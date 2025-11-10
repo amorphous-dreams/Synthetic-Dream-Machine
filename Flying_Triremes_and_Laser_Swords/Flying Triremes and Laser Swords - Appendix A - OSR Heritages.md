@@ -2,9 +2,9 @@
 
 # ☄️ A Brief Word on the Heritage Trait
 
-This trait is granted \*\*free at character creation\*\* and immediately confers the three \*Skilled\* benefits listed for the chosen Heritage. A hero can \*\*never hold more than one Heritage\*\*, but they may deepen the one they have: by investing experience or questing for secrets, a player can unlock its \*Expert\* and \*Master\* ranks. Commonly practiced Expert and Master upgrades are given for each. The daemon may also invest XP to turn it into a special Hallmark trait.
+This trait is granted **free at character creation** and immediately confers the three *Skilled* benefits listed for the chosen Heritage. A hero can **never hold more than one Heritage**, but they may deepen the one they have: by investing experience or questing for secrets, a player can unlock its *Expert* and *Master* ranks. Commonly practiced Expert and Master upgrades are given for each. The daemon may also invest XP to turn it into a special Hallmark trait.
 
-\> Heritage Ranks: Skilled \= 3 slots. Expert \= 4 slots. Master \= 5 slots.
+> Heritage Ranks: Skilled \= 3 slots. Expert \= 4 slots. Master \= 5 slots.
 
 Some Heritage effects have special rules, including marking the trait in order to activate certain abilities. You may not mark this trait if it is already marked. Unmark your Heritage trait by resting for one watch (4 hours), or resting for 10 minutes and spending 1 Life.
 
