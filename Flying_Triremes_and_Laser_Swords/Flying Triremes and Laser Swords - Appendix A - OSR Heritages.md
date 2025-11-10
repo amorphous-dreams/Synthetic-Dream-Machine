@@ -1,6 +1,6 @@
-# Appendix A \- Old School Roleplaying Heritage Traits
+# Old School Roleplaying Heritage Traits
 
-# ☄️ A Brief Word on the Heritage Trait
+# A Brief Word on the Heritage Trait
 
 This trait is granted **free at character creation** and immediately confers the three *Skilled* benefits listed for the chosen Heritage. A hero can **never hold more than one Heritage**, but they may deepen the one they have: by investing experience or questing for secrets, a player can unlock its *Expert* and *Master* ranks. Commonly practiced Expert and Master upgrades are given for each. The daemon may also invest XP to turn it into a special Hallmark trait.
 
