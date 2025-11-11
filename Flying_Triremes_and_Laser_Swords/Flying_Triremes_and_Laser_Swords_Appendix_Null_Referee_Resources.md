@@ -1,5 +1,277 @@
 # Appendix Null \- Referee Resources
 
+# Mechanical Tags
+
+## Core (from Vastlands Powers / Traits / Gear)
+
+* \[oldtech\] — rare or fragile magitech.  
+* \[fantascience\] — unstable sorcery-tech hybrid.  
+* \[anchored\] — bound to a locus or object; break anchor, end effect.  
+* \[attack\] — resolves as attack vs Defense (not a save).  
+* \[attune\] — requires attunement/binding (time/rite cost).  
+* \[area S/M/L\] — area size shorthand (Small/Medium/Large).  
+* \[burst\] — localized multi-target emission.  
+* \[dangerous\] — triggers Danger Rolls / corruption exposure.  
+* \[focus\] — requires concentration; disruption ends it.  
+* \[fueled\] — consumes components, tools, time, or extra resource.  
+* \[hands-free\] — functions when worn/installed; doesn’t occupy hands.  
+* \[imbued\] — Life (or cost) stays committed while active.  
+* \[item\] — effect is object-bound; can be stolen/disabled.  
+* \[petrifying\], \[fearsome\] — impose saves, morale shocks, conditions.  
+* \[re X\] — reload/cooldown pacing (e.g. “re 7”).  
+* \[repaired\] — jury-rigged, fragile, may fail under stress.  
+* \[slow\], \[clumsy\] — action or accuracy penalties.  
+* \[vital\], \[necrotic\], \[deathly\] — damage/interaction type.  
+* \[vorpal\] — limb/head loss on thresholds or crits.
+
+## Armor / Protection Context
+
+* \[bulky\] — extra slots; awkward to carry.  
+* \[bulletproof\] — resists ballistic harm.  
+* \[camo:lion/sand/forest/etc.\] — camouflaged pattern.  
+* \[enviro\] — sealed; protects vs vacuum/toxins/radiation.  
+* \[light armor\] — minimal encumbrance.  
+* \[medium armor\] — balance protection/weight.  
+* \[heavy armor\] — max defense, heavy burden.  
+* \[shield\] — carried/integrated active defense.  
+* \[force shield\] — energy/mana shield barrier.  
+* \[warded\] — psychic/dream protections woven in.
+
+## Afflictions / Conditions (often trait-linked)
+
+* \[affliction\] — ongoing harmful state.  
+* \[burden\] — occupies encumbrance/mind slot.  
+* \[wear\] — degradation track (gear or body).  
+* \[corruption\] — noösphere taint, mutation risk.  
+* \[disease\] — biological or magical sickness.  
+* \[curse\] — bound malediction; persists until broken.  
+* \[mutation\] — altered form; can be a trait or drawback.  
+* \[hallmark\] — attuned distinguishing feature (XP invested in gear/trait).
+
+## Usage / Action Economy
+
+* \[instant\] — resolves immediately.  
+* \[reaction\] — triggers off another’s action.  
+* \[stance\] — sustained posture; ends if you move/shift.  
+* \[sustained\] — continues with effort or cost each round/watch.  
+* \[passive\] — always on, no activation.  
+* \[aura\] — persistent zone effect centered on user.  
+* \[line\], \[cone\], \[zone\] — effect geometry.  
+* \[touch\], \[self\], \[adjacent\] — targeting shorthand.
+
+## Thematic Tags
+
+### **Elements & Energies**
+
+\[air\], \[earth\], \[fire\], \[water\], \[ice\], \[lightning\], \[acid\], \[venom\], \[poison\], \[smoke\], \[steam\], \[magma\], \[metal\], \[stone\], \[sand\], \[storm\], \[sun\], \[moon\], \[star\], \[radiant\], \[necrotic\], \[chromatic\], \[gravity\], \[heat\], \[subdual\], \[plasma\]
+
+### **Dreams & Shadows**
+
+\[dream\], \[shadow\], \[web\], \[chaos\], \[order\], \[void\], \[fear\], \[madness\], \[illusion\], \[phantasm\], \[astral\], \[ethereal\], \[corruption\], \[mutation\], \[apocrypha\], \[wyrd\], \[phantasm\], \[confusion\]
+
+### **Totems & Spirits**
+
+\[totem\], \[animal\], \[beast\], \[plant\], \[fungus\], \[insect\], \[wyrm\], \[fae\], \[demon\], \[angel\], \[undead\], \[giant\], \[construct\], \[golem\], \[vome\], \[spirit\], \[guardian\], \[zombie\], \[lich\], \[daemon\], \[vampire\], \[caller\], \[necrobeast\]
+
+### **Schools & Traditions**
+
+\[abjuration\], \[conjuration\], \[divination\], \[enchantment\], \[evocation\], \[illusion\], \[necromancy\], \[transmutation\], \[sorcery\], \[oldtech\], \[fantascience\], \[wizard\], \[noömagus\], \[gunmaker\], \[biomantic\]
+
+### **Clerical & Cult Domains**
+
+\[healing\], \[war\], \[death\], \[life\], \[light\], \[darkness\], \[nature\], \[trickery\], \[knowledge\], \[tempest\], \[forge\], \[grave\], \[blessing\], \[curse\], \[sacrifice\], \[oath\], \[geas\], \[hallmark\], \[cult\], \[faith\], \[prophecy\]
+
+### **Artifacts & Practices**
+
+\[ritual\], \[rite\], \[song\], \[dance\], \[shout\], \[imbue\], \[hex\], \[ward\], \[summon\], \[banish\], \[bind\], \[mark\], \[seal\], \[attune\], \[geas\], \[oath\], \[hallmark\], \[weapon\], \[armor\], \[harness\], \[autofac\], \[artifact\]
+
+### **Weird Science & Magitech**
+
+\[oldtech\], \[fantascience\], \[network\], \[cyber\], \[circuit\], \[signal\], \[pulse\], \[resonance\], \[overload\], \[bio\], \[shell\], \[gear\], \[autogolem\], \[wandgun\], \[raygun\], \[plasma\], \[portal\], \[time\], \[reality\], \[attune\], \[slow\], \[intravenous\], \[corrupting\], \[vorpal\]
+
+### **Misc / Playful**
+
+\[blood\], \[bone\], \[flesh\], \[heart\], \[soul\], \[mind\], \[gaze\], \[hand\], \[voice\], \[wyrd\], \[luck\], \[time\], \[space\], \[entropy\], \[burden\], \[mutation\], \[hero\], \[curse\], \[fearsome\], \[vital\], \[petrifying\], \[slow\], \[clumsy\], \[burst\]
+
+# Powers
+
+## Power Name
+
+ Power Level (P): *cost in Life / Mana*  
+ Range (R): *self / touch / adjacent / short (\~5 m) / nearby / middling (\~30–50 m) / medium (\~50 m) / here (area) / aura X yd / etc.*  
+ Target (T): *self / creature / object / zone (size) / each in X / one willing ally / etc.*  
+ Duration (D): *instant / one round / minutes / hour / one watch (≈4 h) / day / scene / permanent*  
+ Overcharge (Ox): *x2 — small boost; x4 — big boost or extra use/effect.* (Overcharge expands effect/scale; may also add safety risks.)
+
+Tags: *e.g., \[totem\] \[dream\] \[shadow\] \[gaze\] \[rite\] \[network\] \[venom\] \[element\]* (use tags to cue fiction and rules hooks like Affinity; albums and practices group related powers.)
+
+Effect:  
+ *A tight, one-paragraph description of what the power does in play, stated in clear, player-facing terms. Mention any rolls or saves, damage, area, movement, or status it creates. Keep tone consistent with SDM examples.*
+
+## OSR Powers Catalog
+
+## **B/X via Old‑School Essentials (OSE)**
+
+*Charm Person* — \[enchantment\] \[mind\] *\[focus\]*  
+ *Detect Magic* — \[divination\] \[light\]  
+ *Floating Disc* — \[oldtech\] \[telekinetic\] *\[sustained\]*  
+ *Hold Portal* — \[abjuration\] \[ward\]  
+ *Light / Darkness* — \[light\] / \[darkness\]  
+ *Magic Missile* — \[evocation\] \[radiant\] *\[attack\]*  
+ *Protection from Evil* — \[abjuration\] \[ward\] *\[aura\]*  
+ *Read Magic* — \[divination\] \[apocrypha\]  
+ *Shield* — \[abjuration\] \[ward\] *\[imbued\]*  
+ *Sleep* — \[dream\] \[enchantment\] \[mind\] *\[burst\]*  
+ *Invisibility* — \[illusion\] \[shadow\] *\[focus\]*  
+ *Knock* — \[transmutation\] \[oldtech\]  
+ *Levitate* — \[air\] \[transmutation\] *\[focus\]*  
+ *Mirror Image* — \[illusion\] *\[focus\]*  
+ *Phantasmal Force* — \[illusion\] \[phantasm\] *\[focus\]*  
+ *Web* — \[web\] \[conjuration\] *\[zone\]*  
+ *Dispel Magic* — \[abjuration\]  
+ *Fly* — \[air\] \[transmutation\] *\[focus\]*  
+ *Fireball* — \[fire\] \[evocation\] *\[burst\]*  
+ *Lightning Bolt* — \[lightning\] \[evocation\] *\[line\]*  
+ *Hold Person* — \[enchantment\] \[order\]  
+ *Dimension Door* — \[space\]  
+ *Polymorph Self / Others* — \[transmutation\] \[flesh\] / \[transmutation\] \[curse\]  
+ *Wall of Fire / Ice / Stone* — \[fire\] / \[ice\] / \[earth\] \[evocation\] *\[zone\]*  
+ *Animate Dead* — \[necromancy\] \[death\] \[undead\] *\[ritual\] \[dangerous\]*  
+ *Cloudkill* — \[poison\] \[death\] *\[zone\] \[dangerous\]*  
+ *Conjure Elemental* — \[element\] \[summon\] *\[ritual\] \[dangerous\]*  
+ *Magic Jar* — \[necromancy\] \[spirit\] *\[anchored\] \[focus\] \[dangerous\]*  
+ *Teleport* — \[space\] *\[dangerous\]*  
+ *Geas / Remove Geas* — \[geas\] \[oath\] \[enchantment\] / \[abjuration\]  
+ (Spell lists and names verified against OSE SRD for magic‑user & cleric.) [Old School Essentials+2Old School Essentials+2](https://oldschoolessentials.necroticgnome.com/srd/index.php/Magic-User_Spells?utm_source=chatgpt.com)
+
+---
+
+## **OD\&D lineage via Swords & Wizardry**
+
+*Stinking Cloud* — \[poison\] \[air\] *\[zone\]*  
+ *Pyrotechnics* — \[fire\] \[illusion\]  
+ *Rope Trick* — \[space\] \[trickery\]  
+ *Explosive Runes* — \[ward\] \[mark\]  
+ *Slow* — \[time\] \[order\]  
+ *Monster Summoning I–VII* — \[summon\] \[beast\]  
+ *Prismatic Sphere* — \[chromatic\] \[abjuration\] *\[ward\]*  
+ *Time Stop* — \[time\] \[cosmic\]  
+ *Reverse Gravity* — \[gravity\] \[transmutation\]  
+ *Limited Wish / Wish* — \[cosmic\] \[reality\] \[sorcery\] *\[dangerous\]*  
+ *Gate* — \[astral\] \[summon\] \[angel\] \[daemon\] *\[dangerous\] \[ritual\]*  
+ *Cacodemon* — \[demon\] \[summon\] *\[dangerous\]*  
+ *Mass Invisibility* — \[illusion\] \[shadow\]  
+ *Simulacrum* — \[illusion\] \[construct\]  
+ (Complete cleric \+ magic‑user spell lists referenced.) [Mojobob](https://mojobob.com/roleplay/swordsandwizardry/sw_html/sw18_spell-lists.html)
+
+---
+
+## **AD\&D 1e lineage via OSRIC**
+
+*Enchant Item* — \[oldtech\] \[artifact\] \[imbue\] *\[ritual\] \[fueled\]*  
+ *Permanency* — \[sorcery\] *\[imbued\] \[dangerous\]*  
+ *Legend Lore* — \[divination\] \[apocrypha\] *\[ritual\]*  
+ *Repulsion* — \[abjuration\] *\[aura\]*  
+ *Anti‑Magic Shell* — \[abjuration\] *\[aura\] \[ward\]*  
+ *Move Earth* — \[earth\] *\[zone\]*  
+ *Part Water / Control Weather* — \[water\] / \[storm\] \[air\] *\[zone\]*  
+ *Astral Spell* — \[astral\] \[dream\] *\[ritual\] \[focus\]*  
+ (Spell chapter & master tables confirmed.) [osricwiki.presgas.name+1](https://osricwiki.presgas.name/doku.php?id=osric%3Achapter2&utm_source=chatgpt.com)
+
+---
+
+## **Labyrinth Lord (B/X clone focus, cleric highlights)**
+
+*Cure Light/Serious Wounds* — \[healing\] \[life\]  
+ *Bless* — \[blessing\] \[war\] *\[aura\]*  
+ *Find Traps* — \[divination\] \[oldtech\]  
+ *Hold Person* — \[order\] \[enchantment\]  
+ *Speak with Animals/Plants* — \[nature\] \[beast\] \[plant\]  
+ *Neutralize Poison* — \[healing\] \[venom\]  
+ *Sticks to Snakes* — \[nature\] \[totem\] \[venom\]  
+ *Create Food and Water* — \[nature\] \[life\] *\[ritual\]*  
+ *Insect Plague* — \[nature\] \[disease\] *\[zone\]*  
+ *Quest* — \[oath\] \[geas\]  
+ *Raise Dead* — \[death\] \[life\]  
+ (Cleric spell list corroborated.) [Devil Ghost](https://devilghost.com/rules/spells.html?utm_source=chatgpt.com)
+
+---
+
+## **Basic Fantasy RPG (BFRPG SRD)**
+
+*Magic Mouth* — \[illusion\] \[voice\]  
+ *Darkvision* — \[darkness\] \[vision\]  
+ *Ice Storm* — \[ice\] \[evocation\] *\[area M\]*  
+ *Passwall* — \[earth\] \[transmutation\]  
+ *Wall of Iron* — \[metal\] \[evocation\] *\[zone\]*  
+ *Animate Objects* — \[construct\] \[totem\]  
+ *Blade Barrier* — \[metal\] \[war\] *\[zone\]*  
+ *True Seeing* — \[divination\] \[light\]  
+ *Restoration* — \[healing\] \[life\]  
+ *Word of Recall* — \[space\] \[oath\]  
+ *Heal* — \[healing\] \[life\]  
+ *Speak with Dead* — \[death\] \[spirit\]  
+ (Names and availability verified in BFRPG SRD.) [Basic Fantasy SRD](https://bfsrd.opengamingnetwork.com/spells/)
+
+---
+
+## **Shadowdark (modern OSR)**
+
+*Acid Arrow* — \[acid\] \[evocation\] *\[attack\]*  
+ *Mage Armor* — \[abjuration\] \[ward\] *\[imbued\]*  
+ *Magic Circle* — \[abjuration\] \[ward\] *\[aura\]*  
+ *Resilient Sphere* — \[abjuration\] \[oldtech\]  
+ *Silence* — \[order\] *\[zone\]*  
+ *Sleep* — \[dream\] \[enchantment\]  
+ *Lightning Ray* (Lightning Bolt) — \[lightning\] \[evocation\] *\[line\]*  
+ *Fly* — \[air\] \[transmutation\]  
+ *Gaseous Form* — \[water\] \[air\] \[transmutation\]  
+ *Scrying* — \[divination\] \[astral\] *\[focus\]*  
+ *Heal / Regenerate* — \[healing\] \[life\]  
+ *Zone of Truth* — \[order\] \[knowledge\] *\[zone\]*  
+ (Spell list sourced from the Shadowdark tools index.) [Anjour's Arsenal](https://anjours-arsenal.net/tools/shadowdark-spells)
+
+---
+
+## **Dungeon Crawl Classics (DCC) — patron & weird‑magic imports**
+
+*Patron Bond* — \[oath\] \[geas\] \[daemon\] \[angel\] \[ritual\] *\[dangerous\]*  
+ *Invoke Patron* — \[daemon\] \[angel\] \[summon\] *\[dangerous\]*  
+ *(Use with DCC idioms below; core spell lists exist, but these two define its vibe.)* [Roll20+3Goodman Games+3Goodman Games+3](https://goodman-games.com/forums/viewtopic.php?f=72&t=49189&utm_source=chatgpt.com)
+
+**DCC spellcasting idioms to consider as FTLS “meta‑powers”:**  
+ *Spellburn* — \[sacrifice\] \[corruption\] (trade ability for casting power)  
+ *Mercurial Magic* — \[chaos\] \[mutation\] (per‑spell weird side effect)  
+ *Patron Taint* — \[curse\] \[daemon\] (long‑term consequences) [irontavern.com+1](https://irontavern.com/2012/08/05/angels-daemons-and-beings-between-a-patron-sourcebook-for-dcc-rpg/?utm_source=chatgpt.com)
+
+---
+
+## **MÖRK BORG — “Powers” (scroll‑based spells)**
+
+*Palms Open the Southern Gate* — \[fire\] \[evocation\] *\[burst\]*  
+ *Tongue of Eris* — \[madness\] \[enchantment\]  
+ *Telekinesis (Te‑le‑kin‑esis)* — \[mind\] \[oldtech\]  
+ *Lucifer’s Levitation* — \[air\] \[transmutation\]  
+ *Daemon of Capillaries* — \[blood\] \[death\]  
+ *Nine Violet Signs Unknot the Storm* — \[storm\] \[chaos\]  
+ *Metzhuotl Blind Your Eye* — \[illusion\] \[shadow\] (invisibility)  
+ *Foul Psychopomp* — \[death\] \[summon\] \[undead\]  
+ *Eyelid Blinds the Mind* — \[dream\] \[enchantment\] (sleep)  
+ *Death* — \[death\] \[necrotic\] *\[area S\]*
+
+**Sacred Scrolls (notables):**  
+ *Grace of a Dead Saint* — \[healing\] \[death\]  
+ *Grace for a Sinner* — \[blessing\] \[luck\]  
+ *Whispers Pass the Gate* — \[death\] \[divination\] (speak with dead)  
+ *Aegis of Sorrow* — \[ward\] \[sorrow\]  
+ *Unmet Fate* — \[life\] \[death\] (revivify‑style)  
+ *Bestial Speech* — \[nature\] \[beast\]  
+ *False Dawn / Night’s Chariot* — \[light\] / \[darkness\]  
+ *Hermetic Step* — \[knowledge\] \[trap\]  
+ *Roskoe’s Consuming Glare* — \[radiant\] \[evocation\]  
+ *Enochian Syntax* — \[command\] \[enchantment\]  
+ (Names and d10 lists taken from the Barebones edition spell pages / “Powers” references.)
+
 # Heritage Design Template
 
 **Purpose**  
@@ -475,276 +747,3 @@ d6 Referee Hooks
 4. Mirth-touched shades are impersonating local leaders.  
 5. A Veilwalk passage collapses, trapping the party in the Between.  
 6. The draugr fleet rises each equinox to hunt coastal villages.
-
-# Mechanical Tags
-
-## Core (from Vastlands Powers / Traits / Gear)
-
-* \[oldtech\] — rare or fragile magitech.  
-* \[fantascience\] — unstable sorcery-tech hybrid.  
-* \[anchored\] — bound to a locus or object; break anchor, end effect.  
-* \[attack\] — resolves as attack vs Defense (not a save).  
-* \[attune\] — requires attunement/binding (time/rite cost).  
-* \[area S/M/L\] — area size shorthand (Small/Medium/Large).  
-* \[burst\] — localized multi-target emission.  
-* \[dangerous\] — triggers Danger Rolls / corruption exposure.  
-* \[focus\] — requires concentration; disruption ends it.  
-* \[fueled\] — consumes components, tools, time, or extra resource.  
-* \[hands-free\] — functions when worn/installed; doesn’t occupy hands.  
-* \[imbued\] — Life (or cost) stays committed while active.  
-* \[item\] — effect is object-bound; can be stolen/disabled.  
-* \[petrifying\], \[fearsome\] — impose saves, morale shocks, conditions.  
-* \[re X\] — reload/cooldown pacing (e.g. “re 7”).  
-* \[repaired\] — jury-rigged, fragile, may fail under stress.  
-* \[slow\], \[clumsy\] — action or accuracy penalties.  
-* \[vital\], \[necrotic\], \[deathly\] — damage/interaction type.  
-* \[vorpal\] — limb/head loss on thresholds or crits.
-
-## Armor / Protection Context
-
-* \[bulky\] — extra slots; awkward to carry.  
-* \[bulletproof\] — resists ballistic harm.  
-* \[camo:lion/sand/forest/etc.\] — camouflaged pattern.  
-* \[enviro\] — sealed; protects vs vacuum/toxins/radiation.  
-* \[light armor\] — minimal encumbrance.  
-* \[medium armor\] — balance protection/weight.  
-* \[heavy armor\] — max defense, heavy burden.  
-* \[shield\] — carried/integrated active defense.  
-* \[force shield\] — energy/mana shield barrier.  
-* \[warded\] — psychic/dream protections woven in.
-
-## Afflictions / Conditions (often trait-linked)
-
-* \[affliction\] — ongoing harmful state.  
-* \[burden\] — occupies encumbrance/mind slot.  
-* \[wear\] — degradation track (gear or body).  
-* \[corruption\] — noösphere taint, mutation risk.  
-* \[disease\] — biological or magical sickness.  
-* \[curse\] — bound malediction; persists until broken.  
-* \[mutation\] — altered form; can be a trait or drawback.  
-* \[hallmark\] — attuned distinguishing feature (XP invested in gear/trait).
-
-## Usage / Action Economy
-
-* \[instant\] — resolves immediately.  
-* \[reaction\] — triggers off another’s action.  
-* \[stance\] — sustained posture; ends if you move/shift.  
-* \[sustained\] — continues with effort or cost each round/watch.  
-* \[passive\] — always on, no activation.  
-* \[aura\] — persistent zone effect centered on user.  
-* \[line\], \[cone\], \[zone\] — effect geometry.  
-* \[touch\], \[self\], \[adjacent\] — targeting shorthand.
-
-## Thematic Tags
-
-### **Elements & Energies**
-
-\[air\], \[earth\], \[fire\], \[water\], \[ice\], \[lightning\], \[acid\], \[venom\], \[poison\], \[smoke\], \[steam\], \[magma\], \[metal\], \[stone\], \[sand\], \[storm\], \[sun\], \[moon\], \[star\], \[radiant\], \[necrotic\], \[chromatic\], \[gravity\], \[heat\], \[subdual\], \[plasma\]
-
-### **Dreams & Shadows**
-
-\[dream\], \[shadow\], \[web\], \[chaos\], \[order\], \[void\], \[fear\], \[madness\], \[illusion\], \[phantasm\], \[astral\], \[ethereal\], \[corruption\], \[mutation\], \[apocrypha\], \[wyrd\], \[phantasm\], \[confusion\]
-
-### **Totems & Spirits**
-
-\[totem\], \[animal\], \[beast\], \[plant\], \[fungus\], \[insect\], \[wyrm\], \[fae\], \[demon\], \[angel\], \[undead\], \[giant\], \[construct\], \[golem\], \[vome\], \[spirit\], \[guardian\], \[zombie\], \[lich\], \[daemon\], \[vampire\], \[caller\], \[necrobeast\]
-
-### **Schools & Traditions**
-
-\[abjuration\], \[conjuration\], \[divination\], \[enchantment\], \[evocation\], \[illusion\], \[necromancy\], \[transmutation\], \[sorcery\], \[oldtech\], \[fantascience\], \[wizard\], \[noömagus\], \[gunmaker\], \[biomantic\]
-
-### **Clerical & Cult Domains**
-
-\[healing\], \[war\], \[death\], \[life\], \[light\], \[darkness\], \[nature\], \[trickery\], \[knowledge\], \[tempest\], \[forge\], \[grave\], \[blessing\], \[curse\], \[sacrifice\], \[oath\], \[geas\], \[hallmark\], \[cult\], \[faith\], \[prophecy\]
-
-### **Artifacts & Practices**
-
-\[ritual\], \[rite\], \[song\], \[dance\], \[shout\], \[imbue\], \[hex\], \[ward\], \[summon\], \[banish\], \[bind\], \[mark\], \[seal\], \[attune\], \[geas\], \[oath\], \[hallmark\], \[weapon\], \[armor\], \[harness\], \[autofac\], \[artifact\]
-
-### **Weird Science & Magitech**
-
-\[oldtech\], \[fantascience\], \[network\], \[cyber\], \[circuit\], \[signal\], \[pulse\], \[resonance\], \[overload\], \[bio\], \[shell\], \[gear\], \[autogolem\], \[wandgun\], \[raygun\], \[plasma\], \[portal\], \[time\], \[reality\], \[attune\], \[slow\], \[intravenous\], \[corrupting\], \[vorpal\]
-
-### **Misc / Playful**
-
-\[blood\], \[bone\], \[flesh\], \[heart\], \[soul\], \[mind\], \[gaze\], \[hand\], \[voice\], \[wyrd\], \[luck\], \[time\], \[space\], \[entropy\], \[burden\], \[mutation\], \[hero\], \[curse\], \[fearsome\], \[vital\], \[petrifying\], \[slow\], \[clumsy\], \[burst\]
-
-# Powers
-
-## Power Name
-
- Power Level (P): *cost in Life / Mana*  
- Range (R): *self / touch / adjacent / short (\~5 m) / nearby / middling (\~30–50 m) / medium (\~50 m) / here (area) / aura X yd / etc.*  
- Target (T): *self / creature / object / zone (size) / each in X / one willing ally / etc.*  
- Duration (D): *instant / one round / minutes / hour / one watch (≈4 h) / day / scene / permanent*  
- Overcharge (Ox): *x2 — small boost; x4 — big boost or extra use/effect.* (Overcharge expands effect/scale; may also add safety risks.)
-
-Tags: *e.g., \[totem\] \[dream\] \[shadow\] \[gaze\] \[rite\] \[network\] \[venom\] \[element\]* (use tags to cue fiction and rules hooks like Affinity; albums and practices group related powers.)
-
-Effect:  
- *A tight, one-paragraph description of what the power does in play, stated in clear, player-facing terms. Mention any rolls or saves, damage, area, movement, or status it creates. Keep tone consistent with SDM examples.*
-
-## OSR Powers Catalog
-
-## **B/X via Old‑School Essentials (OSE)**
-
-*Charm Person* — \[enchantment\] \[mind\] *\[focus\]*  
- *Detect Magic* — \[divination\] \[light\]  
- *Floating Disc* — \[oldtech\] \[telekinetic\] *\[sustained\]*  
- *Hold Portal* — \[abjuration\] \[ward\]  
- *Light / Darkness* — \[light\] / \[darkness\]  
- *Magic Missile* — \[evocation\] \[radiant\] *\[attack\]*  
- *Protection from Evil* — \[abjuration\] \[ward\] *\[aura\]*  
- *Read Magic* — \[divination\] \[apocrypha\]  
- *Shield* — \[abjuration\] \[ward\] *\[imbued\]*  
- *Sleep* — \[dream\] \[enchantment\] \[mind\] *\[burst\]*  
- *Invisibility* — \[illusion\] \[shadow\] *\[focus\]*  
- *Knock* — \[transmutation\] \[oldtech\]  
- *Levitate* — \[air\] \[transmutation\] *\[focus\]*  
- *Mirror Image* — \[illusion\] *\[focus\]*  
- *Phantasmal Force* — \[illusion\] \[phantasm\] *\[focus\]*  
- *Web* — \[web\] \[conjuration\] *\[zone\]*  
- *Dispel Magic* — \[abjuration\]  
- *Fly* — \[air\] \[transmutation\] *\[focus\]*  
- *Fireball* — \[fire\] \[evocation\] *\[burst\]*  
- *Lightning Bolt* — \[lightning\] \[evocation\] *\[line\]*  
- *Hold Person* — \[enchantment\] \[order\]  
- *Dimension Door* — \[space\]  
- *Polymorph Self / Others* — \[transmutation\] \[flesh\] / \[transmutation\] \[curse\]  
- *Wall of Fire / Ice / Stone* — \[fire\] / \[ice\] / \[earth\] \[evocation\] *\[zone\]*  
- *Animate Dead* — \[necromancy\] \[death\] \[undead\] *\[ritual\] \[dangerous\]*  
- *Cloudkill* — \[poison\] \[death\] *\[zone\] \[dangerous\]*  
- *Conjure Elemental* — \[element\] \[summon\] *\[ritual\] \[dangerous\]*  
- *Magic Jar* — \[necromancy\] \[spirit\] *\[anchored\] \[focus\] \[dangerous\]*  
- *Teleport* — \[space\] *\[dangerous\]*  
- *Geas / Remove Geas* — \[geas\] \[oath\] \[enchantment\] / \[abjuration\]  
- (Spell lists and names verified against OSE SRD for magic‑user & cleric.) [Old School Essentials+2Old School Essentials+2](https://oldschoolessentials.necroticgnome.com/srd/index.php/Magic-User_Spells?utm_source=chatgpt.com)
-
----
-
-## **OD\&D lineage via Swords & Wizardry**
-
-*Stinking Cloud* — \[poison\] \[air\] *\[zone\]*  
- *Pyrotechnics* — \[fire\] \[illusion\]  
- *Rope Trick* — \[space\] \[trickery\]  
- *Explosive Runes* — \[ward\] \[mark\]  
- *Slow* — \[time\] \[order\]  
- *Monster Summoning I–VII* — \[summon\] \[beast\]  
- *Prismatic Sphere* — \[chromatic\] \[abjuration\] *\[ward\]*  
- *Time Stop* — \[time\] \[cosmic\]  
- *Reverse Gravity* — \[gravity\] \[transmutation\]  
- *Limited Wish / Wish* — \[cosmic\] \[reality\] \[sorcery\] *\[dangerous\]*  
- *Gate* — \[astral\] \[summon\] \[angel\] \[daemon\] *\[dangerous\] \[ritual\]*  
- *Cacodemon* — \[demon\] \[summon\] *\[dangerous\]*  
- *Mass Invisibility* — \[illusion\] \[shadow\]  
- *Simulacrum* — \[illusion\] \[construct\]  
- (Complete cleric \+ magic‑user spell lists referenced.) [Mojobob](https://mojobob.com/roleplay/swordsandwizardry/sw_html/sw18_spell-lists.html)
-
----
-
-## **AD\&D 1e lineage via OSRIC**
-
-*Enchant Item* — \[oldtech\] \[artifact\] \[imbue\] *\[ritual\] \[fueled\]*  
- *Permanency* — \[sorcery\] *\[imbued\] \[dangerous\]*  
- *Legend Lore* — \[divination\] \[apocrypha\] *\[ritual\]*  
- *Repulsion* — \[abjuration\] *\[aura\]*  
- *Anti‑Magic Shell* — \[abjuration\] *\[aura\] \[ward\]*  
- *Move Earth* — \[earth\] *\[zone\]*  
- *Part Water / Control Weather* — \[water\] / \[storm\] \[air\] *\[zone\]*  
- *Astral Spell* — \[astral\] \[dream\] *\[ritual\] \[focus\]*  
- (Spell chapter & master tables confirmed.) [osricwiki.presgas.name+1](https://osricwiki.presgas.name/doku.php?id=osric%3Achapter2&utm_source=chatgpt.com)
-
----
-
-## **Labyrinth Lord (B/X clone focus, cleric highlights)**
-
-*Cure Light/Serious Wounds* — \[healing\] \[life\]  
- *Bless* — \[blessing\] \[war\] *\[aura\]*  
- *Find Traps* — \[divination\] \[oldtech\]  
- *Hold Person* — \[order\] \[enchantment\]  
- *Speak with Animals/Plants* — \[nature\] \[beast\] \[plant\]  
- *Neutralize Poison* — \[healing\] \[venom\]  
- *Sticks to Snakes* — \[nature\] \[totem\] \[venom\]  
- *Create Food and Water* — \[nature\] \[life\] *\[ritual\]*  
- *Insect Plague* — \[nature\] \[disease\] *\[zone\]*  
- *Quest* — \[oath\] \[geas\]  
- *Raise Dead* — \[death\] \[life\]  
- (Cleric spell list corroborated.) [Devil Ghost](https://devilghost.com/rules/spells.html?utm_source=chatgpt.com)
-
----
-
-## **Basic Fantasy RPG (BFRPG SRD)**
-
-*Magic Mouth* — \[illusion\] \[voice\]  
- *Darkvision* — \[darkness\] \[vision\]  
- *Ice Storm* — \[ice\] \[evocation\] *\[area M\]*  
- *Passwall* — \[earth\] \[transmutation\]  
- *Wall of Iron* — \[metal\] \[evocation\] *\[zone\]*  
- *Animate Objects* — \[construct\] \[totem\]  
- *Blade Barrier* — \[metal\] \[war\] *\[zone\]*  
- *True Seeing* — \[divination\] \[light\]  
- *Restoration* — \[healing\] \[life\]  
- *Word of Recall* — \[space\] \[oath\]  
- *Heal* — \[healing\] \[life\]  
- *Speak with Dead* — \[death\] \[spirit\]  
- (Names and availability verified in BFRPG SRD.) [Basic Fantasy SRD](https://bfsrd.opengamingnetwork.com/spells/)
-
----
-
-## **Shadowdark (modern OSR)**
-
-*Acid Arrow* — \[acid\] \[evocation\] *\[attack\]*  
- *Mage Armor* — \[abjuration\] \[ward\] *\[imbued\]*  
- *Magic Circle* — \[abjuration\] \[ward\] *\[aura\]*  
- *Resilient Sphere* — \[abjuration\] \[oldtech\]  
- *Silence* — \[order\] *\[zone\]*  
- *Sleep* — \[dream\] \[enchantment\]  
- *Lightning Ray* (Lightning Bolt) — \[lightning\] \[evocation\] *\[line\]*  
- *Fly* — \[air\] \[transmutation\]  
- *Gaseous Form* — \[water\] \[air\] \[transmutation\]  
- *Scrying* — \[divination\] \[astral\] *\[focus\]*  
- *Heal / Regenerate* — \[healing\] \[life\]  
- *Zone of Truth* — \[order\] \[knowledge\] *\[zone\]*  
- (Spell list sourced from the Shadowdark tools index.) [Anjour's Arsenal](https://anjours-arsenal.net/tools/shadowdark-spells)
-
----
-
-## **Dungeon Crawl Classics (DCC) — patron & weird‑magic imports**
-
-*Patron Bond* — \[oath\] \[geas\] \[daemon\] \[angel\] \[ritual\] *\[dangerous\]*  
- *Invoke Patron* — \[daemon\] \[angel\] \[summon\] *\[dangerous\]*  
- *(Use with DCC idioms below; core spell lists exist, but these two define its vibe.)* [Roll20+3Goodman Games+3Goodman Games+3](https://goodman-games.com/forums/viewtopic.php?f=72&t=49189&utm_source=chatgpt.com)
-
-**DCC spellcasting idioms to consider as FTLS “meta‑powers”:**  
- *Spellburn* — \[sacrifice\] \[corruption\] (trade ability for casting power)  
- *Mercurial Magic* — \[chaos\] \[mutation\] (per‑spell weird side effect)  
- *Patron Taint* — \[curse\] \[daemon\] (long‑term consequences) [irontavern.com+1](https://irontavern.com/2012/08/05/angels-daemons-and-beings-between-a-patron-sourcebook-for-dcc-rpg/?utm_source=chatgpt.com)
-
----
-
-## **MÖRK BORG — “Powers” (scroll‑based spells)**
-
-*Palms Open the Southern Gate* — \[fire\] \[evocation\] *\[burst\]*  
- *Tongue of Eris* — \[madness\] \[enchantment\]  
- *Telekinesis (Te‑le‑kin‑esis)* — \[mind\] \[oldtech\]  
- *Lucifer’s Levitation* — \[air\] \[transmutation\]  
- *Daemon of Capillaries* — \[blood\] \[death\]  
- *Nine Violet Signs Unknot the Storm* — \[storm\] \[chaos\]  
- *Metzhuotl Blind Your Eye* — \[illusion\] \[shadow\] (invisibility)  
- *Foul Psychopomp* — \[death\] \[summon\] \[undead\]  
- *Eyelid Blinds the Mind* — \[dream\] \[enchantment\] (sleep)  
- *Death* — \[death\] \[necrotic\] *\[area S\]*
-
-**Sacred Scrolls (notables):**  
- *Grace of a Dead Saint* — \[healing\] \[death\]  
- *Grace for a Sinner* — \[blessing\] \[luck\]  
- *Whispers Pass the Gate* — \[death\] \[divination\] (speak with dead)  
- *Aegis of Sorrow* — \[ward\] \[sorrow\]  
- *Unmet Fate* — \[life\] \[death\] (revivify‑style)  
- *Bestial Speech* — \[nature\] \[beast\]  
- *False Dawn / Night’s Chariot* — \[light\] / \[darkness\]  
- *Hermetic Step* — \[knowledge\] \[trap\]  
- *Roskoe’s Consuming Glare* — \[radiant\] \[evocation\]  
- *Enochian Syntax* — \[command\] \[enchantment\]  
- (Names and d10 lists taken from the Barebones edition spell pages / “Powers” references.)
-
