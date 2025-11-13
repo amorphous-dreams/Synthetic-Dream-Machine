@@ -1012,15 +1012,15 @@ Pale, deep-trench kin with bioluminescent veins, glassy eyes who barter with str
 
 #### Selkie Clans
 
-Shore-roaming otter, seal, dolphin and sea-mammal kin, keepers of hide-magic and fog ballads. Skilled: Swap Ability Bonus – Quick with **Armoured Body** (mystic otter-hide, etc). Their chimeric forms often take the shape of dire sea-mammals.
+Shore-roaming otter, seal, dolphin, and sea-mammal kin, keepers of hide-magic and fog ballads. Skilled: Swap Ability Bonus – Quick with **Armoured Body** (mystic otter-hide, etc). Their chimeric forms often take the shape of dire sea-mammals.
 
-#### Shark Folk
+#### Shark Clans
 
 Aggressive couriers of the Blue Rush currents; questors of the deeps near the Astral Sea; folk who honor the Wild Hunt. Skilled: Swap Ability Bonus – Quick with **Aggressive**. Most shark folk take **Blood Scent** as one of their chimeric form effects.
 
-#### Crab Folk
+#### Crab Clans
 
-Reef-builders clad in living carapace, master coral smiths and builders. Skilled: Swap Ability Bonus – Quick with **Armoured Body** (carapace plating). Common chimeric form choices include either **Nimble** or **Size – Large**, and either **Alternate Movement– Swim**, or **Alternate Movement – Climb**.
+Ocean and dry-land reef-builders clad in living carapace, these clans include master coral-smiths and architects. Skilled: Swap Ability Bonus – Quick with **Armoured Body** (carapace plating). Common chimeric form choices include either **Nimble** or **Size – Large**, and either **Alternate Movement– Swim**, or **Alternate Movement – Climb**.
 
 ## Nerthurian (Earthen/Stone Folk)
 
@@ -1355,11 +1355,11 @@ Humanoid spider fae who read fate in trembling threads and craft bamboo palaces 
 
 Appearance — multi-limbed silhouettes, glossy carapace over humanoid torso, human faces with ocular clusters shimmering like dew.
 
-Names — Thrice‑Spun, Nyx‑Web, Looming‑Lai, Silk‑Fang, Drift‑in‑Shadow, Docktor Claw
+Names — Thrice‑Spun, Nox‑Web, Looming‑Lai, Silk‑Fang, Drift‑in‑Shadow, Docktor Claw
 
 Motives / Ethics / Voice — staccato clicks, polite detachment; value obligation nets over coins.
 
-Culture — Sun brewed dew-teas, lacquered insect sweets, mushroom broths. Rites of monthly web ceremonies and omen-reading; legendary deed-records stitched in silk. Taboos on cutting another’s thread without permission; burning silk in a shrine. They build orb temples spun from mist and bamboo.
+Culture — Sun brewed dew-teas, candied insect sweets, mushroom broths. Rites of monthly web ceremonies and omen-reading; legendary deed-records stitched in silk. Taboos on cutting another’s thread without permission; burning silk in a shrine. They build orb temples spun from mist and bamboo.
 
 Example Backgrounds — Web‑Crafter (Artisan), Bamboo Architect (Artisan), Shadow Hunter (Scout).
 
