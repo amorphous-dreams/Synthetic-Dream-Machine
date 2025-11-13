@@ -88,11 +88,11 @@ Tags: \[force\] \[lightning\] \[magnetism\]
 
 Hurl invisible kinetics and sketch geometry in the air; make fields that cradle, crush, or pin an army like moths. Grip the unseen scaffolds of the world and yank: vectors snap taut, inertia buckles, space folds, and force-arcs crawl like silver spiders across your knuckles.
 
-### Affinity — Blood • Bone • Salt
+### Affinity — Blood • Bone • Biomancy
 
-Tags: \[blood\] \[bone\] \[salt\]
+Tags: \[blood\] \[bone\] \[biomancy\]
 
-Distill humors, set fractures with whispered rites, and ring thresholds with salt. Knit sinew, carve forms, and seal pacts with preservative alchemy. Your craft binds memory to matter. Life’s ledger and death’s archive live in your kit.
+Distill humors, set fractures with whispered rites, and ring thresholds with salt-wards against infections. Knit sinew, carve forms, and seal pacts with preservative alchemy. Your craft binds memory to matter. Life’s ledger and death’s archive live in your kit.
 
 ### Affinity — Fungus & Spore
 
@@ -954,7 +954,7 @@ Example Backgrounds — Dream-Warden (Scout), Lighting-Fist Acolyte (Military), 
 
 ## Marmot Folk
 
-* Skilled (+3): **Affinity – Blood • Bone • Salt, Affinity – Earth • Stone • Wood, Size – Small**
+* Skilled (+3): **Affinity – Blood • Bone • Biomancy, Affinity – Earth • Stone • Wood, Size – Small**
 * Expert (+6): **Darkvision**
 * Master (+9): **Alternate Movement – Burrow** – Can dig tunnels through soft earth at regular speed, and limestone at 6 yd/round, enough for a single Marmot Folk.
 
@@ -1002,17 +1002,17 @@ Example Backgrounds — Coral Mason (Artisan), Tide-Cartographer (Scout), Dragon
 
 **Variants**
 
-#### Reef Clan Mer Folk
+#### Reef Clans
 
 The standard variant, Mer folk of all types and themes. Like the centaur and harpy clans they practice Chimeric Body magics, walking the land and also shifting to a “hybrid” form more attuned with their local waters. Almost all Mer folk chose **Alternate Movement – Swim** as one of their chimeric form effects.
 
-#### Cold Vome “Mer”
+#### "Cold Vome" Void Mer Folk
 
 Pale, deep-trench kin with bioluminescent veins, glassy eyes who barter with strange logic machines. Skilled: Swap Affinity – Water • Ice • Steam with **Affinity – Illusion • Light • Void** (polar light, dark brine). Chimeric forms often carry cephalopod, jellyfish, or stranger animal traits. These folk often carry \[void\] tagged breath charms and pressure wards.
 
-#### Selkie Tribes
+#### Selkie Clans
 
-Shore-roaming otter and seal kin, keepers of hide-magic and fog ballads. Skilled: Swap Ability Bonus – Quick with **Armoured Body** (mystic otter-hide or sealskin). Their chimeric forms often take the shape of dire sea mammals.
+Shore-roaming otter, seal, dolphin and sea-mammal kin, keepers of hide-magic and fog ballads. Skilled: Swap Ability Bonus – Quick with **Armoured Body** (mystic otter-hide, etc). Their chimeric forms often take the shape of dire sea-mammals.
 
 #### Shark Folk
 
@@ -1463,7 +1463,7 @@ Example Backgrounds — Thunder Fist Acolyte (Military), Dream Tech Broker (Merc
 ## Undead (Post Mortal)
 
 * Skilled (+3): **Deathless, Choose Two**
-  * Common choices: **Ability Bonus – Solid, Ability Bonus – Spirited,** **Ability Bonus – Spirited, Affinity – Blood • Bone • Salt, Armoured Body, Darkvision, Inner Fire**
+  * Common choices: **Ability Bonus – Solid, Ability Bonus – Spirited,** **Ability Bonus – Spirited, Affinity – Blood • Bone • Biomancy, Armoured Body, Darkvision, Inner Fire**
 * Expert (+6): **Choose One**
 * Master (+9): **Affinity – Chaos • Dream • Shadow**
 
@@ -1484,6 +1484,6 @@ Example Backgrounds — Licensed necrotech (Magitech), Oath-Bound Warden (Scout)
 
 **Variants:**
 
-* Candle-Heart Revenant: Wax-heart burns brighter with every good deed. Skilled: Choose **Inner Fire** and **Affinity – Blood • Bone • Salt**.
+* Candle-Heart Revenant: Wax-heart burns brighter with every good deed. Skilled: Choose **Inner Fire** and **Affinity – Blood • Bone • Biomancy**.
 * Mirth-Touched Shade: Your ever-changing guise hides the truth within. Skilled: Choose **Ability Bonus – Spirited** and **Affinity – Masks & Totems**
 * Salt-Bone Draugr: Tide-bound returned-ones. Skilled: Choose **Armoured Body** and **Alternate Movement – Swim**.

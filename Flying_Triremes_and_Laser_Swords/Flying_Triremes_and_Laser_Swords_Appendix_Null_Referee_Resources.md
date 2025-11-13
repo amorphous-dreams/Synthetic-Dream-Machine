@@ -91,7 +91,7 @@
 
 ### **Misc / Playful**
 
-\[blood\], \[bone\], \[flesh\], \[heart\], \[soul\], \[mind\], \[gaze\], \[hand\], \[voice\], \[wyrd\], \[luck\], \[time\], \[space\], \[entropy\], \[burden\], \[mutation\], \[hero\], \[curse\], \[fearsome\], \[vital\], \[petrifying\], \[slow\], \[clumsy\], \[burst\]
+\[blood\], \[bone\], \[biomancy\], \[flesh\], \[heart\], \[soul\], \[mind\], \[gaze\], \[hand\], \[voice\], \[wyrd\], \[luck\], \[time\], \[space\], \[entropy\], \[burden\], \[mutation\], \[hero\], \[curse\], \[fearsome\], \[vital\], \[petrifying\], \[slow\], \[clumsy\], \[burst\]
 
 # Powers
 
