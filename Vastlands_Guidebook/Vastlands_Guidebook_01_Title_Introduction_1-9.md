@@ -36,8 +36,6 @@ _A concrete pigeon._
 
 ## THE VASTLANDS GUIDEBOOK
 
-f
-
 **Vastlands Guidebook (VLG)**
 
 _For would-be heroes of the lands at the end of time._
@@ -196,18 +194,18 @@ No player, not even the referee, has to master all the lore. You’re on a journ
 
 **Referee Titles**
 To remind everyone that the referee is also a player, they can get a different title and playful power every session. Here are some ideas to get you started:
-|#|Title|Session Powers|
+|*#*|**Title**|**Session Powers**|
 |---|---|---|
-|1|Boss Cat|All must acclaim the local house cat. Give extra xp for cat-themed treats.|
-|2|The Cleaner|Award xp to players who help clean up after the session.|
-|3|Electric Ghost|Summon a hero’s annoying ancestor ghost for advice or moral lessons.|
-|4|Glitch Golem|Move a random location on the map. Swap place names.|
-|5|Judging Muse|Give xp for good background music choices. Veto bad ones by group vote.|
-|6|Nine Lifer|Grant up to nine extra life points to characters.|
-|7|Prismatic Priest|Randomly recolor locations. Roll d6: (1) monochrome, (2) desaturated, (3) cool hues, (4) warm hues, (5) bright, harmonious colors, (6) a brutal riot of neon and day-glo.|
-|8|Rail Plotter|Draw a visible path linking prepared locations. Players can choose to follow or ignore it.|
-|9|Sky Bringer|Create dramatic weather effects in-game. No complaints about tired clichés allowed.|
-|10|Snack Warden|Give 1d4 re-rolls to players who bring food or music.|
+|1|Boss Cat|All must acclaim the local house cat.|Give extra xp for cat-themed treats.|
+|2|The Cleaner|Award xp to players who help clean|up after the session.|
+|3|Electric Ghost|Summon a hero’s annoying ancestor|ghost for advice or moral lessons.|
+|4|Glitch Golem|Move a random location on the map.|Swap place names.|
+|5|Judging Muse|Give xp for good background music|choices. Veto bad ones by group vote.|
+|6|Nine Lifer|Grant up to nine extra life points to|characters.|
+|7|Prismatic Priest||Randomly recolor locations. Roll d6: (1) monochrome, (2) desaturated, (3) cool hues, (4) warm hues, (5) bright, harmonious colors, (6) a brutal riot of neon and day-glo.|
+|8|Rail Plotter|Draw a visible path linking prepared|locations. Players can choose to follow or ignore it.|
+|9|Sky Bringer|Create dramatic weather effects|in-game. No complaints about tired clichés allowed.|
+|10|Snack Warden|Give 1d4 re-rolls to players who bring|food or music.|
 
 > [@Vastlands_Guidebook, _p._ _7_]
 
