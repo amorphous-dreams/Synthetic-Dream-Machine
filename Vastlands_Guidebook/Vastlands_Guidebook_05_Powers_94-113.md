@@ -402,7 +402,9 @@ If you make longer studies, use an oldtech laboratory, or get suitable help, you
 
 <!-- Vastlands Guidebook, Page 103 -->
 
-**Modifying a Power** You can try to modify a power you already know how to use. This requires a few weeks, access to a suitable oldtech laboratory or similar facility, and €50 per power level. Typical mods could include:
+**Modifying a Power**
+
+You can try to modify a power you already know how to use. This requires a few weeks, access to a suitable oldtech laboratory or similar facility, and €50 per power level. Typical mods could include:
 
 1. **Hack.** Make the power work with one of your existing traits. Very hard thought test. 
 
@@ -421,6 +423,10 @@ As with learning a new power, failing a thought roll risks corruption, and great
 **Upgrades, Quirks, and Side Effects**
 
 When used, the modified power also exhibits the following effect when used.
+
+- **Small Upgrade** - Improved with whizz-bang oldtech.
+- **Cosmetic Quirk** - Show you really own your powers.
+- **Side-Effect** - A bit busted. Still useful, just... ah.
 
 | d10 | Small Upgrade | Cosmetic Quirk | Side-Effect |
 | --- | --- | --- | --- |
@@ -590,28 +596,51 @@ Powers are often compiled, marketed, sold, and installed as concept albums. Tech
 
 Albums, like trait paths, are optional compilations, not rigid schools. Walled garden fruit stores exist where well-heeled power consumers can pick and choose individual powers to complement their personality and create technomagical mixtapes. Characters can acquire individual powers from different albums. If they grow in fame and skill, they may also create their own albums.
 
-| d20 | Title | Themes | Levels | Price |
-| --- | --- | --- | --- | --- |
-| 1 | Abyss Transcendent | Breaking the soul to create something better. | 8 | €1,000 |
-| 2 | The Biomechalypsis | Usha's guides to mutating and improving the body. | 9 | €1,500 |
-| 3 | Canticle of Testimonies | Appreciation of the cosmic mysteries of the Maker. | 10 | €2,000 |
-| 4 | Consumanthropos | The secret libram of the ghoul wizards of the Eater. | 11 | €2,500 |
-| 5 | Culter Vulcani | The iron symphony of the living weapons of Zu. | 13 | €3,500 |
-| 6 | Decrees of Umbra | Legal doctrines of the sacred citizens dead. | 15 | €4,500 |
-| 7 | Dendrocosmica | The plant-first doctrines of the D.R.U.I.D. para-cult. | 18 | €6,000 |
-| 8 | The Erebus Library | The Portal Architects' veil-ripper fairy tales. | 21 | €7,500 |
-| 9 | Eternal Arkhiatricon | Lich craft for Dummies. You too can live forever! | 25 | €11k |
-| 10 | The Forcefield Lotus | Meditations on the translation of mind into force. | 29 | €13k |
-| 11 | The Furies Codex | The mind-breaking records of the Grand Inquisitor. | 34 | €17k |
-| 12 | Lachryma Demiurgica | All-chemical truths stolen from the weeping demiurge. | 39 | €23k |
-| 13 | Logos Apeiron | Post-existential void magics of the Null Priests. | 45 | €31k |
-| 14 | Machina Chrysopoeia | Song-codes of the living machines and unliving vomes. | 51 | €37k |
-| 15 | On the Electrophage | Truths embedded in the self-willed energies of being. | 58 | €47k |
-| 16 | Ophthalmothanatikon | Curses cast by the gaze of the ill-favored observer. | 65 | €59k |
-| 17 | Our Panomphalos | Summoning secrets of the belly of the world. | 73 | €67k |
-| 18 | Paries Spectri VII | Seven chromatic truths of the prismatic post-humans. | 81 | €73k |
-| 19 | Terminus Rectus | Heretical doctrines from the end of the world. | 90 | €83k |
-| 20 | Vastum Quietus | A hieratical chrestomathy of many counterpowers. | 99 | €97k |
+| d20 | Title | Themes |
+| --- | --- | --- |
+| 1 | Abyss Transcendent | Breaking the soul to create something better. |
+| 2 | The Biomechalypsis | Usha's guides to mutating and improving the body. |
+| 3 | Canticle of Testimonies | Appreciation of the cosmic mysteries of the Maker. |
+| 4 | Consumanthropos | The secret libram of the ghoul wizards of the Eater. |
+| 5 | Culter Vulcani | The iron symphony of the living weapons of Zu. |
+| 6 | Decrees of Umbra | Legal doctrines of the sacred citizens dead. |
+| 7 | Dendrocosmica | The plant-first doctrines of the D.R.U.I.D. para-cult. |
+| 8 | The Erebus Library | The Portal Architects' veil-ripper fairy tales. |
+| 9 | Eternal Arkhiatricon | Lich craft for Dummies. You too can live forever! |
+| 10 | The Forcefield Lotus | Meditations on the translation of mind into force. |
+| 11 | The Furies Codex | The mind-breaking records of the Grand Inquisitor. |
+| 12 | Lachryma Demiurgica | All-chemical truths stolen from the weeping demiurge. |
+| 13 | Logos Apeiron | Post-existential void magics of the Null Priests. |
+| 14 | Machina Chrysopoeia | Song-codes of the living machines and unliving vomes. |
+| 15 | On the Electrophage | Truths embedded in the self-willed energies of being. |
+| 16 | Ophthalmothanatikon | Curses cast by the gaze of the ill-favored observer. |
+| 17 | Our Panomphalos | Summoning secrets of the belly of the world. |
+| 18 | Paries Spectri VII | Seven chromatic truths of the prismatic post-humans. |
+| 19 | Terminus Rectus | Heretical doctrines from the end of the world. |
+| 20 | Vastum Quietus | A hieratical chrestomathy of many counterpowers. |
+
+| d20 | Levels | Price |
+| --- | --- | --- |
+| 1 | 8 | €1,000 |
+| 2 | 9 | €1,500 |
+| 3 | 10 | €2,000 |
+| 4 | 11 | €2,500 |
+| 5 | 13 | €3,500 |
+| 6 | 15 | €4,500 |
+| 7 | 18 | €6,000 |
+| 8 | 21 | €7,500 |
+| 9 | 25 | €11k |
+| 10 | 29 | €13k |
+| 11 | 34 | €17k |
+| 12 | 39 | €23k |
+| 13 | 45 | €31k |
+| 14 | 51 | €37k |
+| 15 | 58 | €47k |
+| 16 | 65 | €59k |
+| 17 | 73 | €67k |
+| 18 | 81 | €73k |
+| 19 | 90 | €83k |
+| 20 | 99 | €97k |
 
 > [@Vastlands_Guidebook, _p._ _106_]
 
@@ -621,28 +650,51 @@ Albums, like trait paths, are optional compilations, not rigid schools. Walled g
 
 You hold in your hand a mintTM condition artifact from the Long Long Ago, a wonder whose secrets promise to transport you (or your psychic emanation) to worlds undreamed-of in more mediocre philosophies. A pristine power album in its original packaging includes power recordings and reproduction instructions. To enjoy its powers, some equipment may be required (sold separately). For best results, one should invest in high fidelity power activation equipment from a reputable brand. It may cost more, but it has a logo! Roll separately for the format of the album and any special features it touts to justify its marked-up price.
 
-| d20 | Format | Size | Design Highlight | Special Feature | Markup |
-| --- | --- | --- | --- | --- | --- |
-| 1 | oldtech computer | 5 st | old bronze demon statuette | freemium micro-transactions | €9/wk |
-| 2 | synthskin cyber fiche | 1 st | ornate ritual reproduction | keeps coming loose | €15 |
-| 3 | vials of memory fluid | 1 st | reading causes a euphoric high | needs refueling | €25 |
-| 4 | baked clay tablets | 3 st | extra-dimensional appendages | disappears unpredictably | €50 |
-| 5 | tattooed skin | 2 st | use trepanation for best effect | alien tastes | €60 |
-| 6 | bundled bone scales | 4 st | doubles as a scarf or flag | prone to overgrowth | €85 |
-| 7 | parchment codex | 1 st | fiddly to read on the move | requires micro-lens reader | €100 |
-| 8 | brazen clockwork | 2 st | silver bonds & cautionary tales | corrupted arcane sigils | €150 |
-| 9 | mass-market paperback | 5 sp | heavy and nigh-indestructible | infested with memories | €225 |
-| 10 | plastic paper scroll | 5 sp | bottle with aerosol spray nozzle | bureaucryptic triplicate coding | €295 |
-| 11 | preserved head | 1 st | phosphorescent & highly visible | requires reading assistant | €450 |
-| 12 | crystal-laced slab | 2 st | howls to access the underworld | demon-haunted | €666 |
-| 13 | compact phonograph | 5 sp | played with gears and levers | sings when used | €750 |
-| 14 | artificial mycelial mass | 1 st | produces hallucinogenic fruits | skips records if jostled | €850 |
-| 15 | knotted net record | 1 st | professorial spell slave in a jar | requires host neural network | €1,200 |
-| 16 | vomeronasal stimulator | 1 sp | inscrutable vantablack surface | autocorrected keyword blocker | €2,400 |
-| 17 | pearlescent implant | 1 sp | tatty, yellow, with thin sheets | looks like valuable cash | €3,500 |
-| 18 | tactile interface cylinder | 1 st | collectible protective cover | corroded by fae memories | €4,500 |
-| 19 | mirrored glasses | 1 sp | holo bubble with AR codes | obscure gesture interface | €6,250 |
-| 20 | memory daemon trait | — | ostentatious jadeite matrix | strong views on poetic politics | €9,990 |
+| d20 | Format | Size |
+| --- | --- | --- |
+| 1 | oldtech computer | 5 st |
+| 2 | synthskin cyber fiche | 1 st |
+| 3 | vials of memory fluid | 1 st |
+| 4 | baked clay tablets | 3 st |
+| 5 | tattooed skin | 2 st |
+| 6 | bundled bone scales | 4 st |
+| 7 | parchment codex | 1 st |
+| 8 | brazen clockwork | 2 st |
+| 9 | mass-market paperback | 5 sp |
+| 10 | plastic paper scroll | 5 sp |
+| 11 | preserved head | 1 st |
+| 12 | crystal-laced slab | 2 st |
+| 13 | compact phonograph | 5 sp |
+| 14 | artificial mycelial mass | 1 st |
+| 15 | knotted net record | 1 st |
+| 16 | vomeronasal stimulator | 1 sp |
+| 17 | pearlescent implant | 1 sp |
+| 18 | tactile interface cylinder | 1 st |
+| 19 | mirrored glasses | 1 sp |
+| 20 | memory daemon | trait |
+
+| d20 | Design Highlight | Special Feature | Markup |
+| --- | --- | --- | --- |
+| 1 | old bronze demon statuette | freemium micro-transactions | €9/wk |
+| 2 | ornate ritual reproduction | keeps coming loose | €15 |
+| 3 | reading causes a euphoric high | needs refueling | €25 |
+| 4 | extra-dimensional appendages | disappears unpredictably | €50 |
+| 5 | use trepanation for best effect | alien tastes | €60 |
+| 6 | doubles as a scarf or flag | prone to overgrowth | €85 |
+| 7 | fiddly to read on the move | requires micro-lens reader | €100 |
+| 8 | silver bonds & cautionary tales | corrupted arcane sigils | €150 |
+| 9 | heavy and nigh-indestructible | infested with memories | €225 |
+| 10 | bottle with aerosol spray nozzle | bureaucryptic triplicate coding | €295 |
+| 11 | phosphorescent & highly visible | requires reading assistant | €450 |
+| 12 | howls to access the underworld | demon-haunted | €666 |
+| 13 | played with gears and levers | sings when used | €750 |
+| 14 | produces hallucinogenic fruits | skips records if jostled | €850 |
+| 15 | professorial spell slave in a jar | requires host neural network | €1,200 |
+| 16 | inscrutable vantablack surface | autocorrected keyword blocker | €2,400 |
+| 17 | tatty, yellow, with thin sheets | looks like valuable cash | €3,500 |
+| 18 | collectible protective cover | corroded by fae memories | €4,500 |
+| 19 | holo bubble with AR codes | obscure gesture interface | €6,250 |
+| 20 | ostentatious jadeite matrix | strong views on poetic politics | €9,990 |
 
 > [@Vastlands_Guidebook, _p._ _107_]
 
@@ -654,17 +706,31 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 
 **Red Mist**
 
-Tactical Aggression Augment **P:** 1 **R:** short, ~20m **T:** one creature **D:** a few minutes
+Tactical Aggression Augment 
 
-Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save). It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma. _Overcharge:_ Affect a number of creatures equal to your level + 1.
+**P:** 1 **R:** short, ~20m **T:** one creature **D:** a few minutes
 
-**Orange Dream** Forgotten Spider’s Labors **P:** 1 **R:** whisper **T:** one creature **D:** an hour A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear immediately dangerous or risky. _Overcharge:_ Even a hostile or violent creature listens, provided you can whisper in its ear.
+Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save). It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
+
+_Overcharge:_ Affect a number of creatures equal to your level + 1.
+
+**Orange Dream**
+
+Forgotten Spider’s Labors 
+
+**P:** 1 **R:** whisper **T:** one creature **D:** an hour
+
+A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear immediately dangerous or risky.
+
+_Overcharge:_ Even a hostile or violent creature listens, provided you can whisper in its ear.
 
 **Yellow Cloud**
 
 Sands of Lost Times
 
-**P:** 1 **R:** nearby **T:** a 9m cube **D:** a few minutes Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust irritates the lungs of air-breathers. After a few minutes, it blows away.
+**P:** 1 **R:** nearby **T:** a 9m cube **D:** a few minutes
+
+Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust irritates the lungs of air-breathers. After a few minutes, it blows away.
 
 _Overcharge:_ Summon into shimmering immobility a wall of dust measuring 200 cubic meters.
 
@@ -672,9 +738,9 @@ _Overcharge:_ Summon into shimmering immobility a wall of dust measuring 200 cub
 
 Arbor Sanctuary
 
-**P:** 1 **R:** nearby **T:** a 7m diameter sphere
+**P:** 1 **R:** nearby **T:** a 7m diameter sphere **D:** a night or a day
 
-**D:** a night or a day Convince shrubberies, grasses, brambles, and other plants to form a hedge domehome, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable while in the shrub wall. After a night or day, the plants return to their ordinary ways.
+Convince shrubberies, grasses, brambles, and other plants to form a hedge domehome, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable while in the shrub wall. After a night or day, the plants return to their ordinary ways.
 
 _Overcharge:_ Sculpt a thorny hedge wall measuring 200 meters square and 1 meter thick. Its thorns cut anyone pushing through like daggers (1d4 damage).
 
@@ -688,9 +754,13 @@ Soma’s bliss brings contentment to the target (save).
 
 Success: it loses its next turn to a blissful reverie.
 
-Failure: it sits down, lost in blissful reverie for an hour. _Overcharge:_ Affect a number of creatures equal to your level + 1.
+Failure: it sits down, lost in blissful reverie for an hour.
 
-**Purple Memories** Comic Emotional Display
+_Overcharge:_ Affect a number of creatures equal to your level + 1.
+
+**Purple Memories**
+
+Comic Emotional Display
 
 **P:** 1 **R:** touch **T:** a creature **D:** several minutes
 
@@ -710,25 +780,54 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 
 Blood Made Lead
 
-**P:** 1 **R:** touch **T:** anchor weapon **D:** instant Reloads your weapon as a free action, turning life force into semi-real projectiles. _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
+**P:** 1 **R:** touch **T:** anchor weapon **D:** instant
 
-**Dancing In The Hail** Dodgebullet
+Reloads your weapon as a free action, turning life force into semi-real projectiles.
+
+_Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
+
+**Dancing In The Hail**
+
+Dodgebullet
 
 **P:** 1 **R:** self **T:** self **D:** one round
 
-Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage). _Overcharge:_ Any ranged attacks that hit deal half damage.
+Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage).
 
-**Ring of Lead** Rapid Metal Spin Cycle
+_Overcharge:_ Any ranged attacks that hit deal half damage.
 
-**P:** 1 **R:** adjacent **T:** all creatures **D:** one action Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action. _Overcharge:_ No attack roll required. *subject to how much ammo the anchor weapon holds.
+**Ring of Lead**
 
-**Eyes of the Arrow** Panoptic Projectile **P:** 1 **R:** touch **T:** one projectile **D:** a minute or so Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor). _Overcharge:_ The projectile maneuvers in flight with the agility of a dove.
+Rapid Metal Spin Cycle
 
-**Counterfire** Panoptic Projectile **P:** 1 **R:** a middling hemisphere, ~12m **T:** one attack **D:** interrupt Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll. _Overcharge:_ The attacker must save or be disarmed.
+**P:** 1 **R:** adjacent **T:** all creatures **D:** one action
+
+Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
+
+_Overcharge:_ No attack roll required. *subject to how much ammo the anchor weapon holds.
+
+**Eyes of the Arrow**
+
+Panoptic Projectile
+
+**P:** 1 **R:** touch **T:** one projectile **D:** a minute or so
+
+Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor). _Overcharge:_ The projectile maneuvers in flight with the agility of a dove.
+
+**Counterfire**
+
+Panoptic Projectile 
+**P:** 1 **R:** a middling hemisphere, ~12m **T:** one attack **D:** interrupt
+
+Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll.
+
+_Overcharge:_ The attacker must save or be disarmed.
 
 **Depleted Heavy Metal Rain**
 
-Bigger Bang **P:** 1 **R:** touch **T:** anchor weapon **D:** a few minutes
+Bigger Bang
+
+**P:** 1 **R:** touch **T:** anchor weapon **D:** a few minutes
 
 Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
 
@@ -744,7 +843,15 @@ A compilation of folk road magic by the ethnologist and hedge wizard Fritzu Na (
 
 No album makes the crooked road straighter.
 
-**Dampen Mass** Nosigoro Logistical Augment **P:** 1 **R:** touch **T:** 1 sack **D:** 1 day A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty. _Overcharge:_ The mass is halved again. Alternately, it affects an object twice as large, or lasts a week instead.
+**Dampen Mass**
+
+Nosigoro Logistical Augment
+
+**P:** 1 **R:** touch **T:** 1 sack **D:** 1 day
+
+A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
+
+_Overcharge:_ The mass is halved again. Alternately, it affects an object twice as large, or lasts a week instead.
 
 **Better Pastures**
 
@@ -758,17 +865,43 @@ _Overcharge:_ Ask a second question or clarify the first.
 
 **Wing And Prayer**
 
-Dirty Fixing **P:** 1 **R:** touch **T:** vehicle or steed **D:** 1 day Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a burden for a day, but then the damage is worse. _Overcharge:_ The fix lasts a week; but the damage is even worse after.
+Dirty Fixing
 
-**Roadfinder** Blacktop Sniffer **P:** 1 **R:** a day’s march **T:** self **D:** 1 hour Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
+**P:** 1 **R:** touch **T:** vehicle or steed **D:** 1 day
+
+Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a burden for a day, but then the damage is worse.
+
+_Overcharge:_ The fix lasts a week; but the damage is even worse after.
+
+**Roadfinder**
+
+Blacktop Sniffer
+
+**P:** 1 **R:** a day’s march **T:** self **D:** 1 hour
+
+Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
 
 _Overcharge:_ The detection range is doubled, or the sense lasts a day.
 
-**Highway Cruiser** Foolself Driving **P:** 1 **R:** touch **T:** vehicle or steed **D:** 1 day Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to receive voice commands. _Overcharge:_ The daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
+**Highway Cruiser**
+
+Foolself Driving
+
+**P:** 1 **R:** touch **T:** vehicle or steed **D:** 1 day
+
+Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to receive voice commands.
+
+_Overcharge:_ The daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
 
 **Roadmaker**
 
-Stradograd’s Engine of Civility **P:** 6 **R:** one metric mile **T:** rock and soil **D:** 1 day By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month. _Overcharge:_ The faststone sets into standardstone overnight, creating a surface that lasts a century without maintenance.
+Stradograd’s Engine of Civility
+
+**P:** 6 **R:** one metric mile **T:** rock and soil **D:** 1 day
+
+By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month.
+
+_Overcharge:_ The faststone sets into standardstone overnight, creating a surface that lasts a century without maintenance.
 
 > [@Vastlands_Guidebook, _p._ _110_]
 
@@ -782,9 +915,7 @@ Found on tablets pried from the petrified hand bones of the lich-vizier Akaula a
 
 Revelations of Pain
 
-**P:** 1 **R:** self
-
-**T:** thorn tree **D:** 1 hour
+**P:** 1 **R:** self **T:** thorn tree **D:** 1 hour
 
 The wizard hangs upon a tree of thorns and gains +1 to an ability score for the rest of the day and a cryptic answer to a single question asked of the uncaring void. The answer has a 1-in-6 chance of being immediately helpful.
 
@@ -794,37 +925,45 @@ _Overcharge:_ Gains +2 to an ability score and the answer has a 1-in-4 chance of
 
 Razorblade Tree
 
-**P:** 3 **R:** short (10m or so)
+**P:** 3 **R:** short (10m or so) **T:** planted landcoral seed **D:** permanent
 
-**T:** planted landcoral seed **D:** permanent The petromancer spills their lifeblood, forcing the landcoral seed into sudden, explosive growth. A 5–8 meter tall limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket of razor branches suffers 1d4 damage. The speed of growth kills the landcoral. _Overcharge:_ the growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with caltrop-like landcoral shards.
+The petromancer spills their lifeblood, forcing the landcoral seed into sudden, explosive growth. A 5–8 meter tall limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket of razor branches suffers 1d4 damage. The speed of growth kills the landcoral.
 
-**Invoke Ub Dragon** Local Reality Error Spark
+_Overcharge:_ the growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with caltrop-like landcoral shards.
 
-**P:** 7 **R:** here
+**Invoke Ub Dragon**
 
-**T:** large local area of disturbed reality **D:** permanent
+Local Reality Error Spark
+
+**P:** 7 **R:** here **T:** large local area of disturbed reality **D:** permanent
 
 The summoner invokes the Ub code and condenses accumulated magitechnical disturbance into an eater. Its power depends on the level of disturbance (decided by the referee or a d10 roll). After the eater emerges, the local disturbance reduces one step; stuckforces loosen, energy snarls fade, radiation ghosts dim.
 
-<1 undisturbed: **sparkly air plankton** (L0, harmless) 1–3 barely disturbed: **purifier slime** (L1d4, caustic) 4–7 temporal static: **destruction lizard** (L2d4, armored) 8–9 spatial scarring: **flaming leaper** (L2d6, thorned) 10+ reality fracture: **blade harvester** (L3d4+2, winged)
+| d10 | Disturbance  | Eater Invoked | Level |
+| --- | --- | --- | --- |
+| <1 | undisturbed | **sparkly air plankton** | L0 (harmless) |
+| 1–3 | barely disturbed | **purifier slime** | L1d4 (caustic) |
+| 4–7 | temporal static | **destruction lizard** | L2d4 (armored) |
+| 8–9 | spatial scarring | **flaming leaper** | L2d6 (thorned) |
+| 10+ | reality fracture | **blade harvester** | L3d4+2 (winged) |
 
 _Overcharge:_ You have temporary control of the eater.
 
-**Eyes of Akaula** Visions of the Dear Departed
+**Eyes of Akaula**
 
-**P:** 8 **R:** medium, ~50m
+Visions of the Dear Departed
 
-**T:** self **D:** 1 day
+**P:** 8 **R:** medium, ~50m **T:** self **D:** 1 day
 
-The seeker's eyes glow pale chartreuse and can see things invisible, hidden, departed, and dead. _Overcharge:_ The seeker gains a gaze attack that paralyzes the aforementioned things for 1d6 rounds (save).
+The seeker's eyes glow pale chartreuse and can see things invisible, hidden, departed, and dead.
 
-**Stoyevod’s Irreducible** **Crystallization of the Ego Complex**
+_Overcharge:_ The seeker gains a gaze attack that paralyzes the aforementioned things for 1d6 rounds (save).
+
+**Stoyevod’s Irreducible Crystallization of the Ego Complex**
 
 Restoration of the Priceless One
 
-**P:** 17 **R:** here
-
-**T:** one dead hero **D:** permanent
+**P:** 17 **R:** here **T:** one dead hero **D:** permanent
 
 This deeply immoral ritual tears a departed psyche from the All-Mind's cosmic consciousness. It steals the forgiven soul from the All-Fire of Creation-PreservationDestruction. It undoes the body's decay into the All Green of Life-Death-Rebirth.
 
@@ -834,11 +973,15 @@ _Overcharge:_ The hero adds +20 to their relife roll or increases one of their a
 
 > _In the Year of the Lambent Fox the Chosen One fell before her time and the people of the Milkweed faced certain doom. Stoyevod the Practitioner sacrificed 9 of his clone brothers and sisters to return the Chosen One and resume the Good and Proper Path of the Milkweed._
 
-**Akaula's Sacrificial Hero** Purification of the Mouth of Hell
+**Akaula's Sacrificial Hero**
 
-**P:** 21 **R:** touch
+Purification of the Mouth of Hell
 
-**T:** chosen hero, large area **D:** permanent The purifier uses the six sigils of binding to mark a hero to the slaughter. The hero loses 1 life per round. When they run out of life, their mind and soul erupt in a blaze of the Maker's fire. The fire banishes all daemons and aliens of double the hero's level or less in a 100 meter radius and shuts all dimensional and void gates for a number of years equal to the hero's level. _Overcharge:_ The outsiders are destroyed, the gates are broken for decades equal to the hero's level.
+**P:** 21 **R:** touch **T:** chosen hero, large area **D:** permanent
+
+The purifier uses the six sigils of binding to mark a hero to the slaughter. The hero loses 1 life per round. When they run out of life, their mind and soul erupt in a blaze of the Maker's fire. The fire banishes all daemons and aliens of double the hero's level or less in a 100 meter radius and shuts all dimensional and void gates for a number of years equal to the hero's level.
+
+_Overcharge:_ The outsiders are destroyed, the gates are broken for decades equal to the hero's level.
 
 > [@Vastlands_Guidebook, _p._ _111_]
 
@@ -848,51 +991,73 @@ _Overcharge:_ The hero adds +20 to their relife roll or increases one of their a
 
 Powers implied in documents salvaged from the ends of existence. Fine scholars employed by the Institute of Industrial Accountability and Civilian Recycling (Purple Branch) have worked hard to recreate these powers for a modern audience. Not so much an album, as a box of incomprehensible odds and terrible ends.
 
-**Can Trip** Two Left Feet Curse, Clumsy Cat-astrophe
+**Can Trip**
 
-**P:** 1 **R:** a few meters
+Two Left Feet Curse, Clumsy Cat-astrophe
 
-**T:** someone who can hear you **D:** instant
+**P:** 1 **R:** a few meters **T:** someone who can hear you **D:** instant
 
 You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
 
 _Overcharge:_ There’s no save. The target is tripping.
 
-**Tragic Missile** Antipersonnel Guided Force Bolt,
+**Tragic Missile**
 
-Cupid’s Cranial Penetrator
+Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator
 
-**P:** 2 **R:** middling, ~30–50m **T:** anything with a mind and soul **D:** instant You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul. _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
+**P:** 2 **R:** middling, ~30–50m **T:** anything with a mind and soul **D:** instant
+
+You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
+
+_Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
 **Hlod Person**
 
-Dyslexic Demon’s Binding, Leshnik’s Unforeseen
+Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction
 
-Constriction
+**P:** 4 **R:** close **T:** a person **D:** 1 hour
 
-**P:** 4 **R:** close **T:** a person **D:** 1 hour Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff, unmoving, receptive to carpentry. _Overcharge:_ The change is permanent.
+Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff, unmoving, receptive to carpentry.
 
-**Pyreball** Instant Incendiary, Damora’s Placid Inferno
+_Overcharge:_ The change is permanent.
 
-**P:** 6 **R:** touch, or as thrown
+**Pyreball**
 
-**T:** 10m diameter sphere **D:** a day, then instant You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6 damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day. _Overcharge:_ The ball deals 10d6 damage, or its fires keep for a month.
+Instant Incendiary, Damora’s Placid Inferno
+
+**P:** 6 **R:** touch, or as thrown **T:** 10m diameter sphere **D:** a day, then instant
+
+You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6 damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
+
+_Overcharge:_ The ball deals 10d6 damage, or its fires keep for a month.
 
 **Nihil Est!**
 
-Life’s End Made Present, Hadi’s Self-Immolation Binding **P:** 8 **R:** touch **T:** a sentient creature **D:** 1 year Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
+Life’s End Made Present, Hadi’s Self-Immolation Binding
 
-_Overcharge:_ you age seven years and a kilometer diameter sphere, centered on your soul, disappears into the nothing of wormspace for a year. Overcharge again to remain behind and watch the sphere disappear (please have some form of levitation ready). _Dangerous:_ No matter how powerful you are.
+**P:** 8 **R:** touch **T:** a sentient creature **D:** 1 year
 
-**Big Wish** Keep on Turning, Supplication of the Perverse Demiurge **P:** 18 **R:** self **T:** demiurge **D:** a day, then permanent. You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge does its level best to misunderstand you, probably because it is an alien from out of time and space.
+Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
+
+_Overcharge:_ you age seven years and a kilometer diameter sphere, centered on your soul, disappears into the nothing of wormspace for a year. Overcharge again to remain behind and watch the sphere disappear (please have some form of levitation ready).
+
+_Dangerous:_ No matter how powerful you are.
+
+**Big Wish**
+
+Keep on Turning, Supplication of the Perverse Demiurge
+
+**P:** 18 **R:** self **T:** demiurge **D:** a day, then permanent.
+
+You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge does its level best to misunderstand you, probably because it is an alien from out of time and space.
 
 The protective circle takes a day to draw, or the power could be dangerous. The summoning itself takes but three gestures and one reflective object. Typical wishes (and perversions):
 
-u "Bring my love back to life." — done, but now she loves another.
-
-u "Take this cup away from me." — very well, let us give it to your nemesis. u "Transport me to a safe place." — you are now in a bank vault, with none of your belongings. u "Get us out of this frying pan!" — into the fire you go.
-
-u "Is this power useless?" — well, it's mostly a joke.
+- "Bring my love back to life." — done, but now she loves another.
+- "Take this cup away from me." — very well, let us give it to your nemesis.
+- "Transport me to a safe place." — you are now in a bank vault, with none of your belongings.
+- "Get us out of this frying pan!" — into the fire you go.
+- "Is this power useless?" — well, it's mostly a joke.
 
 _Overcharge:_ You get three wishes in a crystal chalice. Drink its sour liquid to summon your demiurge.
 
@@ -904,17 +1069,11 @@ _Overcharge:_ You get three wishes in a crystal chalice. Drink its sour liquid t
 
 Localized Spirit Surf
 
-**P:** 1
-
-**R:** touch
-
-**T:** one thinking tree
-
-**D:** 10 minutes
+**P:** 1 **R:** touch **T:** one thinking tree **D:** 10 minutes
 
 You unplug from your body and send your spirit-mind ( _ka-ba_ ) into the synthetic dreamspace of a local server tree. You can access the tree’s short-term memories, divine announcements, algorithmically generated human-interest novelties, and locally hosted offshoot dream realities.
 
-_Overcharge:_ Gain root-level access to the tree’s source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms.
+_Overcharge:_ Gain root-level access to the tree’s source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms. 
 
 Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert functioning guardians (L2d6, electrangelic) to your interventions.
 
