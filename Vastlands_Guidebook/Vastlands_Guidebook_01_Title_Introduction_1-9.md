@@ -144,7 +144,7 @@ The Vastlands made possible by the heroes of the [Stratometaship at the Wizardth
 
 Welcome, curious explorer, to the Vastlands. To a time beyond the end of time.
 
-Here, in the heart of the world, is the Circle Sea, the pond of panhumanity surrounded by polychrome lands. This is _Our Golden_ _Age_ . An overgrown garden of humanity, here neat, there feral, sprawling out of sight of its absentee Builders, safely kept by the inscrutable might of its warden angels, the Phylakes.
+Here, in the heart of the world, is the Circle Sea, the pond of panhumanity surrounded by polychrome lands. This is _Our Golden Age_ . An overgrown garden of humanity, here neat, there feral, sprawling out of sight of its absentee Builders, safely kept by the inscrutable might of its warden angels, the Phylakes.
 
 There, to the west, the psychedelic _Ultraviolet Grasslands_ stretch beyond the edge of civilization and its faded histories, a deep, vast, mythic steppe littered with the detritus of time and space and memory.
 
@@ -193,7 +193,9 @@ The referee is used as a neutral term for the player preparing the adventure, ru
 No player, not even the referee, has to master all the lore. You’re on a journey together: discovering the world and what happens in it by the oracle of your dice. There is no canonic Vastlands. No true, proper way to play it. The game at your table belongs to you all. Through play, you create a world of your very own.
 
 **Referee Titles**
+
 To remind everyone that the referee is also a player, they can get a different title and playful power every session. Here are some ideas to get you started:
+
 |*#*|**Title**|**Session Powers**|
 |---|---|---|
 |1|Boss Cat|All must acclaim the local house cat. Give extra xp for cat-themed treats.|

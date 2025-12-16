@@ -24,7 +24,7 @@ Later, you can acquire other characters: pets, sidekicks, secondary PCs and more
 
 A group of exemplary... er... example characters joins us to illustrate how the rules and procedures work.
 
-_Example: The referee Cat and the intrepid characters Noë, Onion, Safir, and others demonstrate how the rules work to lay_ _waste the best-laid plans of mice and houses. And humans._
+> _Example: The referee Cat and the intrepid characters Noë, Onion, Safir, and others demonstrate how the rules work to lay waste the best-laid plans of mice and houses. And humans._
 
 The heroes sacrificed to the dice oracles are built using random rolls for ability scores—and possibly changed through the vagaries of play and interactions with arcane devices. Yours may have different attributes.
 
@@ -257,13 +257,19 @@ Choose the same trait multiple times to increase its skill modifier.
 
 A trait selected multiple times does not take up additional trait slots. Note a trait’s bonus (+3 / +6 / +9) to track how many times you have selected it.
 
-**Applying Trait Skill Modifiers** Trait descriptions list some situations where skill modifiers apply. Players and the referee can use dialogue and common sense to figure out if a trait could apply in a new or unexpected situation.
+**Applying Trait Skill Modifiers**
 
-**Other Trait Benefits** If traits provide other benefits, note them. You may also invent or discover new benefits to existing traits through play. This is good.
+Trait descriptions list some situations where skill modifiers apply. Players and the referee can use dialogue and common sense to figure out if a trait could apply in a new or unexpected situation.
 
-**Inventing New Traits** Players and referees can make up new traits together. Any profession, quality, background, mutation, or space oddity that sounds fun is fair game.
+**Other Trait Benefits**
 
-→ _Next: pick a path trait (p16). This provides the adventuring_ _competence your random background trait may lack._
+If traits provide other benefits, note them. You may also invent or discover new benefits to existing traits through play. This is good.
+
+**Inventing New Traits**
+
+Players and referees can make up new traits together. Any profession, quality, background, mutation, or space oddity that sounds fun is fair game.
+
+→ _Next: pick a path trait (p16). This provides the adventuring competence your random background trait may lack._
 
 > [@Vastlands_Guidebook, _p._ _14_]
 
@@ -332,9 +338,11 @@ Review and **choose a path** (or roll d6):
 |5–6|Path of the **Fighter**|
 
 **Not Classes**
+
 Paths are not classes. You are not bound to one path. You can choose traits from any path, in any order, mixing-and-matching as you level up.
 
 **No Prerequisites**
+
 Some traits complement one another, but you can pick them in any order as you level up or otherwise acquire new traits through play. If you want, you can even skip the superbasic, number zero trait.
 
 ### PATH OF THE WIZARD
@@ -344,6 +352,7 @@ A scholar who uses the old technologies.
 0. **Wizard.** You call yourself a magus, maker, or mechanic. You are skilled at casting spells (using oldtech powers). Perhaps you just know how to read the manuals of Long Ago and the Zero-One codes?
 
 **More Wizard Traits**
+
 To interrogate, to learn, to master, perhaps to create:
 
 1. **Burner.** Once per turn, you can spend an ability point to overcharge a power, regardless of its cost.
@@ -366,6 +375,7 @@ A merchant focused on overland voyaging. A trickster?
 0. **Traveler.** You call yourself a vagabond, a wanderer, the wind. You are skilled at managing a caravan, navigating with maps and stars and waypoints, making and concealing camps, finding water and food, and the etiquette of the vast open lands. You wield the marching staff and the dagger and the traditional rifle.
 
 **More Traveler Traits**
+
 To hear, to see, to convince, perhaps to lead:
 
 1. **Escapist.** You’re skilled at being lucky. That’s a +3 bonus to all saves.
@@ -384,6 +394,7 @@ A caravan guard who wears armor and wields weapons.
 0. **Fighter.** You call yourself a warden, warrior, or weaponmaster. You are skilled at using traditional weapons and armors; from knife to sword, blaster to rifle, chitin shield to buffer harness. Also, you are skilled at defense. That’s a +3 bonus to defense and attack. Expert: +6; master: +9.
 
 **More Fighter Traits**
+
 To struggle, to fall, to rise, perhaps to succeed:
 
 1. **Armiger.** Carry a number of weapons equal to your level for free, ignoring inventory. Draw a weapons box on the back of your character sheet.
@@ -415,12 +426,15 @@ d6 for background and path traits (58 options) or d10 to include corruption and 
 - 10 (0): roll d6 to determine corruption intensity: (1) severe, (2–3) moderate, (4–6) mild; then d20 for the corresponding corruption trait column (p99)
 
 **Choose a New Trait**
+
 Choose any new trait you like. Either from the tables listed above or from other sources.
 
 **Choose an Existing Trait and Become an Expert**
+
 When you select the same trait a second time, your trait’s skill modifier increases from +3 (skilled) to +6 (expert). Depending on the trait, expertise may provide additional benefits. Selecting a trait twice does not increase the number of trait inventory slots it occupies. As you progress further, you can select the same trait a third time, becoming a master and increasing its skill modifier to +9 (master).
 
 **Invent a New Trait**
+
 To create a new trait, discuss with the rest of the table:
 
 1. Is it fun and evocative to roleplay?
@@ -499,17 +513,18 @@ Item sizes in the Vastlands use abstract units that combine weight and bulk.
 Unless otherwise specified, an item takes up 1 stone of inventory space. 250 cash units take up 1 stone. A PC's money is usually a mix of cards, credit, notes, and units that fit in a wallet. Treat the wallet as part of their clothing.
 
 **Available Items and Packed Items**
+
 Available items take up at least one inventory slot each, regardless of size, but a character can use them immediately.
 
-_Example: A readied dagger (5 sp) takes up a whole inventory slot (1 st)._ 
+> _Example: A readied dagger (5 sp) takes up a whole inventory slot (1 st)._ 
 
 Items can be packed away to save space. Readying a packed item for use takes at least one action.
 
-_Example: Packed in a bundle, two daggers fit in a single inventory slot._
+> _Example: Packed in a bundle, two daggers fit in a single inventory slot._
 
 Some equipment such as backpacks, pouches, purses, ammo belts, or clothing with hidden pockets can allow characters to pack away more gear than usual, effectively increasing their inventory.
 
-_Example: Onion's synthetic skin backpack (1 st) allows him to pack away and carry 3 stones worth of small gear. Effectively, Onion can stuff 4 stones of items into a single inventory slot. However, retrieving a specific item from his backpack takes a whole action. Onion had better not pack away his inquisition squirtgun if he plans to use it._
+> _Example: Onion's synthetic skin backpack (1 st) allows him to pack away and carry 3 stones worth of small gear. Effectively, Onion can stuff 4 stones of items into a single inventory slot. However, retrieving a specific item from his backpack takes a whole action. Onion had better not pack away his inquisition squirtgun if he plans to use it._
 
 > [@Vastlands_Guidebook, _p._ _20_]
 
@@ -519,7 +534,7 @@ _Example: Onion's synthetic skin backpack (1 st) allows him to pack away and car
 
 A character can quickly drop one item or pack as a free action on their turn, reducing any penalties suffered from encumbrance. A quickly dropped item may break, get damaged, roll away, or otherwise suffer the consequences. The referee chooses a save target.
 
-_Example: A pair of shoes chucked onto a grassy slope may roll downhill, a sack of stolen glass statuettes dropped on a marble floor may produce a lot of sharp glass caltrops._
+> _Example: A pair of shoes chucked onto a grassy slope may roll downhill, a sack of stolen glass statuettes dropped on a marble floor may produce a lot of sharp glass caltrops._
 
 A character taking an action to carefully drop an item or pack avoids any risk of damaging their precious property.
 
@@ -527,21 +542,21 @@ A character taking an action to carefully drop an item or pack avoids any risk o
 
 Items are not just bundles of game mechanics. They improve a character’s performance and let them do new things. Use common sense and imagination to figure out how to take advantage of your PC’s equipment.
 
-_Example: Rafts let characters float, while climbing gear helps scale surfaces that are impossible to free-climb._
+> _Example: Rafts let characters float, while climbing gear helps scale surfaces that are impossible to free-climb._
 
 ### HUMAN CLOTHES
 
 Baseline humans have evolved to wear clothes. Any garments suitable for a tropical or temperate climate that such a character wears take up no inventory slots. You can describe them on the back of the character sheet.
 
-_Example: boiler suit, ship overalls, field loincloth, civilian sarong._
+> _Example: boiler suit, ship overalls, field loincloth, civilian sarong._
 
 Additional sets of clothes, or garments that provide benefits or modifiers, occupy inventory slots as usual.
 
-_Example: a corporate suit (1 st) provides status benefits and access to temples of finance, a classical toga (3 st) blocks one arm and marks the wearer as a member of the ruling class in some Decapolitan republics, nomad robes (1 st) serve as armor, very warm clothes (2 st) are useful in the domains of Winterwhite, an environment suit (1 st) protects against radiation ghosts, etc._
+> _Example: a corporate suit (1 st) provides status benefits and access to temples of finance, a classical toga (3 st) blocks one arm and marks the wearer as a member of the ruling class in some Decapolitan republics, nomad robes (1 st) serve as armor, very warm clothes (2 st) are useful in the domains of Winterwhite, an environment suit (1 st) protects against radiation ghosts, etc._
 
 Characters who are not evolved to wear clothes, such as cat lords, spectrum satraps, some golems, and other strange creatures, do not get a free inventory slot for the garments they wear.
 
-_Example: a cat lord wearing a cute little jump suit (1 st) and knit cap with foopy antennae may not look annoyed, but they can’t carry quite as many sacrificial mouse victims as they might wish._
+> _Example: a cat lord wearing a cute little jump suit (1 st) and knit cap with foopy antennae may not look annoyed, but they can’t carry quite as many sacrificial mouse victims as they might wish._
 
 > [@Vastlands_Guidebook, _p._ _21_]
 
@@ -630,7 +645,7 @@ You have **a kit for one of your background traits** . Draw a kit box on the bac
 
 The kit measures a whole sack (10 stones) in heft and includes up to 10 individual items. You don’t need to choose in advance exactly what is in your character’s kit—the items are in a quantum superposition until you define them as you play.
 
-_Example: Noë has a background as a plumber (don’t ask) and starts with a plumber’s kit. Noë doesn’t list each individual item in the kit. As she adventures, she produces useful O-rings, allen wrenches, lengths of pipe, and sealing tape from her kit. She lists these in her kit box, leaving space for 6 more quantum items._
+> _Example: Noë has a background as a plumber (don’t ask) and starts with a plumber’s kit. Noë doesn’t list each individual item in the kit. As she adventures, she produces useful O-rings, allen wrenches, lengths of pipe, and sealing tape from her kit. She lists these in her kit box, leaving space for 6 more quantum items._
 
 The kit includes nothing better than a civilian weapon (1d6 damage) and no armor. You can buy more weapons and armor with your starting cash.
 
@@ -649,6 +664,7 @@ You have **€50 + €50 per level** in physical currency. Enough to live on for
 That's not much per level, honestly.
 
 **What Cash Buys**
+
 Precisely how much €1 buys varies with place and time (and referee whim), but a reasonable baseline is 100 theoretical convertible imperial universal dollars from Finite Earth A.D. 2025 to €1. Example purchases:
 
 |Price|Purchase|
@@ -771,11 +787,11 @@ When you defend against an attack in the physical world the so-called hylosphere
 
 Some specific attacks may have modifiers against mundane targets (which most PCs are).
 
-_Example: Safir squares off against a malevolent radiation ghost. Normally, Safir’s defense would be 18 (7 + 3 (agility) + 3 (fighter trait) + 5 (chitin cuirass). Alas, the radiation ghost’s gentle touch ignores physical armor, so the target for its attacks is just 13._
+> _Example: Safir squares off against a malevolent radiation ghost. Normally, Safir’s defense would be 18 (7 + 3 (agility) + 3 (fighter trait) + 5 (chitin cuirass). Alas, the radiation ghost’s gentle touch ignores physical armor, so the target for its attacks is just 13._
 
 Armor is modern equipment to soften blows or ancient machines replacing the body. Armor may give additional modifiers, benefits, penalties and mechanics.
 
-_Example: many golem armors increase a character’s ability score (usually strength) and give bonus life._
+> _Example: many golem armors increase a character’s ability score (usually strength) and give bonus life._
 
 #### Option: More Defenses
 
@@ -830,7 +846,7 @@ If you have no suitable item for a type of attack, you can [almost] always make 
 
 Your improvised or unarmed attack always deals at least 1d3 damage.
 
-_Example unarmed attacks:_
+> _Example unarmed attacks:_
 
 1. **Melee** - a punch, a kick, a head butt.
 2. **Ranged** - a thrown clod, rock, or bar of soap.
@@ -901,7 +917,7 @@ At 20 burdens, you can move or speak slowly and carefully, but can't take almost
 
 If you run out of regular inventory slots for traits or items, you can store the excess among your burdens.
 
-_Example: Onion is carrying his equipment (8 st) and an armoire (10 st). With a strength of 1, he has 8 item slots. The armoire takes up ten burden slots, imposing a -10 penalty on all his rolls._
+> _Example: Onion is carrying his equipment (8 st) and an armoire (10 st). With a strength of 1, he has 8 item slots. The armoire takes up ten burden slots, imposing a -10 penalty on all his rolls._
 
 Unwisely, or desperately, he tries to chase off a ligneous skeleton (L1, corken) with a blast of hot plasma from his wand-gun. He might still overcome and roll up on the skeleton’s stomping grounds (on a roll that beats the target 14 defense with a bonus of +5, even after deducting the penalty, an overall chance of 0 or 5 in 20 of landing a blow, depending on the double damage).
 
@@ -911,7 +927,7 @@ Still, even a glancing blast from the hot plasma might frighten the ligneous ske
 
 Curses, diseases, mutations, corruptions, injuries, phobias, the impact of facing a true demon, and other afflictions occupy burden slots by default.
 
-_Example: Fatigue (affliction) You are drained by your exertions or the actions of an ill-daemon. Reduces maximum life total by your level._
+> _Example: Fatigue (affliction) You are drained by your exertions or the actions of an ill-daemon. Reduces maximum life total by your level._
 
 Such afflictions often impose additional penalties in addition to the standard -1 to all rolls.
 
@@ -1079,9 +1095,9 @@ Each level, a hallmark gains an upgrade such as:
 2. a +1 defense bonus (so a shield’s bonus goes from +1 to +2) at a cost of €10 per item level, or
 3. another new trait, power or complication such as the upgrades listed in the equipment section (p78).
 
-_Example: Safir smashes the backup mind-soul jewel of the deathless general of the City of Mirrors with his accelerated hammer. The lich is now vulnerable, should her physical avatar be destroyed._
+> _Example: Safir smashes the backup mind-soul jewel of the deathless general of the City of Mirrors with his accelerated hammer. The lich is now vulnerable, should her physical avatar be destroyed._
 
-_Safir levels up his hammer and gives it the lich-bane trait (double damage against liches). Cat rules this upgrade requires no additional materials._
+> _Safir levels up his hammer and gives it the lich-bane trait (double damage against liches). Cat rules this upgrade requires no additional materials._
 
 ### Shared Characters or Hallmarks
 
@@ -1117,11 +1133,11 @@ Progress from skilled to expert requires 4–6 successes, and from expert to mas
 
 The referee peppers sites and mentor NPCs around the map, creating a personalized quest.
 
-_Example: Onion has observed the porcelain princes’ masterful crafting of masks and faces, and wishes to become a facemaker, so he could create new faces for himself and pass as other people with ease._
+> _Example: Onion has observed the porcelain princes’ masterful crafting of masks and faces, and wishes to become a facemaker, so he could create new faces for himself and pass as other people with ease._
 
-_The referee agrees this could be a worthy trait. The first place to start learning about masks as faces would obviously be the Porcelain Citadel. This is enough of a hook for the player to write down the facemaker trait, with space for three tallies._
+> _The referee agrees this could be a worthy trait. The first place to start learning about masks as faces would obviously be the Porcelain Citadel. This is enough of a hook for the player to write down the facemaker trait, with space for three tallies._
 
-_The referee consults their Grand Map. It will take Onion at least 3 weeks of travel to reach the Porcelain Citadel and look for a mentor. The search could take another week and Onion's studies will take at least one more week. With travel events and the other PCs' shenanigans, that affords plenty of play time to seed clues for future study locations Onion can research and visit._
+> _The referee consults their Grand Map. It will take Onion at least 3 weeks of travel to reach the Porcelain Citadel and look for a mentor. The search could take another week and Onion's studies will take at least one more week. With travel events and the other PCs' shenanigans, that affords plenty of play time to seed clues for future study locations Onion can research and visit._
 
 ### Increasing Ability Scores
 
@@ -1133,13 +1149,13 @@ Characters do not only become stronger. Age, injury, and magitechnical mishaps m
 
 The referee should be clear with players before their PCs take a course of action that may result in permanent injury. Permanent changes should be the result of risks freely taken by the player.
 
-_Example: Noë dreams of becoming a terrible and powerful wizard to prove to her mother that she is not a failure._
+> _Example: Noë dreams of becoming a terrible and powerful wizard to prove to her mother that she is not a failure._
 
-_The referee provides rumors of an electrical brain holding albums of great power, and Noë excitedly pursues them. However, the more she learns of the brain named Ata’ari, the clearer it becomes that the price of ultimate mastery is the destruction of her physical human body._
+> _The referee provides rumors of an electrical brain holding albums of great power, and Noë excitedly pursues them. However, the more she learns of the brain named Ata’ari, the clearer it becomes that the price of ultimate mastery is the destruction of her physical human body._
 
-_Will she go this far? Or will she take some of her knowledge and sell the rest to fuel new escapades?_ 
+> _Will she go this far? Or will she take some of her knowledge and sell the rest to fuel new escapades?_ 
 
-_A referee may then provide quests to stave off a character’s inevitable decline and demise._
+> _A referee may then provide quests to stave off a character’s inevitable decline and demise._
 
 Alternatively, a player may decide to retire their character and promote a sidekick or create a new character. One option is to give the new character fewer xp than the lowest-level player character or the highest-level available sidekick (whichever is less) at the table.
 
@@ -1153,7 +1169,7 @@ Alternatively, a player may decide to retire their character and promote a sidek
 
 A name says a lot. It says where a character is from, who they want to be, what they want to achieve. Choose or roll or invent a name you find funny, meaningful, or interesting. Above all, choose one you enjoy.
 
-|d8|High Common (upper-class) [1]|Vulgar Common (middle-class) [2]|Purple Land (cat-magical) [3]|Blue Land (moldificent) [4]|Green Land (very civilized) [5]|
+|d8|[1] High Common (upper-class)|[2] Vulgar Common (middle-class)|[3] Purple Land (cat-magical)|[4] Blue Land (moldificent)|[5] Green Land (very civilized)|
 |---|---|---|---|---|---|
 |1|Elsedéz Diës|Alba Nigra|Arha Skivayi|Aleia Unomor|Axil i’Eliseis|
 |2|Ennui a’Sheval|Equreis Liber|Buqa Loban|Gorto per Cultur|Eralda Fiusc|
@@ -1164,7 +1180,7 @@ A name says a lot. It says where a character is from, who they want to be, what 
 |7|Vruit d’Ajai|Uino Sepolto|Yasa Furfurea|Qarno Azur|Ulfis i’Bosc|
 |8|Yuin a’Romeö|Urora Squra|Yilis Olorka.|Via Alpin.|Xriso di Ust.|
 
-|d8|Yellow Land (mercantile) [6]|Orange Land (post-mortal) [7]|Red Land (vintner vamp) [8]|Kriol & Cant (out-class) [9]|DWARF (working-class) [10]|
+|d8|[6] Yellow Land (mercantile)|[7] Orange Land (post-mortal)|[8] Red Land (vintner vamp)|[9] Kriol & Cant (out-class)|[10] DWARF (working-class)|
 |---|---|---|---|---|---|
 |1|Cortez an’Opera|Amber’ Osscale|Amfo s’Teran|Anater En-Ein|Amdt 'Logistic|
 |2|Dona de Cuiyot|Presid’ Uniuersal|Cozarin s’Berberin|Hors To-Burk|Del 'Machinist|
@@ -1175,7 +1191,7 @@ A name says a lot. It says where a character is from, who they want to be, what 
 |7|Yaro Despolie|Uale Xerive|Torron Valpin|Ski Senk-Karti|Vek 'Driver|
 |8|Ylva ‘n Vusta.|Xuli’ Ueronesi.|Zinf Ander.|Tosk Perfors|Yon 'Engine|
 
-|d8|Steppe Lands (semi nomadic) [11]|Timelost (re-made) [12]|Distributed (polybody) [13]|Post-Human (ultra ghost) [14]|Golem (machine human) [15]|
+|d8|[11] Steppe Lands (semi nomadic)|[12] Timelost (re-made)|[13] Distributed (polybody)|[14] Post-Human (ultra ghost)|[15] Golem (machine human)|
 |---|---|---|---|---|---|
 |1|Acid Spirit|Cryo 523-Amber|AkaulaRe-Dust-4|AsperaMors|ClayApostrophe|
 |2|Citrus Elevator|Eggs Perimeter-4|Fordite14-belt|KarnNeu|ClockTangerine|
@@ -1186,7 +1202,7 @@ A name says a lot. It says where a character is from, who they want to be, what 
 |7|Starfall Perimeter|Sidhe Reäl|UlbiraHead-4|TrisKelly|KFT479+"Fly"|
 |8|Wayfarer Sanctum|Winterbird|WlkLN-3|YadriAurore|MaryGautamaReve|
 
-|d8|Quarterling (parahuman) [16]|Clan (non-corporate) [17]|Ancestor (pre-jubilee) [18]|Sacred (incorporated) [19]|Reasonable (ministry code) [20]|
+|d8|[16] Quarterling (parahuman)|[17] Clan (non-corporate)|[18] Ancestor (pre-jubilee)|[19] Sacred (incorporated)|[20] Reasonable (ministry code)|
 |---|---|---|---|---|---|
 |1|117"Troubleman"|EngineMother|Beles Isehot|BigDog|Administeriä Manu|
 |2|Mouse5"Pablo"|Jewelhead|Dokonosatu|Black Obelisk|Anarhiä Stahlya|
