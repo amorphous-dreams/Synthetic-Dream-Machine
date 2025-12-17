@@ -4671,4 +4671,4 @@ meta:
     id: Vastlands Powers Chapter
 
 
-- *See `Synthetic_Dream_Machine/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Powers_Index.md` for the canonical power listings that “count as traits,” and cross-reference those entries here as they come online.*
+> *See `Synthetic_Dream_Machine/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Powers_Index.md` for the canonical power listings that “count as traits,” and cross-reference those entries here as they come online.*
