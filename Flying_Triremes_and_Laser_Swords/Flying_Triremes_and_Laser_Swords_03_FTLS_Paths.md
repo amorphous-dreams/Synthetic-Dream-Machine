@@ -62,68 +62,17 @@ While you hold ≥ 1 Hero Die, your Defenses against ranged and mental att
 
 ### d12 Wild Mage Items
 
-d12  
-Item  
-Description & Play Effect  
-Stats  
-Cost  
-1  
-Flux-Wyld Compass  
-Orichalcum gyroscope that twitches toward the most “energetic” ley-knot. Free action – spend 1 Hero Die to reroll any navigation, teleport or portal test.  
-1 sp  
-€120  
-2  
-Wave-Jammer Focus Lens  
-Cracked planar-glass disk; when held up it bends reality’s currents. Once/watch swap positions of two willing creatures within 60 ′ (treat as power price 3).  
-1 sp  
-€180  
-3  
-Wind-Jammer Sail Cloak  
-Living membrane that inflates with astral wind; glide 30 ′ horizontally per 10 ′ fallen, soak 1d6 fall dmg, roll Agility for aerial acrobatics, \+1 Defense against ranged.  
-1 st  
-€250  
-4  
-Folded Horizon Key  
-A semiotic origami tool forged from memory-mirrors and liminal bone. Once per session, insert into a locked gate, dead portal, or any threshold—roll d6: (1–2) opens briefly (make a Danger Roll vs Area \+bonus), (3–5) opens fully, (6) opens elsewhere (referee decides).  
-1 sp  
-€130  
-5  
-Entropy Harmonizer  
-Chiming hand-bell that drinks stray Flux. Ring when Mana Burn would trigger to turn up to Level × 2 stored power into 1 Hero Die (requires Danger Roll vs Area \+bonus).  
-1 sp  
-€140  
-6  
-Wyld-Jammer Helm  
-Crystal-studded circlet; attune during a watch to any living vehicle (wave-, wind- or wyld-jammer). While worn: pilot checks \+2 on skills and counts as Magitech and Sorcery proficient. Occupies 1 trait slot.  
-2 st  
-€400  
-7  
-Probability Resonance Dice (Paradox Set)  
-Five void-amber d6 whose pips flicker between 1 ↔ 6\. Gambit — Before you roll any test, declare a Paradox Gambit and roll any number of dice from the set: keep the highest die result as a flat bonus or penalty (your choice) to the test, & if it is a 6 it explodes (roll again). If two or more dice show the same face, trigger a Dangerous Surge exposure test  
-negligible  
-€600  
-8  
-Wyldfire Strider Boots  
-Arc-jet greaves forged from wyld-wyrm scale. Ignite: whenever you spend ≥ 5 Power or you make a Dangerous Magic exposure test, you may fly 60 ′ (hover) until the end of the next round and gain Advantage on the first Save or Agility roll made during that flight. Each ignition past the first in a watch forces an Arcane Alignment check for the wearers group.  
-1 st  
-€230  
-9  
-Holo Compass \[prismatic\]  
-Crystal gyroscope that blooms a shifting holo-rose. Scan (action): name Pattern, Flux, or Arcane—the compass flashes the area’s score band (low / mid / high) and pivots toward the nearest resource node, giving advantage on the next Recon roll that uses that score. Salvage Assist: during an RSS Salvage check, the compass may grand advantage; if either d20 rolls a natural 1 the device over-syncs—trigger a Dangerous Magic exposure test.  
-1 sp  
-€190  
-10  
-Aetheric Kite Familiar  
-Folded planar-paper bird. Unfold to summon Tiny flying scout (Level 1, \+3/1d6 damage, Power 8, carries 5 sp). Bonded: Spend life to grant an ally an equal bonus on their next roll. Reform after 2d6 hrs if reduced to 0 Life.  
-1 sp  
-€110  
-11  
-Quantum Anchor Spike  
-Drive into ground (action): 30 ′ radius becomes immune to teleport/shift for 1 watch (4 hours). Remove to end effect.  
-1 st  
-€170  
-12  
-Chaos Mirror Circuit  
-Obsidian-platinum wafer. Once per watch, imprint any spell (price ≤ 6\) you witness; cast it next round at normal cost, then the mirror shatters until dawn (marked).  
-1 sp  
-€300  
+| d12 | Item | Description & Play Effect | Stats | Cost |
+| --- | --- | --- | --- | --- |
+| 1 | Flux-Wyld Compass | Orichalcum gyroscope that twitches toward the most “energetic” ley-knot. Free action – spend 1 Hero Die to reroll any navigation, teleport or portal test. | 1 sp | €120 |
+| 2 | Wave-Jammer Focus Lens | Cracked planar-glass disk; when held up it bends reality’s currents. Once/watch swap positions of two willing creatures within 60 ′ (treat as power price 3). | 1 sp | €180 |
+| 3 | Wind-Jammer Sail Cloak | Living membrane that inflates with astral wind; glide 30 ′ horizontally per 10 ′ fallen, soak 1d6 fall dmg, roll Agility for aerial acrobatics, \+1 Defense against ranged. | 1 st | €250 |
+| 4 | Folded Horizon Key | A semiotic origami tool forged from memory-mirrors and liminal bone. Once per session, insert into a locked gate, dead portal, or any threshold—roll d6: (1–2) opens briefly (make a Danger Roll vs Area \+bonus), (3–5) opens fully, (6) opens elsewhere (referee decides). | 1 sp | €130 |
+| 5 | Entropy Harmonizer | Chiming hand-bell that drinks stray Flux. Ring when Mana Burn would trigger to turn up to Level × 2 stored power into 1 Hero Die (requires Danger Roll vs Area \+bonus). | 1 sp | €140 |
+| 6 | Wyld-Jammer Helm | Crystal-studded circlet; attune during a watch to any living vehicle (wave-, wind- or wyld-jammer). While worn: pilot checks \+2 on skills and counts as Magitech and Sorcery proficient. Occupies 1 trait slot. | 2 st | €400 |
+| 7 | Probability Resonance Dice (Paradox Set) | Five void-amber d6 whose pips flicker between 1 ↔ 6\. Gambit — Before you roll any test, declare a Paradox Gambit and roll any number of dice from the set: keep the highest die result as a flat bonus or penalty (your choice) to the test, & if it is a 6 it explodes (roll again). If two or more dice show the same face, trigger a Dangerous Surge exposure test. | negligible | €600 |
+| 8 | Wyldfire Strider Boots | Arc-jet greaves forged from wyld-wyrm scale. Ignite: whenever you spend ≥ 5 Power or you make a Dangerous Magic exposure test, you may fly 60 ′ (hover) until the end of the next round and gain Advantage on the first Save or Agility roll made during that flight. Each ignition past the first in a watch forces an Arcane Alignment check for the wearers group. | 1 st | €230 |
+| 9 | Holo Compass \[prismatic\] | Crystal gyroscope that blooms a shifting holo-rose. Scan (action): name Pattern, Flux, or Arcane—the compass flashes the area’s score band (low / mid / high) and pivots toward the nearest resource node, giving advantage on the next Recon roll that uses that score. Salvage Assist: during an RSS Salvage check, the compass may grant advantage; if either d20 rolls a natural 1 the device over-syncs—trigger a Dangerous Magic exposure test. | 1 sp | €190 |
+| 10 | Aetheric Kite Familiar | Folded planar-paper bird. Unfold to summon Tiny flying scout (Level 1, \+3/1d6 damage, Power 8, carries 5 sp). Bonded: Spend life to grant an ally an equal bonus on their next roll. Reform after 2d6 hrs if reduced to 0 Life. | 1 sp | €110 |
+| 11 | Quantum Anchor Spike | Drive into ground (action): 30 ′ radius becomes immune to teleport/shift for 1 watch (4 hours). Remove to end effect. | 1 st | €170 |
+| 12 | Chaos Mirror Circuit | Obsidian-platinum wafer. Once per watch, imprint any spell (price ≤ 6\) you witness; cast it next round at normal cost, then the mirror shatters until dawn (marked). | 1 sp | €300 |
