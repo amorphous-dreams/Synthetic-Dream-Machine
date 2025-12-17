@@ -10,8 +10,7 @@ text:
 tags:
   [trait]
   [type:<background|path|corruption|power|mutation|prosthetic|skillpack|other>]
-  [path:<Wizard|Fighter|Traveler|…>]        # if applicable
-  [pathIndex:<0-6>]                         # if listed in a path table
+  [path:<Wizard|Vampire Lord|Traveler|…>]   # if applicable; spaces are fine
   [corruption:<mild|moderate|severe>]       # if applicable
   [affects:<attack|defense|save|reaction|inventory|actions|powers|social|…>]
   [uses:<heroDie|life|abilityPoint|item|…>] # resource hooks, if any
@@ -20,7 +19,19 @@ tags:
   [source:Vastlands_Guidebook]
   [page:<##>]
   [ref:<stable-id>]
+meta:
+  - scope:<path|trope|corruption|powerlist|other>
+    id: <Wizard|Humans of the Pananthropy|…>  # matches a tag slug; spaces ok
+    index: <##>                               # optional order/index reference
+    note:<extra context>                     # optional free text
+  - ...
 ```
+
+Use the `meta` list to capture every structured placement of the trait
+(path slot, trope variant, corruption tier, etc.). Keep the `tags:` short and
+searchable—one `[path:slug]` (or analogous) tag per relevant list—and push
+order, die results, or other metadata into `meta`. Slugs can mirror the
+published names (whitespace included) as long as they stay consistent.
 
 ---
 
@@ -59,11 +70,24 @@ tags:
 
 #### Randomly Rolled Backgrounds (Traditional Generator)
 
-*(Procedure followed: roll d40 on the Traditional Background Generator; read across Flavor → Role 1 → Role 2 → Task → Spin.)*
+*(Procedure followed: roll 5d40s on the Traditional Background Generator; read across Flavor → Role 1 → Role 2 → Task → Spin. Each column uses its own d40 roll.)*
 
-- **Purple Land Therapist–Barista Who Makes Coffee and Makes Peace**
-- **Moon Bio‑Mechanic Who Modifies and Creates Living Things**
-- **Dead God Scholar of Long Ago Exploring the False Past of Lost Times**
+- **Hexad Therapist–Maximizer Who Optimizes Primary Production and Shaves the Coins for Memories**
+- **Plateau Rogue–Private Who Assigns Assigned Assignations and Clouds Minds for Shared Goals**
+- **Timelost Nöosphere–Maximizer Who Interfaces with Beast-Bodied Minds and Shaves the Coins for Memories**
+
+#### OSR Trope Backgrounds
+
+- **Relic-Questing Freeblade from a Candlelit City of Thieves**
+- **Badge-Clad Whisper Spy Who Buys Secrets with Favors**
+- **Skyship Privateer Hunting Immortals’ Lost Toys**
+- **Dragon-Sworn Knight Bearing Oaths, Family Curses, and Bright Lances**
+- **Chrononaut Archaeologist Raiding Time-Locked Vaults**
+- **Planar Cipher Tout Who Knows Every Sigil Portal Key**
+- **Bloodline Scion-General Guiding Storied Domains**
+- **Burning-Waste Dune Walker Who Smuggles Water and Psionic Whispers**
+- **Mourning Vicar Battling Sentient Mists with Silver Verses**
+- **Void Wainwright Maintaining Living Ships Between Crystal Spheres**
 
 ---
 
@@ -71,7 +95,6 @@ tags:
 
 ### Wizard Path
 
-*(Core Path; titles and metadata captured. Rules text intentionally omitted pending verified transcription.)*
 
 ```text
 title: Wizard
@@ -81,10 +104,13 @@ tags:
   [trait]
   [type:path]
   [path:Wizard]
-  [pathIndex:0]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:16]
+meta:
+  - scope:path
+    id: Wizard
+    index: 0
 ```
 
 ```text
@@ -95,12 +121,15 @@ tags:
   [trait]
   [type:path]
   [path:Wizard]
-  [pathIndex:1]
   [affects:powers]
   [uses:abilityPoint]
   [frequency:per-turn]
   [source:Vastlands_Guidebook]
   [page:16]
+meta:
+  - scope:path
+    id: Wizard
+    index: 1
 ```
 
 ```text
@@ -111,12 +140,15 @@ tags:
   [trait]
   [type:path]
   [path:Wizard]
-  [pathIndex:2]
   [affects:powers]
   [uses:heroDie]
   [frequency:per-round]
   [source:Vastlands_Guidebook]
   [page:16]
+meta:
+  - scope:path
+    id: Wizard
+    index: 2
 ```
 
 ```text
@@ -127,10 +159,13 @@ tags:
   [trait]
   [type:path]
   [path:Wizard]
-  [pathIndex:3]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:16]
+meta:
+  - scope:path
+    id: Wizard
+    index: 3
 ```
 
 ```text
@@ -141,11 +176,14 @@ tags:
   [trait]
   [type:path]
   [path:Wizard]
-  [pathIndex:4]
   [affects:powers]
   [inventory:free]
   [source:Vastlands_Guidebook]
   [page:16]
+meta:
+  - scope:path
+    id: Wizard
+    index: 4
 ```
 
 ```text
@@ -156,12 +194,15 @@ tags:
   [trait]
   [type:path]
   [path:Wizard]
-  [pathIndex:5]
   [affects:powers]
   [uses:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:16]
+meta:
+  - scope:path
+    id: Wizard
+    index: 5
 ```
 
 ```text
@@ -172,11 +213,14 @@ tags:
   [trait]
   [type:path]
   [path:Wizard]
-  [pathIndex:6]
   [affects:powers]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:16]
+meta:
+  - scope:path
+    id: Wizard
+    index: 6
 ```
 
 ### Traveler Path
@@ -189,10 +233,13 @@ tags:
   [trait]
   [type:path]
   [path:Traveler]
-  [pathIndex:0]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Traveler
+    index: 0
 ```
 
 ```text
@@ -203,10 +250,13 @@ tags:
   [trait]
   [type:path]
   [path:Traveler]
-  [pathIndex:1]
   [affects:save]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Traveler
+    index: 1
 ```
 
 ```text
@@ -217,11 +267,14 @@ tags:
   [trait]
   [type:path]
   [path:Traveler]
-  [pathIndex:2]
   [affects:inventory]
   [inventory:free]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Traveler
+    index: 2
 ```
 
 ```text
@@ -232,10 +285,13 @@ tags:
   [trait]
   [type:path]
   [path:Traveler]
-  [pathIndex:3]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Traveler
+    index: 3
 ```
 
 ```text
@@ -246,10 +302,13 @@ tags:
   [trait]
   [type:path]
   [path:Traveler]
-  [pathIndex:4]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Traveler
+    index: 4
 ```
 
 ```text
@@ -260,11 +319,14 @@ tags:
   [trait]
   [type:path]
   [path:Traveler]
-  [pathIndex:5]
   [affects:inventory]
   [inventory:free]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Traveler
+    index: 5
 ```
 
 ```text
@@ -275,13 +337,16 @@ tags:
   [trait]
   [type:path]
   [path:Traveler]
-  [pathIndex:6]
   [affects:actions]
   [uses:life]
   [uses:heroDie]
   [frequency:per-turn]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Traveler
+    index: 6
 ```
 
 ### Fighter Path
@@ -294,11 +359,14 @@ tags:
   [trait]
   [type:path]
   [path:Fighter]
-  [pathIndex:0]
   [affects:attack]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Fighter
+    index: 0
 ```
 
 ```text
@@ -309,11 +377,14 @@ tags:
   [trait]
   [type:path]
   [path:Fighter]
-  [pathIndex:1]
   [affects:inventory]
   [inventory:free]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Fighter
+    index: 1
 ```
 
 ```text
@@ -324,10 +395,13 @@ tags:
   [trait]
   [type:path]
   [path:Fighter]
-  [pathIndex:2]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Fighter
+    index: 2
 ```
 
 ```text
@@ -338,10 +412,13 @@ tags:
   [trait]
   [type:path]
   [path:Fighter]
-  [pathIndex:3]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Fighter
+    index: 3
 ```
 
 ```text
@@ -352,11 +429,14 @@ tags:
   [trait]
   [type:path]
   [path:Fighter]
-  [pathIndex:4]
   [affects:attack]
   [frequency:per-round]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Fighter
+    index: 4
 ```
 
 ```text
@@ -367,11 +447,14 @@ tags:
   [trait]
   [type:path]
   [path:Fighter]
-  [pathIndex:5]
   [affects:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Fighter
+    index: 5
 ```
 
 ```text
@@ -382,19 +465,20 @@ tags:
   [trait]
   [type:path]
   [path:Fighter]
-  [pathIndex:6]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:17]
+meta:
+  - scope:path
+    id: Fighter
+    index: 6
 ```
 
 ---
 
 ## Other Path Traits
 
-- *Barbarian, Bluelander, Bourgeois, Golem, Greenlander, Holy Fool, Manager,
-  Noble, Noömagus, Orangelander, Purplelander, Redlander, Scion, Servant,
-  Skeleton, Soldier, Tourist, Trickster, Weapon, Yellowlander*
+- *Barbarian, Bluelander, Bourgeois, Golem, Greenlander, Holy Fool, Manager,   Noble, Noömagus, Orangelander, Purplelander, Redlander, Scion, Servant, Skeleton, Soldier, Tourist, Trickster, Weapon, Yellowlander*
 
 ### Barbarian Path
 
@@ -406,11 +490,14 @@ tags:
   [trait]
   [type:path]
   [path:Barbarian]
-  [pathIndex:0]
   [affects:attack]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:116]
+meta:
+  - scope:path
+    id: Barbarian
+    index: 0
 ```
 
 ```text
@@ -421,11 +508,14 @@ tags:
   [trait]
   [type:path]
   [path:Barbarian]
-  [pathIndex:1]
   [affects:life]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:117]
+meta:
+  - scope:path
+    id: Barbarian
+    index: 1
 ```
 
 ```text
@@ -436,12 +526,15 @@ tags:
   [trait]
   [type:path]
   [path:Barbarian]
-  [pathIndex:2]
   [affects:attack]
   [affects:defense]
   [uses:bloodDie]
   [source:Vastlands_Guidebook]
   [page:117]
+meta:
+  - scope:path
+    id: Barbarian
+    index: 2
 ```
 
 ```text
@@ -452,10 +545,13 @@ tags:
   [trait]
   [type:path]
   [path:Barbarian]
-  [pathIndex:3]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:117]
+meta:
+  - scope:path
+    id: Barbarian
+    index: 3
 ```
 
 ```text
@@ -466,11 +562,14 @@ tags:
   [trait]
   [type:path]
   [path:Barbarian]
-  [pathIndex:4]
   [affects:save]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:117]
+meta:
+  - scope:path
+    id: Barbarian
+    index: 4
 ```
 
 ```text
@@ -481,13 +580,16 @@ tags:
   [trait]
   [type:path]
   [path:Barbarian]
-  [pathIndex:5]
   [affects:actions]
   [uses:abilityPoint]
   [uses:heroDie]
   [uses:bloodDie]
   [source:Vastlands_Guidebook]
   [page:117]
+meta:
+  - scope:path
+    id: Barbarian
+    index: 5
 ```
 
 ```text
@@ -498,11 +600,14 @@ tags:
   [trait]
   [type:path]
   [path:Barbarian]
-  [pathIndex:6]
   [affects:attack]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:117]
+meta:
+  - scope:path
+    id: Barbarian
+    index: 6
 ```
 
 ### Bluelander Path
@@ -515,11 +620,14 @@ tags:
   [trait]
   [type:path]
   [path:Bluelander]
-  [pathIndex:0]
   [affects:attack]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:118]
+meta:
+  - scope:path
+    id: Bluelander
+    index: 0
 ```
 
 ```text
@@ -530,10 +638,13 @@ tags:
   [trait]
   [type:path]
   [path:Bluelander]
-  [pathIndex:1]
   [affects:inventory]
   [source:Vastlands_Guidebook]
   [page:119]
+meta:
+  - scope:path
+    id: Bluelander
+    index: 1
 ```
 
 ```text
@@ -544,11 +655,14 @@ tags:
   [trait]
   [type:path]
   [path:Bluelander]
-  [pathIndex:2]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:119]
+meta:
+  - scope:path
+    id: Bluelander
+    index: 2
 ```
 
 ```text
@@ -559,10 +673,13 @@ tags:
   [trait]
   [type:path]
   [path:Bluelander]
-  [pathIndex:3]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:119]
+meta:
+  - scope:path
+    id: Bluelander
+    index: 3
 ```
 
 ```text
@@ -573,11 +690,14 @@ tags:
   [trait]
   [type:path]
   [path:Bluelander]
-  [pathIndex:4]
   [affects:powers]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:119]
+meta:
+  - scope:path
+    id: Bluelander
+    index: 4
 ```
 
 ```text
@@ -588,10 +708,13 @@ tags:
   [trait]
   [type:path]
   [path:Bluelander]
-  [pathIndex:5]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:119]
+meta:
+  - scope:path
+    id: Bluelander
+    index: 5
 ```
 
 ```text
@@ -602,10 +725,13 @@ tags:
   [trait]
   [type:path]
   [path:Bluelander]
-  [pathIndex:6]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:119]
+meta:
+  - scope:path
+    id: Bluelander
+    index: 6
 ```
 
 ### Bourgeois Path
@@ -618,12 +744,15 @@ tags:
   [trait]
   [type:path]
   [path:Bourgeois]
-  [pathIndex:0]
   [affects:attack]
   [affects:social]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:120]
+meta:
+  - scope:path
+    id: Bourgeois
+    index: 0
 ```
 
 ```text
@@ -634,10 +763,13 @@ tags:
   [trait]
   [type:path]
   [path:Bourgeois]
-  [pathIndex:1]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:121]
+meta:
+  - scope:path
+    id: Bourgeois
+    index: 1
 ```
 
 ```text
@@ -648,10 +780,13 @@ tags:
   [trait]
   [type:path]
   [path:Bourgeois]
-  [pathIndex:2]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:121]
+meta:
+  - scope:path
+    id: Bourgeois
+    index: 2
 ```
 
 ```text
@@ -662,10 +797,13 @@ tags:
   [trait]
   [type:path]
   [path:Bourgeois]
-  [pathIndex:3]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:121]
+meta:
+  - scope:path
+    id: Bourgeois
+    index: 3
 ```
 
 ```text
@@ -676,12 +814,15 @@ tags:
   [trait]
   [type:path]
   [path:Bourgeois]
-  [pathIndex:4]
   [affects:social]
   [uses:heroDie]
   [frequency:per-session]
   [source:Vastlands_Guidebook]
   [page:121]
+meta:
+  - scope:path
+    id: Bourgeois
+    index: 4
 ```
 
 ```text
@@ -692,10 +833,13 @@ tags:
   [trait]
   [type:path]
   [path:Bourgeois]
-  [pathIndex:5]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:121]
+meta:
+  - scope:path
+    id: Bourgeois
+    index: 5
 ```
 
 ```text
@@ -706,11 +850,14 @@ tags:
   [trait]
   [type:path]
   [path:Bourgeois]
-  [pathIndex:6]
   [affects:social]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:121]
+meta:
+  - scope:path
+    id: Bourgeois
+    index: 6
 ```
 
 ### Golem Path
@@ -723,11 +870,14 @@ tags:
   [trait]
   [type:path]
   [path:Golem]
-  [pathIndex:0]
   [affects:actions]
   [inventory:slot]
   [source:Vastlands_Guidebook]
   [page:122]
+meta:
+  - scope:path
+    id: Golem
+    index: 0
 ```
 
 ```text
@@ -738,10 +888,13 @@ tags:
   [trait]
   [type:path]
   [path:Golem]
-  [pathIndex:1]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:123]
+meta:
+  - scope:path
+    id: Golem
+    index: 1
 ```
 
 ```text
@@ -752,10 +905,13 @@ tags:
   [trait]
   [type:path]
   [path:Golem]
-  [pathIndex:2]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:123]
+meta:
+  - scope:path
+    id: Golem
+    index: 2
 ```
 
 ```text
@@ -766,10 +922,13 @@ tags:
   [trait]
   [type:path]
   [path:Golem]
-  [pathIndex:3]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:123]
+meta:
+  - scope:path
+    id: Golem
+    index: 3
 ```
 
 ```text
@@ -780,10 +939,13 @@ tags:
   [trait]
   [type:path]
   [path:Golem]
-  [pathIndex:4]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:123]
+meta:
+  - scope:path
+    id: Golem
+    index: 4
 ```
 
 ```text
@@ -794,10 +956,13 @@ tags:
   [trait]
   [type:path]
   [path:Golem]
-  [pathIndex:5]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:123]
+meta:
+  - scope:path
+    id: Golem
+    index: 5
 ```
 
 ```text
@@ -808,10 +973,13 @@ tags:
   [trait]
   [type:path]
   [path:Golem]
-  [pathIndex:6]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:123]
+meta:
+  - scope:path
+    id: Golem
+    index: 6
 ```
 
 ### Greenlander Path
@@ -824,11 +992,14 @@ tags:
   [trait]
   [type:path]
   [path:Greenlander]
-  [pathIndex:0]
   [affects:attack]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:124]
+meta:
+  - scope:path
+    id: Greenlander
+    index: 0
 ```
 
 ```text
@@ -839,10 +1010,13 @@ tags:
   [trait]
   [type:path]
   [path:Greenlander]
-  [pathIndex:1]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:125]
+meta:
+  - scope:path
+    id: Greenlander
+    index: 1
 ```
 
 ```text
@@ -853,10 +1027,13 @@ tags:
   [trait]
   [type:path]
   [path:Greenlander]
-  [pathIndex:2]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:125]
+meta:
+  - scope:path
+    id: Greenlander
+    index: 2
 ```
 
 ```text
@@ -867,12 +1044,15 @@ tags:
   [trait]
   [type:path]
   [path:Greenlander]
-  [pathIndex:3]
   [affects:social]
   [uses:heroDie]
   [frequency:per-session]
   [source:Vastlands_Guidebook]
   [page:125]
+meta:
+  - scope:path
+    id: Greenlander
+    index: 3
 ```
 
 ```text
@@ -883,11 +1063,14 @@ tags:
   [trait]
   [type:path]
   [path:Greenlander]
-  [pathIndex:4]
   [affects:actions]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:125]
+meta:
+  - scope:path
+    id: Greenlander
+    index: 4
 ```
 
 ```text
@@ -898,10 +1081,13 @@ tags:
   [trait]
   [type:path]
   [path:Greenlander]
-  [pathIndex:5]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:125]
+meta:
+  - scope:path
+    id: Greenlander
+    index: 5
 ```
 
 ```text
@@ -912,10 +1098,13 @@ tags:
   [trait]
   [type:path]
   [path:Greenlander]
-  [pathIndex:6]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:125]
+meta:
+  - scope:path
+    id: Greenlander
+    index: 6
 ```
 
 ### Holy Fool Path
@@ -928,12 +1117,15 @@ tags:
   [trait]
   [type:path]
   [path:Holy Fool]
-  [pathIndex:0]
   [affects:actions]
   [uses:life]
   [uses:abilityPoint]
   [source:Vastlands_Guidebook]
   [page:126]
+meta:
+  - scope:path
+    id: Holy Fool
+    index: 0
 ```
 
 ```text
@@ -944,11 +1136,14 @@ tags:
   [trait]
   [type:path]
   [path:Holy Fool]
-  [pathIndex:1]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:127]
+meta:
+  - scope:path
+    id: Holy Fool
+    index: 1
 ```
 
 ```text
@@ -959,10 +1154,13 @@ tags:
   [trait]
   [type:path]
   [path:Holy Fool]
-  [pathIndex:2]
   [affects:save]
   [source:Vastlands_Guidebook]
   [page:127]
+meta:
+  - scope:path
+    id: Holy Fool
+    index: 2
 ```
 
 ```text
@@ -973,11 +1171,14 @@ tags:
   [trait]
   [type:path]
   [path:Holy Fool]
-  [pathIndex:3]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:127]
+meta:
+  - scope:path
+    id: Holy Fool
+    index: 3
 ```
 
 ```text
@@ -988,10 +1189,13 @@ tags:
   [trait]
   [type:path]
   [path:Holy Fool]
-  [pathIndex:4]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:127]
+meta:
+  - scope:path
+    id: Holy Fool
+    index: 4
 ```
 
 ```text
@@ -1002,11 +1206,14 @@ tags:
   [trait]
   [type:path]
   [path:Holy Fool]
-  [pathIndex:5]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:127]
+meta:
+  - scope:path
+    id: Holy Fool
+    index: 5
 ```
 
 ```text
@@ -1017,10 +1224,13 @@ tags:
   [trait]
   [type:path]
   [path:Holy Fool]
-  [pathIndex:6]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:127]
+meta:
+  - scope:path
+    id: Holy Fool
+    index: 6
 ```
 
 ### Manager Path
@@ -1033,11 +1243,14 @@ tags:
   [trait]
   [type:path]
   [path:Manager]
-  [pathIndex:0]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:128]
+meta:
+  - scope:path
+    id: Manager
+    index: 0
 ```
 
 ```text
@@ -1048,10 +1261,13 @@ tags:
   [trait]
   [type:path]
   [path:Manager]
-  [pathIndex:1]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:129]
+meta:
+  - scope:path
+    id: Manager
+    index: 1
 ```
 
 ```text
@@ -1062,11 +1278,14 @@ tags:
   [trait]
   [type:path]
   [path:Manager]
-  [pathIndex:2]
   [affects:social]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:129]
+meta:
+  - scope:path
+    id: Manager
+    index: 2
 ```
 
 ```text
@@ -1077,10 +1296,13 @@ tags:
   [trait]
   [type:path]
   [path:Manager]
-  [pathIndex:3]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:129]
+meta:
+  - scope:path
+    id: Manager
+    index: 3
 ```
 
 ```text
@@ -1091,11 +1313,14 @@ tags:
   [trait]
   [type:path]
   [path:Manager]
-  [pathIndex:4]
   [affects:social]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:129]
+meta:
+  - scope:path
+    id: Manager
+    index: 4
 ```
 
 ```text
@@ -1106,10 +1331,13 @@ tags:
   [trait]
   [type:path]
   [path:Manager]
-  [pathIndex:5]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:129]
+meta:
+  - scope:path
+    id: Manager
+    index: 5
 ```
 
 ```text
@@ -1120,11 +1348,14 @@ tags:
   [trait]
   [type:path]
   [path:Manager]
-  [pathIndex:6]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:129]
+meta:
+  - scope:path
+    id: Manager
+    index: 6
 ```
 
 ### Noble Path
@@ -1137,12 +1368,15 @@ tags:
   [trait]
   [type:path]
   [path:Noble]
-  [pathIndex:0]
   [affects:attack]
   [affects:social]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:130]
+meta:
+  - scope:path
+    id: Noble
+    index: 0
 ```
 
 ```text
@@ -1153,10 +1387,13 @@ tags:
   [trait]
   [type:path]
   [path:Noble]
-  [pathIndex:1]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:131]
+meta:
+  - scope:path
+    id: Noble
+    index: 1
 ```
 
 ```text
@@ -1167,11 +1404,14 @@ tags:
   [trait]
   [type:path]
   [path:Noble]
-  [pathIndex:2]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:131]
+meta:
+  - scope:path
+    id: Noble
+    index: 2
 ```
 
 ```text
@@ -1182,10 +1422,13 @@ tags:
   [trait]
   [type:path]
   [path:Noble]
-  [pathIndex:3]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:131]
+meta:
+  - scope:path
+    id: Noble
+    index: 3
 ```
 
 ```text
@@ -1196,10 +1439,13 @@ tags:
   [trait]
   [type:path]
   [path:Noble]
-  [pathIndex:4]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:131]
+meta:
+  - scope:path
+    id: Noble
+    index: 4
 ```
 
 ```text
@@ -1210,10 +1456,13 @@ tags:
   [trait]
   [type:path]
   [path:Noble]
-  [pathIndex:5]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:131]
+meta:
+  - scope:path
+    id: Noble
+    index: 5
 ```
 
 ```text
@@ -1224,10 +1473,13 @@ tags:
   [trait]
   [type:path]
   [path:Noble]
-  [pathIndex:6]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:131]
+meta:
+  - scope:path
+    id: Noble
+    index: 6
 ```
 
 ### Noömagus Path
@@ -1240,11 +1492,14 @@ tags:
   [trait]
   [type:path]
   [path:Noömagus]
-  [pathIndex:0]
   [affects:powers]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:132]
+meta:
+  - scope:path
+    id: Noömagus
+    index: 0
 ```
 
 ```text
@@ -1255,10 +1510,13 @@ tags:
   [trait]
   [type:path]
   [path:Noömagus]
-  [pathIndex:1]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:133]
+meta:
+  - scope:path
+    id: Noömagus
+    index: 1
 ```
 
 ```text
@@ -1269,12 +1527,15 @@ tags:
   [trait]
   [type:path]
   [path:Noömagus]
-  [pathIndex:2]
   [affects:powers]
   [uses:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:133]
+meta:
+  - scope:path
+    id: Noömagus
+    index: 2
 ```
 
 ```text
@@ -1285,10 +1546,13 @@ tags:
   [trait]
   [type:path]
   [path:Noömagus]
-  [pathIndex:3]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:133]
+meta:
+  - scope:path
+    id: Noömagus
+    index: 3
 ```
 
 ```text
@@ -1299,11 +1563,14 @@ tags:
   [trait]
   [type:path]
   [path:Noömagus]
-  [pathIndex:4]
   [affects:powers]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:133]
+meta:
+  - scope:path
+    id: Noömagus
+    index: 4
 ```
 
 ```text
@@ -1314,12 +1581,15 @@ tags:
   [trait]
   [type:path]
   [path:Noömagus]
-  [pathIndex:5]
   [affects:powers]
   [uses:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:133]
+meta:
+  - scope:path
+    id: Noömagus
+    index: 5
 ```
 
 ```text
@@ -1330,10 +1600,13 @@ tags:
   [trait]
   [type:path]
   [path:Noömagus]
-  [pathIndex:6]
   [affects:save]
   [source:Vastlands_Guidebook]
   [page:133]
+meta:
+  - scope:path
+    id: Noömagus
+    index: 6
 ```
 
 ### Orangelander Path
@@ -1346,11 +1619,14 @@ tags:
   [trait]
   [type:path]
   [path:Orangelander]
-  [pathIndex:0]
   [affects:attack]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:134]
+meta:
+  - scope:path
+    id: Orangelander
+    index: 0
 ```
 
 ```text
@@ -1361,10 +1637,13 @@ tags:
   [trait]
   [type:path]
   [path:Orangelander]
-  [pathIndex:1]
   [affects:inventory]
   [source:Vastlands_Guidebook]
   [page:135]
+meta:
+  - scope:path
+    id: Orangelander
+    index: 1
 ```
 
 ```text
@@ -1375,11 +1654,14 @@ tags:
   [trait]
   [type:path]
   [path:Orangelander]
-  [pathIndex:2]
   [affects:life]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:135]
+meta:
+  - scope:path
+    id: Orangelander
+    index: 2
 ```
 
 ```text
@@ -1390,11 +1672,14 @@ tags:
   [trait]
   [type:path]
   [path:Orangelander]
-  [pathIndex:3]
   [affects:actions]
   [affects:save]
   [source:Vastlands_Guidebook]
   [page:135]
+meta:
+  - scope:path
+    id: Orangelander
+    index: 3
 ```
 
 ```text
@@ -1405,12 +1690,15 @@ tags:
   [trait]
   [type:path]
   [path:Orangelander]
-  [pathIndex:4]
   [affects:actions]
   [uses:heroDie]
   [frequency:per-day]
   [source:Vastlands_Guidebook]
   [page:135]
+meta:
+  - scope:path
+    id: Orangelander
+    index: 4
 ```
 
 ```text
@@ -1421,10 +1709,13 @@ tags:
   [trait]
   [type:path]
   [path:Orangelander]
-  [pathIndex:5]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:135]
+meta:
+  - scope:path
+    id: Orangelander
+    index: 5
 ```
 
 ```text
@@ -1435,10 +1726,13 @@ tags:
   [trait]
   [type:path]
   [path:Orangelander]
-  [pathIndex:6]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:135]
+meta:
+  - scope:path
+    id: Orangelander
+    index: 6
 ```
 
 ### Purplelander Path
@@ -1451,11 +1745,14 @@ tags:
   [trait]
   [type:path]
   [path:Purplelander]
-  [pathIndex:0]
   [affects:attack]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:136]
+meta:
+  - scope:path
+    id: Purplelander
+    index: 0
 ```
 
 ```text
@@ -1466,10 +1763,13 @@ tags:
   [trait]
   [type:path]
   [path:Purplelander]
-  [pathIndex:1]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:137]
+meta:
+  - scope:path
+    id: Purplelander
+    index: 1
 ```
 
 ```text
@@ -1480,11 +1780,14 @@ tags:
   [trait]
   [type:path]
   [path:Purplelander]
-  [pathIndex:2]
   [affects:life]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:137]
+meta:
+  - scope:path
+    id: Purplelander
+    index: 2
 ```
 
 ```text
@@ -1495,10 +1798,13 @@ tags:
   [trait]
   [type:path]
   [path:Purplelander]
-  [pathIndex:3]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:137]
+meta:
+  - scope:path
+    id: Purplelander
+    index: 3
 ```
 
 ```text
@@ -1509,11 +1815,14 @@ tags:
   [trait]
   [type:path]
   [path:Purplelander]
-  [pathIndex:4]
   [affects:life]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:137]
+meta:
+  - scope:path
+    id: Purplelander
+    index: 4
 ```
 
 ```text
@@ -1524,10 +1833,13 @@ tags:
   [trait]
   [type:path]
   [path:Purplelander]
-  [pathIndex:5]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:137]
+meta:
+  - scope:path
+    id: Purplelander
+    index: 5
 ```
 
 ```text
@@ -1538,11 +1850,14 @@ tags:
   [trait]
   [type:path]
   [path:Purplelander]
-  [pathIndex:6]
   [affects:actions]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:137]
+meta:
+  - scope:path
+    id: Purplelander
+    index: 6
 ```
 
 ### Redlander Path
@@ -1555,11 +1870,14 @@ tags:
   [trait]
   [type:path]
   [path:Redlander]
-  [pathIndex:0]
   [affects:attack]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:138]
+meta:
+  - scope:path
+    id: Redlander
+    index: 0
 ```
 
 ```text
@@ -1570,12 +1888,15 @@ tags:
   [trait]
   [type:path]
   [path:Redlander]
-  [pathIndex:1]
   [affects:social]
   [uses:abilityPoint]
   [frequency:per-day]
   [source:Vastlands_Guidebook]
   [page:139]
+meta:
+  - scope:path
+    id: Redlander
+    index: 1
 ```
 
 ```text
@@ -1586,10 +1907,13 @@ tags:
   [trait]
   [type:path]
   [path:Redlander]
-  [pathIndex:2]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:139]
+meta:
+  - scope:path
+    id: Redlander
+    index: 2
 ```
 
 ```text
@@ -1600,10 +1924,13 @@ tags:
   [trait]
   [type:path]
   [path:Redlander]
-  [pathIndex:3]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:139]
+meta:
+  - scope:path
+    id: Redlander
+    index: 3
 ```
 
 ```text
@@ -1614,10 +1941,13 @@ tags:
   [trait]
   [type:path]
   [path:Redlander]
-  [pathIndex:4]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:139]
+meta:
+  - scope:path
+    id: Redlander
+    index: 4
 ```
 
 ```text
@@ -1628,10 +1958,13 @@ tags:
   [trait]
   [type:path]
   [path:Redlander]
-  [pathIndex:5]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:139]
+meta:
+  - scope:path
+    id: Redlander
+    index: 5
 ```
 
 ```text
@@ -1642,11 +1975,14 @@ tags:
   [trait]
   [type:path]
   [path:Redlander]
-  [pathIndex:6]
   [affects:powers]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:139]
+meta:
+  - scope:path
+    id: Redlander
+    index: 6
 ```
 
 ### Scion Path
@@ -1659,12 +1995,15 @@ tags:
   [trait]
   [type:path]
   [path:Scion]
-  [pathIndex:0]
   [affects:powers]
   [uses:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:140]
+meta:
+  - scope:path
+    id: Scion
+    index: 0
 ```
 
 ```text
@@ -1675,10 +2014,13 @@ tags:
   [trait]
   [type:path]
   [path:Scion]
-  [pathIndex:1]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:141]
+meta:
+  - scope:path
+    id: Scion
+    index: 1
 ```
 
 ```text
@@ -1689,10 +2031,13 @@ tags:
   [trait]
   [type:path]
   [path:Scion]
-  [pathIndex:2]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:141]
+meta:
+  - scope:path
+    id: Scion
+    index: 2
 ```
 
 ```text
@@ -1703,11 +2048,14 @@ tags:
   [trait]
   [type:path]
   [path:Scion]
-  [pathIndex:3]
   [affects:powers]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:141]
+meta:
+  - scope:path
+    id: Scion
+    index: 3
 ```
 
 ```text
@@ -1718,10 +2066,13 @@ tags:
   [trait]
   [type:path]
   [path:Scion]
-  [pathIndex:4]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:141]
+meta:
+  - scope:path
+    id: Scion
+    index: 4
 ```
 
 ```text
@@ -1732,10 +2083,13 @@ tags:
   [trait]
   [type:path]
   [path:Scion]
-  [pathIndex:5]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:141]
+meta:
+  - scope:path
+    id: Scion
+    index: 5
 ```
 
 ```text
@@ -1746,10 +2100,13 @@ tags:
   [trait]
   [type:path]
   [path:Scion]
-  [pathIndex:6]
   [affects:powers]
   [source:Vastlands_Guidebook]
   [page:141]
+meta:
+  - scope:path
+    id: Scion
+    index: 6
 ```
 
 ### Servant Path
@@ -1762,11 +2119,14 @@ tags:
   [trait]
   [type:path]
   [path:Servant]
-  [pathIndex:0]
   [affects:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:142]
+meta:
+  - scope:path
+    id: Servant
+    index: 0
 ```
 
 ```text
@@ -1777,10 +2137,13 @@ tags:
   [trait]
   [type:path]
   [path:Servant]
-  [pathIndex:1]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:143]
+meta:
+  - scope:path
+    id: Servant
+    index: 1
 ```
 
 ```text
@@ -1791,11 +2154,14 @@ tags:
   [trait]
   [type:path]
   [path:Servant]
-  [pathIndex:2]
   [affects:actions]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:143]
+meta:
+  - scope:path
+    id: Servant
+    index: 2
 ```
 
 ```text
@@ -1806,11 +2172,14 @@ tags:
   [trait]
   [type:path]
   [path:Servant]
-  [pathIndex:3]
   [affects:inventory]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:143]
+meta:
+  - scope:path
+    id: Servant
+    index: 3
 ```
 
 ```text
@@ -1821,11 +2190,14 @@ tags:
   [trait]
   [type:path]
   [path:Servant]
-  [pathIndex:4]
   [affects:social]
   [uses:abilityPoint]
   [source:Vastlands_Guidebook]
   [page:143]
+meta:
+  - scope:path
+    id: Servant
+    index: 4
 ```
 
 ```text
@@ -1836,10 +2208,13 @@ tags:
   [trait]
   [type:path]
   [path:Servant]
-  [pathIndex:5]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:143]
+meta:
+  - scope:path
+    id: Servant
+    index: 5
 ```
 
 ```text
@@ -1850,10 +2225,13 @@ tags:
   [trait]
   [type:path]
   [path:Servant]
-  [pathIndex:6]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:143]
+meta:
+  - scope:path
+    id: Servant
+    index: 6
 ```
 
 ### Skeleton Path
@@ -1866,11 +2244,14 @@ tags:
   [trait]
   [type:path]
   [path:Skeleton]
-  [pathIndex:0]
   [affects:defense]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:144]
+meta:
+  - scope:path
+    id: Skeleton
+    index: 0
 ```
 
 ```text
@@ -1881,10 +2262,13 @@ tags:
   [trait]
   [type:path]
   [path:Skeleton]
-  [pathIndex:1]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:145]
+meta:
+  - scope:path
+    id: Skeleton
+    index: 1
 ```
 
 ```text
@@ -1895,11 +2279,14 @@ tags:
   [trait]
   [type:path]
   [path:Skeleton]
-  [pathIndex:2]
   [affects:inventory]
   [inventory:slot]
   [source:Vastlands_Guidebook]
   [page:145]
+meta:
+  - scope:path
+    id: Skeleton
+    index: 2
 ```
 
 ```text
@@ -1910,10 +2297,13 @@ tags:
   [trait]
   [type:path]
   [path:Skeleton]
-  [pathIndex:3]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:145]
+meta:
+  - scope:path
+    id: Skeleton
+    index: 3
 ```
 
 ```text
@@ -1924,10 +2314,13 @@ tags:
   [trait]
   [type:path]
   [path:Skeleton]
-  [pathIndex:4]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:145]
+meta:
+  - scope:path
+    id: Skeleton
+    index: 4
 ```
 
 ```text
@@ -1938,11 +2331,14 @@ tags:
   [trait]
   [type:path]
   [path:Skeleton]
-  [pathIndex:5]
   [affects:defense]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:145]
+meta:
+  - scope:path
+    id: Skeleton
+    index: 5
 ```
 
 ```text
@@ -1953,10 +2349,13 @@ tags:
   [trait]
   [type:path]
   [path:Skeleton]
-  [pathIndex:6]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:145]
+meta:
+  - scope:path
+    id: Skeleton
+    index: 6
 ```
 
 ### Soldier Path
@@ -1969,11 +2368,14 @@ tags:
   [trait]
   [type:path]
   [path:Soldier]
-  [pathIndex:0]
   [affects:attack]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:146]
+meta:
+  - scope:path
+    id: Soldier
+    index: 0
 ```
 
 ```text
@@ -1984,11 +2386,14 @@ tags:
   [trait]
   [type:path]
   [path:Soldier]
-  [pathIndex:1]
   [affects:defense]
   [inventory:free]
   [source:Vastlands_Guidebook]
   [page:147]
+meta:
+  - scope:path
+    id: Soldier
+    index: 1
 ```
 
 ```text
@@ -1999,10 +2404,13 @@ tags:
   [trait]
   [type:path]
   [path:Soldier]
-  [pathIndex:2]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:147]
+meta:
+  - scope:path
+    id: Soldier
+    index: 2
 ```
 
 ```text
@@ -2013,10 +2421,13 @@ tags:
   [trait]
   [type:path]
   [path:Soldier]
-  [pathIndex:3]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:147]
+meta:
+  - scope:path
+    id: Soldier
+    index: 3
 ```
 
 ```text
@@ -2027,10 +2438,13 @@ tags:
   [trait]
   [type:path]
   [path:Soldier]
-  [pathIndex:4]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:147]
+meta:
+  - scope:path
+    id: Soldier
+    index: 4
 ```
 
 ```text
@@ -2041,10 +2455,13 @@ tags:
   [trait]
   [type:path]
   [path:Soldier]
-  [pathIndex:5]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:147]
+meta:
+  - scope:path
+    id: Soldier
+    index: 5
 ```
 
 ```text
@@ -2055,11 +2472,14 @@ tags:
   [trait]
   [type:path]
   [path:Soldier]
-  [pathIndex:6]
   [affects:actions]
   [uses:life]
   [source:Vastlands_Guidebook]
   [page:147]
+meta:
+  - scope:path
+    id: Soldier
+    index: 6
 ```
 
 ### Tourist Path
@@ -2072,11 +2492,14 @@ tags:
   [trait]
   [type:path]
   [path:Tourist]
-  [pathIndex:0]
   [affects:actions]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:148]
+meta:
+  - scope:path
+    id: Tourist
+    index: 0
 ```
 
 ```text
@@ -2087,11 +2510,14 @@ tags:
   [trait]
   [type:path]
   [path:Tourist]
-  [pathIndex:1]
   [affects:actions]
   [frequency:per-session]
   [source:Vastlands_Guidebook]
   [page:149]
+meta:
+  - scope:path
+    id: Tourist
+    index: 1
 ```
 
 ```text
@@ -2102,11 +2528,14 @@ tags:
   [trait]
   [type:path]
   [path:Tourist]
-  [pathIndex:2]
   [affects:social]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:149]
+meta:
+  - scope:path
+    id: Tourist
+    index: 2
 ```
 
 ```text
@@ -2117,11 +2546,14 @@ tags:
   [trait]
   [type:path]
   [path:Tourist]
-  [pathIndex:3]
   [affects:actions]
   [inventory:slot]
   [source:Vastlands_Guidebook]
   [page:149]
+meta:
+  - scope:path
+    id: Tourist
+    index: 3
 ```
 
 ```text
@@ -2132,11 +2564,14 @@ tags:
   [trait]
   [type:path]
   [path:Tourist]
-  [pathIndex:4]
   [affects:defense]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:149]
+meta:
+  - scope:path
+    id: Tourist
+    index: 4
 ```
 
 ```text
@@ -2147,12 +2582,15 @@ tags:
   [trait]
   [type:path]
   [path:Tourist]
-  [pathIndex:5]
   [affects:actions]
   [uses:heroDie]
   [frequency:per-session]
   [source:Vastlands_Guidebook]
   [page:149]
+meta:
+  - scope:path
+    id: Tourist
+    index: 5
 ```
 
 ```text
@@ -2163,10 +2601,13 @@ tags:
   [trait]
   [type:path]
   [path:Tourist]
-  [pathIndex:6]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:149]
+meta:
+  - scope:path
+    id: Tourist
+    index: 6
 ```
 
 ### Trickster Path
@@ -2179,11 +2620,14 @@ tags:
   [trait]
   [type:path]
   [path:Trickster]
-  [pathIndex:0]
   [affects:actions]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:150]
+meta:
+  - scope:path
+    id: Trickster
+    index: 0
 ```
 
 ```text
@@ -2194,10 +2638,13 @@ tags:
   [trait]
   [type:path]
   [path:Trickster]
-  [pathIndex:1]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:151]
+meta:
+  - scope:path
+    id: Trickster
+    index: 1
 ```
 
 ```text
@@ -2208,10 +2655,13 @@ tags:
   [trait]
   [type:path]
   [path:Trickster]
-  [pathIndex:2]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:151]
+meta:
+  - scope:path
+    id: Trickster
+    index: 2
 ```
 
 ```text
@@ -2222,11 +2672,14 @@ tags:
   [trait]
   [type:path]
   [path:Trickster]
-  [pathIndex:3]
   [affects:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:151]
+meta:
+  - scope:path
+    id: Trickster
+    index: 3
 ```
 
 ```text
@@ -2237,10 +2690,13 @@ tags:
   [trait]
   [type:path]
   [path:Trickster]
-  [pathIndex:4]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:151]
+meta:
+  - scope:path
+    id: Trickster
+    index: 4
 ```
 
 ```text
@@ -2251,10 +2707,13 @@ tags:
   [trait]
   [type:path]
   [path:Trickster]
-  [pathIndex:5]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:151]
+meta:
+  - scope:path
+    id: Trickster
+    index: 5
 ```
 
 ```text
@@ -2265,11 +2724,14 @@ tags:
   [trait]
   [type:path]
   [path:Trickster]
-  [pathIndex:6]
   [affects:social]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:151]
+meta:
+  - scope:path
+    id: Trickster
+    index: 6
 ```
 
 ### Weapon Path
@@ -2282,10 +2744,13 @@ tags:
   [trait]
   [type:path]
   [path:Weapon]
-  [pathIndex:0]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:152]
+meta:
+  - scope:path
+    id: Weapon
+    index: 0
 ```
 
 ```text
@@ -2296,13 +2761,16 @@ tags:
   [trait]
   [type:path]
   [path:Weapon]
-  [pathIndex:1]
   [affects:powers]
   [uses:abilityPoint]
   [uses:life]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:153]
+meta:
+  - scope:path
+    id: Weapon
+    index: 1
 ```
 
 ```text
@@ -2313,10 +2781,13 @@ tags:
   [trait]
   [type:path]
   [path:Weapon]
-  [pathIndex:2]
   [affects:social]
   [source:Vastlands_Guidebook]
   [page:153]
+meta:
+  - scope:path
+    id: Weapon
+    index: 2
 ```
 
 ```text
@@ -2327,10 +2798,13 @@ tags:
   [trait]
   [type:path]
   [path:Weapon]
-  [pathIndex:3]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:153]
+meta:
+  - scope:path
+    id: Weapon
+    index: 3
 ```
 
 ```text
@@ -2341,11 +2815,14 @@ tags:
   [trait]
   [type:path]
   [path:Weapon]
-  [pathIndex:4]
   [affects:attack]
   [uses:abilityPoint]
   [source:Vastlands_Guidebook]
   [page:153]
+meta:
+  - scope:path
+    id: Weapon
+    index: 4
 ```
 
 ```text
@@ -2356,10 +2833,13 @@ tags:
   [trait]
   [type:path]
   [path:Weapon]
-  [pathIndex:5]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:153]
+meta:
+  - scope:path
+    id: Weapon
+    index: 5
 ```
 
 ```text
@@ -2370,10 +2850,13 @@ tags:
   [trait]
   [type:path]
   [path:Weapon]
-  [pathIndex:6]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:153]
+meta:
+  - scope:path
+    id: Weapon
+    index: 6
 ```
 
 ```text
@@ -2384,11 +2867,14 @@ tags:
   [trait]
   [type:path]
   [path:Bearer]
-  [pathIndex:1]
   [affects:actions]
   [uses:heroDie]
   [source:Vastlands_Guidebook]
   [page:157]
+meta:
+  - scope:path
+    id: Bearer
+    index: 1
 ```
 
 ```text
@@ -2399,10 +2885,13 @@ tags:
   [trait]
   [type:path]
   [path:Bearer]
-  [pathIndex:2]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:157]
+meta:
+  - scope:path
+    id: Bearer
+    index: 2
 ```
 
 ```text
@@ -2413,10 +2902,13 @@ tags:
   [trait]
   [type:path]
   [path:Bearer]
-  [pathIndex:3]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:157]
+meta:
+  - scope:path
+    id: Bearer
+    index: 3
 ```
 
 ```text
@@ -2427,12 +2919,15 @@ tags:
   [trait]
   [type:path]
   [path:Bearer]
-  [pathIndex:4]
   [affects:social]
   [uses:heroDie]
   [frequency:per-scene]
   [source:Vastlands_Guidebook]
   [page:157]
+meta:
+  - scope:path
+    id: Bearer
+    index: 4
 ```
 
 ```text
@@ -2443,10 +2938,13 @@ tags:
   [trait]
   [type:path]
   [path:Bearer]
-  [pathIndex:5]
   [affects:life]
   [source:Vastlands_Guidebook]
   [page:157]
+meta:
+  - scope:path
+    id: Bearer
+    index: 5
 ```
 
 ```text
@@ -2457,10 +2955,13 @@ tags:
   [trait]
   [type:path]
   [path:Bearer]
-  [pathIndex:6]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:157]
+meta:
+  - scope:path
+    id: Bearer
+    index: 6
 ```
 
 ### Yellowlander Path
@@ -2473,11 +2974,14 @@ tags:
   [trait]
   [type:path]
   [path:Yellowlander]
-  [pathIndex:0]
   [affects:actions]
   [uses:abilityPoint]
   [source:Vastlands_Guidebook]
   [page:158]
+meta:
+  - scope:path
+    id: Yellowlander
+    index: 0
 ```
 
 ```text
@@ -2488,10 +2992,13 @@ tags:
   [trait]
   [type:path]
   [path:Yellowlander]
-  [pathIndex:1]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:159]
+meta:
+  - scope:path
+    id: Yellowlander
+    index: 1
 ```
 
 ```text
@@ -2502,10 +3009,13 @@ tags:
   [trait]
   [type:path]
   [path:Yellowlander]
-  [pathIndex:2]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:159]
+meta:
+  - scope:path
+    id: Yellowlander
+    index: 2
 ```
 
 ```text
@@ -2516,10 +3026,13 @@ tags:
   [trait]
   [type:path]
   [path:Yellowlander]
-  [pathIndex:3]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:159]
+meta:
+  - scope:path
+    id: Yellowlander
+    index: 3
 ```
 
 ```text
@@ -2530,10 +3043,13 @@ tags:
   [trait]
   [type:path]
   [path:Yellowlander]
-  [pathIndex:4]
   [affects:actions]
   [source:Vastlands_Guidebook]
   [page:159]
+meta:
+  - scope:path
+    id: Yellowlander
+    index: 4
 ```
 
 ```text
@@ -2544,10 +3060,13 @@ tags:
   [trait]
   [type:path]
   [path:Yellowlander]
-  [pathIndex:5]
   [affects:defense]
   [source:Vastlands_Guidebook]
   [page:159]
+meta:
+  - scope:path
+    id: Yellowlander
+    index: 5
 ```
 
 ```text
@@ -2558,11 +3077,14 @@ tags:
   [trait]
   [type:path]
   [path:Yellowlander]
-  [pathIndex:6]
   [affects:defense]
   [affects:attack]
   [source:Vastlands_Guidebook]
   [page:159]
+meta:
+  - scope:path
+    id: Yellowlander
+    index: 6
 ```
 
 ---
@@ -2573,8 +3095,521 @@ tags:
  factions, and synthesized entities. These traits follow the same canonical
  template as Path traits but are not restricted to player characters.)*
 
-- *NPC Traits from **NPCs of the Vastlands** and related sections
-  (starting p.167), pending enumeration*
+```text
+title: Bonded
+text:
+  **Bonded.** Spend life to grant an ally an equal bonus on their next roll.
+tags:
+  [trait]
+  [type:other]
+  [path:Humans of the Pananthropy]
+  [affects:actions]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Humans of the Pananthropy
+    index: 1
+```
+
+```text
+title: Teamwork
+text:
+  **Teamwork.** Gain a +2 bonus and +2 defense when standing next to an ally.
+tags:
+  [trait]
+  [type:other]
+  [path:Humans of the Pananthropy]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Humans of the Pananthropy
+    index: 2
+```
+
+```text
+title: Toolmaker
+text:
+  **Toolmaker.** Improvise a weapon or tool in one round.
+tags:
+  [trait]
+  [type:other]
+  [path:Humans of the Pananthropy]
+  [affects:actions]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Humans of the Pananthropy
+    index: 3
+```
+
+```text
+title: Adaptable
+text:
+  **Adaptable.** Copy an enemy's last used special ability.
+tags:
+  [trait]
+  [type:other]
+  [path:Humans of the Pananthropy]
+  [affects:actions]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Humans of the Pananthropy
+    index: 4
+```
+
+```text
+title: Tactical
+text:
+  **Tactical.** After being hit by an attack, gain +3 defense against that attack type.
+tags:
+  [trait]
+  [type:other]
+  [path:Humans of the Pananthropy]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Humans of the Pananthropy
+    index: 5
+```
+
+```text
+title: Common Humanity
+text:
+  **Common Humanity.** Spend 1 life to appeal for understanding and parlay (save).
+tags:
+  [trait]
+  [type:other]
+  [path:Humans of the Pananthropy]
+  [affects:social]
+  [uses:life]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Humans of the Pananthropy
+    index: 6
+```
+
+```text
+title: Shieldfriend
+text:
+  **Shieldfriend.** Can take a hit meant for nearby allies.
+tags:
+  [trait]
+  [type:other]
+  [path:Brick Bastions]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Brick Bastions
+    index: 1
+```
+
+```text
+title: Steadfast
+text:
+  **Steadfast.** Cannot be moved against their will.
+tags:
+  [trait]
+  [type:other]
+  [path:Brick Bastions]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Brick Bastions
+    index: 2
+```
+
+```text
+title: Denial
+text:
+  **Denial.** Adjacent enemies have difficulty moving.
+tags:
+  [trait]
+  [type:other]
+  [path:Brick Bastions]
+  [affects:actions]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Brick Bastions
+    index: 3
+```
+
+```text
+title: Resistomorph
+text:
+  **Resistomorph.** After being hit by an attack, ignore that attack type for one round.
+tags:
+  [trait]
+  [type:other]
+  [path:Brick Bastions]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Brick Bastions
+    index: 4
+```
+
+```text
+title: Rockblood
+text:
+  **Rockblood.** Below half life, double defense.
+tags:
+  [trait]
+  [type:other]
+  [path:Brick Bastions]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Brick Bastions
+    index: 5
+```
+
+```text
+title: Slam
+text:
+  **Slam.** Spend 5 life to knock down adjacent foes (save).
+tags:
+  [trait]
+  [type:other]
+  [path:Brick Bastions]
+  [affects:attack]
+  [uses:life]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Brick Bastions
+    index: 6
+```
+
+```text
+title: Overcharge
+text:
+  **Overcharge.** Spend life equal to your level to double damage.
+tags:
+  [trait]
+  [type:other]
+  [path:Crystal Cannons]
+  [affects:attack]
+  [uses:life]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Crystal Cannons
+    index: 1
+```
+
+```text
+title: Desperate Shot
+text:
+  **Desperate Shot.** Deal triple damage when at 1 life.
+tags:
+  [trait]
+  [type:other]
+  [path:Crystal Cannons]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Crystal Cannons
+    index: 2
+```
+
+```text
+title: Feedback
+text:
+  **Feedback.** Each hit suffered adds 1d6 to damage.
+tags:
+  [trait]
+  [type:other]
+  [path:Crystal Cannons]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Crystal Cannons
+    index: 3
+```
+
+```text
+title: Shatter
+text:
+  **Shatter.** On death, deal your level × d4 damage to all nearby targets.
+tags:
+  [trait]
+  [type:other]
+  [path:Crystal Cannons]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Crystal Cannons
+    index: 4
+```
+
+```text
+title: Phase
+text:
+  **Phase.** Spend 1 life to become a ghost for one round.
+tags:
+  [trait]
+  [type:other]
+  [path:Crystal Cannons]
+  [affects:defense]
+  [uses:life]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Crystal Cannons
+    index: 5
+```
+
+```text
+title: Circle of Pain
+text:
+  **Circle of Pain.** Nearby allies deal and suffer double damage; adjacent foes suffer double damage.
+tags:
+  [trait]
+  [type:other]
+  [path:Crystal Cannons]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Crystal Cannons
+    index: 6
+```
+
+```text
+title: Charger
+text:
+  **Charger.** Deal double damage after a direct charge.
+tags:
+  [trait]
+  [type:other]
+  [path:Darting Dodgers]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Darting Dodgers
+    index: 1
+```
+
+```text
+title: Double Attack
+text:
+  **Double Attack.** Attack twice with one action.
+tags:
+  [trait]
+  [type:other]
+  [path:Darting Dodgers]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Darting Dodgers
+    index: 2
+```
+
+```text
+title: Riposte
+text:
+  **Riposte.** Make a free counterattack against missed attacks.
+tags:
+  [trait]
+  [type:other]
+  [path:Darting Dodgers]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Darting Dodgers
+    index: 3
+```
+
+```text
+title: Evasive
+text:
+  **Evasive.** Sacrifice your attack to add your bonus to defense.
+tags:
+  [trait]
+  [type:other]
+  [path:Darting Dodgers]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Darting Dodgers
+    index: 4
+```
+
+```text
+title: Springer
+text:
+  **Springer.** Jump away after attacking without provoking opportunity attacks.
+tags:
+  [trait]
+  [type:other]
+  [path:Darting Dodgers]
+  [affects:defense]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Darting Dodgers
+    index: 5
+```
+
+```text
+title: Stabber
+text:
+  **Stabber.** Deal double damage to surprised opponents.
+tags:
+  [trait]
+  [type:other]
+  [path:Darting Dodgers]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:162]
+meta:
+  - scope: trope
+    id: Darting Dodgers
+    index: 6
+```
+
+```text
+title: Death Curse
+text:
+  **Death Curse.** Your killer suffers a psychic burden.
+tags:
+  [trait]
+  [type:other]
+  [path:Erratic Expendables]
+  [affects:actions]
+  [source:Vastlands_Guidebook]
+  [page:163]
+meta:
+  - scope: trope
+    id: Erratic Expendables
+    index: 1
+```
+
+```text
+title: Martyr
+text:
+  **Martyr.** On death, grant your bonus to nearby allies.
+tags:
+  [trait]
+  [type:other]
+  [path:Erratic Expendables]
+  [affects:actions]
+  [source:Vastlands_Guidebook]
+  [page:163]
+meta:
+  - scope: trope
+    id: Erratic Expendables
+    index: 2
+```
+
+```text
+title: Once Again
+text:
+  **Once Again.** Revive two rounds after death, once.
+tags:
+  [trait]
+  [type:other]
+  [path:Erratic Expendables]
+  [affects:life]
+  [source:Vastlands_Guidebook]
+  [page:163]
+meta:
+  - scope: trope
+    id: Erratic Expendables
+    index: 3
+```
+
+```text
+title: Killbite
+text:
+  **Killbite.** Make a free attack upon death.
+tags:
+  [trait]
+  [type:other]
+  [path:Erratic Expendables]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:163]
+meta:
+  - scope: trope
+    id: Erratic Expendables
+    index: 4
+```
+
+```text
+title: Ticking Corpse
+text:
+  **Ticking Corpse.** Deal double damage to all nearby 1d4 rounds after death
+  (save to negate).
+tags:
+  [trait]
+  [type:other]
+  [path:Erratic Expendables]
+  [affects:attack]
+  [source:Vastlands_Guidebook]
+  [page:163]
+meta:
+  - scope: trope
+    id: Erratic Expendables
+    index: 5
+```
+
+```text
+title: Frenzy
+text:
+  **Frenzy.** Spend 2 defense to get a free attack.
+tags:
+  [trait]
+  [type:other]
+  [path:Erratic Expendables]
+  [affects:attack]
+  [uses:defense]
+  [source:Vastlands_Guidebook]
+  [page:163]
+meta:
+  - scope: trope
+    id: Erratic Expendables
+    index: 6
+```
 
 ---
 
@@ -2582,14 +3617,60 @@ tags:
 
 *(Abstract trait category; individual corruptions are generated procedurally.)*
 
-- *Mild Corruption Traits (table-based)*
-- *Moderate Corruption Traits (table-based)*
-- *Severe Corruption Traits (table-based)*
+```text
+title: Corruption
+
+text:
+  **Corruption.** Power corrupts, and the wonders of the Long Long Ago do so spectacularly. Corruption twists a body, abrades a soul, stains a mind, and—cruelly—does it in proportion to the marvel you dared to touch. A corruption trait represents that scarring: a permanent mutation, obsession, parasitic organ, alien outlook, or saintly curse that now travels with you.
+
+  Exposure: When you trigger a corrupting effect (failing a danger roll while using a power, being bitten by a corruptive creature, wading into radiant slurry without protection, drinking the glowing gool-aid, etc.):
+
+  1. Immediately gain a burden that describes the acute backlash.
+  2. Roll **2d6 + aura** to determine severity (≤2: catastrophic/severe, 3–6: severe, 7–10: moderate, 11–12: mild, 13+: mild plus you regain the cost you just paid).
+  3. Roll on or choose the corresponding corruption table and claim the new trait. Corruption traits can occupy either a trait slot or an item slot depending on their fiction.
+
+  Critical failures, burdens, relic-specific quirks, and referee judgement may shift the severity roll or skip it entirely. Corruption traits linger until cured, transformed, or embraced; players may even arrange them into bespoke “corruption paths” when an adventure demands it.
+tags:
+  [trait]
+  [type:corruption]
+  [source:Vastlands_Guidebook]
+  [page:98]
+meta:
+  - scope: corruption
+    id: Vastlands Corruption Procedure
+```
+
+- *Mild Corruption Traits (table-based; Vastlands_Guidebook, p.100)*
+- *Moderate Corruption Traits (table-based; Vastlands_Guidebook, p.99)*
+- *Severe Corruption Traits (table-based; Vastlands_Guidebook, p.99)*
 
 ---
 
-## Power-as-Trait References
+## Powers-as-Traits
 
 *(Abstract trait category; individual powers are defined elsewhere.)*
 
-- *Powers that explicitly occupy trait slots (to be cross-linked later)*
+```text
+title: Power (as Trait)
+
+text:
+  **Power-as-Trait.** Some powers live in your head, nerves, or soul instead of on a shelf. When a power is recorded as a trait—engraved as memetic code, sung into implanted crystal, branded on your aura—it occupies a trait slot but follows the normal power rules in the Vastlands Guidebook (life cost = power score; double cost if you lack a relevant skill; make danger rolls when the use is risky). Treat the trait entry as the storage container; the actual procedure and stats stay in the power’s listing.
+
+  Storage: Powers may also live as **items** (spellbooks, rods, idol-cartridges) or **burdens** (curses, compulsions). When a power explicitly says it “counts as a trait,” use this template: list the hosting trait, then reference the originating codex entry. Free inventory tricks still work (mind palaces, technocodexes, path features) and may let multiple powers ride in the same slot.
+
+  Activation: Spend life (or ability points) equal to the power score, apply modifiers from traits or items, and roll for danger when appropriate (target = price). Failures route into the corruption procedure; successes leave the trait ready for reuse.
+
+  Power recap: every Vastlands power lists **Power (P)**, **Range (R)**, **Target (T)**, **Duration (D)**, and **Overcharge steps (Ox)**. Optional attributes such as Anchored, Attack, Focus, Fueled, Imbued, or Item appear when the procedure has special hooks. If a power is flagged as dangerous (or you lack skill/levels), expect to make the danger roll before the effect resolves.
+
+  Removal: A power-trait can be forgotten, exorcised, traded, or overwritten like any other trait, though doing so may have in-fiction costs (losing a neural tattoo, paying a data-smith, letting the implanted daemon die).
+tags:
+  [trait]
+  [type:power]
+  [source:Vastlands_Guidebook]
+  [page:94]
+meta:
+  - scope: powerlist
+    id: Vastlands Powers Chapter
+```
+
+- *See `Synthetic_Dream_Machine/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Powers_Index.md` for the canonical power listings that “count as traits,” and cross-reference those entries here as they come online.*

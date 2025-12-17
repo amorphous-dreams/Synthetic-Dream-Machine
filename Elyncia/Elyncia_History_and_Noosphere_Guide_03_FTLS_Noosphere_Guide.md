@@ -22,7 +22,7 @@ The DreamNet blends:
 * Semi-sapient node spirits (Lares)  
 * Asynchronous multi-nexus routing and damage control
 
-It’s not fast. It’s not always accurate. But it is alive, in some sense—and your local lares instance always aims for meaningful answers, filtering them through its personality, bias, and the echoes of wars it once died in. Access is gated by location-traveling to a local lararium, or by advanced magitech and fantascience deices that allow remote access to the closest node. Dreamdecks and personal ai-daemon assistants, tapping the local mycelium-net, finding a noosphere tree-many methods have developed since the birth of the DreamNet.
+It’s not fast. It’s not always accurate. But it is alive, in some sense—and your local lares instance always aims for meaningful answers, filtering them through its personality, bias, and the echoes of wars it once died in. Access is gated by location-traveling to a local lararium, or by advanced magitech and fantascience deices that allow remote access to the closest node. Dreamdecks and personal ai-daemon assistants, tapping the local mycelium-net, finding a nootree-many methods have developed since the birth of the DreamNet.
 
 ## 📜 *Field Notes of a Wandering Techno-Mystic*
 
