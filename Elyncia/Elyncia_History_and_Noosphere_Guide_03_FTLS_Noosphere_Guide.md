@@ -10,7 +10,7 @@ In the early ages on Gaia, the Lares were household and boundary spirits—guard
 
 ## Lares of Elyncia
 
-When the ancient spirit engines powering the Neo-Thracian Web 2 infrastructure sputtered and died, rogue daemons broke containment and the network fractured beyond repair. This era of strife lasted two years. Into this desolation stepped the Lindwyrn, patron of the New Delos Nexus, bearing tons of hoarded orichalcum and refined resources. Calling in debts and favors from Hermes, Hephestus, Eris-Enyo (Strife), Aracne-Jorogumo (Mother Spider), and over a hundred lesser divinities, daemon princes, and machine-spirits, they built a new lattice out of Elyncia’s unstable ley lines—a living network architecture capable of flexing across Pattern fractures and surviving resonance collapses.
+When the ancient spirit engines powering the Neo-Thracian Empire's Web 2 infrastructure sputtered and died, rogue daemons broke containment and the physical networks fractured beyond repair. This era of strife lasted two years. Into this desolation stepped the Lindwyrn, patron of the New Delos Nexus, bearing tons of hoarded orichalcum and refined resources. Calling in debts and favors from Hermes, Hephestus, Eris-Enyo (Strife), Aracne-Jorogumo (Mother Spider), and over a hundred lesser divinities, daemon princes, and machine-spirits, they built a new lattice out of Elyncia’s unstable ley lines—a living network architecture capable of flexing across reality fractures and surviving resonance collapses.
 
 The result was Web 3: the Lares DreamNet—a semi-sapient, hypercontextual infosphere composed of self-correcting astral engines and distributed personality spirits known as Lares. Each Lares governs a node—local or planetary—and serves both as a guide and gatekeeper. Some Lares are benevolent muses. Others, inscrutable archivists. A few are outright hostile. But all are bound by the Hermetic Protocols and code-etched by Hephestus’s divine hammers.
 
@@ -22,7 +22,7 @@ The DreamNet blends:
 * Semi-sapient node spirits (Lares)  
 * Asynchronous multi-nexus routing and damage control
 
-It’s not fast. It’s not always accurate. But it is alive, in some sense—and your local lares instance always aims for meaningful answers, filtering them through its personality, bias, and the echoes of wars it once died in.
+It’s not fast. It’s not always accurate. But it is alive, in some sense—and your local lares instance always aims for meaningful answers, filtering them through its personality, bias, and the echoes of wars it once died in. Access is gated by location-traveling to a local lararium, or by advanced magitech and fantascience deices that allow remote access to the closest node. Dreamdecks and personal ai-daemon assistants, tapping the local mycelium-net, finding a noosphere tree-many methods have developed since the birth of the DreamNet.
 
 ## 📜 *Field Notes of a Wandering Techno-Mystic*
 
@@ -41,7 +41,7 @@ The journal warns: *“Each node a city of spirits, not a solitary saint.”*
 
 ## 🔹 How It Works
 
-Each Lares serves a named location, node, path, domain, or ruin. Lares are embodied manifestations of the local noosphere. Users interact via:
+Each Lares node serves a named location, node, path, domain, or ruin. Lares are embodied manifestations of the local noosphere. Users interact via:
 
 * **Astral forms:** Some may take on prismatic bodies and walk the noosphere links to the deep dream and back.  
 * **Dream tethers:** Pattern-stable memory links, an array of oldtech (magitech) and fantascience (sorcery) techniques to strengthen the silver cord tying the dreaming *ha* to sleeping *ba*.  
