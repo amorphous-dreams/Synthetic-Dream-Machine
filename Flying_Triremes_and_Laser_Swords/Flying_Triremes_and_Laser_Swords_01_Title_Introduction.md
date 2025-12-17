@@ -29,7 +29,7 @@ $lares open \-mime text/vnd.tiddlywiki;mode=edit \-uri ./Flying Triremes and Las
 * 09 Formations and Mass Combat  
 * 10 Loot & Treasure  
 * 11 Grimoires  
-* Appendix Null \- Referee Resources
+* 12 Appendix Null \- Referee Resources
 
 \> end(uri)  
 \> Next query?  

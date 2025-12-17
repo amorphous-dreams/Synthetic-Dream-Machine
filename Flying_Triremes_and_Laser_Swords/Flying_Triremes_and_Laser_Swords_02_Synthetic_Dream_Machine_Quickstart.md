@@ -2,6 +2,8 @@
 
 Every half‑decent world is held together by three things: good stories, dubious cartography, and people determined to prove their grandparents wrong.
 
+> This Quickstart is a lens on the SDM, not a replacement for the Vastlands Guidebook.
+
 # Synthetic Dream Machine
 
 ## Typical Target Numbers
@@ -12,7 +14,8 @@ Every half‑decent world is held together by three things: good stories, dubiou
 15 hard, challenging, tasking  
 19 very hard, confounding, arduous (terrible odds)
 
-\> roll over the target number:  
+\> roll over the target number: 
+
 d20 \+ ability (if applicable) \+ skill (if applicable)
 
 ## Magic Numbers
@@ -31,11 +34,9 @@ When you roll the exploding die’s highest face, roll again and add the results
 \> Exploding dice in SDM are marked with an asterisk (dX\*). D20s always explode,   
 even without an asterisk.
 
-\*\*Note:\*\* ALL “effect dice” in the FTLS fork of SDM explode.
-
 ## Hero Dice (HD)
 
-Six-sided dice (d6) for adjusting rolls and regaining life. You (the Player daemon) gain one per session and one more every couple of hours. Other daemons may have alternate rules.
+Six-sided dice (d6) for adjusting rolls and regaining life. You (the Player daemon) gain one per session and one more every couple of hours. Other daemons may have alternate rules. 
 
 Daemons can store HD equal to their most powerful Primary Character’s level. The referee can grant more hero dice for inspired roleplaying and prosocial behavior like bringing milk and cookies to the game session.
 
@@ -46,7 +47,9 @@ Roll hero dice to do two things:
 
 Traits and items may provide other uses for hero dice. Rare traits can modify the number or type of hero dice. Burdens do not affect hero die rolls.
 
-# 📜 Entity Metaphysics (Revised)
+Tables may treat Hero Dice as purely narrative luck, or as literal daemon intervention, depending on tone.
+
+# 📜 Entity Metaphysics
 
 ## 1️⃣ Character Creation Snapshot
 
@@ -64,11 +67,13 @@ Traits and items may provide other uses for hero dice. Rare traits can modify th
 
 * All entities in the game have a **Level**.  
 * Most start at **Level 0** or **1**, unless otherwise noted.  
-* **Player Characters (PCs)** begin at **Level 1** by default (Referees may start them higher with bonus Experience).  
+  * **Player Characters** and other **Primary Characters** (PCs) begin at **Level 1** by default. 
+  * Referees may start them higher with bonus Experience.
 * Entities with Life begin with:  
   * **4 Life** at Level 0  
   * **\+4 Life per additional level** (4, 8, 12, etc.)  
-* **Roll Defeat at zero Life. Ability scores cannot go below zero—roll Defeat instead.**
+* **Life cannot go below 0**-Roll Defeat at zero Life if damaged. Most characters flee or surrender earlier than this.
+* **Ability scores cannot go below zero**—roll Defeat instead.
 
 ## 3️⃣ Abilities
 
@@ -83,23 +88,22 @@ Traits and items may provide other uses for hero dice. Rare traits can modify th
 
 ## 4️⃣ Traits & Items
 
-* All entities start with **two “free traits” at Level 0**.  
-  * **For items**: this means their base mechanics **plus one Level‑0 mod slot** (often a quality, affinity tag, or magitech/sorcery upgrade).  
-* **Items** gain **one mod slot per level** beyond Level 0\.  
-* **Characters may** choose the same trait (“path/skill/ability”) multiple times to increase its skill modifier, or grant a listed upgrade.  
-  * Skilled \+3 bonus to rolls good enough to make a living  
-  * Expert \+6 bonus to rolls good enough to teach  
-  * Master \+9 bonus to rolls a rare master of this art  
-* A trait selected multiple times does not take up additional trait slots. 
+* All entities start with **two “free traits” at Level 0**.
+  * **For characters**: this is the core 1 Background trait, 1 Path trait at level 0.
+  * **For items**: this means- 1) their base mechanics, 2) **plus one Level‑0 mod slot** (often a quality, affinity tag, or magitech/sorcery upgrade). Items gain **one mod slot per level** beyond Level 0\.  
+* **Characters may** choose the same trait (“path/skill/ability”) multiple times to increase its skill modifier, or grant a listed upgrade. A trait selected multiple times does not take up additional trait slots.
+  * Skilled \+3 bonus to rolls; good enough to make a living
+  * Expert \+6 bonus to rolls; good enough to teach
+  * Master \+9 bonus to rolls; a rare master of this art
 
 ## **5️⃣** Defense & Ward
 
-* **Defense (Physical)** \= 7 \+ Agility \+ relevant Skill \+ Armor  
+* **Defense (Physical)** \= 7 \+ Agility \+ Bonus (relevant Skill) \+ Armor  
   * **UVG NPCs** are “skilled in Defense” (10 \+ Agility \+ Armor baseline).  
-* **Defense (Mental)** \= 7 \+ Thought \+ relevant Skill \+Ward  
-  * **Ward** represents psychic and mental resilience, and provides **Save bonuses** and **mental defenses**.  
-* **Defense (Social)** \= 7 \+ Agility Charisma \+ relevant Skill \+ Prestige  
-  * **Prestige** is a factional reputation.
+* **Defense (Mental)** \= 7 \+ Thought \+ Bonus (relevant Skill) \+ Ward  
+  * **Ward** represents psychic and mental resilience, and provides **Save bonuses** and **mental defenses**. Granted by metaphysical trinkets and magitechnical artifacts known as "wards" that protect one's non-physical integrity. They also often protect against spells.
+* **Defense (Social)** \= 7 \+ Charisma \+ Bonus (relevant Skill) \+ Prestige  
+  * **Prestige** is a factional reputation from status symbols—titles, properties, valuable possessions, and admired traits—that enhance influence in relevant settings.
 
 ## 6️⃣ Basic Attack Types
 
@@ -173,7 +177,7 @@ characters to pack away more gear than usual, effectively increasing their inven
 
 # INVESTING EXPERIENCE
 
-All experience earned is banked (by the daemon) until you invest it to level up a character(s), their pets and sidekicks, or their hallmarks. You can invest experience in other players’ (daemons’) characters, pets, sidekicks, and hallmarks, if they agree.
+All experience earned is banked (by the daemon) until you invest it to level up a character, their pets and sidekicks, or their hallmarks. You can invest experience in other players’ (daemons’) characters, pets, sidekicks, and hallmarks, if they agree.
 
 Each pet, sidekick, or other hallmark with invested xp occupies a trait or item slot on their owner Character's sheet.
 
@@ -183,22 +187,23 @@ Your player character is also your main or primary character. PC is thus, conven
 
 * Choose one:  
   * gain a new trait of their choice (or a random trait), or  
-  *  improve a trait of their choice (skilled \+3 → expert \+6 → master \+9)  
+  * improve a trait of their choice (skilled \+3 → expert \+6 → master \+9)  
 * Increase an ability score by 1  
 * \+4 Life  
 * (Primary Character) \+1 Hero Die to their Daemon’s Maximum HD
 
-**Xp Level Life Total XP**  
-0 0 4 0  
-\+300 1 8 300  
-\+450 2 12 750  
-\+750 3 16 1,500  
-\+1,500 4 20 3,000  
-\+3,000 5 24 6,000  
-\+6,500 6 28 12,500  
-\+12,500 7 32 25,000  
-\+25,000 8 36 50,000  
-\+49,999 9 40 99,999
+| XP | Level | Life | Total XP |
+| --- | --- | --- | --- |
+| 0 | 0 | 4 | 0 |
+| +300 | 1 | 8 | 300 |
+| +450 | 2 | 12 | 750 |
+| +750 | 3 | 16 | 1,500 |
+| +1,500 | 4 | 20 | 3,000 |
+| +3,000 | 5 | 24 | 6,000 |
+| +6,500 | 6 | 28 | 12,500 |
+| +12,500 | 7 | 32 | 25,000 |
+| +25,000 | 8 | 36 | 50,000 |
+| +49,999 | 9 | 40 | 99,999 |
 
 ## Investing in Pets and Sidekicks
 
