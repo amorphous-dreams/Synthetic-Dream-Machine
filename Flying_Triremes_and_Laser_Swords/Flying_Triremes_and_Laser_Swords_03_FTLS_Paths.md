@@ -37,34 +37,27 @@ Other names: Riven Shadowstep, Poppy Whirlwind, Reverend Hazard,
 
 ### Wild Mage
 
-0
-Wild Mage  
-Path (starts \+3 Skilled). Choose Magitech or Sorcery proficiency, when Mastered you count as proficient in both. On a Danger Roll success, regain one Hero Die or heal one Ability damage. Mark this trait to gain advantage on one attack or ability test (Expert: also saves; Master: also Corruption/ Wild‑Magic effect tests). Unmark by spending a Hero Die or taking a point of Ability damage. If you cast a power while this trait is marked it automatically triggers a Danger Roll. 
+0. **Wild Mage.** You are attuned to unstable forces. Choose Magitech or Fantascience proficiency; when you reach Master, you are proficient in both. When you succeed on a Dangerous Magic exposure test, you may recover 1 point of Ability damage or 1 Life. 
+   - You may mark this trait to push probability, power, or action beyond safe limits. You may not mark this trait if it is already marked.
+   - Mark to gain advantage on one attack or ability test (Expert: also saving throws; Master: also Corruption / Wild-Magic exposure tests).
+   - If you cast a spell or activate a power while this trait is marked, it automatically triggers a Dangerous Magic exposure test.
+   - Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Immediately taking 1 point of Ability damage (your choice).
 
 ### d6 Wild Mage Traits
 
-d6  
-Trait  
-Effect
+d6  **Trait** Effect
 
-1  
-...
-...
-2  
-Bend Luck  
-Free Action: spend 1 Hero Die to adjust any d20 action you can see by ±2d6 after it lands. If any dice explode, you must also make a Danger Roll vs the Bend Luck modifier total. Expert: use d6+d8; Master: use 2d8.  
-3  
-Reckless Dweomer  
-Once per watch, before casting a power, declare it a Reckless Dweomer: ignore the Power price (0 mana, no overcharging) but automatically make Corruption/Wild Magic exposure test with disadvantage on the final d20 (roll twice, referee chooses).  
-4  
-Wyldfire  
-Free Action, once per watch: When any power is successfully cast within 60 ′, you may consume its energy: cancel the spell’s effect and store power equal to its price. Wyldfire Release (action): spend stored mana to either channel power (heal self/ally at Life per 2 mana) or unleash a 30 ′ cone of void‑flame dealing that much damage split among targets (you make a Danger Roll vs power used, targets may Save to take 1/2 damage). Stored power is susceptible to Mana Burn (see Erisian Rites ritual).  
-5  
-Chaos Step  
-Free Action: When an attack targets you or you fail a save, spend 1 Hero Die or take 1 Ability damage to blink up to 30 ′ to a space you can see. The triggering attack resolves against your new position with disadvantage (line‑of‑sight permitting & bonus for new partial cover; otherwise it misses). Immediately roll a Dangerous Magic exposure test. If that result is teleportation, portal, or quantum themed you regain the Hero Die or heal the Ability damage.  
-6  
-Entropic Shield  
-While you hold ≥ 1 Hero Die, your Defenses against ranged and mental attacks gain \+1 per Hero Die (max +3 Skilled / +6 Expert / +9 Master). You may add this bonus to one damage roll each round. When anyone nearby rolls a natural 1, either expend a Hero Die or make a Danger Roll vs the local Area Level. Spend a Hero Die to emplace a 2‑yard entropy shield that grants your entropy bonus (defense & attack bonuses); the emplaced entropy shield can be moved as a 1‑stone item, but decays by \-1 each minute until destroyed.
+1. **TODO** ...
+
+2. **Bend Luck.** Free Action: spend 1 Hero Die to adjust any d20 action you can see by ±2d6 after it lands. If any dice explode, you must also make a Danger Roll vs the Bend Luck modifier total. Expert: use d6+d8; Master: use 2d8.
+
+3. **Reckless Dweomer.** Once per watch, before casting a power, declare it a Reckless Dweomer: ignore the Power price (0 mana, no overcharging) but automatically make Corruption/Wild Magic exposure test with disadvantage on the final d20 (roll twice, referee chooses).
+
+4. **Wyldfire.** Free Action, once per watch: When any power is successfully cast within 60 ′, you may consume its energy: cancel the spell’s effect and store power equal to its price. Wyldfire Release (action): spend stored mana to either channel power (heal self/ally at Life per 2 mana) or unleash a 30 ′ cone of void‑flame dealing that much damage split among targets (you make a Danger Roll vs power used, targets may Save to take 1/2 damage). Stored power is susceptible to Mana Burn (see Erisian Rites ritual).
+
+5. **Chaos Step.** Free Action: When an attack targets you or you fail a save, spend 1 Hero Die or take 1 Ability damage to blink up to 30 ′ to a space you can see. The triggering attack resolves against your new position with disadvantage (line‑of‑sight permitting & bonus for new partial cover; otherwise it misses). Immediately roll a Dangerous Magic exposure test. If that result is teleportation, portal, or quantum themed you regain the Hero Die or heal the Ability damage.
+
+6. **Entropic Shield.** While you hold ≥ 1 Hero Die, your Defenses against ranged and mental attacks gain \+1 per Hero Die (max +3 Skilled / +6 Expert / +9 Master). You may add this bonus to one damage roll each round. When anyone nearby rolls a natural 1, either expend a Hero Die or make a Danger Roll vs the local Area Level. Spend a Hero Die to emplace a 2‑yard entropy shield that grants your entropy bonus (defense & attack bonuses); the emplaced entropy shield can be moved as a 1‑stone item, but decays by \-1 each minute until destroyed.
 
 ### d12 Wild Mage Items
 

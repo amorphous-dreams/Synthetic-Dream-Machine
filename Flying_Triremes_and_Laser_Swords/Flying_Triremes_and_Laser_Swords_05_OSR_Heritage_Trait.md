@@ -55,7 +55,11 @@ This trait is granted **free at character creation** and immediately confers the
 
 > Heritage Ranks: Skilled \= 3 slots. Expert \= 4 slots. Master \= 5 slots.
 
+## Marking Your Heritage Trait
+
 Some Heritage effects have special rules, including marking the trait in order to activate certain abilities. You may not mark this trait if it is already marked. Unmark your Heritage trait by resting for one watch (4 hours), or resting for 10 minutes and spending 1 Life.
+
+## Heritage In Play
 
 The population of Elyncia is multi-cultural and multi-heritage. Heritages are not factions, and the various nations, tribes, and clans of Elyncia have always included many heritages. Everyone has someone in their family or community who expresses the faerie magic differently. The influx of Human folk during the Bronze Age also spread their Gaian cultures and adaptability, with influence from later Gaian cultures arriving through unstable noospheric connections.
 
