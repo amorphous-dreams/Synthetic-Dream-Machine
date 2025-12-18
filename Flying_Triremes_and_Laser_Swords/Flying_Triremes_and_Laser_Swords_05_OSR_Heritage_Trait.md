@@ -1,4 +1,4 @@
-# Old School Roleplaying Heritage Traits
+# Old School Roleplaying Heritage Trait
 # Heritage Table of Contents
 
 <a id="heritage-table-of-contents"></a>
