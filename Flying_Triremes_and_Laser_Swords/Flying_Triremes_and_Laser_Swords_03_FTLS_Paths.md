@@ -2,7 +2,7 @@
 
 New path traits that allow pick-up & play with many Old School Roleplaying resources (campaigns, adventures, etc).
 
-## Wild Mage
+## Wild Mage Path
 
 \> “We occur at random among your children, the laughter between lightning strikes.” — Telarus, Keeper of the Sacred Chao, Guru of Kilat Pencak Silat, Sorcerer of the Amorphous Dreams Cabal
 
@@ -35,6 +35,12 @@ Leads solar charge drills in forgotten orbital trenches near Elyncia’s event-l
 
 Other names: Riven Shadowstep, Poppy Whirlwind, Reverend Hazard, 
 
+### Wild Mage
+
+0
+Wild Mage  
+Path (starts \+3 Skilled). Choose Magitech or Sorcery proficiency, when Mastered you count as proficient in both. On a Danger Roll success, regain one Hero Die or heal one Ability damage. Mark this trait to gain advantage on one attack or ability test (Expert: also saves; Master: also Corruption/ Wild‑Magic effect tests). Unmark by spending a Hero Die or taking a point of Ability damage. If you cast a power while this trait is marked it automatically triggers a Danger Roll. 
+
 ### d6 Wild Mage Traits
 
 d6  
@@ -42,8 +48,8 @@ Trait
 Effect
 
 1  
-Wild Mage  
-Path (starts \+3 Skilled). Choose Magitech or Sorcery proficiency, when Mastered you count as proficient in both. On a Danger Roll success, regain one Hero Die or heal one Ability damage. Mark this trait to gain advantage on one attack or ability test (Expert: also saves; Master: also Corruption/ Wild‑Magic effect tests). Unmark by spending a Hero Die or taking a point of Ability damage. If you cast a power while this trait is marked it automatically triggers a Danger Roll.  
+...
+...
 2  
 Bend Luck  
 Free Action: spend 1 Hero Die to adjust any d20 action you can see by ±2d6 after it lands. If any dice explode, you must also make a Danger Roll vs the Bend Luck modifier total. Expert: use d6+d8; Master: use 2d8.  
