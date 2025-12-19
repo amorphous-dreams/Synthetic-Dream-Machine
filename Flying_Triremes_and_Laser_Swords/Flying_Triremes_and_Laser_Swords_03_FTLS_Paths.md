@@ -41,7 +41,7 @@ Other names: Riven Shadowstep, Poppy Whirlwind, Reverend Hazard,
    - You may mark this trait to push probability, power, or action beyond safe limits. You may not mark this trait if it is already marked.
    - Mark to gain advantage on one attack or ability test (Expert: also saving throws; Master: also Corruption / Wild-Magic exposure tests).
    - If you cast a spell or activate a power while this trait is marked, it automatically triggers a Dangerous Magic exposure test.
-   - Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Immediately taking 1 point of Ability damage (your choice).
+   - Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of Ability damage.
 
 ### d6 Wild Mage Traits
 
@@ -49,7 +49,11 @@ d6  **Trait** Effect
 
 1. **TODO** ...
 
-2. **Bend Luck.** Free Action: spend 1 Hero Die to adjust any d20 action you can see by ±2d6 after it lands. If any dice explode, you must also make a Danger Roll vs the Bend Luck modifier total. Expert: use d6+d8; Master: use 2d8.
+2. **Bend Luck.** You twist probability at the moment it resolves. Mark this trait to roll a Paradox Die and add or subtract its result to any roll you can see after it is made.
+    - Skilled: d6*
+    - Expert: d8*
+    - Master: d10*
+The Paradox Die explodes. If it ever rolls any 1 (including on explosions), immediately make a Dangerous Magic exposure test. The difficulty equals the final modifier applied by the Paradox Die (reality glitches). You may not mark this trait if it is already marked. Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of Ability damage.
 
 3. **Reckless Dweomer.** Once per watch, before casting a power, declare it a Reckless Dweomer: ignore the Power price (0 mana, no overcharging) but automatically make Corruption/Wild Magic exposure test with disadvantage on the final d20 (roll twice, referee chooses).
 

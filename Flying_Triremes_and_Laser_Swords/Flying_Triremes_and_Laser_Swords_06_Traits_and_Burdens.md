@@ -1,6 +1,6 @@
 # Traits and Burdens
 
-## Here there be dragons.
+Beta playtest material. Here there be dragons.
 
 # New Traits
 
@@ -14,34 +14,53 @@ Your consciousness may roam the noosphere, collecting Experience and Hero Dice. 
 
 ## God Touched
 
-**Skilled:** You are Lucky: Reroll one test per watch (4 hours). You must accept the second result. You also gain 2 free points to spend on ability scores, and your daemon can hold \+2 max HD.  
-**Expert:** 1 ability score point, \+3 max HD.  
-**Master:** 1 ability score point, \+4 max HD.
+**Skilled:** You are Lucky: Mark this trait to reroll one test. You must accept the second result.  You may not mark this trait if it is already marked. Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of Ability damage. You also gain +1 Ability point, and your daemon can hold \+1 max HD.
+
+**Expert:** 1 ability score point, \+2 max HD.
+
+**Master:** 1 ability score point, \+3 max HD.
 
 ## Heritage
 
-**Skilled:** \+3 to heritage lore, three Heritage effects.  
-**Expert:** \+6 to heritage lore, four Heritage effects.  
-**Master:** \+9 to heritage lore, five Heritage effects.  
-Free at character creation and takes 1 Trait slot. You carry a heritage, granting a bonus to esoteric lore related to your folk, tribe, or origin. Choose a descriptive phrase to represent your heritage, for example “Goblin Folk,” “Awakened Golem,” etc. See Appendix A \- OSR Heritages for full rules and examples.
+Heritage is a birthright, lineage, construction, or mythic origin that shapes how you exist in the world. It grants fictional positioning, esoteric permissions, and a small package of concrete effects.
+
+Choose a heritage descriptor (e.g. Goblin Folk, Awakened Golem, Deathless Revenant, Star-Marked Human). This descriptor defines what kinds of lore, rituals, environments, and effects naturally apply to you.
+
+**Skilled**: +3 to heritage-related lore and research. Choose three Heritage effects.
+
+**Expert**: +6 to heritage-related lore. Choose four Heritage effects.
+
+**Master**: +9 to heritage-related lore. Choose five Heritage effects.
+
+Heritage effects are selected from the OSR Heritage lists (Chapter 05). Effects may grant resistances, needs (or lack thereof), senses, movement modes, immunities, taboos, upkeep requirements, or other non-class advantages and obligations.
+
+Notes:
+
+- Heritage is free at character creation and occupies 1 Trait slot.
+- Heritage effects may impose costs, maintenance, or vulnerabilities; these are part of the bargain.
+- When in doubt, Heritage defines what is normal for you and what requires no roll.
 
 ## Spirit
 
-You exist as a **noospheric spirit**. While incorporeal: **\+6 Defense vs. physical attacks**. To pass through mundane matter, make a **d20 \+ Thought test vs. (local Area Level + 10)**; failure means you’re blocked or repelled. Named/Ward‑bound items can always strike you.
+Your *Ha* (body) is out of phase and insubstantial. Your *Ka* (soul) and *Ba* (psyche) remain fully present. You exist in the same reality as everyone else, but without a stable physical body.
 
-Your **physical Abilities** (Strength, Endurance, Agility) are unusable unless you **spend 1 Life** to manifest briefly (1 round) or **3 Life** for a full watch (4h).
+While unmanifested, you are incorporeal: you gain +6 Defense vs. physical attacks, may pass through mundane matter, and still suffer Life damage normally. Named, warded, enchanted, or noospheric effects can always affect you.
 
-**Skilled:** Detect spirits, dream‑echoes, and noospheric ripples within *Thought × 10 yd*  
-**Expert:** Manifestations last a full **watch for 1 Life** and you can carry **up to 3 stones \+ Strength**Skilled:  of gear while manifested.  
-**Master:** Gain **Affinity – Chaos • Dream • Shadow**: as a noospheric spirit reshape dream-code, and weaponize chaos and darkness (as the Heritage trait effect).
+To act physically, you must manifest your Ha, spending 1 Life for one round or 3 Life for one watch (4 hours). While manifested, you use physical Abilities, carry Strength stones in gear, and interact normally. When manifestation ends, your body slips out of phase again.
+
+Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you.
+
+Skilled: Sense spirits and noospheric disturbances within Thought × 10 yards, carry up to Strength stones while manifested.
+Expert: Manifest for one watch for 1 Life, carry up to 3 stones + Strength while manifested.
+Master: Gain Affinity – Chaos • Dream • Shadow (as a Heritage-style effect).
 
 # New Burdens
 
 *“Existence is not all Slack and Frop. That’s why we offer Eternal Salvation or Triple your Money Back\!”* \-J.R. “Bob” Dobbs
 
-## Arcane Misalignment
+## Arcane (*Ka*) Misalignment
 
-The local Area's Ability scores serve as penalties instead of bonuses. The Arcane score is also a penalty to magic use, increasing the price of any Power or Ritual, or the severity of any Hazard. (i.e. adding to damage, raising the Danger Roll target number, or other difficulties or damage, etc).
+The local Area's *Ka* Ability scores beomes a penalty to magic use, increasing the price of any Power or Ritual, or the severity of any Hazard.
 
 ## Void Madness
 

@@ -57,7 +57,7 @@ This trait is granted **free at character creation** and immediately confers the
 
 ## Marking Your Heritage Trait
 
-Some Heritage effects have special rules, including marking the trait in order to activate certain abilities. You may not mark this trait if it is already marked. Unmark your Heritage trait by resting for one watch (4 hours), or resting for 10 minutes and spending 1 Life.
+Some Heritage effects have special rules, including marking the trait in order to activate certain abilities. You may not mark this trait if it is already marked. Unmark your Heritage trait by resting for one watch (4 hours), resting for 10 minutes and spending 1 Life, or resting for one action and taking 1 Ability damage.
 
 ## Heritage In Play
 
