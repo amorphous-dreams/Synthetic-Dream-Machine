@@ -4,11 +4,11 @@
 
 A modular subsystem for SDM games (Elyncia, UVG 2E, & Vastlands) emphasizing exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. RSS stands for:
 
-\> Reconnaissance → Salvage → Secrets
+> Reconnaissance → Salvage → Secrets
 
 Spending Bonus / Ticket Dice (Comfort, Protection, Speed) helps to improve discoveries, ensure safer work, and allow extra Salvage tests—if the area still has capacity.
 
-## 1\. Recon (Discovery / Research)
+## 1. Recon (Discovery / Research)
 
 Use travel and voyage events and discovery tables (Vastlands Guidebook, UVG, Our Golden Age) to place resource discoveries on the map. You may also roll d6 to reveal a Resource Node Location (a location with a higher ability score than the surrounding area):
 
@@ -137,6 +137,14 @@ Apply bonuses or penalties to Alignment rolls based on the current narrative, an
 \<= 1 Botch: The group is Misaligned (below) and rolls a Hazard die.  
 \< 9 Misaligned: All group members in the area suffer the Arcane Misalignment burden. The area's Ability scores serve as penalties instead of bonuses. This can be removed by leaving the area, or performing an Alignment ritual. See the burdens section for full rules.  
 \>= 9 Aligned: Your group's magic functions, with as much reliability as can be expected in these strange times.
+
+*“Existence is not all Slack and Frop. That’s why we offer Eternal Salvation or Triple your Money Back\!”* \-J.R. “Bob” Dobbs
+
+## Arcane  Misalignment
+
+Your *Ha*, *Ka* and *Ba* are misaligned with the local noosphere. While affected, the local Area Level penalizes arcane interaction: increase Power and Ritual costs by +Area Level, and increase Hazard or Corruption severity or apply –Area Level to relevant saves or effect rolls.
+
+Affects magitech, fantascience, rituals, daemon bargains, and noospheric effects. Mundane actions are unaffected. This burden may be taken multiple times. Each instance applies the normal –1 to all rolls, but does not further increase Area Level–based penalties. 
 
 It is often favorable to have a local or more knowledgeable person calling the shots for the initial Arcane Alignment of an area. This ritual has spread beyond the Merchant and Scout guilds to all the Adventurer's Guild certified companies of Elyncia 
 
