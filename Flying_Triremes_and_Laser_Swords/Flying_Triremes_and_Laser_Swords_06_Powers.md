@@ -49,6 +49,32 @@ Life energy (used for *powers* and other magic) is often called **mana**. Mages 
 
 Powers from Old School Roleplaying (and games inspired by the OSR aesthetic). As a general conversion guideline, SDM Power Level \= OSR “Spell Level” x2. Feel free to remix, modify, or play mad alchemist to your heart’s content. Powers, Traits, and Gear in FTLS are not static, but always mod-able.
 
+### Reckless Dweomer
+
+- subtitle: Mana Condensation, Very Dangerous
+- power: 0
+- range: self
+- target: local ley-lines or mana pools
+- duration: until spent or dispersed (sunset or sunrise)
+- overcharge: n/a
+
+> text:
+
+You grab the ley-lines without quite knowing how, and an octarine glow spills free, hastily arranging itself into spendable mana.
+
+Roll 1d6 + Aura and gain that much Mana (Life), torn loose from the local flow. If the Mana gained exceeds your effective level, immediately make a Dangerous Magic roll (effective level may be modified by traits, conditions, corruption, or similar effects).
+
+The Mana must be stored immediately in a Gear or Trait inventory slot; if there is no room, it overflows into Burdens (referee’s call). You may spend this Mana in place of Life to cast powers, either incrementally or all at once. You cannot use the Reckless Dweomer power while carrying Mana in any inventory.
+
+This power is Very Dangerous. While you are carrying Mana and you make a Defeat roll, or whenever you make any other Dangerous Magic roll, you must immediately make a another Dangerous Magic roll. Unused Mana disperses back into the ley-lines at sunset or sunrise.
+
+> tags:
+
+[power]
+[type:fantascience]
+[storage:trait]
+[very-dangerous]
+
 ### Magic Missile
 
  Power Level (P): 2  

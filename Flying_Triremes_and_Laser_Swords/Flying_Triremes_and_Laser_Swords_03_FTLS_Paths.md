@@ -78,15 +78,15 @@ Other names: Riven Shadowstep, Poppy Whirlwind, Reverend Hazard,
 
 d6  **Trait** Effect
 
-1. **Reckless Dweomer.** Once per watch, before casting a power, declare it a Reckless Dweomer: ignore the Power price (0 mana, no overcharging) but automatically make Corruption/Wild Magic exposure test with disadvantage on the final d20 (roll twice, referee chooses).
-
-2. **Bend Luck.** You twist probability at the moment it resolves. Mark this trait to roll a Paradox Die and add or subtract its result to any roll you can see after it is made.
+1. **Bend Luck.** You twist probability at the moment it resolves. Mark this trait to roll a Paradox Die and add or subtract its result to any roll you can see after it is made.
     - Skilled: d6*
     - Expert: d8*
     - Master: d10*
 The Paradox Die explodes. If it ever rolls any 1 (including on explosions), immediately make a Dangerous Magic exposure test. The difficulty equals the final modifier applied by the Paradox Die (reality glitches). You may not mark this trait if it is already marked. Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of Ability damage.
 
-3. **Chaos Step.** Free Action: When an attack targets you or you fail a save, spend 1 Hero Die or take 1 Ability damage to blink up to 30 ′ to a space you can see. The triggering attack resolves against your new position with disadvantage (line‑of‑sight permitting & bonus for new partial cover; otherwise it misses). Immediately roll a Dangerous Magic exposure test. If that result is teleportation, portal, or quantum themed you regain the Hero Die or heal the Ability damage.
+2. **Chaos Step.** Free Action: When an attack targets you or you fail a save, spend 1 Hero Die or take 1 Ability damage to blink up to 30 ′ to a space you can see. The triggering attack resolves against your new position with disadvantage (line‑of‑sight permitting & bonus for new partial cover; otherwise it misses). Immediately roll a Dangerous Magic exposure test. If that result is teleportation, portal, or quantum themed you regain the Hero Die or heal the Ability damage.
+
+3. **TODO** ...
 
 4. **TODO** ...
 

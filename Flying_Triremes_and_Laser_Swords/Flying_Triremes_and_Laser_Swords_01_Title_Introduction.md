@@ -23,13 +23,12 @@ $lares open \-mime text/vnd.tiddlywiki;mode=edit \-uri ./Flying Triremes and Las
 * 03 FTLS Paths  
 * 04 Recon, Salvage, Secrets  
 * 05 OSR Heritage Traits  
-* 06 Traits and Burdens  
-* 07 Powers  
-* 08 Wild Magic Exposure  
-* 09 Formations and Mass Combat  
-* 10 Loot & Treasure  
-* 11 Grimoires  
-* 12 Appendix Null \- Referee Resources
+* 06 Powers  
+* 07 Wild Magic Exposure  
+* 08 Formations and Mass Combat  
+* 09 Loot & Treasure  
+* 10 Grimoires  
+* 11 Appendix Null \- Referee Resources
 
 \> end(uri)  
 \> Next query?  
