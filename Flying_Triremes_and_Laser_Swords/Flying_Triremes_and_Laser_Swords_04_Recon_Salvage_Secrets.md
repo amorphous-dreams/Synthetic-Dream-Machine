@@ -55,7 +55,7 @@ Other items or effects as the Referee and Player Daemons expand the deep lore.
 
 Recipe or Ritual Examples (Time cost: 1 watch)  
 **Recipe    Refined Units    Consumable Effect**  
-Flux-Gyoza    1 Static, 1 Active    Ignore Dangerous Magic exposure test for 1 watch (4 hours).  
+Flux-Gyoza    1 Static, 1 Active    Ignore Advantage on DAnger Rolls for 1 watch (4 hours).  
 Shardwine    1 Static, 1 Active, 1 Dynamic    \+2d6 damage on next attack, attrition save  
 Bone-Sifter Wand    2 Static, 1 Dynamic    Reroll a Salvage test 1/day.  
 Bonus Die Trinket    2 Static OR Dynamic, 1 Active, 1 item    Trinket \[item\], gain a Comfort/Protect/Speed die, spend for bonus effect.

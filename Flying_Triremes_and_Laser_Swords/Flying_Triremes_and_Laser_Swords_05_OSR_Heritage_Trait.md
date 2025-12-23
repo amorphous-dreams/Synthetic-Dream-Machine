@@ -1330,7 +1330,7 @@ Example Backgrounds — River Warden (Scout), Quartermaster (Merchant), Tech-Rig
     * **[Size](#effect-size)** – you are Large, Small, or oddly out of scale.
 * Expert (+6): **Choose one effect**, or enhance one you already have (e.g. upgrade [Armoured Body](#effect-armoured-body) to \+2/+2).
 <a id="effect-paradox-die"></a>
-* Master (+9): **Paradox** – Mark your Heritage trait to add a **Paradox Die** (d6\*) to any roll. This functions as a Hero Die, except rolling any 1s rolled triggers a Magic Hazard roll. The difficulty is the current bonus total from this die (reality glitches).
+* Master (+9): **Paradox Die** – Mark your Heritage trait to add a **d6* Paradox Die** to any roll. Immediately make a Danger Roll vs the final Paradox Die modifier (reality glitches).
 
 **Description**
 

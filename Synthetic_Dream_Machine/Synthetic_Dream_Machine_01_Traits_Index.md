@@ -176,34 +176,34 @@
 | <a id="sdm-trait-thorny-row"></a>[Thorny](#sdm-trait-thorny) | Yellowlander |
 | <a id="sdm-trait-generic-synthesized-creature-row"></a>[Generic Synthesized Creature](#sdm-trait-generic-synthesized-creature) | Generic Synthesized Creature |
 | <a id="sdm-trait-humans-of-the-pananthropy-row"></a>[Humans of the Pananthropy](#sdm-trait-humans-of-the-pananthropy) | Humans of the Pananthropy |
-| <a id="sdm-trait-brick-bastions-row"></a>[Brick Bastions](#sdm-trait-brick-bastions) | Brick Bastions |
-| <a id="sdm-trait-crystal-cannons-row"></a>[Crystal Cannons](#sdm-trait-crystal-cannons) | Crystal Cannons |
-| <a id="sdm-trait-darting-dodgers-row"></a>[Darting Dodgers](#sdm-trait-darting-dodgers) | Darting Dodgers |
-| <a id="sdm-trait-erratic-expendables-row"></a>[Erratic Expendables](#sdm-trait-erratic-expendables) | Erratic Expendables |
 | <a id="sdm-trait-bonded-row"></a>[Bonded](#sdm-trait-bonded) | Humans of the Pananthropy |
 | <a id="sdm-trait-teamwork-row"></a>[Teamwork](#sdm-trait-teamwork) | Humans of the Pananthropy |
 | <a id="sdm-trait-toolmaker-row"></a>[Toolmaker](#sdm-trait-toolmaker) | Humans of the Pananthropy |
 | <a id="sdm-trait-adaptable-row"></a>[Adaptable](#sdm-trait-adaptable) | Humans of the Pananthropy |
 | <a id="sdm-trait-tactical-row"></a>[Tactical](#sdm-trait-tactical) | Humans of the Pananthropy |
 | <a id="sdm-trait-common-humanity-row"></a>[Common Humanity](#sdm-trait-common-humanity) | Humans of the Pananthropy |
+| <a id="sdm-trait-brick-bastions-row"></a>[Brick Bastions](#sdm-trait-brick-bastions) | Brick Bastions |
 | <a id="sdm-trait-shieldfriend-row"></a>[Shieldfriend](#sdm-trait-shieldfriend) | Brick Bastions |
 | <a id="sdm-trait-steadfast-row"></a>[Steadfast](#sdm-trait-steadfast) | Brick Bastions |
 | <a id="sdm-trait-denial-row"></a>[Denial](#sdm-trait-denial) | Brick Bastions |
 | <a id="sdm-trait-resistomorph-row"></a>[Resistomorph](#sdm-trait-resistomorph) | Brick Bastions |
 | <a id="sdm-trait-rockblood-row"></a>[Rockblood](#sdm-trait-rockblood) | Brick Bastions |
 | <a id="sdm-trait-slam-row"></a>[Slam](#sdm-trait-slam) | Brick Bastions |
+| <a id="sdm-trait-crystal-cannons-row"></a>[Crystal Cannons](#sdm-trait-crystal-cannons) | Crystal Cannons |
 | <a id="sdm-trait-overcharge-row"></a>[Overcharge](#sdm-trait-overcharge) | Crystal Cannons |
 | <a id="sdm-trait-desperate-shot-row"></a>[Desperate Shot](#sdm-trait-desperate-shot) | Crystal Cannons |
 | <a id="sdm-trait-feedback-row"></a>[Feedback](#sdm-trait-feedback) | Crystal Cannons |
 | <a id="sdm-trait-shatter-row"></a>[Shatter](#sdm-trait-shatter) | Crystal Cannons |
 | <a id="sdm-trait-phase-row"></a>[Phase](#sdm-trait-phase) | Crystal Cannons |
 | <a id="sdm-trait-circle-of-pain-row"></a>[Circle of Pain](#sdm-trait-circle-of-pain) | Crystal Cannons |
+| <a id="sdm-trait-darting-dodgers-row"></a>[Darting Dodgers](#sdm-trait-darting-dodgers) | Darting Dodgers |
 | <a id="sdm-trait-charger-row"></a>[Charger](#sdm-trait-charger) | Darting Dodgers |
 | <a id="sdm-trait-double-attack-row"></a>[Double Attack](#sdm-trait-double-attack) | Darting Dodgers |
 | <a id="sdm-trait-riposte-row"></a>[Riposte](#sdm-trait-riposte) | Darting Dodgers |
 | <a id="sdm-trait-evasive-row"></a>[Evasive](#sdm-trait-evasive) | Darting Dodgers |
 | <a id="sdm-trait-springer-row"></a>[Springer](#sdm-trait-springer) | Darting Dodgers |
 | <a id="sdm-trait-stabber-row"></a>[Stabber](#sdm-trait-stabber) | Darting Dodgers |
+| <a id="sdm-trait-erratic-expendables-row"></a>[Erratic Expendables](#sdm-trait-erratic-expendables) | Erratic Expendables |
 | <a id="sdm-trait-death-curse-row"></a>[Death Curse](#sdm-trait-death-curse) | Erratic Expendables |
 | <a id="sdm-trait-martyr-row"></a>[Martyr](#sdm-trait-martyr) | Erratic Expendables |
 | <a id="sdm-trait-once-again-row"></a>[Once Again](#sdm-trait-once-again) | Erratic Expendables |
@@ -5088,181 +5088,6 @@ Use the `meta` list to capture every structured placement of the trait (path slo
     page: 162
 <hr/>
 
-<a id="sdm-trait-brick-bastions"></a>
-#### Brick Bastions
-<div class="trait-return"><a href="#sdm-trait-brick-bastions-row">↩ Back to Table</a></div>
-
-> text:
-
-  **Brick Bastions.** Floating shields, animated armors, soil golems, lumberlings, horde zombies, crawling flesh centipedes, armor vomes, gelatinous skeletons, and other creatures that can't avoid getting hit. Often slow.
-
-  Note: Brick Bastions is an alternate “tank/brute” NPC statline. Package: `Def` is fixed at 7, `Life` is table-driven and accelerates hard (well above `4 + 4×Lvl`), and `Dmg` scales cleanly as `(Lvl+1)d6`. `Bon` grows slowly (+0 to +5) and `Mor` reaches 11 by Lv 5. Tiers: Lv 0–2 bulky fodder; Lv 3–4 brute bodies; Lv 5–6 siege-stoppers; Lv 7–9 boss tanks.
-
-  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
-  | --- | --- | --- | --- | --- | --- | --- |
-  | 01–25 | 0 | 12 | 6 | 7 | +0 | 1d6 |
-  | 26–45 | 1 | 25 | 7 | 7 | +1 | 2d6 |
-  | 46–59 | 2 | 40 | 8 | 7 | +1 | 3d6 |
-  | 60–74 | 3 | 60 | 9 | 7 | +2 | 4d6 |
-  | 75–84 | 4 | 85 | 10 | 7 | +2 | 5d6 |
-  | 85–92 | 5 | 120 | 11 | 7 | +3 | 6d6 |
-  | 93–97 | 6 | 160 | 11 | 7 | +3 | 7d6 |
-  | 98 | 7 | 220 | 11 | 7 | +4 | 8d6 |
-  | 99 | 8 | 300 | 11 | 7 | +4 | 9d6 |
-  | 00 | 9 | 400 | 11 | 7 | +5 | 10d6 |
-
-> tags:
-
-  [trait]
-  [type:path]
-  [path:Brick Bastions]
-  [affects:npc]
-  [affects:statblock]
-
-> meta:
-
-  - scope: trope
-    id: Brick Bastions
-    index: 0
-    note: Alternate NPC stat progression; high life, fixed low defense, multi-d6 damage.
-
-
-  - scope: source
-    source: Vastlands_Guidebook
-    page: 163
-<hr/>
-
-<a id="sdm-trait-crystal-cannons"></a>
-#### Crystal Cannons
-<div class="trait-return"><a href="#sdm-trait-crystal-cannons-row">↩ Back to Table</a></div>
-
-> text:
-
-  **Crystal Cannons.** Electric wizards, gas goblins, spore shooters, drop bears, doom discs, floating rayballs, porcelain liches, thanatic fanatics, and others that deal damage but can't take it.
-
-  Note: Crystal Cannons are an extreme glass-cannon NPC package. Pattern: `Def` is always `Bon + 7`, and the flat add in `Dmg` always matches `Bon` (so you can reuse the attack bonus as the damage add). Their `Life` stays intentionally tiny (1–46) while `Def`/`Bon` climb quickly and damage jumps in “weapon tiers” (`1d6` → `1d12` → multi-die). Tiers: Lv 0–2 brittle blasters; Lv 3–4 dangerous strikers; Lv 5–6 elite cannons; Lv 7–9 boss artillery.
-
-  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
-  | --- | --- | --- | --- | --- | --- | --- |
-  | 01–20 | 0 | 1 | 2 | 12 | +5 | 1d6+5 |
-  | 20–39 | 1 | 2 | 3 | 13 | +6 | 1d8+6 |
-  | 40–59 | 2 | 4 | 3 | 14 | +7 | 1d10+7 |
-  | 60–74 | 3 | 7 | 4 | 15 | +8 | 1d12+8 |
-  | 75–84 | 4 | 11 | 4 | 16 | +9 | 2d8+9 |
-  | 85–92 | 5 | 16 | 5 | 17 | +10 | 3d6+10 |
-  | 93–97 | 6 | 22 | 5 | 18 | +11 | 2d10+11 |
-  | 98 | 7 | 29 | 6 | 19 | +12 | 2d12+12 |
-  | 99 | 8 | 37 | 6 | 20 | +13 | 5d6+13 |
-  | 00 | 9 | 46 | 7 | 21 | +14 | 6d6+14 |
-
-> tags:
-
-  [trait]
-  [type:path]
-  [path:Crystal Cannons]
-  [affects:npc]
-  [affects:statblock]
-
-> meta:
-
-  - scope: trope
-    id: Crystal Cannons
-    index: 0
-    note: Alternate NPC stat progression; very low life, high defense/bonus, high damage.
-
-
-  - scope: source
-    source: Vastlands_Guidebook
-    page: 163
-<hr/>
-
-<a id="sdm-trait-darting-dodgers"></a>
-#### Darting Dodgers
-<div class="trait-return"><a href="#sdm-trait-darting-dodgers-row">↩ Back to Table</a></div>
-
-> text:
-
-  **Darting Dodgers.** Hoptoads, lashing leapers, vomitorrials, nimblers, fire furies, nightmare ninjas, neon knights, mercury golems, bioenhanced bandits, and other creatures that depend on their speed to avoid attacks and score hits.
-
-  Note: Darting Dodgers are an alternate “speedster/duelist” NPC package. Pattern: `Def` is always `Bon + 10` (so you can pick `Bon` by level and just add 10). Their `Dmg` is all “exploding” dice (`*`) with no flat add—swingy, spike-prone damage that steps in tiers: Lv 0–1 = `1d4*`/`1d6*`; Lv 2–4 = `2d4*` → `2d6*` → `2d8*`; Lv 5–6 = `3d6*`/`3d8*`; Lv 7–9 = escalating piles of d6 (`4d6*`, `5d6*`, `6d6*`). `Life` starts slightly under the Base line, then catches up and exceeds it at higher levels (ending at 50). Tiers: Lv 0–1 nimble pests; Lv 2–4 duelists; Lv 5–6 elite skirmishers; Lv 7–9 apex speedsters.
-
-  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
-  | --- | --- | --- | --- | --- | --- | --- |
-  | 01–20 | 0 | 3 | 2 | 13 | +3 | 1d4* |
-  | 20–39 | 1 | 6 | 3 | 14 | +4 | 1d6* |
-  | 40–59 | 2 | 10 | 4 | 15 | +5 | 2d4* |
-  | 60–74 | 3 | 14 | 4 | 16 | +6 | 2d6* |
-  | 75–84 | 4 | 19 | 5 | 18 | +8 | 2d8* |
-  | 85–92 | 5 | 24 | 6 | 20 | +10 | 3d6* |
-  | 93–97 | 6 | 30 | 7 | 22 | +12 | 3d8* |
-  | 98 | 7 | 36 | 7 | 24 | +14 | 4d6* |
-  | 99 | 8 | 43 | 8 | 26 | +16 | 5d6* |
-  | 00 | 9 | 50 | 9 | 28 | +18 | 6d6* |
-
-> tags:
-
-  [trait]
-  [type:path]
-  [path:Darting Dodgers]
-  [affects:npc]
-  [affects:statblock]
-
-> meta:
-
-  - scope: trope
-    id: Darting Dodgers
-    index: 0
-    note: Alternate NPC stat progression; high defense and exploding damage dice, moderate life.
-
-
-  - scope: source
-    source: Vastlands_Guidebook
-    page: 163
-<hr/>
-
-<a id="sdm-trait-erratic-expendables"></a>
-#### Erratic Expendables
-<div class="trait-return"><a href="#sdm-trait-erratic-expendables-row">↩ Back to Table</a></div>
-
-> text:
-
-  **Erratic Expendables.** Doom drones, exploding skeletons, suicide squirrels, spitborn ghoulies, shackleminded grenadiers, bicycle cavalry. Not expected to return from the fight.
-
-  Note: Erratic Expendables are a “disposable ordinance” NPC package. Pattern: `Life` is just `Lvl + 1` (1–10), and their core numbers advance cleanly as `Bon = Lvl + 3` (capped at +12) and `Def = Bon + 4` (so `Def = Lvl + 7`). Their `Dmg` is a simple ladder—single dice from `1d4` up to `1d12`, then multi-die “payload” steps (`2d8` → `2d12` → `3d10`). `Mor` runs high and quickly plateaus at 11, matching enemies that don’t retreat so much as they detonate, collapse, or complete the job. Tiers: Lv 0–2 brittle fodder; Lv 3–4 skirmisher bombs; Lv 5–6 nasty payloads; Lv 7–9 elite expendables.
-
-  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
-  | --- | --- | --- | --- | --- | --- | --- |
-  | 01–20 | 0 | 1 | 4 | 7 | +3 | 1d4 |
-  | 20–39 | 1 | 2 | 5 | 8 | +4 | 1d6 |
-  | 40–59 | 2 | 3 | 6 | 9 | +5 | 1d8 |
-  | 60–74 | 3 | 4 | 7 | 10 | +6 | 1d10 |
-  | 75–84 | 4 | 5 | 8 | 11 | +7 | 1d12 |
-  | 85–92 | 5 | 6 | 9 | 12 | +8 | 2d8 |
-  | 93–97 | 6 | 7 | 10 | 13 | +9 | 2d10 |
-  | 98 | 7 | 8 | 11 | 14 | +10 | 2d12 |
-  | 99 | 8 | 9 | 11 | 15 | +11 | 3d8 |
-  | 00 | 9 | 10 | 11 | 16 | +12 | 3d10 |
-
-> tags:
-
-  [trait]
-  [type:path]
-  [path:Erratic Expendables]
-  [affects:npc]
-  [affects:statblock]
-
-> meta:
-
-  - scope: trope
-    id: Erratic Expendables
-    index: 0
-    note: Alternate NPC stat progression; low life and death-trigger traits, designed to explode or sacrifice themselves.
-
-  - scope: source
-    source: Vastlands_Guidebook
-    page: 163
-<hr/>
-
 <a id="sdm-trait-bonded"></a>
 #### Bonded
 <div class="trait-return"><a href="#sdm-trait-bonded-row">↩ Back to Table</a></div>
@@ -5426,6 +5251,50 @@ Use the `meta` list to capture every structured placement of the trait (path slo
     page: 162
 <hr/>
 
+<a id="sdm-trait-brick-bastions"></a>
+#### Brick Bastions
+<div class="trait-return"><a href="#sdm-trait-brick-bastions-row">↩ Back to Table</a></div>
+
+> text:
+
+  **Brick Bastions.** Floating shields, animated armors, soil golems, lumberlings, horde zombies, crawling flesh centipedes, armor vomes, gelatinous skeletons, and other creatures that can't avoid getting hit. Often slow.
+
+  Note: Brick Bastions is an alternate “tank/brute” NPC statline. Package: `Def` is fixed at 7, `Life` is table-driven and accelerates hard (well above `4 + 4×Lvl`), and `Dmg` scales cleanly as `(Lvl+1)d6`. `Bon` grows slowly (+0 to +5) and `Mor` reaches 11 by Lv 5. Tiers: Lv 0–2 bulky fodder; Lv 3–4 brute bodies; Lv 5–6 siege-stoppers; Lv 7–9 boss tanks.
+
+  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 01–25 | 0 | 12 | 6 | 7 | +0 | 1d6 |
+  | 26–45 | 1 | 25 | 7 | 7 | +1 | 2d6 |
+  | 46–59 | 2 | 40 | 8 | 7 | +1 | 3d6 |
+  | 60–74 | 3 | 60 | 9 | 7 | +2 | 4d6 |
+  | 75–84 | 4 | 85 | 10 | 7 | +2 | 5d6 |
+  | 85–92 | 5 | 120 | 11 | 7 | +3 | 6d6 |
+  | 93–97 | 6 | 160 | 11 | 7 | +3 | 7d6 |
+  | 98 | 7 | 220 | 11 | 7 | +4 | 8d6 |
+  | 99 | 8 | 300 | 11 | 7 | +4 | 9d6 |
+  | 00 | 9 | 400 | 11 | 7 | +5 | 10d6 |
+
+> tags:
+
+  [trait]
+  [type:path]
+  [path:Brick Bastions]
+  [affects:npc]
+  [affects:statblock]
+
+> meta:
+
+  - scope: trope
+    id: Brick Bastions
+    index: 0
+    note: Alternate NPC stat progression; high life, fixed low defense, multi-d6 damage.
+
+
+  - scope: source
+    source: Vastlands_Guidebook
+    page: 163
+<hr/>
+
 <a id="sdm-trait-shieldfriend"></a>
 #### Shieldfriend
 <div class="trait-return"><a href="#sdm-trait-shieldfriend-row">↩ Back to Table</a></div>
@@ -5587,6 +5456,50 @@ Use the `meta` list to capture every structured placement of the trait (path slo
   - scope: source
     source: Vastlands_Guidebook
     page: 162
+<hr/>
+
+<a id="sdm-trait-crystal-cannons"></a>
+#### Crystal Cannons
+<div class="trait-return"><a href="#sdm-trait-crystal-cannons-row">↩ Back to Table</a></div>
+
+> text:
+
+  **Crystal Cannons.** Electric wizards, gas goblins, spore shooters, drop bears, doom discs, floating rayballs, porcelain liches, thanatic fanatics, and others that deal damage but can't take it.
+
+  Note: Crystal Cannons are an extreme glass-cannon NPC package. Pattern: `Def` is always `Bon + 7`, and the flat add in `Dmg` always matches `Bon` (so you can reuse the attack bonus as the damage add). Their `Life` stays intentionally tiny (1–46) while `Def`/`Bon` climb quickly and damage jumps in “weapon tiers” (`1d6` → `1d12` → multi-die). Tiers: Lv 0–2 brittle blasters; Lv 3–4 dangerous strikers; Lv 5–6 elite cannons; Lv 7–9 boss artillery.
+
+  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 01–20 | 0 | 1 | 2 | 12 | +5 | 1d6+5 |
+  | 20–39 | 1 | 2 | 3 | 13 | +6 | 1d8+6 |
+  | 40–59 | 2 | 4 | 3 | 14 | +7 | 1d10+7 |
+  | 60–74 | 3 | 7 | 4 | 15 | +8 | 1d12+8 |
+  | 75–84 | 4 | 11 | 4 | 16 | +9 | 2d8+9 |
+  | 85–92 | 5 | 16 | 5 | 17 | +10 | 3d6+10 |
+  | 93–97 | 6 | 22 | 5 | 18 | +11 | 2d10+11 |
+  | 98 | 7 | 29 | 6 | 19 | +12 | 2d12+12 |
+  | 99 | 8 | 37 | 6 | 20 | +13 | 5d6+13 |
+  | 00 | 9 | 46 | 7 | 21 | +14 | 6d6+14 |
+
+> tags:
+
+  [trait]
+  [type:path]
+  [path:Crystal Cannons]
+  [affects:npc]
+  [affects:statblock]
+
+> meta:
+
+  - scope: trope
+    id: Crystal Cannons
+    index: 0
+    note: Alternate NPC stat progression; very low life, high defense/bonus, high damage.
+
+
+  - scope: source
+    source: Vastlands_Guidebook
+    page: 163
 <hr/>
 
 <a id="sdm-trait-overcharge"></a>
@@ -5753,6 +5666,50 @@ Use the `meta` list to capture every structured placement of the trait (path slo
     page: 162
 <hr/>
 
+<a id="sdm-trait-darting-dodgers"></a>
+#### Darting Dodgers
+<div class="trait-return"><a href="#sdm-trait-darting-dodgers-row">↩ Back to Table</a></div>
+
+> text:
+
+  **Darting Dodgers.** Hoptoads, lashing leapers, vomitorrials, nimblers, fire furies, nightmare ninjas, neon knights, mercury golems, bioenhanced bandits, and other creatures that depend on their speed to avoid attacks and score hits.
+
+  Note: Darting Dodgers are an alternate “speedster/duelist” NPC package. Pattern: `Def` is always `Bon + 10` (so you can pick `Bon` by level and just add 10). Their `Dmg` is all “exploding” dice (`*`) with no flat add—swingy, spike-prone damage that steps in tiers: Lv 0–1 = `1d4*`/`1d6*`; Lv 2–4 = `2d4*` → `2d6*` → `2d8*`; Lv 5–6 = `3d6*`/`3d8*`; Lv 7–9 = escalating piles of d6 (`4d6*`, `5d6*`, `6d6*`). `Life` starts slightly under the Base line, then catches up and exceeds it at higher levels (ending at 50). Tiers: Lv 0–1 nimble pests; Lv 2–4 duelists; Lv 5–6 elite skirmishers; Lv 7–9 apex speedsters.
+
+  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 01–20 | 0 | 3 | 2 | 13 | +3 | 1d4* |
+  | 20–39 | 1 | 6 | 3 | 14 | +4 | 1d6* |
+  | 40–59 | 2 | 10 | 4 | 15 | +5 | 2d4* |
+  | 60–74 | 3 | 14 | 4 | 16 | +6 | 2d6* |
+  | 75–84 | 4 | 19 | 5 | 18 | +8 | 2d8* |
+  | 85–92 | 5 | 24 | 6 | 20 | +10 | 3d6* |
+  | 93–97 | 6 | 30 | 7 | 22 | +12 | 3d8* |
+  | 98 | 7 | 36 | 7 | 24 | +14 | 4d6* |
+  | 99 | 8 | 43 | 8 | 26 | +16 | 5d6* |
+  | 00 | 9 | 50 | 9 | 28 | +18 | 6d6* |
+
+> tags:
+
+  [trait]
+  [type:path]
+  [path:Darting Dodgers]
+  [affects:npc]
+  [affects:statblock]
+
+> meta:
+
+  - scope: trope
+    id: Darting Dodgers
+    index: 0
+    note: Alternate NPC stat progression; high defense and exploding damage dice, moderate life.
+
+
+  - scope: source
+    source: Vastlands_Guidebook
+    page: 163
+<hr/>
+
 <a id="sdm-trait-charger"></a>
 #### Charger
 <div class="trait-return"><a href="#sdm-trait-charger-row">↩ Back to Table</a></div>
@@ -5913,6 +5870,49 @@ Use the `meta` list to capture every structured placement of the trait (path slo
   - scope: source
     source: Vastlands_Guidebook
     page: 162
+<hr/>
+
+<a id="sdm-trait-erratic-expendables"></a>
+#### Erratic Expendables
+<div class="trait-return"><a href="#sdm-trait-erratic-expendables-row">↩ Back to Table</a></div>
+
+> text:
+
+  **Erratic Expendables.** Doom drones, exploding skeletons, suicide squirrels, spitborn ghoulies, shackleminded grenadiers, bicycle cavalry. Not expected to return from the fight.
+
+  Note: Erratic Expendables are a “disposable ordinance” NPC package. Pattern: `Life` is just `Lvl + 1` (1–10), and their core numbers advance cleanly as `Bon = Lvl + 3` (capped at +12) and `Def = Bon + 4` (so `Def = Lvl + 7`). Their `Dmg` is a simple ladder—single dice from `1d4` up to `1d12`, then multi-die “payload” steps (`2d8` → `2d12` → `3d10`). `Mor` runs high and quickly plateaus at 11, matching enemies that don’t retreat so much as they detonate, collapse, or complete the job. Tiers: Lv 0–2 brittle fodder; Lv 3–4 skirmisher bombs; Lv 5–6 nasty payloads; Lv 7–9 elite expendables.
+
+  | d00 | Lvl | Life | Mor | Def | Bon | Dmg |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 01–20 | 0 | 1 | 4 | 7 | +3 | 1d4 |
+  | 20–39 | 1 | 2 | 5 | 8 | +4 | 1d6 |
+  | 40–59 | 2 | 3 | 6 | 9 | +5 | 1d8 |
+  | 60–74 | 3 | 4 | 7 | 10 | +6 | 1d10 |
+  | 75–84 | 4 | 5 | 8 | 11 | +7 | 1d12 |
+  | 85–92 | 5 | 6 | 9 | 12 | +8 | 2d8 |
+  | 93–97 | 6 | 7 | 10 | 13 | +9 | 2d10 |
+  | 98 | 7 | 8 | 11 | 14 | +10 | 2d12 |
+  | 99 | 8 | 9 | 11 | 15 | +11 | 3d8 |
+  | 00 | 9 | 10 | 11 | 16 | +12 | 3d10 |
+
+> tags:
+
+  [trait]
+  [type:path]
+  [path:Erratic Expendables]
+  [affects:npc]
+  [affects:statblock]
+
+> meta:
+
+  - scope: trope
+    id: Erratic Expendables
+    index: 0
+    note: Alternate NPC stat progression; low life and death-trigger traits, designed to explode or sacrifice themselves.
+
+  - scope: source
+    source: Vastlands_Guidebook
+    page: 163
 <hr/>
 
 <a id="sdm-trait-death-curse"></a>
