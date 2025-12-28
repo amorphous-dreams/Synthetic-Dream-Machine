@@ -115,8 +115,14 @@ So when mortals speak of “the goddess,” they often mean something simple and
 * You cannot truly leave her jurisdiction. (Even orbit is still in her story.)
 * Her attention is rare, but her *pressure* is constant.
 * What you call miracles may just be **dream-logic** leaking through a crack.
-* When the land “answers,” it’s usually not a dialogue—it’s a **reflex**.
+* When the world “answers,” it’s usually not a dialogue—it’s a **reflex**.
 
-Elyncia sleeps. The world moves in the rythm of her breath. And every so often, someone does something impossible—something myth-shaped enough—that the dream shifts… and an entire region wakes up different.
+Elyncia sleeps. The realms moves in the rythm of her breath. And every so often, someone does something impossible—something myth-shaped enough—that the dream shifts… and an entire region wakes up different.
 
+> “People keep asking whether the gods are real, which is a library patron’s way of asking whether a footnote can bite you. Gods are not persons; they are habits of the cosmos that learned how to accept offerings. An avatar, then, is not a visitation but a reality error—a temporary user interface spun up when too many folk query same ideas at once. You don’t meet the god; you meet the part of it that fit through the door without knocking the building down. This is why the wise do not pray for miracles, only for benign glitches.
 > 
+> Of course, once in a long while, the glitch notices you back. At that point it becomes etiquette, not theology. Keep your syntax loose, your metaphors polite, and your exits memorized. Never argue ontology with something that can edit the margins of causality while you’re still reading the index. Also, you must never run from anything immortal. It attracts their attention.
+>
+> The practical takeaway is simple: never demand clarity from the infinite. Ask for legibility, then back away slowly. As for Erisian avatars: they insist they are not glitches at all, merely punchlines that arrived before the joke finished loading."
+>
+> — Hexagram Voss, Floating Librarians of Mu - High Delos Archive
