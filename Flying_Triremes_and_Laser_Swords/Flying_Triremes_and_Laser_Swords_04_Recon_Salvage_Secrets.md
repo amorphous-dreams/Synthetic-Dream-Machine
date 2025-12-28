@@ -2,13 +2,13 @@
 
 RSS stands for: *» Reconnaissance » Salvage » Secrets*
 
-A modular subsystem for SDM games (Elyncia, UVG 2E, Vastlands, OGA) emphasizing exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. Spending Bonus / Ticket Dice (Comfort, Protection, Speed) helps to improve discoveries, ensure safer work, and allow extra Salvage tests—if the area still has capacity.
+A modular subsystem for SDM games emphasizing exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. Spending Bonus / Ticket Dice (Comfort, Protection, Speed) helps to improve discoveries, ensure safer work, and allow extra Salvage tests—if the area still has capacity.
 
 ## 1. Recon (Discovery / Research)
 
 **Resource Nodes.** A “node” is a specific thing you can meaningfully exploit: a wreck, a fungus reef, a shrine-net, an autofac vent, a bone orchard, a signal tower, etc. Nodes have Tags (examples: metal, fuel, porcelain, flesh, spores, signal, relic, void, legal, holy, volatile).
 
-Use travel and voyage events and discovery tables (UVG, Vastlands Guidebook, Our Golden Age) to place resource discoveries on the map. You may also roll d6 to reveal a Resource Node:
+When traveling, or exploring a destination for Discoveris, the referee my genreate nodes. Use the travel and voyage events and discovery tables (UVG, Vastlands Guidebook, Our Golden Age) to flavor the local resource nodes. You may also roll d6 to reveal a Resource Node:
 
 **Resource Node Discovery Table (1d6)**  
 1\. Edible/Medicinal Herbs or Raw Resources (Static)  
