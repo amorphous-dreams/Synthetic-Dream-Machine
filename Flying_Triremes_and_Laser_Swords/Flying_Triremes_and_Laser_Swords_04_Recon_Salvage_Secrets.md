@@ -1,47 +1,52 @@
 # Recon, Salvage, Secrets (RSS System)
 
-(under construction…)
+RSS stands for: *» Reconnaissance » Salvage » Secrets*
 
-A modular subsystem for SDM games (Elyncia, UVG 2E, & Vastlands) emphasizing exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. RSS stands for:
-
-> Reconnaissance → Salvage → Secrets
-
-Spending Bonus / Ticket Dice (Comfort, Protection, Speed) helps to improve discoveries, ensure safer work, and allow extra Salvage tests—if the area still has capacity.
+A modular subsystem for SDM games (Elyncia, UVG 2E, Vastlands, OGA) emphasizing exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. Spending Bonus / Ticket Dice (Comfort, Protection, Speed) helps to improve discoveries, ensure safer work, and allow extra Salvage tests—if the area still has capacity.
 
 ## 1. Recon (Discovery / Research)
 
-Use travel and voyage events and discovery tables (Vastlands Guidebook, UVG, Our Golden Age) to place resource discoveries on the map. You may also roll d6 to reveal a Resource Node Location (a location with a higher ability score than the surrounding area):
+**Resource Nodes.** A “node” is a specific thing you can meaningfully exploit: a wreck, a fungus reef, a shrine-net, an autofac vent, a bone orchard, a signal tower, etc. Nodes have Tags (examples: metal, fuel, porcelain, flesh, spores, signal, relic, void, legal, holy, volatile).
+
+Use travel and voyage events and discovery tables (UVG, Vastlands Guidebook, Our Golden Age) to place resource discoveries on the map. You may also roll d6 to reveal a Resource Node:
 
 **Resource Node Discovery Table (1d6)**  
-1\. Edible/Medicinal Herbs or Raw Resources (+1 Static)  
-2\. Edible Fauna or Other Consumable (+1 Static)  
-3\. Magitech Salvage or Fantascience Components (+1 Active)  
-4\. Oldtech Battery or Leyline Node (+1 Active)  
-5\. Dream-Shard or Arcane Secret  (+1 Dynamic)  
-6\. Ritual Site or Archive Uplink (+1 Dynamic)
+1\. Edible/Medicinal Herbs or Raw Resources (Static)  
+2\. Edible Fauna or Other Consumable (Static)  
+3\. Magitech Salvage or Fantascience Components (Active)  
+4\. Oldtech Battery or Leyline Node (Active)  
+5\. Dream-Shard or Arcane Secret  (Dynamic)  
+6\. Ritual Site or Archive Uplink (Dynamic)
 
 ## 2\. Salvage (Collect / Refine)
 
-Once resources are found they must be collected and refined. Trained crews are paid well – 1 standard share of pay, plus hazard pay in any week of dangerous conditions. Shares are counted as 1 per crew member, 2 each per officer, and 4 each for the leadership. Monthly profits are then split by share and disbursed. Beats working the campsite for 1 € a day.
+Once resources are found they must be collected and refined. Trained crews are paid well – 1 standard share of pay, plus 6 € / level hazard pay in any week of dangerous conditions. Shares are counted as 1 per crew member, 2 each per officer. Monthly profits are then split by share and disbursed. Beats working the campsite for 1 € a day.
 
-Salvage requires 1 person, a suitable Toolkit (e.g., Brimstone Fae Mining Kit, Adventurer's Guild Kitchen, Portable Forge Cart, Quantum Tinker’s Kit), and 1 watch (4 hours). An area can support a number of Salvage rolls per week equal to its Level. Spend a Speed die to make an additional Salvage roll using the current equipment and crew-power.
+Salvage requires 1 person, a suitable Toolkit (e.g., Brimstone Fae Mining Kit, Adventurer's Guild Kitchen, Portable Forge Cart, Quantum Tinker’s Kit), and 1 day (8 hours). An area can support a number of Salvage rolls per week equal to its Level. Spend a Speed die to make an additional Salvage roll using the current equipment and crew-power.
 
 **Collect**
 
-To collect salvage target an Area Ability score then make a Salvage roll:
+To collect salvage target resource node then make a Salvage roll:
 
-\> d20 \+ Ability \+ Skill \+/- Area Ability ≥ 10 \+ Area \+bonus  
-Botch: Roll a Hazard die & reduce one Location Ability by \-1.  
-Fail: Roll a Hazard die.  
-Success: Gain 1 Salvage die of the chosen Ability type, \+1 per 5 points margin. Note what tags are associated with these dice (referee decides).  
+\> d20 \+ Ability \+ Skill ≥ 10 \+ Area Level  
+
+Botch: Roll a Hazard die & reduce one Location Ability by \-1.
+
+Fail: Roll a Hazard die.
+
+Success: Gain 1 Salvage die of the chosen Ability type, \+1 per 5 points margin. Note what tags are associated with these dice (referee decides).
+
 d20 explodes: Loot\! Keep rolling to collect Salvage dice. Also, roll for Random Loot\! (See Appendix B \- Loot & Treasure.)
 
+
 **Refine**  
-To refine salvaged materials, power, and data shards into usable ingredients make a pool of Salvage dice of one type, then roll (counts as 1 Salvage roll):  
+To refine the raw materials, power, and data shards into usable resources make a pool of Salvage dice of one type, then roll (counts as 1 Salvage roll):
+
 \> Lucky 7s: match two dice up to make 7s. Each match grants one refined ingredient or resource.  
 1 \= Botch: Something went very wrong. For each one showing after completing all matches; roll a Hazard die.  
 6\* \= Explosion: Unexpected high quality salvage. Roll a bonus d6\!  
-7\*\* \= Success: For each match of two dice that add to 7 made, score one Unit of refined ingredients.  
+7\*\* \= Success: For each match of two dice that add to 7 made, score one Unit of refined ingredients.
+
 Tags: Tag these refined ingredients with the area Ability score rolled against & any other area Tags from the die pool rolled. The story should guide this.  
 Path & Background Traits: Some skilled craftsmen can affect refinement. If the referee says you have an appropriate trait, take 1 point of Endurance or Aura damage to change the value of a match by \+/-1. If they cannot suffer the ability damage without rolling for Defeat, they may take an attrition Wear and Tear burden instead.  
 Hero & Bonus dice: Spend a Hero die to roll \+2d6 Salvage dice. Spend a Comfort or Protection die to remove 1 point of Endurance/Aura damage, or a Wear and Tear burden caused from Salvage.
@@ -83,21 +88,15 @@ $lares query \-async “align these cash prices with the Ultraviolet Grasslands 
 
 ## Area Template
 
-\*\*Area Name\*\*  
-\*Level X, \+bonus\*  
-S \+1/ A \+3/ D \+2
+\*\*Area Name\*\* (\*Level X)
 
 Static (ha): pattern, integrity, resources, structure  
 Active (ka): mana, fire, energy, motion  
 Dynamic (ba): arcane, thought, dream, signal
 
-## Assigning Scores
-
-Level = average CR of resident threats or intended PC tier, (Novice 1‑3, Veteran 4‑7, Champion 8‑10, Mythic 11‑13). Level 0 areas are infrequent and ominous reality-rifts.
-
 ## Tags
 
-Use Vastlands-style tags to guide Arcane Alignment, or to flavor Hazards and Locations (places in an Area with \+1 to a specific Ability):
+Use Vastlands-style tags to guide Arcane Alignment, or to flavor Discoveries and Hazards:
 
 \> \[fire\], \[flux storm\], \[magitech\], \[consumables\], \[mnemonic\], \[dream-scape\]
 

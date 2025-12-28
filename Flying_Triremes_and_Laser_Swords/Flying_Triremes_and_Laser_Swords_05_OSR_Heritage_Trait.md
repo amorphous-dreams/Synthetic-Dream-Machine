@@ -68,7 +68,6 @@ Some Heritage effects have special rules, including marking the trait in order t
 | <a id="heritage-tauran-folk-row"></a>[Tauran Folk](#heritage-tauran-folk) | Labyrinth guardians | • [Ability Bonus – Fierce](#effect-ability-bonus-fierce) (+1 STR, +6 yd), • [Aggressive](#effect-aggressive) (rush), • [Size](#effect-size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Inspiration](#effect-inspiration) (aura) (Expert), • Labyrinth Soul (Master) | Uroch Trail-Keepers / Broken Horned |
 | <a id="heritage-troll-row"></a>[Troll](#heritage-troll) | Mischief tollkeepers | • [Aggressive](#effect-aggressive) (rush), • [Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat), • [Size](#effect-size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Armoured Body](#effect-armoured-body) (+1 Armor/+1 Ward) (Expert), • [Affinity](#effect-affinity-earth-stone-wood) — Earth • Stone • Wood ([earth] [stone] [wood]) or [Affinity](#effect-affinity-air-song-storm) — Air • Song • Storm ([air] [song] [storm]) (Master) | Ash-Troll / Reef-Troll |
 | <a id="heritage-turtle-folk-row"></a>[Turtle Folk](#heritage-turtle-folk) | Radical walking shrines | • [Armoured Body](#effect-armoured-body) ×2 (+2 Armor/+2 Ward), • Choose one ([Ability Bonus](#effect-ability-bonus)/move) | • [Affinity](#effect-affinity-water-ice-steam) — Water • Ice • Steam ([water] [ice] [steam]) (Expert), • [Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat) (Master) | Shrineback Pilgrim |
-| <a id="heritage-undead-post-mortal-row"></a>[Undead (Post Mortal)*](#heritage-undead-post-mortal) | Vow-bound revenants | • [Deathless](#effect-deathless) (upkeep; sacrifice to recover), • Choose two ([Ability Bonus](#effect-ability-bonus)/[Affinity](#effect-affinity-blood-bone-biomancy) — Blood • Bone • Biomancy ([blood] [bone] [biomancy])/[Armoured Body](#effect-armoured-body) (+1 Armor/+1 Ward)/[Darkvision](#effect-darkvision) (20 yd)/[Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick, • [Affinity](#effect-affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Candle-Heart / Mirth-Touched / Salt-Bone |
 | <a id="heritage-undead-post-mortal-row-2"></a>[Undead (Post Mortal)*](#heritage-undead-post-mortal) | Vow-bound revenants | • [Deathless](#effect-deathless) upkeep, • Choose two ([Ability Bonus](#effect-ability-bonus)/[Affinity](#effect-affinity-blood-bone-biomancy) [blood] [bone] [biomancy]/[Armoured Body](#effect-armoured-body) (+1 Armor/+1 Ward)/[Darkvision](#effect-darkvision)/[Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick, • [Affinity](#effect-affinity-chaos-dream-shadow) [chaos] [dream] [shadow] (Master) | Candle-Heart / Mirth-Touched / Salt-Bone |
 
 
@@ -345,19 +344,19 @@ Note: If chosen as a [Chimeric Body](#effect-chimeric-body) effect, the characte
 
 * ### Size – Tiny
 
-  * ¼ rations, \+4 Defense, 1 stone Gear
+  * ¼ rations, \+2 Defense, 5 + Str stone Gear
 
 * ### Size – Small
 
-  * ½ rations, \+2 Defense, 4 stone Gear
+  * ½ rations, \+1 Defense, 6 + Str stone Gear
 
 * ### Size – Large
 
-  * ×2 rations, \+10 Life, 10 stone Gear
+  * ×2 rations, \+10 Life, 10 + Str stone Gear
 
 * ### Size – Huge
 
-  * ×4 rations, \+20 Life, 13 stone Gear
+  * ×4 rations, \+20 Life, 13 + Str stone Gear
 
 <a id="effect-vome-upgrade"></a>
 ## Vome Upgrade
