@@ -2,13 +2,214 @@
 
 RSS stands for: *» Reconnaissance » Salvage » Secrets*
 
-A modular subsystem for SDM games emphasizing exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. Spending Bonus / Ticket Dice (Comfort, Protection, Speed) helps to improve discoveries, ensure safer work, and allow extra Salvage tests—if the area still has capacity.
+RSS emphasizes exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. Spending Bonus Dice (Comfort, Protection, Speed, etc.) helps you move faster, safer, and weirder—without turning the setting into a vending machine.
 
-## 1. Recon (Discovery / Research)
+RSS doesn’t add new phases. It adds a lens you can apply during existing procedures (week travel, destination actions, camp actions, and site exploration). A **Discovery** is a location; an **RSS Node** is what that location yields when the players look at it like scavengers, cooks, ritualists, hackers, or archaeologists with good boots. Players and the referee can note RSS nodes on maps next to Destinations or Discoveries.
 
-**Resource Nodes.** A “node” is a specific thing you can meaningfully exploit: a wreck, a fungus reef, a shrine-net, an autofac vent, a bone orchard, a signal tower, etc. Nodes have Tags (examples: metal, fuel, porcelain, flesh, spores, signal, relic, void, legal, holy, volatile).
+*Important Terms:* **Area Level** sets difficulty and “how much you can safely take per week.” **Tags** say what kind of trouble/resources/affinities apply. **Attention** says how noticed you are while doing it.
 
-When traveling, or exploring a destination for Discoveris, the referee my genreate nodes. Use the travel and voyage events and discovery tables (UVG, Vastlands Guidebook, Our Golden Age) to flavor the local resource nodes. You may also roll d6 to reveal a Resource Node:
+## Core Time Scales (Week / Watch / Turn)
+
+SDM likes weeks. Dungeons like 10-minute turns. FTLS runs both.
+
+- **Week**: travel, destination living, “stopped” caravan actions, long projects, market moves.
+- **Watch (4 hours)**: work shifts, scouting blocks, salvage runs, heat management, stealth operations.
+- **Turn (10 minutes)**: site exploration, patrol timing, noises, search loops, old-school encounter checks.
+
+Use the lowest scale that matters right now. When nobody cares about minutes, don’t count minutes. When someone cares, start counting.
+
+## The Area Contract
+
+Every Area has:
+
+- **Level** (0–17): how hard it pushes back; how much you can extract per week.
+- **Tags**: narrative hooks defined in rules terms (metal, fuel, signal, holy, legal, volatile, void, etc.).
+
+## Attention (the alarum clock)
+
+Attention measures how close the Area is to noticing you *as a problem*. Attention can mean guards, spirits, systems, guilds, wards, reputation, paperwork, Intrusion Countermeasure Electromagitech, or “the ruin wakes up.” One clock by default. Split it into sub-clocks only when multiple factions/phenomena matter and you want the mess to show.
+
+### Attention Track (0–19+)
+
+Attention uses SDM’s banding language (the same kind of roll bands you already see in UVG procedures):
+
+- **0–1** Quiet. The Area barely registers you.
+- **2–6** Warm. Background suspicion. “Something moved.”
+- **7** Hot. First threshold. Someone commits to noticing.
+- **8–12** Loud. Organized attention. Patrol logic. Audit logic.
+- **13** Alarm. Second threshold. The Area starts spending resources to stop you.
+- **14–19** Sirens. Active countermeasures. Doors close. Wards wake. Paperwork sharpens.
+- **20+** Response. The Area answers you *right now*.
+
+These numbers do not model “morality.” They model **alarum**.
+
+#### One Clock (Default) + Optional Sub-Clocks
+
+Run **one Attention score** per Area by default. Split into sub-clocks only when:
+- two factions respond differently and you want that friction,
+- two phenomena exist (guards + ward-net, or locals + ICE) and each escalates on its own schedule.
+
+When you split, keep each clock simple. Tags tell you which one you just poked.
+
+#### Tick Size (how fast Attention climbs)
+
+When an action increases Attention, add a **Tick**:
+
+- Tick size starts from **Area Level**, with flat “bounded accuracy” bands:
+
+  - **Level 0–3:** Tick **+1**
+  - **Level 4–7:** Tick **+2**
+  - **Level 8–11:** Tick **+3**
+  - **Level 12–17:** Tick **+4**
+
+- Then apply situational mods:
+  - **Careful / quiet method:** reduce Tick by 1 (minimum Tick = +1)
+  - **Noisy / overt method:** increase Tick by 1 (to a maximum of +4)
+  - **Arcane Misalignment in play:** increase Tick by 1 for magitech/ritual/noöspheric actions, or start “hot” (below). Misalignment already makes Area Level bite harder; Attention makes that bite *visible*.:contentReference[oaicite:1]{index=1}
+
+Tick size never drops below **+1**. Nothing stays invisible forever. Not on Elyncia.
+
+#### Starting Hot (and why)
+
+Start Attention above 0 when fiction demands it:
+- **A = 2–6** if the crew already carries rumors, blood, contraband, or a fresh bounty.
+- **A = 7** if the group enters Misaligned, or if the Area tags include [legal], [warded], [surveilled], [holy], [guild], [military] and the crew arrives acting like tourists with burglary tools.
+- **A = 13** when the crew already triggered alarms here this week, or when a rival faction primed the site.
+
+“Starting hot” saves time. It also tells the table the truth.
+
+---
+
+## Attention Triggers (what raises it)
+
+Increase Attention when the party takes an RSS-facing action that risks notice:
+
+- **Recon** that involves trespass, wiretaps, breaking seals, scrying, bribery, or tailing.
+- **Salvage** (always), because extraction leaves scars.
+- **Secrets** (rituals, hacking, archive uplinks), because reality logs access attempts.
+- **Fail or botch** on an RSS test (and also resolve Hazards as usual). Your existing Salvage text already routes failure into Hazard; Attention simply adds “someone noticed the mistake.”:contentReference[oaicite:2]{index=2}
+
+Some actions increase Attention even on success:
+- extra Salvage attempts
+- overt power use in a controlled Area
+- “clean success” achieved loudly (demolition, obvious drone swarms, daylight gate-picking)
+
+If an action feels like it should increase Attention, it probably should. Use Tags as your conscience.
+
+---
+
+## Attention Breakpoints (what happens when you cross them)
+
+At low levels, the Area reacts softly. At high levels, the Area reacts immediately.
+
+### 0–6: Use the OSR Encounter Die (soft pressure)
+
+At **Attention 2–6**, bring back the old engine: **the OSR Encounter Die**.
+
+**Encounter Die (default):** roll **1d6** at the cadence the scenario expects.
+- Dungeon turns often roll every 1–3 turns.
+- A watch-scale infiltration might roll once per watch.
+- A city caper might roll per “district move” or per major scene beat.
+
+On a **1**, trigger a Random Encounter (or a “complication encounter”: suspicious questions, a nosy drone, a clerk with a stamp). Keep it setting-appropriate.
+
+> **Jacquays trick (Caverns of Thracia):** pre-roll a *list* of encounter checks and results before play.
+> Especially when tables chain into other tables (Area A references Area B, which references Area C), pre-rolling keeps the table moving and prevents recursive page-flipping.
+> Cross off the next entry whenever you call for an encounter check. The dungeon feels alive. The referee stays sane.
+
+**Pre-roll pack (practical):**
+- Pre-roll 20–30 encounter checks (d6 results).
+- For each “1,” pre-roll the encounter result + reaction + distance/approach.
+- If your encounter tables point into other Area tables, pre-roll those too and note the source next to each entry.
+
+This turns Random Encounters into *flow* instead of *interruption*.
+
+### 7: First threshold (immediate)
+
+When Attention reaches **7**, trigger one immediate, concrete sign:
+- a patrol passes close,
+- a ward pings,
+- a local fixer asks pointed questions,
+- an ICE daemon starts watching the line.
+
+Then keep running encounter checks, but increase the chance:
+- Encounter on **1–2** on the d6 (instead of only 1).
+
+### 8–12: Loud (pressure increases)
+
+At **8–12**, the Area runs a search pattern.
+- Encounter on **1–3** on the d6.
+- Some encounters stop looking random; they start looking like *procedure* (shift change, sweeps, checkpoints, scans).
+
+### 13: Alarm (immediate)
+
+When Attention reaches **13**, trigger an immediate escalation:
+- locks engage, wards harden, rival crews arrive, patrol leaders show up, guild paperwork hits the table like a guillotine.
+
+Then either:
+- encounter on **1–4** on the d6, **or**
+- switch from Random Encounters to Directed Encounters (referee choice) when fiction points clearly to “they know what they want.”
+
+### 14–19: Sirens (immediate, ongoing)
+
+At **14+**, assume active countermeasures.
+- Treat many “encounter checks” as automatic: you roll only for *which* response arrives, not whether one arrives.
+
+### 20+: Response (the Area answers now)
+
+At **20+**, the Area stops hinting.
+- fight, chase, containment, purge, arrest, expulsion, quarantine, spiritual possession, black-bag paperwork.
+Pick the response that fits the tags.
+
+---
+
+## Optional: Overloaded Encounter Die (Vastlands add-on)
+
+Some tables like a single die that eats resources and spawns encounters at once. Vastlands calls this **Overloaded Encounter Dice** and frames it as an option for exploration periods.:contentReference[oaicite:3]{index=3}
+
+RSS does not require this option.
+If you want it, bolt it on later as a module:
+- the encounter die still rolls,
+- but certain faces also tick supplies, fatigue, light, heat, or Attention.
+
+Keep it optional. Keep it local. Keep it weird.
+
+---
+
+## Salvage (Collect / Refine) — Timing Update (Watch Scale)
+
+Your existing RSS draft keys Salvage to toolkits and Area capacity, with a clear target number:  
+**d20 + Ability + Skill ≥ 10 + Area Level**.:contentReference[oaicite:4]{index=4}
+
+Update only the time scale and the “careful” option:
+
+- **One Salvage attempt costs 1 watch (4 hours)** and needs:
+  - 1 person
+  - a suitable Toolkit
+  - a Node to work
+- **Double watch (8 hours):** take **[+]** on the Salvage test *or* reduce the Attention Tick by 1 (minimum +1). Choose before rolling.
+- **Weekly capacity:** an Area supports a number of Salvage attempts per week equal to its **Level** (same cap, finer granularity).:contentReference[oaicite:5]{index=5}
+
+**Attention:** every Salvage attempt risks notice. On a fail/botch you already roll Hazard; also tick Attention using the Area’s Tick size. Success may still tick Attention if the method leaves obvious traces.
+
+(We keep Salvage yield math and refiner math intact for now. We only make time/attention legible.)
+
+---
+
+## Integration Note: Nodes live inside Discoveries
+
+UVG defines **Discoveries** as interesting locations near Destinations, and it encourages map notes as a group asset.:contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+
+RSS adds:
+- each Discovery can contain **Nodes** (things you can exploit)
+- each Node carries **Tags** (what it yields, what it triggers)
+- Attention tells you how long you can push before the place pushes back.
+
+
+
+
+---
+You may also roll d6 to reveal a Resource Node:
 
 **Resource Node Discovery Table (1d6)**  
 1. Edible/Medicinal Herbs or Raw Resources (Static)  
