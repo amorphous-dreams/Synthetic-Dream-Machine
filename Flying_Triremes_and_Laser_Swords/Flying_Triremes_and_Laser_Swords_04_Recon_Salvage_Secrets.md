@@ -11,12 +11,12 @@ A modular subsystem for SDM games emphasizing exploration, resource management, 
 When traveling, or exploring a destination for Discoveris, the referee my genreate nodes. Use the travel and voyage events and discovery tables (UVG, Vastlands Guidebook, Our Golden Age) to flavor the local resource nodes. You may also roll d6 to reveal a Resource Node:
 
 **Resource Node Discovery Table (1d6)**  
-1\. Edible/Medicinal Herbs or Raw Resources (Static)  
-2\. Edible Fauna or Other Consumable (Static)  
-3\. Magitech Salvage or Fantascience Components (Active)  
-4\. Oldtech Battery or Leyline Node (Active)  
-5\. Dream-Shard or Arcane Secret  (Dynamic)  
-6\. Ritual Site or Archive Uplink (Dynamic)
+1. Edible/Medicinal Herbs or Raw Resources (Static)  
+2. Edible Fauna or Other Consumable (Static)  
+3. Magitech Salvage or Fantascience Components (Active)  
+4. Oldtech Battery or Leyline Node (Active)  
+5. Dream-Shard or Arcane Secret  (Dynamic)  
+6. Ritual Site or Archive Uplink (Dynamic)
 
 ## 2\. Salvage (Collect / Refine)
 

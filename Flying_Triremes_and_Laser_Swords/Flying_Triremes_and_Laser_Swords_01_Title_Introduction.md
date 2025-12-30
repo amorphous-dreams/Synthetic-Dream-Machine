@@ -2,14 +2,14 @@
 
 ## Alpha Playtest
 ```
-telarus@dreamdeck-enyalius:\~  
+operator-anon@dreamdeck:\~  
 $ddate
 
 \>DDate: X-Day, 40th Confusion, YOLD 5491  
-telarus@dreamdeck-enyalius:\~  
+operator-anon@dreamdeck:\~  
 $cd documents/FTLS
 
-telarus@dreamdeck-enyalius:\~/documents/FTLS(main)  
+operator-anon@dreamdeck:\~/documents/FTLS(main)  
 $lares open \-mime text/vnd.tiddlywiki;mode=edit \-uri ./Flying Triremes and Laser Swords \- Alpha Playtest
 
 \> Loading…  
@@ -32,10 +32,10 @@ $lares open \-mime text/vnd.tiddlywiki;mode=edit \-uri ./Flying Triremes and Las
 
 \> end(uri)  
 \> Next query?  
-telarus@dreamdeck-enyalius:\~/documents/FTLS(main)  
+operator-anon@dreamdeck:\~/documents/FTLS(main)  
 $cd \~
 
-telarus@dreamdeck-enyalius:\~  
+operator-anon@dreamdeck:\~  
 $lares wiki \-query “brief SDM status, then wait for next query”
 
 \>Here is your UVG Third Party License Compliance State:  
