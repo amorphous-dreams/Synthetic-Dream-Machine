@@ -4,9 +4,7 @@ RSS stands for: *» Reconnaissance » Salvage » Secrets*
 
 RSS emphasizes exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. Spending Bonus Dice (Comfort, Protection, Speed, etc.) helps you move faster, safer, and weirder—without turning the setting into a vending machine.
 
-RSS doesn’t add new phases. It adds a lens you can apply during existing procedures (week travel, destination actions, camp actions, and site exploration). A **Discovery** is a location; an **RSS Node** is what that location yields when the players look at it like scavengers, cooks, ritualists, hackers, or archaeologists with good boots. Players and the referee can note RSS nodes on maps next to Destinations or Discoveries.
-
-*Important Terms:* **Area Level** sets difficulty and “how much you can safely take per week.” **Tags** say what kind of trouble/resources/affinities apply. **Attention** says how noticed you are while doing it.
+RSS doesn’t add new phases. It adds a lens you can apply during existing procedures (week travel, destination actions, camp actions, and site exploration). A **Discovery** is a location; an **RSS ndode** is what that location yields when the players look at it like scavengers, cooks, ritualists, hackers, or archaeologists with good boots. Players and the referee can note RSS nodes on maps next to Destinations or Discoveries.
 
 ## Core Time Scales (Week / Watch / Turn)
 
