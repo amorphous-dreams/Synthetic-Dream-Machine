@@ -6,7 +6,9 @@ RSS emphasizes exploration, resource management, cooking, crafting, rituals, mag
 
 RSS doesn’t add new phases. It adds a lens you can apply during existing procedures (week travel, destination actions, camp actions, and site exploration). A **Discovery** is a location; an **RSS ndode** is what that location yields when the players look at it like scavengers, cooks, ritualists, hackers, or archaeologists with good boots. Players and the referee can note RSS nodes on maps next to Destinations or Discoveries.
 
-## Core Time Scales (Week / Watch / Turn)
+## Recon
+
+### Core Time Scales (Week / Watch / Turn)
 
 SDM likes weeks. Dungeons like 10-minute turns. FTLS runs both.
 
@@ -16,7 +18,7 @@ SDM likes weeks. Dungeons like 10-minute turns. FTLS runs both.
 
 Use the lowest scale that matters right now. When nobody cares about minutes, don’t count minutes. When someone cares, start counting.
 
-## The Area Contract
+### The Area Contract
 
 Every Area has:
 
@@ -29,7 +31,7 @@ Attention measures how close the Area is to noticing you *as a problem*. Attenti
 
 ### Attention Track (0–19+)
 
-Attention uses SDM’s banding language (the same kind of roll bands you already see in UVG procedures):
+Attention uses SDM’s banding language:
 
 - **0–1** Quiet. The Area barely registers you.
 - **2–6** Warm. Background suspicion. “Something moved.”
@@ -53,7 +55,7 @@ When you split, keep each clock simple. Tags tell you which one you just poked.
 
 When an action increases Attention, add a **Tick**:
 
-- Tick size starts from **Area Level**, with flat “bounded accuracy” bands:
+- Tick size scales with **Area Level**:
 
   - **Level 0–3:** Tick **+1**
   - **Level 4–7:** Tick **+2**
@@ -61,9 +63,9 @@ When an action increases Attention, add a **Tick**:
   - **Level 12–17:** Tick **+4**
 
 - Then apply situational mods:
-  - **Careful / quiet method:** reduce Tick by 1 (minimum Tick = +1)
-  - **Noisy / overt method:** increase Tick by 1 (to a maximum of +4)
-  - **Arcane Misalignment in play:** increase Tick by 1 for magitech/ritual/noöspheric actions, or start “hot” (below). Misalignment already makes Area Level bite harder; Attention makes that bite *visible*.:contentReference[oaicite:1]{index=1}
+  - **Careful / quiet method:** reduce Tick by 1 (minimum +1)
+  - **Noisy / overt method:** increase Tick by 1
+  - **Arcane Misalignment in play:** increase Tick by 1 for magitech/ritual/noöspheric actions, or start “hot” (below).
 
 Tick size never drops below **+1**. Nothing stays invisible forever. Not on Elyncia.
 
@@ -72,57 +74,52 @@ Tick size never drops below **+1**. Nothing stays invisible forever. Not on Elyn
 Start Attention above 0 when fiction demands it:
 - **A = 2–6** if the crew already carries rumors, blood, contraband, or a fresh bounty.
 - **A = 7** if the group enters Misaligned, or if the Area tags include [legal], [warded], [surveilled], [holy], [guild], [military] and the crew arrives acting like tourists with burglary tools.
-- **A = 13** when the crew already triggered alarms here this week, or when a rival faction primed the site.
+- **A = 13** when the crew already triggered alarms here this week, or when a rival faction primed the site.d
 
-“Starting hot” saves time. It also tells the table the truth.
-
----
-
-## Attention Triggers (what raises it)
+#### Attention Triggers (what raises it)
 
 Increase Attention when the party takes an RSS-facing action that risks notice:
 
 - **Recon** that involves trespass, wiretaps, breaking seals, scrying, bribery, or tailing.
 - **Salvage** (always), because extraction leaves scars.
 - **Secrets** (rituals, hacking, archive uplinks), because reality logs access attempts.
-- **Fail or botch** on an RSS test (and also resolve Hazards as usual). Your existing Salvage text already routes failure into Hazard; Attention simply adds “someone noticed the mistake.”:contentReference[oaicite:2]{index=2}
+- **Fail or botch** on an RSS test (and also resolve Hazards as usual).
 
 Some actions increase Attention even on success:
 - extra Salvage attempts
 - overt power use in a controlled Area
 - “clean success” achieved loudly (demolition, obvious drone swarms, daylight gate-picking)
 
-If an action feels like it should increase Attention, it probably should. Use Tags as your conscience.
+If an action feels like it should increase Attention, it probably should.
 
----
-
-## Attention Breakpoints (what happens when you cross them)
+### Attention Breakpoints
 
 At low levels, the Area reacts softly. At high levels, the Area reacts immediately.
 
-### 0–6: Use the OSR Encounter Die (soft pressure)
+#### 0–6: Use the OSR Encounter Die (soft pressure)
 
-At **Attention 2–6**, bring back the old engine: **the OSR Encounter Die**.
+At **Attention 2+**, bring out the **OSR Encounter Die**.
 
 **Encounter Die (default):** roll **1d6** at the cadence the scenario expects.
-- Dungeon turns often roll every 1–3 turns.
+- Dungeon turns often roll every 1–2 turns.
 - A watch-scale infiltration might roll once per watch.
 - A city caper might roll per “district move” or per major scene beat.
 
-On a **1**, trigger a Random Encounter (or a “complication encounter”: suspicious questions, a nosy drone, a clerk with a stamp). Keep it setting-appropriate.
+On a **1**, trigger a Random Encounter (or a “complication encounter”: suspicious questions, a nosy drone, a clerk with a stamp). Keep it setting-appropriate. The Attention level may modify the trigger range.
 
-> **Jacquays trick (Caverns of Thracia):** pre-roll a *list* of encounter checks and results before play.
+> **Jacquays' trick (encounter stack):** pre-roll a *list* of encounter results before play.
 > Especially when tables chain into other tables (Area A references Area B, which references Area C), pre-rolling keeps the table moving and prevents recursive page-flipping.
-> Cross off the next entry whenever you call for an encounter check. The dungeon feels alive. The referee stays sane.
+> Cross off the next entry whenever your d6 roll shows an encounter. The dungeon feels alive. The referee stays sane.
 
-**Pre-roll pack (practical):**
-- Pre-roll 20–30 encounter checks (d6 results).
-- For each “1,” pre-roll the encounter result + reaction + distance/approach.
-- If your encounter tables point into other Area tables, pre-roll those too and note the source next to each entry.
+**Pre-roll encounter stacks:**
+- Pre-roll 5–10 encounter results for each Area that has an encounter table.
+- If your encounter tables point into other Area tables, note the source next to each result.
+- When an encounter is used in play - roll the reaction + distance/approach using the SDM d6 tables. Cross that encounter off the stack.
+- Refill your encounter stack during downtimes in the session.
 
 This turns Random Encounters into *flow* instead of *interruption*.
 
-### 7: First threshold (immediate)
+#### 7: First threshold (immediate)
 
 When Attention reaches **7**, trigger one immediate, concrete sign:
 - a patrol passes close,
@@ -133,27 +130,28 @@ When Attention reaches **7**, trigger one immediate, concrete sign:
 Then keep running encounter checks, but increase the chance:
 - Encounter on **1–2** on the d6 (instead of only 1).
 
-### 8–12: Loud (pressure increases)
+#### 8–12: Loud (pressure increases)
 
 At **8–12**, the Area runs a search pattern.
 - Encounter on **1–3** on the d6.
-- Some encounters stop looking random; they start looking like *procedure* (shift change, sweeps, checkpoints, scans).
+- Some encounters stop looking random; they start looking like *procedure* (shift change, sweeps, checkpoints, scans). The whole posture of the Area has changed.
 
-### 13: Alarm (immediate)
+#### 13: Alarm (immediate)
 
 When Attention reaches **13**, trigger an immediate escalation:
+- trigger an immediate encounter, and
 - locks engage, wards harden, rival crews arrive, patrol leaders show up, guild paperwork hits the table like a guillotine.
 
 Then either:
 - encounter on **1–4** on the d6, **or**
 - switch from Random Encounters to Directed Encounters (referee choice) when fiction points clearly to “they know what they want.”
 
-### 14–19: Sirens (immediate, ongoing)
+#### 14–19: Sirens (immediate, ongoing)
 
 At **14+**, assume active countermeasures.
-- Treat many “encounter checks” as automatic: you roll only for *which* response arrives, not whether one arrives.
+- Treat many “encounter checks” as automatic
 
-### 20+: Response (the Area answers now)
+#### 20: Response (the Area answers now)
 
 At **20+**, the Area stops hinting.
 - fight, chase, containment, purge, arrest, expulsion, quarantine, spiritual possession, black-bag paperwork.
@@ -161,7 +159,7 @@ Pick the response that fits the tags.
 
 ---
 
-## Optional: Overloaded Encounter Die (Vastlands add-on)
+#### Optional: Overloaded Encounter Die (Vastlands add-on)
 
 Some tables like a single die that eats resources and spawns encounters at once. Vastlands calls this **Overloaded Encounter Dice** and frames it as an option for exploration periods.:contentReference[oaicite:3]{index=3}
 
