@@ -158,14 +158,11 @@ You may be exposed to corruption in various ways:
 
 - **Fail a danger roll** from using a power.
 
-- **Afflicted** by a monster’s corrupting abilities
-(the bite of a grey ooze ghoul).
-- **Failing a save** against corrupting effects
-(wading through electromagnificent radiation
-without an enviro-suit).
+- **Afflicted** by a monster’s corrupting abilities (the bite of a grey ooze ghoul).
 
-- **Doing something stupid**
-(drinking the glowing blue gool-aid).
+- **Failing a save** against corrupting effects (wading through electromagnificent radiation without an enviro-suit).
+
+- **Doing something stupid** (drinking the glowing blue gool-aid).
 
 **Corruption Exposure**
 

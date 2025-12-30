@@ -49,6 +49,75 @@ Life energy (used for *powers* and other magic) is often called **mana**. Mages 
 
 Powers from Old School Roleplaying (and games inspired by the OSR aesthetic). As a general conversion guideline, SDM Power Level \= OSR “Spell Level” x2. Feel free to remix, modify, or play mad alchemist to your heart’s content. Powers, Traits, and Gear in FTLS are not static, but always mod-able.
 
+## Entropic Shield
+
+- subtitle: Reactive Probability Barrier
+- power: 3
+- range: self or nearby (10 m)
+- target: self
+- duration: sustained, up to 1 watch (4 hours)
+- overcharge: emplace the shield at a point in space
+
+> text:
+
+You surround yourself—or a nearby locus—with a crackling sheath of entropic interference: void-static, probability shear, and counter-resonant force. While the shield protects **you**:
+
+* Gain **+2 Defense** against **ranged and mental attacks**.
+* **Once per round**, add **+1d6** to **either**:
+
+  * a damage roll you make, **or**
+  * a Defenseive roll or Save against a ranged attack, spell, or power.
+
+Whenever **any creature within short range** rolls a **natural 1** on an attack, save, or power activation, the shield destabilizes. The caster makes a Dangerous Magic roll against the current area Level.
+
+Overcharge: Instead of protecting yourself, you may **emplace** the shield:
+
+* Creates a **2-yard-radius entropy barrier**.
+* Creatures inside gain the same Defense bonus.
+* The barrier can be **picked up and moved** as a **1-stone item**.
+* It **decays by –1 Defense per minute** until it collapses.
+
+> tags:
+
+[power]
+[type:fantascience]
+[storage:trait]
+[storage:item]
+
+> meta:
+
+* scope: power
+* id: Entropic Shield
+* note: Wild Mage, Wizard, or Noömagus most often know this power.
+
+---
+
+### Reckless Dweomer
+
+- subtitle: Mana Condensation, Very Dangerous
+- power: 0
+- range: self
+- target: local ley-lines or mana pools
+- duration: until spent or dispersed (sunset or sunrise)
+- overcharge: n/a
+
+> text:
+
+You grab the ley-lines without quite knowing how, and an octarine glow spills free, hastily arranging itself into spendable mana.
+
+Roll 1d6 + Aura and gain that much Mana (Life), torn loose from the local flow. If the Mana gained exceeds your effective level, immediately make a Dangerous Magic roll (effective level may be modified by traits, conditions, corruption, or similar effects).
+
+The Mana must be stored immediately in a Gear or Trait inventory slot; if there is no room, it overflows into Burdens (referee’s call). You may spend this Mana in place of Life to cast powers, either incrementally or all at once. You cannot use the Reckless Dweomer power while carrying Mana in any inventory.
+
+This power is Very Dangerous. While you are carrying Mana and you make a Defeat roll, or whenever you make any other Dangerous Magic roll, you must immediately make a another Dangerous Magic roll. Unused Mana disperses back into the ley-lines at sunset or sunrise.
+
+> tags:
+
+[power]
+[type:fantascience]
+[storage:trait]
+[very-dangerous]
+
 ### Magic Missile
 
  Power Level (P): 2  

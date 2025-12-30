@@ -85,7 +85,7 @@ YA \= Years Ago (years before the playtest campaign)
 
 During the War of the Immortals (on Gaia, the Bronze age collapse) the faerie tribes of Elyncia were aligned into the "Summer Court” and the “Winter Court" \- corrupt factions headed by the Elf Queen & the Dwarf King. During the next 5,500 years those factions dissolve and the modern populations are extremely multi-cultural. There are now more than two Faerie Courts \- The Seelie Court (remnants of the War of the Immortals who aligned to defeat the Unseelie agents in both the old Summer & Winter Courts), the Unseelie Court (remnants of those who broke the world the first time, terrorists), the Ouroborous Court (led by a mortal that acquired Faerie Lord status, mobile & at war with hordes of intelligent undead from the 2nd Breaking), the Brimstone Court (magitech specialists of the unstable Brimstone Nexus), and others.
 
-#### YOLD 3191 / 2025 CE (2,300YA):
+#### YOLD 3191 / 2025 CE (2,300 YA):
 
 *Modern Day Gaia*: the Player Daemons all agree on this time period as “IRL”. This esoterica should be noted when investigating noosphere bleed-through or quantum-locked storage devices.
 

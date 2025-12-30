@@ -1,5 +1,28 @@
-# Old School Roleplaying Heritage Traits
-# Heritage Table of Contents
+# Old School Roleplaying Heritage Trait
+
+# Heritage (Trait)
+
+Heritage is a birthright, lineage, construction, or mythic origin that shapes how you exist in the world. It grants fictional positioning, esoteric permissions, and a small package of concrete effects. Choose a heritage descriptor (e.g. Goblin Folk, Awakened Golem, Deathless Revenant, Star-Marked Human). This descriptor defines what kinds of lore, rituals, environments, and effects naturally apply to you. In Flying Triremes and Laser Swords games, Heritage is free at character creation.
+
+**Skilled**: +3 to heritage-related lore and research. Choose three Heritage effects.
+
+**Expert**: +6 to heritage-related lore. Choose four Heritage effects.
+
+**Master**: +9 to heritage-related lore. Choose five Heritage effects.
+
+Heritage effects are selected from the Heritage Effects Catalog. Effects may grant resistances, needs (or lack thereof), senses, movement modes, immunities, taboos, upkeep requirements, or other non-class advantages and obligations.
+
+Notes:
+
+- Heritage is free at character creation and occupies 1 Trait slot.
+- Heritage effects may impose costs, maintenance, or vulnerabilities; these are part of the bargain.
+- When in doubt, Heritage defines what is normal for you and what requires no roll.
+
+### Marking Your Heritage Trait
+
+Some Heritage effects have special rules, including marking the trait in order to activate certain abilities. You may not mark this trait if it is already marked. Unmark your Heritage trait by resting for one watch (4 hours), resting for 10 minutes and spending 1 Life, or resting for one action and taking 1 Ability damage.
+
+## Heritage Table of Contents
 
 <a id="heritage-table-of-contents"></a>
 | Heritage | Hook | Skilled | Expert/Master | Variants |
@@ -45,17 +68,16 @@
 | <a id="heritage-tauran-folk-row"></a>[Tauran Folk](#heritage-tauran-folk) | Labyrinth guardians | • [Ability Bonus – Fierce](#effect-ability-bonus-fierce) (+1 STR, +6 yd), • [Aggressive](#effect-aggressive) (rush), • [Size](#effect-size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Inspiration](#effect-inspiration) (aura) (Expert), • Labyrinth Soul (Master) | Uroch Trail-Keepers / Broken Horned |
 | <a id="heritage-troll-row"></a>[Troll](#heritage-troll) | Mischief tollkeepers | • [Aggressive](#effect-aggressive) (rush), • [Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat), • [Size](#effect-size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Armoured Body](#effect-armoured-body) (+1 Armor/+1 Ward) (Expert), • [Affinity](#effect-affinity-earth-stone-wood) — Earth • Stone • Wood ([earth] [stone] [wood]) or [Affinity](#effect-affinity-air-song-storm) — Air • Song • Storm ([air] [song] [storm]) (Master) | Ash-Troll / Reef-Troll |
 | <a id="heritage-turtle-folk-row"></a>[Turtle Folk](#heritage-turtle-folk) | Radical walking shrines | • [Armoured Body](#effect-armoured-body) ×2 (+2 Armor/+2 Ward), • Choose one ([Ability Bonus](#effect-ability-bonus)/move) | • [Affinity](#effect-affinity-water-ice-steam) — Water • Ice • Steam ([water] [ice] [steam]) (Expert), • [Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat) (Master) | Shrineback Pilgrim |
-| <a id="heritage-undead-post-mortal-row"></a>[Undead (Post Mortal)*](#heritage-undead-post-mortal) | Vow-bound revenants | • [Deathless](#effect-deathless) (upkeep; sacrifice to recover), • Choose two ([Ability Bonus](#effect-ability-bonus)/[Affinity](#effect-affinity-blood-bone-biomancy) — Blood • Bone • Biomancy ([blood] [bone] [biomancy])/[Armoured Body](#effect-armoured-body) (+1 Armor/+1 Ward)/[Darkvision](#effect-darkvision) (20 yd)/[Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick, • [Affinity](#effect-affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Candle-Heart / Mirth-Touched / Salt-Bone |
 | <a id="heritage-undead-post-mortal-row-2"></a>[Undead (Post Mortal)*](#heritage-undead-post-mortal) | Vow-bound revenants | • [Deathless](#effect-deathless) upkeep, • Choose two ([Ability Bonus](#effect-ability-bonus)/[Affinity](#effect-affinity-blood-bone-biomancy) [blood] [bone] [biomancy]/[Armoured Body](#effect-armoured-body) (+1 Armor/+1 Ward)/[Darkvision](#effect-darkvision)/[Inner Fire](#effect-inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick, • [Affinity](#effect-affinity-chaos-dream-shadow) [chaos] [dream] [shadow] (Master) | Candle-Heart / Mirth-Touched / Salt-Bone |
 
 
-# A Brief Word on the Heritage Trait
+## A Brief Word on the Heritage Trait
 
 This trait is granted **free at character creation** and immediately confers the three *Skilled* benefits listed for the chosen Heritage. A hero can **never hold more than one Heritage**, but they may deepen the one they have: by investing experience or questing for secrets, a player can unlock its *Expert* and *Master* ranks. Commonly practiced Expert and Master upgrades are given for each. The daemon may also invest XP to turn it into a special Hallmark trait.
 
 > Heritage Ranks: Skilled \= 3 slots. Expert \= 4 slots. Master \= 5 slots.
 
-Some Heritage effects have special rules, including marking the trait in order to activate certain abilities. You may not mark this trait if it is already marked. Unmark your Heritage trait by resting for one watch (4 hours), or resting for 10 minutes and spending 1 Life.
+## Heritage In Play
 
 The population of Elyncia is multi-cultural and multi-heritage. Heritages are not factions, and the various nations, tribes, and clans of Elyncia have always included many heritages. Everyone has someone in their family or community who expresses the faerie magic differently. The influx of Human folk during the Bronze Age also spread their Gaian cultures and adaptability, with influence from later Gaian cultures arriving through unstable noospheric connections.
 
@@ -262,10 +284,18 @@ See in darkness as in dim light (greyscale) out to a 20 yd radius, including
 
 You do not need to eat or drink, though you may do so for pleasure, comfort, or memory. On a Defeat roll result of 2–6 (Dead), you may instead sacrifice of yourself to recover. Either take 1 Ability damage to regain Life equal to your Level (minimum 1), or take 1 Life damage to heal 1 Ability damage. You may sacrifice up to your level (minimum 1\) each time, but must choose to spend either Life or Ability points.
 
-Choose one upkeep need, which takes 4 hours and 1 sack of resources worth 10 cash per week. If you cannot fulfill your upkeep, you risk Void Madness (see FTLS New Rules \- Burdens).
+Constructs, revenant undead, uplifted vomes, and other Deathless beings require regular upkeep. Without it, their Ka–Ba destabilizes. Choose one upkeep need, which takes 4 hours and 1 sack of resources worth 10 cash per week. If you cannot fulfill your upkeep, you risk Void Madness (below).
 
 * Craving — an exotic substance or ritual compulsion.
 * Maintenance — with an appropriate toolkit and resources.
+
+Upkeep: Each week without maintenance, make an Aura or Endurance save. On a failure, take 1 Aura or Endurance damage; if damage cannot be taken, gain Wear & Tear (one instance, one burden slot). Repeat weekly until upkeep is performed. If a failed upkeep check causes Wear & Tear burdens to exceed the character’s level, they gain the Void Madness burden, which occupies 1 burden slot (-1 to all rolls).
+
+### Void Madness (Burden)
+
+While in Void Madness upkeep checks are suspended, they and behave erratically, and always act last in their side's initiative. When damaged, the character’s total Burden penalty is inverted and applied as a bonus to attack and damage against the perceived threat until it leaves sensory range.
+
+Recovery: Remove Void Madness through specialist repair or rites (e.g. artificers, necrotechs, nethermancers). Once removed, upkeep checks resume and Wear & Tear may be cleared per standard rules.
 
 <a id="effect-inner-fire"></a>
 ## Inner Fire
@@ -314,19 +344,19 @@ Note: If chosen as a [Chimeric Body](#effect-chimeric-body) effect, the characte
 
 * ### Size – Tiny
 
-  * ¼ rations, \+4 Defense, 1 stone Gear
+  * ¼ rations, \+2 Defense, 5 + Str stone Gear
 
 * ### Size – Small
 
-  * ½ rations, \+2 Defense, 4 stone Gear
+  * ½ rations, \+1 Defense, 6 + Str stone Gear
 
 * ### Size – Large
 
-  * ×2 rations, \+10 Life, 10 stone Gear
+  * ×2 rations, \+10 Life, 10 + Str stone Gear
 
 * ### Size – Huge
 
-  * ×4 rations, \+20 Life, 13 stone Gear
+  * ×4 rations, \+20 Life, 13 + Str stone Gear
 
 <a id="effect-vome-upgrade"></a>
 ## Vome Upgrade
@@ -1299,7 +1329,7 @@ Example Backgrounds — River Warden (Scout), Quartermaster (Merchant), Tech-Rig
     * **[Size](#effect-size)** – you are Large, Small, or oddly out of scale.
 * Expert (+6): **Choose one effect**, or enhance one you already have (e.g. upgrade [Armoured Body](#effect-armoured-body) to \+2/+2).
 <a id="effect-paradox-die"></a>
-* Master (+9): **Paradox** – Mark your Heritage trait to add a **Paradox Die** (d6\*) to any roll. This functions as a Hero Die, except rolling any 1s rolled triggers a Magic Hazard roll. The difficulty is the current bonus total from this die (reality glitches).
+* Master (+9): **Paradox Die** – Mark your Heritage trait to add a **d6* Paradox Die** to any roll. Immediately make a Danger Roll vs the final Paradox Die modifier (reality glitches).
 
 **Description**
 

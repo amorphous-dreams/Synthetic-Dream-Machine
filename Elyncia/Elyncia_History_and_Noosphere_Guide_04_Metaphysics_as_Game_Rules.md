@@ -2,7 +2,7 @@
 
 # Daemons in Elyncia and the Vastlands
 
-The Vastlands and its sister game \- Flying Triremes and Laser Swords \- are a mashup of caravan crawl, dungeons delve, and cosmic board game. At one scale characters tramp across the Circle Sea (Vastlands) or the Astral Sea (Elyncia), rolling voyage events, exploring discoveries, and bargaining for safe passage. At another, unseen hands—daemons, gods, stranger things—nudge dice, twist fate, and embroider destinies.
+The Vastlands and its sister game \- Flying Triremes and Laser Swords \- are a mashup of caravan crawl, dungeons delve, and cosmic board game. At one scale characters tramp across the lands of the Circle Sea (Vastlands) or the currents of the Astral Sea (Elyncia), rolling voyage events, exploring discoveries, and bargaining for safe passage. At another, unseen hands—daemons, gods, stranger things—nudge dice, twist fate, and embroider destinies.
 
 Players in this system operate at both scales: Primary Characters traveling through the world and Daemons meddling above it. The linkage between these scales is Hero Dice, a pool of action dice rooted in the daemon and tethered to the PCs’ progress. From that simple premise unfurls a layered structure: mortal journey, daemon meddling, and cosmic intrigue, all operating on the same skeleton of dice, tables, and choices.
 
@@ -12,7 +12,7 @@ Players in this system operate at both scales: Primary Characters traveling thro
 
 The **Ultraviolet Grasslands (UVG, 2E)** first framed travel as a living rhythm: the caravan as a collective character, moving in weekly turns through supply, hazard, and discovery. Experience grew from wandering and adventure, with resources abstracted into dice. Beneath it all, the system hinted at layered play—personal journeys, logistical caravans, and strategic expeditions nested together.
 
-The **Vastlands Guidebook (VLG, v3.44)** sharpened that implication into metaphysics. Dice became explicit instruments of fate: **Hero Dice** as daemonic leverage, **Bonus Dice** as structured privileges, and voyage events expanding from the mundane to the cosmic. It made the invisible hand of daemon and destiny mechanical.
+The **Vastlands Guidebook (VLG)** sharpened that implication into metaphysics. Dice became explicit instruments of fate: **Hero Dice** as daemonic leverage, **Bonus Dice** as structured privileges, and voyage events expanding from the mundane to the cosmic. It made the invisible hand of daemon and destiny mechanical.
 
 **Our Golden Age (OGA)** then streamlined the process with **Ticket Dice**—purchased abstractions of cost, comfort, and speed—allowing travel to resolve swiftly when the full caravan mechanics aren’t in focus. It layers a “quick travel” mode atop the UVG framework without replacing it, an overlay for skipping across the steppe when detail yields to momentum.
 
@@ -24,19 +24,12 @@ Together these three texts form a telescoping engine—the **Synthetic Dream Mac
 
 Each layer complements the others. Caravans crawl. Daemons meddle. Journeys fast-forward. What UVG once implied—that gods and daemons tug the threads of fate—is now the explicit pulse running through every subsystem.
 
-### Bonus Dice
-
-Ticket Dice are specialized Bonus Dice. They give steady bonuses (+1s) and can be spent for rerolls, mitigations, or acquisitions. They’re part of a broader genus: dream dice, fate dice, ruin dice, or stranger daemon bargains. Each follows the same design—portable abstractions of power or privilege tied to a particular scope. Ticket Dice belong to travel, but mirror patterns that appear across the game.
-
 ### Daemon Scaffolding
 
-The Guidebook foreshadows daemonic influence—possessions, null encounters, bloodlines. That layer crystallizes as:
+The Vastlands Guidebook foreshadows daemonic influence—possessions, null encounters, bloodlines. That layer crystallizes as:
 
+* **Bonus Dice**: situational, scope-specific—travel Tickets, or others yet stranger trinkets.
 * **Hero Dice**: broad daemon leverage, capped by PC level.  
-* **Bonus Dice**: situational, scope-specific—travel Tickets, or others yet stranger.  
-* **Daemon Sheets**: track these pools, their ties to PCs and Hallmarks.
-
-Thus the scaffolding: caravans move in loops, daemons manipulate through dice, and gods/stranger entities sit above as broader character-sheets of fate.
 
 ## Primary & Adjacent Influences
 
@@ -46,11 +39,11 @@ All of these showed us that dice and resources are levers of cosmology as much a
 
 **JG-102 Caverns of Thracia (1979, Judges Guild, Jennell Jacquays)** – A foundational adventure, famous for “Jacquaying the dungeon.” Multi-level maps, multiple entrances, factions with agendas, and procedural density made the dungeon into a living world, not a linear gauntlet. Its design tricks—loops, dead ends with meaning, interconnected threats—are the DNA for our procedural travel events. Thracia is the OSR’s Rosetta Stone of non-linear emergent play.
 
-**Shadowrun (1989)** – Famously crunchy, but notable for its dual-scale play: meatspace runs, matrix hacks, and astral quests overlapping. Characters are both street-level actors and pawns in megacorp/daemon-level struggles. Shadowrun’s layered systems echo our duality of PC action and daemon meddling.
+**Shadowrun (1989)** – Famously crunchy, but notable for its multi-scale play: meatspace runs, matrix hacks, and astral quests overlapping. Characters are both street-level actors and pawns in megacorp/daemon-level struggles.
 
 **Tales from the Floating Vagabond (1991)** – A parody RPG, but mechanically instructive. Rules for “Schticks” bent reality (like Toon), creating narrative physics knobs. Humor was the surface, but beneath it was a lesson: mechanics can reinforce absurdity as much as deadliness. For us, this validates daemonic meddling that ranges from slapstick to metaphysical horror.
 
-**Earthdawn (1993)** – A pillar of our framework. Its design philosophy is tight: rules are not just mechanics, they are meta-bindings to the world’s metaphysics. Disciplines define advancement, Karma dice fuel extraordinary effort, and the cycle of Horrors creates a cosmology baked into resolution. For Daemons in the Vastlands, Earthdawn is proof that dice pools can be more than modifiers—they are a statement of cosmology. Our Hero Dice live in that lineage.
+**Earthdawn (1993)** – A pillar of our framework. Its design philosophy is tight: rules are not just mechanics, they are meta-bindings to the world’s metaphysics. Disciplines define advancement, Karma dice fuel extraordinary effort, and the cycle of Horrors creates a cosmology baked into resolution. For Daemons in the Vastlands, Earthdawn is proof that dice pools can be more than modifiers—they are a statement of cosmology. Our Bonus Dice and Hero Dice live in that lineage.
 
 **Mage: the Ascension (1993)** – The consensus reality wars. Magic succeeds or fails based on paradigm, belief, and the collective unconscious. This is daemon play in all but name: competing metaphysical agents bending rolls, events, and outcomes according to their worldview. Mage shows how to operationalize philosophy as mechanics.
 
@@ -59,8 +52,6 @@ All of these showed us that dice and resources are levers of cosmology as much a
 **The Shadow of Yesterday (2004)** – A seminal indie game. Known for Keys (XP triggers based on character motives), but equally important are its Pools (resource dice for Vigor, Instinct, Reason) and its modular resolution system (simple vs. extended conflicts). Together, these made advancement a story engine and resource management a narrative driver. In our daemon frame, this maps directly onto how Hero Dice tie PC motives to daemon power: story choices → resources → cosmic leverage.
 
 **The Mountain Witch (2005)** – Trust Dice meta economy: alliances and betrayals enforced by mechanics, not just roleplay. Direct ancestor of daemon Hero Dice.
-
-…
 
 ### Classic OSR Bedrock (OSR DNA)
 
@@ -119,7 +110,7 @@ From **Caverns of Thracia**, we inherit structure as revelation. The dungeon, wi
 From **BECMI’s tiered play**, we inherit the ladder of transcendence. Those boxed sets did not merely increase power—they expanded *scope*. Basic was the crawl. Expert was the journey. Companion was command. Master was myth. Immortal was cosmology itself. In our design, that escalator returns. PCs begin as caravaners trudging through dust; their daemons meddle from beyond. In time, those daemons may become gods, and the gods may, in turn, become rules. The table’s dice become the pantheon’s language.
 
 From the **classic OSR** corpus we inherit the severe, procedural truths:  
- maps over story, choice over balance, consequence over comfort.  
+ maps and story over numbers, choice over balance, consequence over comfort.  
  Pre-roll. Record. Replace. Let the world respond, not conspire.  
  Death is not a failure state—it is punctuation.
 
