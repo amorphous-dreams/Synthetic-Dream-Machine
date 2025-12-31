@@ -231,7 +231,7 @@ Attention should always reflect the Area’s Tags. A [legal] Area cools through 
 
 ### 🔮 Arcane Alignment
 
-Arcane Alignment is the crew’s *shared* attunement to an Area’s noösphere. It is not private mystic resonance. It is group logistics: the local rules of magic, magitech, and dream-code deciding whether you “fit”. Alignment is rolled once for the **active faction** (usually the party, their caravan, their company, their unit). Individuals *carry* the consequences, but the state is factional. If it helps, the referee can write it down as a **Faction Burden**: **Aligned** or **Misaligned** (and how many Misalignment burdens are currently riding the crew).
+Arcane Alignment is a crew’s *shared* attunement to an Area’s noösphere. It is not private mystic resonance. It is group logistics: the local rules of magic, magitech, and dream-code deciding whether you “fit”. Alignment is rolled once for the **faction** (usually the party, their caravan, their company, their unit). Individuals *carry* the consequences, but the state is factional. If it helps, the referee can write it down as a **Faction Burden**: **Misaligned** (and how many Misalignment burdens the crew are carrying).
 
 Like morale and reaction rolls, one character rolls for the group (unless a Trait, Ritual, or local expert is in play). The vibes spread fast. The noösphere is a social medium.
 
@@ -256,7 +256,7 @@ Apply bonuses or penalties based on:
 - If Misalignment stacks, track the *count* on the faction (even though the –1 penalties live on individuals).
 - When the party splits, decide whether the split group inherits the faction state (usually yes) or must reroll (when they separate long enough, cross a boundary, or start acting like a different faction).
 
-## Arcane Misalignment
+### Arcane Misalignment
 
 Your *Ha*, *Ka*, and *Ba* can fall out of phase with the local noösphere. When Misaligned, arcane interaction gets expensive and dangerous. The Area doesn’t “hate” you. It just doesn’t recognize your protocols.
 
@@ -300,7 +300,6 @@ Areas can also be tagged with "negative level modifiers" due to calamities and o
 12+.    All ok! Reality fracture subsides.
 
 ## 2\. Salvage (Collect / Refine)
-
 
 **Attention:** every Salvage attempt risks notice. On a fail/botch you already roll Hazard; also tick Attention using the Area’s Tick size. Success may still tick Attention if the method leaves obvious traces.
 
