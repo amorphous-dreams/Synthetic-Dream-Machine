@@ -272,7 +272,7 @@ Your chimeric legacy lets you adopt an advanced chimeric form. All of your [Chim
 <a id="effect-coordination"></a>
 ## Coordination
 
-\+1 to this character’s action tests for every 2 allies within a 10 yd radius (max \+6).
+\+1 to this character’s action tests for every 2 allies within a 10 yd radius (max \+4).
 
 <a id="effect-darkvision"></a>
 ## Darkvision

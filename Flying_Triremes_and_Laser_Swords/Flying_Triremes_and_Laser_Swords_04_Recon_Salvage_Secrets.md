@@ -4,7 +4,7 @@ RSS stands for: *» Recon (Reconnaissance) » Salvage » Secrets*
 
 RSS emphasizes exploration, resource management, cooking, crafting, rituals, magitech tinkering, and noöspheric secrets. Spending Bonus Dice (Comfort, Protection, Speed, etc.) helps you move faster, safer, and weirder—without turning the setting into a vending machine.
 
-RSS doesn’t add new phases. It adds a lens you can apply during existing procedures (week travel, destination actions, camp actions, and site exploration). A **Discovery** is a location; an **RSS ndode** is what that location yields when the players look at it like scavengers, cooks, ritualists, hackers, or archaeologists with good boots.
+RSS doesn’t add new phases. It adds a lens you can apply during existing procedures (week travel, destination actions, camp actions, and site exploration). A **Discovery** is a location; an **RSS node** is what that location yields when the players look at it like scavengers, cooks, ritualists, hackers, or archaeologists with good boots.
 
 ## 1\. Recon (Reconnaissance)
 
@@ -54,7 +54,7 @@ You may also roll a d6 to choose a node's type:
 
 Use Vastlands-style tags to guide Arcane Alignment, or to flavor Discoveries and Hazards:
 
-\> \[fire\], \[flux\], \[storm\], \[magitech\], \[consumable\], \[mnemonic\], \[dream\]
+\> \[fire\], \[chaos\], \[storm\], \[magitech\], \[consumable\], \[mnemonic\], \[dream\]
 
 ### Attention
 
@@ -103,7 +103,7 @@ Tick size never drops below **+1**. Nothing stays invisible forever. Not in the 
 Start Attention above 0 when fiction demands it:
 - **A = 1d6** if the crew already carries rumors, blood, contraband, or a fresh bounty.
 - **A = 7** if the group enters Misaligned, or if the Area tags include [legal], [warded], [surveilled], [holy], [guild], [military] and the crew arrives acting like tourists with burglary tools.
-- **A = 13** when the crew already triggered alarms here this week, or when a rival faction primed the site.d
+- **A = 13** when the crew already triggered alarms here this week, or when a rival faction primed the site.
 
 #### Attention Triggers (what raises it)
 
@@ -141,13 +141,14 @@ On a **1**, trigger a Random Encounter (or a “complication encounter”: suspi
 > **Jacquays' Encounter Stack:** pre-roll a *list* of encounter results before play.
 > Especially when tables chain into other tables (Area A references Area B, which references Area C), pre-rolling keeps the table moving and prevents recursive page-flipping.
 > Cross off the next entry whenever your d6 roll shows an encounter. The dungeon feels alive. The referee stays sane. This turns Random Encounters into *flow* instead of *interruption*.
+> *Source:* JG-102 **Caverns of Thracia** by Jenell Jacquays
 
-**Pre-rolled encounter stacks:**
+**Pre-rolled Encounter Stacks:**
 - Pre-roll 5–10 encounter results for each Area that has an encounter table.
-- If your encounter tables point into other Area tables, note the source next to each result.
-- When an encounter is used in play roll the reaction + distance/approach using the SDM d6 tables.
-- Cross the encounter off the stack when used.
-- Refill your encounter stack during downtimes in the session.
+- If your encounter tables point into other Area tables, note the source next to each pre-rolled result.
+- Cross an encounter off the stack when used in play (d6 shows *Encounter*).
+- When an encounter is used roll the reaction + distance/approach using the SDM d6 tables.
+- Refill your encounter stack(s) during downtime in the session.
 
 #### 7: Hot (immediate)
 
@@ -177,12 +178,13 @@ When Attention reaches **13**, trigger an immediate escalation:
 
 At **14+**, assume active countermeasures:
 - Treat “encounter checks” as automatic, that's an encounter every other round - or every round if the party is being conspicious.
-- Named characters may start making appearences as independet agents (not random encounters)
+- Named characters may start making appearances as indepedent agents (not random encounters)
 
 #### 20+: Emergency (the Area answers now)
 
 At **20+**, the Area stops hinting:
 - fight, chase, containment, purge, arrest, expulsion, quarantine, spiritual possession, black-bag paperwork. Pick the emergency response that fits the tags.
+- once the Attention score is over 20, further +tick events do not add to the score but may immediately draw the attention of the active countermeasures.
 
 ---
 
@@ -231,122 +233,106 @@ Attention should always reflect the Area’s Tags. A [legal] Area cools through 
 
 ### 🔮 Arcane Alignment
 
-Arcane Alignment is a crew’s *shared* attunement to an Area’s noösphere. It is not private mystic resonance. It is group logistics: the local rules of magic, magitech, and dream-code deciding whether you “fit”. Alignment is rolled once for the **faction** (usually the party, their caravan, their company, their unit). Individuals *carry* the consequences, but the state is factional. If it helps, the referee can write it down as a **Faction Burden**: **Misaligned** (and how many Misalignment burdens the crew are carrying).
+Arcane Alignment is a crew’s *shared* attunement to the local noösphere. It is not private mystic resonance. It is group logistics: the local rules of magic, magitech, and dream-code deciding whether you “fit”. Individuals *carry* the consequences, but the state is factional. Alignment is rolled once for the **faction** (usually the party, caravan, or company) when faction members enter an area. Some other events may trigger further Arcane Alignment rolls.
 
-Like morale and reaction rolls, one character rolls for the group (unless a Trait, Ritual, or local expert is in play). The vibes spread fast. The noösphere is a social medium.
+Like morale and reaction rolls, one character rolls for the group (unless a Trait, Ritual, or local expert is in play). The vibes spread fast. The noösphere is a social medium. Use the same instincts as reaction rolls. Like raction rolls, take spend 1 Charisma to re-roll.
+
+> 2d6 + Thought + Mods
 
 Apply bonuses or penalties based on:
 - the current narrative (calm vs panic, stealth vs loud),
 - compatible or incompatible **Area Tags**,
 - the faction’s **Gear / Traits / Affinities** and what they are actually doing.
 
-> 2d6 + Charisma OR Thought + Mods  
-> (Use the same instincts as reaction rolls.)
-
-**Arcane Alignment (2d6 + Mods)**  
-<= 1 **Botch:** The faction becomes **Misaligned** and rolls a Hazard die.  
-< 9 **Misaligned:** All members of the faction in the Area suffer the **Arcane Misalignment** burden. This can be cleared by leaving the Area or performing an Alignment ritual.
+**Arcane Alignment (2d6 + Thought + Mods)**  
+<= 1 **Botch:** The faction becomes **Misaligned** and rolls a Hazard die. 
+< 9 **Misaligned:** All members of the faction suffer the **Arcane Misalignment** burden.
 >= 9 **Success:** The faction’s magic functions, with as much reliability as can be expected in these strange times.
 
 *“Existence is not all Slack and Frop. That’s why we offer Eternal Salvation or Triple your Money Back!”* — J.R. “Bob” Dobbs
 
-#### Notes for the Referee (Factional Burden)
+#### Misalignment (Faction Burden)
 
-- Write **Misaligned** next to the faction name or caravan sheet.
-- If Misalignment stacks, track the *count* on the faction (even though the –1 penalties live on individuals).
-- When the party splits, decide whether the split group inherits the faction state (usually yes) or must reroll (when they separate long enough, cross a boundary, or start acting like a different faction).
+Your *Ha*, *Ka*, and *Ba* can fall out of phase with the local noösphere. When Misaligned, arcane interaction gets expensive and dangerous. The Area doesn’t “hate” you. It just doesn’t recognize your crew's protocols. This burden may be taken multiple times. It may be cleared by leaving the Area that triggered it for one day, or by performing an Alignment ritual.
 
-### Arcane Misalignment
+While Misaligned, **penalize arcane interaction** by members of that faction:
+- Increase Power and Ritual costs by the number of Misalignment burdens, and/or
+- Increase Hazard or Corruption severity (roll result or target number) by that number, and/or
+- Apply that number as a penalty to relevant magitech, fantascience, rituals, daemon bargains, danger rolls, and noöspheric effect or save rolls. Burden slots are filled, but "mundane" actions are unaffected.
 
-Your *Ha*, *Ka*, and *Ba* can fall out of phase with the local noösphere. When Misaligned, arcane interaction gets expensive and dangerous. The Area doesn’t “hate” you. It just doesn’t recognize your protocols.
+#### Notes for the Referee: Factional Burdens
 
-While Misaligned, **Area Level penalizes arcane interaction**:
-- Increase Power and Ritual costs by **Area Level**, and/or
-- Increase Hazard or Corruption severity, and/or
-- Apply **Area Level** as a penalty to relevant magitech, fantascience, rituals, daemon bargains, and noöspheric effect or save rolls. Mundane actions are unaffected.
+- Write **Misaligned** next to the faction name or on the caravan/company sheet. Also, note the area/location the misalignment occurred in, and how many instance are from each area.
+- Track the *count* on the faction sheet (even though the –1 penalties and filled Burden slots live on individuals). Misalignment from different areas/locations also stacks!
 
-This burden may be taken multiple times. Each instance also applies the normal **–1** to all rolls, but does not further increase Area Level–based penalties.
-
-It is often favorable to have a local or more knowledgeable person calling the shots for the initial Arcane Alignment of an Area. This practice spread from Merchant and Scout guilds into the Adventurer’s Guild certified companies of Elyncia. It works because it is social: the faction agrees who gets to speak for them to the place.
+It is often favorable to have a local or more knowledgeable person calling the shots for the initial scouting of an area. This practice spread from Merchant and Scout guilds into the Adventurer’s Guild's certified companies. It works because it is meta-social: the faction agrees who gets to speak for them to the area.
 
 **Recipe: The Pilot's Handshake (common)**
 *Ingredients:* 1 specialist, 1 sack Static OR Dynamic refined resource, 1 secret (optional).  
-Process: The group agrees to let an individual take the lead role for a period of time (ingredients are consumed during negotiations). The specialist makes Arcane Alignment rolls whenever the group enters a new Area, or when rerolling for the group. If the pilot knows a local secret that currently applies to their actions or with tags compatible to the area, they gain +1 on these rolls.
+Process: The group agrees to let an individual take the lead role for a period of time (ingredients are consumed during negotiations). The specialist makes Arcane Alignment rolls whenever the group enters a new Area, or when rerolling for the group. If the pilot knows a local secret that currently applies to their actions or has traits or gear with tags compatible to the area, they gain +1 on these rolls.
 
 **Recipe: Alignment Rituals (common)**
 *Ingredients:* a magitech or sorcery proficient character, a Secret related to the local Area, 1 sack Static OR Active OR Dynamic resource  
-Process: Many variations exist in cultures across Elyncia. The mage declares who the group is aligned with and sacrifices the ingredients to the local noöspheric spirits.
+Process: Many variations exist in cultures across Elyncia. The mage declares which faction the group is aligned with and sacrifices the ingredients to the local noöspheric spirits.
 
 ### Area Hazards & Depatterning
 
-Areas may suffer intermittent hazards such as ball lightning, fires, floods, quakes, landslides, flux storms, toxic miasma, glitches, or sudden mana flares or vortices. Use this table for a random generic Hazard, and add your own flavor text. 
+Areas may suffer intermittent hazards such as ball lightning, fires, floods, quakes, landslides, chaos storms, toxic miasma, glitches, or sudden mana flares or vortices. Use this table for a random generic Hazard, and add your own flavor text.
 
 *Generic Hazard Die (d6)*  
 **d6.   Hazard Type, Roll: Effect on Failure**  
-1. Active (flux storm, leyline corruption), Danger Roll vs Area Level: Corruption/Wild Magic exposure test  
-2. Static (witchfire, reality quake), Endurance Save vs Environment: 2d6 damage  
-3. Dynamic (ball lightning, miasma), Aura Save: Misalignment Burden and 1d6 damage  
-4. Dynamic (glitch, delusion), Aura Save: random Trait marked and 1 Aura damage  
-5. Static (pattern flaw, magitech failure), Endurance Save: random Creature/Item/Vehicle marked and 1 Endurance damage  
-6. Active (beacon, mana surge), Danger Roll vs Area Level: random Trait marked and Hostile local entity attracted (Level = Area Level, +2d6 if the effective Level is 0).
+1. Chaos storm, leyline corruption (Active), Danger Roll vs Area Level: Corruption/Wild Magic exposure test
+2. Reality quake, witchfire (Static), apply Misalignment to all factions and make Endurance Saves: characters take 2d6 damage, 
+3. Ball lightning, miasma (Dynamic), apply Misalignment to all factions and make Aura Saves: characters take 1d6 damage  
+4. Glitch, delusion (Dynamic), a random Trait on a random character is marked, and they make an Aura Save: 1 Aura damage  
+5. Local pattern flaw, magitech failure (Static), random Creature/Item/Vehicle marked and makes an Endurance Save: and 1 Endurance damage  
+6. Astral beacon, mana surge (Active), Danger Roll vs Area Level: Hostile local entity attracted (Level = Area Level, +2d6 if the effective Area Level is 0).
 
-Areas can also be tagged with "negative level modifiers" due to calamities and other major events. If the Area's effective Level would be reduced below zero, make a 2d6 Depatterning roll. Modify the Depatterning roll based on the current narrative or area tags.
+Each time a Hazard occurs, the area takes a -1 Area Level modifier. Areas can be tagged with negative levels due to other calamities and major events. If the Area's effective Level would be reduced below zero, make a 2d6 Defeat roll. Modify the Defeat roll based on the current narrative or area tags.
 
-*Area Depatterning (2d6 + Mods)*  
+*Area defeat (2d6 + Mods)*  
 **2d6.   Consequences**  
 ≤1.   Destroyed. The area is gone … (fill in astral sea/flux-lands metaphysics)  
-2–6.   Dead. This area requires re-life intervention to rebuild the local ha, ka or ba. Ley lines flicker and fracture, patterns rot, and secrets leak from the noosphere.  
-7-11.   Hazard! Roll a d6 Hazard die. The hazard triggers its effect once every 10 minutes until metaphysically resolved.  
+2–6.   Dead. This area requires re-life intervention to rebuild the local ha, ka or ba. Ley lines flicker and spark, patterns rot, and secrets leak from the noosphere. Apply a Misaligned burden to all factions in the area.
+7-11.   Reality Fracture! Roll a d6 Hazard die every watch until the reality fracture is metaphysically resolved. The referee may use the Area tags to guide attempts as repairing a reality fracture.
 12+.    All ok! Reality fracture subsides.
 
-## 2\. Salvage (Collect / Refine)
+## 2\. Salvage (Collect & Refine)
 
-**Attention:** every Salvage attempt risks notice. On a fail/botch you already roll Hazard; also tick Attention using the Area’s Tick size. Success may still tick Attention if the method leaves obvious traces.
+Once resources are found they must be collected and refined. Salvage attempts requires 1 watch (4 hours), an accessible resource node or collected resources, one or more crew, and a suitable toolkit (e.g., Brimstone Fae Mining Kit, Adventurer's Guild Kitchen, Portable Forge Cart, Quantum Tinker’s Kit). Trained crews are paid well and receive 1 standard share, plus 10 € hazard pay in any week of dangerous conditions. Shares are counted as 1 per crew member, 2 per company officer. Monthly profits are split by share and disbursed. Beats working the campsite for 1 € a day.
 
-(We keep Salvage yield math and refiner math intact for now. We only make time/attention legible.)
-
----
-
-
-Once resources are found they must be collected and refined. Trained crews are paid well – 1 standard share of pay, plus 6 € / level hazard pay in any week of dangerous conditions. Shares are counted as 1 per crew member, 2 per officer. Monthly profits are then split by share and disbursed. Beats working the campsite for 1 € a day.
-
-Salvage requires an accessable resource node, a person, a suitable toolkit (e.g., Brimstone Fae Mining Kit, Adventurer's Guild Kitchen, Portable Forge Cart, Quantum Tinker’s Kit), and 1 watch (4 hours). Double the time (2 watches / 8 hours) to gain **[+]** on the Salvage test *or* reduce the Attention Tick by 1 (minimum +1). Choose before rolling. Each Salvage attempt adds one tick to the Attention clock, add an additional tick for failures/botches.
-
-An area can support a number of Salvage attempts (collection or refinement) per week equal to its Level. Spend a Speed die to make an additional Salvage attempt using the current equipment and crew-power.
+An area can support a number of Salvage attempts for collection or refinement per week equal to its Level. Every Salvage attempt adds one +tick to the Attention clock, add one additional +tick for failures/botches. Double the time spent (2 watches / 8 hours) to gain **+4** on the Collection roll, re-roll one Salvage die in a refinement pool, *or* reduce the Attention +tick by 1 (minimum +1). Choose before making the attempt.
 
 **Collect**
 
-To collect salvage target a resource node then make a Salvage roll. This always increases Attention by one tick. If the crew does not have a Commander, a random character rolls:
+To collect salvage a crew targets a resource node then make a Collection roll. The referee determines what ability and skill might appy to the current node. If the crew does not have a character with the Commander trait, a random character rolls. Add +1 to the roll for every 2 crew working together on the same Collection attempt (the referee may limit this to max +10).
 
-\> d20 \+ Ability \+ Skill ≥ 10 \+ Area Level  
+\> d20 \+ Ability \+ Skill \+ 1/2 Crew Size ≥ 10 \+ Area Level  
 
-Botch: Roll a Hazard die & increase Attention by one more tick.
+- **Botch:** Roll a Hazard die & increase Attention by one more +tick.
+- **Fail:** Increase Attention by one more +tick.
+- **Success:** Gain 1 Salvage die of the chosen node type, \+1 per 5 point margin you beath the target number by. Note what tags are associated with these dice (referee decides).
+- **d20 explodes:** Loot\! As a success, and roll a bonus Collection roll. Also, roll for Random Loot\! (See Appendix B \- Loot & Treasure.)
 
-Fail: Increase Attention by one more tick.
+**Refine**
 
-Success: Gain 1 Salvage die of the chosen node type, \+1 per 5 points margin. Note what tags are associated with these dice (referee decides).
+To turn raw materials, power, and data shards into usable resources make a pool of Salvage dice, then roll them. This counts as one Salvage attempt. Each die rolled ties up one crew member for the duration of the attempt. A crew may *push the work*: roll up to double your crew size in Salvage dice, but add +1 hour per extra die.
 
-d20 explodes: Loot\! Keep rolling to collect Salvage dice. Also, roll for Random Loot\! (See Appendix B \- Loot & Treasure.)
+- **Lucky 7s = Success:** match two or more dice up to make 7s. Each match grants one sack of refined ingredients or resources. These resources carry all of the tags in the current Salvage dice pool and the referee decides the form of the refined resouce.
+- **1 \= Botch:** Something went very wrong. For each 1 showing after completing all matches; roll a Hazard die.
+- **6\* \= Explosion:** Unexpected high quality salvage. Roll a bonus d6\ Salvage die!
 
+**Traits - Path & Background Skills:** Some skilled craftsmen can affect refinement. If the referee says you have an appropriate trait, take 1 point of Endurance or Aura damage to change the value of a die by \+/-1. If a character cannot suffer the ability damage without rolling for Defeat, they may take an attrition Wear and Tear burden instead.
 
-**Refine**  
-To refine the raw materials, power, and data shards into usable resources make a pool of Salvage dice of one type, then roll (counts as 1 Salvage roll):
-
-\> Lucky 7s: match two dice up to make 7s. Each match grants one refined ingredient or resource.  
-1 \= Botch: Something went very wrong. For each one showing after completing all matches; roll a Hazard die.  
-6\* \= Explosion: Unexpected high quality salvage. Roll a bonus d6\!  
-7\*\* \= Success: For each match of two dice that add to 7 made, score one Unit of refined ingredients.
-
-Tags: Tag these refined ingredients with the area Ability score rolled against & any other area Tags from the die pool rolled. The story should guide this.  
-Path & Background Traits: Some skilled craftsmen can affect refinement. If the referee says you have an appropriate trait, take 1 point of Endurance or Aura damage to change the value of a match by \+/-1. If they cannot suffer the ability damage without rolling for Defeat, they may take an attrition Wear and Tear burden instead.  
-Hero & Bonus dice: Spend a Hero die to roll \+2d6 Salvage dice. Spend a Comfort or Protection die to remove 1 point of Endurance/Aura damage, or a Wear and Tear burden caused from Salvage.
+**Hero & Bonus Dice**
+Spend a Hero die to roll \+1d6 with the Collection roll or the Salvage pool. Spend a Comfort or Protection die to remove 1 point of Endurance/Aura damage or a Wear and Tear burden caused from Salvage or Hazards. Spend a Speed Die to gain **+4** on the Collection roll, or to re-roll a die in the Salvage pool.
 
 ## 3\. Secrets (Cooking, Crafting, Enchantment, Rituals)
 
 Cooking, crafting, enchanting, summoning, and other rituals require a recipe, some refined ingredients/resources, and often secrets or other knowledge. Recipes are ritual items that take 1 sp (soap) of inventory space \- or noöspheric equivalent. Common recipes yield consumables like dream-tonics, healing stews, memory crystals, Bonus Dice trinkets, etc. This can include:  
-SDM Powers (from Powers/Albums of Power sections).  
-Strange Items or Gear (via UVG and Vastlands item tables).  
-Other items or effects as the Referee and Player Daemons expand the deep lore.
+- SDM Powers (from Powers/Albums of Power sections).  
+- Strange Items or Gear (via UVG and Vastlands item tables).  
+- Other items or effects as the Referee and Player Daemons expand the deep lore.
 
 Recipe or Ritual Examples (Time cost: 1 watch)  
 **Recipe    Refined Units    Consumable Effect**  
@@ -372,7 +358,7 @@ Standard rate: 1 refined unit ≈ 100 € or 1 Bonus/Ticket Die trinket. Adjust 
 
 Organizations offer rare rewards or special Bonus/Ticket Dice trinkets for bulk trades (10+ resource units).
 
-$lares query \-async “align these cash prices with the Ultraviolet Grasslands 2.0 and Vastlands Guidebook material”
+telarus@dreamdeck-enyalios:~$ lares query \-async “align these cash prices with the Ultraviolet Grasslands 2.0 and Vastlands Guidebook material”
 
 
 
