@@ -94,11 +94,11 @@ At **Attention 0-6**, bring out the old school **Encounter Die**.
 
 On a **1**, trigger a Random Encounter (or a “complication encounter” such as suspicious questions, a nosy drone, a clerk with a stamp). Keep it setting-appropriate. The Attention level may modify the trigger range.
 
-> **Jacquays' Encounter Stack:**
+> **Jaquays' Encounter Stack:**
 > 
 > Pre-roll a *list* of encounter results before play. Especially when tables chain into other tables (Area A references Area B, which references Area C), pre-rolling keeps the table moving and prevents recursive page-flipping. Cross off the next entry whenever your d6 roll shows an encounter. The dungeon feels alive. The referee stays sane. This turns Random Encounters into *flow* instead of *interruption*.
 >
-> *Source:* JG-102 **Caverns of Thracia** by Jenell Jacquays
+> *Source:* JG-102 **Caverns of Thracia** by Jenell Jaquays
 
 **Pre-rolled Encounter Stacks:**
 

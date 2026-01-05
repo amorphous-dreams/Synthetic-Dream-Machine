@@ -107,7 +107,7 @@ All of these showed us that dice and resources are levers of cosmology as much a
 
 **OSR Dungeons and Dragons (0e \- 2e)** – The Old School DNA traces back to Arneson’s Blackmoor sessions and Gygax’s Greyhawk campaigns. Their original designs were half-sandbox, half-wargame improvisation—procedures for dungeon expeditions, kingdom logistics, and emergent consequence more than plotted narrative. But these early notes and pamphlets were raw ore. It was BECMI D\&D (1983–1986), Frank Mentzer’s boxed sets, that refined them into steel. See the next section.
 
-**JG-102 Caverns of Thracia (1979, Judges Guild, Jennell Jacquays)** – A foundational adventure, famous for “Jacquaying the dungeon.” Multi-level maps, multiple entrances, factions with agendas, and procedural density made the dungeon into a living world, not a linear gauntlet. Its design tricks—loops, dead ends with meaning, interconnected threats—are the DNA for our procedural travel events. Thracia is the OSR’s Rosetta Stone of non-linear emergent play.
+**JG-102 Caverns of Thracia (1979, Judges Guild, Jennell Jaquays)** – A foundational adventure, famous for “Jacquaying the dungeon.” Multi-level maps, multiple entrances, factions with agendas, and procedural density made the dungeon into a living world, not a linear gauntlet. Its design tricks—loops, dead ends with meaning, interconnected threats—are the DNA for our procedural travel events. Thracia is the OSR’s Rosetta Stone of non-linear emergent play.
 
 **Shadowrun (1989)** – Famously crunchy, but notable for its multi-scale play: meatspace runs, matrix hacks, and astral quests overlapping. Characters are both street-level actors and pawns in megacorp/daemon-level struggles.
 
