@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Our Golden Age Preview | Synthetic Dream Machine</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #e7e2d9;
+      --paper: #0f0d0a;
+      --flare: #ff7e5f;
+      --glow: #63ffd8;
+      --dust: #a79f93;
+      --card: #1b1712;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(circle at top, #241e18 0%, #0f0d0a 55%, #0b0907 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 56px clamp(24px, 6vw, 80px) 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(120deg, rgba(255, 126, 95, 0.15), transparent 60%);
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 3.6vw, 3.4rem);
+      margin: 0 0 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    p {
+      margin: 0;
+      max-width: 700px;
+      line-height: 1.6;
+      color: var(--dust);
+    }
+
+    main {
+      padding: 32px clamp(24px, 6vw, 80px) 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px 20px 24px;
+      box-shadow: 0 0 24px rgba(99, 255, 216, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--glow);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .card a {
+      color: var(--ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card a:hover {
+      color: var(--flare);
+      border-color: rgba(255, 126, 95, 0.6);
+    }
+
+    footer {
+      padding: 24px clamp(24px, 6vw, 80px) 48px;
+      color: rgba(231, 226, 217, 0.5);
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sigil {
+      color: var(--flare);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="sigil">DreamNet Archive</div>
+    <h1>Our Golden Age Preview</h1>
+    <p>Table of contents for this archive node. Select a chapter to open the markdown source.</p>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Chapters</h2>
+      <a href="SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6.md">SDM-Our Golden Age-Teaser 31 Going Places 1-6</a>
+    </section>
+    <section class="card">
+      <h2>Return</h2>
+      <a href="../index.html">Repository Index</a>
+    </section>
+  </main>
+  <footer>
+    Synthetic Dream Machine &mdash; archive node listing.
+  </footer>
+</body>
+</html>
