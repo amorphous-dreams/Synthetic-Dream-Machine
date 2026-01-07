@@ -107,7 +107,7 @@ Some rare gear and powers may temporarily raise or lower an **Area Heat** rate. 
 | 0–6 | **Quiet** | Background suspicion; encounter die on 1 |
 | 7–12 | **Loud** | Organized attention; encounter die on 1–2 |
 | 13–19 | **Alarm** | Active escalation; encounter die on 1–3 |
-| 20+ | **Emergency** | Active countermeasures; encounters are automatic when checked for |
+| 20 | **Emergency** | Active countermeasures; encounters are automatic when checked for |
 
 #### 0–6: Quiet
 
@@ -156,14 +156,16 @@ Encounter checks escalate:
 - encounter on **1–3** on the d6
 - Named characters encounters as independent agents (not random encounters)
 
-#### 20+: Emergency
+#### 20: Emergency
 
 Active countermeasures. The Area answers you *right now*.
 
-At **20+**, assume active countermeasures:
+**20** is the maximum. Once the Attention clock is at maximum then further **Tick Attention** events do not add to the score, but may immediately draw the attention of the active countermeasures.
+
+At **20**, assume active countermeasures:
 - fight, chase, containment, purge, arrest, expulsion, quarantine, spiritual possession, black-bag paperwork. Pick the emergency response that fits the tags.
 
-Treat Encounters as automatic when checked for (every other turn - or every turn if the party is being conspicuous). Once the Attention clock is over 20, further **Tick Attention** events do not add to the score, but may immediately draw the attention of the active countermeasures.
+Treat Encounters as automatic when checked for (every other turn - or every turn if the party is being conspicuous).
 
 ---
 
@@ -254,9 +256,9 @@ You may Look for Discoveries (UVG procedure). On arrival, one PC makes a moderat
 
 | Roll d6 | Node Type Tag | What it is (plain words) | Typical yields | Typical tags |
 | --- | --- | --- | --- | --- |
-| 1–2 | **[static]** | Matter you can harvest, eat, craft, or farm | food, medicine, raw materials, material salvage | [consumable], [herb], [ore], [timber], [beast] |
-| 3–4 | **[active]** | Power you can tap, store, route, or stabilize | mana batteries, leyline taps, charge, magitech widgets, fantascience components | [magitech], [fantascience], [signal], [battery], [ley] |
-| 5–6 | **[dynamic]** | Information that changes behavior and reality | secrets, dream-code, rites, permissions, maps, arcane secrets, ritual sites, archive uplinks | [mnemonic], [dream], [archive], [ritual], [contract] |
+| 1–3 | **[static]** | Matter you can harvest, eat, craft, or farm | food, medicine, raw materials, material salvage | [consumable], [herb], [ore], [timber], [beast] |
+| 4–5 | **[active]** | Power you can tap, store, route, or stabilize | mana batteries, leyline taps, charge, magitech widgets, fantascience components | [magitech], [fantascience], [signal], [battery], [ley] |
+| 6 | **[dynamic]** | Information that changes behavior and reality | secrets, dream-code, rites, permissions, maps, arcane secrets, ritual sites, archive uplinks | [mnemonic], [dream], [archive], [ritual], [contract] |
 
 **Node record format (minimum):** *Name/description* + **Type** + **1 extra tag**.
 
