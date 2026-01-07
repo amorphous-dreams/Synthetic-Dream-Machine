@@ -272,7 +272,7 @@ Your chimeric legacy lets you adopt an advanced chimeric form. All of your [Chim
 <a id="effect-coordination"></a>
 ## Coordination
 
-\+1 to this character’s action tests for every 2 allies within a 10 yd radius (max \+6).
+\+1 to this character’s action tests for every 2 allies within a 10 yd radius (max \+4).
 
 <a id="effect-darkvision"></a>
 ## Darkvision
@@ -1604,7 +1604,7 @@ Desert day‑ranger patrols, chitin tinted sunset red; clan valor bound to solar
 
 * **Skilled (+3): [Ability Bonus – Fierce](#effect-ability-bonus-fierce), [Aggressive](#effect-aggressive), [Size](#effect-size) – Large**
 * **Expert (+6):**  **[Inspiration](#effect-inspiration)**
-* **Master (+9): Labyrinth Soul** – Once per day ignore confusion, psychic powers, illusions, or Arcane Misalignment for a watch (4 hours). While leading a caravan or party through complex terrain—such as dungeons, underground zones, or pattern-fractured spaces—you gain Advantage on all navigation, escape, or structural analysis tests.
+* **Master (+9): Labyrinth Soul** – Once per day gain [+] against confusion, psychic powers, and illusions for a watch (4 hours). While leading a caravan or party through complex terrain—such as dungeons, underground zones, or pattern-fractured spaces—you gain Advantage on all navigation, escape, or structural analysis tests.
 
 **Description**
 
