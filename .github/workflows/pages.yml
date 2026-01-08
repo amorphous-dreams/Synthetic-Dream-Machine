@@ -1,8 +1,8 @@
-name: Deploy GitHub Pages
+name: Deploy GitHub Pages (prod & preview)
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "github-pages-test"]
   workflow_dispatch:
 
 permissions:
@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      site-path: ${{ steps.upload.outputs.path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,17 +28,39 @@ jobs:
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
+        # If your Jekyll source is in a subfolder (e.g., Synthetic_Dream_Machine),
+        # uncomment and set source accordingly:
+        # with:
+        #   source: "./Synthetic_Dream_Machine"
+        #   destination: "./_site"
+
+      - name: Quick smoke test: check site has HTML
+        run: |
+          # Fail if _site is missing or seems empty of .html files
+          if [ ! -d "./_site" ]; then
+            echo "_site missing"
+            exit 1
+          fi
+          shopt -s nullglob || true
+          html_count=$(find _site -type f -name '*.html' | wc -l || true)
+          echo "Found ${html_count} HTML files"
+          if [ "${html_count}" -lt 1 ]; then
+            echo "No generated HTML files detected; failing build"
+            exit 1
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        id: upload
         with:
           path: "./_site"
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    # Choose environment depending on branch
     environment:
-      name: github-pages
+      name: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'github-pages-preview' }}
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
