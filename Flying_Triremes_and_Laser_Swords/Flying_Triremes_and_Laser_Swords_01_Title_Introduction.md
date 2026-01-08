@@ -1,6 +1,3 @@
----
-layout: default
----
 
 # Flying Triremes and Laser Swords
 

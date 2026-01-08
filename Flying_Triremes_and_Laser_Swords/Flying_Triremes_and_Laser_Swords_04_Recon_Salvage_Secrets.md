@@ -1,6 +1,3 @@
----
-layout: default
----
 
 # Recon, Salvage, Secrets (RSS System)
 

@@ -1,6 +1,3 @@
----
-layout: default
----
 
 # Elyncia: A Broken World
 

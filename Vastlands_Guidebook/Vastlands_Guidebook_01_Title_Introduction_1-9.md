@@ -1,6 +1,3 @@
----
-layout: default
----
 
 <!-- Vastlands Guidebook, Page 001 -->
 

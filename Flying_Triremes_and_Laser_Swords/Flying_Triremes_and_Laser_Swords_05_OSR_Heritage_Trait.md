@@ -1,6 +1,3 @@
----
-layout: default
----
 
 # Old School Roleplaying Heritage Trait
 

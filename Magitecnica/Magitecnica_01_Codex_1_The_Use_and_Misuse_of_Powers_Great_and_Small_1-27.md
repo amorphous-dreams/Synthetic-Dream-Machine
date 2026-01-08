@@ -1,6 +1,3 @@
----
-layout: default
----
 
 <!-- Magitecnica Codex 1, Page 001 -->
 

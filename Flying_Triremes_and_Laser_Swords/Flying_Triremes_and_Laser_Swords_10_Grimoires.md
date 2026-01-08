@@ -1,6 +1,3 @@
----
-layout: default
----
 
 # Appendix G \- Grimoires
 
