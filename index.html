@@ -41,6 +41,11 @@
       text-transform: uppercase;
     }
 
+    .repo-link a {
+      color: var(--glow);
+      text-decoration: none;
+    }
+
     .repo-link {
       margin: 0 0 16px;
       font-size: 1rem;
@@ -87,30 +92,44 @@
       text-transform: uppercase;
     }
 
-    .card a {
+    .card-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-entry:last-of-type {
+      border-bottom: none;
+    }
+
+    .card-entry a {
       color: var(--ink);
       text-decoration: none;
+    }
+
+    .card-entry .nav-link {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      transition: color 0.2s ease, border-color 0.2s ease;
+      flex: 1;
     }
 
-    .card a:hover {
-      color: var(--flare);
-      border-color: rgba(255, 126, 95, 0.6);
-    }
-
-    .download-link {
-      border-bottom: none;
-      padding: 8px 0 8px 8px;
+    .card-entry .download-link {
       color: var(--dust);
+      border-bottom: none;
+      padding: 0;
+      transition: color 0.2s ease;
     }
 
-    .download-link:hover {
+    .card-entry .download-link:hover {
       color: var(--glow);
+    }
+
+    .card-entry .nav-link:hover {
+      color: var(--flare);
     }
 
     footer {
@@ -144,28 +163,46 @@
     <section class="card">
       <h2>Repository Vaults</h2>
       <h3>SDM Core Modules</h3>
-      <a href="Synthetic_Dream_Machine/index.html">Synthetic Dream Machine</a>
-      <a class="download-link" href="Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Traits_Index.md" title="Download this markdown file">📥</a>
-      <a href="UVG_Black_City_2e/index.html">UVG Black City 2e</a>
-      <a class="download-link" href="UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md" title="Download this markdown file">📥</a>
-      <a href="Vastlands_Guidebook/index.html">Vastlands Guidebook</a>
-      <a class="download-link" href="Vastlands_Guidebook/Vastlands_Guidebook_01_Title_Introduction_1-9.md" title="Download this markdown file">📥</a>
-      <a href="Our_Golden_Age_Preview/index.html">Our Golden Age Preview</a>
-      <a class="download-link" href="Our_Golden_Age_Preview/SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6.md" title="Download this markdown file">📥</a>
-      <a href="Magitecnica/index.html">Magitecnica</a>
-      <a class="download-link" href="Magitecnica/Magitecnica_01_Codex_1_The_Use_and_Misuse_of_Powers_Great_and_Small_1-27.md" title="Download this markdown file">📥</a>
+      <div class="card-entry">
+        <a class="nav-link" href="Synthetic_Dream_Machine/index.html">Synthetic Dream Machine</a>
+        <a class="download-link" href="Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Traits_Index.md" title="Download this markdown file">📥</a>
+      </div>
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e/index.html">UVG Black City 2e</a>
+        <a class="download-link" href="UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md" title="Download this markdown file">📥</a>
+      </div>
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook/index.html">Vastlands Guidebook</a>
+        <a class="download-link" href="Vastlands_Guidebook/Vastlands_Guidebook_01_Title_Introduction_1-9.md" title="Download this markdown file">📥</a>
+      </div>
+      <div class="card-entry">
+        <a class="nav-link" href="Our_Golden_Age_Preview/index.html">Our Golden Age Preview</a>
+        <a class="download-link" href="Our_Golden_Age_Preview/SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6.md" title="Download this markdown file">📥</a>
+      </div>
+      <div class="card-entry">
+        <a class="nav-link" href="Magitecnica/index.html">Magitecnica</a>
+        <a class="download-link" href="Magitecnica/Magitecnica_01_Codex_1_The_Use_and_Misuse_of_Powers_Great_and_Small_1-27.md" title="Download this markdown file">📥</a>
+      </div>
       <h3>SDM Extensions Modules</h3>
-      <a href="Elyncia/index.html">Elyncia: A Broken World (setting)</a>
-      <a class="download-link" href="Elyncia/Elyncia_History_and_Noosphere_Guide_01_Elyncia_A_Broken_World.md" title="Download this markdown file">📥</a>
-      <a href="Flying_Triremes_and_Laser_Swords/index.html">Flying Triremes and Laser Swords (FLTS mechanics)</a>
-      <a class="download-link" href="Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md" title="Download this markdown file">📥</a>
+      <div class="card-entry">
+        <a class="nav-link" href="Elyncia/index.html">Elyncia: A Broken World (setting)</a>
+        <a class="download-link" href="Elyncia/Elyncia_History_and_Noosphere_Guide_01_Elyncia_A_Broken_World.md" title="Download this markdown file">📥</a>
+      </div>
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords/index.html">Flying Triremes and Laser Swords (FLTS mechanics)</a>
+        <a class="download-link" href="Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md" title="Download this markdown file">📥</a>
+      </div>
     </section>
     <section class="card">
       <h2>Reference</h2>
-      <a href="Synthetic-Dream-Machine-3rd-Party-License.html">Third-Party License</a>
-      <a class="download-link" href="Synthetic-Dream-Machine-3rd-Party-License.md" title="Download this markdown file">📥</a>
-      <a href="docs/index.html">Docs Site</a>
-      <a class="download-link" href="docs/index.md" title="Download this markdown file">📥</a>
+      <div class="card-entry">
+        <a class="nav-link" href="Synthetic-Dream-Machine-3rd-Party-License.html">Third-Party License</a>
+        <a class="download-link" href="Synthetic-Dream-Machine-3rd-Party-License.md" title="Download this markdown file">📥</a>
+      </div>
+      <div class="card-entry">
+        <a class="nav-link" href="docs/index.html">Docs Site</a>
+        <a class="download-link" href="docs/index.md" title="Download this markdown file">📥</a>
+      </div>
     </section>
   </main>
   <footer>
