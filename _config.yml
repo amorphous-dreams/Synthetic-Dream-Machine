@@ -1,0 +1,10 @@
+title: Synthetic Dream Machine
+theme: jekyll-theme-minimal
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+exclude:
+  - AGENTS.md
+  - Lares_A_CustomGPT_System_Prompt.md
+  - Campaigns
