@@ -1,19 +1,21 @@
+elyncia_chapters: &elyncia_chapters
+  - label: "Elyncia History and Noosphere Guide 01 Elyncia A Broken World"
+    href: "/Elyncia/Elyncia_History_and_Noosphere_Guide_01_Elyncia_A_Broken_World/"
+    download: "/Elyncia/Elyncia_History_and_Noosphere_Guide_01_Elyncia_A_Broken_World.md"
+
+  - label: "Elyncia History and Noosphere Guide 02 FTLS Noosphere Guide"
+    href: "/Elyncia/Elyncia_History_and_Noosphere_Guide_02_FTLS_Noosphere_Guide/"
+    download: "/Elyncia/Elyncia_History_and_Noosphere_Guide_02_FTLS_Noosphere_Guide.md"
+
 elyncia:
   title: "Elyncia"
-  subtitle: "Table of contents for this archive node. Select a chapter to open the markdown source."
+  subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
-  chapters:
-    - label: "Elyncia History and Noosphere Guide 01 Elyncia A Broken World"
-      href: "/Elyncia/Elyncia_History_and_Noosphere_Guide_01_Elyncia_A_Broken_World/"
-      download: "/Elyncia/Elyncia_History_and_Noosphere_Guide_01_Elyncia_A_Broken_World.md"
-
-    - label: "Elyncia History and Noosphere Guide 02 FTLS Noosphere Guide"
-      href: "/Elyncia/Elyncia_History_and_Noosphere_Guide_02_FTLS_Noosphere_Guide/"
-      download: "/Elyncia/Elyncia_History_and_Noosphere_Guide_02_FTLS_Noosphere_Guide.md"
+  chapters: *elyncia_chapters
 
 flying_triremes:
   title: "Flying Triremes and Laser Swords"
-  subtitle: "Table of contents for this archive node. Select a chapter to open the markdown source."
+  subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
     - label: "Flying Triremes and Laser Swords 01 Title Introduction"
@@ -62,7 +64,7 @@ flying_triremes:
 
 magitecnica:
   title: "Magitecnica"
-  subtitle: "Table of contents for this archive node. Select a chapter to open the markdown source."
+  subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
     - label: "Magitecnica 01 Codex 1 The Use and Misuse of Powers Great and Small 1-27"
@@ -75,7 +77,7 @@ magitecnica:
 
 our_golden_age:
   title: "Our Golden Age Preview"
-  subtitle: "Table of contents for this archive node. Select a chapter to open the markdown source."
+  subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
     - label: "SDM-Our Golden Age-Teaser 31 Going Places 1-6"
@@ -118,7 +120,7 @@ our_golden_age:
 
 synthetic_dream_machine:
   title: "Synthetic Dream Machine"
-  subtitle: "Table of contents for this archive node. Select a chapter to open the markdown source."
+  subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
     - label: "Synthetic Dream Machine 01 Traits Index"
@@ -131,7 +133,7 @@ synthetic_dream_machine:
 
 uvg_black_city:
   title: "UVG Black City 2e"
-  subtitle: "Table of contents for this archive node. Select a chapter to open the markdown source."
+  subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
     - label: "UVG Black City 2e 01 Cover Introduction A-vi"
@@ -168,7 +170,7 @@ uvg_black_city:
 
 vastlands_guidebook:
   title: "Vastlands Guidebook"
-  subtitle: "Table of contents for this archive node. Select a chapter to open the markdown source."
+  subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
     - label: "Vastlands Guidebook 01 Title Introduction 1-9"
@@ -203,14 +205,14 @@ root:
   title: "Synthetic Dream Machine"
   subtitle: "A navigational console for the SDM constellation: rules, references, and setting fragments anchored to this repository. Choose a vault to continue."
   return_href: "https://github.com/joshuafontany/Synthetic-Dream-Machine"
-  ftls_vaults:
+  ftls_vaults: &ftls_vaults
     - label: "Elyncia"
       href: "/Elyncia/"
 
     - label: "Flying Triremes and Laser Swords"
       href: "/Flying_Triremes_and_Laser_Swords/"
 
-  sdm_vaults:
+  sdm_vaults: &sdm_vaults
     - label: "Synthetic Dream Machine"
       href: "/Synthetic_Dream_Machine/"
 
@@ -227,11 +229,151 @@ root:
     - label: "Magitecnica"
       href: "/Magitecnica/"
 
-  reference:
+  campaigns_vaults: &campaigns_vaults []
+
+  reference: &reference_links
     - label: "Third-Party License"
-      href: "/Synthetic-Dream-Machine-3rd-Party-License.html"
+      href: "/Synthetic-Dream-Machine-3rd-Party-License/"
       download: "/Synthetic-Dream-Machine-3rd-Party-License.md"
 
     - label: "Docs"
       href: "/docs/"
       download: "/docs/index.md"
+
+    - label: "GitHub Mirror"
+      href: "https://github.com/joshuafontany/Synthetic-Dream-Machine"
+      icon: "↺"
+      target: "_blank"
+      rel: "noopener"
+
+ftls_parent: &ftls_parent
+  label: "FTLS Vaults"
+  href: "/Vaults/FTLS/"
+sdm_parent: &sdm_parent
+  label: "SDM Vaults"
+  href: "/Vaults/SDM/"
+campaigns_parent: &campaigns_parent
+  label: "Campaign Vaults"
+  href: "/Vaults/Campaigns/"
+
+vault_sections: &vault_sections
+  - label: "FTLS Vaults"
+    href: "/Vaults/FTLS/"
+
+  - label: "SDM Vaults"
+    href: "/Vaults/SDM/"
+
+  - label: "Campaign Vaults"
+    href: "/Vaults/Campaigns/"
+
+vaults_block: &vaults_block
+  parent:
+    label: "Vaults"
+    href: "/Vaults/"
+  links: *vault_sections
+
+ftls_block: &ftls_block
+  parent: *ftls_parent
+  links: *ftls_vaults
+
+sdm_block: &sdm_block
+  parent: *sdm_parent
+  links: *sdm_vaults
+
+campaigns_block: &campaigns_block
+  parent: *campaigns_parent
+  links: *campaigns_vaults
+
+contexts:
+  root: &root_context
+    - *vaults_block
+    - *ftls_block
+    - *sdm_block
+    - *campaigns_block
+    - parent:
+        label: "Reference"
+        href: "/docs/"
+      links: *reference_links
+  ftls:
+    - *vaults_block
+    - *ftls_block
+    - *sdm_block
+    - *campaigns_block
+    - parent:
+        label: "Reference"
+        href: "/docs/"
+      links: *reference_links
+  sdm:
+    - *vaults_block
+    - *ftls_block
+    - *sdm_block
+    - *campaigns_block
+    - parent:
+        label: "Reference"
+        href: "/docs/"
+      links: *reference_links
+  docs:
+    - *vaults_block
+    - *ftls_block
+    - *sdm_block
+    - *campaigns_block
+    - parent:
+        label: "Reference"
+        href: "/docs/"
+      links: *reference_links
+  elyncia:
+    - *vaults_block
+    - *ftls_block
+    - *sdm_block
+    - *campaigns_block
+    - parent:
+        label: "Elyncia Chapters"
+        href: "/Elyncia/"
+      links: *elyncia_chapters
+  campaigns:
+    - *vaults_block
+    - *ftls_block
+    - *sdm_block
+    - *campaigns_block
+    - parent:
+        label: "Reference"
+        href: "/docs/"
+      links: *reference_links
+  vaults: *root_context
+
+context_map:
+  - prefix: "/Elyncia/"
+    context: elyncia
+  - prefix: "/Flying_Triremes_and_Laser_Swords/"
+    context: ftls
+  - prefix: "/Magitecnica/"
+    context: ftls
+  - prefix: "/UVG_Black_City_2e/"
+    context: ftls
+  - prefix: "/Our_Golden_Age/"
+    context: sdm
+  - prefix: "/Vastlands_Guidebook/"
+    context: sdm
+  - prefix: "/Synthetic_Dream_Machine/"
+    context: sdm
+  - prefix: "/Vaults/SDM/"
+    context: sdm
+  - prefix: "/Vaults/FTLS/"
+    context: ftls
+  - prefix: "/Vaults/Campaigns/"
+    context: campaigns
+  - prefix: "/Vaults/"
+    context: vaults
+  - prefix: "/docs/"
+    context: docs
+  - prefix: "/Synthetic-Dream-Machine-3rd-Party-License/"
+    context: docs
+  - prefix: "/"
+    context: root
+
+default_context: root
+
+home_link:
+  label: "SDM Archive"
+  href: "/"
+  icon: "✶"

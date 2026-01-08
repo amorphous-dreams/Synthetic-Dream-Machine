@@ -64,19 +64,6 @@ body.archive .nav-link:hover {
   border-color: rgba(254, 128, 25, 0.6);
 }
 
-/* Entry row (nav + download icon) */
-body.archive .card-entry {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(235, 219, 178, 0.04);
-}
-body.archive .card-entry:last-of-type {
-  border-bottom: none;
-}
-
 /* Download link */
 body.archive .download-link {
   color: var(--dust);
