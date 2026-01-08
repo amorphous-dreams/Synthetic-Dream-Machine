@@ -1,4 +1,3 @@
-
 <!-- Vastlands Guidebook, Page 064 -->
 
 # EQUIPMENT

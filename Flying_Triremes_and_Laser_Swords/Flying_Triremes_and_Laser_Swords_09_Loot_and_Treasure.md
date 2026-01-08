@@ -1,4 +1,3 @@
-
 # Loot & Treasure
 
 # Loot Tables

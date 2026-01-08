@@ -1,4 +1,3 @@
-
 # SDM Power Index
 
 *(Canonical repository for Vastlands powers. Use this document to record every power stat block, regardless of whether the power is stored as a trait, item, burden, or location-bound wonder.)*

@@ -1,4 +1,3 @@
-
 # Flying Triremes and Laser Swords
 
 ## Alpha Playtest

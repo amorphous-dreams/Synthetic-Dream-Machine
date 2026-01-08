@@ -1,5 +1,0 @@
-title: Synthetic Dream Machine
-markdown: kramdown
-kramdown:
-  input: GFM
-  hard_wrap: false

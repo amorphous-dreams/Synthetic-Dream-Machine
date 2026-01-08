@@ -1,4 +1,3 @@
-
 # Old School Roleplaying Heritage Trait
 
 # Heritage (Trait)

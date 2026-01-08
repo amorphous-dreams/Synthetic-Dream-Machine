@@ -1,4 +1,3 @@
-
 <!-- Vastlands Guidebook, Page 010 -->
 
 # CHARACTER CREATION

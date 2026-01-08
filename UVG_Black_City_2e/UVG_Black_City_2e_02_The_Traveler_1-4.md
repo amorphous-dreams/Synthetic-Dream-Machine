@@ -1,4 +1,3 @@
-
 <!-- Page 1 -->
 
 # The Traveler

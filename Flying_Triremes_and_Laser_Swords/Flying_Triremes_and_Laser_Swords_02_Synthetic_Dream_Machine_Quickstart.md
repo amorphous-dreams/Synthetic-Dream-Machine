@@ -1,4 +1,3 @@
-
 # SDM Quickstart
 
 Every half‑decent world is held together by three things: good stories, dubious cartography, and people determined to prove their grandparents wrong.

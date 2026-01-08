@@ -1,4 +1,3 @@
-
 # SDM Trait Index
 
 

@@ -1,4 +1,3 @@
-
 # Formations & Mass Combat
 
 *A modular add‑on that sits cleanly on Vastlands’ core cadence: one attack roll (d20 \+ ability \+ skill vs Defense), then damage.*
