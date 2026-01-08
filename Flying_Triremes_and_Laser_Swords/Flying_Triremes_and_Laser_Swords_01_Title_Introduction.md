@@ -19,14 +19,14 @@ $lares open \-mime text/vnd.tiddlywiki;mode=edit \-uri ./Flying Triremes and Las
 # Outline
 
 * 01 Flying Triremes and Laser Swords  
-* 02 SDM Quickstart  
+* 02 Synthetic Dream Machine Quickstart  
 * 03 FTLS Paths  
 * 04 Recon, Salvage, Secrets  
 * 05 OSR Heritage Traits  
 * 06 Powers  
 * 07 Wild Magic Exposure  
 * 08 Formations and Mass Combat  
-* 09 Loot & Treasure  
+* 09 Loot and Treasure  
 * 10 Grimoires  
 * 11 Appendix Null \- Referee Resources
 

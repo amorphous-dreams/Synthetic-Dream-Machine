@@ -1,5 +1,4 @@
 title: Synthetic Dream Machine
-theme: jekyll-theme-minimal
 markdown: kramdown
 kramdown:
   input: GFM
@@ -8,3 +7,18 @@ exclude:
   - AGENTS.md
   - Lares_A_CustomGPT_System_Prompt.md
   - Campaigns
+# Global publishing settings
+future: true
+permalink: /:title/
+include: [".htaccess"]
+# Front Matter Defaults
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
