@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Old School Roleplaying Heritage Trait
 
 # Heritage (Trait)

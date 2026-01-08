@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Vastlands Guidebook, Page 064 -->
 
 # EQUIPMENT

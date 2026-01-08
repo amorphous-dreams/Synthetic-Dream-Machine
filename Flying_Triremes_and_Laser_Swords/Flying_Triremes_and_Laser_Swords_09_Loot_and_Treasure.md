@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Loot & Treasure
 
 # Loot Tables

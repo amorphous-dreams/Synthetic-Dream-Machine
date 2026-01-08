@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Vastlands Guidebook, Page 036 -->
 
 # RULES

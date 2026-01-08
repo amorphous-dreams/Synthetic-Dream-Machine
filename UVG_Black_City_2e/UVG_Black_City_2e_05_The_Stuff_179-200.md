@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Page 179 -->
 
 # The Stuff

@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Page 219 -->
 
 # **The Setting**

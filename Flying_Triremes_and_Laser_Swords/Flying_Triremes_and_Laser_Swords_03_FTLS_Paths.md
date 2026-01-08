@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # FTLS Paths
 
 New paths/traits that allow pick-up & play with many Old School Roleplaying resources (campaigns, adventures, etc). These paths extend some existing SDM traits, and also add some new traits and procedures to the SDM core.

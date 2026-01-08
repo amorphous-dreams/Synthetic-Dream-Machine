@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Powers
 
 *(Vastlands Guidebook, p96)*  

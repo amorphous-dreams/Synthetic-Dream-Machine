@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Flying Triremes and Laser Swords
 
 ## Alpha Playtest

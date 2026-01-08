@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # FTLS Noosphere Guidebook
 
 # 🕸️ What Is the Lares DreamNet?

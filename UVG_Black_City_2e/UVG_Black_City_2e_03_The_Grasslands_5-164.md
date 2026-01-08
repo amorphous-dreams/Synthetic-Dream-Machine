@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Page 5 -->
 
 # The Grasslands

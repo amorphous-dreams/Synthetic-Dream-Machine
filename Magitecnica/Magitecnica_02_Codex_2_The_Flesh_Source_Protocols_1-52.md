@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Magitecnica Codex 2, Page 001 -->
 
 > [@sdm_magitecnica_codex_2, _p._ _1_]

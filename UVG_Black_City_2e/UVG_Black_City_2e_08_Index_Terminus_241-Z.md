@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Page 241 -->
 
 ## **Index** **Terminus**

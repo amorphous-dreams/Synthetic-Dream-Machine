@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Page 001 -->
 
 # GOING PLACES

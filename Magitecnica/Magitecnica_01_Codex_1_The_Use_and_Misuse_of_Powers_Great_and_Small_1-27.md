@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!-- Magitecnica Codex 1, Page 001 -->
 
 # **Codex 1: the Use and Misuse of Powers Great and Small Luka Rejec**

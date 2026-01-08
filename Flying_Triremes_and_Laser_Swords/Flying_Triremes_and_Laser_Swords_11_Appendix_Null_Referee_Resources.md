@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Appendix Null \- Referee Resources
 
 # Mechanical Tags
