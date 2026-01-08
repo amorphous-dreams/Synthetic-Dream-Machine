@@ -90,6 +90,29 @@
       border-color: rgba(255, 126, 95, 0.6);
     }
 
+    /* small helper for each entry so the nav + download sit inline */
+    .card-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .download-link {
+      color: var(--dust);
+      text-decoration: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease, background-color 0.12s ease;
+    }
+
+    .download-link:hover {
+      color: var(--glow);
+      background: rgba(99,255,216,0.02);
+    }
+
     footer {
       padding: 24px clamp(24px, 6vw, 80px) 48px;
       color: rgba(231, 226, 217, 0.5);
@@ -114,11 +137,23 @@
   <main>
     <section class="card">
       <h2>Chapters</h2>
-      <a href="SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6.md">SDM-Our Golden Age-Teaser 31 Going Places 1-6</a>
+
+      <div class="card-entry">
+        <a class="nav-link" href="SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6/">
+          SDM-Our Golden Age-Teaser 31 Going Places 1-6
+        </a>
+        <a class="download-link"
+           href="SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6.md"
+           download
+           aria-label="Download SDM-Our Golden Age-Teaser 31 Going Places">
+          📥
+        </a>
+      </div>
+
     </section>
     <section class="card">
       <h2>Return</h2>
-      <a href="../index.html">Repository Index</a>
+      <a href="../" aria-label="Return to repository index">Repository Index</a>
     </section>
   </main>
   <footer>

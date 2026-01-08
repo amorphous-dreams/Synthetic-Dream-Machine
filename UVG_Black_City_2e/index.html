@@ -90,6 +90,29 @@
       border-color: rgba(255, 126, 95, 0.6);
     }
 
+    /* small helper for each entry so the nav + download sit inline */
+    .card-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .download-link {
+      color: var(--dust);
+      text-decoration: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease, background-color 0.12s ease;
+    }
+
+    .download-link:hover {
+      color: var(--glow);
+      background: rgba(99,255,216,0.02);
+    }
+
     footer {
       padding: 24px clamp(24px, 6vw, 80px) 48px;
       color: rgba(231, 226, 217, 0.5);
@@ -114,18 +137,107 @@
   <main>
     <section class="card">
       <h2>Chapters</h2>
-      <a href="UVG_Black_City_2e_01_Cover_Introduction_A-vi.md">UVG Black City 2e 01 Cover Introduction A-vi</a>
-      <a href="UVG_Black_City_2e_02_The_Traveler_1-4.md">UVG Black City 2e 02 The Traveler 1-4</a>
-      <a href="UVG_Black_City_2e_03_The_Grasslands_5-164.md">UVG Black City 2e 03 The Grasslands 5-164</a>
-      <a href="UVG_Black_City_2e_04_The_Caravan_165-178.md">UVG Black City 2e 04 The Caravan 165-178</a>
-      <a href="UVG_Black_City_2e_05_The_Stuff_179-200.md">UVG Black City 2e 05 The Stuff 179-200</a>
-      <a href="UVG_Black_City_2e_06_The_Bestiary_201-218.md">UVG Black City 2e 06 The Bestiary 201-218</a>
-      <a href="UVG_Black_City_2e_07_The_Setting_219-240.md">UVG Black City 2e 07 The Setting 219-240</a>
-      <a href="UVG_Black_City_2e_08_Index_Terminus_241-Z.md">UVG Black City 2e 08 Index Terminus 241-Z</a>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_01_Cover_Introduction_A-vi/">
+          UVG Black City 2e 01 Cover Introduction A-vi
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_01_Cover_Introduction_A-vi.md"
+           download
+           aria-label="Download UVG Black City 2e 01 Cover Introduction">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_02_The_Traveler_1-4/">
+          UVG Black City 2e 02 The Traveler 1-4
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_02_The_Traveler_1-4.md"
+           download
+           aria-label="Download UVG Black City 2e 02 The Traveler">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_03_The_Grasslands_5-164/">
+          UVG Black City 2e 03 The Grasslands 5-164
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_03_The_Grasslands_5-164.md"
+           download
+           aria-label="Download UVG Black City 2e 03 The Grasslands">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_04_The_Caravan_165-178/">
+          UVG Black City 2e 04 The Caravan 165-178
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_04_The_Caravan_165-178.md"
+           download
+           aria-label="Download UVG Black City 2e 04 The Caravan">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_05_The_Stuff_179-200/">
+          UVG Black City 2e 05 The Stuff 179-200
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_05_The_Stuff_179-200.md"
+           download
+           aria-label="Download UVG Black City 2e 05 The Stuff">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_06_The_Bestiary_201-218/">
+          UVG Black City 2e 06 The Bestiary 201-218
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_06_The_Bestiary_201-218.md"
+           download
+           aria-label="Download UVG Black City 2e 06 The Bestiary">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_07_The_Setting_219-240/">
+          UVG Black City 2e 07 The Setting 219-240
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_07_The_Setting_219-240.md"
+           download
+           aria-label="Download UVG Black City 2e 07 The Setting">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="UVG_Black_City_2e_08_Index_Terminus_241-Z/">
+          UVG Black City 2e 08 Index Terminus 241-Z
+        </a>
+        <a class="download-link"
+           href="UVG_Black_City_2e_08_Index_Terminus_241-Z.md"
+           download
+           aria-label="Download UVG Black City 2e 08 Index Terminus">
+          📥
+        </a>
+      </div>
+
     </section>
     <section class="card">
       <h2>Return</h2>
-      <a href="../index.html">Repository Index</a>
+      <a href="../" aria-label="Return to repository index">Repository Index</a>
     </section>
   </main>
   <footer>

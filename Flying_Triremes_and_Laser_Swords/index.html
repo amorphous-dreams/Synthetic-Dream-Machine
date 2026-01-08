@@ -90,6 +90,29 @@
       border-color: rgba(255, 126, 95, 0.6);
     }
 
+    /* small helper for each entry so the nav + download sit inline */
+    .card-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .download-link {
+      color: var(--dust);
+      text-decoration: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease, background-color 0.12s ease;
+    }
+
+    .download-link:hover {
+      color: var(--glow);
+      background: rgba(99,255,216,0.02);
+    }
+
     footer {
       padding: 24px clamp(24px, 6vw, 80px) 48px;
       color: rgba(231, 226, 217, 0.5);
@@ -114,24 +137,147 @@
   <main>
     <section class="card">
       <h2>Chapters</h2>
-      <a href="Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md">Flying Triremes and Laser Swords 01 Title Introduction</a>
-      <a href="Flying_Triremes_and_Laser_Swords_02_Synthetic_Dream_Machine_Quickstart.md">Flying Triremes and Laser Swords 02 Synthetic Dream Machine Quickstart</a>
-      <a href="Flying_Triremes_and_Laser_Swords_03_FTLS_Paths.md">Flying Triremes and Laser Swords 03 FTLS Paths</a>
-      <a href="Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md">Flying Triremes and Laser Swords 04 Recon Salvage Secrets</a>
-      <a href="Flying_Triremes_and_Laser_Swords_05_OSR_Heritage_Trait.md">Flying Triremes and Laser Swords 05 OSR Heritage Trait</a>
-      <a href="Flying_Triremes_and_Laser_Swords_06_Powers.md">Flying Triremes and Laser Swords 06 Powers</a>
-      <a href="Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md">Flying Triremes and Laser Swords 07 Wild Magic Exposure</a>
-      <a href="Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md">Flying Triremes and Laser Swords 08 Formations and Mass Combat</a>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_01_Title_Introduction/">
+          Flying Triremes and Laser Swords 01 Title Introduction
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md"
+           download
+           aria-label="Download FTLS 01 Title Introduction">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_02_Synthetic_Dream_Machine_Quickstart/">
+          Flying Triremes and Laser Swords 02 Synthetic Dream Machine Quickstart
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_02_Synthetic_Dream_Machine_Quickstart.md"
+           download
+           aria-label="Download FTLS 02 Quickstart">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_03_FTLS_Paths/">
+          Flying Triremes and Laser Swords 03 FTLS Paths
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_03_FTLS_Paths.md"
+           download
+           aria-label="Download FTLS 03 FTLS Paths">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets/">
+          Flying Triremes and Laser Swords 04 Recon Salvage Secrets
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md"
+           download
+           aria-label="Download FTLS 04 Recon Salvage Secrets">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_05_OSR_Heritage_Trait/">
+          Flying Triremes and Laser Swords 05 OSR Heritage Trait
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_05_OSR_Heritage_Trait.md"
+           download
+           aria-label="Download FTLS 05 OSR Heritage Trait">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_06_Powers/">
+          Flying Triremes and Laser Swords 06 Powers
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_06_Powers.md"
+           download
+           aria-label="Download FTLS 06 Powers">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure/">
+          Flying Triremes and Laser Swords 07 Wild Magic Exposure
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md"
+           download
+           aria-label="Download FTLS 07 Wild Magic Exposure">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat/">
+          Flying Triremes and Laser Swords 08 Formations and Mass Combat
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md"
+           download
+           aria-label="Download FTLS 08 Formations and Mass Combat">
+          📥
+        </a>
+      </div>
+
     </section>
     <section class="card">
       <h2>Chapters</h2>
-      <a href="Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md">Flying Triremes and Laser Swords 09 Loot and Treasure</a>
-      <a href="Flying_Triremes_and_Laser_Swords_10_Grimoires.md">Flying Triremes and Laser Swords 10 Grimoires</a>
-      <a href="Flying_Triremes_and_Laser_Swords_11_Appendix_Null_Referee_Resources.md">Flying Triremes and Laser Swords 11 Appendix Null Referee Resources</a>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure/">
+          Flying Triremes and Laser Swords 09 Loot and Treasure
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md"
+           download
+           aria-label="Download FTLS 09 Loot and Treasure">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_10_Grimoires/">
+          Flying Triremes and Laser Swords 10 Grimoires
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_10_Grimoires.md"
+           download
+           aria-label="Download FTLS 10 Grimoires">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Flying_Triremes_and_Laser_Swords_11_Appendix_Null_Referee_Resources/">
+          Flying Triremes and Laser Swords 11 Appendix Null Referee Resources
+        </a>
+        <a class="download-link"
+           href="Flying_Triremes_and_Laser_Swords_11_Appendix_Null_Referee_Resources.md"
+           download
+           aria-label="Download FTLS 11 Appendix">
+          📥
+        </a>
+      </div>
+
     </section>
     <section class="card">
       <h2>Return</h2>
-      <a href="../index.html">Repository Index</a>
+      <a href="../" aria-label="Return to repository index">Repository Index</a>
     </section>
   </main>
   <footer>

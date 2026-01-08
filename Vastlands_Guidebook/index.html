@@ -90,6 +90,29 @@
       border-color: rgba(255, 126, 95, 0.6);
     }
 
+    /* small helper for each entry so the nav + download sit inline */
+    .card-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .download-link {
+      color: var(--dust);
+      text-decoration: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease, background-color 0.12s ease;
+    }
+
+    .download-link:hover {
+      color: var(--glow);
+      background: rgba(99,255,216,0.02);
+    }
+
     footer {
       padding: 24px clamp(24px, 6vw, 80px) 48px;
       color: rgba(231, 226, 217, 0.5);
@@ -114,17 +137,95 @@
   <main>
     <section class="card">
       <h2>Chapters</h2>
-      <a href="Vastlands_Guidebook_01_Title_Introduction_1-9.md">Vastlands Guidebook 01 Title Introduction 1-9</a>
-      <a href="Vastlands_Guidebook_02_Character_Creation_10-35.md">Vastlands Guidebook 02 Character Creation 10-35</a>
-      <a href="Vastlands_Guidebook_03_Rules_36-63.md">Vastlands Guidebook 03 Rules 36-63</a>
-      <a href="Vastlands_Guidebook_04_Equipment_64-93.md">Vastlands Guidebook 04 Equipment 64-93</a>
-      <a href="Vastlands_Guidebook_05_Powers_94-113.md">Vastlands Guidebook 05 Powers 94-113</a>
-      <a href="Vastlands_Guidebook_06_Other_Paths_114-159.md">Vastlands Guidebook 06 Other Paths 114-159</a>
-      <a href="Vastlands_Guidebook_07_Appendix_160-170.md">Vastlands Guidebook 07 Appendix 160-170</a>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook_01_Title_Introduction_1-9/">
+          Vastlands Guidebook 01 Title Introduction 1-9
+        </a>
+        <a class="download-link"
+           href="Vastlands_Guidebook_01_Title_Introduction_1-9.md"
+           download
+           aria-label="Download Vastlands Guidebook 01 Title Introduction">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook_02_Character_Creation_10-35/">
+          Vastlands Guidebook 02 Character Creation 10-35
+        </a>
+        <a class="download-link"
+           href="Vastlands_Guidebook_02_Character_Creation_10-35.md"
+           download
+           aria-label="Download Vastlands Guidebook 02 Character Creation">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook_03_Rules_36-63/">
+          Vastlands Guidebook 03 Rules 36-63
+        </a>
+        <a class="download-link"
+           href="Vastlands_Guidebook_03_Rules_36-63.md"
+           download
+           aria-label="Download Vastlands Guidebook 03 Rules">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook_04_Equipment_64-93/">
+          Vastlands Guidebook 04 Equipment 64-93
+        </a>
+        <a class="download-link"
+           href="Vastlands_Guidebook_04_Equipment_64-93.md"
+           download
+           aria-label="Download Vastlands Guidebook 04 Equipment">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook_05_Powers_94-113/">
+          Vastlands Guidebook 05 Powers 94-113
+        </a>
+        <a class="download-link"
+           href="Vastlands_Guidebook_05_Powers_94-113.md"
+           download
+           aria-label="Download Vastlands Guidebook 05 Powers">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook_06_Other_Paths_114-159/">
+          Vastlands Guidebook 06 Other Paths 114-159
+        </a>
+        <a class="download-link"
+           href="Vastlands_Guidebook_06_Other_Paths_114-159.md"
+           download
+           aria-label="Download Vastlands Guidebook 06 Other Paths">
+          📥
+        </a>
+      </div>
+
+      <div class="card-entry">
+        <a class="nav-link" href="Vastlands_Guidebook_07_Appendix_160-170/">
+          Vastlands Guidebook 07 Appendix 160-170
+        </a>
+        <a class="download-link"
+           href="Vastlands_Guidebook_07_Appendix_160-170.md"
+           download
+           aria-label="Download Vastlands Guidebook 07 Appendix">
+          📥
+        </a>
+      </div>
+
     </section>
     <section class="card">
       <h2>Return</h2>
-      <a href="../index.html">Repository Index</a>
+      <a href="../" aria-label="Return to repository index">Repository Index</a>
     </section>
   </main>
   <footer>

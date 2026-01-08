@@ -1,8 +1,3 @@
----
-layout: default
-title: Synthetic Dream Machine
----
-
 # Synthetic Dream Machine
 
 Welcome to the Synthetic Dream Machine reference hub. Use the vault links below to browse each root archive.
