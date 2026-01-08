@@ -3,6 +3,10 @@ markdown: kramdown
 kramdown:
   input: GFM
   hard_wrap: false
+exclude:
+  - AGENTS.md
+  - Lares_A_CustomGPT_System_Prompt.md
+  - Campaigns
 # Global publishing settings
 future: true
 permalink: /:title/
