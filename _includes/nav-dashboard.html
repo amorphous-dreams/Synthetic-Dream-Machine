@@ -1,0 +1,43 @@
+{%
+  assign heading_text = include.book_label | default: include.heading | default: "Contents"
+  assign aria_label = include.book_label | default: include.heading | default: "Navigation Dashboard"
+%}
+
+<section class="card nav-dashboard" aria-label="{{ aria_label }}">
+  <header class="nav-dashboard__header">
+    <span class="nav-dashboard__orb" aria-hidden="true"></span>
+    <h2>{{ heading_text }}</h2>
+    <span class="nav-dashboard__beam" aria-hidden="true"></span>
+  </header>
+
+  <div class="nav-dashboard__grid">
+    {% for item in include.items %}
+      {% assign display_label = item.label %}
+      {% assign original_label = display_label %}
+      {% if include.strip_prefixes %}
+        {% assign prefix_list = include.strip_prefixes | split: ',' %}
+        {% for prefix in prefix_list %}
+          {% assign trimmed_prefix = prefix | strip %}
+          {% if trimmed_prefix != '' %}
+            {% assign display_label = display_label | replace_first: trimmed_prefix, '' %}
+          {% endif %}
+        {% endfor %}
+        {% assign display_label = display_label | strip %}
+        {% if display_label == '' %}
+          {% assign display_label = original_label %}
+        {% endif %}
+      {% endif %}
+      <div class="card-entry">
+        <a class="nav-link" href="{{ item.href | relative_url }}">{{ display_label }}</a>
+        {% if item.download %}
+          <a class="download-link"
+             href="{{ item.download | relative_url }}"
+             download
+             aria-label="Download {{ item.label }}">
+            📥
+          </a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>

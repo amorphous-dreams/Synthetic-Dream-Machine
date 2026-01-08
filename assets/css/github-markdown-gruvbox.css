@@ -1,0 +1,92 @@
+/* assets/css/github-markdown-gruvbox.css */
+
+/* Give the markdown container the standard GitHub width/padding */
+.markdown-body{
+  box-sizing:border-box;
+  min-width:200px;
+  max-width:980px;
+  margin:0 auto;
+  padding:45px;
+}
+@media (max-width:767px){
+  .markdown-body{ padding:15px; }
+}
+
+/* Force dark UI semantics for form controls, etc */
+.markdown-body{ color-scheme: dark; }
+
+/* --- Gruvbox Dark palette mapped onto GitHub CSS variables --- */
+.markdown-body{
+  /* Core surfaces */
+  --color-canvas-default: #282828;   /* bg0 */
+  --color-canvas-subtle:  #3c3836;   /* bg1 */
+  --color-canvas-inset:   #3c3836;
+
+  /* Text */
+  --color-fg-default: #ebdbb2;       /* fg0 */
+  --color-fg-muted:   #a89984;       /* fg4 */
+  --color-fg-subtle:  #d5c4a1;       /* fg2 */
+
+  /* Borders */
+  --color-border-default: rgba(235,219,178,0.10);
+  --color-border-muted:   rgba(235,219,178,0.06);
+
+  /* Links / accents (GitHub “blue”, but Gruvbox) */
+  --color-accent-fg:       #83a598;  /* blue */
+  --color-accent-emphasis: #458588;  /* deep blue */
+  --color-accent-muted:    rgba(131,165,152,0.25);
+  --color-accent-subtle:   rgba(131,165,152,0.12);
+
+  /* States */
+  --color-success-fg: #b8bb26;       /* green */
+  --color-attention-fg: #fabd2f;     /* yellow */
+  --color-danger-fg: #fb4934;        /* red */
+  --color-done-fg: #d3869b;          /* purple-ish */
+
+  /* Selections / highlights */
+  --color-primer-shadow-focus: 0 0 0 3px rgba(131,165,152,0.25);
+
+  /* Code blocks */
+  --color-neutral-muted: rgba(255,255,255,0.08);
+  --color-neutral-subtle: rgba(255,255,255,0.04);
+
+  /* Prettylights (syntax highlight tokens used by GitHub markdown CSS) */
+  --color-prettylights-syntax-comment:         #928374;
+  --color-prettylights-syntax-constant:        #d3869b;
+  --color-prettylights-syntax-entity:          #8ec07c;
+  --color-prettylights-syntax-keyword:         #fb4934;
+  --color-prettylights-syntax-string:          #b8bb26;
+  --color-prettylights-syntax-variable:        #83a598;
+  --color-prettylights-syntax-brackethighlighter-unmatched: #fb4934;
+  --color-prettylights-syntax-invalid-illegal-text: #282828;
+  --color-prettylights-syntax-invalid-illegal-bg:   #fb4934;
+  --color-prettylights-syntax-carriage-return-text: #282828;
+  --color-prettylights-syntax-carriage-return-bg:   #fb4934;
+  --color-prettylights-syntax-markup-heading:       #b8bb26;
+  --color-prettylights-syntax-markup-italic:        #ebdbb2;
+  --color-prettylights-syntax-markup-bold:          #ebdbb2;
+  --color-prettylights-syntax-markup-deleted-text:  #fb4934;
+  --color-prettylights-syntax-markup-deleted-bg:    rgba(251,73,52,0.12);
+  --color-prettylights-syntax-markup-inserted-text: #b8bb26;
+  --color-prettylights-syntax-markup-inserted-bg:   rgba(184,187,38,0.12);
+  --color-prettylights-syntax-markup-changed-text:  #fe8019;
+  --color-prettylights-syntax-markup-changed-bg:    rgba(254,128,25,0.12);
+  --color-prettylights-syntax-markup-ignored-text:  #ebdbb2;
+  --color-prettylights-syntax-markup-ignored-bg:    #504945;
+  --color-prettylights-syntax-meta-diff-range:      #d3869b;
+  --color-prettylights-syntax-brackethighlighter-angle: #a89984;
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #a89984;
+}
+
+/* Optional: match your dashboard font while keeping GitHub spacing */
+.markdown-body{
+  font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Optional: slightly soften table backgrounds on Gruvbox */
+.markdown-body table tr{
+  background-color: var(--color-canvas-default);
+}
+.markdown-body table tr:nth-child(2n){
+  background-color: var(--color-canvas-subtle);
+}

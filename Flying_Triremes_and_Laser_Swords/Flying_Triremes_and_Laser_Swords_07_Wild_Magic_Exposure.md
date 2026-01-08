@@ -31,7 +31,7 @@ When a spell mishap, narrative cue, or failed Danger Roll occurs, the acting c
 Then, choose one of the following resolution tables to generate an effect—  
 *Corruption Severity Tables* (VLG p 99)  
 *Source Corruption* (UVG 2E p 171 & p 200)  
-*Wild Magic* (FLTS: Appendix C \- below)
+*Wild Magic* (FTLS: Appendix C \- below)
 
 ### Severe Wild Magic Exposure
 

@@ -1,0 +1,100 @@
+/* Gruvbox book chapter theme */
+body.book-chapter {
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(254, 128, 25, 0.32), transparent 52%),
+    radial-gradient(circle at 70% 18%, rgba(131, 165, 152, 0.24), transparent 48%),
+    radial-gradient(circle at 35% 72%, rgba(255, 255, 255, 0.05), transparent 65%),
+    linear-gradient(165deg, rgba(10, 8, 6, 0.98) 0%, rgba(4, 3, 2, 1) 70%, rgba(1, 1, 1, 1) 100%);
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+body.book-chapter::before {
+  background-image: radial-gradient(rgba(235, 219, 178, 0.02) 1px, transparent 1px),
+    radial-gradient(circle at 15% 5%, rgba(254, 128, 25, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 35%, rgba(131, 165, 152, 0.12), transparent 55%);
+  background-size: 180px 180px, 100% 100%, 120% 140%;
+  opacity: 0.45;
+  mix-blend-mode: screen;
+}
+
+body.book-chapter .page-card {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  position: relative;
+  isolation: isolate;
+}
+
+body.book-chapter .page-card .markdown-body {
+  background: linear-gradient(180deg, rgba(41, 36, 32, 0.96), rgba(17, 13, 12, 0.9));
+  border: 1px solid rgba(235, 219, 178, 0.38);
+  border-radius: calc(var(--card-radius) + 6px);
+  padding: clamp(32px, 4vw, 64px);
+  box-shadow: 0 40px 110px rgba(0, 0, 0, 0.55), 0 0 35px rgba(254, 128, 25, 0.18);
+  backdrop-filter: blur(22px);
+  position: relative;
+  overflow: hidden;
+}
+
+body.book-chapter .page-card .markdown-body::after {
+  background: radial-gradient(circle at 25% 30%, rgba(254, 128, 25, 0.18), transparent 55%),
+    radial-gradient(circle at 70% 20%, rgba(131, 165, 152, 0.12), transparent 60%);
+  opacity: 0.45;
+  mix-blend-mode: screen;
+}
+
+body.book-chapter .markdown-body h1 {
+  color: var(--glow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.book-chapter .markdown-body h2,
+body.book-chapter .markdown-body h3,
+body.book-chapter .markdown-body h4 {
+  color: var(--dust);
+  letter-spacing: 0.04em;
+}
+
+body.book-chapter .markdown-body p,
+body.book-chapter .markdown-body li {
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+body.book-chapter .markdown-body a {
+  color: var(--flare);
+  text-decoration: underline;
+  text-decoration-color: rgba(254, 128, 25, 0.45);
+  transition: color 0.2s ease;
+}
+
+body.book-chapter .markdown-body a:hover,
+body.book-chapter .markdown-body a:focus-visible {
+  color: var(--glow);
+}
+
+body.book-chapter .markdown-body blockquote {
+  border-left: 3px solid rgba(254, 128, 25, 0.6);
+  background: rgba(33, 29, 25, 0.7);
+  padding: 14px 18px;
+  color: rgba(235, 219, 178, 0.9);
+}
+
+body.book-chapter .markdown-body code,
+body.book-chapter .markdown-body pre {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(235, 219, 178, 0.12);
+  border-radius: 6px;
+}
+
+body.book-chapter .markdown-body hr {
+  border-color: rgba(235, 219, 178, 0.3);
+}
+
+body.book-chapter .markdown-body table th,
+body.book-chapter .markdown-body table td {
+  border-color: rgba(235, 219, 178, 0.12);
+}

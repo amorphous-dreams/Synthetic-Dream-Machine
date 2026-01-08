@@ -1,1 +1,4 @@
 .venv/
+.bundle/
+vendor/
+_site/

@@ -1,11 +1,139 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ page.title | default: site.title }}</title>
-  </head>
-  <body>
-    {{ content }}
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page.title | default: site.title }}</title>
+
+  <!-- GitHub Markdown CSS (dark-only) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown-dark.min.css">
+
+  <!-- Site-wide (Gruvbox variables + header/footer/layout) -->
+  <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}" />
+
+  <!-- GitHub Markdown overrides: Gruvbox Dark -->
+  <link rel="stylesheet" href="{{ '/assets/css/github-markdown-gruvbox.css' | relative_url }}" />
+
+  {% if page.body_class contains 'book-chapter' %}
+    <link rel="stylesheet" href="{{ '/assets/css/book-theme.css' | relative_url }}" />
+  {% endif %}
+
+  <meta name="color-scheme" content="dark light">
+</head>
+<body class="{{ page.body_class | default: '' }}">
+  <header>
+    <div class="sigil">DreamNet Node</div>
+    <h1>{{ site.title | default: "Synthetic Dream Machine" }}</h1>
+    {% if site.description %}
+      <h2 class="repo-link">
+        <a target="_blank" rel="noopener" href="{{ site.repo | default: 'https://github.com/joshuafontany/Synthetic-Dream-Machine' }}">
+          {{ site.description }}
+        </a>
+      </h2>
+    {% endif %}
+    <p class="lead">{{ page.subtitle | default: site.lead | default: "A navigational console for the SDM constellation." }}</p>
+    {% assign request_url = page.url | default: '/' %}
+    {% assign request_url_norm = request_url | downcase %}
+    {% assign header_context = page.header_nav_context %}
+    {% if header_context == nil and site.data.nav.context_map %}
+      {% for entry in site.data.nav.context_map %}
+        {% assign prefix = entry.prefix | default: '/' %}
+        {% assign prefix_length = prefix | size %}
+        {% assign current_prefix = request_url | slice: 0, prefix_length %}
+        {% assign prefix_norm = prefix | downcase %}
+        {% assign current_prefix_norm = current_prefix | downcase %}
+        {% if prefix != '' and current_prefix_norm == prefix_norm %}
+          {% assign header_context = entry.context %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% assign header_context = header_context | default: site.data.nav.default_context | default: 'root' %}
+    {% assign header_nav = site.data.nav.contexts[header_context] | default: site.data.nav.contexts.root %}
+    {% if header_nav %}
+      <nav class="header-nav" aria-label="Page navigation">
+        {% if site.data.nav.home_link %}
+          {% assign home_href_raw = site.data.nav.home_link.href | default: '/' %}
+          {% if home_href_raw contains '://' %}
+            {% assign home_href = home_href_raw %}
+          {% else %}
+            {% assign home_href = home_href_raw | relative_url %}
+          {% endif %}
+          {% assign home_href_norm = home_href | downcase %}
+          <a class="header-link header-home-link"
+             href="{{ home_href }}"
+             {% if home_href_norm == request_url_norm %}aria-current="page"{% endif %}>
+            {% if site.data.nav.home_link.icon %}<span class="header-link-icon">{{ site.data.nav.home_link.icon }}</span>{% endif %}
+            {{ site.data.nav.home_link.label }}
+          </a>
+        {% endif %}
+        {% for block in header_nav %}
+          {% assign block_links = block.links %}
+          {% if block_links %}
+            {% assign parent = block.parent %}
+            {% assign parent_label = block.title %}
+            {% if parent_label == nil %}
+              {% assign parent_label = block_links[0].label %}
+            {% endif %}
+            {% if parent and parent.label %}
+              {% assign parent_label = parent.label %}
+            {% endif %}
+            {% assign parent_href_raw = nil %}
+            {% if parent and parent.href %}
+              {% assign parent_href_raw = parent.href %}
+            {% endif %}
+            {% if parent_href_raw == nil %}
+              {% assign parent_href_raw = block_links[0].href | default: '/' %}
+            {% endif %}
+            {% if parent_href_raw contains '://' %}
+              {% assign parent_href = parent_href_raw %}
+            {% else %}
+              {% assign parent_href = parent_href_raw | relative_url %}
+            {% endif %}
+            {% assign parent_href_norm = parent_href | downcase %}
+            <div class="header-link-group">
+              <a class="header-link header-link-parent"
+                 href="{{ parent_href }}"
+                 aria-haspopup="true"
+                 {% if parent_href_norm == request_url_norm %}aria-current="page"{% endif %}>
+                {{ parent_label }}
+              </a>
+              <div class="header-dropdown" role="menu">
+                {% for item in block_links %}
+                  {% assign raw_href = item.href | default: "#" %}
+                  {% if raw_href contains '://' %}
+                    {% assign item_href = raw_href %}
+                  {% else %}
+                    {% assign item_href = raw_href | relative_url %}
+                  {% endif %}
+                  {% assign item_href_norm = item_href | downcase %}
+                  <a class="header-link header-dropdown-link"
+                     role="menuitem"
+                     href="{{ item_href }}"
+                     {% if item_href_norm == request_url_norm %}aria-current="page"{% endif %}
+                     {% if item.target %}target="{{ item.target }}"{% endif %}
+                     {% if item.rel %}rel="{{ item.rel }}"{% endif %}>
+                    {{ item.label }}
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </nav>
+    {% endif %}
+  </header>
+
+  <main class="page-wrap">
+    <section class="card page-card">
+      <article class="markdown-body">
+        {{ content }}
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    {{ site.title | default: "Synthetic Dream Machine" }} — The archive Lares are listening...
+  </footer>
+</body>
 </html>

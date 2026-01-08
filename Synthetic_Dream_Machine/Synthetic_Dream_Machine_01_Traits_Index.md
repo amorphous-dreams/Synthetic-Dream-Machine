@@ -4,214 +4,450 @@
 ## Trait Table of Contents
 
 <a id="sdm-trait-table-of-contents"></a>
-| Trait | Path |
-| --- | --- |
-| <a id="sdm-trait-background-row"></a>[Background](#sdm-trait-background) |  |
-| <a id="sdm-trait-wizard-row"></a>[Wizard](#sdm-trait-wizard) | Wizard |
-| <a id="sdm-trait-burner-row"></a>[Burner](#sdm-trait-burner) | Wizard |
-| <a id="sdm-trait-chronic-row"></a>[Chronic](#sdm-trait-chronic) | Wizard |
-| <a id="sdm-trait-exuberant-row"></a>[Exuberant](#sdm-trait-exuberant) | Wizard |
-| <a id="sdm-trait-mind-palace-row"></a>[Mind Palace](#sdm-trait-mind-palace) | Wizard |
-| <a id="sdm-trait-oblique-reality-row"></a>[Oblique Reality](#sdm-trait-oblique-reality) | Wizard |
-| <a id="sdm-trait-recast-row"></a>[Recast](#sdm-trait-recast) | Wizard |
-| <a id="sdm-trait-traveler-row"></a>[Traveler](#sdm-trait-traveler) | Traveler |
-| <a id="sdm-trait-escapist-row"></a>[Escapist](#sdm-trait-escapist) | Traveler |
-| <a id="sdm-trait-friends-row"></a>[Friends](#sdm-trait-friends) | Traveler |
-| <a id="sdm-trait-hunter-row"></a>[Hunter](#sdm-trait-hunter) | Traveler |
-| <a id="sdm-trait-pleasant-row"></a>[Pleasant](#sdm-trait-pleasant) | Traveler |
-| <a id="sdm-trait-pocketmaster-row"></a>[Pocketmaster](#sdm-trait-pocketmaster) | Traveler |
-| <a id="sdm-trait-swift-row"></a>[Swift](#sdm-trait-swift) | Traveler |
-| <a id="sdm-trait-fighter-row"></a>[Fighter](#sdm-trait-fighter) | Fighter |
-| <a id="sdm-trait-armiger-row"></a>[Armiger](#sdm-trait-armiger) | Fighter |
-| <a id="sdm-trait-defender-row"></a>[Defender](#sdm-trait-defender) | Fighter |
-| <a id="sdm-trait-grit-row"></a>[Grit](#sdm-trait-grit) | Fighter |
-| <a id="sdm-trait-irresistible-row"></a>[Irresistible](#sdm-trait-irresistible) | Fighter |
-| <a id="sdm-trait-second-chance-row"></a>[Second Chance](#sdm-trait-second-chance) | Fighter |
-| <a id="sdm-trait-terrifying-row"></a>[Terrifying](#sdm-trait-terrifying) | Fighter |
-| <a id="sdm-trait-barbarian-row"></a>[Barbarian](#sdm-trait-barbarian) | Barbarian |
-| <a id="sdm-trait-antimagus-row"></a>[Antimagus](#sdm-trait-antimagus) | Barbarian |
-| <a id="sdm-trait-blood-clad-row"></a>[Blood Clad](#sdm-trait-blood-clad) | Barbarian |
-| <a id="sdm-trait-culling-row"></a>[Culling](#sdm-trait-culling) | Barbarian |
-| <a id="sdm-trait-feral-row"></a>[Feral](#sdm-trait-feral) | Barbarian |
-| <a id="sdm-trait-lost-songs-row"></a>[Lost Songs](#sdm-trait-lost-songs) | Barbarian |
-| <a id="sdm-trait-wild-survivor-row"></a>[Wild Survivor](#sdm-trait-wild-survivor) | Barbarian |
-| <a id="sdm-trait-bluelander-row"></a>[Bluelander](#sdm-trait-bluelander) | Bluelander |
-| <a id="sdm-trait-boatmaster-row"></a>[Boatmaster](#sdm-trait-boatmaster) | Bluelander |
-| <a id="sdm-trait-cheesemaker-row"></a>[Cheesemaker](#sdm-trait-cheesemaker) | Bluelander |
-| <a id="sdm-trait-oppressed-faith-row"></a>[Oppressed Faith](#sdm-trait-oppressed-faith) | Bluelander |
-| <a id="sdm-trait-reanimator-row"></a>[Reanimator](#sdm-trait-reanimator) | Bluelander |
-| <a id="sdm-trait-spelunker-row"></a>[Spelunker](#sdm-trait-spelunker) | Bluelander |
-| <a id="sdm-trait-sporemark-row"></a>[Sporemark](#sdm-trait-sporemark) | Bluelander |
-| <a id="sdm-trait-bourgeois-row"></a>[Bourgeois](#sdm-trait-bourgeois) | Bourgeois |
-| <a id="sdm-trait-double-platinum-deathless-backup-row"></a>[Double-Platinum Deathless Backup](#sdm-trait-double-platinum-deathless-backup) | Bourgeois |
-| <a id="sdm-trait-enterprising-row"></a>[Enterprising](#sdm-trait-enterprising) | Bourgeois |
-| <a id="sdm-trait-expensive-training-row"></a>[Expensive Training](#sdm-trait-expensive-training) | Bourgeois |
-| <a id="sdm-trait-legal-immunity-row"></a>[Legal Immunity](#sdm-trait-legal-immunity) | Bourgeois |
-| <a id="sdm-trait-old-money-row"></a>[Old Money](#sdm-trait-old-money) | Bourgeois |
-| <a id="sdm-trait-urbane-row"></a>[Urbane](#sdm-trait-urbane) | Bourgeois |
-| <a id="sdm-trait-golem-row"></a>[Golem](#sdm-trait-golem) | Golem |
-| <a id="sdm-trait-hardened-row"></a>[Hardened](#sdm-trait-hardened) | Golem |
-| <a id="sdm-trait-powered-row"></a>[Powered](#sdm-trait-powered) | Golem |
-| <a id="sdm-trait-synthetic-soul-row"></a>[Synthetic Soul](#sdm-trait-synthetic-soul) | Golem |
-| <a id="sdm-trait-undying-synthetic-row"></a>[Undying Synthetic](#sdm-trait-undying-synthetic) | Golem |
-| <a id="sdm-trait-ur-war-program-row"></a>[Ur-War Program](#sdm-trait-ur-war-program) | Golem |
-| <a id="sdm-trait-very-strong-row"></a>[Very Strong](#sdm-trait-very-strong) | Golem |
-| <a id="sdm-trait-greenlander-row"></a>[Greenlander](#sdm-trait-greenlander) | Greenlander |
-| <a id="sdm-trait-country-squire-row"></a>[Country Squire](#sdm-trait-country-squire) | Greenlander |
-| <a id="sdm-trait-deeply-embodied-row"></a>[Deeply Embodied](#sdm-trait-deeply-embodied) | Greenlander |
-| <a id="sdm-trait-informant-row"></a>[Informant](#sdm-trait-informant) | Greenlander |
-| <a id="sdm-trait-metropolitan-row"></a>[Metropolitan](#sdm-trait-metropolitan) | Greenlander |
-| <a id="sdm-trait-mossblood-row"></a>[Mossblood](#sdm-trait-mossblood) | Greenlander |
-| <a id="sdm-trait-soiltwined-row"></a>[Soiltwined](#sdm-trait-soiltwined) | Greenlander |
-| <a id="sdm-trait-holy-fool-row"></a>[Holy Fool](#sdm-trait-holy-fool) | Holy Fool |
-| <a id="sdm-trait-abandoned-row"></a>[Abandoned](#sdm-trait-abandoned) | Holy Fool |
-| <a id="sdm-trait-blessed-row"></a>[Blessed](#sdm-trait-blessed) | Holy Fool |
-| <a id="sdm-trait-holy-diver-row"></a>[Holy Diver](#sdm-trait-holy-diver) | Holy Fool |
-| <a id="sdm-trait-phylakes-child-row"></a>[Phylake’s Child](#sdm-trait-phylakes-child) | Holy Fool |
-| <a id="sdm-trait-soothsayer-row"></a>[Soothsayer](#sdm-trait-soothsayer) | Holy Fool |
-| <a id="sdm-trait-wanderer-row"></a>[Wanderer](#sdm-trait-wanderer) | Holy Fool |
-| <a id="sdm-trait-manager-row"></a>[Manager](#sdm-trait-manager) | Manager |
-| <a id="sdm-trait-competent-appearance-row"></a>[Competent Appearance](#sdm-trait-competent-appearance) | Manager |
-| <a id="sdm-trait-social-survivor-row"></a>[Social Survivor](#sdm-trait-social-survivor) | Manager |
-| <a id="sdm-trait-inquisition-agent-row"></a>[Inquisition Agent](#sdm-trait-inquisition-agent) | Manager |
-| <a id="sdm-trait-motivational-row"></a>[Motivational](#sdm-trait-motivational) | Manager |
-| <a id="sdm-trait-noosphere-priest-row"></a>[Noösphere Priest](#sdm-trait-noosphere-priest) | Manager |
-| <a id="sdm-trait-numbers-maximization-official-row"></a>[Numbers Maximization Official](#sdm-trait-numbers-maximization-official) | Manager |
-| <a id="sdm-trait-noble-row"></a>[Noble](#sdm-trait-noble) | Noble |
-| <a id="sdm-trait-hexer-meritocrat-row"></a>[Hexer Meritocrat](#sdm-trait-hexer-meritocrat) | Noble |
-| <a id="sdm-trait-knight-reflexes-row"></a>[Knight Reflexes](#sdm-trait-knight-reflexes) | Noble |
-| <a id="sdm-trait-dissipated-row"></a>[Dissipated](#sdm-trait-dissipated) | Noble |
-| <a id="sdm-trait-divine-blood-row"></a>[Divine Blood](#sdm-trait-divine-blood) | Noble |
-| <a id="sdm-trait-sculpted-beauty-row"></a>[Sculpted Beauty](#sdm-trait-sculpted-beauty) | Noble |
-| <a id="sdm-trait-perfected-germline-row"></a>[Perfected Germline](#sdm-trait-perfected-germline) | Noble |
-| <a id="sdm-trait-noomagus-row"></a>[Noömagus](#sdm-trait-noomagus) | Noömagus |
-| <a id="sdm-trait-cosmic-qanat-row"></a>[Cosmic Qanat](#sdm-trait-cosmic-qanat) | Noömagus |
-| <a id="sdm-trait-hackmagic-row"></a>[Hackmagic](#sdm-trait-hackmagic) | Noömagus |
-| <a id="sdm-trait-noosphere-native-row"></a>[Noösphere Native](#sdm-trait-noosphere-native) | Noömagus |
-| <a id="sdm-trait-power-scroller-row"></a>[Power Scroller](#sdm-trait-power-scroller) | Noömagus |
-| <a id="sdm-trait-soul-fuel-row"></a>[Soul Fuel](#sdm-trait-soul-fuel) | Noömagus |
-| <a id="sdm-trait-veteran-of-the-psychic-wars-row"></a>[Veteran of the Psychic Wars](#sdm-trait-veteran-of-the-psychic-wars) | Noömagus |
-| <a id="sdm-trait-orangelander-row"></a>[Orangelander](#sdm-trait-orangelander) | Orangelander |
-| <a id="sdm-trait-cad-row"></a>[Cad](#sdm-trait-cad) | Orangelander |
-| <a id="sdm-trait-citizen-living-row"></a>[Citizen Living](#sdm-trait-citizen-living) | Orangelander |
-| <a id="sdm-trait-citizen-maintainer-row"></a>[Citizen Maintainer](#sdm-trait-citizen-maintainer) | Orangelander |
-| <a id="sdm-trait-ducky-row"></a>[Ducky](#sdm-trait-ducky) | Orangelander |
-| <a id="sdm-trait-orange-half-ling-row"></a>[Orange Half-Ling](#sdm-trait-orange-half-ling) | Orangelander |
-| <a id="sdm-trait-unfred-row"></a>[Unfred](#sdm-trait-unfred) | Orangelander |
-| <a id="sdm-trait-purplelander-row"></a>[Purplelander](#sdm-trait-purplelander) | Purplelander |
-| <a id="sdm-trait-arboreal-row"></a>[Arboreal](#sdm-trait-arboreal) | Purplelander |
-| <a id="sdm-trait-colonist-row"></a>[Colonist](#sdm-trait-colonist) | Purplelander |
-| <a id="sdm-trait-human-library-row"></a>[Human Library](#sdm-trait-human-library) | Purplelander |
-| <a id="sdm-trait-kaffetropist-row"></a>[Kaffetropist](#sdm-trait-kaffetropist) | Purplelander |
-| <a id="sdm-trait-pet-sidekick-row"></a>[Pet Sidekick](#sdm-trait-pet-sidekick) | Purplelander |
-| <a id="sdm-trait-telempath-row"></a>[Telempath](#sdm-trait-telempath) | Purplelander |
-| <a id="sdm-trait-redlander-row"></a>[Redlander](#sdm-trait-redlander) | Redlander |
-| <a id="sdm-trait-hexad-member-row"></a>[Hexad Member](#sdm-trait-hexad-member) | Redlander |
-| <a id="sdm-trait-falscher-row"></a>[Falscher](#sdm-trait-falscher) | Redlander |
-| <a id="sdm-trait-ruster-row"></a>[Ruster](#sdm-trait-ruster) | Redlander |
-| <a id="sdm-trait-vampire-row"></a>[Vampire](#sdm-trait-vampire) | Redlander |
-| <a id="sdm-trait-vintner-row"></a>[Vintner](#sdm-trait-vintner) | Redlander |
-| <a id="sdm-trait-werker-row"></a>[Werker](#sdm-trait-werker) | Redlander |
-| <a id="sdm-trait-scion-row"></a>[Scion](#sdm-trait-scion) | Scion |
-| <a id="sdm-trait-dreamwalker-row"></a>[Dreamwalker](#sdm-trait-dreamwalker) | Scion |
-| <a id="sdm-trait-faceless-row"></a>[Faceless](#sdm-trait-faceless) | Scion |
-| <a id="sdm-trait-of-world-row"></a>[Of-World](#sdm-trait-of-world) | Scion |
-| <a id="sdm-trait-perfect-row"></a>[Perfect](#sdm-trait-perfect) | Scion |
-| <a id="sdm-trait-subconscious-decay-row"></a>[Subconscious Decay](#sdm-trait-subconscious-decay) | Scion |
-| <a id="sdm-trait-superuser-row"></a>[Superuser](#sdm-trait-superuser) | Scion |
-| <a id="sdm-trait-servant-row"></a>[Servant](#sdm-trait-servant) | Servant |
-| <a id="sdm-trait-grounded-row"></a>[Grounded](#sdm-trait-grounded) | Servant |
-| <a id="sdm-trait-housemaker-row"></a>[Housemaker](#sdm-trait-housemaker) | Servant |
-| <a id="sdm-trait-resourceful-row"></a>[Resourceful](#sdm-trait-resourceful) | Servant |
-| <a id="sdm-trait-shopstaff-row"></a>[Shopstaff](#sdm-trait-shopstaff) | Servant |
-| <a id="sdm-trait-strong-row"></a>[Strong](#sdm-trait-strong) | Servant |
-| <a id="sdm-trait-tough-row"></a>[Tough](#sdm-trait-tough) | Servant |
-| <a id="sdm-trait-skeleton-row"></a>[Skeleton](#sdm-trait-skeleton) | Skeleton |
-| <a id="sdm-trait-glowing-skeleton-row"></a>[Glowing Skeleton](#sdm-trait-glowing-skeleton) | Skeleton |
-| <a id="sdm-trait-my-bones-engraved-row"></a>[My Bones Engraved](#sdm-trait-my-bones-engraved) | Skeleton |
-| <a id="sdm-trait-void-ward-row"></a>[Void Ward](#sdm-trait-void-ward) | Skeleton |
-| <a id="sdm-trait-from-dust-returning-row"></a>[From Dust, Returning](#sdm-trait-from-dust-returning) | Skeleton |
-| <a id="sdm-trait-cold-new-flesh-row"></a>[Cold New Flesh](#sdm-trait-cold-new-flesh) | Skeleton |
-| <a id="sdm-trait-soul-thief-row"></a>[Soul Thief](#sdm-trait-soul-thief) | Skeleton |
-| <a id="sdm-trait-soldier-row"></a>[Soldier](#sdm-trait-soldier) | Soldier |
-| <a id="sdm-trait-armorborn-row"></a>[Armorborn](#sdm-trait-armorborn) | Soldier |
-| <a id="sdm-trait-blastermaster-row"></a>[Blastermaster](#sdm-trait-blastermaster) | Soldier |
-| <a id="sdm-trait-devastator-row"></a>[Devastator](#sdm-trait-devastator) | Soldier |
-| <a id="sdm-trait-rationalised-row"></a>[Rationalised](#sdm-trait-rationalised) | Soldier |
-| <a id="sdm-trait-slayer-row"></a>[Slayer](#sdm-trait-slayer) | Soldier |
-| <a id="sdm-trait-wired-row"></a>[Wired](#sdm-trait-wired) | Soldier |
-| <a id="sdm-trait-tourist-row"></a>[Tourist](#sdm-trait-tourist) | Tourist |
-| <a id="sdm-trait-personal-daimon-row"></a>[Personal Daimon](#sdm-trait-personal-daimon) | Tourist |
-| <a id="sdm-trait-clueless-outsider-row"></a>[Clueless Outsider](#sdm-trait-clueless-outsider) | Tourist |
-| <a id="sdm-trait-fortunate-one-row"></a>[Fortunate One](#sdm-trait-fortunate-one) | Tourist |
-| <a id="sdm-trait-underestimated-row"></a>[Underestimated](#sdm-trait-underestimated) | Tourist |
-| <a id="sdm-trait-intestinal-fortitude-row"></a>[Intestinal Fortitude](#sdm-trait-intestinal-fortitude) | Tourist |
-| <a id="sdm-trait-hashtag-blessed-row"></a>[Hashtag Blessed](#sdm-trait-hashtag-blessed) | Tourist |
-| <a id="sdm-trait-trickster-row"></a>[Trickster](#sdm-trait-trickster) | Trickster |
-| <a id="sdm-trait-backstabber-row"></a>[Backstabber](#sdm-trait-backstabber) | Trickster |
-| <a id="sdm-trait-expert-friends-row"></a>[Expert Friends](#sdm-trait-expert-friends) | Trickster |
-| <a id="sdm-trait-fake-out-row"></a>[Fake Out](#sdm-trait-fake-out) | Trickster |
-| <a id="sdm-trait-pickpocket-row"></a>[Pickpocket](#sdm-trait-pickpocket) | Trickster |
-| <a id="sdm-trait-bystander-row"></a>[Bystander](#sdm-trait-bystander) | Trickster |
-| <a id="sdm-trait-silver-tongued-row"></a>[Silver-Tongued](#sdm-trait-silver-tongued) | Trickster |
-| <a id="sdm-trait-weapon-row"></a>[Weapon](#sdm-trait-weapon) | Weapon |
-| <a id="sdm-trait-cleanser-row"></a>[Cleanser](#sdm-trait-cleanser) | Weapon |
-| <a id="sdm-trait-curse-blessed-row"></a>[Curse-Blessed](#sdm-trait-curse-blessed) | Weapon |
-| <a id="sdm-trait-death-hunger-row"></a>[Death Hunger](#sdm-trait-death-hunger) | Weapon |
-| <a id="sdm-trait-demolisher-row"></a>[Demolisher](#sdm-trait-demolisher) | Weapon |
-| <a id="sdm-trait-fatespun-row"></a>[Fatespun](#sdm-trait-fatespun) | Weapon |
-| <a id="sdm-trait-i-am-legion-row"></a>[I Am Legion](#sdm-trait-i-am-legion) | Weapon |
-| <a id="sdm-trait-burglar-row"></a>[Burglar](#sdm-trait-burglar) | Bearer |
-| <a id="sdm-trait-doombringer-row"></a>[Doombringer](#sdm-trait-doombringer) | Bearer |
-| <a id="sdm-trait-fighting-woman-or-man-row"></a>[Fighting Woman or Man](#sdm-trait-fighting-woman-or-man) | Bearer |
-| <a id="sdm-trait-loyal-row"></a>[Loyal](#sdm-trait-loyal) | Bearer |
-| <a id="sdm-trait-revenant-in-waiting-row"></a>[Revenant-in-Waiting](#sdm-trait-revenant-in-waiting) | Bearer |
-| <a id="sdm-trait-shackleminded-row"></a>[Shackleminded](#sdm-trait-shackleminded) | Bearer |
-| <a id="sdm-trait-yellowlander-row"></a>[Yellowlander](#sdm-trait-yellowlander) | Yellowlander |
-| <a id="sdm-trait-diesel-dwarf-row"></a>[Diesel Dwarf](#sdm-trait-diesel-dwarf) | Yellowlander |
-| <a id="sdm-trait-dust-rat-row"></a>[Dust Rat](#sdm-trait-dust-rat) | Yellowlander |
-| <a id="sdm-trait-rancher-row"></a>[Rancher](#sdm-trait-rancher) | Yellowlander |
-| <a id="sdm-trait-ruderalist-row"></a>[Ruderalist](#sdm-trait-ruderalist) | Yellowlander |
-| <a id="sdm-trait-saffron-eater-row"></a>[Saffron Eater](#sdm-trait-saffron-eater) | Yellowlander |
-| <a id="sdm-trait-thorny-row"></a>[Thorny](#sdm-trait-thorny) | Yellowlander |
-| <a id="sdm-trait-generic-synthesized-creature-row"></a>[Generic Synthesized Creature](#sdm-trait-generic-synthesized-creature) | Generic Synthesized Creature |
-| <a id="sdm-trait-humans-of-the-pananthropy-row"></a>[Humans of the Pananthropy](#sdm-trait-humans-of-the-pananthropy) | Humans of the Pananthropy |
-| <a id="sdm-trait-bonded-row"></a>[Bonded](#sdm-trait-bonded) | Humans of the Pananthropy |
-| <a id="sdm-trait-teamwork-row"></a>[Teamwork](#sdm-trait-teamwork) | Humans of the Pananthropy |
-| <a id="sdm-trait-toolmaker-row"></a>[Toolmaker](#sdm-trait-toolmaker) | Humans of the Pananthropy |
-| <a id="sdm-trait-adaptable-row"></a>[Adaptable](#sdm-trait-adaptable) | Humans of the Pananthropy |
-| <a id="sdm-trait-tactical-row"></a>[Tactical](#sdm-trait-tactical) | Humans of the Pananthropy |
-| <a id="sdm-trait-common-humanity-row"></a>[Common Humanity](#sdm-trait-common-humanity) | Humans of the Pananthropy |
-| <a id="sdm-trait-brick-bastions-row"></a>[Brick Bastions](#sdm-trait-brick-bastions) | Brick Bastions |
-| <a id="sdm-trait-shieldfriend-row"></a>[Shieldfriend](#sdm-trait-shieldfriend) | Brick Bastions |
-| <a id="sdm-trait-steadfast-row"></a>[Steadfast](#sdm-trait-steadfast) | Brick Bastions |
-| <a id="sdm-trait-denial-row"></a>[Denial](#sdm-trait-denial) | Brick Bastions |
-| <a id="sdm-trait-resistomorph-row"></a>[Resistomorph](#sdm-trait-resistomorph) | Brick Bastions |
-| <a id="sdm-trait-rockblood-row"></a>[Rockblood](#sdm-trait-rockblood) | Brick Bastions |
-| <a id="sdm-trait-slam-row"></a>[Slam](#sdm-trait-slam) | Brick Bastions |
-| <a id="sdm-trait-crystal-cannons-row"></a>[Crystal Cannons](#sdm-trait-crystal-cannons) | Crystal Cannons |
-| <a id="sdm-trait-overcharge-row"></a>[Overcharge](#sdm-trait-overcharge) | Crystal Cannons |
-| <a id="sdm-trait-desperate-shot-row"></a>[Desperate Shot](#sdm-trait-desperate-shot) | Crystal Cannons |
-| <a id="sdm-trait-feedback-row"></a>[Feedback](#sdm-trait-feedback) | Crystal Cannons |
-| <a id="sdm-trait-shatter-row"></a>[Shatter](#sdm-trait-shatter) | Crystal Cannons |
-| <a id="sdm-trait-phase-row"></a>[Phase](#sdm-trait-phase) | Crystal Cannons |
-| <a id="sdm-trait-circle-of-pain-row"></a>[Circle of Pain](#sdm-trait-circle-of-pain) | Crystal Cannons |
-| <a id="sdm-trait-darting-dodgers-row"></a>[Darting Dodgers](#sdm-trait-darting-dodgers) | Darting Dodgers |
-| <a id="sdm-trait-charger-row"></a>[Charger](#sdm-trait-charger) | Darting Dodgers |
-| <a id="sdm-trait-double-attack-row"></a>[Double Attack](#sdm-trait-double-attack) | Darting Dodgers |
-| <a id="sdm-trait-riposte-row"></a>[Riposte](#sdm-trait-riposte) | Darting Dodgers |
-| <a id="sdm-trait-evasive-row"></a>[Evasive](#sdm-trait-evasive) | Darting Dodgers |
-| <a id="sdm-trait-springer-row"></a>[Springer](#sdm-trait-springer) | Darting Dodgers |
-| <a id="sdm-trait-stabber-row"></a>[Stabber](#sdm-trait-stabber) | Darting Dodgers |
-| <a id="sdm-trait-erratic-expendables-row"></a>[Erratic Expendables](#sdm-trait-erratic-expendables) | Erratic Expendables |
-| <a id="sdm-trait-death-curse-row"></a>[Death Curse](#sdm-trait-death-curse) | Erratic Expendables |
-| <a id="sdm-trait-martyr-row"></a>[Martyr](#sdm-trait-martyr) | Erratic Expendables |
-| <a id="sdm-trait-once-again-row"></a>[Once Again](#sdm-trait-once-again) | Erratic Expendables |
-| <a id="sdm-trait-killbite-row"></a>[Killbite](#sdm-trait-killbite) | Erratic Expendables |
-| <a id="sdm-trait-ticking-corpse-row"></a>[Ticking Corpse](#sdm-trait-ticking-corpse) | Erratic Expendables |
-| <a id="sdm-trait-frenzy-row"></a>[Frenzy](#sdm-trait-frenzy) | Erratic Expendables |
-| <a id="sdm-trait-corruption-row"></a>[Corruption](#sdm-trait-corruption) |  |
-| <a id="sdm-trait-power-as-trait-row"></a>[Power (as Trait)](#sdm-trait-power-as-trait) |  |
+
+- **No Path**
+<a id="sdm-trait-background-anchor"></a>
+  - [Background](#sdm-trait-background)
+<a id="sdm-trait-corruption-anchor"></a>
+  - [Corruption](#sdm-trait-corruption)
+<a id="sdm-trait-power-as-trait-anchor"></a>
+  - [Power (as Trait)](#sdm-trait-power-as-trait)
+
+<a id="sdm-trait-wizard-anchor"></a>
+- [Wizard](#sdm-trait-wizard) (Vastlands Guidebook)
+<a id="sdm-trait-burner-anchor"></a>
+  - [Burner](#sdm-trait-burner)
+<a id="sdm-trait-chronic-anchor"></a>
+  - [Chronic](#sdm-trait-chronic)
+<a id="sdm-trait-exuberant-anchor"></a>
+  - [Exuberant](#sdm-trait-exuberant)
+<a id="sdm-trait-mind-palace-anchor"></a>
+  - [Mind Palace](#sdm-trait-mind-palace)
+<a id="sdm-trait-oblique-reality-anchor"></a>
+  - [Oblique Reality](#sdm-trait-oblique-reality)
+<a id="sdm-trait-recast-anchor"></a>
+  - [Recast](#sdm-trait-recast)
+
+<a id="sdm-trait-traveler-anchor"></a>
+- [Traveler](#sdm-trait-traveler) (Vastlands Guidebook)
+<a id="sdm-trait-escapist-anchor"></a>
+  - [Escapist](#sdm-trait-escapist)
+<a id="sdm-trait-friends-anchor"></a>
+  - [Friends](#sdm-trait-friends)
+<a id="sdm-trait-hunter-anchor"></a>
+  - [Hunter](#sdm-trait-hunter)
+<a id="sdm-trait-pleasant-anchor"></a>
+  - [Pleasant](#sdm-trait-pleasant)
+<a id="sdm-trait-pocketmaster-anchor"></a>
+  - [Pocketmaster](#sdm-trait-pocketmaster)
+<a id="sdm-trait-swift-anchor"></a>
+  - [Swift](#sdm-trait-swift)
+
+<a id="sdm-trait-fighter-anchor"></a>
+- [Fighter](#sdm-trait-fighter) (Vastlands Guidebook)
+<a id="sdm-trait-armiger-anchor"></a>
+  - [Armiger](#sdm-trait-armiger)
+<a id="sdm-trait-defender-anchor"></a>
+  - [Defender](#sdm-trait-defender)
+<a id="sdm-trait-grit-anchor"></a>
+  - [Grit](#sdm-trait-grit)
+<a id="sdm-trait-irresistible-anchor"></a>
+  - [Irresistible](#sdm-trait-irresistible)
+<a id="sdm-trait-second-chance-anchor"></a>
+  - [Second Chance](#sdm-trait-second-chance)
+<a id="sdm-trait-terrifying-anchor"></a>
+  - [Terrifying](#sdm-trait-terrifying)
+
+<a id="sdm-trait-barbarian-anchor"></a>
+- [Barbarian](#sdm-trait-barbarian) (Vastlands Guidebook)
+<a id="sdm-trait-antimagus-anchor"></a>
+  - [Antimagus](#sdm-trait-antimagus)
+<a id="sdm-trait-blood-clad-anchor"></a>
+  - [Blood Clad](#sdm-trait-blood-clad)
+<a id="sdm-trait-culling-anchor"></a>
+  - [Culling](#sdm-trait-culling)
+<a id="sdm-trait-feral-anchor"></a>
+  - [Feral](#sdm-trait-feral)
+<a id="sdm-trait-lost-songs-anchor"></a>
+  - [Lost Songs](#sdm-trait-lost-songs)
+<a id="sdm-trait-wild-survivor-anchor"></a>
+  - [Wild Survivor](#sdm-trait-wild-survivor)
+
+<a id="sdm-trait-bluelander-anchor"></a>
+- [Bluelander](#sdm-trait-bluelander) (Vastlands Guidebook)
+<a id="sdm-trait-boatmaster-anchor"></a>
+  - [Boatmaster](#sdm-trait-boatmaster)
+<a id="sdm-trait-cheesemaker-anchor"></a>
+  - [Cheesemaker](#sdm-trait-cheesemaker)
+<a id="sdm-trait-oppressed-faith-anchor"></a>
+  - [Oppressed Faith](#sdm-trait-oppressed-faith)
+<a id="sdm-trait-reanimator-anchor"></a>
+  - [Reanimator](#sdm-trait-reanimator)
+<a id="sdm-trait-spelunker-anchor"></a>
+  - [Spelunker](#sdm-trait-spelunker)
+<a id="sdm-trait-sporemark-anchor"></a>
+  - [Sporemark](#sdm-trait-sporemark)
+
+<a id="sdm-trait-bourgeois-anchor"></a>
+- [Bourgeois](#sdm-trait-bourgeois) (Vastlands Guidebook)
+<a id="sdm-trait-double-platinum-deathless-backup-anchor"></a>
+  - [Double-Platinum Deathless Backup](#sdm-trait-double-platinum-deathless-backup)
+<a id="sdm-trait-enterprising-anchor"></a>
+  - [Enterprising](#sdm-trait-enterprising)
+<a id="sdm-trait-expensive-training-anchor"></a>
+  - [Expensive Training](#sdm-trait-expensive-training)
+<a id="sdm-trait-legal-immunity-anchor"></a>
+  - [Legal Immunity](#sdm-trait-legal-immunity)
+<a id="sdm-trait-old-money-anchor"></a>
+  - [Old Money](#sdm-trait-old-money)
+<a id="sdm-trait-urbane-anchor"></a>
+  - [Urbane](#sdm-trait-urbane)
+
+<a id="sdm-trait-golem-anchor"></a>
+- [Golem](#sdm-trait-golem) (Vastlands Guidebook)
+<a id="sdm-trait-hardened-anchor"></a>
+  - [Hardened](#sdm-trait-hardened)
+<a id="sdm-trait-powered-anchor"></a>
+  - [Powered](#sdm-trait-powered)
+<a id="sdm-trait-synthetic-soul-anchor"></a>
+  - [Synthetic Soul](#sdm-trait-synthetic-soul)
+<a id="sdm-trait-undying-synthetic-anchor"></a>
+  - [Undying Synthetic](#sdm-trait-undying-synthetic)
+<a id="sdm-trait-ur-war-program-anchor"></a>
+  - [Ur-War Program](#sdm-trait-ur-war-program)
+<a id="sdm-trait-very-strong-anchor"></a>
+  - [Very Strong](#sdm-trait-very-strong)
+
+<a id="sdm-trait-greenlander-anchor"></a>
+- [Greenlander](#sdm-trait-greenlander) (Vastlands Guidebook)
+<a id="sdm-trait-country-squire-anchor"></a>
+  - [Country Squire](#sdm-trait-country-squire)
+<a id="sdm-trait-deeply-embodied-anchor"></a>
+  - [Deeply Embodied](#sdm-trait-deeply-embodied)
+<a id="sdm-trait-informant-anchor"></a>
+  - [Informant](#sdm-trait-informant)
+<a id="sdm-trait-metropolitan-anchor"></a>
+  - [Metropolitan](#sdm-trait-metropolitan)
+<a id="sdm-trait-mossblood-anchor"></a>
+  - [Mossblood](#sdm-trait-mossblood)
+<a id="sdm-trait-soiltwined-anchor"></a>
+  - [Soiltwined](#sdm-trait-soiltwined)
+
+<a id="sdm-trait-holy-fool-anchor"></a>
+- [Holy Fool](#sdm-trait-holy-fool) (Vastlands Guidebook)
+<a id="sdm-trait-abandoned-anchor"></a>
+  - [Abandoned](#sdm-trait-abandoned)
+<a id="sdm-trait-blessed-anchor"></a>
+  - [Blessed](#sdm-trait-blessed)
+<a id="sdm-trait-holy-diver-anchor"></a>
+  - [Holy Diver](#sdm-trait-holy-diver)
+<a id="sdm-trait-phylakes-child-anchor"></a>
+  - [Phylake’s Child](#sdm-trait-phylakes-child)
+<a id="sdm-trait-soothsayer-anchor"></a>
+  - [Soothsayer](#sdm-trait-soothsayer)
+<a id="sdm-trait-wanderer-anchor"></a>
+  - [Wanderer](#sdm-trait-wanderer)
+
+<a id="sdm-trait-manager-anchor"></a>
+- [Manager](#sdm-trait-manager) (Vastlands Guidebook)
+<a id="sdm-trait-competent-appearance-anchor"></a>
+  - [Competent Appearance](#sdm-trait-competent-appearance)
+<a id="sdm-trait-social-survivor-anchor"></a>
+  - [Social Survivor](#sdm-trait-social-survivor)
+<a id="sdm-trait-inquisition-agent-anchor"></a>
+  - [Inquisition Agent](#sdm-trait-inquisition-agent)
+<a id="sdm-trait-motivational-anchor"></a>
+  - [Motivational](#sdm-trait-motivational)
+<a id="sdm-trait-noosphere-priest-anchor"></a>
+  - [Noösphere Priest](#sdm-trait-noosphere-priest)
+<a id="sdm-trait-numbers-maximization-official-anchor"></a>
+  - [Numbers Maximization Official](#sdm-trait-numbers-maximization-official)
+
+<a id="sdm-trait-noble-anchor"></a>
+- [Noble](#sdm-trait-noble) (Vastlands Guidebook)
+<a id="sdm-trait-hexer-meritocrat-anchor"></a>
+  - [Hexer Meritocrat](#sdm-trait-hexer-meritocrat)
+<a id="sdm-trait-knight-reflexes-anchor"></a>
+  - [Knight Reflexes](#sdm-trait-knight-reflexes)
+<a id="sdm-trait-dissipated-anchor"></a>
+  - [Dissipated](#sdm-trait-dissipated)
+<a id="sdm-trait-divine-blood-anchor"></a>
+  - [Divine Blood](#sdm-trait-divine-blood)
+<a id="sdm-trait-sculpted-beauty-anchor"></a>
+  - [Sculpted Beauty](#sdm-trait-sculpted-beauty)
+<a id="sdm-trait-perfected-germline-anchor"></a>
+  - [Perfected Germline](#sdm-trait-perfected-germline)
+
+<a id="sdm-trait-noomagus-anchor"></a>
+- [Noömagus](#sdm-trait-noomagus) (Vastlands Guidebook)
+<a id="sdm-trait-cosmic-qanat-anchor"></a>
+  - [Cosmic Qanat](#sdm-trait-cosmic-qanat)
+<a id="sdm-trait-hackmagic-anchor"></a>
+  - [Hackmagic](#sdm-trait-hackmagic)
+<a id="sdm-trait-noosphere-native-anchor"></a>
+  - [Noösphere Native](#sdm-trait-noosphere-native)
+<a id="sdm-trait-power-scroller-anchor"></a>
+  - [Power Scroller](#sdm-trait-power-scroller)
+<a id="sdm-trait-soul-fuel-anchor"></a>
+  - [Soul Fuel](#sdm-trait-soul-fuel)
+<a id="sdm-trait-veteran-of-the-psychic-wars-anchor"></a>
+  - [Veteran of the Psychic Wars](#sdm-trait-veteran-of-the-psychic-wars)
+
+<a id="sdm-trait-orangelander-anchor"></a>
+- [Orangelander](#sdm-trait-orangelander) (Vastlands Guidebook)
+<a id="sdm-trait-cad-anchor"></a>
+  - [Cad](#sdm-trait-cad)
+<a id="sdm-trait-citizen-living-anchor"></a>
+  - [Citizen Living](#sdm-trait-citizen-living)
+<a id="sdm-trait-citizen-maintainer-anchor"></a>
+  - [Citizen Maintainer](#sdm-trait-citizen-maintainer)
+<a id="sdm-trait-ducky-anchor"></a>
+  - [Ducky](#sdm-trait-ducky)
+<a id="sdm-trait-orange-half-ling-anchor"></a>
+  - [Orange Half-Ling](#sdm-trait-orange-half-ling)
+<a id="sdm-trait-unfred-anchor"></a>
+  - [Unfred](#sdm-trait-unfred)
+
+<a id="sdm-trait-purplelander-anchor"></a>
+- [Purplelander](#sdm-trait-purplelander) (Vastlands Guidebook)
+<a id="sdm-trait-arboreal-anchor"></a>
+  - [Arboreal](#sdm-trait-arboreal)
+<a id="sdm-trait-colonist-anchor"></a>
+  - [Colonist](#sdm-trait-colonist)
+<a id="sdm-trait-human-library-anchor"></a>
+  - [Human Library](#sdm-trait-human-library)
+<a id="sdm-trait-kaffetropist-anchor"></a>
+  - [Kaffetropist](#sdm-trait-kaffetropist)
+<a id="sdm-trait-pet-sidekick-anchor"></a>
+  - [Pet Sidekick](#sdm-trait-pet-sidekick)
+<a id="sdm-trait-telempath-anchor"></a>
+  - [Telempath](#sdm-trait-telempath)
+
+<a id="sdm-trait-redlander-anchor"></a>
+- [Redlander](#sdm-trait-redlander) (Vastlands Guidebook)
+<a id="sdm-trait-hexad-member-anchor"></a>
+  - [Hexad Member](#sdm-trait-hexad-member)
+<a id="sdm-trait-falscher-anchor"></a>
+  - [Falscher](#sdm-trait-falscher)
+<a id="sdm-trait-ruster-anchor"></a>
+  - [Ruster](#sdm-trait-ruster)
+<a id="sdm-trait-vampire-anchor"></a>
+  - [Vampire](#sdm-trait-vampire)
+<a id="sdm-trait-vintner-anchor"></a>
+  - [Vintner](#sdm-trait-vintner)
+<a id="sdm-trait-werker-anchor"></a>
+  - [Werker](#sdm-trait-werker)
+
+<a id="sdm-trait-scion-anchor"></a>
+- [Scion](#sdm-trait-scion) (Vastlands Guidebook)
+<a id="sdm-trait-dreamwalker-anchor"></a>
+  - [Dreamwalker](#sdm-trait-dreamwalker)
+<a id="sdm-trait-faceless-anchor"></a>
+  - [Faceless](#sdm-trait-faceless)
+<a id="sdm-trait-of-world-anchor"></a>
+  - [Of-World](#sdm-trait-of-world)
+<a id="sdm-trait-perfect-anchor"></a>
+  - [Perfect](#sdm-trait-perfect)
+<a id="sdm-trait-subconscious-decay-anchor"></a>
+  - [Subconscious Decay](#sdm-trait-subconscious-decay)
+<a id="sdm-trait-superuser-anchor"></a>
+  - [Superuser](#sdm-trait-superuser)
+
+<a id="sdm-trait-servant-anchor"></a>
+- [Servant](#sdm-trait-servant) (Vastlands Guidebook)
+<a id="sdm-trait-grounded-anchor"></a>
+  - [Grounded](#sdm-trait-grounded)
+<a id="sdm-trait-housemaker-anchor"></a>
+  - [Housemaker](#sdm-trait-housemaker)
+<a id="sdm-trait-resourceful-anchor"></a>
+  - [Resourceful](#sdm-trait-resourceful)
+<a id="sdm-trait-shopstaff-anchor"></a>
+  - [Shopstaff](#sdm-trait-shopstaff)
+<a id="sdm-trait-strong-anchor"></a>
+  - [Strong](#sdm-trait-strong)
+<a id="sdm-trait-tough-anchor"></a>
+  - [Tough](#sdm-trait-tough)
+
+<a id="sdm-trait-skeleton-anchor"></a>
+- [Skeleton](#sdm-trait-skeleton) (Vastlands Guidebook)
+<a id="sdm-trait-glowing-skeleton-anchor"></a>
+  - [Glowing Skeleton](#sdm-trait-glowing-skeleton)
+<a id="sdm-trait-my-bones-engraved-anchor"></a>
+  - [My Bones Engraved](#sdm-trait-my-bones-engraved)
+<a id="sdm-trait-void-ward-anchor"></a>
+  - [Void Ward](#sdm-trait-void-ward)
+<a id="sdm-trait-from-dust-returning-anchor"></a>
+  - [From Dust, Returning](#sdm-trait-from-dust-returning)
+<a id="sdm-trait-cold-new-flesh-anchor"></a>
+  - [Cold New Flesh](#sdm-trait-cold-new-flesh)
+<a id="sdm-trait-soul-thief-anchor"></a>
+  - [Soul Thief](#sdm-trait-soul-thief)
+
+<a id="sdm-trait-soldier-anchor"></a>
+- [Soldier](#sdm-trait-soldier) (Vastlands Guidebook)
+<a id="sdm-trait-armorborn-anchor"></a>
+  - [Armorborn](#sdm-trait-armorborn)
+<a id="sdm-trait-blastermaster-anchor"></a>
+  - [Blastermaster](#sdm-trait-blastermaster)
+<a id="sdm-trait-devastator-anchor"></a>
+  - [Devastator](#sdm-trait-devastator)
+<a id="sdm-trait-rationalised-anchor"></a>
+  - [Rationalised](#sdm-trait-rationalised)
+<a id="sdm-trait-slayer-anchor"></a>
+  - [Slayer](#sdm-trait-slayer)
+<a id="sdm-trait-wired-anchor"></a>
+  - [Wired](#sdm-trait-wired)
+
+<a id="sdm-trait-tourist-anchor"></a>
+- [Tourist](#sdm-trait-tourist) (Vastlands Guidebook)
+<a id="sdm-trait-personal-daimon-anchor"></a>
+  - [Personal Daimon](#sdm-trait-personal-daimon)
+<a id="sdm-trait-clueless-outsider-anchor"></a>
+  - [Clueless Outsider](#sdm-trait-clueless-outsider)
+<a id="sdm-trait-fortunate-one-anchor"></a>
+  - [Fortunate One](#sdm-trait-fortunate-one)
+<a id="sdm-trait-underestimated-anchor"></a>
+  - [Underestimated](#sdm-trait-underestimated)
+<a id="sdm-trait-intestinal-fortitude-anchor"></a>
+  - [Intestinal Fortitude](#sdm-trait-intestinal-fortitude)
+<a id="sdm-trait-hashtag-blessed-anchor"></a>
+  - [Hashtag Blessed](#sdm-trait-hashtag-blessed)
+
+<a id="sdm-trait-trickster-anchor"></a>
+- [Trickster](#sdm-trait-trickster) (Vastlands Guidebook)
+<a id="sdm-trait-backstabber-anchor"></a>
+  - [Backstabber](#sdm-trait-backstabber)
+<a id="sdm-trait-expert-friends-anchor"></a>
+  - [Expert Friends](#sdm-trait-expert-friends)
+<a id="sdm-trait-fake-out-anchor"></a>
+  - [Fake Out](#sdm-trait-fake-out)
+<a id="sdm-trait-pickpocket-anchor"></a>
+  - [Pickpocket](#sdm-trait-pickpocket)
+<a id="sdm-trait-bystander-anchor"></a>
+  - [Bystander](#sdm-trait-bystander)
+<a id="sdm-trait-silver-tongued-anchor"></a>
+  - [Silver-Tongued](#sdm-trait-silver-tongued)
+
+<a id="sdm-trait-weapon-anchor"></a>
+- [Weapon](#sdm-trait-weapon) (Vastlands Guidebook)
+<a id="sdm-trait-cleanser-anchor"></a>
+  - [Cleanser](#sdm-trait-cleanser)
+<a id="sdm-trait-curse-blessed-anchor"></a>
+  - [Curse-Blessed](#sdm-trait-curse-blessed)
+<a id="sdm-trait-death-hunger-anchor"></a>
+  - [Death Hunger](#sdm-trait-death-hunger)
+<a id="sdm-trait-demolisher-anchor"></a>
+  - [Demolisher](#sdm-trait-demolisher)
+<a id="sdm-trait-fatespun-anchor"></a>
+  - [Fatespun](#sdm-trait-fatespun)
+<a id="sdm-trait-i-am-legion-anchor"></a>
+  - [I Am Legion](#sdm-trait-i-am-legion)
+
+<a id="sdm-trait-burglar-anchor"></a>
+- [Burglar](#sdm-trait-burglar) (Vastlands Guidebook)
+<a id="sdm-trait-doombringer-anchor"></a>
+  - [Doombringer](#sdm-trait-doombringer)
+<a id="sdm-trait-fighting-woman-or-man-anchor"></a>
+  - [Fighting Woman or Man](#sdm-trait-fighting-woman-or-man)
+<a id="sdm-trait-loyal-anchor"></a>
+  - [Loyal](#sdm-trait-loyal)
+<a id="sdm-trait-revenant-in-waiting-anchor"></a>
+  - [Revenant-in-Waiting](#sdm-trait-revenant-in-waiting)
+<a id="sdm-trait-shackleminded-anchor"></a>
+  - [Shackleminded](#sdm-trait-shackleminded)
+
+<a id="sdm-trait-yellowlander-anchor"></a>
+- [Yellowlander](#sdm-trait-yellowlander) (Vastlands Guidebook)
+<a id="sdm-trait-diesel-dwarf-anchor"></a>
+  - [Diesel Dwarf](#sdm-trait-diesel-dwarf)
+<a id="sdm-trait-dust-rat-anchor"></a>
+  - [Dust Rat](#sdm-trait-dust-rat)
+<a id="sdm-trait-rancher-anchor"></a>
+  - [Rancher](#sdm-trait-rancher)
+<a id="sdm-trait-ruderalist-anchor"></a>
+  - [Ruderalist](#sdm-trait-ruderalist)
+<a id="sdm-trait-saffron-eater-anchor"></a>
+  - [Saffron Eater](#sdm-trait-saffron-eater)
+<a id="sdm-trait-thorny-anchor"></a>
+  - [Thorny](#sdm-trait-thorny)
+
+<a id="sdm-trait-generic-synthesized-creature-anchor"></a>
+- [Generic Synthesized Creature](#sdm-trait-generic-synthesized-creature) (Vastlands Guidebook)
+
+<a id="sdm-trait-humans-of-the-pananthropy-anchor"></a>
+- [Humans of the Pananthropy](#sdm-trait-humans-of-the-pananthropy) (Vastlands Guidebook)
+<a id="sdm-trait-bonded-anchor"></a>
+  - [Bonded](#sdm-trait-bonded)
+<a id="sdm-trait-teamwork-anchor"></a>
+  - [Teamwork](#sdm-trait-teamwork)
+<a id="sdm-trait-toolmaker-anchor"></a>
+  - [Toolmaker](#sdm-trait-toolmaker)
+<a id="sdm-trait-adaptable-anchor"></a>
+  - [Adaptable](#sdm-trait-adaptable)
+<a id="sdm-trait-tactical-anchor"></a>
+  - [Tactical](#sdm-trait-tactical)
+<a id="sdm-trait-common-humanity-anchor"></a>
+  - [Common Humanity](#sdm-trait-common-humanity)
+
+<a id="sdm-trait-brick-bastions-anchor"></a>
+- [Brick Bastions](#sdm-trait-brick-bastions) (Vastlands Guidebook)
+<a id="sdm-trait-shieldfriend-anchor"></a>
+  - [Shieldfriend](#sdm-trait-shieldfriend)
+<a id="sdm-trait-steadfast-anchor"></a>
+  - [Steadfast](#sdm-trait-steadfast)
+<a id="sdm-trait-denial-anchor"></a>
+  - [Denial](#sdm-trait-denial)
+<a id="sdm-trait-resistomorph-anchor"></a>
+  - [Resistomorph](#sdm-trait-resistomorph)
+<a id="sdm-trait-rockblood-anchor"></a>
+  - [Rockblood](#sdm-trait-rockblood)
+<a id="sdm-trait-slam-anchor"></a>
+  - [Slam](#sdm-trait-slam)
+
+<a id="sdm-trait-crystal-cannons-anchor"></a>
+- [Crystal Cannons](#sdm-trait-crystal-cannons) (Vastlands Guidebook)
+<a id="sdm-trait-overcharge-anchor"></a>
+  - [Overcharge](#sdm-trait-overcharge)
+<a id="sdm-trait-desperate-shot-anchor"></a>
+  - [Desperate Shot](#sdm-trait-desperate-shot)
+<a id="sdm-trait-feedback-anchor"></a>
+  - [Feedback](#sdm-trait-feedback)
+<a id="sdm-trait-shatter-anchor"></a>
+  - [Shatter](#sdm-trait-shatter)
+<a id="sdm-trait-phase-anchor"></a>
+  - [Phase](#sdm-trait-phase)
+<a id="sdm-trait-circle-of-pain-anchor"></a>
+  - [Circle of Pain](#sdm-trait-circle-of-pain)
+
+<a id="sdm-trait-darting-dodgers-anchor"></a>
+- [Darting Dodgers](#sdm-trait-darting-dodgers) (Vastlands Guidebook)
+<a id="sdm-trait-charger-anchor"></a>
+  - [Charger](#sdm-trait-charger)
+<a id="sdm-trait-double-attack-anchor"></a>
+  - [Double Attack](#sdm-trait-double-attack)
+<a id="sdm-trait-riposte-anchor"></a>
+  - [Riposte](#sdm-trait-riposte)
+<a id="sdm-trait-evasive-anchor"></a>
+  - [Evasive](#sdm-trait-evasive)
+<a id="sdm-trait-springer-anchor"></a>
+  - [Springer](#sdm-trait-springer)
+<a id="sdm-trait-stabber-anchor"></a>
+  - [Stabber](#sdm-trait-stabber)
+
+<a id="sdm-trait-erratic-expendables-anchor"></a>
+- [Erratic Expendables](#sdm-trait-erratic-expendables) (Vastlands Guidebook)
+<a id="sdm-trait-death-curse-anchor"></a>
+  - [Death Curse](#sdm-trait-death-curse)
+<a id="sdm-trait-martyr-anchor"></a>
+  - [Martyr](#sdm-trait-martyr)
+<a id="sdm-trait-once-again-anchor"></a>
+  - [Once Again](#sdm-trait-once-again)
+<a id="sdm-trait-killbite-anchor"></a>
+  - [Killbite](#sdm-trait-killbite)
+<a id="sdm-trait-ticking-corpse-anchor"></a>
+  - [Ticking Corpse](#sdm-trait-ticking-corpse)
+<a id="sdm-trait-frenzy-anchor"></a>
+  - [Frenzy](#sdm-trait-frenzy)
 
 ## SDM Trait Template
 
@@ -260,7 +496,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-background"></a>
 #### Background
-<div class="trait-return"><a href="#sdm-trait-background-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-background-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -329,7 +565,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-wizard"></a>
 #### Wizard
-<div class="trait-return"><a href="#sdm-trait-wizard-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-wizard-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -356,7 +592,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-burner"></a>
 #### Burner
-<div class="trait-return"><a href="#sdm-trait-burner-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-burner-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -385,7 +621,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-chronic"></a>
 #### Chronic
-<div class="trait-return"><a href="#sdm-trait-chronic-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-chronic-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -414,7 +650,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-exuberant"></a>
 #### Exuberant
-<div class="trait-return"><a href="#sdm-trait-exuberant-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-exuberant-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -441,7 +677,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-mind-palace"></a>
 #### Mind Palace
-<div class="trait-return"><a href="#sdm-trait-mind-palace-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-mind-palace-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -469,7 +705,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-oblique-reality"></a>
 #### Oblique Reality
-<div class="trait-return"><a href="#sdm-trait-oblique-reality-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-oblique-reality-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -498,7 +734,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-recast"></a>
 #### Recast
-<div class="trait-return"><a href="#sdm-trait-recast-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-recast-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -528,7 +764,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-traveler"></a>
 #### Traveler
-<div class="trait-return"><a href="#sdm-trait-traveler-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-traveler-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -555,7 +791,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-escapist"></a>
 #### Escapist
-<div class="trait-return"><a href="#sdm-trait-escapist-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-escapist-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -582,7 +818,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-friends"></a>
 #### Friends
-<div class="trait-return"><a href="#sdm-trait-friends-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-friends-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -610,7 +846,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-hunter"></a>
 #### Hunter
-<div class="trait-return"><a href="#sdm-trait-hunter-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-hunter-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -637,7 +873,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-pleasant"></a>
 #### Pleasant
-<div class="trait-return"><a href="#sdm-trait-pleasant-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-pleasant-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -664,7 +900,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-pocketmaster"></a>
 #### Pocketmaster
-<div class="trait-return"><a href="#sdm-trait-pocketmaster-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-pocketmaster-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -692,7 +928,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-swift"></a>
 #### Swift
-<div class="trait-return"><a href="#sdm-trait-swift-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-swift-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -724,7 +960,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-fighter"></a>
 #### Fighter
-<div class="trait-return"><a href="#sdm-trait-fighter-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-fighter-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -752,7 +988,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-armiger"></a>
 #### Armiger
-<div class="trait-return"><a href="#sdm-trait-armiger-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-armiger-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -780,7 +1016,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-defender"></a>
 #### Defender
-<div class="trait-return"><a href="#sdm-trait-defender-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-defender-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -807,7 +1043,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-grit"></a>
 #### Grit
-<div class="trait-return"><a href="#sdm-trait-grit-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-grit-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -834,7 +1070,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-irresistible"></a>
 #### Irresistible
-<div class="trait-return"><a href="#sdm-trait-irresistible-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-irresistible-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -862,7 +1098,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-second-chance"></a>
 #### Second Chance
-<div class="trait-return"><a href="#sdm-trait-second-chance-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-second-chance-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -890,7 +1126,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-terrifying"></a>
 #### Terrifying
-<div class="trait-return"><a href="#sdm-trait-terrifying-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-terrifying-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -925,7 +1161,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-barbarian"></a>
 #### Barbarian
-<div class="trait-return"><a href="#sdm-trait-barbarian-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-barbarian-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -953,7 +1189,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-antimagus"></a>
 #### Antimagus
-<div class="trait-return"><a href="#sdm-trait-antimagus-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-antimagus-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -981,7 +1217,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-blood-clad"></a>
 #### Blood Clad
-<div class="trait-return"><a href="#sdm-trait-blood-clad-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-blood-clad-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1010,7 +1246,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-culling"></a>
 #### Culling
-<div class="trait-return"><a href="#sdm-trait-culling-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-culling-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1037,7 +1273,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-feral"></a>
 #### Feral
-<div class="trait-return"><a href="#sdm-trait-feral-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-feral-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1065,7 +1301,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-lost-songs"></a>
 #### Lost Songs
-<div class="trait-return"><a href="#sdm-trait-lost-songs-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-lost-songs-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1095,7 +1331,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-wild-survivor"></a>
 #### Wild Survivor
-<div class="trait-return"><a href="#sdm-trait-wild-survivor-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-wild-survivor-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1125,7 +1361,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-bluelander"></a>
 #### Bluelander
-<div class="trait-return"><a href="#sdm-trait-bluelander-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-bluelander-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1153,7 +1389,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-boatmaster"></a>
 #### Boatmaster
-<div class="trait-return"><a href="#sdm-trait-boatmaster-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-boatmaster-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1180,7 +1416,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-cheesemaker"></a>
 #### Cheesemaker
-<div class="trait-return"><a href="#sdm-trait-cheesemaker-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-cheesemaker-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1208,7 +1444,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-oppressed-faith"></a>
 #### Oppressed Faith
-<div class="trait-return"><a href="#sdm-trait-oppressed-faith-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-oppressed-faith-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1235,7 +1471,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-reanimator"></a>
 #### Reanimator
-<div class="trait-return"><a href="#sdm-trait-reanimator-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-reanimator-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1263,7 +1499,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-spelunker"></a>
 #### Spelunker
-<div class="trait-return"><a href="#sdm-trait-spelunker-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-spelunker-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1290,7 +1526,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-sporemark"></a>
 #### Sporemark
-<div class="trait-return"><a href="#sdm-trait-sporemark-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-sporemark-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1319,7 +1555,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-bourgeois"></a>
 #### Bourgeois
-<div class="trait-return"><a href="#sdm-trait-bourgeois-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-bourgeois-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1348,7 +1584,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-double-platinum-deathless-backup"></a>
 #### Double-Platinum Deathless Backup
-<div class="trait-return"><a href="#sdm-trait-double-platinum-deathless-backup-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-double-platinum-deathless-backup-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1375,7 +1611,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-enterprising"></a>
 #### Enterprising
-<div class="trait-return"><a href="#sdm-trait-enterprising-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-enterprising-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1402,7 +1638,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-expensive-training"></a>
 #### Expensive Training
-<div class="trait-return"><a href="#sdm-trait-expensive-training-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-expensive-training-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1429,7 +1665,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-legal-immunity"></a>
 #### Legal Immunity
-<div class="trait-return"><a href="#sdm-trait-legal-immunity-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-legal-immunity-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1458,7 +1694,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-old-money"></a>
 #### Old Money
-<div class="trait-return"><a href="#sdm-trait-old-money-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-old-money-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1485,7 +1721,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-urbane"></a>
 #### Urbane
-<div class="trait-return"><a href="#sdm-trait-urbane-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-urbane-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1515,7 +1751,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-golem"></a>
 #### Golem
-<div class="trait-return"><a href="#sdm-trait-golem-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-golem-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1543,7 +1779,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-hardened"></a>
 #### Hardened
-<div class="trait-return"><a href="#sdm-trait-hardened-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-hardened-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1570,7 +1806,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-powered"></a>
 #### Powered
-<div class="trait-return"><a href="#sdm-trait-powered-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-powered-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1597,7 +1833,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-synthetic-soul"></a>
 #### Synthetic Soul
-<div class="trait-return"><a href="#sdm-trait-synthetic-soul-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-synthetic-soul-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1624,7 +1860,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-undying-synthetic"></a>
 #### Undying Synthetic
-<div class="trait-return"><a href="#sdm-trait-undying-synthetic-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-undying-synthetic-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1651,7 +1887,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-ur-war-program"></a>
 #### Ur-War Program
-<div class="trait-return"><a href="#sdm-trait-ur-war-program-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-ur-war-program-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1678,7 +1914,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-very-strong"></a>
 #### Very Strong
-<div class="trait-return"><a href="#sdm-trait-very-strong-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-very-strong-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1707,7 +1943,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-greenlander"></a>
 #### Greenlander
-<div class="trait-return"><a href="#sdm-trait-greenlander-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-greenlander-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1735,7 +1971,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-country-squire"></a>
 #### Country Squire
-<div class="trait-return"><a href="#sdm-trait-country-squire-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-country-squire-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1762,7 +1998,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-deeply-embodied"></a>
 #### Deeply Embodied
-<div class="trait-return"><a href="#sdm-trait-deeply-embodied-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-deeply-embodied-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1789,7 +2025,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-informant"></a>
 #### Informant
-<div class="trait-return"><a href="#sdm-trait-informant-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-informant-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1818,7 +2054,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-metropolitan"></a>
 #### Metropolitan
-<div class="trait-return"><a href="#sdm-trait-metropolitan-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-metropolitan-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1846,7 +2082,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-mossblood"></a>
 #### Mossblood
-<div class="trait-return"><a href="#sdm-trait-mossblood-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-mossblood-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1873,7 +2109,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-soiltwined"></a>
 #### Soiltwined
-<div class="trait-return"><a href="#sdm-trait-soiltwined-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-soiltwined-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1902,7 +2138,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-holy-fool"></a>
 #### Holy Fool
-<div class="trait-return"><a href="#sdm-trait-holy-fool-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-holy-fool-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1931,7 +2167,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-abandoned"></a>
 #### Abandoned
-<div class="trait-return"><a href="#sdm-trait-abandoned-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-abandoned-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1959,7 +2195,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-blessed"></a>
 #### Blessed
-<div class="trait-return"><a href="#sdm-trait-blessed-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-blessed-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -1986,7 +2222,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-holy-diver"></a>
 #### Holy Diver
-<div class="trait-return"><a href="#sdm-trait-holy-diver-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-holy-diver-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2014,7 +2250,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-phylakes-child"></a>
 #### Phylake’s Child
-<div class="trait-return"><a href="#sdm-trait-phylakes-child-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-phylakes-child-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2041,7 +2277,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-soothsayer"></a>
 #### Soothsayer
-<div class="trait-return"><a href="#sdm-trait-soothsayer-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-soothsayer-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2069,7 +2305,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-wanderer"></a>
 #### Wanderer
-<div class="trait-return"><a href="#sdm-trait-wanderer-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-wanderer-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2098,7 +2334,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-manager"></a>
 #### Manager
-<div class="trait-return"><a href="#sdm-trait-manager-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-manager-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2126,7 +2362,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-competent-appearance"></a>
 #### Competent Appearance
-<div class="trait-return"><a href="#sdm-trait-competent-appearance-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-competent-appearance-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2153,7 +2389,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-social-survivor"></a>
 #### Social Survivor
-<div class="trait-return"><a href="#sdm-trait-social-survivor-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-social-survivor-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2181,7 +2417,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-inquisition-agent"></a>
 #### Inquisition Agent
-<div class="trait-return"><a href="#sdm-trait-inquisition-agent-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-inquisition-agent-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2208,7 +2444,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-motivational"></a>
 #### Motivational
-<div class="trait-return"><a href="#sdm-trait-motivational-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-motivational-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2236,7 +2472,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-noosphere-priest"></a>
 #### Noösphere Priest
-<div class="trait-return"><a href="#sdm-trait-noosphere-priest-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-noosphere-priest-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2263,7 +2499,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-numbers-maximization-official"></a>
 #### Numbers Maximization Official
-<div class="trait-return"><a href="#sdm-trait-numbers-maximization-official-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-numbers-maximization-official-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2293,7 +2529,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-noble"></a>
 #### Noble
-<div class="trait-return"><a href="#sdm-trait-noble-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-noble-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2322,7 +2558,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-hexer-meritocrat"></a>
 #### Hexer Meritocrat
-<div class="trait-return"><a href="#sdm-trait-hexer-meritocrat-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-hexer-meritocrat-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2349,7 +2585,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-knight-reflexes"></a>
 #### Knight Reflexes
-<div class="trait-return"><a href="#sdm-trait-knight-reflexes-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-knight-reflexes-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2377,7 +2613,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-dissipated"></a>
 #### Dissipated
-<div class="trait-return"><a href="#sdm-trait-dissipated-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-dissipated-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2404,7 +2640,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-divine-blood"></a>
 #### Divine Blood
-<div class="trait-return"><a href="#sdm-trait-divine-blood-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-divine-blood-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2431,7 +2667,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-sculpted-beauty"></a>
 #### Sculpted Beauty
-<div class="trait-return"><a href="#sdm-trait-sculpted-beauty-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-sculpted-beauty-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2458,7 +2694,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-perfected-germline"></a>
 #### Perfected Germline
-<div class="trait-return"><a href="#sdm-trait-perfected-germline-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-perfected-germline-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2487,7 +2723,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-noomagus"></a>
 #### Noömagus
-<div class="trait-return"><a href="#sdm-trait-noomagus-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-noomagus-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2515,7 +2751,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-cosmic-qanat"></a>
 #### Cosmic Qanat
-<div class="trait-return"><a href="#sdm-trait-cosmic-qanat-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-cosmic-qanat-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2542,7 +2778,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-hackmagic"></a>
 #### Hackmagic
-<div class="trait-return"><a href="#sdm-trait-hackmagic-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-hackmagic-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2571,7 +2807,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-noosphere-native"></a>
 #### Noösphere Native
-<div class="trait-return"><a href="#sdm-trait-noosphere-native-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-noosphere-native-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2598,7 +2834,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-power-scroller"></a>
 #### Power Scroller
-<div class="trait-return"><a href="#sdm-trait-power-scroller-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-power-scroller-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2626,7 +2862,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-soul-fuel"></a>
 #### Soul Fuel
-<div class="trait-return"><a href="#sdm-trait-soul-fuel-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-soul-fuel-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2655,7 +2891,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-veteran-of-the-psychic-wars"></a>
 #### Veteran of the Psychic Wars
-<div class="trait-return"><a href="#sdm-trait-veteran-of-the-psychic-wars-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-veteran-of-the-psychic-wars-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2684,7 +2920,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-orangelander"></a>
 #### Orangelander
-<div class="trait-return"><a href="#sdm-trait-orangelander-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-orangelander-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2712,7 +2948,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-cad"></a>
 #### Cad
-<div class="trait-return"><a href="#sdm-trait-cad-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-cad-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2739,7 +2975,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-citizen-living"></a>
 #### Citizen Living
-<div class="trait-return"><a href="#sdm-trait-citizen-living-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-citizen-living-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2767,7 +3003,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-citizen-maintainer"></a>
 #### Citizen Maintainer
-<div class="trait-return"><a href="#sdm-trait-citizen-maintainer-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-citizen-maintainer-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2795,7 +3031,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-ducky"></a>
 #### Ducky
-<div class="trait-return"><a href="#sdm-trait-ducky-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-ducky-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2824,7 +3060,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-orange-half-ling"></a>
 #### Orange Half-Ling
-<div class="trait-return"><a href="#sdm-trait-orange-half-ling-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-orange-half-ling-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2851,7 +3087,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-unfred"></a>
 #### Unfred
-<div class="trait-return"><a href="#sdm-trait-unfred-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-unfred-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2880,7 +3116,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-purplelander"></a>
 #### Purplelander
-<div class="trait-return"><a href="#sdm-trait-purplelander-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-purplelander-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2908,7 +3144,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-arboreal"></a>
 #### Arboreal
-<div class="trait-return"><a href="#sdm-trait-arboreal-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-arboreal-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2935,7 +3171,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-colonist"></a>
 #### Colonist
-<div class="trait-return"><a href="#sdm-trait-colonist-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-colonist-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2963,7 +3199,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-human-library"></a>
 #### Human Library
-<div class="trait-return"><a href="#sdm-trait-human-library-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-human-library-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -2990,7 +3226,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-kaffetropist"></a>
 #### Kaffetropist
-<div class="trait-return"><a href="#sdm-trait-kaffetropist-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-kaffetropist-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3018,7 +3254,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-pet-sidekick"></a>
 #### Pet Sidekick
-<div class="trait-return"><a href="#sdm-trait-pet-sidekick-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-pet-sidekick-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3045,7 +3281,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-telempath"></a>
 #### Telempath
-<div class="trait-return"><a href="#sdm-trait-telempath-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-telempath-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3075,7 +3311,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-redlander"></a>
 #### Redlander
-<div class="trait-return"><a href="#sdm-trait-redlander-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-redlander-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3103,7 +3339,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-hexad-member"></a>
 #### Hexad Member
-<div class="trait-return"><a href="#sdm-trait-hexad-member-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-hexad-member-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3132,7 +3368,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-falscher"></a>
 #### Falscher
-<div class="trait-return"><a href="#sdm-trait-falscher-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-falscher-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3159,7 +3395,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-ruster"></a>
 #### Ruster
-<div class="trait-return"><a href="#sdm-trait-ruster-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-ruster-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3186,7 +3422,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-vampire"></a>
 #### Vampire
-<div class="trait-return"><a href="#sdm-trait-vampire-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-vampire-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3213,7 +3449,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-vintner"></a>
 #### Vintner
-<div class="trait-return"><a href="#sdm-trait-vintner-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-vintner-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3240,7 +3476,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-werker"></a>
 #### Werker
-<div class="trait-return"><a href="#sdm-trait-werker-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-werker-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3270,7 +3506,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-scion"></a>
 #### Scion
-<div class="trait-return"><a href="#sdm-trait-scion-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-scion-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3299,7 +3535,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-dreamwalker"></a>
 #### Dreamwalker
-<div class="trait-return"><a href="#sdm-trait-dreamwalker-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-dreamwalker-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3326,7 +3562,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-faceless"></a>
 #### Faceless
-<div class="trait-return"><a href="#sdm-trait-faceless-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-faceless-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3353,7 +3589,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-of-world"></a>
 #### Of-World
-<div class="trait-return"><a href="#sdm-trait-of-world-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-of-world-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3381,7 +3617,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-perfect"></a>
 #### Perfect
-<div class="trait-return"><a href="#sdm-trait-perfect-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-perfect-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3408,7 +3644,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-subconscious-decay"></a>
 #### Subconscious Decay
-<div class="trait-return"><a href="#sdm-trait-subconscious-decay-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-subconscious-decay-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3435,7 +3671,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-superuser"></a>
 #### Superuser
-<div class="trait-return"><a href="#sdm-trait-superuser-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-superuser-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3464,7 +3700,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-servant"></a>
 #### Servant
-<div class="trait-return"><a href="#sdm-trait-servant-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-servant-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3492,7 +3728,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-grounded"></a>
 #### Grounded
-<div class="trait-return"><a href="#sdm-trait-grounded-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-grounded-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3519,7 +3755,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-housemaker"></a>
 #### Housemaker
-<div class="trait-return"><a href="#sdm-trait-housemaker-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-housemaker-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3547,7 +3783,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-resourceful"></a>
 #### Resourceful
-<div class="trait-return"><a href="#sdm-trait-resourceful-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-resourceful-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3575,7 +3811,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-shopstaff"></a>
 #### Shopstaff
-<div class="trait-return"><a href="#sdm-trait-shopstaff-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-shopstaff-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3603,7 +3839,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-strong"></a>
 #### Strong
-<div class="trait-return"><a href="#sdm-trait-strong-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-strong-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3630,7 +3866,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-tough"></a>
 #### Tough
-<div class="trait-return"><a href="#sdm-trait-tough-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-tough-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3659,7 +3895,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-skeleton"></a>
 #### Skeleton
-<div class="trait-return"><a href="#sdm-trait-skeleton-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-skeleton-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3687,7 +3923,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-glowing-skeleton"></a>
 #### Glowing Skeleton
-<div class="trait-return"><a href="#sdm-trait-glowing-skeleton-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-glowing-skeleton-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3714,7 +3950,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-my-bones-engraved"></a>
 #### My Bones Engraved
-<div class="trait-return"><a href="#sdm-trait-my-bones-engraved-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-my-bones-engraved-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3742,7 +3978,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-void-ward"></a>
 #### Void Ward
-<div class="trait-return"><a href="#sdm-trait-void-ward-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-void-ward-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3769,7 +4005,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-from-dust-returning"></a>
 #### From Dust, Returning
-<div class="trait-return"><a href="#sdm-trait-from-dust-returning-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-from-dust-returning-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3796,7 +4032,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-cold-new-flesh"></a>
 #### Cold New Flesh
-<div class="trait-return"><a href="#sdm-trait-cold-new-flesh-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-cold-new-flesh-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3824,7 +4060,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-soul-thief"></a>
 #### Soul Thief
-<div class="trait-return"><a href="#sdm-trait-soul-thief-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-soul-thief-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3853,7 +4089,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-soldier"></a>
 #### Soldier
-<div class="trait-return"><a href="#sdm-trait-soldier-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-soldier-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3881,7 +4117,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-armorborn"></a>
 #### Armorborn
-<div class="trait-return"><a href="#sdm-trait-armorborn-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-armorborn-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3909,7 +4145,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-blastermaster"></a>
 #### Blastermaster
-<div class="trait-return"><a href="#sdm-trait-blastermaster-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-blastermaster-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3936,7 +4172,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-devastator"></a>
 #### Devastator
-<div class="trait-return"><a href="#sdm-trait-devastator-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-devastator-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3963,7 +4199,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-rationalised"></a>
 #### Rationalised
-<div class="trait-return"><a href="#sdm-trait-rationalised-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-rationalised-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -3990,7 +4226,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-slayer"></a>
 #### Slayer
-<div class="trait-return"><a href="#sdm-trait-slayer-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-slayer-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4017,7 +4253,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-wired"></a>
 #### Wired
-<div class="trait-return"><a href="#sdm-trait-wired-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-wired-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4047,7 +4283,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-tourist"></a>
 #### Tourist
-<div class="trait-return"><a href="#sdm-trait-tourist-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-tourist-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4075,7 +4311,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-personal-daimon"></a>
 #### Personal Daimon
-<div class="trait-return"><a href="#sdm-trait-personal-daimon-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-personal-daimon-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4103,7 +4339,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-clueless-outsider"></a>
 #### Clueless Outsider
-<div class="trait-return"><a href="#sdm-trait-clueless-outsider-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-clueless-outsider-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4131,7 +4367,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-fortunate-one"></a>
 #### Fortunate One
-<div class="trait-return"><a href="#sdm-trait-fortunate-one-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-fortunate-one-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4159,7 +4395,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-underestimated"></a>
 #### Underestimated
-<div class="trait-return"><a href="#sdm-trait-underestimated-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-underestimated-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4187,7 +4423,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-intestinal-fortitude"></a>
 #### Intestinal Fortitude
-<div class="trait-return"><a href="#sdm-trait-intestinal-fortitude-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-intestinal-fortitude-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4216,7 +4452,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-hashtag-blessed"></a>
 #### Hashtag Blessed
-<div class="trait-return"><a href="#sdm-trait-hashtag-blessed-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-hashtag-blessed-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4245,7 +4481,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-trickster"></a>
 #### Trickster
-<div class="trait-return"><a href="#sdm-trait-trickster-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-trickster-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4273,7 +4509,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-backstabber"></a>
 #### Backstabber
-<div class="trait-return"><a href="#sdm-trait-backstabber-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-backstabber-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4300,7 +4536,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-expert-friends"></a>
 #### Expert Friends
-<div class="trait-return"><a href="#sdm-trait-expert-friends-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-expert-friends-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4327,7 +4563,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-fake-out"></a>
 #### Fake Out
-<div class="trait-return"><a href="#sdm-trait-fake-out-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-fake-out-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4355,7 +4591,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-pickpocket"></a>
 #### Pickpocket
-<div class="trait-return"><a href="#sdm-trait-pickpocket-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-pickpocket-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4382,7 +4618,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-bystander"></a>
 #### Bystander
-<div class="trait-return"><a href="#sdm-trait-bystander-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-bystander-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4409,7 +4645,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-silver-tongued"></a>
 #### Silver-Tongued
-<div class="trait-return"><a href="#sdm-trait-silver-tongued-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-silver-tongued-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4439,7 +4675,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-weapon"></a>
 #### Weapon
-<div class="trait-return"><a href="#sdm-trait-weapon-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-weapon-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4466,7 +4702,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-cleanser"></a>
 #### Cleanser
-<div class="trait-return"><a href="#sdm-trait-cleanser-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-cleanser-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4496,7 +4732,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-curse-blessed"></a>
 #### Curse-Blessed
-<div class="trait-return"><a href="#sdm-trait-curse-blessed-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-curse-blessed-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4523,7 +4759,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-death-hunger"></a>
 #### Death Hunger
-<div class="trait-return"><a href="#sdm-trait-death-hunger-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-death-hunger-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4550,7 +4786,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-demolisher"></a>
 #### Demolisher
-<div class="trait-return"><a href="#sdm-trait-demolisher-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-demolisher-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4578,7 +4814,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-fatespun"></a>
 #### Fatespun
-<div class="trait-return"><a href="#sdm-trait-fatespun-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-fatespun-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4605,7 +4841,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-i-am-legion"></a>
 #### I Am Legion
-<div class="trait-return"><a href="#sdm-trait-i-am-legion-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-i-am-legion-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4632,7 +4868,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-burglar"></a>
 #### Burglar
-<div class="trait-return"><a href="#sdm-trait-burglar-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-burglar-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4660,7 +4896,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-doombringer"></a>
 #### Doombringer
-<div class="trait-return"><a href="#sdm-trait-doombringer-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-doombringer-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4687,7 +4923,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-fighting-woman-or-man"></a>
 #### Fighting Woman or Man
-<div class="trait-return"><a href="#sdm-trait-fighting-woman-or-man-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-fighting-woman-or-man-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4714,7 +4950,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-loyal"></a>
 #### Loyal
-<div class="trait-return"><a href="#sdm-trait-loyal-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-loyal-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4743,7 +4979,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-revenant-in-waiting"></a>
 #### Revenant-in-Waiting
-<div class="trait-return"><a href="#sdm-trait-revenant-in-waiting-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-revenant-in-waiting-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4770,7 +5006,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-shackleminded"></a>
 #### Shackleminded
-<div class="trait-return"><a href="#sdm-trait-shackleminded-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-shackleminded-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4799,7 +5035,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-yellowlander"></a>
 #### Yellowlander
-<div class="trait-return"><a href="#sdm-trait-yellowlander-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-yellowlander-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4827,7 +5063,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-diesel-dwarf"></a>
 #### Diesel Dwarf
-<div class="trait-return"><a href="#sdm-trait-diesel-dwarf-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-diesel-dwarf-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4854,7 +5090,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-dust-rat"></a>
 #### Dust Rat
-<div class="trait-return"><a href="#sdm-trait-dust-rat-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-dust-rat-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4881,7 +5117,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-rancher"></a>
 #### Rancher
-<div class="trait-return"><a href="#sdm-trait-rancher-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-rancher-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4908,7 +5144,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-ruderalist"></a>
 #### Ruderalist
-<div class="trait-return"><a href="#sdm-trait-ruderalist-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-ruderalist-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4935,7 +5171,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-saffron-eater"></a>
 #### Saffron Eater
-<div class="trait-return"><a href="#sdm-trait-saffron-eater-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-saffron-eater-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4962,7 +5198,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-thorny"></a>
 #### Thorny
-<div class="trait-return"><a href="#sdm-trait-thorny-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-thorny-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -4994,7 +5230,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-generic-synthesized-creature"></a>
 #### Generic Synthesized Creature
-<div class="trait-return"><a href="#sdm-trait-generic-synthesized-creature-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-generic-synthesized-creature-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5046,7 +5282,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-humans-of-the-pananthropy"></a>
 #### Humans of the Pananthropy
-<div class="trait-return"><a href="#sdm-trait-humans-of-the-pananthropy-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-humans-of-the-pananthropy-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5090,7 +5326,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-bonded"></a>
 #### Bonded
-<div class="trait-return"><a href="#sdm-trait-bonded-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-bonded-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5117,7 +5353,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-teamwork"></a>
 #### Teamwork
-<div class="trait-return"><a href="#sdm-trait-teamwork-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-teamwork-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5144,7 +5380,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-toolmaker"></a>
 #### Toolmaker
-<div class="trait-return"><a href="#sdm-trait-toolmaker-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-toolmaker-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5171,7 +5407,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-adaptable"></a>
 #### Adaptable
-<div class="trait-return"><a href="#sdm-trait-adaptable-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-adaptable-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5198,7 +5434,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-tactical"></a>
 #### Tactical
-<div class="trait-return"><a href="#sdm-trait-tactical-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-tactical-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5225,7 +5461,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-common-humanity"></a>
 #### Common Humanity
-<div class="trait-return"><a href="#sdm-trait-common-humanity-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-common-humanity-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5253,7 +5489,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-brick-bastions"></a>
 #### Brick Bastions
-<div class="trait-return"><a href="#sdm-trait-brick-bastions-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-brick-bastions-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5297,7 +5533,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-shieldfriend"></a>
 #### Shieldfriend
-<div class="trait-return"><a href="#sdm-trait-shieldfriend-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-shieldfriend-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5324,7 +5560,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-steadfast"></a>
 #### Steadfast
-<div class="trait-return"><a href="#sdm-trait-steadfast-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-steadfast-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5351,7 +5587,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-denial"></a>
 #### Denial
-<div class="trait-return"><a href="#sdm-trait-denial-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-denial-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5378,7 +5614,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-resistomorph"></a>
 #### Resistomorph
-<div class="trait-return"><a href="#sdm-trait-resistomorph-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-resistomorph-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5405,7 +5641,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-rockblood"></a>
 #### Rockblood
-<div class="trait-return"><a href="#sdm-trait-rockblood-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-rockblood-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5432,7 +5668,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-slam"></a>
 #### Slam
-<div class="trait-return"><a href="#sdm-trait-slam-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-slam-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5460,7 +5696,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-crystal-cannons"></a>
 #### Crystal Cannons
-<div class="trait-return"><a href="#sdm-trait-crystal-cannons-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-crystal-cannons-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5504,7 +5740,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-overcharge"></a>
 #### Overcharge
-<div class="trait-return"><a href="#sdm-trait-overcharge-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-overcharge-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5532,7 +5768,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-desperate-shot"></a>
 #### Desperate Shot
-<div class="trait-return"><a href="#sdm-trait-desperate-shot-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-desperate-shot-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5559,7 +5795,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-feedback"></a>
 #### Feedback
-<div class="trait-return"><a href="#sdm-trait-feedback-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-feedback-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5586,7 +5822,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-shatter"></a>
 #### Shatter
-<div class="trait-return"><a href="#sdm-trait-shatter-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-shatter-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5613,7 +5849,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-phase"></a>
 #### Phase
-<div class="trait-return"><a href="#sdm-trait-phase-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-phase-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5641,7 +5877,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-circle-of-pain"></a>
 #### Circle of Pain
-<div class="trait-return"><a href="#sdm-trait-circle-of-pain-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-circle-of-pain-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5668,7 +5904,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-darting-dodgers"></a>
 #### Darting Dodgers
-<div class="trait-return"><a href="#sdm-trait-darting-dodgers-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-darting-dodgers-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5712,7 +5948,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-charger"></a>
 #### Charger
-<div class="trait-return"><a href="#sdm-trait-charger-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-charger-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5739,7 +5975,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-double-attack"></a>
 #### Double Attack
-<div class="trait-return"><a href="#sdm-trait-double-attack-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-double-attack-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5766,7 +6002,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-riposte"></a>
 #### Riposte
-<div class="trait-return"><a href="#sdm-trait-riposte-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-riposte-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5793,7 +6029,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-evasive"></a>
 #### Evasive
-<div class="trait-return"><a href="#sdm-trait-evasive-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-evasive-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5820,7 +6056,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-springer"></a>
 #### Springer
-<div class="trait-return"><a href="#sdm-trait-springer-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-springer-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5847,7 +6083,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-stabber"></a>
 #### Stabber
-<div class="trait-return"><a href="#sdm-trait-stabber-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-stabber-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5874,7 +6110,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-erratic-expendables"></a>
 #### Erratic Expendables
-<div class="trait-return"><a href="#sdm-trait-erratic-expendables-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-erratic-expendables-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5917,7 +6153,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-death-curse"></a>
 #### Death Curse
-<div class="trait-return"><a href="#sdm-trait-death-curse-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-death-curse-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5944,7 +6180,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-martyr"></a>
 #### Martyr
-<div class="trait-return"><a href="#sdm-trait-martyr-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-martyr-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5971,7 +6207,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-once-again"></a>
 #### Once Again
-<div class="trait-return"><a href="#sdm-trait-once-again-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-once-again-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -5998,7 +6234,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-killbite"></a>
 #### Killbite
-<div class="trait-return"><a href="#sdm-trait-killbite-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-killbite-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -6025,7 +6261,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-ticking-corpse"></a>
 #### Ticking Corpse
-<div class="trait-return"><a href="#sdm-trait-ticking-corpse-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-ticking-corpse-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -6053,7 +6289,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-frenzy"></a>
 #### Frenzy
-<div class="trait-return"><a href="#sdm-trait-frenzy-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-frenzy-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -6087,7 +6323,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-corruption"></a>
 #### Corruption
-<div class="trait-return"><a href="#sdm-trait-corruption-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-corruption-anchor">↩ Back to Table</a></div>
 
 > text:
 
@@ -6129,7 +6365,7 @@ Use the `meta` list to capture every structured placement of the trait (path slo
 
 <a id="sdm-trait-power-as-trait"></a>
 #### Power (as Trait)
-<div class="trait-return"><a href="#sdm-trait-power-as-trait-row">↩ Back to Table</a></div>
+<div class="trait-return"><a href="#sdm-trait-power-as-trait-anchor">↩ Back to Table</a></div>
 
 > text:
 

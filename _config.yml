@@ -6,14 +6,20 @@ kramdown:
 plugins:
   - jekyll-optional-front-matter
 source: .
+include: [".htaccess", "Synthetic-Dream-Machine-3rd-Party-License.md"]
 exclude:
+  - .bundle
+  - .bundle/**
+  - .venv
+  - .venv/**
+  - vendor
+  - vendor/**
   - AGENTS.md
   - Lares_A_CustomGPT_System_Prompt.md
   - Campaigns
 # Global publishing settings
 future: true
 permalink: /:title/
-include: [".htaccess"]
 # Front Matter Defaults
 # optional defaults so you don't need layout in every file
 defaults:
@@ -27,3 +33,38 @@ defaults:
       type: "posts"
     values:
       layout: "post"
+  - scope:
+      path: "Elyncia"
+      type: "pages"
+    values:
+      body_class: "book-chapter"
+  - scope:
+      path: "Flying_Triremes_and_Laser_Swords"
+      type: "pages"
+    values:
+      body_class: "book-chapter"
+  - scope:
+      path: "Magitecnica"
+      type: "pages"
+    values:
+      body_class: "book-chapter"
+  - scope:
+      path: "Our_Golden_Age"
+      type: "pages"
+    values:
+      body_class: "book-chapter"
+  - scope:
+      path: "Synthetic_Dream_Machine"
+      type: "pages"
+    values:
+      body_class: "book-chapter"
+  - scope:
+      path: "UVG_Black_City_2e"
+      type: "pages"
+    values:
+      body_class: "book-chapter"
+  - scope:
+      path: "Vastlands_Guidebook"
+      type: "pages"
+    values:
+      body_class: "book-chapter"
