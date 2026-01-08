@@ -7,6 +7,12 @@ plugins:
   - jekyll-optional-front-matter
 source: .
 exclude:
+  - .bundle
+  - .bundle/**
+  - .venv
+  - .venv/**
+  - vendor
+  - vendor/**
   - AGENTS.md
   - Lares_A_CustomGPT_System_Prompt.md
   - Campaigns

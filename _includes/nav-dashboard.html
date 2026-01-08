@@ -1,0 +1,31 @@
+<section class="card">
+  <h2>{{ include.heading | default: "Contents" }}</h2>
+
+  {% for item in include.items %}
+    <div class="card-entry">
+      <a class="nav-link" href="{{ item.href | relative_url }}">{{ item.label }}</a>
+      {% if item.download %}
+        <a class="download-link"
+           href="{{ item.download | relative_url }}"
+           download
+           aria-label="Download {{ item.label }}">
+          📥
+        </a>
+      {% endif %}
+    </div>
+  {% endfor %}
+</section>
+
+{% assign raw_return_href = include.return_href | default: '/' %}
+{% if raw_return_href contains '://' %}
+  {% assign return_href = raw_return_href %}
+{% else %}
+  {% assign return_href = raw_return_href | relative_url %}
+{% endif %}
+
+{% if include.show_return != false %}
+  <section class="card">
+    <h2>Return</h2>
+    <a class="nav-link" href="{{ return_href }}">Repository Index</a>
+  </section>
+{% endif %}

@@ -1,11 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ page.title | default: site.title }}</title>
-  </head>
-  <body>
-    {{ content }}
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page.title | default: site.title }}</title>
+
+  <!-- GitHub Markdown CSS (dark-only) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown-dark.min.css">
+
+  <!-- Site-wide (Gruvbox variables + header/footer/layout) -->
+  <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}" />
+
+  <!-- GitHub Markdown overrides: Gruvbox Dark -->
+  <link rel="stylesheet" href="{{ '/assets/css/github-markdown-gruvbox.css' | relative_url }}" />
+
+  <meta name="color-scheme" content="dark light">
+</head>
+<body class="{{ page.body_class | default: '' }}">
+  <header>
+    <div class="sigil">DreamNet Node</div>
+    <h1>{{ site.title | default: "Synthetic Dream Machine" }}</h1>
+    {% if site.description %}
+      <h2 class="repo-link">
+        <a target="_blank" rel="noopener" href="{{ site.repo | default: 'https://github.com/joshuafontany/Synthetic-Dream-Machine' }}">
+          {{ site.description }}
+        </a>
+      </h2>
+    {% endif %}
+    <p class="lead">{{ page.subtitle | default: site.lead | default: "A navigational console for the SDM constellation." }}</p>
+  </header>
+
+  <main class="page-wrap">
+    <article class="markdown-body">
+      {{ content }}
+    </article>
+  </main>
+
+  <footer>
+    {{ site.title | default: "Synthetic Dream Machine" }} — archive node listing.
+  </footer>
+</body>
 </html>

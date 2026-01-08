@@ -25,6 +25,7 @@ Some Heritage effects have special rules, including marking the trait in order t
 ## Heritage Table of Contents
 
 <a id="heritage-table-of-contents"></a>
+
 | Heritage | Hook | Skilled | Expert/Master | Variants |
 | --- | --- | --- | --- | --- |
 | <a id="heritage-ant-folk-row"></a>[Ant Folk](#heritage-ant-folk) | Silent hive scouts | • [Armoured Body](#effect-armoured-body) (+1 Armor/+1 Ward), • [Coordination](#effect-coordination) (+1 per 2 allies within 10 yd), • [Psi-Speech](#effect-psi-speech) (telepathy) | • [Blindsight](#effect-blindsight) (pheromone sense; (Level+Thought)×10 yd) (Expert), • [Polybody](#effect-polybody) (Level+2 bodies) (Master) | Alates / Soldier / Far-Ranger |
