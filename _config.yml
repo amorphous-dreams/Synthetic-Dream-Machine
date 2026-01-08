@@ -3,6 +3,9 @@ markdown: kramdown
 kramdown:
   input: GFM
   hard_wrap: false
+plugins:
+  - jekyll-optional-front-matter
+source: .
 exclude:
   - AGENTS.md
   - Lares_A_CustomGPT_System_Prompt.md
@@ -12,9 +15,11 @@ future: true
 permalink: /:title/
 include: [".htaccess"]
 # Front Matter Defaults
+# optional defaults so you don't need layout in every file
 defaults:
   - scope:
       path: ""
+      type: "pages"
     values:
       layout: "default"
   - scope:
