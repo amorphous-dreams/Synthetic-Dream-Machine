@@ -1,5 +1,5 @@
 # Synthetic-Dream-Machine
-An archive of SDM RPG material (see Ultraviolet Grasslands / Vastlands by Luka Rejec)
+An archive of SDM RPG material (Ultraviolet Grasslands / Vastlands Guidebok / Our Golden Age by Luka Rejec)
 
 <!-- Vastlands Guidebook Page 166 -->
 
