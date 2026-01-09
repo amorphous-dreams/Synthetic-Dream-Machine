@@ -1517,21 +1517,25 @@ You can carry no items because you are an item. Every weapon gains the power _Ob
 
 _The Bending Fork, Made's Invisible Hand_
 
-**P:** 1 **R:** nearby **T:** object **D:** a few minutes
+**P:** 1 **R:** nearby
 
-Fragments of your form corrode, sublimate, and become an ectoplasmic hand with which you can caress, hold, crush, and discard. It is as strong as a weak human. Punching, it deals 1d3 damage.
+**T:** object **D:** a few minutes
 
-_Overcharge:_ stronger than most humans (strength 3), it deals 1d3+3 damage.
+> Fragments of your form corrode, sublimate, and become an ectoplasmic hand with which you can caress, hold, crush, and discard. It is as strong as a weak human. Punching, it deals 1d3 damage.
+>
+> _Overcharge:_ stronger than most humans (strength 3), it deals 1d3+3 damage.
 
 **Suspended in the Light**
 
 _Luminous Grasp, Hard Light Hold_
 
-**P:** 1 **R:** nearby **T:** creature or object **D:** instant
+**P:** 1 **R:** nearby
 
-You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.
+**T:** creature or object **D:** instant
 
-_Overcharge:_ they suffer 1d8 damage instead.
+> You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.
+>
+> _Overcharge:_ they suffer 1d8 damage instead.
 
 > [@Vastlands_Guidebook, _p._ _154_]
 
@@ -1556,16 +1560,11 @@ Your purpose permanently blocks a trait slot. Its power is available at once. Th
 
  You have announced the death of the old world and the dawn of the new era. Content, you rest and wait for (d6):
  
- 1. the world to be purified in fire,
-
+1. the world to be purified in fire,
 2. the world to be cleansed in flood,
-
 3. the dead to walk again,
-
 4. the sky wanderers to return,
-
 5. famine and pestilence to empty the world and restore its eternal perfection,
-
 6. the final war to resume.
 
 > [@Vastlands_Guidebook, _p._ _155_]
