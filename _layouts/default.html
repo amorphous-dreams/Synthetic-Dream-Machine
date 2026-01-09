@@ -92,8 +92,9 @@
             {% endif %}
             {% assign parent_href_norm = parent_href | downcase %}
             <div class="header-link-group">
-              <a class="header-link header-link-parent"
-                 href="{{ parent_href }}"
+              <a class="header-link header-link-parent header-link-parent-navigate"
+                 role="button"
+                 href="#"
                  aria-haspopup="true"
                  {% if parent_href_norm == request_url_norm %}aria-current="page"{% endif %}>
                 {{ parent_label }}

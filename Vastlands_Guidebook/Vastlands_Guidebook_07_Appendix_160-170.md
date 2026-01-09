@@ -10,7 +10,7 @@ Here we are now, the end of our delightful dreams, the line, the limit, the edge
 
 #### I. CHARACTER SHEET
 
-![SDM Character Sheet](./page_0161.png "Character Sheet")
+![SDM Character Sheet](./images/page_0161.png "Character Sheet")
 
 > [@Vastlands_Guidebook, _p._ _161_]
 

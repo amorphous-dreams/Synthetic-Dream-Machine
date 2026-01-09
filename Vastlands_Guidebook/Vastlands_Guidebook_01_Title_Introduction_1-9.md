@@ -1,5 +1,9 @@
 <!-- Vastlands Guidebook, Page 001 -->
 
+![Vastlands Guidebook cover](images/vastlands_cover_page.png)
+
+**Official site:** [Vastlands Guidebook](https://www.wizardthieffighter.com/synthetic-dream-machine/)
+
 # Vastlands Guidebook VLG
 
 **Synthetic Dream Machine SDM**
@@ -50,25 +54,15 @@ Terminus Lexamen v3.44
 
 August 2025
 
-**Art:**
+**Art:** Luka Rejec
 
-Luka Rejec
+**Layout:** Guilherme Gontijo, Luka Rejec
 
-**Layout:**
+**Editing:** Brandes Stoddard
 
-Guilherme Gontijo, Luka Rejec
+**Knights Grammarian:** Joseph Hawkes, Madeline, MoonRawrr, myownlittlworld, Najahiri, Pavlov
 
-**Editing:**
-
-Brandes Stoddard
-
-**Knights Grammarian:**
-
-Joseph Hawkes, Madeline, MoonRawrr, myownlittlworld, Najahiri, Pavlov
-
-**Additional Thanks:**
-
-Aaron, Adam Thornton, Ahimsa Kerp, Christian Conkle, Cintain, Dimfrost, Dungeons Possums, Eddo, KYA, Lazy Litch, Eric Nieudan, Nuelijarma, Scratch Monkey, Telarus, Tofukaag, Tom Solo, Wombat
+**Additional Thanks:** Aaron, Adam Thornton, Ahimsa Kerp, Christian Conkle, Cintain, Dimfrost, Dungeons Possums, Eddo, KYA, Lazy Litch, Eric Nieudan, Nuelijarma, Scratch Monkey, Telarus, Tofukaag, Tom Solo, Wombat
 
 This edition made possible by the gold and [the good of the Our Golden Age backerkit campaign.](https://www.backerkit.com/c/projects/exalted-funeral/our-golden-age-an-ultra-violet-grasslands-rpg-sequel)
 
