@@ -123,11 +123,15 @@ synthetic_dream_machine:
   subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
-    - label: "Synthetic Dream Machine 01 Traits Index"
-      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Traits_Index/"
-      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Traits_Index.md"
+    - label: "Synthetic Dream Machine 01 Paths Index"
+      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/"
+      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index.md"
 
-    - label: "Synthetic Dream Machine 02 Powers Index"
+    - label: "Synthetic Dream Machine 02 Traits Index"
+      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Traits_Index/"
+      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Traits_Index.md"
+
+    - label: "Synthetic Dream Machine 03 Powers Index"
       href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Powers_Index/"
       download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Powers_Index.md"
 
@@ -203,33 +207,76 @@ vastlands_guidebook:
 
 root:
   title: "Synthetic Dream Machine"
-  subtitle: "A navigational console for the SDM constellation: rules, references, and setting fragments anchored to this repository. Choose a vault to continue."
+  subtitle: "A navigational console for the SDM constellation, choose a vault to continue. The archive Lares are listening..."
   return_href: "https://github.com/joshuafontany/Synthetic-Dream-Machine"
-  ftls_vaults: &ftls_vaults
-    - label: "Elyncia"
-      href: "/Elyncia/"
+  ftls_directory_link: &ftls_directory_link
+    label: "Directory"
+    href: "/Vaults/FTLS/"
 
-    - label: "Flying Triremes and Laser Swords"
-      href: "/Flying_Triremes_and_Laser_Swords/"
+  ftls_elyncia_link: &ftls_elyncia_link
+    label: "Elyncia"
+    href: "/Elyncia/"
+
+  ftls_triremes_link: &ftls_triremes_link
+    label: "Flying Triremes and Laser Swords"
+    href: "/Flying_Triremes_and_Laser_Swords/"
+
+  ftls_vaults: &ftls_vaults
+    - *ftls_elyncia_link
+    - *ftls_triremes_link
+
+  ftls_header_links: &ftls_header_links
+    - *ftls_directory_link
+    - *ftls_elyncia_link
+    - *ftls_triremes_link
+
+  sdm_directory_link: &sdm_directory_link
+    label: "Directory"
+    href: "/Vaults/SDM/"
+
+  sdm_sdm_link: &sdm_sdm_link
+    label: "Synthetic Dream Machine"
+    href: "/Synthetic_Dream_Machine/"
+
+  sdm_oga_link: &sdm_oga_link
+    label: "Our Golden Age"
+    href: "/Our_Golden_Age/"
+
+  sdm_vastlands_link: &sdm_vastlands_link
+    label: "Vastlands Guidebook"
+    href: "/Vastlands_Guidebook/"
+
+  sdm_uvg_link: &sdm_uvg_link
+    label: "UVG Black City 2e"
+    href: "/UVG_Black_City_2e/"
+
+  sdm_magitecnica_link: &sdm_magitecnica_link
+    label: "Magitecnica"
+    href: "/Magitecnica/"
 
   sdm_vaults: &sdm_vaults
-    - label: "Synthetic Dream Machine"
-      href: "/Synthetic_Dream_Machine/"
+    - *sdm_sdm_link
+    - *sdm_oga_link
+    - *sdm_vastlands_link
+    - *sdm_uvg_link
+    - *sdm_magitecnica_link
 
-    - label: "Our Golden Age"
-      href: "/Our_Golden_Age/"
+  sdm_header_links: &sdm_header_links
+    - *sdm_directory_link
+    - *sdm_sdm_link
+    - *sdm_oga_link
+    - *sdm_vastlands_link
+    - *sdm_uvg_link
+    - *sdm_magitecnica_link
 
-
-    - label: "Vastlands Guidebook"
-      href: "/Vastlands_Guidebook/"
-
-    - label: "UVG Black City 2e"
-      href: "/UVG_Black_City_2e/"
-
-    - label: "Magitecnica"
-      href: "/Magitecnica/"
+  campaigns_directory_link: &campaigns_directory_link
+    label: "Directory"
+    href: "/Vaults/Campaigns/"
 
   campaigns_vaults: &campaigns_vaults []
+
+  campaigns_header_links: &campaigns_header_links
+    - *campaigns_directory_link
 
   reference: &reference_links
     - label: "Third-Party License"
@@ -246,6 +293,16 @@ root:
       target: "_blank"
       rel: "noopener"
 
+  vault_sections: &vault_sections
+    - label: "FTLS Vaults"
+      href: "/Vaults/FTLS/"
+
+    - label: "SDM Vaults"
+      href: "/Vaults/SDM/"
+
+    - label: "Campaign Vaults"
+      href: "/Vaults/Campaigns/"
+
 ftls_parent: &ftls_parent
   label: "FTLS Vaults"
   href: "/Vaults/FTLS/"
@@ -256,37 +313,20 @@ campaigns_parent: &campaigns_parent
   label: "Campaign Vaults"
   href: "/Vaults/Campaigns/"
 
-vault_sections: &vault_sections
-  - label: "FTLS Vaults"
-    href: "/Vaults/FTLS/"
-
-  - label: "SDM Vaults"
-    href: "/Vaults/SDM/"
-
-  - label: "Campaign Vaults"
-    href: "/Vaults/Campaigns/"
-
-vaults_block: &vaults_block
-  parent:
-    label: "Vaults"
-    href: "/Vaults/"
-  links: *vault_sections
-
 ftls_block: &ftls_block
   parent: *ftls_parent
-  links: *ftls_vaults
+  links: *ftls_header_links
 
 sdm_block: &sdm_block
   parent: *sdm_parent
-  links: *sdm_vaults
+  links: *sdm_header_links
 
 campaigns_block: &campaigns_block
   parent: *campaigns_parent
-  links: *campaigns_vaults
+  links: *campaigns_header_links
 
 contexts:
   root: &root_context
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -295,7 +335,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   ftls:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -304,7 +343,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   sdm:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -313,7 +351,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   docs:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -322,7 +359,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   elyncia:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -331,7 +367,6 @@ contexts:
         href: "/Elyncia/"
       links: *elyncia_chapters
   campaigns:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block

@@ -15,6 +15,7 @@ exclude:
   - .venv/**
   - vendor
   - vendor/**
+  - Markdown.md
   - AGENTS.md
   - Lares_A_CustomGPT_System_Prompt.md
   - Campaigns

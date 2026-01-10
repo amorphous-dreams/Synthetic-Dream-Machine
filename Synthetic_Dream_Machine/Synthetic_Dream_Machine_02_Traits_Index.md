@@ -1,12 +1,11 @@
 # SDM Trait Index
 
-
+- FTLS = Flying Triremes and Laser Swords
+- OGA = Our Golden Age
+- VLG = Vastlands Guidebook
+- UVG = Ultraviolet Grasslands and the Black City 2e
+- 
 ## Trait Table of Contents
-
-FTLS = Flying Triremes and Laser Swords
-OGA = Our Golden Age
-VLG = Vastlands Guidebook
-UVG = Ultraviolet GRasslands and the Black City 2e
 
 <a id="sdm-trait-table-of-contents"></a>
 
@@ -559,7 +558,12 @@ meta:
 - **Mourning Vicar Battling Sentient Mists with Silver Verses**
 - **Void Wainwright Maintaining Living Ships Between Crystal Spheres**
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-background-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-background-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 ## Core Path Traits
 
@@ -589,7 +593,12 @@ meta:
 > usage:
 > - scope: path; id: Wizard; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-wizard-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wizard-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-burner"></a>
 
@@ -613,7 +622,12 @@ meta:
 > usage:
 > - scope: path; id: Wizard; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-burner-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-burner-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-chronic"></a>
 
@@ -637,7 +651,12 @@ meta:
 > usage:
 > - scope: path; id: Wizard; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-chronic-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-chronic-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-exuberant"></a>
 
@@ -659,7 +678,12 @@ meta:
 > usage:
 > - scope: path; id: Wizard; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-exuberant-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-exuberant-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-mind-palace"></a>
 
@@ -682,7 +706,12 @@ meta:
 > usage:
 > - scope: path; id: Wizard; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-mind-palace-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-mind-palace-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-oblique-reality"></a>
 
@@ -706,7 +735,12 @@ meta:
 > usage:
 > - scope: path; id: Wizard; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-oblique-reality-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-oblique-reality-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-recast"></a>
 
@@ -733,7 +767,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-recast-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-recast-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-traveler"></a>
 
@@ -755,7 +794,12 @@ meta:
 > usage:
 > - scope: path; id: Traveler; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-traveler-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-traveler-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-escapist"></a>
 
@@ -777,7 +821,12 @@ meta:
 > usage:
 > - scope: path; id: Traveler; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-escapist-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-escapist-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-friends"></a>
 
@@ -800,7 +849,12 @@ meta:
 > usage:
 > - scope: path; id: Traveler; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-friends-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-friends-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-hunter"></a>
 
@@ -822,7 +876,12 @@ meta:
 > usage:
 > - scope: path; id: Traveler; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-hunter-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hunter-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-pleasant"></a>
 
@@ -844,7 +903,12 @@ meta:
 > usage:
 > - scope: path; id: Traveler; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-pleasant-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pleasant-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-pocketmaster"></a>
 
@@ -867,7 +931,12 @@ meta:
 > usage:
 > - scope: path; id: Traveler; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-pocketmaster-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pocketmaster-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-swift"></a>
 
@@ -896,7 +965,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-swift-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-swift-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-fighter"></a>
 
@@ -919,7 +993,12 @@ meta:
 > usage:
 > - scope: path; id: Fighter; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-fighter-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fighter-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-armiger"></a>
 
@@ -942,7 +1021,12 @@ meta:
 > usage:
 > - scope: path; id: Fighter; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-armiger-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-armiger-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-defender"></a>
 
@@ -964,7 +1048,12 @@ meta:
 > usage:
 > - scope: path; id: Fighter; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-defender-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-defender-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-grit"></a>
 
@@ -986,7 +1075,12 @@ meta:
 > usage:
 > - scope: path; id: Fighter; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-grit-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-grit-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-irresistible"></a>
 
@@ -1009,7 +1103,12 @@ meta:
 > usage:
 > - scope: path; id: Fighter; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-irresistible-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-irresistible-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-second-chance"></a>
 
@@ -1032,7 +1131,12 @@ meta:
 > usage:
 > - scope: path; id: Fighter; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-second-chance-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-second-chance-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-terrifying"></a>
 
@@ -1063,7 +1167,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-terrifying-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-terrifying-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-barbarian"></a>
 
@@ -1086,7 +1195,12 @@ meta:
 > usage:
 > - scope: path; id: Barbarian; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-barbarian-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-barbarian-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-antimagus"></a>
 
@@ -1109,7 +1223,12 @@ meta:
 > usage:
 > - scope: path; id: Barbarian; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-antimagus-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-antimagus-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-blood-clad"></a>
 
@@ -1133,7 +1252,12 @@ meta:
 > usage:
 > - scope: path; id: Barbarian; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-blood-clad-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-blood-clad-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-culling"></a>
 
@@ -1155,7 +1279,12 @@ meta:
 > usage:
 > - scope: path; id: Barbarian; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-culling-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-culling-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-feral"></a>
 
@@ -1178,7 +1307,12 @@ meta:
 > usage:
 > - scope: path; id: Barbarian; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-feral-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-feral-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-lost-songs"></a>
 
@@ -1203,7 +1337,12 @@ meta:
 > usage:
 > - scope: path; id: Barbarian; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-lost-songs-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-lost-songs-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-wild-survivor"></a>
 
@@ -1230,7 +1369,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-wild-survivor-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wild-survivor-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-bluelander"></a>
 
@@ -1253,7 +1397,12 @@ meta:
 > usage:
 > - scope: path; id: Bluelander; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-bluelander-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bluelander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-boatmaster"></a>
 
@@ -1275,7 +1424,12 @@ meta:
 > usage:
 > - scope: path; id: Bluelander; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-boatmaster-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-boatmaster-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-cheesemaker"></a>
 
@@ -1298,7 +1452,12 @@ meta:
 > usage:
 > - scope: path; id: Bluelander; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-cheesemaker-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cheesemaker-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-oppressed-faith"></a>
 
@@ -1320,7 +1479,12 @@ meta:
 > usage:
 > - scope: path; id: Bluelander; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-oppressed-faith-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-oppressed-faith-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-reanimator"></a>
 
@@ -1343,7 +1507,12 @@ meta:
 > usage:
 > - scope: path; id: Bluelander; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-reanimator-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-reanimator-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-spelunker"></a>
 
@@ -1365,7 +1534,12 @@ meta:
 > usage:
 > - scope: path; id: Bluelander; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-spelunker-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-spelunker-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-sporemark"></a>
 
@@ -1391,7 +1565,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-sporemark-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-sporemark-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-bourgeois"></a>
 
@@ -1415,7 +1594,12 @@ meta:
 > usage:
 > - scope: path; id: Bourgeois; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-bourgeois-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bourgeois-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-double-platinum-deathless-backup"></a>
 
@@ -1437,7 +1621,12 @@ meta:
 > usage:
 > - scope: path; id: Bourgeois; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-double-platinum-deathless-backup-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-double-platinum-deathless-backup-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-enterprising"></a>
 
@@ -1459,7 +1648,12 @@ meta:
 > usage:
 > - scope: path; id: Bourgeois; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-enterprising-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-enterprising-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-expensive-training"></a>
 
@@ -1481,7 +1675,12 @@ meta:
 > usage:
 > - scope: path; id: Bourgeois; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-expensive-training-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-expensive-training-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-legal-immunity"></a>
 
@@ -1505,7 +1704,12 @@ meta:
 > usage:
 > - scope: path; id: Bourgeois; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-legal-immunity-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-legal-immunity-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-old-money"></a>
 
@@ -1527,7 +1731,12 @@ meta:
 > usage:
 > - scope: path; id: Bourgeois; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-old-money-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-old-money-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-urbane"></a>
 
@@ -1554,7 +1763,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-urbane-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-urbane-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-golem"></a>
 
@@ -1577,7 +1791,12 @@ meta:
 > usage:
 > - scope: path; id: Golem; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-golem-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-golem-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-hardened"></a>
 
@@ -1599,7 +1818,12 @@ meta:
 > usage:
 > - scope: path; id: Golem; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-hardened-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hardened-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-powered"></a>
 
@@ -1621,7 +1845,12 @@ meta:
 > usage:
 > - scope: path; id: Golem; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-powered-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-powered-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-synthetic-soul"></a>
 
@@ -1643,7 +1872,12 @@ meta:
 > usage:
 > - scope: path; id: Golem; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-synthetic-soul-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-synthetic-soul-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-undying-synthetic"></a>
 
@@ -1665,7 +1899,12 @@ meta:
 > usage:
 > - scope: path; id: Golem; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-undying-synthetic-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-undying-synthetic-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-ur-war-program"></a>
 
@@ -1687,7 +1926,12 @@ meta:
 > usage:
 > - scope: path; id: Golem; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-ur-war-program-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ur-war-program-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-very-strong"></a>
 
@@ -1713,7 +1957,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-very-strong-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-very-strong-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-greenlander"></a>
 
@@ -1736,7 +1985,12 @@ meta:
 > usage:
 > - scope: path; id: Greenlander; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-greenlander-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-greenlander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-country-squire"></a>
 
@@ -1758,7 +2012,12 @@ meta:
 > usage:
 > - scope: path; id: Greenlander; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-country-squire-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-country-squire-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-deeply-embodied"></a>
 
@@ -1780,7 +2039,12 @@ meta:
 > usage:
 > - scope: path; id: Greenlander; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-deeply-embodied-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-deeply-embodied-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-informant"></a>
 
@@ -1804,7 +2068,12 @@ meta:
 > usage:
 > - scope: path; id: Greenlander; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-informant-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-informant-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-metropolitan"></a>
 
@@ -1827,7 +2096,12 @@ meta:
 > usage:
 > - scope: path; id: Greenlander; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-metropolitan-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-metropolitan-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-mossblood"></a>
 
@@ -1849,7 +2123,12 @@ meta:
 > usage:
 > - scope: path; id: Greenlander; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-mossblood-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-mossblood-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-soiltwined"></a>
 
@@ -1875,7 +2154,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-soiltwined-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soiltwined-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-holy-fool"></a>
 
@@ -1899,7 +2183,12 @@ meta:
 > usage:
 > - scope: path; id: Holy Fool; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-holy-fool-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-holy-fool-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-abandoned"></a>
 
@@ -1922,7 +2211,12 @@ meta:
 > usage:
 > - scope: path; id: Holy Fool; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-abandoned-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-abandoned-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-blessed"></a>
 
@@ -1944,7 +2238,12 @@ meta:
 > usage:
 > - scope: path; id: Holy Fool; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-blessed-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-blessed-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-holy-diver"></a>
 
@@ -1967,7 +2266,12 @@ meta:
 > usage:
 > - scope: path; id: Holy Fool; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-holy-diver-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-holy-diver-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-phylakes-child"></a>
 
@@ -1989,7 +2293,12 @@ meta:
 > usage:
 > - scope: path; id: Holy Fool; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-phylakes-child-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-phylakes-child-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-soothsayer"></a>
 
@@ -2012,7 +2321,12 @@ meta:
 > usage:
 > - scope: path; id: Holy Fool; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-soothsayer-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soothsayer-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-wanderer"></a>
 
@@ -2038,7 +2352,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-wanderer-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wanderer-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-manager"></a>
 
@@ -2061,7 +2380,12 @@ meta:
 > usage:
 > - scope: path; id: Manager; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-manager-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-manager-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-competent-appearance"></a>
 
@@ -2083,7 +2407,12 @@ meta:
 > usage:
 > - scope: path; id: Manager; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-competent-appearance-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-competent-appearance-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-social-survivor"></a>
 
@@ -2106,7 +2435,12 @@ meta:
 > usage:
 > - scope: path; id: Manager; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-social-survivor-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-social-survivor-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-inquisition-agent"></a>
 
@@ -2128,7 +2462,12 @@ meta:
 > usage:
 > - scope: path; id: Manager; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-inquisition-agent-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-inquisition-agent-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-motivational"></a>
 
@@ -2151,7 +2490,12 @@ meta:
 > usage:
 > - scope: path; id: Manager; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-motivational-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-motivational-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-noosphere-priest"></a>
 
@@ -2173,7 +2517,12 @@ meta:
 > usage:
 > - scope: path; id: Manager; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-noosphere-priest-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noosphere-priest-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-numbers-maximization-official"></a>
 
@@ -2200,7 +2549,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-numbers-maximization-official-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-numbers-maximization-official-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-noble"></a>
 
@@ -2224,7 +2578,12 @@ meta:
 > usage:
 > - scope: path; id: Noble; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-noble-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noble-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-hexer-meritocrat"></a>
 
@@ -2246,7 +2605,12 @@ meta:
 > usage:
 > - scope: path; id: Noble; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-hexer-meritocrat-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hexer-meritocrat-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-knight-reflexes"></a>
 
@@ -2269,7 +2633,12 @@ meta:
 > usage:
 > - scope: path; id: Noble; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-knight-reflexes-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-knight-reflexes-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-dissipated"></a>
 
@@ -2291,7 +2660,12 @@ meta:
 > usage:
 > - scope: path; id: Noble; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-dissipated-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-dissipated-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-divine-blood"></a>
 
@@ -2313,7 +2687,12 @@ meta:
 > usage:
 > - scope: path; id: Noble; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-divine-blood-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-divine-blood-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-sculpted-beauty"></a>
 
@@ -2335,7 +2714,12 @@ meta:
 > usage:
 > - scope: path; id: Noble; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-sculpted-beauty-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-sculpted-beauty-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-perfected-germline"></a>
 
@@ -2361,7 +2745,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-perfected-germline-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-perfected-germline-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-noomagus"></a>
 
@@ -2384,7 +2773,12 @@ meta:
 > usage:
 > - scope: path; id: Noömagus; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-noomagus-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noomagus-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-cosmic-qanat"></a>
 
@@ -2406,7 +2800,12 @@ meta:
 > usage:
 > - scope: path; id: Noömagus; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-cosmic-qanat-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cosmic-qanat-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-hackmagic"></a>
 
@@ -2430,7 +2829,12 @@ meta:
 > usage:
 > - scope: path; id: Noömagus; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-hackmagic-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hackmagic-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-noosphere-native"></a>
 
@@ -2452,7 +2856,12 @@ meta:
 > usage:
 > - scope: path; id: Noömagus; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-noosphere-native-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noosphere-native-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-power-scroller"></a>
 
@@ -2475,7 +2884,12 @@ meta:
 > usage:
 > - scope: path; id: Noömagus; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-power-scroller-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-power-scroller-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-soul-fuel"></a>
 
@@ -2499,7 +2913,12 @@ meta:
 > usage:
 > - scope: path; id: Noömagus; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-soul-fuel-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soul-fuel-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-veteran-of-the-psychic-wars"></a>
 
@@ -2525,7 +2944,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-veteran-of-the-psychic-wars-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-veteran-of-the-psychic-wars-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-orangelander"></a>
 
@@ -2548,7 +2972,12 @@ meta:
 > usage:
 > - scope: path; id: Orangelander; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-orangelander-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-orangelander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-cad"></a>
 
@@ -2570,7 +2999,12 @@ meta:
 > usage:
 > - scope: path; id: Orangelander; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-cad-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cad-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-citizen-living"></a>
 
@@ -2593,7 +3027,12 @@ meta:
 > usage:
 > - scope: path; id: Orangelander; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-citizen-living-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-citizen-living-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-citizen-maintainer"></a>
 
@@ -2616,7 +3055,12 @@ meta:
 > usage:
 > - scope: path; id: Orangelander; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-citizen-maintainer-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-citizen-maintainer-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-ducky"></a>
 
@@ -2640,7 +3084,12 @@ meta:
 > usage:
 > - scope: path; id: Orangelander; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-ducky-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ducky-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-orange-half-ling"></a>
 
@@ -2662,7 +3111,12 @@ meta:
 > usage:
 > - scope: path; id: Orangelander; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-orange-half-ling-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-orange-half-ling-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-unfred"></a>
 
@@ -2688,7 +3142,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-unfred-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-unfred-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-purplelander"></a>
 
@@ -2711,7 +3170,12 @@ meta:
 > usage:
 > - scope: path; id: Purplelander; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-purplelander-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-purplelander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-arboreal"></a>
 
@@ -2733,7 +3197,12 @@ meta:
 > usage:
 > - scope: path; id: Purplelander; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-arboreal-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-arboreal-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-colonist"></a>
 
@@ -2756,7 +3225,12 @@ meta:
 > usage:
 > - scope: path; id: Purplelander; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-colonist-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-colonist-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-human-library"></a>
 
@@ -2778,7 +3252,12 @@ meta:
 > usage:
 > - scope: path; id: Purplelander; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-human-library-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-human-library-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-kaffetropist"></a>
 
@@ -2801,7 +3280,12 @@ meta:
 > usage:
 > - scope: path; id: Purplelander; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-kaffetropist-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-kaffetropist-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-pet-sidekick"></a>
 
@@ -2823,7 +3307,12 @@ meta:
 > usage:
 > - scope: path; id: Purplelander; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-pet-sidekick-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pet-sidekick-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-telempath"></a>
 
@@ -2850,7 +3339,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-telempath-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-telempath-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-redlander"></a>
 
@@ -2873,7 +3367,12 @@ meta:
 > usage:
 > - scope: path; id: Redlander; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-redlander-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-redlander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-hexad-member"></a>
 
@@ -2897,7 +3396,12 @@ meta:
 > usage:
 > - scope: path; id: Redlander; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-hexad-member-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hexad-member-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-falscher"></a>
 
@@ -2919,7 +3423,12 @@ meta:
 > usage:
 > - scope: path; id: Redlander; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-falscher-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-falscher-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-ruster"></a>
 
@@ -2941,7 +3450,12 @@ meta:
 > usage:
 > - scope: path; id: Redlander; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-ruster-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ruster-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-vampire"></a>
 
@@ -2968,7 +3482,12 @@ meta:
 >       index: 4
 >       note: FTLS Paths Vampire Path expands the core Vastlands_Guidebook Vampire trait.
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-vampire-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-vampire-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-vintner"></a>
 
@@ -2990,7 +3509,12 @@ meta:
 > usage:
 > - scope: path; id: Redlander; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-vintner-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-vintner-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-werker"></a>
 
@@ -3017,7 +3541,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-werker-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-werker-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-scion"></a>
 
@@ -3041,7 +3570,12 @@ meta:
 > usage:
 > - scope: path; id: Scion; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-scion-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-scion-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-dreamwalker"></a>
 
@@ -3063,7 +3597,12 @@ meta:
 > usage:
 > - scope: path; id: Scion; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-dreamwalker-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-dreamwalker-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-faceless"></a>
 
@@ -3085,7 +3624,12 @@ meta:
 > usage:
 > - scope: path; id: Scion; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-faceless-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-faceless-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-of-world"></a>
 
@@ -3108,7 +3652,12 @@ meta:
 > usage:
 > - scope: path; id: Scion; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-of-world-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-of-world-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-perfect"></a>
 
@@ -3130,7 +3679,12 @@ meta:
 > usage:
 > - scope: path; id: Scion; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-perfect-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-perfect-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-subconscious-decay"></a>
 
@@ -3152,7 +3706,12 @@ meta:
 > usage:
 > - scope: path; id: Scion; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-subconscious-decay-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-subconscious-decay-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-superuser"></a>
 
@@ -3178,7 +3737,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-superuser-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-superuser-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-servant"></a>
 
@@ -3201,7 +3765,12 @@ meta:
 > usage:
 > - scope: path; id: Servant; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-servant-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-servant-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-grounded"></a>
 
@@ -3223,7 +3792,12 @@ meta:
 > usage:
 > - scope: path; id: Servant; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-grounded-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-grounded-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-housemaker"></a>
 
@@ -3246,7 +3820,12 @@ meta:
 > usage:
 > - scope: path; id: Servant; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-housemaker-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-housemaker-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-resourceful"></a>
 
@@ -3269,7 +3848,12 @@ meta:
 > usage:
 > - scope: path; id: Servant; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-resourceful-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-resourceful-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-shopstaff"></a>
 
@@ -3292,7 +3876,12 @@ meta:
 > usage:
 > - scope: path; id: Servant; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-shopstaff-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shopstaff-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-strong"></a>
 
@@ -3314,7 +3903,12 @@ meta:
 > usage:
 > - scope: path; id: Servant; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-strong-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-strong-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-tough"></a>
 
@@ -3340,7 +3934,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-tough-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tough-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-skeleton"></a>
 
@@ -3363,7 +3962,12 @@ meta:
 > usage:
 > - scope: path; id: Skeleton; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-skeleton-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-skeleton-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-glowing-skeleton"></a>
 
@@ -3385,7 +3989,12 @@ meta:
 > usage:
 > - scope: path; id: Skeleton; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-glowing-skeleton-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-glowing-skeleton-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-my-bones-engraved"></a>
 
@@ -3408,7 +4017,12 @@ meta:
 > usage:
 > - scope: path; id: Skeleton; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-my-bones-engraved-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-my-bones-engraved-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-void-ward"></a>
 
@@ -3430,7 +4044,12 @@ meta:
 > usage:
 > - scope: path; id: Skeleton; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-void-ward-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-void-ward-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-from-dust-returning"></a>
 
@@ -3452,7 +4071,12 @@ meta:
 > usage:
 > - scope: path; id: Skeleton; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-from-dust-returning-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-from-dust-returning-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-cold-new-flesh"></a>
 
@@ -3475,7 +4099,12 @@ meta:
 > usage:
 > - scope: path; id: Skeleton; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-cold-new-flesh-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cold-new-flesh-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-soul-thief"></a>
 
@@ -3501,7 +4130,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-soul-thief-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soul-thief-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-soldier"></a>
 
@@ -3524,7 +4158,12 @@ meta:
 > usage:
 > - scope: path; id: Soldier; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-soldier-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soldier-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-armorborn"></a>
 
@@ -3547,7 +4186,12 @@ meta:
 > usage:
 > - scope: path; id: Soldier; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-armorborn-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-armorborn-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-blastermaster"></a>
 
@@ -3569,7 +4213,12 @@ meta:
 > usage:
 > - scope: path; id: Soldier; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-blastermaster-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-blastermaster-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-devastator"></a>
 
@@ -3591,7 +4240,12 @@ meta:
 > usage:
 > - scope: path; id: Soldier; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-devastator-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-devastator-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-rationalised"></a>
 
@@ -3613,7 +4267,12 @@ meta:
 > usage:
 > - scope: path; id: Soldier; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-rationalised-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-rationalised-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-slayer"></a>
 
@@ -3635,7 +4294,12 @@ meta:
 > usage:
 > - scope: path; id: Soldier; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-slayer-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-slayer-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-wired"></a>
 
@@ -3662,7 +4326,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-wired-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wired-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-tourist"></a>
 
@@ -3685,7 +4354,12 @@ meta:
 > usage:
 > - scope: path; id: Tourist; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-tourist-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tourist-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-personal-daimon"></a>
 
@@ -3708,7 +4382,12 @@ meta:
 > usage:
 > - scope: path; id: Tourist; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-personal-daimon-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-personal-daimon-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-clueless-outsider"></a>
 
@@ -3731,7 +4410,12 @@ meta:
 > usage:
 > - scope: path; id: Tourist; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-clueless-outsider-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-clueless-outsider-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-fortunate-one"></a>
 
@@ -3754,7 +4438,12 @@ meta:
 > usage:
 > - scope: path; id: Tourist; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-fortunate-one-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fortunate-one-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-underestimated"></a>
 
@@ -3777,7 +4466,12 @@ meta:
 > usage:
 > - scope: path; id: Tourist; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-underestimated-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-underestimated-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-intestinal-fortitude"></a>
 
@@ -3801,7 +4495,12 @@ meta:
 > usage:
 > - scope: path; id: Tourist; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-intestinal-fortitude-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-intestinal-fortitude-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-hashtag-blessed"></a>
 
@@ -3827,7 +4526,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-hashtag-blessed-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hashtag-blessed-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-trickster"></a>
 
@@ -3850,7 +4554,12 @@ meta:
 > usage:
 > - scope: path; id: Trickster; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-trickster-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-trickster-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-backstabber"></a>
 
@@ -3872,7 +4581,12 @@ meta:
 > usage:
 > - scope: path; id: Trickster; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-backstabber-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-backstabber-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-expert-friends"></a>
 
@@ -3894,7 +4608,12 @@ meta:
 > usage:
 > - scope: path; id: Trickster; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-expert-friends-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-expert-friends-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-fake-out"></a>
 
@@ -3917,7 +4636,12 @@ meta:
 > usage:
 > - scope: path; id: Trickster; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-fake-out-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fake-out-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-pickpocket"></a>
 
@@ -3939,7 +4663,12 @@ meta:
 > usage:
 > - scope: path; id: Trickster; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-pickpocket-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pickpocket-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-bystander"></a>
 
@@ -3961,7 +4690,12 @@ meta:
 > usage:
 > - scope: path; id: Trickster; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-bystander-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bystander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-silver-tongued"></a>
 
@@ -3988,7 +4722,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-silver-tongued-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-silver-tongued-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-weapon"></a>
 
@@ -4010,7 +4749,12 @@ meta:
 > usage:
 > - scope: path; id: Weapon; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-weapon-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-weapon-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-cleanser"></a>
 
@@ -4035,7 +4779,12 @@ meta:
 > usage:
 > - scope: path; id: Weapon; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-cleanser-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cleanser-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-curse-blessed"></a>
 
@@ -4057,7 +4806,12 @@ meta:
 > usage:
 > - scope: path; id: Weapon; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-curse-blessed-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-curse-blessed-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-death-hunger"></a>
 
@@ -4079,7 +4833,12 @@ meta:
 > usage:
 > - scope: path; id: Weapon; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-death-hunger-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-death-hunger-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-demolisher"></a>
 
@@ -4102,7 +4861,12 @@ meta:
 > usage:
 > - scope: path; id: Weapon; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-demolisher-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-demolisher-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-fatespun"></a>
 
@@ -4124,7 +4888,12 @@ meta:
 > usage:
 > - scope: path; id: Weapon; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-fatespun-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fatespun-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-i-am-legion"></a>
 
@@ -4146,7 +4915,12 @@ meta:
 > usage:
 > - scope: path; id: Weapon; index: 6
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-i-am-legion-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-i-am-legion-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-burglar"></a>
 
@@ -4169,7 +4943,12 @@ meta:
 > usage:
 > - scope: path; id: Bearer; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-burglar-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-burglar-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-doombringer"></a>
 
@@ -4191,7 +4970,12 @@ meta:
 > usage:
 > - scope: path; id: Bearer; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-doombringer-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-doombringer-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-fighting-woman-or-man"></a>
 
@@ -4213,7 +4997,12 @@ meta:
 > usage:
 > - scope: path; id: Bearer; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-fighting-woman-or-man-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fighting-woman-or-man-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-loyal"></a>
 
@@ -4237,7 +5026,12 @@ meta:
 > usage:
 > - scope: path; id: Bearer; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-loyal-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-loyal-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-revenant-in-waiting"></a>
 
@@ -4259,7 +5053,12 @@ meta:
 > usage:
 > - scope: path; id: Bearer; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-revenant-in-waiting-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-revenant-in-waiting-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-shackleminded"></a>
 
@@ -4285,7 +5084,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-shackleminded-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shackleminded-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-yellowlander"></a>
 
@@ -4308,7 +5112,12 @@ meta:
 > usage:
 > - scope: path; id: Yellowlander; index: 0
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-yellowlander-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-yellowlander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-diesel-dwarf"></a>
 
@@ -4330,7 +5139,12 @@ meta:
 > usage:
 > - scope: path; id: Yellowlander; index: 1
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-diesel-dwarf-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-diesel-dwarf-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-dust-rat"></a>
 
@@ -4352,7 +5166,12 @@ meta:
 > usage:
 > - scope: path; id: Yellowlander; index: 2
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-dust-rat-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-dust-rat-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-rancher"></a>
 
@@ -4374,7 +5193,12 @@ meta:
 > usage:
 > - scope: path; id: Yellowlander; index: 3
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-rancher-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-rancher-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-ruderalist"></a>
 
@@ -4396,7 +5220,12 @@ meta:
 > usage:
 > - scope: path; id: Yellowlander; index: 4
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-ruderalist-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ruderalist-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-saffron-eater"></a>
 
@@ -4418,7 +5247,12 @@ meta:
 > usage:
 > - scope: path; id: Yellowlander; index: 5
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-saffron-eater-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-saffron-eater-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-thorny"></a>
 
@@ -4445,7 +5279,12 @@ meta:
 
 <hr/>
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-thorny-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-thorny-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-generic-synthesized-creature"></a>
 
@@ -4495,7 +5334,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-generic-synthesized-creature-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-generic-synthesized-creature-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-humans-of-the-pananthropy"></a>
 
@@ -4537,7 +5381,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-humans-of-the-pananthropy-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-humans-of-the-pananthropy-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-bonded"></a>
 
@@ -4562,7 +5411,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-bonded-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bonded-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-teamwork"></a>
 
@@ -4587,7 +5441,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-teamwork-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-teamwork-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-toolmaker"></a>
 
@@ -4612,7 +5471,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-toolmaker-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-toolmaker-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-adaptable"></a>
 
@@ -4637,7 +5501,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-adaptable-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-adaptable-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-tactical"></a>
 
@@ -4662,7 +5531,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-tactical-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tactical-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-common-humanity"></a>
 
@@ -4688,7 +5562,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-common-humanity-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-common-humanity-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-brick-bastions"></a>
 
@@ -4730,7 +5609,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-brick-bastions-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-brick-bastions-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-shieldfriend"></a>
 
@@ -4755,7 +5639,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-shieldfriend-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shieldfriend-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-steadfast"></a>
 
@@ -4780,7 +5669,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-steadfast-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-steadfast-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-denial"></a>
 
@@ -4805,7 +5699,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-denial-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-denial-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-resistomorph"></a>
 
@@ -4830,7 +5729,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-resistomorph-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-resistomorph-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-rockblood"></a>
 
@@ -4855,7 +5759,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-rockblood-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-rockblood-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-slam"></a>
 
@@ -4881,7 +5790,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-slam-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-slam-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-crystal-cannons"></a>
 
@@ -4923,7 +5837,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-crystal-cannons-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-crystal-cannons-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-overcharge"></a>
 
@@ -4949,7 +5868,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-overcharge-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-overcharge-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-desperate-shot"></a>
 
@@ -4974,7 +5898,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-desperate-shot-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-desperate-shot-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-feedback"></a>
 
@@ -4999,7 +5928,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-feedback-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-feedback-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-shatter"></a>
 
@@ -5024,7 +5958,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-shatter-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shatter-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-phase"></a>
 
@@ -5050,7 +5989,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-phase-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-phase-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-circle-of-pain"></a>
 
@@ -5075,7 +6019,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-circle-of-pain-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-circle-of-pain-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-darting-dodgers"></a>
 
@@ -5117,7 +6066,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-darting-dodgers-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-darting-dodgers-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-charger"></a>
 
@@ -5142,7 +6096,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-charger-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-charger-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-double-attack"></a>
 
@@ -5167,7 +6126,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-double-attack-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-double-attack-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-riposte"></a>
 
@@ -5192,7 +6156,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-riposte-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-riposte-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-evasive"></a>
 
@@ -5217,7 +6186,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-evasive-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-evasive-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-springer"></a>
 
@@ -5242,7 +6216,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-springer-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-springer-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-stabber"></a>
 
@@ -5267,7 +6246,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 162
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-stabber-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-stabber-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-erratic-expendables"></a>
 
@@ -5308,7 +6292,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-erratic-expendables-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-erratic-expendables-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-death-curse"></a>
 
@@ -5333,7 +6322,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-death-curse-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-death-curse-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-martyr"></a>
 
@@ -5358,7 +6352,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-martyr-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-martyr-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-once-again"></a>
 
@@ -5383,7 +6382,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-once-again-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-once-again-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-killbite"></a>
 
@@ -5408,7 +6412,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-killbite-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-killbite-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-ticking-corpse"></a>
 
@@ -5434,7 +6443,12 @@ meta:
 >     source: Vastlands_Guidebook
 >     page: 163
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-ticking-corpse-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ticking-corpse-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-frenzy"></a>
 
@@ -5465,7 +6479,12 @@ meta:
 *(Abstract trait category; individual corruptions are generated procedurally.)*
 
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-frenzy-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-frenzy-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-corruption"></a>
 
@@ -5502,7 +6521,12 @@ meta:
 *(Abstract trait category; individual powers are defined elsewhere.)*
 
 
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-corruption-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-corruption-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>
 
 <a id="sdm-trait-power-as-trait"></a>
 
@@ -5533,4 +6557,9 @@ meta:
   - scope: source
     source: Vastlands_Guidebook
     page: 94
-<span class="trait-return">&nbsp;&nbsp;<a href="#sdm-trait-power-as-trait-anchor">↩ Back</a></span>
+<span class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-power-as-trait-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</span>

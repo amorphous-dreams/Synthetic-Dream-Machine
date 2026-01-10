@@ -136,5 +136,53 @@
   <footer>
     {{ site.title | default: "Synthetic Dream Machine" }} — The archive Lares are listening...
   </footer>
+  <script>
+  /* Lares: Back-link behavior
+     - Targets <a class="js-back-link" href="/path/to/toc/#anchor">
+     - Calls history.back() when safe (same-origin referrer OR plausible history),
+       otherwise lets the link follow its href (TOC fallback).
+  */
+  (function () {
+    function initBackLinks() {
+      var links = document.querySelectorAll('a.js-back-link');
+      if (!links || !links.length) return;
+
+      links.forEach(function (a) {
+        if (a.__back_link_attached) return;
+        a.__back_link_attached = true;
+
+        a.addEventListener('click', function (ev) {
+          try {
+            var ref = document.referrer || '';
+            var sameOriginRef = false;
+            if (ref) {
+              try { sameOriginRef = (new URL(ref)).origin === location.origin; } catch (e) { sameOriginRef = false; }
+            }
+
+            if (sameOriginRef) {
+              ev.preventDefault();
+              history.back();
+              return;
+            }
+
+            if (!ref && history.length > 1) {
+              ev.preventDefault();
+              history.back();
+              return;
+            }
+          } catch (err) {
+            return;
+          }
+        });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBackLinks);
+    } else {
+      initBackLinks();
+    }
+  })();
+  </script>
 </body>
 </html>
