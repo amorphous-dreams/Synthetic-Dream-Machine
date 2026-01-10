@@ -7,7 +7,7 @@ body_class: dashboard
 
 {% include nav-dashboard.html
   book_label=site.data.nav.our_golden_age.title
-  strip_prefixes="SDM-Our Golden Age-Teaser,OGA,Our Golden Age"
+  strip_prefixes="Our Golden Age"
   items=site.data.nav.our_golden_age.chapters
   return_href=site.data.nav.our_golden_age.return_href
 %}
