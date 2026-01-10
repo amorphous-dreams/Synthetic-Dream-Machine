@@ -430,9 +430,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [path:Revenant]
 >   [affects:powers]
 >   [affects:senses]
+>   [path:Revenant]
 
 meta:
 > - source:

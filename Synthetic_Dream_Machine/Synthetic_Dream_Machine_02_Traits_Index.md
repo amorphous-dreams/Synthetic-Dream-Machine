@@ -23,6 +23,7 @@
 - <a id="sdm-trait-burner-anchor"></a> [Burner](#sdm-trait-burner)
 - <a id="sdm-trait-bystander-anchor"></a> [Bystander](#sdm-trait-bystander)
 - <a id="sdm-trait-cad-anchor"></a> [Cad](#sdm-trait-cad)
+- <a id="sdm-trait-chaos-step-anchor"></a> [Chaos Step](#sdm-trait-chaos-step)
 - <a id="sdm-trait-charger-anchor"></a> [Charger](#sdm-trait-charger)
 - <a id="sdm-trait-cheesemaker-anchor"></a> [Cheesemaker](#sdm-trait-cheesemaker)
 - <a id="sdm-trait-chronic-anchor"></a> [Chronic](#sdm-trait-chronic)
@@ -33,6 +34,7 @@
 - <a id="sdm-trait-clueless-outsider-anchor"></a> [Clueless Outsider](#sdm-trait-clueless-outsider)
 - <a id="sdm-trait-cold-new-flesh-anchor"></a> [Cold New Flesh](#sdm-trait-cold-new-flesh)
 - <a id="sdm-trait-colonist-anchor"></a> [Colonist](#sdm-trait-colonist)
+- <a id="sdm-trait-commander-anchor"></a> [Commander](#sdm-trait-commander)
 - <a id="sdm-trait-common-humanity-anchor"></a> [Common Humanity](#sdm-trait-common-humanity)
 - <a id="sdm-trait-competent-appearance-anchor"></a> [Competent Appearance](#sdm-trait-competent-appearance)
 - <a id="sdm-trait-corruption-anchor"></a> [Corruption](#sdm-trait-corruption)
@@ -89,6 +91,7 @@
 - <a id="sdm-trait-hashtag-blessed-anchor"></a> [Hashtag Blessed](#sdm-trait-hashtag-blessed)
 - <a id="sdm-trait-hexad-member-anchor"></a> [Hexad Member](#sdm-trait-hexad-member)
 - <a id="sdm-trait-hexer-meritocrat-anchor"></a> [Hexer Meritocrat](#sdm-trait-hexer-meritocrat)
+- <a id="sdm-trait-hollow-halo-anchor"></a> [Hollow Halo](#sdm-trait-hollow-halo)
 - <a id="sdm-trait-holy-diver-anchor"></a> [Holy Diver](#sdm-trait-holy-diver)
 - <a id="sdm-trait-holy-fool-anchor"></a> [Holy Fool](#sdm-trait-holy-fool)
 - <a id="sdm-trait-housemaker-anchor"></a> [Housemaker](#sdm-trait-housemaker)
@@ -103,6 +106,7 @@
 - <a id="sdm-trait-kaffetropist-anchor"></a> [Kaffetropist](#sdm-trait-kaffetropist)
 - <a id="sdm-trait-killbite-anchor"></a> [Killbite](#sdm-trait-killbite)
 - <a id="sdm-trait-knight-reflexes-anchor"></a> [Knight Reflexes](#sdm-trait-knight-reflexes)
+- <a id="sdm-trait-lair-wards-anchor"></a> [Lair wards](#sdm-trait-lair-wards)
 - <a id="sdm-trait-legal-immunity-anchor"></a> [Legal Immunity](#sdm-trait-legal-immunity)
 - <a id="sdm-trait-lost-songs-anchor"></a> [Lost Songs](#sdm-trait-lost-songs)
 - <a id="sdm-trait-loyal-anchor"></a> [Loyal](#sdm-trait-loyal)
@@ -126,6 +130,7 @@
 - <a id="sdm-trait-orange-half-ling-anchor"></a> [Orange Half-Ling](#sdm-trait-orange-half-ling)
 - <a id="sdm-trait-orangelander-anchor"></a> [Orangelander](#sdm-trait-orangelander)
 - <a id="sdm-trait-overcharge-anchor"></a> [Overcharge](#sdm-trait-overcharge)
+- <a id="sdm-trait-paradox-die-anchor"></a> [Paradox Die](#sdm-trait-paradox-die)
 - <a id="sdm-trait-perfect-anchor"></a> [Perfect](#sdm-trait-perfect)
 - <a id="sdm-trait-perfected-germline-anchor"></a> [Perfected Germline](#sdm-trait-perfected-germline)
 - <a id="sdm-trait-personal-daimon-anchor"></a> [Personal Daimon](#sdm-trait-personal-daimon)
@@ -139,6 +144,7 @@
 - <a id="sdm-trait-power-scroller-anchor"></a> [Power Scroller](#sdm-trait-power-scroller)
 - <a id="sdm-trait-powered-anchor"></a> [Powered](#sdm-trait-powered)
 - <a id="sdm-trait-purplelander-anchor"></a> [Purplelander](#sdm-trait-purplelander)
+- <a id="sdm-trait-quartermaster-anchor"></a> [Quartermaster](#sdm-trait-quartermaster)
 - <a id="sdm-trait-rancher-anchor"></a> [Rancher](#sdm-trait-rancher)
 - <a id="sdm-trait-rationalised-anchor"></a> [Rationalised](#sdm-trait-rationalised)
 - <a id="sdm-trait-reanimator-anchor"></a> [Reanimator](#sdm-trait-reanimator)
@@ -146,6 +152,7 @@
 - <a id="sdm-trait-redlander-anchor"></a> [Redlander](#sdm-trait-redlander)
 - <a id="sdm-trait-resistomorph-anchor"></a> [Resistomorph](#sdm-trait-resistomorph)
 - <a id="sdm-trait-resourceful-anchor"></a> [Resourceful](#sdm-trait-resourceful)
+- <a id="sdm-trait-revenant-anchor"></a> [Revenant](#sdm-trait-revenant)
 - <a id="sdm-trait-revenant-in-waiting-anchor"></a> [Revenant-in-Waiting](#sdm-trait-revenant-in-waiting)
 - <a id="sdm-trait-riposte-anchor"></a> [Riposte](#sdm-trait-riposte)
 - <a id="sdm-trait-rockblood-anchor"></a> [Rockblood](#sdm-trait-rockblood)
@@ -160,6 +167,7 @@
 - <a id="sdm-trait-shatter-anchor"></a> [Shatter](#sdm-trait-shatter)
 - <a id="sdm-trait-shieldfriend-anchor"></a> [Shieldfriend](#sdm-trait-shieldfriend)
 - <a id="sdm-trait-shopstaff-anchor"></a> [Shopstaff](#sdm-trait-shopstaff)
+- <a id="sdm-trait-signalmaster-anchor"></a> [Signalmaster](#sdm-trait-signalmaster)
 - <a id="sdm-trait-silver-tongued-anchor"></a> [Silver-Tongued](#sdm-trait-silver-tongued)
 - <a id="sdm-trait-skeleton-anchor"></a> [Skeleton](#sdm-trait-skeleton)
 - <a id="sdm-trait-slam-anchor"></a> [Slam](#sdm-trait-slam)
@@ -171,6 +179,7 @@
 - <a id="sdm-trait-soul-fuel-anchor"></a> [Soul Fuel](#sdm-trait-soul-fuel)
 - <a id="sdm-trait-soul-thief-anchor"></a> [Soul Thief](#sdm-trait-soul-thief)
 - <a id="sdm-trait-spelunker-anchor"></a> [Spelunker](#sdm-trait-spelunker)
+- <a id="sdm-trait-spirit-anchor"></a> [Spirit](#sdm-trait-spirit)
 - <a id="sdm-trait-sporemark-anchor"></a> [Sporemark](#sdm-trait-sporemark)
 - <a id="sdm-trait-springer-anchor"></a> [Springer](#sdm-trait-springer)
 - <a id="sdm-trait-stabber-anchor"></a> [Stabber](#sdm-trait-stabber)
@@ -181,6 +190,7 @@
 - <a id="sdm-trait-swift-anchor"></a> [Swift](#sdm-trait-swift)
 - <a id="sdm-trait-synthetic-soul-anchor"></a> [Synthetic Soul](#sdm-trait-synthetic-soul)
 - <a id="sdm-trait-tactical-anchor"></a> [Tactical](#sdm-trait-tactical)
+- <a id="sdm-trait-tactician-anchor"></a> [Tactician](#sdm-trait-tactician)
 - <a id="sdm-trait-teamwork-anchor"></a> [Teamwork](#sdm-trait-teamwork)
 - <a id="sdm-trait-telempath-anchor"></a> [Telempath](#sdm-trait-telempath)
 - <a id="sdm-trait-terrifying-anchor"></a> [Terrifying](#sdm-trait-terrifying)
@@ -202,11 +212,14 @@
 - <a id="sdm-trait-vintner-anchor"></a> [Vintner](#sdm-trait-vintner)
 - <a id="sdm-trait-void-ward-anchor"></a> [Void Ward](#sdm-trait-void-ward)
 - <a id="sdm-trait-wanderer-anchor"></a> [Wanderer](#sdm-trait-wanderer)
+- <a id="sdm-trait-wardwright-anchor"></a> [Wardwright](#sdm-trait-wardwright)
 - <a id="sdm-trait-weapon-anchor"></a> [Weapon](#sdm-trait-weapon)
 - <a id="sdm-trait-werker-anchor"></a> [Werker](#sdm-trait-werker)
+- <a id="sdm-trait-wild-mage-anchor"></a> [Wild Mage](#sdm-trait-wild-mage)
 - <a id="sdm-trait-wild-survivor-anchor"></a> [Wild Survivor](#sdm-trait-wild-survivor)
 - <a id="sdm-trait-wired-anchor"></a> [Wired](#sdm-trait-wired)
 - <a id="sdm-trait-wizard-anchor"></a> [Wizard](#sdm-trait-wizard)
+- <a id="sdm-trait-wyldfire-anchor"></a> [Wyldfire](#sdm-trait-wyldfire)
 - <a id="sdm-trait-yellowlander-anchor"></a> [Yellowlander](#sdm-trait-yellowlander)
 
 # SDM Trait Template
@@ -267,7 +280,6 @@ Traits represent the "radically ungated advancement" of the Sythetic Dream Machi
 
 This section enumerates canonical traits. Abstract traits describe procedures rather than listing every possible instance.
 
-
 <div class="trait-card" markdown="1">
 
 ## **Abandoned** {#sdm-trait-abandoned}
@@ -297,7 +309,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Adaptable** {#sdm-trait-adaptable}
@@ -325,7 +336,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -356,7 +366,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Arboreal** {#sdm-trait-arboreal}
@@ -384,7 +393,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -415,7 +423,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Armorborn** {#sdm-trait-armorborn}
@@ -444,7 +451,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -506,7 +512,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Backstabber** {#sdm-trait-backstabber}
@@ -534,7 +539,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -565,7 +569,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Blastermaster** {#sdm-trait-blastermaster}
@@ -594,7 +597,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Blessed** {#sdm-trait-blessed}
@@ -622,7 +624,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -654,7 +655,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Bluelander** {#sdm-trait-bluelander}
@@ -684,7 +684,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Boatmaster** {#sdm-trait-boatmaster}
@@ -713,7 +712,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Bonded** {#sdm-trait-bonded}
@@ -741,7 +739,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -772,7 +769,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -818,7 +814,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Burglar** {#sdm-trait-burglar}
@@ -847,7 +842,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -879,7 +873,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Bystander** {#sdm-trait-bystander}
@@ -907,7 +900,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -937,6 +929,35 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Chaos Step** {#sdm-trait-chaos-step}
+
+text:
+>   **Chaos Step.** Free Action. When an attack targets you or you fail a save spend 1 Hero Die or take 1 ability damage to blink up to 30 feet to a you-sized space you can see. The triggering attack resolves against your new position with disadvantage (line‑of‑sight permitting & bonus for any new cover; otherwise it misses). Immediately roll a Dangerous Magic roll vs the Area level. If that results in a Corruption effect related to teleportation, portals, or quantum themes you regain the Hero Die or heal the ability damage.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:defense]
+>   [path:Wild Mage]
+>   [uses:heroDie]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Wild Mage; index: 2
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-chaos-step-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -966,7 +987,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Cheesemaker** {#sdm-trait-cheesemaker}
@@ -995,7 +1015,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1027,7 +1046,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Circle of Pain** {#sdm-trait-circle-of-pain}
@@ -1055,7 +1073,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1086,7 +1103,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Citizen Maintainer** {#sdm-trait-citizen-maintainer}
@@ -1115,7 +1131,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1148,7 +1163,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Clueless Outsider** {#sdm-trait-clueless-outsider}
@@ -1177,7 +1191,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1208,7 +1221,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Colonist** {#sdm-trait-colonist}
@@ -1238,6 +1250,37 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Commander** {#sdm-trait-commander}
+
+text:
+>   **Commander.** Excel at battle lore, tactics, and rally tests. Draw a Formation Inventory box on the character sheet and list attached Units/Vehicles (and/or stations). Draw a small Command Dice (d6) box beside it. Skilled: attach up to 3 Units within 1 zone; start combat with 1 Command Die. Expert: attach up to 5 Units within 2 zones; start combat with 2 Command Dice. Master: attach up to 7 Units within 3 zones; start combat with 3 Command Dice. Each Commander also gains 1 Command die at the start of their side's turn. "Start of combat" Command Dice refresh only after one encounter fully ends; follow-on waves, running fights, and active pursuits count as the same battle.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:attack]
+>   [affects:inventory]
+>   [affects:morale]
+>   [path:Commander]
+>   [uses:commandDie]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Commander; index: 0
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-commander-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -1268,7 +1311,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Competent Appearance** {#sdm-trait-competent-appearance}
@@ -1296,7 +1338,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1337,7 +1378,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Cosmic Qanat** {#sdm-trait-cosmic-qanat}
@@ -1366,7 +1406,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Country Squire** {#sdm-trait-country-squire}
@@ -1394,7 +1433,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1440,7 +1478,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Culling** {#sdm-trait-culling}
@@ -1469,7 +1506,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Curse-Blessed** {#sdm-trait-curse-blessed}
@@ -1497,7 +1533,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1543,7 +1578,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Death Curse** {#sdm-trait-death-curse}
@@ -1571,7 +1605,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1601,7 +1634,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Deeply Embodied** {#sdm-trait-deeply-embodied}
@@ -1630,7 +1662,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Defender** {#sdm-trait-defender}
@@ -1658,7 +1689,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1689,7 +1719,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Denial** {#sdm-trait-denial}
@@ -1717,7 +1746,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1747,7 +1775,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Devastator** {#sdm-trait-devastator}
@@ -1775,7 +1802,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1805,7 +1831,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Dissipated** {#sdm-trait-dissipated}
@@ -1833,7 +1858,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1863,7 +1887,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Doombringer** {#sdm-trait-doombringer}
@@ -1891,7 +1914,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -1921,7 +1943,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Double-Platinum Deathless Backup** {#sdm-trait-double-platinum-deathless-backup}
@@ -1950,7 +1971,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Dreamwalker** {#sdm-trait-dreamwalker}
@@ -1978,7 +1998,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2010,7 +2029,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Dust Rat** {#sdm-trait-dust-rat}
@@ -2039,7 +2057,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Enterprising** {#sdm-trait-enterprising}
@@ -2067,7 +2084,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2113,7 +2129,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Escapist** {#sdm-trait-escapist}
@@ -2141,7 +2156,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2171,7 +2185,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Expensive Training** {#sdm-trait-expensive-training}
@@ -2199,7 +2212,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2229,7 +2241,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Exuberant** {#sdm-trait-exuberant}
@@ -2258,7 +2269,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Faceless** {#sdm-trait-faceless}
@@ -2286,7 +2296,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2317,7 +2326,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Falscher** {#sdm-trait-falscher}
@@ -2345,7 +2353,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2375,7 +2382,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Feedback** {#sdm-trait-feedback}
@@ -2403,7 +2409,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2434,7 +2439,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Fighter** {#sdm-trait-fighter}
@@ -2464,7 +2468,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Fighting Woman or Man** {#sdm-trait-fighting-woman-or-man}
@@ -2492,7 +2495,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2522,7 +2524,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2558,7 +2559,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Friends** {#sdm-trait-friends}
@@ -2588,7 +2588,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **From Dust, Returning** {#sdm-trait-from-dust-returning}
@@ -2616,7 +2615,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2670,7 +2668,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Glowing Skeleton** {#sdm-trait-glowing-skeleton}
@@ -2698,7 +2695,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2729,7 +2725,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Greenlander** {#sdm-trait-greenlander}
@@ -2759,7 +2754,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Grit** {#sdm-trait-grit}
@@ -2788,7 +2782,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Grounded** {#sdm-trait-grounded}
@@ -2816,7 +2809,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2848,7 +2840,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Hardened** {#sdm-trait-hardened}
@@ -2876,7 +2867,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -2910,7 +2900,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Hexad Member** {#sdm-trait-hexad-member}
@@ -2941,7 +2930,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Hexer Meritocrat** {#sdm-trait-hexer-meritocrat}
@@ -2970,6 +2958,34 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Hollow Halo** {#sdm-trait-hollow-halo}
+
+text:
+>   **Hollow Halo.** You may attune mindless undead you have maintained this week to your Halo. Attuned undead recognize you as a handler and obey simple commands. You may keep a number of attuned undead equal to your **Level + Aura**; if any miss upkeep and Degrade, it immediately drops out of attunement. Expert: Your *Ba* rides the void-channels. You may see and hear through one attuned undead at a time, and you may shift your senses between them freely. Master: You may cast Powers through any attuned undead, as if you stood where it stands.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:powers]
+>   [affects:senses]
+>   [path:Revenant]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Revenant; index: 6
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hollow-halo-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -2999,7 +3015,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3031,7 +3046,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Housemaker** {#sdm-trait-housemaker}
@@ -3061,7 +3075,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Human Library** {#sdm-trait-human-library}
@@ -3089,7 +3102,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3135,7 +3147,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Hunter** {#sdm-trait-hunter}
@@ -3164,7 +3175,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **I Am Legion** {#sdm-trait-i-am-legion}
@@ -3192,7 +3202,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3224,7 +3233,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Inquisition Agent** {#sdm-trait-inquisition-agent}
@@ -3252,7 +3260,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3284,7 +3291,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Irresistible** {#sdm-trait-irresistible}
@@ -3313,7 +3319,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3344,7 +3349,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Killbite** {#sdm-trait-killbite}
@@ -3372,7 +3376,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3403,6 +3406,36 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Lair wards** {#sdm-trait-lair-wards}
+
+text:
+>   **Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer –2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair's threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee's call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:attack]
+>   [affects:save]
+>   [affects:ward]
+>   [path:Vampire]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Vampire; index: 6
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-lair-wards-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -3433,7 +3466,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3466,7 +3498,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Loyal** {#sdm-trait-loyal}
@@ -3497,7 +3528,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Manager** {#sdm-trait-manager}
@@ -3527,7 +3557,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Martyr** {#sdm-trait-martyr}
@@ -3555,7 +3584,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3586,7 +3614,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Mind Palace** {#sdm-trait-mind-palace}
@@ -3616,7 +3643,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Mossblood** {#sdm-trait-mossblood}
@@ -3644,7 +3670,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3675,7 +3700,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **My Bones Engraved** {#sdm-trait-my-bones-engraved}
@@ -3704,7 +3728,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3736,7 +3759,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Noömagus** {#sdm-trait-noomagus}
@@ -3766,7 +3788,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Noösphere Native** {#sdm-trait-noosphere-native}
@@ -3795,7 +3816,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Noösphere Priest** {#sdm-trait-noosphere-priest}
@@ -3823,7 +3843,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3858,7 +3877,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Oblique Reality** {#sdm-trait-oblique-reality}
@@ -3889,7 +3907,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Of-World** {#sdm-trait-of-world}
@@ -3919,7 +3936,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Old Money** {#sdm-trait-old-money}
@@ -3947,7 +3963,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -3977,7 +3992,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Oppressed Faith** {#sdm-trait-oppressed-faith}
@@ -4006,7 +4020,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Orange Half-Ling** {#sdm-trait-orange-half-ling}
@@ -4034,7 +4047,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4065,7 +4077,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Overcharge** {#sdm-trait-overcharge}
@@ -4095,6 +4106,34 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Paradox Die** {#sdm-trait-paradox-die}
+
+text:
+>   **Paradox Die.** Skilled: d6*, Expert: d8*, Master: d10*; You twist probability at the moment it resolves. Mark this trait to roll a Paradox Die and add or subtract its result to any roll. Immediately make a Danger Roll vs the total Paradox Die result (reality glitches). You may not mark this trait if it is already marked. Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of ability damage.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [path:Wild Mage]
+>   [uses:life]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Wild Mage; index: 1
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-paradox-die-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -4123,7 +4162,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4157,7 +4195,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Personal Daimon** {#sdm-trait-personal-daimon}
@@ -4187,7 +4224,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Pet Sidekick** {#sdm-trait-pet-sidekick}
@@ -4215,7 +4251,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4246,7 +4281,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Phylake’s Child** {#sdm-trait-phylakes-child}
@@ -4274,7 +4308,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4304,7 +4337,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Pleasant** {#sdm-trait-pleasant}
@@ -4332,7 +4364,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4362,7 +4393,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4426,7 +4456,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Powered** {#sdm-trait-powered}
@@ -4454,7 +4483,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4485,6 +4513,35 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Quartermaster** {#sdm-trait-quartermaster}
+
+text:
+>   **Quartermaster.** You keep the Company fed, paid, and pointed the right way. Skilled: At the week scale, reduce Company supply spend by 1 sack (minimum 1). In settled places, gain +2 to tests to buy, hire, negotiate wages, or arrange transport. Expert: Once per week, when a misfortune/encounter would cost supplies, ammo, tools, or spares, make a moderate relevant test; on a success, halve the loss (round up) or shift it to a different expendable the referee names (“lose rope, not water”). Master: You can requisition in jurisdictions that recognize your badge/charter/papers: claim short-term supplies, lodging, or transport (scale by Area Level / scarcity). It always leaves a paper trail—expect repayment, favors, or questions later.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:inventory]
+>   [affects:social]
+>   [frequency:per-week]
+>   [path:Commander]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Commander; index: 4
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-quartermaster-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -4514,7 +4571,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Rationalised** {#sdm-trait-rationalised}
@@ -4542,7 +4598,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4572,7 +4627,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4607,7 +4661,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Redlander** {#sdm-trait-redlander}
@@ -4637,7 +4690,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Resistomorph** {#sdm-trait-resistomorph}
@@ -4665,7 +4717,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4696,6 +4747,34 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Revenant** {#sdm-trait-revenant}
+
+text:
+>   **Revenant.** Exposure to the Void has opened your mind to strange magics. You can recognize [void] workings—tell if a creature, object, place, or Power is [void]-tainted after a moment of still attention. When an undead special attack, or a [void] Power targeting you fails, gain 1 temporary life. Expert: Gain 1 temporary life when any Power targeting you fails (not just undead/[void]). Master: Gain the Power’s base cost in temporary Life (ignore any Overcharges). Also gain Affinity – Illusion • Light • Void (as a Heritage-style effect tied to this trait).
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:life]
+>   [affects:powers]
+>   [path:Revenant]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Revenant; index: 0
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-revenant-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -4725,7 +4804,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Riposte** {#sdm-trait-riposte}
@@ -4753,7 +4831,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4783,7 +4860,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Ruderalist** {#sdm-trait-ruderalist}
@@ -4811,7 +4887,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4841,7 +4916,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Saffron Eater** {#sdm-trait-saffron-eater}
@@ -4869,7 +4943,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4901,7 +4974,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Sculpted Beauty** {#sdm-trait-sculpted-beauty}
@@ -4929,7 +5001,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -4960,7 +5031,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Servant** {#sdm-trait-servant}
@@ -4989,7 +5059,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5023,7 +5092,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Shatter** {#sdm-trait-shatter}
@@ -5052,7 +5120,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Shieldfriend** {#sdm-trait-shieldfriend}
@@ -5080,7 +5147,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5111,6 +5177,36 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Signalmaster** {#sdm-trait-signalmaster}
+
+text:
+>   **Signalmaster.** You keep the signal alive—voice, banner, drum-code, lamps, clicks on the noösphere. Skilled: Allies who can see/hear your signal don’t lose coordination to ordinary chaos (smoke, crowd noise, darkness, confusion) unless it’s truly disruptive (hard separation, storm, ward-jamming, total blackout). If you have Commander, this also prevents your attached Units from being severed by ordinary chaos. Expert: Once per round, when a friendly creature/Unit in your zone or Near would break, scatter, or test morale, you may make a rally test; on a success they hold together long enough to act normally this round (they may still withdraw after). Master: You can run a relay: choose a willing ally/Unit in your zone or Near as your signal post; for this encounter, treat allies who can see/hear them as also receiving your orders/rally (until the relay is taken out or separated).
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:morale]
+>   [affects:social]
+>   [frequency:per-round]
+>   [path:Commander]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Commander; index: 5
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-signalmaster-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -5145,7 +5241,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Skeleton** {#sdm-trait-skeleton}
@@ -5174,7 +5269,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5205,7 +5299,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Slayer** {#sdm-trait-slayer}
@@ -5233,7 +5326,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5263,7 +5355,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5297,7 +5388,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Soldier** {#sdm-trait-soldier}
@@ -5326,7 +5416,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5357,7 +5446,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Soul Fuel** {#sdm-trait-soul-fuel}
@@ -5387,7 +5475,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5421,7 +5508,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Spelunker** {#sdm-trait-spelunker}
@@ -5450,6 +5536,36 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Spirit** {#sdm-trait-spirit}
+
+text:
+>   **Spirit.** Your body (*Ha*) is slightly out of phase and insubstantial, yet your soul (*Ka*) and psyche (*Ba*) remain fully present. You gain +6 Defense vs. physical attacks and suffer Life damage normally. Others sense your touch as a light crackle of energy and you cannot manipulate objects. Named, warded, enchanted, or noospheric effects can always affect you. To act physically, you must manifest your Ha, spending 1 Life for one hour. While manifested you may use your Strength ability score, carry Strength stones in gear, and interact normally with objects. When manifestation ends, your body slips out of phase again. Expert: Spend 1 Life to manifest for one watch (4 hours), carry up to 3 + Strength stones while manifested. Master: Spend 1 Life to manifest for one day. Also, gain Affinity – Chaos • Dream • Shadow (as a Heritage-style effect).
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:defense]
+>   [affects:ward]
+>   [path:Spirit]
+>   [uses:life]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Spirit; index: 0
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-spirit-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -5483,7 +5599,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Springer** {#sdm-trait-springer}
@@ -5511,7 +5626,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5541,7 +5655,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Steadfast** {#sdm-trait-steadfast}
@@ -5569,7 +5682,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5599,7 +5711,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Subconscious Decay** {#sdm-trait-subconscious-decay}
@@ -5627,7 +5738,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5660,7 +5770,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5697,7 +5806,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Synthetic Soul** {#sdm-trait-synthetic-soul}
@@ -5725,7 +5833,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5755,6 +5862,35 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Tactician** {#sdm-trait-tactician}
+
+text:
+>   **Tactician.** You read the field like a diagram—angles, timing, lines of fire, and when to commit. Skilled: Gain +1 to initiative. When your side rolls initiative, it may choose any Tactician present to roll (instead of a random ally). Expert: Gain +2 to initiative. Once per round, declare Focus Fire on one visible foe; allies you can signal (same zone or Near, clear line-of-effect) gain +1 to attack rolls against that target until the round ends. If you have Commander, you may extend Focus Fire to attached Units within your command range. Master: Gain +3 to initiative. When your side rolls initiative, you may roll twice and take the better result (your side must use your roll, use once per watch).
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:attack]
+>   [affects:initiative]
+>   [path:Commander]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Commander; index: 6
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tactician-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -5783,7 +5919,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5818,7 +5953,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Terrifying** {#sdm-trait-terrifying}
@@ -5846,7 +5980,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5881,7 +6014,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Ticking Corpse** {#sdm-trait-ticking-corpse}
@@ -5911,7 +6043,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Toolmaker** {#sdm-trait-toolmaker}
@@ -5939,7 +6070,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -5973,7 +6103,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Tourist** {#sdm-trait-tourist}
@@ -6003,7 +6132,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Traveler** {#sdm-trait-traveler}
@@ -6031,7 +6159,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -6062,7 +6189,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Underestimated** {#sdm-trait-underestimated}
@@ -6092,7 +6218,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Undying Synthetic** {#sdm-trait-undying-synthetic}
@@ -6120,7 +6245,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -6154,7 +6278,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Ur-War Program** {#sdm-trait-ur-war-program}
@@ -6182,7 +6305,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -6216,7 +6338,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -6252,7 +6373,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Very Strong** {#sdm-trait-very-strong}
@@ -6284,7 +6404,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -6318,7 +6437,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Vintner** {#sdm-trait-vintner}
@@ -6347,7 +6465,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Void Ward** {#sdm-trait-void-ward}
@@ -6375,7 +6492,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -6409,6 +6525,34 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Wardwright** {#sdm-trait-wardwright}
+
+text:
+>   **Wardwright.** You can hear wards the way others hear music: crackle, drift, harmonic clash, the tiny scream right after a glyph tastes a lie. Gain +1 Ward. Expert: With a little kit (jade dust, wire, incense, doppler charm, etc.) and one watch of downtime, you may install, remove, or swap a single Ward Feature on a ward you possess, or re-mount a ward to a different body-part/anchor to avoid bad stacking. When you trigger Ward Compatibility Error, roll d20 + Aura twice and take the better result. Master: You may keep one ward you carry in *Autonomous Mode* under your supervision. It follows one standing Directive (watch, alarm, harry, fetch, carry a whisper, map dream-noise, etc.) and you may update that Directive once per watch without special tools. Your companion ward may remain near you; if forced farther, it powers down until reunited.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:defense]
+>   [path:Spirit]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Spirit; index: 6
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wardwright-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -6437,7 +6581,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -6472,6 +6615,36 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Wild Mage** {#sdm-trait-wild-mage}
+
+text:
+>   **Wild Mage.** You are attuned to chaos and unstable forces. When you succeed on a Danger Roll, you may recover 1 point of ability damage or 1 Life. You may mark this trait to gain advantage on one attack or ability test (Expert: also Saves; Master: also Corruption exposure severity). You may not mark this trait if it is already marked. If you cast a spell or activate a power while this trait is marked, it automatically triggers a Danger Roll. Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of ability damage. Choose a Magitech or Fantascience proficiency; when you reach Master, you are proficient in both.
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:life]
+>   [affects:powers]
+>   [path:Wild Mage]
+>   [uses:life]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Wild Mage; index: 0
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wild-mage-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 
@@ -6506,7 +6679,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Wired** {#sdm-trait-wired}
@@ -6540,7 +6712,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Wizard** {#sdm-trait-wizard}
@@ -6569,6 +6740,34 @@ meta:
 
 </div>
 
+<div class="trait-card" markdown="1">
+
+## **Wyldfire** {#sdm-trait-wyldfire}
+
+text:
+>   **Wyldfire.** Free Action. When any power is successfully cast within 60 feet, make a Danger Roll against the power level to consume its energy. On success cancel the spell’s effect and store the power in your inventory as Mana (max Mana equals your Level). On failure, the power has with a Corruption. Expert: Spend stored mana and an action to heal yourself or a nearby ally (1 Life per 2 mana). Master: Spend stored mana and an action to unleash a 30 feet cone of void‑flame; the damage equals power spent - split among the targets (Aura Save to take 1/2 damage).
+
+tags:
+>   [trait]
+>   [type:path]
+>   [affects:actions]
+>   [affects:powers]
+>   [path:Wild Mage]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+> - usage:
+>   - scope: path; id: Wild Mage; index: 3
+
+<div class="trait-return">
+  &nbsp;&nbsp;
+  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wyldfire-anchor" aria-label="Back to previous page">
+    ↩ Back
+  </a>
+</div>
+
+</div>
 
 <div class="trait-card" markdown="1">
 

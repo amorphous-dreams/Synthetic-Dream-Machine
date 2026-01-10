@@ -1,12 +1,10 @@
 
 ## Vastlands Guidebook Powers
 
-### The Sixfold Hexacenter
-> Source: Vastlands Guidebook, p.108.
 
 <hr/>
 
-#### Red Mist
+## Red Mist
 
 - subtitle: Tactical Aggression Augment
 - power: 1
@@ -20,12 +18,10 @@
   Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save).
   It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
 
-> tags:
-
-  [power]
-  [type:fantascience]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -41,7 +37,7 @@
     page: 20
 <hr/>
 
-#### Orange Dream
+## Orange Dream
 
 - subtitle: Forgotten Spider’s Labors
 - power: 1
@@ -55,12 +51,10 @@
   A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear
   immediately dangerous or risky.
 
-> tags:
-
-  [power]
-  [type:fantascience]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -76,7 +70,7 @@
     page: 20
 <hr/>
 
-#### Yellow Cloud
+## Yellow Cloud
 
 - subtitle: Sands of Lost Times
 - power: 1
@@ -90,12 +84,10 @@
   Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust
   irritates the lungs of air-breathers. After a few minutes, it blows away.
 
-> tags:
-
-  [power]
-  [type:fantascience]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -111,7 +103,7 @@
     page: 20
 <hr/>
 
-#### Green Haven
+## Green Haven
 
 - subtitle: Arbor Sanctuary
 - power: 1
@@ -126,12 +118,10 @@
   in. Enemies need at least one turn to pass through the hedge. They are vulnerable while in the shrub wall. After
   a night or day, the plants return to their ordinary ways.
 
-> tags:
-
-  [power]
-  [type:fantascience]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -147,7 +137,7 @@
     page: 20
 <hr/>
 
-#### Blue Lotus
+## Blue Lotus
 
 - subtitle: Maximum Somatic Contentment
 - power: 1
@@ -162,12 +152,10 @@
   Success: it loses its next turn to a blissful reverie.
   Failure: it sits down, lost in blissful reverie for an hour.
 
-> tags:
-
-  [power]
-  [type:fantascience]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -183,7 +171,7 @@
     page: 20
 <hr/>
 
-#### Purple Memories
+## Purple Memories
 
 - subtitle: Comic Emotional Display
 - power: 1
@@ -197,12 +185,10 @@
   The target becomes susceptible to influence. The barest word or sensation triggers vivid memories, thoughts, and
   emotions. How could anyone keep thoughts or facts a secret in this state? Or resist a fine, rousing song?
 
-> tags:
-
-  [power]
-  [type:fantascience]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -216,12 +202,10 @@
   - scope: source
     source: Magitecnica_Codex_1
     page: 20
-### The Viridian Practice
-> Source: Vastlands Guidebook, p.109.
 
 <hr/>
 
-#### Mother of Bullets
+## Mother of Bullets
 
 - subtitle: Blood Made Lead
 - power: 1
@@ -234,12 +218,10 @@
 
   Reloads your weapon as a free action, turning life force into semi-real projectiles.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -255,7 +237,7 @@
     page: 24
 <hr/>
 
-#### Dancing In The Hail
+## Dancing in the Hail
 
 - subtitle: Dodgebullet
 - power: 1
@@ -269,12 +251,10 @@
   Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major
   penalties (i.e. disadvantage).
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -290,7 +270,7 @@
     page: 24
 <hr/>
 
-#### Ring of Lead
+## Ring of Lead
 
 - subtitle: Rapid Metal Spin Cycle
 - power: 1
@@ -304,12 +284,10 @@
   Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
   *subject to how much ammo the anchor weapon holds.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -325,7 +303,7 @@
     page: 24
 <hr/>
 
-#### Eyes of the Arrow
+## Eyes of the Arrow
 
 - subtitle: Panoptic Projectile
 - power: 1
@@ -338,12 +316,10 @@
 
   Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor).
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -359,7 +335,7 @@
     page: 24
 <hr/>
 
-#### Counterfire
+## Counterfire
 
 - subtitle: Panoptic Projectile
 - power: 1
@@ -372,12 +348,10 @@
 
   Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -393,7 +367,7 @@
     page: 24
 <hr/>
 
-#### Depleted Heavy Metal Rain
+## Depleted Heavy Metal Rain
 
 - subtitle: Bigger Bang
 - power: 1
@@ -406,12 +380,10 @@
 
   Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -425,12 +397,10 @@
   - scope: source
     source: Magitecnica_Codex_1
     page: 24
-### Dawn’s Highway
-> Source: Vastlands Guidebook, p.110.
 
 <hr/>
 
-#### Dampen Mass
+## Dampen Mass
 
 - subtitle: Nosigoro Logistical Augment
 - power: 1
@@ -443,12 +413,10 @@
 
   A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -464,7 +432,7 @@
     page: 22
 <hr/>
 
-#### Better Pastures
+## Better Pastures
 
 - subtitle: Darehodo Patch Choice
 - power: 1
@@ -479,12 +447,10 @@
   seeds. Ask one objective yes / no question of the crossroads, and it shall answer. Will this path reach water
   within 50 miles? Is there green grass along that path within 20 km?
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -500,7 +466,7 @@
     page: 22
 <hr/>
 
-#### Wing And Prayer
+## Wing and Prayer
 
 - subtitle: Dirty Fixing
 - power: 1
@@ -514,12 +480,10 @@
   Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a
   burden for a day, but then the damage is worse.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -535,7 +499,7 @@
     page: 22
 <hr/>
 
-#### Roadfinder
+## Roadfinder
 
 - subtitle: Blacktop Sniffer
 - power: 1
@@ -548,12 +512,10 @@
 
   Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -569,7 +531,7 @@
     page: 22
 <hr/>
 
-#### Highway Cruiser
+## Highway Cruiser
 
 - subtitle: Foolself Driving
 - power: 1
@@ -583,12 +545,10 @@
   Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now
   drives itself! Hopefully, the daemon understands your language to receive voice commands.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -604,7 +564,7 @@
     page: 22
 <hr/>
 
-#### Roadmaker
+## Roadmaker
 
 - subtitle: Stradograd’s Engine of Civility
 - power: 6
@@ -620,12 +580,10 @@
   metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without
   additional fixatives and preparation, the faststone road surface decays in a month.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -639,12 +597,10 @@
   - scope: source
     source: Magitecnica_Codex_1
     page: 22
-### Fundamental Purification of the Soil
-> Source: Vastlands Guidebook, p.111.
 
 <hr/>
 
-#### Suspended Insight
+## Suspended Insight
 
 - subtitle: Revelations of Pain
 - power: 1
@@ -659,12 +615,10 @@
   answer to a single question asked of the uncaring void. The answer has a 1-in-6 chance of being immediately
   helpful.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -676,7 +630,7 @@
     page: 111
 <hr/>
 
-#### Thornstone Obelisk
+## Thornstone Obelisk
 
 - subtitle: Razorblade Tree
 - power: 3
@@ -691,12 +645,10 @@
   limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket
   of razor branches suffers 1d4 damage. The speed of growth kills the landcoral.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -712,7 +664,7 @@
     page: 5
 <hr/>
 
-#### Invoke Ub Dragon
+## Invoke Ub Dragon
 
 - subtitle: Local Reality Error Spark
 - power: 7
@@ -734,12 +686,10 @@
   | 8–9 | spatial scarring | **flaming leaper** | L2d6 (thorned) |
   | 10+ | reality fracture | **blade harvester** | L3d4+2 (winged) |
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -751,7 +701,7 @@
     page: 111
 <hr/>
 
-#### Eyes of Akaula
+## Eyes of Akaula
 
 - subtitle: Visions of the Dear Departed
 - power: 8
@@ -764,12 +714,10 @@
 
   The seeker’s eyes glow pale chartreuse and can see things invisible, hidden, departed, and dead.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -781,7 +729,7 @@
     page: 111
 <hr/>
 
-#### Stoyevod’s Irreducible Crystallization of the Ego Complex
+## Stoyevod’S Irreducible Crystallization of the Ego Complex
 
 - subtitle: Restoration of the Priceless One
 - power: 17
@@ -803,13 +751,11 @@
   doom. Stoyevod the Practitioner sacrificed 9 of his clone brothers and sisters to return the Chosen One and resume
   the Good and Proper Path of the Milkweed._
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-  [attribute:dangerous]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+>   [attribute:dangerous]
 > meta:
 
   - scope: power
@@ -821,7 +767,7 @@
     page: 111
 <hr/>
 
-#### Akaula's Sacrificial Hero
+## Akaula'S Sacrificial Hero
 
 - subtitle: Purification of the Mouth of Hell
 - power: 21
@@ -837,12 +783,10 @@
   aliens of double the hero's level or less in a 100 meter radius and shuts all dimensional and void gates for a
   number of years equal to the hero's level.
 
-> tags:
-
-  [power]
-  [type:ritual]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -852,12 +796,10 @@
   - scope: source
     source: Vastlands_Guidebook
     page: 111
-### Apocrypha of the O.S.
-> Source: Vastlands Guidebook, p.112.
 
 <hr/>
 
-#### Can Trip
+## Can Trip
 
 - subtitle: Two Left Feet Curse, Clumsy Cat-astrophe
 - power: 1
@@ -871,12 +813,10 @@
   You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly
   undone, or a stone or stick hops to trip them. They save or sprawl.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -892,7 +832,7 @@
     page: 25
 <hr/>
 
-#### Tragic Missile
+## Tragic Missile
 
 - subtitle: Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator
 - power: 2
@@ -908,12 +848,10 @@
   The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy
   strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -929,7 +867,7 @@
     page: 25
 <hr/>
 
-#### Hlod Person
+## Hlod Person
 
 - subtitle: Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction
 - power: 4
@@ -943,12 +881,10 @@
   Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff,
   unmoving, receptive to carpentry.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -964,7 +900,7 @@
     page: 25
 <hr/>
 
-#### Pyreball
+## Pyreball
 
 - subtitle: Instant Incendiary, Damora’s Placid Inferno
 - power: 6
@@ -979,12 +915,10 @@
   within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6
   damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1000,7 +934,7 @@
     page: 25
 <hr/>
 
-#### Nihil Est!
+## Nihil Est!
 
 - subtitle: Life’s End Made Present, Hadi’s Self-Immolation Binding
 - power: 8
@@ -1015,13 +949,11 @@
   touch disappears into the nothing of wormspace for a year. No save.
   Dangerous: No matter how powerful you are.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-  [attribute:dangerous]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [attribute:dangerous]
 > meta:
 
   - scope: power
@@ -1037,7 +969,7 @@
     page: 25
 <hr/>
 
-#### Big Wish
+## Big Wish
 
 - subtitle: Keep on Turning, Supplication of the Perverse Demiurge
 - power: 18
@@ -1058,12 +990,10 @@
   - "Get us out of this frying pan!" — into the fire you go.
   - "Is this power useless?" — well, it's mostly a joke.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1077,12 +1007,10 @@
   - scope: source
     source: Magitecnica_Codex_1
     page: 25
-### Access Noötree
-> Source: Vastlands Guidebook, p.113.
 
 <hr/>
 
-#### Access Noötree
+## Access Noötree
 
 - subtitle: Localized Spirit Surf
 - power: 1
@@ -1099,12 +1027,10 @@
   Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert
   functioning guardians (L2d6, electrangelic) to your interventions.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1114,12 +1040,10 @@
   - scope: source
     source: Vastlands_Guidebook
     page: 113
-### Weapon Form Powers
-> Source: Vastlands Guidebook 06, p.154.
 
 <hr/>
 
-#### Objective Telekinesis
+## Objective Telekinesis
 
 - subtitle: The Bending Fork, Made’s Invisible Hand
 - power: 1
@@ -1133,12 +1057,10 @@
   Fragments of your form corrode, sublimate, and become an ectoplasmic hand with which you can caress, hold, crush,
   and discard. It is as strong as a weak human. Punching, it deals 1d3 damage.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1150,7 +1072,7 @@
     page: 154
 <hr/>
 
-#### Suspended in the Light
+## Suspended in the Light
 
 - subtitle: Luminous Grasp, Hard Light Hold
 - power: 1
@@ -1164,12 +1086,10 @@
   You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard
   light throttles them. They suffer 1d4 damage and lose their next action.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1179,12 +1099,10 @@
   - scope: source
     source: Vastlands_Guidebook
     page: 154
-### Weapon's Eternal Purpose
-> Source: Vastlands Guidebook 06, p.155.
 
 <hr/>
 
-#### Sense Allegiance
+## Sense Allegiance
 
 - subtitle: Doom Purpose — The Evil One Must Fall
 - power: 2
@@ -1199,12 +1117,10 @@
   Sense Allegiance: read a creature’s ethics; evil creatures stunned for 1d4 rounds when brushed by your mind (save).
   Object (d6): (1) your bearer, (2) closest friend, (3) born under a thrice-red star, (4) nameless beggar, (5) benevolent prince, (6) local deity most high.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:trait]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:trait]
 > meta:
 
   - scope: power
@@ -1216,7 +1132,7 @@
     page: 155
 <hr/>
 
-#### Viridian Sun
+## Viridian Sun
 
 - subtitle: Creation Purpose — Chosen Ones and Quilted Greens
 - power: 2
@@ -1231,12 +1147,10 @@
   Viridian Sun: turn lights green and spawn quilted plants, dreaming trees, mammalian insects, avian arachnids, fungoid gastropods (L1).
   Object (d6): (1) your bearer's sibling, (2) worst enemy, (3) dying old man, (4) wise whale, (5) tyrant's decadent heir, (6) zealous cultist.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:trait]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:trait]
 > meta:
 
   - scope: power
@@ -1248,7 +1162,7 @@
     page: 155
 <hr/>
 
-#### Caustic Purification
+## Caustic Purification
 
 - subtitle: Balance Purpose — Scatter the Unnaturals
 - power: 2
@@ -1263,12 +1177,10 @@
   Caustic Purification: remove an affliction and a benefit (save); cleanse toxins and life.
   Object (d6): (1) dreamer opening a portal, (2) misunderstood scientist, (3) preacher of dire revolution, (4) adolescent throne-heir, (5) bitter, tragic wizard, (6) mother who loved one timelost.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:trait]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:trait]
 > meta:
 
   - scope: power
@@ -1280,7 +1192,7 @@
     page: 155
 <hr/>
 
-#### Lay In Wires
+## Lay in Wires
 
 - subtitle: Preserve Purpose — Maintain the Canopy
 - power: 2
@@ -1295,12 +1207,10 @@
   Lay In Wires: plunge into a creature, granting 10 life while draining 1 life per round for 12 rounds.
   Object (d6): (1) world-eater's bleak city, (2) raveller of creation's seams, (3) forge of peoples' faiths, (4) undying traveler in time, (5) alien uniter of worlds, (6) subservience to the gods.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:trait]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:trait]
 > meta:
 
   - scope: power
@@ -1312,7 +1222,7 @@
     page: 155
 <hr/>
 
-#### Cut the Sky
+## Cut the Sky
 
 - subtitle: Devastate Purpose — Planes of Hidden Damage
 - power: 2
@@ -1327,12 +1237,10 @@
   Cut the Sky: barely-visible planes deal 2d4* damage, sever limbs or heads.
   Object (d6): (1) the eater of the sky, (2) gods' secret of life everlasting, (3) innocent breaker of barriers, (4) the one who is and is not, (5) the vile maker of humanity, (6) the child of the angelhunt.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:trait]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:trait]
 > meta:
 
   - scope: power
@@ -1344,7 +1252,7 @@
     page: 155
 <hr/>
 
-#### Ha-Ka-Ba Short Circuit
+## Ha-Ka-Ba Short Circuit
 
 - subtitle: Error Purpose — Abort/Retry/Fail
 - power: 2
@@ -1359,12 +1267,10 @@
   Ha-Ka-Ba Short Circuit: target’s soul, mind, and body disconnect for 1 round (save); parts attacked individually gain a bonus.
   Object (d6): (1) the moon detonator, (2) the fountain of white hands, (3) the sun eater, (4) the new star, (5) the eternal mind beyond space, (6) the electric MKR.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:trait]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:trait]
 > meta:
 
   - scope: power
@@ -1374,12 +1280,10 @@
   - scope: source
     source: Vastlands_Guidebook
     page: 155
-### Access Blessings (Our Golden Age Preview)
-> Source: SDM-Our_Golden_Age-Teaser_31, p.4.
 
 <hr/>
 
-#### Access Blessing One — Autosoma
+## Access Blessing One —— Autosoma
 
 - subtitle: Unlock Medical Buildertech, Sacred Pod Charm
 - power: 2
@@ -1396,13 +1300,11 @@
   Note: you can only store this power in human tissue—in yourself (as a trait) or in a suitable anchor, such as the
   mummified hand of Dr. N. A. Vec.
 
-> tags:
-
-  [power]
-  [type:oldtech]
-  [storage:trait]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:trait]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1417,12 +1319,10 @@
 
 ## Magitecnica Codex 2 Powers
 
-### ARKHIATRY CLASSICS
-> Source: Magitecnica Codex 2, p.34.
 
 <hr/>
 
-#### ANNE ASTEC
+## Anne Astec
 
 - subtitle: Iatric Priest Painkiller
 - power: 2
@@ -1435,12 +1335,10 @@
 
   You overridea creature's pain response, providing relief from pain and burdens. Wait, did the scribe mishear "anesthetic"?
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1452,7 +1350,7 @@
     page: 37
 <hr/>
 
-#### BURDEN SHARE
+## Burden Share
 
 - subtitle: Sanator's Empathy Ritual
 - power: 2
@@ -1465,12 +1363,10 @@
 
   You tap into a creature's essence and transfer one of its burdens—fatigue, injury, anxiety, or some other affliction—to another creature. During transfer it transforms into a spiritual stone, a healer's burden. It feels heavy and annoying within the receiver’s soul, but causes no permanent damage and dissipates normally with rest.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1482,7 +1378,7 @@
     page: 37
 <hr/>
 
-#### METEMPSYCHOSIS
+## Metempsychosis
 
 - subtitle: Serapefti's Ka-Ba Translation
 - power: 6
@@ -1503,12 +1399,10 @@
   
   **Result** **Effect** nat. 1 Patient’s essence lost or replaced with a similar daemon! fail Transfer fails. Both targets exposed to moderate corruption. success Transfer succeeds. Host essence destroyed. nat. 20 Excellent transfer. Patient can choose to retain one of the host’s traits or skills.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1520,7 +1414,7 @@
     page: 38
 <hr/>
 
-#### OPEN PERSON
+## Open Person
 
 - subtitle: Hsu Doru's Preparatory Ritual
 - power: 6
@@ -1535,12 +1429,10 @@
   
   _Note_ : an unattended open person automatically reseals after 1 hour.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1552,7 +1444,7 @@
     page: 39
 <hr/>
 
-#### PARASOMA TRANSFERENCE
+## Parasoma Transference
 
 - subtitle: Hsu Doru's Life Shunt
 - power: 2
@@ -1565,12 +1457,10 @@
 
   You manipulate the underlying energy patterns to transfer life from one creature to another, or directly from your own reserves.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1582,7 +1472,7 @@
     page: 39
 <hr/>
 
-#### PRIMARY DESENESCENCE
+## Primary Desenescence
 
 - subtitle: Wissa's Fountain of YouthificationTM
 - power: 6
@@ -1595,12 +1485,10 @@
 
   You restore a creature to its biological state of a year earlier, while preserving most of its current memories.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1612,7 +1500,7 @@
     page: 39
 <hr/>
 
-#### REAL-TIME REBUILD
+## Real-Time Rebuild
 
 - subtitle: Zdarovar's Rapid Healing
 - power: variable
@@ -1627,12 +1515,10 @@
   
   **Power Settings:** P2 remove cosmetic blemishes P4 flush toxins or afflictions P6 restore a damaged organ to factory settings P10 regrow a limb P16 regrow a head or torso P25 rebuild a whole body from dust and fragments
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1644,7 +1530,7 @@
     page: 40
 <hr/>
 
-#### RESTORATIVE SLUMBER
+## Restorative Slumber
 
 - subtitle: Medeorite's Healing Dream Ritual
 - power: 2
@@ -1657,12 +1543,10 @@
 
   Your dream-form leads the patient into a deep, healing sleep. While asleep, they appear lifeless. After the spell concludes they awake rejuvenated, with one attribute restored or one burden lifted.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1674,12 +1558,10 @@
     page: 40
 <hr/>
 
-### NUNKA’S AUTOMORPH
-> Source: Magitecnica Codex 2, p.28.
 
 <hr/>
 
-#### NUNKA’S WEAPON MORPH
+## Nunka’S Weapon Morph
 
 - subtitle: Biocombat Implementation
 - power: 2
@@ -1703,12 +1585,10 @@
   
   `⚔︎`
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1720,7 +1600,7 @@
     page: 29
 <hr/>
 
-#### NUNKA’S EPIDERMAL SCULPT
+## Nunka’S Epidermal Sculpt
 
 - subtitle: Biodefense Integration
 - power: 2
@@ -1748,12 +1628,10 @@
   
   **Result** **Effect**
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1765,7 +1643,7 @@
     page: 30
 <hr/>
 
-#### NUNKA’S BIOPHYSICAL OVERDRIVE
+## Nunka’S Biophysical Overdrive
 
 - subtitle: Radical Metabolic Manipulation
 - power: 1
@@ -1783,12 +1661,10 @@
   
   `⚔︎`
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1800,7 +1676,7 @@
     page: 32
 <hr/>
 
-#### NUNKA’S SPITTING SYMBIOTE
+## Nunka’S Spitting Symbiote
 
 - subtitle: Integrated Biological Warfare
 - power: 4
@@ -1824,12 +1700,10 @@
   
   `⚔︎`
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1841,12 +1715,10 @@
     page: 33
 <hr/>
 
-### REHORYAN’S BLOOD CANTICLE
-> Source: Magitecnica Codex 2, p.19.
 
 <hr/>
 
-#### REHORYAN’S VITAL SYMPHONY
+## Rehoryan’S Vital Symphony
 
 - subtitle: Somatic Insight Probe, Bodyreading
 - power: 1
@@ -1862,12 +1734,10 @@
   
   ❂
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1879,7 +1749,7 @@
     page: 19
 <hr/>
 
-#### REHORYAN’S VIVID REGRESSION
+## Rehoryan’S Vivid Regression
 
 - subtitle: Bioatavistic Reformulation
 - power: 4
@@ -1903,12 +1773,10 @@
   
   ❂
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1920,7 +1788,7 @@
     page: 20
 <hr/>
 
-#### REHORYAN’S PROGRESSIVE RESTORATION
+## Rehoryan’S Progressive Restoration
 
 - subtitle: Automedical Self Repair
 - power: 2
@@ -1944,12 +1812,10 @@
   
   ❂
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -1961,7 +1827,7 @@
     page: 21
 <hr/>
 
-#### REHORYAN’S PROPHETIC SONG
+## Rehoryan’S Prophetic Song
 
 - subtitle: Purposeful Biotic Evolution
 - power: 5
@@ -1987,12 +1853,10 @@
   
   ❂
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2004,7 +1868,7 @@
     page: 22
 <hr/>
 
-#### REHORYAN’S PROPHETIC SONG 2
+## Rehoryan’S Prophetic Song 2
 
 - subtitle: More Purposeful Biotic Evolution, Rehoryan’s Illegal Power
 - power: 11
@@ -2028,12 +1892,10 @@
   
   ❂
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2045,12 +1907,10 @@
     page: 23
 <hr/>
 
-### SIATO RUNO’S XENON GENESIS
-> Source: Magitecnica Codex 2, p.24.
 
 <hr/>
 
-#### RUNO’S BIOCATALYSIS
+## Runo’S Biocatalysis
 
 - subtitle: Biotemporal Manipulation
 - power: 1
@@ -2068,12 +1928,10 @@
   
   ☗
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2085,7 +1943,7 @@
     page: 24
 <hr/>
 
-#### RUNO’S PARTHENOGENIC CRADLE
+## Runo’S Parthenogenic Cradle
 
 - subtitle: Synthetic Egg System
 - power: 3
@@ -2107,12 +1965,10 @@
   
   ☗
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2124,7 +1980,7 @@
     page: 25
 <hr/>
 
-#### RUNO’S PARTHENOGENIC POUCH
+## Runo’S Parthenogenic Pouch
 
 - subtitle: Synthetic Marsupilism
 - power: 4
@@ -2144,12 +2000,10 @@
   
   ☗
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2161,7 +2015,7 @@
     page: 26
 <hr/>
 
-#### RUNO’S ONTOGENIC EDITOR
+## Runo’S Ontogenic Editor
 
 - subtitle: Germline Modifier
 - power: 4
@@ -2183,12 +2037,10 @@
   
   ☗
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2200,12 +2052,10 @@
     page: 27
 <hr/>
 
-### THE AWAKENED SPHERE
-> Source: Magitecnica Codex 2, p.41.
 
 <hr/>
 
-#### EATEGRATE
+## Eategrate
 
 - subtitle: Simple Assimilator
 - power: 2
@@ -2230,12 +2080,10 @@
   
   _Note:_ if you consume a pound of _living_ flesh (1d6 damage), the cost of using the power is halved. However, consuming living flesh is kind of a horrible thing to do and would mark you out as a ghoul. Eating a symbolic representation, like cookies baked in the shape of a skunk to get its ... aroma ... instead doubles the power cost. But is much nicer.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2247,7 +2095,7 @@
     page: 45
 <hr/>
 
-#### BLOODSONG
+## Bloodsong
 
 - subtitle: Bioactive Communion
 - power: 2
@@ -2262,12 +2110,10 @@
   
   The life force of one of the target creatures imbues the power. If this creature is not the power user, it is paid in addition to the activation cost.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2279,7 +2125,7 @@
     page: 46
 <hr/>
 
-#### MANYBODIED
+## Manybodied
 
 - subtitle: Bioactive Fusion
 - power: 2
@@ -2297,12 +2143,10 @@
   
   _Note:_ Dominating a creature whose mental attributes exceed your own is dangerous—it may take control of you instead! At the referee’s discretion, very alien creatures may be harder to control.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2314,7 +2158,7 @@
     page: 47
 <hr/>
 
-#### SKINSHIFT
+## Skinshift
 
 - subtitle: Formal Translation
 - power: 4
@@ -2336,12 +2180,10 @@
   
   **Again (x4)** : Into any form, from a mite to a mighty airwhale.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2353,7 +2195,7 @@
     page: 48
 <hr/>
 
-#### SKINSPLIT
+## Skinsplit
 
 - subtitle: Colony Translation
 - power: 6
@@ -2382,12 +2224,10 @@
   
   Strangling Vines. Creep through the forest, crawl through the undergrowth, entangle (save) then choke (save).
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2399,7 +2239,7 @@
     page: 49
 <hr/>
 
-#### SKINWYRD
+## Skinwyrd
 
 - subtitle: Subconscious Translation
 - power: 1
@@ -2416,12 +2256,10 @@
   
   You cannot end skinwyrd normally. Each round in the skinwyrd, you lose 1 life. When you reach 0 life, you fall unconscious and revert to your normal form. When you awake, you regain 1d6 life.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2433,7 +2271,7 @@
     page: 50
 <hr/>
 
-#### ECOSPHERE ATTUNEMENT
+## Ecosphere Attunement
 
 - subtitle: Biodetector
 - power: 1
@@ -2448,12 +2286,10 @@
   
   Gain a bonus to detecting hidden or invisible creatures, avoiding surprises or ambushes, and tracking recent biological activity.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2465,7 +2301,7 @@
     page: 51
 <hr/>
 
-#### ECOSPHERE VEIL
+## Ecosphere Veil
 
 - subtitle: Biojammer
 - power: 2
@@ -2478,12 +2314,10 @@
 
   You align your essence with the local ecosphere. Creatures unconsciously disregard your presence, facilitating stealth. _Alternatively_, you can make yourself stand out sharply, possibly distracting from other activities or gaining a social bonus like a peacock in full display.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2495,7 +2329,7 @@
     page: 51
 <hr/>
 
-#### ECOSPHERE IMMERSION
+## Ecosphere Immersion
 
 - subtitle: Biomelt
 - power: 5
@@ -2520,12 +2354,10 @@
   
   with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman’s axe, the joy of Spring’s blossoming, the tramping of an army, and the fall of a great oak.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2537,12 +2369,10 @@
     page: 52
 <hr/>
 
-### USHA’S WILD RIDE
-> Source: Magitecnica Codex 2, p.9.
 
 <hr/>
 
-#### USHA’S HORRORSHOW INFESTATION
+## Usha’S Horrorshow Infestation
 
 - subtitle: Biotic Corruption Augment, Cancer Bomb
 - power: 4
@@ -2561,12 +2391,10 @@
   
   _Extract:_ ripping the infestation out is tough and deals another 2d6* damage to the target. The creature (L4) continues to attack mindlessly.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2578,7 +2406,7 @@
     page: 9
 <hr/>
 
-#### USHA’S CHAOS TRIGGER
+## Usha’S Chaos Trigger
 
 - subtitle: Biotic Manipulation Augment, Mutation Bomb
 - power: 3
@@ -2593,12 +2421,10 @@
   
   1. Roll on the Regular Exposure corruption table 2. Roll on the Mild Exposure corruption table 3. Regression. Prehensile tail, gripping feet, powerful fangs, curly fur, clawed fingers, or brachiating arms. 4. Extra Sensory Organ. Electric sense, magnetic sense, canine smell, feline hearing, serpentine taste, or the ability to see dead people. 5. External Changes. Armored hide (+2 defense), bioluminescence, rudimentary gills (longer dives), arm feathers (glide), hooves, or rubber skin (electric and radiation resistance). 6. Internal Changes. Acidic blood, venomous saliva, super-liver (break down toxins), regenerating sticky entangling intestines (sea cucumber style), second heart, or nauseating cloud organ.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2610,7 +2436,7 @@
     page: 11
 <hr/>
 
-#### USHA’S UPLIFT
+## Usha’S Uplift
 
 - subtitle: Biotic Enhancement Augment, Value Added Operation
 - power: 2
@@ -2638,12 +2464,10 @@
   
   **d20** **Creature’s Response** 1 Outwardly pleased, secretly plots to overthrow its creator. 2–7 Brutally depressed by realization of its own mortality.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2655,7 +2479,7 @@
     page: 12
 <hr/>
 
-#### USHA’S CHIMERA SPLICE
+## Usha’S Chimera Splice
 
 - subtitle: Biotic Fusion Augment, Meltflesh Hyperblot
 - power: 4
@@ -2682,12 +2506,10 @@
   
   **d20** **Creature’s Response** ≤3 A new mind, a melding of both that went before. And it hates you. 4–7 A dominant mind and a subordinate mind and they both hate you. 8–10 Two minds, howling at each other. This will be complicated. 11–14 One mind remains and it hates you. 15–19 One mind remains, confused, with no memory of what happened. 20≤ Both minds are obliterated. A pliant shell for you to command!
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2699,7 +2521,7 @@
     page: 14
 <hr/>
 
-#### USHA’S XENOGRAFT
+## Usha’S Xenograft
 
 - subtitle: Biotic Integration Augment, Meetmeat
 - power: 6
@@ -2720,12 +2542,10 @@
   
   **Recorded Xenografts** The following xenografts were seen by the cleanup crew after the Green Powder Island incident of —X4. 1. Ghula Musculature. Lifted from a warc semi-living phenotype (strain U-572). Boost strength and endurance by 1d4 each, reduce charisma and aura by 1d3 each, gain a 1d6 bite attack. 2. Airbeast Boneframe. Aeorilth and honeycomb structures reduce weight by 25% and boost agility by 2. 3. Scalamander Wetware. Gill structures and webbing double swimming speed and increase dive length ten-fold. Reduce charisma by 1d2.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2737,7 +2557,7 @@
     page: 15
 <hr/>
 
-#### USHA’S REPLICATOR STRAND
+## Usha’S Replicator Strand
 
 - subtitle: Biotic Growth Augment, Root Meatmaker
 - power: 1
@@ -2754,12 +2574,10 @@
   
   _Note:_ the growth does not produce high quality tissue. Grown meat is spongy and tough, expanded ivory is brittle and gnarled, extended hair is flakey and hard. It’s just ... bigger.
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
@@ -2771,7 +2589,7 @@
     page: 17
 <hr/>
 
-#### USHA’S SWIFT REBUILD
+## Usha’S Swift Rebuild
 
 - subtitle: Biotic Regeneration Augment, Systemic Limb Back Trigger
 - power: 3
@@ -2799,12 +2617,10 @@
   
   **Effect** ≤1 Roll on the Severe Exposure corruption table. Then the target dies. 2–11 Roll on the Moderate Exposure corruption table. 12–19 Roll on the Mild Exposure corruption table. 20≤ Everything went well! Huzzah!
 
-> tags:
-
-  [power]
-  [type:other]
-  [storage:item]
-
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
 > meta:
 
   - scope: power
