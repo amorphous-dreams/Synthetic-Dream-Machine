@@ -88,3 +88,66 @@
 - **Motivational (Manager path 4)** – Confirmed the hero-die encouragement and life cost match p.129 while `meta` references index 4.
 - **Noösphere Priest (Manager path 5)** – Ensured the noösphere programming and sacrifice bonus description equals p.129 and `meta` stays at index 5.
 - **Numbers Maximization Official (Manager path 6)** – Verified the life-for-roll text matches p.129 and left the metadata/tags tied to index 6.
+- **Noble (Noble path 0)** – Confirmed the born-better prestige summary matches Vastlands p.130 and `meta.source`/`usage` still points at index 0.
+- **Hexer Meritocrat (Noble path 1)** – Verified the merit-bonus numbers line matches p.131 and kept metadata/tags tied to index 1.
+- **Knight Reflexes (Noble path 2)** – Confirmed the life-for-initiative text plus agility bump equals p.131 and `meta` references index 2.
+- **Dissipated (Noble path 3)** – Matched the chemical cocktail/€5×level description with p.131 and kept metadata for index 3 intact.
+- **Divine Blood (Noble path 4)** – Checked the source-code machines lowering costs matches p.131 and `meta` stays at index 4.
+- **Sculpted Beauty (Noble path 5)** – Verified the synthetic glamour +2 charisma line equals p.131 and `meta` remains at index 5.
+- **Perfected Germline (Noble path 6)** – Ensured the immunity/flawless text matches p.131 and `meta` references index 6.
+- **Noömagus (Noömagus path 0)** – Confirmed the neon knight path summary matches Vastlands p.132 and `meta.source`/`usage` stays tied to index 0.
+- **Cosmic Qanat (Noömagus path 1)** – Verified the power-level/risk reduction text matches p.133 and the metadata references index 1.
+- **Hackmagic (Noömagus path 2)** – Checked the power-hacking wording plus Cosmic Qanat synergy equals p.133 and kept `meta` index 2.
+- **Noösphere Native (Noömagus path 3)** – Ensured the noösphere defense bonus text matches p.133 and metadata points to index 3.
+- **Power Scroller (Noömagus path 4)** – Confirmed the scroll-imbuing narrative and hero die cost align with p.133 and `meta` references index 4.
+- **Soul Fuel (Noömagus path 5)** – Matched the life-force recharge description with p.133 and left `meta` at index 5.
+- **Veteran of the Psychic Wars (Noömagus path 6)** – Verified the enchantment save bonus and mind-blow damage text equals p.133 and `meta` remains on index 6.
+- **Orangelander (Orangelander path 0)** – Confirmed the celebratory path description equals Vastlands p.134 and `meta.source`/`usage` stays tied to index 0.
+- **Cad (Orangelander path 1)** – Verified the cat-arm branch text matches p.135 and `meta` references index 1.
+- **Citizen Living (Orangelander path 2)** – Confirmed the joy+stats entry equals p.135 and `meta` points to index 2.
+- **Citizen Maintainer (Orangelander path 3)** – Ensured the undead-maintenance save bonus text matches p.135 and `meta` references index 3.
+- **Ducky (Orangelander path 4)** – Matched the hero-die daily ally description to p.135 and left `meta` tied to index 4.
+- **Orange Half-Ling (Orangelander path 5)** – Verified the small-size/resource text plus agility bonus matches p.135 and `meta` remains at index 5.
+- **Unfred (Orangelander path 6)** – Confirmed the mind-control immunity/endurance buff text matches p.135 and `meta` refers to index 6.
+- **Purplelander (Purplelander path 0)** – Confirmed the advanced magical creation overview matches Vastlands p.136 and the metadata tags still reference index 0.
+- **Arboreal (Purplelander path 1)** – Verified the tree/bioduct climbing +1 strength text equals p.137 and `meta` references index 1.
+- **Colonist (Purplelander path 2)** – Checked the hexad temporary-life and charisma line matches p.137 while tags/`meta` stay tied to index 2.
+- **Human Library (Purplelander path 3)** – Matched the Long Long Ago knowledge/ +1 thought wording to p.137 and kept metadata at index 3.
+- **Kaffetropist (Purplelander path 4)** – Ensured the caffeine/metabolize description matches p.137 and the tags/`meta` still point to index 4.
+- **Pet Sidekick (Purplelander path 5)** – Confirmed the pet-master swap text plus +1 aura equals p.137 and metadata references index 5.
+- **Telempath (Purplelander path 6)** – Verified the warning transmission +1 ward line matches p.137 and `meta` references index 6.
+- **Redlander (Redlander path 0)** – Confirmed the bunker/vine/armor bonus description matches Vastlands p.138 and `meta.source`/`usage` remains tied to index 0.
+- **Hexad Member (Redlander path 1)** – Verified the self-help glyph/contact trait text equals p.139 and `meta` references index 1.
+- **Falscher (Redlander path 2)** – Checked the false-child/mental immunity wording to p.139 and the metadata stays at index 2.
+- **Ruster (Redlander path 3)** – Matched the wasteland scavenging/super ammo description with p.139 and `meta` references index 3.
+- **Vampire (Redlander path 4)** – Confirmed the life-drain narrative matches p.139 while the `meta.source` includes both Vastlands and FTLS notes (page 126 of FTLS Paths) and `usage` references index 4 with the FTLS extension note.
+- **Vintner (Redlander path 5)** – Verified the plant-immunity/ethanol temporary life text matches p.139 and `meta` stays tied to index 5.
+- **Werker (Redlander path 6)** – Ensured the builder-tech interface/backstage sense description equals p.139 and `meta` references index 6.
+- **Scion (Scion path 0)** – Confirmed the divine-child overview matches Vastlands p.140 and metadata stays tied to index 0 with life/heroDie uses noted.
+- **Dreamwalker (Scion path 1)** – Verified the noösphere endurance bonus text equals p.140‑141 and `meta` references index 1.
+- **Faceless (Scion path 2)** – Confirmed the face-choice description matches p.141 and metadata links to index 2.
+- **Of-World (Scion path 3)** – Checked the hero-die merge-with-elements wording vs p.141 and kept `meta` at index 3.
+- **Perfect (Scion path 4)** – Matched the perfection/bio-mod immunity text to p.141 with metadata referencing index 4.
+- **Subconscious Decay (Scion path 5)** – Ensured the sleep-decay/reconstitute aura bonus text equals p.141 and `meta` stays at index 5.
+- **Superuser (Scion path 6)** – Verified the free action activation description matches p.141 and `meta` links to index 6.
+- **Servant (Servant path 0)** – Confirmed the blue-collar plus hero-die overlook text matches Vastlands p.142 and `meta` stays tied to index 0.
+- **Grounded (Servant path 1)** – Verified the aura/thought bonus and extra mental burden removal text equals p.143 and `meta` references index 1.
+- **Housemaker (Servant path 2)** – Checked the hero-die duct/sewer connection wording against p.143 and kept `meta` at index 2.
+- **Resourceful (Servant path 3)** – Matched the life-to-steal item text to p.143 and kept `meta` referencing index 3.
+- **Shopstaff (Servant path 4)** – Ensured the charisma-for-friendly text matches p.143 and `meta` sits on index 4.
+- **Strong (Servant path 5)** – Confirmed the labor-strength/endurance boost matches p.143 and `meta` points at index 5.
+- **Tough (Servant path 6)** – Verified the daily temporary punishment points description equals p.143 and `meta` references index 6.
+- **Skeleton (Skeleton path 0)** – Confirmed the dead-turned-un description matches Vastlands p.144 and `meta` stays tied to index 0.
+- **Glowing Skeleton (Skeleton path 1)** – Verified the radioactive resistance text equals p.145 and `meta` references index 1.
+- **My Bones Engraved (Skeleton path 2)** – Matched the bone-inventory slot write-up to p.145 and `meta` points at index 2.
+- **Void Ward (Skeleton path 3)** – Ensured the aura defense text matches p.145 and `meta` stays at index 3.
+- **From Dust, Returning (Skeleton path 4)** – Checked the sprinkle-of-fluids reform text against p.145 and kept `meta` referencing index 4.
+- **Cold New Flesh (Skeleton path 5)** – Confirmed the semi-precious defense/blood transfer wording equals p.145 and `meta` remains tied to index 5.
+- **Soul Thief (Skeleton path 6)** – Verified the soul-steal/four-life trade text matches p.145 and `meta` references index 6.
+- **Soldier (Soldier path 0)** – Confirmed the not-war veteran defense/ally charisma boost description matches Vastlands p.146 and `meta` stays tied to index 0.
+- **Armorborn (Soldier path 1)** – Verified the armor-free inventory and stone bonus wording equals p.147 and `meta` references index 1.
+- **Blastermaster (Soldier path 2)** – Checked the ranged skill bonus plus critical improvements text matches p.147 and `meta` holds index 2.
+- **Devastator (Soldier path 3)** – Matched the once-per-round drop-to-zero ability with p.147 and kept `meta` tied to index 3.
+- **Rationalised (Soldier path 4)** – Ensured the panic immunity and ward addition description equals p.147 and `meta` references index 4.
+- **Slayer (Soldier path 5)** – Confirmed the doubled attack/damage versus equal-or-higher foes wording equals p.147 and `meta` points to index 5.
+- **Wired (Soldier path 6)** – Verified the life-to-initiative/bonus action/ability text matches p.147 and `meta` stays tied to index 6.

@@ -5,6 +5,7 @@ kramdown:
   hard_wrap: false
 plugins:
   - jekyll-optional-front-matter
+  - jekyll-relative-links
 source: .
 include: [".htaccess", "Synthetic-Dream-Machine-3rd-Party-License.md"]
 exclude:
