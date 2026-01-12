@@ -1,4 +1,6 @@
 title: Synthetic Dream Machine
+url: "https://joshuafontany.github.io"
+baseurl: "/Synthetic-Dream-Machine"
 markdown: kramdown
 kramdown:
   input: GFM
