@@ -45,12 +45,12 @@ jobs:
           echo "Found ${html_count} HTML files"
           [ "${html_count}" -ge 1 ]
 
-            # Only upload the Pages artifact when we're actually going to deploy (push to main)
-            - name: Upload artifact
-              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              uses: actions/upload-pages-artifact@v3
-              with:
-                path: "./_site"
+      # Only upload the Pages artifact when we're actually going to deploy (push to main)
+      - name: Upload artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./_site"
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
