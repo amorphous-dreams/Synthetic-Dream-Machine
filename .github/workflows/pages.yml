@@ -23,15 +23,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: "Build with Jekyll"
-        uses: actions/jekyll-build-pages@v1
-        # if your Jekyll source is in a subfolder, uncomment and set:
-        # with:
-        #   source: "./Synthetic_Dream_Machine"
-        #   destination: "./_site"
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/github-pages-test" ]; then
+            bundle exec jekyll build --config _config.yml,_config_qa.yml --destination _site/test
+          else
+            bundle exec jekyll build --config _config.yml --destination _site
+          fi
 
       - name: "Quick smoke test: check site has HTML"
         run: |
@@ -59,7 +66,7 @@ jobs:
     needs: build
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'github-pages-preview' }}
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ github.ref == 'refs/heads/main' && steps.deployment.outputs.page_url || format('{0}test/', steps.deployment.outputs.page_url) }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

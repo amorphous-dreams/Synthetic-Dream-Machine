@@ -102,11 +102,11 @@ Onion looked shocked, “no, I think that was for trying to feed on a cat’s gr
 Static swallowed Onion’s thin voice. Noë snarled and banged the headset, but to no avail. Then a tinny, archaic voice erupted out of the speakers.
 
 > _“...welcome, visitor, to this Guided and Precise Memorium to the powers bestowed on humanity by the Builders (in accord with the Obvious Instructions of the Maker M.B.U.T.E.) and also the lesser powers discovered by humans for themselves in their striving to escape the benevolent Garden Path._
->
+> 
 > _The powers here range from those commonly utilized today in the urbanized vicinity of the Circle Sea, called the Rainbowlands by the common folk of to-day, and also other, stranger powers used by clans and quarterlings and stranger post-humans in the wilds of this Given World, from the Ultraviolet Grasslands to the baked lands of Two-Day._
->
+> 
 > _You will learn how these powers work within the mechanical framework of the reality of this world and the dangers they pose to the untutored. For your delectation, a curious exhibition of power corruptions that have afflicted many a poor human over the centuries is also presented. Please do not feed the fallen humans._
->
+> 
 > _Finally, we also offer a sampler, a buffet, of typical powers harvested from stray travelers in the vicinity of this humble Memorium. Do not worry, no travelers were permanently destroyed in the process!”_
 
 “.. ere? Are you there?” Onion’s voice came back. Endearingly panicked.
@@ -780,23 +780,28 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 *Tactical Aggression Augment*
 
-**P:** 1 **R:** short, maybe 20m
+**P:** 1 **R:** short, ~20m
 
 **T:** one creature **D:** a few minutes
 
-> Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure.
->
-> It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma. _Overcharge:_ affect a number of creatures equal to your level + 1.
+> Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save).
+> It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
+> 
+> _Overcharge:_ Affect a number of creatures equal to your level + 1.
 
 **Blue Lotus**
 
 *Maximum Somatic Contentment*
 
-**P:** 1 **R:** short, maybe 5 meters
+**P:** 1 **R:** short, ~5m
 
 **T:** one creature **D:** an hour
 
-> Soma’s bliss brings contentment to the target. It saves. Success: it loses its next turn to a blissful reverie. Failure: it sits down, lost in blissful reverie for an hour. _Overcharge:_ affect a number of creatures equal to your level + 1.
+> Soma’s bliss brings contentment to the target (save).
+> Success: it loses its next turn to a blissful reverie.
+> Failure: it sits down, lost in blissful reverie for an hour.
+> 
+> _Overcharge:_ Affect a number of creatures equal to your level + 1.
 
 **Orange Dream**
 
@@ -806,9 +811,9 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 **T:** one creature **D:** an hour
 
-> A neutral or friendly creature agrees to do what you ask for an hour, so long as it does not appear immediately dangerous or risky.
->
-> _Overcharge:_ even a hostile or violent creature will listen, provided you can whisper in its ear.
+> A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear immediately dangerous or risky.
+> 
+> _Overcharge:_ Even a hostile or violent creature listens, provided you can whisper in its ear.
 
 **Green Haven**
 
@@ -816,11 +821,12 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 **P:** 1 **R:** nearby
 
-**T:** a 7 meter diameter sphere **D:** a night or a day
+**T:** a 7m diameter sphere **D:** a night or a day
 
-> Convince shrubberies, grasses, brambles, and other plants to form a hedge igloo, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable in the shrub wall. After a night or day, the plants return to their ordinary ways.
->
-> _Overcharge:_ sculpt a thorny hedge wall measuring 200 meters square and 1 meter thick. Its thorns cut anyone forcing their way through like daggers (1d4 damage).
+> Convince shrubberies, grasses, brambles, and other plants to form a hedge domehome, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable while in the shrub wall. After
+> a night or day, the plants return to their ordinary ways.
+> 
+> _Overcharge:_ Sculpt a thorny hedge wall measuring 200 meters square and 1 meter thick. Its thorns cut anyone pushing through like daggers (1d4 damage).
 
 **Yellow Cloud**
 
@@ -828,11 +834,11 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 **P:** 1 **R:** nearby
 
-**T:** a 9 meter cube **D:** a few minutes
+**T:** a 9m cube **D:** a few minutes
 
-> Fine, obscuring yellow dust rises from the ground and hangs in the air. A veil no sight can pierce. The dust irritates the lungs of air breathers. After a few minutes, it blows away.
->
-> _Overcharge:_ summon into shimmering immobility a wall of dust measuring 200 cubic meters.
+> Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust irritates the lungs of air-breathers. After a few minutes, it blows away.
+> 
+> _Overcharge:_ Summon into shimmering immobility a wall of dust measuring 200 cubic meters.
 
 **Purple Memories**
 
@@ -842,7 +848,9 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 **T:** a creature **D:** several minutes
 
-> The barest word or sensation triggers vivid memories, thoughts, and emotions. How could anyone keep thought or fact a secret in this state? Or resist a fine, rousing song? _Overcharge:_ affect up to twice your level creatures.
+> The target becomes susceptible to influence. The barest word or sensation triggers vivid memories, thoughts, and emotions. How could anyone keep thoughts or facts a secret in this state? Or resist a fine, rousing song?
+> 
+> _Overcharge:_ Affect a number of creatures equal to twice your level.
 
 > [@sdm_magitecnica_codex_1, _p._ _20_]
 
@@ -889,7 +897,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 **T:** 1 sack **D:** 1 day
 
 > A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
->
+> 
 > _Overcharge:_ the mass is halved again. Or it affects an object twice the size. Or it lasts a week instead.
 
 **Better Pastures**
@@ -900,9 +908,10 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 **T:** self **D:** 1 hour
 
-> Meditate at a crossroad for an hour, observe the flow of its energies, the flight of birds, the waft of milkweed seeds. Ask one objective yes / no question of the crossroad, and it shall answer. Will this path reach water within 50 miles? Is there green grass along that path within 20 km?
->
-> _Overcharge:_ ask a second question or clarify the first.
+> Meditate at a crossroads for an hour, observe the flow of its energies, the flight of birds, the waft of milkweed seeds. Ask one objective yes / no question of the crossroads, and it shall answer. Will this path reach water
+> within 50 miles? Is there green grass along that path within 20 km?
+> 
+> _Overcharge:_ Ask a second question or clarify the first.
 
 **Wing And Prayer**
 
@@ -912,9 +921,9 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 **T:** vehicle or steed **D:** 1 day
 
-> Use your faith to mend an axle or splint a leg. Your vehicle or steed can ignore one failure or injury for a day, but then the damage is worse.
->
-> _Overcharge:_ the fix lasts a week; but the damage is even worse after.
+> Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a burden for a day, but then the damage is worse.
+> 
+> _Overcharge:_ The fix lasts a week; but the damage is even worse after.
 
 **Roadfinder**
 
@@ -924,9 +933,9 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 **T:** self **D:** 1 hour
 
-> Sniff the world’s road fields, gard the astral way-lines. Detect the nearest road a day’s march or less away.
->
-> _Overcharge:_ the detection range is doubled or the sense lasts a day.
+> Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
+> 
+> _Overcharge:_ The detection range is doubled, or the sense lasts a day.
 
 **Highway Cruiser**
 
@@ -936,9 +945,9 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 **T:** vehicle or steed **D:** 1 day
 
-> Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to enable voice commands.
->
-> _Overcharge:_ the daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
+> Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to receive voice commands.
+> 
+> _Overcharge:_ The daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
 
 **Roadmaker**
 
@@ -948,9 +957,10 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 **T:** rock and soil **D:** 1 day
 
-> By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month.
->
-> _Overcharge:_ the faststone sets into standardstone overnight, creating a surface that will last a century without maintenance.
+> By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a
+> metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month.
+> 
+> _Overcharge:_ The faststone sets into standardstone overnight, creating a surface that lasts a century without maintenance.
 
 > [@sdm_magitecnica_codex_1, _p._ _22_]
 
@@ -1001,8 +1011,8 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 **T:** anchor weapon **D:** instant
 
 > Reloads your weapon as a free action, turning life force into semi-real projectiles.
->
-> _Overcharge:_ the first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
+> 
+> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
 
 **Dancing In The Hail**
 
@@ -1013,8 +1023,8 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 **T:** self **D:** one round
 
 > Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage).
->
-> _Overcharge:_ any ranged attacks that do hit only deal half damage.
+> 
+> _Overcharge:_ Any ranged attacks that hit deal half damage.
 
 **Ring of Lead**
 
@@ -1024,9 +1034,9 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 **T:** all creatures **D:** one action
 
-> Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with a single action.
->
-> _Overcharge:_ no attack roll required. *subject to how much ammunition their anchor weapon holds.
+> Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
+> 
+> _Overcharge:_ No attack roll required. *subject to how much ammo the anchor weapon holds.
 
 **Eyes of the Arrow**
 
@@ -1037,20 +1047,20 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 **T:** one projectile **D:** a minute or so
 
 > Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor).
->
-> _Overcharge:_ the projectile maneuvers in flight with the agility of a dove.
+> 
+> _Overcharge:_ The projectile maneuvers in flight with the agility of a dove.
 
 **Counterfire**
 
 *Panoptic Projectile*
 
-**P:** 1 **R:** a dozen meters
+**P:** 1 **R:** a middling hemisphere, ~12m
 
 **T:** one attack **D:** interrupt
 
-> Deflect an incoming attack, melee or ranged, with a projectile.
->
-> _Overcharge:_ the attacker must save or be disarmed.
+> Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll.
+> 
+> _Overcharge:_ The attacker must save or be disarmed.
 
 **Depleted Heavy Metal Rain**
 
@@ -1060,21 +1070,9 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 **T:** anchor weapon **D:** a few minutes
 
-> Imbue your next shot with an inertial error. Roll damage dice twice. The dice also become exploding (for example, as long as a d6 rolls sixes, keep rolling and adding up the total).
->
+> Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
+> 
 > _Overcharge:_ Roll damage dice thrice.
-
-Ξ
-
-_Manual Acquisition_ Noë thumbed through the plastic pages of the manual. None of this made any sense. She couldn’t use this old blaster turret. It was hooked right into the golem’s rattled mind. Well, she could override it, but that would be risky. The thing was leaking heat and gods knew what else.
-
-The leathery nomad prodded her with her scavvie rifle, “go on, lock in. We paid good money for your frozen ass.”
-
-Thoughts stumbled. Frozen.  no.  yes. Sarcopsykter. Right, after the radiation wizard cleaned out the shatter-scatter. Bit of her mind felt like an empty tooth socket. The nomad prodded her again. Shit. She hoped they had a receipt. Needed to figure out what happened.
-
-“Yes, yes, I’ll need a life source. A soul for the gun.”
-
- 
 
 > [@sdm_magitecnica_codex_1, _p._ _24_]
 
@@ -1086,26 +1084,26 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **Can Trip**
 
-*Two Left Foot Curse, Clumsy Cat-astrophe*
+*Two Left Feet Curse, Clumsy Cat-astrophe*
 
 **P:** 1 **R:** a few meters
 
 **T:** someone who can hear you **D:** instant
 
-> You wish someone sprawled and humbled and your muttered curse may make it so. The target’s shoelaces are suddenly undone or a stone or stick hops to trip them. They save or sprawl.
->
+> You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
+> 
 > _Overcharge:_ There’s no save. The target is tripping.
 
 **Tragic Missile**
 
-*Antipersonal Guided Force Bolt, Cupid’s Cranial Penetrator*
+*Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator*
 
-**P:** 2 **R:** roughly 30–50m
+**P:** 2 **R:** middling, ~30–50m
 
-**T:** anything with a mind **D:** instant
+**T:** anything with a mind and soul **D:** instant
 
-> You visualize a channel connecting the local ambient energy fields with the soul-personality dyad of an entity you can see or imagine. Once you release your visualization, the energies fly into the nexus of that entity’s mindspace, like a noöspheric homing missile. The effect is quite painful, dealing 2d4 damage plus 1 damage for every level, charisma, aura, and thought point of the target. Yea, the stronger they are, the harder tragedy strikes. The missile leaves no mark.
->
+> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
+> 
 > _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
 **Hlod Person**
@@ -1116,8 +1114,8 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **T:** a person **D:** 1 hour
 
-> Wave your hand like the six-times folded frond and watch your target become as a log of wood. Hard, stiff, unmoving, receptive to carpentry.
->
+> Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff, unmoving, receptive to carpentry.
+> 
 > _Overcharge:_ The change is permanent.
 
 **Pyreball**
@@ -1126,11 +1124,12 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **P:** 6 **R:** touch, or as thrown
 
-**T:** 10m diameter **D:** a day, then instant
+**T:** 10m diameter sphere **D:** a day, then instant
 
-> You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6 damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
->
-> _Overcharge:_ the ball deals 10d6 damage or its fires keep for a month.
+> You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6
+> damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
+> 
+> _Overcharge:_ The ball deals 10d6 damage, or its fires keep for a month.
 
 **Nihil Est!**
 
@@ -1138,13 +1137,14 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **P:** 8 **R:** touch
 
-**T:** a sentient target **D:** 1 year
+**T:** a sentient creature **D:** 1 year
 
 > Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
->
-> _Overcharge:_ you age seven years and a kilometer diameter sphere centered on your soul disappears into the nothing of wormspace for a year. Overcharge again to remain behind to watch the sphere disappear.
->
-> _Dangerous:_ no matter how powerful you are, this spell imperils your existence.
+> 
+> _Dangerous:_ No matter how powerful you are.
+> 
+> _Overcharge:_ You age seven years and a kilometer diameter sphere, centered on your soul, disappears into the nothing of wormspace for a year. Overcharge again to remain behind and watch the sphere disappear (please have some form of levitation ready).
+> [attribute:dangerous]
 
 **Big Wish**
 
@@ -1152,13 +1152,17 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **P:** 18 **R:** self
 
-**T:** demiurge **D:** a day, then permanent.
+**T:** demiurge **D:** a day, then permanent
 
-> You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge will do its level best to misunderstand you, probably because it is an alien from out of time and space.
->
-> The protective circle takes a day to draw, otherwise the spell could be dangerous. The summoning itself takes but three gestures and one shining, reflective object.
->
-> _Overcharge:_ you get three wishes in a crystal chalice. Drink its sour liquid to summon your demiurge.
+> You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge does its level best to misunderstand you, probably because it is an alien from out of time and space.
+> The protective circle takes a day to draw, or the power could be dangerous. The summoning itself takes but three gestures and one reflective object. Typical wishes (and perversions):
+> - "Bring my love back to life." — done, but now she loves another.
+> - "Take this cup away from me." — very well, let us give it to your nemesis.
+> - "Transport me to a safe place." — you are now in a bank vault, with none of your belongings.
+> - "Get us out of this frying pan!" — into the fire you go.
+> - "Is this power useless?" — well, it's mostly a joke.
+> 
+> _Overcharge:_ You get three wishes in a crystal chalice. Drink its sour liquid to summon your demiurge.
 
 > [@sdm_magitecnica_codex_1, _p._ _25_]
 
