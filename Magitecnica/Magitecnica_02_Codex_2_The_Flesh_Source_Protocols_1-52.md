@@ -402,10 +402,17 @@ Didn’t remove the damaged part first? Make a biomantic, medical, or other rele
 **T:** one creature **D:** 10 rounds
 
 > Your touch instructs an organism to start swiftly repairing itself. The target regenerates 1 life point per round. As the regeneration proceeds, wounds knit, broken bones set, and missing bits regrow. Injured areas remain tender and fragile for a week.
-> _(rounds)_ **Life** **Repair** 3 Open wounds knit, bleeding stops. 7 Broken bones set. Medical roll to set them _well_ .
-> 10 Fingertips, earlobes, nose tips grow back.
+> _(rounds)_ | **Life Repair**
+> --- | ---
+> 3 | Open wounds knit, bleeding stops.
+> 7 | Broken bones set. Medical roll to set them _well_ .
+> 10 | Fingertips, earlobes, nose tips grow back.
 > _Overcharge:_ Regenerate for 10 more rounds.
-> _(rounds)_ **Life** **Repair** 13 Torn ligaments regrow, joints function again. 17 Partially destroyed organs self-repair. 20 Fingers, ears, noses, tongues, toes, eyes grow back.
+> _(rounds)_ | **Life Repair**
+> --- | ---
+> 13 | Torn ligaments regrow, joints function again.
+> 17 | Partially destroyed organs self-repair.
+> 20 | Fingers, ears, noses, tongues, toes, eyes grow back.
 > _Note:_ this power does not cure illnesses or conditions.
 
 > [@sdm_magitecnica_codex_2, _p._ _21_]

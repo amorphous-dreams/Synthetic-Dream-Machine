@@ -115,7 +115,9 @@
 >
 > <Full power procedure/description exactly as written, including activation costs and narrative details.>
 >
-> _Overcharge:_ <Ox steps / notes if any>
+> _Dangerous:_ <Optional. Use only when the source has a standalone Dangerous note; keep patterns like ‘Dangerous for the target’ inside Overcharge lines or body text if they appear there.”>
+>
+> _Overcharge:_ <Ox steps / 'again' & notes if any>
 
 tags:
 >   [power]
@@ -144,6 +146,9 @@ meta:
 
 - **Stat block recap.** Every power records Power (P), Range (R), Target (T), Duration (D), and Overcharge steps (Ox). Optional attributes/tags such as Anchored, Attack, Focus, Fueled, Imbued, Item, or Dangerous appear when relevant.
 - **Storage tags.** Use `[storage:trait]` when a power is inscribed as a trait, `[storage:item]` for spellbooks or devices, `[storage:burden]` for curses/brands, etc. Many entries will have multiple valid storage forms.
+- **Tables for rolls.** If the source has roll/result lists (d6/d20, etc.), prefer a blockquote table.
+- **Overcharge ordering.** Put `_Overcharge:_` before `_Again (x#):_` and keep both italicized.
+- **Multi-source conflicts.** If multiple sources differ, prefer VLG+OGA; otherwise preserve source text verbatim and add a meta note.
 
 <hr/>
 
@@ -1420,9 +1425,9 @@ meta:
 >
 > **T:** a sentient creature **D:** 1 year
 >
-> Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you
-> touch disappears into the nothing of wormspace for a year. No save.
-> Dangerous: No matter how powerful you are.
+> Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
+> 
+> _Dangerous:_ No matter how powerful you are.
 >
 > _Overcharge:_ You age seven years and a kilometer diameter sphere, centered on your soul, disappears into the nothing of wormspace for a year. Overcharge again to remain behind and watch the sphere disappear (please have some form of levitation ready).
 
@@ -1463,12 +1468,9 @@ meta:
 
 > You coerce the target into a fight or flight overdrive, boosting its physical abilities past their safe limits. The target gains +2 strength, endurance, and agility. It can lift more, leap farther, punch harder. When the overdrive fades, it gains 6 exhaustion burdens. These fade at a rate of one per hour.
 >
->
-> **Again (x4):** The target gains 6 more points to assign. When the overdrive fades, besides the exhaustion and damage, the target must save or die.
->
-> `⚔︎`
->
 > _Overcharge:_ The target gains an additional 6 points to assign to strength, endurance, agility, attack, and defense as it sees fit. When the overdrive fades, besides the exhaustion the target also suffers 1d8 damage.
+>
+> _Again (x4):_ The target gains 6 more points to assign. When the overdrive fades, besides the exhaustion and damage, the target must save or die.
 
 tags:
 >   [power]
@@ -1502,25 +1504,45 @@ meta:
 > **P:** 2 **R:** touch
 >
 > **T:** one creature **D:** permanent
-
+>
 > You reshape a creature’s skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
 >
->
 > _Note:_ Multiple uses on a single individual are dangerous.
->
-> `⚔︎`
 >
 > **Epidermal Effects**
 >
 > Some complex sculpts require a biomantic roll.
 >
-> **Sculpt** **Effect** Leathery Hide armor +2 Fur, Feather or Fat Insulation cold resistant Sweat or Radiators heat resistant
+> **Sculpt** | **Effect**
+> --- | ---
+> Leathery Hide | armor +2
+> Fur, Feather or Fat Insulation | cold resistant
+> Sweat or Radiators | heat resistant
+> Scales | armor +3, reduced water loss, (moderate)
+> Armored Nodules | armor +5, agility -1, (moderate)
+> Armored Plates | armor +8, agility -3, (hard)
+> Rejuvenated | look a decade younger
+> Soft Skin | armor -2, look younger, (moderate)
+> Squishy | armor -5, agility +2, (hard)
+> Vesicles | store liquids or gases, agility -1
+> Spines | attackers suffer 1d4 damage in close combat
+> Lethal Spines | attackers suffer 1d8 damage in close combat, agility -1, (hard)
+> Webbing / Gliding Surfaces | movement bonus, agility -1, (moderate)
+> Transparent | creepy
+> Glowing | like a bioluminescent candle, (easy)
+> Camouflage | bonus to hide, conceal, (easy)
+> Slippery | bonus to grapple, escape, (easy)
 >
-> Scales armor +3, reduced water loss, (moderate) Armored Nodules armor +5, agility -1, (moderate) Armored Plates armor +8, agility -3, (hard) Rejuvenated look a decade younger Soft Skin armor -2, look younger, (moderate) Squishy armor -5, agility +2, (hard) Vesicles store liquids or gases, agility -1 Spines attackers suffer 1d4 damage in close combat Lethal Spines attackers suffer 1d8 damage in close combat, agility -1, (hard) Webbing / Gliding Surfaces movement bonus, agility -1, (moderate) Transparent creepy Glowing like a bioluminescent candle, (easy) Camouflage bonus to hide, conceal, (easy) Slippery bonus to grapple, escape, (easy)
+> **Result** | **Effect**
+> --- | ---
+> ≤1 | Sculpt fails. Victim exposed to severe corruption.
+> fail | Sculpt succeeds. Patient exposed to moderate corruption.
+> success | Sculpt succeeds.
+> nat. 20 | Excellent sculpt. Increase bonus by 1 or reduce slots occupied by 1 (minimum 1).
 >
-> **Result** **Effect**
+> If sculpting an unwilling target, a failed biomantic roll botches the sculpt and does not expose the target to corruption.
 >
-> _Overcharge:_ The growths develop instantly, dealing 1d6 damage.
+> _Overcharge:_ The growths develop instantly, dealing 1d6* damage.
 
 tags:
 >   [power]
@@ -1595,16 +1617,16 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka’S Weapon Morph** {#sdm-power-nunka-s-weapon-morph}
+## **Nunka’s Weapon Morph** {#sdm-power-nunka-s-weapon-morph}
 
-> **Nunka’S Weapon Morph**
+> **Nunka’s Weapon Morph**
 >
 > _Biocombat Implementation_
 >
 > **P:** 2 **R:** touch
 >
 > **T:** one creature **D:** permanent
-
+>
 > You coerce a creature's biology to express natural weapons like claws, spikes, horns, or venom. The manifestation depends on the creature's size and form. The modification occupies an inventory slot. The transformation requires 1 day.
 >
 >
@@ -1618,7 +1640,7 @@ meta:
 >
 > `⚔︎`
 >
-> _Overcharge:_ The weapons erupt instantly in a traumatic burst dealing 1d6 damage.
+> _Overcharge:_ The weapons erupt instantly in a traumatic burst dealing 1d6* damage.
 
 tags:
 >   [power]
@@ -2003,12 +2025,17 @@ meta:
 >
 > Your touch instructs an organism to start swiftly repairing itself. The target regenerates 1 life point per round. As the regeneration proceeds, wounds knit, broken bones set, and missing bits regrow. Injured areas remain tender and fragile for a week.
 >
-> _(rounds)_ **Life** **Repair** 3 Open wounds knit, bleeding stops. 7 Broken bones set. Medical roll to set them _well_ .
+> _(rounds)_ | **Life Repair**
+> --- | ---
+> 3 | Open wounds knit, bleeding stops.
+> 7 | Broken bones set. Medical roll to set them _well_ .
+> 10 | Fingertips, earlobes, nose tips grow back.
 >
-> 10 Fingertips, earlobes, nose tips grow back.
->
->
-> _(rounds)_ **Life** **Repair** 13 Torn ligaments regrow, joints function again. 17 Partially destroyed organs self-repair. 20 Fingers, ears, noses, tongues, toes, eyes grow back.
+> _(rounds)_ | **Life Repair**
+> --- | ---
+> 13 | Torn ligaments regrow, joints function again.
+> 17 | Partially destroyed organs self-repair.
+> 20 | Fingers, ears, noses, tongues, toes, eyes grow back.
 >
 > _Note:_ this power does not cure illnesses or conditions.
 >
@@ -2277,9 +2304,8 @@ meta:
 > **T:** all creatures **D:** one action
 >
 > Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
-> *subject to how much ammo the anchor weapon holds.
 >
-> _Overcharge:_ No attack roll required.
+> _Overcharge:_ No attack roll required. *subject to how much ammo the anchor weapon holds.
 
 tags:
 >   [power]
@@ -2398,11 +2424,9 @@ meta:
 > You alter the speed of a chosen biological process in the target, accelerating or retarding it as much as 10-fold. Processes include growth, gestation, decay, metabolism, disease progression, etc.
 >
 >
-> **Again (x4):** Make the process 1,000 times faster or slower. Very dangerous for the target.
->
-> ☗
->
 > _Overcharge:_ Make the process 100 times faster or slower. Dangerous for the target.
+>
+> _Again (x4):_ Make the process 1,000 times faster or slower. Very dangerous for the target.
 
 tags:
 >   [power]
@@ -2440,13 +2464,20 @@ meta:
 > You stretch a tendril of focused aura into an unborn organism to manipulate its developmental pathway, altering it to reach the upper or lower extremes of the species range in one aspect. The effect unfolds through the creature’s gestation and maturation.
 >
 >
-> ☗
->
 > **Generic Aspects**
 >
-> **Aspect** **Effect** 1. Size Increase or decrease final growth size. 2. Lifespan Extend or reduce natural lifespan. 3. Maturation Accelerate or slow developmental progression. 4. Physical Alter attributes like strength, durability, speed. 5. Senses Enhance sensory acuity, reduce sensory vulnerability. 6. Adaptations Resistance to hazards, camouflage. 7. Cognitive Expand intelligence, reasoning, special talents. 8. Behavior Adjust sociability, docility, initiative, drive, curiosity. 9. Morphology Appendages, bone structures, fur, feathers. 10. Metabolism Increase or reduce metabolic rates.
->
-> ☗
+> **Aspect** | **Effect**
+> --- | ---
+> 1. Size | Increase or decrease final growth size.
+> 2. Lifespan | Extend or reduce natural lifespan.
+> 3. Maturation | Accelerate or slow developmental progression.
+> 4. Physical | Alter attributes like strength, durability, speed.
+> 5. Senses | Enhance sensory acuity, reduce sensory vulnerability.
+> 6. Adaptations | Resistance to hazards, camouflage.
+> 7. Cognitive | Expand intelligence, reasoning, special talents.
+> 8. Behavior | Adjust sociability, docility, initiative, drive, curiosity.
+> 9. Morphology | Appendages, bone structures, fur, feathers.
+> 10. Metabolism | Increase or reduce metabolic rates.
 >
 > _Overcharge:_ The organism is altered to twice (or half) the normal extreme of the species. So, twice or half the size, for example. This is dangerous for the organism.
 
@@ -2488,15 +2519,13 @@ meta:
 > You sculpt a viable egg and artificial uterus from biomatter. Using somatic manipulation, you spark parthenogenic development within the cradle. The egg gestates to term as normally required by the subject species.
 >
 >
-> **Again (x4):** The gestation is 100 times faster than normal. Very dangerous for the subject.
+> _Overcharge:_ The gestation is 10 times faster than normal. Dangerous for the subject.
+>
+> _Again (x4):_ The gestation is 100 times faster than normal. Very dangerous for the subject.
 >
 > _Note:_ A tissue sample of the subject species is recommended for successful parthenogenesis.
 >
 > _Warning:_ Once hatched, the bodies and consciousness of new organisms may display unpredictable aberrations from the forced growth. Siato Runo LLC is not liable for any teratogenous disasters caused by careless parthenogenesis.
->
-> ☗
->
-> _Overcharge:_ The gestation is 10 times faster than normal. Dangerous for the subject.
 
 tags:
 >   [power]
@@ -2536,11 +2565,9 @@ meta:
 > _Note:_ Larger species may require larger pouches. Using this power on the same creature twice is very dangerous.
 >
 >
-> _Synergy:_ Combine with _Runo’s Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
->
-> ☗
->
 > _Overcharge:_ Sculpt three pouches occupying two slots. Dangerous for the subject.
+>
+> _Synergy:_ Combine with _Runo’s Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
 
 tags:
 >   [power]
@@ -2623,9 +2650,9 @@ meta:
 > _Note:_ if you are carrying the prepared skin of your chosen form, the power cost is halved and the transformation takes mere seconds.
 >
 >
-> **Again (x4)** : Into any form, from a mite to a mighty airwhale.
->
 > _Overcharge:_ Shift into much smaller (shrew-sized) or larger (mammothsized) forms.
+>
+> _Again (x4):_ Into any form, from a mite to a mighty airwhale.
 
 tags:
 >   [power]
@@ -2715,7 +2742,14 @@ meta:
 
 > You give free reign to the darkest parts of yourself, transforming into a ravening aberrant horror born of your subconscious. You lose the ability to use powers or your higher mental faculties, but your strength, endurance, and melee attack all increase depending on your aura score:
 >
-> **Aura** **Effect** ≤0 +4+level str and end, 2d8 melee attack 1 +3+level str and end, 1d12 melee attack 2 +2+level str and end, 1d10 melee attack 3 +1+level str and end, 1d8 melee attack 4 +level str and end, 1d6 melee attack 5≤ Skinwyrd does not activate as normal, instead it explodes in a single burst that deals 1d6 psychic bliss damage to each adjacent creature. Any creature that takes 1 damage is stunned with immaculate joy for 1 round. Any creature reduced to 0 life by this damage falls asleep and awakens later unharmed.
+> **Aura** | **Effect**
+> --- | ---
+> ≤0 | +4+level str and end, 2d8 melee attack
+> 1 | +3+level str and end, 1d12 melee attack
+> 2 | +2+level str and end, 1d10 melee attack
+> 3 | +1+level str and end, 1d8 melee attack
+> 4 | +level str and end, 1d6 melee attack
+> 5≤ | Skinwyrd does not activate as normal, instead it explodes in a single burst that deals 1d6 psychic bliss damage to each adjacent creature. Any creature that takes 1 damage is stunned with immaculate joy for 1 round. Any creature reduced to 0 life by this damage falls asleep and awakens later unharmed.
 >
 > You cannot end skinwyrd normally. Each round in the skinwyrd, you lose 1 life. When you reach 0 life, you fall unconscious and revert to your normal form. When you awake, you regain 1d6 life.
 >
@@ -2754,17 +2788,14 @@ meta:
 >
 > **T:** one dead hero **D:** permanent
 >
-> This deeply immoral ritual tears a departed psyche from the All-Mind's cosmic consciousness. It steals the forgiven
-> soul from the All-Fire of Creation-PreservationDestruction. It undoes the body's decay into the All Green of
-> Life-Death-Rebirth.
-> In a rapturous whirlwind, the hero is recreated from sacred fire and holy breath and perfect soil. They make their
-> relife roll with advantage. All this ritual requires is the loving sacrifice of another human, and one more for
-> each level of the hero.
-> Dangerous: The sacrificial specialist will probably be corrupted by this spell.
-> _In the Year of the Lambent Fox the Chosen One fell before her time and the people of the Milkweed faced certain
-> doom. Stoyevod the Practitioner sacrificed 9 of his clone brothers and sisters to return the Chosen One and resume
-> the Good and Proper Path of the Milkweed._
+> This deeply immoral ritual tears a departed psyche from the All-Mind's cosmic consciousness. It steals the forgiven soul from the All-Fire of Creation-Preservation-Destruction. It undoes the body's decay into the All Green of Life-Death-Rebirth.
 >
+> In a rapturous whirlwind, the hero is recreated from sacred fire and holy breath and perfect soil. They make their relife roll with advantage. All this ritual requires is the loving sacrifice of another human, and one more for each level of the hero.
+>
+> _In the Year of the Lambent Fox the Chosen One fell before her time and the people of the Milkweed faced certain doom. Stoyevod the Practitioner sacrificed 9 of his clone brothers and sisters to return the Chosen One and resume the Good and Proper Path of the Milkweed._
+>
+> _Dangerous:_ The sacrificial specialist will probably be corrupted by this spell.
+> 
 > _Overcharge:_ The hero adds +20 to their relife roll or increases one of their ability scores by 1.
 
 tags:
@@ -2919,10 +2950,7 @@ meta:
 >
 > **T:** anything with a mind and soul **D:** instant
 >
-> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you
-> release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile.
-> The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy
-> strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
+> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
 >
 > _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
@@ -2962,7 +2990,14 @@ meta:
 >
 > You speak to the target's genetic code, triggering unpredictable mutation. It suffers 1d6 damage per round for 1d4 rounds as flesh and bone warp and change. After, the target gains a random mutation that fills one of its slots. An unwilling target saves to avoid the mutation. Roll 1d6:
 >
-> 1. Roll on the Regular Exposure corruption table 2. Roll on the Mild Exposure corruption table 3. Regression. Prehensile tail, gripping feet, powerful fangs, curly fur, clawed fingers, or brachiating arms. 4. Extra Sensory Organ. Electric sense, magnetic sense, canine smell, feline hearing, serpentine taste, or the ability to see dead people. 5. External Changes. Armored hide (+2 defense), bioluminescence, rudimentary gills (longer dives), arm feathers (glide), hooves, or rubber skin (electric and radiation resistance). 6. Internal Changes. Acidic blood, venomous saliva, super-liver (break down toxins), regenerating sticky entangling intestines (sea cucumber style), second heart, or nauseating cloud organ.
+> **d6** | **Effect**
+> --- | ---
+> 1 | Roll on the Regular Exposure corruption table.
+> 2 | Roll on the Mild Exposure corruption table.
+> 3 | Regression. Prehensile tail, gripping feet, powerful fangs, curly fur, clawed fingers, or brachiating arms.
+> 4 | Extra Sensory Organ. Electric sense, magnetic sense, canine smell, feline hearing, serpentine taste, or the ability to see dead people.
+> 5 | External Changes. Armored hide (+2 defense), bioluminescence, rudimentary gills (longer dives), arm feathers (glide), hooves, or rubber skin (electric and radiation resistance).
+> 6 | Internal Changes. Acidic blood, venomous saliva, super-liver (break down toxins), regenerating sticky entangling intestines (sea cucumber style), second heart, or nauseating cloud organ.
 >
 > _Overcharge:_ You get to choose the mutation. Dangerous.
 
@@ -3013,7 +3048,14 @@ meta:
 >
 > Before there were two minds, now there is one. Which is it?
 >
-> **d20** **Creature’s Response** ≤3 A new mind, a melding of both that went before. And it hates you. 4–7 A dominant mind and a subordinate mind and they both hate you. 8–10 Two minds, howling at each other. This will be complicated. 11–14 One mind remains and it hates you. 15–19 One mind remains, confused, with no memory of what happened. 20≤ Both minds are obliterated. A pliant shell for you to command!
+> **d20** | **Creature’s Response**
+> --- | ---
+> ≤3 | A new mind, a melding of both that went before. And it hates you.
+> 4–7 | A dominant mind and a subordinate mind and they both hate you.
+> 8–10 | Two minds, howling at each other. This will be complicated.
+> 11–14 | One mind remains and it hates you.
+> 15–19 | One mind remains, confused, with no memory of what happened.
+> 20≤ | Both minds are obliterated. A pliant shell for you to command!
 >
 > _Overcharge:_ The chimera gains an additional trait from each original creature.
 
@@ -3058,7 +3100,7 @@ meta:
 >
 > _Extract:_ ripping the infestation out is tough and deals another 2d6* damage to the target. The creature (L4) continues to attack mindlessly.
 >
-> _Overcharge:_ the target automatically fails its save and immediately suffers 4d6 damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody’s control.
+> _Overcharge:_ the target automatically fails its save and immediately suffers 4d6* damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody’s control.
 
 tags:
 >   [power]
@@ -3099,7 +3141,7 @@ meta:
 >
 > _Note:_ the growth does not produce high quality tissue. Grown meat is spongy and tough, expanded ivory is brittle and gnarled, extended hair is flakey and hard. It’s just ... bigger.
 >
-> _Overcharge:_ Watch a stone’s worth of tissue grow to sack-sized in one hour. The growth deals 4d4 damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
+> _Overcharge:_ Watch a stone’s worth of tissue grow to sack-sized in one hour. The growth deals 4d4* damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
 
 tags:
 >   [power]
@@ -3136,8 +3178,9 @@ meta:
 
 > Regrow a non-critical destroyed tissue, limb or organ. Takes one hour. Please remove* damaged parts before regrowth for safety.
 >
+> _Overcharge:_ Regrow a critical organ or bodily system, like the digestive or circulatory system. These cannot be safely removed.
 >
-> **Again (x4):** Regrow a body from a single limb or organ. Memories will not be restored.
+> _Again (x4):_ Regrow a body from a single limb or organ. Memories will not be restored.
 >
 >
 > **[optional] Surgihackery**
@@ -3149,7 +3192,12 @@ meta:
 >
 > Didn’t remove the damaged part first? Make a biomantic, medical, or other relevant roll.
 >
-> **Effect** ≤1 Roll on the Severe Exposure corruption table. Then the target dies. 2–11 Roll on the Moderate Exposure corruption table. 12–19 Roll on the Mild Exposure corruption table. 20≤ Everything went well! Huzzah!
+> **Effect** | 
+> --- |
+> ≤1 | Roll on the Severe Exposure corruption table. Then the target dies.
+> 2–11 | Roll on the Moderate Exposure corruption table.
+> 12–19 | Roll on the Mild Exposure corruption table.
+> 20≤ | Everything went well! Huzzah!
 >
 > _Overcharge:_ Regrow a critical organ or bodily system, like the digestive or circulatory system. These cannot be safely removed.
 
@@ -3190,20 +3238,39 @@ meta:
 >
 > _Note:_ Very dangerous for the target. Usually only works once per target.
 >
+> _Overcharge:_ Its intelligence increases another step (+2 thought).
+>
+> _Overcharge Again (x4):_ Another step (+3 thought).
+>
 > **The Ladder of Sentience**
 >
 > Incomprehensible mess of gore, ropes of keratin, legs of gristle, limbs of thorn. If it infects enough humans it may become cunning, even wise.
 >
-> **Tho Example Creatures** -8 algae, moss, bacterium -7 amoeba, fungus, slime mold, tree -5 anemone, jellyfish, earthworm -4 crab, fish, insect, spider -3 insect colony, frog, salamander -2 mammal, reptile, bird -1 ape, corvid, dolphin, troglodyte 0 basic human
+> **Tho** | **Example Creatures**
+> --- | ---
+> -8 | algae, moss, bacterium
+> -7 | amoeba, fungus, slime mold, tree
+> -5 | anemone, jellyfish, earthworm
+> -4 | crab, fish, insect, spider
+> -3 | insect colony, frog, salamander
+> -2 | mammal, reptile, bird
+> -1 | ape, corvid, dolphin, troglodyte
+> 0 | basic human
 >
 >
 > **Love Your Maker**
 >
 > Perhaps the creature is pleased with its new situation?
 >
-> **d20** **Creature’s Response** 1 Outwardly pleased, secretly plots to overthrow its creator. 2–7 Brutally depressed by realization of its own mortality.
->
-> _Overcharge:_ Its intelligence increases another step (+2 thought). Overcharge again (x4): Another step (+3 thought).
+> **d20** | **Creature’s Response**
+> --- | ---
+> 1 | Outwardly pleased, secretly plots to overthrow its creator.
+> 2–7 | Brutally depressed by realization of its own mortality.
+> 8–12 | Confused. Desperately seeking meaning and purpose.
+> 13 | Disdainful of creator. Convinced it will discover, better truth.
+> 14–15 | Numb with shock of understanding.
+> 16–19 | Obsequious. Convinced the creator is a deity who understands all.
+> 20≤ | Understands you’re not so different. It’s mortals all the way down.
 
 tags:
 >   [power]
@@ -3240,13 +3307,29 @@ meta:
 
 > You surgically graft a new anatomy and associated trait into the target creature. You must have the relevant anatomy on hand to attempt a graft. The procedure takes a day and is dangerous to the target. Make a biomantic, medical, or other relevant test to integrate the xenograft:
 >
-> **Roll** **Effect** ≤1 Catastrophe. Patient suffers severe corruption, then dies. 2–5 Severe corruption exposure, 6d6 damage, new trait occupies 2 slots. 6–10 Regular corruption exposure, 4d6 damage, new trait occupies 2 slots. 11–15 Mild corruption exposure, 2d6 damage, new trait occupies 1 slot. 16–19 2d6 damage, new trait occupies 1 slot. 20≤ New trait occupies 1 slot.
+> **Roll** | **Effect**
+> --- | ---
+> ≤1 | Catastrophe. Patient suffers severe corruption, then dies.
+> 2–5 | Severe corruption exposure, 6d6 damage, new trait occupies 2 slots.
+> 6–10 | Regular corruption exposure, 4d6 damage, new trait occupies 2 slots.
+> 11–15 | Mild corruption exposure, 2d6 damage, new trait occupies 1 slot.
+> 16–19 | 2d6 damage, new trait occupies 1 slot.
+> 20≤ | New trait occupies 1 slot.
 >
 > The patient can use the xenograft once they have healed from the procedure.
 >
 >
 >
-> **Recorded Xenografts** The following xenografts were seen by the cleanup crew after the Green Powder Island incident of —X4. 1. Ghula Musculature. Lifted from a warc semi-living phenotype (strain U-572). Boost strength and endurance by 1d4 each, reduce charisma and aura by 1d3 each, gain a 1d6 bite attack. 2. Airbeast Boneframe. Aeorilth and honeycomb structures reduce weight by 25% and boost agility by 2. 3. Scalamander Wetware. Gill structures and webbing double swimming speed and increase dive length ten-fold. Reduce charisma by 1d2.
+> **Recorded Xenografts** The following xenografts were seen by the cleanup crew after the Green Powder Island incident of —X4.
+>
+> **d6** | **Xenograft**
+> --- | ---
+> 1 | Ghula Musculature. Lifted from a warc semi-living phenotype (strain U-572). Boost strength and endurance by 1d4 each, reduce charisma and aura by 1d3 each, gain a 1d6 bite attack.
+> 2 | Airbeast Boneframe. Aeorilth and honeycomb structures reduce weight by 25% and boost agility by 2.
+> 3 | Scalamander Wetware. Gill structures and webbing double swimming speed and increase dive length ten-fold. Reduce charisma by 1d2.
+> 4 | Chitin Lepidote. Exoskeletal segments grafted across the body (+2 armor) with delicate sensillae providing fine sense of vibrations as well as moving air and water currents. Reduce charisma by 1d2.
+> 5 | Feline Sinews. Increased balance (+1 agility), more graceful movement (+1 charisma), and quicker reflexes (+1 initiative). Very illegal in any cat-friendly lands. Death penalty in the Purple Land.
+> 6 | Warhog Guts. Digestive tract designed to grind and drain nutrients out of the poorest foodstuffs: bones, dead leaves, dry wood, old leather. Also, near-immunity to ingested poisons and toxins.
 >
 > _Overcharge:_ The procedure takes less than an hour. It is very dangerous for the experimental subject.
 

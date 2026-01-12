@@ -642,6 +642,8 @@ Hero dice! Gain one d6 HD per session and one more every couple of hours or at r
 - **Adjust any roll**, whether a d4, d20, or d100. This does not have to be your roll. The adjusted roll counts as a natural roll. This is not an action.
 - **Regain life** equal to the roll. This is always an action.
 
+> The Daemon holds the Hero dice for all their heroes. They may hold a maximum of their PCs' highest "Hero dice" attribute.
+
 > [@OGA, _p._ _22_]
 
 <!-- Our Golden Age, Page 023 -->

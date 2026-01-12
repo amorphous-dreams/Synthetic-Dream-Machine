@@ -1,5 +1,41 @@
 # FTLS Scraped Traits (Index Format)
 
+TODO: Merge status vs Traits Index
+- Commander: merged
+- Teamwork: merged
+- Shieldfriend: merged
+- Pleasant: merged
+- Quartermaster: merged
+- Signalmaster: merged
+- Tactician: merged
+- Revenant: merged
+- From Dust, Returning: merged
+- My Bones Engraved: merged
+- Void Ward: merged
+- Citizen Maintainer: merged
+- Reanimator: merged
+- Hollow Halo: merged
+- Spirit: merged
+- Phase: merged
+- Subconscious Decay: merged
+- Dreamwalker: merged
+- Of-World: merged
+- Personal Daimon: merged
+- Wardwright: merged
+- Vampire: merged
+- Blood Clad: merged
+- Cold New Flesh: merged
+- Death Hunger: merged
+- Frenzy: merged
+- Once Again: merged
+- Lair wards: merged
+- Wild Mage: merged
+- Paradox Die: merged
+- Chaos Step: merged
+- Wyldfire: merged
+- Burner: merged
+- Chronic: merged
+- Recast: merged
 Source: `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_03_FTLS_Paths.md`
 
 <div class="trait-card" markdown="1">
@@ -12,11 +48,11 @@ text:
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Commander]
 >   [affects:actions]
 >   [affects:attack]
 >   [affects:inventory]
 >   [affects:morale]
->   [path:Commander]
 >   [uses:commandDie]
 
 meta:
@@ -34,20 +70,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Teamwork** {#sdm-trait-teamwork}
 
 text:
->   **Teamwork.** Gain a +2 bonus and +2 Defense when standing next to an ally. Expert: When you gain the Teamwork bonus, one the nearby ally characters also gains +2 Defense. Master: While you are standing next to any Unit, all allies in that Unit gain +2 Defense.
+>   **Teamwork.** Gain a +2 bonus and +2 Defense when standing next to an ally. Expert: When you gain the Teamwork bonus, one of the nearby ally characters also gains +2 Defense. Master: While you are standing next to any Unit, all allies in that Unit gain +2 Defense.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:defense]
 >   [path:Commander]
 >   [path:Humans of the Pananthropy]
+>   [affects:defense]
 
 meta:
 > - source:
@@ -66,7 +101,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Shieldfriend** {#sdm-trait-shieldfriend}
@@ -77,9 +111,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:defense]
 >   [path:Brick Bastions]
 >   [path:Commander]
+>   [affects:defense]
 
 meta:
 > - source:
@@ -98,20 +132,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Pleasant** {#sdm-trait-pleasant}
 
 text:
->   **Pleasant.** Charming conversation and an easy demeanor. You get people to like you. That’s +2 to reaction rolls. Expert: +4; Master: +6.
+>   **Pleasant.** Charming conversation and an easy demeanor. You get people to like you. That's +2 to reaction rolls. Expert: +4; Master: +6.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:social]
 >   [path:Commander]
 >   [path:Traveler]
+>   [affects:social]
 
 meta:
 > - source:
@@ -130,21 +163,20 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Quartermaster** {#sdm-trait-quartermaster}
 
 text:
->   **Quartermaster.** You keep the Company fed, paid, and pointed the right way. Skilled: At the week scale, reduce Company supply spend by 1 sack (minimum 1). In settled places, gain +2 to tests to buy, hire, negotiate wages, or arrange transport. Expert: Once per week, when a misfortune/encounter would cost supplies, ammo, tools, or spares, make a moderate relevant test; on a success, halve the loss (round up) or shift it to a different expendable the referee names (“lose rope, not water”). Master: You can requisition in jurisdictions that recognize your badge/charter/papers: claim short-term supplies, lodging, or transport (scale by Area Level / scarcity). It always leaves a paper trail—expect repayment, favors, or questions later.
+>   **Quartermaster.** You keep the Company fed, paid, and pointed the right way. Skilled: At the week scale, reduce Company supply spend by 1 sack (minimum 1). In settled places, gain +2 to tests to buy, hire, negotiate wages, or arrange transport. Expert: Once per week, when a misfortune/encounter would cost supplies, ammo, tools, or spares, make a moderate relevant test; on a success, halve the loss (round up) or shift it to a different expendable the referee names ("lose rope, not water"). Master: You can requisition in jurisdictions that recognize your badge/charter/papers: claim short-term supplies, lodging, or transport (scale by Area Level / scarcity). It always leaves a paper trail -- expect repayment, favors, or questions later.
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Commander]
 >   [affects:inventory]
 >   [affects:social]
 >   [frequency:per-week]
->   [path:Commander]
 
 meta:
 > - source:
@@ -161,22 +193,21 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Signalmaster** {#sdm-trait-signalmaster}
 
 text:
->   **Signalmaster.** You keep the signal alive—voice, banner, drum-code, lamps, clicks on the noösphere. Skilled: Allies who can see/hear your signal don’t lose coordination to ordinary chaos (smoke, crowd noise, darkness, confusion) unless it’s truly disruptive (hard separation, storm, ward-jamming, total blackout). If you have Commander, this also prevents your attached Units from being severed by ordinary chaos. Expert: Once per round, when a friendly creature/Unit in your zone or Near would break, scatter, or test morale, you may make a rally test; on a success they hold together long enough to act normally this round (they may still withdraw after). Master: You can run a relay: choose a willing ally/Unit in your zone or Near as your signal post; for this encounter, treat allies who can see/hear them as also receiving your orders/rally (until the relay is taken out or separated).
+>   **Signalmaster.** You keep the signal alive -- voice, banner, drum-code, lamps, clicks on the noösphere. Skilled: Allies who can see/hear your signal don't lose coordination to ordinary chaos (smoke, crowd noise, darkness, confusion) unless it's truly disruptive (hard separation, storm, ward-jamming, total blackout). If you have Commander, this also prevents your attached Units from being severed by ordinary chaos. Expert: Once per round, when a friendly creature/Unit in your zone or Near would break, scatter, or test morale, you may make a rally test; on a success they hold together long enough to act normally this round (they may still withdraw after). Master: You can run a relay: choose a willing ally/Unit in your zone or Near as your signal post; for this encounter, treat allies who can see/hear them as also receiving your orders/rally (until the relay is taken out or separated).
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Commander]
 >   [affects:actions]
 >   [affects:morale]
 >   [affects:social]
 >   [frequency:per-round]
->   [path:Commander]
 
 meta:
 > - source:
@@ -193,21 +224,20 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Tactician** {#sdm-trait-tactician}
 
 text:
->   **Tactician.** You read the field like a diagram—angles, timing, lines of fire, and when to commit. Skilled: Gain +1 to initiative. When your side rolls initiative, it may choose any Tactician present to roll (instead of a random ally). Expert: Gain +2 to initiative. Once per round, declare Focus Fire on one visible foe; allies you can signal (same zone or Near, clear line-of-effect) gain +1 to attack rolls against that target until the round ends. If you have Commander, you may extend Focus Fire to attached Units within your command range. Master: Gain +3 to initiative. When your side rolls initiative, you may roll twice and take the better result (your side must use your roll, use once per watch).
+>   **Tactician.** You read the field like a diagram -- angles, timing, lines of fire, and when to commit. Skilled: Gain +1 to initiative. When your side rolls initiative, it may choose any Tactician present to roll (instead of a random ally). Expert: Gain +2 to initiative. Once per round, declare Focus Fire on one visible foe; allies you can signal (same zone or Near, clear line-of-effect) gain +1 to attack rolls against that target until the round ends. If you have Commander, you may extend Focus Fire to attached Units within your command range. Master: Gain +3 to initiative. When your side rolls initiative, you may roll twice and take the better result (your side must use your roll, use once per watch).
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Commander]
 >   [affects:actions]
 >   [affects:attack]
 >   [affects:initiative]
->   [path:Commander]
 
 meta:
 > - source:
@@ -224,20 +254,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Revenant** {#sdm-trait-revenant}
 
 text:
->   **Revenant.** Exposure to the Void has opened your mind to strange magics. You can recognize [void] workings—tell if a creature, object, place, or Power is [void]-tainted after a moment of still attention. When an undead special attack, or a [void] Power targeting you fails, gain 1 temporary life. Expert: Gain 1 temporary life when any Power targeting you fails (not just undead/[void]). Master: Gain the Power’s base cost in temporary Life (ignore any Overcharges). Also gain Affinity – Illusion • Light • Void (as a Heritage-style effect tied to this trait).
+>   **Revenant.** Exposure to the Void has opened your mind to strange magics. You can recognize [void] workings -- tell if a creature, object, place, or Power is [void]-tainted after a moment of still attention. When an undead special attack, or a [void] Power targeting you fails, gain 1 temporary life. Expert: Gain 1 temporary life when any Power targeting you fails (not just undead/[void]). Master: Gain the Power's base cost in temporary Life (ignore any Overcharges). Also gain Affinity - Illusion, Light, Void (as a Heritage-style effect tied to this trait).
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Revenant]
 >   [affects:life]
 >   [affects:powers]
->   [path:Revenant]
 
 meta:
 > - source:
@@ -254,22 +283,21 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **From Dust, Returning** {#sdm-trait-from-dust-returning}
 
 text:
->   **From Dust, Returning.** Your link to the world is stronger than ever. Even if crushed to dust, when your remains taste a sprinkle of (roll d6): (1) holy water, (2) blood, (3) wine, (4) tomato soup, (5) milk, or (6) nectar, your body reforms itself in a week. Expert: You return in a day. Master: Your dust can crawl—if any drop of your catalyst exists within a day’s travel, you reform there.
+>   **From Dust, Returning.** Your link to the world is stronger than ever. Even if crushed to dust, when your remains taste a sprinkle of (roll d6): (1) holy water, (2) blood, (3) wine, (4) tomato soup, (5) milk, or (6) nectar, your body reforms itself in a week. Expert: You return in a day. Master: Your dust can crawl -- if any drop of your catalyst exists within a day's travel, you reform there.
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Revenant]
+>   [path:Skeleton]
 >   [affects:actions]
 >   [affects:life]
 >   [affects:powers]
->   [path:Revenant]
->   [path:Skeleton]
 
 meta:
 > - source:
@@ -288,7 +316,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **My Bones Engraved** {#sdm-trait-my-bones-engraved}
@@ -299,10 +326,10 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:inventory]
->   [inventory:slot]
 >   [path:Revenant]
 >   [path:Skeleton]
+>   [affects:inventory]
+>   [inventory:slot]
 
 meta:
 > - source:
@@ -321,7 +348,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Void Ward** {#sdm-trait-void-ward}
@@ -332,9 +358,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:defense]
 >   [path:Revenant]
 >   [path:Skeleton]
+>   [affects:defense]
 
 meta:
 > - source:
@@ -353,21 +379,20 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Citizen Maintainer** {#sdm-trait-citizen-maintainer}
 
 text:
->   **Citizen Maintainer.** Skilled at maintaining the citizens dead. Repair and improve the undead, converse with them, know their ways and needs. Also, a bonus to saves vs all undead special attacks. Expert: You can stabilize a degrading or malfunctioning mindless undead in the field: spend a few minutes and a drop of blood (or equivalent) to prevent this week’s Degrade roll for that undead or remove feral status. Master: Mindless undead recognize you as maintenance staff and will not attack you unless provoked. Once per day, you may influence an undead you can touch: for a scene it treats you as its rightful handler and obeys simple commands. If you are caught doing this “off the books,” it may count as illegal activity.
+>   **Citizen Maintainer.** Skilled at maintaining the citizens dead. Repair and improve the undead, converse with them, know their ways and needs. Also, a bonus to saves vs all undead special attacks. Expert: You can stabilize a degrading or malfunctioning mindless undead in the field: spend a few minutes and a drop of blood (or equivalent) to prevent this week's Degrade roll for that undead or remove feral status. Master: Mindless undead recognize you as maintenance staff and will not attack you unless provoked. Once per day, you may influence an undead you can touch: for a scene it treats you as its rightful handler and obeys simple commands. If you are caught doing this "off the books," it may count as illegal activity.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:actions]
->   [affects:save]
 >   [path:Orangelander]
 >   [path:Revenant]
+>   [affects:actions]
+>   [affects:save]
 
 meta:
 > - source:
@@ -386,7 +411,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Reanimator** {#sdm-trait-reanimator}
@@ -397,9 +421,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:powers]
 >   [path:Bluelander]
 >   [path:Revenant]
+>   [affects:powers]
 >   [uses:life]
 
 meta:
@@ -419,7 +443,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Hollow Halo** {#sdm-trait-hollow-halo}
@@ -430,9 +453,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Revenant]
 >   [affects:powers]
 >   [affects:senses]
->   [path:Revenant]
 
 meta:
 > - source:
@@ -449,21 +472,20 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Spirit** {#sdm-trait-spirit}
 
 text:
->   **Spirit.** Your body (*Ha*) is slightly out of phase and insubstantial, yet your soul (*Ka*) and psyche (*Ba*) remain fully present. You gain +6 Defense vs. physical attacks and suffer Life damage normally. Others sense your touch as a light crackle of energy and you cannot manipulate objects. Named, warded, enchanted, or noospheric effects can always affect you. To act physically, you must manifest your Ha, spending 1 Life for one hour. While manifested you may use your Strength ability score, carry Strength stones in gear, and interact normally with objects. When manifestation ends, your body slips out of phase again. Expert: Spend 1 Life to manifest for one watch (4 hours), carry up to 3 + Strength stones while manifested. Master: Spend 1 Life to manifest for one day. Also, gain Affinity – Chaos • Dream • Shadow (as a Heritage-style effect).
+>   **Spirit.** Your body (*Ha*) is slightly out of phase and insubstantial, yet your soul (*Ka*) and psyche (*Ba*) remain fully present. You gain +6 Defense vs. physical attacks and suffer Life damage normally. Others sense your touch as a light crackle of energy and you cannot manipulate objects. Named, warded, enchanted, or noospheric effects can always affect you. To act physically, you must manifest your Ha, spending 1 Life for one hour. While manifested you may use your Strength ability score, carry Strength stones in gear, and interact normally with objects. When manifestation ends, your body slips out of phase again. Expert: Spend 1 Life to manifest for one watch (4 hours), carry up to 3 + Strength stones while manifested. Master: Spend 1 Life to manifest for one day. Also, gain Affinity - Chaos, Dream, Shadow (as a Heritage-style effect).
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Spirit]
 >   [affects:actions]
 >   [affects:defense]
 >   [affects:ward]
->   [path:Spirit]
 >   [uses:life]
 
 meta:
@@ -481,21 +503,20 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Phase** {#sdm-trait-phase}
 
 text:
->   **Phase.** Spend 1 life to become a ghost for 1 round. While a phase ghost, you may move freely through mundane matter (walls, creatures, objects). Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you. Named, sanctified, enchanted, or noospheric effects still affect you normally. Expert: While phased, your attacks ignore Armor modifiers to the target's physical Defense. Master: When a physical attack or hazard would affect you, you may spend 1 life to Phase immediately. The triggering effect passes through you (unless it is named, sanctified, enchanted, warded, or noospheric). You remain phased until the end of your next turn.
+>   **Phase.** Spend 1 life to become a ghost for one round. While a phase ghost, you may move freely through mundane matter (walls, creatures, objects). Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you. Named, sanctified, enchanted, or noospheric effects still affect you normally. Expert: While phased, your attacks ignore Armor modifiers to the target's physical Defense. Master: When a physical attack or hazard would affect you, you may spend 1 life to Phase immediately. The triggering effect passes through you (unless it is named, sanctified, enchanted, warded, or noospheric). You remain phased until the end of your next turn.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:actions]
->   [affects:defense]
 >   [path:Crystal Cannons]
 >   [path:Spirit]
+>   [affects:actions]
+>   [affects:defense]
 >   [uses:life]
 
 meta:
@@ -515,20 +536,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Subconscious Decay** {#sdm-trait-subconscious-decay}
 
 text:
->   **Subconscious Decay.** When you are unconscious or asleep, your physical form rapidly decays. It reconstitutes when you wake. Gain +1 aura. Expert: +2 aura. Master: While you are unconsciousness, your mind slips loose and drifts the local noösphere. Once per watch you may attempt a d20 + Thought test vs Area Level + 10 to do one of the following: Learn one useful fact about nearby minds/signals/wards (a clue, a rumor, a location tag); Plant a short “dream-message” (a phrase, symbol, or sensation) that a spirit-sensitive/wardwright can pick up later; Snap awake if your resting place is disturbed, crossed, or ward-tested. Also, +3 aura.
+>   **Subconscious Decay.** When you are unconscious or asleep, your physical form rapidly decays. It reconstitutes when you wake. Gain +1 aura. Expert: +2 aura. Master: While you are unconsciousness, your mind slips loose and drifts the local noösphere. Once per watch you may attempt a d20 + Thought test vs Area Level + 10 to do one of the following: Learn one useful fact about nearby minds/signals/wards (a clue, a rumor, a location tag); Plant a short "dream-message" (a phrase, symbol, or sensation) that a spirit-sensitive/wardwright can pick up later; Snap awake if your resting place is disturbed, crossed, or ward-tested. Also, +3 aura.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:actions]
 >   [path:Scion]
 >   [path:Spirit]
+>   [affects:actions]
 
 meta:
 > - source:
@@ -547,7 +567,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Dreamwalker** {#sdm-trait-dreamwalker}
@@ -558,9 +577,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:actions]
 >   [path:Scion]
 >   [path:Spirit]
+>   [affects:actions]
 
 meta:
 > - source:
@@ -579,7 +598,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Of-World** {#sdm-trait-of-world}
@@ -590,9 +608,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:powers]
 >   [path:Scion]
 >   [path:Spirit]
+>   [affects:powers]
 >   [uses:heroDie]
 
 meta:
@@ -612,21 +630,20 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Personal Daimon** {#sdm-trait-personal-daimon}
 
 text:
->   **Personal Daimon.** Nimbic essence of a goldenager from the farthest times, where future and past meet. It knows strange histories and, once per session, lets you narrate a surprise twist or discovery ("there was an extra battery in the empty suitcase!"). The referee has a soft veto if something is far too silly. Expert: Given a Directive (*translate, watch, route, diagnose, map dream-noise, maintain wards, etc.*) and within the right context window, the daimon grants +3 to relevant tests and routine assistance. Master: Overclock your personal daimon. Choose one effect, then mark this trait—it is inert until repaired or "re-captured": Parallelize—the daimon executes an action for the character, allowing them to take another action; Shield—reduce the penalty from a noospheric complication by 2 or gain +2 on one Save vs noospheric effects.
+>   **Personal Daimon.** Nimbic essence of a goldenager from the farthest times, where future and past meet. It knows strange histories and, once per session, lets you narrate a surprise twist or discovery ("there was an extra battery in the empty suitcase!"). The referee has a soft veto if something is far too silly. Expert: Given a Directive (*translate, watch, route, diagnose, map dream-noise, maintain wards, etc.*) and within the right context window, the daimon grants +3 to relevant tests and routine assistance. Master: Overclock your personal daimon. Choose one effect, then mark this trait -- it is inert until repaired or "re-captured": Parallelize -- the daimon executes an action for the character, allowing them to take another action; Shield -- reduce the penalty from a noospheric complication by 2 or gain +2 on one Save vs noospheric effects.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:actions]
->   [frequency:per-session]
 >   [path:Spirit]
 >   [path:Tourist]
+>   [affects:actions]
+>   [frequency:per-session]
 
 meta:
 > - source:
@@ -645,7 +662,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Wardwright** {#sdm-trait-wardwright}
@@ -656,9 +672,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Spirit]
 >   [affects:actions]
 >   [affects:defense]
->   [path:Spirit]
 
 meta:
 > - source:
@@ -675,35 +691,28 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Vampire** {#sdm-trait-vampire}
 
 text:
->   **Vampire.** Drain the life force of other creatures to fuel your own powers and abilities. Your target must be **willing or immobile**. You drain **1 point of life per minute**. Draw a **“borrowed life” box** on your character sheet. You may store an amount of borrowed life **equal to your own life**. Borrowed Life may be spent as normal Life, but cannot be recovered by rest or healing. Expert: You may drain **1 Life per round** instead of per minute when the target is **grappled, restrained, or helpless**. Master: Add your **Level** to your maximum Life.
+>   **Vampire.** Drain the life force of other creatures to fuel your own powers and abilities. Your target must be **willing or immobile**. You drain **1 point of life per minute**. Draw a **"borrowed life" box** on your character sheet. You may store an amount of borrowed life **equal to your own life**. Borrowed Life may be spent as normal Life, but cannot be recovered by rest or healing. Expert: You may drain **1 Life per round** instead of per minute when the target is **grappled, restrained, or helpless**. Master: Add your **Level** to your maximum Life.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:life]
->   [frequency:per-watch]
 >   [path:Redlander]
 >   [path:Vampire]
+>   [affects:life]
+>   [frequency:per-watch]
 
 meta:
 > - source:
 >   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
->   - book: Vastlands_Guidebook
->   - page: 139
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths
->   - page: 126
+>   - book: Vastlands_Guidebook; page: 139
 > - usage:
 >   - scope: path; id: Vampire; index: 0
->   - scope:path
->   - id: Redlander
->   - index: 4
->   - note: FTLS Paths Vampire Path expands the core Vastlands_Guidebook Vampire trait.
+>   - scope: path; id: Redlander; index: 4; note: FTLS Paths Vampire Path expands the core Vastlands_Guidebook Vampire trait.
 
 <div class="trait-return">
   &nbsp;&nbsp;
@@ -713,7 +722,6 @@ meta:
 </div>
 
 </div>
-
 
 <div class="trait-card" markdown="1">
 
@@ -725,10 +733,10 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:attack]
->   [affects:defense]
 >   [path:Barbarian]
 >   [path:Vampire]
+>   [affects:attack]
+>   [affects:defense]
 >   [uses:bloodDie]
 
 meta:
@@ -748,7 +756,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Cold New Flesh** {#sdm-trait-cold-new-flesh}
@@ -759,10 +766,10 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:defense]
->   [affects:life]
 >   [path:Skeleton]
 >   [path:Vampire]
+>   [affects:defense]
+>   [affects:life]
 
 meta:
 > - source:
@@ -781,7 +788,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Death Hunger** {#sdm-trait-death-hunger}
@@ -792,9 +798,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:attack]
 >   [path:Vampire]
 >   [path:Weapon]
+>   [affects:attack]
 
 meta:
 > - source:
@@ -813,7 +819,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Frenzy** {#sdm-trait-frenzy}
@@ -824,9 +829,9 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:attack]
 >   [path:Erratic Expendables]
 >   [path:Vampire]
+>   [affects:attack]
 >   [uses:defense]
 
 meta:
@@ -846,20 +851,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Once Again** {#sdm-trait-once-again}
 
 text:
->   **Once Again.** Revive **two rounds after death**, once. Mark this trait when it is used. While marked, it cannot trigger again. *Unmark at the referee’s discretion*—for example, if a daemon spends a Hero Die on your behalf or the character rests for a week. Expert: When you revive via *Once Again*, gain **+2 Defense** until the end of the current round. You may immediately make **one free move** (no attack). Master: You revive **after 1 round** instead of 2. Upon reviving, you may immediately make **one free move and attack** against a hostile creature within reach. Also, *Once Again* unmarks automatically after a full rest.
+>   **Once Again.** Revive **two rounds after death**, once. Mark this trait when it is used. While marked, it cannot trigger again. *Unmark at the referee's discretion* -- for example, if a daemon spends a Hero Die on your behalf or the character rests for a week. Expert: When you revive via *Once Again*, gain **+2 Defense** until the end of the current round. You may immediately make **one free move** (no attack). Master: You revive **after 1 round** instead of 2. Upon reviving, you may immediately make **one free move and attack** against a hostile creature within reach. Also, *Once Again* unmarks automatically after a full rest.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:life]
 >   [path:Erratic Expendables]
 >   [path:Vampire]
+>   [affects:life]
 
 meta:
 > - source:
@@ -878,22 +882,21 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Lair wards** {#sdm-trait-lair-wards}
 
 text:
->   **Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer –2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair's threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee's call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
+>   **Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer - 2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair's threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee's call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Vampire]
 >   [affects:actions]
 >   [affects:attack]
 >   [affects:save]
 >   [affects:ward]
->   [path:Vampire]
 
 meta:
 > - source:
@@ -910,7 +913,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Wild Mage** {#sdm-trait-wild-mage}
@@ -921,10 +923,10 @@ text:
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Wild Mage]
 >   [affects:actions]
 >   [affects:life]
 >   [affects:powers]
->   [path:Wild Mage]
 >   [uses:life]
 
 meta:
@@ -942,7 +944,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Paradox Die** {#sdm-trait-paradox-die}
@@ -953,8 +954,8 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:actions]
 >   [path:Wild Mage]
+>   [affects:actions]
 >   [uses:life]
 
 meta:
@@ -972,20 +973,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Chaos Step** {#sdm-trait-chaos-step}
 
 text:
->   **Chaos Step.** Free Action. When an attack targets you or you fail a save spend 1 Hero Die or take 1 ability damage to blink up to 30 feet to a you-sized space you can see. The triggering attack resolves against your new position with disadvantage (line‑of‑sight permitting & bonus for any new cover; otherwise it misses). Immediately roll a Dangerous Magic roll vs the Area level. If that results in a Corruption effect related to teleportation, portals, or quantum themes you regain the Hero Die or heal the ability damage.
+>   **Chaos Step.** Free Action. When an attack targets you or you fail a save spend 1 Hero Die or take 1 ability damage to blink up to 30 feet to a you-sized space you can see. The triggering attack resolves against your new position with disadvantage (line-of-sight permitting & bonus for any new cover; otherwise it misses). Immediately roll a Dangerous Magic roll vs the Area level. If that results in a Corruption effect related to teleportation, portals, or quantum themes you regain the Hero Die or heal the ability damage.
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Wild Mage]
 >   [affects:actions]
 >   [affects:defense]
->   [path:Wild Mage]
 >   [uses:heroDie]
 
 meta:
@@ -1003,20 +1003,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Wyldfire** {#sdm-trait-wyldfire}
 
 text:
->   **Wyldfire.** Free Action. When any power is successfully cast within 60 feet, make a Danger Roll against the power level to consume its energy. On success cancel the spell’s effect and store the power in your inventory as Mana (max Mana equals your Level). On failure, the power has with a Corruption. Expert: Spend stored mana and an action to heal yourself or a nearby ally (1 Life per 2 mana). Master: Spend stored mana and an action to unleash a 30 feet cone of void‑flame; the damage equals power spent - split among the targets (Aura Save to take 1/2 damage).
+>   **Wyldfire.** Free Action. When any power is successfully cast within 60 feet, make a Danger Roll against the power level to consume its energy. On success cancel the spell's effect and store the power in your inventory as Mana (max Mana equals your Level). On failure, the power has with a Corruption. Expert: Spend stored mana and an action to heal yourself or a nearby ally (1 Life per 2 mana). Master: Spend stored mana and an action to unleash a 30 feet cone of void-flame; the damage equals power spent - split among the targets (Aura Save to take 1/2 damage).
 
 tags:
 >   [trait]
 >   [type:path]
+>   [path:Wild Mage]
 >   [affects:actions]
 >   [affects:powers]
->   [path:Wild Mage]
 
 meta:
 > - source:
@@ -1033,7 +1032,6 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Burner** {#sdm-trait-burner}
@@ -1044,11 +1042,11 @@ text:
 tags:
 >   [trait]
 >   [type:path]
->   [affects:powers]
->   [frequency:per-turn]
 >   [path:Wild Mage]
 >   [path:Wizard]
+>   [affects:powers]
 >   [uses:abilityPoint]
+>   [frequency:per-turn]
 
 meta:
 > - source:
@@ -1067,22 +1065,21 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Chronic** {#sdm-trait-chronic}
 
 text:
->   **Chronic.** Spend a hero die to use a second power this round. Expert: When you go Chronic, you may hold the second power and release it at any point later in the round, even during another creature’s action or resolution. Both your powers still count as being used in the same round for duration, limits, counters, etc. Master: Once per watch, you may use Chronic without spending a Hero Die—but the second power automatically triggers a Danger Roll.
+>   **Chronic.** Spend a hero die to use a second power this round. Expert: When you go Chronic, you may hold the second power and release it at any point later in the round, even during another creature's action or resolution. Both your powers still count as being used in the same round for duration, limits, counters, etc. Master: Once per watch, you may use Chronic without spending a Hero Die -- but the second power automatically triggers a Danger Roll.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:powers]
->   [frequency:per-round]
 >   [path:Wild Mage]
 >   [path:Wizard]
+>   [affects:powers]
 >   [uses:heroDie]
+>   [frequency:per-round]
 
 meta:
 > - source:
@@ -1101,20 +1098,19 @@ meta:
 
 </div>
 
-
 <div class="trait-card" markdown="1">
 
 ## **Recast** {#sdm-trait-recast}
 
 text:
->   **Recast.** When your power fails or a target makes its save, you can use the power again for free. Once. Recharge your recast with a hero die. Expert: When you use Recast, gain +2 on the recast power’s attack or activation roll or apply -2 to the target's Save roll. Master: When you use Recast, you may choose to recharge the trait immediately. You may only choose this *once each watch* and the recast power triggers a Danger Roll.
+>   **Recast.** When your power fails or a target makes its save, you can use the power again for free. Once. Recharge your recast with a hero die. Expert: When you use Recast, gain +2 on the recast power's attack or activation roll or apply -2 to the target's Save roll. Master: When you use Recast, you may choose to recharge the trait immediately. You may only choose this *once each watch* and the recast power triggers a Danger Roll.
 
 tags:
 >   [trait]
 >   [type:path]
->   [affects:powers]
 >   [path:Wild Mage]
 >   [path:Wizard]
+>   [affects:powers]
 >   [uses:heroDie]
 
 meta:
