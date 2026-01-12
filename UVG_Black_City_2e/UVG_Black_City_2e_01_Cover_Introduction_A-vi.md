@@ -1,5 +1,9 @@
 <!-- Page A -->
 
+![Ultraviolet Grasslands and the Black City 2E cover](images/uvg_cover_page.png)
+
+**Official site:** [Ultraviolet Grasslands and the Black City](https://www.wizardthieffighter.com/synthetic-dream-machine/)
+
 # Ultraviolet Grasslands and the Black City 2E
 
 _By Luka Rejec_

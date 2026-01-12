@@ -205,7 +205,7 @@ h1 { font-size: clamp(2.2rem, 3.6vw, 3.4rem); margin: 0 0 12px; letter-spacing:0
 .page-card .markdown-body {
   margin: 0 auto;
   max-width: var(--max-width);
-  padding: clamp(32px, 4vw, 56px);
+  padding: clamp(20px, 3vw, 32px);
   background: var(--page-backdrop);
   border-radius: var(--card-radius);
   border: 1px solid rgba(235, 219, 178, 0.15);

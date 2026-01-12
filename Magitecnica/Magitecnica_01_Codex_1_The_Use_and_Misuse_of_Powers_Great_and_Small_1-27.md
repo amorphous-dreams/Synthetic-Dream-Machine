@@ -102,11 +102,11 @@ Onion looked shocked, “no, I think that was for trying to feed on a cat’s gr
 Static swallowed Onion’s thin voice. Noë snarled and banged the headset, but to no avail. Then a tinny, archaic voice erupted out of the speakers.
 
 > _“...welcome, visitor, to this Guided and Precise Memorium to the powers bestowed on humanity by the Builders (in accord with the Obvious Instructions of the Maker M.B.U.T.E.) and also the lesser powers discovered by humans for themselves in their striving to escape the benevolent Garden Path._
->
+> 
 > _The powers here range from those commonly utilized today in the urbanized vicinity of the Circle Sea, called the Rainbowlands by the common folk of to-day, and also other, stranger powers used by clans and quarterlings and stranger post-humans in the wilds of this Given World, from the Ultraviolet Grasslands to the baked lands of Two-Day._
->
+> 
 > _You will learn how these powers work within the mechanical framework of the reality of this world and the dangers they pose to the untutored. For your delectation, a curious exhibition of power corruptions that have afflicted many a poor human over the centuries is also presented. Please do not feed the fallen humans._
->
+> 
 > _Finally, we also offer a sampler, a buffet, of typical powers harvested from stray travelers in the vicinity of this humble Memorium. Do not worry, no travelers were permanently destroyed in the process!”_
 
 “.. ere? Are you there?” Onion’s voice came back. Endearingly panicked.
@@ -161,8 +161,9 @@ Any character can use any power. Using a power may mean reading the fantascienti
 
 However, a character who knows what they’re doing (i.e. has a trait with relevant skills) is less likely to blow themselves up into a giant blueberry or unleash a plague of ear-eating wigs.
 
-IV.a. Paying For Power Powers impose otherworldly wrongness on the mundane. There is a price to pay for such power and the alien fires of the incomprehensible may consume one’s body, spirit, and memories.
+IV.a. Paying For Power
 
+Powers impose otherworldly wrongness on the mundane. There is a price to pay for such power and the alien fires of the incomprehensible may consume one’s body, spirit, and memories.
 To use a power, you must first pay the price.
 
 **1 power costs 1 life**
@@ -187,7 +188,9 @@ Assigning powers is more art than science:
 
 Powers can also occupy every order in between, from 2 to 98.
 
-IV.c. Carrying Powers (Inventory) A character can use any power in their inventory. They may bear it as a:
+IV.c. Carrying Powers (Inventory)
+
+A character can use any power in their inventory. They may bear it as a:
 
 ⬡ Trait: for example, strange equations locked in their mind, changing their perspective and personality. ⬡ Item: for example, a plastic skull filled with lambent newt juice.
 
@@ -203,19 +206,27 @@ Power albums, technocodicils, and spell books are valuable because they let a ch
 
 <!-- Magitecnica Codex 1, Page 008 -->
 
-IV.d. Range, Target, Duration Self explanatory. Range (R:), Target (T:), and Duration (D:).
+IV.d. Range, Target, Duration
 
-IV.e. Overcharge Overcharging a power doubles its price and modifies its effect.
+Self explanatory. Range (R:), Target (T:), and Duration (D:).
+
+IV.e. Overcharge
+
+Overcharging a power doubles its price and modifies its effect.
 
 Some powers can be overcharged multiple times: x2, x4, x8, x16 and so on.
 
-IV.f. Power Options Powers may have additional mechanics. For example:
+IV.f. Power Options
+
+Powers may have additional mechanics. For example:
 
 ⬡ Anchored Powers: The power is kept active and controlled with a physical anchor stored in the user’s inventory. Destroying or losing the anchor deactivates the power (or worse). ⬡ Attack Power: The power is used as an attack against the target’s defense score. The defender does not save or make other rolls.
 
 ⬡ Focus Powers: The user must focus on keeping the power active. If they are distracted by their own actions or external events, the power deactivates (or worse). ⬡ Fueled Powers: The power requires some kind of consumable component to activate. Life alone is not enough to activate it. ⬡ Imbued Powers: The power remains active so long as it remains imbued with the user’s vital essence (the life or ability score price paid by the user). The user cannot recover imbued life or ability scores until they deactivate the power. ⬡ Item Powers: The power locks the user’s vital essence (life or ability score price paid) within an object. This is permanent, unless the item is destroyed or ritually powered down. Once an item is disabled, the user can recover their locked life or ability scores.
 
-IV.g. Dangerous Powers Any power may be dangerous. Powers are dangerous when:
+IV.g. Dangerous Powers
+
+Any power may be dangerous. Powers are dangerous when:
 
 1. a **character has no suitable skill** (for example, a celebrated influencer trying to merge their consciousness with an oldtech war machine); 2. or, **their level is lower than the price of the power** (for example, a 3rd level PC trying to use a power that costs 4 life); 3. or, **a power is known to be dangerous** (for example, playing with a cancer bomb is never safe).
 
@@ -251,7 +262,9 @@ Depending on severity, corruption may take many forms.
 
 _Example: Onion fiddles with the Long Ago stasis lock and finally flings open the psychophagus. An eerie extra-temporal mist floods out, surprising the wily Onion. Still, this shouldn’t be too hard for the lucky (+3 to saves) traveler. Onion’s player checks with the referee and Cat confirms it’s a standard save: Onion has to roll over 13. “A dawdle,” says Onion and rolls his save, d20 + 3. The big die rolls and it’s a 4. Even with a +3 bonus, that’s far from the 14 he needed. He is exposed to the ancient technomagic of the stasis lock and Cat bids him roll for corruption exposure._
 
-V.a. Corruption Exposure When a character is exposed to corruption they immediately **gain a burden** (such as a dramatic nosebleed or headache), then **roll 2d6 + aura** to figure out their corruption exposure.
+_V.a. Corruption Exposure_
+
+When a character is exposed to corruption they immediately **gain a burden** (such as a dramatic nosebleed or headache), then **roll 2d6 + aura** to figure out their corruption exposure.
 
 1 or less Power blowback. The power user’s head explodes*, but the corruption keeps them alive until they die of hunger. Severe corruption exposure.
 
@@ -275,10 +288,14 @@ Burdens affect the exposure roll.
 
 <!-- Magitecnica Codex 1, Page 010 -->
 
-_V.a.i. Severe Exposure_ Deleterious effects, calamitous mutations; the void peels back and chaos crawls through. The user becomes a warning to would-be meddlers.
+_V.a.i. Severe Exposure_
+
+Deleterious effects, calamitous mutations; the void peels back and chaos crawls through. The user becomes a warning to would-be meddlers.
 
 
-_V.a.ii. Regular Exposure_ Cosmetic effects, visible mutations; the user’s source code is corrupted and they become a living glitch, a reminder of all that could go wrong.
+_V.a.ii. Regular Exposure_
+
+Cosmetic effects, visible mutations; the user’s source code is corrupted and they become a living glitch, a reminder of all that could go wrong.
 
 
 The character falls violently ill, suffering 1d6 points of ability score damage. Over the next day and night, they permanently reduce a relevant ability score by one (1) and gain a new corruption trait.
@@ -292,24 +309,85 @@ Roll or choose a relevant corruption trait. It can occupy a trait or item slot.
 
 
 
-1. Only bones remain. The character is now a chaos skeleton. 2. Bones become soft or brittle. Gelatinous prognosis. 3. Eyes collapse and evaporate, leaving sockets that see the astral light. 4. Back hunches, fuses, turns into a shell-like carapace over a few weeks. 5. Strange bones erupt into spikes and thorns piercing the skin. 6. Hair develops into ropey keratin tentacles. Not quite snakes. 7. Suffused with the void, shadows permanently shroud the character. 8. Teeth fall out or become needle-sharp. 9. Hand withers and locks into a dagger-like claw (1d4 damage). 10. Skin rots and develops suppurating boils. 11. Secondary brain. It slowly develops independent thought. 12. Lower extremities turn into hooves or paws or bird feet. 13. Personality becomes alien, oblique, orthogonal to humanity. 14. Wings or flagellae. They grow capable of flight over a few weeks. 15. Secrete corrosive fluids, ruining clothes and eating through metals. 16. Strange vampiric metabolism. Consume unusual organs to thrive. 17. Secondary form. Like Jekyll’s Hyde or a wolf’s were. 18. Vomit up three remote sense organs. One can see, one can hear, one has a different strange sense. They have a range of a few dozen meters. If a remote organ is destroyed, the character permanently loses 1 life. 19. Undying. But not undecaying. This will become dreadful in a few decades, without a steady supply of replacement parts. 20. Psionic evolution. Acquire a power as an innate trait.
+1. Only bones remain. The character is now a chaos skeleton.
+2. Bones become soft or brittle. Gelatinous prognosis.
+3. Eyes collapse and evaporate, leaving sockets that see the astral light.
+4. Back hunches, fuses, turns into a shell-like carapace over a few weeks.
+5. Strange bones erupt into spikes and thorns piercing the skin.
+6. Hair develops into ropey keratin tentacles. Not quite snakes.
+7. Suffused with the void, shadows permanently shroud the character.
+8. Teeth fall out or become needle-sharp.
+9. Hand withers and locks into a dagger-like claw (1d4 damage).
+10. Skin rots and develops suppurating boils.
+11. Secondary brain. It slowly develops independent thought.
+12. Lower extremities turn into hooves or paws or bird feet.
+13. Personality becomes alien, oblique, orthogonal to humanity.
+14. Wings or flagellae. They grow capable of flight over a few weeks.
+15. Secrete corrosive fluids, ruining clothes and eating through metals.
+16. Strange vampiric metabolism. Consume unusual organs to thrive.
+17. Secondary form. Like Jekyll’s Hyde or a wolf’s were.
+18. Vomit up three remote sense organs. One can see, one can hear, one has a different strange sense. They have a range of a few dozen meters. If a remote organ is destroyed, the character permanently loses 1 life.
+19. Undying. But not undecaying. This will become dreadful in a few decades, without a steady supply of replacement parts.
+20. Psionic evolution. Acquire a power as an innate trait.
 
 
-1. Face comes... off. Leaving a living, grinning skull. 2. Flesh and skin become waxy and translucent. 3. Joins become weaker but hypermobile. 4. Ears wither away or turn into bony horns. Or tentacles. 5. Tongue fused to jaw or covered in sharp radulae. Speech is strange. 6. New vestigial arm or tail. It becomes functional over a few weeks. 7. Eyes turn milky and blind. Only ultraviolet light remains visible. 8. Fingers wither, become raw, until only undead bones remain. 9. Gills or gas breathing organs. They’re functional after a few weeks. 10. Grow taller or shorter. May become much taller or shorter. 11. Voice becomes posthuman. A cascade of colors and sensations. 12. Skin becomes patterned, shifting, chameleon or cuttlefish-like. 13. Small horns or platelets cover the skin, like armor. 14. Features and skull become animalistic. 15. Body becomes bulkier or gracile, as though adapting to an alien gravity. 16. Alien organ. It activates on death, reviving a version of the character. 17. Eerie new senses: vibration, echolocation, electricity, or magnetism. 18. Labor augmentation: no longer bored with dull, repetitive tasks. 19. Mule. Can carry twice as much as normal. 20. Suffused with sparkly spores, the character now glows.
+1. Face comes... off. Leaving a living, grinning skull.
+2. Flesh and skin become waxy and translucent.
+3. Joins become weaker but hypermobile.
+4. Ears wither away or turn into bony horns. Or tentacles.
+5. Tongue fused to jaw or covered in sharp radulae. Speech is strange.
+6. New vestigial arm or tail. It becomes functional over a few weeks.
+7. Eyes turn milky and blind. Only ultraviolet light remains visible.
+8. Fingers wither, become raw, until only undead bones remain.
+9. Gills or gas breathing organs. They’re functional after a few weeks.
+10. Grow taller or shorter. May become much taller or shorter.
+11. Voice becomes posthuman. A cascade of colors and sensations.
+12. Skin becomes patterned, shifting, chameleon or cuttlefish-like.
+13. Small horns or platelets cover the skin, like armor.
+14. Features and skull become animalistic.
+15. Body becomes bulkier or gracile, as though adapting to an alien gravity.
+16. Alien organ. It activates on death, reviving a version of the character.
+17. Eerie new senses: vibration, echolocation, electricity, or magnetism.
+18. Labor augmentation: no longer bored with dull, repetitive tasks.
+19. Mule. Can carry twice as much as normal.
+20. Suffused with sparkly spores, the character now glows.
 
 > [@sdm_magitecnica_codex_1, _p._ _10_]
 
 <!-- Magitecnica Codex 1, Page 011 -->
 
-_V.a.iii. Mild Exposure_ Beneficial effects, lucky mutations; the Maker must have interceded to preserve the user and make them a bulwark of the Garden Path.
+_V.a.iii. Mild Exposure_
+
+Beneficial effects, lucky mutations; the Maker must have interceded to preserve the user and make them a bulwark of the Garden Path.
 
 The character feels fine. Possibly even a little euphoric. Over the next week and a day, they gain a new corruption trait.
 
 Roll or choose a relevant corruption trait. It can occupy a trait or item slot.
 
-1. Flesh crawls and regenerates, like it is a _Thing_ with a mind of its own. 2. Mouth widens from ear to ear or nearly disappears. 3. Vestigial fingers and toes grow. They become functional in a few weeks. 4. Skin or hair color becomes strange and unnatural. 5. Skull becomes rounder or more elongated. Eyes grow larger. 6. Lips or nose or ears grow or disappear. 7. A biological weapon concealed within the body (deals 1d6 damage). 8. Eyes change color or shape, becoming radically weird. 9. A finger or other small appendage disappears and the character gains 1 life. Sacrifice two more for 1 more life. 10. Hair disappears or becomes voluminous and omnipresent. 11. Fingers become elongated multi-tool assemblages of chitin and bone. 12. Metabolic enhancement gives sustenance from any organic substances and immunity to most toxins. 13. Blood changes color, becoming blue or green. Gain 1 endurance. 14. Muscles grow extremely slim or bulky. Gain 1 strength or agility. 15. A sense becomes incredibly acute and sensitive. 16. Tele-empathy, like a cat. Gain 1 aura. 17. Golem-like secondary reason routines. Gain 1 thought. 18. Noble augmentation: health, beauty, and authority. Gain 1 charisma. 19. Precognitive flashes. Mostly harmless, but can spend 1 hero die per session to completely negate any roll. 20. Visions of a higher cosmos. The character becomes convinced that they are living in a synthetic hell, not a true heaven.
+1. Flesh crawls and regenerates, like it is a _Thing_ with a mind of its own.
+2. Mouth widens from ear to ear or nearly disappears.
+3. Vestigial fingers and toes grow. They become functional in a few weeks.
+4. Skin or hair color becomes strange and unnatural.
+5. Skull becomes rounder or more elongated. Eyes grow larger.
+6. Lips or nose or ears grow or disappear.
+7. A biological weapon concealed within the body (deals 1d6 damage).
+8. Eyes change color or shape, becoming radically weird.
+9. A finger or other small appendage disappears and the character gains 1 life. Sacrifice two more for 1 more life.
+10. Hair disappears or becomes voluminous and omnipresent.
+11. Fingers become elongated multi-tool assemblages of chitin and bone.
+12. Metabolic enhancement gives sustenance from any organic substances and immunity to most toxins.
+13. Blood changes color, becoming blue or green. Gain 1 endurance.
+14. Muscles grow extremely slim or bulky. Gain 1 strength or agility.
+15. A sense becomes incredibly acute and sensitive.
+16. Tele-empathy, like a cat. Gain 1 aura.
+17. Golem-like secondary reason routines. Gain 1 thought.
+18. Noble augmentation: health, beauty, and authority. Gain 1 charisma.
+19. Precognitive flashes. Mostly harmless, but can spend 1 hero die per session to completely negate any roll.
+20. Visions of a higher cosmos. The character becomes convinced that they are living in a synthetic hell, not a true heaven.
 
-V.b. Other Types of Corruption The referee may design custom corruption traits to fit the location, item, or story. Corruption traits could also be arranged in paths to fit special themes.
+V.b. Other Types of Corruption
+
+The referee may design custom corruption traits to fit the location, item, or story. Corruption traits could also be arranged in paths to fit special themes.
 
 Game modules, locations, powers and items may also specify particular types and flavors of corruption.
 
@@ -341,31 +419,28 @@ Cat stole this idea from a grim writer in a strange dream. But she won’t admit
 
 Unless a PC rolls a power as a starting item or buys one with their starting cash, they start without any powers beyond their own wits and competence.
 
-VI.a. Getting a New Power There are five ways, from smart to stupid:
+VI.a. Getting a New Power
 
-1. Learn it from a wise master, as is tradition. No roll to learn to use the power needed! 2. Purchase an original, mint-in-box power, complete with instructions. Expensive, but easy to learn. 3. Acquire a pre-loved power together with vague instructions from a power user. 4. Find it on an adventure, while looting burial goods
-
-.  er.  a treasure hoard. Hard to learn. 5. By messing with a strange artifact or aberration beyond human ken. This may well corrupt your essence.
+There are five ways, from smart to stupid:
+1. Learn it from a wise master, as is tradition. No roll to learn to use the power needed!
+2. Purchase an original, mint-in-box power, complete with instructions. Expensive, but easy to learn.
+3. Acquire a pre-loved power together with vague instructions from a power user.
+4. Find it on an adventure, while looting burial goods—er, a treasure hoard. Hard to learn.
+5. By messing with a strange artifact or aberration beyond human ken. This may well corrupt your essence.
 
 Most cities regulate the production and sale of powers, which drives official prices up. Still, an enterprising character might find black markets and wild traders with powers for sale. The referee has final say on what powers, if any, are available for purchase in a locality.
 
-Order of
+Order of Power | Mint | Pre-Loved | Looted*
+---|---|---|---
+1 | €100 | €50 | €25
+2 | €300 | €150 | €75
+3 | €1,000 | €500 | €250
+4 | €3,000 | €1,500 | €750
+5 | €10,000 | €5,000 | €2,500
+6 | €30,000 | €15,000 | €7,500
+7 | €100,000 | €50,000 | €25,000
 
-Power Mint Pre-Loved Looted*
-
-1 €100 €50 €25
-
-2 €300 €150 €75
-
-3 €1,000 €500 €250
-
-4 €3,000 €1,500 €750
-
-5 €10,000 €5,000 €2,500
-
-6 €30,000 €15,000 €7,500
-
-7 €100,000 €50,000 €25,000 *always has an unfortunate side effect.
+*always has an unfortunate side effect.
 
 > [@sdm_magitecnica_codex_1, _p._ _12_]
 
@@ -389,7 +464,9 @@ Then, roll thought to see how your studies went:
 
 If you make longer studies, use an oldtech laboratory, or get special help, you may gain bonuses to your learning roll.
 
-VI.c. Modifying a Power Any PC may attempt to modify a power know how to use. This requires a few weeks, access to a suitable oldtech laboratory or similar facility, and €50 per order of power. Example modifications:
+VI.c. Modifying a Power
+
+Any PC may attempt to modify a power know how to use. This requires a few weeks, access to a suitable oldtech laboratory or similar facility, and €50 per order of power. Example modifications:
 
 ⬡ Power Hack. Make the power work with one of your existing traits. Very hard thought test.
 
@@ -409,15 +486,35 @@ As with learning a new power (VI.b.), failing to modify a power risks corruption
 
 <!-- Magitecnica Codex 1, Page 014 -->
 
-_VI.c.i. Small Upgrades_ Improve powers with a bit of whizz-bang oldtech wizardry.
+_VI.c.i. Small Upgrades_
 
-1. Healing. A random nearby creature or object gains 1 life when you use the power. 2. Soothing. Nearby plants, animals, and even humans feel calm when you use the power. 3. Shielding. When you deploy your power, you can shield a creature or object from its effect. 4. Silent. Very stealthy to use. Soundless, even. 5. Enticing aroma. You smell very nice and pleasant after using the power. 6. Nimbus. When you use the power, you gain a small bonus to your defenses for the rest of the round. 7. Warding. Using the power creates a field that weakens adjacent daemons or undead for the rest of the round. 8. Timer. You can set your power to activate 0 to 2 turns after your turn. 9. Retro-probabilistic. After you use your power, you gain a bonus on your next roll. It’s weird. 10. Explosive. All dice for your power’s effects explode.
+Improve powers with a bit of whizz-bang oldtech wizardry.
+
+1. Healing. A random nearby creature or object gains 1 life when you use the power.
+2. Soothing. Nearby plants, animals, and even humans feel calm when you use the power.
+3. Shielding. When you deploy your power, you can shield a creature or object from its effect.
+4. Silent. Very stealthy to use. Soundless, even.
+5. Enticing aroma. You smell very nice and pleasant after using the power.
+6. Nimbus. When you use the power, you gain a small bonus to your defenses for the rest of the round.
+7. Warding. Using the power creates a field that weakens adjacent daemons or undead for the rest of the round.
+8. Timer. You can set your power to activate 0 to 2 turns after your turn.
+9. Retro-probabilistic. After you use your power, you gain a bonus on your next roll. It’s weird.
+10. Explosive. All dice for your power’s effects explode.
 
 _VI.c.ii. Cosmetic Quirks_
 
 Customize your powers and show that you really own them!
 
-1. Transfer. When you use your power, one nearby creature is left pale and cool, another becomes flushed and hot. 2. Wind. Leaves rustle, and fly as you use your power. 3. Green. Mosses sprout, plants grow, fur shines. 4. Musical. Chimes. Spheres. Tubular bells. Angelic pipes. Fortunately, you can turn this effect off. 5. Odor. Madeleines? Paingeometric scones? 6. Luminous. A gentle glow of an unnatural sort accompanies your power use. 7. Shadowy. Local shadows animate and flap away. 8. Extratemporal. Eternity beckons in an instant. Everyone nearby sees a bit of the far future and distant past when you use your power. The glimpse is cool, not helpful. 9. Whispers. From beyond the cosmic veil. They promise secrets, but never quite deliver. 10. Fourth wall. Phantom dice spin about the wizard.
+1. Transfer. When you use your power, one nearby creature is left pale and cool, another becomes flushed and hot.
+2. Wind. Leaves rustle, and fly as you use your power.
+3. Green. Mosses sprout, plants grow, fur shines.
+4. Musical. Chimes. Spheres. Tubular bells. Angelic pipes. Fortunately, you can turn this effect off.
+5. Odor. Madeleines? Paingeometric scones?
+6. Luminous. A gentle glow of an unnatural sort accompanies your power use.
+7. Shadowy. Local shadows animate and flap away.
+8. Extratemporal. Eternity beckons in an instant. Everyone nearby sees a bit of the far future and distant past when you use your power. The glimpse is cool, not helpful.
+9. Whispers. From beyond the cosmic veil. They promise secrets, but never quite deliver.
+10. Fourth wall. Phantom dice spin about the wizard.
 
 > [@sdm_magitecnica_codex_1, _p._ _14_]
 
@@ -429,17 +526,28 @@ Unfortunately, this power is a bit busted. Still useful, just.  not nice. Sorry.
 
 When you use it, the following effect occurs:
 
-1. Leeching. A random nearby creature loses 1 life. 2. Baleful. Animals howl, plants quiver, humans weep. 3. Leaky. The power also partly affects a random creature near your target. Annoying. 4. Noisy. Louder than it should be. Much louder. 5. Smelly. Rotten dragon eggs? Wet howlbear farts? It’s quite unpleasant and obvious. 6. Flashy. A five second holo-advertorial plays before it activates. Oof. 7. Ghastly. Disturbs nearby resting dead. Graves shake. Cloudy with a chance of zombies. 8. Slow. Takes an extra action or 1 more life.  9. Caustic. The mood of everyone nearby worsens. It just does. 10. Juddering. Any effect dice that roll a natural 1 fizzle. If the power doesn’t have effect dice, roll a d12. On a natural 1 the power fails to trigger.
+1. Leeching. A random nearby creature loses 1 life.
+2. Baleful. Animals howl, plants quiver, humans weep.
+3. Leaky. The power also partly affects a random creature near your target. Annoying.
+4. Noisy. Louder than it should be. Much louder.
+5. Smelly. Rotten dragon eggs? Wet howlbear farts? It’s quite unpleasant and obvious.
+6. Flashy. A five second holo-advertorial plays before it activates. Oof.
+7. Ghastly. Disturbs nearby resting dead. Graves shake. Cloudy with a chance of zombies.
+8. Slow. Takes an extra action or 1 more life.
+9. Caustic. The mood of everyone nearby worsens. It just does.
+10. Juddering. Any effect dice that roll a natural 1 fizzle. If the power doesn’t have effect dice, roll a d12. On a natural 1 the power fails to trigger.
 
 VI.d. Becoming a Proper Wizard®
 
- To become a proper wizard, the PC must track down a mentor, perform 3 foolish tasks, permanently reduce their life by 1 point per level in a ritual involving strange foods at a harrowing feast, and gain a corruption trait.
+To become a proper wizard, the PC must track down a mentor, perform 3 foolish tasks, permanently reduce their life by 1 point per level in a ritual involving strange foods at a harrowing feast, and gain a corruption trait.
 
 Thereafter, each of their own life points spent on a power, or “spell” as they call it, is worth double.
 
 “Proper Wizard®” is a trait and occupies a trait slot.
 
-_VI.d.i. Example: Master Nobolus of the Sixfold Hexacenter_ The pupil ascends the folded stair, up the side of the great nameless emperor’s visage carved into the obsidian flanks of the Glass Mountain. The postfall locals have quarried away much of the emperor’s chin and mouth, but their needs are small and it will be a thousand years before they obliterate the face.  if their molehill culture lasts that long.
+_VI.d.i. Example: Master Nobolus of the Sixfold Hexacenter_
+
+The pupil ascends the folded stair, up the side of the great nameless emperor’s visage carved into the obsidian flanks of the Glass Mountain. The postfall locals have quarried away much of the emperor’s chin and mouth, but their needs are small and it will be a thousand years before they obliterate the face.  if their molehill culture lasts that long.
 
 The pupil steps sideways through time as she ascends the folded stair, up the side of the emperor’s forehead, walking into the cool broken place of the
 
@@ -469,7 +577,12 @@ A strangely folded head appears from behind a plane of shadow. An origami silhou
 
 When inventing a new power for a character:
 
-1. Come up with an idea that creates fun solutions and novel situations. 2. Describe it in three sentences. 3. Make sure it’s not a universal ‘I win’ button. 4. Give it a memorable name. 5. Set its parameters: order of power, range, target, and duration. 6. An overcharge is optional.
+1. Come up with an idea that creates fun solutions and novel situations.
+2. Describe it in three sentences.
+3. Make sure it’s not a universal ‘I win’ button.
+4. Give it a memorable name.
+5. Set its parameters: order of power, range, target, and duration.
+6. An overcharge is optional.
 
 Pop culture, books, movies, and songs can all give a good creative jolt. Mix those ideas with other works and concepts to create a unique power.
 
@@ -487,11 +600,15 @@ This is an art not a science.
 
 You can start with a weak version, then create a stronger, advanced, or second edition version. The technowizards of these later times are not perfect rationalists and multiple versions of a power can and should exist.
 
-VII.c. Adapting Spell Levels [from Other Systems] Feral schools call the ancients’ powers spells and assign to them levels of magical magnitude. This is nonsense, but their ravings imply:
+VII.c. Adapting Spell Levels [from Other Systems]
+
+Feral schools call the ancients’ powers spells and assign to them levels of magical magnitude. This is nonsense, but their ravings imply:
 
 1 power = 0th level spell, such as _Can Trip_
 
-2 power = 1st level spell, such as _Tragic Missile_ 4 power = 2nd level spell, such as _Hlod Person_ [sic]
+2 power = 1st level spell, such as _Tragic Missile_
+
+4 power = 2nd level spell, such as _Hlod Person_ [sic]
 
 6 power = 3rd level spell, such as _Pyreball_
 
@@ -499,9 +616,15 @@ VII.c. Adapting Spell Levels [from Other Systems] Feral schools call the ancient
 
 For details consult the album _Apocrypha of the O.S._ at the end of the book.
 
-VII.b. Adjusting Powers Through Play Every group will find powers that are mechanically too useful, reducing the creativity of roleplay or the utility of other characters. When that happens, the players and referee should discuss what to do. There are many options short of banning a power:
+VII.b. Adjusting Powers Through Play
 
-1. Make it dangerous. 2. Increase the power’s order. 3. Reduce the power’s parameters: duration, range, or targets. 4. Adjust the power’s effects: modify damage or mechanical impact. 5. Add an additional cost or drawback to the power. Perhaps it requires a strange fuel, like crushed arcane diamonds, to use.
+Every group will find powers that are mechanically too useful, reducing the creativity of roleplay or the utility of other characters. When that happens, the players and referee should discuss what to do. There are many options short of banning a power:
+
+1. Make it dangerous.
+2. Increase the power’s order.
+3. Reduce the power’s parameters: duration, range, or targets.
+4. Adjust the power’s effects: modify damage or mechanical impact.
+5. Add an additional cost or drawback to the power. Perhaps it requires a strange fuel, like crushed arcane diamonds, to use.
 
 The in-game narrative rationale for this kind of retcon (nerf) is simple. Powers require half-understood fantascience, rare components, old rituals, and goldilocks circumstances. Something has changed, and the power no longer works as it did when a character first learned to use it.
 
@@ -549,17 +672,71 @@ A.1. This Album
 
 You hold in your hand a mint condition artifact from the Long Long Ago. A wonder whose secrets promise to transport you (or your psychic emanation) to worlds undreamed of in more mediocre philosophies.
 
-_A.1.b Distinctive Design_ 1. howls when accessing underworld cloud 2. fiddly to read on the move 3. reading causes a euphoric high 4. heavy and nigh-indestructible 5. phosphorescent & highly visible 6. iridescent, beautiful, living extra-dimensional appendage 7. silver bonds and cautionary tales 8. played with gears and levers 9. tatty, yellow, with thin sheets 10. ornate ritual reproduction 11. professorial spell slave in a jar
+_A.1.b Distinctive Design_
+1. howls when accessing underworld cloud
+2. fiddly to read on the move
+3. reading causes a euphoric high
+4. heavy and nigh-indestructible
+5. phosphorescent & highly visible
+6. iridescent, beautiful, living extra-dimensional appendage
+7. silver bonds and cautionary tales
+8. played with gears and levers
+9. tatty, yellow, with thin sheets
+10. ornate ritual reproduction
+11. professorial spell slave in a jar
+12. ostentatious jadeite matrix
+13. highly collectible protective cover
+14. produces hallucinogenic fruiting bodies
+15. doubles as a scarf or flag
+16. bottled with aerosol spray nozzle
+17. suggests trepanation for best effect
+18. inscrutable vantablack surface
+19. holo bubble with AR power codes
+20. traditional bronze pazuzu-style statuette
 
-_A.1.c Feature, not Bug_ 1. demon-haunted 2. requires micro-lens reader 3. needs refueling 4. infested with memories 5. requires reading assistant 6. looks like valuable cash 7. corrupted arcane sigils 8. sings when used 9. disappears and reappears unpredictably 10. keeps coming loose 11. requires host neural network 12. strong opinions on poetic politics
+_A.1.c Feature, not Bug_
+1. demon-haunted
+2. requires micro-lens reader
+3. needs refueling
+4. infested with memories
+5. requires reading assistant
+6. looks like valuable cash
+7. corrupted arcane sigils
+8. sings when used
+9. disappears and reappears unpredictably
+10. keeps coming loose
+11. requires host neural network
+12. strong opinions on poetic politics
+13. corroded by fae memories
+14. skips records if jostled
+15. prone to overgrowth
+16. coded in bureaucratic triplicate
+17. alien tastes
+18. autocorrected keyword blocker
+19. obscure gesture interface
+20. freemium micro transaction model
 
-12. ostentatious jadeite matrix 13. highly collectible protective cover 14. produces hallucinogenic fruiting bodies 15. doubles as a scarf or flag 16. bottled with aerosol spray nozzle 17. suggests trepanation for best effect 18. inscrutable vantablack surface 19. holo bubble with AR power codes 20. traditional bronze pazuzu-style statuette
-
-13. corroded by fae memories 14. skips records if jostled 15. prone to overgrowth 16. coded in bureaucratic triplicate 17. alien tastes 18. autocorrected keyword blocker 19. obscure gesture interface 20. freemium micro transaction model
-
-_A.1.a Album Format_ 1. oldtech computer 2. synthskin cyber fiche 3. vials of memory fluid 4. baked clay tablets 5. tattooed skin 6. bundled bone scales 7. parchment codex 8. brazen clockwork 9. mass-market paperback 10. plastic paper scroll
-
-11. preserved head 12. crystal-laced slab 13. compact phonograph 14. artificial mycelial mass 15. knotted net record 16. vomeronasal stimulator 17. pearlescent implant 18. tactile interface cylinder 19. mirrored glasses 20. memory daemon
+_A.1.a Album Format_
+1. oldtech computer
+2. synthskin cyber fiche
+3. vials of memory fluid
+4. baked clay tablets
+5. tattooed skin
+6. bundled bone scales
+7. parchment codex
+8. brazen clockwork
+9. mass-market paperback
+10. plastic paper scroll
+11. preserved head
+12. crystal-laced slab
+13. compact phonograph
+14. artificial mycelial mass
+15. knotted net record
+16. vomeronasal stimulator
+17. pearlescent implant
+18. tactile interface cylinder
+19. mirrored glasses
+20. memory daemon
 
 > [@sdm_magitecnica_codex_1, _p._ _18_]
 
@@ -599,43 +776,81 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 <!-- Magitecnica Codex 1, Page 020 -->
 
-_Red Mist_
+**Red Mist**
 
-Tactical Aggression Augment **P:** 1 **R:** short, maybe 20m **T:** one creature **D:** a few minutes
+*Tactical Aggression Augment*
 
-Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure.
+**P:** 1 **R:** short, ~20m
 
-It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma. _Overcharge:_ affect a number of creatures equal to your level + 1.
+**T:** one creature **D:** a few minutes
 
-_Blue Lotus_
+> Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save).
+> It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
+> 
+> _Overcharge:_ Affect a number of creatures equal to your level + 1.
 
-Maximum Somatic Contentment
+**Blue Lotus**
 
-**P:** 1 **R:** short, maybe 5 meters **T:** one creature **D:** an hour
+*Maximum Somatic Contentment*
 
-Soma’s bliss brings contentment to the target. It saves. Success: it loses its next turn to a blissful reverie. Failure: it sits down, lost in blissful reverie for an hour. _Overcharge:_ affect a number of creatures equal to your level + 1.
+**P:** 1 **R:** short, ~5m
 
-_Orange Dream_ Forgotten Spider’s Labors **P:** 1 **R:** whisper **T:** one creature **D:** an hour A neutral or friendly creature agrees to do what you ask for an hour, so long as it does not appear immediately dangerous or risky. _Overcharge:_ even a hostile or violent creature will listen, provided you can whisper in its ear.
+**T:** one creature **D:** an hour
 
-_Green Haven_
+> Soma’s bliss brings contentment to the target (save).
+> Success: it loses its next turn to a blissful reverie.
+> Failure: it sits down, lost in blissful reverie for an hour.
+> 
+> _Overcharge:_ Affect a number of creatures equal to your level + 1.
 
-Arbor Sanctuary
+**Orange Dream**
 
-**P:** 1 **R:** nearby **T:** a 7 meter diameter sphere **D:** a night or a day Convince shrubberies, grasses, brambles, and other plants to form a hedge igloo, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable in the shrub wall. After a night or day, the plants return to their ordinary ways. _Overcharge:_ sculpt a thorny hedge wall measuring 200 meters square and 1 meter thick. Its thorns cut anyone forcing their way through like daggers (1d4 damage).
+*Forgotten Spider’s Labors*
 
-_Yellow Cloud_
+**P:** 1 **R:** whisper
 
-Sands of Lost Times
+**T:** one creature **D:** an hour
 
-**P:** 1 **R:** nearby **T:** a 9 meter cube **D:** a few minutes Fine, obscuring yellow dust rises from the ground and hangs in the air. A veil no sight can pierce. The dust irritates the lungs of air breathers. After a few minutes, it blows away. _Overcharge:_ summon into shimmering immobility a wall of dust measuring 200 cubic meters.
+> A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear immediately dangerous or risky.
+> 
+> _Overcharge:_ Even a hostile or violent creature listens, provided you can whisper in its ear.
 
-_Purple Memories_
+**Green Haven**
 
-Comic Emotional Display
+*Arbor Sanctuary*
 
-**P:** 1 **R:** touch **T:** a creature **D:** several minutes
+**P:** 1 **R:** nearby
 
-The barest word or sensation triggers vivid memories, thoughts, and emotions. How could anyone keep thought or fact a secret in this state? Or resist a fine, rousing song? _Overcharge:_ affect up to twice your level creatures.
+**T:** a 7m diameter sphere **D:** a night or a day
+
+> Convince shrubberies, grasses, brambles, and other plants to form a hedge domehome, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable while in the shrub wall. After
+> a night or day, the plants return to their ordinary ways.
+> 
+> _Overcharge:_ Sculpt a thorny hedge wall measuring 200 meters square and 1 meter thick. Its thorns cut anyone pushing through like daggers (1d4 damage).
+
+**Yellow Cloud**
+
+*Sands of Lost Times*
+
+**P:** 1 **R:** nearby
+
+**T:** a 9m cube **D:** a few minutes
+
+> Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust irritates the lungs of air-breathers. After a few minutes, it blows away.
+> 
+> _Overcharge:_ Summon into shimmering immobility a wall of dust measuring 200 cubic meters.
+
+**Purple Memories**
+
+*Comic Emotional Display*
+
+**P:** 1 **R:** touch
+
+**T:** a creature **D:** several minutes
+
+> The target becomes susceptible to influence. The barest word or sensation triggers vivid memories, thoughts, and emotions. How could anyone keep thoughts or facts a secret in this state? Or resist a fine, rousing song?
+> 
+> _Overcharge:_ Affect a number of creatures equal to twice your level.
 
 > [@sdm_magitecnica_codex_1, _p._ _20_]
 
@@ -673,31 +888,79 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 <!-- Magitecnica Codex 1, Page 022 -->
 
-_Damp Mass_
+**Damp Mass**
 
-Nosigoro Logistical Augment **P:** 1 **R:** touch **T:** 1 sack **D:** 1 day A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty. _Overcharge:_ the mass is halved again. Or it affects an object twice the size. Or it lasts a week instead.
+*Nosigoro Logistical Augment*
 
-_Better Pastures_
+**P:** 1 **R:** touch
 
-Darehodo Patch Choice
+**T:** 1 sack **D:** 1 day
 
-**P:** 1 **R:** self **T:** self **D:** 1 hour
+> A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
+> 
+> _Overcharge:_ the mass is halved again. Or it affects an object twice the size. Or it lasts a week instead.
 
-Meditate at a crossroad for an hour, observe the flow of its energies, the flight of birds, the waft of milkweed seeds. Ask one objective yes / no question of the crossroad, and it shall answer. Will this path reach water within 50 miles? Is there green grass along that path within 20 km? _Overcharge:_ ask a second question or clarify the first.
+**Better Pastures**
 
-_Wing And Prayer_
+*Darehodo Patch Choice*
 
-Dirty Fixing **P:** 1 **R:** touch **T:** vehicle or steed **D:** 1 day Use your faith to mend an axle or splint a leg. Your vehicle or steed can ignore one failure or injury for a day, but then the damage is worse. _Overcharge:_ the fix lasts a week; but the damage is even worse after.
+**P:** 1 **R:** self
 
-_Roadfinder_ Blacktop Sniffer **P:** 1 **R:** a day’s march **T:** self **D:** 1 hour Sniff the world’s road fields, gard the astral way-lines. Detect the nearest road a day’s march or less away.
+**T:** self **D:** 1 hour
 
-_Overcharge:_ the detection range is doubled or the sense lasts a day.
+> Meditate at a crossroads for an hour, observe the flow of its energies, the flight of birds, the waft of milkweed seeds. Ask one objective yes / no question of the crossroads, and it shall answer. Will this path reach water
+> within 50 miles? Is there green grass along that path within 20 km?
+> 
+> _Overcharge:_ Ask a second question or clarify the first.
 
-_Highway Cruiser_ Foolself Driving **P:** 1 **R:** touch **T:** vehicle or steed **D:** 1 day Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to enable voice commands. _Overcharge:_ the daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
+**Wing And Prayer**
 
-_Roadmaker_
+*Dirty Fixing*
 
-Stradograd’s Engine of Civility **P:** 6 **R:** one metric mile **T:** rock and soil **D:** 1 day By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month. _Overcharge:_ the faststone sets into standardstone overnight, creating a surface that will last a century without maintenance.
+**P:** 1 **R:** touch
+
+**T:** vehicle or steed **D:** 1 day
+
+> Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a burden for a day, but then the damage is worse.
+> 
+> _Overcharge:_ The fix lasts a week; but the damage is even worse after.
+
+**Roadfinder**
+
+*Blacktop Sniffer*
+
+**P:** 1 **R:** a day’s march
+
+**T:** self **D:** 1 hour
+
+> Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
+> 
+> _Overcharge:_ The detection range is doubled, or the sense lasts a day.
+
+**Highway Cruiser**
+
+*Foolself Driving*
+
+**P:** 1 **R:** touch
+
+**T:** vehicle or steed **D:** 1 day
+
+> Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to receive voice commands.
+> 
+> _Overcharge:_ The daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
+
+**Roadmaker**
+
+*Stradograd’s Engine of Civility*
+
+**P:** 6 **R:** one metric mile
+
+**T:** rock and soil **D:** 1 day
+
+> By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a
+> metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month.
+> 
+> _Overcharge:_ The faststone sets into standardstone overnight, creating a surface that lasts a century without maintenance.
 
 > [@sdm_magitecnica_codex_1, _p._ _22_]
 
@@ -739,51 +1002,77 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 <!-- Magitecnica Codex 1, Page 024 -->
 
-_Mother of Bullets_
+**Mother of Bullets**
 
-Blood Made Lead
+*Blood Made Lead*
 
-**P:** 1 **R:** touch **T:** anchor weapon **D:** instant Reloads your weapon as a free action, turning life force into semi-real projectiles. _Overcharge:_ the first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
+**P:** 1 **R:** touch
 
-_Dancing In The Hail_ Dodgebullet
+**T:** anchor weapon **D:** instant
 
-**P:** 1 **R:** self **T:** self **D:** one round
+> Reloads your weapon as a free action, turning life force into semi-real projectiles.
+> 
+> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
 
-Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage). _Overcharge:_ any ranged attacks that do hit only deal half damage.
+**Dancing In The Hail**
 
-_Ring of Lead_
+*Dodgebullet*
 
-Rapid Metal Spin Cycle
+**P:** 1 **R:** self
 
-**P:** 1 **R:** adjacent **T:** all creatures **D:** one action Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with a single action.
+**T:** self **D:** one round
 
- 
+> Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage).
+> 
+> _Overcharge:_ Any ranged attacks that hit deal half damage.
 
-_Overcharge:_ no attack roll required. *subject to how much ammunition their anchor weapon holds.
+**Ring of Lead**
 
-_Eyes of the Arrow_ Panoptic Projectile **P:** 1 **R:** touch **T:** one projectile **D:** a minute or so Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor). _Overcharge:_ the projectile maneuvers in flight with the agility of a dove.
+*Rapid Metal Spin Cycle*
 
-_Counterfire_ Panoptic Projectile
+**P:** 1 **R:** adjacent
 
-**P:** 1 **R:** a dozen meters **T:** one attack **D:** interrupt Deflect an incoming attack, melee or ranged, with a projectile. _Overcharge:_ the attacker must save or be disarmed.
+**T:** all creatures **D:** one action
 
-_Depleted Heavy Metal Rain_
+> Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
+> 
+> _Overcharge:_ No attack roll required. *subject to how much ammo the anchor weapon holds.
 
-Bigger Bang **P:** 1 **R:** touch **T:** anchor weapon **D:** a few minutes
+**Eyes of the Arrow**
 
-Imbue your next shot with an inertial error. Roll damage dice twice. The dice also become exploding (for example, as long as a d6 rolls sixes, keep rolling and adding up the total). _Overcharge:_ Roll damage dice thrice.
+*Panoptic Projectile*
 
-Ξ
+**P:** 1 **R:** touch
 
-_Manual Acquisition_ Noë thumbed through the plastic pages of the manual. None of this made any sense. She couldn’t use this old blaster turret. It was hooked right into the golem’s rattled mind. Well, she could override it, but that would be risky. The thing was leaking heat and gods knew what else.
+**T:** one projectile **D:** a minute or so
 
-The leathery nomad prodded her with her scavvie rifle, “go on, lock in. We paid good money for your frozen ass.”
+> Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor).
+> 
+> _Overcharge:_ The projectile maneuvers in flight with the agility of a dove.
 
-Thoughts stumbled. Frozen.  no.  yes. Sarcopsykter. Right, after the radiation wizard cleaned out the shatter-scatter. Bit of her mind felt like an empty tooth socket. The nomad prodded her again. Shit. She hoped they had a receipt. Needed to figure out what happened.
+**Counterfire**
 
-“Yes, yes, I’ll need a life source. A soul for the gun.”
+*Panoptic Projectile*
 
- 
+**P:** 1 **R:** a middling hemisphere, ~12m
+
+**T:** one attack **D:** interrupt
+
+> Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll.
+> 
+> _Overcharge:_ The attacker must save or be disarmed.
+
+**Depleted Heavy Metal Rain**
+
+*Bigger Bang*
+
+**P:** 1 **R:** touch
+
+**T:** anchor weapon **D:** a few minutes
+
+> Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
+> 
+> _Overcharge:_ Roll damage dice thrice.
 
 > [@sdm_magitecnica_codex_1, _p._ _24_]
 
@@ -793,33 +1082,87 @@ Thoughts stumbled. Frozen.  no.  yes. Sarcopsykter. Right, after the radiation w
 
 Powers implied in documents salvaged from the ends of existence. Fine scholars employed by the Institute of Industrial Accountability and Civilian Recycling (Purple Branch) have worked hard to recreate these powers for a modern audience. Not so much as an album, as a box of incomprehensible odds and terrible ends.
 
-_Can Trip_ Two Left Foot Curse, Clumsy Cat-astrophe **P:** 1 **R:** a few meters **T:** someone who can hear you **D:** instant
+**Can Trip**
 
-You wish someone sprawled and humbled and your muttered curse may make it so. The target’s shoelaces are suddenly undone or a stone or stick hops to trip them. They save or sprawl.
+*Two Left Feet Curse, Clumsy Cat-astrophe*
 
-_Overcharge:_ There’s no save. The target is tripping.
+**P:** 1 **R:** a few meters
 
-_Tragic Missile_
+**T:** someone who can hear you **D:** instant
 
-Antipersonal Guided Force Bolt, Cupid’s Cranial Penetrator
+> You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
+> 
+> _Overcharge:_ There’s no save. The target is tripping.
 
-**P:** 2 **R:** roughly 30–50m **T:** anything with a mind **D:** instant You visualize a channel connecting the local ambient energy fields with the soul-personality dyad of an entity you can see or imagine. Once you release your visualization, the energies fly into the nexus of that entity’s mindspace, like a noöspheric homing missile. The effect is quite painful, dealing 2d4 damage plus 1 damage for every level, charisma, aura, and thought point of the target. Yea, the stronger they are, the harder tragedy strikes. The missile leaves no mark. _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
+**Tragic Missile**
 
-_Hlod Person_
+*Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator*
 
-Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction **P:** 4 **R:** close **T:** a person **D:** 1 hour Wave your hand like the six-times folded frond and watch your target become as a log of wood. Hard, stiff, unmoving, receptive to carpentry. _Overcharge:_ The change is permanent.
+**P:** 2 **R:** middling, ~30–50m
 
-_Pyreball_ Instant Incendiary, Damora’s Placid Inferno
+**T:** anything with a mind and soul **D:** instant
 
-**P:** 6 **R:** touch, or as thrown **T:** 10m diameter **D:** a day, then instant You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6 damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day. _Overcharge:_ the ball deals 10d6 damage or its fires keep for a month.
+> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
+> 
+> _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
-_Nihil Est!_
+**Hlod Person**
 
-Life’s End Made Present, Hadi’s Self-Immolation Binding **P:** 8 **R:** touch **T:** a sentient target **D:** 1 year Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save. _Overcharge:_ you age seven years and a kilometer diameter sphere centered on your soul disappears into the nothing of wormspace for a year. Overcharge again to remain behind to watch the sphere disappear. _Dangerous:_ no matter how powerful you are, this spell imperils your existence.
+*Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction*
 
-_Big Wish_ Keep on Turning, Supplication of the Perverse Demiurge **P:** 18 **R:** self **T:** demiurge **D:** a day, then permanent. You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge will do its level best to misunderstand you, probably because it is an alien from out of time and space.
+**P:** 4 **R:** close
 
-The protective circle takes a day to draw, otherwise the spell could be dangerous. The summoning itself takes but three gestures and one shining, reflective object. _Overcharge:_ you get three wishes in a crystal chalice. Drink its sour liquid to summon your demiurge.
+**T:** a person **D:** 1 hour
+
+> Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff, unmoving, receptive to carpentry.
+> 
+> _Overcharge:_ The change is permanent.
+
+**Pyreball**
+
+*Instant Incendiary, Damora’s Placid Inferno*
+
+**P:** 6 **R:** touch, or as thrown
+
+**T:** 10m diameter sphere **D:** a day, then instant
+
+> You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6
+> damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
+> 
+> _Overcharge:_ The ball deals 10d6 damage, or its fires keep for a month.
+
+**Nihil Est!**
+
+*Life’s End Made Present, Hadi’s Self-Immolation Binding*
+
+**P:** 8 **R:** touch
+
+**T:** a sentient creature **D:** 1 year
+
+> Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
+> 
+> _Dangerous:_ No matter how powerful you are.
+> 
+> _Overcharge:_ You age seven years and a kilometer diameter sphere, centered on your soul, disappears into the nothing of wormspace for a year. Overcharge again to remain behind and watch the sphere disappear (please have some form of levitation ready).
+> [attribute:dangerous]
+
+**Big Wish**
+
+*Keep on Turning, Supplication of the Perverse Demiurge*
+
+**P:** 18 **R:** self
+
+**T:** demiurge **D:** a day, then permanent
+
+> You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge does its level best to misunderstand you, probably because it is an alien from out of time and space.
+> The protective circle takes a day to draw, or the power could be dangerous. The summoning itself takes but three gestures and one reflective object. Typical wishes (and perversions):
+> - "Bring my love back to life." — done, but now she loves another.
+> - "Take this cup away from me." — very well, let us give it to your nemesis.
+> - "Transport me to a safe place." — you are now in a bank vault, with none of your belongings.
+> - "Get us out of this frying pan!" — into the fire you go.
+> - "Is this power useless?" — well, it's mostly a joke.
+> 
+> _Overcharge:_ You get three wishes in a crystal chalice. Drink its sour liquid to summon your demiurge.
 
 > [@sdm_magitecnica_codex_1, _p._ _25_]
 

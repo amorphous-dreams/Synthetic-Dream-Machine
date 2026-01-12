@@ -1,8 +1,10 @@
-name: Deploy GitHub Pages (prod & preview)
+name: Deploy GitHub Pages (main only)
 
 on:
   push:
-    branches: ["main", "github-pages-test"]
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,54 +13,51 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      site-path: ${{ steps.upload.outputs.path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: "Build with Jekyll"
-        uses: actions/jekyll-build-pages@v1
-        # if your Jekyll source is in a subfolder, uncomment and set:
-        # with:
-        #   source: "./Synthetic_Dream_Machine"
-        #   destination: "./_site"
+      - name: Build with Jekyll
+        run: bundle exec jekyll build --config _config.yml --destination _site
 
       - name: "Quick smoke test: check site has HTML"
         run: |
-          # Fail if _site is missing or seems empty of .html files
           if [ ! -d "./_site" ]; then
             echo "_site missing"
             exit 1
           fi
-          shopt -s nullglob || true
-          html_count=$(find _site -type f -name '*.html' | wc -l || true)
+          html_count=$(find _site -type f -name '*.html' -print | wc -l)
           echo "Found ${html_count} HTML files"
-          if [ "${html_count}" -lt 1 ]; then
-            echo "No generated HTML files detected; failing build"
-            exit 1
-          fi
+          [ "${html_count}" -ge 1 ]
 
+      # Only upload the Pages artifact when we're actually going to deploy (push to main)
       - name: Upload artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
-        id: upload
         with:
           path: "./_site"
 
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'github-pages-preview' }}
+      name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages

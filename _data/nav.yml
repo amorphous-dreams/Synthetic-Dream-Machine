@@ -76,46 +76,43 @@ magitecnica:
       download: "/Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols_1-52.md"
 
 our_golden_age:
-  title: "Our Golden Age Preview"
+  title: "Our Golden Age"
   subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
-    - label: "SDM-Our Golden Age-Teaser 31 Going Places 1-6"
-      href: "/Our_Golden_Age/SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6/"
-      download: "/Our_Golden_Age/SDM-Our_Golden_Age-Teaser_31_Going_Places_1-6.md"
-    - label: "OGA 01 Title Contents 1-7"
-      href: "/Our_Golden_Age/OGA_01_Title_Contents_1-7/"
-      download: "/Our_Golden_Age/OGA_01_Title_Contents_1-7.md"
-    - label: "OGA 02 Summons Unexpected 8-39"
-      href: "/Our_Golden_Age/OGA_02_Summons_Unexpected_8-39/"
-      download: "/Our_Golden_Age/OGA_02_Summons_Unexpected_8-39.md"
-    - label: "OGA 03 This Hollow House 40-81"
-      href: "/Our_Golden_Age/OGA_03_This_Hollow_House_40-81/"
-      download: "/Our_Golden_Age/OGA_03_This_Hollow_House_40-81.md"
-    - label: "OGA 04 Blue Land 82-105"
-      href: "/Our_Golden_Age/OGA_04_Blue_Land_82-105/"
-      download: "/Our_Golden_Age/OGA_04_Blue_Land_82-105.md"
-    - label: "OGA 05 Purple Land 106-123"
-      href: "/Our_Golden_Age/OGA_05_Purple_Land_106-123/"
-      download: "/Our_Golden_Age/OGA_05_Purple_Land_106-123.md"
-    - label: "OGA 06 Red Land 124-155"
-      href: "/Our_Golden_Age/OGA_06_Red_Land_124-155/"
-      download: "/Our_Golden_Age/OGA_06_Red_Land_124-155.md"
-    - label: "OGA 07 Orange Land 156-179"
-      href: "/Our_Golden_Age/OGA_07_Orange_Land_156-179/"
-      download: "/Our_Golden_Age/OGA_07_Orange_Land_156-179.md"
-    - label: "OGA 08 Yellow Land 180-203"
-      href: "/Our_Golden_Age/OGA_08_Yellow_Land_180-203/"
-      download: "/Our_Golden_Age/OGA_08_Yellow_Land_180-203.md"
-    - label: "OGA 09 Green Land 204-223"
-      href: "/Our_Golden_Age/OGA_09_Green_Land_204-223/"
-      download: "/Our_Golden_Age/OGA_09_Green_Land_204-223.md"
-    - label: "OGA 10 Omega Jubilee 224-254"
-      href: "/Our_Golden_Age/OGA_10_Omega_Jubilee_224-254/"
-      download: "/Our_Golden_Age/OGA_10_Omega_Jubilee_224-254.md"
-    - label: "OGA 11 Index Outro 255-260"
-      href: "/Our_Golden_Age/OGA_11_Index_Outro_255-260/"
-      download: "/Our_Golden_Age/OGA_11_Index_Outro_255-260.md"
+    - label: "Our Golden Age 01 Title Contents 1-7"
+      href: "/Our_Golden_Age/Our_Golden_Age_01_Title_Contents_1-7/"
+      download: "/Our_Golden_Age/Our_Golden_Age_01_Title_Contents_1-7.md"
+    - label: "Our Golden Age 02 Summons Unexpected 8-39"
+      href: "/Our_Golden_Age/Our_Golden_Age_02_Summons_Unexpected_8-39/"
+      download: "/Our_Golden_Age/Our_Golden_Age_02_Summons_Unexpected_8-39.md"
+    - label: "Our Golden Age 03 This Hollow House 40-81"
+      href: "/Our_Golden_Age/Our_Golden_Age_03_This_Hollow_House_40-81/"
+      download: "/Our_Golden_Age/Our_Golden_Age_03_This_Hollow_House_40-81.md"
+    - label: "Our Golden Age 04 Blue Land 82-105"
+      href: "/Our_Golden_Age/Our_Golden_Age_04_Blue_Land_82-105/"
+      download: "/Our_Golden_Age/Our_Golden_Age_04_Blue_Land_82-105.md"
+    - label: "Our Golden Age 05 Purple Land 106-123"
+      href: "/Our_Golden_Age/Our_Golden_Age_05_Purple_Land_106-123/"
+      download: "/Our_Golden_Age/Our_Golden_Age_05_Purple_Land_106-123.md"
+    - label: "Our Golden Age 06 Red Land 124-155"
+      href: "/Our_Golden_Age/Our_Golden_Age_06_Red_Land_124-155/"
+      download: "/Our_Golden_Age/Our_Golden_Age_06_Red_Land_124-155.md"
+    - label: "Our Golden Age 07 Orange Land 156-179"
+      href: "/Our_Golden_Age/Our_Golden_Age_07_Orange_Land_156-179/"
+      download: "/Our_Golden_Age/Our_Golden_Age_07_Orange_Land_156-179.md"
+    - label: "Our Golden Age 08 Yellow Land 180-203"
+      href: "/Our_Golden_Age/Our_Golden_Age_08_Yellow_Land_180-203/"
+      download: "/Our_Golden_Age/Our_Golden_Age_08_Yellow_Land_180-203.md"
+    - label: "Our Golden Age 09 Green Land 204-223"
+      href: "/Our_Golden_Age/Our_Golden_Age_09_Green_Land_204-223/"
+      download: "/Our_Golden_Age/Our_Golden_Age_09_Green_Land_204-223.md"
+    - label: "Our Golden Age 10 Omega Jubilee 224-254"
+      href: "/Our_Golden_Age/Our_Golden_Age_10_Omega_Jubilee_224-254/"
+      download: "/Our_Golden_Age/Our_Golden_Age_10_Omega_Jubilee_224-254.md"
+    - label: "Our Golden Age 11 Index Outro 255-260"
+      href: "/Our_Golden_Age/Our_Golden_Age_11_Index_Outro_255-260/"
+      download: "/Our_Golden_Age/Our_Golden_Age_11_Index_Outro_255-260.md"
 
 
 synthetic_dream_machine:
@@ -123,13 +120,17 @@ synthetic_dream_machine:
   subtitle: "Table of contents for this archive node. Select a chapter to open, select an icon-link to download the markdown source."
   return_href: "../"
   chapters:
-    - label: "Synthetic Dream Machine 01 Traits Index"
-      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Traits_Index/"
-      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Traits_Index.md"
+    - label: "Synthetic Dream Machine 01 Paths Index"
+      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/"
+      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index.md"
 
-    - label: "Synthetic Dream Machine 02 Powers Index"
-      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Powers_Index/"
-      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Powers_Index.md"
+    - label: "Synthetic Dream Machine 02 Traits Index"
+      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Traits_Index/"
+      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Traits_Index.md"
+
+    - label: "Synthetic Dream Machine 03 Powers Index"
+      href: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/"
+      download: "/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index.md"
 
 uvg_black_city:
   title: "UVG Black City 2e"
@@ -203,33 +204,76 @@ vastlands_guidebook:
 
 root:
   title: "Synthetic Dream Machine"
-  subtitle: "A navigational console for the SDM constellation: rules, references, and setting fragments anchored to this repository. Choose a vault to continue."
+  subtitle: "A navigational console for the SDM constellation, choose a vault to continue. The archive Lares are listening..."
   return_href: "https://github.com/joshuafontany/Synthetic-Dream-Machine"
-  ftls_vaults: &ftls_vaults
-    - label: "Elyncia"
-      href: "/Elyncia/"
+  ftls_directory_link: &ftls_directory_link
+    label: "Directory"
+    href: "/Vaults/FTLS/"
 
-    - label: "Flying Triremes and Laser Swords"
-      href: "/Flying_Triremes_and_Laser_Swords/"
+  ftls_elyncia_link: &ftls_elyncia_link
+    label: "Elyncia"
+    href: "/Elyncia/"
+
+  ftls_triremes_link: &ftls_triremes_link
+    label: "Flying Triremes and Laser Swords"
+    href: "/Flying_Triremes_and_Laser_Swords/"
+
+  ftls_vaults: &ftls_vaults
+    - *ftls_elyncia_link
+    - *ftls_triremes_link
+
+  ftls_header_links: &ftls_header_links
+    - *ftls_directory_link
+    - *ftls_elyncia_link
+    - *ftls_triremes_link
+
+  sdm_directory_link: &sdm_directory_link
+    label: "Directory"
+    href: "/Vaults/SDM/"
+
+  sdm_sdm_link: &sdm_sdm_link
+    label: "Synthetic Dream Machine"
+    href: "/Synthetic_Dream_Machine/"
+
+  sdm_oga_link: &sdm_oga_link
+    label: "Our Golden Age"
+    href: "/Our_Golden_Age/"
+
+  sdm_vastlands_link: &sdm_vastlands_link
+    label: "Vastlands Guidebook"
+    href: "/Vastlands_Guidebook/"
+
+  sdm_uvg_link: &sdm_uvg_link
+    label: "UVG Black City 2e"
+    href: "/UVG_Black_City_2e/"
+
+  sdm_magitecnica_link: &sdm_magitecnica_link
+    label: "Magitecnica"
+    href: "/Magitecnica/"
 
   sdm_vaults: &sdm_vaults
-    - label: "Synthetic Dream Machine"
-      href: "/Synthetic_Dream_Machine/"
+    - *sdm_sdm_link
+    - *sdm_oga_link
+    - *sdm_vastlands_link
+    - *sdm_uvg_link
+    - *sdm_magitecnica_link
 
-    - label: "Our Golden Age"
-      href: "/Our_Golden_Age/"
+  sdm_header_links: &sdm_header_links
+    - *sdm_directory_link
+    - *sdm_sdm_link
+    - *sdm_oga_link
+    - *sdm_vastlands_link
+    - *sdm_uvg_link
+    - *sdm_magitecnica_link
 
-
-    - label: "Vastlands Guidebook"
-      href: "/Vastlands_Guidebook/"
-
-    - label: "UVG Black City 2e"
-      href: "/UVG_Black_City_2e/"
-
-    - label: "Magitecnica"
-      href: "/Magitecnica/"
+  campaigns_directory_link: &campaigns_directory_link
+    label: "Directory"
+    href: "/Vaults/Campaigns/"
 
   campaigns_vaults: &campaigns_vaults []
+
+  campaigns_header_links: &campaigns_header_links
+    - *campaigns_directory_link
 
   reference: &reference_links
     - label: "Third-Party License"
@@ -246,6 +290,16 @@ root:
       target: "_blank"
       rel: "noopener"
 
+  vault_sections: &vault_sections
+    - label: "FTLS Vaults"
+      href: "/Vaults/FTLS/"
+
+    - label: "SDM Vaults"
+      href: "/Vaults/SDM/"
+
+    - label: "Campaign Vaults"
+      href: "/Vaults/Campaigns/"
+
 ftls_parent: &ftls_parent
   label: "FTLS Vaults"
   href: "/Vaults/FTLS/"
@@ -256,37 +310,20 @@ campaigns_parent: &campaigns_parent
   label: "Campaign Vaults"
   href: "/Vaults/Campaigns/"
 
-vault_sections: &vault_sections
-  - label: "FTLS Vaults"
-    href: "/Vaults/FTLS/"
-
-  - label: "SDM Vaults"
-    href: "/Vaults/SDM/"
-
-  - label: "Campaign Vaults"
-    href: "/Vaults/Campaigns/"
-
-vaults_block: &vaults_block
-  parent:
-    label: "Vaults"
-    href: "/Vaults/"
-  links: *vault_sections
-
 ftls_block: &ftls_block
   parent: *ftls_parent
-  links: *ftls_vaults
+  links: *ftls_header_links
 
 sdm_block: &sdm_block
   parent: *sdm_parent
-  links: *sdm_vaults
+  links: *sdm_header_links
 
 campaigns_block: &campaigns_block
   parent: *campaigns_parent
-  links: *campaigns_vaults
+  links: *campaigns_header_links
 
 contexts:
   root: &root_context
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -295,7 +332,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   ftls:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -304,7 +340,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   sdm:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -313,7 +348,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   docs:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -322,7 +356,6 @@ contexts:
         href: "/docs/"
       links: *reference_links
   elyncia:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block
@@ -331,7 +364,6 @@ contexts:
         href: "/Elyncia/"
       links: *elyncia_chapters
   campaigns:
-    - *vaults_block
     - *ftls_block
     - *sdm_block
     - *campaigns_block

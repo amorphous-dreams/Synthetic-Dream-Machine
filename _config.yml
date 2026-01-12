@@ -5,6 +5,7 @@ kramdown:
   hard_wrap: false
 plugins:
   - jekyll-optional-front-matter
+  - jekyll-relative-links
 source: .
 include: [".htaccess", "Synthetic-Dream-Machine-3rd-Party-License.md"]
 exclude:
@@ -14,6 +15,7 @@ exclude:
   - .venv/**
   - vendor
   - vendor/**
+  - Markdown.md
   - AGENTS.md
   - Lares_A_CustomGPT_System_Prompt.md
   - Campaigns

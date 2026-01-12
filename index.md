@@ -1,6 +1,6 @@
 ---
 title: Synthetic Dream Machine
-subtitle: "A navigational console for the SDM constellation: rules, references, and setting fragments. Choose a vault to continue. The archive Lares are listening..."
+subtitle: "A navigational console for the SDM constellation, choose a vault to continue. The archive Lares are listening..."
 layout: default
 body_class: dashboard
 ---

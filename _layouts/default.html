@@ -10,13 +10,13 @@
 
   <!-- Site-wide (Gruvbox variables + header/footer/layout) -->
   <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}" />
-
   <!-- GitHub Markdown overrides: Gruvbox Dark -->
   <link rel="stylesheet" href="{{ '/assets/css/github-markdown-gruvbox.css' | relative_url }}" />
 
   {% if page.body_class contains 'book-chapter' %}
     <link rel="stylesheet" href="{{ '/assets/css/book-theme.css' | relative_url }}" />
   {% endif %}
+  <link rel="stylesheet" href="{{ '/assets/css/sdm-theme.css' | relative_url }}" />
 
   <meta name="color-scheme" content="dark light">
 </head>
@@ -92,8 +92,9 @@
             {% endif %}
             {% assign parent_href_norm = parent_href | downcase %}
             <div class="header-link-group">
-              <a class="header-link header-link-parent"
-                 href="{{ parent_href }}"
+              <a class="header-link header-link-parent header-link-parent-navigate"
+                 role="button"
+                 href="#"
                  aria-haspopup="true"
                  {% if parent_href_norm == request_url_norm %}aria-current="page"{% endif %}>
                 {{ parent_label }}
@@ -135,5 +136,53 @@
   <footer>
     {{ site.title | default: "Synthetic Dream Machine" }} — The archive Lares are listening...
   </footer>
+  <script>
+  /* Lares: Back-link behavior
+     - Targets <a class="js-back-link" href="/path/to/toc/#anchor">
+     - Calls history.back() when safe (same-origin referrer OR plausible history),
+       otherwise lets the link follow its href (TOC fallback).
+  */
+  (function () {
+    function initBackLinks() {
+      var links = document.querySelectorAll('a.js-back-link');
+      if (!links || !links.length) return;
+
+      links.forEach(function (a) {
+        if (a.__back_link_attached) return;
+        a.__back_link_attached = true;
+
+        a.addEventListener('click', function (ev) {
+          try {
+            var ref = document.referrer || '';
+            var sameOriginRef = false;
+            if (ref) {
+              try { sameOriginRef = (new URL(ref)).origin === location.origin; } catch (e) { sameOriginRef = false; }
+            }
+
+            if (sameOriginRef) {
+              ev.preventDefault();
+              history.back();
+              return;
+            }
+
+            if (!ref && history.length > 1) {
+              ev.preventDefault();
+              history.back();
+              return;
+            }
+          } catch (err) {
+            return;
+          }
+        });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBackLinks);
+    } else {
+      initBackLinks();
+    }
+  })();
+  </script>
 </body>
 </html>
