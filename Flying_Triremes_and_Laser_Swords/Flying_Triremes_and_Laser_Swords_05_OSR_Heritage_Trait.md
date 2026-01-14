@@ -2,25 +2,25 @@
 
 # Heritage (Trait)
 
-Heritage is a birthright, lineage, construction, or mythic origin that shapes how you exist in the world. It grants fictional positioning, esoteric permissions, and a small package of concrete effects. Choose a heritage descriptor (e.g. Goblin Folk, Awakened Golem, Deathless Revenant, Star-Marked Human). This descriptor defines what kinds of lore, rituals, environments, and effects naturally apply to you. In Flying Triremes and Laser Swords games, Heritage is free at character creation.
+Heritage is a birthright, lineage, construction, or mythic origin that shapes how you exist in the world. It grants fictional positioning, esoteric permissions, and a small package of concrete effects. Choose a heritage descriptor (e.g. Goblin Folk, Awakened Golem, Deathless Revenant, Star-Marked Human). This descriptor defines what kinds of lore, rituals, environments, and effects naturally apply to you. In Flying Triremes and Laser Swords games, Heritage is free at character creation and does not occupy a Trait Inventory slot. draw a "Heritage" box on your character sheet:
 
-**Skilled**: +3 to heritage-related lore and research. Choose three Heritage effects.
+**Skilled**: +3 to heritage-related lore and research. Three Heritage effects.
 
-**Expert**: +6 to heritage-related lore. Choose four Heritage effects.
+**Expert**: +6 to heritage-related lore. Four Heritage effects.
 
-**Master**: +9 to heritage-related lore. Choose five Heritage effects.
+**Master**: +9 to heritage-related lore. Five Heritage effects.
 
 Heritage effects are selected from the Heritage Effects Catalog. Effects may grant resistances, needs (or lack thereof), senses, movement modes, immunities, taboos, upkeep requirements, or other non-class advantages and obligations.
 
 Notes:
 
-- Heritage is free at character creation and occupies 1 Trait slot.
+- Heritage is free at character creation and does not occupy a Trait Invenotry slot.
 - Heritage effects may impose costs, maintenance, or vulnerabilities; these are part of the bargain.
-- When in doubt, Heritage defines what is normal for you and what requires no roll.
+- When in doubt, Heritage and Backgrounds define what your compentencies are and what may require no roll (referee call).
 
 ### Marking Your Heritage Trait
 
-Some Heritage effects have special rules, including marking the trait in order to activate certain abilities. You may not mark this trait if it is already marked. Unmark your Heritage trait by resting for one watch (4 hours), resting for 10 minutes and spending 1 Life, or resting for one action and taking 1 Ability damage.
+Some Heritage effects have special rules, including marking the trait in order to activate certain abilities (place a mark or check next to the JHeritage box on your character sheet). You may not mark this trait if it is already marked. Unmark your Heritage by resting for one watch (4 hours), resting for 10 minutes and spending 1 Life, or resting for one action and taking 1 Ability damage.
 
 ## Heritage Table of Contents
 

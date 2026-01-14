@@ -275,7 +275,7 @@ Effect:
 # Heritage Design Template
 
 **Purpose**  
-A *Heritage* represents cultural and mythic resonance—not species biology. It is the invisible backpack of inherited weirdness that shapes customs, taboos, and play style. Each heritage provides a ready-to-play OSR archetype, built from modular *Heritage Effects* drawn from the shared catalogue. Players begin with one free Heritage Trait (it occupies a normal Trait slot). Upgrading to Expert and Master costs XP or quest completion per SDM rules.
+A *Heritage* represents cultural and mythic resonance—not species biology. It is the invisible backpack of inherited weirdness that shapes customs, taboos, and play style. Each heritage provides a ready-to-play OSR archetype, built from modular *Heritage Effects* drawn from the shared catalogue. Players begin with one free Heritage Trait (it does not occupy a normal Trait slot). Upgrading to Expert and Master costs XP or quest completion per SDM rules.
 
 ### **Heritage Format**
 

@@ -57,7 +57,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
   * Assign **7 ability score points** (max 5 for now), **OR**  
   * Roll a flavor tag & ability array on the d100 table (VLG p.12).  
 * **Traits at Level 0:** Background \+ one extra trait.  
-* **Heritage Trait:** A gift from the goddess (Elyncia/FTLS).  
+* **Heritage Trait:** A gift from the goddess (Elyncia/FTLS). Does not take a Trait Inventory slot.  
 * **Starting Gear:**  
   * Level 1: strange item (VLG p.22), quantum gear kit (p.23), €100.  
   * Level 0: no strange item, only €50.  
