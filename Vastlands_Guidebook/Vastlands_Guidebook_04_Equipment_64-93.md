@@ -40,7 +40,7 @@ Season to taste.
 
 **Typical Use**
 
-Sometimes, improvisation is not enough. For those situation, standard equipment attributes come into play. The following five are mechanics may see a lot of use:
+Sometimes, improvisation is not enough. For those situations, standard equipment attributes come into play. The following five are mechanics may see a lot of use:
 
 1. **Size.** Each ready item occupies at least one stone (1 st) of inventory. Packed items can occupy less space. Most PCs can carry at least 7 stones of gear without penalty. Stronger PCs can carry more. 2. **Damage.** If combat breaks out, many items can serve as improvised weapons. A small personal weapon like a knife deals 1d4 damage, a civilian weapon like a fire axe deals 1d6 damage, and a military weapon like a lance deals 1d8 damage. Fragile items break after they hit. Clumsy items impose a penalty to attack rolls.
 

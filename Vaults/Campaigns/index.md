@@ -10,6 +10,8 @@ header_nav_context: campaigns
 This archive is currently cataloguing campaign drafts. Check back once the vault has material.
 {% endif %}
 
+Visit the [Campaign Vaults directory](/Campaigns/) for a narrative overview before diving into the individual nodes.
+
 {% include nav-dashboard.html
   heading="Campaign Vaults"
   items=site.data.nav.root.campaigns_vaults

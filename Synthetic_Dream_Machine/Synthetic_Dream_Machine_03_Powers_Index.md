@@ -2640,7 +2640,7 @@ meta:
 > **P:** 4 **R:** touch
 >
 > **T:** self **D:** imbued
-
+>
 > You adopt the physical form of a roughly human-sized creature (say dogsized to horse-sized) you are familiar with and whose symbolic representation you own. This could be a tiger tattoo or a dodo doll. The transformation takes several minutes.
 >
 > Your physical abilities and traits transform to match the target. You lose access to traits that do not work in the new form. For example, a hog cannot speak, so neither can you if you shift into a hog.
@@ -2650,7 +2650,7 @@ meta:
 > _Note:_ if you are carrying the prepared skin of your chosen form, the power cost is halved and the transformation takes mere seconds.
 >
 >
-> _Overcharge:_ Shift into much smaller (shrew-sized) or larger (mammothsized) forms.
+> _Overcharge:_ Shift into much smaller (shrew-sized) or larger (mammoth-sized) forms.
 >
 > _Again (x4):_ Into any form, from a mite to a mighty airwhale.
 

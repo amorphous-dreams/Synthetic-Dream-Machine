@@ -1168,7 +1168,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Note:_ if you are carrying the prepared skin of your chosen form, the power cost is halved and the transformation takes mere seconds.
 > 
-> _Overcharge:_ Shift into much smaller (shrew-sized) or larger (mammothsized) forms.
+> _Overcharge:_ Shift into much smaller (shrew-sized) or larger (mammoth-sized) forms.
 > 
 > _Again (x4):_ Into any form, from a mite to a mighty airwhale.
 
