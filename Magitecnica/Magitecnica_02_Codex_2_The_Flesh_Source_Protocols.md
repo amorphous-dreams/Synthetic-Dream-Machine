@@ -1,8 +1,6 @@
-<!-- Magitecnica Codex 2, Page 001 -->
+<a name="page_0001"></a>
 
-> [@sdm_magitecnica_codex_2, _p._ _1_]
-
-<!-- Magitecnica Codex 2, Page 002 -->
+<a name="page_0002"></a>
 
 ##### **WORK IN PROGRESS**
 
@@ -19,9 +17,7 @@ The heroes of the Stratometaship made this zine possible. Thank you. _“Let us 
 February 2024 [https://patreon.com/wizardthiefighter f](https://patreon.com/wizardthieffighter)
 
 
-> [@sdm_magitecnica_codex_2, _p._ _2_]
-
-<!-- Magitecnica Codex 2, Page 003 -->
+<a name="page_0003"></a>
 
 #### _Magitecnica_
 
@@ -35,9 +31,7 @@ February 2024 [https://patreon.com/wizardthiefighter f](https://patreon.com/wiza
 Art and writing ©2024 Luka Rejec
 
 
-> [@sdm_magitecnica_codex_2, _p._ _3_]
-
-<!-- Magitecnica Codex 2, Page 004 -->
+<a name="page_0004"></a>
 
 _WORK IN PROGRESS_ _2_
 
@@ -63,9 +57,7 @@ _Anne Astec_ _37_ _Burden Share_ _37_ _Metempsychosis_ _38_ _Open Person_ _39_ _
 
 The Awakened Sphere 41 _Awakened Sphere Traits_ _42_ _Eategrate_ _45_ _Bloodsong_ _46_ _Manybodied_ _47_ _Skinshift_ _48_ _SkinSplit_ _49_ _Skinwyrd_ _50_ _Ecosphere Attunement_ _51_ _Ecosphere Veil_ _51_ _Ecosphere Immersion_ _52_
 
-> [@sdm_magitecnica_codex_2, _p._ _4_]
-
-<!-- Magitecnica Codex 2, Page 005 -->
+<a name="page_0005"></a>
 
 ## **BIOMANCY**
 
@@ -75,9 +67,7 @@ Apologia (Bazili 4-chrysogenes, editor).
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _5_]
-
-<!-- Magitecnica Codex 2, Page 006 -->
+<a name="page_0006"></a>
 
 ##### **THE BLOOD MUSE**
 
@@ -104,9 +94,7 @@ Fleshsculptor, hiuri hwers, peestmacher, razumorti, relifer, seitas, sorselor, v
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _6_]
-
-<!-- Magitecnica Codex 2, Page 007 -->
+<a name="page_0007"></a>
 
 ##### **BIOMANTIC POWERS**
 
@@ -130,9 +118,7 @@ Many biomantic powers may cause:
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _7_]
-
-<!-- Magitecnica Codex 2, Page 008 -->
+<a name="page_0008"></a>
 
 **Beast Egg Mass**
 
@@ -154,9 +140,7 @@ Traditional uses of bém:
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _8_]
-
-<!-- Magitecnica Codex 2, Page 009 -->
+<a name="page_0009"></a>
 
 ### **USHA’S WILD RIDE**
 
@@ -182,9 +166,7 @@ We don’t know who Usha was or even if she really existed. Based on a reading o
 > 
 > _Overcharge:_ the target automatically fails its save and immediately suffers 4d6* damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody’s control.
 
-> [@sdm_magitecnica_codex_2, _p._ _9_]
-
-<!-- Magitecnica Codex 2, Page 010 -->
+<a name="page_0010"></a>
 
 **The Flesh Horror**
 
@@ -200,9 +182,7 @@ Special: After (d4: (1) a few minutes, (2–3) a few hours, (4) a few days) the 
 
 Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), (4–5) an organic blade tougher than steel (1d8 damage, €100), (6) an empty mind pearl (€250).
 
-> [@sdm_magitecnica_codex_2, _p._ _10_]
-
-<!-- Magitecnica Codex 2, Page 011 -->
+<a name="page_0011"></a>
 
 ##### **USHA’S CHAOS TRIGGER**
 
@@ -225,9 +205,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ You get to choose the mutation. Dangerous.
 
-> [@sdm_magitecnica_codex_2, _p._ _11_]
-
-<!-- Magitecnica Codex 2, Page 012 -->
+<a name="page_0012"></a>
 
 ##### **USHA’S UPLIFT**
 
@@ -274,18 +252,14 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 16–19 | Obsequious. Convinced the creator is a deity who understands all.
 > 20≤ | Understands you’re not so different. It’s mortals all the way down.
 
-> [@sdm_magitecnica_codex_2, _p._ _12_]
-
-<!-- Magitecnica Codex 2, Page 013 -->
+<a name="page_0013"></a>
 
 8–12 Confused. Desperately seeking meaning and purpose. 13 Disdainful of creator. Convinced it will discover, better truth. 14–15 Numb with shock of understanding. 16–19 Obsequious. Convinced the creator is a deity who understands all. 20≤ Understands you’re not so different. It’s mortals all the way down.
 
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _13_]
-
-<!-- Magitecnica Codex 2, Page 014 -->
+<a name="page_0014"></a>
 
 ##### **USHA’S CHIMERA SPLICE**
 
@@ -319,9 +293,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The chimera gains an additional trait from each original creature.
 
-> [@sdm_magitecnica_codex_2, _p._ _14_]
-
-<!-- Magitecnica Codex 2, Page 015 -->
+<a name="page_0015"></a>
 
 ##### **USHA’S XENOGRAFT**
 
@@ -358,17 +330,13 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The procedure takes less than an hour. It is very dangerous for the experimental subject.
 
-> [@sdm_magitecnica_codex_2, _p._ _15_]
-
-<!-- Magitecnica Codex 2, Page 016 -->
+<a name="page_0016"></a>
 
 4. Chitin Lepidote. Exoskeletal segments grafted across the body (+2 armor) with delicate sensillae providing fine sense of vibrations as well as moving air and water currents. Reduce charisma by 1d2. 5. Feline Sinews. Increased balance (+1 agility), more graceful movement (+1 charisma), and quicker reflexes (+1 initiative). Very illegal in any cat-friendly lands. Death penalty in the Purple Land. 6. Warhog Guts. Digestive tract designed grind and drain nutrients out of the poorest foodstuffs: bones, dead leaves, dry wood, old leather. Also, near-immunity to ingested poisons and toxins.
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _16_]
-
-<!-- Magitecnica Codex 2, Page 017 -->
+<a name="page_0017"></a>
 
 ##### **USHA’S REPLICATOR STRAND**
 
@@ -386,9 +354,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Watch a stone’s worth of tissue grow to sack-sized in one hour. The growth deals 4d4* damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
 
-> [@sdm_magitecnica_codex_2, _p._ _17_]
-
-<!-- Magitecnica Codex 2, Page 018 -->
+<a name="page_0018"></a>
 
 ##### **USHA’S SWIFT REBUILD**
 
@@ -421,9 +387,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Regrow a critical organ or bodily system, like the digestive or circulatory system. These cannot be safely removed.
 
-> [@sdm_magitecnica_codex_2, _p._ _18_]
-
-<!-- Magitecnica Codex 2, Page 019 -->
+<a name="page_0019"></a>
 
 ### **REHORYAN’S BLOOD CANTICLE**
 
@@ -443,9 +407,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The attunement takes mere seconds. Or: you may listen for the biohistory of a dead organism or part thereof.
 
-> [@sdm_magitecnica_codex_2, _p._ _19_]
-
-<!-- Magitecnica Codex 2, Page 020 -->
+<a name="page_0020"></a>
 
 ##### **REHORYAN’S VIVID REGRESSION**
 
@@ -467,9 +429,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The spell is not dangerous to the target, it suffers no stress damage, and it gets a bonus to save its original traits.
 
-> [@sdm_magitecnica_codex_2, _p._ _20_]
-
-<!-- Magitecnica Codex 2, Page 021 -->
+<a name="page_0021"></a>
 
 ##### **REHORYAN’S PROGRESSIVE RESTORATION**
 
@@ -497,9 +457,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Regenerate for 10 more rounds.
 
-> [@sdm_magitecnica_codex_2, _p._ _21_]
-
-<!-- Magitecnica Codex 2, Page 022 -->
+<a name="page_0022"></a>
 
 ##### **REHORYAN’S PROPHETIC SONG**
 
@@ -523,9 +481,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Disabled for this power by order Magenta-cantaloupe-3.
 
-> [@sdm_magitecnica_codex_2, _p._ _22_]
-
-<!-- Magitecnica Codex 2, Page 023 -->
+<a name="page_0023"></a>
 
 ##### **REHORYAN’S PROPHETIC SONG 2**
 
@@ -547,9 +503,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ none
 
-> [@sdm_magitecnica_codex_2, _p._ _23_]
-
-<!-- Magitecnica Codex 2, Page 024 -->
+<a name="page_0024"></a>
 
 ### **SIATO RUNO’S XENON GENESIS**
 
@@ -572,9 +526,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Again (x4):_ Make the process 1,000 times faster or slower. Very dangerous for the target.
 
-> [@sdm_magitecnica_codex_2, _p._ _24_]
-
-<!-- Magitecnica Codex 2, Page 025 -->
+<a name="page_0025"></a>
 
 ##### **RUNO’S PARTHENOGENIC CRADLE**
 
@@ -594,9 +546,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Warning:_ Once hatched, the bodies and consciousness of new organisms may display unpredictable aberrations from the forced growth. Siato Runo LLC is not liable for any teratogenous disasters caused by careless parthenogenesis.
 
-> [@sdm_magitecnica_codex_2, _p._ _25_]
-
-<!-- Magitecnica Codex 2, Page 026 -->
+<a name="page_0026"></a>
 
 ##### **RUNO’S PARTHENOGENIC POUCH**
 
@@ -614,9 +564,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Synergy:_ Combine with _Runo’s Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
 
-> [@sdm_magitecnica_codex_2, _p._ _26_]
-
-<!-- Magitecnica Codex 2, Page 027 -->
+<a name="page_0027"></a>
 
 ##### **RUNO’S ONTOGENIC EDITOR**
 
@@ -645,9 +593,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Overcharge:_ The organism is altered to twice (or half) the normal extreme of the species. So, twice or half the size, for example. This is dangerous for the organism.
 
-> [@sdm_magitecnica_codex_2, _p._ _27_]
-
-<!-- Magitecnica Codex 2, Page 028 -->
+<a name="page_0028"></a>
 
 ### **NUNKA’S AUTOMORPH**
 
@@ -665,9 +611,7 @@ Violet City Scale Library
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _28_]
-
-<!-- Magitecnica Codex 2, Page 029 -->
+<a name="page_0029"></a>
 
 ##### **NUNKA’S WEAPON MORPH**
 
@@ -691,9 +635,7 @@ Violet City Scale Library
 > 
 > _Overcharge:_ The weapons erupt instantly in a traumatic burst dealing 1d6* damage.
 
-> [@sdm_magitecnica_codex_2, _p._ _29_]
-
-<!-- Magitecnica Codex 2, Page 030 -->
+<a name="page_0030"></a>
 
 ##### **NUNKA’S EPIDERMAL SCULPT**
 
@@ -742,9 +684,7 @@ Violet City Scale Library
 > 
 > _Overcharge:_ The growths develop instantly, dealing 1d6* damage.
 
-> [@sdm_magitecnica_codex_2, _p._ _30_]
-
-<!-- Magitecnica Codex 2, Page 031 -->
+<a name="page_0031"></a>
 
 ≤1 Sculpt fails. Victim exposed to severe corruption. fail Sculpt succeeds. Patient exposed to moderate corruption. success Sculpt succeeds. nat. 20 Excellent sculpt. Increase bonus by 1 or reduce slots occupied by 1 (minimum 1).
 
@@ -753,9 +693,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _31_]
-
-<!-- Magitecnica Codex 2, Page 032 -->
+<a name="page_0032"></a>
 
 ##### **NUNKA’S BIOPHYSICAL OVERDRIVE**
 
@@ -771,9 +709,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 > 
 > _Again (x4):_ The target gains 6 more points to assign. When the overdrive fades, besides the exhaustion and damage, the target must save or die.
 
-> [@sdm_magitecnica_codex_2, _p._ _32_]
-
-<!-- Magitecnica Codex 2, Page 033 -->
+<a name="page_0033"></a>
 
 ##### **NUNKA’S SPITTING SYMBIOTE**
 
@@ -797,9 +733,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 > 
 > _Overcharge:_ a perfected integration means the symbiote regrows after a single full round if the host spends 1d4 life.
 
-> [@sdm_magitecnica_codex_2, _p._ _33_]
-
-<!-- Magitecnica Codex 2, Page 034 -->
+<a name="page_0034"></a>
 
 ### **ARKHIATRY CLASSICS**
 
@@ -825,9 +759,7 @@ _Mediwizards_, Emerald University Press, Metropolis, YPC.
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _34_]
-
-<!-- Magitecnica Codex 2, Page 035 -->
+<a name="page_0035"></a>
 
 ##### **THE MEDIMAGIC OF THE EVERLIVING**
 
@@ -845,9 +777,7 @@ When that society [section missing] the many iatric clans were scattered and bro
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _35_]
-
-<!-- Magitecnica Codex 2, Page 036 -->
+<a name="page_0036"></a>
 
 ##### **GREAT HEALER TRAITS**
 
@@ -870,9 +800,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _36_]
-
-<!-- Magitecnica Codex 2, Page 037 -->
+<a name="page_0037"></a>
 
 ##### **ANNE ASTEC**
 
@@ -898,9 +826,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ The ritual takes several minutes, but inflicts 1d4 damage to each of the parties.
 
-> [@sdm_magitecnica_codex_2, _p._ _37_]
-
-<!-- Magitecnica Codex 2, Page 038 -->
+<a name="page_0038"></a>
 
 ##### **METEMPSYCHOSIS**
 
@@ -921,9 +847,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ Attempt to overwrite the mind of a non-compliant host.
 
-> [@sdm_magitecnica_codex_2, _p._ _38_]
-
-<!-- Magitecnica Codex 2, Page 039 -->
+<a name="page_0039"></a>
 
 ##### **OPEN PERSON**
 
@@ -963,9 +887,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ Restore a creature to its state of six years earlier.
 
-> [@sdm_magitecnica_codex_2, _p._ _39_]
-
-<!-- Magitecnica Codex 2, Page 040 -->
+<a name="page_0040"></a>
 
 ##### **REAL-TIME REBUILD**
 
@@ -993,9 +915,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ Restore an additional attribute or lift a second burden. Alternatively, reduce the duration of the slumber three-fold.
 
-> [@sdm_magitecnica_codex_2, _p._ _40_]
-
-<!-- Magitecnica Codex 2, Page 041 -->
+<a name="page_0041"></a>
 
 ### **THE AWAKENED SPHERE**
 
@@ -1012,9 +932,7 @@ Chrysalist, dog-in, hédeōs, metassia, noömantikoï, skinchanger, yedyayin, zu
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _41_]
-
-<!-- Magitecnica Codex 2, Page 042 -->
+<a name="page_0042"></a>
 
 ##### **AWAKENED SPHERE TRAITS**
 
@@ -1032,9 +950,7 @@ Chrysalist, dog-in, hédeōs, metassia, noömantikoï, skinchanger, yedyayin, zu
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _42_]
-
-<!-- Magitecnica Codex 2, Page 043 -->
+<a name="page_0043"></a>
 
 **Awakened Sphere Features**
 
@@ -1052,9 +968,7 @@ Some awakened powers may cause:
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _43_]
-
-<!-- Magitecnica Codex 2, Page 044 -->
+<a name="page_0044"></a>
 
 **Organic Inscription**
 
@@ -1082,9 +996,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 
 
-> [@sdm_magitecnica_codex_2, _p._ _44_]
-
-<!-- Magitecnica Codex 2, Page 045 -->
+<a name="page_0045"></a>
 
 ##### **EATEGRATE**
 
@@ -1110,9 +1022,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You can manifest a semi-magical trait, like the breath of a dragon or the death glare of a unicorn.
 
-> [@sdm_magitecnica_codex_2, _p._ _45_]
-
-<!-- Magitecnica Codex 2, Page 046 -->
+<a name="page_0046"></a>
 
 ##### **BLOODSONG**
 
@@ -1128,9 +1038,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You forge a link between two very different creatures, such as between a dog or a crab and a hydra or a medusa.
 
-> [@sdm_magitecnica_codex_2, _p._ _46_]
-
-<!-- Magitecnica Codex 2, Page 047 -->
+<a name="page_0047"></a>
 
 ##### **MANYBODIED**
 
@@ -1148,9 +1056,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You attempt to inject your mind into a larger creature, such as a man or mammoth.
 
-> [@sdm_magitecnica_codex_2, _p._ _47_]
-
-<!-- Magitecnica Codex 2, Page 048 -->
+<a name="page_0048"></a>
 
 ##### **SKINSHIFT**
 
@@ -1172,9 +1078,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Again (x4):_ Into any form, from a mite to a mighty airwhale.
 
-> [@sdm_magitecnica_codex_2, _p._ _48_]
-
-<!-- Magitecnica Codex 2, Page 049 -->
+<a name="page_0049"></a>
 
 ##### **SKINSPLIT**
 
@@ -1203,9 +1107,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ Shift into a dangerous colony organism with special attacks.
 
-> [@sdm_magitecnica_codex_2, _p._ _49_]
-
-<!-- Magitecnica Codex 2, Page 050 -->
+<a name="page_0050"></a>
 
 ##### **SKINWYRD**
 
@@ -1230,9 +1132,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You retain some control of the skinwyrd, including the ability to deactivate the power by making a successful save.
 
-> [@sdm_magitecnica_codex_2, _p._ _50_]
-
-<!-- Magitecnica Codex 2, Page 051 -->
+<a name="page_0051"></a>
 
 ##### **ECOSPHERE ATTUNEMENT**
 
@@ -1260,9 +1160,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You are effectively invisible and undetectable within the environment, passing without sound or trace. Alternatively, you are completely unmissable.
 
-> [@sdm_magitecnica_codex_2, _p._ _51_]
-
-<!-- Magitecnica Codex 2, Page 052 -->
+<a name="page_0052"></a>
 
 ##### **ECOSPHERE IMMERSION**
 
@@ -1287,4 +1185,3 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ Persist as motes in the wind and microbes in the soil for up to 1 week before full reconstitution. Each day counts as a week’s rest. At the end of the week, save or permanently replace one of your traits with a deep panpsychic connection to the local ecology: the glen, dale, vale, grove, stream, lake, bay, or what have you. You may choose to fail this save.
 
-> [@sdm_magitecnica_codex_2, _p._ _52_]

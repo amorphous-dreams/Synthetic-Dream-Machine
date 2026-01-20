@@ -1,10 +1,8 @@
-<!-- Magitecnica Codex 1, Page 001 -->
+<a name="page_0001"></a>
 
 # **Codex 1: the Use and Misuse of Powers Great and Small Luka Rejec**
 
-> [@sdm_magitecnica_codex_1, _p._ _1_]
-
-<!-- Magitecnica Codex 1, Page 002 -->
+<a name="page_0002"></a>
 
 _**Shiptower Haruspex, now captained by the wizard Vorus Hafut.**_
 
@@ -49,9 +47,7 @@ C. Dawn’s Highway. . . . . . . . . . . . . . . . . . 21
 D. The Viridian Practice. . . . . . . . . . . . . . . 23
 E. Apocrypha of the O.S.. . . . . . . . . . . . . . 25
 ```
-> [@sdm_magitecnica_codex_1, _p._ _2_]
-
-<!-- Magitecnica Codex 1, Page 003 -->
+<a name="page_0003"></a>
 
 ## **THE USE AND MISUSE OF POWERS**
 
@@ -67,9 +63,7 @@ The corpuncle lit up with a jaune glow. It seemed to take her etiquette as an in
 
 It turned to face her with its barely-preserved face and hissed again to emphasize, “Three thousand years.”
 
-> [@sdm_magitecnica_codex_1, _p._ _3_]
-
-<!-- Magitecnica Codex 1, Page 004 -->
+<a name="page_0004"></a>
 
 ### **I. Earlier**
 
@@ -119,9 +113,7 @@ Static swallowed Onion’s thin voice. Noë snarled and banged the headset, but 
 
 
 
-> [@sdm_magitecnica_codex_1, _p._ _4_]
-
-<!-- Magitecnica Codex 1, Page 005 -->
+<a name="page_0005"></a>
 
 ### **III. Oldtech and Fantascience**
 
@@ -151,9 +143,7 @@ Razorblade Tree
 
 The petromancer spills their lifeblood, forcing the landcoral seed into sudden, explosive growth. A medium-sized limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket of razor branches suffers 1d4 damage. The terrible growth speed kills the landcoral. _Overcharge:_ the growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with stone shards like caltrops. This destroys the landcoral.
 
-> [@sdm_magitecnica_codex_1, _p._ _5_]
-
-<!-- Magitecnica Codex 1, Page 006 -->
+<a name="page_0006"></a>
 
 ### **IV. Using Powers**
 
@@ -174,9 +164,7 @@ A completely clueless character, with no relevant skill or experience, pays doub
 
 Traits can change the price a character pays for their powers.
 
-> [@sdm_magitecnica_codex_1, _p._ _6_]
-
-<!-- Magitecnica Codex 1, Page 007 -->
+<a name="page_0007"></a>
 
 IV.b. Orders of Powers
 
@@ -202,9 +190,7 @@ Powers can be packed away, like other items, or stored in a library or other saf
 
 Power albums, technocodicils, and spell books are valuable because they let a character carry a number of powers in a single inventory slot.
 
-> [@sdm_magitecnica_codex_1, _p._ _7_]
-
-<!-- Magitecnica Codex 1, Page 008 -->
+<a name="page_0008"></a>
 
 IV.d. Range, Target, Duration
 
@@ -246,9 +232,7 @@ A PC without a relevant skill suffers a penalty. A PC whose level is higher than
 
 A character who fails their danger roll is **exposed to corruption** (V.).
 
-> [@sdm_magitecnica_codex_1, _p._ _8_]
-
-<!-- Magitecnica Codex 1, Page 009 -->
+<a name="page_0009"></a>
 
 ### **V. Power Corruption**
 
@@ -284,9 +268,7 @@ Traits, magic drugs, sacrifices, and special items may improve the odds.
 
 Burdens affect the exposure roll.
 
-> [@sdm_magitecnica_codex_1, _p._ _9_]
-
-<!-- Magitecnica Codex 1, Page 010 -->
+<a name="page_0010"></a>
 
 _V.a.i. Severe Exposure_
 
@@ -352,9 +334,7 @@ Roll or choose a relevant corruption trait. It can occupy a trait or item slot.
 19. Mule. Can carry twice as much as normal.
 20. Suffused with sparkly spores, the character now glows.
 
-> [@sdm_magitecnica_codex_1, _p._ _10_]
-
-<!-- Magitecnica Codex 1, Page 011 -->
+<a name="page_0011"></a>
 
 _V.a.iii. Mild Exposure_
 
@@ -411,9 +391,7 @@ Fourth, the sacred yogurt. A whitish substance with the consistency of clotted y
 
 Cat stole this idea from a grim writer in a strange dream. But she won’t admit it.
 
-> [@sdm_magitecnica_codex_1, _p._ _11_]
-
-<!-- Magitecnica Codex 1, Page 012 -->
+<a name="page_0012"></a>
 
 ### **VI. Owning Powers**
 
@@ -442,9 +420,7 @@ Order of Power | Mint | Pre-Loved | Looted*
 
 *always has an unfortunate side effect.
 
-> [@sdm_magitecnica_codex_1, _p._ _12_]
-
-<!-- Magitecnica Codex 1, Page 013 -->
+<a name="page_0013"></a>
 
 VI.b. Learning to Use a New Power
 
@@ -482,9 +458,7 @@ _Example: making mosses sprout when a hydrotechnique is used._
 
 As with learning a new power (VI.b.), failing to modify a power risks corruption and great success offers added bonuses.
 
-> [@sdm_magitecnica_codex_1, _p._ _13_]
-
-<!-- Magitecnica Codex 1, Page 014 -->
+<a name="page_0014"></a>
 
 _VI.c.i. Small Upgrades_
 
@@ -516,9 +490,7 @@ Customize your powers and show that you really own them!
 9. Whispers. From beyond the cosmic veil. They promise secrets, but never quite deliver.
 10. Fourth wall. Phantom dice spin about the wizard.
 
-> [@sdm_magitecnica_codex_1, _p._ _14_]
-
-<!-- Magitecnica Codex 1, Page 015 -->
+<a name="page_0015"></a>
 
 _VI.c.iii. Side Effects_
 
@@ -569,9 +541,7 @@ A strangely folded head appears from behind a plane of shadow. An origami silhou
 
 
 
-> [@sdm_magitecnica_codex_1, _p._ _15_]
-
-<!-- Magitecnica Codex 1, Page 016 -->
+<a name="page_0016"></a>
 
 ### **VII. Inventing New Powers**
 
@@ -632,9 +602,7 @@ Consider, for example, the ancient and true First Soil story of the great techno
 
 Lying scholars suggest that the extant tales of Long Long Ago still known in the Rainbow Lands are garbled. This is obviously false.
 
-> [@sdm_magitecnica_codex_1, _p._ _16_]
-
-<!-- Magitecnica Codex 1, Page 017 -->
+<a name="page_0017"></a>
 
 ## **POWERS GREAT AND SMALL**
 
@@ -654,9 +622,7 @@ The shadows glowed, the lights sucked at her eyes, the reds burned with ultravio
 
 Where would a stupid post-human wizard put the blueprince scroll collection? And, more vital, where would he put the exit?
 
-> [@sdm_magitecnica_codex_1, _p._ _17_]
-
-<!-- Magitecnica Codex 1, Page 018 -->
+<a name="page_0018"></a>
 
 ### **A. Albums of Power**
 
@@ -738,9 +704,7 @@ _A.1.a Album Format_
 19. mirrored glasses
 20. memory daemon
 
-> [@sdm_magitecnica_codex_1, _p._ _18_]
-
-<!-- Magitecnica Codex 1, Page 019 -->
+<a name="page_0019"></a>
 
 ### **B. The Sixfold Hexacenter**
 
@@ -772,9 +736,7 @@ Noë swallowed and held up the _Nihil!_ blueprince scroll she had found in Vorus
 
 The youth’s eyes widened and it whispered, “ahh.”
 
-> [@sdm_magitecnica_codex_1, _p._ _19_]
-
-<!-- Magitecnica Codex 1, Page 020 -->
+<a name="page_0020"></a>
 
 **Red Mist**
 
@@ -852,9 +814,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 > 
 > _Overcharge:_ Affect a number of creatures equal to twice your level.
 
-> [@sdm_magitecnica_codex_1, _p._ _20_]
-
-<!-- Magitecnica Codex 1, Page 021 -->
+<a name="page_0021"></a>
 
 ### **C. Dawn’s Highway**
 
@@ -884,9 +844,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 “It leaves this _Damp Mass_ copy,” the quarterling offered the little artifact.
 
-> [@sdm_magitecnica_codex_1, _p._ _21_]
-
-<!-- Magitecnica Codex 1, Page 022 -->
+<a name="page_0022"></a>
 
 **Damp Mass**
 
@@ -962,9 +920,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 > 
 > _Overcharge:_ The faststone sets into standardstone overnight, creating a surface that lasts a century without maintenance.
 
-> [@sdm_magitecnica_codex_1, _p._ _22_]
-
-<!-- Magitecnica Codex 1, Page 023 -->
+<a name="page_0023"></a>
 
 ### **D. The Viridian Practice**
 
@@ -998,9 +954,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 “The big tarret. Our golem took a worm to the brain. Can’t operate now. You’ll do, you’ll do. Come, quick, hydrate her! We don’t have much time!”
 
-> [@sdm_magitecnica_codex_1, _p._ _23_]
-
-<!-- Magitecnica Codex 1, Page 024 -->
+<a name="page_0024"></a>
 
 **Mother of Bullets**
 
@@ -1074,9 +1028,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 > 
 > _Overcharge:_ Roll damage dice thrice.
 
-> [@sdm_magitecnica_codex_1, _p._ _24_]
-
-<!-- Magitecnica Codex 1, Page 025 -->
+<a name="page_0025"></a>
 
 ### **E. Apocrypha of the O.S.**
 
@@ -1164,15 +1116,11 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 > 
 > _Overcharge:_ You get three wishes in a crystal chalice. Drink its sour liquid to summon your demiurge.
 
-> [@sdm_magitecnica_codex_1, _p._ _25_]
+<a name="page_0026"></a>
 
-<!-- Magitecnica Codex 1, Page 026 -->
+<!-- Removed due to graphics focus (page 0026) -->
 
-<!-- Page 026 removed due to graphics focus -->
-
-> [@sdm_magitecnica_codex_1, _p._ _26_]
-
-<!-- Magitecnica Codex 1, Page 027 -->
+<a name="page_0027"></a>
 
 A text to entice the reader and tempt the buyer. A tome of magic sufficiently advanced. A zine of powers in the psychedelic wonderland of the synthetic dream machine. A codex for wizards in the Ultraviolet Grasslands and beyond.
 
@@ -1181,5 +1129,3 @@ A text to entice the reader and tempt the buyer. A tome of magic sufficiently ad
 AN EATER OF DREAMS AND SOULS! IT WILL PICKLE
 
 YOUR BODY AND STEAL YOUR MIND! FLEE! FLEE! >
-
-> [@sdm_magitecnica_codex_1, _p._ _27_]
