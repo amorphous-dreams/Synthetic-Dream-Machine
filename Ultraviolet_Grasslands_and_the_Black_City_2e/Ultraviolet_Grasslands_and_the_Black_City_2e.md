@@ -54,8 +54,8 @@ Art & writing copyright © 2019 & 2022 Luka Rejec
 - Development: WizardThiefFighter Studio
 - Publishing: Exalted Funeral Press
 - ISBN: 979-8-88756-031-155000
-- www.wizardthieffighter.com
-- www.exaltedfuneral.com
+- [www.wizardthieffighter.com](https://www.wizardthieffighter.com)
+- [www.exaltedfuneral.com](https://www.exaltedfuneral.com)
 
 <a name="page_iii"></a>
 
