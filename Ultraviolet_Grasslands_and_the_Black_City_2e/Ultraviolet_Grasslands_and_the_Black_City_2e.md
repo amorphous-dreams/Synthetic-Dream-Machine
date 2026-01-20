@@ -1,4 +1,4 @@
-<!-- Begin: UVG_Black_City_2e_01_Cover_Introduction_A-vi -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_01_Cover_Introduction_A-vi -->
 
 <a name="page_A"></a>
 
@@ -22,22 +22,22 @@ _Luka Rejec_
 
 <a name="page_ii"></a>
 
-Time is the essence  
-Time is the season  
-Time ain’t no reason  
-Got no time to slow
-
-Time everlasting  
-Time to play B–sides  
-Time ain’t on my side  
-Time I’ll never know
-
-Burn out the day  
-Burn out the night  
-I’m not the one to tell you what’s wrong or what’s right  
-I’ve seen suns that were freezing and lives that were through.
-
-— _Burnin’ For You, Fire of Unknown Origin,_ Blue Öyster Cult
+> Time is the essence  
+> Time is the season  
+> Time ain’t no reason  
+> Got no time to slow
+> 
+> Time everlasting  
+> Time to play B–sides  
+> Time ain’t on my side  
+> Time I’ll never know
+> 
+> Burn out the day  
+> Burn out the night  
+> I’m not the one to tell you what’s wrong or what’s right  
+> I’ve seen suns that were freezing and lives that were through.
+> 
+> — _Burnin’ For You, Fire of Unknown Origin,_ Blue Öyster Cult
 
 _Ultraviolet Grasslands, 2nd Edition_
 
@@ -238,7 +238,7 @@ The fifth and sixth sections, the Bestiary and the Setting, provide some materia
 
 The UVG is designed to resist repetition and canon. Each gaming group is encouraged to make it their own, to use the parts they like, and have a unique adventure together. It belongs to you now.
 
-<!-- Begin: UVG_Black_City_2e_02_The_Traveler_1-4 -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_02_The_Traveler_1-4 -->
 
 <a name="page_0001"></a>
 
@@ -488,7 +488,7 @@ Every level, a PC gains one of the following:
 - A new innate power or mutation.
 - Increases an ability score by 1.
 
-<!-- Begin: UVG_Black_City_2e_03_The_Grasslands_5-164 -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_03_The_Grasslands_5-164 -->
 
 <a name="page_0005"></a>
 
@@ -5581,7 +5581,7 @@ He’ll mix a drink for you and warn you that you might walk away, but you will 
 
 ## The Caravan
 
-<!-- Begin: UVG_Black_City_2e_04_The_Caravan_165-178 -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_04_The_Caravan_165-178 -->
 
 <a name="page_0165"></a>
 
@@ -6277,7 +6277,7 @@ If trading and exploring isn't enough, these secret quests may give additional i
 9. **Saving the World**. The holiest of relics from the Final Place will avert the End of the World. A series of random destinations leading into the Deep Grasslands holds the 3 parts of the Key Compass to the Final Place. There is also a 1-in-6 chance that any one of these destinations is home to an **Avatar of the End** (L11, angel of death) bent on ensuring the world ends. Once the Key Compass is reassembled it unlocks access to a deadly dungeon at the Final Place. The End of Time is still optional.
 10. **Ascending into the Sky like the Shamans of Old**. The people's myths tell of the Long Long Ago, when the Ancestors walked in the stars. Following visions from the True Mother, a group of noble and ruthless warriors and seers has been chosen to return to the stars and tell the tale of their oppression and bring the Ancestors back to the earth. Three random destinations each hold a bulky Ladder to the Sky. Once the three Ladders are reunited, a **Demon of Lies** (L11, misunderstood) appears. Inside the Demon's head is a crystal astrolabe that points to the destination of ascendance. Reaching the space port is enough. Actual void-faring is optional.
 
-<!-- Begin: UVG_Black_City_2e_05_The_Stuff_179-200 -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_05_The_Stuff_179-200 -->
 
 <a name="page_0179"></a>
 
@@ -7663,7 +7663,7 @@ Random exposure is likely to have deleterious effects. When a hero acquires a de
 
 200 The Stuff
 
-<!-- Begin: UVG_Black_City_2e_06_The_Bestiary_201-218 -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_06_The_Bestiary_201-218 -->
 
 <a name="page_0201"></a>
 
@@ -8954,7 +8954,7 @@ Pets start at level 1 with 1d6+5 life, defense of 1d6+7 and a bonus of +3. Playe
 
 <a name="page_0218"></a>
 
-<!-- Begin: UVG_Black_City_2e_07_The_Setting_219-240 -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_07_The_Setting_219-240 -->
 
 <a name="page_0219"></a>
 
@@ -9683,7 +9683,7 @@ Repeat. This is Zu. We have returned. The retemporization protocol will not work
 
 ![Hero sheet (page 240)](images/hero_sheet_240.png)
 
-<!-- Begin: UVG_Black_City_2e_08_Index_Terminus_241-Z -->
+<!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_08_Index_Terminus_241-Z -->
 
 <a name="page_0241"></a>
 
@@ -10892,326 +10892,3 @@ P225
 > "Fair Hero, the end, the end alone awaits all travelers, and at the end ... was the journey all in vain? All journeys end in vain," mused the Observer at the End of Time.
 >
 > "Welcome to the roleplaying game of heroes tripping through mythic steppes in search of Lost Time, Broken Space, and Deep Rifts. A second edition: more pages for bigger art."
-
-<!-- Begin: TODO -->
-
-# UVG_Black_City_2e — Page-by-page cleanup tracker
-
-Goal: move raw extraction toward a clean SRD-style Markdown chapter set.
-
-Quality scale (capture quality):
-- 0 = unusable (missing text / wrong order)
-- 1 = heavy repair (columns/tables broken)
-- 2 = significant repair (many line breaks / structure wrong)
-- 3 = moderate repair (some formatting + minor order issues)
-- 4 = minor polish (mostly correct; small fixes)
-- 5 = clean (faithful + readable; SRD-ready)
-
-Workflow per page:
-1) Open PNG and rate **Pre** quality.
-2) Find the corresponding `<a name="page_0001"></a>` block in the chapter `.md`.
-3) Fix: tables, sentence breaks, column order, forms/charts handling, headings/lists.
-4) Re-rate **Post** quality; note any remaining known issues/questions.
-
-Project-level goals:
-- Confirm every `<a name="page_0001"></a>` marker appears once, in order, with correct label (A-vi, 1-240, U-Z).
-- Check table headers and separators match column counts (avoid Markdown render issues).
-- Normalize list markers (no stray glyph bullets, consistent numbering).
-- Verify image embeds exist for chart, map, and form pages; note any missing charts/maps for follow-up.
-- Scan for run-on header lines where bold headers should be separated from body text.
-
-## Chapter 01 — Cover Introduction (A–vi)
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 1 | A | `Lares/Books/UVG/page_pngs/pages/page_0001.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 4 | Cover art; only title/author to keep | Kept text-only title/author | 4 | done |  |
-| 2 | B | `Lares/Books/UVG/page_pngs/pages/page_0002.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 5 | Illustration only | Left page body empty (no art reuse) | 5 | done |  |
-| 3 | i | `Lares/Books/UVG/page_pngs/pages/page_0003.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 2 | Bad title extraction (dagger/formatting) | Rebuilt title page text from PNG | 5 | done |  |
-| 4 | ii | `Lares/Books/UVG/page_pngs/pages/page_0004.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 2 | Broken lines; run-on credits; stray tokens | Reflowed verse; rebuilt credits as bullets; kept the `55000` ISBN suffix | 5 | done |  |
-| 5 | iii | `Lares/Books/UVG/page_pngs/pages/page_0005.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 2 | Stray letters (“A”, “O iii”) | Kept dedication lines only | 5 | done |  |
-| 6 | iv | `Lares/Books/UVG/page_pngs/pages/page_0006.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 4 | Two-column ToC; leader dots not captured | Normalized to nested list with “— page” formatting | 5 | done |  |
-| 7 | v | `Lares/Books/UVG/page_pngs/pages/page_0007.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 4 | Two-column ToC; indentation drift | Normalized nested list; fixed subitem indent | 5 | done |  |
-| 8 | vi | `Lares/Books/UVG/page_pngs/pages/page_0008.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_01_Cover_Introduction_A-vi.md` | 2 | Column reflow issues; broken words; stray “E/vi/Introduction” | Reflowed into blockquote + clean paragraphs; fixed hyphenation | 5 | done |  |
-
-## Chapter 02 — The Traveler (1–4)
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 9 | 1 | `Lares/Books/UVG/page_pngs/pages/page_0009.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_02_The_Traveler_1-4.md` | 4 | Title formatting artifacts; stray page number | Normalized heading; removed extracted page number | 5 | done |  |
-| 10 | 2 | `Lares/Books/UVG/page_pngs/pages/page_0010.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_02_The_Traveler_1-4.md` | 2 | 3-column d50 table collapsed into run-on lines | Rebuilt as Markdown table with headers; fixed minor word breaks | 5 | done |  |
-| 11 | 3 | `Lares/Books/UVG/page_pngs/pages/page_0011.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_02_The_Traveler_1-4.md` | 2 | Multi-block tables collapsed; stray footer text; art present | Rebuilt name lists + three d6 tables; removed footer; no art reuse | 5 | done |  |
-| 12 | 4 | `Lares/Books/UVG/page_pngs/pages/page_0012.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_02_The_Traveler_1-4.md` | 2 | Dense two-column rules summary; broken line breaks/hyphenation | Reflowed into SRD-style headings + lists; rebuilt level table | 5 | done |  |
-
-## Chapter 03 — The Grasslands (5–164)
-Verification: pages 15–62 reviewed against PNGs; existing cleanup matches scans.
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 13 | 5 | `Lares/Books/UVG/page_pngs/pages/page_0013.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 4 | Cover art; heading extracted with styling artifacts; stray page number | Normalized heading; removed extracted page number; kept text-only | 5 | done |  |
-| 14 | 6 | `Lares/Books/UVG/page_pngs/pages/page_0014.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Line breaks + stray artifacts; legend items not structured | Reflowed paragraphs; removed stray tokens; rebuilt legend as list | 5 | done |  |
-| 15 | 7 | `Lares/Books/UVG/page_pngs/pages/page_0015.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 5 | Map art page; header included | Removed page number noise; kept map label only | 5 | done |  |
-| 16 | 8 | `Lares/Books/UVG/page_pngs/pages/page_0016.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 5 | Map art page; header included | Removed page number noise; kept map label only | 5 | done |  |
-| 17 | 9 | `Lares/Books/UVG/page_pngs/pages/page_0017.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 5 | Map art page; header included | Removed page number noise; kept map label only | 5 | done |  |
-| 18 | 10 | `Lares/Books/UVG/page_pngs/pages/page_0018.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 5 | Map art page; header included | Removed page number noise; kept map label only | 5 | done |  |
-| 19 | 11 | `Lares/Books/UVG/page_pngs/pages/page_0019.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 4 | Map art page; bogus “ERROR 667-U” footer | Removed bogus error footer; kept map label only | 5 | done |  |
-| 20 | 12 | `Lares/Books/UVG/page_pngs/pages/page_0020.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 4 | Section splash art; heading block had stray tokens | Normalized to a clean section heading only | 5 | done |  |
-| 21 | 13 | `Lares/Books/UVG/page_pngs/pages/page_0021.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Broken paragraphs; misfortune table collapsed; travel options jammed | Reflowed prose; rebuilt misfortune as Markdown table; split travel options + encounters list | 5 | done |  |
-| 22 | 14 | `Lares/Books/UVG/page_pngs/pages/page_0022.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column layout caused run-ons; list numbering/headers broken | Reflowed “Meet in the Street”; formatted “Who Would Hurt Vorgo?” as numbered list; fixed hyphenation | 5 | done |  |
-| 23 | 15 | `Lares/Books/UVG/page_pngs/pages/page_0023.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column layout caused run-ons; list items merged; typos | Reflowed into two clear sections; fixed numbering; corrected “undis closed” | 5 | done |  |
-| 24 | 16 | `Lares/Books/UVG/page_pngs/pages/page_0024.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d20 table collapsed; broken word wraps; stray tokens | Rebuilt carousing table; normalized headings; fixed line breaks/italics | 5 | done |  |
-| 25 | 17 | `Lares/Books/UVG/page_pngs/pages/page_0025.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column layout; d8 drugs list + d6 dining list collapsed; broken word wraps | Rebuilt d8 drugs as Markdown table; cleaned addiction rules; reflowed d6 dining list; fixed hyphenation/spacing | 5 | done |  |
-| 26 | 18 | `Lares/Books/UVG/page_pngs/pages/page_0026.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 4 | Splash page; title styling artifacts; stray page/roman numerals | Normalized heading; kept captions; removed page/roman numerals | 5 | done |  |
-| 27 | 19 | `Lares/Books/UVG/page_pngs/pages/page_0027.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune table collapsed; travel options/encounters run together; broken line wraps | Rebuilt d20 misfortune as table; split travel options; formatted d8 encounters list; fixed hyphenation | 5 | done |  |
-| 28 | 20 | `Lares/Books/UVG/page_pngs/pages/page_0028.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column discoveries; broken wraps; nested list collapsed; stray roman numeral | Rebuilt as clean subsections; fixed hyphenation; structured d4 list; removed stray token | 5 | done |  |
-| 29 | 21 | `Lares/Books/UVG/page_pngs/pages/page_0029.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 3 | Two-column discoveries; minor word wrap issues; stray footer | Normalized discovery headings and time/xp lines; reflowed wrapped parentheticals; removed footer | 5 | done |  |
-| 30 | 22 | `Lares/Books/UVG/page_pngs/pages/page_0030.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune table collapsed; travel options/encounters run together; stray page/roman numerals | Rebuilt d20 misfortune as table; split travel options; formatted d8 encounters list; folded “III” into heading | 5 | done |  |
-| 31 | 23 | `Lares/Books/UVG/page_pngs/pages/page_0031.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 3 | Discovery blocks; nested bullets collapsed; inconsistent headings | Normalized subheadings + time/xp; rebuilt spring depth/offering bullets; added cryptich sub-bullets; removed duplicate underground block; removed footer | 5 | done |  |
-| 32 | 24 | `Lares/Books/UVG/page_pngs/pages/page_0032.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column discoveries; broken spacing/word splits; stray section marker | Rebuilt into SRD headings + bullets; fixed “m a k e”/“equip ment”; removed stray “III” line | 5 | done |  |
-| 33 | 25 | `Lares/Books/UVG/page_pngs/pages/page_0033.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 3 | Heading styling artifacts; broken wraps; section split across columns | Normalized headings; reflowed paragraphs; fixed “privileges” word split; removed footer | 5 | done |  |
-| 34 | 26 | `Lares/Books/UVG/page_pngs/pages/page_0034.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column layout; d20 misfortune collapsed; stray page/roman numerals | Normalized heading/quote; rebuilt d20 misfortune table; removed page/roman numerals; folded “IV” into heading | 5 | done |  |
-| 35 | 27 | `Lares/Books/UVG/page_pngs/pages/page_0035.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel options merged; word splits; encounter list run-ons; footer | Rebuilt travel options list; fixed splits; reflowed d8 encounters list; removed footer | 5 | done |  |
-| 36 | 28 | `Lares/Books/UVG/page_pngs/pages/page_0036.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column content; d8 list collapsed; broken word wrap; stray page/roman numerals | Normalized section formatting; rebuilt d8 as table; fixed word breaks; removed page/roman numerals | 5 | done |  |
-| 37 | 29 | `Lares/Books/UVG/page_pngs/pages/page_0037.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d20 carousing table collapsed; headings inconsistent; footer | Rebuilt d20 as Markdown table; normalized headings; cleaned italics; removed footer | 5 | done |  |
-| 38 | 30 | `Lares/Books/UVG/page_pngs/pages/page_0038.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column list; broken wraps and stray section marker | Rebuilt as clean ordered list with bold item names; fixed word splits; removed stray “30/IV” lines | 5 | done |  |
-| 39 | 31 | `Lares/Books/UVG/page_pngs/pages/page_0039.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Continuation list items 8–14; broken wraps/word splits; footer | Reflowed into bolded ordered list; fixed “insurrection” split; removed footer | 5 | done |  |
-| 40 | 32 | `Lares/Books/UVG/page_pngs/pages/page_0040.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Word breaks; d20 misfortune collapsed; stray page/roman numerals | Normalized heading; fixed “exoskeletons”; rebuilt d20 misfortune table; folded “V” into heading | 5 | done |  |
-| 41 | 33 | `Lares/Books/UVG/page_pngs/pages/page_0041.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel options merged; encounters list run-ons; footer | Rebuilt travel options list; reflowed d8 encounters list; fixed punctuation; removed d6 line break; removed footer | 5 | done |  |
-| 42 | 34 | `Lares/Books/UVG/page_pngs/pages/page_0042.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery entries collapsed; broken wraps; stray page/roman numerals | Rebuilt as SRD headings + time/xp lines; fixed harvest/cost wraps; removed stray “34/V” lines | 5 | done |  |
-| 43 | 35 | `Lares/Books/UVG/page_pngs/pages/page_0043.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings collapsed; internal bullets run-on; x/×; footer | Normalized discovery headings + time/xp; rebuilt internal bullets; fixed × usage; removed footer | 5 | done |  |
-| 44 | 36 | `Lares/Books/UVG/page_pngs/pages/page_0044.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Broken headings/lists; stray page/roman numerals; word splits | Rebuilt “Glass House of a Dead Prince” as SRD subsections; fixed list breaks + word splits; tightened hairy devils/trick tracker line breaks; removed footer/roman numeral | 5 | done |  |
-| 45 | 37 | `Lares/Books/UVG/page_pngs/pages/page_0045.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d30 list collapsed into run-on lines; footer text leaked | Rebuilt “Locations and Treasures (d30)” as ordered list; fixed “delicacies” split; removed footer | 5 | done |  |
-| 46 | 38 | `Lares/Books/UVG/page_pngs/pages/page_0046.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Missing heading; d20 table not formatted; encounters run together; stray page/roman numerals | Added “Trail of Vomish Dreams” heading; rebuilt d20 misfortune as table; cleaned travel options + d8 encounters; removed footer/roman numeral | 5 | done |  |
-| 47 | 39 | `Lares/Books/UVG/page_pngs/pages/page_0047.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings inconsistent; word splits/broken bold; footer text | Normalized discovery headings + time/xp lines; fixed split words/bold; removed footer | 5 | done |  |
-| 48 | 40 | `Lares/Books/UVG/page_pngs/pages/page_0048.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Tables collapsed; list items merged; roman numeral/footer tokens | Rebuilt “Vome Nests” section with SRD headings; split merged list items; rendered 6×d6 table; removed footer/roman numeral | 5 | done |  |
-| 49 | 41 | `Lares/Books/UVG/page_pngs/pages/page_0049.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 5 | Full-page vome hive map | Copied to `Lares/Books/UVG/UVG_Black_City_2e/images/vome_hive_map.png` and embedded as image | 5 | done |  |
-| 50 | 42 | `Lares/Books/UVG/page_pngs/pages/page_0050.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading/paragraph breaks; stray page/roman numeral | Normalized heading to “Grass Colossus (VII)”; removed stray tokens; reflowed paragraph | 5 | done |  |
-| 51 | 43 | `Lares/Books/UVG/page_pngs/pages/page_0051.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d20 misfortune collapsed; travel options/encounters run together; footer | Rebuilt d20 misfortune as table; normalized travel options + encounters; embedded map image `Lares/Books/UVG/UVG_Black_City_2e/images/grass_colossus_map.png` | 5 | done |  |
-| 52 | 44 | `Lares/Books/UVG/page_pngs/pages/page_0052.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d8 list items merged; word splits; footer/roman numeral | Rebuilt “Clansfolk, Madsfolk (d8)” list + “Clansfolk and Celebrations” subheading; fixed splits; removed stray tokens | 5 | done |  |
-| 53 | 45 | `Lares/Books/UVG/page_pngs/pages/page_0053.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Two-column list merged; aftermath mini-table lost; footer | Reflowed d6 celebrations; rebuilt d10 aftermath as table; removed footer | 5 | done |  |
-| 54 | 46 | `Lares/Books/UVG/page_pngs/pages/page_0054.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 4 | Stray footer/roman numeral | Normalized heading to “The Last Serai (VIII)”; removed footer/roman numeral | 5 | done |  |
-| 55 | 47 | `Lares/Books/UVG/page_pngs/pages/page_0055.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d20 misfortune collapsed; travel options/encounters run together; footer | Rebuilt d20 misfortune as table; normalized travel options + encounters; removed footer | 5 | done |  |
-| 56 | 48 | `Lares/Books/UVG/page_pngs/pages/page_0056.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 5 | Full-page illustration | Omitted illustration (no art reuse) | 5 | done |  |
-| 57 | 49 | `Lares/Books/UVG/page_pngs/pages/page_0057.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d12 list merged; word splits; footer | Rebuilt “Sectors of the Serai” d12 list; fixed word splits; removed footer | 5 | done |  |
-| 58 | 50 | `Lares/Books/UVG/page_pngs/pages/page_0058.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Sections merged; bullets broken; footer/roman numeral | Rebuilt “The Harmonium” + “The Last Trading House” into SRD headings/bullets; fixed word splits; removed footer/roman numeral | 5 | done |  |
-| 59 | 51 | `Lares/Books/UVG/page_pngs/pages/page_0059.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Columns merged; bullets/italics broken; footer | Rebuilt “Final Embassy” and “Ignored Tower” with SRD headings/bullets; fixed word splits; corrected “particles”; removed footer | 5 | done |  |
-| 60 | 52 | `Lares/Books/UVG/page_pngs/pages/page_0060.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading broken; stray page/roman numeral; word splits | Normalized heading to “Way Stone Graveyard (IX)”; removed stray tokens; fixed word splits | 5 | done |  |
-| 61 | 53 | `Lares/Books/UVG/page_pngs/pages/page_0061.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d20 misfortune collapsed; travel options/encounters run together; footer | Rebuilt d20 misfortune as table; normalized travel options + d6 encounters; removed footer | 5 | done |  |
-| 62 | 54 | `Lares/Books/UVG/page_pngs/pages/page_0062.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings/time-xp lines inconsistent; stray tokens | Rebuilt “Discoveries by the Way Stone” into SRD subsections; fixed word splits; removed stray tokens | 5 | done |  |
-| 63 | 55 | `Lares/Books/UVG/page_pngs/pages/page_0063.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Headings broken; word splits; footer; art present | Rebuilt 3 location entries with SRD headings + time/xp; removed footer; no art reuse | 5 | done |  |
-| 64 | 56 | `Lares/Books/UVG/page_pngs/pages/page_0064.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 4 | Heading tokens; footer/roman numeral; art present | Normalized heading to “The Death-Facing Passage (X)”; removed stray tokens; no art reuse | 5 | done |  |
-| 65 | 57 | `Lares/Books/UVG/page_pngs/pages/page_0065.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d20 misfortune collapsed; travel/encounters run together; word splits; art present | Rebuilt d20 misfortune table; normalized travel options + d8 encounters; fixed word splits; no art reuse | 5 | done |  |
-| 66 | 58 | `Lares/Books/UVG/page_pngs/pages/page_0066.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; list formatting broken; footer/roman numeral; art present | Rebuilt “Discoveries under the Face of Death” subsections; fixed list formatting; removed stray tokens; no art reuse | 5 | done |  |
-| 67 | 59 | `Lares/Books/UVG/page_pngs/pages/page_0075.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading/time-xp lines broken; d8 list merged; footer present | Rebuilt heading + time/xp; formatted d8 archaic wonders; reflowed text; removed footer | 5 | done |  |
-| 68 | 60 | `Lares/Books/UVG/page_pngs/pages/page_0076.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading spacing; misfortune list flattened; footer tokens | Normalized heading; built d20 misfortune table; reflowed intro text; removed stray tokens | 5 | done |  |
-| 69 | 61 | `Lares/Books/UVG/page_pngs/pages/page_0077.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Encounters/travel options merged; footer; heading missing | Added SRD headings; split d8 encounters + travel bullets; cleaned footer | 5 | done |  |
-| 70 | 62 | `Lares/Books/UVG/page_pngs/pages/page_0078.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings/time-xp lines broken; word splits; footer/roman numeral | Rebuilt discovery headings with time/xp; fixed word splits; removed footer tokens | 5 | done |  |
-| 71 | 63 | `Lares/Books/UVG/page_pngs/pages/page_0079.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel options/encounters merged; list formatting broken | Rebuilt travel options and encounters list; normalized headings | 5 | done |  |
-| 72 | 64 | `Lares/Books/UVG/page_pngs/pages/page_0080.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings/time-xp lines merged | Rebuilt “Discoveries on the Long Ridge” headings + time/xp; reflowed paragraphs | 5 | done |  |
-| 73 | 65 | `Lares/Books/UVG/page_pngs/pages/page_0081.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Column breaks; word splits; section headings merged | Rebuilt Sky Tower/Schkarp/Copper Cairn entries with headings + time/xp | 5 | done |  |
-| 74 | 66 | `Lares/Books/UVG/page_pngs/pages/page_0082.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; word splits; footer tokens | Rebuilt Behemoth Shell misfortune table; fixed word splits | 5 | done |  |
-| 75 | 67 | `Lares/Books/UVG/page_pngs/pages/page_0083.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel/encounter lists merged; calcite list collapsed | Rebuilt travel options/encounters lists; structured calcite discoveries | 5 | done |  |
-| 76 | 68 | `Lares/Books/UVG/page_pngs/pages/page_0084.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits | Rebuilt Crushed Shell/Ideal Island headings + time/xp | 5 | done |  |
-| 77 | 69 | `Lares/Books/UVG/page_pngs/pages/page_0085.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel/encounters merged; word splits | Rebuilt Serpent Stone Marker misfortune table; normalized travel/encounters | 5 | done |  |
-| 78 | 70 | `Lares/Books/UVG/page_pngs/pages/page_0086.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discoveries headings and list flattened; word splits | Rebuilt White Grass Ocean discoveries with headings + list formatting | 5 | done |  |
-| 79 | 71 | `Lares/Books/UVG/page_pngs/pages/page_0087.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; offer list collapsed | Rebuilt Lophotroche/Eternal Snaking Marker headings; formatted offers list | 5 | done |  |
-| 80 | 72 | `Lares/Books/UVG/page_pngs/pages/page_0088.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel options merged; word splits | Rebuilt Moon-Facing Ford misfortune table; normalized travel options | 5 | done |  |
-| 81 | 73 | `Lares/Books/UVG/page_pngs/pages/page_0089.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | NPC list merged; encounters list run-on; word splits | Reflowed Pylon Kraal NPC entries + encounters list; fixed splits | 5 | done |  |
-| 82 | 74 | `Lares/Books/UVG/page_pngs/pages/page_0090.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Bardstone table flattened; kraal table merged | Rebuilt Bardstone content table; structured Fordite Kraal tables | 5 | done |  |
-| 83 | 75 | `Lares/Books/UVG/page_pngs/pages/page_0091.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Other crossings list merged; word splits | Rebuilt “Other Crossings” list with headings + time/xp | 5 | done |  |
-| 84 | 76 | `Lares/Books/UVG/page_pngs/pages/page_0092.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Column layout; line breaks; footer tokens | Reflowed Near Moon intro; removed footer artifacts | 5 | done |  |
-| 85 | 77 | `Lares/Books/UVG/page_pngs/pages/page_0093.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; encounters/odd tides merged | Rebuilt misfortune table; formatted encounters + odd tide effects; cleaned Spectrum Lodge list | 5 | done |  |
-| 86 | 78 | `Lares/Books/UVG/page_pngs/pages/page_0094.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits | Rebuilt “Discoveries on the Ground” headings + time/xp; fixed splits | 5 | done |  |
-| 87 | 79 | `Lares/Books/UVG/page_pngs/pages/page_0095.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Megadungeon and creature list merged; word splits | Normalized Surface of the Near Moon headings; rebuilt creature list | 5 | done |  |
-| 88 | 80 | `Lares/Books/UVG/page_pngs/pages/page_0096.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Location headings merged; word splits | Rebuilt surface locations with headings + time/xp; fixed splits | 5 | done |  |
-| 89 | 81 | `Lares/Books/UVG/page_pngs/pages/page_0097.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Tables collapsed; discovery headers merged | Rebuilt Cold Crust tables and discoveries; fixed hyphenation | 5 | done |  |
-| 90 | 82 | `Lares/Books/UVG/page_pngs/pages/page_0098.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Encounter lists merged; tables flattened | Rebuilt Warm Mantle encounters and passage/chamber tables | 5 | done |  |
-| 91 | 83 | `Lares/Books/UVG/page_pngs/pages/page_0099.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits | Rebuilt Warm Mantle discoveries with headings + time/xp | 5 | done |  |
-| 92 | 84 | `Lares/Books/UVG/page_pngs/pages/page_0100.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Tables collapsed; word splits; footer tokens | Rebuilt Crystal Core section with tables + list; fixed splits | 5 | done |  |
-| 93 | 85 | `Lares/Books/UVG/page_pngs/pages/page_0101.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discoveries list merged; footer tokens | Rebuilt Crystal Core discoveries with headings + time/xp; cleaned splits | 5 | done |  |
-| 94 | 86 | `Lares/Books/UVG/page_pngs/pages/page_0102.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Outcome lists merged; headings inconsistent | Rebuilt Unmooring/Detonating outcomes; formatted Crystal Ship options | 5 | done |  |
-| 95 | 87 | `Lares/Books/UVG/page_pngs/pages/page_0103.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits | Rebuilt Orbital Pyramid/Death’s Own Moon headings + time/xp | 5 | done |  |
-| 96 | 88 | `Lares/Books/UVG/page_pngs/pages/page_0104.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading flattened; quote wrap issues | Reflowed Megaregion header + closing quote | 5 | done |  |
-| 97 | 89 | `Lares/Books/UVG/page_pngs/pages/page_0105.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Sections merged; list and misfortune formatting broken | Rebuilt Glass Bridge section with misfortune table, travel options, encounters | 5 | done |  |
-| 98 | 90 | `Lares/Books/UVG/page_pngs/pages/page_0106.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Subsections merged; broken wraps | Split Village/Bridge subheads; reflowed Red Bear/Glass Bridge/Old River | 5 | done |  |
-| 99 | 91 | `Lares/Books/UVG/page_pngs/pages/page_0107.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Carousing table collapsed; PC traits merged | Rebuilt d20 carousing table; structured Villagers and PC traits | 5 | done |  |
-| 100 | 92 | `Lares/Books/UVG/page_pngs/pages/page_0108.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discoveries merged; word splits | Rebuilt Discoveries Near the Glass entries with headings + time/xp | 5 | done |  |
-| 101 | 93 | `Lares/Books/UVG/page_pngs/pages/page_0109.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits | Structured High Horse Steppe/High Moon Crossing/Long Slog/Sparkling Shore/White River | 5 | done |  |
-| 102 | 94 | `Lares/Books/UVG/page_pngs/pages/page_0110.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Header/intro breaks; travel options merged; footer tokens | Reflowed Three Sticks Lake intro; rebuilt travel options list | 5 | done |  |
-| 103 | 95 | `Lares/Books/UVG/page_pngs/pages/page_0111.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; encounters run-on; footer tokens | Rebuilt misfortune table and encounters list | 5 | done |  |
-| 104 | 96 | `Lares/Books/UVG/page_pngs/pages/page_0112.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; broken wraps; footer tokens | Rebuilt Lakeside Discoveries with headings + time/xp; cleaned splits | 5 | done |  |
-| 105 | 97 | `Lares/Books/UVG/page_pngs/pages/page_0113.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Location headings merged; word splits; footer tokens | Structured Red River region entries with headings + time/xp; fixed splits | 5 | done |  |
-| 106 | 98 | `Lares/Books/UVG/page_pngs/pages/page_0114.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section headers merged; table missing; footer tokens | Rebuilt Cholan Woods/Dead Shore/Grey Glow/Lonely Shore headings + table | 5 | done |  |
-| 107 | 99 | `Lares/Books/UVG/page_pngs/pages/page_0115.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel options/encounters merged | Rebuilt misfortune table; normalized travel options + encounters | 5 | done |  |
-| 108 | 100 | `Lares/Books/UVG/page_pngs/pages/page_0116.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits; footer tokens | Rebuilt Galling Discoveries entries with headings + time/xp | 5 | done |  |
-| 109 | 101 | `Lares/Books/UVG/page_pngs/pages/page_0117.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section headers merged; word splits; footer tokens | Rebuilt Rose Towers on the Wine River subheads + time/xp | 5 | done |  |
-| 110 | 102 | `Lares/Books/UVG/page_pngs/pages/page_0118.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section headers merged; word splits; footer tokens | Rebuilt North-Most End entries with headings + time/xp | 5 | done |  |
-| 111 | 103 | `Lares/Books/UVG/page_pngs/pages/page_0119.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section headers merged; table flattened; footer tokens | Rebuilt Copper Hulls with d20 table; reflowed Ka-Ba Fortress note | 5 | done |  |
-| 112 | 104 | `Lares/Books/UVG/page_pngs/pages/page_0120.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Ruins block merged; list formatting broken | Rebuilt Three Sticks Ruins with d6 list; cleaned Black Grass/Lower Spines | 5 | done |  |
-| 113 | 105 | `Lares/Books/UVG/page_pngs/pages/page_0121.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Paragraph wraps; list merged; footer tokens | Rebuilt Vicar’s Beach and Machine Humans sections | 5 | done |  |
-| 114 | 106 | `Lares/Books/UVG/page_pngs/pages/page_0122.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune table missing; footer tokens | Rebuilt Spectrum Run misfortune table | 5 | done |  |
-| 115 | 107 | `Lares/Books/UVG/page_pngs/pages/page_0123.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel/encounters merged; word splits | Rebuilt Spectrum Run travel options + encounters list | 5 | done |  |
-| 116 | 108 | `Lares/Books/UVG/page_pngs/pages/page_0124.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; table flattened; footer tokens | Rebuilt Spectrum Cross Discoveries with tables/lists | 5 | done |  |
-| 117 | 109 | `Lares/Books/UVG/page_pngs/pages/page_0125.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; list formatting broken | Rebuilt Gemstone Tomb + Crystal Tree entries and d8/d6 lists | 5 | done |  |
-| 118 | 110 | `Lares/Books/UVG/page_pngs/pages/page_0126.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel/encounters/ misfortune tables merged | Rebuilt Refracting Trees travel, encounters, misfortune table | 5 | done |  |
-| 119 | 111 | `Lares/Books/UVG/page_pngs/pages/page_0127.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discoveries merged; list formatting broken | Rebuilt Discoveries Refracted entries with headings + lists | 5 | done |  |
-| 120 | 112 | `Lares/Books/UVG/page_pngs/pages/page_0128.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section header tokens only | Normalized Ribs of the Father heading | 5 | done |  |
-| 121 | 113 | `Lares/Books/UVG/page_pngs/pages/page_0129.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune table flattened; travel/encounters merged | Rebuilt Ribs of the Father misfortune table + travel/encounters | 5 | done |  |
-| 122 | 114 | `Lares/Books/UVG/page_pngs/pages/page_0130.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discoveries merged; d20 table flattened | Rebuilt Discoveries Among the Ribs with d20 table | 5 | done |  |
-| 123 | 115 | `Lares/Books/UVG/page_pngs/pages/page_0131.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Marmotfolk halls merged; word splits | Rebuilt Marmotfolk Halls entries with headings + time/xp | 5 | done |  |
-| 124 | 116 | `Lares/Books/UVG/page_pngs/pages/page_0132.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Cage Run misfortune/travel/encounters merged | Rebuilt Cage Run misfortune table + travel/encounters lists | 5 | done |  |
-| 125 | 117 | `Lares/Books/UVG/page_pngs/pages/page_0133.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Terranova discoveries merged; d20 table flattened | Rebuilt Discoveries in Terranova + d20 table | 5 | done |  |
-| 126 | 118 | `Lares/Books/UVG/page_pngs/pages/page_0134.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Poem/heading broken; footer tokens | Reflowed poem; normalized Spectrum Palace heading; removed footer tokens | 5 | done |  |
-| 127 | 119 | `Lares/Books/UVG/page_pngs/pages/page_0135.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel/encounters merged; footer tokens | Rebuilt misfortune table, travel options, and d10 encounters | 5 | done |  |
-| 128 | 120 | `Lares/Books/UVG/page_pngs/pages/page_0136.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section headers merged; line breaks mid-sentences | Rebuilt Spectrum Myth-Symbol Complex with headings; reflowed myth text | 5 | done |  |
-| 129 | 121 | `Lares/Books/UVG/page_pngs/pages/page_0137.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Lists merged; word splits; footer tokens | Rebuilt Place and Power sections with d5/d8/d12 lists; fixed splits | 5 | done |  |
-| 130 | 122 | `Lares/Books/UVG/page_pngs/pages/page_0138.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits; footer tokens | Rebuilt Discoveries Beyond the Satraps headings + d8 list; fixed splits | 5 | done |  |
-| 131 | 123 | `Lares/Books/UVG/page_pngs/pages/page_0139.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading/time-xp merged; footer tokens | Rebuilt The Alter entry with heading + time/xp; removed footer tokens | 5 | done |  |
-| 132 | 124 | `Lares/Books/UVG/page_pngs/pages/page_0140.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel/encounters merged; footer tokens | Rebuilt Iron Road misfortune table, travel options, and d8 encounters | 5 | done |  |
-| 133 | 125 | `Lares/Books/UVG/page_pngs/pages/page_0141.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; stray heading insert; footer tokens | Rebuilt Iron Road Discoveries headings + time/xp; cleaned paragraphs | 5 | done |  |
-| 134 | 126 | `Lares/Books/UVG/page_pngs/pages/page_0142.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel/encounters merged; footer tokens | Rebuilt Ivory Plain misfortune table, travel options, and d10 encounters | 5 | done |  |
-| 135 | 127 | `Lares/Books/UVG/page_pngs/pages/page_0143.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits; footer tokens | Rebuilt Discoveries on a Plain headings + time/xp; reflowed text | 5 | done |  |
-| 136 | 128 | `Lares/Books/UVG/page_pngs/pages/page_0144.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading merged into paragraph; footer tokens | Normalized Dead Bridge heading + narrative breaks; removed footer tokens | 5 | done |  |
-| 137 | 129 | `Lares/Books/UVG/page_pngs/pages/page_0145.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel/encounters merged; footer tokens | Rebuilt Dead Bridge misfortune table, travel options, and d8 encounters | 5 | done |  |
-| 138 | 130 | `Lares/Books/UVG/page_pngs/pages/page_0146.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; lists collapsed; footer tokens | Rebuilt Discoveries at the Bridge entries + d6 list; fixed splits | 5 | done |  |
-| 139 | 131 | `Lares/Books/UVG/page_pngs/pages/page_0147.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section lists merged; word splits; footer tokens | Rebuilt Down in the Chasm subsections with d8 lists | 5 | done |  |
-| 140 | 132 | `Lares/Books/UVG/page_pngs/pages/page_0148.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel/encounters merged; footer tokens | Rebuilt Dark Light Passage misfortune table, travel options, and d10 encounters | 5 | done |  |
-| 141 | 133 | `Lares/Books/UVG/page_pngs/pages/page_0149.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits; footer tokens | Rebuilt Discoveries in Darkest Light entries + time/xp | 5 | done |  |
-| 142 | 134 | `Lares/Books/UVG/page_pngs/pages/page_0150.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; heading breaks | Rebuilt Endless Houses misfortune table; normalized heading | 5 | done |  |
-| 143 | 135 | `Lares/Books/UVG/page_pngs/pages/page_0151.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel/encounters merged; line breaks | Rebuilt travel options and d10 encounters | 5 | done |  |
-| 144 | 136 | `Lares/Books/UVG/page_pngs/pages/page_0152.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Generator tables collapsed; footer tokens | Rebuilt Endless Houses generator tables and d30 list | 5 | done |  |
-| 145 | 137 | `Lares/Books/UVG/page_pngs/pages/page_0153.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; list formatting broken | Rebuilt Ruinland Discoveries headings + d6 list | 5 | done |  |
-| 146 | 138 | `Lares/Books/UVG/page_pngs/pages/page_0154.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; header tokens | Rebuilt Forest of Meat misfortune table | 5 | done |  |
-| 147 | 139 | `Lares/Books/UVG/page_pngs/pages/page_0155.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Travel/encounters merged; footer tokens | Rebuilt travel options and d10 encounters | 5 | done |  |
-| 148 | 140 | `Lares/Books/UVG/page_pngs/pages/page_0156.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Generator lists collapsed; footer tokens | Rebuilt Carnibotanic Generator lists | 5 | done |  |
-| 149 | 141 | `Lares/Books/UVG/page_pngs/pages/page_0157.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Discovery headings merged; word splits | Rebuilt Discoveries in the Forest headings + time/xp | 5 | done |  |
-| 150 | 142 | `Lares/Books/UVG/page_pngs/pages/page_0158.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Heading breaks; stray footer tokens | Normalized Black City heading + paragraph flow | 5 | done |  |
-| 151 | 143 | `Lares/Books/UVG/page_pngs/pages/page_0159.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Misfortune list flattened; travel/encounters merged | Rebuilt misfortune table, travel options, and d12 encounters | 5 | done |  |
-| 152 | 144 | `Lares/Books/UVG/page_pngs/pages/page_0160.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Section headings merged; list formatting broken | Rebuilt Last Camp headings + d6 list | 5 | done |  |
-| 153 | 145 | `Lares/Books/UVG/page_pngs/pages/page_0161.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Carousing table collapsed; Dark Hospital text merged | Rebuilt d20 carousing table; cleaned Dark Hospital section | 5 | done |  |
-| 154 | 146 | `Lares/Books/UVG/page_pngs/pages/page_0162.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Lists merged; payment table missing | Rebuilt hermits d6 list + Black City payment table | 5 | done |  |
-| 155 | 147 | `Lares/Books/UVG/page_pngs/pages/page_0163.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Grand Observer block merged; tables missing | Rebuilt Grand Observer headings, odds table, and d12 list | 5 | done |  |
-| 156 | 148 | `Lares/Books/UVG/page_pngs/pages/page_0164.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Prophecy list merged; line breaks | Rebuilt d30 prophecies list and heading | 5 | done |  |
-| 157 | 149 | `Lares/Books/UVG/page_pngs/pages/page_0165.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Portal sections merged; list formatting broken | Rebuilt Five Portals heading + Sky Portal lists | 5 | done |  |
-| 158 | 150 | `Lares/Books/UVG/page_pngs/pages/page_0166.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Portal sections merged; line breaks | Rebuilt Earth/Third Portal headings + d6 list | 5 | done |  |
-| 159 | 151 | `Lares/Books/UVG/page_pngs/pages/page_0167.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Portal sections merged; list formatting broken | Rebuilt Wind/Green Portal headings + d6 list | 5 | done |  |
-| 160 | 152 | `Lares/Books/UVG/page_pngs/pages/page_0168.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Line breaks and list formatting broken | Reflowed Pre-City narrative; rebuilt d10 lists; fixed word splits | 5 | done |  |
-| 161 | 153 | `Lares/Books/UVG/page_pngs/pages/page_0169.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | Headings and d8 list merged; word splits | Normalized City Itself headings; rebuilt d8 questions; fixed splits | 5 | done |  |
-| 162 | 154 | `Lares/Books/UVG/page_pngs/pages/page_0170.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d6 list run-on; paragraph wraps | Reflowed Lacquered Chaos/Black Obelisk sections; rebuilt d6 list | 5 | done |  |
-| 163 | 155 | `Lares/Books/UVG/page_pngs/pages/page_0171.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 2 | d6 list run-on; line breaks | Rebuilt House on the Edge of Time list; reflowed Pepis paragraph | 5 | done |  |
-| 164 | 156 | `Lares/Books/UVG/page_pngs/pages/page_0172.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_03_The_Grasslands_5-164.md` | 4 | Stray page title tokens | Normalized “The Caravan” heading | 5 | done |  |
-
-## Chapter 04 — The Caravan (165–178)
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 173 | 165 | `Lares/Books/UVG/page_pngs/pages/page_0173.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Title split; stray page number | Normalized chapter heading; removed extracted page number | 5 | done |  |
-| 174 | 166 | `Lares/Books/UVG/page_pngs/pages/page_0174.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Two-column reflow; bold heads flattened; word splits | Reflowed section paragraphs; normalized bold subheads | 5 | done |  |
-| 175 | 167 | `Lares/Books/UVG/page_pngs/pages/page_0175.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Bullet lists merged; table collapsed; word splits | Rebuilt lists and units; formatted d00 table | 5 | done |  |
-| 176 | 168 | `Lares/Books/UVG/page_pngs/pages/page_0176.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Column order issues; numbered steps run-on | Reflowed time rules; rebuilt steps and lists | 5 | done |  |
-| 177 | 169 | `Lares/Books/UVG/page_pngs/pages/page_0177.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Misfortune table flattened; modifiers list merged | Rebuilt misfortune table and modifiers | 5 | done |  |
-| 178 | 170 | `Lares/Books/UVG/page_pngs/pages/page_0178.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Discoveries tables merged; word splits | Rebuilt destination/discovery tables | 5 | done |  |
-| 179 | 171 | `Lares/Books/UVG/page_pngs/pages/page_0179.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Lists run together; corruption table flattened | Reflowed survival lists; rebuilt corruption table | 5 | done |  |
-| 180 | 172 | `Lares/Books/UVG/page_pngs/pages/page_0180.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Tables collapsed; bullets merged | Rebuilt market/haggling/catch tables | 5 | done |  |
-| 181 | 173 | `Lares/Books/UVG/page_pngs/pages/page_0181.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Multi-column trade goods table collapsed | Rebuilt d30 trade goods table | 5 | done |  |
-| 182 | 174 | `Lares/Books/UVG/page_pngs/pages/page_0182.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Numbered list merged; paragraph breaks off | Rebuilt First Caravan list with sub-lines | 5 | done |  |
-| 183 | 175 | `Lares/Books/UVG/page_pngs/pages/page_0183.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Two-column samples merged; formatting drift | Structured sample caravans with bullets | 5 | done |  |
-| 184 | 176 | `Lares/Books/UVG/page_pngs/pages/page_0184.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Financiers tables collapsed | Rebuilt patron tables | 5 | done |  |
-| 185 | 177 | `Lares/Books/UVG/page_pngs/pages/page_0185.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Trade routes table collapsed | Rebuilt trade routes table | 5 | done |  |
-| 186 | 178 | `Lares/Books/UVG/page_pngs/pages/page_0186.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_04_The_Caravan_165-178.md` | 2 | Quest list run-on | Rebuilt caravan quests list | 5 | done |  |
-
-## Chapter 05 — The Stuff (179–200)
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 187 | 179 | `Lares/Books/UVG/page_pngs/pages/page_0187.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Title styling; stray page number | Normalized chapter heading; removed page number | 5 | done |  |
-| 188 | 180 | `Lares/Books/UVG/page_pngs/pages/page_0188.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Transport table collapsed; bullets merged | Rebuilt fuel bullets and transport table | 5 | done |  |
-| 189 | 181 | `Lares/Books/UVG/page_pngs/pages/page_0189.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Column reflow; humanoid stats merged | Rebuilt overloading list and humanoid entries | 5 | done |  |
-| 190 | 182 | `Lares/Books/UVG/page_pngs/pages/page_0190.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Undead blocks merged; add-ons run-on | Rebuilt undead entries and add-ons | 5 | done |  |
-| 191 | 183 | `Lares/Books/UVG/page_pngs/pages/page_0191.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Variants table collapsed; line breaks | Rebuilt beasts table and add-ons | 5 | done |  |
-| 192 | 184 | `Lares/Books/UVG/page_pngs/pages/page_0192.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Wagons/steeds merged; add-ons run-on | Reflowed wagons and metal steed add-ons | 5 | done |  |
-| 193 | 185 | `Lares/Books/UVG/page_pngs/pages/page_0193.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Vehicle add-ons collapsed; word splits | Rebuilt Wicker Autowagon/Road Yacht sections | 5 | done |  |
-| 194 | 186 | `Lares/Books/UVG/page_pngs/pages/page_0194.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Walker add-ons merged | Rebuilt walker entry and add-ons | 5 | done |  |
-| 195 | 187 | `Lares/Books/UVG/page_pngs/pages/page_0195.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Autogolem/war engine blocks merged | Rebuilt autogolem and war engine add-ons | 5 | done |  |
-| 196 | 188 | `Lares/Books/UVG/page_pngs/pages/page_0196.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Tables collapsed | Rebuilt transport fixes and trouble tables | 5 | done |  |
-| 197 | 189 | `Lares/Books/UVG/page_pngs/pages/page_0197.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Quote/gear table merged | Rebuilt quote and general goods table | 5 | done |  |
-| 198 | 190 | `Lares/Books/UVG/page_pngs/pages/page_0198.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Toolkits table collapsed | Rebuilt toolkits table | 5 | done |  |
-| 199 | 191 | `Lares/Books/UVG/page_pngs/pages/page_0199.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Armor table and features merged | Rebuilt armor features and table | 5 | done |  |
-| 200 | 192 | `Lares/Books/UVG/page_pngs/pages/page_0200.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Weapon tables collapsed | Rebuilt ranges and ranged weapons table | 5 | done |  |
-| 201 | 193 | `Lares/Books/UVG/page_pngs/pages/page_0201.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Melee tables collapsed | Rebuilt melee weapons tables | 5 | done |  |
-| 202 | 194 | `Lares/Books/UVG/page_pngs/pages/page_0202.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Implants list merged | Rebuilt implant varieties and table | 5 | done |  |
-| 203 | 195 | `Lares/Books/UVG/page_pngs/pages/page_0203.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Services tables collapsed | Rebuilt services tables | 5 | done |  |
-| 204 | 196 | `Lares/Books/UVG/page_pngs/pages/page_0204.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | d100 list merged | Reflowed 100 strange items list | 5 | done |  |
-| 205 | 197 | `Lares/Books/UVG/page_pngs/pages/page_0205.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | d100 list continued | Reflowed 100 strange items list | 5 | done |  |
-| 206 | 198 | `Lares/Books/UVG/page_pngs/pages/page_0206.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Spells block merged | Reflowed spell entries | 5 | done |  |
-| 207 | 199 | `Lares/Books/UVG/page_pngs/pages/page_0207.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Spells block merged | Reflowed spell entries | 5 | done |  |
-| 208 | 200 | `Lares/Books/UVG/page_pngs/pages/page_0208.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_05_The_Stuff_179-200.md` | 2 | Corruption tables collapsed | Rebuilt corruption tables | 5 | done |  |
-
-## Chapter 06 — The Bestiary (201–218)
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 209 | 201 | `Lares/Books/UVG/page_pngs/pages/page_0209.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 4 | Cover art; page number noise | Kept title/citation; removed page number | 5 | done |  |
-| 210 | 202 | `Lares/Books/UVG/page_pngs/pages/page_0210.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Attribute list and encounters run-on; table collapsed | Reflowed attributes and encounters; rebuilt level table | 5 | done |  |
-| 211 | 203 | `Lares/Books/UVG/page_pngs/pages/page_0211.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Autofac blocks and lists run-on | Reflowed entry fields; rebuilt d6 lists and specials | 5 | done |  |
-| 212 | 204 | `Lares/Books/UVG/page_pngs/pages/page_0212.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Cat Lord stats/lists merged; PC traits run-on | Split stat blocks, lists, and PC traits | 5 | done |  |
-| 213 | 205 | `Lares/Books/UVG/page_pngs/pages/page_0213.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Fetish list/table collapsed; golem variants merged | Rebuilt fetish table and golem variant list | 5 | done |  |
-| 214 | 206 | `Lares/Books/UVG/page_pngs/pages/page_0214.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Great Folk/Human rumors merged | Reflowed entries and rumor lists | 5 | done |  |
-| 215 | 207 | `Lares/Books/UVG/page_pngs/pages/page_0215.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Marmotfolk rumors and PC traits run-on | Reflowed rumors/names/traits; fixed word splits | 5 | done |  |
-| 216 | 208 | `Lares/Books/UVG/page_pngs/pages/page_0216.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Porcelain Prince lists and rumors merged | Rebuilt body list, rumors, and PC rules | 5 | done |  |
-| 217 | 209 | `Lares/Books/UVG/page_pngs/pages/page_0217.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Post-Mortal/Radiation Ghost lists merged | Reflowed subtype and ghost lists; fixed splits | 5 | done |  |
-| 218 | 210 | `Lares/Books/UVG/page_pngs/pages/page_0218.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Quarterling clannotype table collapsed | Rebuilt clannotype table and lists | 5 | done |  |
-| 219 | 211 | `Lares/Books/UVG/page_pngs/pages/page_0219.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Spectrum Satrap lists run-on | Reflowed satrap lists, rumors, traits | 5 | done |  |
-| 220 | 212 | `Lares/Books/UVG/page_pngs/pages/page_0220.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Steppe Nomad lists merged | Reflowed steppelander lists and headings | 5 | done |  |
-| 221 | 213 | `Lares/Books/UVG/page_pngs/pages/page_0221.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Ultra lists run-on; word splits | Reflowed Ultra lists; fixed splits | 5 | done |  |
-| 222 | 214 | `Lares/Books/UVG/page_pngs/pages/page_0222.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Vech variants list run-on; word splits | Rebuilt Vech variants list; fixed splits | 5 | done |  |
-| 223 | 215 | `Lares/Books/UVG/page_pngs/pages/page_0223.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Vome lists merged; word splits | Reflowed Vome lists and upgrades; fixed splits | 5 | done |  |
-| 224 | 216 | `Lares/Books/UVG/page_pngs/pages/page_0224.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Water People lists merged | Reflowed Water People lists and rumors | 5 | done |  |
-| 225 | 217 | `Lares/Books/UVG/page_pngs/pages/page_0225.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 2 | Pets table collapsed | Rebuilt pets table and intro text | 5 | done |  |
-| 226 | 218 | `Lares/Books/UVG/page_pngs/pages/page_0226.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_06_The_Bestiary_201-218.md` | 4 | Illustration-only page | Left page body empty (citation only) | 5 | done |  |
-
-## Chapter 07 — The Setting (219–240)
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 227 | 219 | `Lares/Books/UVG/page_pngs/pages/page_0227.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 4 | Section splash art; title extracted with page number noise | Normalized heading; removed page number; kept citation only | 5 | done |  |
-| 228 | 220 | `Lares/Books/UVG/page_pngs/pages/page_0228.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | d100 table collapsed; line breaks merged | Rebuilt Other Voyagers table | 5 | done |  |
-| 229 | 221 | `Lares/Books/UVG/page_pngs/pages/page_0229.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Continuation table merged | Rebuilt Other Voyagers continuation table | 5 | done |  |
-| 230 | 222 | `Lares/Books/UVG/page_pngs/pages/page_0230.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Two-column gate text and table collapsed | Reflowed gate text; rebuilt rumors table | 5 | done |  |
-| 231 | 223 | `Lares/Books/UVG/page_pngs/pages/page_0231.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Gate list and gater sickness table collapsed | Rebuilt lists and gater sickness table | 5 | done |  |
-| 232 | 224 | `Lares/Books/UVG/page_pngs/pages/page_0232.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Climate and geography tables collapsed | Rebuilt Weather and Climate Matrix + geography tables | 5 | done |  |
-| 233 | 225 | `Lares/Books/UVG/page_pngs/pages/page_0233.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Two d20 tables collapsed | Rebuilt New Discoveries and Historic Periods tables | 5 | done |  |
-| 234 | 226 | `Lares/Books/UVG/page_pngs/pages/page_0234.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Histories lists merged | Reflowed Forgotten Times and Strife lists | 5 | done |  |
-| 235 | 227 | `Lares/Books/UVG/page_pngs/pages/page_0235.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Fabled and Revolution lists merged | Reflowed lists and headers | 5 | done |  |
-| 236 | 228 | `Lares/Books/UVG/page_pngs/pages/page_0236.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Languages list broken | Rebuilt Common Languages list | 5 | done |  |
-| 237 | 229 | `Lares/Books/UVG/page_pngs/pages/page_0237.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Dead/Weird language list merged | Reflowed and repaired list entries | 5 | done |  |
-| 238 | 230 | `Lares/Books/UVG/page_pngs/pages/page_0238.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Death triad table and lists collapsed | Rebuilt triad table and list formatting | 5 | done |  |
-| 239 | 231 | `Lares/Books/UVG/page_pngs/pages/page_0239.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Oracle table collapsed | Rebuilt Oracle of the Death Dice table | 5 | done |  |
-| 240 | 232 | `Lares/Books/UVG/page_pngs/pages/page_0240.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Glossary entries split across lines | Reflowed glossary and fixed split words | 5 | done |  |
-| 241 | 233 | `Lares/Books/UVG/page_pngs/pages/page_0241.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Glossary entries split across lines | Reflowed glossary and fixed split words | 5 | done |  |
-| 242 | 234 | `Lares/Books/UVG/page_pngs/pages/page_0242.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Glossary entries split across lines | Reflowed glossary and fixed split words | 5 | done |  |
-| 243 | 235 | `Lares/Books/UVG/page_pngs/pages/page_0243.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Glossary entries split across lines | Reflowed glossary and fixed split words | 5 | done |  |
-| 244 | 236 | `Lares/Books/UVG/page_pngs/pages/page_0244.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Glossary entries split across lines | Reflowed glossary and fixed split words | 5 | done |  |
-| 245 | 237 | `Lares/Books/UVG/page_pngs/pages/page_0245.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 2 | Glossary entries split across lines | Reflowed glossary and fixed split words | 5 | done |  |
-| 246 | 238 | `Lares/Books/UVG/page_pngs/pages/page_0246.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 1 | Character sheet form page | Embedded character sheet image | 5 | done |  |
-| 247 | 239 | `Lares/Books/UVG/page_pngs/pages/page_0247.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 1 | Caravan sheet form page | Embedded caravan sheet image | 5 | done |  |
-| 248 | 240 | `Lares/Books/UVG/page_pngs/pages/page_0248.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_07_The_Setting_219-240.md` | 1 | Hero sheet form page | Embedded hero sheet image | 5 | done |  |
-
-## Chapter 08 — Index Terminus (241–Z)
-
-Status: complete.
-
-| Page # | Label | PNG | Chapter File | Pre | Issues | Fix Notes | Post | Status | Questions/Hard Pages |
-|---:|:---:|:---|:---|:---:|:---|:---|:---:|:---:|:---|
-| 249 | 241 | `Lares/Books/UVG/page_pngs/pages/page_0249.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 1 | Index entries garbled; leader dots missing | Rebuilt as nested list; split merged entries; removed footer noise | 5 | done |  |
-| 250 | 242 | `Lares/Books/UVG/page_pngs/pages/page_0250.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 1 | Index entries merged; leader dots missing | Rebuilt as nested list; split merged entries; removed footer noise | 5 | done |  |
-| 251 | 243 | `Lares/Books/UVG/page_pngs/pages/page_0251.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 1 | Index entries merged; leader dots missing | Rebuilt as nested list; split merged entries; removed footer noise | 5 | done |  |
-| 252 | 244 | `Lares/Books/UVG/page_pngs/pages/page_0252.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 3 | Title line had page number | Normalized title heading | 5 | done |  |
-| 253 | 245 | `Lares/Books/UVG/page_pngs/pages/page_0253.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 3 | Title line had page number | Normalized title heading | 5 | done |  |
-| 254 | 246 | `Lares/Books/UVG/page_pngs/pages/page_0254.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 2 | Ad copy broken by stray tokens | Reflowed ad copy; fixed word splits; removed artifacts | 5 | done |  |
-| 255 | U | `Lares/Books/UVG/page_pngs/pages/page_0255.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 5 | Illustration-only page | Left citation only | 5 | done |  |
-| 256 | V | `Lares/Books/UVG/page_pngs/pages/page_0256.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 1 | Travel rules summary run-on; » bullets | Rebuilt travel flow tables; embedded chart image; normalized rolls/bullets | 5 | done |  |
-| 257 | W | `Lares/Books/UVG/page_pngs/pages/page_0257.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 0 | Flowchart context missing | Rebuilt destination/camp/action tables; embedded chart image | 5 | done |  |
-| 258 | X | `Lares/Books/UVG/page_pngs/pages/page_0258.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 0 | Referee tables merged | Rebuilt aspects/NPC/vehicle/weather tables; embedded chart image | 5 | done |  |
-| 259 | Y | `Lares/Books/UVG/page_pngs/pages/page_0259.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 1 | Summary tables merged | Rebuilt discovery summary tables; embedded chart image | 5 | done |  |
-| 260 | Z | `Lares/Books/UVG/page_pngs/pages/page_0260.png` | `Lares/Books/UVG/UVG_Black_City_2e/UVG_Black_City_2e_08_Index_Terminus_241-Z.md` | 4 | Art page with quote | Transcribed quote; left art out | 5 | done |  |
-
