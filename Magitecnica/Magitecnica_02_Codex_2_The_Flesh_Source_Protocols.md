@@ -1,6 +1,6 @@
-<a name="page_0001"></a>
+<a id="page_0001"></a>
 
-<a name="page_0002"></a>
+<a id="page_0002"></a>
 
 ##### **WORK IN PROGRESS**
 
@@ -17,7 +17,7 @@ The heroes of the Stratometaship made this zine possible. Thank you. _“Let us 
 February 2024 [https://patreon.com/wizardthiefighter f](https://patreon.com/wizardthieffighter)
 
 
-<a name="page_0003"></a>
+<a id="page_0003"></a>
 
 #### _Magitecnica_
 
@@ -31,7 +31,7 @@ February 2024 [https://patreon.com/wizardthiefighter f](https://patreon.com/wiza
 Art and writing ©2024 Luka Rejec
 
 
-<a name="page_0004"></a>
+<a id="page_0004"></a>
 
 _WORK IN PROGRESS_ _2_
 
@@ -57,7 +57,7 @@ _Anne Astec_ _37_ _Burden Share_ _37_ _Metempsychosis_ _38_ _Open Person_ _39_ _
 
 The Awakened Sphere 41 _Awakened Sphere Traits_ _42_ _Eategrate_ _45_ _Bloodsong_ _46_ _Manybodied_ _47_ _Skinshift_ _48_ _SkinSplit_ _49_ _Skinwyrd_ _50_ _Ecosphere Attunement_ _51_ _Ecosphere Veil_ _51_ _Ecosphere Immersion_ _52_
 
-<a name="page_0005"></a>
+<a id="page_0005"></a>
 
 ## **BIOMANCY**
 
@@ -67,7 +67,7 @@ Apologia (Bazili 4-chrysogenes, editor).
 
 
 
-<a name="page_0006"></a>
+<a id="page_0006"></a>
 
 ##### **THE BLOOD MUSE**
 
@@ -94,7 +94,7 @@ Fleshsculptor, hiuri hwers, peestmacher, razumorti, relifer, seitas, sorselor, v
 
 
 
-<a name="page_0007"></a>
+<a id="page_0007"></a>
 
 ##### **BIOMANTIC POWERS**
 
@@ -118,7 +118,7 @@ Many biomantic powers may cause:
 
 
 
-<a name="page_0008"></a>
+<a id="page_0008"></a>
 
 **Beast Egg Mass**
 
@@ -140,7 +140,7 @@ Traditional uses of bém:
 
 
 
-<a name="page_0009"></a>
+<a id="page_0009"></a>
 
 ### **USHA’S WILD RIDE**
 
@@ -166,7 +166,7 @@ We don’t know who Usha was or even if she really existed. Based on a reading o
 > 
 > _Overcharge:_ the target automatically fails its save and immediately suffers 4d6* damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody’s control.
 
-<a name="page_0010"></a>
+<a id="page_0010"></a>
 
 **The Flesh Horror**
 
@@ -182,7 +182,7 @@ Special: After (d4: (1) a few minutes, (2–3) a few hours, (4) a few days) the 
 
 Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), (4–5) an organic blade tougher than steel (1d8 damage, €100), (6) an empty mind pearl (€250).
 
-<a name="page_0011"></a>
+<a id="page_0011"></a>
 
 ##### **USHA’S CHAOS TRIGGER**
 
@@ -205,7 +205,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ You get to choose the mutation. Dangerous.
 
-<a name="page_0012"></a>
+<a id="page_0012"></a>
 
 ##### **USHA’S UPLIFT**
 
@@ -252,14 +252,14 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 16–19 | Obsequious. Convinced the creator is a deity who understands all.
 > 20≤ | Understands you’re not so different. It’s mortals all the way down.
 
-<a name="page_0013"></a>
+<a id="page_0013"></a>
 
 8–12 Confused. Desperately seeking meaning and purpose. 13 Disdainful of creator. Convinced it will discover, better truth. 14–15 Numb with shock of understanding. 16–19 Obsequious. Convinced the creator is a deity who understands all. 20≤ Understands you’re not so different. It’s mortals all the way down.
 
 
 
 
-<a name="page_0014"></a>
+<a id="page_0014"></a>
 
 ##### **USHA’S CHIMERA SPLICE**
 
@@ -293,7 +293,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The chimera gains an additional trait from each original creature.
 
-<a name="page_0015"></a>
+<a id="page_0015"></a>
 
 ##### **USHA’S XENOGRAFT**
 
@@ -330,13 +330,13 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The procedure takes less than an hour. It is very dangerous for the experimental subject.
 
-<a name="page_0016"></a>
+<a id="page_0016"></a>
 
 4. Chitin Lepidote. Exoskeletal segments grafted across the body (+2 armor) with delicate sensillae providing fine sense of vibrations as well as moving air and water currents. Reduce charisma by 1d2. 5. Feline Sinews. Increased balance (+1 agility), more graceful movement (+1 charisma), and quicker reflexes (+1 initiative). Very illegal in any cat-friendly lands. Death penalty in the Purple Land. 6. Warhog Guts. Digestive tract designed grind and drain nutrients out of the poorest foodstuffs: bones, dead leaves, dry wood, old leather. Also, near-immunity to ingested poisons and toxins.
 
 
 
-<a name="page_0017"></a>
+<a id="page_0017"></a>
 
 ##### **USHA’S REPLICATOR STRAND**
 
@@ -354,7 +354,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Watch a stone’s worth of tissue grow to sack-sized in one hour. The growth deals 4d4* damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
 
-<a name="page_0018"></a>
+<a id="page_0018"></a>
 
 ##### **USHA’S SWIFT REBUILD**
 
@@ -387,7 +387,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Regrow a critical organ or bodily system, like the digestive or circulatory system. These cannot be safely removed.
 
-<a name="page_0019"></a>
+<a id="page_0019"></a>
 
 ### **REHORYAN’S BLOOD CANTICLE**
 
@@ -407,7 +407,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The attunement takes mere seconds. Or: you may listen for the biohistory of a dead organism or part thereof.
 
-<a name="page_0020"></a>
+<a id="page_0020"></a>
 
 ##### **REHORYAN’S VIVID REGRESSION**
 
@@ -429,7 +429,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ The spell is not dangerous to the target, it suffers no stress damage, and it gets a bonus to save its original traits.
 
-<a name="page_0021"></a>
+<a id="page_0021"></a>
 
 ##### **REHORYAN’S PROGRESSIVE RESTORATION**
 
@@ -457,7 +457,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Regenerate for 10 more rounds.
 
-<a name="page_0022"></a>
+<a id="page_0022"></a>
 
 ##### **REHORYAN’S PROPHETIC SONG**
 
@@ -481,7 +481,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ Disabled for this power by order Magenta-cantaloupe-3.
 
-<a name="page_0023"></a>
+<a id="page_0023"></a>
 
 ##### **REHORYAN’S PROPHETIC SONG 2**
 
@@ -503,7 +503,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Overcharge:_ none
 
-<a name="page_0024"></a>
+<a id="page_0024"></a>
 
 ### **SIATO RUNO’S XENON GENESIS**
 
@@ -526,7 +526,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Again (x4):_ Make the process 1,000 times faster or slower. Very dangerous for the target.
 
-<a name="page_0025"></a>
+<a id="page_0025"></a>
 
 ##### **RUNO’S PARTHENOGENIC CRADLE**
 
@@ -546,7 +546,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Warning:_ Once hatched, the bodies and consciousness of new organisms may display unpredictable aberrations from the forced growth. Siato Runo LLC is not liable for any teratogenous disasters caused by careless parthenogenesis.
 
-<a name="page_0026"></a>
+<a id="page_0026"></a>
 
 ##### **RUNO’S PARTHENOGENIC POUCH**
 
@@ -564,7 +564,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Synergy:_ Combine with _Runo’s Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
 
-<a name="page_0027"></a>
+<a id="page_0027"></a>
 
 ##### **RUNO’S ONTOGENIC EDITOR**
 
@@ -593,7 +593,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 > 
 > _Overcharge:_ The organism is altered to twice (or half) the normal extreme of the species. So, twice or half the size, for example. This is dangerous for the organism.
 
-<a name="page_0028"></a>
+<a id="page_0028"></a>
 
 ### **NUNKA’S AUTOMORPH**
 
@@ -611,7 +611,7 @@ Violet City Scale Library
 
 
 
-<a name="page_0029"></a>
+<a id="page_0029"></a>
 
 ##### **NUNKA’S WEAPON MORPH**
 
@@ -635,7 +635,7 @@ Violet City Scale Library
 > 
 > _Overcharge:_ The weapons erupt instantly in a traumatic burst dealing 1d6* damage.
 
-<a name="page_0030"></a>
+<a id="page_0030"></a>
 
 ##### **NUNKA’S EPIDERMAL SCULPT**
 
@@ -684,7 +684,7 @@ Violet City Scale Library
 > 
 > _Overcharge:_ The growths develop instantly, dealing 1d6* damage.
 
-<a name="page_0031"></a>
+<a id="page_0031"></a>
 
 ≤1 Sculpt fails. Victim exposed to severe corruption. fail Sculpt succeeds. Patient exposed to moderate corruption. success Sculpt succeeds. nat. 20 Excellent sculpt. Increase bonus by 1 or reduce slots occupied by 1 (minimum 1).
 
@@ -693,7 +693,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 
 
 
-<a name="page_0032"></a>
+<a id="page_0032"></a>
 
 ##### **NUNKA’S BIOPHYSICAL OVERDRIVE**
 
@@ -709,7 +709,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 > 
 > _Again (x4):_ The target gains 6 more points to assign. When the overdrive fades, besides the exhaustion and damage, the target must save or die.
 
-<a name="page_0033"></a>
+<a id="page_0033"></a>
 
 ##### **NUNKA’S SPITTING SYMBIOTE**
 
@@ -733,7 +733,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 > 
 > _Overcharge:_ a perfected integration means the symbiote regrows after a single full round if the host spends 1d4 life.
 
-<a name="page_0034"></a>
+<a id="page_0034"></a>
 
 ### **ARKHIATRY CLASSICS**
 
@@ -759,7 +759,7 @@ _Mediwizards_, Emerald University Press, Metropolis, YPC.
 
 
 
-<a name="page_0035"></a>
+<a id="page_0035"></a>
 
 ##### **THE MEDIMAGIC OF THE EVERLIVING**
 
@@ -777,7 +777,7 @@ When that society [section missing] the many iatric clans were scattered and bro
 
 
 
-<a name="page_0036"></a>
+<a id="page_0036"></a>
 
 ##### **GREAT HEALER TRAITS**
 
@@ -800,7 +800,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 
 
-<a name="page_0037"></a>
+<a id="page_0037"></a>
 
 ##### **ANNE ASTEC**
 
@@ -826,7 +826,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ The ritual takes several minutes, but inflicts 1d4 damage to each of the parties.
 
-<a name="page_0038"></a>
+<a id="page_0038"></a>
 
 ##### **METEMPSYCHOSIS**
 
@@ -847,7 +847,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ Attempt to overwrite the mind of a non-compliant host.
 
-<a name="page_0039"></a>
+<a id="page_0039"></a>
 
 ##### **OPEN PERSON**
 
@@ -887,7 +887,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ Restore a creature to its state of six years earlier.
 
-<a name="page_0040"></a>
+<a id="page_0040"></a>
 
 ##### **REAL-TIME REBUILD**
 
@@ -915,7 +915,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > _Overcharge:_ Restore an additional attribute or lift a second burden. Alternatively, reduce the duration of the slumber three-fold.
 
-<a name="page_0041"></a>
+<a id="page_0041"></a>
 
 ### **THE AWAKENED SPHERE**
 
@@ -932,7 +932,7 @@ Chrysalist, dog-in, hédeōs, metassia, noömantikoï, skinchanger, yedyayin, zu
 
 
 
-<a name="page_0042"></a>
+<a id="page_0042"></a>
 
 ##### **AWAKENED SPHERE TRAITS**
 
@@ -950,7 +950,7 @@ Chrysalist, dog-in, hédeōs, metassia, noömantikoï, skinchanger, yedyayin, zu
 
 
 
-<a name="page_0043"></a>
+<a id="page_0043"></a>
 
 **Awakened Sphere Features**
 
@@ -968,7 +968,7 @@ Some awakened powers may cause:
 
 
 
-<a name="page_0044"></a>
+<a id="page_0044"></a>
 
 **Organic Inscription**
 
@@ -996,7 +996,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 
 
-<a name="page_0045"></a>
+<a id="page_0045"></a>
 
 ##### **EATEGRATE**
 
@@ -1022,7 +1022,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You can manifest a semi-magical trait, like the breath of a dragon or the death glare of a unicorn.
 
-<a name="page_0046"></a>
+<a id="page_0046"></a>
 
 ##### **BLOODSONG**
 
@@ -1038,7 +1038,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You forge a link between two very different creatures, such as between a dog or a crab and a hydra or a medusa.
 
-<a name="page_0047"></a>
+<a id="page_0047"></a>
 
 ##### **MANYBODIED**
 
@@ -1056,7 +1056,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You attempt to inject your mind into a larger creature, such as a man or mammoth.
 
-<a name="page_0048"></a>
+<a id="page_0048"></a>
 
 ##### **SKINSHIFT**
 
@@ -1078,7 +1078,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Again (x4):_ Into any form, from a mite to a mighty airwhale.
 
-<a name="page_0049"></a>
+<a id="page_0049"></a>
 
 ##### **SKINSPLIT**
 
@@ -1107,7 +1107,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ Shift into a dangerous colony organism with special attacks.
 
-<a name="page_0050"></a>
+<a id="page_0050"></a>
 
 ##### **SKINWYRD**
 
@@ -1132,7 +1132,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You retain some control of the skinwyrd, including the ability to deactivate the power by making a successful save.
 
-<a name="page_0051"></a>
+<a id="page_0051"></a>
 
 ##### **ECOSPHERE ATTUNEMENT**
 
@@ -1160,7 +1160,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > _Overcharge:_ You are effectively invisible and undetectable within the environment, passing without sound or trace. Alternatively, you are completely unmissable.
 
-<a name="page_0052"></a>
+<a id="page_0052"></a>
 
 ##### **ECOSPHERE IMMERSION**
 

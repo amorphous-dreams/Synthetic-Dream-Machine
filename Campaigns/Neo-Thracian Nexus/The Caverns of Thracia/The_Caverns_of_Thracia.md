@@ -1,6 +1,6 @@
 <!-- Begin: JG102_The_Caverns_of_Thracia_01_Intro_Tables_1-20 -->
 
-<a name="page_0001"></a>
+<a id="page_0001"></a>
 
 # THE CAVERNS OF THRACIA
 
@@ -8,15 +8,15 @@ By Jennell Jaquays
 
 ![The Caverns of Thracia cover (page 1)](images/p001.png)
 
-<a name="page_0002"></a>
+<a id="page_0002"></a>
 
 ![The Caverns of Thracia title page (page 2)](images/p002.png)
 
-<a name="page_0003"></a>
+<a id="page_0003"></a>
 
 THIS PAGE INTENTIONALLY LEFT BLANK
 
-<a name="page_0004"></a>
+<a id="page_0004"></a>
 
 ## Table of Contents
 
@@ -76,7 +76,7 @@ This book was typeset by Penny Gooding and Layout
 was by Mark Holmer. Both had assists from Chuck
 Anshell, Bob Bingham and Dave Sering.
 
-<a name="page_0005"></a>
+<a id="page_0005"></a>
 
 ## Forward
 
@@ -100,7 +100,7 @@ C\) Some rooms may have to be beefed up or toned down and some of their contents
 
 D\) There are several monsters in this adventure that were created especially for the scenarios presented. They are not to be taken as official D&D monsters, but instead are just local color to foil the rule book memorizers in an adventuring party. Nothing seems to scare someone who knows the rules like something totally unknown.
 
-<a name="page_0006"></a>
+<a id="page_0006"></a>
 
 E\) A complete table of random encounters for each level is provided with the adventure. If a wandering monster is indicated, use the chart for that level. If a level does not have a chart, it does not have wandering monsters.
 
@@ -120,7 +120,7 @@ Before man existed, or possibly before he discovered the benefits and curses of 
 
 Meanwhile, the humans had discovered the caverns, not realizing that the once feared reptile men (they were merely legendary now and the Immortal King was a bogeyman to scare children) still occupied hidden portions of the caverns. At this point the men were beginning to develop a civilization comparable to the early Mycenaean or Cretan civilizations of this world’s past. The art and architecture were almost
 
-<a name="page_0007"></a>
+<a id="page_0007"></a>
 
 identical with the above mentioned cultures. Eventually they sealed off several of their tomb complexes and began to concentrate on the civilization above ground. Half a millennium later they would construct the temples on second level and 200 years after that they would begin the golden age of Thracian culture.
 
@@ -142,7 +142,7 @@ The caverns are now the holy places both for the descendants of the Thracians an
 
 The very ancient Thracians had a written language. There are a few instances where it can be found in the caverns. However, between the time of the sealing of the Ancient Thracian tombs and the beginning of the golden age, the Thracian language changed drastically (something like the difference between classical Latin and modern Italian). A character who can read the Thracian language may pick out one word in ten of the Ancient Thracian language.
 
-<a name="page_0008"></a>
+<a id="page_0008"></a>
 
 ## Random Encounter Tables
 
@@ -204,7 +204,7 @@ Room Complex 53 (A - J):
 | 3-9 | No encounter (small spiders and little insects make scurrying noise) |
 | 10 | G’ruk, the lizard man Shaman (Room 31)* |
 
-<a name="page_0009"></a>
+<a id="page_0009"></a>
 
 ### Level Three: The Gardens
 
@@ -260,7 +260,7 @@ These are the descriptions and some rationalizations for the various encounters 
 
 4\) Band of Bold Tribesmen: There will be a total of 6 Tribesmen in 1 of 3 bands. Band 1: Led by a 2nd level fighter in platemail (see illustration of armored Tribesmen guards), Align: N, AC: 3, Move: 6", HD: 2, Damage: Spear for 1 - 6 and Broadsword for 1 - 8, HP: 11, STR: 12, DEX: 13. The next character of note is a 4th level Cleric of The Dark One, Align: LE, AC: 6 (Leather and Shield), Move: 12", HD: 2+4, Damage: Mace for 1 - 6, HP: 12, Spells: Cure Light Wounds, Cure Light Wounds, Animate 3 Undead (Skeletons or Zombies) once daily and Control Undead of a number equal to the turning ability of a good Cleric (see Designer’s Notes for further information).
 
-<a name="page_0010"></a>
+<a id="page_0010"></a>
 
 The rest of the band is made up of 1st level fighters armed with Leather Armor, Shield and Spear. Align: N, AC: 6, Move: 12", HD: 1, Damage: 1 - 6 with Spear, HP: 6, 8, 4, 7. The group will also have split between them the following: Two 50' Coils of Rope, 36 Torches, 5 Bronze Spikes, Rations for 6 men for 4 days, 6 Flagons of Water, 1 Flagon of Weak Wine, 2 Bronze Daggers, a Stone Hammer, a rock on the end of a stick with a Continual Light spell on it. The glowing rock has a hood attached to hide the light. It is carried by the Cleric.
 
@@ -272,7 +272,7 @@ Band 3: This is a group of escaped slaves from the 3rd level. They are AC: 9, Mo
 
 ![Armored Tribesmen Guards (page 10)](images/p010.png)
 
-<a name="page_0011"></a>
+<a id="page_0011"></a>
 
 6\) **Tribesman Funerary Procession:** This group will only be in the designated area. If it is indicated as an encounter and the adventuring party is not in the appropriate area, the procession will be located in Room 27B and will remain there for 3 - 18 turns after the encounter is determined. The funeral procession will consist of the same entourage as in the Tribesmen religious ceremony described in Room 23. However, there will be an additional 1 - 12 0 level types. All will be garbed in black robes and the 0 level types will have their faces painted in bright, garish colors. The body is borne by 6 men (0 levels) of 4 Hit Points each. There also will only be four 1st level fighters in plate mail, AC: 3, Move: 6", HD: 1, Damage: Spear for 1 - 6 and Broadsword for 1 - 8, HP: 4, 6, 3, 8; plus one 2nd level fighter in plate mail, AC: 3, Move: 6", HD: 2, Damage: Spear for 1 - 6 and Sword for 1 - 8, HP: 13.
 
@@ -304,7 +304,7 @@ Band 3: This is a group of escaped slaves from the 3rd level. They are AC: 9, Mo
 
 2\) **Special:** Nothing unless the Immortal King in Room 53 E has been disturbed. If so, then it will be that undead creature as it prowls about its former demesne in search of living flesh to devour. This creature can and will leave the Room 53 Complex if the door to Room 53 from 53 A is not spiked shut. It will not attempt to leave through either of the other exits from this level, although it may seek to travel either astrally or ethereally.
 
-<a name="page_0012"></a>
+<a id="page_0012"></a>
 
 10\) **G’ruk the Lizard Shaman:** (see Room 31 for further details on this creature). He will be exploring the sacred area and may be found in any unsealed area except for 53 E.
 
@@ -351,7 +351,7 @@ Band 3: This is a group of escaped slaves from the 3rd level. They are AC: 9, Mo
 | --- | --- |
 | 1-8 | Captive and escorted by two Gnoll guards, AC: 5, Move: 9", HD: 2, Damage: 1 - 10 with two-handed Sword, HP: 14, 4. |
 
-<a name="page_0013"></a>
+<a id="page_0013"></a>
 
 | d20 | Result |
 | --- | --- |
@@ -395,7 +395,7 @@ If the identity of a given Gnoll patrol is not predetermined, roll once on a d6.
 | 2 | **Dog Brother Magic User:** AC: 6, Move: 12", HD: 4, Damage: two Daggers for 1 - 4 each and/or bite for 1 - 4, HP: 27, Spells: (as a 4th level Magic User) *Charm Person* (x2), *Shield*, *Sleep*, *Web* (x2). |
 | 3 | **Minotaur:** AC: 6, Move: 12", HD: 6, Damage: butt for 2 - 8, bite for 1 - 3 and/or Battle Axe for 1 - 12, HP: 35. |
 
-<a name="page_0014"></a>
+<a id="page_0014"></a>
 
 #### Table III: Special Patrol Members (continues)
 
@@ -433,7 +433,7 @@ Roll once on a d4 on Table One. This will determine the number of information bi
 | 3 | 3 pieces of information |
 | 4 | No pieces of information |
 
-<a name="page_0015"></a>
+<a id="page_0015"></a>
 
 ### Table Two
 
@@ -460,7 +460,7 @@ Roll once on a d4 on Table One. This will determine the number of information bi
 | 19 | The touch of the Good will destroy Undead (F). |
 | 20 | You have learned to speak the language of the Tribesmen. You have a 65% chance of speaking clearly to any Tribesman. If the 65% roll is not made, clarity of conversation must be determined on Room 73’s Interpretation tables. |
 
-<a name="page_0016"></a>
+<a id="page_0016"></a>
 
 ## The Lost City of Thracia
 
@@ -480,33 +480,33 @@ E\) **A Hunting Party:** Slurping quietly about in the swamp is a patrol of Liza
 
 F\) **A Hole in the Ground:** This is a 5' diameter hole that lets sunlight down into the cavern below and at high noon is focused directly on the semicircular area of 23. The drop is 65' for 6d6 +2 damage. If the character falling survives and does not hang on there is an additional 20% chance that he or she will slip off and fall an additional 50' to land on the east bank of the river, taking another 4d6 +2 damage.
 
-<a name="page_0017"></a>
+<a id="page_0017"></a>
 
 ![The Lost City of Thracia map (page 17)](images/p017.png)
 
-<a name="page_0018"></a>
+<a id="page_0018"></a>
 
 ![Area Around Thracia (page 18)](images/p018.png)
 
-<a name="page_0019"></a>
+<a id="page_0019"></a>
 
 ![Area Around Thracia (page 19)](images/p019.png)
 
-<a name="page_0020"></a>
+<a id="page_0020"></a>
 
 ![Area Around Thracia (page 20)](images/p020.png)
 
 <!-- Begin: JG102_The_Caverns_of_Thracia_02_Caverns_Level_01_21-30 -->
 
-<a name="page_0021"></a>
+<a id="page_0021"></a>
 
 # Level One
 
-<a name="page_0022"></a>
+<a id="page_0022"></a>
 
 ![The Caverns of Thracia level one, 1 inch = 40 ft. (page 22)](images/p022.png)
 
-<a name="page_0023"></a>
+<a id="page_0023"></a>
 
 ## Level One
 
@@ -524,7 +524,7 @@ F\) **A Hole in the Ground:** This is a 5' diameter hole that lets sunlight down
 
 7\) **Gnoll Guardpost**: This is a guardpost occupied by 6 Gnolls (in addition to the one above) who are in the service of the Minotaur King. AC: 5, Move: 9", HD: 2, HP: 13, 14, 7, 15, 8, 10, Damage: Longbow for 1-6, and Battle Axe for 1-10. Each Gnoll has 4 SP, and 6 GP on his person.
 
-<a name="page_0024"></a>
+<a id="page_0024"></a>
 
 ![The Incarnation of Death](images/p024.png)
 
@@ -569,7 +569,7 @@ If a character, even an unwounded one, willingly embraces the Incarnation of Dea
 
 The creature is normally invisible, but once attacked it becomes visible. It will drain one energy (life) level when it scores a hit.
 
-<a name="page_0025"></a>
+<a id="page_0025"></a>
 
 9 A\) **The Gates of Death**: This secret door leads to the ancient chapel of the god, Thanatos (death personified). The door is plastered over and can not be detected unless looked for. Once the plaster is chipped away, an inscription will be visible, written in ancient Thracian.
 
@@ -597,7 +597,7 @@ The amorphous black blob at the north end of the room is a "scarecrow" made of a
 
 All the secret doors into Rooms 10A-F are covered by a layer of plaster. Painted over the locations of each door is a somber, human face, approximately 4' tall.
 
-<a name="page_0026"></a>
+<a id="page_0026"></a>
 
 10 A\) **Empty Crypt**: Whatever was buried in here has long since crumbled to dust. The tomb contains nothing of value.
 
@@ -621,7 +621,7 @@ The floor of the room is set in large, red, ceramic tiles, glazed and very smoot
 
 Floating 15' off the ground in the center of the hexagram is a green, glowing, human skull with ram's horns apparently growing out from it. The skull has living eyes and will watch persons entering the room, and will chuckle ominously. Once the door closes, the skull will say, "SPEAK PETITIONER AND HAVE THY SAY, THAT I MAY ANSWER YE YEA OR NAY." The skull
 
-<a name="page_0027"></a>
+<a id="page_0027"></a>
 
 will then allow everyone present to ask one yes or no question which the referee must answer truthfully. No character may ever ask more than one question, regardless if they return again to the room. Once the question has been asked and answered, the skull will speak again and say, "YOUR QUESTIONS HAVE BEEN ANSWERED AND YE ARE NOW THANATOS' OWN." At that point, a small, white, skull-shaped blemish will appear on the back of the right hand of every character who asked a question. It actually means nothing, except as an identifying mark for a worshipper of Thanatos.
 
@@ -643,7 +643,7 @@ The hall to the south leads to a cavern and a 50' drop. Note: both this opening 
 
 Each section is partitioned from the other by a ceiling to floor drapes of heavy black material. Each drape is made of two pieces. The central and eastern section are lit by torches while the statuary nook is lit by the braziers. The 4 "e's" are 4 2nd level fighting men, Align: N, Platemail, AC: 3, Weapons: Spear and Broadsword, HP: 14, 10, 16, 19.
 
-<a name="page_0028"></a>
+<a id="page_0028"></a>
 
 Entry into the statuary nook will result in a curse being cast on all intruders (reverse of *Remove Curse* as if cast by a 12th level Cleric). Only Clerics of Thanatos may safely pass through. The statue is an 8' tall wooden carving of a humanoid in black robes with a skull face. Each eye of the statue is a 200 GP turquoise. Any attempt to liberate these gems will cause the flames in the braziers to explode for 1d8 of damage to all within a 5' radius and to set the nearest curtains on fire. Due to the drying of the braziers, these curtains are tinder dry.
 
@@ -667,7 +667,7 @@ Light moving along this bridge will alert the guard posted at the door to Room 2
 
 The room is a purification chamber where the priests of "The Dark One" ceremonial clean themselves before entering into any holy rites. The circle in the room's center is a 5' diameter basin that sets on a 3' tall pillar of skulls. At the north end of the room is a 10' diameter column of black drapery that hangs from the ceiling 20' overhead to the floor. If the two sections of drapes are pulled back all characters viewing the black statue behind it must save vs. paralyzation or be paralyzed for 1-6 turns (not rounds). Worshippers of Thanatos (and those wearing his brand) are immune. The two "c's" flanking the statue are a pair of adepts in the service of "The Dark One", 2nd level Clerics, Align: LE, Leather Armor and Shield, AC: 6, Damage: Mace for 1-6, HP: 7, 8, spells: *Cure Light Wounds* (reverse). The 2 "e's" in the room are a pair of fighters in the service of the god. 2nd level fighters, Align: N, Platemail, AC: 3, Weapons: Spear for 1-6, and Broadsword for 1-8, HP: 13, 14. The eyes of the statue are a pair of matched citrines worth 150 GP each.
 
-<a name="page_0029"></a>
+<a id="page_0029"></a>
 
 21\) **Outer Lair of the Wolverine**: This rough-carved room reeks of animal waste and a skunk-like odor. Any noise, movement, breathing, etc, in here will bring the giant wolverine, AC: 4, HD: 4 + 4, 3 attacks 2-5/2-5/2-8, + musk as per a skunk at rear opponents, HP: 26. The creature also attacks with a +4 hit probability.
 
@@ -687,7 +687,7 @@ If there is no sacrificial ceremony in progress there will be 10 huge bats, AC: 
 
 The room is lit by four torches that flank chests on the north and south walls. Each chest is locked and has a Curse (as per the reverse of *Remove Curse*) that has an 8 turn duration. The Curse will unfailingly lower the strength of any non-Clerics of "The Dark One" who touch it to 3. This curse will apply only to the 1st character to actually physically touch either of the boxes or their contents, including touching with weapons or lock picks. The north box is empty except that a cloud of sleep gas will be released into the room (save vs. poison) which will put characters not saving to sleep for the number of turns equal to their constitution subtracted from 20. The south box contains the following: a jeweled Mace valued at 200 GP, an Iron Box containing 100 GP, a Leather Bag with five 10 GP Gems, a 200 GP Gem, and a 150 GP Gem. There is also a skull-shaped silver goblet set with gem chips valued at 50 GP and Platinum Box, intricately carved with ancient runes valued at 250 GP (the runes merely state that this box was crafted for his high excellence the King of
 
-<a name="page_0030"></a>
+<a id="page_0030"></a>
 
 Thracia, Argos II). Inside the platinum box is a pair of glass beads that appear to be exact replicas of human eyes. If a character loses one or both of his or her eyes, they can be replaced with these magic eyes which will grant *Infravision* and on a 2 times per day basis, X-ray Vision.
 
@@ -710,15 +710,15 @@ The "x" along the east wall represents a locked, stone chest. The chest is guard
 
 <!-- Begin: JG102_The_Caverns_of_Thracia_03_Caverns_Level_02_31-54 -->
 
-<a name="page_0031"></a>
+<a id="page_0031"></a>
 
 # Level Two
 
-<a name="page_0032"></a>
+<a id="page_0032"></a>
 
 ![Level Two map (page 32)](images/p032.png)
 
-<a name="page_0033"></a>
+<a id="page_0033"></a>
 
 ## Level Two
 
@@ -732,7 +732,7 @@ The passageway leading to the north out of this area is smoothly carved and the 
 
 30 A\) **Stirge Strike**: This area is a natural indentation into the cavern wall. Possibly at some distant time in the past a tributary to the main river may have flowed from this point. Now, however, the niche is occupied by the shards and fragments of several ornate columns and a shattered statue to some now indistinguishable god. Any in-depth search of the area will reveal scattered, half-buried human bones and 1 or 2 weapons (a heavily tarnished and dull Bronze Sword and a Stone Mace). It is doubtful
 
-<a name="page_0034"></a>
+<a id="page_0034"></a>
 
 that this search will be made since the niche is also the dwelling place of a colony of 10 Stirges, AC: 7, Move: 18”, HD: 1, Damage: 1 - 3 + Blood Drain of 1 - 4 points each round thereafter up to a maximum of 12 points, HP: 2 (x2), 6, 7 (x2), 8, 4, 1, 5, 3. The Stirges will be well hidden in the rock formations, giving them a 1 - 4 chance on a d6 of surprising the unwary.
 
@@ -746,7 +746,7 @@ that this search will be made since the niche is also the dwelling place of a co
 
 **G’ruk: Shaman of the Lizardmen**
 
-<a name="page_0035"></a>
+<a id="page_0035"></a>
 
 without regards to pain (lowers AC by 3 when fighting as berserker). **Lizard Shaman (G’ruk the Fish-finder)**, AC: 4, Armor: Skin and Shield, Move 6”/12” (swimming), HD: 4, Damage: Mace 1 - 8, spells: *Cause Light Wounds, Cause Fear, Hold Person*. On his person the Shaman has a satchel that contains a Potion of Undead Control, 18 GP, 4 Sacred Rocks (useless), a mummified Human Hand, 6 Teeth of various Creatures, 4 Bags of various Powders (1 is alum, 2 and 3 are useless, 4 is a poison dust that is -1 on saving throw. Failure to save means death while a save indicates taking 1 - 8 points of damage. This is very virulent poison! It may be inhaled since the full bag of dust will form a 10’ x 10’ x 10’ cloud, mixed with water and taken internally for up to 5 dosages or smeared on weapons as a paste, 2 applications), a Set of 20 Divining Sticks, 5 or 6 Strips of dried Human Flesh and a Human Jawbone. As a last resort, the Shaman will cast the poison dust as a missile weapon creating a cloud of dust (see above) when it hits. There is a 10% chance that the bag will not burst on impact. The magic potion was obtained from the treasure trove in Room 33. About 5 Lizard Braves died obtaining this bottle. Since then the Shaman has learned of the legend that requires human blood to obtain the treasure. “Cast the blood of man upon the troubled waters.” (False) is how the phrase goes. The Shaman has been waiting for a living human to come his way for some time (the Lizard Men usually only bring back pieces). G’ruk knows of a secret door in the north wall and has a secret Lair in Room 53 H.
 
@@ -760,11 +760,11 @@ The doors to the passage leading north are of heavy oak, covered with moss and b
 
 One may well ask what a giant spider’s lair is doing so close to the lair of the Lizard Men. Well, it’s more a case of mutual toleration than anything else. The Lizard Men feed the spider an occasional living Tribesman, and the spider lets them pass beneath her web without interference.
 
-<a name="page_0036"></a>
+<a id="page_0036"></a>
 
 ![Giant spider (page 36)](images/p036.png)
 
-<a name="page_0037"></a>
+<a id="page_0037"></a>
 
 33 \) **A Seemingly Abandoned Treasure Vault**: This is a dark little vault carved into the stone. The walls are painted with images of huge fanged mouths. It appears that the vault has been entered recently and the dust that has settled on the floor over the ages has been disturbed. There are dark stains along the floor in the hall leading to the north out of the room. The north hall is also slightly damp. The constant gurgling of water can be heard from Room 34. In the vault itself are 3 boxes, 1 large and 2 small. The small box on the right of the large box is open and empty (both small boxes are approximately the same size as shoe boxes). The small box on the left and the large box are both locked and sealed with wax seals. In the small box is a Potion of Invisibility and a +1 Dagger with a solid Garnet hilt and an apparent jewelry value of 1200 GP. The box is protected or more correctly “haunted” by a spectral, disembodied mouthful of sharp teeth. The mouth will bite any hand that is thrust into the box (it is invisible) and then appear for 3 melee rounds, darting in and about biting at will. If not destroyed in the initial encounter the creature will disappear, to reappear 5 - 10 rounds later. It will gain 4 hit points each time it disappears and instead of biting for 1 - 4 points of damage it will bite for 1 - 6. Then, when it appears a third time (with an additional 4 hit points), it will bite for 1 - 8 points of damage and so on. It will continue to attack in this fashion (appearing every 5 - 10 turns and attacking for 1 - 3 melee rounds, then disappearing for another 5 - 10 rounds) until it is destroyed or the treasure it was guarding is discarded.
 
@@ -778,7 +778,7 @@ At this point, most adventurers are ready to relax, having obtained the treasure
 
 34 \) **Great Grasping Guardians**: Usually dormant, this creature lies beneath the bubbling waters which are the source of the river. If the treasure in Room 33 is disturbed (see above) then it will begin to attack by sending **The Guardian Beast**, AC: 3, Move: 18”, HD: 6, Weapon: Tentacles, Damage: 1 - 8, HP: See Below. The guardian is a variation on the octopus theme. The creature has 6 tentacles, all armored and 50’ long. The body of the beast takes 30 hit points and each tentacle takes 20. Tentacles hits may be regenerated at a rate of 3 points per turn if the wounded appendage is withdrawn from combat. Hits to the body can not be regenerated. A single blow of 10+ points of damage will sever that tentacle entirely and it will be immediately withdrawn from melee and will not be used for at least 15 rounds. When a tentacle has taken 20 points of damage it will be automatically withdrawn from the fracas. The body of the creature is always submerged beneath the water. It sees by using the eyes on the ends of its appendages. Blinking an eye does not blind that appendage, but blinding all eyes will functionally blind the beast. The creature attacks by using its crushing tentacles to wrap around victims and crush them to death. Once a victim is latched onto the creature gains an automatic hit of 1 - 8 on subsequent rounds until the victim is freed by destroying the tentacle. To complicate matters, the victim will be dragged at a rate of 20’ per round toward the water. A victim may survive underwater without breathing a number of melee rounds equal to his constitution divided by 4 (drop fractions). At that point he or she suffers death by drowning. Also remember
 
-<a name="page_0038"></a>
+<a id="page_0038"></a>
 
 that non-magical armor is incredibly heavy in the water. There is a 50% chance that a victim entrapped by the guardian beast will have his Sword or weapon arm impaired and will be unable to escape unaided. If the creature is slain, it will rise to the surface and slowly float downstream to be trapped in the spider’s web (if it still exists). The creature has a single eye that is formed of a huge jelly-like gem stone that will dry and harden and shrink into a 3000 GP diamond.
 
@@ -790,7 +790,7 @@ From the hallway, Room 35 appears to be dark and empty. The only distinguishing 
 
 36 \) **Intriguing Treasures and Deep Shafts**: The hall leading to this room from Room 35 is normally lit with a magical green light. However, if the sphinx has been killed to obtain passage to this hall, then the walls will glow with a throbbing red light instead of the normal cool green. At the northern end of the hall is a statue of a lion-headed man with glowing orange eyes. He is flanked by red curtains on his left and right and to his rear. If the secret doors from Room 35 are passed through, and the hall entered by more than 10’, he will come to life. The lion man is 9’ tall, AC: 3, Move: 12”, HD: 5, Weapon: Mace, Damage: 2 - 12, HP: 32. Lodged in the chest of the statue creature is a 500 GP gem. If the walls glow green, then the gem merely makes him half immune to edged weapons allowing him to take only half damage from all cuts and thrusts. If the walls glow red, then he has the above ability plus, wherever he walks, the ground, be it stone or earth, in a 5’ radius, around him turns to 2’ deep mud for 2 melee rounds. The lion man can walk on top of the mud like it was solid earth. This creature is intelligent, but it will also fight to the death. It does not wish to preserve its life so much as it desires to protect that which lies beyond the curtains. If the gem in his chest (a 500 GP diamond) is removed or destroyed it loses all magic powers except that it will allow the bearer a +1 on all saving throws.
 
-<a name="page_0039"></a>
+<a id="page_0039"></a>
 
 If the curtains to Room 36 touch living flesh (not armor or clothing) they will immediately adhere to it (no saving throw) and cannot be removed except by *Dispel Magic*. The curtains may be pulled down but they can not be physically affected (cut, burned, torn, etc.) until the *Dispel Magic* has been cast. There are 3 sections of drapery (east, west and north) and each one will adhere to any living flesh until a *Dispel Magic* has been cast upon it. The height of the curtains is 15’. The width of the side curtains is 8’ and the back curtain is 16’ wide (specifics are gone into here because someone is certainly going to figure out that these things can be used as weapons or traps).
 
@@ -804,7 +804,7 @@ In Room 37 itself, the door creature is invisible or at least appears to be a pa
 
 Determine the intelligence of the interpreter and subtract the score from 14 (a positive remainder indicates a greater difficulty in understanding the language, whereas a negative remainder would indicate an ease of translation). Then, go to the chart below and roll each time a verbal interchange is made between a Tribesman interpreter and the Thracian fighting woman, adding the remainder to the die roll of a d20. Based on the die roll, the referee may determine the outcome of a given conversation.
 
-<a name="page_0040"></a>
+<a id="page_0040"></a>
 
 **Interpretation Chart**
 
@@ -820,7 +820,7 @@ Determine the intelligence of the interpreter and subtract the score from 14 (a 
 
 ![Illustration (page 40)](images/p040.png)
 
-<a name="page_0041"></a>
+<a id="page_0041"></a>
 
 **Epicaste, Fighting Woman**, Align: Lawful Good, Level 3, AC: -2, HD: 3, Armor: +1 magic Plate Armor and non-magic Shield, Weapon: Longsword, HP: 21, STR: 14, INT: 14, WIS: 10, DEX: 17, CON: 16, CHR: 13. Epicaste is a fighting woman in the service of her King, Agamemnos, who has been dead for at least 1100 years. The last thing that she remembers is coming down into this room via the trap door in Room 39 with 3 other soldiers. She and **Danaus** (the dead man) must have been affected by something in the room. She will vaguely remember a cold mist. Danaus can be found lying in front of the door creature. Epicaste will say that the reason they were down here was that they were investigating the possible hiding places where the **Beast Men** could be headquartering. There are rumors that they are planning an uprise (unless it is made clear to her that over a millennium has passed since she and her companion were overcome, Epicaste will be adamant that only hours could have gone by since she lost consciousness). Epicaste will know her way through the northern part of the 2nd level (Rooms 31, 38, 39, 39A, 42 - 47), Rooms 1 - 8 of the 1st level, the north wing of the palace on the 3rd level and all of the dungeon on the 4th level. However, she will not know of their present occupants and she will not know of any secret doors (past or present). If any character can speak in the Gnollic tongue (**Beast Men**), Epicaste may communicate with them as per the interpreting chart. To see if the intent or meaning of a phrase is understood, follow the direction for the chart, the person trying to understand the phrase operating as the interpreter. If no adventurer speaks Thracian, the language of the Tribesmen, or Gnollic, then communication will be possible only via hand signals or a variation of *Read Languages* (Epicaste is 65% capable of writing legibly in her own tongue).
 
@@ -846,11 +846,11 @@ The letter "a" in the room represents a spy-hole in the wall looking in on the s
 
 If necessary, both doors in this room can be bolted with a heavy oaken bar from the inside.
 
-<a name="page_0042"></a>
+<a id="page_0042"></a>
 
 ![Room Complex 40 A–I and Room 41 B maps (page 42)](images/p042.png)
 
-<a name="page_0043"></a>
+<a id="page_0043"></a>
 
 39 \) **A Lone Guard**: Standing before the double doors to Room 38 is a single Gnoll guard, AC: 5, Move: 9, HD: 2, Weapon: Sword, HP: 9. He is standing in one of the few places in the room that is not covered with heaps of garbage (some of the garbage piles are 1000 years old!). The floor itself is covered with at least a full foot of ancient compressed garbage. If the floor is so intended for hollow spaces, the 10' square trap door marked by the large "x" on the floor will be evident. However, the large pile of garbage that covers that area must first be moved. There will be nothing of value in the garbage heaps. Reward any characters who diligently search the piles though with 1 - 6 SP and 1 - 10 CP.
 
@@ -866,7 +866,7 @@ The doors on the lower level are magicked so that anyone attempting to open them
 
 40 B\) **Guardian of Singular Combat**: The single fighting man in this room will never be surprised. He appears to be garbed from head to toe in cunningly crafted platemail. His face is hidden by a visor. The guardian is armed with Sword and Shield. He will fight at a minimum level of 4th or as a fighter 2 levels higher than his opponent. Guardian: AC: 2, Move: 9”, HD: 4+, Damage: 1 - 8, HP: 25. The guardian will mentally say to any who enter: “I am the guardian. To pass me, I must be defeated and destroyed. Choose your champion.” The guardian will not attack until a single champion has been determined from intruding adventurers. If he is attacked en masse, then the first adventurer to cross swords with him or hit him with a spell (or join combat in any manner) will be his opponent. At that point he is impervious to all attacks or attempts at hindrance by any other being. Any further attempt at touching or attacking the guardian will pass through him as if he were smoke or immaterial, and he will go for his opponent. Once locked in combat with the guardian, it is to the death. If the guardian is defeated by the adventurer, the combatants into a pile of jumbled and rusting armor. His sword, however, remains bright and shiny since it will now function as a +1 magic blade. If the adventurer halts the hit point he has lost and make the challenge again (see above). If at any point, the adventurers leave the room without defeating the guardian, the guardian will immediately regain all lost hit points. The door opposite the one entered will close with a *Wizard Lock* until the guardian dies.
 
-<a name="page_0044"></a>
+<a id="page_0044"></a>
 
 40 C\) **The Throne Hall**: This large, unlit hall is draped at the western end. A 10’ wide opening is in the 1st pair of drapes, but the curtains behind the throne are unbroken and run from ceiling to floor and wall to wall. A wall of bars with a 10’ wide door in the center will prevent intruders from approaching the throne. The gate in the bars is locked and -15% on picking due to some complicated inner workings. The bars are of iron and extremely thick.
 
@@ -886,7 +886,7 @@ The bottom of the crypt is covered with 2000 GP and near the north end of the cr
 
 40 F\) **A Second Burial Vault**: This vault contains a moldering, dead skeleton. However, after the room is entered, the body will animate, sit up and turn to face any intruders. It will speak in a very ancient tongue (only a *Read Languages* spell that has been previously cast will allow any understanding). It will say: "Long have I lain here, storing up my hatred for those who have entombed my brethren. Now they shall be unleashed on those who have wronged them!" The skeleton will then rise from its
 
-<a name="page_0045"></a>
+<a id="page_0045"></a>
 
 bier and begin to walk toward the door. It will not attempt to attack any being. If it is not obstructed it will tap the doors to crypts E, G, and H, releasing the Undead in there. The released Undead will then begin to attack anything in sight. Once they have defeated any living creatures, they will begin an organized assault on living creatures in the caverns. If the skeleton from this crypt is not destroyed, he can convert any dead creature (recent) into a zombie or any long dead creature into a skeleton. If this skeleton is destroyed there is a 75% chance that his imbuing spirit will be transferred to any available dead body within 200’. Skeleton: AC: 7, Move: 6”, HD: 4, Damage: 1 - 6, HP: 30, Turns as a Spectre. Any Undead encountered by this creature will immediately follow it.
 
@@ -900,7 +900,7 @@ bier and begin to walk toward the door. It will not attempt to attack any being.
 
 The rectangles marked with letters represent 6’ tall pedestles, upon which sit a variety of statuary, carved from several kinds of stone.
 
-<a name="page_0046"></a>
+<a id="page_0046"></a>
 
 | Pedestal | Statuary | Carved of | Eyes |
 | ---: | --- | --- | --- |
@@ -925,7 +925,7 @@ At the west end of the chamber is a large statue. It is standing stock still. Th
 
 It will not attack if its room is entered. However, if the gem-eyes of the statues in Room 41 A
 
-<a name="page_0047"></a>
+<a id="page_0047"></a>
 
 are removed (see above) or if an attempt to remove the gems from its crown is made or if the statue is attacked, it will begin to attack. This creature can detect the presence of the gems from Room 41 A at any distance and will pursue and destroy any being possessing those gems to the ends of the earth.
 
@@ -945,7 +945,7 @@ The 30’ deep pit is extremely ancient and its location is unknown to current d
 
 At the east end of the temple is a tall statue (10’) of a regal woman in long loose, greek style clothing. She bears a Shield and Spear and wears a Helm. The 10’ square area before the statue (marked with an "x" on the map) is a Teleportation pad. Standing on it for 1 melee round will activate it and send those upon the square to area 54 on the 3rd Level map (see 89 if a special marble is possessed).
 
-<a name="page_0048"></a>
+<a id="page_0048"></a>
 
 Guarding this strategic location is a squad of 8 Gnolls, AC: 5, Move: 9", HD: 2, Damage: 1 - 6 with Longbow, 1 - 10 with Halberd, HP: 7 (x3), 8, 10 (x2), 9, 12. Each Gnoll will have 11 SP and 2 GP on his person.
 
@@ -964,7 +964,7 @@ Any light or noise in the cavern will alert the Gnolls, who will hide among the 
 ![Room Complex 45 A–I (page 48)](images/p048.png)
 
 
-<a name="page_0049"></a>
+<a id="page_0049"></a>
 
 - **Box 6, 7, 8:** In these boxes are the components of a special mechanism that will throw 6 Crossbow quarrels per round for a total of 6 rounds before having to be reloaded. There are no assembly instructions and the parts, although well protected, are incomprehensible. A fighting man will have a percentage chance equal to his Intelligence score -10 x 5. If the fighting man has access to a knowledgeable Sage, his chance of constructing the machine properly will go up by 20%. If it is known how to assemble the machine, it will take a minimum of 2 turns to put it together properly. If the machine is put together and carried (weight of 1000 GP + Quarrels) it will take the averaged Dexterity of all characters doing the assembling subtracted from 20 in melee rounds to put the thing in working order and capable of firing on the next melee round. If a fighter is trying to put the machine together for the first time, subtract his Intelligence from 25 and the resultant number will be the number of hours required to puzzle the thing together (if he or she can do it at all). An improperly constructed machine will not work at all. Treat as Light Crossbow for accuracy.
 - **Box 9:** Another box of carefully wrapped Crossbow Quarrels, 60 in number.
@@ -976,7 +976,7 @@ Any light or noise in the cavern will alert the Gnolls, who will hide among the 
 
 45 C\) **Demesne of the Minotaur Lizard**: A large reptilian creature has been in a sort of stasis-like trance for some centuries now. Originally placed as a guard for the secret door in the north wall, it was forgotten long ago. The spell placed on it is such that if the room is entered, it will awaken and attack. Once it has defeated and devoured its victims it will fall back into the stasis again. Minotaur Lizard: AC: 3, Move: 9”, HD: 8, Damage: Bite: 4 - 32, Claw: 2 - 20, Claw: 2 - 20, HP: 46. The secret door in the north wall is further guarded by two spells. The first is a *Polymorph Other* spell. The first creature to touch the door with the intention of opening it must make a saving throw vs magic or be polymorphed into a house cat. The second one to touch the door will be hit with a *Magic Missile* spell of 7th level. Thereafter the door will be safe to open, except that it is *Wizard Locked*.
 
-<a name="page_0050"></a>
+<a id="page_0050"></a>
 
 45 D\) **Slippery Slide from the Trap Above**: This is the slide that comes from the 30’ deep trap described in area 43. The slide is so designed that no actual damage is done in the drop. The slide is steep, but the Minotaur Lizard can climb it. The trap door cannot be opened or sprung from beneath.
 
@@ -1002,7 +1002,7 @@ The golden globe is the source of power for the teleportation system between lev
 
 45 I\) **The Last Stronghold**: It was in this room that the remnants of King Agamemnos’ court and guard made their escape and that their dead and mortally wounded were left. If Epicaste from room 37 is with a group of adventurers, she will be able to identify several of the corpses as friends and acquaintances of hers. One of the bodies in the room is not completely dead yet. Powerful magic was used to keep the near-dead Anteus, a soldier in the King’s Guard, alive or partially alive for 1100 years. Anteus appears as a tall (6’) man in plate armor and shield (+1 plate) bearing a two-handed sword. In addition, he has a +2 dexterity bonus. AC: -1, Move: 9”, HD: 7, Damage: 1 - 10 + 2 (for strength), HP: 41. His vocal chords have atrophied and he has lost the power of speech. If any can speak the language of the tribesman or the Thracian tongue then he might be made to understand peaceful intentions (see room 37 for translation charts). If he is not immediately made to understand that the adventurers are not servants of the beast-men, he will attack. The small, circular room on the south wall of this room is actually a shaft that leads from room 36 to 118 (see room 36). From this point, it is 60’ up to the floor of room 36 and 40’ down to the ceiling of room 118 and an additional 20’ beyond that to the floor. Falling from this point will do 6d6 of damage.
 
-<a name="page_0051"></a>
+<a id="page_0051"></a>
 
 46\) **Giant Spider**: AC: 4, Move: 3”/12” (in web), HD: 4 + 4, Damage: Bite 2 - 8 + save vs poison or die, HP: 28. Once per round this spider may also shoot a strand of web at the victim. If the victim is hit he must make a saving throw of under his Strength -4 on a d20. Treat each level of extraordinary strength as a separate strength point.
 
@@ -1018,7 +1018,7 @@ The golden globe is the source of power for the teleportation system between lev
 
 52\) **Barracks of Allied Mercenary Lizard Men**: This is the barracks of an allied troop of mercenary lizard men. They are under the command of the gnoll in room 51, but if things get rough they will break for it. 6 lizard men: AC: 4 (skin and shield), Move: 6”/12” (swimming), HD: 2 + 1, Weapons: club for 1 - 8 damage and 4 darts each for 1 - 4, HP: 8, 8, 7, 7, 11, 10. These lizard men will attempt to get back to their tribe. One of the lizards has recently discovered secret doors in the south wall of room 48 and there is a 40% chance that if that avenue of escape is possible they will use it. The 10 HP lizard man speaks the common tongue and may offer to ransom himself and the other lizard men with tales of great treasure (room 33) and directions on how to reach it. He won’t necessarily reveal any of the guardian creatures or traps unless magically forced to.
 
-<a name="page_0052"></a>
+<a id="page_0052"></a>
 
 53\) **The Rising Demon Image**: This is the sculpture of a demon that rises up in flames into room 27A. Its location is unknown to the locals. The statue is carved of black granite and has borne the ravages of time with a great deal of grace. Its eyes are large, 300 GP, faceted amber gemstones. Its mouth is hollow and an odor of methane is detectable from it. An odd quirk about this statue is that it will always turn and face (rotate in place) a good cleric, regardless of where he or she stands in the room. If there is more than one in the room, it will face the one of highest level. To the south of the room are a pair of hidden 10’ wide doors. They are covered over with plaster and faded frescoes are painted into the plaster, itself. To get at the door, the plaster must be chipped away. Behind the doors are stairs that lead downward. This complex is old; older than the Ancient Thracian tomb complexes of rooms 37 - 41. Their use was ended soon after the coming of the ancient Thracians. Some say that this is the remnant of an ancient race of civilized lizard men. No one can be certain, except that humans are not portrayed in any but the more recent frescoes and then only as sacrifices of lizard-headed men. The stairs are crumbly and deep with dust and fallen rubble. No plaster remains on the walls. The ceiling of the stairwell is covered with stalactites and the floor with stalagmites. In places they have grown together and almost blocked the passage. The dust on the floor is undisturbed.
 
@@ -1040,7 +1040,7 @@ The stairs at the south end of the room lead upward 10’ to a ceremonial podium
 
 53 C\) **Urns and Ashes**: This small room is filled with shards of pottery and a few small, unbroken ceramic urns. The quality of the pottery is excellent and the 4 surviving pieces would be valued at 1000 GP each if taken to the right buyer (someone who is very interested in ancient, prehuman history). The urns seem to contain ashes of some sort. The secret door in the north wall is disguised by a glaze of stalactite material that has formed over it and hidden the edges of the door.
 
-<a name="page_0053"></a>
+<a id="page_0053"></a>
 
 53 D\) **A Preliminary Crypt**: Two piles of dust and debris flank the north door in this room. They are in actuality a pair of skeletal Lizard warriors who will spring to life if the room is entered, forming up right out of the dust. These Undead do not fear Human Clerics in the least, due to the special evil magic rings that they wear. Skeletal Lizard Men: AC: 5, Move: 6”, HD: 6, Damage: 1 - 10, HP: 32 each. *Protection from Evil* will keep these creatures at bay for 6 melee rounds and then they will actually shatter the spell with some sort of counter magic. When they are killed, they return to dust, as do their rings.
 
@@ -1054,7 +1054,7 @@ The stairs at the south end of the room lead upward 10’ to a ceremonial podium
 
 31\) **A Sealed Room**: This room is sealed off from Room 53 G. Its walls and contents are fairly intact. The walls show scenes of a ritualistic sacrifice of a Human victim and several Lizard Man victims by a group of gowned Lizard Priests. In the background, there is a hazy image of the ever present Immortal King, a tall winged Lizard Man wearing a silver crown. On a table in the center of the room (more like a 3’ cube of granite) is a golden mask designed to fit a Lizard Man. It has a demonic countenance. The mask is valued at 2000 GP.
 
-<a name="page_0054"></a>
+<a id="page_0054"></a>
 
 53 J\) **The Secret Sacrificial Shaft of the Lizard Priests**: The frescoes in this room are intact also and show images of a giant winged Lizard Man (the Immortal King) devouring huge numbers of Humans, Lizard Men and Dinosaurs. Along the south wall, there is a 5’ square shaft for the sacrifice of living victims. The shaft is 45’ long but it opens up on the 3rd level for an additional drop of 200’ (2d6 of damage).
 
@@ -1062,15 +1062,15 @@ The stairs at the south end of the room lead upward 10’ to a ceremonial podium
 
 <!-- Begin: JG102_The_Caverns_of_Thracia_04_Caverns_Level_03a_55-61 -->
 
-<a name="page_0055"></a>
+<a id="page_0055"></a>
 
 # Level 3a
 
-<a name="page_0056"></a>
+<a id="page_0056"></a>
 
 ![The Caverns of Thracia cross-section (page 56)](images/p056.png)
 
-<a name="page_0057"></a>
+<a id="page_0057"></a>
 
 ## Level Three A
 
@@ -1090,7 +1090,7 @@ Note: This entire level was once a temple and worship area devoted to the god Th
 
 121) **Sanctuary of the God of Death**: The walls of this large, pillared hall are lined with jet black stone. The walls, the ceiling, the floors, the pillars, all are intensely black. Add to this a permanent Darkness spell throughout the chamber and you will have the temple of Thanatos. The entire room has also been permanently Silenced by magic. Where there would normally be a statue, there is none, for the statue wanders the entire level, seeking to destroy intruders (it actually makes no distinction between Beast Men and Humans. After all, an intruder is an intruder). Lying about on the floor of this room are the corpses of 5 Gnolls. They have been dead for at least a millennium. If their bones are touched, they will crumble to dust.
 
-<a name="page_0058"></a>
+<a id="page_0058"></a>
 
 122) **The Robing Room**: In this chamber will be found the crumbling remains of the priests of Thanatos' ceremonial vestments in a chest (locked, with a poison pin containing a poison that paralyzes, but does not kill. So potent is this poison that it is -2 saving throw and its effect is immediate. There is a 25% chance the victim will appear dead.) Inside the box is a golden Helm studded with black sapphires that is worth 3000 GP and a ceremonial Dagger with a carved platinum hilt valued at 1200 GP. The various robes and ritual costumes are all decayed with age and will be valueless. There is a body of a man in the robes of a priest lying near the door. Around his neck is the silver skull with turquoise eyes (25 GP). The front of his robes seem to have been slashed open and several ribs are broken. Lying next to the box containing the jewelry is the body of a Gnoll. If the box is touched a loud moaning will be heard and the dead body of the priest will seem to stand up and then collapse as if the animating spirit has left it. A Spectre will then form and attack. Spectre: AC: 2, Move: 15"/30", HD: 6, Damage: 1-8 and 2 Levels of Energy Drain, HP: 29. Trap in North Hall: This pit will open up on a d6 roll of 1-2. The drop is 200' down to the third Level.
 
@@ -1104,25 +1104,25 @@ Note: This entire level was once a temple and worship area devoted to the god Th
 
 126) **Crank and Cradle**: This room houses the mechanism made of polished bronze that was magically preserved to prevent rust and corrosion. It consists of a manually operated crank, a set of strange roller apparatus (pulleys) and iron cables that attach to the drum that the crank rotates, go up to the ceiling and then down through a hole in the floor to disappear in the wisps of mist floating up out of the hole. This machinery is what raises and lowers a sort of elevator basket from this level to the next. It is also operated by a magical device from Level 4 Room 112. The basket or elevator cannot be seen through the hole since it is hidden by cloud-like mist. There is light coming up through the hole. It is much brighter than magical light, but not quite so bright as a sunny day. A ladder extends down into the hole. If it is descended, the character will find himself in a bronze cage with a crank-like apparatus. The crank is used to lower the cage on the steel ropes. When lowered to Level 3 it will end up a little north west of Tree 60. The cage will be visible to all guards posted on the 3rd level and it is an almost sure thing that they will have an ambush ready.
 
-<a name="page_0059"></a>
+<a id="page_0059"></a>
 
 ![Full-page art (page 59)](images/p059.png)
 
-<a name="page_0060"></a>
+<a id="page_0060"></a>
 
 ![Full-page art (page 60)](images/p060.png)
 
-<a name="page_0061"></a>
+<a id="page_0061"></a>
 
 ![Full-page art (page 61)](images/p061.png)
 
 <!-- Begin: JG102_The_Caverns_of_Thracia_05_Caverns_Level_03_62-73 -->
 
-<a name="page_0062"></a>
+<a id="page_0062"></a>
 
 # Level 3
 
-<a name="page_0063"></a>
+<a id="page_0063"></a>
 
 ## Level Three
 
@@ -1154,15 +1154,15 @@ This level is the palace and garden that once belonged to the Thracian King, Aga
 
 65\) **Jocasta**: Her tree is an Oak. HP: 12.
 
-<a name="page_0064"></a>
+<a id="page_0064"></a>
 
 ![The Caverns of Thracia Level 3 (page 64)](images/p064.png)
 
-<a name="page_0065"></a>
+<a id="page_0065"></a>
 
 ![The Caverns of Thracia Level 3 (page 65)](images/p065.png)
 
-<a name="page_0066"></a>
+<a id="page_0066"></a>
 
 66\) **The Stumps of Lost Trees**: Recently the Minotaur King has been removing trees to fuel the boilers in the cellars beneath his palace. The supply of wood from the surface has dwindled lately (the Tribesmen are flexing their muscles and refusing to pay tribute to the Minotaur King). Several of the removed trees were Dryad-containing trees. Their loss is mourned and if this information is used as a verbal weapon, the Dryads' aid might be gained against the minions of the Minotaur.
 
@@ -1174,7 +1174,7 @@ This level is the palace and garden that once belonged to the Thracian King, Aga
 
 69\) **Jailers for a Noble Tree**: Surrounding the tree is a 12' tall stone wall that is topped with spikes and large pieces of broken glass. The sharpened spikes point outward. There is a gate to the northwest that is hidden by the brambles that guard the enclosure. The brambles are AC: 4 (tough!!) and require 50 hit points of damage to be given before a man-sized hole or passage can be cut through them. When cut, these brambles exude sickly smelling vapor that will cause sleep if a saving throw vs. poison is not made. Sleep will last for a number of turns equal to the character's constitution subtracted from 20. If a character falls asleep in a path cut through the brambles and is left there, the brambles will regenerate 2 hit points every melee round (they grow back swiftly) and if they regenerate back half the damage taken they will begin to absorb 1 life level every two melee rounds from a sleeping victim, who if he awakens will have to cut him or herself free of brambles. Fire will do damage to the plants, but it will not spread.
 
-<a name="page_0067"></a>
+<a id="page_0067"></a>
 
 Guarding against aerial attack are 5 Harpies. They will sit on the southeastern roof of the palace and watch with malevolent little eyes as adventurers sneak by. If an assault is made on the hedge, they will swoop down, harassing and attempting to Charm and lead victims away to be devoured. If an attempt to reach the Dryad is made through the air, the Harpies will immediately attack to kill. AC: 7, Move: 6"/15", Damage: 2 Claws for 1-3 each, and a Sword for 1-6, HP: 15 (x2), 11, 9, 19.
 
@@ -1192,7 +1192,7 @@ The Gnoll squad is made up of 6 Gnolls armed with two-handed Swords. Three of th
 
 **Dog Brothers**: These are a crew of intelligent, man-like dogs. They act as guides and overseers for the rapacious Gnolls. These dog-men will rarely be seen outside of the palace level or its dungeon complex. If they are encountered, it will be as a commander of a Gnoll guard squad. The
 
-<a name="page_0068"></a>
+<a id="page_0068"></a>
 
 **Dog Brother, Bitterbark**: AC: 6, Move: 12", HD: 4, Damage: Bite for 1-4 or by weapon type, in this case, a Sword for 1-8, Align: Neutral, HP: 17. Often a Dog Brother may operate solely as a Magic User, never going beyond the 5th level of expertise. If the court is attacked, the Minotaur King and the Dog Brother will stick around long enough to ascertain the direction the battle is going and then if in danger leave by the quickest route available.
 
@@ -1204,7 +1204,7 @@ The Gnoll squad is made up of 6 Gnolls armed with two-handed Swords. Three of th
 
 75\) **Lair of the Minotaur King**: This is the chamber that the King of the Beast Men calls home. It is high ceilinged and lit both by skylights and by the fire that 3 Minotauresses, paragons of bovine beauty, are tending upon which turns a spit containing the roasted carcass of a Human female. Running about the room will be 2 small Minotaur calves, butting and playing. There is a 10% chance that the Minotaur King will be in here (see Room 72). Minotaur Females: AC: 6, Move: 12", HD: 5, Damage: Butt for 2-8, Bite for 1-3 and/or Carving Knife for 1-6, HP: 29, 28, 20. The largest of the Minotaur Cows is the mother of the two calves and will fight berserkly (+2 hit probability and +10 hit points). The smallest Cow has a fairly high intelligence and has been taught to function as a 2nd level Magic User, using Charm Person (x2). The Minotaur Calves will attack immediately anything Human that does not resemble a slave and even then, they will roughhouse that person. The calves are only semi-intelligent and are always hungry. Calves: AC: 6, Move: 9", HD: 3, Damage: Butt for 1-6 points of damage and Bite for 1-2, HP: 13 (x2). The room is furnished with several stone benches draped with furs. One of the benches is actually a chest containing 1000 GP, and a Potion of Heroism. The "secret doors" to the temple are not secret from this side. However, they are trapped. If the stone face in the center of the right hand door is not spun so that it is upside down when the door is opened, a hail of large rocks will be dropped on top of victims for 4-24 points of damage each (no saving throw).
 
-<a name="page_0069"></a>
+<a id="page_0069"></a>
 
 76\) **Stairway into the Dungeons**: This stair leads down into the dungeons and lower recess of the palace itself. Since the Beast Men took over, the stair has been rigged with a pair of traps firing 3 Spears each (see Room 76 on Level 4 Map). These traps are maintained regularly and were set up to keep slaves from escaping this way or from bothering the Manticores in Room 94. The traps will be fired off horizontally to hit chest high at the point marked on the map. They will hit as if thrown by a heavy Crossbow being fired by an 8th level fighter. Any, repeat, any noise in this stair will alert the manticores to the presence of visitors. The manticores will then prepare an ambush if the correct password is not spoken. (Determine password in effect below.)
 
@@ -1230,7 +1230,7 @@ If the password is spoken, the Manticores will judge the speaker to be alright. 
 
 A roll on the percentile die of 01-50% indicates that teleportees reached their destination with an error factor of no more than 1-6" too high, incurring no damage as they land, only a lack
 
-<a name="page_0070"></a>
+<a id="page_0070"></a>
 
 of initiative if placed in a problem situation (subtract 1 point from initiative roll for each inch that a teleportee lands too high). A roll of 51-90% indicates that the teleportees came in 1-20' too high and a resultant drop will do damage equal to 1d6 per 10' of fall. Also, victims may lose a chance for an initiative roll (this is up to the referee) if they are dropped into a situation requiring such a roll to be made.
 
@@ -1250,7 +1250,7 @@ A water elemental may be sent through the teleport by setting up the teleport an
 
 81\) **A Gnollic Guardpoint**: Ever watchful at this point are a squad of 6 gnolls, AC: 5, Move: 9", HD: 2, Damage: two-handed swords for 1-10, HP: 9, 8, 7, 10, 10, 6. The air in this room, besides being
 
-<a name="page_0071"></a>
+<a id="page_0071"></a>
 
 permeated with the odor of raunchy gnoll, smells heavily of cooked food. Each gnoll will have 4 sp & 2 gp on his person. A fracas in here will draw wary minotaurs from room 82.
 
@@ -1264,11 +1264,11 @@ permeated with the odor of raunchy gnoll, smells heavily of cooked food. Each gn
 
 86\) **Hall of Harrowing Hands**: (Actually this is a stairway, but stair isn't alliterative with hands.) When this room is entered, the walls will seem to sprout hands on long arms. The hands will be the temperature of rock but will be fairly soft. All they will do is feel anything passing through them. The walls on both the east and west sides of the stair will sprout hands for a distance of 20' down the stairway.
 
-<a name="page_0072"></a>
+<a id="page_0072"></a>
 
 ![Officers of the Guard (page 72)](images/p072.jpeg)
 
-<a name="page_0073"></a>
+<a id="page_0073"></a>
 
 The hands are harmless unless they are attacked (AC: 8, Move: 0, HD: %, Damage: attack as 4 hit dice monsters for 1-4 each, HP: 2 (x70)). Each 10' section of wall will contain 10 hands. The arms telescope and can reach 6' out into the stairwell. Fire will not harm the hands, but a fireball will paralyze them for 1-4 melee rounds. Once the hands have been irritated, they will not calm down for 12 turns and will try to attack anything trying to pass through at that time. (2-8 will attack each person each round.) They will continue to remain agitated for 2 hours after every encounter in which they are damaged or attacked.
 
@@ -1284,7 +1284,7 @@ The hands are harmless unless they are attacked (AC: 8, Move: 0, HD: %, Damage: 
 
 <!-- Begin: JG102_The_Caverns_of_Thracia_06_Caverns_Level_04_74-78 -->
 
-<a name="page_0074"></a>
+<a id="page_0074"></a>
 
 # Level 4
 
@@ -1304,11 +1304,11 @@ The hands are harmless unless they are attacked (AC: 8, Move: 0, HD: %, Damage: 
 
 100\) **Shrine of the Ancient Ones and Treasure Vault**: This is the worship area of the lizard mercenaries. It is a form of ancestor worship. Over the centuries, the lizards have discovered various treasures and items that are both valuable and related to the ancient lizard culture that once existed. A simple stone carving of a lizard man is set up on a short piece of marble pillar and has flayed human skin draped over it. The eyes are mismatched, though. The left eye is a 1000 gp peridot and the right eye is a 5000 gp sapphire. Elsewhere on the carving there is a 500 gp jade stone and a 10 gp amber chip.
 
-<a name="page_0075"></a>
+<a id="page_0075"></a>
 
 ![Level 4 map (page 75)](images/p075.png)
 
-<a name="page_0076"></a>
+<a id="page_0076"></a>
 
 On a tray in front of the small altar there rests two potions and a rolled scroll of some ancient, tough skin (possibly dinosaur hide). One of the potions is human control and the other invisibility. The scroll has a curse on it and will polymorph the opener into a small, extinct reptile, AC: 6, Move: 12", HD: 1, Damage: bite for 1-3, HP: 7 and unintelligent. A saving throw against magic is applicable. To read the scroll a *Read Languages* spell is necessary. It is a map that will lead to the location of the grand temple of the reptile race. It will only show the location of the door into the area from 53 and will also reveal the entrance to that chamber. This shrine is guarded by a pair of fanatic lizard men, AC: 4, Move: 6", HD: 2 + 1, Damage: club for 1-8 and 4 darts for 1-4 each, HP: 8, 8. Both lizard men know the function of the human control potion and will attempt to drink it if they are attacked. They do not know the function of the other potion, but are aware that the map is a great artifact, even though they do not know what it is. Stealing the shrine or its gems will cause every lizard man mercenary to desert his post and come looking for the thieves. Within 15 turns of the theft, they will have used the pool in room 77 through the help of one of the dog brothers, and from 5-25 lizard men will teleport directly to the location of the gems and fight like berserkers to the death to regain their holy object. This will continue once every 4 turns until a total of 60 lizard men have been killed or the shrine and its valuables are returned.
 
@@ -1327,7 +1327,7 @@ G. 5 slaves: 2 women, 1 old man, 1 boy, 1 girl
 
 104\) **The Torture Chamber**: Although this area is not normally used, captured adventurers will be brought here and placed into 104A. The door is solid oak and locked. All possessions will be placed in 104B except for items of obvious value which the gnolls and dog brother in charge of this area will place in room 115. The room contains various archaic modes of torture. Very few of them will be as sophisticated as current contraptions but they will do the job. If a character is indeed tortured (a 40% chance if they carried any valuables on them or spoke cryptically to their captors or if part of the intruder party got away) a mode of torture will be selected that will reduce a characteristic by 1 point for each full turn the torture is applied. Use this chart to determine the characteristic in a random manner: 1=Strength; 2=Intelligence; 3=Wisdom; 4=Dexterity; 5=Constitution; 6=Charisma, 7=2 characteristics will be affected, reroll; 8=1 will be affected, but twice as fast, reroll. The application of *Cure Serious Wounds* will heal 1-2 points of damage but may only be done once and to only 1 characteristic affected, when more than one is. A characteristic that is damaged will naturally heal back 1 point (in a month) but all other loss to that characteristic is permanent unless healed as above. A *Limited Wish* would also remove damage taken. Thus, if a character was tortured and lost 3 points of intelligence and 4 points of charisma, he would heal back 1 point of each in one month's time and a *Cure Critical Wounds* could reduce the damage further to one of the characteristics by an additional 1-2 points. Note: If Constitution is reduced below 3, the character will die. Characters should be informed each turn that they are tortured that they have lost a certain amount of points. Each time a character is tortured, the affected characteristic should be determined anew.
 
-<a name="page_0077"></a>
+<a id="page_0077"></a>
 
 This room is run by Dog Brother Fangfriend, AC: 6, Move: 12", HD: 4, Damage: Sword for 1-8 or Bite for 1-4, HP: 21; and three Gnolls, AC: 5, Move: 9", HD: 2, Damage: Halberds for 1-10, HP: 6, 11, 8. They know of their secret treasure secreted away in Room 115. If they are tortured or threatened with loss of life, they might reveal the location of the treasure.
 
@@ -1343,7 +1343,7 @@ This room is run by Dog Brother Fangfriend, AC: 6, Move: 12", HD: 4, Damage: Swo
 
 112\) **The Treasure Trove of the Minotaur King**: In this room there will always be a large Minotaur and a magic-using Dog Brother, guarding the King's treasure. The Minotaur, Thundahuuf, AC: 6, Move: 12", HD: 6, Damage: Battle Axe for 1-12, Butt for 2-8, and Bite for 1-3, HP: 40. The Dog Brother, Woofworth, AC: 6, Move: 12", HD: 4, Damage: Bite for 1-4 or two Daggers for 1-4 each, HP: 19, spells: *Charm Person* (x 3), *Magic Missile*, *Web* (x 2), *Haste*. The treasure consists of a large box of stone containing 2000 SP and 5000 GP. Buried under the coins is a locked iron box of ingenious design and ornately wrought, studded with 4 diamonds and valued at 4000 GP. This box may be opened, but doing so will release a creature exactly like the one guarding the chests in Room 33 (see 33 for details on the Disembodied Mouth). Inside the iron box is the following: a Ring of Contrariness, a Marble Elephant (the miscellaneous magic item), a Sword Sheath formed of thin plates of citrine valued at 1700 GP and a set of gold, silver and pink coral Beads worth 2900 GP. High, on an apparently empty shelf in the southeast corner of the room, is an invisible box. Not even the Minotaur King and his minions suspect its presence. Inside the box are two items, a glowing, green glass globe and a strange contraption made of brass that appears to be a box with a hand pointing upward on its top and a hand crank on its side. The glass globe is the powering element for the teleporter in Room 89. If it is broken or taken out of the palace, the glow will fade and the teleporter will cease to function, neither sending nor receiving. The brass box is a summoning agent for the basket that lowers from Room 126. By turning the crank and pointing the hand skyward, a small, magical electric force will be generated which will cause the basket to descend to the floor of the 3rd level. The crank must be turned continuously until the basket reaches the ground. It will only work outside of the palace. It will take approximately 1 full turn for the basket to descend and at least a melee round for it to be visible below the mists which blanket the ceiling of the cavern. These two items were hidden here by the last remaining Humans in the palace when the Beasts took over 1100 years ago.
 
-<a name="page_0078"></a>
+<a id="page_0078"></a>
 
 115\) **Torturers Treasure**: This small, roughly carved room has a chimney of shaft leading up from its low (6') ceiling to Room 93. Buried under a tile in the floor and covered with dirt is the treasure that the torturers in Room 104 have extorted from their victims. The treasure consists of 200 SP, a Silver Amulet worth 50 GP and a Cloak woven of mithril thread/wire and studded with bloodstones valued at 2300 GP.
 
@@ -1357,7 +1357,7 @@ Happy Adventuring! Jennell Jaquays
 
 <!-- Begin: JG102_The_Caverns_of_Thracia_07_Outro_79-80 -->
 
-<a name="page_0079"></a>
+<a id="page_0079"></a>
 
 SEE YOUR DEALER FOR THESE
 OTHER FINE PRODUCTS FROM
@@ -1426,7 +1426,7 @@ Products above are approved for use with the
 following games as indicated below:
 *=D&D **=AD&D ft=Traveller %=Runequest 719
 
-<a name="page_0080"></a>
+<a id="page_0080"></a>
 
 ## The Caverns of Thracia
 

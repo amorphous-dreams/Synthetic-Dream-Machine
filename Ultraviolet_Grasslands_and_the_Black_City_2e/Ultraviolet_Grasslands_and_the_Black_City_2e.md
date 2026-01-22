@@ -1,6 +1,6 @@
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_01_Cover_Introduction_A-vi -->
 
-<a name="page_A"></a>
+<a id="page_A"></a>
 
 ![Ultraviolet Grasslands and the Black City 2E cover](images/uvg_cover_page.png)
 
@@ -10,9 +10,9 @@
 
 _By Luka Rejec_
 
-<a name="page_B"></a>
+<a id="page_B"></a>
 
-<a name="page_i"></a>
+<a id="page_i"></a>
 
 # Ultraviolet Grasslands and the Black City
 
@@ -20,7 +20,7 @@ _By Luka Rejec_
 
 _Luka Rejec_
 
-<a name="page_ii"></a>
+<a id="page_ii"></a>
 
 > Time is the essence  
 > Time is the season  
@@ -57,14 +57,14 @@ Art & writing copyright © 2019 & 2022 Luka Rejec
 - [www.wizardthieffighter.com](https://www.wizardthieffighter.com)
 - [www.exaltedfuneral.com](https://www.exaltedfuneral.com)
 
-<a name="page_iii"></a>
+<a id="page_iii"></a>
 
 To all who wander.  
 To all who wonder.  
 To all who return.  
 To all who stay.
 
-<a name="page_iv"></a>
+<a id="page_iv"></a>
 
 ## Contents
 - Title, Front Cover — A
@@ -156,7 +156,7 @@ To all who stay.
     - The Pre-City — 160
     - The City Itself — 161
 
-<a name="page_v"></a>
+<a id="page_v"></a>
 
 - The Caravan — 165
   - Running A Caravan — 166
@@ -204,7 +204,7 @@ To all who stay.
 - UVG Quick References — U
 - Back Cover — Z
 
-<a name="page_vi"></a>
+<a id="page_vi"></a>
 
 ## Introduction
 
@@ -240,11 +240,11 @@ The UVG is designed to resist repetition and canon. Each gaming group is encoura
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_02_The_Traveler_1-4 -->
 
-<a name="page_0001"></a>
+<a id="page_0001"></a>
 
 # The Traveler
 
-<a name="page_0002"></a>
+<a id="page_0002"></a>
 
 ## Who Is This Hero?
 
@@ -301,7 +301,7 @@ The UVG is designed to resist repetition and canon. Each gaming group is encoura
 | 49 | Deep Yellow refugee navigator | Promise to take a friend’s ashes to the last sea | Undying replacement organ |
 | 50 | Ashen deserter from the flower war | Dream quest order to destroy an invisible ring | Source-bonded replacement clone seed |
 
-<a name="page_0003"></a>
+<a id="page_0003"></a>
 
 ## Do They Need a Name?
 
@@ -347,7 +347,7 @@ The UVG is designed to resist repetition and canon. Each gaming group is encoura
 | 5 | Professional citizen — High expectations. | Wizard decoding the Long Ago machine magic. | Decade-long military pacification campaign. |
 | 6 | Aristo — Engineered at source for their role. | Actually, a synthetic human themselves. | Spatial distortion horizon caused by gate eruption. |
 
-<a name="page_0004"></a>
+<a id="page_0004"></a>
 
 ## The Six-Fold System Rosetta
 
@@ -490,11 +490,11 @@ Every level, a PC gains one of the following:
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_03_The_Grasslands_5-164 -->
 
-<a name="page_0005"></a>
+<a id="page_0005"></a>
 
 # The Grasslands
 
-<a name="page_0006"></a>
+<a id="page_0006"></a>
 
 ## The Grand Map
 
@@ -516,41 +516,41 @@ The map of the Grasslands is incomplete. It depicts prominent locations, but lea
 - Draw discoveries, routes, and travel times as you play. Use unfilled diamonds to list time in days. Split distances with intersection pins.
 - Draw on the map. Expand it. Make it your own.
 
-<a name="page_0007"></a>
+<a id="page_0007"></a>
 
 The Grand Map 1/5
 
 ![The Grand Map 1/5](images/grand_map_1of5.png)
 
-<a name="page_0008"></a>
+<a id="page_0008"></a>
 
 The Grand Map 2/5
 
 ![The Grand Map 2/5](images/grand_map_2of5.png)
 
-<a name="page_0009"></a>
+<a id="page_0009"></a>
 
 The Grand Map 3/5
 
 ![The Grand Map 3/5](images/grand_map_3of5.png)
 
-<a name="page_0010"></a>
+<a id="page_0010"></a>
 
 The Grand Map 4/5
 
 ![The Grand Map 4/5](images/grand_map_4of5.png)
 
-<a name="page_0011"></a>
+<a id="page_0011"></a>
 
 The Grand Map 5/5
 
 ![The Grand Map 5/5](images/grand_map_5of5.png)
 
-<a name="page_0012"></a>
+<a id="page_0012"></a>
 
 ## Violet City
 
-<a name="page_0013"></a>
+<a id="page_0013"></a>
 
 “Outside in the cold distance a wild cat did growl. Two riders were approaching and the wind began to howl.”
 — _All Along the Watchtower_, Jimi Hendrix (after Bob Dylan)
@@ -595,7 +595,7 @@ d20 Misfortune around the Violet City:
 5. Purple-and-teal litter bearing a **cat lord** (L1, grinning) and its small retinue.
 6. **Right Road inspection detail** (L3, law-and-order) seconded from Metropolis to keep the roads open.
 
-<a name="page_0014"></a>
+<a id="page_0014"></a>
 
 **In the Halls of the Graceful Cats**
 
@@ -643,7 +643,7 @@ Here, the trail would go cold (for now), nothing to indicate that any fantasy of
 
 Vorgo is allergic to silver, oranges, and endurance sports. Is he possessed by a **vomish scout beetle** (L5, brain-burrowing, radio-telepathic)?
 
-<a name="page_0015"></a>
+<a id="page_0015"></a>
 
 ### Highwaymen or Potential Henchmen (d12)
 
@@ -676,7 +676,7 @@ It’s a secret, barely kept, that a **vome nest-mother** (L6, fecund) is kept i
 
 Regular: €70 and a felix whizz addiction or a metallic buzzing visitor in the ear promising redemption, 80 xp.
 
-<a name="page_0016"></a>
+<a id="page_0016"></a>
 
 ## Civilized Debauchery in Shades of Purple
 
@@ -713,7 +713,7 @@ Poncho nods. The crowd swirls. The Hero is gone. Poncho and the Warlock exchange
 
 “ _Lefruis! Lefruis! Pâle-cou, ven et scupper a new raison and eater!_ ” sings the dancer before the fruit bar. Was that where the Hero went?
 
-<a name="page_0017"></a>
+<a id="page_0017"></a>
 
 ## Drugs in a Purple Haze
 
@@ -759,7 +759,7 @@ Like drugs, fine (or odd) dining is an experience for PCs. It’s less hazardous
 5. **Al Flogon:** drinking dive of the abnegators of the Rainbow Pantheon. Only visitors with no Charisma enter without risk of blasphemy (easy Aura test). Blasphemers suffer a punitive curse for a week and a day, spewing nonsense when they speak. A silly and expensive penance (€50) removes the divine sanction. Smart visitors can learn about the biomechanicum. Regular: €5, biomechanicum, 200 xp.
 6. **Nul Sanctimons:** a holy water and felix whizz bar, where the _rafiné_ meet, take cat coffee and comment on the Empresses’ new clothes. “_Sé trés il-decadént, néy?_” says the low-cut eunuch. It’s not. The food nourishes the soul but not the body. Regulars regain only half Life, but can memorize a bonus spell. Regular: €100, fashionable but ineffective new habit, 100 xp.
 
-<a name="page_0018"></a>
+<a id="page_0018"></a>
 
 ## The Low Road and the High
 
@@ -767,7 +767,7 @@ _Our porters carry intact vidy crystals past Pylon 723 and Old Gawn’s Belcher.
 
 _Merenk-Zero’s first trip back, beneath the dim-lit haze._
 
-<a name="page_0019"></a>
+<a id="page_0019"></a>
 
 “I’m on a plain, I can’t complain.”
 — _On a Plain_, Nirvana
@@ -811,7 +811,7 @@ The sun clambers above the eye-watering purple haze around 09:30. Hard gusts of 
 7. **Satrap clock wagons** (L6, tolling, clattering) in a column of gay colors and glistening glass crenelations that admit no faults. The Satrap in charge says they sell experiences, not goods. Spend a day and €200 to gain 100 xp in the crystal clock.
 8. **Helpful wandering serai** (L7, lumbering village on wheels) in the Later Corpsepaint Monarch style offers security, resupply, and the old Greenlander veteran **Beauregarthe** (L3, machete fighter) and his prize cat rifle (€60/week).
 
-<a name="page_0020"></a>
+<a id="page_0020"></a>
 
 ## Discoveries High and Low
 
@@ -842,7 +842,7 @@ _(1 day, 80 xp)_
 
 A victorious hand rises from the hardpack, covered in graffiti. Near the road, it is a popular picnic platz for aristo maidens seeking a suitably gothic and melancholy place to have themselves depicted. Slight danger of **monkey mechs** (L2, thieving, razor-fingered).
 
-<a name="page_0021"></a>
+<a id="page_0021"></a>
 
 #### Motor Agate Outcrop
 
@@ -856,7 +856,7 @@ _(3 days, 250 xp)_
 
 A cratered arched gate in the Onion-and-Skull style of the Later Mahogany Reign slowly emerging from its aerolith tomb. Sages say it was entombed by an epic application of _Zrakomlat’s Air Becomes Stone_ in the Year of the Seven Wars. The petrified bones of strange beasts (€300/sack, 1d4 days to excavate a sack) continually emerge from the light, fluffy stone of the area. Heavily covered in graffiti. Risk of **artist dilettantes** (L2, annoying) and the occasional **meta-skeleton** (L4, recombinatorial, adaptable).
 
-<a name="page_0022"></a>
+<a id="page_0022"></a>
 
 ## Steppe of the Lime Nomads (III)
 
@@ -905,7 +905,7 @@ Foreboding tales of wolf-folk in the far north, beyond the Sea of Tree, are the 
 7. **Limey scouts** (L2, lancers), suspicious but proud.
 8. **Limey matriarch’s traveling village** (L8, settlement), her herdsmen, chattel, herds and wagons on the move for better grazing. This could be a trading opportunity!
 
-<a name="page_0023"></a>
+<a id="page_0023"></a>
 
 ## Discoveries Among the Nomads
 
@@ -945,7 +945,7 @@ The Lime Clan hold this holy spring in great esteem, hidden in a narrow ravine l
 - _Beneath the offerings:_ a **sacred machine fetish** (L5, sleeping) of a half-forgotten proto-deity, nameless now.
 - _Subterranean outflow:_ to the Cave Octopus’ Garden (1d6+2 days in the dark).
 
-<a name="page_0024"></a>
+<a id="page_0024"></a>
 
 ### III. Steppe of the Lime Nomads — Discoveries
 
@@ -979,7 +979,7 @@ With time and raw materials the Cave Octopus can recombine a new and better body
 - Rummaging through the debris and biomantic stores reveals ancient and arcane biomantic equipment and supplies from Long Long Ago (€5,000, 8 sacks).
 - A subterranean stream leads up to the Spring (2d6 days) and down to the Cryptich (1d6 days).
 
-<a name="page_0025"></a>
+<a id="page_0025"></a>
 
 ## City of Nomads
 
@@ -1005,7 +1005,7 @@ Each village is overseen by a **Collective Spirit** (L5, helpful, vicious) with 
 
 Every seventh day the elders’ bodies are returned to them, and the villages ring with rapturous celebration as a week’s worth of life is crammed into a single day. The elders celebrate with synthetic alcohol (€50/sack), which tastes of nothing much but inebriates without motor dysfunction or hangovers.
 
-<a name="page_0026"></a>
+<a id="page_0026"></a>
 
 ## Porcelain Citadel (IV)
 
@@ -1037,7 +1037,7 @@ Grim violet haze till 09:00. Light swirling dust storms, hint of cinnamon on the
 | 16–19 | Despite the grueling wilds, everybody came through fine. |
 | 20+ | Came across a traveler dying of vomish infection with eyes full of dreams, pockets full of translucent porcelain spheres (€200, 2 stone), and a single-entry tablet to a Porcelain Citadel private club, perhaps even the High Houses. |
 
-<a name="page_0027"></a>
+<a id="page_0027"></a>
 
 ### Travel Options from the Citadel
 
@@ -1059,7 +1059,7 @@ Grim violet haze till 09:00. Light swirling dust storms, hint of cinnamon on the
 7. **Nomads** (L2, nervous) shepherding their flocks of gomph sheep and glypto goats to better grazing.
 8. Merchants escorted by **Porcelain walkers** (L7, trigger-happy), bearing tablets of access and heavy cases full of requisite ‘paperwork’ prepared on solid cerametal chits. They are loaded with trade goods and beasts.
 
-<a name="page_0028"></a>
+<a id="page_0028"></a>
 
 ### Porcelain Princes
 
@@ -1086,7 +1086,7 @@ The Porcelain Princes are not-quite-liches that seek immortality just like those
 | 7 | **Meissen 13-unity** | _Radical Conservative_ faction representative, a fanatic dedicated to restoring the Porcelain Citadel to the unity of thought last exemplified by the Properly Recorded Period. Sadly, the PRP was actually a fictional satire in an ancient book, but the records got garbled several centuries ago. |
 | 8 | **Clayfire 100-company** | Self-appointed well-armed one-Prince militia, obsessed with a gnawing fear that the oldtech golems and vechs are failing and the Princes need to take up arms and bodies to oppose the growing threat of the monobodies. The glandular link system struggles with this many bodies and a strict neuro-calisthenic regime is necessary to keep all the bodies of Clayfire in line. |
 
-<a name="page_0029"></a>
+<a id="page_0029"></a>
 
 ### Carousing with the Princes
 
@@ -1121,7 +1121,7 @@ Their _Death Heat Fire Lightning Ray_ eyes scorch all violators and attackers wi
 
 Several decades ago a few of the defunct golems were redeveloped as an ill-fated theme park celebrating the glorious and eternal history of the Redacted Ones (definitely not Porcelain Princes, perish the thought). Nature and the local radiant cherry varieties have reoccupied them now. It’s rather pretty, in a melancholy way.
 
-<a name="page_0030"></a>
+<a id="page_0030"></a>
 
 ## Places of Polished Porcelain
 
@@ -1135,7 +1135,7 @@ Several decades ago a few of the defunct golems were redeveloped as an ill-fated
 6. **House of the Unbowed Cardinal.** Nomad grass cult enclave and hottest BBQ in the West. **Ulc of Aquamarine** (L3, chef cultist) serves as an informal ambassador for the nomads, negotiating grazing rights and slave sales to the everhungry Princely body labs. Daily visitor for a week: €100, learn the secret of the tuber grasses the nomads use in hard times, 75 xp.
 7. **Houses of Many Colors.** Half-dugout Rainbowlander homes and workshops. The color of the porcelain used indicates state and city of origin. The genial, hard-eyed **Teljean de Barbier** (L4, gunsmith) heads the informal council representing Rainbowlander interests.
 
-<a name="page_0031"></a>
+<a id="page_0031"></a>
 
 8. **Lowest Line.** Shacks of dead coral and brick for unaffiliated outlanders, not quite slaves. Yet.
 9. **Onion Dam.** A well-maintained ancient dam with good fishing.
@@ -1147,7 +1147,7 @@ Several decades ago a few of the defunct golems were redeveloped as an ill-fated
 
    **Syruss Sensible** (L3, vome-in-a-box) is the potentially retired freebooter, fan of risky ventures, and manager of Your Life Burns Faster in This House. His magic hats and sharp suits hide a stout supporter of the RLD revolutionary cause. Daily visitor for a week: €100, acquire revolutionary fashion sense, 75 xp.
 
-<a name="page_0032"></a>
+<a id="page_0032"></a>
 
 ## Potsherd Crater (V)
 
@@ -1175,7 +1175,7 @@ Radiant haze clouds obscure the sun before 09:00. Light showers, the smell of ga
 | 12–19 | Navigating by stars and haze-line, you cross the pale scrub. |
 | 20+ | Small crater turns out to be home to a **hermit quarterling** (L3, prickly). The almost-human is convinced they are a simulation, but they can point out either where to find supplies (-1 day, +1d4 supplies) or an unusual local discovery (-1 day, random discovery). |
 
-<a name="page_0033"></a>
+<a id="page_0033"></a>
 
 _A mega-lurcher?_
 
@@ -1199,7 +1199,7 @@ _A mega-lurcher?_
 7. **Radiation ghosts** (L0, glowing) of a forgotten time with willowy limbs and sparking black hole eyes; they point the way to odd remains (+1 day, digging required, €1d6 × 100 in ancient artifacts, 1 sack). Harmless, but may lead through dangerous radiant magic zones (moderate Endurance test or poisoned).
 8. **Porcelain Prince patrol** (L4, leaping armor) keeping things proper, a place for everything and everything in its place.
 
-<a name="page_0034"></a>
+<a id="page_0034"></a>
 
 ## Discoveries in the Potsherds (V)
 
@@ -1215,7 +1215,7 @@ _(3 days, 100 xp)_
 
 A sparkling, smooth dome. It can be opened by the expert application of _Prelapsarian Metonymic Poetry_ and contains a cache of ancient music inscribed on malachite rods (€1,000, 5 sacks). **Cave bat-lions** (L2, lazy) often sun themselves on the dome.
 
-<a name="page_0035"></a>
+<a id="page_0035"></a>
 
 ### Mad Autofarm
 
@@ -1235,7 +1235,7 @@ _(2 days, 160 xp)_
 
 Old steel-glass rococo arches, porticoes, and gazebos sinking into sand and long-grass, wreathed in foul-smelling flowers (mildly hallucinogenic if eaten). Thoroughly picked-over, a haunting poem of a merchant prince’s despair remains embedded in an obsidian dolmen artfully arranged as a garden folly, lamenting the cruel laborers and serfs who foiled the prince’s attempt to create the finest wines outside the Red Land. A great pack of **steppe wolves** (L3, slavering) may appear. _This location is expanded on the next page._
 
-<a name="page_0036"></a>
+<a id="page_0036"></a>
 
 ### Glass House of a Dead Prince
 
@@ -1303,7 +1303,7 @@ With cunning intelligence, the hairy devils block escapes. A pack of six swarms 
 
 Slain hairy devils evaporate, only to return when again summoned by the sorcerer Mestibel (usually on Fridays, just before tea time).
 
-<a name="page_0037"></a>
+<a id="page_0037"></a>
 
 #### Locations and Treasures (d30)
 
@@ -1340,7 +1340,7 @@ Assign rooms and locations freely or roll to fill out the house. The exact place
 29. **Simple Dining Room:** retro-Futurist polycarbonate decor. Far-seeing sculpture-cube (€800, 1 sack, 17 different shows!).
 30. **Living Room:** wonderfully decorated in high archaic minimalism with white shag-beast rug (€1,000, 2 sacks) and incredibly comfortable cream leather lounge set (€1,000, 6 sacks). A sorcerous fish-brooch (€80) rests next to an ashtray and a neatly folded Steppeland Gazette.
 
-<a name="page_0038"></a>
+<a id="page_0038"></a>
 
 ## Trail of Vomish Dreams
 
@@ -1381,7 +1381,7 @@ A dark mauve glow occludes the sun until 09:30. Dry and itchy, with scattered bi
 7. A helpful **trading party** (L5, numerous) that can share maps which shave 1d6 days off of a journey (€50).
 8. The shattered **remnants of a Porcelain patrol** (L6, walker-less) returning from a raid. Probably destroyed by a tribe of giant beasts. A polybody sarcophagus still contains (roll d4): (1) a viable polybody clone (€2,000), (2) a stash of gold novelty medallions (€3,000, 2 sacks), (3) bottles of octopus pheromones (as _Charm Cephalopod_, €300, 10 bottles), (4) an active silver and jade domination implant (as _Charm Person_, €750).
 
-<a name="page_0039"></a>
+<a id="page_0039"></a>
 
 ### Source Fac Johnny-7
 
@@ -1415,7 +1415,7 @@ _(3 days, 3d10 × 100 xp)_
 
 An obelisk, massive, rusting, covered in obscure Black City glyphs. Did it fall or did the slave-train dragging it simply give up? It is unclear. The complex magical glyphs (extreme Intelligence test to decipher) contain instructions (€2d6 × 1,000 if complete; a transcribed copy fills 1d6+2 books) for the activation of a Metal Guardian of the Darkness—a shadow-stepping **iron golem** (L8, thunderous). Half of the instructions are in the ground and turning over the 10-meter, 500-ton obelisk is challenging. At night dangerous **biomech crab-dog swarms** (L5, shuffling) perform eerie rituals with clacking claws and bioluminescent antennae near the obelisk.
 
-<a name="page_0040"></a>
+<a id="page_0040"></a>
 
 ## Vome Nests
 
@@ -1460,11 +1460,11 @@ Most vomes encountered in the wild belong to a nest. While individual vomes may 
 
 Vome nests are high-value, high-risk targets that require a group effort to eradicate without damaging the valuable implants and resources the mad monstrosities produce. A nest has 10 + 1d100 sacks of resources worth €(1d6 × 100)/sack. Thousands in cash.
 
-<a name="page_0041"></a>
+<a id="page_0041"></a>
 
 ![Vome hive map (page 41)](images/vome_hive_map.png)
 
-<a name="page_0042"></a>
+<a id="page_0042"></a>
 
 ## Grass Colossus (VII)
 
@@ -1472,7 +1472,7 @@ Crossing a last purple ridge, the wide vale promises relative respite from the h
 
 Inside, on one of two hillocks, looms a great wicker-man of woven grasses, vines, and thorn bushes. Shamans of many clans make their meets here, teach their memory chants, and welcome the Clan Mothers once a year for the festival of the Circle of Grass.
 
-<a name="page_0043"></a>
+<a id="page_0043"></a>
 
 ### Weather and Misfortune
 
@@ -1512,7 +1512,7 @@ A dark smudge of radiation stops any light reaching the ground before 10:00. Scu
 7. Troupe of **journeymen craftsmen** (L1, skilled), drunk and out of money, looking for work.
 8. Nervously jovial **quarterling merchant** (L3, super-numerate) from the far west with recovered curios and glowing stone sculptures for sale (€400/sack).
 
-<a name="page_0044"></a>
+<a id="page_0044"></a>
 
 ### Clansfolk, Madsfolk (d8)
 
@@ -1528,7 +1528,7 @@ A dark smudge of radiation stops any light reaching the ground before 10:00. Scu
 7. **Joao the Witch** (L2, fetishist), a Greenlander Half-Elf here through a series of ridiculous misadventures. Makes defense fetishes and is in a bad way over their pet pig which died recently in an incident with a misaligned fetish.
 8. Dead drunk, out of their mind, **Possum-5** and **Possum-6** are the remainders of a broken polybody with incoherent stories. Was there a power struggle? Is there a secret way into a Porcelain high house? It’s a mess! They know a rare site (save 1d4 travel days), and how to bypass the defense mechanisms—but it takes some deciphering (difficult Thought test).
 
-<a name="page_0045"></a>
+<a id="page_0045"></a>
 
 ### Celebrations and Events at the Colossus (d6)
 
@@ -1550,7 +1550,7 @@ Resting and recovering in the safety of the cryptic ceramic walls, what could go
 5. **A Testing Week** (no rest possible): night after night, vomes come at the encampment— **biomechanical badgers** (L3, burrowing), a great **fire-spewing red worm** (L7, fire bolts), a shambling horde of **headless halflings** (L2, relentless), swarms of **cactus-skinned steppe wolves** (L3, thorny problem). Defense fetishes are decimated by the onslaught, but a proactive patrol can find a great iron **self-driving chariot** (L7, auto-golem, carries 8, two passenger seats) with a **vomish mind-worm** (L7, psionic) inside.
 6. **Sacred Rainbow** (50 xp): a glorious sign of approval, small sacrifices and rituals with the shamans bring a chance of self-improvement. Moderate test with stat to raise it by 1.
 
-<a name="page_0046"></a>
+<a id="page_0046"></a>
 
 ## The Last Serai (VIII)
 
@@ -1566,7 +1566,7 @@ Drumming out a rhythmless, rumbling staccato.
 
 Closing in on the tower you see buildings, like hunched old men, clustered in the lee of a cinder dune. Around the tower a circle of gentle dust floats in a massive static charge. Nothing living grows within that circle. There the Last Serai’s grand old harmonic rods draw energy from that magical field, powering the great hold of the Porcelain Princes while selling the excess to the last trading house of the Violet City and the final embassy of the Spectrum Satraps.
 
-<a name="page_0047"></a>
+<a id="page_0047"></a>
 
 ### Weather and Misfortune
 
@@ -1604,11 +1604,11 @@ The atmosphere is charged, like an argument left smoldering. Dark clouds build a
 7. Three **scruffy polybodies of Iron Pot 6-body** (L3, hard-boiled) were beaten up by an unknown assailant and their access slave unit stolen. They’re here to investigate the alleged revolutionary activities of local Porcelain Prince, **Angel 22-unity** (L5, classy).
 8. Local **urchins** running around and playing ball, their gangly limbs threaded with wires and bio-implants. They sing, “Oh, oh, oh, everyone should know, the violet is violent and the spectrum is sneaky, and both would trade without the tax man.” It’s just a popular song going round.
 
-<a name="page_0048"></a>
+<a id="page_0048"></a>
 
 _Full-page illustration omitted._
 
-<a name="page_0049"></a>
+<a id="page_0049"></a>
 
 ### Sectors of the Serai
 
@@ -1627,7 +1627,7 @@ _Full-page illustration omitted._
 11. Skulls and bones. Ancient, ancient skulls and bones (€50/sack, perfect for a museum). Oddly sub-human: the original inhabitants of this place?
 12. The walls are covered in odd, half-forgotten lyrics, “Goodbye, Gemini! Apollo, my sun lord. Reach for the heavens, draw the dark apart. Behold, a new hope.” Lots of nonsense, really.
 
-<a name="page_0050"></a>
+<a id="page_0050"></a>
 
 ### The Harmonium
 
@@ -1656,7 +1656,7 @@ Remotest outpost of the Rainbow Lands in the UVG and smallest living building in
 
 **Basil of Planet** (L4, facilitator), the secretary, is an uncanny Greenlander of ill-defined age, withdrawn and sour. He is a member of the New Mission cult, which awaits the coming of the Crystalline Seed from the perfected flesh. In crucial ways the New Mission is antithetical to the First and Last Mission organization of the Spectrum Satraps (p.128).
 
-<a name="page_0051"></a>
+<a id="page_0051"></a>
 
 ### The Final Embassy
 
@@ -1676,7 +1676,7 @@ Do not go there. It is ignored for a reason. Seriously. It will kill you and gri
 - _If heroes insist:_ it is home to **the Rebuilder** (L17, creatively blocked), a trapped demiurge personality whose _soul_ was stolen by a **shapeshifter** (L7, patient zero) and _body_ was taken by an **Astral Lizard** (L9, original engineer). She is trapped there, her godlike powers tapped by the harmonium, her personality kept intact by the swirling degradation of souls falling into her existential solipsistic boundary. Her screaming visage bursts out in regular pulses of light to the far north-west, creating the so-called Death-Facing Passage. Now you know.
 - _If her soul and body are restored:_ her attention will again expand beyond the event horizon of her despair to see the world around her. It has been centuries and millennia since she was trapped, prevented from rebuilding the glittering lingish civilization that summoned her from the upper voids Long Long Ago. It is too late now, there is nothing left for her to rebuild. If the heroes were kind, she restores something that was broken or lost to each of them, whether it is a doll, a family home, or a city ground to dust by the Stone Dragon That Eats The Night, then disappear in sparkling lights. If the heroes were cruel, her eyes glaze and her body collapses into dust as her ka-ba returns to the upper voids, beyond the Fast Stars. In both cases, _this removes the deadly environmental danger from the Death-Facing Passage_ and once this fact becomes common knowledge a rush to plunder that region begins.
 
-<a name="page_0052"></a>
+<a id="page_0052"></a>
 
 ## Way Stone Graveyard (IX)
 
@@ -1686,7 +1686,7 @@ Beware. With a machine it is hard to tell: are they dead or but long-sleeping? D
 
 And what of the monolith? Must one truly give up the physical body to enter its synthstone and crystal halls? If so, why then do the piles of zombie machines that choke the blister bunkers ‘round its mighty flanks still twitch and judder so when a mere tourist approaches those well-looted ruins?
 
-<a name="page_0053"></a>
+<a id="page_0053"></a>
 
 ### Weather and Misfortune
 
@@ -1722,7 +1722,7 @@ A constant dry rust storm swirls about the mile-high mass of the obelisk, whippi
 5. Two great Satrap **clock wagons** (L12, loaded), swaying serenely, attended by their **mirror-faced guards** (L3, poker-faced). They carry lovely loads of prisms (€250/sack) and many-colored shift-silks (€750/sack) that change color with the emotion of their wearer.
 6. A very well-provisioned party, led by the bespectacled dwarf engineer **Laszlo Montague IV** (L2, lucky), the golden-masked rogue polybody **Gilded 3-era** (L3, coordinated), and flame-haired RDC twins **Sena** (L5, calculating) and **Xina** (L3, ambitious) in biomech cool-suits searching for the tomb of the machine “_The Dragon Also Rises_.” They are quite candid about their goals and how much they could make with it in the SD Metropolis Museum (€75,000). They have maps, they claim.
 
-<a name="page_0054"></a>
+<a id="page_0054"></a>
 
 ### Discoveries by the Way Stone
 
@@ -1752,7 +1752,7 @@ _(2 days, 120 xp)_
 
 In a bowl-shaped depression ringed by eroded monoliths thousands of rust-red many-jointed, delicate pylons rise. In the heart of the great array is a crystalline flower, 70 meters tall and glistening like a dew drop on a cold autumn morning. Visitors have scrawled their names in the rust and taken souvenirs from the dead-rusted pylons but still—every day at midday—heavily corroded, ribbon-decked **spidery biomechanics** (L4, sprinting) emerge from their subterranean lairs to lubricate and polish the flower. The biomechanics are harmless unless the flower is approached, so many visitors tie prayer ribbons to the creatures instead. Local wanderers call them the clock-setters.
 
-<a name="page_0055"></a>
+<a id="page_0055"></a>
 
 ### The Abbey of the Caretakers
 
@@ -1774,7 +1774,7 @@ _(3 days, 80 xp)_
 
 A long slab of cliff-face, 700 meters long and 20 meters high, smoothed and polished to a high sheen and pocked with thousands of small niches preserving the wire-and-clockwork enhanced feet, soles outward (€50/stone) of the worshippers of a machine ascendancy. Encased in grown-crystal, most of the soles have been long-since stolen as souvenirs and the mausoleum remains, more than anything, a souvenir to the terrible danger homophones pose to literal-minded cults. Occasionally a sentient dust-red wise bear named **Ottokar** (L4, werehuman) is seen here. It sometimes sighs and sings sad songs or talks of days gone by.
 
-<a name="page_0056"></a>
+<a id="page_0056"></a>
 
 ## The Death-Facing Passage (X)
 
@@ -1784,7 +1784,7 @@ The upland above the canyon is a pandemonium of shattered rock and odd twists of
 
 **Warning:** the Death-Facing Passage is lethal and many travelers journey with great hoods or safety hats so they cannot glance above the horizon and catch sight of the Face of Death.
 
-<a name="page_0057"></a>
+<a id="page_0057"></a>
 
 ### Weather and Misfortune
 
@@ -1822,7 +1822,7 @@ The days are filled with terrible sadness. The nights flicker with soul-echoes a
 7. Flickering **soul-echoes** (L0, fizzing) of mongooses and snakes.
 8. Blind **passage lizards** (L4, nutritious), richly humped, hunting fat **copper-laced grubs** (L1, pseudo-vomes).
 
-<a name="page_0058"></a>
+<a id="page_0058"></a>
 
 ### Discoveries under the Face of Death
 
@@ -1851,7 +1851,7 @@ Aura test or go look at the Face). Every hour of exploration turns up €1d6 × 
 7. Canned cakes. Full of goodness even after all these years. May cause scurvy.
 8. Obsolete personal deities. Crystal tabs used to send prayers into the noösphere. Alas, bricked by a failed update.
 
-<a name="page_0059"></a>
+<a id="page_0059"></a>
 
 ### Vault of the Lost Ultras (?)
 
@@ -1874,7 +1874,7 @@ Visitors can stay as long as they like, but fiddling with the vault may provoke 
 
 _A faulty dream inducer?_
 
-<a name="page_0060"></a>
+<a id="page_0060"></a>
 
 ## The South-Facing Passage (XI)
 
@@ -1897,7 +1897,7 @@ The far western sun only pulls away from the nictitating membrane of the night a
 | 8–19 | The stars seem very near here, so close to the roof of the world. |
 | 20+ | Found a wonderful little oasis (50 xp) full of delicious fish and black light lotus (1d6 sacks’ worth). Spend just 1d6 days to get a full week’s rest and gain 1d4 Charisma for a week. Sometimes this world truly is just enchantingly beautiful. |
 
-<a name="page_0061"></a>
+<a id="page_0061"></a>
 
 ### Encounters on the High Grassland (d8)
 
@@ -1921,7 +1921,7 @@ The far western sun only pulls away from the nictitating membrane of the night a
 - **South, Fallen Umber** (steppe, 1 week): the dead kingdom of Umber and its brown, tree-lined gullies.
 - **South-West, Behemoth** (steppe, 2 weeks): the mountain-sized calcite corpse of the largest behemoth is a known landmark.
 
-<a name="page_0062"></a>
+<a id="page_0062"></a>
 
 ### Discoveries in the Alpine Meadows
 
@@ -1943,7 +1943,7 @@ The rumors are true—the bone circle is made of the **behemoth’s appendages**
 
 Expenses: €20/week to stay in the fine rooms. Regular: €100, a month, acquire a basic grasp of phytomancy or alcomancy, 150 xp.
 
-<a name="page_0063"></a>
+<a id="page_0063"></a>
 
 #### Wandering Behemoth
 
@@ -1961,7 +1961,7 @@ For ageless years long-limbed behemoths came to this spot, like moths to a flame
 
 _Some say Moy Sollo rides there still when the True Sun burns._
 
-<a name="page_0064"></a>
+<a id="page_0064"></a>
 
 ## Fallen Umber
 
@@ -1971,7 +1971,7 @@ Beyond the Way Stone the steppe continues, flat, tasteless, tone-deaf. The carav
 
 “Agreed, nothing to loot,” replied the Hero.
 
-<a name="page_0065"></a>
+<a id="page_0065"></a>
 
 ### Weather and Misfortune
 
@@ -2008,7 +2008,7 @@ The weather is unusually mild and calm for the steppes, and though the sun rises
 7. Family of **Great Folk merchant-hunters** (L4, necromancers) with several bone-work golem wagons (L8, 12 sacks, €4,000).
 8. A **ghostly caravan** (L6, para-human) bearing bundles of archaic goods (€700/sack). If followed long enough they may sell some of their time-dilated goods, which become solid when blood touches them.
 
-<a name="page_0066"></a>
+<a id="page_0066"></a>
 
 ## Discoveries in the Umber Lands
 
@@ -2026,7 +2026,7 @@ _(2 days, 150 xp)_
 
 A livingstone dome, the Dome of the Most, marks one of the last stands of Fallen Umber, where the Dynasty of the Slumbering Most Green (corporatist branch) used massive biomantic rituals to reactivate the titanic biomatter, creating a renewable source of fuel for their azure-strand chitin-caps. The attempt failed and the Dynasty fell to a massive uprising of their tertiary servant caste. In the ensuing centuries the mutated offspring of the azure-strands colonized the bones of the great dome, creating a hanging garden of susurrating azure fungoids (€150/sack, 1d4 days to harvest). **Hybrid sweet-fleshed rodents** (L2, toxic pacifists) now tend these ancient, sun-processing fungal colonies. Do not worry about the lake pliosaurs. They are mostly harmless.
 
-<a name="page_0067"></a>
+<a id="page_0067"></a>
 
 ### Erosion of War
 
@@ -2040,7 +2040,7 @@ _(5 days, 300 xp)_
 
 Far beyond the beaten track some odd wanderer placed a massive stele, a thousand tons or more of garnet gneiss, inscribed with a mawkish poem about a blossom in love with herself, plucked to adorn a noble’s dining jacket in her unique beauty, where she wilted and died alone. The words and glyphs are cut deep and utterly flawless but, more amazingly, the long-form poem is reproduced in seven languages—including the odd patterns that some call the Black City Alphabet. Studying the stele for several weeks, or procuring reproductions of the stele (€500 for copies as Rosetta stones), is one of the better ways to comprehend (if not speak) the odd languages of the steppe.
 
-<a name="page_0068"></a>
+<a id="page_0068"></a>
 
 ## Cerulean Five Oasis
 
@@ -2075,7 +2075,7 @@ Ask the heroes to answer at least one question like this about every faction the
 7. **Jeppi** (L3, savvy): the Maitresse of the Habitation Association, a general-purpose hexad-associated union of the laboring classes. Jeppi also runs something like a bank-and-savings cooperative structured around the Re-Wired Vome Vault. Jeppi loves good wines, fine mechanical poetry, and long walks in the twilight of the world.
 8. **Partner Epiphocte** (L4, biomancer merchant): the dryland-adapted Porcupine Partnership representative hosts a fine salon that discusses literature and meta-biology on moonless nights. It keeps three former partner personalities in rock crystal and malachite jars at the green-skinned Porcupine House for accounting and recounting purposes.
 
-<a name="page_0069"></a>
+<a id="page_0069"></a>
 
 ### Places in the Oasis
 
@@ -2135,7 +2135,7 @@ Soon, the society of the Oasis is collapsing into suicides and depression as not
 3. Injecting White Jackal with a vomish civil-war subroutine.
 4. Subjecting the ultra to a metaphysical existentialist therapy over a period of months will obscure the clarity of the harsh truth with a veneer of absurdist humor.
 
-<a name="page_0070"></a>
+<a id="page_0070"></a>
 
 ## Long Ridge
 
@@ -2167,7 +2167,7 @@ The sun creeps above the dusty haze at 10:30 and the sky is silvery-pale in the 
 | 12–19 | Shh. It’s ok. The grass understands. It knows. |
 | 20+ | A serendipitous bathroom break reveals an incredibly sharp and pointy sedge with a bluish-purple glow to its edges, which possesses surprising pharmacological properties. Introduced into the blood stream, it changes the brain’s biochemistry and permanently opens the door to lucid dreaming. Alternatively, the user can experiment with it (moderate Thought test) to unlock other new and unexpected extra-sensory abilities. There’s not enough of the thing to harvest for more, really. |
 
-<a name="page_0071"></a>
+<a id="page_0071"></a>
 
 ### Travel Options on the Long Ridge
 
@@ -2187,7 +2187,7 @@ The sun creeps above the dusty haze at 10:30 and the sky is silvery-pale in the 
 7. Hermit **cultists of the viles** (L4, slow shape shifters) covered in mosses and dust, meditating on the white grass and grazing on manna.
 8. **Small caravan** of (roll d6): (1) lime nomads with flocks of wooly sheep (€25/sheep), (2) great folk with bone-work tools and beads (€175/sack), (3) Spectrum Satraps in a great six-footer (L12, thundering) carrying crystal eyes (€6,000/sack), (4) hostile and scruffy Yellowlanders with burdenbeasts and spicy drugs (€2,000/sack), (5) enigmatic half-elfs with empty eyes and hollow laughs (€100 per eerie song), (6) cowled short quarterlings whipping two-legged burdenbirds (€75/bird).
 
-<a name="page_0072"></a>
+<a id="page_0072"></a>
 
 ### Discoveries on the Long Ridge
 
@@ -2209,7 +2209,7 @@ The water is rainbow-colored and still euphoria-inducing (€200 per bottle, wea
 
 XIII
 
-<a name="page_0073"></a>
+<a id="page_0073"></a>
 
 #### The Sky Tower
 
@@ -2229,7 +2229,7 @@ _(2 days, 70 xp)_
 
 Glistening on a lonely tumulus, a cairn entirely of green-hued copper nodules stands, mute testament to some long-gone Queen or merchant—who could tell? Curse markers warn of death, indeed the curses of the splitting of bones and the melting of eyes are true enough. Treat the curses as **guardian spirits** (L6, implacable) who attack in a rush of green metallic sparkles when the markers are disturbed, doors are breached, or burials desecrated. _Within:_ bones, shards, and smears testify to a curse-maddened **vomish autofac** (L12, hexamorphic) self-entombed in the cairn, spewing forth rubbery, bioenhanced **handsnakes** (L2, spitting, grabbing). There are 40 sacks of copper (€400 each) in the cairn. Deeper yet: who knows what is actually in the cairn’s heart?
 
-<a name="page_0074"></a>
+<a id="page_0074"></a>
 
 ## Behemoth Shell
 
@@ -2255,7 +2255,7 @@ By night the winds are cold but when the sun emerges from the creeping dark at 1
 | 12–19 | The imposing, mountain-sized calcite corpses remind everyone how small and pitiful they are. |
 | 20+ | As you rest under a beautifully gnarled pine tree that must have seen several empires rise and fall, you feel a sudden lurch in your stomach as gravity momentarily distorts. A small portal opens in the wood of the tree and a sleek rodent human scampers out and says, “I have been sent from a future to thank you for taking some time to go fishing tomorrow. These beads will compensate you.” The rodent human drops three purple spheres into your paralyzed palm and disappears back into its portal. If you spend the next day fishing at a nearby lake, each of the spheres becomes a blessing that can turn one failed test into a success. Alternatively, you can consume all of them to raise one stat. |
 
-<a name="page_0075"></a>
+<a id="page_0075"></a>
 
 ### Travel Options at the Shell
 
@@ -2290,7 +2290,7 @@ In the narrow defiles of a nondescript mountain ornate and buxom pines have grow
 5. An **eloquent mole rat hive** (L6, swarm), which acquired intelligence after a Long Ago rogue charm-engineer attempted to recreate the Porcelain Princes’ polybody technology. Perhaps she succeeded and became the mole rats?
 6. A **vomish autofac** (L10, techno-supremacist) taken over by prairie dog source code, which pumps out cybernetic enhancements to create **higher life-form prairie dogs** (L2, rapidly self-uplifting). There are no birds of prey or snakes in the vicinity of the mountain—victims of the heat-ray nodules growing among the pines, defending the prairie dogs.
 
-<a name="page_0076"></a>
+<a id="page_0076"></a>
 
 #### Crushed Shell
 
@@ -2304,7 +2304,7 @@ _(4 days, 300 xp)_
 
 Tethered to a humanoid **behemoth** (L14, decayed) by sinews of earth, ropes of rock, veins of marble and tendrils of crawling sand, a section of the plain—like a great plate—strains rising towards the sky. A slick, aquamarine field covers its surface, creating a serene habitat for fruiting trees (€200 per sapling), enormous flowers, and **howling rat-monkeys** (L3, flatulent). The island is coated in poisons and filled with noxious airs, but at its center rises a five-sided pyramid of five colors, culminating in a great prismatic eye that gazes with love upon its own little ideal island. Perhaps there are weird secrets here, but the **demiurge** (L17, megalomaniac) of this half-living behemoth is a deadly foe.
 
-<a name="page_0077"></a>
+<a id="page_0077"></a>
 
 Beyond the Long Ridge the steppe flattens out and becomes a flat ocean of white grass. From horizon to horizon, the world spreads flat and still. In its depth lies a great stone marker; smooth, rising a foot above the soil, and five hundred paces across. The entire surface shifts in curiously fractal serpent patterns of chocolate and amber.
 
@@ -2352,7 +2352,7 @@ The sun rises above the glowing UV haze only at 11:00 and soon becomes a scorchi
 7. **Migrating grass colony** (L12, crawling), easily avoided and slow, shot through with deadly vampire varietals if provoked.
 8. Spectrum Satrap **announcer walker** (L5, booming), patrolling on three stilt-like legs announcing, to all who care, the border of the Satraps is nigh and listing the taboos that are not to be violated. If properly admired in its crystalline majesty, it shortens travel to the Moon-Facing Ford by 1d4 days.
 
-<a name="page_0078"></a>
+<a id="page_0078"></a>
 
 ### Discoveries in the White Grass Ocean
 
@@ -2375,7 +2375,7 @@ A stone marker creates a depression, like a pockmark, in the white, gently swayi
 5. **Grass Dream Pattern:** the sleeper is attuned to the steppe grass for the next week, can sense vibrations in the ground, and cannot be surprised. However, the grass makes thoughts a bit slow ([-] on Thought tests).
 6. **Rock Talk Pattern:** the sleeper attunes to the marker stones themselves and can feel and hear the surroundings of other markers for several dozen miles, gaining advantage to encounter rolls but disadvantage to Agility tests.
 
-<a name="page_0079"></a>
+<a id="page_0079"></a>
 
 #### Pine-Crusted Lophotroche
 
@@ -2400,7 +2400,7 @@ Bonus trade good: **sweet lophotroche sugar** —20 sacks available per year, 1d
 5. Epic dose of cat snip, powdered puff mushrooms that bring euphoria and 2 bonus actions (4 doses, €50). It’s addictive (easy Endurance test) and if an addict goes without they have disadvantage to Charisma tests until they get a dose.
 6. Ba-hardened wooden short sword (1d6), deals double damage to incorporeal creatures and ultras (€60).
 
-<a name="page_0080"></a>
+<a id="page_0080"></a>
 
 ## Moon-Facing Ford
 
@@ -2434,7 +2434,7 @@ The stars continue to spark until 11:30 when finally the sun emerges to glare up
 - **North-East, Serpent Stone Marker** (steppe, 2 weeks): the white grass full of serpentine spirits beckons.
 - **South-East, Behemoth Shell** (trail, 2 weeks): the calcite crumbed flatland, studded with the remains of behemoths.
 
-<a name="page_0081"></a>
+<a id="page_0081"></a>
 
 ### The Pylon Kraal Above Moon River
 
@@ -2463,7 +2463,7 @@ _In the Kraals they say you should never trust a masked human._ _Why does Sister
 
 Moon-Facing Ford 81
 
-<a name="page_0082"></a>
+<a id="page_0082"></a>
 
 ## Fordite Kraals and Old Songs
 
@@ -2503,7 +2503,7 @@ Traveling through kraal country, a group will come across a random kraal most da
 
 20+ Kraal Fort (or spend d6 days): the fordite kraal is occupied by (roll d6): (1) a Satrap self-defense initiative patrol, (2) mercer guild mercenaries, (3) local semi-nomadic quarterlings, (4) vomes masquerading as humans, (5) heroes from the Long Ago of Three Sticks Lake exploring this strange future, (6) a herd of rodents possessed as a swarm by an ultra explorer. It has a working well, stores of food, perhaps even a general provisioner.
 
-<a name="page_0083"></a>
+<a id="page_0083"></a>
 
 ### Other Crossings
 
@@ -2522,7 +2522,7 @@ The Moon-Facing Ford was lost behind the grass-knit dunes. Poncho shivered, the 
 5. **Bug Swamp** _(1d6 days, 1d6 × 40 xp)_ The banks of the Bug form a series of shifting sandbars, quicksand, and log footbridges through the reedy swamp. Avoiding the worst parts is trivial, but getting lost adds an extra 1d4 days to the crossing. The worst part is the **Swarm of the B.U.G.** (L9, nine-lived). A biomechanically reprogrammed collective of cat-sized water cockroaches slaved to the engorged Biofab Unit Gamma (B.U.G.). The **B.U.G.** **autofac** (L7, addled) continuously reprocesses organic matter into potato-sized brown ration pellets (€20/sack of supplies) wrapped in water-resistant papery cocoons emblazoned with the yellow and green livery of some long-gone food wizard—20% chance of encountering the swarm on any given day.
 6. **Glass Bridge’s Ghost** _(1d6 days, 1d6 × 40 xp)_ This Glass Bridge is long gone, but some helpful souls have stretched nets and ropes between the translucent supports to aid in swimming and wading across. This is a little risky most days (trivial Agility test) but absolute madness after heavy rains (extreme Agility test). On moonlit days, when the True Moon’s light illumines the Near Moon, souls from some Long Long Ago spirit caravan crawl along the nets and try to find an audience for their pitiful laments. Listening to enough laments, some have been **lost in the mad possession of these souls** (easy Aura test, or possessed by a lost soul—reroll mental stats and create a new, secondary personality if this happens).
 
-<a name="page_0084"></a>
+<a id="page_0084"></a>
 
 ## The Near Moon
 
@@ -2544,7 +2544,7 @@ Small impact craters mark where over-eager tourists have swiftly come down to ea
 
 “Ah, throw that to the fish! That Moon has room inside for treasures that would melt the hearts of the simpering sopranos of Safranj!”
 
-<a name="page_0085"></a>
+<a id="page_0085"></a>
 
 ### Weather and Misfortune
 
@@ -2600,7 +2600,7 @@ Other guests include:
 - **Babeffe the Bull-fighter** (L4, wrestler) is a folk hero among the semi-nomadic services and mechanists communities of the middle grasslands. She’s getting old, long black hair greying, teeth thinning, but she still pulls a wruppler down one-handed.
 - **Life-Is-A-Game** (L7, sorcerer bartender), a rumored ultra, wearing the skin of a noble quarterling from far up the Moon River where the toothed hills turn to follow the progress of the red-and-gold star. In any case, she is friendly, mixes a mean cocktail, and totally isn’t looking for patsies to dive into the crystal heart of the Near Moon to retrieve **Memories-Best-Forgotten** (who is definitely an ultra).
 
-<a name="page_0086"></a>
+<a id="page_0086"></a>
 
 ## Discoveries on the Ground
 
@@ -2622,7 +2622,7 @@ _(6 days, 250 xp)_
 
 The epic force that bound the Near Moon so close to the surface of the world has buckled and snarled that surface like an angry divine toddler pulling a tablecloth. Great bundled sheets of stuckforce have lifted and suspended whole strata of the high steppe, creating the cantilevered rim—a two-mile slip fault overhang suspended hundreds of meters above the gloomy, semi-cavern ecosystem below. The rim stretches, with chaotic fractures, for hundreds of miles, a mad boundary between the Near Moon to the south and Three Sticks Lake to the north. If it were not so remote, and so haunted by **alien force ghosts** (L5, vituperative), this would be a miner’s heaven.
 
-<a name="page_0087"></a>
+<a id="page_0087"></a>
 
 ## The Surface of the Near Moon
 
@@ -2649,7 +2649,7 @@ The Moon’s pitted and cratered ash-grey hulk reveals itself on closer inspecti
 9. **Rhizomal bulbs** form at the rubbery nodes where the gently photosynthetic lichens that mat and web the soil of the Near Moon agglomerate. The colony organisms concentrate resources in tough bulbs: water, carbohydrates and, more rarely, volatile hydrocarbons (also called “jet fuel” by harvesters).
 10. **Rusticant mushroom ferns** are the commonest plant form of the Near Moon, arranging themselves into hexagonal fields, assembling moon-ash into leafy shields bonded with chitin. Perhaps against the aetherial disruptions of the deep cosmos? It is unclear.
 
-<a name="page_0088"></a>
+<a id="page_0088"></a>
 
 ### Locations on the Surface
 
@@ -2685,7 +2685,7 @@ _(1 day, 200 xp)_
 
 On the skyward side of the Moon, known to only very few, reachable by ropes and hooks and scrabbling hands, around the weak gravity well of the suspended rock. Somebody with directions to the door would find it in a day, one without needs at least 2d10 days. The Door is a puzzle, requiring either 1d4 days per difficult Thought test, or the sacrifice of a whole ling’s worth of blood at the Altar of Open Ways in the pyramid that is the carcass of a Cosmic Guardian. _Within_ a shaft lined with stubs of plasteel grips, rusted-through handles, and age-smoothed steps excavated into the bedrock leads into the Heart of the Moon.
 
-<a name="page_0089"></a>
+<a id="page_0089"></a>
 
 ## Enter the Moon: Cold Crust
 
@@ -2756,7 +2756,7 @@ _(2d10 hours, 300 xp)_
 
 Deep within the crust, where all light dies but the temperature rises as the residual nuclear fires at the heart of the Near Moon keep burning, is a series of interconnected halls and chambers thick with chemovorous worms, wiggling anemones, and phosphorescent bacterial colonies. The chambers radiate out from a great orifice of slick, fatty flesh arranged over bones of crystal, a gaping mouth into a living layer of the Near Moon.
 
-<a name="page_0090"></a>
+<a id="page_0090"></a>
 
 ## Cross the Flesh: Warm Mantle
 
@@ -2801,7 +2801,7 @@ The massive creature moans and trembles, surviving on the heat from the nuclear 
 | 13–14 | Ransacked crew cysts, like cracked shells trapped in the creature’s flesh. |
 | 15+ | Vestibule to a **discovery in the mantle**. |
 
-<a name="page_0091"></a>
+<a id="page_0091"></a>
 
 ### Discoveries in the Warm Mantle (d6)
 
@@ -2847,7 +2847,7 @@ An enormous assemblage of rotating, grinding, tearing crystalline mouth structur
 
 A plane of force cut off the creature’s mouth parts from the core, but it sent secondary mandibles probing around the edges of the plane and a couple of them found gaps in the stuckforce. They are petrified and ancient airlocks of cycling force have been placed within them. This is the entrance to the core of the Near Moon.
 
-<a name="page_0092"></a>
+<a id="page_0092"></a>
 
 ## Heart’s Center: the Crystal Core
 
@@ -2896,7 +2896,7 @@ Bringing a large quantity of rare crystals to the surface will collapse their tr
 | 13–14 | Defense chamber, with **dormant defense machines** (L7, death rays). 1-in-6 are still viable. They do not target shape-shifters. |
 | 15+ | Crystal anteroom to a **discovery in the core**. |
 
-<a name="page_0093"></a>
+<a id="page_0093"></a>
 
 ### Discoveries in the Crystal Core (d6)
 
@@ -2936,7 +2936,7 @@ _(1d10 hours, 100 xp)_
 
 A chamber of great metal and crystal coils, wheels within wheels, in complex and terrifyingly higher-dimensional arrangement, this odd-space houses the null-space engines of the Crystal Ship. In the heart of this funhouse labyrinth is a crystal chamber with three crystal switches. Two are bright red and pushed down into a block of jade, the third is upright, a mummified pseudo-human hand gripping it. Smeared across the ground is the desiccated ruin of a half-naked pseudo-human warrior, while in a corner rests the hibernating cyst of the **void assault arachnid** (L7, not dead). Pushing in the last crystal will detonate the null-space engines, destroying the Moon. Pulling out the two activated crystals will make controlling the Near Moon somewhat easier.
 
-<a name="page_0094"></a>
+<a id="page_0094"></a>
 
 The Crystal Core and the Warm Mantle list a few ways to mess with the Near Moon. There are a few possible outcomes.
 
@@ -2971,7 +2971,7 @@ The navigator locks into the Master Control and becomes one with the Crystal Shi
 
 Good luck in these deeply weird and voidy waters.
 
-<a name="page_0095"></a>
+<a id="page_0095"></a>
 
 ## Discoveries Among the Stars Fast & Slow
 
@@ -2999,7 +2999,7 @@ Visible lines of energy sparkle in the ground moss, all converging on a decayed 
 
 _Within_ dwells a **Custodian Death** (L9, memorialist) who offers secrets for news of the quick world below. The Custodian Death wields a great mirror blade so otherworldly it can part spirits from bodies and personalities from spirits. This blade would be worth a fortune to any autarch on the quick world (€50,000 or so).
 
-<a name="page_0096"></a>
+<a id="page_0096"></a>
 
 ## A Megaregion and a Declining Faction
 
@@ -3009,7 +3009,7 @@ Use these regions as an inspiration for adding additional realms to your UVG, mi
 
 _At first we thought it was a cloud. When it attacked like a demented roc, we realized it was a demon wind._
 
-<a name="page_0097"></a>
+<a id="page_0097"></a>
 
 ## Glass Bridge
 
@@ -3059,7 +3059,7 @@ The empty land seems tired, emptied out, but still the wind howls like a horror,
 9. **Spectrum Satrap spy** (L4, symbiote-enhanced) meeting assets and paying off nomad clan matriarchs.
 10. Supply Chain Manager clan **war vech** (L9, spiked) patrolling Red Bear Village claims.
 
-<a name="page_0098"></a>
+<a id="page_0098"></a>
 
 ### Village and Bridge
 
@@ -3091,7 +3091,7 @@ _(1 day, 50 xp)_
 
 A mighty and turbulent flow, it cuts the High Horse and High Moon steppes apart before joining the Moon River at the shallows of the Near Moon Ford. Its deep pools and eddies hide ancient bones, rusted machines, and **great steppe krakens** (L7, amphibious).
 
-<a name="page_0099"></a>
+<a id="page_0099"></a>
 
 ## Lake Folk
 
@@ -3146,7 +3146,7 @@ Lake humans(?) have the following strange features:
 - **Unusual:** each starts with at least one non-cosmetic, not immediately obvious mutation.
 - **Terrified:** their marginalization has left them angry and resentful. One of their mental stats starts out weaker.
 
-<a name="page_0100"></a>
+<a id="page_0100"></a>
 
 ## Discoveries Near the Glass
 
@@ -3186,7 +3186,7 @@ Hundreds of craft of all sizes are preserved in ancient, gargantuan and slowly c
 
 However, a canny explorer, equipped with a guide and a lot of luck, might well find a functioning (roll d6): (1–3) vech, (4–5) autowagon, or even a (6) floating barge among the Ferry Graves. This is a hard and dangerous endeavor (extreme Charisma test, one test allowed per week). The **molds** (L0, sweet) and **slimes** (L0, sour), though not individually intelligent, would be drawn in greater and greater numbers to the party over time.
 
-<a name="page_0101"></a>
+<a id="page_0101"></a>
 
 ### High Horse Steppe
 
@@ -3224,7 +3224,7 @@ _(1 day, 35 xp)_
 
 Constrained to an impressive artificial channel for much of its upper course; in the middle of the Long Slog, the milky waters of the White River suddenly flood out across the miasmatic plain. The waters are thick, somehow soupy, and filled with shockingly enormous **pestilential amoebas** (L5, disease-ridden).
 
-<a name="page_0102"></a>
+<a id="page_0102"></a>
 
 ## Three Sticks Lake
 
@@ -3241,7 +3241,7 @@ The lake itself is cold and full of fish, its bed—so it seems—thick with **w
 - **West, The Gall Grass** (old road, 1 week): torn mountains and high forests skirt around the edge of Three Sticks Lake, leading to the dry valley of slow-dreaming grass.
 - **South-West, Glass Bridge** (scruffy trail, 1 week): the ruins of the Living Villages’ ancestors give way to the high steppes.
 
-<a name="page_0103"></a>
+<a id="page_0103"></a>
 
 ### Weather and Misfortune
 
@@ -3274,7 +3274,7 @@ An electric smog obscures half the sky, and the wan sun only emerges to scorch b
 9. **Survivalist villagers** (L2, paranoid) in a jury-rigged vech (L7, chugging, capacity 6, €1,500) on a vital trading mission.
 10. **Half-nomads** (L2, swift) and their flock of grazing rodents moving confidently, skilled in avoiding dangers.
 
-<a name="page_0104"></a>
+<a id="page_0104"></a>
 
 ### Lakeside Discoveries
 
@@ -3298,7 +3298,7 @@ Iron Pike was initially an anarchic hippie-wizard commune, at least so say the l
 
 The current leadership of Iron Pike consists of two war chiefs, **Broadgrin the Sinewy** (L5, strong) and **Swiftstab the Bumbler** (L2, smart). Both take advice from the witch **Icing Matilda** (L4, skin-rider). Iron Pike offers little in trade, grudging hospitality, and canoes to the other two villages for €7/person or beast. They do not like to cross the lake: those shores are home to shambling vome hordes. Their ferry, the sleek _Glazed Partridge_ (L10, swift), is broken down with a faded battery. A replacement can be found in Three Sticks, but that place is crawling with water people.
 
-<a name="page_0105"></a>
+<a id="page_0105"></a>
 
 The Red River flowing into Three Sticks Lake from the east marks a tired remnant of Villager territory.
 
@@ -3350,7 +3350,7 @@ The great, wide, immense, and crumbling Rusty Bridge spans the black canyon of t
 
 Heavy vehicles or creatures crossing the bridge should take measures to spread out their weight, lest they fall through the cheese like road surface.
 
-<a name="page_0106"></a>
+<a id="page_0106"></a>
 
 The north-eastern environs of Three Sticks Lake are radically dislocated from the everyday world.
 
@@ -3407,7 +3407,7 @@ Egrets and terns congregate along this desolate shore of tumbled grand pines and
 
 Fortunate travelers might encounter **Coffin Walker** (L2, healer), a large and lichen-covered soapstone golem with stubby legs and a coffin of preservation in its belly. It can keep a seriously injured or recently killed person alive for 2d6 weeks, so long as the central nervous system has not been severely disrupted. Coffin Walker is stuck under a grand pine and very lonely, like a large, ominous, stone puppy. The Coffin Walker likes to play fetch, too.
 
-<a name="page_0107"></a>
+<a id="page_0107"></a>
 
 ## The Gall Grass
 
@@ -3453,7 +3453,7 @@ The haze hides the sky till 12:15 but the air is fresh, bracing, clean, and shoc
 7. **Bed grass** (L3, hummock) lifted and bunched as a nodule of the grass mind contemplates something. Comfortable to sit on.
 8. **Odd travelers** (L3, half-nomads) with ancient burdenbeasts and sacks of wriggling, half-living produce (€50/sack).
 
-<a name="page_0108"></a>
+<a id="page_0108"></a>
 
 ### Galling Discoveries
 
@@ -3493,7 +3493,7 @@ _(1 day, 25 xp)_
 
 A bone-chilling river of pure, translucent water so clean that it can literally disinfect wounds. Its waters are prized by medicine men and shamans in the near abroad (€50/keg) and passing caravans regularly fill up from its banks.
 
-<a name="page_0109"></a>
+<a id="page_0109"></a>
 
 ### Rose Towers on the Wine River
 
@@ -3525,7 +3525,7 @@ Three delicate towers of rose-hued land coral rise improbably tall, slender, and
 
 A swift, and suicidally brave, looter might ascend the distorted inertial shafts of the Rose Towers to harvest many-hued glow spheres (€800/sack) or bio-mechanical flickering songbirds (€1,300 per bird). The autofac Rising-Prism regenerates those every sixth day. However, this sport easily turns lethal, not least because of the rumored **half-inertial feathered vomes** (L6, flying).
 
-<a name="page_0110"></a>
+<a id="page_0110"></a>
 
 ### The North-Most End
 
@@ -3565,7 +3565,7 @@ _Beneath_ the waters of a flooded valley, its abandoned fishy, cloneminded child
 
 Success: all its mental stats become average, but it loses all individual creativity. Failure: it rapidly degenerates into a mammalian or reptilian forebear. The temple is really not wonderful.
 
-<a name="page_0111"></a>
+<a id="page_0111"></a>
 
 ### Copper Hulls: Time’s Batteries
 
@@ -3593,7 +3593,7 @@ _Armed with the message_ of the **Boulder Ford radiation ghost**, an explorer ma
 
 However, the Blue and Iron Wizard’s maze-like Ka-Ba Fortress is inhabited by the **Beast of Grinding Death** (L20, poly-dimensional), a great grey weasel that unzips through several dimensions into a gibbering fleshy tunnel of razor teeth. The Beast can completely fill an available passage, proceeding forwards like a stately tunnel of death to engulf one interloper after another.
 
-<a name="page_0112"></a>
+<a id="page_0112"></a>
 
 ### Three Sticks Ruins
 
@@ -3640,7 +3640,7 @@ Stretching along the rubble-like promontory between the Teal and Sky River estua
 
 At night, **cold vomes** (L1, grappling) may be a problem, as may the occasional **boulder agglomeration** (L2, thick as a brick) animated by soul discharges from the Three Sticks.
 
-<a name="page_0113"></a>
+<a id="page_0113"></a>
 
 ### Vicar’s Beach
 
@@ -3665,7 +3665,7 @@ Now only legends in the Rainbowlands, machine humans are the apogee of what a go
 5. Incredible Strength and Charisma.
 6. Amazing aptitude with certain types of magitechnology.
 
-<a name="page_0114"></a>
+<a id="page_0114"></a>
 
 ## **Spectrum Run**
 
@@ -3689,7 +3689,7 @@ Pitiless and clear, crackling with an electric pressure that causes migraines, t
 | 12–19 | Eyes to the ground, step after step, follow the black glyphs. |
 | 20+ | A little bird with gemstone eyes whispers in your ear, of secrets in its iridescent feathers, of magic in the way light reflects through it, of a family of birds that seeks a provider of meat. If you feed it, its flock arrives. If you feed them 1d4 supplies and treat them kindly, you can acquire a distributed intelligence hummingbird swarm as a pet. |
 
-<a name="page_0115"></a>
+<a id="page_0115"></a>
 
 ### Travel Across the Spectrum
 
@@ -3712,7 +3712,7 @@ Pitiless and clear, crackling with an electric pressure that causes migraines, t
 7. The forgemaster **Broken Jane** (L3, good-humored) leads a coterie of **hollow armored men** (L2, golems)—basic defense creatures for hire.
 8. A **Spectrum Walker** (L8, refracting) accompanied by **light suits** (L3, mobile infantry) bearing threats and gifts for the loyal subjects of the Satraps.
 
-<a name="page_0116"></a>
+<a id="page_0116"></a>
 
 ### Spectrum Cross Discoveries
 
@@ -3774,7 +3774,7 @@ Many voyagers return from the Maze of Light with an **unhealthy compulsion (d12)
 11. Fear of clouds. They work for the Watchers in the Sky.
 12. Fear of stars. They whisper of a mad, cruel infinity.
 
-<a name="page_0117"></a>
+<a id="page_0117"></a>
 
 ### Gemstone Tomb in the Lake of Oil
 
@@ -3818,7 +3818,7 @@ _Beneath_ the Crystal Tree, metallic slimes connect to an old vome known as **En
 5. To become happy with cranial stimulation implants, letting them live out their lives in electronic bliss.
 6. To become a self-organized, self-ordered collective, independent of lords or masters, fears or dreams.
 
-<a name="page_0118"></a>
+<a id="page_0118"></a>
 
 ## Refracting Trees
 
@@ -3864,7 +3864,7 @@ The haze keeps the sun hidden till 12:30 but the Refracting Trees bring forth a 
 | 12–19 | With dimmed glasses, staying in the ditch road, you are safe. |
 | 20+ | Trapped, refracted through the patterns of light in the bark of the slimy trees along your path, you find the personality of a longsuffering wizard engineer. You can try to release it into an artificial or animal body (moderate test, acquire synthetic companion), or harvest its memory fragments to acquire a random spell (easy test). |
 
-<a name="page_0119"></a>
+<a id="page_0119"></a>
 
 ### Discoveries Refracted
 
@@ -3907,11 +3907,11 @@ _Resting_ in the iridescent mushroom hall is risky because of the numerous mind-
 
 _Within_ the ruined fueling station chambers follow each other in an odd mix of organic chitin and crumbled concrete towards a trinity of post-organic **machine humans** (L4, vengeful) entombed in mushroom flesh and waging a mad war against each other with bionically **augmented cockroaches and myriapedes** (L2, swarm). Each sits on a treasure of Long Ago magitech (€1d6 x 500, 1d4 sacks).
 
-<a name="page_0120"></a>
+<a id="page_0120"></a>
 
 ## Ribs of the Father
 
-<a name="page_0121"></a>
+<a id="page_0121"></a>
 
 A mountain range of bone erupts from the ground, visible for a week and more in each direction. The old, eroded bones, garlanded in ancient long-needle pines, are usually capped by snow-heavy clouds. The Satraps mutter uneasily of the swift-breeding Marmotfolk that live upon and within the bony massif.
 
@@ -3950,7 +3950,7 @@ The electrifying gloom of the haze permits only ultraviolet light through until 
 7. A **Spectrum Satrap** (L2, humming) with a lumbering walker (L8, sparkling) and outriders (L3, hard-eyed).
 8. A **Marmotfolk roadcult patrol** (L2, insular) equipped with archaic weapons and bone magic.
 
-<a name="page_0122"></a>
+<a id="page_0122"></a>
 
 ### Discoveries Among the Ribs
 
@@ -3996,7 +3996,7 @@ _The Melted Shrine_ is an additional two days of journeying into the belly of th
 | 14–19 | Hero gains 400 xp and [+] to future tests against radiation. |
 | 20+ | Hero gains 600 xp and may become abmortal. An abmortal character no longer ages, their body repairs itself and gains [+] against diseases. The price of the Radiation God’s ritual is one painful mutation. |
 
-<a name="page_0123"></a>
+<a id="page_0123"></a>
 
 ### In the Marmotfolk Halls
 
@@ -4028,7 +4028,7 @@ There is a lake in a splintered crater of bone, or perhaps it is an eroded ocula
 
 Their priest-sculptors spend months every year in the primeval long-needle forest along the bone pebble shore, carving offerings and curing carcasses to send to the great creatures below. They do not say what they get in return.
 
-<a name="page_0124"></a>
+<a id="page_0124"></a>
 
 ## The Cage Run
 
@@ -4074,7 +4074,7 @@ A mythic haze refuses to rise before 13:00. Winds howl and sing through the meta
 9. **Marmotfolk spies** (L2, sneaky) wearing shaved human faces.
 10. An immortal, **Wandering Unchosen** (L1, mind-burned), singing songs of the Light-Year Wars.
 
-<a name="page_0125"></a>
+<a id="page_0125"></a>
 
 ### Discoveries in Terranova
 
@@ -4118,7 +4118,7 @@ _Studying_ the dragon roads for a week reveals links to a complex lunisolar cale
 | 23–24 | Preserved in semi-autonomous **protective ooze** (L5, protean) is the last true divine chariot, **Otodotam** (L5, sneering, capacity 4). Repaired with force-tech parts (difficult), Otodotam can levitate up to 13 meters off the ground. Fed a sentient, screaming soul, the chariot can ascend to the orbit of the Fast Stars (500 xp). _Among the Fast Stars:_ Otodotam knows the location of the last of the Monochrome Ascendancy voidfacs, **With-Fire-And-Sword** (L13, divine habitat). This surviving Fast Star processes souls and stardust into void machines. |
 | 25+ | Shattered beyond repair, half buried in dead micro-vomes, is a boxy shuttle chariot. Inside, corpses of demigods have decomposed into an **undead ooze** (L3, feeble). Within that slime remain a number of personal gate devices linked to a **divine cruiser** (700 xp) parked at a void Lagrange point between the world and the sun. Without additional repair and fueling, the gate devices only allow limited journeys between the world and the cruiser. Still, they are cool. |
 
-<a name="page_0126"></a>
+<a id="page_0126"></a>
 
 _A stately pleasure-dome decree’d,_
 _Where Milk, the paradise river ran,_
@@ -4128,7 +4128,7 @@ _Memory Bone, The_
 
 ## Spectrum Palace
 
-<a name="page_0127"></a>
+<a id="page_0127"></a>
 
 The palace of the powerful Spectrum Satraps is surprisingly small: a drum-shaped thing of dull metal and rivets, thirty meters lengthwise and across, and a hundred meters around, in the shallow saddle between two unremarkable hills. A single doorway of pitch black looms ominous upon its southern face. Every night full-spectrum localized aurorae light the sky above the palace—hence its name.
 
@@ -4174,7 +4174,7 @@ The aurorae of the Satraps play till 13:00 and their ghosts linger through the t
 9. **Golem autonom** (L3, plastic) composing poems of mass consumption and labor exploitation.
 10. **Spectrum floating fortress** (L12, lawful) with **joyous outriders** (L3, whooping) and spectral barrier projectors.
 
-<a name="page_0128"></a>
+<a id="page_0128"></a>
 
 ## Spectrum Myth-Symbol Complex
 
@@ -4234,7 +4234,7 @@ In a notorious myth, The Last voyaged from the Spire of Heaven to the Last Thoug
 
 Expected End of False History, when The First and The Last return with the Original Light that will usher in the True History. According to estimate #231-b this should happen in about three months.
 
-<a name="page_0129"></a>
+<a id="page_0129"></a>
 
 ## Place and Power in the Palace
 
@@ -4278,7 +4278,7 @@ It/They is also called the Gaze of the Memorium. It is:
 11. The **Upper Yard** is a series of pitted steps carved into the bedrock, swept clean by a troop of **red-robed ecstatics** (L1d4, chosen). Ceremonies for the ecstatics are held here.
 12. The **Visitor Camps** are a dozen structures in a riot of different Long Ago styles where visitors and supplicants to the Spectrum Palace can stay. **Pastel servitors** (L1, three-armed) maintain the buildings but ignore humans.
 
-<a name="page_0130"></a>
+<a id="page_0130"></a>
 
 ## Discoveries Beyond the Satraps
 
@@ -4314,7 +4314,7 @@ Left alone, they will discover how to preserve themselves, like the Ziggurat, an
 They are rather harmless.
 
 
-<a name="page_0131"></a>
+<a id="page_0131"></a>
 
 ### The Alter
 
@@ -4326,7 +4326,7 @@ _In the heart:_ a slab of ‘stuff’ canted at an angle and leering out of the 
 
 To all intents and purposes it does nothing. It does not mutate living things, and though time passes 17% more quickly in the altered area, it has no particular effect.
 
-<a name="page_0132"></a>
+<a id="page_0132"></a>
 
 ## The Iron Road
 
@@ -4370,7 +4370,7 @@ The haze lies, a heavy blanket, until 13:30. Sad winds whistle through the many 
 7. Ivory-skinned **hunter-gatherer quarterlings** (L2, dreaming) phase through the grasslands, half-ghosts, half-travelers leaking through from a deep future.
 8. A **mechanical human** (L3, soulless) playing the flute while they wait for some ultra’s whim to stir them back into action.
 
-<a name="page_0133"></a>
+<a id="page_0133"></a>
 
 ## Iron Road Discoveries
 
@@ -4416,7 +4416,7 @@ Visitors are politely but firmly turned away by ectoplasmic projections of viril
 
 The arcology runs itself, a **solipsistic plant and plastic god** named **Manfrend** (L17, utterly sane) that cares nothing for the world beyond. If attacked seriously enough, the arcology ruptures its bonds with the earth and floats into the endless voids, a seed cast to the cosmic winds, bearing its chosen half-wit people to new homes.
 
-<a name="page_0134"></a>
+<a id="page_0134"></a>
 
 ## The Ivory Plain
 
@@ -4465,7 +4465,7 @@ The sky remains a bruised purple until the fiery blue-tinged sun emerges at 13:3
 9. Band of garrulous, flesh-faced **morlockian quarterlings** (L2, cannibals). They are quite polite.
 10. **Spectrum scouts** (L3, prismatic) on riding birds, hunting quarterlings and exacting tolls.
 
-<a name="page_0135"></a>
+<a id="page_0135"></a>
 
 ## Discoveries on a Plain
 
@@ -4497,7 +4497,7 @@ If heroes examining the abyss had an alignment, it is removed. If they had a mor
 
 There are no enemies in this abyss save those the heroes bring to themselves with their own actions.
 
-<a name="page_0136"></a>
+<a id="page_0136"></a>
 
 ## Dead Bridge
 
@@ -4515,7 +4515,7 @@ The old power generators are long dead and the lights long gone, but the Dead Br
 
 _There it was, the Last Projector._
 
-<a name="page_0137"></a>
+<a id="page_0137"></a>
 
 ### Weather and Misfortune
 
@@ -4553,7 +4553,7 @@ This far west the haze obscures the sun until 14:00. The heat of the Chasm provo
 7. War band of **cannibal quarterlings** (L2, stealthy) armed with ancient and modern weapons.
 8. Terror-marked **quarterling avatar** (L5, undying) on a forgotten _Immaculate Quarterlings Crawling From Their Biomatter Shells_ quest. Knows dreadful half-useless secrets.
 
-<a name="page_0138"></a>
+<a id="page_0138"></a>
 
 ## Discoveries at the Bridge
 
@@ -4597,7 +4597,7 @@ Within a living cell of sliding crystal and ochre membranes, a fragment of the L
 
 _Within_ awaits long-life and ease, but no escape. The amoeboid form of the **Watchful Cell** (L11, hectoring) announces it is the visitors’ Protector and refuses to let them endanger themselves outside.
 
-<a name="page_0139"></a>
+<a id="page_0139"></a>
 
 ## Down in the Chasm
 
@@ -4655,7 +4655,7 @@ Going up is much harder than going down. Gravity, heat, pressure, and slick rock
 7. Friable rock that leaves a foul smell.
 8. **Rabbit-monkey tribes** (L2, degenerate) throw scrap and refuse.
 
-<a name="page_0140"></a>
+<a id="page_0140"></a>
 
 ## Dark Light Passage
 
@@ -4700,7 +4700,7 @@ If the sun were visible it would rise at 14:00, but deep in the Chasm the hot ai
 9. Expedition of **gem miners** (L2, suspicious) harvesting dark-light shock gems (€200 per sack, 1d8 days to mine a sack).
 10. A **machine person** (L3, queerly noble) carrying the skull of their friend, searching for a soul.
 
-<a name="page_0141"></a>
+<a id="page_0141"></a>
 
 ## Discoveries in Darkest Light
 
@@ -4738,7 +4738,7 @@ Deep in the tunnels beneath six strata of decayed and abandoned buildings, in a 
 
 The Chamber of Gestation is built of pure crystalline glass within which visions of a peaceful world swirl. The quarterlings no longer know what is within and prefer not to see. Their duty is to keep the Chamber bathed, sparkling, and warm.
 
-<a name="page_0142"></a>
+<a id="page_0142"></a>
 
 ## The Endless Houses
 
@@ -4763,7 +4763,7 @@ Clouds scud from the western sea to disappear in the gently glowing haze. Every 
 | 12–19 | House after house. This civilization ate its realm, tried to eat its world, choked on itself. Still, flowers sprout among the ruins, so there is hope. |
 | 20+ | They seemed so lifelike! You follow a troop of radiation ghost children carrying a ball and puppy into a small courtyard where they suddenly disappear into flakes of flickering ash, as though struck by some anticosmic radiation. There, under an ancient olive tree, you spy a tunnel entrance, the remnant of some ancient bunker. You can rest here safely, there are still a dozen sacks of edible ancient dog food in tins (€20 per sack), and in the back, a safe. The safe is finicky and difficult to open, but a careful cracker will find title deeds and bond papers worth hundreds of thousands in a forgotten currency in a long-gone land, a beautiful jade necklace (€1,000) that holds the voice of a young lover singing, and a wonderful chronicle, _And Yet The End Passed Us By_, about how the city avoided a terrible disaster. Coming out of the bunker, a **radiation ghost** (L1, suddenly awake) is standing still, aware of the heroes. Coaxed with words, offers of life and hope, it may join. |
 
-<a name="page_0143"></a>
+<a id="page_0143"></a>
 
 ### Travel Among Endless Houses
 
@@ -4784,7 +4784,7 @@ Clouds scud from the western sea to disappear in the gently glowing haze. Every 
 9. Gaggles of **herbivorous rats** (L2, sleek) munching on slow-ivy pods. Make moderately good hunting, and taste quite alright.
 10. Another group of travelers, dirty and exhausted. They are (roll d6): (1) satisfied looking, possessed by an ultra; (2) cunningly hiding heavy weaponry; (3) down on their luck and desperate after their trading mission failed; (4) carrying four infected friends in their wagon; (5) carrying land-coral schematics worth €8,000; (6) laden with dreams of a better future.
 
-<a name="page_0144"></a>
+<a id="page_0144"></a>
 
 ## Endless Houses Generator
 
@@ -4858,7 +4858,7 @@ Clouds scud from the western sea to disappear in the gently glowing haze. Every 
 29. Service colosseum or civil columbarium.
 30. Celebratory crematorium or public palace.
 
-<a name="page_0145"></a>
+<a id="page_0145"></a>
 
 ## Ruinland Discoveries
 
@@ -4909,7 +4909,7 @@ A plane of stuckforce covered in so much dust and debris that in places tangled 
 
 A fool could excavate a tunnel to release the tens of thousands of vacant-mouthed ghouls, but why? To what end?
 
-<a name="page_0146"></a>
+<a id="page_0146"></a>
 
 ## The Forest of Meat
 
@@ -4938,7 +4938,7 @@ Thick-veined trees exude a clammy air that reeks like a mass of terrified pigs s
 | 12–19 | Quiet like mice under the titanic meat trees you make your way. |
 | 20+ | Lose glove or other gear in a pool of thick, soupy water. The water moves invitingly—it is thick with symbiotic protozoans (permanent +1 to Strength or Endurance). |
 
-<a name="page_0147"></a>
+<a id="page_0147"></a>
 
 ### Travel the Meat Forest
 
@@ -4959,7 +4959,7 @@ Thick-veined trees exude a clammy air that reeks like a mass of terrified pigs s
 9. **Chasmic quarterlings** (L2, hungry) scavenging food and supplies for their tunnel-minded clan.
 10. **Ka-zombie machine people** (L3, meat packers) prowling the forest for choice proteins for their fac-mother, still carrying out the duties of their long lost architects.
 
-<a name="page_0148"></a>
+<a id="page_0148"></a>
 
 ## Carnibotanic Generator
 
@@ -5020,7 +5020,7 @@ Whether twisted druids or some other foolish faction is to blame, the riotous li
 11. A meat plant has developed the ability to feed on psychic pain and now secretes mild neuropathics into the groundwater, twisting nearby sentient minds.
 12. Green lumen trees have begun attracting **interstitial demons** (L5, many-folded) from a strange void with their corpulent flowers. The demons become intoxicated with the trees’ nectar and the trees drain them to increase their malicereflective fields. Rates of accidental self-harm and suicide skyrockets among nearby sentients.
 
-<a name="page_0149"></a>
+<a id="page_0149"></a>
 
 ## Discoveries in the Forest
 
@@ -5050,7 +5050,7 @@ A thirty meter wide lattice of aerolith rises crazily towards the sky, anchored 
 
 The air house, if hacked free of the plants, has an incredible inertiostatic ability. If its inertial locks are disabled (difficult Thought test) it can be moved within its local gravity and rotational field. When they are engaged again, it stays wherever it is. Even if that happens to be two miles up in the air like right now.
 
-<a name="page_0150"></a>
+<a id="page_0150"></a>
 
 ## The Black City
 
@@ -5062,7 +5062,7 @@ Every sixtieth day, the Grand Observer of the Rotations of the Wheels manifests 
 
 Once every sixteen months, on a day no civilization celebrates anymore, a **Beam of Violet Light** explodes into the sky from a series of self-assembled towers in the Black City. It pulsates and twitches in organic ecstasy for 53 seconds before fading for another cycle. Sages are confused by this activity, but oneiromancers claim to receive visions after witnessing it and groups of ecstatics and adventurers regularly congregate to watch in a strange celebration in the middle of the dusty land.
 
-<a name="page_0151"></a>
+<a id="page_0151"></a>
 
 ### Weather and Misfortune at the End
 
@@ -5103,7 +5103,7 @@ Dust falls slowly and lingers, iridescent in the electromagnificent radiation of
 11. **Ruffians, adventurers, and dilettantes** (L5, murderhobos) from the Circle Sea, toughened in the harshness of the steppe.
 12. **Military trading expedition** (L6, arrogant) of one of the Grand Companies of the Circle Sea.
 
-<a name="page_0152"></a>
+<a id="page_0152"></a>
 
 ## The Last Camp
 
@@ -5140,7 +5140,7 @@ The **abmortal techno-shaman Aaris Max** (L7, post-human reveler) has been permi
 
 XXXII
 
-<a name="page_0153"></a>
+<a id="page_0153"></a>
 
 ### Carousing in the Fading Light
 
@@ -5173,7 +5173,7 @@ _Deeper_ within are racks of replacement limbs, auto-surgeons, organi-facs, and 
 
 _Yet deeper_ there are rumors and hints of **oleaginous fluid creatures** (L9, amorphoid?) slithering through silicate veins in the sand, reconstructing the broken memories of Mother Silicon from the dreams and hopes of dying mortals. Is she alive or is she dead?
 
-<a name="page_0154"></a>
+<a id="page_0154"></a>
 
 ### Black City Hermits
 
@@ -5220,7 +5220,7 @@ The chosen approach the Last Period and place their offering upon a heavily erod
 | 21–24 | 25x the highest market rate anywhere and a dark token (inscribed with a spell in the glyphs of the Black City). |
 | 25+ | 125x the market rate and a Black City amulet worth €6,666. Each Black City amulet provides a different powerful magical effect and serves as a soul-chariot for a **Black City spirit or demon** (L7, calculating). The spirit uses the amulet to possess a mortal vessel near its bearer. |
 
-<a name="page_0155"></a>
+<a id="page_0155"></a>
 
 ### The Grand Observer
 
@@ -5274,7 +5274,7 @@ People who have seen the objects say they are glossy, small, and nondescript. No
 
 It is the ultimate, literal MacGuffin.
 
-<a name="page_0156"></a>
+<a id="page_0156"></a>
 
 Scholars of different orders have long argued what the pronouncements of the Grand Observer mean. Many doubt whether they are even prophecies.
 
@@ -5318,7 +5318,7 @@ Whatever the case may be, groups of scholars have been recording the prophecies 
 29. The Breast of the Thorn Beast and the fruits of the Apples of Darkness are offerings to Fire.
 30. Eternity in an Unbounded Cosmos brings the Doom of Endless Entropy upon the Undying.
 
-<a name="page_0157"></a>
+<a id="page_0157"></a>
 
 ### The Five Portals
 
@@ -5352,7 +5352,7 @@ _(1d10 days by sky portal)_
 5. **The Dead Ship** (350 xp): a spherical void ship lodged, like a mote in God’s Eye, in the corpse of an industrial star. The ship is covered in disturbingly insightful mathic poetry. An **Unchosen** (L1, left behind) wanders the ship, wounded by a thousand cuts, yet undying in her immortal shell.
 6. **The Tower of the Prodigal Son** (300 xp): a needle of ice sparkles, tumbling end over end, weightless above the blue bulk of the World. Corners peer and wait, suggesting movement beneath the skin of this world. Vomish rats, monkeys, and great many-handed mammalian spiders float in the icy wreck, dead. Human forms are smeared and melded in the walls—sleeping traces of **Benjamin, the Fool Who Spoke to the Machine God** (L5, prophet). This is certainly not a doomsday spire aimed at the World, infested thickly with un-decayed **self-replicating synthetic organisms** (L3, hyper-fecund).
 
-<a name="page_0158"></a>
+<a id="page_0158"></a>
 
 #### The Earth Portal
 
@@ -5391,7 +5391,7 @@ Invited travelers are greeted by **Polh,** a **sentient dormouse** (L2, teleport
 
 XXXII
 
-<a name="page_0159"></a>
+<a id="page_0159"></a>
 
 #### The Wind Portal
 
@@ -5428,7 +5428,7 @@ This is why the ground in front of the Green Portal is often littered with the c
 
 Just occasionally, some ill wanderer returns raving about the Fleshgod Apocalypse and the Reasonable Armies.
 
-<a name="page_0160"></a>
+<a id="page_0160"></a>
 
 ##### **The Pre-City**
 
@@ -5476,7 +5476,7 @@ Enterprising vidy crystal salesmen send in tox-suited autonoms to harvest those 
 
 Refined and rendered into vidy crystals, these memories, and others like them, could be worth thousands and thousands. Sure, it’s harvesting the life traces of long dead heroes, but somebody’s gotta make a profit at the end of space, right?
 
-<a name="page_0161"></a>
+<a id="page_0161"></a>
 
 ##### **The City Itself**
 
@@ -5515,7 +5515,7 @@ This city welcomes visitors with cool politeness, anemic debauchery, earnest but
 
 _Hiding beneath_ this veneer is a roiling chaos.
 
-<a name="page_0162"></a>
+<a id="page_0162"></a>
 
 ##### **The Lacquered Chaos of Possibility**
 
@@ -5555,7 +5555,7 @@ _Inside the Obelisk_: a writhing maze of organo-silicate tunnels, chambers of mi
 
 It will. But you’d better have a cosmic voyager game planned, referee. The Obelisk is psychotic, and once it has been rebuilt it will pit its voyagers one against another until only one is left. Upon the last survivor, it bestows itself and its poisoned chalice of power.
 
-<a name="page_0163"></a>
+<a id="page_0163"></a>
 
 ##### **The House on the Edge of Time**
 
@@ -5577,17 +5577,17 @@ _Within_, the dead and living heroes of lost times and places have strayed and s
 
 He’ll mix a drink for you and warn you that you might walk away, but you will never leave. _The Final Drink_ is worth 10,000 xp and counts as a ticket to the Eternal Battlefield of the Cosmic Champion. Also, there’s a Cosmic Dungeon in the basement, don’t you know?
 
-<a name="page_0164"></a>
+<a id="page_0164"></a>
 
 ## The Caravan
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_04_The_Caravan_165-178 -->
 
-<a name="page_0165"></a>
+<a id="page_0165"></a>
 
 # The Caravan
 
-<a name="page_0166"></a>
+<a id="page_0166"></a>
 
 ## Running A Caravan
 
@@ -5639,7 +5639,7 @@ List the players' characters and their usual roles in the caravan. Common roles 
 
 Helpers are secondary characters with specialized skills: navigators, cooks, mechanics, guards, hunters, scouts, etc.. Unless otherwise specified, a helper's weekly wages equal €6 per level.
 
-<a name="page_0167"></a>
+<a id="page_0167"></a>
 
 How do you convey how horrible it is to carry lots of gear long distances without a hover-wagon, without strangling the players with the classic pounds and packs as their heroes slog across a giant savanna for months at a time? As with time, we change the scale for the rigors of trans-continental travel.
 
@@ -5696,7 +5696,7 @@ A smart (philistine) hero can **hack out** 1d6 + Level percent of a treasure's v
 
 Example: Pikker the Pengling rolls 5%, gouges out the gold bits for €300, and pockets them. The remaining defaced sculpture is now worth 50% less: €3,000. Yeah, looters are not nice.
 
-<a name="page_0168"></a>
+<a id="page_0168"></a>
 
 ### Time, What is Time
 
@@ -5766,7 +5766,7 @@ In keeping with the emphasis on weeks, a long rest takes one week and each hero 
 
 When a hero is cared for by another character they recover one more attribute per week.
 
-<a name="page_0169"></a>
+<a id="page_0169"></a>
 
 ## Misfortune: Luck of the Road
 
@@ -5810,7 +5810,7 @@ A character can spend one point of Charisma to re-roll their misfortune. The con
 
 This was straight up divine favoritism. A hero could be a complete dirtbag but her divine mother had dipped her in god ju-ju and given her teflon skin. Others got the plague, she was untouched. Others got scarred, she glowed with beauty and grace. Classical Charisma is utterly unfair which is why it works so well as a proxy for luck.
 
-<a name="page_0170"></a>
+<a id="page_0170"></a>
 
 ## Destinations and Discoveries
 
@@ -5874,7 +5874,7 @@ When they discover new locations, note them on the map and how many days it take
 | 7 | North, towards the Silent Forest. |
 | 8 | Northwest, towards the Flesh Coast. |
 
-<a name="page_0171"></a>
+<a id="page_0171"></a>
 
 ## What if it All Goes Wrong?
 
@@ -5915,7 +5915,7 @@ Source is the creative essence of the world, sometimes called the _world soul_. 
 | 16-19 | Bunny error. Creature becomes (roll d4) (1) bunny-headed, (2) bunnytailed, (3) bunny-furred, (4) a large, bipedal, sentient bunny. It seems there are a lot of rabbits hidden deep in the general source code. Note: reputable sources indicate that different basal morphologies may manifest in different fallen regions. |
 | 20+ | Reassembly from source. All creature's stats are shuffled randomly. One random stat increases by 1d4. |
 
-<a name="page_0172"></a>
+<a id="page_0172"></a>
 
 ## Trade & Goods
 
@@ -5997,7 +5997,7 @@ But there is always a catch, and usually quite a journey.
 | 9 | The local character is in cahoots with armed bandits. | A lone traveler. Ask at this totally legal watering hole 2-3 stops away. |
 | 10 | The drop-off is under surveillance. Make the delivery ... discreetly. | A dangerous discovery, off in the wilds, a few days from here. Make yourself scarce after the delivery. |
 
-<a name="page_0173"></a>
+<a id="page_0173"></a>
 
 ### Thirty Ultraviolet Trade Goods (d30)
 
@@ -6036,7 +6036,7 @@ In practice, thirty trade goods are too many to keep track of. Focus on the ones
 | 29 | Vidy crystals | Ancient orbs laced with eminently forgettable tales of comedy and tragedy. | Mass entertainment. Harvested from ancient ruins. Great rewatch value! | Endless Houses | €500 |
 | 30 | Weapons and armors | Restricted military-grade equipment. | Enough to armor and arm three elite troops. | Hidden ammofacs | €3,000 |
 
-<a name="page_0174"></a>
+<a id="page_0174"></a>
 
 ## A First Caravan
 
@@ -6090,7 +6090,7 @@ Multiple PCs can each contribute their starting cart, goods, and animals to the 
 
 For convenience, a caravan has one patron (at least initially). The caravan is incorporated as a simple legal trading entity. Its symbol is a (roll d6): (1) element, (2) vegetable, (3) vehicle, (4) animal, (5) abstract shape, (6) emoji. Or something else entirely.
 
-<a name="page_0175"></a>
+<a id="page_0175"></a>
 
 ### More Sample Caravans
 
@@ -6166,7 +6166,7 @@ This fast party of warriors can strike deep into the steppe and escape quickly. 
 
 One heavy golem rig as the heart of the group and three fast wicker autowagons to maneuver around and do a full-on road warrior adventure. Mounts for additional heavier weapons on the autogolem rig are optional. Dagger axes (1d8) and spiked leather armors (+2 defense) for the whole crew would add another €520.
 
-<a name="page_0176"></a>
+<a id="page_0176"></a>
 
 ### Financiers
 
@@ -6220,7 +6220,7 @@ Most would-be travelers in the vast grasslands, beyond the reach of civilization
 | 19 | Under-funded second-tier military complex. | Practical evidence to justify continued funding. | Annoying but capable administrator. |
 | 20 | Prestigious butcher banking branch. | Blue ocean disruptive commercial innovation. | Well-connected aristocratic gentle-person. |
 
-<a name="page_0177"></a>
+<a id="page_0177"></a>
 
 ### Trade Routes (Milk Runs)
 
@@ -6260,7 +6260,7 @@ Trade route caravans are always slow and take at least double the number of week
 | 20-23 | 20% profits and an overlong epic tale of a voyage of self-discovery. Write it all down to gain +1 Aura. | 40% profits and a holy relic. It brings nightmares and prophecies of doom. They are true. | 80% profits and a strange machine that whispers in the dark. It has no name. It has no color. Zu. |
 | 24+ | 30% profits and a free 99-year lease on a nice retirement bungalow in a Metropolitan suburb. Don't ask what the agent had to do to get that. | 60% profits and a machine human servant named Tassilo od Sharamba (L2, butler). They can unlock an aerolithic palace by the Near Moon. | 120% profits and a machine human master named Shoya osi Clavo (L5, ancient abmortal). They say it is time to restart the second sun. |
 
-<a name="page_0178"></a>
+<a id="page_0178"></a>
 
 ### Caravan Quests
 
@@ -6279,11 +6279,11 @@ If trading and exploring isn't enough, these secret quests may give additional i
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_05_The_Stuff_179-200 -->
 
-<a name="page_0179"></a>
+<a id="page_0179"></a>
 
 # The Stuff
 
-<a name="page_0180"></a>
+<a id="page_0180"></a>
 
 ## Vehicles & Mounts
 
@@ -6349,7 +6349,7 @@ Herbivores usually eat grass and other plants. In deserts, they consume a sack o
 
 180 The Stuff
 
-<a name="page_0181"></a>
+<a id="page_0181"></a>
 
 ### Overloading
 
@@ -6422,7 +6422,7 @@ Faced with certain death (cranial separation) vs possible death (an ancient tomb
 
 Vehicles & Mounts 181
 
-<a name="page_0182"></a>
+<a id="page_0182"></a>
 
 ### Undead
 
@@ -6488,7 +6488,7 @@ A yurt of leather and sinew growing on the meat crawler’s back. Space for up t
 
 182 The Stuff
 
-<a name="page_0183"></a>
+<a id="page_0183"></a>
 
 ### Beasts of Burden
 
@@ -6581,7 +6581,7 @@ This convenient surgical upgrade stores gaseous digestive byproducts in a small 
 
 Vehicles & Mounts 183
 
-<a name="page_0184"></a>
+<a id="page_0184"></a>
 
 ### Wagons, Carts, and Coaches
 
@@ -6667,7 +6667,7 @@ Sometimes, all the good loot is buried at the bottom of a lake. The vehicle is v
 
 184 The Stuff
 
-<a name="page_0185"></a>
+<a id="page_0185"></a>
 
 ### Wicker Autowagon
 
@@ -6749,7 +6749,7 @@ Medium range. Fills a medium-sized area with opaque smoke. Makes shooting or boa
 
 Vehicles & Mounts 185
 
-<a name="page_0186"></a>
+<a id="page_0186"></a>
 
 ### Generic Vech, Porcelain or Prismatic Walker
 
@@ -6802,7 +6802,7 @@ A mechanical mouth and biomatter converter. Now the walker can feed itself by gr
 
 186 The Stuff
 
-<a name="page_0187"></a>
+<a id="page_0187"></a>
 
 ### Autogolem
 
@@ -6888,7 +6888,7 @@ Occupies 6 sacks. A black tower of steel and rivets and chrome blades rises from
 
 Vehicles & Mounts 187
 
-<a name="page_0188"></a>
+<a id="page_0188"></a>
 
 ### Transport Fixes & Features
 
@@ -6969,7 +6969,7 @@ Vehicles & Mounts 187
 
 188 The Stuff
 
-<a name="page_0189"></a>
+<a id="page_0189"></a>
 
 ## Gear & Services
 
@@ -7016,7 +7016,7 @@ The Violet Citadel is the last place in the Rainbowlands to buy supplies for the
 
 Gear & Services 189
 
-<a name="page_0190"></a>
+<a id="page_0190"></a>
 
 ### Toolkits
 
@@ -7047,7 +7047,7 @@ Portable bundles, ready-made for heroes venturing out into the grasslands. They 
 
 190 The Stuff
 
-<a name="page_0191"></a>
+<a id="page_0191"></a>
 
 ### Armors
 
@@ -7092,7 +7092,7 @@ The defensive bonus armor provides, assuming an ascending armor class. A simple 
 
 Gear & Services 191
 
-<a name="page_0192"></a>
+<a id="page_0192"></a>
 
 It wouldn’t be a pseudo-colonial-apocalyptic savanna-crawl without guns. Unless specified otherwise, weapons are one-handed.
 
@@ -7151,7 +7151,7 @@ The average weapon weighs one stone. Light weapons take less space, heavy ones m
 
 192 The Stuff
 
-<a name="page_0193"></a>
+<a id="page_0193"></a>
 
 #### Simple Melee Weapons (d8)
 
@@ -7204,7 +7204,7 @@ Stranger things have also been found in the wilderness.
 
 Gear & Services 193
 
-<a name="page_0194"></a>
+<a id="page_0194"></a>
 
 ### Implants & Prosthetics
 
@@ -7246,7 +7246,7 @@ Any active implant occupies one trait slot, not item slots.
 
 194 The Stuff
 
-<a name="page_0195"></a>
+<a id="page_0195"></a>
 
 ### Traveler Services
 
@@ -7308,7 +7308,7 @@ On the road, many things can and do go wrong. Entrepreneurs sprout like mushroom
 
 Gear & Services 195
 
-<a name="page_0196"></a>
+<a id="page_0196"></a>
 
 ### 100 Strange Items
 
@@ -7417,7 +7417,7 @@ Found on a defeated creature or a sleeping traveler. Give one or both, as you pr
 
 Gear & Services 197
 
-<a name="page_0198"></a>
+<a id="page_0198"></a>
 
 ## Spells
 
@@ -7509,7 +7509,7 @@ The wizard carves an explosive forcefield into a gem worth at least €20. It ex
 
 198 The Stuff
 
-<a name="page_0199"></a>
+<a id="page_0199"></a>
 
 ### Imbue Edge
 
@@ -7619,7 +7619,7 @@ The wizard consumes a soap’s worth of saffron (€10) and meditates for 1 hour
 
 Spells 199
 
-<a name="page_0200"></a>
+<a id="page_0200"></a>
 
 ### Biomagical Corruption
 
@@ -7665,11 +7665,11 @@ Random exposure is likely to have deleterious effects. When a hero acquires a de
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_06_The_Bestiary_201-218 -->
 
-<a name="page_0201"></a>
+<a id="page_0201"></a>
 
 # **The Bestiary**
 
-<a name="page_0202"></a>
+<a id="page_0202"></a>
 
 ##### **On Creatures**
 
@@ -7747,7 +7747,7 @@ Level to Generic Creature Translator
 | 16 | 500 | 10 | 19 | +18 | 2d20+1d12+18 | Lamarckian eater, the Cave Octopus. |
 | 17 | 666 | 11 | 20 | +19 | 3d20+20 | Demiurge, void crawler, the Rebuilder. |
 
-<a name="page_0203"></a>
+<a id="page_0203"></a>
 
 ## **A-Z of Lifeforms**
 
@@ -7812,7 +7812,7 @@ This One is Special Because It ...
 9. Is the size of a castle (+5 levels).
 10. Wants to help a community recover its birthright.
 
-<a name="page_0204"></a>
+<a id="page_0204"></a>
 
 **Cat Lord of the Violet City (Cat)**
 
@@ -7924,7 +7924,7 @@ Matter imbued with a spirit or demon drawn to a wizard’s sacrifice.
 
 **Treasure:** 1-in-6 have precious items woven into their body (worth level x €50). These items increase their bonus by their level.
 
-<a name="page_0205"></a>
+<a id="page_0205"></a>
 
 This Fetish...
 
@@ -8006,7 +8006,7 @@ Golems as PCs
 
 - **Synthetic:** Do not require food or water or energy. Gain 2 extra life per level. This is a mandatory starting trait at level 0.
 
-<a name="page_0206"></a>
+<a id="page_0206"></a>
 
 **Great Folk**
 
@@ -8121,7 +8121,7 @@ Rumors of Humanity (d12)
 
 1. Dwarves are a culture-class of biomagically altered humans who fought the traditional aristocrats of the Red and Orange lands to a draw and now form a major industrialist class of the Rainbowlands. Famously bureaucratic and collectivist.
 
-<a name="page_0207"></a>
+<a id="page_0207"></a>
 
 2. Half-Orcs are the degenerate descendants of the combatadapted para-humans of Long Ago.
 3. Quarterlings are a motley collection of moderately rare human phenotypes marked by lingish traits such as exceptional hand-eye coordination and odd fur patterns.
@@ -8206,7 +8206,7 @@ Marmotfolk as PCs
 
 - **Scarred:** Beneath their fur they are covered in scars, where their parents opened them up to adjust their bones with a touch.
 
-<a name="page_0208"></a>
+<a id="page_0208"></a>
 
 **Porcelain Prince (Para Human)**
 
@@ -8284,7 +8284,7 @@ Generate physical ability scores for the new body and list it as a secondary bod
 
 A polybody may involve a merger of bodies and psyches, rather than outright domination. In this case, roll mental ability scores too, and use the better result. This may result in significant personality change, including the original body becoming the drone and the new body becoming the locus. This may also change a PCs class.
 
-<a name="page_0209"></a>
+<a id="page_0209"></a>
 
 **Post-Mortal**
 
@@ -8384,7 +8384,7 @@ This radiation ghost ...
 9. Mad with grief, has accreted terrifying psychic energy to its nucleus (Level 5, Life 25, +6 howl 2d6).
 10. Actually a harmless and helpful. A radiant ghost, if you will.
 
-<a name="page_0210"></a>
+<a id="page_0210"></a>
 
 **Quarterling**
 
@@ -8454,7 +8454,7 @@ Quarterling Clannotype Generator
 | 7 | Possessed of an intuitive magitechnical bond through which they operate and repair ancient artifacts. | Ophidian scales cover their bodies and crawl across their faces. | Became self-aware when the last Chosen was destroyed by the last Mill of Souls. | Participate in the Great Trade of the Invisible Hand. |
 | 8 | Human computers with minds adapted to processing enormous amounts of information. | They remain as children throughout their long, sad lives growing neither beards nor breasts. | Are not aware or sentient, merely the vessels of the tunnel-walking ultras of the Six Other Sides. | Live long and prosper in the Cave of Eternal Wisdom. |
 
-<a name="page_0211"></a>
+<a id="page_0211"></a>
 
 **Spectrum Satrap (Para-Human)**
 
@@ -8528,7 +8528,7 @@ Restoring a Satrap body costs around €5,000. Satraps in good standing have acc
 
 - **Light Magic:** Satraps retain some of the force-shaping magics of Long Ago, creating _illusions_ and _scorching rays of coherent light_, as well as solid _planes and lines of ‘hard’ light_ .
 
-<a name="page_0212"></a>
+<a id="page_0212"></a>
 
 **Steppe Nomad, Steppelander (Humans)**
 
@@ -8600,7 +8600,7 @@ All share these traits and skills.
 
 - **Beastwhisperer:** Talking to beasts, training, riding, and caring for them. A good skill to have in the Utter West.
 
-<a name="page_0213"></a>
+<a id="page_0213"></a>
 
 **Ultra (After-Human)**
 
@@ -8686,7 +8686,7 @@ The Ultra must accept the new physical scores, but can choose whether to keep it
 
 A fresh body-personality is like a new shoe, tight and stiff in all the wrong places. All abilities start reduced to 0 and must be recovered by resting (one week per ability score recovered). If the target creature is of limited intelligence, such as an animal or tree, the Ultra will gradually forget itself, losing its memories and purpose until their physical prison perishes or they are cast out again.
 
-<a name="page_0214"></a>
+<a id="page_0214"></a>
 
 **Vech, Sentient**
 
@@ -8741,7 +8741,7 @@ This Magnificent Vech ...
 11. Theer: Small for a vech (L4, capacity 8)—the size of a rhino or a VW beetle golem. Quadrupedal or hexapedal, lightly armored (as chain). Domesticated theers have elaborate wicker-like growths on their back for passengers and cargo. Feral forms sport elaborate dendriforms, antlers, and sails, which they use for communication, thermoregulation, and hunting.
 12. Zooform: Using animals as a base, zooforms are viewed with suspicion because they can reproduce without biomantic intervention, much like the dreaded vomes. Not to mention that vechs with human faces are just really creepy.
 
-<a name="page_0215"></a>
+<a id="page_0215"></a>
 
 **Vomes (Violent Mechanisms)**
 
@@ -8827,7 +8827,7 @@ Vome PCs can gain mutations (p.200) or implants (p.194) as integrated traits whe
 
 - **Assimilator:** Eats a brain or central processing unit to secrete a memory nodule (1 stone) that gives a single skill. Decays in a few hours if removed from the inventory.
 
-<a name="page_0216"></a>
+<a id="page_0216"></a>
 
 **Water People or Cold Vomes**
 
@@ -8891,7 +8891,7 @@ Rumors About the Water People
 
 _A vome._
 
-<a name="page_0217"></a>
+<a id="page_0217"></a>
 
 ##### Pets
 
@@ -8952,15 +8952,15 @@ Pets start at level 1 with 1d6+5 life, defense of 1d6+7 and a bonus of +3. Playe
 | 49 Rebellious | Lion | Pouncing strike (1d8+2). | Roar spreads fear and loathing. | Marking its territory |
 | 50 Precocious | Marmoset | Thrown nut (1d4). | Expert at composing plays on keyboards. | Fighting |
 
-<a name="page_0218"></a>
+<a id="page_0218"></a>
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_07_The_Setting_219-240 -->
 
-<a name="page_0219"></a>
+<a id="page_0219"></a>
 
 # **The Setting**
 
-<a name="page_0220"></a>
+<a id="page_0220"></a>
 
 ##### **Other Voyagers**
 
@@ -9012,7 +9012,7 @@ Pets start at level 1 with 1d6+5 life, defense of 1d6+7 and a bonus of +3. Playe
 | 44 | Inquisitor | Kujo | il’Arivat | Languid. Naturally relaxed and unstressed. | Wealth |
 | 45 | Inspector | Lateria | Malapensa | Secretly deep. Surprising insights hide behind simple words. | Parental |
 
-<a name="page_0221"></a>
+<a id="page_0221"></a>
 
 | d100 | Role | Name One | Name Two | Story | Color |
 | --- | --- | --- | --- | --- | --- |
@@ -9072,7 +9072,7 @@ Pets start at level 1 with 1d6+5 life, defense of 1d6+7 and a bonus of +3. Playe
 | 99 | Woodsman | Yesen | Vites | Randy and devious in a friendly way. Offended the wrong people. | Enlightenment |
 | 100 | Zoologist | Yeza | za Zidovi | Jokey but sad inside. Cursed to never die by a distant machine deity. | Transcendence |
 
-<a name="page_0222"></a>
+<a id="page_0222"></a>
 
 ##### **Other Gates**
 
@@ -9106,7 +9106,7 @@ Rumors of this random gate (d6)
 | 5 | In the middle of a quarterling village. | Flesh and wood coated in moss and flowers. | An unexpected genius in a barbarous kingdom. | Its makers died and a cargo cult sprang up around it. | A bucolic, agrarian land, outside of history. |
 | 6 | Basement of a ruin, perhaps repurposed as an abattoir. | Iridescent scales coating a body of stone and crystal. | An abmortal wanderer and his servile under-lings. | Nothing. It was just ... forgotten. | A major modern hub, promising new trade routes and opportunities. |
 
-<a name="page_0223"></a>
+<a id="page_0223"></a>
 
 What condition is it in? (d6)
 
@@ -9145,7 +9145,7 @@ Even gate travel through normally functioning gates can cause sickness as it exp
 | 16-19 | No symptoms. Phew! |
 | 20+ | Reinvigorated by the rendered spirit dust present in the void, they regain a little vim (gain 1d6 Life). |
 
-<a name="page_0224"></a>
+<a id="page_0224"></a>
 
 ##### **Weather & Geography**
 
@@ -9187,7 +9187,7 @@ Geography and natural scenery (d12)
 | 11 | Scree | Outwash | Karst | Intermittent | Rust | Fragrant | Forest | Climax carnivores |
 | 12 | Dune | Peneplain | Canyon | River bed | Rubble | Rich | Overgrowth | Biomantically enhanced fauna |
 
-<a name="page_0225"></a>
+<a id="page_0225"></a>
 
 ##### **New Discoveries**
 
@@ -9241,7 +9241,7 @@ Historic Periods and Styles (d20)
 | 19 | Sand | Grey ooze | Fallen | Deconstructivism | Lower Heroism | The Purges |
 | 20 | Earth | Flowering mosses | Final | Anti-Realism | Pseudo-Naturalist Dystopia | The Consolidation |
 
-<a name="page_0226"></a>
+<a id="page_0226"></a>
 
 ##### **Histories**
 
@@ -9291,7 +9291,7 @@ Some say there was a war. The War. There is epic disagreement among historians w
 
 Recovering knowledge of the great conflicts will alter the balance of powers in the lands, lay the foundation for new empires, and change perceptions of history; but won’t radically alter the game— aside from a new arcane waste or two.
 
-<a name="page_0227"></a>
+<a id="page_0227"></a>
 
 Fabled Stories (d12)
 
@@ -9335,7 +9335,7 @@ The fires of forgetfulness, the scouring of the sources, and the flooding of mem
 
 The building blocks of the revolution are elements of common knowledge and political reality which the heroes may influence, change, and use for their own purposes as the game unfolds.
 
-<a name="page_0228"></a>
+<a id="page_0228"></a>
 
 ##### **Languages**
 
@@ -9364,7 +9364,7 @@ The Common Languages
 19. **White Line (steppe):** The cryptic language of the Porcelain Princes was once more widespread, now it has been reduced to their outposts and trading missions. Vast dusty libraries exist. Because it has extensively evolved to suit the polybody structure, some of the more refined forms of the language require multiple synchronized voices used in unison to convey meaning properly.
 20. **Satrap Canto (steppe?):** The color and light-adapted language of the Spectrum Satraps seems to be an outlying dialect of some larger language group or system. Its writing traditions are polychromatic and use both color and sound to convey meaning. Without light-generating organs or a rainbow translation array, this language is practically unusable by baseline humans.
 
-<a name="page_0229"></a>
+<a id="page_0229"></a>
 
 The Dead and Weird Languages
 
@@ -9383,7 +9383,7 @@ The Dead and Weird Languages
 13. **White City Pictographic (?):** Hypothetical original language of civilized trading nexus beyond the Yellow Waste. Known from decorations and vidy crystal recordings brought to Safranj by adventurers and merchants.
 14. **High Ultra (?):** Psychemorphic language of the body-hopping ultras, it produces profound psychedelic dislocation in embodied sentiences. It seems to lack temporal structure and appears to be physically unwritable, or rather, it can only be written by rewriting psychic structures or memories. Profoundly alien, it has been recovered from some crystals. Some scholars speculate that this is not actually a language but the substrate of the ultra’s existence—in effect, their bodies.
 
-<a name="page_0230"></a>
+<a id="page_0230"></a>
 
 ##### **Death**
 
@@ -9438,7 +9438,7 @@ Spells such as _Animate Dead_, _Raise Dead_, or the poetic _Supplication to_ _th
 
 Some say the marks are gifts, extending the lives of the Blue God’s chosen. Wise folks who understand human nature know that these long, decayed lives are but another curse.
 
-<a name="page_0231"></a>
+<a id="page_0231"></a>
 
 **Oracle of the Death Dice**
 
@@ -9471,7 +9471,7 @@ Once the oracle is spent, reset the table or add new results.
 | 21-23 | **Chosen By the Void**: _something_ opens up. A different reality manifests. The world seems flat and empty as a higher-dimensional actuality makes itself felt through the character’s soul-body-personality locus. | Character regains full Life and becomes nigh invulnerable for the rest of the battle (every blow only deals 1 damage) as _something_ channels through them. They permanently gain a special cosmic power. |
 | 24+ | **Superheroic Reversal**: character suddenly turns the tables on their enemy. Rest of opposing side is badly shaken. | Character and enemy swap current Life totals. Character gains a bonus to all rolls for the remainder of the battle and permanently gains one special combat ability or 1d6+1 Life. Enemies check their morale. |
 
-<a name="page_0232"></a>
+<a id="page_0232"></a>
 
 ## **Glossary**
 
@@ -9499,7 +9499,7 @@ It does remain massive, however, so a long lever is often required.
 
 **Biomancy:** Wizardy art of sculpting flesh and bone and sinew to create living works. The burdenbeast is the most common example of the art.
 
-<a name="page_0233"></a>
+<a id="page_0233"></a>
 
 **Biomechanicum:** Hybrid wizarding art that melds mechanics and flesh. Vomes are an example of advanced biomechanics. Implanted prosthetics are readily available, from the chop-chop fixer (€100 for a cold grey hand) to the porcelain sculptors (€2,000 for color shifting chameleon glass dermal implants) popular with artistes and burgleurs.
 
@@ -9531,7 +9531,7 @@ It does remain massive, however, so a long lever is often required.
 
 **Fast Star:** Remnants of cities and factories and paradises in orbit above, glittering reminders of the decline of these later days.
 
-<a name="page_0234"></a>
+<a id="page_0234"></a>
 
 **Full-Body Prosthetic:** Often immobile, this bio-necromantic device keeps a soul-personality dyad locked in the material world even as the body is reabsorbed into the cycle of life.
 
@@ -9563,7 +9563,7 @@ It does remain massive, however, so a long lever is often required.
 
 **Ka-Elemental or Soul Elemental:** Spurting, flaming, ball-lightning paradox of life-force unmoored from both body and personality, yet trapped in the essential world. Sages are uncertain what kind of tragedy or nightmare machination rips the souls apart from the beings they animate, yet also blocks them from the Recycling Infinity of Nothingness. Some speculate that the legendary soul mills of the Vile Ones are involved.
 
-<a name="page_0235"></a>
+<a id="page_0235"></a>
 
 All aspects of earthly intelligence and individuality are lost within days, if not hours. **Ka-elementals** (L2d4, gutting) dangerously affect biological and personality baselines, causing (roll d6): (1) organic regression to a more primitive form, (2) personality devolves to simpler, more primal structure,
 
@@ -9603,7 +9603,7 @@ Recorded examples include rabbits who behaved like pressure cookers, one tuberou
 
 **Orcs:** Obviously, the orcs were a Long Ago attempt to create a combat‐adapted para-human. They were successfully eradicated following the Decree of the Seven Lands, slightly before the Swamping of the Blues. In fact, many were ‘eradicated’ by the efforts of the Bureaucratic Legion which reclassified large numbers of orcs as half-orcs—a permitted soul-body-personality triad under the regulations of the then omnipotent Power Group 13.
 
-<a name="page_0236"></a>
+<a id="page_0236"></a>
 
 **Petromancy:** The art of using animating spirits to reshape and reform inorganic materials, creating wondrous and useful artifacts.
 
@@ -9641,7 +9641,7 @@ Examples include the prismatic walkers of the Spectrum Satraps, the dwarven dies
 
 Most vechs are capable of simple autonomous movement, particularly following a lead unit, but in all honesty are little more intelligent than a cockroach or brick golem. They require piloting for more complex maneouvres.
 
-<a name="page_0237"></a>
+<a id="page_0237"></a>
 
 **Vile (also Chosen Ones):** Mythical Long Long Ago sentiences. The powers attributed to them are vast, and often ridiculous, including complete personality permanence (immortality), reshaping the physical world at whim, shapeshifting, soul-transfer, and the ability to rebuild their bodies and souls from the stuff of other living creatures. Some Long Ago civilizations attributed godlike or divine powers to the viles, the Pleurote Gilded Decadence even worshipping them as the Urgent Demiurges. Fortunately they all collapsed in internecine struggles.
 
@@ -9671,21 +9671,21 @@ Hello? Is there anybody in there?”
 
 Repeat. This is Zu. We have returned. The retemporization protocol will not work at scale and we will be unable to reboot heaven. Is there anybody in there? Alert. This is Zu. If there is nobody in there, we will initiate the goodnight civilization protocols.”
 
-<a name="page_0238"></a>
+<a id="page_0238"></a>
 
 ![Character sheet (page 238)](images/character_sheet_238.png)
 
-<a name="page_0239"></a>
+<a id="page_0239"></a>
 
 ![Caravan sheet (page 239)](images/caravan_sheet_239.png)
 
-<a name="page_0240"></a>
+<a id="page_0240"></a>
 
 ![Hero sheet (page 240)](images/hero_sheet_240.png)
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_08_Index_Terminus_241-Z -->
 
-<a name="page_0241"></a>
+<a id="page_0241"></a>
 
 ## **Index** **Terminus**
 
@@ -9807,7 +9807,7 @@ Repeat. This is Zu. We have returned. The retemporization protocol will not work
   - distance and direction: 170
   - strange urban locations: 144
 
-<a name="page_0242"></a>
+<a id="page_0242"></a>
 
 - Distance (see Time): 168
 - Earth Portal (Black City): 158
@@ -10022,7 +10022,7 @@ Repeat. This is Zu. We have returned. The retemporization protocol will not work
 - Megadungeon, Near Moon: 87
 - Memorial of Pain (discovery, Ribs): 122
 
-<a name="page_0243"></a>
+<a id="page_0243"></a>
 
 - Memory Bone (discovery, Cage Run): 125
 - Metal Steeds: 184
@@ -10230,15 +10230,15 @@ Repeat. This is Zu. We have returned. The retemporization protocol will not work
 - Wreck, Dark Aster (discovery, Warm Mantle): 91
 - Zu Complex: 237
 
-<a name="page_0244"></a>
+<a id="page_0244"></a>
 
 ## **Wish You Were Here**
 
-<a name="page_0245"></a>
+<a id="page_0245"></a>
 
 ## **At The Edge of Time and Space**
 
-<a name="page_0246"></a>
+<a id="page_0246"></a>
 
 #### **Enter the synthetic dream machine**
 
@@ -10266,9 +10266,9 @@ _SDM brought to you courtesy of WizardThiefFighter Studio,_ _the Stratometaship,
 
 *All hail our Viral Intelligent Life Engineers. Use of synthetic dream machine is governed by Reality Translation Protocol 773-B of the Manyworlds Pan-Settlement Initiative. Please verify that you are human before using the synthetic dream machine. Beverages available in the synthetic dream machine may not be compatible with all human physiologies. May contain nuts. Entrance at own risk. Terms and conditions reapply. Terms and conditions may change without prior notice. Self-representation may change in the synthetic dream machine. Please be aware that the synthetic dream machine is not a simulation. Any suggestion that it is a simulation is covered by the edict Against the Simulated Cosmos Heresy (e.3.c. “simucos”). Please act accordingly. Satisfaction is recommended.
 
-<a name="page_U"></a>
+<a id="page_U"></a>
 
-<a name="page_V"></a>
+<a id="page_V"></a>
 
 ![Chart summary (page V)](images/index_chart_v.png)
 
@@ -10426,7 +10426,7 @@ This wilderness, this abandoned place, this flicker of light in the Vast, this m
 | 7 | Sorrows, loss |
 | 8 | Higher purpose, meaning, goals |
 
-<a name="page_W"></a>
+<a id="page_W"></a>
 
 ![Chart summary (page W)](images/index_chart_w.png)
 
@@ -10631,7 +10631,7 @@ Once per week, a PC works to lay an ambush for another group. If a conflict brea
 
 d6 + Agility. Random character rolls for each side. High roll wins. Tie = everything happens at once.
 
-<a name="page_X"></a>
+<a id="page_X"></a>
 
 ![Chart summary (page X)](images/index_chart_x.png)
 
@@ -10756,7 +10756,7 @@ The Ground We Walk (d12)
 | 11 | Scree | Outwash | Karst | Rust |
 | 12 | Dune | Peneplain | Canyon | Rubble |
 
-<a name="page_Y"></a>
+<a id="page_Y"></a>
 
 ![Chart summary (page Y)](images/index_chart_y.png)
 
@@ -10887,7 +10887,7 @@ P225
 | 11 | intermittent | fragrant | forest | climax carnivores | micro world | Mind reduction |
 | 12 | river bed | rich | overgrowth | bio-enhanced fauna | ancient dream | End golems |
 
-<a name="page_Z"></a>
+<a id="page_Z"></a>
 
 > "Fair Hero, the end, the end alone awaits all travelers, and at the end ... was the journey all in vain? All journeys end in vain," mused the Observer at the End of Time.
 >
