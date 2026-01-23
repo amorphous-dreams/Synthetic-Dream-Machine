@@ -54,29 +54,56 @@ Art and writing ©2024 Luka Rejec
 
 <a id="page_0004"></a>
 
-_WORK IN PROGRESS_ _2_
-
-**BIOMANCY** **5**
-
-_The Blood Muse_ _6_ _Biomantic Powers_ _7_
-
-Usha’s Wild Ride 9
-
-_Usha’s Horrorshow Infestation_ _9_ _Usha’s Chaos Trigger_ _11_ _Usha’s Uplift_ _12_ _Usha’s Chimera Splice_ _14_ _Usha’s Xenograft_ _15_ _Usha’s Replicator Strand_ _17_ _Usha’s Swift Rebuild_ _18_
-
-Rehoryan’s Blood Canticle 19 _Rehoryan’s Vital Symphony_ _19_ _Rehoryan’s Vivid Regression_ _20_ _Rehoryan’s Progressive Restoration_ _21_ _Rehoryan’s Prophetic Song_ _22_ _Rehoryan’s Prophetic Song 2_ _23_
-
-Siato Runo’s Xenon Genesis 24
-
-_Runo’s Biocatalysis_ _24_ _Runo’s Parthenogenic Cradle_ _25_ _Runo’s Parthenogenic Pouch_ _26_ _Runo’s Ontogenic Editor_ _27_
-
-Nunka’s Automorph 28 _Nunka’s Weapon Morph_ _29_ _Nunka’s Epidermal Sculpt_ _30_ _Nunka’s Biophysical Overdrive_ _32_ _Nunka’s Spitting Symbiote_ _33_
-
-Arkhiatry Classics 34 _The Medimagic of the Everliving_ _35_ _Great Healer Traits_ _36_
-
-_Anne Astec_ _37_ _Burden Share_ _37_ _Metempsychosis_ _38_ _Open Person_ _39_ _Parasoma Transference_ _39_ _Primary Desenescence_ _39_ _Real-time Rebuild_ _40_ _Restorative Slumber_ _40_
-
-The Awakened Sphere 41 _Awakened Sphere Traits_ _42_ _Eategrate_ _45_ _Bloodsong_ _46_ _Manybodied_ _47_ _Skinshift_ _48_ _SkinSplit_ _49_ _Skinwyrd_ _50_ _Ecosphere Attunement_ _51_ _Ecosphere Veil_ _51_ _Ecosphere Immersion_ _52_
+- [WORK IN PROGRESS](#page_0002)
+- [BIOMANCY](#page_0005)
+  - [The Blood Muse](#page_0006)
+  - [Biomantic Powers](#page_0007)
+  - [Usha’s Wild Ride](#page_0009)
+    - [Usha’s Horrorshow Infestation](#page_0009)
+    - [Usha’s Chaos Trigger](#page_0011)
+    - [Usha’s Uplift](#page_0012)
+    - [Usha’s Chimera Splice](#page_0014)
+    - [Usha’s Xenograft](#page_0015)
+    - [Usha’s Replicator Strand](#page_0017)
+    - [Usha’s Swift Rebuild](#page_0018)
+  - [Rehoryan’s Blood Canticle](#page_0019)
+    - [Rehoryan’s Vital Symphony](#page_0019)
+    - [Rehoryan’s Vivid Regression](#page_0020)
+    - [Rehoryan’s Progressive Restoration](#page_0021)
+    - [Rehoryan’s Prophetic Song](#page_0022)
+    - [Rehoryan’s Prophetic Song 2](#page_0023)
+  - [Siato Runo’s Xenon Genesis](#page_0024)
+    - [Runo’s Biocatalysis](#page_0024)
+    - [Runo’s Parthenogenic Cradle](#page_0025)
+    - [Runo’s Parthenogenic Pouch](#page_0026)
+    - [Runo’s Ontogenic Editor](#page_0027)
+  - [Nunka’s Automorph](#page_0028)
+    - [Nunka’s Weapon Morph](#page_0029)
+    - [Nunka’s Epidermal Sculpt](#page_0030)
+    - [Nunka’s Biophysical Overdrive](#page_0032)
+    - [Nunka’s Spitting Symbiote](#page_0033)
+  - [Arkhiatry Classics](#page_0034)
+    - [The Medimagic of the Everliving](#page_0035)
+    - [Great Healer Traits](#page_0036)
+    - [Anne Astec](#page_0037)
+    - [Burden Share](#page_0037)
+    - [Metempsychosis](#page_0038)
+    - [Open Person](#page_0039)
+    - [Parasoma Transference](#page_0039)
+    - [Primary Desenescence](#page_0039)
+    - [Real-time Rebuild](#page_0040)
+    - [Restorative Slumber](#page_0040)
+  - [The Awakened Sphere](#page_0041)
+    - [Awakened Sphere Traits](#page_0042)
+    - [Eategrate](#page_0045)
+    - [Bloodsong](#page_0046)
+    - [Manybodied](#page_0047)
+    - [Skinshift](#page_0048)
+    - [SkinSplit](#page_0049)
+    - [Skinwyrd](#page_0050)
+    - [Ecosphere Attunement](#page_0051)
+    - [Ecosphere Veil](#page_0051)
+    - [Ecosphere Immersion](#page_0052)
 
 <a id="page_0005"></a>
 
@@ -85,8 +112,6 @@ The Awakened Sphere 41 _Awakened Sphere Traits_ _42_ _Eategrate_ _45_ _Bloodsong
 “We were promised paradise. Instead, the rate-edited corpogeneratives (likely an intermediate servitor daemon —ed.) woke us on a rattling Figaro Mk III (possibly a metaphor for the ark-egg of gods —ed.) in orbit around a class four cinder (a poetic term for the unsprouted seed of the given world? —ed.). What did they expect? That’d we’d blindly stick to their protocols? The ministry was on the other side of the gate’s throat. Of course, we improvised! And yes, sometimes the results were a little ... unexpected (here the mythological Usha refers to the events known as the Bringing of Fire and Tool to Humanity —ed.)” —Apocrypha of the Elder Oral Historian, the Usha Papers 3:42 The
 
 Apologia (Bazili 4-chrysogenes, editor).
-
-
 
 <a id="page_0006"></a>
 
@@ -113,8 +138,6 @@ Bodychoppers. Genehackers.
 
 Fleshsculptor, hiuri hwers, peestmacher, razumorti, relifer, seitas, sorselor, vivimanté
 
-
-
 <a id="page_0007"></a>
 
 ##### **BIOMANTIC POWERS**
@@ -137,8 +160,6 @@ Many biomantic powers may cause:
 
 2. Horror. A character witnessing the power in action for the first time must save or they reel back in horror. They lose 1 action and suffer a psychological burden of horror. A rest, a stiff drink, and companionship removes the burden. Alternatively, a long rest and repression also does the job ... (until it doesn’t).
 
-
-
 <a id="page_0008"></a>
 
 **Beast Egg Mass**
@@ -158,8 +179,6 @@ Traditional uses of bém:
 5. A cup is also a potent meal. Cook with starch and fats to gain a bonus to all endurance activities for a day.
 
 6. A cup of raw bém mixed with your blood and set to rest for an hour creates a dangerous restorative. Drink it to regain 1d10 life, then make a trivial danger roll to avoid corruption. Anyone else drinking of bém and blood recovers 1d8 life and must pass an easy test.
-
-
 
 <a id="page_0009"></a>
 
@@ -278,8 +297,6 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 8–12 Confused. Desperately seeking meaning and purpose. 13 Disdainful of creator. Convinced it will discover, better truth. 14–15 Numb with shock of understanding. 16–19 Obsequious. Convinced the creator is a deity who understands all. 20≤ Understands you’re not so different. It’s mortals all the way down.
 
 
-
-
 <a id="page_0014"></a>
 
 ##### **USHA’S CHIMERA SPLICE**
@@ -354,8 +371,6 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 <a id="page_0016"></a>
 
 4. Chitin Lepidote. Exoskeletal segments grafted across the body (+2 armor) with delicate sensillae providing fine sense of vibrations as well as moving air and water currents. Reduce charisma by 1d2. 5. Feline Sinews. Increased balance (+1 agility), more graceful movement (+1 charisma), and quicker reflexes (+1 initiative). Very illegal in any cat-friendly lands. Death penalty in the Purple Land. 6. Warhog Guts. Digestive tract designed grind and drain nutrients out of the poorest foodstuffs: bones, dead leaves, dry wood, old leather. Also, near-immunity to ingested poisons and toxins.
-
-
 
 <a id="page_0017"></a>
 
@@ -630,8 +645,6 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 Violet City Scale Library
 
-
-
 <a id="page_0029"></a>
 
 ##### **NUNKA’S WEAPON MORPH**
@@ -712,8 +725,6 @@ Violet City Scale Library
 If sculpting an unwilling target, a failed biomantic roll botches the sculpt and does not expose the target to corruption.
 
 
-
-
 <a id="page_0032"></a>
 
 ##### **NUNKA’S BIOPHYSICAL OVERDRIVE**
@@ -778,8 +789,6 @@ At least, that is how her fragmentary words are translated today. After the Grea
 
 _Mediwizards_, Emerald University Press, Metropolis, YPC.
 
-
-
 <a id="page_0035"></a>
 
 ##### **THE MEDIMAGIC OF THE EVERLIVING**
@@ -795,8 +804,6 @@ Within three generations of abmortals, humanity had speciated into many forms an
 The best mediwizards were prized above all other wizards, their fees were enormous and meritorious. Soon, the lords of earth and sky and sea corralled these wizards into luxury guilds, provided them with gilded prison palaces and restricted their magics to their own chosen undying castes.
 
 When that society [section missing] the many iatric clans were scattered and broken. In their blood memories, during the winter years after the bursting of the suns, succulent doctor [?] flesh became a delicacy for the peacemaker varieties of humanity.
-
-
 
 <a id="page_0036"></a>
 
@@ -818,8 +825,6 @@ When that society [section missing] the many iatric clans were scattered and bro
 **Traditional Healer Titles**
 
 Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
-
-
 
 <a id="page_0037"></a>
 
@@ -951,8 +956,6 @@ As the protagonists of the Awakened Sphere say, “The human is everything and e
 
 Chrysalist, dog-in, hédeōs, metassia, noömantikoï, skinchanger, yedyayin, zukzik
 
-
-
 <a id="page_0042"></a>
 
 ##### **AWAKENED SPHERE TRAITS**
@@ -969,8 +972,6 @@ Chrysalist, dog-in, hédeōs, metassia, noömantikoï, skinchanger, yedyayin, zu
 
 6. Ranger. Track and hunt, shoot and fish, camp and hike.
 
-
-
 <a id="page_0043"></a>
 
 **Awakened Sphere Features**
@@ -986,8 +987,6 @@ Unless specified otherwise, all awakened sphere powers powers:
 Some awakened powers may cause:
 
 1. Horror. A character witnessing the power in action for the first time must save or they reel back in horror. They lose 1 action and suffer a psychological burden of horror. A rest, a stiff drink, and companionship removes the burden. Alternatively, a long rest and repression also does the job ... (until it doesn’t).
-
-
 
 <a id="page_0044"></a>
 
@@ -1014,8 +1013,6 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 7. Skin. Your power is disguised as something else, only revealing itself after it takes effect. Any targets do not notice a failed attack.
 
 8. Stomach. The power feeds on a target you touch. It deals damage equal to its cost, and the casting is free for you. This effect only works once per day.
-
-
 
 <a id="page_0045"></a>
 

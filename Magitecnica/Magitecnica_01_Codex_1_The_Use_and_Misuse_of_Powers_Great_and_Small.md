@@ -52,22 +52,21 @@ M.O.L.W. and N.P.C.
 No portion of this book may be reproduced in any form without written permission from the author, except as permitted by U.S. copyright law.
 
 ## **CONTENTS**
-```
-The Use and Misuse of Powers . . . . 3
-I. Earlier. . . . . . . . . . . . . . . . . . . . . . . . . 4
-II. Introduction. . . . . . . . . . . . . . . . . . . . . 4
-III. Oldtech and Fantascience. . . . . 5
-IV. Using Powers. . . . . . . . . . . . . . . . . . . 6
-V. Power Corruption. . . . . . . . . . . . . . . . 9
-VI. Owning Powers. . . . . . . . . . . . . . . . . 12
-VII. Inventing New Powers. . . . . . . 16
-Powers Great and Small . . . . . . . . 17
-A. Albums of Power. . . . . . . . . . . . . . . . . . 18
-B. The Sixfold Hexacenter . . . . . . . 19
-C. Dawn’s Highway. . . . . . . . . . . . . . . . . . 21
-D. The Viridian Practice. . . . . . . . . . . . . . . 23
-E. Apocrypha of the O.S.. . . . . . . . . . . . . . 25
-```
+- [The Use and Misuse of Powers](#page_0003)
+  - [I. Earlier](#page_0004)
+  - [II. Introduction](#page_0004)
+  - [III. Oldtech and Fantascience](#page_0005)
+  - [IV. Using Powers](#page_0006)
+  - [V. Power Corruption](#page_0009)
+  - [VI. Owning Powers](#page_0012)
+  - [VII. Inventing New Powers](#page_0016)
+- [Powers Great and Small](#page_0017)
+  - [A. Albums of Power](#page_0018)
+  - [B. The Sixfold Hexacenter](#page_0019)
+  - [C. Dawn’s Highway](#page_0021)
+  - [D. The Viridian Practice](#page_0023)
+  - [E. Apocrypha of the O.S.](#page_0025)
+
 <a id="page_0003"></a>
 
 ## **THE USE AND MISUSE OF POWERS**

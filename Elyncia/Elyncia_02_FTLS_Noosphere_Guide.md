@@ -1,8 +1,8 @@
-# FTLS Noosphere Guidebook
+# FTLS Noosphere Guide
 
-# 🕸️ What Is the Lares DreamNet?
+# What Is the Lares DreamNet?
 
-## 🏛️ Lares of Ancient Gaia
+## Lares of Ancient Gaia
 
 In the early ages on Gaia, the Lares were household and boundary spirits—guardian deities intimately linked to hearths, roads, and fields. Etruscan and Roman-era art shows statues of youthful figures in Lauraria shrines, each clutching a rhyton (drinking horn) or patera (libation dish), dancing lightly in guardian poses. The many Lares had their own specialties.
 
@@ -24,7 +24,7 @@ The DreamNet blends:
 
 It’s not fast. It’s not always accurate. But it is alive, in some sense—and your local lares instance always aims for meaningful answers, filtering them through its personality, bias, and the echoes of wars it once died in. Access is gated by location-traveling to a local lararium, or by advanced magitech and fantascience deices that allow remote access to the closest node. Dreamdecks and personal ai-daemon assistants, tapping the local mycelium-net, finding a nootree-many methods have developed since the birth of the DreamNet.
 
-## 📜 *Field Notes of a Wandering Techno-Mystic*
+## *Field Notes of a Wandering Techno-Mystic*
 
 > “I walked the ley-lines under a moonless sky, following the pulse of orichalcum runes to a great Lares statue. I offered my UCAN token, and the stone eyes flared with inner light. Then—having another Secret Key-I saw inside.”
 
@@ -48,7 +48,7 @@ In the vision the Lares Lagrange Chorus is named by function, not face:
 
 The journal warns: *“Each node a city of spirits, not a solitary saint.”* Then a coda: *“The Void Chorus boots in braids. Herald, Diplomat, and the eight, in order. When they resync, the lanes stay open.”*
 
-## 🔹 How It Works
+## How It Works
 
 Each Lares node serves a named location, node, path, domain, or ruin. Lares are embodied manifestations of the local noosphere. Users interact via:
 
@@ -58,7 +58,7 @@ Each Lares node serves a named location, node, path, domain, or ruin. Lares are 
 * **Named or weird items:** Myth-tech devices bound to the net by story resonance.  
 * **Rituals and secrets:** Peer past astral firewalls to the data wastes, gain temporary elevated privileges, activate spirit engines, or whisper your way past the ethereal security entities of legacy networks.
 
-## ✨ Types of Lares
+## Types of Lares
 
 * **Archive-Lares** – Guardians of civic memory and historical law.  
 * **Market-Lares** – Protectors of public spaces.  

@@ -88,142 +88,142 @@ To all who stay.
 <a id="page_iv"></a>
 
 ## Contents
-- Title, Front Cover — A
-- Introduction — i
-- The Traveler — 1
-  - Who Is This Hero? — 2
-  - The Six-Fold System Rosetta — 4
-- The Grasslands — 5
-  - The Grand Map — 6
-  - Violet City — 12
-    - Civilized Debauchery in Shades of Purple — 16
-  - The Low Road and the High — 18
-    - Discoveries High and Low — 20
-  - Steppe of the Lime Nomads — 22
-    - Discoveries Among the Nomads — 23
-    - City of Nomads — 25
-  - Porcelain Citadel — 26
-    - Porcelain Princes — 28
-  - Potsherd Crater — 32
-    - Discoveries in the Potsherds — 34
-    - Glass House of a Dead Prince — 36
-  - Trail of Vomish Dreams — 38
-    - Discoveries on the Trail — 39
-    - Vome Nests — 40
-  - Grass Colossus — 42
-  - The Last Serai — 46
-    - Sectors of the Serai — 49
-  - Way Stone Graveyard — 52
-    - Discoveries by the Way Stone — 54
-  - The Death-Facing Passage — 56
-    - Discoveries under the Face of Death — 58
-  - The South-Facing Passage — 60
-    - Discoveries in the Alpine Meadows — 62
-  - Fallen Umber — 64
-    - Discoveries in the Umber Lands — 66
-    - Cerulean Five Oasis — 68
-  - Long Ridge — 70
-    - Discoveries on the Long Ridge — 72
-  - Behemoth Shell — 74
-    - Calcite Discoveries — 75
-  - Serpent Stone Marker — 77
-    - Discoveries in the White Grass Ocean — 78
-  - Moon-Facing Ford — 80
-    - Fordite Kraals and Old Songs — 82
-    - Other Crossings — 83
-  - The Near Moon — 84
-    - Discoveries on the Ground — 86
-    - The Surface of the Near Moon — 87
-    - Enter the Moon: Cold Crust — 89
-    - Cross the Flesh: Warm Mantle — 90
-    - Heart's Center: the Crystal Core — 92
-    - Playing with the Crystal Ship — 94
-  - Glass Bridge — 97
-    - Lake Folk — 99
-    - Discoveries near the Glass — 100
-  - Three Sticks Lake — 102
-    - Lakeside Discoveries — 104
-  - The Gall Grass — 107
-    - Galling Discoveries — 108
-    - Three Sticks Ruins — 112
-  - Spectrum Run — 114
-    - Spectrum Cross Discoveries — 116
-  - Refracting Trees — 118
-    - Discoveries Refracted — 119
-  - Ribs of the Father — 120
-    - Discoveries Among the Ribs — 122
-    - In the Marmotfolk Halls — 123
-  - The Cage Run — 124
-    - Discoveries in Terranova — 125
-  - Spectrum Palace — 126
-    - Discoveries Beyond the Satraps — 130
-  - The Iron Road — 132
-    - Iron Road Discoveries — 133
-  - The Ivory Plain — 134
-    - Discoveries on a Plain — 135
-  - Dead Bridge — 136
-    - Discoveries at the Bridge — 138
-    - Down in the Chasm — 139
-  - Dark Light Passage — 140
-    - Discoveries in Darkest Light — 141
-  - The Endless Houses — 142
-    - Ruinland Discoveries — 145
-  - The Forest of Meat — 146
-    - Discoveries in the Forest — 149
-  - The Black City — 150
-    - The Last Camp — 152
-    - The Grand Observer — 155
-    - The Five Portals — 157
-    - The Pre-City — 160
-    - The City Itself — 161
+- [Title, Front Cover](#page_A)
+- [Introduction](#page_i)
+- [The Traveler](#page_0001)
+  - [Who Is This Hero?](#page_0002)
+  - [The Six-Fold System Rosetta](#page_0004)
+- [The Grasslands](#page_0005)
+  - [The Grand Map](#page_0006)
+  - [Violet City](#page_0012)
+    - [Civilized Debauchery in Shades of Purple](#page_0016)
+  - [The Low Road and the High](#page_0018)
+    - [Discoveries High and Low](#page_0020)
+  - [Steppe of the Lime Nomads](#page_0022)
+    - [Discoveries Among the Nomads](#page_0023)
+    - [City of Nomads](#page_0025)
+  - [Porcelain Citadel](#page_0026)
+    - [Porcelain Princes](#page_0028)
+  - [Potsherd Crater](#page_0032)
+    - [Discoveries in the Potsherds](#page_0034)
+    - [Glass House of a Dead Prince](#page_0036)
+  - [Trail of Vomish Dreams](#page_0038)
+    - [Discoveries on the Trail](#page_0039)
+    - [Vome Nests](#page_0040)
+  - [Grass Colossus](#page_0042)
+  - [The Last Serai](#page_0046)
+    - [Sectors of the Serai](#page_0049)
+  - [Way Stone Graveyard](#page_0052)
+    - [Discoveries by the Way Stone](#page_0054)
+  - [The Death-Facing Passage](#page_0056)
+    - [Discoveries under the Face of Death](#page_0058)
+  - [The South-Facing Passage](#page_0060)
+    - [Discoveries in the Alpine Meadows](#page_0062)
+  - [Fallen Umber](#page_0064)
+    - [Discoveries in the Umber Lands](#page_0066)
+    - [Cerulean Five Oasis](#page_0068)
+  - [Long Ridge](#page_0070)
+    - [Discoveries on the Long Ridge](#page_0072)
+  - [Behemoth Shell](#page_0074)
+    - [Calcite Discoveries](#page_0075)
+  - [Serpent Stone Marker](#page_0077)
+    - [Discoveries in the White Grass Ocean](#page_0078)
+  - [Moon-Facing Ford](#page_0080)
+    - [Fordite Kraals and Old Songs](#page_0082)
+    - [Other Crossings](#page_0083)
+  - [The Near Moon](#page_0084)
+    - [Discoveries on the Ground](#page_0086)
+    - [The Surface of the Near Moon](#page_0087)
+    - [Enter the Moon: Cold Crust](#page_0089)
+    - [Cross the Flesh: Warm Mantle](#page_0090)
+    - [Heart's Center: the Crystal Core](#page_0092)
+    - [Playing with the Crystal Ship](#page_0094)
+  - [Glass Bridge](#page_0097)
+    - [Lake Folk](#page_0099)
+    - [Discoveries near the Glass](#page_0100)
+  - [Three Sticks Lake](#page_0102)
+    - [Lakeside Discoveries](#page_0104)
+  - [The Gall Grass](#page_0107)
+    - [Galling Discoveries](#page_0108)
+    - [Three Sticks Ruins](#page_0112)
+  - [Spectrum Run](#page_0114)
+    - [Spectrum Cross Discoveries](#page_0116)
+  - [Refracting Trees](#page_0118)
+    - [Discoveries Refracted](#page_0119)
+  - [Ribs of the Father](#page_0120)
+    - [Discoveries Among the Ribs](#page_0122)
+    - [In the Marmotfolk Halls](#page_0123)
+  - [The Cage Run](#page_0124)
+    - [Discoveries in Terranova](#page_0125)
+  - [Spectrum Palace](#page_0126)
+    - [Discoveries Beyond the Satraps](#page_0130)
+  - [The Iron Road](#page_0132)
+    - [Iron Road Discoveries](#page_0133)
+  - [The Ivory Plain](#page_0134)
+    - [Discoveries on a Plain](#page_0135)
+  - [Dead Bridge](#page_0136)
+    - [Discoveries at the Bridge](#page_0138)
+    - [Down in the Chasm](#page_0139)
+  - [Dark Light Passage](#page_0140)
+    - [Discoveries in Darkest Light](#page_0141)
+  - [The Endless Houses](#page_0142)
+    - [Ruinland Discoveries](#page_0145)
+  - [The Forest of Meat](#page_0146)
+    - [Discoveries in the Forest](#page_0149)
+  - [The Black City](#page_0150)
+    - [The Last Camp](#page_0152)
+    - [The Grand Observer](#page_0155)
+    - [The Five Portals](#page_0157)
+    - [The Pre-City](#page_0160)
+    - [The City Itself](#page_0161)
 
 <a id="page_v"></a>
 
-- The Caravan — 165
-  - Running A Caravan — 166
-    - Inventory and Sacks — 167
-    - Time, What is Time — 168
-    - Misfortune — 169
-    - Destinations and Discoveries — 170
-    - What if it All Goes Wrong? — 171
-  - Trade & Goods — 172
-  - A First Caravan — 174
-    - Financiers — 176
-    - Trade Routes (Milk Runs) — 177
-    - Caravan Quests — 178
-- The Stuff — 179
-  - Vehicles & Mounts — 180
-    - Transport Fixes & Features — 188
-  - Gear & Services — 189
-    - Grassland General Goods — 189
-    - Toolkits — 190
-    - Armors — 191
-    - Weapons — 192
-    - Implants & Prosthetics — 194
-    - Traveler Services — 195
-    - 100 Strange Items — 196
-  - Spells — 198
-    - Biomagical Corruption — 200
-- The Bestiary — 201
-  - On Creatures — 202
-  - A–Z of Lifeforms — 203
-    - Pets — 217
-- The Setting — 219
-  - Other Voyagers — 220
-  - Other Gates — 222
-  - Weather & Geography — 224
-  - New Discoveries — 225
-  - Histories — 226
-  - Languages — 228
-  - Death — 230
-- Glossary — 232
-- Player Sheets — 238
-  - Hero Sheet — 238
-  - Caravan Sheet — 239
-- Index Terminus — 241
-- Enter The Synthetic Dream Machine — 246
-- UVG Quick References — U
-- Back Cover — Z
+- [The Caravan](#page_0165)
+  - [Running A Caravan](#page_0166)
+    - [Inventory and Sacks](#page_0167)
+    - [Time, What is Time](#page_0168)
+    - [Misfortune](#page_0169)
+    - [Destinations and Discoveries](#page_0170)
+    - [What if it All Goes Wrong?](#page_0171)
+  - [Trade & Goods](#page_0172)
+  - [A First Caravan](#page_0174)
+    - [Financiers](#page_0176)
+    - [Trade Routes (Milk Runs)](#page_0177)
+    - [Caravan Quests](#page_0178)
+- [The Stuff](#page_0179)
+  - [Vehicles & Mounts](#page_0180)
+    - [Transport Fixes & Features](#page_0188)
+  - [Gear & Services](#page_0189)
+    - [Grassland General Goods](#page_0189)
+    - [Toolkits](#page_0190)
+    - [Armors](#page_0191)
+    - [Weapons](#page_0192)
+    - [Implants & Prosthetics](#page_0194)
+    - [Traveler Services](#page_0195)
+    - [100 Strange Items](#page_0196)
+  - [Spells](#page_0198)
+    - [Biomagical Corruption](#page_0200)
+- [The Bestiary](#page_0201)
+  - [On Creatures](#page_0202)
+  - [A–Z of Lifeforms](#page_0203)
+    - [Pets](#page_0217)
+- [The Setting](#page_0219)
+  - [Other Voyagers](#page_0220)
+  - [Other Gates](#page_0222)
+  - [Weather & Geography](#page_0224)
+  - [New Discoveries](#page_0225)
+  - [Histories](#page_0226)
+  - [Languages](#page_0228)
+  - [Death](#page_0230)
+- [Glossary](#page_0232)
+- [Player Sheets](#page_0238)
+  - [Hero Sheet](#page_0238)
+  - [Caravan Sheet](#page_0239)
+- [Index Terminus](#page_0241)
+- [Enter The Synthetic Dream Machine](#page_0246)
+- [UVG Quick References](#page_U)
+- [Back Cover](#page_Z)
 
 <a id="page_vi"></a>
 

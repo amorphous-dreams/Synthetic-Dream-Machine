@@ -1,3 +1,24 @@
+---
+# Layout & Page Setup
+layout: book_page
+title: "Our Golden Age"
+subtitle: "and the Mother Machine"
+description: "A psychedelic RPG setting for the SDM system set in the Rainbow Lands of the Circle Sea."
+published: true
+
+# Book Metadata
+author: "Luka Rejec"
+date: 2026-01-23
+image: /images/page_0001_title_page.png
+series: "Synthetic Dream Machine"
+volume: 1
+genres: [fiction, rpg, ttrpg, fantasy, adventure, science-fantasy, setting]
+version: "0.57"
+
+# Custom Content
+publisher: "Synthetic Dream Machine"
+product_id: "SDM-OGA"
+---
 <!-- Begin: Our_Golden_Age_01_Title_Contents_1-7 -->
 
 <a id="page_0001"></a>
@@ -153,145 +174,145 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 
 ### CONTENTS
 
-**SUMMONS UNEXPECTED — 8**
+**[SUMMONS UNEXPECTED](#page_0008)**
 
-- The Call — 10
-- The Voyage — 12
-- The Destination — 14
-- The Castle, Approach — 16
-- The Castle, Inside — 18
-- Onwards — 20
-- Invest Your Experience — 22
-- Upgrade Your Items — 24
-- Going Places — 25
-- Ticket Dice — 25
-- Voyage Events — 26
-- The List of All Humans — 32
-- The 768 Human Languages — 36
+- [The Call](#page_0010)
+- [The Voyage](#page_0012)
+- [The Destination](#page_0014)
+- [The Castle, Approach](#page_0016)
+- [The Castle, Inside](#page_0018)
+- [Onwards](#page_0020)
+- [Invest Your Experience](#page_0022)
+- [Upgrade Your Items](#page_0024)
+- [Going Places](#page_0025)
+- [Ticket Dice](#page_0025)
+- [Voyage Events](#page_0026)
+- [The List of All Humans](#page_0032)
+- [The 768 Human Languages](#page_0036)
 
-**THIS HOLLOW HOUSE — 40**
+**[THIS HOLLOW HOUSE](#page_0040)**
 
-- Regional Omens — 42
-- Region — 43
-- Settlement Options — 44
-- Haven — 46
-- Relaxation — 47
-- Execution — 48
-- Onwards, Again — 50
-- Estate Flowering — 52
-- A Simple Estate of Mind — 53
-- Running Estates — 57
-- Domus Nova — 59
-- Houses — 60
-- Cash Assets — 64
-- Rest? For The Wicked? — 66
-- Bed Rest — 66
-- Relaxation — 67
-- Upkeep — 67
-- Improvement — 68
-- Labor — 69
-- Townsabouts — 70
-- The 300 Town Traits — 72
-- Colors — 80
+- [Regional Omens](#page_0042)
+- [Region](#page_0043)
+- [Settlement Options](#page_0044)
+- [Haven](#page_0046)
+- [Relaxation](#page_0047)
+- [Execution](#page_0048)
+- [Onwards, Again](#page_0050)
+- [Estate Flowering](#page_0052)
+- [A Simple Estate of Mind](#page_0053)
+- [Running Estates](#page_0057)
+- [Domus Nova](#page_0059)
+- [Houses](#page_0060)
+- [Cash Assets](#page_0064)
+- [Rest? For The Wicked?](#page_0066)
+- [Bed Rest](#page_0066)
+- [Relaxation](#page_0067)
+- [Upkeep](#page_0067)
+- [Improvement](#page_0068)
+- [Labor](#page_0069)
+- [Townsabouts](#page_0070)
+- [The 300 Town Traits](#page_0072)
+- [Colors](#page_0080)
 
-**BLUE LAND — 82**
+**[BLUE LAND](#page_0082)**
 
-- Azure Commercial Reintegration Parks — 86
-- Blue Power Groups — 88
-- Ruins Azure—Azure SEOZ — 92
-- Soma's High Hollow Place — 99
-- Blue Safari — 100
-- Indigo River Valley — 101
-- The Coast Unblue — 102
-- The Designation — 103
+- [Azure Commercial Reintegration Parks](#page_0086)
+- [Blue Power Groups](#page_0088)
+- [Ruins Azure—Azure SEOZ](#page_0092)
+- [Soma's High Hollow Place](#page_0099)
+- [Blue Safari](#page_0100)
+- [Indigo River Valley](#page_0101)
+- [The Coast Unblue](#page_0102)
+- [The Designation](#page_0103)
 
-**PURPLE LAND — 106**
+**[PURPLE LAND](#page_0106)**
 
-- Purr-Purr Entrepôts — 110
-- Factions Violet — 112
-- Violet City—Catlandia — 114
-- Cathedra's Purple University — 116
-- The Nuclear Lands — 118
-- The Cat Plantations — 120
-- The Secure Zone — 121
-- The New Veldt — 122
+- [Purr-Purr Entrepôts](#page_0110)
+- [Factions Violet](#page_0112)
+- [Violet City—Catlandia](#page_0114)
+- [Cathedra's Purple University](#page_0116)
+- [The Nuclear Lands](#page_0118)
+- [The Cat Plantations](#page_0120)
+- [The Secure Zone](#page_0121)
+- [The New Veldt](#page_0122)
 
-**RED LAND — 124**
+**[RED LAND](#page_0124)**
 
-- Freeblood Vendings — 130
-- Factions in Ruby — 132
-- Rubra's Oubliation — 135
-- Red End — 136
-- Red End's Districts — 140
-- Deep Red Destinations — 144
-- Red Land District—The Cities Fixé & Mobile — 146
-- Friends of the City and Other Phylakes — 148
-- Pacific Phylake Towns — 150
-- Rust Westcountry — 152
-- Rust Eastcountry — 154
+- [Freeblood Vendings](#page_0130)
+- [Factions in Ruby](#page_0132)
+- [Rubra's Oubliation](#page_0135)
+- [Red End](#page_0136)
+- [Red End's Districts](#page_0140)
+- [Deep Red Destinations](#page_0144)
+- [Red Land District—The Cities Fixé & Mobile](#page_0146)
+- [Friends of the City and Other Phylakes](#page_0148)
+- [Pacific Phylake Towns](#page_0150)
+- [Rust Westcountry](#page_0152)
+- [Rust Eastcountry](#page_0154)
 
 <a id="page_0007"></a>
 
-**ORANGE LAND — 156**
+**[ORANGE LAND](#page_0156)**
 
-- Amber Standard Hedonic Station — 160
-- Factions in Amber — 162
-- The Necrotechnologies — 164
-- Araña's Ludodrome — 169
-- Oranje—The City-Lake Plough — 170
-- Council & 404 Provinces — 172
-- The Mute Places — 174
-- The Shallow Sea and the Sailing Islands — 176
-- Whistler's Watchtower and Pennyburst Cratervale — 178
+- [Amber Standard Hedonic Station](#page_0160)
+- [Factions in Amber](#page_0162)
+- [The Necrotechnologies](#page_0164)
+- [Araña's Ludodrome](#page_0169)
+- [Oranje—The City-Lake Plough](#page_0170)
+- [Council & 404 Provinces](#page_0172)
+- [The Mute Places](#page_0174)
+- [The Shallow Sea and the Sailing Islands](#page_0176)
+- [Whistler's Watchtower and Pennyburst Cratervale](#page_0178)
 
-**YELLOW LAND — 180**
+**[YELLOW LAND](#page_0180)**
 
-- Heliodor Mercantile Standard Goods — 184
-- Jaundiced Factions — 186
-- Abaco's Temple Mobile — 188
-- Gardener Géants — 189
-- A Decapolis—A Decaypolis? — 190
-- Safranj—Saffron City — 192
-- The Voidway Lane — 194
-- Remarkable Heliodor — 196
-- Warbarians — 198
-- L'ost 'Spital Apotheotic — 200
-- Sunrise In The West — 202
+- [Heliodor Mercantile Standard Goods](#page_0184)
+- [Jaundiced Factions](#page_0186)
+- [Abaco's Temple Mobile](#page_0188)
+- [Gardener Géants](#page_0189)
+- [A Decapolis—A Decaypolis?](#page_0190)
+- [Safranj—Saffron City](#page_0192)
+- [The Voidway Lane](#page_0194)
+- [Remarkable Heliodor](#page_0196)
+- [Warbarians](#page_0198)
+- [L'ost 'Spital Apotheotic](#page_0200)
+- [Sunrise In The West](#page_0202)
 
-**GREEN LAND — 204**
+**[GREEN LAND](#page_0204)**
 
-- Joy Good Dispensary — 208
-- Factions Viridian — 210
-- Cogflower Exchequer — 212
-- Ministerial Estates — 213
-- Verdant Places — 214
-- Emerald City — 216
-- The Leaves of Former Times — 218
-- Portalspace — 220
-- Portal One — Mothercity — 222
+- [Joy Good Dispensary](#page_0208)
+- [Factions Viridian](#page_0210)
+- [Cogflower Exchequer](#page_0212)
+- [Ministerial Estates](#page_0213)
+- [Verdant Places](#page_0214)
+- [Emerald City](#page_0216)
+- [The Leaves of Former Times](#page_0218)
+- [Portalspace](#page_0220)
+- [Portal One — Mothercity](#page_0222)
 
-**OMEGA JUBILEE — 224**
+**[OMEGA JUBILEE](#page_0224)**
 
-- Scene, Session, Story — 226
-- I.N.T.R. Generator — 228
-- Nexus Grid — 232
-- Wield the Nexus — 234
-- Ministry & Nemesis — 236
-- Time — 238
-- Cosmos — 240
-- Maker — 240
-- Sine Deis, Absente Numine — 241
-- Holy Apparition — 242
-- Daemons — 244
-- Sufficiently Advanced Magic — 245
-- The Abandonment — 246
-- Jubilee — 247
-- Palace of Ten Thousand Years — 248
-- The Eye — 250
-- Old Mother Machine — 252
-- Omega — 254
+- [Scene, Session, Story](#page_0226)
+- [I.N.T.R. Generator](#page_0228)
+- [Nexus Grid](#page_0232)
+- [Wield the Nexus](#page_0234)
+- [Ministry & Nemesis](#page_0236)
+- [Time](#page_0238)
+- [Cosmos](#page_0240)
+- [Maker](#page_0240)
+- [Sine Deis, Absente Numine](#page_0241)
+- [Holy Apparition](#page_0242)
+- [Daemons](#page_0244)
+- [Sufficiently Advanced Magic](#page_0245)
+- [The Abandonment](#page_0246)
+- [Jubilee](#page_0247)
+- [Palace of Ten Thousand Years](#page_0248)
+- [The Eye](#page_0250)
+- [Old Mother Machine](#page_0252)
+- [Omega](#page_0254)
 
-**INDEX — 255**
+**[INDEX](#page_0255)**
 
 <!-- Begin: Our_Golden_Age_02_Summons_Unexpected_8-39 -->
 
@@ -10060,4 +10081,3 @@ When she awoke again, she found the other gods had wreaked havoc, some calling f
 [![The Rainbow Lands Map 04 (page 259)](images/page_0259_rainbow_lands_map_04.png)](images/hires/page_0259_rainbow_lands_map_04.png)
 
 <a id="page_0260"></a>
-
