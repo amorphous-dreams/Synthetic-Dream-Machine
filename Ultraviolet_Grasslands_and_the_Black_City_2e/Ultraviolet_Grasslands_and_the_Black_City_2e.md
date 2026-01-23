@@ -1,3 +1,24 @@
+---
+# Layout & Page Setup
+layout: book_page
+title: "Ultraviolet Grasslands and the Black City"
+subtitle: "2e"
+description: "A psychedelic RPG road-trip setting and adventure for the Synthetic Dream Machine system."
+published: true
+
+# Book Metadata
+author: "Luka Rejec"
+date: 2022-01-01
+image: /images/uvg_cover_page.png
+series: "Synthetic Dream Machine"
+volume: 1
+genres: [fiction, rpg, ttrpg, fantasy, adventure, osr, science-fantasy, setting]
+version: "1.0d"
+
+# Custom Content
+publisher: "Synthetic Dream Machine"
+product_id: "SDM-UVG-2E"
+---
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_01_Cover_Introduction_A-vi -->
 
 <a id="page_A"></a>

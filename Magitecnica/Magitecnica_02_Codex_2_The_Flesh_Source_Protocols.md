@@ -1,3 +1,24 @@
+---
+# Layout & Page Setup
+layout: book_page
+title: "Magitecnica: Codex 2"
+subtitle: "The Flesh Source Protocols"
+description: "A volume of powers and items for use with the SDM roleplaying system and the UVG Undying Earth trail setting."
+published: true
+
+# Book Metadata
+author: "Luka Rejec"
+date: 2024-02-01
+image: /images/p001.png
+series: "Magitecnica"
+volume: 2
+genres: [rpg, ttrpg, rules, supplements, science-fantasy]
+version: "0.2.0"
+
+# Custom Content
+publisher: "Synthetic Dream Machine"
+product_id: "SDM-Magitecnica-Codex-2"
+---
 <a id="page_0001"></a>
 
 <a id="page_0002"></a>
@@ -1184,4 +1205,3 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman’s axe, the joy of Spring’s blossoming, the tramping of an army, and the fall of a great oak.
 > 
 > _Overcharge:_ Persist as motes in the wind and microbes in the soil for up to 1 week before full reconstitution. Each day counts as a week’s rest. At the end of the week, save or permanently replace one of your traits with a deep panpsychic connection to the local ecology: the glen, dale, vale, grove, stream, lake, bay, or what have you. You may choose to fail this save.
-

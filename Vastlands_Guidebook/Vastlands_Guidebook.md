@@ -1,3 +1,24 @@
+---
+# Layout & Page Setup
+layout: book_page
+title: "Vastlands Guidebook"
+subtitle: "Roleplaying At The End Of Time"
+description: "A psychedelic RPG guidebook for the Synthetic Dream Machine system set in the Vastlands at the end of time."
+published: true
+
+# Book Metadata
+author: "Luka Rejec"
+date: 2025-08-01
+image: /images/vastlands_cover_page.png
+series: "Synthetic Dream Machine"
+volume: 2
+genres: [fiction, rpg, ttrpg, fantasy, adventure, osr, science-fantasy]
+version: "3.44"
+
+# Custom Content
+publisher: "Synthetic Dream Machine"
+product_id: "SDM-VLG"
+---
 <!-- Begin: Vastlands_Guidebook_01_Title_Introduction_1-9 -->
 
 <a id="page_0001"></a>
@@ -7701,4 +7722,3 @@ Don’t bring modern hatreds and contemporary conflicts into your content. The w
 - **wizarding quests** 105
 - **zones, relative** 53
 - **zones, vehicle action** 54
-

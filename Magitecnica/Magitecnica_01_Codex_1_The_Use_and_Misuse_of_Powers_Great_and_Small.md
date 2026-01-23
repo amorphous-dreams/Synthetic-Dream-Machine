@@ -1,3 +1,24 @@
+---
+# Layout & Page Setup
+layout: book_page
+title: "Magitecnica: Codex 1"
+subtitle: "The Use and Misuse of Powers Great and Small"
+description: "A volume of powers, rules, and spells for use with the SDM roleplaying system and the UVG Undying Earth trail setting."
+published: true
+
+# Book Metadata
+author: "Luka Rejec"
+date: 2023-10-01
+image: /images/p001.png
+series: "Magitecnica"
+volume: 1
+genres: [rpg, ttrpg, rules, supplements, science-fantasy]
+version: "1.0.0"
+
+# Custom Content
+publisher: "Synthetic Dream Machine"
+product_id: "SDM-Magitecnica-Codex-1"
+---
 <a id="page_0001"></a>
 
 # **Codex 1: the Use and Misuse of Powers Great and Small Luka Rejec**
