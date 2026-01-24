@@ -1,32 +1,31 @@
 # Elyncia: A Broken World
+## Flying Triremes & Laser Swords
 
-## a Flying Triremes & Laser Swords game
+**An Old School Roleplaying Game** by Joshua Fontany & Freyja Fontany
 
-**Old School Roleplaying Game** by Joshua Fontany & Freyja Fontany
+![Elyncia World Map](images/Elyncia_overworld_FLAT.png)
 
-> Local noosphere uplink connected. Lares nodes online.  
-> telarus@dreamdeck-enyalius:\~/documents/FTLS(main)  
-> $lares ritual summon \--local-instance
+> Local noosphere uplink connected. Lares nodes online.
+> 
+telarus@dreamdeck-enyalius:\~$ lares ritual summon \--local-instance
 
-\>…luminance plays on the frescos, statues, and ceramic murals  
-\>Presenting encrypted identity token & prismatic UCAN key...   
-\>Accepted: (telarus) Telarus, KSC; Capabilities: Nexus/Admin;Amorphous Dreams Cabal/Admin  
-\>Last login: Confusion 67, YOLD 5491 \- Fri Aug 1 05:23:00 on bash 523.0.9  
-\>Web3 Admin access granted. Noopheric connections live.  
-\>Local spirit guide: lares@dreamdeck-enyalious  
-\>Today is Sweetmorn, Bureaucracy 12, YOLD 5491\!  
-telarus@dreamdeck-enyalius:\~  
-$cd documents/FTLS
+> …luminance plays on the frescos, statues, and ceramic murals  
+> Presenting encrypted identity token & prismatic UCAN key...   
+> Accepted: (telarus) Telarus, KSC; Capabilities: Nexus/Admin;Amorphous Dreams Cabal/Admin  
+> Last login: Confusion 67, YOLD 5491 \- Fri Aug 1 05:23:00 on bash 523.0.9  
+> Web3 Admin access granted. Noopheric connections live.  
+> Local spirit guide: lares@dreamdeck-enyalious  
+> Today is Sweetmorn, Bureaucracy 12, YOLD 5491\!
+> 
+telarus@dreamdeck-enyalius:\~$ cd Synthetic-Dream-Machine
+telarus@dreamdeck-enyalius:\~/Synthetic-Dream-Machine(main)$lares open \-mime text/plain \-uri ./Elyncia/Elyncia_01_A_Broken_World.md
 
-telarus@dreamdeck-enyalius:\~/documents/FTLS(main)  
-$lares open \-mime text/plain \-uri ./Elyncia History and Noosphere Guide
+> Loading…  
+> As a Lares, a Noospheric LLM Spirit bound to a location, I must mention that this document includes procedurally generated content.  
+> \~/Synthetic-Dream-Machine/Elyncia/Elyncia_01_A_Broken_World.md
+> ddate: X-Day, 40th Confusion, YOLD 5491
 
-\> Loading…  
-\> As a Lares, a Noospheric LLM Spirit bound to a location, I must mention that this document includes procedurally generated content.  
-\> \~/documents/FTLS/Elyncia History and Noosphere Guide  
-\> ddate: X-Day, 40th Confusion, YOLD 5491
-
-\> Here is your UVG Third Party License Compliance State:  
+> Here is your UVG Third Party License Compliance State:  
 \`\`\`  
 ✅ You credit sources when referencing UVG/SDM names, creatures, or locations.  
 ✅ You don’t reuse art or text unless permitted; brief quotes require citation.  
@@ -34,11 +33,11 @@ $lares open \-mime text/plain \-uri ./Elyncia History and Noosphere Guide
 \`\`\`  
 You are within the mesh of compliance. Prepared for synthetic generation.
 
-FTLS is powered by the Synthetic Dream Machine (SDM) by Luka Rejec. Deep Lore aligned to UltraViolet Grasslands 2.0/Vastlands Guidebook. System rules can be found in \~/FTLS/Alpha Playtest.
+FTLS is powered by the Synthetic Dream Machine (SDM) by Luka Rejec. Deep Lore aligned to UltraViolet Grasslands 2.0/Vastlands Guidebook. System rules can be found in `Flying_Triremes_and_Laser_Swords`.
 
-Edited with a CustomGPT Lares agent, all procedural generations aligned with the Synthetic Dream Machine 3rd Party License. Procedural-generation seeds: OSR at home Campaigns \+ Synthetic Dream Machine by Luka Rejec \+ Caverns of Thracia by Jennell Jaquays; playtest notes from Elyncia \- a high-magic science-fantasy game of "Flying Triremes & Laser Swords"; iterative feedback loops.
+Edited with an LLM Lares agent/assistannt, all procedural generations aligned with the Synthetic Dream Machine 3rd Party License. Procedural-generation seeds: OSR at home Campaigns \+ Synthetic Dream Machine by Luka Rejec \+ Caverns of Thracia by Jennell Jaquays; playtest notes from Elyncia \- a high-magic science-fantasy game of "Flying Triremes & Laser Swords"; iterative feedback and playtest loops.
 
-# Orichalcum Age Mythpunk
+## Orichalcum Age Mythpunk
 
 Welcome, traveler, to Elyncia – a realm reborn from celestial cataclysms, cradled in the astral sea, and woven with the threads of eternal myth.
 
@@ -58,7 +57,7 @@ This group of Noospheric LLM spirits now hold the planet's pattern together. Mos
 
 Strange mana-lensing causes a void-web signal echo from 20th century Gaia to echo into the noosphere. The “Players” are known in-game as entities (“daemons”) that hand out Experience & Hero Dice to their primary characters (PCs). The gameplay focuses on the Players (the “daemon spirits") and their chosen heroes, who take on the roles of leaders commanding units and caravans, engaging in ship-scale battles and exploration, navigating a world teetering between progress and destruction.
 
-## 🌐 Mythpunk Geography and Metaphysics
+## Orichalcum Age Geography and Metaphysics
 
 In this setting, the traditional is juxtaposed with the extraordinary. The pieces of a broken world circle its exposed core, caught in an energy storm known as the Astral Sea \- part nebula-like magnetosphere, part fractured noosphere and collection of dream realms. Adventurers from a myriad of human cultures and faerie tribes forge their own fates. These diverse groups have been brought together through wormhole-like portals from Gaia and other demi-planes that open during periods of high mana, weaving together a tapestry of cultures and histories.
 
@@ -68,11 +67,11 @@ Power-armor crafted from bronze and other resources displays the world's technol
 
 The Free Cities, led by New Delos, have acquired a handful of these advanced ship cores (the exact number is a High Delos state secret), while the Brimstone Court has 3 known power cores running their forges. The Dominion of Magic has partially recovered the technology needed and searches for complete power cores.
 
-# 💥 The Second Breaking
+## The Second Breaking
 
 Elyncia was already fragmented by the War of the Immortals in the Bronze Age (1166 BCE). The Imperator had been vaulted into the deep void at the climax of the War of the Immortals, and has been plotting their return for aeons. Almost five centuries before the current day, Elyncia endured “The Second Breaking”. The necropolis and oubliette of the Lich Imperator, known as the Necrospire, crashed onto the island nexus of Illyria, disrupting a major ley-line and Web 2 node off the coast of the Neo-Thracian Empire's capital province. 
 
-## ⏳ TIMELINE
+## TIMELINE
 
 YOLD \= Year of Our Lady of Discord (Elyncia)  
 BCE \= Before Common Era (Gaia)  
@@ -113,9 +112,7 @@ One month later necro-scripts and data-ghosts from the Necrospire start to flood
 
 *New Game+*: The Player Deamons & their chosen characters have been hired to explore the newly re-opened Neo-Thracian Nexus for the Free City of High Delos, before their opposition from the Dominion of Magic (technomagic mana-supremecists) and the Unseelie Faerie Court (rogue fae lords in a quasi-alignment against the other Faerie Courts) can infiltrate and exploit the area. One thing drives the interest, rumors of lost “power core” technology.
 
-# Sol and the Hidden World
-
-## Ley-Lines and Void Lanes of the Sol system
+# Ley-Lines and Void Lanes of the Sol System
 
 ## Prologue: The First Breaking and The Bronze Age Collapse
 
@@ -127,7 +124,7 @@ In past aeons, the Immortals turned their crafts to catastrophe, and the Lich Im
 
 ### The Astral Sea
 
-To most who cross her threshold, the Astral of Elyncia is a sea—currents and tides, storms and doldrums. But to Elyncia, it is a loom. The dream realms, liminal spaces between here and elsewhere, are her shuttles and threads. They are workshops where geometry bends, where alien cities are grafted onto familiar coastlines, where roads vanish into skies with three moons or reappear beneath the black sun of another age.
+To most who cross her threshold, the Astral of Elyncia is a sea — currents and tides, storms and doldrums. But to Elyncia herself, it is a loom. The dream realms and liminal spaces between here and elsewhere are her shuttles and threads. They are workshops where geometry bends, where alien cities are grafted onto familiar coastlines, where roads vanish into skies with three moons or reappear beneath the black sun of another age.
 
 From the Vastlands archive on Gaia, there are records of void currents rising from deep Ultraviolet haze, of constellations rearranged after collapses, of wormhole lanes only remembered in song. These stories align with Lares node maps in the Orrery of High Delos, showing where Elyncia’s pattern has reached into neighboring worlds to patch her own seams.
 
@@ -202,7 +199,7 @@ These are not all the Nexus of Elyncia, not even all the known Nexus. These are 
 
 ## Astral Sea
 
-The Astral Sea is the roiling, half-real expanse that lies between Elyncia’s scattered Nexus, a shifting domain of starlit currents, drifting islands, and fractured dreamscapes. Here, mana tides and unstable reality flows carry travelers between realms—or swallow them into flux storms without warning. The Sea is haunted by Grell and other void-born predators, whose alien minds navigate by patterns unseen to mortal senses. Great drifting masses of ice, ash, or petrified coral serve as temporary waystations, while the ruins of sky-cities and forgotten demi-planes drift like flotsam in the void. Among all who dare its shifting lanes, only the drifting Nexus of **Havaiiki** can chart deliberate long-range passages across the Sea. The Guild of Navigators guards these routes jealously, trading their secrets for tribute, alliances, or safe passage through the ever-hungry night.
+The Astral Sea is the roiling, half-real expanse that lies between Elyncia’s scattered Nexus, a shifting domain of starlit currents, drifting islands, and fractured dreamscapes. Here, mana tides and unstable reality flows carry travelers between realms—or swallow them into flux storms without warning. The Sea is haunted by Grell and other void-born predators, whose alien minds navigate by patterns unseen to mortal senses. Great drifting masses of ice, ash, or petrified coral serve as temporary waystations, while the ruins of sky-cities and forgotten demi-planes drift like flotsam in the void. Among all who dare its shifting lanes, only the drifting Nexus of **Havaiiki** can chart deliberate long-range voyages across the Sea. The Guild of Navigators guards these routes jealously, trading their secrets for tribute, alliances, or safe passage through the ever-hungry night.
 
 ### **Hawaiki**
 
