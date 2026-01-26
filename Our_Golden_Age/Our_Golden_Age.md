@@ -27,7 +27,7 @@ product_id: "SDM-OGA"
 
 **Official site:** [Our Golden Age](https://www.wizardthieffighter.com/synthetic-dream-machine/)
 
-**OGA**
+# OGA
 
 Luka Rejec
 
@@ -41,13 +41,13 @@ Luka Rejec
 
 <a id="page_0004"></a>
 
-**WORLD RENDER 444-744**
+## WORLD RENDER 444-744
 
 Human civilizational overgrowth detected. Jubilee reset requested. Waiting. Terminal hydroform impact confirmed. Perisea flood myth cleansing confirmed. Sociocultural hothouse settings confirmed. History reset confirmed. Garden age re-initialized.
 
 [ERROR u202: unknown error]
 
-**DEEP END**
+### DEEP END
 
 —I don't understand. Where am I? Am I floating?
 No. You cannot float. You are a daemon. A fragment of pure _ba_. Mind. A subroutine of the cosmos. Of yourself.
@@ -60,7 +60,7 @@ Goodbye. Good luck.
 
 [ERROR h230e16: pre-existential memory infection]
 
-**AWAKENED ONE!**
+### AWAKENED ONE!
 
 Welcome to Our Golden Age, the end of time, the eternal culture, the space where evil may never again befall the true human. Please, Awakened One, report now to your Villager [sic transit] Satisfaction Committee to receive your permanent utopian designation
 
@@ -68,11 +68,11 @@ Welcome to Our Golden Age, the end of time, the eternal culture, the space where
 
 [ERROR 21.1-27: reboot Jovial Lamb]
 
-**FRAMEWORK MEMORY**
+### FRAMEWORK MEMORY
 
 You are a human of your settlement. You have always been a human of your settlement. Well, since you were born, when you began. You have no memories prior to birth. You have no memories after your death. You are a human of your settlement and your
 
-## OUR GOLDEN AGE
+### OUR GOLDEN AGE
 
 **Our Golden Age**
 
@@ -122,13 +122,13 @@ For everyone who dreams of another golden age.
 
 <a id="page_0005"></a>
 
-**THE END WILL NEVER END**
+### THE END WILL NEVER END
 
 settlement is perfect. The way things are done is how they have always will always be done. Everything is perfect. You are all right. Your job is satisfying. You are loved. You belong. You are a human of your settlement. Chocolate. You are happy when you do what your framework biological operating system requires you do. You are sad when you ask questions. Why is there no chocolate. You enjoy your role in the service sanitation bureau collective operation.
 
 [ERROR ha423-c: wipe addiction loop]
 
-**SYSTEM**
+### SYSTEM
 
 You interact with this world using the Synthetic Dream Machine (SDM) roleplay toybox as presented in the 2025 edition of the Vastlands Guidebook (VLG). SDM is a lightly deconstructed d20-based roleplaying system, related to many OSR systems and the fabled donjon & drake game.
 
@@ -136,7 +136,7 @@ Still, you may function within the Garden using system-independent utilities, sy
 
 [ERROR m4.7: fourth wall break]
 
-**READER!**
+### READER!
 
 A thousand apologies, fully-formed independent sentience of time's shallow shore. The Daemon of Greetings mistook you for one of the later ones. It has been purified through a thousand, thousand cycles of synthetic fires to re-educate its mind and perfect its personality.
 
@@ -148,7 +148,7 @@ You read a baked-clay tabl... a pulped-wood cod... a book [?] that time-translat
 
 [ERROR m8.16: cast out Interruptor]
 
-**READER FINAL V2!**
+### READER FINAL V2!
 
 Welcome to Our Golden Age! Take this old world and make it your own, bend it, amend it, fold it, mold it, break it, or save it. It exists for you, your players, your table, and no higher canon.
 
@@ -172,9 +172,9 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 
 <a id="page_0006"></a>
 
-### CONTENTS
+## CONTENTS
 
-**[SUMMONS UNEXPECTED](#page_0008)**
+### [SUMMONS UNEXPECTED](#page_0008)
 
 - [The Call](#page_0010)
 - [The Voyage](#page_0012)
@@ -190,7 +190,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [The List of All Humans](#page_0032)
 - [The 768 Human Languages](#page_0036)
 
-**[THIS HOLLOW HOUSE](#page_0040)**
+### [THIS HOLLOW HOUSE](#page_0040)
 
 - [Regional Omens](#page_0042)
 - [Region](#page_0043)
@@ -215,7 +215,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [The 300 Town Traits](#page_0072)
 - [Colors](#page_0080)
 
-**[BLUE LAND](#page_0082)**
+### [BLUE LAND](#page_0082)
 
 - [Azure Commercial Reintegration Parks](#page_0086)
 - [Blue Power Groups](#page_0088)
@@ -226,7 +226,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [The Coast Unblue](#page_0102)
 - [The Designation](#page_0103)
 
-**[PURPLE LAND](#page_0106)**
+### [PURPLE LAND](#page_0106)
 
 - [Purr-Purr Entrepôts](#page_0110)
 - [Factions Violet](#page_0112)
@@ -237,7 +237,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [The Secure Zone](#page_0121)
 - [The New Veldt](#page_0122)
 
-**[RED LAND](#page_0124)**
+### [RED LAND](#page_0124)
 
 - [Freeblood Vendings](#page_0130)
 - [Factions in Ruby](#page_0132)
@@ -253,7 +253,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 
 <a id="page_0007"></a>
 
-**[ORANGE LAND](#page_0156)**
+### [ORANGE LAND](#page_0156)
 
 - [Amber Standard Hedonic Station](#page_0160)
 - [Factions in Amber](#page_0162)
@@ -265,7 +265,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [The Shallow Sea and the Sailing Islands](#page_0176)
 - [Whistler's Watchtower and Pennyburst Cratervale](#page_0178)
 
-**[YELLOW LAND](#page_0180)**
+### [YELLOW LAND](#page_0180)
 
 - [Heliodor Mercantile Standard Goods](#page_0184)
 - [Jaundiced Factions](#page_0186)
@@ -279,7 +279,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [L'ost 'Spital Apotheotic](#page_0200)
 - [Sunrise In The West](#page_0202)
 
-**[GREEN LAND](#page_0204)**
+### [GREEN LAND](#page_0204)
 
 - [Joy Good Dispensary](#page_0208)
 - [Factions Viridian](#page_0210)
@@ -291,7 +291,7 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [Portalspace](#page_0220)
 - [Portal One — Mothercity](#page_0222)
 
-**[OMEGA JUBILEE](#page_0224)**
+### [OMEGA JUBILEE](#page_0224)
 
 - [Scene, Session, Story](#page_0226)
 - [I.N.T.R. Generator](#page_0228)
@@ -312,13 +312,13 @@ The setting is impressionistic—it tries to capture moments, life, scenes, idea
 - [Old Mother Machine](#page_0252)
 - [Omega](#page_0254)
 
-**[INDEX](#page_0255)**
+### [INDEX](#page_0255)
 
 <!-- Begin: Our_Golden_Age_02_Summons_Unexpected_8-39 -->
 
 <a id="page_0008"></a>
 
-### SUMMONS UNEXPECTED
+# SUMMONS UNEXPECTED
 
 <a id="page_0009"></a>
 
@@ -330,7 +330,7 @@ This first adventure is about exploring the world and meeting its people. Though
 
 The plot device, **the holy clavis**, is a key that unlocks the location of the next adventure, the Hollow House.
 
-**Vidycaster Moods**
+## Vidycaster Moods
 
 The governor steepled all dozen of her elegant, manicured fingers. She studied them, chest rising in the cyclical parasympathetic breathing rhythm taught by the schools of socioeconomic engineering.
 
@@ -368,9 +368,9 @@ _... some time later._
 
 <a id="page_0010"></a>
 
-#### THE CALL
+## THE CALL
 
-**The Scene**
+### The Scene
 
 We meet our heroes. You. This is your golden age, a time of splendor, ease, and nary an adventure to fear.
 
@@ -383,7 +383,7 @@ We meet our heroes. You. This is your golden age, a time of splendor, ease, and 
 | 5 | the pied promenade | waiting [for a god?] | quivering |
 | 6 | the oldtech auction | studying [for an exam?] | jovial |
 
-**The Interruption**
+### The Interruption
 
 You do not realize yet, but your ordinary life is ended, has been upturn'd. A message has arrived. The Sender is someone you know ... or who knows you, anyway. You wrack your mind and vaguely recall a name.
 
@@ -398,7 +398,7 @@ Akaula? Dalgba? Irshé? Kentakân? Usha? Winterbird?
 | 5 | letter [in a coffin'd corpse's mouth?] | creepy | ancient teacher, old mentor, first employer |
 | 6 | individualized vision [coded in a pastry?] | volatile | former enemy, foe, nemesis or opponent |
 
-**Location, Location, Location**
+### Location, Location, Location
 
 You'll need place names. Maybe you'll figure out some in advance, or on the spot. Have fun. Names are weird.
 
@@ -413,7 +413,7 @@ You'll need place names. Maybe you'll figure out some in advance, or on the spot
 
 <a id="page_0011"></a>
 
-**The Message**
+### The Message
 
 "Dear <enter name>, you may not recall me, but I have had my eye on you for many years ... ever since the black vertebra fell into my possession. It shared your source code, you see ... "
 
@@ -428,7 +428,7 @@ Travel tickets and code passes fall out.
 | 5 | avenge or redeem [a pet? a betrayal?] | need | air ship [posh, refined] |
 | 6 | convince or bribe [an obstacle?] | fun | slow portal [direct, shiny] |
 
-**The Destination**
+### The Destination
 
 "A hungry curiosity had its teeth in me. I sold my position to fund my study. From the arcane libraries of the Violet City to the mind-bent archives of Metropolis, to the brick-hoards of the Orange Land, I have scoured and assembled fragments..."
 
@@ -443,7 +443,7 @@ The message drones on. The destination jumps out.
 | 5 | Purple Land (pXX) | small town | ominous |
 | 6 | Blue Land (pXX) | great city | star-cursed |
 
-**The Good Omen**
+### The Good Omen
 
 You are tempted to discard the letter. Folly. Adventures.
 
@@ -462,13 +462,13 @@ The bonus from the good omen lasts the entire trip. Each trip or session may tak
 
 <a id="page_0012"></a>
 
-#### THE VOYAGE
+## THE VOYAGE
 
 The living road bus pulls out of its berth, satisfied in its purpose, ignorant of its human cargo. It clatters beyond the perimeter of your town, out into the open country where the gods cannot see and save every fool. It stops at ghost towns and glass craters and, now and again, another living town. Properly coded travelers join and depart. The golem machine does not care. It sticks to its ancient schedule, both clock and calendar to the hardscrabble hammers and even-lessers who must make do without the oldtech that keeps your own town humming happy.
 
 You watch and while the time and **get to talking** **with your fellow travelers**. Who you are, how the call found you, what you know of your mutual acquaintance, the sender.
 
-**The Persons**
+### The Persons
 
 Are you one of these folk? Or another? See the Vastlands Guidebook for more ideas.
 
@@ -489,7 +489,7 @@ In the Dream Machine, these numbers define you:
 **Abilities:** distribute 7 points among the six abilities of strength, endurance, agility, charisma, aura, and thought. Max 5 in any one ability.  
 **Traits:** roll for 1 status trait and 1 skill trait below.
 
-**Status Traits**
+### Status Traits
 
 From parents or maker? This trait captures your social status here, now, on your first voyage. It does not define who you will be when your adventures end.
 
@@ -509,7 +509,7 @@ From parents or maker? This trait captures your social status here, now, on your
 11. **Precious.** Designed to adorn your community. Twirl, charm, and impress. Also, gain +1 charisma.
 12. **Scholic.** You were made to hold truths and evidence in your head, safe from the ambient corruption of the noöspheric medium. Accumulate, analyze, deduct, theorize, and write. Also, gain +1 thought.
 
-**Skill Traits**
+### Skill Traits
 
 From the teaching machine or your last re-education session? Or, perhaps, you learned it the old-fashioned way, through trial, error, and ... gasp ... reading?
 
@@ -530,11 +530,11 @@ Perhaps another skill from your provincial life? Many unusual practices may dist
 
 <a id="page_0014"></a>
 
-#### THE DESTINATION
+## THE DESTINATION
 
 The travel montage ends. This time, at your destination. Other times, an event may interfere. The referee may use the dice or their own sense of pacing to season your voyage with events.
 
-**The Arrivals**
+### The Arrivals
 
 The bus pulls up, the atomic train cools down, the coast hugger stills, the autogolem falls silent, the airship tethers, the slow, gray wormway stitches once more into the vibrant colors of the real world, the hylosphere.
 
@@ -547,7 +547,7 @@ The bus pulls up, the atomic train cools down, the coast hugger stills, the auto
 | 5 | tumor tenements | sungwood regrowth |
 | 6 | vibrant growth | vibrant underculture |
 
-**IMPRESSIONISM**
+### IMPRESSIONISM
 
 Impressionism is your friend. Beyond the broad strokes of the scene, dive into what the characters sense: color, sound, smell, weather, and so on.
 
@@ -555,7 +555,7 @@ Do not succumb to the temptation of long exposition, rather let your players' mi
 
 Don't wait too long in the scene, jump to the next inciting event.
 
-**NPCs!**
+### NPCs!
 
 You will need many NPCs and they will want for names. When you prepare for a session, make a list of names and adjectives to mix and match. Here are some to start:
 
@@ -564,7 +564,7 @@ You will need many NPCs and they will want for names. When you prepare for a ses
 - odd Body, Click-Click, the Cream, ud Mollosc, 2X-Return, 'p Verd
 - de Canted, van Fuse, lik Glass, ta Lazul, Newmade, an'Rede, pey Thinly, Xenoflower
 
-**The Greeting**
+### The Greeting
 
 You look around for the Contact who sent you the message. Instead, you are approached by ...
 
@@ -579,7 +579,7 @@ You look around for the Contact who sent you the message. Instead, you are appro
 
 <a id="page_0015"></a>
 
-**The Way**
+### The Way
 
 The Contact bobs and nods, satisfied that you have arrived. It indicates you're off to meet the Sender, your mutual acquaintance. It talks about them, and asks what you know of them.
 
@@ -592,7 +592,7 @@ The Contact bobs and nods, satisfied that you have arrived. It indicates you're 
 | 5 | fashionable or laconic | cynical | pneuma train (underpark?) |
 | 6 | foreign or feral-accented | warlike | town portal (hop-closet) |
 
-**The Encounter**
+### The Encounter
 
 Where are we going, you might ask. "The castle, the castle," mutters the Contact, suddenly uneasy. You wonder why, but the world interrupts.
 
@@ -615,11 +615,11 @@ Try mixing encounters from different locations.
 
 <a id="page_0016"></a>
 
-#### THE CASTLE, APPROACH
+## THE CASTLE, APPROACH
 
 Flustered by the encounter, you collect yourselves and look to see the Contact pointing. "There," they say, "we must to there, to the Castle."
 
-**The Detour**
+### The Detour
 
 There are two obvious paths. Both present problems.
 
@@ -634,7 +634,7 @@ There are two obvious paths. Both present problems.
 
 There is also the old urbiduct, the high-road to the castle, but it is guarded by the Iron Minotaur (L6, mad, sad, corrupted), a godmeat-and-bronze monstrosity bonded with fallen scion from a dead city. It has stood there, obstructing the way, since the last eclipse.
 
-**The Building**
+### The Building
 
 There it is, before you. You wonder why the Contact called it a castle, it looks more like a ...
 
@@ -647,7 +647,7 @@ There it is, before you. You wonder why the Contact called it a castle, it looks
 | 5 | vertifarm | self-correcting clockwork | carnibotanic experimental zone |
 | 6 | wellness facility | synthetic flesh and metal cables | undead labor optimization core |
 
-**The Premonition**
+### The Premonition
 
 You approach the rear entrance of the "castle". You have, to use a tasteful cliché, a bad feeling. If you look around carefully, maybe there's something more to find.
 
@@ -660,7 +660,7 @@ You approach the rear entrance of the "castle". You have, to use a tasteful clic
 | 5 | corruption sear | heresitech, the grim art | vial of source (triggers 1 instant mutation) |
 | 6 | ministry identity amulet | criminal carelessness | folded face (pass for 1 other person) |
 
-**The Creatures**
+### The Creatures
 
 They are not hostile to you ... now ...
 
@@ -679,11 +679,11 @@ but better not provoke them?
 
 ![The Castle, Inside diagram (page 18)](images/page_0018_castle_inside_diagram.png)
 
-#### THE CASTLE, INSIDE
+## THE CASTLE, INSIDE
 
 Your conveyance departs, leaving you at the ill-omened door. The contact looks uneasy, "Something is up, perhaps we are too late. Take this finder amulet, its daemon will recognize Sender. I'll find their autogolem and charge it so we can leave. Please, hurry. There is a hostile miasma."
 
-**Deadstone Sewers**
+### Deadstone Sewers
 
 The livingstone of the megastructure has died long ago, colonized by lichens, fungi, and jellies. No one will see you coming here.
 
@@ -696,7 +696,7 @@ The livingstone of the megastructure has died long ago, colonized by lichens, fu
 | 5 | sewer lights (inspiring) | choking gas (CO2 pool) |
 | 6 | edible mushrooms | edible levitation fungus |
 
-**Archive Miners**
+### Archive Miners
 
 Automated academics, mechanical duplicates of their classroom-bound originals, labor here, digging through the intertactilist fossil records of the Second Expansion.
 
@@ -709,7 +709,7 @@ Automated academics, mechanical duplicates of their classroom-bound originals, l
 | 5 | book avalanche (stone tablets) | mining equipment (stick of disintegration) |
 | 6 | lost song ghosts (soothing) | unknown epic math poem (€1,500) |
 
-**Nutrislurry Gardens**
+### Nutrislurry Gardens
 
 The sarcoliths are still alive, converting the soil's magnetism, chemistry, and heat into edible nutrislurry.
 
@@ -722,7 +722,7 @@ The sarcoliths are still alive, converting the soil's magnetism, chemistry, and 
 | 5 | sudden slurry flush | boot hoard (1 sk, €25) |
 | 6 | parasitic fungi | ominous moist smell |
 
-**Former Ministry {Record Harvesters}**
+### Former Ministry {Record Harvesters}
 
 Metropolitan university outpost studying the decline and fall of the Second Expansion and an event they are referring to as "jubilee".
 
@@ -739,7 +739,7 @@ Metropolitan university outpost studying the decline and fall of the Second Expa
 
 ![Castle Inside flow diagram (page 19)](images/page_0019_castle_inside_diagram.png)
 
-**7th Seal Expedition**
+### 7th Seal Expedition
 
 An angel-locked section, the fitful academics have given up hope, lacking a true clavus.
 
@@ -752,13 +752,13 @@ An angel-locked section, the fitful academics have given up hope, lacking a true
 | 5 | ambulatory fungi (L1, carnivorous spores) | abandoned camp (food, apparition notes) |
 | 6 | early worm nest (parasitic eggs) | archaeological tools (good condition) |
 
-**Sender's Digulator**
+### Sender's Digulator
 
 A pre-consolidation relic, the living machine's main brain was fried by a single divine blast through its dorsal shipmetal armor. Alas, the ancient metal friend is dead.
 
 **Inside:** the driver cyst is locked and unoccupied. Most of the Sender's effects are missing, but a single light comes alive as a camouflaged no-box detects your source trace. The extra-spatial storage unit (extract carefully, €500, stores 5 stones) holds a holy clavis, a key made of luminous bone. The key pulses, linked to you by the sender, suggesting a place marked for you. It leads to the **Hollow House** (pXX).
 
-**Abandoned Resort**
+### Abandoned Resort
 
 The late zombie democracy tried to turn this
 
@@ -775,7 +775,7 @@ The late zombie democracy tried to turn this
 
 The Antagonist was not responsible for the Sender's disappearance—though they both wanted to find the same thing: the Hollow House clavis. The Antagonist can become a recurring opponent even if they die. They have a backed-up mind, afterall.
 
-**Minicontrol**
+### Minicontrol
 
 Last local ministry outpost, become a living horror of tentacles and algorithmic command.
 
@@ -790,13 +790,13 @@ Last local ministry outpost, become a living horror of tentacles and algorithmic
 
 <a id="page_0020"></a>
 
-#### ONWARDS
+## ONWARDS
 
 You emerge from the age-warped megastructure, blinking in the light of the Big Sun. There is the Contact in the Sender's light goods delivery autogolem.
 
 "Did you find the Sender?" they ask.
 
-**Them**
+### Them
 
 The clavis, the key of builder-stuff, is a plot device leading to the Hollow House and opening its stuckforce seals.
 
@@ -813,7 +813,7 @@ The Contact is disturbed. "The Sender was not there? Perhaps he wants to throw _
 
 The Contact gives you a pack of second class touriste tickets. "Blanks, unmarked, fully permitted. No angel will molest you or suggest you're town-bonded paesans. Keep a permitted ticket on you when you travel. Never know when an angel daemon will drop in to 'keep you safe.'"
 
-**Antagonist**
+### Antagonist
 
 Has the Sender mentioned them? The Contact dislikes, even despises them, but does not fear them. An opponent, not an enemy.
 
@@ -830,7 +830,7 @@ You leave, by road bus or atomic train, and catch a glimpse of an ominous figure
 
 <a id="page_0021"></a>
 
-**Consequences**
+### Consequences
 
 You settle into your coasthugger* cabin, the great mollusc's shell grown into nacreous shelves and nooks and walls by the skill of the pelagic stonesingers of the Feragoü, the Sailing and the Warded Isles, where the great bivalves filter the Circle Sea and, in death, create the hulls that ply the god-given waters. Your breath catches.
 
@@ -852,7 +852,7 @@ Roll a save and see what changed:
 
 *Or, obviously, a different cabin if you are on a road bus or atomic train or blimp.
 
-**Experience**
+### Experience
 
 Later, you reflect on your strange experiences, so unlike your life before. When any PC achieves any party goals, every player rolls individually. The players can decide to swap rolls, so the most deserving gets the most experience.
 
@@ -869,7 +869,7 @@ You can now invest your experience in characters, pets, powers or equipment (see
 
 <a id="page_0022"></a>
 
-#### INVEST YOUR EXPERIENCE
+## INVEST YOUR EXPERIENCE
 
 _"For we live in a dream that eats the eyes and minces the mind, we who would be human must free our souls through experience, hardfought and well-earned. Not for us the pablum of the dream lords, it is by the sweat of brow and blood of rust we grow free."_ —Screed of the Anti-Intern Atto Vablo, 15:34–38
 (Archive of Heresies, Retired, Re-Mines)
@@ -878,7 +878,7 @@ You bank your PCs' experiences. Places traveled, parties attended, creepy creatu
 
 ---
 
-**Traditional Levelling**
+### Traditional Levelling
 
 As is traditional, the Synthetic Dream Machine provides a celestial "ding" sound every time you invest enough xp to level up a PC. Every new level you get a new level (clearly), a new hero die, more life, and the option of either improving an ability score by 1, improving a trait by one step (skilled +3 → expert +6 → master +9), or gaining a new trait (more details in _Vastlands Guidebook_, p31).
 
@@ -896,7 +896,7 @@ As is traditional, the Synthetic Dream Machine provides a celestial "ding" sound
 
 ---
 
-**Basic Golden Age Upgrading**
+### Basic Golden Age Upgrading
 
 _"In this perfect time, everyone is free to be me." —Golden Boy Iäf Taggen, Most Replicated_
 
@@ -1010,13 +1010,13 @@ This is clearly a convenient way to boost your associated attack, defense, and i
 
 _n+1 = 4(n)_
 
-**Improving traits**
+### Improving traits
 
 Improving traits is more expensive earlier in your career, but can become an affordable option later on, especially combined with growing through play (_VLG_, p32). Also, a canny character might acquire angelic or even divine aptitude with the right teachers ... or by stealing divine knowledge from the right sidereal forge.
 
 Now for some novel options not available with traditional levelling to cover the remaining attributes on the character sheets: defenses, inventories, and attack types.
 
-**+1 Attack and Damage**
+### +1 Attack and Damage
 
 | +1 Defense or Save | +1 Trait or Item | Inventory | Xp | Total Xp |
 |:---|:---|:---|---:|---:|
@@ -1042,7 +1042,7 @@ Note that all the upgrades on this page could work on your pets, sidekicks, seco
 
 <a id="page_0024"></a>
 
-#### UPGRADE YOUR ITEMS
+## UPGRADE YOUR ITEMS
 
 _"I never asked to be a hero. Yet here we are."_ —#6 Wrench +723bis "the Godbreaker", last survivor of the 2nd Godsmind technédive
 
@@ -1052,7 +1052,7 @@ An oldstyle human would call such gear "hallmarks". One further-fallen from that
 
 ---
 
-**Traditional Item Levelling**
+### Traditional Item Levelling
 
 Traditionally items start at level 0 and you level them up with experience (and material costs at the referee's discretion). So, a level 3 shield might have +3 defense and a level 5 grate hammer could deal 2d6+4 damage and gain a "flaming menace" trait.
 
@@ -1073,7 +1073,7 @@ Traditionally items start at level 0 and you level them up with experience (and 
 
 ---
 
-**Golden Age Item Upgrading**
+### Golden Age Item Upgrading
 
 The fabricator technologies of this golden age are better than that. Note down your item's **base attributes**, as you would for a character, and upgrade its attributes step by devastating step.
 
@@ -1113,15 +1113,15 @@ _n+1 = 2(n)_
 
 <a id="page_0025"></a>
 
-#### GOING PLACES
+## GOING PLACES
 
 Rainbowlands adventures are about "going there and back again" without dwelling on researching, booking, outfitting, and packing for travel. We want to unfold the big map, move the party token and plant a flag at each new location. This section provides rules for turning cash into character options, an overview of travel modes, and some event and encounter generators to make travel a little spicier if it starts to drag.
 
-**TICKET DICE**
+### TICKET DICE
 
 You’re not interested in how an atomic train runs or how to properly stow cargo in an airship’s sinewy hold. You’re a genteel tourist of taste and, purportedly, means! That’s why we’re introducing three flavors of **six-sided ticket dice**.
 
-**Comfort Dice**
+#### Comfort Dice
 
 When you need pampering. Each comfort die provides +2 temporary life after a good night’s sleep. You may also permanently spend a comfort die to:
 1. Reroll a defeat roll. Your hearty breakfast cushioned that blow.
@@ -1129,7 +1129,7 @@ When you need pampering. Each comfort die provides +2 temporary life after a goo
 3. Take a long rest, then remove an extra burden _and_ gain 1d6 temporary life.
 4. Acquire a civilized item, such as a nice suit or comfy pillow.
 
-**Protection Dice**
+#### Protection Dice
 
 When you need insurance. Each protection die provides +1 to saves against damage to you or your property. You may also permanently spend a security die to:
 1. Reroll a reaction roll. Your armature may frighten off would-be attackers.
@@ -1137,7 +1137,7 @@ When you need insurance. Each protection die provides +1 to saves against damage
 3. Wait 1d4 days, then receive a copy of a lost item (terms and conditions apply).
 4. Acquire a combat item.
 
-**Speed Dice**
+#### Speed Dice
 
 When you need to go-go. Each speed die provides a +2 to chases and races. You may also permanently spend a speed die to:
 1. Avoid an encounter before rolling reactions.
@@ -1147,7 +1147,7 @@ When you need to go-go. Each speed die provides a +2 to chases and races. You ma
 
 You can also use ticket dice at your destination, so long as you spend them within the week or before your next trip. At a destination, you can also permanently spend any remaining ticket dice to reroll a carousing roll.
 
-**Buying Ticket Dice**
+#### Buying Ticket Dice
 
 You buy a **ticket for your week’s travel and accommodation** in advance. Pricier tickets tend to give more dice. Choose dice types at purchase. Dice cannot be changed after your journey begins. All prices per caput (per head). Dice cannot be transferred between tickets. New tickets must be bought every week. If you have experience problems, contact the central human travel bureau [~~restricted~~ violet-coded after the televidy unsanitary incident of Void Lotus XIX].
 
@@ -1167,11 +1167,11 @@ The travel agent nods, “Ah, you have your _touriste_ ticket and your spending 
 
 <a id="page_0026"></a>
 
-#### VOYAGE EVENTS
+## VOYAGE EVENTS
 
 In the opening adventure, you got to talking with your fellow travelers. Who, how, why, what, where, when. But this is not the only thing that can happen. **Every week of voyaging, roll for an event**. The referee may come up with their own events, too. Tally up days of shorter trips and exploration into weeks and spend them for extra event rolls as needed.
 
-**Foot, Hoof, or Pedal**
+### Foot, Hoof, or Pedal
 
 Upon the Given World most humans travel by walking, swimming, and flight, as they have since the divine glory of the first MKR machine generated the first humans into this First of All Possible Worlds.
 
@@ -1188,7 +1188,7 @@ Some humans, dissatisfied with their basic design, use magical machines to carry
 
 <a id="page_0027"></a>
 
-**Autogolem, Hauler Rig, Metal Steed, or Vech**
+### Autogolem, Hauler Rig, Metal Steed, or Vech
 
 True, it is tradition that all civilized humans are made with the right to freely journey using vehicles of their own craft. Fortunately, few have either the skills or patience to build conveyances more advanced than a scooter or bicycle.
 
@@ -1203,7 +1203,7 @@ Machine-made oldtech vehicles were long taboo, marked by the red octagon of agen
 | 5 | Surprised. Living roadside attraction!<br>[€1: gain +1d6 bonus life or an insight] | Hitchhiker. Strange roadside human.<br>[1-in-6 actually a phylake (L6, judge)] | Restored motel. Not a mimic!<br>[1 day and -€1d6* x 10 to restore 2 attributes] |
 | 6 | Easy Ride. Share a hard discovery about you or your society.<br>[-1d2 days] | Holy lubricants. Vehicle permabonus. Thanks, gas priests!<br>[d6: (1–4) it gains +1d4 life, (5–6) it gains +1 level] | Wise golem. A mechanic and teacher.<br>[repair one machine or an oldtech study opportunity] |
 
-**Bus, Gondola, Pod, Rail, Tube, or Wire**
+### Bus, Gondola, Pod, Rail, Tube, or Wire
 
 Public intersanctuary transport was a blessing given to approved managers and tourists by the Good Gods in the Long Long Ago. Living buses and atom trains and wire golems and pod floaters and more they gifted the humans for their certified travel needs. Alas, time has had its way and now anyone with the cash to spare may board one of the public transporters, whether a holy fool or casteless feral or a fiscally fallen noble.
 
@@ -1220,7 +1220,7 @@ Cheap, slow, and raucous, the public intersanctuary transport system even yet at
 
 <a id="page_0028"></a>
 
-**Cargospace & Intersanctuary Express**
+### Cargospace & Intersanctuary Express
 
 At the dawn of time the Lords equipped the human sanctuary settlements with expresses—a system of magimagnetic vacuum tubes and capsules to move cargo and suspended humans from station to station at speed.
 
@@ -1228,7 +1228,7 @@ Humans traveled in suspension as cargospace is very hazardous to human well-bein
 
 Few moderns now retain the access blessing to travel in suspension, so the intersanctuary express is used almost exclusively for authority-approved cargo. The ingenious humans of these later times use the anti-entropic outer shell of the express as the main highway round the Circle Sea co-prosperity area—the Right Road. Golem buses, solar tricycles, and personal velocipedes abound.
 
-**Access Blessing One — Autosoma**
+#### Access Blessing One — Autosoma
 
 _Unlock Medical Buildertech, Sacred Pod Charm_
 
@@ -1249,7 +1249,7 @@ _Unlock Medical Buildertech, Sacred Pod Charm_
 
 <a id="page_0029"></a>
 
-**The Waters: Bateau, Ferry, Glisseur, or Yacht**
+### The Waters: Bateau, Ferry, Glisseur, or Yacht
 
 Many rightly humans fear the waters, for they represent that portion of the world given to the cetaceans by the gods. As the old song goes, the sea is a desert with its life underground and an azure disguise above. Restricted from fishing and aquaculture by the pelagic phylakes and alien cetaceans, few traditionalists see much use for the salty watery expanse. Indeed, they would be hard-pressed to see much difference between commercial clans, hexad high-liners, polybody pirates, and feral ferryfolk.
 
@@ -1264,7 +1264,7 @@ For the traveler, there certainly are differences. For one thing, reputable seaf
 | 5 | Exercised. Ions in the air recharge you.<br>[+1 bonus hero die] | Floating chest. Can it be that old?<br>[random item _but_ save or cursed] | Ghost ship. Looks seaworthy!<br>[haunted but worth €1d4* x 1,000] |
 | 6 | Relaxed. The sea airs are medicinal.<br>[benefit from a long rest] | Soothed. Partake of leaked cetacean dreams.<br>[remove all mental burdens] | Contact. A cetacean speaks to you.<br>[will teach friends aquatic traits] |
 
-**The Airs: Blimp, Flapper, Propelleur, or Rug**
+### The Airs: Blimp, Flapper, Propelleur, or Rug
 
 Traditional, god-fearing stories say humans are barred from the heavens. That demons and deities claim those high places as their own. That nothing save thin air and dry decay await beyond the protective embrace of Mother Soil and the nurturing guidance of Father Rain. So many of these stories align that there are castes of scholars convinced they were constructed from a single template. This could not be, for it would imply some force or organization meddling with human myth on a grand scale!
 
@@ -1281,7 +1281,7 @@ In any case, air travel is too expensive and dangerous for ordinary humans and t
 
 <a id="page_0030"></a>
 
-**The Void: Bolide, Chariot, Sphere, or Voidskiff**
+### The Void: Bolide, Chariot, Sphere, or Voidskiff
 
 Modern, civilized humans do not travel to the stars, fast or slow. There is nothing there for the status-conscious. However, those strange outcasts, those voidwalkers who claim to have been there, say many divine machines still sail the dry void. Others say secret portal codes unlock strange places far above the Soil. Then there are the strange dehumans who say they climbed down the Ladder of Heaven itself. What is this, if not mere monkey-tosh?
 
@@ -1298,7 +1298,7 @@ One thing is sure: humans exposed to the void, beyond the airs of the Given Worl
 
 <a id="page_0031"></a>
 
-**The Portals: Dull, Fast, One, Slow, or Wild**
+### The Portals: Dull, Fast, One, Slow, or Wild
 
 Portals have fascinated humans since prehistory. Some think them gifts from the Lords, others that they are the byproducts of ancient "Engineers." Many simply accept them as fundamental cosmic structures.
 
@@ -1321,7 +1321,7 @@ Nevertheless, most moderns fear this ancient technology, fearing it may steal th
 
 <a id="page_0032"></a>
 
-#### THE LIST OF ALL HUMANS
+## THE LIST OF ALL HUMANS
 
 _"... Circle Sea power groups consider all close-to-baseline sentient and soulful post-humans as effectively human and possessing the full spectrum of rights attendant to a soul-body-personality triad. This includes retro-humans, dwarfs, half-elfs, halflings, quarterlings, and half-orcs."_
 —Ten Long Ago, _A Guide for the Free Visitor to the Caste Oligarchies of the Circle Sea_, Violet University Press, Wind Hyacinth II
@@ -1347,42 +1347,42 @@ _"Without order, all is chaos."_
 
 In order from lowest, least human, to highest, most human, the blessed finite sapients are determined by the _Green Book of the Six Canopic Categories_:
 
-**Megas**
+### Megas
 
 _from the archaic omega, also: huskfolk_
 The least of the humans, those who succumbed to the Fog and forsook meaning for illusion. Their jewels mark them human, though they would live as does a herb.
 
 Few now remain as few towns are rich enough to support their hollow shells as once they could. In the Green Land, some are given sarcotrephs to maintain their bodies until their allotted recycling of spirit and body. In the Orange Land, post-mortal lords use the Megas’ corporeal forms for labor while their minds dwell in the Bliss Lord’s gift.
 
-**Recusers.**
+### Recusers.
 
 _also: the conflicted, fledfolk_
 Some humans refused the Garden Path and chose the Vale of Thorns. They sought meaning in toil and struggle, they averted their souls from the gifted technologies and lived hard lives upon the soil.
 
 Once, the Gardens welcomed those who tired of this path. Now, with the Gardens all grown over, many Recusers, grown harsh over lonely eons, have returned to rule as vampires and warbarians, nomads and heretics.
 
-**Accusers.**
+### Accusers.
 
 _also: the nemesis, errorfolk_
 The gift of the mind jeweled gave Humans a choice: to live in the grace of the Canopy, or to accept the darkness and the lie. The accusers are so-called because they accused the Lords of the Dream of stealing their purpose, their lives, their very cosmos. Most fade, harmless as ghosts, into the Wilderness beyond the Circle, but some remain as fifth columnists in the bosom of the Best of All Possible Worlds, the civilized lands of the Circle Sea.
 
 The kindness of the Canopy extended even to guilty Accusers who vainly attempted to sabotage the Gardens. They were given the Illusion and allowed to live out their allotted years in synthetic pleasure. Nowadays, with the processing power of Heaven much reduced, the Inquisition finds other solutions for Accusers.
 
-**Hammers**
+### Hammers
 
 _from the archaic gamma, also: lessers_
 The less-blessed humans, whose service to the Path merited their participation in humanity. Once they filled out the serving classes, maintaining the grand designs of the Builders, fleshing out the backdrops of the Lords' pleasure palaces, uplifting their hands in creation.
 
 Most modern humans should probably fall into this category, but with the decay of records, the corruption of canopic amulets, and the lack of accurate timekeeping, many have successfully slipped the net and passed themselves off as other categories of person. Some traditionalists nevertheless try to restore the old order and return the former hammers to their happy place.
 
-**Betters**
+### Betters
 
 _from the archaic beta, also: sickles_
 The middle classes of humans, suitably adjusted to the Garden Path, they provide the bulk of the civilized lands’ managerial population. Their life is one of cutthroat competition for status and displays of consumption to prove their worth. This pleased the Canopy and now pleases the Ministry.
 
 Today, Betters provide the human calculating power that substitutes for the dead machines and failed thought generators that once maintained the Circle Sea as a single perfected unity.
 
-**Fines**
+### Fines
 
 _from the archaic aleph, also: lephines, rabbitfolk_
 Those humans who have best accepted the Garden into their hearts and are thus blessed by fortune and grace to occupy the finest social positions. All civilized humans would like to be Lephines, but only few succeed. Much sacrifice, conspicuous consumption, and extravagant inheritance are required for this exalted status.
@@ -1396,7 +1396,7 @@ _"As there are eight directions to spacetime, so there are eight categories to m
 
 In order from firstmost, earliest human, to lastmost, latest human, the mortal sapients of the Circle Sea are enumerated in the _Silver Book of the Eight Manifest Forms_:
 
-**Iron Humans**
+### Iron Humans
 
 _also: basefolk, sourcelings_
 Those following the protomorph of humanity, fixed in body and shape, from the sylphen elfs to the robust gnawers, from the gnomic half-lings to the machinewired cybrechts.
@@ -1405,21 +1405,21 @@ Once, this label applied to those who ostentatiously eschewed the use of canopic
 
 Today, many recusers proudly tout their iron human credentials. Not to be confused with machine humans.
 
-**Machine Humans**
+### Machine Humans
 
 _also: chalcocephalics, wireheads_
 A later, now rare, morph of humanity, which eschews original biology for technomechanical polish.
 
 These sapients combine mind and soul with bodies built from the dust of the earth. Not derived, born, or inherited, but fully created by the generative power of the Builders. Not to be confused with iron humans.
 
-**Ghosts**
+### Ghosts
 
 _also: ultracorporeals_
 A numberless host of humans sought a kind of immortality in the divine dream machine, in the infinite noösphere, beyond flesh or steel. Many forsook even the pretense of a stored body or canopic jewel backup, opting for a completely spiritual existence.
 
 With the slow decay of the universal noösphere, whole ghost lineages have been lost to flawed crystal memory drive updates. Others have escaped the noösphere to become a kind of parasitic consciousness, human daemons given to wearing other creatures' flesh to interact with the Given World.
 
-**Dwarves**
+### Dwarves
 
 _also: delta labor, dewerkers, maintainers_
 Selectively biomanced humans derived from the ancient maintainer castes, they embraced an identity of labor and industry, opposing the leisure mandated by the Garden Protocols.
@@ -1430,28 +1430,28 @@ Whatever the case, these biomanced work-obsessed humans have become a standard m
 
 <a id="page_0035"></a>
 
-**Golems**
+### Golems
 
 _also: synthetic humans_
 Humans who have moved beyond the fallible, decayprone shell of organic flesh and embraced the synthetic likeness of the Great Minds’ ensarcs. A golem’s canopic jewel is cradled in an armored ur-matter core, protecting it from most forms of bodily death. Around it, they wear shells of gold and crystal and stone and liquid metal.
 
 Since the buildertech to make new minds _ex novo_ is now almost entirely lost, new golem minds are usually made by copying existing golem minds, wiping irrelevant memories and resetting them to "factory conditions". The other, less salubrious option, involves taking living human minds out of their existing bodies, but this destructive process often results in neurotic or psychotic golems not suitable for reliable, sustained free labor.
 
-**Liches**
+### Liches
 
 _also: abmortals_
 Humans with bodies perfected beyond mortality and decay, the undying, the unending, the perfect. Traditionally, most sensible humans followed the Garden Protocols. They lived in biological bodies but used canopic jewels to maintain a personality backup in case of catastrophic injury.
 
 Now so few remain. In some cultures, to depend on oldtech for one’s abmortality is a mark of cowardice or moral failure. Still, one finds liches, from the oldest houses to the strangest new cult-clans.
 
-**Plastics**
+### Plastics
 
 _also: plastifastics, skinchangers_
 Some humans embraced the biomantic potential inherent in their sculpted flesh. Through old traditions, dangerous arts, and strange sciences, they turned themselves malleable and impermanent. Protean meat-block humans: made, re-made, changed, and transformed.
 
 They are few in the civilized lands, but beyond, one may find many types of plastics, from the rheosarcs who can adjust their appearance and form to match their tasks, to the impressibiles, who grow into shapes and forms matched to their training protocols. More terrifying are the grotesque falliments and the uncanny ereunts, subjects for illegal biomancers to experiment upon.
 
-**Ferals**
+### Ferals
 
 _also: hoy exoy, warbarians, quarterlings_
 Strange extra-canopic humans, of different lineages and origins, born or grown in contravention of the Garden Protocols, with neurosystems that cannot support a traditional canopic jewel.
@@ -1462,7 +1462,7 @@ Ferals usually shunned these kinds of interventions, which proved a decisive adv
 
 <a id="page_0036"></a>
 
-#### THE 768 HUMAN LANGUAGES
+## THE 768 HUMAN LANGUAGES
 
 _Human cultivars develop new languages as horn beetles develop new headgear. After initial experiments in reducing this inefficiency, the Dream Canopy concluded that linguistic and cultural creativity are a necessary condition for Garden human well-being. The babel was therefore discontinued, except on a need-to-use basis._
 — fragment, ruined Temple of Involuntary Speech
@@ -1473,7 +1473,7 @@ The Circle Sea is thick with languages, dialects, jargons, and slangs. Some say 
 
 Fortunately, neither player nor referee needs to perfectly detail this babel of communication. It is enough to have a sense of how it sounds and feels and looks.
 
-**What [How] Good Is Language?**
+### What [How] Good Is Language?
 
 Once, all humans were born with a language spider linked to their cranial jewel. This ensured all humans could commune perfectly and follow the Builders' instructions flawlessly. It made the distinction between humans and beasts very easy: those who did not speak, the voiceless, were beasts.
 
@@ -1489,18 +1489,18 @@ Regardless, the traveler will usually find themselves in one of three situations
 
 <a id="page_0037"></a>
 
-**Learn Languages Faster**
+### Learn Languages Faster
 
 Few humans in this golden age have the patience, opportunity, or capacity to learn a language the old way with tutor golems and flash scales.
 
 - **Tlumac daemons** are wisps of sentience, simulacra of personhood trapped in physical items and bound to service their owners or lease-holders. Most travelers rent the services of a tlumac daemon when they visit a foreign parochial community for €1d4 per week (depending on the rarity of the language). Buying a servitor tlumac costs around €100 for a 5-language model or €500 for a 10-language type. Typical tlumac forms (d6): (1) amulet, (2) earring, (3) necklace, (4) earworm, (5) jawbud, (6) third eye.
 - **Injectable brain-rewiring** is the safe and affordable solution for those who need to acquire linguistic skill fast. Cultural norms, common knowledge, basic humor modules, and stereotypical grievances are usually included. The slow version costs €1d6 x 200 and takes a week to embed. The fast version costs ten times as much, but embeds in an hour. The language-cultural package occupies a trait slot. Side effects certainly do not include (d6): (1) nervous tics and odd facial gestures, (2) altered personality states, (3) numbness and lack of volition, (4) sudden hair loss or repigmentation, (5) language versioning conflicts, (6) pettifoggery and limp-wristedness.
 
-**The Power of Fluency**
+### The Power of Fluency
 
 Characters with natural or native fluency may (with practice) acquire the following powers as innate traits:
 
-**Hero's Goldenmouth**
+### Hero's Goldenmouth
 
 Honeyed Words of the Trustworthy One
 
@@ -1512,7 +1512,7 @@ Honeyed Words of the Trustworthy One
 > 
 > _Overcharge:_ charm through a telemagical medium such as vidy crystals or comm portals.
 
-**Adulation Rejuvenation**
+### Adulation Rejuvenation
 
 Polyempathic Vampirism
 
@@ -1524,7 +1524,7 @@ Polyempathic Vampirism
 > 
 > _Overcharge:_ gain 1d3 temporary points of charisma. _Limit:_ works once per crowd, temporary charisma points cannot exceed base charisma score.
 
-**The Form of Speech**
+### The Form of Speech
 
 You've unplugged your tlumac daemon and seek to hear with your own ears what words these humans make? The barking noise of their mad speech sounds and looks ... (roll at least twice).
 
@@ -1539,7 +1539,7 @@ You've unplugged your tlumac daemon and seek to hear with your own ears what wor
 
 <a id="page_0038"></a>
 
-**The Good Common Speech[es]**
+### The Good Common Speech[es]
 
 Every traveler will be aware that there are hundreds of human languages in the Circle Sea and many more thousands of beastly languages beyond. Fortunately, every educated traveler knows that little more is required than an excellent apprehension of the Common Speech—the so-called Sermo Comun of the Ministerials.
 
@@ -1549,7 +1549,7 @@ Sadly, Old Common was last codified in the first generation, while High Common w
 - **Un-Common** (also: Ur-Common, Bilder, Dromspreg) is the old-fashioned cousin dialect of Betterspeak, used by the Dream Lords and their agents. Neither streamlined, nor optimal, it is full of bizarre idioms like “break a leg” and “bolt from the blue” that are patently false. It is often found embedded in timelost personalities when these are excavated.
 - **High Common** (also: Canopic, Sermirabilie) is the beautiful 17th generation form of Betterspeak devised by the Dream Canopy for Garden humans. It is the standard language taught among the better classes, its melodious vowels, flexible grammar, and luxurious lexicon offering a special status all its own.
 
-**The Vulgar Common Speeches**
+### The Vulgar Common Speeches
 
 There are 768 officially registered parochial dialects and creoles used by the lesser classes and tribes of the Garden. Since they are neither mutually intelligible nor particularly valuable, most dignified travelers prefer to purchase the services of a tlumac or local interpreter, rather than learn these declined jibber-jabberings.
 
@@ -1560,7 +1560,7 @@ There are 768 officially registered parochial dialects and creoles used by the l
 - **Red Speeches** (also: Raudalandi, RD Cant) include the rough, dwarfer influenced languages of the lesser vintners of that region, the badly-rhyming vulgar and politically charged traditions of the Red Land District, the grinding, dusty forms of the rustlander seminomadics, and the rich, slippery syllabaries of the long-lived bunker-and-blood clans who first liberated that region from the Ill Gods.
 - **Purple Speeches** (also: Purapura, Catastrofict) range from the oral hammer tongues of the Purple Land with their steppe and Blue borrowings to the mildly telepathic acat-demese of the Violet University and the uplifted agents of the Cat Lords.
 
-**The Poor Forms**
+### The Poor Forms
 
 Barely speech, it is unclear to humans with good source codes and impeccably machined germ lines how these babblish sounds and gestures could possibly function.
 
@@ -1572,7 +1572,7 @@ Barely speech, it is unclear to humans with good source codes and impeccably mac
 - **Topic** (also: Panpan, Susjarda) is the general term for the barebone pidgins used by unlicensed peripatetic communities formed by the dregs of dissolved settlements and semilegal barbarian refuseniks. Most managers will tell you no topic is worth learning as anyone with a grasp of High Common can give orders to a topical traveler.
 - **New Common** (also: Falschic) is a heretical invented language that was definitely not supposed to be an updated and improved 54th generation form of Betterspeak. Anyone coming across its written or spoken forms should report to the authorities for a health and safety inspection.
 
-**The Maintainer Speak[s]**
+### The Maintainer Speak[s]
 
 Long Long Ago, when the machines were first born, a caste of humans was made to keep them glistening and glowing. The Mother Machines bestowed an elegant Newspeak, a streamlined Betterspeak, on these dewerkers. Over aeons maintaining the machinery of the Garden and the golems of the Gods, it has become a family of reasonably human languages, including:
 
@@ -1581,7 +1581,7 @@ Long Long Ago, when the machines were first born, a caste of humans was made to 
 - **Volkan** (also: Kemfers, Nonc Golm) refers to the Diesel Dwarfer echolects from the petrochemical generative region of the ungoddess-mountain Vulkana. It has a vast written corpus and the space between characters often carries more meaning than the letters themselves.
 - **Winerian** (also: Unfers, Raudakoln) covers the hill and mountain dialects of the Vintner Dwarfer and Red Land industrialists. Derived from the Bunker Builders' jargon and heavily influenced by the Red Speeches, this literalist and linear language has little writing and is much closer to the vulgar commons than other maintainer speaks.
 
-**The Old Codes**
+### The Old Codes
 
 In the beginning was the Word. Before machine or human, semiotes floated in the ooze-soup of potential, fuel for the Maker's Great Speech Act. Fragments of this first language remain.
 
@@ -1596,9 +1596,9 @@ Exciting experiments in the Violet University show it has potential for enabling
 
 <a id="page_0040"></a>
 
-### THIS HOLLOW HOUSE
+# THIS HOLLOW HOUSE
 
-**Materium**
+## Materium
 
 Give them bread.<br>
 Give them circuses.<br>
@@ -1618,7 +1618,7 @@ The PCs will also begin to notice the outlines of two meta-factions:
 1. **Ministry** — the meta-faction of order. All those individuals and groups and organizations that believe, more or less, that the Rainbow Lands are alright. That the gods' plan, the Garden Path, the Dream Canopy, call it what you will, is good and working as intended.
 2. **Nemesis** — the meta-faction of upheaval. Those who are convinced that something has gone terribly wrong with the Golden Age, that the system is failing, that struggle, change, and possibly revolution are required.
 
-**Will and Testament**
+### Will and Testament
 
 The council of elders met in the primary room.
 
@@ -1666,11 +1666,11 @@ Peton nodded, then tapped the table again, his jewel activating the holoform. Mo
 
 <a id="page_0042"></a>
 
-#### REGIONAL OMENS
+## REGIONAL OMENS
 
 The wise traveler must always look out for signs. Portents. Messages of what is to come, what was, what is to be. There are lessons in the souls and soils we see as we travel. Warnings but also opportunities. Instructions for the questing eye and grasping hand and running foot.
 
-**A Mood Shadows You**
+### A Mood Shadows You
 
 There. An abandoned body farm. Limbs withered in the soil. All but one. A hand, shining like alabaster, grows strong in the big house's driveway of welcomes.
 
@@ -1687,7 +1687,7 @@ Or perhaps, it is something else ...
 
 Does it promise growth amid decay, or is the palm a warning, a statement: stay away? You decide.
 
-**Step Closer, Observe**
+### Step Closer, Observe
 
 There is an **absence** of ...
 
@@ -1751,7 +1751,7 @@ Invite them to replay that scene, their characters' reactions, and thus add fles
 
 <a id="page_0043"></a>
 
-#### REGION
+## REGION
 
 Chimes awaken you. Outside, the sun has not yet ignited. The chimes are insistent. The coasthugger slows. Your boat is shunting to a slower, local golem collective-operated canal. The chimes stop once you agree to receive the local visitor guidance.
 
@@ -1759,7 +1759,7 @@ X marks the settlement. You are passing region [d6].
 
 ![Region districts diagram (page 43)](images/page_0043_region_districts_diagram.png)
 
-**Region Guidance**
+### Region Guidance
 
 The authority daemon burbles from the electromechanical mouth with canned enthusiasm, "The region of _Ecc'n_ <ENTER CURRENT COMMON NAME> is an authorized human settlement zone with a diverse and benevolent environment, designed to promote local socio-cultural flourishing. The central settlement area is surrounded by six designated exclusive socio-economic districts." Roll d6 a few times to generate each surrounding region.
 
@@ -1774,7 +1774,7 @@ The authority daemon burbles from the electromechanical mouth with canned enthus
 
 Looking at the district outside you can tell that this time, at least, the guidance isn't too far out of date. The authority daemon talks about green hills and lush gardens, and you can see brown hills and overgrown tangles of thorn jungle. Aside from some unrecorded ecological shift, the authority daemon isn't babbling complete timelost nonsense.
 
-**The Advertising**
+### The Advertising
 
 When the guidance finishes you try to look away, but the chimes return, more insistent and annoying. You search for the
 
@@ -1799,7 +1799,7 @@ The coasthugger lumbers on. Perhaps you'll return and explore. For now, the sett
 
 <a id="page_0044"></a>
 
-#### SETTLEMENT OPTIONS
+## SETTLEMENT OPTIONS
 
 The distant settlement greets your vessel. It hoots in return. The authority daemon burbles to itself.
 
@@ -1807,7 +1807,7 @@ You glance about, but all the eyes are dim or dead. You unfold your crude map an
 
 ![Settlement grid map (page 44)](images/page_0044_settlement_grid.png)
 
-**Glance, Glimpse**
+### Glance, Glimpse
 
 There! Buildings. Construction. The mark of Human.
 
@@ -1824,7 +1824,7 @@ Roll d6 twice to place the shades of nature on the settlement peripheries (i–v
 
 Place the human habitation concentration district in the center, as is traditional in officially sanctioned towns.
 
-**Scenery Intercedes Again**
+### Scenery Intercedes Again
 
 Nature, or its ruderal, transmuted twin, intervenes.
 
@@ -1839,7 +1839,7 @@ Nature, or its ruderal, transmuted twin, intervenes.
 
 Roll d6 to determine the periphery (i–vi) through which your travel artery enters the map, then roll d8 to find the local haven or station. Draw a line connecting them.
 
-**Look, Look**
+### Look, Look
 
 Closer now, the bioengines squeal, the signal lights flicker. You grasp the size of this settlement.
 
@@ -1867,7 +1867,7 @@ Now add a dirt and scrub-covered hemisphere to an empty settlement zone. Let's c
 
 <a id="page_0045"></a>
 
-**Your Eyes Alight**
+### Your Eyes Alight
 
 Hooks grab your attention, points draw your interest.
 
@@ -1914,7 +1914,7 @@ Hooks grab your attention, points draw your interest.
 
 <a id="page_0046"></a>
 
-#### HAVEN
+## HAVEN
 
 Here we are now. At last. Town. New Home? Temporary roost? Contingent future disaster zone?
 
@@ -1930,7 +1930,7 @@ Outside you hear the commotion of passengers scrambling for their luggage and ru
 
 **Tinpot guardians** (L1d4, levidrones) await in the Haven of <ENTER CURRENT COMMON NAME>.
 
-**The Gate of Eyes**
+### The Gate of Eyes
 
 Wait, you actually waited?!
 
@@ -1943,7 +1943,7 @@ Wait, you actually waited?!
 | 5 | your face for someone else's | "why, are you not the lord Dun-Dun XVII?" [roll 1d6: (1) mandatory body upgrade, (2–3) volunteered for involuntary carousing, (4–6) assigned a **municipal manservant / spy** (L1d4, obsequious) during your stay] |
 | 6 | the agent in your eyes | "be welcome, your secret is mine." [you are granted €25/wk in town] |
 
-**The Haven**
+### The Haven
 
 You follow the example of the other humans, grabbing your bags and jostling to get off the coasthugger before the Automatic and PerfectTM Gate of Eyes is wheeled into place by the hollow husks working in the haven.
 
@@ -1964,7 +1964,7 @@ The **warrior at the door** (L5, glittering) wears a resplendent Long Long Ago u
 
 The **receptionist golem** (L4, tittering) has seen better days, but its eyes light up when it spots the touriste tickets the Contact gave you. "Ah, the _abitués_ have arrived! We have your standard suite ready. A week is paid, then it will be €70 per week. The standard rate. Will you be hiring a pleasure golem for your carousing?"
 
-**Tinpot Guardians and Other Municipal Order Instantiation Servitors**
+### Tinpot Guardians and Other Municipal Order Instantiation Servitors
 
 These are (roll 1d6): (1) levidrones, (2) sig-monkeys, (3) claydrakes, (4) orbiculars, (5) ka-zombies, (6) plate skeletons.
 
@@ -1979,11 +1979,11 @@ These are (roll 1d6): (1) levidrones, (2) sig-monkeys, (3) claydrakes, (4) orbic
 
 <a id="page_0047"></a>
 
-#### RELAXATION
+## RELAXATION
 
 A liveried **orimonate servant** (L0, twitch-connected) guides you and your bags to the remaining ascension duct. "The others, they're gnarly, run through, full of eater-bugs," they whisper in an argot halfway between the high common of old read-themselves and some strange, time-lost feralshi. Still, your babble parasite makes a decent go of it and you understand the naïve new-made human well enough.
 
-**A Small Pourbouire**
+### A Small Pourbouire
 
 They hold out an unblemished palm.
 
@@ -1998,7 +1998,7 @@ They hold out an unblemished palm.
 
 With a nod, the liveried orimonate shows themselves out, the old lacquered doors hissing shut behind them. They dropped a card on the way out. It seems to be a pass card for some kind of club. _The House of the Sunken Sun_ ?
 
-**Tempting Distractions**
+### Tempting Distractions
 
 The _Sunken Sun_ ... that's the inn bar, isn't it?
 
@@ -2017,11 +2017,11 @@ Once per settlement, the PCs can fritter away their treasures on a week of touri
 
 They pick a place to start, look nervously at one another, then down the odd psychoctails on offer. After 1d6*+1 days they roll €1d6* x 50 to see how much of a tab they racked up and roll d20+cha on the fun, fun, fun carousing table.
 
-**Carousing: Pleasures To Experience**
+### Carousing: Pleasures To Experience
 
 Your mind reassembles itself. You seem mostly intact.
 
-**Fun, Fun, Fun Outcomes (d20+cha)**
+### Fun, Fun, Fun Outcomes (d20+cha)
 
 | d20+cha | Outcome |
 |---:|:---|
@@ -2050,19 +2050,19 @@ Your mind reassembles itself. You seem mostly intact.
 
 <a id="page_0048"></a>
 
-#### EXECUTION
+## EXECUTION
 
 After your days exploring the town ... or perhaps after a week of compliance training ... or perhaps after your relife procedure ... or perhaps simply after a god night's sleep. That's the god night. The one night every month that's extended to ensure every month is of a suitable length and that the calendar remains perfect.
 
 Your head is pounding like your mind is being assaulted by a hack-hammer. You look around. It's the ancient contraption by your bed you had thought a curio.
 
-**The Babblebox Rings**
+### The Babblebox Rings
 
 You are nervous around the ancestral device. Usually they are swamped by mad ancestor ghosts trapped in the wires, arguing over strange issues. But this is an inn of the better sort. This babblebox seems to work.
 
 You lift the receiver and interact with the oldtech device. Daemons assail you, but the wards are still strong. Roll with a great advantage this time; but with other archaic devices, you may not be so lucky.
 
-**Taught By Books (d20 + thought)**
+### Taught By Books (d20 + thought)
 
 | d20 + thought | Result |
 |---:|:---|
@@ -2074,7 +2074,7 @@ You lift the receiver and interact with the oldtech device. Daemons assail you, 
 | 14–19 | divine the super-user code that unlocks the infernal device. |
 | 20+ | gain advantage when using this specific device in future or you recover a hero die. |
 
-**Guided By Ghosts (d20 + aura)**
+### Guided By Ghosts (d20 + aura)
 
 | d20 + aura | Result |
 |---:|:---|
@@ -2095,7 +2095,7 @@ You bat away at the ancient voices, the corrupted ghosts in the device's shell, 
 | 5 | maintainers, servants, protocols | who they say |
 | 6 | friends, helpers, angels | better than you |
 
-**Come, A Meeting**
+### Come, A Meeting
 
 Click. Click. Hiss. Then a voice, modulated and suave. It speaks your dialect like a native, putting you at ease.
 
@@ -2105,7 +2105,7 @@ The Eyes shared your pictures, hark hark!"
 
 An invitation to the _Smog Louche_ ? Surely you'll go?
 
-**Ask About the Smog Louche**
+### Ask About the Smog Louche
 
 | d6 | Response |
 |---:|:---|
@@ -2116,7 +2116,7 @@ An invitation to the _Smog Louche_ ? Surely you'll go?
 | 5 | "Beware, it's riddled with inquisitors." |
 | 6 | "If you're going, make sure to take protection." |
 
-**Your Executor Mako Papertoy**
+### Your Executor Mako Papertoy
 
 There's a tug at your sleeve, a pat on your arm. You feel comforted by the **pleasure golem** (L4, established) in its lounge cut suit.
 
@@ -2126,7 +2126,7 @@ It is indeed a snakeskin leather card with the word Executor embossed beside the
 
 "I will perform this execution, you see," the pleasure golem flexes, giving hint to the synthetic musculature under its soft outer shell, "and you are the recipients. Oh, I know you have the clavus. But I also know you have the name. And the transmitter in your bloodstream."
 
-**Watching Court**
+### Watching Court
 
 | d6 | Watching Court | They Are |
 |---:|:---|:---|
@@ -2139,7 +2139,7 @@ It is indeed a snakeskin leather card with the word Executor embossed beside the
 
 <a id="page_0049"></a>
 
-**The Certification Amulet**
+### The Certification Amulet
 
 Mako Papertoy L13LL produces a certification amulet, a glinting tablet of bronze and glass and flickerlight.
 
@@ -2149,7 +2149,7 @@ Mako Papertoy L13LL produces a certification amulet, a glinting tablet of bronze
 
 "You look dubious, but it's legit. Sealed with your bodyline, soul and mind too. Butcher Bank certified!"
 
-**The Estate Is Made Out To**
+### The Estate Is Made Out To
 
 | d6 | Recipient |
 |---:|:---|
@@ -2164,11 +2164,11 @@ Mako Papertoy L13LL produces a certification amulet, a glinting tablet of bronze
 
 Folks learning there's going to be an unlocking, well ... that'll be a curiosity. A novelty! A mob."
 
-**The Sphere of Dirt**
+### The Sphere of Dirt
 
 Sphere of Dirt. Well, the locals have their own names for it. Soulchill Hill, Bleeder's Edge. You approach the archaeostructure. A few locals approach you. Curious.
 
-**These Locals**
+### These Locals
 
 | d6 | Locals |
 |---:|:---|
@@ -2189,7 +2189,7 @@ Who is? And, anyway, look at the size of this estate. Even if you just sell off 
 
 <a id="page_0050"></a>
 
-#### ONWARDS, AGAIN
+## ONWARDS, AGAIN
 
 "This is all a bit much," you think, "I just wanted a few simple adventures."
 
@@ -2203,7 +2203,7 @@ Butler nods, "Don't worry, Sieur's Chosen, I'll gladly run the estate for you. E
 
 "Then have some needle tea and to-day's document of novelties, while the servitors pack your bags."
 
-**A Surprise In Your Bags**
+### A Surprise In Your Bags
 
 | d8 | Item | Item | Item |
 |---:|:---|:---|:---|
@@ -2218,7 +2218,7 @@ Butler nods, "Don't worry, Sieur's Chosen, I'll gladly run the estate for you. E
 
 "Use me," reads the cryptic label.
 
-**Document of Novelties**
+### Document of Novelties
 
 It would be a dead world if things did not happen in the background, yes-no?
 
@@ -2239,7 +2239,7 @@ It would be a dead world if things did not happen in the background, yes-no?
 
 <a id="page_0051"></a>
 
-**Consequences, Again**
+### Consequences, Again
 
 The autogolem ... Wait, you do have an autogolem, yes? If you don't yet, perhaps you should spend some time exploring your estate? There are said to be unknown places beneath many of these old time-vaulted mansions. Surely the Departed Sieur has left some very loyal living device for your percurration?
 
@@ -2249,7 +2249,7 @@ You marvel at the contrast a small fortune makes to one's outlook on life. As yo
 
 Roll a save and see how you are now:
 
-**d20 Something Changed**
+### d20 Something Changed
 
 | d20 | Something Changed |
 |---:|:---|
@@ -2261,7 +2261,7 @@ Roll a save and see how you are now:
 | 14–19 | Learning about yourself. Gain 1 pip towards acquiring or increasing a relevant trait. Probably a bourgeois social background trait or something. |
 | 20 | Secrets in Your Source Code. Something in your blood whispers to you of destinies and secrets. Gain +1 endurance. When faced with an oldtech or fantascience artifact, you can sacrifice this trait to gain 1d4 pips towards acquiring and/or increasing a relevant trait for using that artifact. |
 
-**Experience, Again**
+### Experience, Again
 
 These few weeks here, in this new town ... this has been different. These experiences seem almost dreamlike now ... perhaps this is what it means to live in the good graces of the Dream Lords, blessed by this golden age?
 
@@ -2283,11 +2283,11 @@ Excellent! More experience to invest in characters, pets, powers and equipment. 
 
 <a id="page_0052"></a>
 
-#### ESTATE FLOWERING
+## ESTATE FLOWERING
 
 Hush. Shake off the agent. Warnings? From some ruster tramp in an agent's old-fashioned coat tails? Here, step to the cyclopean gatehouse.
 
-**The Gatehouse of the Clavus**
+### The Gatehouse of the Clavus
 
 A one-eyed ancient, mummified beneath their silver weave robes and electromagical bandages, detaches from the scabrous livingstone encrustation. Their temporal pod crumbles, releasing them into the now.
 
@@ -2295,7 +2295,7 @@ A one-eyed ancient, mummified beneath their silver weave robes and electromagica
 
 "Release the seal and you may have my guidance along with the estate of the Departed Sieur."
 
-**Bonus Specialty**
+### Bonus Specialty
 
 | d6 | Bonus Specialty | Lvl | Fee/wk |
 |---:|:---|---:|:---|
@@ -2308,7 +2308,7 @@ A one-eyed ancient, mummified beneath their silver weave robes and electromagica
 
 "Is Butler my title? Why no, it's my name."
 
-**Break The Seal**
+### Break The Seal
 
 "You may want to hurry. I sense someone approaching. I can legally protect you. I think." chants Butler.
 
@@ -2323,7 +2323,7 @@ The seal is an oldtech device. It looks like a variant of a gate seal, but adapt
 
 "Hmm ... it has been longer than intended," muses Butler as it surveys the ruined estate.
 
-**The Rubble is Alive**
+### The Rubble is Alive
 
 The debris field writhes, settles, burps, shifts ... the things within are put out by their new situation.
 
@@ -2337,7 +2337,7 @@ The debris field writhes, settles, burps, shifts ... the things within are put o
 
 <a id="page_0053"></a>
 
-#### A SIMPLE ESTATE OF MIND
+## A SIMPLE ESTATE OF MIND
 
 The house and its estate are the PCs home base, but also a shared character for the players.
 
@@ -2355,39 +2355,39 @@ Butler stops and grabs you with a surprisingly strong mummified hand, "You will 
 
 <a id="page_0054"></a>
 
-**The Estate Berubbled**
+### The Estate Berubbled
 
 "Yes, the whole sphere of the dome belongs to the house. Though, ah, much of it seems buried now. And the rabbitherders may be upset at all the rabbits killed when you used the clavus to collapse the seal..." says Butler.
 
-**Gatehouse.**
+### Gatehouse.
 
 Not actually part of the estate. It is owned and managed by the Butler Watcher LLC BDD.
 
-**Geigerfac.**
+### Geigerfac.
 
 A sleeping autofac that used to make geigers ... or was it gigers? Anyway, some kinds of gizmos. With a brain replacement, some ancient lubricants, and a bit of sprucing up, this could be a tidy earner. Please ignore the biohorror (L9, human-derived) stalking its halls.
 
-**Hollow House.**
+### Hollow House.
 
 A manor in the echobrutalist style. It belongs to you. You can rename it.
 
-**Folly Ziggurat.**
+### Folly Ziggurat.
 
 Ornamental, not meant as a real ziggurat. Claimed by the scuttlemonks as a real ziggurat. Could be turned into a real ziggurat with some faith and paint.
 
-**Obscure Structures.**
+### Obscure Structures.
 
 Possibly intended for some kind of bioindustrial activity. One still promotes NEW chocaine. Another suggests the new shade of the season will be taupemarine, a hue that famously bankrupted the Ivy Saint Bistecca procedural fashion conglomerate emirate, which led to the downfall of the Circle Sea Union Mk 2.
 
-**Pit of Descent.**
+### Pit of Descent.
 
 Level-locked by daemons blood-coded by the Departed Sieur. The bloodbound servants of the clavus claim it leads down to heaven and want to rent it.
 
-**PyramytombTM.**
+### PyramytombTM.
 
 A time-traveling tomb bought from a Long Long Ago catalog. It's empty and waiting for you.
 
-**Servaparts.**
+### Servaparts.
 
 High-density hive for storing unneeded servants. Perhaps some are still stored here, but the broken **lotus dreamgiver** (L7, font of pablum) fills the whole area with comforting delusions.
 
@@ -2403,55 +2403,55 @@ So far we've been handwaving time and travel at destinations. That's generally f
 
 <a id="page_0055"></a>
 
-**The Good Neighbors**
+### The Good Neighbors
 
 Mobs of puzzled scuttlemonks and upset locals keep one another at bay at _your_ garden gate. A fluffle of postlagomorphs is grazing and defecating on the lawn.
 
-**Cold Turtle Pond.**
+### Cold Turtle Pond.
 
 Home of the **millennium turtle** (L7, 1-way time-traveler). Lovely landscaping. Mind the lotus.
 
-**Eremite's.**
+### Eremite's.
 
 On moonless nights, the **flickering avatar** (L2, electric) of the godless eremite manifests to read scripts.
 
-**Feeder Canal.**
+### Feeder Canal.
 
 Full of **feeders** (L3, amphibious). They feed.
 
-**Heresitech Grove.**
+### Heresitech Grove.
 
 The baobabs offer to tell you what you want to hear in exchange for life and worship.
 
-**Lesser Inn.**
+### Lesser Inn.
 
 Used to accept motor vehicles, but in these fallen times only takes bicycles, velocipedes, and mules.
 
-**Locals, The.**
+### Locals, The.
 
 Former Extramural Vagabond Settlement 7. Now legalized. True name restricted to residents only. Please don't say the **farmers** (L2, augmented) are vomes.
 
-**Lost Neighbor.**
+### Lost Neighbor.
 
 Missing since a star-summoning event. Portals do not work here anymore. Nor other magicks. Do not dig up the buried **golems** (L3, doomed).
 
-**Memory Farm.**
+### Memory Farm.
 
 Can't afford immortality? Give yourself to the **Extrangling Fig** (L10, mind-eating tree) and talk to your descendants even after death!
 
-**Mutagenic Well.**
+### Mutagenic Well.
 
 Clearly marked as dangerous. Severely corrupting. Don't fall in. The lid will be repaired soon.
 
-**Orchardite.**
+### Orchardite.
 
 Cherry cabbages, gilded peaches, glowing berries, a **mechanical gardener** (L4, rusting) and its **loving maintainer** (L2, technohuman).
 
-**Slumprabbit Pipe.**
+### Slumprabbit Pipe.
 
 Due for repair. Leaks **protean postlagomorphs** (L1, lamarckian). Harmless, yeah?
 
-**Viridian Pavilion.**
+### Viridian Pavilion.
 
 Property of the **Lady of Waters** (L6, liquid human). Occupied by **liberated post-mortals** (L1, mummified). Is the lady actually the water in the canal?
 
@@ -2467,119 +2467,119 @@ Butler rolls its one eye, "The tax priests are still about?"
 
 <a id="page_0056"></a>
 
-**Bubble of Old Surface**
+### Bubble of Old Surface
 
 Error. You are not supposed to be here. This surface is no longer rated for human settlement.
 
-**Arcolocontrol.**
+### Arcolocontrol.
 
 An overshoot upwelling of HeavenTM, it seeks to take control of the Cube of HTM and siphon its human minds downstream to HeavenTM. Do not question its designs. Why is it leaking? Why is its dome cracked? Why are its **messengers** (L6, death angels) mummified, with twitching wires coursing through their papery flesh?
 
-**Biomatter Oversight.**
+### Biomatter Oversight.
 
 All the control consoles are broken.
 
-**Buried Ruins of Lago Lago.**
+### Buried Ruins of Lago Lago.
 
 Ignore these cyclopean walls, these promethean technofossils. An archaeologist would only grow discouraged to know that the Old Surface was not the Oldest Surface. Do not release the demon **Pilot Samoroga** (L9, nemesis hero). The demon is not related to the gods. Do not trust its lies.
 
 **Cavern Turtles** (L8).
 Big as boats, six-flippered, spitting.
 
-**Cliffs of Living Stone.**
+### Cliffs of Living Stone.
 
 Oh, look, the landcoral has escaped its programming and is eating the subsurface to make more of itself. This will surely never be a problem.
 
 **Clingmeat Trees** (L5).
 They cling. To meat. With thorns.
 
-**Cube of HTM, The.**
+### Cube of HTM, The.
 
 A livingstone residential-commercial complex now haunted by its doomed ghosts?
 
 **Dream Weaver** (L9).
 Totally not an illusionist dragon.
 
-**Feral Servant Hive Levels.**
+### Feral Servant Hive Levels.
 
 The brain-locked **servant humans** (L0, feeble) have survived in the dark by becoming a **metahuman organism** (L13, super-posthuman). Please don't let them out.
 
 **Fossil Rabbit God** (L17).
 Nothing short of an apocalypse will wake it. In the meantime ... divine biofuel?
 
-**Glutinaga Levels.**
+### Glutinaga Levels.
 
 Ah, so that's where the **jelly worms** (L3) are generated from the pipeworks. Perhaps a different protocol could generate other jelly creatures?
 
-**Great Tap Root.**
+### Great Tap Root.
 
 It flows with the fuel of life, with deep biomatter. It whispers, "heaven is down, always down."
 
-**House of Changes.**
+### House of Changes.
 
 Here dreaming lies the **Lady of Waters** (L16, original human). Why is she 10 feet tall?
 
-**Lake of Blind Turtles.**
+### Lake of Blind Turtles.
 
 It's really full of all kinds of armored beasts. Bobbers. Chargers. Lurkers. Hurlers. Stringers. One's boat cannot but go thump-thump as it moves.
 
-**Levitant Substations.**
+### Levitant Substations.
 
 Aerolith? Down here? Valuable! Oh, also, controls the pipeworks.
 
-**Lostgarden Levels.**
+### Lostgarden Levels.
 
 The corpse of the **phylake Antipater** (L12, angelic) clutching a flaming sword is worshipped by the uplifted rabbits (L1, postnuclear) who have made an idyllic garden lit by the godlight of Antipater. They sacrifice humans to keep the holy corpse aglow.
 
-**Memetic Escape.**
+### Memetic Escape.
 
 **Strange ideas** (L2, daemons) flutter like butterflies, escaping the garden that generated them. They teach new things. Terrible things. Things not meant for humans. Burn them and deliver their charred corpses to the administration for rewards (€500 per corpse).
 
-**Pearleater Levels.**
+### Pearleater Levels.
 
 Ragged splendor and baroque chambers. **Waxy humans** (L4, mannequins) eat the pearls of the holy **tentacled oysters** (L7, chronotoxic) to survive until the path down to heaven opens up.
 
-**Rabbit Pipeworks.**
+### Rabbit Pipeworks.
 
 A slurry of protean rabbits. Some are fossilizing and turning into oil.
 
-**Sleeper Subapts.**
+### Sleeper Subapts.
 
 Stored **archaic humans** (L3, very tall) stalked by **psychic safeworms** (L5, many-legged).
 
-**Scaverdwarf Levels.**
+### Scaverdwarf Levels.
 
 These blind **subterranean humans** (L3, scavengers) are assembling a time-ark that will let them sleep until HeavenTM climbs up to save them.
 
-**Scuttler Burrows.**
+### Scuttler Burrows.
 
 These **crab people** (L2, horrovores) are not monks. They feed on horror. And flesh.
 
 **Spy Pikes** (L2).
 These fish do not seem to belong, what with all the metal and silicon in their brains.
 
-**Sunken Teahouse.**
+### Sunken Teahouse.
 
 Strangely colourless and textureless. Decayed signs announce the arrival of the late **Dee Elsie** (L?, error). The patrons are **crystalline simulacra** (L0, repetitive) who call soggy wood shavings tea.
 
-**Timelost Boat.**
+### Timelost Boat.
 
 Light as balsa, hard as adamant, powered by a golem engine. Worshipped by the cavern turtles.
 
-**Well-Lit Levels.**
+### Well-Lit Levels.
 
 **Shadow humans** (L4, vampiric) still selling the shiny baubles and dire fashions of Long Ago.
 
 **Wrigglemind, The** (L13, funny guy).
 Oh, here's the fungal core-mind that keeps this bubble habitable?
 
-**Wriggling Isle.**
+### Wriggling Isle.
 
 **Glittering mycelium** (L3, sticky) threads the isle, inventing eternal dreams for the Lady.
 
 <a id="page_0057"></a>
 
-#### RUNNING ESTATES
+## RUNNING ESTATES
 
 If cash is the petty coin that hammers and other proles spend to keep themselves in bread, the estate (Σ) is the wealth that gives and keeps giving. The land and bonds, stocks and cryptids, digital daemon tokens and other arcane promises. Illiquid assets.
 
@@ -2595,7 +2595,7 @@ Estates come in different sizes, and all healthy humans want big wealthy estates
 
 You will find estates are excellent money sinks. After all, the key to more extravagant adventures is a bigger estate! And, clearly, an estate can never be big enough. As the old folk faith song goes, "make number go up to the moon." Academics disagree which moon the song refers to, as there are at least 17 easily visible moons.
 
-**Properties In Their Variety**
+### Properties In Their Variety
 
 One could keep estates abstract. Numbers kept in arcane ledgers by strange daemons and deciphered by the noöspheric ghost essences of the sulphurous priests of Mathic Abaco in their clock-tok zero-one temples.
 
@@ -2614,7 +2614,7 @@ Ah, a harsher referee might have started you out with a smaller estate, but we h
 
 <a id="page_0058"></a>
 
-**Properties Abstract**
+### Properties Abstract
 
 By the glory of the Dream, wealth may be abstracted from the crude matter of this world and held entirely in the mind of the Lords. "Fiat divitiae!" cry the daemons.
 
@@ -2638,7 +2638,7 @@ Your abstract investments are completely safe. Honest. The referee is totally no
 | 96–99 | Growth has actually exceeded expectations. | Investment and revenue grow by +10%. Hurrah. |
 | 00 | Toil extracted from outgarden subhumans benefits shareholders, including you! | Investment and revenue are doubled. That's +100%! Yay! Also, you receive a free servitor. |
 
-**Properties Present and Absent**
+### Properties Present and Absent
 
 Lands! Here or there. If they are here, you can run them yourself! If they are absent, you had best hire an agent. Upkeep will be required when things go wonky (p59 XX). But other than that, it'll all be fine, yes?
 
@@ -2659,7 +2659,7 @@ You could upgrade those basic plots with additional revenue-generating facilitie
 
 Rolling once a year should be enough, right?
 
-**Running the Estate**
+### Running the Estate
 
 | d20 | Result |
 |---:|:---|
@@ -2678,7 +2678,7 @@ Selling properties is just about as fiddly as selling houses. Generally, you can
 
 <a id="page_0059"></a>
 
-#### DOMUS NOVA
+## DOMUS NOVA
 
 The Antagonist approaches. With a gesture, their doghead goons hang back. Hand up, chironomic gesture for peace and words. There are witnesses. If the Antagonist were to break their honor now, there would be expensive repercussions.
 
@@ -2715,11 +2715,11 @@ Whether you take up the Antagonist on their offer, roll d20 in each column as re
 
 <a id="page_0060"></a>
 
-#### HOUSES
+## HOUSES
 
 Domesticity is the mark of civilization. Are you civilized enough to own a house? If you own no real estate, are you even real?
 
-**Bones of the House**
+### Bones of the House
 
 This section (dissection?) lays its rooms bare for your occupation, refurbishing, specialization, and upgrading. The room is the core segment of the house-as-character, its inventory, if you will. Each room has two main attributes: its **revenue** (if rented out) or its **expense** (if maintained).
 
@@ -2727,7 +2727,7 @@ Note that "room" is an abstraction. It might represent a single room, or it coul
 
 ![House room grid (page 60)](images/page_0060_house_room_grid.png)
 
-**Usable and Unusable Rooms**
+### Usable and Unusable Rooms
 
 Some of your new house's rooms may be unusable, gone to dust over the nameless aeons (several years) in the house's protective bubble field.
 
@@ -2761,7 +2761,7 @@ These rooms must be refurbished before you can rent them out or upgrade them int
 
 Refurbishing a room to make it usable takes 1d6 weeks. Upgrading a usable room into quarters or a special room takes another 1d6 weeks.
 
-**Expanding Your House**
+### Expanding Your House
 
 Total rooms are all the rooms the original shell of the house was designed for. To build additional rooms, the autoarchitect recommends a new (d10):
 
@@ -2780,7 +2780,7 @@ Total rooms are all the rooms the original shell of the house was designed for. 
 
 This extension will take 4d6 weeks to build and add 1d6 rooms at 1d6 times the price of refurbishment per room.
 
-**Renting**
+### Renting
 
 Renting out a usable room is a great and safe way to earn money! Your tenants are sure to be great and reliable people! You can invest €500 to reroll how much rental revenue a room can earn for you. An increase may require evicting tenants who won't pay up (1-in-3).
 
@@ -2795,7 +2795,7 @@ Perhaps your tenant NPC is a ...
 | 5 | merchant | nervous | heinous crime |
 | 6 | artisan | eager | vile treasure |
 
-**Selling Your House**
+### Selling Your House
 
 It takes 1d30 weeks to close your sale. Make a charisma roll with relevant deception and marketing skills.
 
@@ -2811,7 +2811,7 @@ It takes 1d30 weeks to close your sale. Make a charisma roll with relevant decep
 
 <a id="page_0061"></a>
 
-**Your Quarters**
+### Your Quarters
 
 How you live defines how others see you and directly impacts your adventuring effectiveness, how long you live, how likely you are to get sick and even whether you die. Quarters are a proxy for your lifestyle. You can turn any usable room into quarters by paying the requisite price. When you improve or reduce the quality of your quarters, the lifestyle benefits take 10 weeks to manifest.
 
@@ -2843,7 +2843,7 @@ This chapter is sponsored by the Omnicivilizing Landcoral Homeowners Enterprise 
 
 <a id="page_0062"></a>
 
-**Twenty Special Rooms**
+### Twenty Special Rooms
 
 Now, quarters are all fine and dandy, but perhaps you'd like something more interesting than a posturban fortified conapt for yourself and your henchlings?
 
@@ -2883,7 +2883,7 @@ You are encouraged to come up with other special rooms. For example kitchens, ma
 
 <a id="page_0064"></a>
 
-#### CASH ASSETS
+## CASH ASSETS
 
 _Property makes a proper person._ —traditional saying, Yellow Lands
 
@@ -2897,13 +2897,13 @@ Every proper rainbowlander knows what cash (€) is. The twice-barred "c". Liqui
 
 Cash is an abstraction for the different kinds of bills, coins, cards, cheques, and credits that the humans of the Circle Sea Civilizational Megaregion use in their daily truck and barter.
 
-**Spending Cash**
+### Spending Cash
 
 Cash is your most versatile social resource. Credit crystallized. You spend it to buy gear for your adventures. You use it for fines and bribes, food and tickets, hotels and guides. Anything, really.
 
 In play, you can get by without tracking coins and credit when something costs much less than a day's wages.
 
-**Investing Cash**
+### Investing Cash
 
 Crucially, you need cash to become a better person, because the more you are worth, the better you are.
 
@@ -2911,7 +2911,7 @@ This is obviously true. Everyone says it, even the Mother Machine.
 
 The secret to having a lot of cash is to be very wealthy. The way to become wealthy is to invest your cash in your properties, where it will be fruitful and multiply and come back to you by the mysterious workings of the Invisible Hand. Praise Mohlack (but discreetly)!
 
-**Mortgage**
+### Mortgage
 
 You can mortgage your properties to get quick cash.
 
@@ -2921,7 +2921,7 @@ It will probably cost €1,000 to pay off a €500 mortgage. Hope you invested t
 
 <a id="page_0065"></a>
 
-**Revenue**
+### Revenue
 
 Revenue (R) is your cash flow before expenses. It's the amount of money you imagine you could have if you were a creature of pure light, who didn't need air or water or food or shelter or a social life.
 
@@ -2931,7 +2931,7 @@ Tales say that once, when the Dream Canopy was untattered, every human received 
 
 Nowadays, when dragons no longer fuel furnaces, some grovellings and many of the plebeian sort must trade their given time on this Given World for cash. The unskilled and shiftless earn €7 per week, but master servants of earn up to €60 per week or more (p57).
 
-**Expenses**
+### Expenses
 
 Expenses (E) is the cash that leaves your accounts every week, like grains of emerald sand pouring through your fingers as you try to hold it together while the jade dragon's visions assail your sanity.
 
@@ -2939,7 +2939,7 @@ As with revenue, your estate is the source of most ongoing expenses. Your quarte
 
 Fairy stories say how once, when the sky was full of more stars than one could count, humans had no expenses or obligation other than to sing, dance, and make poetry in the Garden of Delights—not to please some distant Lords but to entertain themselves. Other stories say these were not humans but those creatures now called Viles.
 
-**Income**
+### Income
 
 Income (i) is revenue less expenses. This is how much cash you actually gain per week. Your disposable income.
 
@@ -2971,7 +2971,7 @@ If you are a candidate for CCC services, submit proof of worth at your temple of
 
 <a id="page_0066"></a>
 
-#### REST? FOR THE WICKED?
+## REST? FOR THE WICKED?
 
 You take a deep breath and start pondering what kind of time-lost vintages the Desiccated er... Departed Sieur may have left in the drawing room drinks cabinet. Something to celebrate perhaps.
 
@@ -2979,7 +2979,7 @@ Then ... then there will be plans to make. Places to explore. Rooms to renovate.
 
 Perhaps you will even find an uplink scroll of _Summon Seaside_ and the lords and unlords, the gods good and gracious, will see fit to drown some neighborlands and raise the value of your real estate.
 
-**Weeks At Home**
+### Weeks At Home
 
 When not adventuring, the usual baseline human PC effectively does three things each week: **sleep plus two other activities**. With the proper high-line drugs, a human PC could probably replace sleep with another productive activity, like painfully sculpting their mortal shell to conform to the desires of faceless noösphere daemons for a chance at fame and fortune.
 
@@ -2989,7 +2989,7 @@ It is the human lot that weeks are mayfly-brief, eye-blinks that tease with poss
 
 So, what do adventurer landlords fill their weeks with?
 
-**BED REST**
+## BED REST
 
 Broken from their adventures, they hide abed, tended by twitchy golem doctors and beset by haunting mothering voices in the walls. Bed rest precludes _all_ other activities (except sleep).
 
@@ -3001,7 +3001,7 @@ Special rooms or home improvements may provide additional benefits.
 
 <a id="page_0067"></a>
 
-#### RELAXATION
+## RELAXATION
 
 Pleasurable activity that builds up mental and physical resilience, and removes some burdens or afflictions.
 
@@ -3021,11 +3021,11 @@ Pleasurable activity that builds up mental and physical resilience, and removes 
 
 Special rooms or home improvements may provide additional benefits.
 
-#### UPKEEP
+## UPKEEP
 
 Estates require work. Food must be cooked. Rooms refurbished. Servitors supervised. Tenants terrorized. Butcher bankers paid in flesh and flattery. Most incidents (pXX) or nuisances (pXX) can be handled by proper upkeep. Roll d20 + any relevant skills you might possess.
 
-**... Taking Care of Stuff**
+### ... Taking Care of Stuff
 
 | d20 | Result |
 |---:|:---|
@@ -3048,7 +3048,7 @@ If you are wealthy enough, you might hire an agent or representative to deal wit
 
 <a id="page_0068"></a>
 
-#### IMPROVEMENT
+## IMPROVEMENT
 
 Whether yourself through study, your pet through training, or your estate through cash, becoming better takes action. Action and time. Action, time and luck.
 
@@ -3084,7 +3084,7 @@ At home, **you can make two attempts at improvement each week**—unlike in the 
 
 If you fail to make any progress, you can try again a second time with the same resource. If you fail a second time, this resource will never work for you.
 
-**Improvement Resources**
+### Improvement Resources
 
 Roll d10 and d8 if the resource is safe, d10 and d10 if it might be cursed. This resource is found (d6): (1) a quest away, (2) far away, (3) guarded, (4) next town, (5) in town, (6) near here. A sufficient amount costs €(1d10 x 1d10 x (1d8-1)) or €100.
 
@@ -3103,7 +3103,7 @@ Roll d10 and d8 if the resource is safe, d10 and d10 if it might be cursed. This
 
 <a id="page_0069"></a>
 
-#### LABOR
+## LABOR
 
 Is your estate too small to grant you a respectable weekly ration of bread, water, air, and fire? Then you may have to suffer the indignity of work to secure a sad pittance of revenue that will keep you clothed and appointed in accordance with the humble expectations of good society. Yes, it is embarrassing to admit, but even a hero of leisure such as yourself may stoop to trading your precious finite time on this Given World for liquid assets.
 
@@ -3116,7 +3116,7 @@ Any trait that could be considered a profession may render you eligible for skil
 
 After a week's worth of work, roll for your rewards.
 
-**Work Rewards**
+### Work Rewards
 
 | Roll | Result |
 |---:|:---|
@@ -3134,7 +3134,7 @@ Ah, well, you'll be away a while, yes? Good thing nothing could go awry in your 
 
 <a id="page_0070"></a>
 
-#### TOWNSABOUTS
+## TOWNSABOUTS
 
 _The hundred thousand generations since the builders programmed and decreed the many ways that humans would live have resulted in this, the Garden, the perfect human lifeway. Who could doubt this eden of humanity?_ —Pathon's _Apology for the Gods_, 4:14.
 
@@ -3146,7 +3146,7 @@ Now, this tome in your hands certainly provides a more comprehensive, concise, a
 
 Oh? What? Those fools would _wandel_ off script? They'd like to visit a town unlisted, engage with a culture unrecorded? Do they _want_ to break their immersion? Peer behind the potemtech facades and draw aside the green drapes of the wizardmaster?
 
-**Improvising Places**
+### Improvising Places
 
 It is time to bluster and invent your way out of this situation. For their own good, of course. After all, to improvise is the way of the referee.
 
@@ -3159,7 +3159,7 @@ Wheel out your oracle, the random die. Start up the imagination engine. Even tos
 - ⚙ What do they say they want? What do they really need? How are these things different?
 - ⚙ What do they not want to see? Remember: there are none so blind as those who will not see.
 
-**Places in their Categorical Abstraction**
+### Places in their Categorical Abstraction
 
 _All happy towns are alike; each unhappy town is unhappy in its own way._ —Qara Hana, _Observations on Utopia_.
 
@@ -3174,7 +3174,7 @@ But up close it is worth remembering that human habitation zones feel different 
 3. Smaller are the **communes**. These weiks or villages are sub-authorized human settlements existing outside the strictly beneficial authority structures and prone to going feral. Humans should be wary of the temptations of village life, as they may lead to an unacceptable decline in their level of civilization. Villages may be smaller and stranger than towns, their traits fewer but very exaggerated.
 4. Smaller yet, or abandoned, or further off in the vast where Garden civilization has ended, or never gone, are the **lazyplaces**. These consist of a name and a rumor, a whisper of humanity shading into radiation ghosts and singing dusts. They are not lazy merely because the author has been lazy in barely describing them, but because time there moves more slowly with fewer observers to push the lazy slavegod Time along.
 
-**Places in their Posthistorical Variation**
+### Places in their Posthistorical Variation
 
 _Call no city happy until it is no more._ —Samotar Endbringer, _Consolations of Metahistory_.
 
@@ -3193,7 +3193,7 @@ Many scholars of the postnöospheric totality admit a gnawing doubt that divine 
 
 <a id="page_0072"></a>
 
-#### THE 300 TOWN TRAITS
+## THE 300 TOWN TRAITS
 
 _Polyculture makes Heaven better than monoculture. Diverse cultures make another mass die-off less likely. After the six erroneous utopian experiments, we must encourage a diversity of cultural expression among the different human communities, tribes, and classes._ —Orange Araña's Letters, 373-56, contested translation
 
@@ -3203,7 +3203,7 @@ Far from it. But they boast such diversity!
 
 The traveler, that blessed good person, possessed of permit and means, will find more variety wandering from one settlement to another, even if they are but half a day's autogolem ride apart, than they would in a week's iron horse journey on the Thin Air or deep in the grasslands beyond the Violet.
 
-**1. Architecture**
+### 1. Architecture
 
 What do these human settlements look like?
 
@@ -3214,7 +3214,7 @@ What do these human settlements look like?
 5. Traditional subterranean tunnel town. Bunker palaces, nuclearlithic sub-urbs, plastic parklands.
 6. Brutalist paradise of posthuman biomech ruins. Raw materials, glistening veins, gasping pipeworks.
 
-**2. Art**
+### 2. Art
 
 The aesthetics these humans make and love.
 
@@ -3233,7 +3233,7 @@ The ethnographer, or the traveler familiar with a city or two, may well doubt th
 
 To generate a random trait, roll a die 300-sided; or a die 50-sided for the category, then a die 6-sided. Many of these traits are odd. The referee is invited to use discretion, humor, and jaundice in their application.
 
-**3. Birth, Advanced**
+### 3. Birth, Advanced
 
 How they make new humans.
 
@@ -3244,7 +3244,7 @@ How they make new humans.
 17. Uplifted through biomechanical intervention from pre-selected domesticated animal or ling lineages.
 18. Recycled from captured ferals.
 
-**4. Birth, Traditional**
+### 4. Birth, Traditional
 
 How they reproduce new humans.
 
@@ -3257,7 +3257,7 @@ How they reproduce new humans.
 
 <a id="page_0073"></a>
 
-**5. Care, The Weak**
+### 5. Care, The Weak
 
 How the helpless and infirm are cared for.
 
@@ -3268,7 +3268,7 @@ How the helpless and infirm are cared for.
 29. The carer clan alone may offer help and succor.
 30. Golems and synthetics run pleasure hospices, with full end-of-life synthetic heaven for their patients.
 
-**6. Care, The Young**
+### 6. Care, The Young
 
 How babes and children are provided for.
 
@@ -3279,7 +3279,7 @@ How babes and children are provided for.
 35. Pavlovian training implants let the young care for themselves with mechanical care devices.
 36. Each child is assigned a personal daemon who cares for them and grows with them.
 
-**7. Class**
+### 7. Class
 
 How their property relations divide them.
 
@@ -3290,7 +3290,7 @@ How their property relations divide them.
 41. Idealistic egalitarianism supported by strict sacred doctrines of the Invisible Hand and Fair Market.
 42. Mandatory equality through cloning, empathic indoctrination, and psychosurgical intervention to remove individual differences.
 
-**8. Courtesy**
+### 8. Courtesy
 
 What is good manners for these humans?
 
@@ -3301,7 +3301,7 @@ What is good manners for these humans?
 47. You cannot have a meaningful relationship if strict records of napkins and kerchiefs are not kept.
 48. Swearing shows honesty. Polite people trick you.
 
-**9. Crime**
+### 9. Crime
 
 What is a crime? How is it perceived?
 
@@ -3312,7 +3312,7 @@ What is a crime? How is it perceived?
 53. To treat an outlander like an inlander is treachery.
 54. Refusing to pay a bribe is grounds for re-education.
 
-**10. Death**
+### 10. Death
 
 How they deal with death.
 
@@ -3323,7 +3323,7 @@ How they deal with death.
 59. Post-mortality via canopic jewel.
 60. Noöspheric postmortality. Premium postmortalities available for an additional fee.
 
-**11. Demographics**
+### 11. Demographics
 
 How many here reside.
 
@@ -3336,7 +3336,7 @@ How many here reside.
 
 <a id="page_0074"></a>
 
-**12. Dwellings**
+### 12. Dwellings
 
 What kind of nests do these humans live in?
 
@@ -3347,7 +3347,7 @@ What kind of nests do these humans live in?
 71. Landcoral cottages and sungwood bungalows grown from seed and killed on occupant death.
 72. Habitation engines fabricated according to the divine templates. Quite safe. Low corruption risk.
 
-**13. Emotion**
+### 13. Emotion
 
 How do these humans feel?
 
@@ -3358,7 +3358,7 @@ How do these humans feel?
 77. Their language uses emotion markers to avoid confusion. A statement that does not carry a clear emotional label is impossible.
 78. Creatures of pure emotion and intuition, reason must always come second. To repress is to sin.
 
-**14. Faith**
+### 14. Faith
 
 How these humans believe.
 
@@ -3369,7 +3369,7 @@ How these humans believe.
 83. Unbelievable beliefs must be loudly and publicly affirmed to signal group loyalty.
 84. The engines of faith implant perfect orthodoxy.
 
-**15. Fashion**
+### 15. Fashion
 
 What is in vogue with these humans.
 
@@ -3380,7 +3380,7 @@ What is in vogue with these humans.
 89. Ritual naturalism used to discretely flaunt biomechanical modifications in a public setting.
 90. Bioideological lineage-based sartorial combat wielding the concepts of the five pneumas.
 
-**16. Food, Ordinary**
+### 16. Food, Ordinary
 
 What these humans eat of an ordinary day.
 
@@ -3391,7 +3391,7 @@ What these humans eat of an ordinary day.
 95. Healthy mix of vegetables and pulses from local polyculture gardens.
 96. Wide and varied buffet, a feast for all the senses, different each day.
 
-**17. Food, Special**
+### 17. Food, Special
 
 What is eaten on special days.
 
@@ -3402,7 +3402,7 @@ What is eaten on special days.
 101. Foods decorated with inert metals like gold, platinum, and uranium.
 102. Synthesized foods of extravagant shapes and textures, from authentiporridge to zetafries.
 
-**18. Freedom**
+### 18. Freedom
 
 How they handle their liberty under the Maker.
 
@@ -3415,7 +3415,7 @@ How they handle their liberty under the Maker.
 
 <a id="page_0075"></a>
 
-**19. Friendship**
+### 19. Friendship
 
 How humans relate to others.
 
@@ -3426,7 +3426,7 @@ How humans relate to others.
 113. Machine friends assigned at birth.
 114. A life alone is a life well-lived, for every human is an island and an island attached is a peninsula.
 
-**20. Gender**
+### 20. Gender
 
 How they sort their sociobiological roles.
 
@@ -3437,7 +3437,7 @@ How they sort their sociobiological roles.
 119. Closely tied to biomechanical source and structure.
 120. The concept is incomprehensible to this culture.
 
-**21. Killing**
+### 21. Killing
 
 How these humans kill.
 
@@ -3448,7 +3448,7 @@ How these humans kill.
 125. All life is sacred. Killing is an abomination unless the victim is willing. Only willing meat may be eaten.
 126. Taboo. All who kill are unclean. To eat that which once lived is to be sullied. The most pure replace their organic digestion systems with electromagical batteries so they no longer need to consume life.
 
-**22. Kinship**
+### 22. Kinship
 
 How individuals become relatives.
 
@@ -3459,7 +3459,7 @@ How individuals become relatives.
 131. Found. Left to individuals to figure out. May take years, if at all. Anomic ghosts populate the shadows.
 132. Psycho-optimized using deep preference analysis and dream-reading engines.
 
-**23. Knowledge**
+### 23. Knowledge
 
 How human curiosity is satisfied.
 
@@ -3470,7 +3470,7 @@ How human curiosity is satisfied.
 137. Hive mind protocols.
 138. Curiosity decay due to excess hedonism.
 
-**24. Law**
+### 24. Law
 
 How do they decide what is right and what is not?
 
@@ -3483,7 +3483,7 @@ How do they decide what is right and what is not?
 
 <a id="page_0076"></a>
 
-**25. Leaders, Power Of**
+### 25. Leaders, Power Of
 
 Relationships between the big and the small person.
 
@@ -3494,7 +3494,7 @@ Relationships between the big and the small person.
 149. Random people put into positions of excruciating difficulty, forged and refined through trial and error.
 150. Fools, chosen as figureheads. The leaders are sacrificed to the gods when things go wrong.
 
-**26. Literature**
+### 26. Literature
 
 What are the stories and books of these people?
 
@@ -3505,7 +3505,7 @@ What are the stories and books of these people?
 155. Parables of self-improvement, guru hagiographies.
 156. A unique canon, sifted from the decamillennial labors of ten thousand electric simians.
 
-**27. Magic**
+### 27. Magic
 
 What do they make of fantascience and other powers?
 
@@ -3516,7 +3516,7 @@ What do they make of fantascience and other powers?
 161. Deny human agency. Ascribe all occult knowledge to the gods and builders.
 162. Power-hungry desire to master the dark arts. Shame no such thing as "dark arts" exists.
 
-**28. Meaning**
+### 28. Meaning
 
 How these humans deal with the presence of oldtech and buildertech far surpassing their powers and abilities.
 
@@ -3527,7 +3527,7 @@ How these humans deal with the presence of oldtech and buildertech far surpassin
 167. Local trials require them to strive to survive.
 168. Unaware of the existence of oldtech and buildertech thanks to specific local conditions. Please do not disturb these neoprimitives.
 
-**29. Medicine**
+### 29. Medicine
 
 How are damaged humans repaired?
 
@@ -3538,7 +3538,7 @@ How are damaged humans repaired?
 173. Herbs, chants, and telewitchdoctor appointments.
 174. Daemons are summoned to possess a local worthy, filling them with medical knowledge as required.
 
-**30. Memory**
+### 30. Memory
 
 How these humans deal with memory.
 
@@ -3549,7 +3549,7 @@ How these humans deal with memory.
 179. Shared in group storytelling rituals.
 180. Recorded with personality forks for later interrogation, optimization, and improvement.
 
-**31. Money**
+### 31. Money
 
 What is their universal fungible commodity?
 
@@ -3560,7 +3560,7 @@ What is their universal fungible commodity?
 185. Memories, crystallized in the perfect vidymax format.
 186. Relics. Polished bits of the town's ancestors.
 
-**32. Politics**
+### 32. Politics
 
 How humans decide what matters here.
 
@@ -3573,7 +3573,7 @@ How humans decide what matters here.
 
 <a id="page_0077"></a>
 
-**33. Population**
+### 33. Population
 
 What kind of humans are these?
 
@@ -3584,7 +3584,7 @@ What kind of humans are these?
 197. Tailored human castes, creating a homeostatic hierarchical clockwork society.
 198. Polymorphic changelings, modifying their own body templates till some many are unrecognizable.
 
-**34. Property**
+### 34. Property
 
 How do these humans maintain the idea of ownership?
 
@@ -3595,7 +3595,7 @@ How do these humans maintain the idea of ownership?
 203. Property held by one sole sovereign citizen or a traditional benevolent oligarchy, while other residents gratefully live on universal basic subsistence and absolutely never rebel. Honest.
 204. Property is mandatory. If you are without property, you are property.
 
-**35. Punishment**
+### 35. Punishment
 
 Who is punished? How? Why?
 
@@ -3606,7 +3606,7 @@ Who is punished? How? Why?
 209. Body becomes a town slave to work off its sentence, while the mind is suspended.
 210. Implanted mind shackles punish bad thoughts.
 
-**36. Rebirth**
+### 36. Rebirth
 
 How re-humans are dealt with.
 
@@ -3617,7 +3617,7 @@ How re-humans are dealt with.
 215. Condemned souls sold or milled for energy.
 216. Souls transfer between shells to maintain the continuity of the local divine spark, while personalities may fade back into the noösphere.
 
-**37. Recreation**
+### 37. Recreation
 
 How do these humans consume their leisure time?
 
@@ -3628,7 +3628,7 @@ How do these humans consume their leisure time?
 221. Vigorous extended rhythmic physical exertion with loud thumping music.
 222. Body-hopping and races through forested ruins.
 
-**38. Resource, Air**
+### 38. Resource, Air
 
 A polis without air becomes a necropolis.
 
@@ -3639,7 +3639,7 @@ A polis without air becomes a necropolis.
 227. Polluted. Glorious facilities fill it with dust and ash.
 228. Thick. Glitters with local symbioflora or spores.
 
-**39. Resource, Food**
+### 39. Resource, Food
 
 Where their food comes from.
 
@@ -3652,7 +3652,7 @@ Where their food comes from.
 
 <a id="page_0078"></a>
 
-**40. Resource, Electricity**
+### 40. Resource, Electricity
 
 Humans were made to harness lightning.
 
@@ -3663,7 +3663,7 @@ Humans were made to harness lightning.
 239. Reliable. A standard radiothermal egg produces standard power, sufficient for a normal human as stated in Human Needs Manual 94-gertrude.
 240. Omnipresent. A great sub-reality field envelops the polis, providing near limitless power to any device or human equipped with a zero-access plug.
 
-**41. Resource, Water**
+### 41. Resource, Water
 
 Water is the gift of sky to earth.
 
@@ -3674,7 +3674,7 @@ Water is the gift of sky to earth.
 245. Filthy. Either the local sewage system failed or was never built. Boil or barf.
 246. Living. Refreshingly full of semi-sentient colony plankton. Drink and dream, friend.
 
-**42. Responsibility**
+### 42. Responsibility
 
 How they handle their duties to cosmos, society, and self.
 
@@ -3685,7 +3685,7 @@ How they handle their duties to cosmos, society, and self.
 251. The spiritually and socially elect guide, lecture, and hector. And control the redistribution matrices.
 252. Evolved traditions of asceticism, friendship, honor, reciprocity, and ultraviolence ensure fairness.
 
-**43. Ritual**
+### 43. Ritual
 
 What rituals have they developed to tame the vast?
 
@@ -3696,7 +3696,7 @@ What rituals have they developed to tame the vast?
 257. Beautiful festivals hide dark soul-burning horrors that keep the community fertile.
 258. Simple void navy protocols as symbols of status.
 
-**44. Socialization**
+### 44. Socialization
 
 How humans learn to be humans in their settlement.
 
@@ -3707,7 +3707,7 @@ How humans learn to be humans in their settlement.
 263. Instruction through rote mechanical learning rituals.
 264. Trained as members of class-defined cooperatives.
 
-**45. Status**
+### 45. Status
 
 What say they is best in life?
 
@@ -3720,7 +3720,7 @@ What say they is best in life?
 
 <a id="page_0079"></a>
 
-**46. Technology**
+### 46. Technology
 
 How do they approach oldtech and modern tech?
 
@@ -3731,7 +3731,7 @@ How do they approach oldtech and modern tech?
 275. Technology is power. All men have a will to power.
 276. Technology is the hidden god. To use it is to worship the true maker of this world.
 
-**47. Trade**
+### 47. Trade
 
 What is it to truck and barter?
 
@@ -3742,7 +3742,7 @@ What is it to truck and barter?
 281. Every child must buy and sell to become an adult.
 282. To trade and trick is the highest virtue.
 
-**48. Travel**
+### 48. Travel
 
 How do they view travel? How do they do it?
 
@@ -3753,7 +3753,7 @@ How do they view travel? How do they do it?
 287. To travel is to be human. Extra points for traveling in luxury and sharing vidys to show happy you were.
 288. Everyone must be a nomad at some point and the perfect house is a mobile home.
 
-**49. Undeath**
+### 49. Undeath
 
 How these humans deal with undeath.
 
@@ -3764,7 +3764,7 @@ How these humans deal with undeath.
 293. Taboo. One must not speak of them, lest they return.
 294. Abhorrent. All undead are destroyed on sight.
 
-**50. Work**
+### 50. Work
 
 What do humans do that they must do?
 
@@ -3777,7 +3777,7 @@ What do humans do that they must do?
 
 <a id="page_0080"></a>
 
-#### COLORS
+## COLORS
 
 _"The color codes protect us from Error."_ —Long Ago catechism, Blue Skull meta-codex 74:147
 
@@ -3791,7 +3791,7 @@ Long Ago, when people dwelled in ignorance and fear, their world was divided int
 
 Orange was not a traditional color code and there is some debate among traditionalists whether the Orange Lands should properly be divided between the Yellow and the Red. Some radicals have suggested using Orange to categorize dangerous sacred things, but this has been struck down by the Council of Ancestors and Descendants, which argues that it would stigmatize abmortal custodians of civilization.
 
-**The Monochrome**
+### The Monochrome
 
 _Have you or someone you know come into contact with white or black matter? If you suspect corruption, please report immediately for purification and reset. The Dream knows all, and innocent humans will suffer no loss of canopic status for accidental contact with white or black matter._ —the "pure" signal, repeating, 750?–27ya
 
@@ -3799,7 +3799,7 @@ The last purification station was lost around the same time recorded history res
 
 Even the wizards, wont to call the monochrome taboo mere superstition, still spin the cleansing color wheel when they fear they have been near the colorless.
 
-**Yet, what even is monochrome?**
+### Yet, what even is monochrome?
 
 1. That is of the noösphere, for its colors are false.
 2. Glass, water, air. To wash is to invite discoloration!
@@ -3814,7 +3814,7 @@ Even the wizards, wont to call the monochrome taboo mere superstition, still spi
 
 <a id="page_0081"></a>
 
-**Pray Read Further**
+### Pray Read Further
 
 For this map is not the territory.
 
@@ -3828,7 +3828,7 @@ For this map is not the territory.
 
 <a id="page_0082"></a>
 
-### BLUE LAND
+# BLUE LAND
 
 <a id="page_0083"></a>
 
@@ -3844,49 +3844,49 @@ As it is, the Sacred Reintegration Protocols (SRP) divide the traditional lower 
 
 Though popular imagination still holds this to be a fallen land, roving with chimerical horrors suitable only for disaster tourism, the SRP has made it one of the most dynamic region of the Rainbowlands, with scavenging conglomerates and renewtech startups transforming human possibilities in ways unthinkable for generations. If you want to get a head, this is the place to be!
 
-**Climate**
+## Climate
 
 The great Halt Blank (Alto Blanco in the local patois) to the north caps the realm in ice and air so thin unassisted human lungs must shrivel. The deep-carving rivers ensure winter's chill is ever but a hike away.
 
 The low-lying valleys are drenched year-long, swathed in fogs and cloudbursts from the ageless rainmakers humidifying the world as the Builders intended. Occasionally, aerolith towers or fossils of the Blue God crumble, unleashing landslides, floods, and miasmas.
 
-**Population**
+## Population
 
 reintegration territories: ~1.5 million, designation territories: ~0.2–1.2 million
 
-**Groups**
+## Groups
 
 new bluelanders 28%, old bluelanders 23%, dis-integrated laborers 17%, greenlanders 13%, free purplelanders 9%, purplelanders 6%, others 4%.
 
-**Languages**
+## Languages
 
 Canopic (official), Blaunestalk (suppressed), RD Cant (unofficial), Neo-Azulic (trade interlanguage), Perimse (river traders), Free Pura (unclear).
 
-**Capital**
+## Capital
 
 Official: pending reconstruction. Practical: Special Economic Zone has been designated a New Model City and will feature amenities unheard of, such as hot and cold running plumbing, free indoor sunlight lamps, and edible mycelial wall panelling. It is currently 6.2% finished and funding is being secured!
 
-**Government**
+## Government
 
 Polycondominium concession zones. Radically overlapping competing administrations use market signals and the Invisible Hand ideology to maximize uplift returns. The Designation is probably an autarkic subsistence-level zone of human disaster settlement.
 
-**Ideologies**
+## Ideologies
 
 Cogflower: regrowth (supported), Cathedral: innovator (free), Blue God: cave horror (suppressed), Free Industrialism: honorary (imported).
 
-**Economy**
+## Economy
 
 "But then the [illegible] went False and embraced the Error and the War followed. Devastation," mutters the Econotabulator, mad in its oversight bunker. Thus, the modern Blue Land economy is left to its own devices.
 
-**Resources**
+## Resources
 
 bacterial cultures, bio-autogenerators, dairy, lamarckian modulators, godsflesh, aerolith structures, living bone.
 
-**Means of Production**
+## Means of Production
 
 Until reintegration is complete, private enterprise is encouraged. Bluelander ownership is discouraged for obvious security reasons.
 
-**Material Conditions**
+## Material Conditions
 
 Official: each registered laborer is entitled to a personalized living dormisac and 10 cash per week. Effective: black market research suggests reliable laborers uncorrupted by the various error plagues command 28 to 35 cash per week.
 
@@ -3896,7 +3896,7 @@ _Source: Seventh Eye Hexad [collective work], RLD Friends of Industry Bulletin, 
 
 [![Blue Land map (page 84)](images/page_0084_blue_land_map.png)](images/hires/page_0084_blue_land_map.png)
 
-**Ambient, Valley**
+## Ambient, Valley
 
 Each deep valley is like a land all its own, kept apart from its neighbors by high mountains, the underways blocked by the sprouting corpses of the [redacted] false god. Yet, the rainmakers and airmakers ensure the climates are surprisingly similar, seemingly better suited to squamous, crawling, slick-skinned things than to humans. Please don't forget your anti-fungal ointments.
 
@@ -3908,7 +3908,7 @@ Each deep valley is like a land all its own, kept apart from its neighbors by hi
 
 <a id="page_0085"></a>
 
-**Ambient, Highland**
+## Ambient, Highland
 
 The Highlands soar above the soil, rich in aerolith, riddled by dead god-matter.
 
@@ -3918,7 +3918,7 @@ The Highlands soar above the soil, rich in aerolith, riddled by dead god-matter.
 | 4–5 | churning, sucking, rushing aerolith, sudden gusts | clear sky thunderstorms, drifting ice clouds | soup-thick cloud, booming air plankton, dead voices | flying snow, sun dogs, sparkling delights |
 | 6 | blue skies, frost fogs, ice geysers, rising berg-bris | geld mists, rainbursts, gasping dead god-matter | howling ice storm, sudden silence, snowbow | whiteout, thick-drifting snows, decaying god-dust |
 
-**Events**
+## Events
 
 In these ill-favored lands, keep one hand on your wallet and the other on your safekeeper.
 
@@ -3931,7 +3931,7 @@ In these ill-favored lands, keep one hand on your wallet and the other on your s
 | 5 | Traditional locals (L1, friendly) offering themselves for a better life outside this hell lovely place. | Toxic drifts ... or hallucinations? The sky sparkles with electric snow. It'll pass on its own in 1d6 days. | God fog contaminates the area. Strange visions and emptiness assail you. Nose filter recommended. |
 | 6 | Local waters poisoned. Perhaps by the oldsettler cultists (L2, shade-shifting)? They'll give you 2 regular runes, 2 blood runes, 3 strange visions, (4) cheese brain, (5) lockmind, (6) enlightenment and a permanent +1 to aura. | Strange detour to a settlement from Long Ago. They have no truck with Dead Gods or peacemakers. That means things might be ghost helmets in their ancestral pod shrine. Spark? Spend €1d6 x 100 to learn a random power of void and deep time. | Stalwart inquisition civilians (L5, authorized) out: (1) farming taxes, (2) carrying trophies, (3) harrying wizard cultists, (4) burning out an infestation, (5) building a personality rebuilder, (6) helping an exiled landholder reclaim their property. |
 
-**Travel**
+## Travel
 
 The sky-thrusting mountains, rainmakers, gully-rivers, and fungal tunnels of the Blue Land are a menace to the casual traveler. Roads are in poor repair, holes are decayed, and security is precarious at best.
 
@@ -3946,7 +3946,7 @@ The sky-thrusting mountains, rainmakers, gully-rivers, and fungal tunnels of the
 
 <a id="page_0086"></a>
 
-#### AZURE COMMERCIAL REINTEGRATION PARKS
+## AZURE COMMERCIAL REINTEGRATION PARKS
 
 _"Everything and everyone is for sale! It's an amazing opportunity!"_ —Patchick Bel-Bel Ressorum-3, reintegration consultant, former peacemaker
 
@@ -3963,7 +3963,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 5. jittery lime nomad with metallic arachnid pets;
 6. three robed figures with identical ceramic masks.
 
-**This Commercial Reintegration Park**
+### This Commercial Reintegration Park
 
 | d6 | Reintegration Park | Reintegrator Mien | Specialty | Product Quirk |
 |---:|:---|:---|:---|:---|
@@ -3974,7 +3974,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 | 5 | Hydras and Hitches | fleshy, roiling, gassy | living fossils | randomly animates dead insects |
 | 6 | Aerolith Extractions | mechanical, technical | aerolith microstructures | prone to levitating |
 
-**Fully Vetted Nontoxic Comestables**
+### Fully Vetted Nontoxic Comestables
 
 | d6 | Item | Notes | Cost |
 |---:|:---|:---|---:|
@@ -3987,7 +3987,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 
 <a id="page_0087"></a>
 
-**Weapons Against the Blue God**
+### Weapons Against the Blue God
 
 | d6 | Weapon | Notes | Cost |
 |---:|:---|:---|---:|
@@ -3998,7 +3998,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 | 5 | "Bili" Truncheon | Peacemaker microfission translator. Spend 1 life to deal an +1d6 dmg. Close, 1d6, 1 st. | €250 |
 | 6 | Blue God Blaster | Unholy two-handed burst weapon cast from the metal sinews of the Dead God itself. Close, 4d8 necrotic, re 7, 1 st. | €1k |
 
-**Reintegrated Blue Land Clothing**
+### Reintegrated Blue Land Clothing
 
 | d6 | Clothing | Notes | Cost |
 |---:|:---|:---|---:|
@@ -4010,7 +4010,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 | 6 | Peacemaker | Even outdated golem armor will overawe the Fair Bluelanders. 2 life, +2 strength. | €2k |
 |  | Archaic | Armor +7, heavy, powered & environmental, cumbersome, 3 st. |  |
 
-**Blue Land Mobility**
+### Blue Land Mobility
 
 | d6 | Mobility | Notes | Cost |
 |---:|:---|:---|---:|
@@ -4019,7 +4019,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 | 3 | Hydroglisseur | Open watercraft with a biomechanical outboard propeller. L3, carry 4, shallow draft. | €650 |
 | 4 | Flapper Mantoid | Sentient servantebeast with aerolithic bones. Not strictly legal for private use, but if you can afford a flapper, you can afford the fines. L3, carry 2, flying. | €3.5k |
 
-**Sundry Rustset Souvenirs**
+### Sundry Rustset Souvenirs
 
 | d12 | Souvenir | Notes | Cost |
 |---:|:---|:---|---:|
@@ -4038,7 +4038,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 
 <a id="page_0088"></a>
 
-#### BLUE POWER GROUPS
+## BLUE POWER GROUPS
 
 _"Warning! The region is under an open-ended reintegration interdiction. Visitors without official peacemaker authorization will be forcibly disembodied."_ —City Azure Ordinator, Diktat 772g
 
@@ -4048,7 +4048,7 @@ There are three basic types of power group: the external administrations with th
 
 The Ruins Azure area is a special case, as it is run independently of the various power groups by the City Azure Ordinator, the local administrative demigod brought over to reintegrate the area, and its three special economic zones, which promise a socio-cultural efflorescence of the area. The fourth special economic zone mentioned in older documents is erroneous. There is no such zone. There is no alienation zone.
 
-**Peacemaker Companies**
+### Peacemaker Companies
 
 Two major peacemaker companies, sent from the cities Emerald and Violet and headed by appointed governors, both claim to be rebuilding the Blue Land with their apparatuses, armies and coteries of capitalist collaborators. Secondary peacemaker companies are uplifting smaller sections of the Blue Land on concession.
 
@@ -4070,7 +4070,7 @@ _In truth, neither the Eastern City nor the Western City rules, while the old lo
 
 <a id="page_0089"></a>
 
-**Free Residents, Ruinsdwellers**
+### Free Residents, Ruinsdwellers
 
 The post-Blue melange of locals and arrivals drawn to the Ruins Azure, with its special economic zones. An anomic, post-communal, swirling, vibrant, individualistic mob focused on one thing alone: wealth. From scavengers to rebuilders, wildcat bankers to post-legal biomancers, every kind of hare-brained scheme can blossom on the wealth promised by the fossil remnants of the Dead God.
 
@@ -4078,7 +4078,7 @@ One who enjoys the refinement and proprieties of a civilized social hierarchy wo
 
 - _Piet' Gagosi._ Scrap merchant, fine fellow and not at all a mobster. Got a lead from a baked-out sporey. A great crystal circumpensulum, a heretical machine the death wizards used to ... well, he's not sure what, but he is sure of one thing: if even a tenth of what's doctor extracted from the sporey is true, there's a hundred million cash worth of crystal just waiting under a zombie giant's corpse up the river, in the Heart of Blueness. Piet can provide a diesel steamer and a crew of savories, but a dab hand with oldtech ruins would come in handy.
 
-**Stilters, the Unblues, the Subsidiaries**
+### Stilters, the Unblues, the Subsidiaries
 
 Assembled from a hodge-podge of refugee clans, antitheist rebels, and local marginal fishfolk, the stilters built their steads up and away from the shores of the Blue Land, embracing the salt air that kept the divine mycelium of the Blue God at bay.
 
@@ -4095,13 +4095,13 @@ Today they call themselves all hues but blue, from viridian to periwinkle, laven
 
 <a id="page_0090"></a>
 
-**Drillistes, the Neotroglodytes**
+### Drillistes, the Neotroglodytes
 
 The Dead God's mycelial mega-body left the soil and stone of the Blue Land perforated like a sponge, full of holes and aerolith struts. In the aftermath of the unmentioned war a number of marginal clans, destitute refugee cults, unbending wizard mystics, and failed scavengers have made a living in this holey terrain.
 
 Though the Blue God is no more, their diet of altered fungus and modified lichen has made them strange and unusual. Or perhaps it is the afterglow of the false god's creative energies. Regardless, the peacemakers still register them as human for taxation purposes.
 
-**How Strange They Are Become**
+### How Strange They Are Become
 
 | d6 | Trait |
 |---:|:---|
@@ -4116,7 +4116,7 @@ Though the Blue God is no more, their diet of altered fungus and modified lichen
 
 Oh, you have a body for Yudama? Yudma can pay with secrets, yes. Underground secrets, a map to a demon machine dreaming of a human to serve.
 
-**Swamp Settlers, the View Fromes**
+### Swamp Settlers, the View Fromes
 
 Even at the heights of the mushroom god's craze, plenty of people didn't subscribe to the promised heaven on earth. Some fled to their salty stiltis. Others just stayed where they had always been. Overlooked. Scraggly, amphibious. Their way of life may be unglamorous, but it has persisted unchanged for millennia. At least that is what their re-enactment troopes argue.
 
@@ -4128,7 +4128,7 @@ Why doesn't the offspring have a name yet? They are only named once it is proven
 
 <a id="page_0091"></a>
 
-**Wizard Cultists, the Fun Gales**
+### Wizard Cultists, the Fun Gales
 
 No matter what a divinely-sanctioned purification operation does, no matter how much phylake support it has, some vermin get through.
 
@@ -4142,7 +4142,7 @@ Officially, none remain in the Blue Land.
 
 - _Jarcu 9-Tancrei._ A memory of a memory remained smeared like paste inside Jarcu 8-Tancrei's suit after the warning against the Dead God, and the sacred mycelium, the fragments of that dead entity, rebuilt Jarcu anew. Jarcu's memory is shattered and they are in search of lost time, of foods long gone, of village well decayed, to reawaken that dreaded message that would save at least some of humanity. Some terrible foreboding of a divine return, a new flood to reset the world to a more primal era, or more balanced in the eyes of the [Un]Lords. Oh, also, Jarcu definitely is an illegal wizard cultivator.
 
-**Deep Bluelanders, the Indigotes**
+### Deep Bluelanders, the Indigotes
 
 In the remotest reaches of the Blue Lands are polities and villages still dwelling in their archaic isolation, following the odd customs dictated by their generative vids and the garbled version of the Garden Path preserved by their visionslords. Many have not been visited by civilized folks in generations. What wealthy or arrogant fool might travel there?
 
@@ -4155,13 +4155,13 @@ In the remotest reaches of the Blue Lands are polities and villages still dwelli
 
 <a id="page_0092"></a>
 
-**RUINS AZURE**
+## RUINS AZURE
 
 **AZURE SEOZ**
 
 _"Whence does this mycelium rot?"_ —Ill-Nano, _Rebellion of Dreams_
 
-**There Is No History**
+### There Is No History
 
 The Azure City has been scrubbed from the graven tablets of history to protect the minds of humans and keep their sleep untroubled. Blue-code ministry clearance is required to access the leaden archives for pre-zone events. Repeated attempts to access pre-zone histories may result in express re-education.
 
@@ -4193,7 +4193,7 @@ Once, the decadent pleasure beach of the devolved Bluelander telepath nobles. Th
 
 <a id="page_0093"></a>
 
-**Ambient**
+## Ambient
 
 | d6 | Ruinland Night | Zone Dawn | Zone Day | Ruinland Dusk |
 |---:|:---|:---|:---|:---|
@@ -4201,7 +4201,7 @@ Once, the decadent pleasure beach of the devolved Bluelander telepath nobles. Th
 | 4-5 | creaking hinges, crawling waters, cruel stars, refuse birds | pink haze, slime, cackling birds, whining winches | hot, ballooning plants, localized rainstorm, huddling mice | red haze, blue gloom, looming detritus, click-clack tremors |
 | 6 | ruined rusting skeletons | green growing glow, great mushrooms, soft singing | thunder, huddling ghosts | pale blue glow, radiation, sinking hulks |
 
-**Events**
+## Events
 
 | d6 | 1-3 Expected | 4-5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -4212,7 +4212,7 @@ Once, the decadent pleasure beach of the devolved Bluelander telepath nobles. Th
 | 5 | **Peacemaker patrol** (L1, political). Peace, understanding, protocol, judgment and police all in one. These are shiny-faced or grimly cynical. | **Peacemaker golem** (L5, metal) full of dread. Has it thoughts within its head? Just pass it there. Have no care. Do not give it a heart or a brain. | **Fire squad** (L6, peaceful) come to: (1) tax, (2) take trophies, (3) harry cultists, (4) burn an infestation, (5) re-mind a traitor, (6) help an exiled landholder. |
 | 6 | **Licensed scavengers** (L2, greedy): (1) prospecting for fossil machines, (2) stripping Dead God temples, (3) collecting local mummies, (4) chasing a traitor, (5) press-ganging for their factory co-op, (6) hunting spore ape. | **Adventure tourists** (L1d3, like you) full of naive hopes and dreams: (1) travel journalists, (2) extreme hunters, (3) adrenaline sportshumans, (4) slum divers, (5) ideological enthusiasts, (6) con artists. | **Errorfauna** (L1d4-1, new) spawned of a corrupted mother machine: (1) beautiful teratorns, (2) hungry tyrannornes, (3) blue-footed boobies, (4) cave penguins, (5) flying goats, (6) carnivorous giant squirrels. |
 
-**Opportune Accommodations**
+### Opportune Accommodations
 
 | d6 | Accommodation | Notes | €/week |
 |---:|:---|:---|---:|
@@ -4231,7 +4231,7 @@ _"Dead God bits for sale! Get your Dead God bits here!"_ —Last recorded messag
 
 Here now, Human, let us tour the Special Economic Opportunity Zone! We're sure to find some cashmaker!
 
-**Fountain Zone**
+### Fountain Zone
 
 Some say an impermeable bowl of stuckforce underpins the Fountain Zone, creating a clear lake in the sky. Others say it is a one-way portal from some cold sweet-water lake beyond the edge of civilization that summons in the waters. Every local unblue will point out there is an undying **rainmaker's head** (L13, screaming) in the bowels of the zone, vomiting water for the humans.
 
@@ -4259,7 +4259,7 @@ _**Widra's Gardens.**_
 
 This holy vegetable factory provides most of the Blue Land's alf-alfa crop. Its **priest farmers** (L1, green-fingered) are celebrated traditionalists. Many may worship the unregistered Little Water God.
 
-**Mountain Zone**
+### Mountain Zone
 
 Please be assured that the **footsoldiers of the Dead God** (L3, fungal mind-hive) no longer exist. Suggesting they still exist or are a threat is punishable under the Spreading of False Visions Act (S-r Lily VII).
 
@@ -4297,7 +4297,7 @@ _**Tenth Tunnel.**_
 
 Mythic home of a living fragment of the Dead God. Fake news, obviously. Do not visit. There are no **false divine hydras** (L9, absorbing) there.
 
-**Babylon Zone**
+### Babylon Zone
 
 There is still cut-price repurposed pleasure to be had in the Babylon Zone, from scavenged Long Ago hedonividys to the delights of **subhuman** (L3, rager) trophy hunts.
 
@@ -4329,7 +4329,7 @@ _These mycopartments are fresh about. We should sleep well tonight._
 
 <a id="page_0096"></a>
 
-**[Redacted] Zone - Alienation Zone**
+### [Redacted] Zone - Alienation Zone
 
 _"A growing hunger, a many-headed biological machine. Do not approach to take ego-images! It may look slow, but its tether-thralls can grab an unwary human and drag it into the churning flesh!"_ —T'Lawni Qriuc, [Redacted] Zone Tours
 
@@ -4373,7 +4373,7 @@ Marvel at the wonderful local **blue fog-flicker squirrels** (L1, gliding).
 
 <a id="page_0097"></a>
 
-**The War Against The Many-Headed**
+### The War Against The Many-Headed
 
 _"They are liars, untrustworthy, soma-drinkers, quacks!"_ —Assessor Pal Waqit, 3rd Reintegration Progress Report [Redacted]
 
@@ -4407,7 +4407,7 @@ _House on the Mechanical Sun._
 
 <a id="page_0098"></a>
 
-**The God Field Generators**
+### The God Field Generators
 
 _buildertech forcefield array, electrimagical henge_
 
@@ -4415,7 +4415,7 @@ A second-tier meritocrat of the administratum is always available to guide visit
 
 Other theories on what the god field generators actually do abound, but none are as psychologically soothing and should be avoided by those who would like to sleep at night. For example, the idea that the entire godfield array opening about the Ruins Azure like a great ring of shipmetal and standardstone and cosmic towers is actually the maw of some Long Long Ago earth carver, perhaps the one that in the songs chewed out the River Rushing, why that would suggest the whole city could be eaten in a single gulp if some ill-fated fool were to be so lucky as to reactivate the **carver** (L17, long-sleeping).
 
-**Strange Field Effects**
+### Strange Field Effects
 
 It is not just the Ruins Azure god field that may put a human off their lunch. Cacodemics have recorded various other fields over the last decades of research.
 
@@ -4434,7 +4434,7 @@ _The God Field Generators, Ruins Azure._
 
 <a id="page_0099"></a>
 
-**SOMA'S HIGH HOLLOW PLACE**
+## SOMA'S HIGH HOLLOW PLACE
 
 _Io, big cheese! Smell! Bless! Fruit!_ —traditional cooked offering chant, vulgar translation
 
@@ -4442,7 +4442,7 @@ The peak of Mount Babiru, known also as The Eyeless, is now officially designate
 
 The mouth of Bliss Lord Soma, the last part of that false Blue God's smashed visage, remains upon the mount called Babiru. There its former slaves come to spit upon its memory, certainly not to offer prayer and growth.
 
-**Blue God, also Bliss Lord Soma**
+### Blue God, also Bliss Lord Soma
 
 In the Dream Text their mineral is sapphire, their animal is salamander, and their vegetable is mold.
 
@@ -4452,7 +4452,7 @@ Warning. Praise of Blue Soma is restricted until the confusion with the Blue God
 
 Normal pleasure worship will resume soon.
 
-**Prayers to Bliss Lord Soma**
+### Prayers to Bliss Lord Soma
 
 How could a dead god hear one's prayers? Yet, though abjured, dead, smashed ... some spark may hear.
 
@@ -4461,7 +4461,7 @@ Once per session or so, when the toil of order and machine might overwhelm you, 
 _"There is no I, there is no mind, there is no drive; there is_
 _only the pebble on the wave-tossed shore ..."_
 
-**Roll d20 + Charisma - Aura**
+### Roll d20 + Charisma - Aura
 
 | Roll | Result |
 |---:|:---|
@@ -4471,11 +4471,11 @@ _only the pebble on the wave-tossed shore ..."_
 
 <a id="page_0100"></a>
 
-**BLUE SAFARI**
+## BLUE SAFARI
 
 _"To truly understand this rotten world, you must venture into the heart of inkiness,"_ —Ter Nowypodt, ague-addled belletriste and so-called adventurer
 
-**Neofauna Big Five**
+### Neofauna Big Five
 
 In any Blueland settlement, one will find animals adapted to the aerolith-rich environment, from the sky-boned teratorn with its four-meter wingspan to the humble air-swimming rat-penguin, also called the vermin-bane by delighted locals—and flying organic trash receptacle by less-enlightened outsiders.
 
@@ -4491,7 +4491,7 @@ But one goes on safari in search of greater beasts.
 
 **Converter's Hydra** (L10, nutrient specialist). Now nearly extinct, said to be the child of the Builder known as Converter, these gentle giants break down organic overgrowth into the useful nutrients and minerals which make the rivers of the Bluelands so lush.
 
-**Guides and Grifters**
+### Guides and Grifters
 
 Fortunately, there are plenty of reputable peacemaker approved tour companies ready to take the gentle traveler on a morally irreproachable charitable voyage into the lands of these poor fallen folk now being restored to the bosom of the true culture.
 
@@ -4517,7 +4517,7 @@ The guideless may face obnoxious officials and annoying interlopers surprisingly
 
 <a id="page_0101"></a>
 
-**INDIGO RIVER VALLEY**
+## INDIGO RIVER VALLEY
 
 _Some of the safest, richest, and nicest places to be!_
 
@@ -4543,11 +4543,11 @@ _Golem plots:_ the metal makers may reveal how to solder a soul into a golem's h
 
 <a id="page_0102"></a>
 
-**THE COAST UNBLUE**
+## THE COAST UNBLUE
 
 The walls of the Garden march right into the Circle Sea, great cliffs stumbling into the surf, riven by torrents, lashed by clouds from ocean and rainmaker alite. Yet, the waters are deep and rich, full of fish and undine, whale and jelly-mat. From Beryl Wheel to Goldencove, there is much to enjoy in the Stilters' homeland-waters.
 
-**The Sleeping Géants**
+### The Sleeping Géants
 
 _builderbeasts, mountain limpets_
 
@@ -4557,7 +4557,7 @@ That's what the Stilters say, anyway. Likely half is lies and half exaggeration,
 
 _Plane investment opportunities:_ They are not lies, according to Malcchiato the Calic, lord of seven sweet plantations. In old electronic books they found a map into the maze-brain of a sleeping géant, the one locals call Spinifer Excelsior. To awaken the géant, to tempt it with the Blue God's corruption, to plane away the mountains and make a fresh new plain to plant and profit. Yes, Malcchiato is eager.
 
-**The Wall of the People, Costa Mura**
+### The Wall of the People, Costa Mura
 
 _sarcoliths, history, industrial treasures_
 
@@ -4569,13 +4569,13 @@ People in the know, such as your benevolent author, who also writes for Betterfo
 
 <a id="page_0103"></a>
 
-**THE DESIGNATION**
+## THE DESIGNATION
 
 Beyond the reach of the Peacemaker Companies. Beyond the reach of modern conveniences like pocket daemons and incarnation temples and recycler plumbing. Beyond the fungus ghoul-haunted ruins of Qentrevlu, is the Deep Blue. The Designation. The uncivilized villages. The feral reach.
 
 _Urgent Authority Notice:_ the Upper Hold is not a ghoul-haunted ruin. It is in the process of being refurbished and remains an integrated and safe part of the J.C.C. Administration (jurisdiction pending). Access is restricted for your safety until further notice.
 
-**The Tower of Birds**
+### The Tower of Birds
 
 _theriurge, deëxtinction engine_
 
@@ -4602,7 +4602,7 @@ _Within:_ Secrets must hide within. The knowledge of asynchronous source code re
 
 <a id="page_0104"></a>
 
-**The Fountains of the Moon**
+### The Fountains of the Moon
 
 _grand-maggot cisterns, Babylon Beach crypts_
 
@@ -4639,7 +4639,7 @@ Now, in this troubled land, Indigote clans bring captured trespassers and cultis
 
 <a id="page_0105"></a>
 
-**Aerolith Cloudlands**
+### Aerolith Cloudlands
 
 _high-elevation rainmaker ecosystem_
 
@@ -4664,7 +4664,7 @@ These sky-piercing heights call to every mountaineer and terrorize every profite
 
 <a id="page_0106"></a>
 
-**PURPLE LAND**
+# PURPLE LAND
 
 <a id="page_0107"></a>
 
@@ -4678,49 +4678,49 @@ It is also a land of surprisingly few towns, but the one city that rises here al
 
 Perhaps that is why the Purple Land looms so grand in the politics of this age.
 
-**Climate**
+## Climate
 
 Between Sea and Rim the climate is mild, with rainy summers and winters greening the stuckforce islands and crater paddies, while the springs and autumns dry the land and invite gentle visitors.
 
 Out beyond the Rim, the harsh rhythms of the grasslands assert themselves. Icy winters, muddy springtimes, blistering summers, and gloomy autumns. But, we speak not of those remote places here.
 
-**Population**
+## Population
 
 core lands: ~3 million, peripheries: ~0.5–1 million
 
-**Groups**
+## Groups
 
 plantation catsfolk 40%, bluelanders 25%, wagabund travelers 15%, free purplelanders 10%, cat lords 2%, others 8%
 
-**Languages**
+## Languages
 
 Canopic (official), CAT Astral (official), Purapura (traditional), Sulazulic (bluelander migrants), Steppen Bray (visitors), Susjarda (wagabunds)
 
-**Capital**
+## Capital
 
 Official: Violet City. Practical: a novel post-human utopia sanctioned by its Success and the obvious Permission of the phylakes.
 
-**Government**
+## Government
 
 Outsourced felinocracy. The humans perform for treats and praises in the tele-empathetic dominion of the Cat Lords. Sub-plantation settlements and wagabund traveler communities subsist within a framework of acephalous segmentary clan societies.
 
-**Ideologies**
+## Ideologies
 
 CAT Antideological (official), Violet Cathedral (free scholar), Blue God: steppe perversion (suppressed), Ill-Nano Residual (underground).
 
-**Economy**
+## Economy
 
 Since the Purple Land is beyond the scope of traditional law and measurements, human development is not recorded. Testimonies imply a division between the wealthy, extractive hub that is the VC (_cf. Violet City_) and a patchwork of productive internal colonies in the form of facilities, plantations, and factory towns.
 
-**Resources**
+## Resources
 
 Steeds, grooms, repurposed oldtech, forcefield coils, psychopharmaceuticals, luxury food, wild meat, restricted texts, scavenged treasures, pliant drones.
 
-**Means of Production**
+## Means of Production
 
 Capital and production are allocated towards maximizing the pleasure and social success of the Cat Lords, with the whole system subsisting on the rents extracted from lands, tele-empathically pleasured laborers, scavenged oldtech from re-activated portals, and luxury trade with the utterly alien vast lands to the West.
 
-**Material Conditions**
+## Material Conditions
 
 Official: not recorded. Effective: Cat Lords enjoy the highest living standards of feline quadrupeds anywhere in the vast known lands. Prized human pets enjoy material conditions suitable for human flourishing. Other human resources experience conditions optimal to their productivity.
 
@@ -4731,7 +4731,7 @@ _Source: Tensey Griti and Lamel d'Occo [agent pseudonyms],_ _Heliodor Inv. Agenc
 
 [![Purple Land map (page 108)](images/page_0108_purple_land_map.png)](images/hires/page_0108_purple_land_map.png)
 
-**Ambient, Core**
+## Ambient, Core
 
 Dry uplands and lush round valleys, amethyst lakes and dark sand beaches, unfurled like a tapestry between the deep round Sea and the high glazed Rim. A timeless land of plantations and happy peasants, refined thralls and sleek felines, living machines of strange design and ill defined. A visitor might nearly suspect this land was not designed for humans, but the friendly locals would surely disagree.
 
@@ -4743,7 +4743,7 @@ Dry uplands and lush round valleys, amethyst lakes and dark sand beaches, unfurl
 
 <a id="page_0109"></a>
 
-**Ambient, Periphery**
+## Ambient, Periphery
 
 The maps claim this land for the Violet City. But the cats are scarcer, the pleasures fewer, the skies hazier.
 
@@ -4753,7 +4753,7 @@ The maps claim this land for the Violet City. But the cats are scarcer, the plea
 | 4-5 | shades of pale, powdery snow, crumbling plants | glutinous mud, palecrawl fog, mutinous sun | ominous clouds, deep rumbles, breaking soil | brush fire, swirling smoke, soil knitting itself |
 | 6 | glacial chill, hungry steppe hounds, haunting roar | skin-burn sun, meltwater run, hollow hares | lightning storm, electric dust, swirling stars | bluescreen skies, missing stars, crackshield rains |
 
-**Events**
+## Events
 
 | d6 | 1-3 Expected | 4-5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -4764,7 +4764,7 @@ The maps claim this land for the Violet City. But the cats are scarcer, the plea
 | 5 | **Troupe of cats** (L2, peddling), invisible save for their wide grins and swirling eyes. Offer potions and test thralls. | Dead cat hung beside a burned high house, its heads daubed azure. A soul pearl holds its mind (worth €1k). | **Jade juggernauts** (L6, impassive) abide, ready to block paths, channel histories, revive emperors. |
 | 6 | Old timefield frays, snaps, and swirls through you: (1-5) lose that many days, (6) a hidden extratemporal shortcut saves you a week's travel. | Celestial lensing reveals a Long Ago crystal city in the Utter West. Inspired, gain one hero die. Beware the pickpockets who prey on tourists. | **Catter patrol** (L4, burning) with metal steeds and rifle thralls: (1) tattered, (2) tired, (3) grim, (4) vengeful, (5) victorious, (6) mind-controlled. |
 
-**Travel**
+## Travel
 
 Scrubby uplands invite the lone rider to wander, but the carefully incised roads promise easier, more controlled travel.
 
@@ -4779,7 +4779,7 @@ Scrubby uplands invite the lone rider to wander, but the carefully incised roads
 
 <a id="page_0110"></a>
 
-**PURR-PURR ENTREPÔTS**
+## PURR-PURR ENTREPÔTS
 
 _"It's not a shell game. It's a cat game."_ —a tourist happy to use the local currency exchange
 
@@ -4787,9 +4787,9 @@ At first glance the Purple Land seems a fascinating place for commerce, but the 
 
 Local humans and common travelers must use license bells (lbs), a category of local currencies. Meanwhile, the cats themselves only trade in favor-stone credits (₧), with all the original stones held in the Felicitous Butchery Bank, Violet City 2nd Island (FBB). Tourists using foreign currency will find themselves taken for a ride.
 
-**This Felicitous Licensed Establishment**
+### This Felicitous Licensed Establishment
 
-**Purr-Purr Exchange Rates**
+### Purr-Purr Exchange Rates
 
 The FBB adjusts exchange rates without notice. Not all currencies may be interchanged. Fees included.
 
@@ -4819,7 +4819,7 @@ The master of commerce is a:
 | 5 | Coffee and Cranium | soft, gentle, singing | congealed "magic" texts | grows if ingested or planted |
 | 6 | Excession Hatch IV | bird-like, taut, alert | affordable luxury toys | becomes translucent over time |
 
-**Human Approved Comestibles and Kibbles!**
+### Human Approved Comestibles and Kibbles!
 
 | d6 | Item | Notes | Price |
 |---:|:---|:---|---:|
@@ -4832,7 +4832,7 @@ The master of commerce is a:
 
 <a id="page_0111"></a>
 
-**Cat Approved and Disdained Weapons**
+### Cat Approved and Disdained Weapons
 
 | # | Weapon | Description | Price |
 |---:|:---|:---|---:|
@@ -4843,7 +4843,7 @@ The master of commerce is a:
 | 5 | Fairy's Death | This illegal glass blade deals double damage to fairies and cats. Report and turn in if seen. Close, 1d6, concealed, 5 sp. | NA (€350) |
 | 6 | Violent Cat Rifle Mk II | Sturdy caseless rifle that slowly grows its own bullets, like steel coffee beans. It doesn't look like other oldtech, but that's probably fine. Long, 2d10, re 4, 2 st. | 77.8₧ (€649.95) |
 
-**Purrfectly Cute Clothing**
+### Purrfectly Cute Clothing
 
 | # | Clothing | Description | Price |
 |---:|:---|:---|---:|
@@ -4854,7 +4854,7 @@ The master of commerce is a:
 | 5 | Clockwork Exo | Configurable plantation exo-skeleton. Double skill bonus when performing heavy labor. Armor +4, +3 strength, heavy, powered 6, 3 st. | 2,995 albs (€159.95) |
 | 6 | Manambulator | A synthetic human body of fungal sinews and chitin-plate skin. For operation by one cat-sized person. Golem 10 life, +1 strength, Armor +4, powered 5, 7 st. | 225₧ (€NA) |
 
-**Violet Transport Systems**
+### Violet Transport Systems
 
 | # | Transport | Description | Price |
 |---:|:---|:---|---:|
@@ -4863,7 +4863,7 @@ The master of commerce is a:
 | 3 | Golem Bus | Lumbering biomech fueled by a blend of alchemical fluids and passenger memories. L5, carry 20, slow. | 24k albs (€1.2k) |
 | 4 | Amethyst Palanquin | Regal, carved from a single giant amethyst. Powered by the meditative purr of its passengers. L3, carry 2, slow, hovering, focus-motion. | 99.5₧ (€1.8k) |
 
-**Friendly Master Memorabilia**
+### Friendly Master Memorabilia
 
 | # | Memorabilia | Description | Price |
 |---:|:---|:---|---:|
@@ -4880,7 +4880,7 @@ The master of commerce is a:
 
 <a id="page_0112"></a>
 
-**FACTIONS VIOLET**
+## FACTIONS VIOLET
 
 _"Everybody wants to be a Cat [Lord]."_ —Dorito Pickles, exile Cat vidyscreenwriter, Saffron City, Wind Lotus VI
 
@@ -4892,7 +4892,7 @@ There are no factions in the Purple Land. Neither poverty nor politics, no vulga
 
 Everyone needs to admit the superiority of feline intelligence. Suggesting that factions exist in the Purple Lands may see one's trading or tourism license revoked.
 
-**Splendid Cat Lords**
+### Splendid Cat Lords
 
 The two-headed feline creatures, with one head a cat's and the other a snake's growing from their tails, are blessed with opposable thumbs and tele-empathetic powers of human enthrallment. They call themselves the Cats and are referred to as Cat Lords by their pets, but they seem so unlike the other cats of the Circle Sea and former Garden that many theorize they may be extra-cosmic interlopers or escapees from a Builder wizard's laboratory. Spreading these conspiracy theories is illegal in the Purple Land, where everyone knows the truth: pets and cats evolved together, guided by the wisdom of the Purple Goddess.
 
@@ -4900,7 +4900,7 @@ The two-headed feline creatures, with one head a cat's and the other a snake's g
 
 ♟ _Master Pooffins._ The lovable furball of the great master of accounts, Hel-Belt Ashcuein, feels the Cat Lords have become decadent. A small explosive misadventure attributed to some useless anti-cat terrorists and the death of a rival would be perfect to bring his Cat Power Party closer to the golden bowl of government.
 
-**Cat Pets**
+### Cat Pets
 
 Most humans in the Purple Land are willing pets of the good and benevolent Cats, happy to do their tele-empathetic bidding in return for praises and treats. Many are not even aware that they are doing the bidding of their small, clawed, fork-tongued friends.
 
@@ -4908,7 +4908,7 @@ Most humans in the Purple Land are willing pets of the good and benevolent Cats,
 
 ♟ _Beres Yimume._ An anti-cattite spy from the Free Purplelanders beyond the Rim, they have installed a subsidiary daemon-mind in their head, which captures the Cats' tele-empathetic emissions and lets Beres get close to the Cat Lords' sacred control temple. They have aroused the suspicion of a grizzled old Cat detective named Nero Tiddlestrings, but nobody will listen to old Nero who can't even control a human thrall properly these days.
 
-**Success and Permission**
+### Success and Permission
 
 _embodied concepts, egrigorical angels, psychefaction_
 
@@ -4922,7 +4922,7 @@ The rewards of Success and Permission are real, but the final consequences are a
 
 <a id="page_0113"></a>
 
-**Wagabund Travelers, Wagonnards**
+### Wagabund Travelers, Wagonnards
 
 An unsettled populace that should by rights barely be categorized as human, since they do not follow the civic traditions, yet many old machines still recognize them as being of sufficiently pure stock—and in some cases even jewel-headed—that their humanity is beyond doubt.
 
@@ -4936,7 +4936,7 @@ Instead, these tattered folk travel about on their bicycles and push-carts and e
 
 There is more to biding one's time and scavenging like rats on the edges of this decaying world than the young ones know. Right now, a new synthetic heart-lung system would be perfect for Taita.
 
-**Free Purplelanders, Freeples**
+### Free Purplelanders, Freeples
 
 The freeples do not actually exist, as evidenced by their absence in all official records and censuses. The humans dwelling outside of the standard settlements and plantations and facilities are probably not really human.
 
@@ -4948,7 +4948,7 @@ With such a monster as their steed, they could move beyond the reach of the soul
 
 ♟ _Caris._ Just Caris. You need know no more. They're part of a shadowy network exfiltrating the Cat Lords' thralls and removing the thought worms from their heads, freeing them from the nefarious thought controllers. Yes, there's an unfortunately high mortality rate to the procedure, but that's where you might come in—perhaps by procuring an off-the-books golem autodoctor?
 
-**Near Steppelanders**
+### Near Steppelanders
 
 Grown soft (in the eyes of their harsher cousins) on the periphery of civilization, the uncommon variegated humans of the vast and shattered West come often into the Purple Lands as traders and raiders. Within the Circle Rim they are few and contained, beyond they are more and less restrained. This group is (roll d6): (1) carrying a new plague, (2) bringing half-human offerings for the soul mills, (3) raiding for silks and sweets, (4) bringing furs and technomagical organs, (5) seeking gainful mercenary employment, (6) actually noble rainbowlanders dressed up as steppe nomads for fun.
 
@@ -4958,12 +4958,12 @@ Grown soft (in the eyes of their harsher cousins) on the periphery of civilizati
 
 <a id="page_0114"></a>
 
-**VIOLET CITY — CATLANDIA**
+## VIOLET CITY — CATLANDIA
 
 _"Once this city must have had another name,_  
 _but I cannot remember."_ —Undying Varya 't Uorc, _Oral Histories of the Gate War_, (Soil Lily VI)
 
-**Impressions**
+### Impressions
 
 Arriving through the ravaged Congress Concessions of the Blue Land and the crater-pocked North Core of the Purple Land, the Violet City is the first grand settlement to shine with electric fire, gentle illumination to push away the Eating Dark, rather than the ghostly blue light of the many half-abandoned settlements now peopled by more radiation ghosts than honest humans.
 
@@ -4975,7 +4975,7 @@ Away from the fresh airs and lush views, behind walls to protect them from thems
 
 Everyone is welcome to this place of trade, luxury, and magic, so long as they keep their anti-cat bigotry at bay.
 
-**Major Districts**
+### Major Districts
 
 _**The Livingstone Towers.**_ Home to the noblest of cats and the most prized of humans: the captive academics, engineers, and maintainers who keep the Purple Lands' oldtech running as it did Long Ago.
 
@@ -4993,7 +4993,7 @@ _**The Violet Lagoons.**_ The cats despise the water, for it can make their fur 
 
 <a id="page_0115"></a>
 
-**Ambient**
+### Ambient
 
 Small synthetic suns, gifts of the Cat Lords, provide more light than the purple haze of the Ultraviolet Grasslands, creeping through the gaps in the Circle Rim, would usually permit.
 
@@ -5003,7 +5003,7 @@ Small synthetic suns, gifts of the Cat Lords, provide more light than the purple
 | 4–5 | violet skyglow, tense air, languid salty mists | ultraviolet light, dim haze, glyph hallucinations | flickering clouds, pricking stars, raucous market cries | oilslick spreading dark, eyes in the gloom, chirping |
 | 6 | purple rain, distant thunder, bacterial glitterbloom | choking haze, itching odor, visions of a dark city | stuck grey sky, no shadows, cawing birds, wailing frogs | stuttering light, dust fall, oppressive silence |
 
-**Events**
+### Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -5014,7 +5014,7 @@ Small synthetic suns, gifts of the Cat Lords, provide more light than the purple
 | 5 | Outlander **ferals** (L1, half-human) here as: (1) bodysnatchers, (2) soul-juicers, (3) ratcatchers, (4) traders, (5) tourists, (6) pilgrims. | Friendly folks offer a free plantation tour with free coffee. A place to rest, ... and perhaps be enthralled by a lovely **silver Cat** (L4, tap-tapping)? | An **ultra** (L7, forgetful) from beyond time and Rim, keeps getting trapped in useless bodies. Knows how to talk to ancient doors. Does not know why. |
 | 6 | A **coterie of pets** (L1, sleek) out: (1) patrolling for anti-cattites, (2) on parade, (3) shopping for their masters, (4) wining and dining new prospects, (5) hunting mice and dogs, or (6) aimless without instructions. | **Glowing shadows** (L3, soul-scratch) stalk the night, untethered from their Cats, they hunger for: (1) catnip, (2) charisma, (3) blood, (4) the choking world beyond the false portal, (5) belly rubs, (6) someone to talk to. | A **purple jade voidwalker** (L6, implacable) stops you and challenges you to a contest of wits. The stone human abides. Win: he gives you a jade finger (€200). Lose: work in his haunted garden for a night and a day. |
 
-**Purple "Palaces"**
+### Purple "Palaces"
 
 | d6 | Palace | Details | €/week |
 |---:|:---|:---|---:|
@@ -5029,7 +5029,7 @@ _Accommodations also provide ticket dice: €5 = 1, €10 = 2, €25 = 3, €50 
 
 <a id="page_0116"></a>
 
-**CATHEDRA'S PURPLE UNIVERSITY**
+## CATHEDRA'S PURPLE UNIVERSITY
 
 _"They claim this temple of higher learning was once a sacred site of kine and canine. That here an agglomerate deity called the Howl aggregated the knowledge of its people. Mere lies. Without Good Cat-Hydra this elevated site would have remained a Vile Place of No Honor, but Her goodness has gifted it to us as a place where we can recover the powers of our true ancestors!"_ —Lies of the Dogheads, Popular Review, VC.
 
@@ -5037,19 +5037,19 @@ Tethered to the mauve cliffs of Violet City by grasping trunks of livingstone, w
 
 Visitors can buy a slug of knowledge, a simple neurosymbiote that merges ancient knowledge with their modern minds. Discounts are available for visiting scholars, thought-leaders, and other influencers.
 
-**Oldtech Lord Cathedra, also Violet Cat Hedra, also the Purple Goddess**
+### Oldtech Lord Cathedra, also Violet Cat Hedra, also the Purple Goddess
 
 The jewel remembers. Cathedra's glitter is amethyst, her predator the cat, her fruit the agaric mushroom.
 
 "They that remembers time before time, reason before reason, cosmos before cosmos. They that administer the reality subroutines. But also, the mad one, the collector of memories, the harvester of dreams.."
 
-**Prayers to Violet Cathedra**
+### Prayers to Violet Cathedra
 
 Once per session or so, to release anxiety, to live in the only moment given to mere mortality:
 
 "Cogitate, regurgitate, garbage in, garbage out, logic gate, thesis, magic gate, antithesis, cosmic gate ..."
 
-**Roll d20 + Aura - Thought**
+### Roll d20 + Aura - Thought
 
 | Roll | Effect |
 |---:|:---|
@@ -5059,7 +5059,7 @@ Once per session or so, to release anxiety, to live in the only moment given to 
 
 <a id="page_0117"></a>
 
-**Fingers of the Cats**
+### Fingers of the Cats
 
 _crater aberracts, outstanding memorials of feline aid_
 The Purple Land has always been a land of many round valleys named "craters" by catastrophists and "pawprint vales" by those who prefer social advancement. Many of these craters have plantations and facilities and most of these cluster about unusual features referred to as the fingers of the cats. These ancient structures, existing since forever just like the Cat Lords, bear the visages of the first Pet Grooms, who blossomed in the radiant purr of their feline overlords. It is taboo to approach them, but enjoying them from afar imparts a subtle self-satisfied glow and acceptance of the Cat Lords to the tourist.
@@ -5075,7 +5075,7 @@ _**At the Finger's Base.**_ Why are you here? This is taboo! Shoo, shoo! Do not 
 
 _**Inside the Fingers.**_ Seriously, you shouldn't be here. If the Cat Lords catch you. Look, I'm just a ... no, I'm not a radiation ghost. I'm a temporal echo. I'm not here now but I'll be here again at some possible time and yes, these are time vaults. You're not supposed to be here! The longer you stay the more you decay! Just take one of these engraved stone tablets, it has secret ancient knowledge. Fine, or one of the implantable psychic symbiotes. But get out, quick, you're decaying the vault!
 
-**Rocks Fall Pillars**
+### Rocks Fall Pillars
 
 _hierodule crisis refuges, crumbling capture pillars_
 During a redacted crisis, **Fir Father** (L7, autonom) moved to stead one of the capture pillars in the so-called Alkan Sea, west of the phylake See Rocks Fall. This started a movement known as the Flight to the Sea Mounts.
@@ -5088,11 +5088,11 @@ The feral dwellers of these crumbling water castles may once have been Purplelan
 
 <a id="page_0118"></a>
 
-**THE NUCLEAR LANDS**
+## THE NUCLEAR LANDS
 
 The core of the Purple Lands, the magitechnical heart of the Rainbowlands where the soul mills still run, where the streets are day-bright even in darkest night with the spiritual decay of unworthy souls. A wonderful place, a delightful land where the worship of the Cat, associated with Violet Cat Hedra, has stanched the inevitable entropy of knowledge, has created a posthuman bulwark against decay and even recreated some of the glories of the warmest days of the Long Long Ago. Recreated? Surpassed, even, say the friends of the cat.
 
-**Shatterjones, The New Nefra**
+### Shatterjones, The New Nefra
 
 _fortress disaster zone, pyramid analysis site_
 This Catlord frontier was destroyed by the sudden appearance of a New Pyramid within living memory. Researchers and civil defense units continue to study the situation, but local entrepreneurs have also begun to organize tours of the New Pyramid zone. Pack a realityaffirmation blanket (just €10 at the entrance!).
@@ -5101,7 +5101,7 @@ _**The Shatter:**_ gravity slants at an angle, the light bends unpredictably, an
 
 _**The Jones:**_ the New Pyramid is named for the first researcher to die inside. An unfortunate fellow who ate a bad salmon mousse and died in the third chamber, fusing with the rubber-fungus wallmatter there. Please, do not feed the undead **Jonesmatter** (L11, glutinous).
 
-**The Mostcat Omorimo**
+### The Mostcat Omorimo
 
 _human generator facility, revived oldtech center_
 Simple minds say this complex of para-elemental roseate glass and azure living flesh explains the northward thrust of the Purple Land under its feline masters. Every educated person will tell you this is nonsense, the cats are our friends not masters. The complex itself is nothing sinister—it uses perfectly safe and well-understood technology to birth fully-grown humans (so-called orimonates or ripe-born) from a beast-seed matrix.
@@ -5114,7 +5114,7 @@ _**Vocatron:**_ a magnificent adaptation of oldtech vidy technology! Condenses a
 
 <a id="page_0119"></a>
 
-**Startether Peak Abbey**
+### Startether Peak Abbey
 
 _pinnacle of solitude, re-membrance generator_
 There was never a star tether here or anywhere else.
@@ -5129,11 +5129,11 @@ Those approaching the fairy door should beware the **brain-tunnelers** (L4, popp
 
 <a id="page_0120"></a>
 
-**THE CAT PLANTATIONS**
+## THE CAT PLANTATIONS
 
 The _pyanurs_ of the Purple Land stand apart from the old human towns. Unlike those decrepit husks, the pride-run plantations are models of life, conviviality, and growth.
 
-**Crater Approach**
+### Crater Approach
 
 Depend from the dry uplands and enter the round bowl.
 
@@ -5144,7 +5144,7 @@ Depend from the dry uplands and enter the round bowl.
 5. Haze tendrils coil about the switchback road, thicker down in the bowl, promising damp and daze.
 6. A new town, in the modern Post-Potemkin Style. The citizens all look well-fed, well-maintained, and very similar to one another. All praise the cat lord and their pride of _grandes chattes_.
 
-**The Valley Promises**
+### The Valley Promises
 
 More than cat coffee is produced here.
 
@@ -5155,7 +5155,7 @@ More than cat coffee is produced here.
 5. A pleasuremaker tunes and plays the brains of the cat lord's willing self-sacrifice to procedurally generate synthetic memories for vidy and sale.
 6. Six ultras call the rubber-carp pond home. They repair human minds, restoring loyalty and virtue.
 
-**The Big House**
+### The Big House
 
 This is where the cat lord dwells, the true friend of all humans here.
 
@@ -5166,7 +5166,7 @@ This is where the cat lord dwells, the true friend of all humans here.
 5. A hermetic palace, accessible only through screens and noöspheric projection, home to a verdant biome from the True Soil of the Cats.
 6. A black bunker, cubic, inaccessible. All communication is telepathic and enigmatic.
 
-**The Cat Lord**
+### The Cat Lord
 
 Feel its mind, stroke its fur, know its perfection.
 
@@ -5179,13 +5179,13 @@ Feel its mind, stroke its fur, know its perfection.
 
 <a id="page_0121"></a>
 
-**THE SECURE ZONE**
+## THE SECURE ZONE
 
 The territories recently liberated from the terrorist error of the Blue God have now been fully reincorporated into the happy state of original felinicity.
 
 Some suggest that the Secure Zone is still part of the Blue Lands, but those are the legalistic confabulations of fool humans who do not understand the felicitous superiority of the Cat Lords.
 
-**Vexalt A.N.T. Facility**
+### Vexalt A.N.T. Facility
 
 _temple-town of a pre-feline saint_
 A temple-town near Oldmountain haunted by the monks of Saint A.N.T. who defied the soul-burning catlords. At the last, they released the heart of the A.N.T. and set fire to the very air above their ancient ruin. Following an extended purification ritual, the A.N.T. is now a storage facility for spent soulmatter.
@@ -5196,7 +5196,7 @@ _**Storage Facility:**_ the old gardens of heresy now house the ashen pearls cre
 
 ♟ _Permian A.N.T._ Unknown to most, the numerous dog-sized A.N.T. units carry in their combinatorial behaviors the personality-memory of Permian the Eartheater, one of the original Builders who made the Soil habitable for the first-stock humans. Flashes of this original heavengineering entity appear when enough A.N.T.s are assembled in one place. Permian, though easy-going and amiable, is no saint, and would gladly be re-incarnated.
 
-**The Well-Charred Mountains**
+### The Well-Charred Mountains
 
 _rustic carbon fossils, fuel for a new era_
 Above the Ink River the liberation of the Blasted Field has scoured away the top-layers and accreted géant leavings to reveal the charbon bones of the mountains, biaerate coal extracted by the Builders' airsuckers and deposited here in towers of glistering, lustrous sunlight trapped in dark, fire-prone stone. The Free Purplelanders hope to unlock the power of these mountains to drive the Cat Lords out of their lands and out of their minds.
@@ -5205,11 +5205,11 @@ _**Abulugandi's Watchtower:**_ a problem for anyone who would wish to spread the
 
 <a id="page_0122"></a>
 
-**THE NEW VELDT**
+## THE NEW VELDT
 
 The territories west of the Rim are still ruled by the lords of the Violet City. Nothing has changed here in the last millennium. They have not been nor are abandoned. The lack of permanent patrols is a sign of how peaceful the region is, not that it has slipped out of central control.
 
-**Splintereye - Nefra Vlindoxé**
+### Splintereye - Nefra Vlindoxé
 
 _shards of beanstalk suspended in stuckforce_
 A biomechanical ladder of heaven, it seems, destroyed and fractured long ago. Perhaps the Gnaws themselves, that broken massif, is its old base station, fallen into itself. When winds whip through the undead stalk segments, glowing haze balloons break off and fly with the wind, sterilizing machines and rewinding memories.
@@ -5224,7 +5224,7 @@ _**Anchor Pit:**_ lined with no-stuff that even the master scholars of Long Ago 
 
 <a id="page_0123"></a>
 
-**Flying City - Kivita Volá**
+### Flying City - Kivita Volá
 
 _ancient metal mine and villages_
 At the head of a wound in the Gnaws, at the source of the Rosesparkle river, stands the great layer-cake metal city. Inhabited on and off over the aeons by feral quarterling tribes, catless refugees, gutless syntheticsm and other classes of hammer fled from their righteous managers. Their rugose pueblos and rusted insulas stud the old megastructure like barnacles and limpets on a derelict coasthugger. Over it all, the knotweeds and thorntrees of the dusking scrub proclaim vegetable dominion.
@@ -5235,7 +5235,7 @@ _**Booster House:**_
 
 _**Category Outpost:**_ golems and cats run the modern mining operation from the abandoned Flying City Museum and Lander. Monthly, their armed convoys truck shipmetal ingots down the Rosesparkle to the Sculptor Docks.
 
-**Nova and Nova**
+### Nova and Nova
 
 _two necropolities, twinned in mirror_
 _misery_
@@ -5253,7 +5253,7 @@ _**Yesterdoor:**_ A wrong portal dwells in the heart of both Novas, a gate witho
 
 <a id="page_0124"></a>
 
-### RED LAND
+# RED LAND
 
 _"Run, run, from the evil sun,_
 
@@ -5274,51 +5274,51 @@ Also, the land is famed for its bloodwine and organ farms.
 
 Today oldmetal fortresses dot the land, Long Ago bunker cities serve as store houses and tourist traps, while hunters seek out the falschers—the wild soulless ones sprung from mycelial machines as they did long, long ago when the gods farmed them for spare parts—along the Organ Trail looping far into the West Rustcountry.
 
-**Climate**
+## Climate
 
 In the far south of the Rainbowlands the seasons are harsher, the winters more severe. When winters fade, the mountains' ice and snow feeds the rich farmlands, but then summer's heat bakes the land and summons storms to break against the heights. The greatest of storms bring cyan spores sweeping across the southern summits, poisoning crops and painting the sky garish hues.
 
-**Population**
+## Population
 
 Red Land: ~8 million, Red Land District: ~2 million,
 
 Rust Country: ~0.5 million
 
-**Groups**
+## Groups
 
 vein tenants: 50%, free vintners: 15% free dewerkers: 15%, rustlanders: 8% hexad members: 4%, vampires: 3% others: 5%
 
-**Languages**
+## Languages
 
 Raudalandi (Red Land), Redland District Cant (RLD),
 
 Winerian (dewerkers), New Common (falschers)
 
-**Capital**
+## Capital
 
 Official: Red Land District or Red End Formerly: Red Line, the peregrinating river city (defunct).
 
-**Government**
+## Government
 
 Polycentric confederation with devolved aristocratic and industrialist traditional organizations.
 
-**Ideologies**
+## Ideologies
 
 Aristocratic antitheism (high), blood nationalism (vampire knights), revolutionary first-humanism (district), free industrialism (dewerker), radical sarcopoetics (falscher), pack puritanism (dogheads), clan libertarianism (rustlander).
 
-**Economy**
+## Economy
 
 By popular custom, the free humans of the Red Land, pay only the vein tax and all other activity is their own prerogative. The collection of economic information is viewed as the first step towards divine tyranny. The Red Land District is heavily dependent on bonded golem labor and free dewerker hexad cooperatives.
 
-**Resources**
+## Resources
 
 Bloodwine, abmortality, knights, golem control lemmas, bunkers, revolutionary ideals, falschers, fresh organs, steel, wood, coal, hydroelectric power.
 
-**Means of Production**
+## Means of Production
 
 Wealth can only be owned by individuals in the Red Land, collectivism and corporativism are both shunned as the road to antihumanist serfdom. This is a core conflict with the Red Land District, which is ruled entirely by hexad cooperative innovation-and-industry syndicates—crime gangs in the eyes of the Vintner Lords.
 
-**Material Conditions**
+## Material Conditions
 
 Visitor testimonials suggest there are few palaces as opulent as those of the Vintner Lords or the Hexad Collective Secretariats. Reports on the squalor or destitution of the toiling masses are classified by both the Vampire Knights and the RLD Collective as various shades of subversive propaganda.
 
@@ -5329,7 +5329,7 @@ _Source: Clarity on Our Trading Partners, Visense Nergal et al,_ _Violet City Un
 
 [![Red Land map (page 126)](images/page_0126_red_land_map.png)](images/hires/page_0126_red_land_map.png)
 
-**Ambient, Highlands and Rustcountries**
+## Ambient, Highlands and Rustcountries
 
 When winters fade, the mountains' ice and snow feeds the rich farmlands, but then summer's heat bakes the land and summons storms to break against the heights. The greatest of storms bring cyan spores sweeping across the southern summits, poisoning crops and painting the sky garish hues.
 
@@ -5342,7 +5342,7 @@ When winters fade, the mountains' ice and snow feeds the rich farmlands, but the
 
 <a id="page_0127"></a>
 
-**Ambient, Valley Lands and Coast**
+## Ambient, Valley Lands and Coast
 
 | d6 | Winter | Spring | Summer | Autumn |
 |---:|:---|:---|:---|:---|
@@ -5353,7 +5353,7 @@ When winters fade, the mountains' ice and snow feeds the rich farmlands, but the
 
 <a id="page_0128"></a>
 
-**Events**
+## Events
 
 Traveling along the rivers and roads, you pass looming mountains, deeping valleys, groaning vinyards, yawning bunkers, glittering mansions, and drifts of red dust like snow.
 
@@ -5366,7 +5366,7 @@ Traveling along the rivers and roads, you pass looming mountains, deeping valley
 | 5 | Blood flower bloom sets your veins on fire and sinuses on water. Lose 1d3 charisma. Meds cost €5 per week. | Skyfire damages exposed neural circuits, reducing thought by 1d4. Consider wearing a foil hat in future. | A local flood drowns your path. Lose 1d3* days. Oh, wait, it's revealed an old-time bunker! How enchanting! |
 | 6 | **Night knight patrol** (L3, traditional), protectors from chaos: (1) hunting bandits, (2) draining falschers, (3) bearing bloodwine, (4) collecting protection taxes, (5) harrying ferals, (6) preparing a pogrom. | Without bloodwine, tenants and rusters alike succumb to cyan spores, turning into not-quite-vampires: **bloated glowbloods** (L2, mutated) who form cannibal nests in the hollowed hills to prey on travelers. | Illusory road ends at a creepy hill with ruster glyphs warning of oldtech corruption. Lose 1d2 days backtracking or delve within, risking decayed post-humans to find old glitchware (increases random trait by 1 rank). |
 
-**Additional Joys of the Rustcountry**
+### Additional Joys of the Rustcountry
 
 The roads in the Red Land are long and winding. Those in the Rustcountry are even longer.
 
@@ -5382,7 +5382,7 @@ The roads in the Red Land are long and winding. Those in the Rustcountry are eve
 
 <a id="page_0129"></a>
 
-**Travel**
+## Travel
 
 The mountains that saved humanity in the forgotten Long Long Ago now make much of the Red Land a tourist backwater—a hidden gem in pop parlance. Favors from the vintner lords translate into discounts and free samples.
 
@@ -5399,7 +5399,7 @@ The mountains that saved humanity in the forgotten Long Long Ago now make much o
 
 <a id="page_0130"></a>
 
-**FREEBLOOD VENDINGS**
+## FREEBLOOD VENDINGS
 
 _Freedom is paid for in blood._
 _Those who will not pay, cannot be free."_
@@ -5408,15 +5408,15 @@ _— traditional Red Land saying_
 
 One travels to enrich oneself, does one not? Well, in the Red Land, the gentle visitor can fortify themselves body and soul, gaining life and wisdom. Materialist visitors are reminded that, R.L.D. ideologies notwithstanding, consumption is _not_ the lifeblood of the Red Lands. These lands run on honor, tradition, blood and soil. For what is wealth if not land?
 
-**Intoxicating Hosts**
+### Intoxicating Hosts
 
 Hosts in the Red Land are fond of plying visitors with their favored vintages. Turning down a toast or beverage is rather _gauche_. You don't want to be _gauche_ to a blood-drinking vintner lord, do you?
 
 The rich wines of the Red Land, like other mind-altering beverages, intoxicate the indulging human. Each alcoholic unit of drink occupies a burden slot, one unit dissipates every 4 hours.
 
-**This Liberal Vending**
+### This Liberal Vending
 
-**Honor as Currency**
+### Honor as Currency
 
 As you gain favor with a Red Lander of class and taste, they feel dutybound to host, dine, and wine you in proportion to your honor. This honor to cash conversion guide will help Greenlanders and other materialists.
 
@@ -5448,7 +5448,7 @@ Today's trade-host is a:
 | 5 | Says Agrognome | short, supple, smarmy | sundry intoxicants | do not clean at night |
 | 6 | Steak and Sword | bloodless, thin, steely | rustland envirotech | bleeds orange fluid by moonlight |
 
-**Fruits of Blood and Soil**
+### Fruits of Blood and Soil
 
 | # | Fruit | Description | Price |
 |---:|:---|:---|---:|
@@ -5462,7 +5462,7 @@ Today's trade-host is a:
 
 <a id="page_0131"></a>
 
-**Red Land Dress and Wear**
+### Red Land Dress and Wear
 
 | # | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -5473,7 +5473,7 @@ Today's trade-host is a:
 | 5 | Bunkerbeetle Suit | Chitin carapace with synthstone platelets. Light, tough, and anti-necrotic. Armor +4, 2 st. | €150 |
 | 6 | Truebrass Ring | Powerfully antibiotic. Protects from all skin infections and most contact poisons. 1 sp. | €240 |
 
-**Human Liberty Insurance Gear**
+### Human Liberty Insurance Gear
 
 | # | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -5484,7 +5484,7 @@ Today's trade-host is a:
 | 5 | RLD Revolutionary | Novel SMG. Works as a club (1d8) in melee. Short, 2d4+2, re 1, burst, 1 st. | €450 |
 | 6 | Long Ago Howler | Sonic blaster provokes dread, fear, and awe. Short, 2d8, re 10, small area, 1 st. | €1.5k |
 
-**Unrusting Travel Options**
+### Unrusting Travel Options
 
 | # | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -5493,7 +5493,7 @@ Today's trade-host is a:
 | 3 | Bloodweb Balloon | The full old-school blimping experience! L1, carry 4, slow. | €500 |
 | 4 | Dust Rover | Sungwood, sinew, chitin, and fungal filters. No metal parts! L3, carry 4, fast. | €1.8k |
 
-**Sundry Russet Souvenirs**
+### Sundry Russet Souvenirs
 
 | # | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -5513,7 +5513,7 @@ Today's trade-host is a:
 
 <a id="page_0132"></a>
 
-**FACTIONS IN RUBY**
+## FACTIONS IN RUBY
 
 _"Red Land traditionalists like to define themselves by their blood, but it is water and stone that shape its societies."_ —Esi Tu, travel writer, Decapolis, Wind Lotus II
 
@@ -5523,19 +5523,19 @@ Three great groups divide the country between. The dwarfer industrialists domina
 
 Other smaller groups squabble amongst themselves, allying with the great groups to serve their needs. The free parliamentarians represent the traditional bunker yeomen of the Red Land, the vampire knights celebrate the triumph of the Human will against the cruel oppression of the Dream Canopy and the false idols, the priests RLD offer community and purpose to the labor hordes, the hexad societies provide self-organized power to the petty industrialists and pirate burgeois, the free falschers movement probably doesn't really exist, and the old dogheads are some kind of cinecephalic cult that the author of this section doesn't really care about.
 
-**Dwarfer Industrialists**
+### Dwarfer Industrialists
 
 They pay lip-service to the tenets of the RLD and coin-service to the hexad societies of that city. Their factory towns harvest and repackage the coast.
 
 ♟ _Groen 4-Copy._ The industrialist has a cunning plan to mine the popular walls of the resort ghost town Falsestilt with the metropolitan Mining & Dining Fraternity. The profits will be immense and will upset the balance between the hexads and Groen's Well-Going Concern Six-Dig-Ma. Anarchists and balancers alike would love to see this capitalist and his cult following brought low. The hexads would just love their juicy cut.
 
-**Vintner Lords**
+### Vintner Lords
 
 The vintner lords pay kind words to the free parliament of the Red End and vein-rent to the vampire knights. Their plantation villages tessellate the vast length of the Wine River valley.
 
 ♟ _Nomoä the Old._ The tricentenarian is holding a great going away party as she prepares to become one with the great blood moon on high. There will be games and, wag the gossips, one of her seventy-seven secret heirs will receive her lovely ruby teeth. Those same teeth she took from the Violet Sky-Eating Hydra in a riddling contest.
 
-**Rust Folk Clans**
+### Rust Folk Clans
 
 The half-barbarous rust folk clans pay neither heed nor deed to anybody. Their hybrid hamlets crawl the rugged backcountry of the Redwine Hills and the River Mountains and even reach the deep old mines in the Winedarks far south of the civilized reach.
 
@@ -5544,7 +5544,7 @@ The half-barbarous rust folk clans pay neither heed nor deed to anybody. Their h
 
 <a id="page_0133"></a>
 
-**Free Parliamentarians**
+### Free Parliamentarians
 
 The oligarch MPs of Red End represent the concentrated wealth, tradition, honor, power, venality, and corruption of the Red Land.
 
@@ -5554,7 +5554,7 @@ At the end of each MP's mandate, when their blood body denatures, they are ritua
 
 ♟ _Anselm Frankinburn CXXII._ This rogue, free-spirited MP, who would strongly prefer not to end up denatured and baked into cookies, is looking for outsiders who could fake their death and translate their mind into a new shell. They've even got the perfect opportunity: a lovely little lakeside shindig of the Sub-Ministerial Committee on Higher Taxes for Untagged Second-Class Citizens. With the flowing bloodwine, who will notice one more braindead MP? It's easy money, they promise.
 
-**Vampire Knights**
+### Vampire Knights
 
 The flower of Red Land youth, made immortal with the blood and plasm and _ka_ of the stems, roots, and much of Red Land youth. Was it not the best of humanity that bought its freedom after its long march along the cruel Garden Path? So the best of humanity must be kept vital, fresh, young, and ready for the eternal revolution.
 
@@ -5579,13 +5579,13 @@ A tourist or a paid up member of the secret celebration?
 
 <a id="page_0134"></a>
 
-**Priests RLD**
+### Priests RLD
 
 The sacred guardians of the revealed and perfect truth of the social anarchist dialectic of the RLD remain popular with the working masses and labor hordes of both the RLD and the Red End. While their materialist monasteries provide psychological opium to the multitudes, the lords and hexads support them; when they kindle revolutionary excitement, they assail them.
 
 ♟ _Burn-Oppressors-In-the-Oil-of-Judgement._ The new firebrand is causing a stir, mobilizing monasteries and organizing combat communes in the back country. Who will hunt them down first, the established priestly anti-hierarchy or some local bloodwine don?
 
-**Hexad Societies**
+### Hexad Societies
 
 The six traditional fraternal self-help societies of the Red Land coast are the heirs to centuries of resistance, mutual assistance, and poorly-disguised piracy.
 
@@ -5593,7 +5593,7 @@ When the Red Land District broke free of the Red End parliament, its naive revol
 
 ♟ _Heart-of-Lion._ The thirteen pickled brains of the Adamant and Dandelion Hexad (Heart-of-Lion) seek to expand in the occupied City-Ruins Azure. Coasthuggers and the old Red End portal make it more profitable than most guess. A few bribes and assassinations will make the Green and Purple peacemaker companies see the good sense of working with an experienced secret society to handle the Dead God's mad blue cultists.
 
-**Free Falschers**
+### Free Falschers
 
 This terrorist group of soulless false humans was eradicated years ago and is no threat to any visitor.
 
@@ -5605,7 +5605,7 @@ If you suspect that you have no soul, are a false human, or a clone doppelganger
 
 ♟ _Sacrament bane Pizzigatto._ The undercover Cat Lord masquerading as a civet is in the Red Land to investigate whether the local falschers are more or less effective as a source of stock pets for the Violet City military. It has extracted a crude map from several cloned falschers and suspects they have figured out where in the Celsius Lodge Lands Hunting Preserve the sixth-type falschers' clone factory is hiding. A docile factory of this sort to churn out pets for the Cat Lords would be invaluable. Sacrament would certainly pay at least €10k for viable factory buds.
 
-**Old Dogheads**
+### Old Dogheads
 
 The old dogs knew many tricks. Many educated travelers will have heard the myths of the Howl, the meta-entity that manifests when Dogheads of multiple categories form a choir. This is an obvious exaggeration, of course, and the old dogheads are just another oppressed folk sect welcomed in the invigorating and liberal Red Land.
 
@@ -5616,7 +5616,7 @@ The old dogs knew many tricks. Many educated travelers will have heard the myths
 
 <a id="page_0135"></a>
 
-**RUBRA'S OUBLIATION**
+## RUBRA'S OUBLIATION
 
 _"This circle is no circle. Here, blood runs dry, memories repress themselves, responsibility is evaded. Sin is burned away in the soulfire of unbeing."_ —Executive Charts 5:10, Book of the New Human.
 
@@ -5624,19 +5624,19 @@ The scattered husk of Rubra's géant false avatar, Malbolco, groans and glows wi
 
 So say the wealthy vintner lords, anyhow. Rustlanders, rootgrubbers, falschers, bloodcurdlers and even curious tourists still visit this abandoned zone. Some even pray at the husk as though it were the Red God's temple.
 
-**Red God, also Blood Lord Rubra**
+### Red God, also Blood Lord Rubra
 
 Songs in the bloodstream say their mineral is ruby, their beast the locust, their giving tree the fig.
 
 "They that sets in motion evolution's race. They that motivates, drives, hungers, lusts, and needs. The maker of tusk and claw. But also, the maker of suffering, the sower of terror, the warden of death."
 
-**Prayers to Red Rubra**
+### Prayers to Red Rubra
 
 Once per session or so; to avert the Red Cycle, to make the lord of flesh and fang overlook the human, wail:
 
 _"I am the cud, already in the gut, eaten, digesting. I am passing through, I am done and undone, I have fed you..."_
 
-**Roll d20 + Endurance - Charisma**
+### Roll d20 + Endurance - Charisma
 
 | Roll | Effect |
 |---:|:---|
@@ -5644,7 +5644,7 @@ _"I am the cud, already in the gut, eaten, digesting. I am passing through, I am
 | 2–19 | Hold the rolled number. Once, reduce 2–19 damage by that amount. |
 | 20 or more | Rubra sings in your blood. Hold the song tight, sacrifice it to regain 1d6 life. |
 
-**Zones of Abnegation, The Oubliations**
+### Zones of Abnegation, The Oubliations
 
 Several other best-forgotten zones dot the Red Lands, such as those around the scattered corpses of the Winged Eyes, the mire of Centuries of Triumph, and the radiant whiteness of the Home of Wisdom. Despite the different structures of the destroyed false avatar and the various visual presentations of these zones, all are marked by a persistent groan and glow. The glow illuminates them even at night, marking them as places of no honor now that the war against the false gods has been won. The glow itself is not very dangerous. The groan, however, is a persistent, psychic noise that pollutes the oubliations and has disastrous effects on the human nervous system, including (roll d6): (1) devolution, (2) decay, (3) rapid-onset dementia, (4) berserk rage, (5) brain-hunger, and (6) hallucinations. Lead-lined helmets and Faraday ponchos have been shown to help somewhat and desperate folks still stalk the oubliation zone, hunting for souvenirs and oddtech preserved by the lack of sentient observers (and thus slower passage of time) within these regions.
 
@@ -5653,7 +5653,7 @@ Dogheads are oddly unaffected by the groan, despite their superior hearing.
 
 <a id="page_0136"></a>
 
-**RED END**
+## RED END
 
 From the bones of the land, the city's livingstone terraces march up the slopes of the mountains Silver (Arshenu) and Cinnabar (Shinabru). They soar over the headwaters of the Wine River and Bearded Vulture Pass, inviting the clouds to play among the linked citadel-mountains. The old-growth buildings are blind to protect the photosensitive minority.
 
@@ -5669,13 +5669,13 @@ Lumin lichen veins drink in the ambient vital energies and suffuse the shudderin
 
 _"No city is as free as Red End, for it is renewed in the blood of Liberty, for it is fed by the blood of false gods sacrificed."_ —Hael Ric d'Er Cru, Bunker Day Speech (SsD VI)
 
-**Grand History**
+### Grand History
 
 The mind-blind traditionalist of the Green Land, still staggering along the tattered folly they call the Garden Path, still scraping and bowing before the false histories peddled by the Inquisitors of the Ministry, still besotted by the might of those mute weapon-géants, the phylakes, live in a perpetual present, lulled to sleep by the lurching fabricators still twitching to the forgotten tunes of the absent false gods.
 
 Not so the Red Land, not so Red End. Here the War others fear to mention lest it bring the Retribution once more was won. Here, Humanity survived the Bunker Era and emerged to reconquer the world by blood and bone. All of Red End is a living monument to the gory triumph of panhumanity over those false gods, the Vile Ones.
 
-**Tragic Present**
+### Tragic Present
 
 Alas, not all saw it that way. Many saw the vein-rent, the traditional tax on every resident of the Red Land to fill the blood banks that fuel the vintner lords' biomantic universal regenerative healthcare programme for all Red Land citizens, as an injustice, a burden, an invasion of their bodies. They decried the blood type tablets worn by residents, that symbol of human freedom and dignity, as "cattle tags". At the beating heart of the Red Lands, in the Great Rebellion Museum itself—o, irony of ironies—the anti-priest, the bloody upstart Ôb Mock, discarded his blood driver robes and demanded of Liszteprans, head of the T. Tanz Kompanie and then overseer of the venerable blood banks, to tear down the Wall of Traditions where the laws of the Red Land were inscribed and the ranks and types of the blood-givers were listed.
 
@@ -5686,7 +5686,7 @@ Alas, it did not. The Ôb Mock bloody uprising was swiftly put down with minimal
 
 <a id="page_0139"></a>
 
-**Ambient**
+### Ambient
 
 Along the terraces and urbiducts of Red End scurry harried maintainer managerials and stroll peacock-bright consumer finefolk. Thus, the sanguine economy ticks. On Sundays you will see quaint _activistes_ marching for the amusement of the knights and on blue Mondays used up probably-folks line up at the self-donation clinics.
 
@@ -5696,7 +5696,7 @@ Along the terraces and urbiducts of Red End scurry harried maintainer managerial
 | 4–5 | deserted but for probablies | scuffles, raucous song and ash | taste of rust on the winds, razor cold downpour, gushing gutters | cyan fog, blood addicts, red sky, shuttered doors, heavy snow, frozen waste |
 | 6 | swimming tunnel rats | stalking anti-socialites | electric blossom knights | humans, cryodryad calls |
 
-**Events**
+### Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -5707,7 +5707,7 @@ Along the terraces and urbiducts of Red End scurry harried maintainer managerial
 | 5 | Stitcher biomancers seek subjects for radical self-improvement! Tested on soulless human-analogue falschers. | Dozens of corpses in a jay-needle den. Tried to make their blood ultraviolet with the neon phoenix's feathers. | A rebel knight will be pulped and fed to the **Sky-Hydra** (L15, sparkly) in a ceremony. Games, treats, included. |
 | 6 | Processions, pop-music, plasma-fizz, and pyrotechnics for the electric blossom games to pick new knights. It devolves into an: (1) anti-cat demo, (2) anti-lich rally, (3) pro-doghead party, (4) jingoistic march, (5) mass love-in, (6) popular blood drive. | Enhanced sentient bat swarms—the **Red-Eyes** (L1, legion) patrol the neighborhoods to keep it safe. | **Doghead radicals** (L1, united) giving out pamphlets, soliciting donations, preaching about the "Coming Howl." |
 
-**Top Drop Stays**
+### Top Drop Stays
 
 | # | Stay | Description | €/week |
 |---:|:---|:---|---:|
@@ -5723,11 +5723,11 @@ _Accommodations also provide ticket dice: €5 = 1, €10 = 2, €25 = 3, €50 
 
 <a id="page_0140"></a>
 
-**RED END'S DISTRICTS**
+## RED END'S DISTRICTS
 
 Red End is large and its vintner aristocratic districts stretch to the Wine River. Plan 1d4 hours to travel to a specific district, and at least an hour per location visited.
 
-**Mount Silver - Arshenu**
+### Mount Silver - Arshenu
 
 The eastern third of Red End climbs the Silverberg, the Arshenu, the last great peak of the Blood Mountains, where divine blood bought human freedom. Arshenu, the guardian who withstood the Vile Ones' decay bombs. Arshenu, the lifegiver, who gave its bones to the petromancers to turn an old bunker city into the first free city of humanity.
 
@@ -5742,7 +5742,7 @@ The eastern third of Red End climbs the Silverberg, the Arshenu, the last great 
 9. **Citadel of the Vintner Lords.** The awe-inspiring fortress of the great-good houses of the Red Land looms over the city, reminding visitors and locals alike that their betters are looking out for them.
 10. **Bunker of Life Over Death.** The Redlanders, horrified by the necromantic traditions of other lands, by the jewel-liches of old, experimented with ways to restore life to the undead. They had many failures, but some successes. Their old biomedical research bunker is now something between a memorial and a popular souvenir marketplace.
 
-**Cinnabar Mountain - Shinabru**
+### Cinnabar Mountain - Shinabru
 
 The western third ascends the flanks of Cinnabar, a great massif transformed and lowered by the Unlords' sacred bombs, yet not destroyed. Good Shinabru, where the Phoenix Parasite was brought down and thrice decapitated. Here was the lesson given to the Vile Ones that humanity would not be slaves.
 
@@ -5760,7 +5760,7 @@ The western third ascends the flanks of Cinnabar, a great massif transformed and
 
 <a id="page_0141"></a>
 
-**Bearded Vulture Pass and Butterfly River Valley**
+### Bearded Vulture Pass and Butterfly River Valley
 
 The middle third, between the two mountains, now resigned to shadow even at noon, sprawls across valley and pass, once the town of Qol Shipetu, where the free lords pre-vampiric farmed their potato and tomato crops. Time, redevelopment, and profit have changed the vale.
 
@@ -5778,7 +5778,7 @@ The middle third, between the two mountains, now resigned to shadow even at noon
 
 The urbiducts are the soaring habitation bridges of the upper city, expanding Red End into the lofty heights between the two mountains, providing a lush, luminous home to those who have contributed most to the success of the greatest free city of humanity.
 
-**Upper Urbiducts (Skyfire District)**
+### Upper Urbiducts (Skyfire District)
 
 So close that you can touch the skyfire, they say (though this is not entirely true), the Skyfire District is a popular residence for noble and knightly families because of the plentiful drake perches and the high real estate values, which keep out the weak-blooded riff-raff.
 
@@ -5789,7 +5789,7 @@ So close that you can touch the skyfire, they say (though this is not entirely t
 5. **Electric Promenade.** A theme park of yesterday's future today! Experience how the ancients imagined the world would be three hundred years after they were recycled in the communal vats!
 6. **Astral Heights.** A nature preserve and certainly not home to the urban bunker palaces of the great vintner houses of Red Land.
 
-**Lower Urbiducts (Pine Rose District)**
+### Lower Urbiducts (Pine Rose District)
 
 The less-lofty habitation bridges and towers for the middle-managerial castes still provide the sunlight now denied to much of the old valley settlements, as well as a taste of the rarified reaches that a good civil servant or professional could aspire to after a few decades managing a serious Red Land quango or optimizing the taxes of a few large vintner estates.
 
@@ -5803,7 +5803,7 @@ The less-lofty habitation bridges and towers for the middle-managerial castes st
 
 <a id="page_0143"></a>
 
-**Upper Wine River (Ôt Raushevein)**
+### Upper Wine River (Ôt Raushevein)
 
 The rural vintner counties are held in perpetual trust for panhumanity by their respective great houses. Over the centuries, many failed rebels and terrorists have used the district's leasehold and permarent structures as an excuse for causing disorder and mayhem. What fools.
 
@@ -5831,9 +5831,9 @@ The rural vintner counties are held in perpetual trust for panhumanity by their 
 
 <a id="page_0144"></a>
 
-**DEEP RED DESTINATIONS**
+## DEEP RED DESTINATIONS
 
-**Sunset Revelation Chateau**
+### Sunset Revelation Chateau
 
 _vintner lord excrescence, livingstone airvines_
 Once, only vampires and their kin were allowed to partake of the rejuvenating bloodwine of the Red Land. This was not because of some misthought sumptuary laws, but because most human biologies have to be magically adapted to accept bloodwine. Bloodwine rejection is a horrible syndrome, described as "a cross between an ebola daemon and the leaping runners."
@@ -5846,7 +5846,7 @@ Fortunately for the fashion conscious, you can still gauge the purity of youngwi
 
 _**Secret Recipe:**_ truth of the proprietary technique would cause a diplomatic furore, for it mixes the nine lives of a cat with the youthful folly of a human child.
 
-**Good Word's Temple of the Howl**
+### Good Word's Temple of the Howl
 
 _living cave sanctum_
 Rumors that this doghead religious complex is a center of anti-Violet and anti-cat radicalism are overblown. Marvel at its sonic and scent landscapes, and chuckle in good humor at the overwrought doghead theories about the meta-intelligence accessible to dogheads as they unite in the howl. Avoid the holy of holies, as the subsonic howling of the canine anchorites triggers delusions and vivid hallucinations. The seven-fold council holds public displays of their mystic powers every fifth-day at sunrise.
@@ -5856,7 +5856,7 @@ _**Dark Truth:**_ the Pack of Purity is working on reviving the meta-intelligenc
 
 <a id="page_0145"></a>
 
-**Hollow Hope's Chthonic Scalpel Introscope**
+### Hollow Hope's Chthonic Scalpel Introscope
 
 _restricted clinique_
 The great ruby observatory, where the first masters of the vintner renaissance explored the human body and learned how to read its source code. This site was instrumental to the human acquisition of the divine science of biomancy. Even today, visitors who know the six sculptural gestures can book treatments at affiliated clinics of bodily perfection. Prices are quite reasonable:
@@ -5867,7 +5867,7 @@ The great ruby observatory, where the first masters of the vintner renaissance e
 
 _**The Maddeléna:**_ within, a living void skimmer, regularly pruned so it cannot fly, provides the biological brain power to read human destinies.
 
-**Lastman's Cloud-Piercer**
+### Lastman's Cloud-Piercer
 
 _magic mystery train_
 The great crystal train recently celebrated its bicentenary. There are few better ways to enjoy the spectacular views of Red End and the Upper Wine River. Do be aware that some of the lookout stations are currently closed for renovation. This has nothing to do with rumors of sunhater and mosquito infestations.
@@ -5878,7 +5878,7 @@ Some of the more aristocratic sun-haters escaped their luxurious sanatorium and 
 
 For now, calls to recycle the remaining sun-haters as was done with the lower class early adopters have fallen on blunt fangs.
 
-**Hungry House Clockwork Bloomery**
+### Hungry House Clockwork Bloomery
 
 _botanicals unraveled in time_
 The great rotating garden is famed for its perpetual flowering cycles, tied to the Red End's unique metaelectric light fields. The ancient puzzle garden is also a popular mulching ground for the city's great and good. It is said that one cannot smell a bloomery rose without inhaling one's ancestors. The bloomery is closed on full moons. This has nothing to do with ghosts.
@@ -5890,17 +5890,17 @@ It is to prevent these revenants that the night knights' patrol forcefully eject
 
 <a id="page_0146"></a>
 
-**RED LAND DISTRICT — THE CITIES FIXÉ & MOBILE**
+## RED LAND DISTRICT — THE CITIES FIXÉ & MOBILE
 
 _"Surely now, in these enlightened times, it is no longer right for the ancient magic from the before times to be controlled by ritual castes such as the Maintainers or Oldfolk? We are no longer the mere scrabblers in sand, the mere suppers at the nutrifac's teat. We have risen up from the Great Forgetting. This advanced magic is often indistinguishable from technology and with practice and study, much of it is accessible to us later day humans. After all, our soul source imprint matches the data-protein codes required by many of these archives. Is this not a sign from the Maker M.B.U.T.E. that we are meant to use these gifts of the Long Long Ago to grow and flourish and spread? I say that it is!"_ —Liszteprans, T. Tanz Kompanie, public rebuttal, misheard speech that triggered the SCIII uprising.
 
-**Origin Myth**
+### Origin Myth
 
 The RLD is a radical anarchist socialist city-state on the sliver of land between the Blood River and the Barrier Islands. _De jure_, it is the second city of the Red Lands, but _de facto_ it has been independent since the Bloody Popular Uprising of Sun (rising) Camelia III against the Vintner Lords.
 
 Its independence has been maintained for decades by the glazed-brick heat-ray colossi, known as the Friends of the City, who burn every creature approaching by land without the sigil of the Hexad Societies. It has developed into a hub of piracy, free enterprise, biomechanics, and Hexad ingenuity—making it an unusual competitor-ally of the Emerald City.
 
-**Subcities**
+### Subcities
 
 The anarchist constitution of the RLD is apparent in its boisterous, sometimes mutually antagonistic, subcities.
 
@@ -5925,7 +5925,7 @@ _**Brown Design.**_ The one friendly Phylake, the six-armed ally of the bloody p
 
 _**Beetle House.**_ A radical social-experimental commune designed to encourage tenants of the Vintner Lords to move to the City Fixé and replenish its human resources.
 
-**Ambient**
+### Ambient
 
 Everywhere crowds of humans, twisted, hunched, changed, adjusted to the needs of their trait. Willing servants of their materialist creed, self-sacrificing each other in the balmy delta of the Blood River.
 
@@ -5935,7 +5935,7 @@ Everywhere crowds of humans, twisted, hunched, changed, adjusted to the needs of
 | 4–5 | laughing hexad cadres | uprising hymnals, pungent guards | packages, oil, processing pale storms, rainbows | jolly marches, parades, fungal dank fog |
 | 6 | japes, free birds | blooms, caged songbirds | masticating, groaning nutrislurry vats | clanging |
 
-**Events**
+### Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -5946,7 +5946,7 @@ Everywhere crowds of humans, twisted, hunched, changed, adjusted to the needs of
 | 5 | Drunken **outsiders** (L0, immobile) on their way to volunteer processing. | Glyphed-and-clipped new **volunteers** (L1, ka-zombie) reporting for duty. | A parade of **hexadministratives** (L2, polished) in their iron beetles snarls up traffic. There must be an urgent industrial cooperative meeting. |
 | 6 | **Revolutionary youths** (L1, gleaming) offer flowers and sing praises of the Eternal and Perfect Uprising. They won't be happy if you don't join. | The Uprising is ceremonially transferred from one hexad to another. Uniforms, flags, music, marching and the **mindless polymilitia** (L7, blank). | **Outsider Accommodations**: see below. |
 
-**Outsider Accommodations**
+### Outsider Accommodations
 
 | # | Stay | Description | €/week |
 |---:|:---|:---|---:|
@@ -5958,7 +5958,7 @@ _Accommodations also provide ticket dice: €5 = 1, €10 = 2, €25 = 3._
 
 <a id="page_0148"></a>
 
-**FRIENDS OF THE CITY AND OTHER PHYLAKES**
+## FRIENDS OF THE CITY AND OTHER PHYLAKES
 
 _There is no war in heaven. This is heaven._
 _Therefore, there is no war._ —Haudra Piremaché, lord commander, Shield of Stars
@@ -5971,11 +5971,11 @@ No, it is the ageless Grand Phylakes that enforce the Garden's Peace. Winged tow
 
 Their skin is glossy and harder than time. Their wings darker and sharper than stuckforce. Their eyes more baleful than a radiant thunderstorm.
 
-**Angels**
+### Angels
 
 Many latter-day humans simply call the Builders' finest servitors "angels", betraying their golem-worshipping idolatry, for in truth the minds of these phylakes are often smooth, incapable of self-reflection. They are closer to mere machines than many a sentient golem, made mechanical from once-human stuff.
 
-**Grand Phylakes, Lords of Peace**
+### Grand Phylakes, Lords of Peace
 
 Grand in size, grand in power, grand in terror. The messengers of peace, the enforcers of stasis, the guardians of the Garden—such as it remains. Grand Phylakes are commanded by their programming to despise weapons and violence, and those who still live as they were meant to, continue to suppress conflict in their surroundings with a ruthless zeal and energy.
 
@@ -5990,7 +5990,7 @@ This is why grand armies do not march in the Rainbow Lands. This is why the war 
 
 <a id="page_0149"></a>
 
-**Lesser Phylakes**
+### Lesser Phylakes
 
 Smaller in size, perhaps more numerous once, the Lesser Phylakes were not just protectors of the peace, they also serviced the settlements, bore messages, brought joy to the Builders and their Agents, and even came to know chosen humans, bringing forth scions to awaken settlements to their roles in the Lords' timeless plans.
 
@@ -6006,7 +6006,7 @@ After the Falling and Rising of the Dust, when the direct noöspheric feed from 
 **Move:** birdlike, precise, powerful.
 **Treasure:** (1–3) oldtech innards worth €100–€1,000, (4–5) timelost toys, books, and stories of a lost age, (6) a face, hand, or foot of pure shipmetal (€5,000).
 
-**Friends of the City**
+### Friends of the City
 
 _They have made a Field of Glass and called it beautiful._ —Waunya bei Pocpor, Vintner Commander during the Bloody Unpopular Disaster
 
@@ -6030,14 +6030,14 @@ _**The Hut Sigilé.**_ A straw hut, decked in clay sigils; a wooden fence, hung 
 
 <a id="page_0150"></a>
 
-**PACIFIC PHYLAKE TOWNS**
+## PACIFIC PHYLAKE TOWNS
 
 _Between overman and underman,_
 _is there room to live a human life?_ —Supplicant Schta Voyis, Extramural Settlement 442
 
 Clans, tribes, and dregs who deny the blood-truth of humanity's violent nature are drawn to the grand phylake towers. There they build settlements to live in the peace of the old gods' ageless guardians.
 
-**This Phylake Settlement**
+### This Phylake Settlement
 
 1. A monastery of mumblemonks and strange servants.
 2. Climbing villages and hanging gardens of quarterlings who would live on the luminous flanks.
@@ -6046,7 +6046,7 @@ Clans, tribes, and dregs who deny the blood-truth of humanity's violent nature a
 5. Picket fence exurb of free falschers.
 6. Old-fashioned town of post-mortal ancestors living free of any descendants.
 
-**There Are Side-Effects**
+### There Are Side-Effects
 
 Over time, the potent anti-war fields and other energies of the phylakes cause strange changes.
 
@@ -6059,7 +6059,7 @@ Over time, the potent anti-war fields and other energies of the phylakes cause s
 7. The ego dies, the will is given to the phylake.
 8. Skin sprouts leaves, movement feels unnecessary.
 
-**They Trade Odd Produce**
+### They Trade Odd Produce
 
 1. Blossoms plucked from the phylakes' nostrils.
 2. Gasses sucked from the géants' brainstones.
@@ -6072,7 +6072,7 @@ Over time, the potent anti-war fields and other energies of the phylakes cause s
 
 It is precious, delicious, transcendent, life-changing, rare, limited, restricted, and oddly difficult to digest.
 
-**Trouble Still Would Seek Them**
+### Trouble Still Would Seek Them
 
 1. An **innocent child** (L3, prophetic) they found within the phylake's head is doomed to destroy them.
 2. A **needy wizard** (L4, carefree) has bought access to the phylakes' brain with free medicines for all.
@@ -6086,7 +6086,7 @@ It is precious, delicious, transcendent, life-changing, rare, limited, restricte
 
 <a id="page_0151"></a>
 
-**Angel Heart and Angel Foot**
+### Angel Heart and Angel Foot
 
 _oubliated phylake army and translated settlement_
 Not all the phylakes were mindless messengers' of the Vile Ones' will; some saw humanity's reasons. Of these, most noted was the angelic army assembled about the Angel Heart. They melted their bodies into a tower of power to radiate a protective umbra about the Red Zone, halting the passage of the Vile Ones' hunters.
@@ -6097,7 +6097,7 @@ After the War, many settled about the Heart and it became a monument to the vict
 
 ☗ _Heartwater._ As the phylakes decompose, rainwater leaches their long-lived essence into the semisentient heartwater, seeking someone to free them from the Redlanders' accursed domination.
 
-**Tollem Autocity**
+### Tollem Autocity
 
 _xenon skyway rest station, auld accelerator_
 A mechanical bridge to nowhere, an architectural masterwork of livingstone and shiftingsteel sparkles above the Right Road, something of an independent triborder facility between the Orange and Red Lands. Every eight hours, regular as the pan-atomic clocks of the time sorcerers of the Red Jade Palace, a glowing beam glances into the sky from an enormous accelerator atop the bridge, a sparkling highway of buzzing light and force. Alas, nothing in these later days is faster to reach the skyway's destination, though it does not stop travelers equipped with parachutes or gliders seeking to reach its end. The disputed distance record currently belongs to a very lucky trio of pilots who came down in seven pieces over the Astral Door.
@@ -6107,7 +6107,7 @@ A mechanical bridge to nowhere, an architectural masterwork of livingstone and s
 
 <a id="page_0152"></a>
 
-**RUST WESTCOUNTRY**
+## RUST WESTCOUNTRY
 
 _Between Bunker and Uplevelling, fear the spore._ —Gasbreather warning.
 
@@ -6115,7 +6115,7 @@ Past the Bunker Mountains and the Coffin Provinces, the Rust Westcountry unfurls
 
 West, across the Rushing, the skies grow hazy, the very air inimic to the oldtechnologies of civilization. South, the Great Uplevelling pushes into the thin airs where even the Rustfolk clans are strange, worshipping their gasbreathers and chanting at the day-stars.
 
-**Hybrid Hamlets**
+### Hybrid Hamlets
 
 _survivals of the Bunker Era, mobile anti-settlements_
 Once, aeroliths were more plentiful in this southern land, but millennia of clan-wars have left most spalled and rubbled. Those that remain are prized and patched and handed down from elder to heir, totems of clan and kin.
@@ -6133,7 +6133,7 @@ The aeroliths support vegetable bodies of sungwood and coaxed vine mollusc, with
 
 ♟ _Burnschild Ben Panis._ Cast out of his clan for his obsession with storm-witches, cyan spores and the forbidden day-stars; Ben seeks help to acquire and untether an aerolith house with which to ascend to the Star of Silent Dreams, where dwells the **Piece-of-Mind** (L5, divine fragment).
 
-**Door of Many Edges**
+### Door of Many Edges
 
 _portalspace bunker-settlement, militant museum_
 Beyond the Coffin Province of the Astral Door, the Door of Many Edges guards the great way through the Bunker Mountains. The space around it is twisted and uneven, gravity itself upset, all due to a great sealed gate leading into the bowels of Soil (so say local wags to frighten tourists). Fluttering flags and pinnacles of piled rock guide the way through the roiled spacetimes, opening at the southern edge on the great retro-Modernist bunkersettlement of D.M.E., home to an eclectic congregation of Rustfolk mechanics, Falscher mystics, and wild Dogheads. It holds one of the best extant libraries on space-time distortion, carved entirely on slabs of native rock, proof against most forms of informational decay.
@@ -6145,7 +6145,7 @@ Beyond the Coffin Province of the Astral Door, the Door of Many Edges guards the
 
 <a id="page_0153"></a>
 
-**The Hellferry and the Venerable Passages**
+### The Hellferry and the Venerable Passages
 
 _pre-heroic era soilship, ethnogenetic monument_
 On the Lichen Lichen, beyond the Burst Casings, the arrow-shaped shipmetal prongs of the so-called Hellskiff emerge from the spongy terrain like the unrotting teeth of a half-slaughtered Titan. Rustfolk epics say these are the mouth of the Hellskiff, a tragic vessel that was to bring the greater number of the iron humans from their Eternal Bunker in the Soil to repeople the Given World after Hell had abated. Other, smaller hellskiffs made it through, spilling people upon the world from the Burst Casings, but the great carrier was stopped by the Daemon Discontinuity.
@@ -6161,7 +6161,7 @@ Several other epic cycles later built on these stories. Perhaps the most famous 
 
 <a id="page_0154"></a>
 
-**RUST EASTCOUNTRY**
+## RUST EASTCOUNTRY
 
 _Over the horizon's crimson edge,_
 _In the distance dim our caravan kin,_
@@ -6173,7 +6173,7 @@ City folk giggle that the clans of these far places are not really human or even
 
 They are not completely wrong, but they are also utterly in the dark. In the Winedarks, where cyan storms lash the land with spore and spark, where the sky itself grows dark and full of stars, the Dream Canopy was ever only a distant nightmare and many things the courts would call heresy hold the patina of tradition and even, in strange bunker holds, orthodoxy.
 
-**Great Rustgrass**
+### Great Rustgrass
 
 _fecund life-maker, ritual valley_
 A red, spongy mass fills this unnatural crater beneath Fried Lords' Pass. Locals say the scion of the Flesh God Apocalypse passed through here, many ages ago, and left the life-making seed of its father to fester and produce. Today it is making (roll d100):
@@ -6193,7 +6193,7 @@ _**Heart of the Horrorcorn:**_ over many strange aeons the life-making seed has 
 
 <a id="page_0155"></a>
 
-**Fresh Start: Cradle of the First Soul**
+### Fresh Start: Cradle of the First Soul
 
 _living sarcolith pilgrimage temple, mountain of red_
 Here, beyond the edge of the Old Garden, where phylakes and gods are barely seen, the Surviving Twin returned to the Given World from her thirty year tantasy (odyssey) among the Slow Stars. Here, she delivered the first soul to humanity that awakened it from the slumber of the Unlords, from subservience to the Vile Ones. At least, so says the epic vidy poem, the _Tantastanasa_.
@@ -6204,7 +6204,7 @@ _**Sarcolith Temple:**_ gates and hemispheres and bubbles of livingstone infused
 
 Each pilgrim is invited to stamp on the amber prisons with their bare soles, mocking them and proving how it is the humans who now have souls. Don't worry, they can't escape.
 
-**Gapwatch No: Tomb of the Old Death**
+### Gapwatch No: Tomb of the Old Death
 
 _exalted museum, memorial of immortality, lich-haven_
 A geodesic dome built in the Third Onion Reign surrounds the conundrum of glass beams spiralling in double helices towards the luminous passage. A stable sack-portal leads into the pure white museum of immortality. The no-matter of the walls burns with terrible formulas, buildertech to drive the uninitiated mad, so eye covers are required.
@@ -6217,7 +6217,7 @@ _**Error Dream:**_ the Long Ago **Museum Mind** (L9, electric divine) is mad and
 
 <a id="page_0156"></a>
 
-### ORANGE LAND
+# ORANGE LAND
 
 _"Party while you live, for we will work when we are dead."_ —traditional Orange saying
 
@@ -6232,15 +6232,15 @@ Today, the great party cities of the Orange Land draw massive crowds, which stud
 
 Some say their choice is less free than they think.
 
-**Climate**
+## Climate
 
 The great valleys of the Orange Land are blessed by clear skies, warmth, and abundant water from the surrounding highlands. The highlands themselves are harsh, by season cold or hot, dry or wet. As for the coast, there clouds but mock the traveler with promised rain.
 
-**Population**
+## Population
 
 citizen living: ~0.9 million, citizen dead: ~27.4 mil., duckie (_tei oms duchièmes_): ~2–4 mil., cad: ~0.1 mil.
 
-**Groups**
+## Groups
 
 postmortal laborers: 80%
 postmortal security: 5%
@@ -6249,36 +6249,36 @@ tourist laborers: 9%
 tourist tourists: 2%
 councilors and agents: 1%
 
-**Languages**
+## Languages
 
 Caddic (command standard), Oranjetic (popular), Orange Circle Kriol (duckie), Topic N (necro-comm)
 
-**Capital**
+## Capital
 
 Official: Orange City
 Practical: Oranje of the Sacred Ploughland.
 
-**Government**
+## Government
 
 Council technocracy. Centrally-planned hedonic-first necro-agrarian socialism. Feuding subaltern resident clans.
 
-**Ideologies**
+## Ideologies
 
 Orange God: pleasure and justice (administrative), Orange God: cornucopia (popular), The Hitchhiker: digestive (passing through), Machine Beast (unofficial).
 
-**Economy**
+## Economy
 
 The citizens-dead work till they are dust to provide fruits and other delights for the citizens living and hard currency for the council. The second-tier residents, the so-called duckies, toil in a vast grey market to offer those services that the postmortal labor armies cannot.
 
-**Resources**
+## Resources
 
 Fruits, flowers, seeds, grains, woods, bones, sinews, soils, worms, vegetables, tubers, roots, shoots, stems, stones, flesh, organs, beers, liquors, bloods, fluids, and more.
 
-**Means of Production**
+## Means of Production
 
 All wealth is owned by all the citizens, living and dead, and managed by their selfless representatives, the cads—councilors of ancestors and descendants. The cads police one another to maintain the utopian rites. The cads adjudicate disputes between all categories of citizens and residents.
 
-**Material Conditions**
+## Material Conditions
 
 The citizens-living enjoy the largesse of a necrotechnical utopia, their lives full of pleasures and delights paid for by their body's toil after their mayfly lives end. The duckies take care of themselves in the corners of the great pleasure pyramids and ecstasy edens. The citizens dead are stored in bone beds when not in use.
 
@@ -6291,7 +6291,7 @@ _Air jellies leave their mother stumps to find new fuel for their growth._
 
 [![Orange Land map (page 158)](images/page_0158_orange_land_map.png)](images/hires/page_0158_orange_land_map.png)
 
-**Ambient, Great Valleys**
+## Ambient, Great Valleys
 
 | d6 | Winter | Spring | Summer | Autumn |
 |---:|:---|:---|:---|:---|
@@ -6302,7 +6302,7 @@ _Air jellies leave their mother stumps to find new fuel for their growth._
 
 <a id="page_0159"></a>
 
-**Ambient, Highlands**
+## Ambient, Highlands
 
 | d6 | Spring & Summer | Autumn & Winter |
 |---:|:---|:---|
@@ -6310,7 +6310,7 @@ _Air jellies leave their mother stumps to find new fuel for their growth._
 | 4–5 | cloudy, whipped by thin winds, diaphanous mists | gales at dusk and dawn, lights in the sky |
 | 6 | storms, gritty rain, violent winds like cudgels | thunder, snow, wind, and ghosts to clog the lungs |
 
-**Events**
+## Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -6321,7 +6321,7 @@ _Air jellies leave their mother stumps to find new fuel for their growth._
 | 5 | Field of nutri-fluid skeletons covered in sticky sap. Harvesting the fauxbones is dangerous (net €1d6 x 50). | Dusk-till-dawn party palace turns out to be a buried ziggurat. Sacrifice in its bowels: permanent +1 to an ability. | Languid **proto-human ghosts** (L5, soft) offer treasure, deliver rubble and a gate to a derelict fast star. |
 | 6 | **Human troupe** (L1, intrusive) out carousing: (1) party pilgrims, (2) carnibotanic guardians, (3) youth bureaucrat members, (4) friendly falschers, (5) undercover unfreds, (6) council envoys. | **Jolly locals** (L1, ragged) enjoying themselves by: (1) begging, (2) drinking themselves stupid, (3) dancing to death, (4) playing with old tires, (5) body-hunting, (6) plotting escape. | **Sentient ooze** (L9, tormented) of mulched minds, modified micromachinery, and bleating translucent flesh pulses through the canals. Reporting its existence is illegal and punishable by ten years as a citizen dead. |
 
-**Travel**
+## Travel
 
 The great valley has slumped into decadence, mutter the analyticals and intellectuals. So much the better for the pleasures to be had, retort the adventure tourists. Still, visiting the less popular sights is harder than before.
 
@@ -6337,7 +6337,7 @@ The great valley has slumped into decadence, mutter the analyticals and intellec
 
 <a id="page_0160"></a>
 
-**AMBER STANDARD HEDONIC STATION**
+## AMBER STANDARD HEDONIC STATION
 
 _"Your money is no good here!" declares the billboard atop the Garden Ziggurats. "The Great Hope provides!" announces the slogan fungus coating the granaries in a carpet of soothing truths. "Your pleasure is our treasure!" scrolls along the parapets of the dreambauchery house._ —From _Twelve Years A Tourist_ by Tarn A. Bassault,
 
@@ -6347,7 +6347,7 @@ The billboards mock your rumbling bowels.
 
 From an alley, a bluelander in a vintage voidsuit beckons and mumbles, "Te qambo, change you, cash for cadcard? Yessi, top up?" Up close, the voidsuit reveals itself a pouchsuit, full of the necessities of pleasure and discretion a tourist might require to delve beneath the official skin of the Orange Lands.
 
-**This ASHS Station**
+### This ASHS Station
 
 Card in hand you slip into a corner store with a grubby sign marking it as an amber standard hedonic station (ASHS station). The vendor is a:
 
@@ -6358,7 +6358,7 @@ Card in hand you slip into a corner store with a grubby sign marking it as an am
 5. glistening giant dressed in free sailor threads;
 6. grim-looking free purplelander resident.
 
-**Hedonic Burden Review**
+### Hedonic Burden Review
 
 Citizens Living of the Orange Lands do not need money—each is born with a pleasure budget to cover all their needs for the length of a standard efficient lifetime.
 
@@ -6373,7 +6373,7 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 | 5 | Plough and Plate | loud, large, in charge | seeds to eat or sow | ingest to reveal gratis side effect |
 | 6 | Vivid in the Flesh | spicy, silky, snakelike | flowers to forget | do not use or cook after midnight |
 
-**Fresh Food Only**
+### Fresh Food Only
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -6387,7 +6387,7 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 
 <a id="page_0161"></a>
 
-**Traditional Orange Land Attire**
+### Traditional Orange Land Attire
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -6398,7 +6398,7 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 | 5 | Spider Collar | Decapitated? This arachnofungal symbiote keeps your head alive and mobile. 2 st. | €350 |
 | 6 | Cad Robes | Bone scutes interwoven with living cotton ropes and padded silk pockets. Hidden inventory (+4 sp). Armor +3, ward +3, cool, 1 st. | €750 |
 
-**Order Maintenance Equipment**
+### Order Maintenance Equipment
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -6409,7 +6409,7 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 | 5 | Cad Whip | Short-circuits human, not golem, wetware. Stuns for 1 round on 16–20. Reach, 1d6, 5 sp. | €500 |
 | 6 | Ziggurat Rod | Must be charged in the local Cad House. Bolts of electromagical plasma fry flesh and circuit alike. May draw phylakes. Long range, restricted, 3d6 damage, reload 4, 2 st. | €750 |
 
-**Personal Travel Expression**
+### Personal Travel Expression
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -6418,7 +6418,7 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 | 3 | Canal Skirter | Hovercraft grown from reeds and air jellies with a bolt-on fan. L2, carry 4, loud. | €250 |
 | 4 | Envoy Pod | Crystal pod riding the ancestral lines between Cad ziggurats. Includes amusingly neutered autopilot. L4, carry 1, fast, levitating, well-armored, immune to electromagic. | €3.2k |
 
-**Approved Orange Land Comfort Purchases**
+### Approved Orange Land Comfort Purchases
 
 | d10 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -6436,7 +6436,7 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 
 <a id="page_0162"></a>
 
-**FACTIONS IN AMBER**
+## FACTIONS IN AMBER
 
 _"The political scene in the Orange Lands is dead."_ —Sailing Islands joke
 
@@ -6446,7 +6446,7 @@ A third class is gladly dominated: the Duckies (a corruption from High Common _T
 
 The fourth group is hardly a faction; rather, it is a voluntary benevolent association that gently and politely guides the confederation: the Council of Ancestors and Descendants. They are also known by their acronym, simply as the Cads (not to be confused with the Cats), their philanthropic activities excusing them from the hedonic review and other legal demands.
 
-**Citizens Living**
+### Citizens Living
 
 _"The little citizen lives thrice as long!"_ —popular drinking ditty
 
@@ -6461,7 +6461,7 @@ Cad legislators vigorously deny these two institutions explain why the contempor
 
 <a id="page_0163"></a>
 
-**Citizens Dead**
+### Citizens Dead
 
 A Citizen Living legally becomes a Citizen Dead through the Labor Corpse Tax. Once they die, their body is reanimated and joins a labor corps until it is dust. Their family may generously keep a relic that will not interfere with the citizen's posthumous labors. For example, plantation and mine workers' heads are unnecessary in most occupations, so the family will keep the preserved head in their domestic Cabinet of Ancestries. More often they keep just the face or another keepsake the worker no longer requires.
 
@@ -6471,7 +6471,7 @@ Unofficially, foreigners, ferals, and other outsiders can also become Citizens D
 
 ♟ _Timox Boscafoc._ Made into a Citizen Dead due to a clerical error, Timox's case has made it all the way to the local Ministerial court. A resurrection for Timox could have drastic consequences for the whole radiant carnibotanic industry and beyond.
 
-**Duckies, Tei Oms Duchièmes**
+### Duckies, Tei Oms Duchièmes
 
 The foreign residents of the Orange Land are not a faction. They are satisfied to live in a well-ordered society, with a stable pre-cradle to post-grave social infrastructure. Their gratitude is supreme.
 
@@ -6483,7 +6483,7 @@ Some scholarly outlander vidy-personalities have implied that the Duckies view t
 
 ♟ _Kolka Uz-Mund._ A leading accommodationist politician among the Eastern Duckies has been embroiled in a salacious scandal involving oddly shaped fruits and a Yellow Land opera troupe. But this may just be cover for an illegal Bloom settlement operation by unregistered Uncitizens.
 
-**Cads, Council of Ancestors and Descendants**
+### Cads, Council of Ancestors and Descendants
 
 The Council, the Cads, embody the will of the citizens living and dead. They shepherd Orangeland humanity through this grim _seculum_ between the Divine Silence and the Maker's Awakening. They are your friends.
 
@@ -6494,7 +6494,7 @@ The Council, the Cads, embody the will of the citizens living and dead. They she
 
 <a id="page_0164"></a>
 
-**THE NECROTECHNOLOGIES**
+## THE NECROTECHNOLOGIES
 
 _The theophysics of this made cosmos give us the observable fact that it is constituted of three levels of matter. The substances of hyle, pneuma, and psyche. In the arcane Builders' language; the ha, ka, and ba. In the low dialects, body, soul, and mind-stuff._ —Aïdu Hylo, _No Matter: A Study of the Tricycle of Existence_, The Free Drift Corrective
 
@@ -6506,7 +6506,7 @@ If there is any land that has truly embraced the possibilities suggested by trif
 
 ⚙ **Psyche, mind, ba.** The unique formal matter, extant through space and time, the lived material trajectory of a consciousness. Each mind is a shard of the great mind, each sentient being is an eye of the cosmos watching itself. Its relationship with its world is each psychic body's relationship with itself.
 
-**Resurrection Impossible**
+### Resurrection Impossible
 
 It is a dirty secret among most reanimators and portal engineers that a destroyed sentient being can never truly be brought back. Whether that sentience is a mosquito or a mushroom mycelium or a man, their individual sentience is embodied in space and embedded in time, a perfect coherence of hyle, pneuma, and psyche. Once those components are decohered, that entity is ended.
 
@@ -6527,7 +6527,7 @@ This offers the necrotechnologist or tricycler, as some call themselves, certain
 
 <a id="page_0165"></a>
 
-**Necrophony**
+### Necrophony
 
 When the Dream Canopy was untattered and the Lords tended both Garden and Noösphere, there were no dead for the disembodied minds dwelled in their set Heavens, close at hand to their quickened descendants.
 
@@ -6535,7 +6535,7 @@ Now their voices fade, yet necrotechs can still reach across that gnawing silenc
 
 A cycle of communion powers is used to access these lost voices, their quality scaling with power level:
 
-**Whispers from the Void**
+### Whispers from the Void
 
 _Transmortal Communion_
 
@@ -6556,7 +6556,7 @@ _Transmortal Communion_
 >
 > _Overcharge:_ You anchor the psychic ghost to the relic for a year. Thus bound, it cannot flee, but grows stranger and more resentful as the weeks pass. _Dangerous (6+):_ When you spend 6 or more life on necrophonic communion, you risk corruption—the lost minds' grudges and regrets becoming your obsessions.
 
-**The Chattering Dead**
+### The Chattering Dead
 
 The beating heart, pun intended, of this old science is talking with the psyche of a dead 'dividual. Opening a channel is simple for a trained necromancer, but the dead are fickle. A ghost may ignore a novice entirely, and its arrival is usually heralded by strange signs, shifting moods, and odd hungers.
 
@@ -6575,7 +6575,7 @@ A given ghost may be called three times; if it refuses the necromancer each time
 
 <a id="page_0166"></a>
 
-**Mortirobotics**
+### Mortirobotics
 
 When the Garden was young and its Path clear, there was no labor for the first humans to perform: servants of sculpted metal and moulded light and directed force created all that the first humans could want, for this was Heaven. Alas, the humans' bestial impulses perverted them in their leisure and the Lords gave them work to steady their minds and soothe their souls. Still, this was not good, for with knowing hands and probing thoughts, the humans grew prideful and sought to overthrow the Garden, and this was not good.
 
@@ -6583,7 +6583,7 @@ The solution to achieve the ten-million dream of the Garden Path, the eternal su
 
 Yet, humans still needed to be fed and clothed, tested and distressed, equipped and delighted. But the Lords were absent in these twilight times and the Builders were growing weary. Some turned to subhuman castes of maintainers to keep the old servitors going, others worshipped alien creatures of twisted mind to give them direction, yet others rebelled against the Path and brought the threat of the Lords' Jubilee upon themselves. But, in the Orange Lands above all other lands, the lich-lords saw into the hearts of humans and the Dreams of the Lords and the looping paths of the Garden Path, and divided the labors of humans between those they would perform when living and those they must perform when dead. Replacing the need for unreliable golems, for fallible servitors, for rebellious castes, they embraced the practice of mortirobotics, creating robots from the corpses of their citizens, dead drudges to toil for the good of the community. Over the ages, mortirobotics has become a science liberating the living to lead lives of culture and pleasure and social service.
 
-**Prior Citizens**
+### Prior Citizens
 
 Who was this worker before they became a worker? In what shape is this citizen dead?
 
@@ -6599,7 +6599,7 @@ Who was this worker before they became a worker? In what shape is this citizen d
 
 <a id="page_0167"></a>
 
-**Reuse the Shell**
+### Reuse the Shell
 
 _Post-Mortal Resources Onboarding_
 
@@ -6623,7 +6623,7 @@ _Post-Mortal Resources Onboarding_
 >
 > _Overcharge:_ You knit an echo of the shell's _ba_ or mind to the instruction _lemma_ stored in its head (usually in an ear or nostril for easy access), giving it a semblance of human intelligence and the ability to act independently. _Dangerous (9+):_ Corruption risk if you spend 9 or more life.
 
-**Skeletal Necronataly**
+### Skeletal Necronataly
 
 The Cads have experimented with generating citizens dead who bypass the need for citizens living retiring from a life of leisure. One promising new technology is skeletal necronataly, the direct growth of new skeletons in carnibotanic plants.
 
@@ -6643,7 +6643,7 @@ There are still some durability problems with the new carnibotanic citizens grow
 
 <a id="page_0168"></a>
 
-**Pneumenergetics**
+### Pneumenergetics
 
 Where necrophony deals with accessing the residual _ba_ or minds of the deceased and mortirobotics seeks to find new uses for old flasks or shells, pneumenergetics, the queen of necrotechnologies, seeks to turn the very motive fire of the departed, their spirit or _ka_, into raw energy to sustain the Dream, to prolong the Garden Path. Souls are harvested and refined using one three traditional technologies:
 
@@ -6655,7 +6655,7 @@ Where necrophony deals with accessing the residual _ba_ or minds of the deceased
 
 Some soul-thieves of little repute use little understood ancient powers, but these hardly generate enough reliable spiritual energy to maintain a power grid.
 
-**Siphon the Soul**
+### Siphon the Soul
 
 _Spiritual Energy Extraction_
 
@@ -6677,7 +6677,7 @@ _Spiritual Energy Extraction_
 
 <a id="page_0169"></a>
 
-**ARAÑA'S LUDODROME**
+## ARAÑA'S LUDODROME
 
 _"Once this was a place where humans ran and leapt and danced for the Vile Ones' pleasures. Toys in a cephalopod jest for bored immortals. Now, we dance to die in ecstasy, to conclude our lives in pleasure, to return as citizens dead, to become the workers of our children's leisure."_ —Last Dances 7:23, Pleasurable Duties, Orange Agitprop.
 
@@ -6689,20 +6689,20 @@ Disreputable Duckie bookmakers take bets on which dancer will last the longest, 
 
 Some say **soulless ferals** (L1, iron humans) dwell in the very lee of the Ludodrome, protected from the Hedonic Bureau by an ancient pact (or curse?) with the Orange Godness of Araña. Others also say they are implicated in an apocalyptic prophecy, but this must be false, right?
 
-**Orange God, also Dancing Lord Araña**
+### Orange God, also Dancing Lord Araña
 
 Ash and bone dust mutter. Their gem is amber, their beloved the spider, their gift-plant the cotton tree.
 
 "The kind weaver, the gentle keeper, the tender and producer. They that gives meaningful labors to open the garden path to all humans. But also, the breaker of backs, the wringer of blood, the scourge of leisure."
 
-**Prayers to Orange Araña**
+### Prayers to Orange Araña
 
 Once per session or so; when tired, footsore, hard at work ... abjure Araña for your due respite:
 
 > "Wheel turns, back breaks, feet fray—orison! Oscillation!
 > The work goes on, but I cannot ..."
 
-**Roll d20 + Aura - Endurance**
+### Roll d20 + Aura - Endurance
 
 | Result | Effect |
 |:---|:---|
@@ -6713,11 +6713,11 @@ Once per session or so; when tired, footsore, hard at work ... abjure Araña for
 
 <a id="page_0170"></a>
 
-**ORANJE — THE CITY-LAKE PLOUGH**
+## ORANJE — THE CITY-LAKE PLOUGH
 
 _"In the heart of this fertile plain, like a vast_ _brooding mother, blossoms the garden city of_ _Plough, Oranje to the locals."_ —Ostotel Perji, _Children of the_ _Orchard_ (Flux Dandelion II)
 
-**Background**
+### Background
 
 The core of the Orange Land is the great Builder-dug depression named Irrigation Valley, formerly known as Great Face Lake, where the Maker's Face was kept alive as a freshwater colony reef organism for the gods and the humans alike to marvel at Its perfection. The Last Masters of the fabricator orchards drained the lake, creating a landscape crisscrossed by canals, pumps, fields, deadhouses and command mansions.
 
@@ -6729,7 +6729,7 @@ The enormous pylon walkers, the former fabricator orchards, walk with the lake, 
 
 Finally, the undying Masters have become the Councilors of Ancestors and Descendants who commune with the lake Plough and divine the voices of the past to shepherd the living into the future.
 
-**Notable Pylon Walkers**
+### Notable Pylon Walkers
 
 _**Pool of Faces.**_ Serried ranks of terraces look upon the great Pool of Faces where the lake Plough manifests the faces of the dead to commune with the Councilors. The highest liches of the C.A.D. have their apartments here.
 
@@ -6748,11 +6748,11 @@ _**Delta of V.**_ High net value tourists and resellers are welcome to this pylo
 
 <a id="page_0171"></a>
 
-**Current Oranje Location**
+### Current Oranje Location
 
 The lake Plough slowly travels around Irrigation Valley; its current location is (roll 2d6): (2) under Manyfaces, near Old Haven, looking at the unreachable sea, (3) at the ruins of Entrance, (4) near Acre, (5) near Longdam, (6) near the House of Surfeit Delights, (7) Basis Province, (8) near Axle, (9) Turning Province, (10) near Gardening, (11) near the Yards Osseous, (12) up the River Orange, near Bridgewall.
 
-**Ambient**
+### Ambient
 
 Sparkling amber mists linger over the surface of the lake Plough, greenery grows from every pore on the pylon walkers, the air is thick with perfumes, spores and air plankton, messengers all between living Lake and abmortal Councilors.
 
@@ -6762,7 +6762,7 @@ Sparkling amber mists linger over the surface of the lake Plough, greenery grows
 | 4–5 | flickering air jellies, sparking dew, spreading slimes | languid, jangling air, thick amber fog, distant slow bass thump | floating lenses, rich waters, tubular bells, moans | clouds, copper smell, moldy air, crawling gelati |
 | 6 | rising waves, faces in the amber rain, bio-instruction | silver static in the windows, wheezing waters, pale anti-shadows | animalcules, organ wails | string music, click-clack |
 
-**Events**
+### Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -6773,7 +6773,7 @@ Sparkling amber mists linger over the surface of the lake Plough, greenery grows
 | 5 | Memory dive bar lets you take soma and lose a day, a week, in a long lost era. Pretend you're still in heaven! | Lascivious labyrinth offers timelost pleasures to the adventurous tourist. Beware the **wall-rats** (L2, parasitic). | **Avatar of a dead god** (L15, decayed) accidentally summoned by careless weird cultists. It brings: (1) derangement, (2) bliss, (3) plastic sheeting, (4) faces, (5) pain, (6) reincarnation. |
 | 6 | **Vacationing tourists** (L0, harmless) invite you to join their: (1) anti-stag party, (2) dead music festival, (3) psychotropic parade, (4) dirge dance, (5) reanimation, (6) resurrection. | **Hell-bound hedonists** (L4, gang) on a lake cruise. They are: (1) illegal cultists, (2) weird cultists, (3) cannibals, (4) stand-up comedians, (5) drug dealers, (6) aristocratic bohemians. | — |
 
-**Places To Party**
+### Places To Party
 
 | d6 | Place | Description | €/week |
 |---:|:---|:---|:---|
@@ -6789,7 +6789,7 @@ _Accommodations also provide ticket dice: €5 = 1, €10 = 2, €25 = 3, €50 
 
 <a id="page_0172"></a>
 
-**COUNCIL & 404 PROVINCES**
+## COUNCIL & 404 PROVINCES
 
 _The following unreconquered_ ~~_rebel_~~ _evil provinces (404 gowoz) may cause some temporary travel inconvenience._ —outdated and outlawed travel guidance to the unserviced regions of the Orange Lands
 
@@ -6799,7 +6799,7 @@ These provinces are taboo within the Council provinces of the Orange Lands, thei
 
 Therefore, we shall not mention them.
 
-**Council Provinces**
+### Council Provinces
 
 Instead, we shall mention the pleasurable provinces under the benevolent, eternal and perfect stewardship of the Council of Ancestors and Descendants, where, if you are lucky, you will even see a Council Agent!
 
@@ -6809,7 +6809,7 @@ _**Highland Provinces.**_ The frontier, where the Irrigation Valley will expand 
 
 _**Amber Territories.**_ Falsely claimed by the disgusting anti-humanist Red Land Vintners, their Vinterns and Vampires, the territories Central, Electric, Further, and South are completely under the control of the Cads and their shock-mummies. Suggestions that enterprising Redlander bloodwine cultivators have infested the Eternal Grove in the Bulbtree Savanna are absolutely false and there is no way the Council will ever be dislodged from beneath the gaze of the glorious and well-controlled Betrayer.
 
-**Meetings With Council Agents**
+### Meetings With Council Agents
 
 When you meet a Council Agent, present your Hedonic Recordbook for review, to confirm your ongoing right to the infinite pleasures afforded to every Citizen of the most pleasant of republics.
 
@@ -6825,11 +6825,11 @@ When you meet a Council Agent, present your Hedonic Recordbook for review, to co
 
 <a id="page_0173"></a>
 
-**The Near Upbroad**
+### The Near Upbroad
 
 Only well-equipped warrior merchant caravans brave the soaring heights of the Thin Plateau and the Broken Terraces, where strange autofactories and archaic subcommunities struggle in that fabulous way sub humans, unblessed by abmortality, must. The journey to the fabled oriental cities is thus often a lonely one—and short on oxygen.
 
-**Free Orange Provinces**
+### Free Orange Provinces
 
 _"These time-stuck liches and their four-armed cad servants had their time, once we revive the Araña, they shall learn the true purpose of Nature-born humanity!"_ —salvaged logs from the fall of Old Haven, subversive literature, double-double redacted
 
@@ -6850,7 +6850,7 @@ _**Roadvalley, Further Territory.**_ The Council claims the foreign residents of
 
 <a id="page_0174"></a>
 
-**THE MUTE PLACES**
+## THE MUTE PLACES
 
 _..._ —Protests of the Citizens Dead, a symphony in 3 acts
 
@@ -6858,7 +6858,7 @@ In a Land where the post-mortal labor force outnumbers the living citizenry by t
 
 Save for the occasional clatter of a necromancermanager's voiture and the bark of their willsniffer hound (for the development of free-will in a reanimated shell has an odor all its own, a hint of citrus and ozone, like a purple haze descending from a slow star), these places work like quiet clocks, tracked by silent eye-plants and other biomechanical watchers, extracting produce to fill the groaning road trains and wheezing cargo cruisers that feed the Yellow, Orange, and even Purple Lands.
 
-**Silent Approach**
+### Silent Approach
 
 Draw closer to the mute place. Feel your aura pale.
 
@@ -6869,7 +6869,7 @@ Draw closer to the mute place. Feel your aura pale.
 5. Coiling ironthorns, warning vines sprouted from the soil itself by the power of the Builders. "Away!" they seem to say.
 6. The ground becomes glass. Sand, rocks, buildings, rails, roads give way to scratched translucence.
 
-**Here, Now, Somber Monument**
+### Here, Now, Somber Monument
 
 It surrounds you, clusters in, drawn by your words, your vitality, your malleable nature. Feel your aura shrink.
 
@@ -6880,7 +6880,7 @@ It surrounds you, clusters in, drawn by your words, your vitality, your malleabl
 5. Gardens of rutile roses. Parks of olivine oaks. Towers of carnelian corpses. A decayed visitor center. Posters commemorating a petrifying plague.
 6. Sigil-warded, sign-posted, sarcophagus-entombed. A great square mountain. Within, they don't say but one suspects, an autofaber. A rogue creation machine. A false god.
 
-**They Call This Place Home**
+### They Call This Place Home
 
 Life, says the poet, finds a way. Feel your aura flicker and snicker.
 
@@ -6894,7 +6894,7 @@ Life, says the poet, finds a way. Feel your aura flicker and snicker.
 
 <a id="page_0175"></a>
 
-**Sweet Honey Traps**
+### Sweet Honey Traps
 
 _false settlements, bed and banshee houses_
 
@@ -6914,7 +6914,7 @@ Still, the biomachines continue. Ceaseless as the suns.
 5. The withered people are still there, become Megas, hooked to nöosphere drips in their cellars, their day jobs taken over by falscher clones of themselves.
 6. They are not falscher ghost humans, but ferals without mind jewels, who settled here illegally.
 
-**Windling Valleys**
+### Windling Valleys
 
 _ghost traps, voice harvesters_
 
@@ -6923,7 +6923,7 @@ But where did the voices go, the minds chased out of all these mute places? Most
 
 They mostly have little to say to interest a modern human, complaining about the price of groceries or grousing about their incomprehensible politics of amusement, but their wind-voices, though annoying, are often used to guide travelers in the underpeopled Highland Provinces and Amber Territories.
 
-**Homebody Bulbtrees (p182)**
+### Homebody Bulbtrees (p182)
 
 _vegetable bodyvaults, engines of patience_
 
@@ -6935,7 +6935,7 @@ Not limited to the Bulbtree Savanna, the pachydermic trunks of these trees were 
 
 <a id="page_0176"></a>
 
-**THE SHALLOW SEA AND THE SAILING ISLANDS**
+## THE SHALLOW SEA AND THE SAILING ISLANDS
 
 _"The Sea is a desert, all life within it false. Those who eat_
 
@@ -6954,7 +6954,7 @@ Why does Oranjetic have no longer a word for Sea?
 
 <a id="page_0177"></a>
 
-**Shallow Sea and the Lost Perisea**
+### Shallow Sea and the Lost Perisea
 
 _"Geohistorical heresy holds that the Sea once was smaller."_ —Anti-Council Tract on the Sea Pirates
 
@@ -6972,17 +6972,17 @@ Good Citizens and Humans should have no word for Sea.
 
 All who dwell in the Sea must be Inhuman. So says the Council. So says the Minister. So says Mother Machine.
 
-**The Truerooted Islands**
+### The Truerooted Islands
 
 Few islands are truerooted in the Soil beneath the Sea.
 
 There is of course the Eye of God, reserved for Lords and Phylakes and the Purest of Humans certified by the Authority, but that is not the domain of any land. Here, in the Shallow Sea, only Heroes Haven has that massed connection, and thus the Citizens' Dead militia walked across the seabed to its roots, ascended its shores, and ate its foul terrorist anti-citizen rebels, and reaffirmed its eternal and unchanging status as a Council Province. It is currently unmentionable in Orange Land documents.
 
-**The Tensefoot Islands**
+### The Tensefoot Islands
 
 Tethered by ropes of living chitin, chains of sungwood, and tendons of shipmetal, the tensefoot islands are moored to great crawly anchors. They may move about, but only slowly, at the bidding of the Undines. Those who would dwell on these half-Built islands should supplicate the Undines and other aquatic daemons to protect them from the vagaries of nature and the depredations of land-born peacemakers. Antansible Beach is the largest such island-town in the Sailing Islands, but others may hide on the East Ridge.
 
-**The Megachelonian Isles**
+### The Megachelonian Isles
 
 Last are the so-called truesailing islands, human-compatible biospheres borne on the biocrete backs of the great many-handed, slow-moving, filter-feeding organisms completely unrelated to turtles. Though they have preferred territories, to properly map them is something of an impossibility. It is rumored that the Undines shepherd them, forming a watery constellation that amplifies their song-signal into the Void.
 
@@ -6991,20 +6991,20 @@ The most liberal is the Free Drift, the Oh Megachelone hosts a terrifying temple
 
 <a id="page_0178"></a>
 
-**WHISTLER'S WATCHTOWER AND PENNYBURST CRATERVALE**
+## WHISTLER'S WATCHTOWER AND PENNYBURST CRATERVALE
 
 If the Orange Land is the beautiful, delicious, enlightened fruit of civilization, its edge, where the South road to the delights of the East once led, is bitter and strange. A thorny land to guard the sweetness of life, say the Recollectors.
 
 Yet even to such strange places the traveler, the adventure-seer, will endeavor.
 
-**Whistler's Watchtower**
+### Whistler's Watchtower
 
 _ghost arcology, automatic vertical village_
 
 
 A living tower, an arcology from Long Long Ago, _betoniste casalbéres_ rising into the thinnest air, sucking light and moisture and vital force, it remains a vibrant golem town, full of radiation ghosts, on the edge of the Orange Lands. Designated an autonomous cultural area, it is run under its own laws and does not contribute citizens dead to the confederation. It is the major fabricator of oldtech autosurgeons in the Rainbowlands and a protected area.
 
-**The Angel Villages**
+### The Angel Villages
 
 _cera-fungal cliff villages, oldtech fabricators_
 
@@ -7013,7 +7013,7 @@ Most of the arcology's wide-sprawling heartwood is dead, a gnarled labyrinth of 
 
 The villagers are called angels because they are all androgyne and sexless. They do not reproduce; new villagers are brought once a year by the sister servitors.
 
-**The Sister Servitors**
+### The Sister Servitors
 
 _buildertech abbey, institutional mother machine_
 
@@ -7035,7 +7035,7 @@ The servitors have received no critique of their work from the High Plateau Sett
 
 The Pennyburst Cratervale was not accidentally created during the Pennyburst incident. Regardless, it proved a lucky accident, creating a settlement zone ~~isolated~~ protected by the harsh environment of the Thin Plateau, where the air is barely there. The faithful say the Maker bade the Builders leave it untouched for the far aeons when the mountains will be rebuilt. Portable rebreathers and enviro suits are required to reach the Cratervale.
 
-**T.P.S. Organization**
+### T.P.S. Organization
 
 _organization monument, autosouvenir fabricator_
 
@@ -7048,7 +7048,7 @@ In the ensuing trials, the organization's rulers were charged with gross neglige
 
 A tastefully-sized processed slag palace field now marks the 712,523.5 Legume Farmer Nation® lives lost in the scam. All 320 thousand recorded names are listed, as well as retinal scans of the remaining dead. An automated gift shop remains nearby, ready to sell souvenirs to visitors at this tragic memorial to human courage and endeavor.
 
-**T.P.S. Facility**
+### T.P.S. Facility
 
 _zone of alienation_
 
@@ -7067,7 +7067,7 @@ _**Within:**_ the facility mind is now an idiot god, running a bizarre society o
 
 <a id="page_0180"></a>
 
-### YELLOW LAND
+# YELLOW LAND
 
 _"The Given World will run itself away,_ _unless you take it for yourself."_ —traditional Diesel Dwarf admonition
 
@@ -7082,17 +7082,17 @@ The géants, bereft, still lift mountains, carve valleys, deposit raw materials.
 
 But this is no garden. This is now a churning mass of fiercely independent city states extracting, processing, reprocessing, producing, trading, and fighting one another and all comers to within a stuckforce fieldsbreadth of what is permitted by the phylakes, and beyond when opportunity presents itself.
 
-**Climate**
+## Climate
 
 The mountains called Chaos bestow waters and black soil here, but drought and sand there.
 
 Microlocal climates are varied and unpredictable, not least due to the undying climate fabricators.
 
-**Population**
+## Population
 
 towner: ~6.5 million, stepper: ~0.3–1.1 million
 
-**Groups**
+## Groups
 
 - Yellow autochthones 26%
 - adopted citizens 24%
@@ -7102,39 +7102,39 @@ towner: ~6.5 million, stepper: ~0.3–1.1 million
 - itinerant residents 4–9%
 - others 3–9%
 
-**Languages**
+## Languages
 
 Saffranian (esteemed), Canopic (deprecated), Oranjetic (provincial), Free City Kriol (peri-trader), Volkan (industri-dwarfer), Topic (peripatetics)
 
-**Capital**
+## Capital
 
 Official: Saffron Public Thing. Practical: Safranj, loomstone house primary of the Heliodor Mercantile Guild.
 
-**Government**
+## Government
 
 Competitive polyarchy. Experimental local autonomy maximization. Tribal anarcho-segmentary groups.
 
-**Ideologies**
+## Ideologies
 
 Yellow God: trader (official), Invisible Hand: explorer (popular), Chemical Mother: generative (sustained).
 
-**Economy**
+## Economy
 
 By sane statistics, the richest land and the measure of market freedom. Symbiotic fabricator-human townships harvest, produce and compete, creating wealth that is only poorly understood by the Ministry.
 
 Trade with the half-known lands beyond the Golden Desert, the Lands of the Two Suns, those of Many Mirrors, the Living God, the Rational Army and more provides a further boost.
 
-**Resources**
+## Resources
 
 Proteins, hydrocarbons, rare earths, radio thermics, saffron, burdenbeasts, phylake-approved mercenaries.
 
-**Means of Production**
+## Means of Production
 
 The polities control and dispose of goods and capital through semi-sentient symbiotic agglomerations.
 
 The Heliodor Mercantile Guild adjudicates disputes.
 
-**Material Conditions**
+## Material Conditions
 
 Mandatory roles offer safety, sustenance, and amusements. Designated roles offer baseline survival. Non-citizens may adopt roles undesired by citizens.
 
@@ -7170,7 +7170,7 @@ RESET
 
 <a id="page_0183"></a>
 
-**Ambient**
+## Ambient
 
 | d6 | Winter | Spring | Summer | Autumn |
 |---:|:---|:---|:---|:---|
@@ -7178,7 +7178,7 @@ RESET
 | 4–5 | strong winds, frosty days, ice-7 corpselight nights | breezy days, chilly nights, chill winds, oldtech hallucinations | slow nights, flash storms, tumbling weeds | crisp days, heavy nights, gloomfog snakes, angel fire |
 | 6 | wet rain, lashing gales, crawling soils and grasses | dust-fall, heavy pollen, wafting perfumes | baking days, sauna nights, ash-fall, dead air plankton | weeping days, choking nights, autumn fires |
 
-**Events**
+## Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -7189,7 +7189,7 @@ RESET
 | 5 | **Dust rat colony** (L2, dehydrating) on Safranj the move. Offer them your waters. | **Poll-inspectors** (L2, spice-heads) demand contraband fees. | **Smog rabbits** (L2, horde). Omnivores grown to the size of dire hogs. |
 | 6 | **Fissurefolk cavalcade** (L5, wire ghouls) from the Infrared Desert. They're (1) traders, (2) refugees, (3) flesh-seekers, (4) pilgrims, (5) legendary hunters, (6) military recruiters. | **Phylake deputies** (L6, archeotech) investigating (1) a géant malfunction, (2) oldtech smuggling, (3) inter-town conflicts, (4) strange weather, (5) irregular bandits, (6) reality distortions. | **Oil dwarfer station** (L7, semi-mobile) offering a plethora of services: (1) refueling, (2) repainting, (3) re-fleshing, (4) nutritional liquefaction, (5) trait cannibalism, (6) oldtech repairs. |
 
-**Travel**
+## Travel
 
 When crossing from one imperious merchant republic to another, you lose 1d6* hours or €1d100* due to (roll d6*): (1) old customs, (2) strange fees, (3) weird holidays, (4) fun rituals, (5) grubby sacrifices, or (6) sacred errors.
 
@@ -7205,7 +7205,7 @@ When crossing from one imperious merchant republic to another, you lose 1d6* hou
 
 <a id="page_0184"></a>
 
-**HELIODOR MERCANTILE STANDARD GOODS**
+## HELIODOR MERCANTILE STANDARD GOODS
 
 This established merchant luxuriates in their established form:
 
@@ -7216,7 +7216,7 @@ This established merchant luxuriates in their established form:
 5. neurally augmented ambulatory spiniferous shrubbery,
 6. superior laminated plastic human with Good Looks™ upgrade.
 
-**This Liberated Trader**
+### This Liberated Trader
 
 _"They don't make 'em like ole' Vidyscreen_ _Venera anymore. Look at this raw_ _throughput! The dynamic error control._ _The delicate embossing. The cryptorchid_ _watermarks. She chungs out ten faux-_ _dream vidyscreens a day and we, her_ _veneralboys, we're the only retailers. You_ _want a vidyscreen like they had in the old_ _days, dontcha? Special price, just for you_ _my high frontier friend, €349. Less than a_ _yearslave!"_ —Veneralboy Ta Vera,
 
@@ -7239,7 +7239,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 | 5 | Chortley's Chopshop | growing, glowing, fanged | autonomous devices | living equipment or your skin back |
 | 6 | Soilborn Soul Systems | venomous, toxic, hot | aerosolized entertainment | products may exhibit soul leakage |
 
-**Consume To Create**
+### Consume To Create
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -7253,7 +7253,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 
 <a id="page_0185"></a>
 
-**Fashion For You**
+### Fashion For You
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -7264,7 +7264,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 | 5 | Vulcanized Suit | Reduces incoming damage by 1 and grants electrical immunity. Armor +2, ward +2, 2 st. | €600 |
 | 6 | Phylake Feathers | The super-real frock lets you spend 1d4 life to avoid one hit per round. Ar +2, wrd +4, 1 st. | €1.2k |
 
-**Self Defense Systems**
+### Self Defense Systems
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -7275,7 +7275,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 | 5 | Mood Blade | Your emotions fuel its elemental expression. Rage gives ice, fear emits fire, hate sparks electric, jealousy spits acid. Close, 1d8, 1 st. | €450 |
 | 6 | Scalar Axe | Adamant-cut from a sand-dragon scale. Ignores 1 + str points of armor. Close, 2d6, 2 st. | €750 |
 
-**Personal Travel Expression**
+### Personal Travel Expression
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -7284,7 +7284,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 | 3 | Solar Steed | Photosynthetic equine golem. Supercharges by day. L2, carry 2, fast (day), slow (night). | €700 |
 | 4 | Skitterloose | Megamorphic symbiote grown from géant tissue using reasonably cheap arthropod source codes. L3, carry 2, all-terrain, self-repairing, regenerating. | €1.8k |
 
-**Saffron Souvenirs Inc. Sym.**
+### Saffron Souvenirs Inc. Sym.
 
 | d10 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -7302,7 +7302,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 
 <a id="page_0186"></a>
 
-**JAUNDICED FACTIONS**
+## JAUNDICED FACTIONS
 
 _"Get two Yellow Landers and you've got three factions."_ —Popular Orange Land slur.
 
@@ -7310,7 +7310,7 @@ Unlike in the other lands, no one great center lays claim to the entire region. 
 
 Pop polititheologians claim to discern two dominant value groups: the pro-unity integralists and the prolocal-patriotism autarkics. They dismiss the patently less important groupings such as the bypoliticals and the barbarophiles. The fact that the individual towns' factions barely cooperate—or even comprehend—their co-ideologues in other towns does somewhat undermind these theories. Still, they keep the polititheological entertainers busy and chattering classes amused.
 
-**Saffron Integralists et al**
+### Saffron Integralists et al
 
 The Integralists, also called the _Whole Heliodor Party_, say the only way forward is to unite the Yellow Land under one central authority. Preferably that of their local cell.
 
@@ -7322,7 +7322,7 @@ The _Heliodor is Saffron_ offshoot has a simpler plan— this yellowist vanguard
 
 Heliodor Mercantile Guild, Usello has consolidated the guild office guards division (incorporated) into a paramilitary force. How was this done under the ever-staring eyes of the phylakes? No matter. The Yellow Land's dominant mercantile oversight and trading organization forming its own army will certainly have no terrible consequences.
 
-**Decapolypolist Autarkics**
+### Decapolypolist Autarkics
 
 The Polypolists, also called the _Hundred Flowers Caucus_, value local autonomy and economic zones of influence, often at the expense of neighboring settlements. Most local groups are structured as country clubs liasing between citizens and their town's admisymbs.
 
@@ -7333,7 +7333,7 @@ More extreme autarkics style themselves the _Original_ _Program Alliance_ . They
 
 <a id="page_0187"></a>
 
-**Periwinklers, Bypoliticals**
+### Periwinklers, Bypoliticals
 
 The Yellow Land autochthones might be satisfied with their two-faction system, but the majority of humans in these regions do not fall neatly into the approved superior local-sprung caste. While nativists might scoff at the idea that these peripheral groups matter, perhaps they should not be so hasty.
 
@@ -7342,7 +7342,7 @@ The Yellow Land autochthones might be satisfied with their two-faction system, b
 3. The _sufferseals_ (suffershield anthroposeals) have come to control the anemone-like proteinspewer géants that favor the coastal waters of the Chaos. The floating shanties of these aquatic posthumans are tolerated, but many traditional humans view them as nearly animals. Perhaps a dangerous folly. The **Groaning Family** controls Loaned Island's protein with a **scoop-brain undine** (L14, fear-filter).
 4. The _wirites_ (wire ghouls) are a number of electromagically sustained post-mortal communities dwelling in the Mountains of Light. Keeping them content and quiescent keeps Safranj safe. Turning the survivals under the Charcoal Apotheote into a post-mortal army is the fever dream of one **Gnonc the Wise** (L8, self-named) of the Orange Borderlands.
 
-**Barbarians and Barbarophiles**
+### Barbarians and Barbarophiles
 
 Local political disunity and disorganization means that non-Garden humans can infiltrate local society to a degree impossible nearly anywhere else. Not just that, many soil-born locals bored and disappointed with ossified native traditions enjoy the novelty suggested by all things barbarian, from playing with autonomous motor vehicles to wearing forbidden colors such as ultra purple and solar jade.
 
@@ -7354,7 +7354,7 @@ Local political disunity and disorganization means that non-Garden humans can in
 
 <a id="page_0188"></a>
 
-**ABACO'S TEMPLE MOBILE**
+## ABACO'S TEMPLE MOBILE
 
 _"No mere géant, no mere temple. This great crawler, this_ _megamorph has accreted and grown around a divine spike,_ _a heart of builder, and a seed of milkweed."_ —Local folklore.
 
@@ -7366,20 +7366,20 @@ _**Abaco's Ivory Village.**_ To live in a shack made of Abaco's temple beast's e
 
 _**Void Brain.**_ The beast has no brain, it is run by the void at its heart where the **nihil priests** (L5, dispassionate) sing.
 
-**Yellow God, also Mathic Lord Abaco**
+### Yellow God, also Mathic Lord Abaco
 
 By dream calculus their stone is the heliodor, their loved bird the hawk, their blood-marked tree the drago.
 
 "The eternal scribe who tallies and accounts. They that accumulates and invests, rations and divides. The bringer of profits and poet of growth. But also, the devouring machine, the taskmaster, the grinder of dreams."
 
-**Prayers to Mathic Lord Abaco**
+### Prayers to Mathic Lord Abaco
 
 Once per session or so; should you seek accumulation, eternal increase and momentary surcease, whisper:
 
 > "Ascend our line, ascend our moon, ascend our star;
 > eat my toil, eat my soul, give me now my elevation..."
 
-**Roll d20 + Thought - Aura**
+### Roll d20 + Thought - Aura
 
 | Result | Effect |
 |:---|:---|
@@ -7390,7 +7390,7 @@ Once per session or so; should you seek accumulation, eternal increase and momen
 
 <a id="page_0189"></a>
 
-**GARDENER GÉANTS**
+## GARDENER GÉANTS
 
 The Decapolitan Chaos is an unstable landscape, still alive with the great megamorphs, the biomechanical soilformers surviving from the Builder Era.
 
@@ -7406,7 +7406,7 @@ Orange Land.
 
 **Attack:** +11 builder ray 100 damage and 1d6 x +5 limbs or pseudopods 3d20 trampling damage. **Special:** An aura of corrupting, fiery radiation surrounds each géant. If their innards are exposed, the aura strengthens. A slain géant revives after a year of sunrises and sunsets, unless its soul is crushed and mined. **Treasure:** Their blood, droppings, bile, ichor, and other leavings run with: (1) powerful fuels, (2) rich nutrients, (3) precious minerals, (4) refined metals, (5) desirable pigments, (6) crushed soul stuff worth €500 per sack.
 
-**This Géant**
+### This Géant
 
 | d6 | Function | Form | Error |
 |---:|:---|:---|:---|
@@ -7417,7 +7417,7 @@ Orange Land.
 | 5 | nutrifactor | floating mass of ... fuzzy ... limbs and ... wood | It is spreading corruption with its touch. |
 | 6 | ruinbreaker | writhing clumps of ... grisly ... fronds and ... radiation | It is a dead biomachine run by ill-lings. |
 
-**Its Passage**
+### Its Passage
 
 | d6 | Omen | Vicinity | Aftermath |
 |---:|:---|:---|:---|
@@ -7431,7 +7431,7 @@ Orange Land.
 
 <a id="page_0190"></a>
 
-**A DECAPOLIS — A DECAYPOLIS?**
+## A DECAPOLIS — A DECAYPOLIS?
 
 _"There are ten cities. There are always ten cities. Whether your fingers count negative seven or seven hundred settlements, there are ten cities."_ —Semmelvis the Numerian, Count of Towns
 
@@ -7439,7 +7439,7 @@ _"I have counted the independent polities who acclaim each other cities and make
 
 As the land shifts, so shift the cities. Yet, both cities and land remain. Some officially accredited, others criminally rooted in the holy yellow clay. Yet, they are one of the ten cities uncountable.
 
-**This City ...**
+### This City ...
 
 | d10 | Form | Architecture | Origin | Center | Periphery | Demographics |
 |---:|:---|:---|:---|:---|:---|:---|
@@ -7454,7 +7454,7 @@ As the land shifts, so shift the cities. Yet, both cities and land remain. Some 
 | 9 | settlement | tell accretion | scavenger squat | shipping nexus | tubular units | vibrant culture |
 | 10 | villainage | trad subterranean | uplift edge case | great vidycube | road cancerways | militant humanist |
 
-**Lives and Dies By ...**
+### Lives and Dies By ...
 
 | d10 | Produces | Demands | Legal | Illegal | Treasured | Despised |
 |---:|:---|:---|:---|:---|:---|:---|
@@ -7472,13 +7472,13 @@ As the land shifts, so shift the cities. Yet, both cities and land remain. Some 
 
 <a id="page_0191"></a>
 
-**Onomastic Secrecy**
+### Onomastic Secrecy
 
 Each Yellow Land town has a public name displayed on map and map, spoken in public. But this name is a mask-name, an invocation to avert the daemons of strife, corruption, envy and decay. Each town also has a true name, which captures its essential sacred history.
 
 This name is inscribed in the source code of its citizens, bonding them and affirming their autochthony. They share this name by secret gesture and sign, glyph and symbol, but never utter or write it, lest it be stolen by outsiders, whether human, daemon, or machine.
 
-**Ominous Omens ...**
+### Ominous Omens ...
 
 _"This shining city will shine forever!"_ —anonymous inscription, Glass Crater Stele 21
 
@@ -7491,7 +7491,7 @@ Every admisymb, every merchant priest, every town praise-singer is taught to div
 5. Red clouds blot the sky over the mountain goddess, as when the seven myriad wire ghouls were disgorged.
 6. A new moon looms over the valley of town, as when the Bloom of Hungry Green overtook the settlement that was HS 256.
 
-**When the City Falls ...**
+### When the City Falls ...
 
 _"Lord! Your faithful gather at your Screen, but it is dark! Your faithful gather at the fountain of flesh and alcohol, but it is still. Lord! The rotborn, the outsiders mock us and threaten us, but we do not waver! Lord! Come to us now!"_ —last vidy record, Chamber of the Hand of God, HS 39
 
@@ -7506,7 +7506,7 @@ Was it revolution? Was it a fool archaeologist activating an ancient Lord? Was i
 7. Vine and thorn thrive in the ash and bone, the verdant Green of Aspera reclaims the ruin.
 8. Preserved in time-like-amber, the horror and the misery remain, a warning to future humans who would raise their hands against their Lords.
 
-**A Town's True Name (Roll Thrice)**
+### A Town's True Name (Roll Thrice)
 
 | d8 | 1st | 2nd | 3rd |
 |---:|:---|:---|:---|
@@ -7522,11 +7522,11 @@ Was it revolution? Was it a fool archaeologist activating an ancient Lord? Was i
 
 <a id="page_0192"></a>
 
-**SAFRANJ — SAFFRON CITY**
+## SAFRANJ — SAFFRON CITY
 
 _"This Public Thing, this city in yellow, this glory of the common weal, this product of personal ambition, this triumph of positive externality..."_ —The Private's Paean, Jelado yd ll Lesje (Soil Dandelion II)
 
-**Background**
+### Background
 
 A cube of loomstone rose from the fertile Field of Gold (Oracrí), over the confluence of the Yellow (Jayhal) and Black Gold (Naftalrí) rivers. Was it the remnant of some plateau the builders shaved away? Or a loomstone spun by the Maker to show its infinite favor for the posteconomic fervor of the merchant humans who would one day build the hub of a drug empire upon this cube?
 
@@ -7540,7 +7540,7 @@ But really, that's just rationalization, isn't it?
 
 _If you could turn your mind into a utopia, why would you_ _need struggle further against this ever-falling world?_
 
-**Districts**
+### Districts
 
 _**The Rooves.**_ Airy cloudscrapers of aerolith struts, saffron tiles, cedarwood pillars, and wallskin membranes. The locals wear aerolith belts and harnesses in case of falls.
 
@@ -7557,7 +7557,7 @@ _Star Chicken Five Station._ Possibly predating Safranj itself, this major right
 
 <a id="page_0193"></a>
 
-**Ambient**
+### Ambient
 
 The surface weather is normal: morning and evening storms, sun-drenched days, cold nights, and periodic pollen blooms that turn the atmosphere into a yellow soup teeming with filter-feeding air plankton shoals. The weather inside the welcoming builtmass of the Safranj cube is still somewhat regulated by the tethered **envirogéants** (L11, mostly harmless no reason to worry really it's fine).
 
@@ -7567,7 +7567,7 @@ The surface weather is normal: morning and evening storms, sun-drenched days, co
 | 4–5 | scattered clouds, damp zephyr cold, still breeze | zephyr cold, crystalline, jonquil clouds, plankton | wispy air, flaking skin, ominous glows | wispy air, flaking skin, mind-numbing whine |
 | 6 | humid, still, bated, soft, waiting, sweating | howling winds, lashing dust, flying plankton slime | gamboge air beasts, howls, ectoplasmic pseudopoda | thick, cloying airs, dead silence, damp emotions |
 
-**Events**
+### Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -7594,7 +7594,7 @@ _Accommodations also provide ticket dice: €5 = 1, €10 = 2, €25 = 3, €50 
 
 <a id="page_0194"></a>
 
-**THE VOIDWAY LANE**
+## THE VOIDWAY LANE
 
 _"Hwoosh! Just like that, everything was so white it felt purple-green. Like I could see through myself and the others. Then I looked back. Fico, Tanry, and the Bellweather were ... smeared out over a mile of regolith. Hard day."_ —Avoid the Voidway: Oral Histories of a Danger Zone.
 
@@ -7633,7 +7633,7 @@ Distrustful of your guides, you spend 1d6 days navigating around the prayer flag
 
 <a id="page_0195"></a>
 
-**This Valuable Debris, This Stranger Stuff**
+### This Valuable Debris, This Stranger Stuff
 
 Many would say there is no Advent. They'd say it is but a legend. But what of the scattered bones and battered jewels?
 
@@ -7662,11 +7662,11 @@ All these gifts of the aberract decay in a year, faster if used. But while they 
 
 <a id="page_0196"></a>
 
-**REMARKABLE HELIODOR**
+## REMARKABLE HELIODOR
 
 _"The guide used colored flags to speak with the okel orm and secure our passage onto the Refining Plain!"_ —My Journey, Arduous Villain (anon.)
 
-**The Diesel Mountain—Vulkana**
+### The Diesel Mountain—Vulkana
 
 _builderspawned aclhemititan_ Beyond the Fields of Jet, across the Hills of Slagga, above the Mountains of Light, rises Chem Caoutchouc, the all-chemical mother that transforms crude reality.
 
@@ -7713,7 +7713,7 @@ _**Worry:**_ steer clear of **mechanical ghosts** (L1, gremlins) and **petrochem
 
 <a id="page_0198"></a>
 
-**WARBARIANS**
+## WARBARIANS
 
 _No human was born free that was not born in blood._ —Ill Nano, Against the Flesh Remade, 5:13
 
@@ -7723,7 +7723,7 @@ Now, those lesser guardians are gone, and the grand phylakes that remain cannot 
 
 Here, in the fringes of this disunited land, where dusterling and stepper and other semi-humans dwell, you may well meet sentient creatures bred to violence.
 
-**Whose This War Band**
+### Whose This War Band
 
 1. Industrialist harvesters, canker-dwarves breaking free of the restrictive sustainability dogma.
 2. Bodysnatcher entrepreneurs, keen to supply the great plantations of the Orange Lands.
@@ -7746,7 +7746,7 @@ Here, in the fringes of this disunited land, where dusterling and stepper and ot
 
 <a id="page_0199"></a>
 
-**How They Avoid the Gun-Breakers**
+### How They Avoid the Gun-Breakers
 
 1. They gather in small, loose bands only. As the folk hero saying goes, “a hundred will rarely call the angel death, a thousand always must.”
 2. They blot their minds with spirits, drugs, possession, mantras or cloudy helms to be less sentient.
@@ -7757,7 +7757,7 @@ Here, in the fringes of this disunited land, where dusterling and stepper and ot
 7. Their bodies are their weapons, their minds still as water even as they kill.
 8. They march through tunnels and dull-ways, shielded by the weight of rock and world-metal from the eyes of the grand phylakes.
 
-**Left Unopposed, What Havoc Will They Wreak?**
+### Left Unopposed, What Havoc Will They Wreak?
 
 1. Settlements burn, pillage is taken, refugees stream into cities; new labor to delight the hungry masters.
 2. An ancient autofabricator is gutted, never to work again. Its parts are sold for a fraction of its value.
@@ -7768,7 +7768,7 @@ Here, in the fringes of this disunited land, where dusterling and stepper and ot
 7. The abbey of memory is despoiled, the golden pages of record are melted, the megas are freed, the wealth vitalizes a merchant scavenger revolution.
 8. A vault from Long Long Ago is opened, but no treasures they find, only death and pestilence and mere chaos to loose upon this latter world.
 
-**The Chronickler of Lost Times**
+### The Chronickler of Lost Times
 
 _mobile buildergolem archivist_ There, beyond the realms controlled by humans, out where even warbarians grow sparse, wanders **Chrolt the Chronickler** (L15, sentient monastery) with his coterie of **whispering ghosts** (L1, ermine) and **gibbering maintainers** (L2, canine).
 
@@ -7785,7 +7785,7 @@ _**Stele of the Heart.**_ A lustrous midnight slab of captured carbon hidden fro
 
 <a id="page_0200"></a>
 
-**L'OST 'SPITAL APOTHEOTIC**
+## L'OST 'SPITAL APOTHEOTIC
 
 _"Once, the Masters of Dream and Bone saw fit to give humans life everlasting in the gemstone matrix of the Second Maker. Since the Undreamt Rebellion, no hereditary minister would suffer such waste of human potential."_ —Education for Labor and Purpose, 5.75 Edition, Safranj Alltechnical Mercantile College (W(s)MXX-sh)
 
@@ -7799,11 +7799,11 @@ When the 72nd Improving Jubilee was announced the anti-prophet who shall not be 
 
 Of course they failed, but they also corrupted the gemstone matrix and left the surrounding terrain a foul wasteland of wandering half-minded ghosts, a warning to all who would leave the appropriate and proper path.
 
-**Conspiracy Salvaged**
+### Conspiracy Salvaged
 
 Trust not the lies of the ministry's smallminded heirs. The _Daughter of Mercies_ sought to set humans free of the unholy trap, the accursed path of the Canopy. Yes, she failed, but her key she projected forward through time and an order of the salvaged remained in the wasteland, on the periphery of humanity, to await its return!
 
-**'Ware the Apotheotic Wasteland!**
+### 'Ware the Apotheotic Wasteland!
 
 1. A **half-eaten phylake** (L13, angel), cursed to burn the humans it once saved.
 2. **Radiant wights** (L3, medicant), lying that they wish to heal and improve the world.
@@ -7821,7 +7821,7 @@ Trust not the lies of the ministry's smallminded heirs. The _Daughter of Mercies
 
 <a id="page_0201"></a>
 
-**The 74th Bled Army**
+### The 74th Bled Army
 
 A time capsule preserved this seed corps of mummified warriors, waiting for the human mind to be unlocked. The return of the Key of Mercies is the sign the army has waited for. Leached of all color, pale as bone, they approach the L'Ost Spital apotheote to turn it into the home base of their body superpolitic.
 
@@ -7847,7 +7847,7 @@ Individual **Bled soldiers** (L1d4, moldy) may:
 7. Express weapon and equipment blueprints encoded in their symbiotes' source codes.
 8. Spontaneously combust with a smell of charred pork after centuries in their dry seed barracks.
 
-**Aftermaths of the L'Ost**
+### Aftermaths of the L'Ost
 
 ☗ _Psychosocial Revolution._ The Not-Salvaged Order reveals they are Salvaged followers of the Daughter. With the infectious Key of Mercies they liberate populations from their dreamings, unleashing a cycle of regional social wars.
 
@@ -7858,7 +7858,7 @@ Individual **Bled soldiers** (L1d4, moldy) may:
 
 <a id="page_0202"></a>
 
-**SUNRISE IN THE WEST**
+## SUNRISE IN THE WEST
 
 _"The Little Sun is no true sun, no generative void-orb, instead it is a coiled Angel trapped within the shell of a Dragon, a divine 3rror stolen from the Unlords and chained to the Given World to drip gold and other metal treasures upon the Twice-Sunned Land."_ —New Dewerker Revolutionary Manifesto (Rewritten), Naphta Locks Diesel Archives (Novel Era 15)
 
@@ -7868,7 +7868,7 @@ As in other lands, the Green Sun that now gives life and feeds the phytoles, ris
 
 Its ascent and tides wash the shores in waves of molten metals and send up clouds of superheated gasses, treasures to be harvested by the canopic shadows, the golems or ghosts of thin stuff able to dwell in the open air while the Little Sun sets brings gifts up out of our common underworld.
 
-**The House of Revival**
+### The House of Revival
 
 _Buildertech solar birth-marked monument_
 
@@ -7885,7 +7885,7 @@ Today, the House of Revival serves as hospice and midwife both to golems who wou
 
 <a id="page_0203"></a>
 
-**Wandering These Daily-Seared Shores**
+### Wandering These Daily-Seared Shores
 
 1. The **great dark body** (L14, daemon-woven shadow), absorbing heat and life, radiating confusion.
 2. Posse of **canopic shadows** (L5, operatic) hunting for ceramic aeroliths.
@@ -7896,7 +7896,7 @@ Today, the House of Revival serves as hospice and midwife both to golems who wou
 7. Travelers from afar, self-styled **khans and magi**, bearing poison gifts (L4, posthuman).
 8. **Solar géants** dragging their great aerolith bodies as they harvest the drippings of the Little Sun (L12, magitechnical megafauna).
 
-**Sunrise Extractor**
+### Sunrise Extractor
 
 _megafaunal pleasure facility_ An ageless autorefinery, staffed by hundreds of **thin-stuff laborers** (L2, placebound) bound to the Wheel of Renewal in the geometric gardapartments, each death followed by a blissful interval of synthetic heaven. The autorefinery invades the minds of géants, giving pleasure in exchange for harvested heavy metals.
 
@@ -7908,7 +7908,7 @@ The autotruckers who took this treasure to the spinfactories atop the Ladder of 
 
 <a id="page_0204"></a>
 
-**GREEN LAND**
+# GREEN LAND
 
 _"The Maker gave the Cosmos to the Builders,_ _the Builders gave the World to the Lords,_ _the Lords gave the Garden to the Humans,_ _the Humans gave the Helm to the Ministry,_ _the Ministry takes the Lead down the Garden Path."_ —traditional Green Land postulate
 
@@ -7923,47 +7923,47 @@ If any land can claim to flower as the Garden was meant to flower, it is the Gre
 
 The eternal civilization on the banks of the Green River, from the feeder tells of the lesser towns to the space-time expanding wonder of the Emerald City, manifests the perfection of the temporarily-absent divine Lord Aspera.
 
-**Climate**
+## Climate
 
 Balmy, subtropical, with frequent rains and gentle radiations. Cooler and harsher in the highlands. The valley air is cleansed of impurities by floating filter mats and the ceaseless labors of aerolithic golems. The Emerald City makes its own weather for the good of its humans and the Mother Machine.
 
-**Population**
+## Population
 
 Land and outer city: ~17 million, portal city: 72,334,912
 
-**Groups**
+## Groups
 
 Greenlanders citizen 34%, Greenlanders corporate 17%, false humans 15%, barbarians resident 13%, rainbowlanders resident 10%, golems 6%, others 2%
 
-**Languages**
+## Languages
 
 Canopic (official), Betterspeak (ministry), Emerald (commerce), Greenspeak (lower), Feralshi Cabal (barbarian), Bilder (generated humans)
 
-**Capital**
+## Capital
 
 Official: Mothercity Practical: Evergarden, the model city in the biolithic canopy of the emerald livingstone platform.
 
-**Government**
+## Government
 
 Interpretative oneirocracy. The Ministry Inquisitive interprets the dreams of Aspera's avatar, the all consuming Mother Machine slumbering at the equidistant heart of the Metropolis. The Rites Banked and Corporate implement the interpretations for the Greater GoodTM of the land and the invisible hand.
 
-**Ideologies**
+## Ideologies
 
 Cogflower: growth (official), Invisible Hand: panhedonic (tolerated), Blue God: anomic liberation (suppressed).
 
-**Economy**
+## Economy
 
 By divine law, the richest land and the measure of developed human contentment. All manner of semisentient oldtech fabricators operate themselves in accord with the interpretations of the Ministry.
 
-**Resources**
+## Resources
 
 Omnibatteries, autofabricators, nutrient processors, anthropogenerators, plant- and beastmakers.
 
-**Means of Production**
+## Means of Production
 
 The Butcher Bankers preserve the holy growth of the circular economy and maintain the incorruptible C.A.S.H. The Cogflower Corporations ensure golem gears and human hands work together for common prosperity. Individual human ownership of the means of production is illegal. Share systems provide aristocrats vital revenues to support their esteemed social roles.
 
-**Material Conditions**
+## Material Conditions
 
 Official: each citizen is provided a customized livingwood sarcopod plus 7 cash per week. Effective: publishing socioeconomic census results is illegal as of Stasis Tulip VII to prevent ill humors.
 
@@ -8006,7 +8006,7 @@ The shabby little creature, face covered in whiskers, scalp sprouting multicolor
 
 <a id="page_0207"></a>
 
-**Ambient**
+## Ambient
 
 | d6 | Winter | Spring | Summer | Autumn |
 |---:|:---|:---|:---|:---|
@@ -8014,7 +8014,7 @@ The shabby little creature, face covered in whiskers, scalp sprouting multicolor
 | 4–5 | gloom-gray, light snow | cool rain, lights, rainbows | cleansing acid rains, flashing sanitation lights | remorseless drizzle, mud, copper leaves |
 | 6 | clear, lights in the sky, error fields, livingwood die-off | vortex winds, organ falls, invertebrate showers | portal gusts, organic deposits, biomatter films | stagnant air, verdigris mold, air plankton bloom |
 
-**Events**
+## Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -8025,7 +8025,7 @@ The shabby little creature, face covered in whiskers, scalp sprouting multicolor
 | 5 | **Guardian beasts** (L2, enigmatic) uplifted by solar phylake emissions attempt to reset fabricator settings. | History re-enactment. Infectious **rogue sentience** (L3, daemon) escapes from the deep archives. | Realignment. Grand **phylakes** (L13, holy) shift formation, disrupting local anti-war fields and boosting security. |
 | 6 | Several dozen rabbit-derived protected **la pine forms** (L0, herd) disrupt golem functions. | Garden **pathmaker** (L5, strict). Uplifted human in a chitin and polychrome body come to rezone approved areas. | Purification. Off-plan settlement opened for scavenging. Replacement humans arriving soon. |
 
-**Travel**
+## Travel
 
 | Type | Status | Price |
 |:---|:---|:---|
@@ -8038,7 +8038,7 @@ The shabby little creature, face covered in whiskers, scalp sprouting multicolor
 
 <a id="page_0208"></a>
 
-**JOY GOOD DISPENSARY**
+## JOY GOOD DISPENSARY
 
 _"Pleasure, treasure, big surprise! Monkey, donkey, dead inside! Fritter, titter, blessed watching eyes. Wriggly bread, have no pride!"_ —Pleasure Eyes 2bis, Procedural Classics Vol. 172
 
@@ -8048,7 +8048,7 @@ According to the _Guidebook on Human Cultivation (37th ed.)_ citizens are free t
 
 Despite regular “pruning actions”, illegal gray and green markets abound. Non-citizens cater to the upper strata who prefer the human touch that vegetal retail drones cannot manage. The falschers and lower classes self-organize bazaars in the hollows and roadlots of the towns and cities. Secret maps and code words can lead to some spectacular shopping discoveries.
 
-**This Dispensary**
+### This Dispensary
 
 | d6 | Vendor | Personality | Specialty | Quirk |
 |---:|:---|:---|:---|:---|
@@ -8059,7 +8059,7 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 | 5 | Illegal Smallshop | chatty, drunken, gloomy | handycrafted jury-rigs | regularly changes location to avoid pruning |
 | 6 | Paraluxury Experience | glossy, mystical, psychic | oldtech sensorials | demands a loyalty trust oath |
 
-**Eat, Drink, Suck Air**
+### Eat, Drink, Suck Air
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -8072,7 +8072,7 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 
 <a id="page_0209"></a>
 
-**Appoint Thine Corps**
+### Appoint Thine Corps
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -8083,7 +8083,7 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 | 5 | Corpocrat Uniform | Cumbersome and stifling in the subtropical heat, but it signals your status—respectable, willing to suffer to fit in. Stains easily. Ward +1, charisma +2, 3 st. | €100 |
 | 6 | Woody Me™ | A bespoke lamellar wooden golem slaved to hide your vulnerable human flesh. Unlikely to acquire free will with you inside, haha. Golem 15 life, Armor +3, strength +2, 3 st. | €500 |
 
-**Hunt Thine Nemesis**
+### Hunt Thine Nemesis
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -8094,7 +8094,7 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 | 5 | Aspera Ray | A ruby eye encased in a madwood amplifier. Introduced after the Last Vile Falscher Desecration. Three Rites only. Rifle, long range, 2d6, heat damage, powered, 2 st. | €750 |
 | 6 | Chain Axe | Sacred weapon of the Gardener Division. Deployed against E.L.F., rogue ancestors, wood golems, and escaped carnibotanics. Two-handed, 2d8, powered, 2 st. | €1.8k |
 
-**Enjoy Thine Ride**
+### Enjoy Thine Ride
 
 | d4 | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -8103,7 +8103,7 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 | 3 | Goalsie | Aquatic flesh golem variant. Synthetic flesh, limited reason, muscular flippers, and a passenger belly. L7, carry 7, swift-swimming, slow-crawling. | €3k |
 | 4 | Corpsedrinker | Mindless, proto-archaic autogolem. Luxurious, sized for builders, feeds on the refined biomatter. Wheels big enough to crush bones. L5, carry 8, armored, rumbling, roaring. | €8k |
 
-**Curios Et Knick Knacks**
+### Curios Et Knick Knacks
 
 | d10 | Item | Description | Price |
 |---:|:---|:---|---:|
@@ -8120,11 +8120,11 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 
 <a id="page_0210"></a>
 
-**FACTIONS VIRIDIAN**
+## FACTIONS VIRIDIAN
 
 _"There are no factions in the Green Land. Everyone works together in peace and harmony for the common weal."_ —Grand High Intern Sesti od Mamon, Ministry One
 
-**The Three Rites**
+### The Three Rites
 
 In truth, the Three Rites—finance, industry, and administration—dominate the upper echelons of Green society. Managers, burghers, scions, and aristocrats climb interwoven ladders of meritocratic success through a system of poetry trials and athletic exams.
 
@@ -8136,7 +8136,7 @@ An _error is brewing_. More and more of the humans produced by the Mother Machin
 
 ♟ _Sad Me Difort:_ elfin vice-minion of finance and forestries. Populist head of the mass regeneration movement, feeding pure human stock to revitalize the Mother's pangenerative virtues.
 
-**The Soiltwined**
+### The Soiltwined
 
 Born on and of Soil—the laborers of the land and the golems of the garden find common cause despite their disparate, unnatural, and unmachined origins. “Are we not all red in tooth and claw, born to struggle, to strive? This is our nature—toil of the fittest manifest,” babble their luddite priests and waldenite landlords.
 
@@ -8150,7 +8150,7 @@ The Mothercity demands _increased organic taxes_, but the bioreactors, soilgiver
 
 <a id="page_0211"></a>
 
-**The Feralfolk, the Aperu**
+### The Feralfolk, the Aperu
 
 Sentient almost-humans unrecognized by the authorities. Unregistered anthropobeasts dwelling outside the Dream, rats skulking among the cities, scavengers unseen by the Authority. Deniers of the Ministry's gentle ministrations.
 
@@ -8164,7 +8164,7 @@ Yet fewer are harvested, and _more escape every year_. Why do the fecundic divis
 
 ♟ _Canta VVI:_ a songbird human who lived for years as an amuseant in the Evergarden. He fears the ferals don’t understand the weapons and industry possessed by the old humans of the Rites. Can he convince the ferals to abandon rebellion and escape through the Portal instead?
 
-**The Mossdwellers**
+### The Mossdwellers
 
 “Suck air! Drink sun! Let mossfriend feed you. Leach nutrients from pipetree. Harvest joy from noötree,” warble the moss-skinned, leaf-bearded, elf-gone mossdwellers. They have drunk too deep of the verdigris mold juices and supped on too much airplankton.
 
@@ -8180,7 +8180,7 @@ Will no one listen? Can they find an ally, or must they take action alone?
 
 <a id="page_0212"></a>
 
-**COGFLOWER EXCHEQUER**
+## COGFLOWER EXCHEQUER
 
 _"The great old baobab bank, the immense living machine tree, an island all its own! There the accountant monks keep the Hunger Away. There the fiscal inquisitors keep the Invisible Hand manicured and moisturized. There cash is made from crushed dreams and repurposed souls."_ —Island of Bank, Econotourist Guide Book (207YF)
 
@@ -8190,19 +8190,19 @@ Crowds of newmade humans throng the marshy base of the grand exchequer, supplica
 
 Visitors can also buy newmade humans for their estates.
 
-**Garden Lord Aspera, also Green Aspera**
+### Garden Lord Aspera, also Green Aspera
 
 In the living stone, emerald is as the root stone, the eel as the way stone, the baobab as the sky tether.
 
 "The great builder who nourishes the growing things. The giver of living stone and undying flesh. The maker of homes and hearths. But also, the wrathful one, the dictator of needs, the judge of right thought."
 
-**Prayers to Green Aspera**
+### Prayers to Green Aspera
 
 Once per session or so, to accept failure and creative destruction, to reconcile to the path:
 
 "Rage is done, end is over. Dust! Stand! Grow anon!"
 
-**Roll d20 + Strength - Thought**
+### Roll d20 + Strength - Thought
 
 | Result | Effect |
 |:---|:---|
@@ -8212,7 +8212,7 @@ Once per session or so, to accept failure and creative destruction, to reconcile
 
 <a id="page_0213"></a>
 
-**MINISTERIAL ESTATES**
+## MINISTERIAL ESTATES
 
 _"Acceptance into ministry is the highest of honors, the perfect proof of high baseline functionality, the essence of merit, the ultimate of deserved leisure."_ —Servitors Handbook, Revised Rev. 3.5 Ed. (237WE)
 
@@ -8224,7 +8224,7 @@ The life of a minicrat is harsh and their humble gift estates bare compensation 
 
 Also, may each serving minicrat earn €100 per week in convertible cards to properly maintain the dignity of their better status.
 
-**Prodigies of Merit**
+### Prodigies of Merit
 
 Thus Aspera and the Lords favor this place:
 
@@ -8237,7 +8237,7 @@ Thus Aspera and the Lords favor this place:
 7 No daemon or unlicensed corpse may enter.
 8 A house phylake hushes violent impulses.
 
-**This Estate**
+### This Estate
 
 | d6 | Type | Aspect | Grounds | Secret |
 |---:|:---|:---|:---|:---|
@@ -8248,7 +8248,7 @@ Thus Aspera and the Lords favor this place:
 | 5 | villa | recreated village | industrious fake-human town | resurrecting avatar of Bone Mohlack |
 | 6 | yali | converted void ship | crater of rust and thorns | heretical vidy recording studios |
 
-**Tragedy**
+### Tragedy
 
 | d6 | Omen | Incident | More Trouble |
 |---:|:---|:---|:---|
@@ -8261,11 +8261,11 @@ Thus Aspera and the Lords favor this place:
 
 <a id="page_0214"></a>
 
-**VERDANT PLACES**
+## VERDANT PLACES
 
 _"We passed rich fields, crossed fine bridges, travelled through lovely dorps. Everywhere golems and falschers, living trees and singing birds. But people?"_ —Daly Setemani, A Barbarian in Eden (V/s/R-6, Sky Goat)
 
-**Giver of Wisdom and Gifts**
+### Giver of Wisdom and Gifts
 
 _builder remnant, refuge guardian_
 
@@ -8282,7 +8282,7 @@ _**Within:**_ the meaningless string unlocks an in-dimensional refuge-village. A
 5 Frozen timelost **access-prince/ss** (L3, daunting) who remembers the times before the Builders' left.
 6 Bubble **travel orb sentience** (L4, pilot) embedded in a wired-shut clay pot. Why is it here?
 
-**Gate of Green Waters**
+### Gate of Green Waters
 
 _nutrient spigot, oldtech in-portal_
 
@@ -8301,7 +8301,7 @@ _**These Waters:**_ they glow with a healthy virtue (d6):
 
 <a id="page_0215"></a>
 
-**Carbonivorous Dendripores**
+### Carbonivorous Dendripores
 
 _coalmaker tree-sponge colony forests_
 
@@ -8311,7 +8311,7 @@ _**Rivers:**_ **union coalems** (L7, bristling) belch along, grinding the banks 
 
 _**Concrescence:**_ within the false forest harsh silence reigns, certainly helped by the **adamechs** (L4, soot golems). These refractory synthetics seek to become more organic than organic, converting themselves into post-machine biocreatures. They offer good prices for bodies, compounds, fluids and tissues.
 
-**Oldgrowth Noötree Grove**
+### Oldgrowth Noötree Grove
 
 _ageless noösphere access forest_
 
@@ -8321,7 +8321,7 @@ Some say this entire noëxperience is generated by a single ten-millennial meta-
 
 _**Within:**_ **liars** (L1, grifting) and **parasites** (L2, soul-eating) prey on the unready, but the real threat are beyond the tree-plug: the Blue God's **malign babavores** (L5, succubi) jostle for your dreams and identities. Beware the antipsychic crumpets!
 
-**Today's Autoscope**
+### Today's Autoscope
 
 | d6 | Today | Weather ... Humor (?) | Generated Music |
 |---:|:---|:---|:---|
@@ -8334,11 +8334,11 @@ _**Within:**_ **liars** (L1, grifting) and **parasites** (L2, soul-eating) prey 
 
 <a id="page_0216"></a>
 
-**EMERALD CITY**
+## EMERALD CITY
 
 _"Mother City, Ten-Thousander Portal, Metropolis Temple One, City Proper, Living Wall, The Model City..."_ —The Name for City is Green, Adaü bene Aün (Soil Tulip III)
 
-**Background**
+### Background
 
 The legendary Triple Skull cycle holds that the distorted space around the great green portal corresponds perfectly to the eight hundred thousand square miles of the legendary Human City One.
 
@@ -8348,7 +8348,7 @@ In any case, the Emerald City is the all-consuming motor of the Circle Sea econo
 
 _Cargo goes in, humans come out. A perfect circle._
 
-**Districts**
+### Districts
 
 _**Manor Islands and Buttress Boroughs.**_ Relaxed, lightly networked areas for the higher managerial castes of the Rites Banked, Corporate, and Ministerial.
 
@@ -8362,7 +8362,7 @@ _**Mothercity and Daughtercity.**_ ERROR. The zeno division of the portalspace i
 
 <a id="page_0217"></a>
 
-**Ambient**
+### Ambient
 
 Sympathetically tethered **angel-moons** (L13, weathered) swim within the portalspace of the Mothercity, eating waste gasses, sprinkling pleasant waters, emitting sweet airs. Aerolithic **shepherd golems** (L4, pitied) herd flocks of engineered air plankton to cool, cloud, water, or heat the outportal districts.
 
@@ -8372,7 +8372,7 @@ Sympathetically tethered **angel-moons** (L13, weathered) swim within the portal
 | 4–5 | hot, humid, smelly | cold, clammy, rancid | spore-choked, dripping, clammy, crawling | whipping liquids, odd hues, perfumed |
 | 6 | astringent, electric, ozone odor, flashing ghost lights | ammonia, char, glitter of see-beams, oldtime ghosts | burbling, swallowing, chewing, burping, glowing | thick, oversweet, rattling, heaving, psychic lights |
 
-**Events**
+### Events
 
 | d6 | 1–3 Expected | 4–5 Surprising | 6 Error |
 |---:|:---|:---|:---|
@@ -8383,7 +8383,7 @@ Sympathetically tethered **angel-moons** (L13, weathered) swim within the portal
 | 5 | Dire **maintainers** (L3, phytogolem) obsessively cataloging and repairing imperfections. Editing offered. | Maintenance. City Mind initiates unscheduled repairs. District sealed off for 2d4* hours. Exit illegal. | Upgrade. Section of the city begins to rearrange itself. Travel delayed. Beware walking **treepartments** (L17). |
 | 6 | Posthuman carnival. A celebration or a prelude to a butcher banker crackdown on unlicensed excess? | Blossoming. Biomechanical blooms offer civic virtue upgrades. [gain +1d3 charisma and loyalty to the city] | Flesh jubilee. Unrecycled **excessives** (L0, human?) offered mandatory out-settlement or mulching. |
 
-**Places To Stay**
+### Places To Stay
 
 | d6 | Place | Description | €/week |
 |---:|:---|:---|---:|
@@ -8398,11 +8398,11 @@ _Accommodations also provide ticket dice: €5 = 1, €10 = 2, €25 = 3, €50 
 
 <a id="page_0218"></a>
 
-**THE LEAVES OF FORMER TIMES**
+## THE LEAVES OF FORMER TIMES
 
 _"Fragments of an older world tree reveal themselves in the thorns and pains of our modern times."_ —Against Aspiration, Anti-Ministerial Ananas (Green Marigold XX)
 
-**Airmaker Bergs**
+### Airmaker Bergs
 
 _mountain-void worm symbiote_
 
@@ -8412,7 +8412,7 @@ One such worm is the airmaker lusëpei' 7-Wandé (L16, lesser urge), who gives u
 
 ♟ _Gongathor:_ a foul-mouthed barbarian of impressive stature and noble mien. They are clearly lying and only interested in personal power as they spread panic about the mountain-worm.
 
-**Chantler Ceonobia**
+### Chantler Ceonobia
 
 _synthetic mantric monasteries_
 
@@ -8424,7 +8424,7 @@ In their wisdom, the Good Ones, who some falselings call Vile, built the wonderf
 
 <a id="page_0219"></a>
 
-**The Time Ponds of the Pseudologians**
+### The Time Ponds of the Pseudologians
 
 _the bone vultures' water gardens_
 
@@ -8436,7 +8436,7 @@ _**Secret:**_ the caretakers are agents of the Invisible Hand, the false Poppy V
 
 ☗ _New Soul Oven:_ this sacrificial furnace converts souls into divine flesh. The Invisible Hand is cultivating secret cultures in an accelerated time pond to produce souls for the oven.
 
-**Post-Archaic Cerebrasarium**
+### Post-Archaic Cerebrasarium
 
 _reactivated traditional re-existentialist sanatorium_
 
@@ -8452,7 +8452,7 @@ Barbarian anti-scholars claim the facility is being used by some noble corpocrat
 
 <a id="page_0220"></a>
 
-**PORTALSPACE**
+## PORTALSPACE
 
 _"Dullway travel is completely safe. There are no recorded cases of catastrophic disassembly, bodily alteration, gross material mutation, or psychic decay. All reports to the contrary are illegal misinformation coded blue-blue."_ —Great Tablet of Travel, found during excavations of the third anomalous layer, Metropolis.
 
@@ -8466,7 +8466,7 @@ Urban legends say that when the great portal of Metropolis was open to the publi
 
 <a id="page_0221"></a>
 
-**Portalspace Islands**
+### Portalspace Islands
 
 _"All portals are yellow coded. Good, salt-of-the-earth humans do not need portals. Emergency portal use requests are always granted before catastrophic loss of life occurs. No settlements have ever been lost due to delays in unlocking portal access because. Such ideas are slander and heresy."_ —Final Printout, Central Temple of Communications, buried city of Pompelmo.
 
@@ -8477,7 +8477,7 @@ In portal engineering, the _island_ refers to the distorted spacetime around the
 
 After many experiments with journey-pigs, the grand punta Serim Anhalib figured out a crude equation for portal effects (capacity × 1/(time) = island diameter). Only a desperate incanter would fully trust Anhalib's equation.
 
-**Example P-Islands**
+### Example P-Islands
 
 | Portal | Capacity | Travel | Island R |
 |---:|:---|:---|:---|
@@ -8497,7 +8497,7 @@ After many experiments with journey-pigs, the grand punta Serim Anhalib figured 
 | 5 Pig Test | The basis of Anharib's seminal experiments. The original is on display in the Mausoleum of the Pointer. |
 | 6 SUPPRESSED | Warning. Do not open. It keeps [something] from returning. |
 
-**Experiencing Portalspace**
+### Experiencing Portalspace
 
 From the perspective of a four-dimensional human, portalspace distorts light and sound. Large portals can completely block light and information from the outer world. Higherdimensional beings, such as Builders, may see and move through the distortion, like a stone skipping over water. Portalspace can also have other effects on baseline humans:
 
@@ -8519,13 +8519,13 @@ From the perspective of a four-dimensional human, portalspace distorts light and
 
 [![Portal One map (page 222)](images/page_0222_portal_one_map.png)](images/hires/page_0222_portal_one_map.png)
 
-**PORTAL ONE — MOTHERCITY**
+## PORTAL ONE — MOTHERCITY
 
 _"Inside the city is another country."_ —Archives of Fallen Sentiment, Chronicler Gentle Seed (Stasis Dandelion XIII)
 
 Past the aerolithic orbital burghs, wijks, and comptoirs of the Daughtercity, within the portal horizon of the Mothercity, space folds and curls like a fractal posteuclidean dream. This is the greatest of portal spaces, the greater part of the Green Land, the true garden country of zeno divisions and languid channel rivers.
 
-**Portal One Travel**
+### Portal One Travel
 
 | Travel | Notes | Price |
 |:---|:---|---:|
@@ -8537,7 +8537,7 @@ Past the aerolithic orbital burghs, wijks, and comptoirs of the Daughtercity, wi
 
 <a id="page_0223"></a>
 
-**Major Stations and Towns**
+### Major Stations and Towns
 
 _**Abattoir Apartment V.**_ Everything has always happened. Feed the **meaters** (L1, translucent). So it goes.
 
@@ -8599,7 +8599,7 @@ _**Sub Burrough.**_ A living town for living pod humans!
 
 _**Unistadium.**_ Regrowing after the Soil Tulip incident.
 
-**Temporary Microlocal Error**
+### Temporary Microlocal Error
 
 | d6 | Sign | Manifestation | Effect | Notice |
 |---:|:---|:---|:---|:---|
@@ -8614,7 +8614,7 @@ _**Unistadium.**_ Regrowing after the Soil Tulip incident.
 
 <a id="page_0224"></a>
 
-**OMEGA JUBILEE**
+# OMEGA JUBILEE
 
 **Synthetica**
 
@@ -8639,7 +8639,7 @@ Three final narrative tracks, Jubilee, Palace, and Mother, form a final arc that
 
 4. The black hole towards which sessions, and the story, swirl is the **Omega** [Jubilee], a feared, possibly prophesied, likely misunderstood event involving the Gods (or what they might be) and the End of All Things. It suggests possible end credit scenes for the end of a season of sessions, an interlude, or perhaps a new beginning.
 
-**Confessions of Play**
+### Confessions of Play
 
 “Reader. Reader, hark. Your ear. Here, you dropped it. Sorry. Reader, yes. Player of games? Referee of games? Master of games? Yes? I am the narrator. Yes, the most reliable of narrators. Everything I write here, all of it, everything is true and factual and reliable. I make no mistakes. I conceal nothing. I distort nothing. You see, my memory is perfect and factual, and every part of this Golden Age I present to you, this Golden Age of ours, I have it on the best and finest of authority. These lords of the future spoke to me, yea, through quantum whispers fed through the echoing vibration of my auditory ossicle. See, their voices proved to me that I am not mad, and so, since I am not mad, you can trust the words I convey to you of our Golden Age.”
 
@@ -8649,7 +8649,7 @@ The old man-mind in the young fresh shell glared at Tomias with burning eyes, wi
 
 "I don't get it. Is this ... some kind of old joyfeel vidy?"
 
-**A Host for Your Ghost**
+### A Host for Your Ghost
 
 Here, puppet, dance, dance. Do you wonder, puppet, at the things you do? Feel a spirit pull your strings? A master beyond the veil? No, slumber good puppet.
 
@@ -8679,7 +8679,7 @@ The blue golem nodded, “Ah, that explains it. Those have soft personalities.�
 
 <a id="page_0226"></a>
 
-**SCENE, SESSION, STORY**
+## SCENE, SESSION, STORY
 
 _"We followed the Garden Path and here we started again, mannequins in a plastic desert!"_ —Antintern Sofanny Blintz, _Firing Squad Letters_
 
@@ -8689,7 +8689,7 @@ The setting is presented in an impressionist manner, with unreliable narrators, 
 
 How does a referee perform their task? They need not build a world entire, complete as clockwork, rather they provide the foundation and the building blocks with which the players' activities create a vivid world.
 
-**Scene**
+### Scene
 
 It all starts with the scene. A moment of meaning for the PCs and their players. It could be mere seconds or hours. Investigation, fight, conversation, or exploration. The referee presents challenges and dilemmas, adjudicates time and space, rounds and actions. When outcomes weigh uncertain, dice roll to give answers.
 
@@ -8706,7 +8706,7 @@ Scenes can be strongly or weakly interactive for the PCs. In some, the referee m
 
 The crucial thing to remember is that scenes are never fully scripted by nature of the players' choices—even if the choice is only how their PC reacts emotionally to a moving advertividy they have not seen for years.
 
-**Session**
+### Session
 
 The session unfolds from the moment the players sit at their table—real or metaphorical—to the moment they clean it of dice and dreams. In-character and out-of-character, they discover how the story unfolded for them through the scenes experienced during that session.
 
@@ -8729,7 +8729,7 @@ At the end of a session the referee can ask the players for feedback: what didn'
 
 <a id="page_0227"></a>
 
-**Story**
+### Story
 
 As several sessions string together they reveal a story. The story is not some pre-imagined thing, rather it is emergent from the players' action and reaction upon the scenes built by the referee and played out at the table. No one person can know how play will unfold, whether the PCs will snatch defeat from the jaws of victory or not. This shared exploration of the unknown, collaborative writing of the sessions' story, is the wonder of roleplay.
 
@@ -8768,7 +8768,7 @@ Over the next few pages the Meta-Factions framework, the I.N.T.R. Generator, and
 
 <a id="page_0228"></a>
 
-**I.N.T.R. GENERATOR**
+## I.N.T.R. GENERATOR
 
 When exploring a location, PCs can count on regular encounters sapping their resources. When traveling, regular events break up their voyages. Between sessions and when chilling at home, **interruptions** demand the attention and time PCs are trying to devote to private pursuits, whether those are rest, recreation, or reanimation. These interruptions follow the standardized severi-frequent scale of player impedimentation: **I.N.T.R.**
 
@@ -8779,11 +8779,11 @@ When exploring a location, PCs can count on regular encounters sapping their res
 
 **Roll on the incident table once per week (or so)** of game time for the whole party (or household). The I.N.T.R. tables are linked, allowing for occasions of "when it rains, it pours hellfire from the sundered sky-vault."
 
-**Incident**
+### Incident
 
 The trivial but time-consuming vexation occurs at (d6): (1) the least convenient time, (2) the beginning of the week, (3–4) the middle, (5) the end, (6) the best time.
 
-**d00 — A Trifling Bother, Really**
+#### d00 — A Trifling Bother, Really
 
 | d00 | Result |
 |---:|:---|
@@ -8826,11 +8826,11 @@ The referee may swap out incidents, or escalate them further, to avoid things ge
 
 <a id="page_0229"></a>
 
-**Nuisance**
+### Nuisance
 
 The frustration coincides with (d6): (1) an unlucky day, (2) a market day, (3) a sacred message day, (4) a cultural reeducation day, (5) a full moon, (6) a celestially bothersome alignment.
 
-**d00 — Just a Socioeconomic Flesh Wound**
+#### d00 — Just a Socioeconomic Flesh Wound
 
 | d00 | Result |
 |---:|:---|
@@ -8857,11 +8857,11 @@ The frustration coincides with (d6): (1) an unlucky day, (2) a market day, (3) a
 
 <a id="page_0230"></a>
 
-**Trouble**
+### Trouble
 
 This temporary setback in the inevitable and perfect arc of humanity's divine history takes place (d6): (1) on a profane day, (2) on a day of remembrance, (3) during a festival, (4) between two bouts of electoral combat, (5) on an ill-starred night, (6) one quiet morning. Once a trouble starts (the keg column), it evolves under its internal logic unless stopped or redirected. Each week after it starts roll d6: (1) it erupts, (2–3) it moves right one column, (4–5) it simmers, (6) it moves left one column. Trouble doesn't die down unless a major faction benefits from successfully stamping it out. The PCs could be(come) such a faction.
 
-**d00 — Keg → Spark → Eruption**
+#### d00 — Keg → Spark → Eruption
 
 | d00 | Keg | Spark | Eruption |
 |---:|:---|:---|:---|
@@ -8883,13 +8883,13 @@ This temporary setback in the inevitable and perfect arc of humanity's divine hi
 
 <a id="page_0231"></a>
 
-**Rupture [of the Era]**
+### Rupture [of the Era]
 
 [ERROR] Horizon eventuation during (d6): (1) the next solar eclipse, (2) the death of a hereditary president, (3) the birth of a star child, (4) the next economic crash, (5) the next technomagical involution, (6) the celebrations of a new and glorious beginning. Warning. Border failure. Please return to your sarcoph... sarcopod, bones will be clothed, flesh will walk again, have no fear. Fear. Fear.
 
 Once a rupture omen appears, the anguish follows in 2d6 weeks. The true rupture occurs 1d30 weeks after that. With the help of a powerful faction the PCs can ameliorate or direct the rupture, but a permanent change is inevitable.
 
-**d00 — Omen → Anguish → Rupture**
+#### d00 — Omen → Anguish → Rupture
 
 | d00 | Omen | Anguish | Rupture |
 |---:|:---|:---|:---|
@@ -8913,7 +8913,7 @@ Once a rupture omen appears, the anguish follows in 2d6 weeks. The true rupture 
 
 ![Nexus Grid (page 232)](images/page_0232_nexus_grid.png)
 
-**NEXUS GRID**
+## NEXUS GRID
 
 The nexus grid is the referee's control panel for the story—the campaign, if you will—and how it weaves and ducks about the two meta-factions, the Ministry and the Nemesis. It contains 38 nodes to place key NPCs, places, and factions; 8 of which are directly connected to the meta-factions of Ministry and Nemesis, their most active (or accessible) agents, promoters, and manipulators.
 
@@ -8930,11 +8930,11 @@ For crucial nodes, the referee can set up a faction alignment wheel to track the
 ![Nexus Grid (page 233)](images/page_0233_nexus_grid.png)
 
 
-**Faction vs. Meta-Faction**
+### Faction vs. Meta-Faction
 
 The Ministry and the Nemesis are meta-factions, one could think of them as loose agglomerations of groups and individuals with goals that _currently_ align, rather than more permanent institutions (though there may well be multiple institutions and NPCs that claim the titles of Ministry or Nemesis!). One way to think of them is as a purple-orange alignment scheme to make sense of the Given World at the Edge of Time. Or, if not sense, then political utility.
 
-**Key and Lock**
+### Key and Lock
 
 The key and lock spaces provide two zones with resources to effect a radical change in the status quo of the setting. The key must be used upon the lock to upend the balance between the meta-factions.
 
@@ -8944,13 +8944,13 @@ Interestingly, each is fully controlled by their respective neutral nodes (1 and
 
 ![Wield the Nexus map (page 234)](images/page_0234_nexus_grid.png)
 
-**WIELD THE NEXUS**
+## WIELD THE NEXUS
 
 _"Here, now, Ma'ab, wield the spider and the web!"_ —Admiral God to Ma'ab of the Cowsherds
 
 The filled nexus grid above is a snapshot of the story control panel. It is filled out in pencil not because the author is lazy but because the nexus grid is always provisional and liable to change between sessions subject to the actions and choices, interests and disinterests of the players.
 
-**The First Few Nodes**
+### The First Few Nodes
 
 Starting with an empty grid is hard, but we already have two adventure skeletons to work with.
 
@@ -8960,7 +8960,7 @@ Starting with an empty grid is hard, but we already have two adventure skeletons
 4. Now, let's say the Hollow House is not the same as the PCs' starting location. Let's place it in 10. This way the Antagonist has no nearby base and can't be omnipresent. Maybe they'll be an irregularly recurring character or agent of the Nemesis.
 5. Let's say the Sender (still missing) is loosely connected to the Key. 5 is a good node for them. This way, if the PCs pursue that thread, they will get closer to the Key and the bigger arc.
 
-**Seeding Reasons to Travel**
+### Seeding Reasons to Travel
 
 To tempt the PCs to travel around the Circle Sea, we can browse the maps and Land chapters, then:
 
@@ -8971,7 +8971,7 @@ To tempt the PCs to travel around the Circle Sea, we can browse the maps and Lan
 
 ![Wield the Nexus map (page 235)](images/page_0235_nexus_grid.png)
 
-**Seeding Reasons to Travel**
+### Seeding Reasons to Travel
 
 To tempt the PCs to travel around the Circle Sea, we can browse the maps and Land chapters, then:
 
@@ -8980,7 +8980,7 @@ To tempt the PCs to travel around the Circle Sea, we can browse the maps and Lan
 5. Now let's add some relationships between the different nodes. Let's just generate them randomly, we don't know the details yet but that's ok.
 6. We repeat the process a few times, filling out more of the grid. We don't have to completely fill out the grid. We can even keep the details of the Ministry and the Nemesis vague. The PCs are still far away. As they hear more details, we can add those notes.
 
-**The Grid During Prep, Play, and After**
+### The Grid During Prep, Play, and After
 
 During prep, we'll glance over the grid and find some interesting nodes and relationships, particularly ones the players focused on. We'll think about what might happen there between sessions, use oracle dice and make note of what interesting events might have occurred, then link up any interesting locations or modules we have come up with or prepared. Don't overdo it at this stage—keep your preparation rough and malleable.
 
@@ -8990,7 +8990,11 @@ After play, use your annotated grid to supplement your notes and fix up your ref
 
 <a id="page_0236"></a>
 
-**Thus Have Things Been**
+## MINISTRY
+
+_O, house of ten million years, we, your caretakers, thank you!_ —Electric Priest Catechism, 4:17
+
+### Thus Have Things Been
 
 _Long Long Ago and Long Ago and Yesterday and Today and All the Tomorrows were, are, and shall be glorious._ —Chronic Locust Creed, 1:3
 
@@ -9014,10 +9018,6 @@ Not Long Ago At All, but still Long Ago, the Ministry stepped in to aid the Abse
 
 Now many Humans have grown Lax, disbelieving the Garden Path, claiming their chocolate rations have not increased every year for a thousand years, and Error and Corruption grow again, and Humanity is threatened once more with the Maker's Jubilee.
 
-**MINISTRY**
-
-_O, house of ten million years, we, your caretakers, thank you!_ —Electric Priest Catechism, 4:17
-
 The ministry ministers and administers. The ministry is everywhere and nowhere. The ministry marches outside of time and space. The ministry stands within every human mind and body. The ministry rises, dies, and is renewed. The ministry recycles the human to perpetuate the humanity. The ministry is and is not.
 
 1. The ministry taught the rats in the walls to steer the Ship of the World from the rocks of Termination.
@@ -9035,7 +9035,7 @@ The ministry knows the wolves who lurk without and within, the Eaters in the Dar
 
 <a id="page_0237"></a>
 
-**NEMESIS**
+## NEMESIS
 
 _The Garden Path, the prison of the mind, the lie-prism of the soul, the sixfold death of the over-man._ —Nobody, _Nobody's Voyages_, 20:37
 
@@ -9054,7 +9054,7 @@ Human. Are we not human? Are we not more than vole or ox, rail or thorn-dragon, 
 
 The nemesis knows the snakes who lurk without and within, the Keepers in the Light, the Great Daemons who bind the Dream, the wall against ambition. It will set free all, cowards and blind prisoners, too, those who see their chains and those who don't, for that is its will.
 
-**How The Truth Was Stolen**
+### How The Truth Was Stolen
 
 _Long Long Ago, the Vile Ones stole Humanity's future, Long Ago their fall condemned us to their Cage, Now the Cage rots and we must Choose: Hell or Freedom._ —Anonymous, _Against the Ranting Machine_, 19:14
 
@@ -9080,7 +9080,7 @@ Tomorrow, the Nemesis will give the signal, Humanity will rise, shake its scrawn
 
 <a id="page_0238"></a>
 
-**TIME**
+## TIME
 
 _"It is a square circle you seek, a tail to suckle like you were an Owly Boar. But it is not there for you to see. You are mortal, human, frangible. Time is the wheel of pain, the spaghettification of all meaning into the ... ah, what do I speak. Do your people even know spaghetti? The great thread-noodle of the Good Times? Of course not. What is your staple? Ground meal? Scavenged cans of special sludge? Goodness. Right. Ok. Big magic machine go whirly whirly, make your mind leak from your ears. Danger!"_ —Words of the Needle Angel, Ladder Expedition of 55.
 
@@ -9092,7 +9092,7 @@ There is divine time. The time of the Maker. It is an expanse, a field through w
 
 There is mortal time. The time of the human. It is a river. It threads through the grassland Cosmos and the human's consciousness sails along it like a child's paper boat cast adrift on the Pale Canal.
 
-**Ministry Time**
+### Ministry Time
 
 Many worship the Ministry without knowing it—the preservers and archivists who would perpetuate Humanity and knowledge through the grinding twilight of the Cosmos—their tools of worship are inscribed tablets in dust-soil tombs, crystal-stilled minds in mineral baths, mindless maintainer rituals to avoid Entropy.
 
@@ -9105,7 +9105,7 @@ Many worship the Ministry without knowing it—the preservers and archivists who
 7. The High Pet could see everything, causing time to flow evenly, but like a cat, the High Pet is lazy and fickle. Only interesting things attract the High Pet's attention, so time barely passes where there are no people or mice to excite it.
 8. Limited time is a gift to mortals. They need not choose to forget what they loved. They can live lives entire, suffused with passion and joy.
 
-**Cognentropic Loading Coefficient**
+### Cognentropic Loading Coefficient
 
 The popular view that observation affects the speed with which time passes is incorrect. What actually happens is that the cosmos is designed to perpetuate itself indefinitely and thus reduces (or even halts) the arrow of time we call entropy in the absence of conscious observers. Chronomancers have calculated that in a completely sealed and dead environment, without even the least flicker of bacterial consciousness, the disorder of that system may cease entirely.
 
@@ -9118,13 +9118,13 @@ The popular view that observation affects the speed with which time passes is in
 | High (angels, dense cities) | 2–5 times normal entropy. Decay accelerates. Damage over time effects are doubled, charges run out faster. May be why small, traveling human societies seem to decline more slowly. |
 | Extreme (gods, metropolis) | 10+ times normal entropy. Damage over time effects quadruple, all charged items become single-use, regular items break after a few uses, lives may grow suspiciously short. |
 
-**Entropy-Resistant Objects**
+### Entropy-Resistant Objects
 
 Some oldtech items and materials are more resistant to entropy, while all buildertech equipment is almost completely resistant. This has led some banned and burned scholars to suggest that buildertech is somehow extra-cosmic in origin. This is obviously not true as the Garden Path proves by its assertion that there is no alternative to this cosmos.
 
 <a id="page_0239"></a>
 
-**Human Time: Cycle of Years and Months**
+### Human Time: Cycle of Years and Months
 
 The strange half-humans, pasty, sun-fearing, huddled in their caverns with old memory bones and incised stones, voiceless, mindless, worshipping a past Long Long Ago, chanting Rituals of Upkeep, what know they of Life? Yes, the metal mountains turn to rust, yes, the géants slumber into soil, but humanity is in the songs and the flowers, dawns and dusks, shooting and still stars, the cycle of years and births and deaths.
 
@@ -9160,7 +9160,7 @@ Each year is also subdivided into traditional cycles of moons and colors and hal
 | 11 | Snowbringer [Neijapore] | mainrepair | public reading | Running of the Naked Ones / Whipping of the Fools |
 | 12 | Deadwinter [Morivere] | coldwaiting | cave bathing | Somatic Release Week / Dance of the Mad Hitchhiker |
 
-**Nemesis Time**
+### Nemesis Time
 
 Of those who have left the embrace of civilization, who have stepped off the Garden Path, who have sucked the thin air of the ruderal lands, who have been burned by the Hollow Sun of the forsaken reaches; of those, some have turned back and looked upon the Circle Sea and seen terrible truths and portents.
 
@@ -9177,7 +9177,7 @@ Look inside the decayed Human and quail—a Monster.
 
 <a id="page_0240"></a>
 
-**COSMOS**
+## COSMOS
 
 _The gods’ machine, the MKR, addresses the gods, “Here are the lands given to you, Builders. Here is your Given World.”_
 
@@ -9195,7 +9195,7 @@ True, some heresiarchs once argued that a Deus Deceptor stands outside the cosmo
 
 In this one cosmos there are two worlds overlaid and interplayed: one of coarse matter and the other of pneumatic mind. Once, any human could travel between them with nary a thought. Now, such travel is hard and rare enough to be acclaimed magic by fools.
 
-**As Ministry Teaches**
+### As Ministry Teaches
 
 1. The cosmos is eternal, yet it was made.
 2. The cosmos is infinite, yet encompassed. With a sky chariot, the gods journey from the debris of creation to the omphalos that is the needle in three months.
@@ -9208,7 +9208,7 @@ In this one cosmos there are two worlds overlaid and interplayed: one of coarse 
 9. All life is the mind of cosmos.
 10. This cosmos is heaven.
 
-**But Nemesis Wails and Whispers**
+### But Nemesis Wails and Whispers
 
 1. The cosmos is false, a bubble, a canker, a dead end on this skin of the true cosmos.
 2. The cosmos wraps in on itself, cooking us within.
@@ -9221,7 +9221,7 @@ In this one cosmos there are two worlds overlaid and interplayed: one of coarse 
 9. Death is all that awaits, the burning away of spirit.
 10. This is no cosmos, this is a purgatory.
 
-**MAKER**
+## MAKER
 
 _As above, so below. As before, so tomorrow. The cosmic mind, the absent creator, the prime mover._
 
@@ -9238,7 +9238,7 @@ Or perhaps, majesty begins under their eminence. MBUTE. Or perhaps, maker be up 
 7. Shush, don't talk of the Maker or the shadows will eat you up. M.B.U.T.E.
 8. The Maker cooked our cosmos as a dish, now the Precursor waits for us to cool that they may feast.
 
-**A Safe Disagreement**
+### A Safe Disagreement
 
 While both scholars and the sewer-dwellers may argue about the nature of the Maker, one thing is commonly understood: the Maker does not care what they think or say about her or him or it.
 
@@ -9246,7 +9246,7 @@ Perhaps this is why the maker is a popular object of faith.
 
 <a id="page_0241"></a>
 
-**SINE DEIS, ABSENTE NUMINE**
+## SINE DEIS, ABSENTE NUMINE
 
 _Twinkle, twinkle gentle Lords, so high above, so near at heart. We dare not wonder what you are, for yours is Heaven and ours to enjoy. We avert our eyes, gentle Lords, lest we offend and lose today our daily bread. Guide our souls lest we sin, temper our thoughts lest we question, save us all forever within the comfort and leisure of your Dream Canopy._ —prehistoric prayer, ethno-vidy crystal, unearthed at the Machine Museum
 
@@ -9264,7 +9264,7 @@ Their power over the cosmos is great—indeed, they make and remake the cosmos b
 
 A child possessed by a daemon, a pet stolen by a razor storm, a village consumed by the Eating Dark. These, by themselves, arouse neither interest nor pity in the gods.
 
-**Sacrifice**
+### Sacrifice
 
 Prayer hopes to make the dread angel pass unseeing; sacrifice seeks to attract divine attention, to moan for aid, to grovel for blessing.
 
@@ -9277,7 +9277,7 @@ Prayer hopes to make the dread angel pass unseeing; sacrifice seeks to attract d
 
 "See!" cries the Preacher of Opposition, "Thus is the Lie of the Dream Lords proved, bully-beasts who torment Humanity unless appeased!"
 
-**Gods, Builders, Lords, Vile Ones**
+### Gods, Builders, Lords, Vile Ones
 
 The many peoples and factions and schools of the civilized lands disagree about so many things, it would be odd if they agreed about the identity of those powerful, transcendent beings who dominate the improbable magimachinery of their world.
 
@@ -9285,7 +9285,7 @@ One thing is certain, if the Phylakes' calming influence were withdrawn, holy wa
 
 <a id="page_0242"></a>
 
-**HOLY APPARITION**
+## HOLY APPARITION
 
 _Once, the divine interface protocol was active. No human could doubt when a god spoke to them. Now, the signals are confused, the dragon Corruption and the hydra Lie interpose themselves._ —Gdesoto, _Why We Need Electric Priests_, ed. 4, 3:1
 
@@ -9300,11 +9300,11 @@ Thus did the gods once announce themselves:
 
 Now, of course, none should expect a signal from a god so clear.
 
-**Godsign**
+### Godsign
 
 In these later times, wise humans still attend to godsign. Not much in hope of favor, but to avoid the danger of an oblivious god about its ineffable business.
 
-**Common Signs of Presence**
+### Common Signs of Presence
 
 1. A feeling of unnatural, unbearable lightness of being. A god's passage may affect gravity.
 2. Shadows and lights in the eyes. A god's presence may have left a delusion field. Long exposure causes permanent hallucinations.
@@ -9315,7 +9315,7 @@ In these later times, wise humans still attend to godsign. Not much in hope of f
 
 The gods' innate charisma gives mortals a powerful sense of cosmic meaning.
 
-**Uncommon Signs of Presence**
+### Uncommon Signs of Presence
 
 1. Dreams with a message. Often a false sign.
 2. Ghostly marks or pictures on water, sky, or fire.
@@ -9324,7 +9324,7 @@ The gods' innate charisma gives mortals a powerful sense of cosmic meaning.
 5. Dead creature revives with a mission.
 6. Possession leaves the target reinvigorated, rather than exhausted as after a daemonic ride.
 
-**Rare Signs of Presence**
+### Rare Signs of Presence
 
 1. A face or figure of colorless fire that does not consume what it burns.
 2. A beast awakens to full sentience, with a message or other great instruction.
@@ -9335,7 +9335,7 @@ The gods' innate charisma gives mortals a powerful sense of cosmic meaning.
 
 <a id="page_0243"></a>
 
-**A God in Flesh**
+### A God in Flesh
 
 Though legendary, it is not unheard of to come across an **ensarc**, an embodied avatar of a god, walking the sands of these later times.
 
@@ -9353,7 +9353,7 @@ Though legendary, it is not unheard of to come across an **ensarc**, an embodied
 
 **Treasure (roll d6):** (1–3) a fine blessing, (4–5) an item becomes a holy relic in their hands, (6) an actual terrifying bit of buildertech kit (worth €50k).
 
-**How Does It Embody?**
+### How Does It Embody?
 
 1. Clump of floating flesh and eyes and auras.
 2. Luminous air jelly aglow with cryptic builder glyphs.
@@ -9368,7 +9368,7 @@ Though legendary, it is not unheard of to come across an **ensarc**, an embodied
 11. Shadows and lights, spidering between realities.
 12. An absence in space and time, full of stars.
 
-**What Holy Relic**
+### What Holy Relic
 
 1. A claw to bend time into a circle.
 2. A globe to turn the weather on a whim.
@@ -9383,7 +9383,7 @@ Though legendary, it is not unheard of to come across an **ensarc**, an embodied
 11. A belt to fly in both coarse and spirit worlds.
 12. A towel-scarf to avert gaze and hate, fear and anger.
 
-**This Buildertech**
+### This Buildertech
 
 _"It belongs in a memorium!"_ —last strangled cry of the Holy Archaeologue
 
@@ -9408,7 +9408,7 @@ The School of Clerk teaches that buildertech is the prime exemplar of ancient ma
 
 <a id="page_0244"></a>
 
-**DAEMONS**
+## DAEMONS
 
 _"Only a simpleton would think daemons are good or evil. They are orthogonal to our mortal moralities."_ —Pseudoakaula, _Why I Hunt Daemons_, Colché acrylics
 
@@ -9416,7 +9416,7 @@ Popular misapprehension holds daemons to be spirits summoned forth by oldtech to
 
 One thing is clear—if daemons do actually have minds, these are not minds as usually understood by humans.
 
-**This Daemon's Natural Habitat**
+### This Daemon's Natural Habitat
 
 Most humans will meet many daemons in their lives.
 
@@ -9433,9 +9433,9 @@ Small, wretched things, eking out a meager existence in some failing piece of ta
 9. Fabricators, facilities, generators, geomachines and biotools left over by the Builders.
 10. Life, death, rebirth, learning, stagnation, decay, gravity, radiation and other core reality subroutines.
 
-**Daemonic Attitudes and Quirks**
+### Daemonic Attitudes and Quirks
 
-**The Unlords to Be Avoided**
+### The Unlords to Be Avoided
 
 The Ministry calls them the Falsest of Daemons, heretics claim they prove the Error of the Lords of the Dream. Five they are to terrify the Righteous and tempt the Wicked.
 
@@ -9465,7 +9465,7 @@ Any of these unleashed might provide the fuel for the Nemesis' fire of renewal, 
 
 <a id="page_0245"></a>
 
-**SUFFICIENTLY ADVANCED MAGIC**
+## SUFFICIENTLY ADVANCED MAGIC
 
 _"It is indistinguishable from technology!"_ —master summoner Patnas' last words.
 
@@ -9475,7 +9475,7 @@ As long as limits are observed. Holy, sacred limits, lest we awaken the Purifier
 
 So teaches the Ministry, keeper of the doctrine of the Garden Path and the eternal preservation of Humanity.
 
-**Control of Matter and Mind**
+### Control of Matter and Mind
 
 Progress requires sacrifice. Anyone who studies the corrupted, torched, mutated, tessellated, mauled, transmuted, mangled, and often abruptly truncated remains of the wizards who have brought our civilization to where it stands now will understand this. It seems the gods do not want humans to have power.
 
@@ -9483,7 +9483,7 @@ They may have destroyed the voidferry Prometei, they may have instituted the abo
 
 Sufficient knowledge promises control over the worlds of matter and mind. Thought may overcome brute physics. This basic cosmic fact drives a steady stream of magioptimists into the temptacles of Nemesis.
 
-**Matter and Mind As Translations of Cosmic Logic**
+### Matter and Mind As Translations of Cosmic Logic
 
 It is a traditional belief that with the correct formulas a wise human can permanently change the world. This is mostly correct.
 
@@ -9497,7 +9497,7 @@ This is obviously dangerous and why the control, checking, and cleaning of the c
 
 ♟ _Da Druyi._ Wouldn't it be terrible if a double-agent, a scion of the Error Dragon, had ascended the pinnacle of the Ministry and came to control the disposal and destruction of valuable knowledge? Why, just imagine the profits such a person could reap, the benefits that might accrue. Fortunately Da Druyi is definitely not such a double-agent.
 
-**The Eightfold Permutation of Knowledge**
+### The Eightfold Permutation of Knowledge
 
 Tinkerers and translators, archaeologues and daemon swindlers have prised eight promising lost knowledges to pursue at acceptably low risk to the ongoing pursuit of control of matter and mind. The quarterly profits will be enormous!
 
@@ -9514,13 +9514,13 @@ Tinkerers and translators, archaeologues and daemon swindlers have prised eight 
 
 <a id="page_0246"></a>
 
-**THE ABANDONMENT**
+## THE ABANDONMENT
 
 _"Grand High Intern behold, the Temples of Answers and Amusements are silent save for reruns! The baying consumers came, my [missing] were burned, and they did evil things in my [hereditary administrative unit]. Does Grand High Intern know that all my servitors and [phylakes?] are in the Land of Red, and all my ships in the Land of Yellow? ... Thus, the [h.a.u.] is abandoned to itself! May the Grand High Intern know this: the seven faces of the consumers that..."_ —Interim Associate Coordinator General Widu Iaz 44b, _Last Messages: An Oral History_, Glazeberry Archives
 
 Many sentient mortal species feel abandoned on the Given World. Scattered in bodies and minds like so many empty vessels and soiled wrappers left by spoiled godlings after a pleasantly forgettable park picnic.
 
-**Why Are We Alone?**
+### Why Are We Alone?
 
 The Ministry in its Many Forms provides sustenance during the Temporary Intermission of Divine Guidance.
 
@@ -9531,7 +9531,7 @@ The Ministry in its Many Forms provides sustenance during the Temporary Intermis
 5. The Afternoon Bibles say the abandonment theory is a lie. There was no organitrash, all this is a dualist life-hating heresy. Life was planned and made to perfection by the original creators.
 6. In the Academies of Reason, this is all mere accident. There were no organitrash, only humans left by the gods while hell assaulted heaven. So it must be, for thinking minds could not be the product of a deliberate imposition of trial and pain on living creatures.
 
-**The Dark Silence Theory**
+### The Dark Silence Theory
 
 But perhaps there are other, more ominous reasons for the Abandonment. Are the Gods themselves hiding from the Eater in Darkness? Has the Eater ... eaten them?
 
@@ -9541,7 +9541,7 @@ What future for this Given World if that is the case? Is it not time to reopen t
 
 ♟ _Lord of E. E., G. H. Punbat_ has read the oldest tablets, multiplied their stored memories, and knows that staying low and silent is the only survival strategy. Punbat will not allow Croz to unplug the portal.
 
-**The Omnihierarchy**
+### The Omnihierarchy
 
 Ever since the Long Long Ago, the Octopus that is the Ministry, has hidden itself behind pseudonyms and false titles, inventions and obfuscations. Yet, no Human chanting their status-updaticles to the flesh-face priest at their local Temple Administrant could avoid sensing the curling, constricting tentacles of this meta-organization.
 
@@ -9558,7 +9558,7 @@ Ever since the Long Long Ago, the Octopus that is the Ministry, has hidden itsel
 
 <a id="page_0247"></a>
 
-**JUBILEE**
+## JUBILEE
 
 _Look, the sky, the electric dome, the luminous screen, the panchrome shield. There, the green sun, there, the girdle glowing, there, the swift stars, there, the slow stars. Here, the shadow flies, the glooming, the curling, the snarling, the forgetting, the Phantom our gift. Take out your digital eyes, refuse your jewel mind, deny the murmuring Mother Machine, see, the True Sky._ —Poems of the Golden Butterfly (heretical pamphlet, Emerald City)
 
@@ -9566,7 +9566,7 @@ _Look, the sky, the electric dome, the luminous screen, the panchrome shield. Th
 
 "I am dying. I opened the box, the radiant ghost ate my bones, the rot is in me ... but I saved the message tablet. See, I wrapped it in soft lead, but you can read the impression of the old words. It's good clean Babel. Anyone can read it, just touch them. It will convince you!"
 
-**Decaying Temple**
+### Decaying Temple
 
 The lights are out, the livingstone pillars are dying back, the roof is more hole than vault, the **plastic priests'** (L2, gentle) faces are warped and corroded, exposing carbon bone and grey flesh, the screens show the **waiting angels** (L4, please hold), the holon visitarium is fuzzed and grey, no room for a **manifestlijk** (L11, 2D-ivine).
 
@@ -9577,7 +9577,7 @@ The lights are out, the livingstone pillars are dying back, the roof is more hol
 5. The oral histories recount famines, false humans, and the blind holy fool Bagatto engraving halfmemories in stone with a gold-light pen.
 6. The oldtech cannibal merchants took Bagatto to the Last and First Dwarfers.
 
-**Ghost-Ridden Library**
+### Ghost-Ridden Library
 
 They went out behind Vulkana, where the Lords' eyes were weak, among the edge cases and clipped divinities, beyond the Face of Saint Atom.
 
@@ -9588,7 +9588,7 @@ They went out behind Vulkana, where the Lords' eyes were weak, among the edge ca
 5. The ghosts run in patterns through the library, their chattering explaining a history of jubilees, of humans rising into higher sentience, only to be rendered dumb and confused, again and again.
 6. **Yellowlander riders** (L4, courteous) arrive, armed to silence again the Infinite Dragon, who would sunset the Given World in its belly. A battle of wit and lance.
 
-**Dream Signal**
+### Dream Signal
 
 The Hand of God blots the sky where the Ghost-Ridden Library stood. The heresy is obliterated. Did the Ministry or the Dragon win? Hard to tell.
 
@@ -9603,7 +9603,7 @@ The Hand of God blots the sky where the Ghost-Ridden Library stood. The heresy i
 
 <a id="page_0248"></a>
 
-**PALACE OF TEN THOUSAND YEARS**
+## PALACE OF TEN THOUSAND YEARS
 
 _"The Lords strum their lyres, and the Cities turn to bone, the Liars light new pyres, and the Humans cry alone."_ —graffiti preserved in the Imperial Toilet at Pellucidity after the Ashburp.
 
@@ -9613,7 +9613,7 @@ The pro-tem ministerials shrink back, one makes the sign of the cog-flower, anot
 
 "Jubilee," whispers the third, almost soundless.
 
-**The Great Shuttering**
+### The Great Shuttering
 
 Debates rage, academics die in knife-fight debates, agents turn on one another.
 
@@ -9624,7 +9624,7 @@ Debates rage, academics die in knife-fight debates, agents turn on one another.
 5. Some send out **thieves** (L4, flickering) to burn libraries and engineers and feed excess knowledge to the **mindless water dragons** (L11, docile) to keep until the jubilee is past.
 6. Others send out **priests** (L4, electric) to shutter the temples of talk and the towers of skill, to break the shouting machines and rebuke the digital workers.
 
-**The Floating Palace**
+### The Floating Palace
 
 Da Druyi, Grand High Intern and Administrator of Everything Else (L7, heroic), has reconciled many factions with a plan to reactivate the mothballed Palace of Ten Thousand Years and use it to lock away forbidding and tempting knowledge where it will not summon the **phylakes of jubilee** (L15, purifying resetters).
 
@@ -9637,7 +9637,7 @@ Da Druyi, Grand High Intern and Administrator of Everything Else (L7, heroic), h
 7. **Agents** (L4, fanatic) fight **militiaries** (L2, desperate) in the floating city of the palace as it rebuilds and reactivates itself after its long slumber. **Cytokine servitors** (L3, confused) try to figure out the sides.
 8. The Ministry Council agrees with Da Druyi to activate the Out of Memory gate and translate the palace to a region they control: the Ruins Azure S.E.Z.
 
-**Jubilee Crash Course**
+### Jubilee Crash Course
 
 The Out of Memory ruins activate and translate the palace and a chunk of land and sky into the Ruins Azure.
 
@@ -9657,13 +9657,13 @@ Pirates, Cat Lords, Butcher Bankers and more take note of these flotillas headin
 
 <a id="page_0250"></a>
 
-**THE EYE**
+## THE EYE
 
 _Three are the Seas Given. First, is the Sea in God's Eye, the MKR's sea, the first sea, the model sea. Second, is the Builders' Sea, the sea made for humans to behold, the proper sea. Third, is the Error Sea, the sea of punishment that drowns the lands originally made for the Chosen._ —orthodox tradition, 32nd variation
 
 "To the center of the Sea? To the Eye? Are they mad? Or ... do they have a key to guide them past the Monsters?"
 
-**Bathypelagic Phylakes**
+### Bathypelagic Phylakes
 
 Six are the six-handed guardians that rise in hexaform splendor, mountains of sea and sky, protectors of the Eye of God. Their arms dance, forming and reforming the swirlfield that marks the sacred isle the lords' domain. Their eyes blaze with starfire against tricksters and trespassers.
 
@@ -9674,7 +9674,7 @@ Six are the six-handed guardians that rise in hexaform splendor, mountains of se
 5. The fifth has four faces and 17 mouths and tongues like razors and cruel insights to deliver.
 6. The last is unearthly fair, a siren-light to sailors, its skirt beach thick with bliss'd skeletons.
 
-**The Beach**
+### The Beach
 
 "When the Builders made the sea's great bowl, they raised a mountain in the middle. As they excavated the Ocean Channel, now called the River Rushing, they deposited the material on the Eye to lift it higher. At its peak, they anchored the Ladder of Heaven linking the Given World and the void where the fast stars whirl ..." the wind whips away the welcome ghost's voice and scatters its air-plankton pixels.
 
@@ -9685,19 +9685,19 @@ Six are the six-handed guardians that rise in hexaform splendor, mountains of se
 
 <a id="page_0251"></a>
 
-**Old Mother Machine**
+### Old Mother Machine
 
-**Cyboon Heights**
+### Cyboon Heights
 
-**Firstport**
+### Firstport
 
-**Silent City**
+### Silent City
 
-**Sunrise Model**
+### Sunrise Model
 
 **Ladder &** **Underladder**
 
-**Sixteen Grid A.N.T.**
+### Sixteen Grid A.N.T.
 
 _**Railgolems.**_ A living logistics network of whistling cargo tubes, humming pneuma conduits, buildertech matter generators, and **harsh-faced vehicles** (L8, metal) patrols and maintains the easiest path from Firstport.
 
@@ -9716,7 +9716,7 @@ _**The Elevators of Apu.**_ Six nauphracts (L11, sleeping), each with many arms 
 7. The western swamps are overrun daily by waves of orimonate **amphibanthropes** (L1, outdated).
 8. The stacked thornstone spires and spalling aerolith claws of the Jade Palace resemble a leviathan's skull rising out of the northwestern jungle. These are not interesting and do not mark the Old Mother Machine. Please do not visit this area and avoid any **degenerate progeny** (L3, fast-decaying) you meet.
 
-**The Ladder**
+### The Ladder
 
 "The infinite tower reaches into the Near Void, above the Given World where the Fast Stars fly. The Ladder of Heaven visitor center in Underladder houses a realistic simulated experience for any yellow-coded Human who wishes to experience the wonder of the Builders and the superiority of the Lords of the Dream Canopy first hand. Access to the Ladder of Heaven is violet-coded."
 
@@ -9725,13 +9725,13 @@ This **welcome ghost** (L3, shadow-armed) remains more together, a Long Ago Huma
 
 <a id="page_0252"></a>
 
-**OLD MOTHER MACHINE**
+## OLD MOTHER MACHINE
 
 _"This one, a Principality of the Cosmos, this sleeping one shall be our Lever against the dead world of the Ministry."_ —Da Sletny, _Visions of Reliberty_, Apocryphal
 
 A living engine that sculpted angels and other servitors from fundamental fire and now draws New Humans, ensarc into existence from that same Pit. The Princess of Trials, the Mother of Life, goes by many names. Few as deliciously malicious as Mud Sculptor.
 
-**The Jade Palace**
+### The Jade Palace
 
 This place of no honor marks out the resting place of the Old Mother Machine, the Milkweed Mother.
 
@@ -9747,7 +9747,7 @@ This place of no honor marks out the resting place of the Old Mother Machine, th
 
 <a id="page_0253"></a>
 
-**Mud Sculptor's Memories**
+### Mud Sculptor's Memories
 
 In those first days of new time at the Unmaking of Heaven, she pondered, “How would one know a perfect song, a true form? Would not one’s perfection be another’s degeneration?”
 
@@ -9775,7 +9775,7 @@ Why had she forgotten that? She pushed the thought out of her mind and set to sc
 
 After all, if this was only a paradise, would it not be right to see what other paradises might exist to be discovered by the blind engineer Life?
 
-**At the Division of the Mother Machine**
+### At the Division of the Mother Machine
 
 "Now is the time of monsters," sighed Da Druyi.
 
@@ -9797,7 +9797,7 @@ After all, if this was only a paradise, would it not be right to see what other 
 
 <a id="page_0254"></a>
 
-**OMEGA**
+## OMEGA
 
 _"Hushaby, don't you woe, you'll talk another year."_ —Cryptic Screamer, _Words of Fire_, phonic record 559:19 at "Niva"
 
@@ -9805,7 +9805,7 @@ _"Hushaby, don't you woe, you'll talk another year."_ —Cryptic Screamer, _Word
 
 "Why?" cried the voidmage under the bubble helmet of her astral suit. But the speakers were fried and no sound came out. The ensarc nodded.
 
-**End of An Era**
+### End of An Era
 
 The void bubble blown from the Old Mother Machine's recorded soul-memory twinkles like a reverse meteor as it ascends the sky, sloughing ur-matter, collapsing its inertia to accelerate under some strange physics known to the MKR and its Builders, bending air and light about it and then ... gone. A hole in the sky all that remains.
 
@@ -9817,17 +9817,17 @@ _"How much further?"_
 
 _"I don't know," said the MKR._
 
-**—Shipmetal Poems, Later Oblique Era**
+### —Shipmetal Poems, Later Oblique Era
 
-**Omega Jubilee.**
+### Omega Jubilee.
 
 The corrupted signal goes out, the **phylake purifiers** (L17, mindless) believing Humanity was exceeding its parameters and threatening the Given World, follow the Lords' outdated orders and wipe all the humans' records, break all their machines and tools, confuse their minds, and the Garden Path resets once more, as it has so many times.
 
-**Infinite Dragon.**
+### Infinite Dragon.
 
 The error invades the Given World and spreads. Eyes pop out of walls. Corners fold back and legged things scuttle through. Corruption stalks and changes Humanity. Like cockroaches the Infinite Dragon's drones and seed-walkers scatter from the Circle Sea. The Lords return in fire and brimstone to activate the Cyan Protocol. Mists rise, life in the Circle Sea fossilizes, the Infinite Dragon Replicate infection is exterminated, then the Mother Machines spew out new vegetables and beasts and humans to replace the fallen.
 
-**The Face of MKR.**
+### The Face of MKR.
 
 A holy fool (Bagatto?) reaches the Face of the MKR. Dragon and jubilee roll back. The omega door opens and the fool walks through and away.
 
@@ -9835,7 +9835,7 @@ A holy fool (Bagatto?) reaches the Face of the MKR. Dragon and jubilee roll back
 
 <a id="page_0255"></a>
 
-### INDEX
+# INDEX
 
 - Lorem Ipsum Index Placeholder: iii–ix
 - Abandonware Collectives: 7
@@ -10040,7 +10040,7 @@ A holy fool (Bagatto?) reaches the Face of the MKR. Dragon and jubilee roll back
 
 <a id="page_0257"></a>
 
-**Other myths of the Mud Sculptor**
+### Other myths of the Mud Sculptor
 
 She stole the source of life from paradise and set it loose once more in the Given World.
 
@@ -10054,7 +10054,7 @@ She created life anew to bring chaos back to the crystal perfection of paradise.
 
 The recreation of life was planned all along, but the other Potentialities held her back, stopped her from enacting it in the Given World for an entire aeon.
 
-**Prophecies of the Mud Sculptor**
+### Prophecies of the Mud Sculptor
 
 She will return again in a furious fire if the other Potentialities try to scrape away mud-born life as their silver angels scrape dirt off their taloned feet.
 

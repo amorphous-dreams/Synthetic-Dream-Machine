@@ -168,7 +168,7 @@ BECMI crystallized what OD\&D and AD\&D 1e gestured toward: a tiered scope of pl
 
 This was not just power inflation—it was a meta-structure of play, where characters rose from rat-bitten novices to godlike agents of reality, and the rules grew with them. Frank Mentzer’s design fingerprints carry far. The Final Fantasy series (particularly from III onward) mirrors this structure: early dungeon grinds → overworld exploration → fleet and airship travel → domain/kingdom influence → finally confronting cosmic/metaphysical foes. Many JRPGs are effectively BECMI campaigns in digital form.
 
-Later editions of D\&D (2e metaplot-heavy era, 3e tactical focus, 4e encounter grids, 5e narrative heroic bias) abandoned these tiered scopes. The link between dungeon expeditions, wilderness travel, domain rulership, and cosmic stakes was broken into isolated playstyles. The OSR revival seizes on this loss, insisting that the old scope-shifting chassis is what made the original designs powerful. Significant callouts for good 2e design include Planescape and Spelljammer.
+Later editions of D\&D (2e metaplot-heavy era, 3e tactical focus, 4e encounter grids, 5e narrative heroic bias) abandoned these tiered scopes. The link between dungeon expeditions, wilderness travel, domain rulership, and cosmic stakes was broken into isolated playstyles. The OSR revival seizes on this loss, insisting that the old scope-shifting chassis is what made the original designs powerful. Significant callouts for memorable 2e design include **Planescape** and **Spelljammer**.
 
 Thus, our daemon framework inherits not just mechanics from B/X and BECMI, but the philosophy of tiered escalation:
 

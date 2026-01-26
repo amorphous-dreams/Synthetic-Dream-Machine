@@ -2,3 +2,5 @@
 .bundle/
 vendor/
 _site/
+
+**/hires_*

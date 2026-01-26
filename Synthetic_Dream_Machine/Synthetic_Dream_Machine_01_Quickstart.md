@@ -2,7 +2,7 @@
 
 Every half‑decent world is held together by three things: good stories, dubious cartography, and people determined to prove their grandparents wrong.
 
-> This Quickstart is a lens on the SDM, not a replacement for the Vastlands Guidebook.
+> This Quickstart is a lens on the SDM, not a replacement for the Vastlands Guidebook + Our Golden Age.
 
 # Synthetic Dream Machine
 
@@ -49,9 +49,9 @@ Traits and items may provide other uses for hero dice. Rare traits can modify th
 
 Tables may treat Hero Dice as purely narrative luck, or as literal daemon intervention, depending on tone.
 
-# 📜 Entity Metaphysics
+# Entity Metaphysics
 
-## 1️⃣ Character Creation Snapshot
+## 1️. Character Creation Snapshot
 
 * Named Characters **either**:  
   * Assign **7 ability score points** (max 5 for now), **OR**  
@@ -63,7 +63,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
   * Level 0: no strange item, only €50.  
   * Higher levels: more cash.
 
-## 2️⃣ Levels & Life
+## 2️. Levels & Life
 
 * All entities in the game have a **Level**.  
 * Most start at **Level 0** or **1**, unless otherwise noted.  
@@ -75,7 +75,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
 * **Life cannot go below 0**-Roll Defeat at zero Life if damaged. Most characters flee or surrender earlier than this.
 * **Ability scores cannot go below zero**—roll Defeat instead.
 
-## 3️⃣ Abilities
+## 3️. Abilities
 
 * **Generic Characters** have a single ability score: **Bonus**  
 * **Named Characters** (Player Daemon‑touched, etc.) use **Ability Scores** (+1 to \+5) instead of a generic bonus.  
@@ -86,7 +86,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
 
 (*Note: These pairings tie into Elyncia’s metaphysics — Ha \= form/body, Ka \= energy/motion, Ba \= mind/spirit.*)
 
-## 4️⃣ Traits & Items
+## 4️. Traits & Items
 
 * All entities start with **two “free traits” at Level 0**.
   * **For characters**: this is the core 1 Background trait, 1 Path trait at level 0.
@@ -96,7 +96,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
   * Expert \+6 bonus to rolls; good enough to teach
   * Master \+9 bonus to rolls; a rare master of this art
 
-## **5️⃣** Defense & Ward
+## 5️. Defense & Ward
 
 * **Defense (Physical)** \= 7 \+ Agility \+ Bonus (relevant Skill) \+ Armor  
   * **UVG NPCs** are “skilled in Defense” (10 \+ Agility \+ Armor baseline).  
@@ -105,7 +105,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
 * **Defense (Social)** \= 7 \+ Charisma \+ Bonus (relevant Skill) \+ Prestige  
   * **Prestige** is a factional reputation from status symbols—titles, properties, valuable possessions, and admired traits—that enhance influence in relevant settings.
 
-## 6️⃣ Basic Attack Types
+## 6️. Basic Attack Types
 
  Each attack type uses d20 \+ relevant ability \+ skill (if applicable). Most attacks target physical or metal **Defense**.
 
@@ -114,7 +114,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
 3. **Oldtech** → Thought (*Magitech,* e.g. brain‑slaved auto‑turret)  
 4. **Fantascience** → Charisma (*Sorcery,* e.g. mind whip, brain shackle)
 
-## 7️⃣ Saves
+## 7️. Saves
 
 When nothing but blind luck will save you, roll d20 \+ ability over your saving roll target (or simply, your save). If you  succeed, you are saved.
 
@@ -133,7 +133,7 @@ Relevant and Irrelevant Abilities:
 
 \>Agility does not provide a save bonus. As soon as a character is aware of a threat, such as a landslide, it is no longer a blind luck situation. They are taking action, using traits and abilities to overcome a threat.
 
-## 8️⃣Group Rolls
+## 8️. Group Rolls
 
 When the whole group is trying to accomplish something risky, a random character rolls for the whole group. Traits may modify this procedure.
 
