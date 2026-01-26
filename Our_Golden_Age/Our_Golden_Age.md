@@ -883,16 +883,16 @@ You bank your PCs' experiences. Places traveled, parties attended, creepy creatu
 As is traditional, the Synthetic Dream Machine provides a celestial "ding" sound every time you invest enough xp to level up a PC. Every new level you get a new level (clearly), a new hero die, more life, and the option of either improving an ability score by 1, improving a trait by one step (skilled +3 → expert +6 → master +9), or gaining a new trait (more details in _Vastlands Guidebook_, p31).
 
 > This tabe is the "SDM legacy Leveling model". Each +Level grants other bonuses.
-
-| Lvl | Maximum Hero Dice | Life | Traits or Ability Score Boosts | Xp | Total Xp |
-|---:|---:|---:|:---:|---:|---:|
-| 0 | 4 | 2 |  | 0 | 0 |
-| 1 | 8 | 3 |  | 300 | 300 |
-| 2 | 12 | 4 |  | 450 | 750 |
-| 3 | 16 | 5 |  | 750 | 1,500 |
-| 4 | 20 | 6 |  | 1,500 | 3,000 |
-| 5 | 24 | 7 |  | 3,000 | 6,000 |
-| 6 | 28 | 8 |  | 6,500 | 12,500 |
+> 
+> | Lvl | Maximum Hero Dice | Life | Traits or Ability Score Boosts | Xp | Total Xp |
+> |---:|---:|---:|:---:|---:|---:|
+> | 0 | 4 | 2 |  | 0 | 0 |
+> | 1 | 8 | 3 |  | 300 | 300 |
+> | 2 | 12 | 4 |  | 450 | 750 |
+> | 3 | 16 | 5 |  | 750 | 1,500 |
+> | 4 | 20 | 6 |  | 1,500 | 3,000 |
+> | 5 | 24 | 7 |  | 3,000 | 6,000 |
+> | 6 | 28 | 8 |  | 6,500 | 12,500 |
 
 ---
 
@@ -906,7 +906,7 @@ But you are here, at the end of history, at the culmination of time, unbound by 
 
 You can choose to instead upgrade your characters from their baselines. Take your PC as it was generated and write down all those initial attributes (level, life, ability scores, hero dice, traits, defenses, and so forth) in ink, scoring them permanently upon your character sheet. Uh ... but leave enough room for the upgraded numbers you will pencil in to the side. These inkrusted [sic] numbers and traits are your **base** **attributes** . You will invest xp to improve them as you like, when you like. Because what better way to be unique, like everybody else?
 
-When upgrading your base attributes, you pay the xp cost for each step. So +1 life costs 8 xp, the next +1 costs 10 xp, the third +1 costs 12 xp, etc. The total xpo column sums the costs of upgrading from the base attribute score.
+When upgrading your base attributes, you pay the xp cost for each step. So +1 life costs 8 xp, the next +1 costs 10 xp, the third +1 costs 12 xp, etc. The total xp column sums the costs of upgrading from the base attribute score.
 
 The price of upgrading **levels**, maximum **hero dice**, and acquiring **new traits** is in line with traditional levelling.
 
@@ -1000,6 +1000,8 @@ Upgrading **ability** scores across the board is a little cheaper this way, but 
 
 This is clearly a convenient way to boost your associated attack, defense, and inventory sizes.
 
+### Improving traits
+
 | Improve Trait | Xp | Total Xp |
 |:---|---:|---:|
 | base (+3 skilled) | 0 | 0 |
@@ -1010,15 +1012,14 @@ This is clearly a convenient way to boost your associated attack, defense, and i
 
 _n+1 = 4(n)_
 
-### Improving traits
 
 Improving traits is more expensive earlier in your career, but can become an affordable option later on, especially combined with growing through play (_VLG_, p32). Also, a canny character might acquire angelic or even divine aptitude with the right teachers ... or by stealing divine knowledge from the right sidereal forge.
 
-Now for some novel options not available with traditional levelling to cover the remaining attributes on the character sheets: defenses, inventories, and attack types.
-
 ### +1 Attack and Damage
 
-| +1 Defense or Save | +1 Trait or Item | Inventory | Xp | Total Xp |
+| +1 Defense or Save | +1 Trait or Item Inventory | +1 Attack  
+and 
+Damage | Xp | Total Xp |
 |:---|:---|:---|---:|---:|
 | base | base | base | 0 | 0 |
 | +1 | +1 | +1 | 200 | 200 |
@@ -1027,6 +1028,8 @@ Now for some novel options not available with traditional levelling to cover the
 | +4 | +4 | +4 | 25,000 | 31,200 |
 
 _n+1 = 5(n)_
+
+Now for some novel options not available with traditional levelling to cover the remaining attributes on the character sheets: defenses, inventories, and attack types.
 
 They start out quite affordable and should combine with ability score upgrades for maximum effect. You could also combine them with traditional levelling if you were feeling adventurous.
 
@@ -1057,19 +1060,19 @@ An oldstyle human would call such gear "hallmarks". One further-fallen from that
 Traditionally items start at level 0 and you level them up with experience (and material costs at the referee's discretion). So, a level 3 shield might have +3 defense and a level 5 grate hammer could deal 2d6+4 damage and gain a "flaming menace" trait.
 
 > This tabe is the "SDM legacy Leveling model". Each +Level grants other bonuses.
-
-| Lvl | +1 damage per die or +1 defense or new trait | Xp | Total Xp |
-|---:|:---|---:|---:|
-| 0 | 0 | 0 | 0 |
-| 1 | 1 | 300 | 300 |
-| 2 | 2 | 450 | 750 |
-| 3 | 3 | 750 | 1,500 |
-| 4 | 4 | 1,500 | 3,000 |
-| 5 | 5 | 3,000 | 6,000 |
-| 6 | 6 | 6,500 | 12,500 |
-| 7 | 7 | 12,500 | 25,000 |
-| 8 | 8 | 25,000 | 50,000 |
-| 9 | 9 | 49,999 | 99,999 |
+>
+> | Lvl | +1 damage per die or +1 defense or new trait | Xp | Total Xp |
+> |---:|:---|---:|---:|
+> | 0 | 0 | 0 | 0 |
+> | 1 | 1 | 300 | 300 |
+> | 2 | 2 | 450 | 750 |
+> | 3 | 3 | 750 | 1,500 |
+> | 4 | 4 | 1,500 | 3,000 |
+> | 5 | 5 | 3,000 | 6,000 |
+> | 6 | 6 | 6,500 | 12,500 |
+> | 7 | 7 | 12,500 | 25,000 |
+> | 8 | 8 | 25,000 | 50,000 |
+> | 9 | 9 | 49,999 | 99,999 |
 
 ---
 
@@ -1077,9 +1080,7 @@ Traditionally items start at level 0 and you level them up with experience (and 
 
 The fabricator technologies of this golden age are better than that. Note down your item's **base attributes**, as you would for a character, and upgrade its attributes step by devastating step.
 
-**Levels** are most relevant for vehicles, where they also translate into other attributes (like life and damage scores). Higher level powers impose penalties to their targets' saves. Weapons with levels may count as "magical" for overcoming strange alien resistances to mundane attacks. Other specific gear, such as golem armor in full auto destruction mode, also benefit from levels.
-
-Situationally, levelled gear may also bestow a certain amount of social renown, cachet, and swagger its owner.
+**Levels** are most relevant for vehicles, where they also translate into other attributes (like life and damage scores). Higher level powers impose penalties to their targets' saves. Weapons with levels may count as "magical" for overcoming strange alien resistances to mundane attacks. Other specific gear, such as golem armor in full auto destruction mode, also benefit from levels. Situationally, levelled gear may also bestow a certain amount of social renown, cachet, and swagger its owner.
 
 The bonus to roll [d20], damage per die, and armor or ward upgrades are straightforward, applying to common attributes.
 
