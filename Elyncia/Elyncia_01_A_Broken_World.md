@@ -41,7 +41,7 @@ Edited with an LLM Lares agent/assistannt, all procedural generations aligned wi
 
 Welcome, traveler, to Elyncia – a realm reborn from celestial cataclysms, cradled in the astral sea, and woven with the threads of eternal myth.
 
-Elyncia is a *mythpunk orichalcum age* setting, a shattered planet reeling under the impact of a cataclysm of wild magic and intelligent undead. At the same time, Elyncia is a goddess \- sister to Gaia and Selene \- a wounded and dreaming goddess who occupies the antipodal orbit (directly across & hidden by Sol from Gaia/Earth). The current year is YOLD 5491 / 4325 CE.
+Elyncia is a *mythpunk orichalcum age* setting, a shattered planet reeling under the impact of a cataclysm of wild magic and intelligent undead. At the same time, Elyncia is a goddess \- sister to Gaia and Selene \- a wounded and dreaming goddess who occupies the antipodal orbit (directly across & hidden by Sol from Gaia/Earth). The current year is YOLD 5492 / 4326 CE.
 
 This setting’s sub-title "Flying Triremes & Laser Swords," merges the fantastical with the technological. We present magic as a form of advanced technology and vice versa. We embrace both Arthur C. Clarke and Terry Pratchett's postulates: Any sufficiently advanced technology is indistinguishable from magic, AND any sufficiently advanced magic is indistinguishable from technology. The two general principles have been labeled “magitech/oldtech” and “fantascience/sorcery” by arch-wizards familiar with them both.
 
@@ -49,7 +49,7 @@ The year was YOLD 1 (1166 BCE), and the void-web connecting Gaia to her sister E
 
 Elyncia's ley-line network, the web of mana that composed Her pattern (Web 1\) nearly unraveled. Grandmother Spider and the Goddess Eris quickly convinced the other gods and immortals to drop their hostilities and act. They hastily repaired the ley-lines, kept the planetary fragments orbiting her core in a new “Astral Sea”, and ejected the Lich Imperator out into the deep void past the Oort Cloud.
 
-The year is YOLD 5491 (4325 CE/AD). Almost 500 years ago the Necrospire, the meteor prison of the Lich Imperator, returned and broke the planet for the second time. The chaos toppled the largest Empire of Neo-Thracia, threw all global factions and powers into imbalance, cursed all iron technology, and shattered the existing communications networks (Web 2).
+The year is YOLD 5492 (4326 CE/AD). Almost 500 years ago the Necrospire, the meteor prison of the Lich Imperator, returned and broke the planet for the second time. The chaos toppled the largest Empire of Neo-Thracia, threw all global factions and powers into imbalance, cursed all iron technology, and shattered the existing communications networks (Web 2).
 
 At the urging of the leader of the megacity trade port of New Delos, the immortal Lindwyrn, the gods again were called to council. Hermes, Hephestus, Grandmother Spider, and Eris devised a plan: The DreamNet. They relied on Hermes’ speed to place a network of orichalcum inscribed magitech statues at the remaining ley-line nodes. These became new anchors used to bind the very ley-lines themselves into the Lares DreamNet (Web 3.0).
 
@@ -78,7 +78,7 @@ BCE \= Before Common Era (Gaia)
 CE \= Common Era (Gaia)  
 YA \= Years Ago (years before the playtest campaign)
 
-### YOLD 1 / 1166 BCE (5490 YA):
+### YOLD 1 / 1166 BCE (5491 Years Ago):
 
 *The War of the Immortals*: Strife between the gods climaxes. The First Breaking of Elyncia causes the void to flood down upon the planet, splitting the planet into a constellation of continents and seas swirling in the nebula-like Astral Sea between them. The gods recover from their conflicts long enough to banish the mortal necromancer responsible into the deep void at the edges of the Sol system. The portals to Gaia fail spectacularly, but not before many mages on Gaia send their populations through. The Gods “borrow” whole pieces of terrain from the dreams of Gaia to repair Elyncia.
 
@@ -102,13 +102,13 @@ During the War of the Immortals (on Gaia, the Bronze age collapse) the faerie tr
 
 The Lindwyrm transmits the Declaration of Confederation over the new DreamNet, forming the League of Free Cities. The Ouroborous and Brimstone Courts agree to join the League, along with the Ali’i of Havaiki, the Nexus that drifts through the Astral Sea in an unstable orbit.. The Dominion of Magic immediately responds by annexing the nearest city-states, sending their sky-castles to patrol the new lands of the Dominion. The gods of the Kemetic Nexus pull inwards, closing all open routes and focusing on repairing the void-web connections to Gaia.
 
-One month later necro-scripts and data-ghosts from the Necrospire start to flood the DreamNet of the Neo-Thracian Nexus. A sudden maelstrom forms in the Astral Sea (the chaotic space between the broken seas & continents) and moves to cover the mouth of the Hebros River and the whole Illyrian archipelago. The land routes to the capital city of Neo-Thracia fall to the flux-lands (semi-unstable reality rifts). The Neo-Thracian Nexus has been cut off from the rest of Elyncia for the next 488 years.
+One month later necro-scripts and data-ghosts from the Necrospire start to flood the DreamNet of the Neo-Thracian Nexus. A sudden maelstrom forms in the Astral Sea (the chaotic space between the broken seas & continents) and moves to cover the mouth of the Hebros River and the whole Illyrian archipelago. The land routes to the capital city of Neo-Thracia fall to the flux-lands (semi-unstable reality rifts). The Neo-Thracian Nexus has been cut off from the rest of Elyncia for the next 489 years.
 
 ### YOLD 5490 / 4324 CE (1 YA): 
 
 *The Neo-Thracian Nexus*: The maelstrom around the Illyrian archipelago has unexpectedly broken up. Rumors of caravans on the old coastal land-route has also attracted the attention of many factions from around Elyncia. The Dominion of Magic, a theocracy from largest of Neo-Thracia’s subservient City-States took over the city’s Wizard University and has tightened its grip for the last 480 years through conflict with the Lich Imperator, raids by Grell from the Astral Sea, and incursions of Unseelie agents. Centering magic and automatons over trained-fighting troops and tightly controlling their magitech, they have sent a small scout legion along the old coastal road. Krull of the Ouroborous Court also sends a company from the Order of Amaranth to scout the old mountain pass from Krull’s territory, knowing that the Seelie and Unseelie courts have sent their own agents into the lost Neo-Thracian Nexus. The Dragon of New Delos quickly looks for agents to send on a mission to scout up the Hebros river.
 
-### YOLD 5491 / 4325 CE (0 YA):
+### YOLD 5492 / 4326 CE (0 YA):
 
 *New Game+*: The Player Deamons & their chosen characters have been hired to explore the newly re-opened Neo-Thracian Nexus for the Free City of High Delos, before their opposition from the Dominion of Magic (technomagic mana-supremecists) and the Unseelie Faerie Court (rogue fae lords in a quasi-alignment against the other Faerie Courts) can infiltrate and exploit the area. One thing drives the interest, rumors of lost “power core” technology.
 
@@ -291,7 +291,7 @@ The Eastern Net is the heartland of Elyncia’s surviving Nexus cluster, bound t
   * **Free Cities Spies** – Intelligence cells probing for opportunities to undermine Dominion influence  
 * **Cultural Influences & Notes:** Remnants of an Imperial bureaucracy with strong magical academia; post-collapse warlordism; lost fae tribes controlling the mythic heart of the old Empire.  
 * **Strategic Importance:** Central river gate route to the inland areas; good overland routes through the mountains; possible repository of lost “power core” tech.  
-* **Lares Node Status:** Recently reconnected after 488 years; Archive-Lares heavily corrupted by necro-scripts from Necrospire, other subnets are equally fragmented and/or misaligned.  
+* **Lares Node Status:** Recently reconnected after 489 years; Archive-Lares heavily corrupted by necro-scripts from Necrospire, other subnets are equally fragmented and/or misaligned.  
 * **Notable Hazards:** Fluxlands, necro-data storms, automatons turned hostile, overgrown urban and suburban areas, lost quantum-locked equipment with defense spirits.  
 * **Adventure Hooks:**  
   * Retrieve magitech blueprints from the lost Thracian capital.  

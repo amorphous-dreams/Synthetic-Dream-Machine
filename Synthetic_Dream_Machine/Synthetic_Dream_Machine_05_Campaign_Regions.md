@@ -4,7 +4,7 @@ Luka Rejec’s “Color Land” chapters of *Our Golden Age* are built like **re
 
 ## The Region chassis (what repeats, and why it works)
 
-### 1) Brochure hook + tilted history = instant genre + pressure
+### 1) Title, Brochure hook + tilted history = instant genre + pressure
 
 A Region opens as propaganda/tourism copy, then immediately slips in the **true engine** (what the place optimizes for, and what it costs). You’re not just “in a desert”; you’re in a system. 
 
@@ -22,7 +22,7 @@ Each Region gets a consistent brief with headings like **Climate, Population, Gr
 
 ### 3) Map → Ambient tables → Events tables = travel play becomes push-button
 
-After the map, Regions reliably deploy:
+After the map and framing, Regions reliably deploy:
 
 * **Ambient** (often seasonal or time-sliced) tables to generate the “weather of play.” 
 * **Events** tables with the signature **1–3 Expected / 4–5 Surprising / 6 Error** escalation track. 
@@ -31,7 +31,7 @@ After the map, Regions reliably deploy:
 
 ---
 
-### 4) Commerce/entry interface first (the place where PCs can *touch* the Region)
+### 4) Commerce/entry interface (the place where PCs can *touch* the Region)
 
 Before deep politics, Luka gives you the **intake valve**: vendors, standard goods, transport, role-economies, travel costs—often as structured tables. Example patterns include:
 
@@ -158,97 +158,77 @@ OGA often turns metaphysics into small tables with direct consequences (field ty
   * a roll table with “hold” currency, or
   * a clear duration/cost. 
 
----
-
-## TEMPLATE: “Write a New Region in OGA Mode” (with built-in table prompts)
-
-### 0) Title & slogan (½ page)
-
-* **Region Name + slogan** (propaganda)
-* **Tilt-history paragraph**: “what it’s for” → “what broke” → “what it optimizes now” → “hook doubt” 
-
-### 1) Region statline (½–1 page)
-
-Use the same headings (and include “Official vs Practical” where possible). 
-
-### 2) Map + Regions (½–1 page)
-
-* Map
-* 3 regions (each gets an **Ambient** table)
-
-### 3) Ambient tables (1–2 tables)
-
-Choose a column scheme:
-
-* **Seasons** (Winter/Spring/Summer/Autumn), or 
-* **Modes** (Night/Haze/Day/Evening), or 
-* **Layers** (Day/Night/Understoreys/Portal). 
-
-> **Ambient table writing constraint:** each cell = 3–5 descriptors + (optional) 1 practical note. Ambient tables may also be included for zones.
-
-### 4) Events table (1 table per region, or 1 table for the Region)
-
-Use the OGA escalation header:
-
-* **d6 | 1–3 Expected | 4–5 Surprising | 6 Error** 
-
-> **Events writing constraint:** each entry must contain (a) an actor or force, (b) a pressure/cost, (c) a choice or consequence, and ideally one explicit mechanic (save, € cost, time loss, burden).
-
-### 5) Entry interface (the “first contact” page)
-
-Pick one:
-
-* **Travel matrix** (Type/Status/Price) 
-* **Vendor + goods menus** 
-* **Currency translation** (Honor→value / permits→rights) 
-
-### 6) Factions / power groups (1–2 pages)
-
-* 4–6 factions + 2–4 named agents
-* Add one line of official denial / propaganda (optional but very OGA) 
-
-### 7) Hub + districts/zones (2–4 pages)
-
-* Hub summary
-* 5–9 districts or zones (each = “what you can do here” + “what can go wrong”)
-* Bake in **costs/time** where movement matters. 
-
-### 8) Postcards (8–12 locales)
-
-Micro-template per locale:
-
-* Look / Control / Offer / Threat / Twist rule
-
-### 9) Weird handle (optional, but powerful)
-
-Choose one:
-
-* **Field effects table** (d6: Field → Effects) 
-* **Ritual/prayer roll table** (d20+stat; “hold” a benefit) 
-* **INTERRUPTION/ERROR insert** as a warning flare 
-
-### 10) Connections out (explicit exits)
-
-* 2–4 exits, each with status/price/taboo
-
----
-
-## Tiny “OGA table” checklist
+### Tiny “OGA table” checklist
 
 When you draft a table entry, ask:
-
+* Describe intent of table first, fill in full cell entries afterwards.
 * Does it **force a choice** (pay, risk, detour, bargain, fight, flee)?
 * Does it create a **new relationship** (faction attention, obligation, rumor, tag)?
 * Can I resolve it with **one roll or one scene**?
 * Is the “Error” column a *real* escalation (not just “extra weird”)?
 
-That’s the trick: OGA tables don’t just decorate travel—they **turn travel into plot production**.
+---
+
+## TEMPLATE: “Write a New Region in OGA Mode” (with built-in table prompts)
+
+### 1) Title & slogan (½ page)
+
+* **Region Name + slogan** (propaganda)
+* **Tilt-history paragraph**: “what it’s for” → “what broke” → “what it optimizes now” → “hook doubt” 
+
+### 2) Region statline (½–1 page)
+
+**Climate, Population, Groups, Languages, Capital (Official vs Practical), Government, Ideologies, Economy, Resources, Means of Production, Material Conditions**, plus an in-world “Source” (and include “Official vs Practical” where possible). 
+
+### 3) Map + Regions (½–1 page),  Ambient tables (1–2 tables + region specific), Events table
+
+**Map & Subdivisions:**
+* Region Map
+* 1-3 subdivisions (each gets an **Ambient** table)
+
+**Ambient:** Choose a column scheme:
+* **Seasons** (Winter/Spring/Summer/Autumn), or 
+* **Modes** (Night/Haze/Day/Evening), or 
+
+> **Ambient table writing constraint:** each cell = 3–5 descriptors + (optional) 1 practical note. Ambient tables may also be included for zones.
+
+**Events:** Use the OGA escalation header:
+
+* **d6 | 1–3 Expected | 4–5 Surprising | 6 Error** 
+
+> **Events writing constraint:** each entry must contain (a) an actor or force, (b) a pressure/cost, (c) a choice or consequence, and ideally one explicit mechanic (save, € cost, time loss, burden).
+
+### 4) Commerce/entry interface
+
+* **Travel matrix** (Type/Status/Price) 
+* **Vendor + goods menus** 
+* **Currency translation** (Honor→value / permits→rights) 
+
+### 5) Factions, hubs, districts, and postcard locales
+
+**Factions:** (1–2 pages)
+* 4–6 factions + 2–4 named agents
+* Add one line of official denial / propaganda (optional but very OGA) 
+
+**Hub + districts/zones:** (2–4 pages)
+* Hub summary
+* 5–9 districts or zones (each = “what you can do here” + “what can go wrong”)
+* Bake in **costs/time** where movement matters. 
+
+**Postcards:** (landmarks/locales)
+* Micro-template per locale: Look / Control / Offer / Threat / Twist rule
+
+### 6) Weird handle / “Glitch inserts” (INTERRUPTION/ERROR; optional, but powerful)
+
+* **Field effects table** (d6: Field → Effects) 
+* **Ritual/prayer roll table** (d20+stat; “hold” a benefit) 
+* **INTERRUPTION/ERROR insert** as a warning flare
 
 ---
 
 # SDM Campaign Region Worksheet
 
-## 0) Title Page
+## 1) Title & Slogan
 
 **REGION NAME:** _______________________________
 **Slogan (propaganda):** “__________________________________________”
@@ -257,13 +237,13 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 * *Then (purpose):* _______________________________________________
 * *Break (what changed):* __________________________________________
 * *Now (what it optimizes for):* _____________________________________
-  **Hook Doubt (“Some say…”):** _______________________________________
+  **Hook Doubt ("Some say..."):** _______________________________________
 
 ---
 
-## 1) Region Statline (campaign physics)
+## 2) Region Statline (campaign physics)
 
-* **Climate:** ___________________  
+* **Climate:** ___________________
 * **Population:** __________________
 * **Groups (%):** ____________________________________________________
 * **Languages:** _____________________________________________________
@@ -274,32 +254,55 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 * **Resources:** ____________________________________________________
 * **Means of Production:** ___________________________________________
 * **Material Conditions (Official / Effective):** __________________ / __________________
-* **Source (diegetic):** “___________________________________________”
+* **Source (diegetic quote):** "___________________________________________"
 
 ---
 
-## 2) Map + Region Subdivisions
+## 3) Map + Regions, Ambient Tables, Events Table
+
+### Map & Subdivisions
 
 **Subdivisions (2-3):** 1) __________________  2) __________________  3) __________________
-**Entry Points (2–3):** ______________________________________________
+**Note:** each subdivision gets its own AMBIENT table if it plays differently.
+
+### Connections (2-4 connections to other Regions)
+
+| Connection | Goes to | Status | Price | Consequence |
+| ---- | ------- | ------ | ----- | ----------- |
+| 1 ... |         |        |       |             |
+| 2 ... |         |        |       |             |
+| 3 ... |         |        |       |             |
+| 4 ... |         |        |       |             |
 
 ---
 
-## 3) AMBIENT Tables (pick 4 modes: Seasons / Dayparts / “Normal–Festival–Crackdown–Error”, include AMBIENT tables for each subdivision, or zone - if different enough)
+### Ambient Tables
+
+**AMBIENT (world's breathing):**
+
+* Pick columns: Seasons / Dayparts / Modes (Normal / Festival / Crackdown / Error).
+* Each cell = 3-5 descriptors + optional practical note.
+* Describe intent of table first, fill in full cell entries afterwards.
 
 **Modes/Columns:** __________________ / __________________ / __________________ / __________________
+**Intent:** ______________________________________________
 
 |  d6 | Mode 1                              | Mode 2 | Mode 3 | Mode 4 |
 | --: | ----------------------------------- | ------ | ------ | ------ |
-| 1–3 | (common texture + 1 practical note) |        |        |        |
-| 4–5 | (inconvenient friction)             |        |        |        |
+| 1-3 | (common texture + 1 practical note) |        |        |        |
+| 4-5 | (inconvenient friction)             |        |        |        |
 |   6 | (weird omen/hazard/boon-with-hook)  |        |        |        |
 
----
+### Events Table
 
-## 4) EVENTS Table (the escalation engine)
+**EVENTS (escalation engine):**
 
-| d6 | 1–3 Expected (cost/delay) | 4–5 Surprising (temptation/choice) | 6 Error (hard escalation) |
+* 1-3 Expected = cost/delay. 4-5 Surprising = choice + temptation. 6 Error = hard escalation.
+* Each entry should include an actor/force, a pressure/cost, and a choice/consequence (add a mechanic if the players need a procedure).
+
+**Intent:** ______________________________________________
+
+| d6 | 1-3 Expected (cost/delay) | 4-5 Surprising (temptation/choice) | 6 Error (hard escalation) |
 | -: | ------------------------- | ---------------------------------- | ------------------------- |
 |  1 |                           |                                    |                           |
 |  2 |                           |                                    |                           |
@@ -308,13 +311,13 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 |  5 |                           |                                    |                           |
 |  6 |                           |                                    |                           |
 
-**Quick rule:** 'Expected' taxes you. 'Surprising' bargains with you. 'Error' rewrites the situation.
-
 ---
 
-## 5) Entry Interface (choose at least ONE: Travel Matrix, Vendors, or Standard Goods)
+## 4) Commerce / Entry Interface
 
 ### Travel Matrix
+
+**Intent:** ______________________________________________
 
 | Route | Type | Status (legal/restricted/taboo) | Price (cash/favor/permit) | Catch |
 | ----- | ---- | ------------------------------- | ------------------------- | ----- |
@@ -323,7 +326,11 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 | 3     |      |                                 |                           |       |
 | 4     |      |                                 |                           |       |
 
+**Currency translation (optional):** ________________________________________
+
 ### Vendors (d6)
+
+**Intent:** ______________________________________________
 
 | d6 | Vendor (brand/faction) | Specialty | Quirk | Hook/Complication |
 | -: | ---------------------- | --------- | ----- | ----------------- |
@@ -334,7 +341,9 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 |  5 |                        |           |       |                   |
 |  6 |                        |           |       |                   |
 
-### Goods Menu (d10) — each item should include **one**: rule effect / risk / social mark
+### Goods Menu (d10) -- each item should include ONE: rule effect / risk / social mark
+
+**Intent:** ______________________________________________
 
 | d10 | Item | Price | Effect/Risk/Mark |
 | --: | ---- | ----: | ---------------- |
@@ -351,9 +360,11 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 
 ---
 
-## 6) Factions / Power Groups (4–6) + Agents (♟)
+## 5) Factions, Hubs, Districts, and Postcards
 
-**Faction list (name → want → control → hates → job offered):**
+### Factions / Power Groups (4-6) + Agents (♟)
+
+**Faction list (name -> want -> control -> hates -> job offered):**
 
 1. ---
 2. ---
@@ -362,19 +373,18 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 
 (+2 optional) _______________________________________________________
 
-**♟ Agents (2–4, one-line scheme each):**
+**♟ Agents (2-4, one-line scheme each):**
 
 * ♟ __________________________ : ____________________________________
 * ♟ __________________________ : ____________________________________
 * ♟ __________________________ : ____________________________________
 
-**Official denial line (optional):** “__________________________________________”
+**Official denial line (optional):** "__________________________________________"
 
----
+### Hub + Districts/Zones (5-9)
 
-## 7) Hub + Districts/Zones (5–9)
-
-**Hub name:** _____________________  **What it sells as:** _____________________
+**Hub name:** _____________________  **What it presents as:** _____________________
+**Note:** bake in costs/time where movement matters.
 
 | District/Zone | Offer (service/info/safety) | Threat (taboo/patrol/price) |
 | ------------- | --------------------------- | --------------------------- |
@@ -384,9 +394,7 @@ That’s the trick: OGA tables don’t just decorate travel—they **turn travel
 | 4             |                             |                             |
 | 5             |                             |                             |
 
----
-
-## 8) Postcards (8–12 runnable locales)
+### Postcards (8-12 runnable locales)
 
 Micro-template per locale: **Look / Control / Offer / Threat / Twist rule**
 
@@ -397,21 +405,10 @@ Micro-template per locale: **Look / Control / Offer / Threat / Twist rule**
 
 ---
 
-## 9) Weird Handle (pick ONE)
+## 6) Weird Handle / "Glitch Insert" (pick ONE)
 
 * **Field Effects (d6):** ___________________________________________________
 * **Ritual/Prayer roll:** ___________________________________________________
 * **INTERRUPTION/ERROR insert:** ___________________________________________
-
----
-
-## 10) Connections Out (2–4 exits)
-
-| Exit | Goes to | Status | Price | Consequence |
-| ---- | ------- | ------ | ----- | ----------- |
-| 1    |         |        |       |             |
-| 2    |         |        |       |             |
-| 3    |         |        |       |             |
-| 4    |         |        |       |             |
 
 ---
