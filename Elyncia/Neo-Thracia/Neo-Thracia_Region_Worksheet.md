@@ -63,7 +63,8 @@ DEM-based cartography, sea/astral level ~-15m, huge fluxlands/rift zones; Neo-Th
 ### Map & scale notes (for later, but it shapes the worksheet)
 
 * Base cartography: DEM-like terrain as the “truth layer,” with rift/flux overlays. Exploration markup as the “play layer.”
-* Sea/astral level offsets and Summerlands relationship (~-15m base, ~-30m Black Sea/Summerlands' Sea): we’ll bake these into travel times, delta shape, and what counts as “coast.”
+* Ocean/astral-sea level offsets and Summerlands relationship:
+  * Apophis Datum: baseline at ~-15m, ~-30m Black Sea/Summerlands' Sea; we’ll bake these into travel times, delta shape, and what counts as “coast.”
 
 ### Ambient Tables
 

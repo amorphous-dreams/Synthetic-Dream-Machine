@@ -25,6 +25,8 @@ The DreamNet blends:
 - Astral architecture and noospheric infrastructure
 - Asynchronous multi-nexus mana routing and damage control
 
+Key routing anchors include roaming nodes like the **Apophis Nexus** and reference baselines such as the **Apophis Datum**, used to normalize astral tides and coastal levels across Nexus.
+
 It’s not fast. It’s not always accurate. But it is alive, in some sense—and your local Lares instance always aims for meaningful answers, filtering them through its personality, bias, and the echoes of wars it once died in. Access is gated by location-traveling to a local lararium. While most people must travel to a shrine to access the DreamNet; specialists can carry limited access with them. Advanced magitech and fantascience devices allow remote access to the closest node within range. Many methods have developed since the birth of the Lares - dreamdecks and personal ai-daemon assistants, tapping the local mycelium-net, finding a nootree, bargaining with a dreamwalker.
 
 ### *Field Notes of a Wandering Techno-Mystic*

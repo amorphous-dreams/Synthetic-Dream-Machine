@@ -5,7 +5,7 @@
 operator-anon@dreamdeck:\~  
 $ddate
 
-\>DDate: X-Day, 40th Confusion, YOLD 5491  
+\>ddate: X-Day, 40th Confusion, YOLD 5491  
 operator-anon@dreamdeck:\~  
 $cd documents/FTLS
 
@@ -20,13 +20,13 @@ $lares open \-mime text/vnd.tiddlywiki;mode=edit \-uri ./Flying Triremes and Las
 
 * 01 Flying Triremes and Laser Swords  
 * 02 FTLS Paths  
-* 03 Recon, Salvage, Secrets  
-* 04 OSR Heritage Traits  
-* 05 Powers  
-* 06 Wild Magic Exposure  
-* 07 Formations and Mass Combat  
-* 08 Loot and Treasure  
-* 09 Grimoires  
+* 03 OSR Heritage Traits  
+* 04 Recon, Salvage, Secrets  
+* 05 Grimoires  
+* 06 Powers  
+* 07 Wild Magic Exposure  
+* 08 Formations and Mass Combat  
+* 09 Loot and Treasure  
 * 10 Appendix Null \- Referee Resources
 
 \> end(uri)  
@@ -93,7 +93,7 @@ When you need to go-go. Each speed die provides a +1 to chases and races. You ma
 >
 > Popular misapprehension holds daemons to be spirits summoned forth by oldtech to serve or disrupt a human’s best-laid plans. Scholarly suspicion frames them as sentient energy creature of the noosphere. Coherent, sentient kaba-elementals in some tellings. [@Our_Golden_Age, _p._ _242_]
 
-Your consciousness roams the noosphere. Play your daemon like a drifting spotlight: Pick any number of favorites (usually PCs), then show up in fiction—as a whisper in the radio-static, a bad omen in a puddle, a helpful coincidence, a haunting. When you spend real table time observing, advising, tempting, protecting, or otherwise being with a favorite, the referee can toss you a Hero Die. Spend these Hero Dice using the standard rules. The referee may award you Experience; you bank it and invest it into your favorites (PCs, sidekicks, hallmarks). Other daemons must have your permission to spend their banked XP or Hero Dice on your favorites. For "tasked spirits" and other _Noospheric Agents_ see **Personal Daimon** trait (FTLS Chatper 03 - Spirit Traits), or the **Personal Daemon** ward-item (Vastlands Guidebook Chapter 06 - Scion Items).
+Your consciousness roams the noosphere. Play your daemon like a drifting spotlight: Pick any number of favorites (usually PCs), then show up in fiction—as a whisper in the radio-static, a bad omen in a puddle, a helpful coincidence, a haunting. When you spend real table time observing, advising, tempting, protecting, or otherwise being with a favorite, the referee can toss you a Hero Die. Spend these Hero Dice using the standard rules. The referee may award you Experience; you bank it and invest it into your favorites (PCs, sidekicks, hallmarks). Other daemons must have your permission to spend their banked XP or Hero Dice on your favorites. For "tasked spirits" and other _Noospheric Agents_ see **Personal Daimon** trait (FTLS Chapter 02 - FTLS Paths, Spirit Path), or the **Personal Daemon** ward-item (Vastlands Guidebook Chapter 06 - Scion Items).
 
 ## Gods (Immortals)
 

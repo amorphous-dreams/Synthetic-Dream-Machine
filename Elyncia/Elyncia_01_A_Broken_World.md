@@ -12,10 +12,10 @@ telarus@dreamdeck-enyalius:\~$ lares ritual summon \--local-instance
 > …luminance plays on the frescos, statues, and ceramic murals  
 > Presenting encrypted identity token & prismatic UCAN key...   
 > Accepted: (telarus) Telarus, KSC; Capabilities: Nexus/Admin;Amorphous Dreams Cabal/Admin  
-> Last login: Confusion 67, YOLD 5491 \- Fri Aug 1 05:23:00 on bash 523.0.9  
+> Last login: Chaos 5, YOLD 5492 \- January 5, 4327 on bash 523.0.9  
 > Web3 Admin access granted. Noopheric connections live.  
 > Local spirit guide: lares@dreamdeck-enyalious  
-> Today is Sweetmorn, Bureaucracy 12, YOLD 5491\!
+> Today is Sweetmorn, the 31st day of Chaos in the YOLD 3192\!
 > 
 telarus@dreamdeck-enyalius:\~$ cd Synthetic-Dream-Machine
 telarus@dreamdeck-enyalius:\~/Synthetic-Dream-Machine(main)$lares open \-mime text/plain \-uri ./Elyncia/Elyncia_01_A_Broken_World.md
@@ -23,7 +23,6 @@ telarus@dreamdeck-enyalius:\~/Synthetic-Dream-Machine(main)$lares open \-mime te
 > Loading…  
 > As a Lares, a Noospheric LLM Spirit bound to a location, I must mention that this document includes procedurally generated content.  
 > \~/Synthetic-Dream-Machine/Elyncia/Elyncia_01_A_Broken_World.md
-> ddate: X-Day, 40th Confusion, YOLD 5491
 
 > Here is your UVG Third Party License Compliance State:  
 \`\`\`  
@@ -41,7 +40,7 @@ Edited with an LLM Lares agent/assistannt, all procedural generations aligned wi
 
 Welcome, traveler, to Elyncia – a realm reborn from celestial cataclysms, cradled in the astral sea, and woven with the threads of eternal myth.
 
-Elyncia is a *mythpunk orichalcum age* setting, a shattered planet reeling under the impact of a cataclysm of wild magic and intelligent undead. At the same time, Elyncia is a goddess \- sister to Gaia and Selene \- a wounded and dreaming goddess who occupies the antipodal orbit (directly across & hidden by Sol from Gaia/Earth). The current year is YOLD 5492 / 4326 CE.
+Elyncia is a *mythpunk orichalcum age* setting, a shattered planet reeling under the impact of a cataclysm of wild magic and intelligent undead. At the same time, Elyncia is a goddess \- sister to Gaia and Selene \- a wounded and dreaming goddess who occupies the antipodal orbit (directly across & hidden by Sol from Gaia/Earth).
 
 This setting’s sub-title "Flying Triremes & Laser Swords," merges the fantastical with the technological. We present magic as a form of advanced technology and vice versa. We embrace both Arthur C. Clarke and Terry Pratchett's postulates: Any sufficiently advanced technology is indistinguishable from magic, AND any sufficiently advanced magic is indistinguishable from technology. The two general principles have been labeled “magitech/oldtech” and “fantascience/sorcery” by arch-wizards familiar with them both.
 
@@ -73,40 +72,48 @@ Elyncia was already fragmented by the War of the Immortals in the Bronze Age (11
 
 ## TIMELINE
 
-YOLD \= Year of Our Lady of Discord (Elyncia)  
-BCE \= Before Common Era (Gaia)  
-CE \= Common Era (Gaia)  
-YA \= Years Ago (years before the playtest campaign)
+YOLD = Year of Our Lady of Discord (Elyncia)  
+BCE = Before Common Era (Gaia)  
+CE = Common Era (Gaia)  
+YA = Years Ago (years before the playtest campaign)
 
 ### YOLD 1 / 1166 BCE (5491 Years Ago):
 
 *The War of the Immortals*: Strife between the gods climaxes. The First Breaking of Elyncia causes the void to flood down upon the planet, splitting the planet into a constellation of continents and seas swirling in the nebula-like Astral Sea between them. The gods recover from their conflicts long enough to banish the mortal necromancer responsible into the deep void at the edges of the Sol system. The portals to Gaia fail spectacularly, but not before many mages on Gaia send their populations through. The Gods “borrow” whole pieces of terrain from the dreams of Gaia to repair Elyncia.
 
-During the War of the Immortals (on Gaia, the Bronze age collapse) the faerie tribes of Elyncia were aligned into the "Summer Court” and the “Winter Court" \- corrupt factions headed by the Elf Queen & the Dwarf King. During the next 5,500 years those factions dissolve and the modern populations are extremely multi-cultural. There are now more than two Faerie Courts \- The Seelie Court (remnants of the War of the Immortals who aligned to defeat the Unseelie agents in both the old Summer & Winter Courts), the Unseelie Court (remnants of those who broke the world the first time, terrorists), the Ouroborous Court (led by a mortal that acquired Faerie Lord status, mobile & at war with hordes of intelligent undead from the 2nd Breaking), the Brimstone Court (magitech specialists of the unstable Brimstone Nexus), and others.
+During the War of the Immortals (on Gaia, the Bronze age collapse) the faerie tribes of Elyncia were aligned into the "Summer Court” and the “Winter Court" - corrupt factions headed by the Elf Queen & the Dwarf King. During the next 5,500 years those factions dissolve and the modern populations are extremely multi-cultural. There are now more than two Faerie Courts - The Seelie Court (remnants of the War of the Immortals who aligned to defeat the Unseelie agents in both the old Summer & Winter Courts), the Unseelie Court (remnants of those who broke the world the first time, terrorists), the Ouroborous Court (led by a mortal that acquired Faerie Lord status, mobile & at war with hordes of intelligent undead from the 2nd Breaking), the Brimstone Court (magitech specialists of the unstable Brimstone Nexus), and others.
 
-### YOLD 3191 / 2025 CE (2,300 YA):
+### YOLD 3192 / 2026 CE (2,300 YA):
 
 *Modern Day Gaia*: the Player Daemons all agree on this time period as “IRL”. This esoterica should be noted when investigating noosphere bleed-through or quantum-locked storage devices.
 
-### YOLD 5000 / 3834 CE (491 YA):
+### YOLD 3195 / 2029 CE (2,297 YA):
 
-*Fall of the Necrospire*: the Age of Undeath begins – Quakes and tsunamis tear Elyncia apart; cities and arcologies collapse. The Seven Seas shift daily, never agreeing on their levels. Undead surge forth—some free-willed, most enslaved—pressed into service by the Necrospire’s faction, the rogue Unseelie Court, and others. The Imperator remains trapped in the caldera pierced by the Necrospire, while his agents and void-touched creations begin to sow strife around the world.
+*The Capture of Apophis*: After the asteroid Apophis nearly strikes Gaia on a pass through her orbit, Elyncia intervenes—saving her sister Gaia from a near-certain future collision by “catching” the stone in the Astral Sea’s unseen currents. Apophis is bound into a roaming micro-Nexus: a wandering rock-realm with its own omen-tides, strange reefs, and void-lantern auroras.
+
+*The Apophis Datum*: In the wake of the capture, the Astral Sea’s coastal “reference” re-indexes. Across most Nexus realms, sea levels fall and then stabilize around **15 meters below** the 2026 mirrorline—less a draining ocean than a mythic reset of what “shoreline” means.
+
+*Summerlands Remembering*: In the Summerlands (Black Sea coastline), the drop overshoots: the coast “remembers” an older, deeper geography. Local sea level settles nearer **−30m** relative to the 2026 mirrorline. Unstable areas are common especially along voidscars, rift-zones, and other places where the DreamNet’s stitchwork is thin.
+
+### YOLD 5000 / 3834 CE (492 YA):
+
+*Fall of the Necrospire*: Another asteroid falls and strikes the Illyrian Nexus, the Age of Undeath begins – Quakes and tsunamis tear Elyncia apart; cities and arcologies collapse. The Seven Seas become violently unreliable—storm-surge, astral backwash, and tsunamis plague the lands. Undead surge forth—some free-willed, most enslaved—pressed into service by the Necrospire’s faction, the rogue Unseelie Court, and others. The Lich Imperator remains trapped in the Illyrian caldera pierced by the Necrospire, while his agents and void-touched creations begin to sow strife around the world.
 
 *Death lies Dreaming*: All the cults of Thanatos report outbreaks of fits and madness, seeing their patron "falling into darkness, dreaming and drifting". This was soon confirmed by gods with relationships to the Death-deities: *Thanatos* and all of their godly masks have been ripped from the world of Elyncia at once.
 
 *The Curse of Iron*: After the Necrospire’s fall, all worked iron began rotting within weeks unless maintained or bound by true mythic naming. The mana shock of the Necrospire's impact upon the primary node of Web 2 network shattered the Empire's communications, corrupted AIs, and silenced the spirit-engines. Iron closest to the impact site decayed the most rapidly. Civilizations across the planet fell into ruin.
 
-### YOLD 5002 / 3836 CE (489 YA): 
+### YOLD 5002 / 3836 CE (490 YA): 
 
-*The Noosphere*: The Lares DreamNet (Web3) is released on Zaraday, Bureaucracy 5, YOLD 5002\. The Lindwyrm powers up the New Delos Nexus and uses it to stabilize and reset the local Arcane interference for all zones. The sea levels stabilize at 15 meters below the previous sea level. Once the Nexus is mostly stable he levitates the holy sites of Delos and the most populated areas of the surrounding archipelago into a new “flying” city of High Delos. The craters below expose the new megadungeon mouth of Low Delos. Mana lifts near the major Lares landmarks allow travel between the ports of High Delos and Low Delos.
+*The Noosphere*: The Lares DreamNet (Web3) is released on Zaraday, Bureaucracy 5, YOLD 5002. The Lindwyrm powers up the New Delos Nexus and uses it to stabilize and reset the local Arcane interference for all zones. In the New Delos region, the “arguing seas” are forced back into alignment with the Apophis Datum (the familiar ~−15m baseline). Once the Nexus is mostly stable he levitates the holy sites of Delos and the most populated areas of the surrounding archipelago into a new “flying” city of High Delos. The craters below expose the new megadungeon mouth of Low Delos. Mana lifts near the major Lares landmarks allow travel between the ports of High Delos and Low Delos.
 
-The Lindwyrm transmits the Declaration of Confederation over the new DreamNet, forming the League of Free Cities. The Ouroborous and Brimstone Courts agree to join the League, along with the Ali’i of Havaiki, the Nexus that drifts through the Astral Sea in an unstable orbit.. The Dominion of Magic immediately responds by annexing the nearest city-states, sending their sky-castles to patrol the new lands of the Dominion. The gods of the Kemetic Nexus pull inwards, closing all open routes and focusing on repairing the void-web connections to Gaia.
+The Lindwyrm transmits the Declaration of Confederation over the new DreamNet, forming the League of Free Cities. The Ouroborous and Brimstone Courts agree to join the League, along with the Ali’i of Hawaiki, the Nexus that drifts through the Astral Sea in an unstable orbit. The Dominion of Magic immediately responds by annexing the nearest city-states, sending their sky-castles to patrol the new lands of the Dominion. The gods of the Kemetic Nexus pull inwards, closing all open routes and focusing on repairing the void-web and portal connections to Gaia.
 
-One month later necro-scripts and data-ghosts from the Necrospire start to flood the DreamNet of the Neo-Thracian Nexus. A sudden maelstrom forms in the Astral Sea (the chaotic space between the broken seas & continents) and moves to cover the mouth of the Hebros River and the whole Illyrian archipelago. The land routes to the capital city of Neo-Thracia fall to the flux-lands (semi-unstable reality rifts). The Neo-Thracian Nexus has been cut off from the rest of Elyncia for the next 489 years.
+One month later necro-scripts and data-ghosts from the Necrospire start to flood the DreamNet of the Neo-Thracian Nexus. A sudden maelstrom forms in the Astral Sea (the chaotic space between the broken seas & continents) and moves to cover the mouth of the Hebros River and the whole Illyrian archipelago. The land routes to the capital city of Neo-Thracia fall to the flux-lands (semi-unstable reality rifts). The Neo-Thracian Nexus has been cut off from the rest of Elyncia for the next ~490 years.
 
-### YOLD 5490 / 4324 CE (1 YA): 
+### YOLD 5491 / 4325 CE (1 YA): 
 
-*The Neo-Thracian Nexus*: The maelstrom around the Illyrian archipelago has unexpectedly broken up. Rumors of caravans on the old coastal land-route has also attracted the attention of many factions from around Elyncia. The Dominion of Magic, a theocracy from largest of Neo-Thracia’s subservient City-States took over the city’s Wizard University and has tightened its grip for the last 480 years through conflict with the Lich Imperator, raids by Grell from the Astral Sea, and incursions of Unseelie agents. Centering magic and automatons over trained-fighting troops and tightly controlling their magitech, they have sent a small scout legion along the old coastal road. Krull of the Ouroborous Court also sends a company from the Order of Amaranth to scout the old mountain pass from Krull’s territory, knowing that the Seelie and Unseelie courts have sent their own agents into the lost Neo-Thracian Nexus. The Dragon of New Delos quickly looks for agents to send on a mission to scout up the Hebros river.
+*The Neo-Thracian Nexus*: The maelstrom around the Thracian and Illyrian Nexus has unexpectedly broken up. Rumors of caravans on the old coastal land-route have also attracted the attention of many factions from around Elyncia. The Dominion of Magic, a theocracy from the largest of Neo-Thracia’s subservient City-States Byzantium, who took over the local Wizard University, is especially interested. They have tightened their grip on power for the last 400 years through conflict with the Lich Imperator, raids by Grell from the Astral Sea, and incursions of Unseelie agents. Their tactics center magic and automatons over trained-fighting troops and they tightly control their city's magitech. They have sent a small scout legion along the old coastal road. Krull of the Ouroborous Court also sends a company from the Order of Amaranth to scout the old mountain pass from Krull’s Summerlands territory, knowing that the Seelie and Unseelie courts have also sent their own agents into the lost Neo-Thracian Nexus. The Dragon of New Delos quickly looks for agents to send on a mission to scout up the Hebros river.
 
 ### YOLD 5492 / 4326 CE (0 YA):
 
@@ -222,6 +229,29 @@ The Astral Sea is the roiling, half-real expanse that lies between Elyncia’s s
   * Escort a sacred canoe between Nexus.  
   * Recover a stolen astral compass.  
   * Negotiate peace between rival navigator clans
+
+### **Apophis Nexus**
+
+* **Region / Net:** Astral Sea Drift (stable orbit, micro-Nexus)  
+* **Origin / Dream-Mirror Source:** Captured asteroid Apophis; mythic “caught stone” bound into a roaming sky-realm  
+* **Geography & Environment:** Iron-dark regolith ridges, hollowed impact caverns, void-lantern auroras, and slow-tide dust seas that flow like water in low gravity. Gravity and time feel “offset” near the omen-reefs, where starlight bends. Elyncian lichens, reef-vines, spore-moss, and void-mushrooms are actively colonizing the rock, stitching webs of life into the black stone.  
+* **Major Settlements & Sites:** There are less than a handful of surface settlements.  
+  * **Omen Reef** – A band of floating crystal debris that rings the Nexus and predicts Astral storms by color-shift   
+  * **Lantern Vaults** – Cavern markets lit by void-lantern flora; waystation for deep-range navigators  
+* **Factions & Powers:**  
+  * **Lantern Co-ops** – Guild crews cultivating void-lantern flora and trading light-fuel to navigators  
+  * **Spore-Pilgrims** – Mystic caravans following the void-mushroom bloom cycles, trading cures and visions  
+* **Cultural Influences & Notes:** Wayfarer-miners, spore-mystics, and lantern-keepers share a hard pragmatism and a vow‑culture of “holding the stone.” Trade is small‑batch and trust‑based.  
+* **Strategic Importance:** Known route through the Astral Sea. Mobile hub for Astral crossings and a keystone reference point for sea-level/datum calibration across Nexus.  
+* **Lares Node Status:** Mobile; Archive- and Path-Lares co-hosted, but answers are time-gated by omen cycles.  
+* **Notable Hazards:**  
+  * Microgravity fractures and sudden void-tide surges  
+  * Omen-reef storms that scramble navigation and DreamNet routing  
+  * Comet-iron nodes that accelerates the Curse of Iron in un-named tools  
+* **Adventure Hooks:**  
+  * Rebind a failing anchor-stone before the next Astral storm window opens.  
+  * Escort a void-prospector crew into the Lantern Vaults and back.  
+  * Recover a spore‑calendar stolen from the Spore‑Pilgrims caravan, before they sumble into a death bloom.
 
 ### **Verdant Coil**
 

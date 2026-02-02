@@ -12,6 +12,47 @@ RSS also assumes the world pushes back. The more you poke at a place, the more i
 
 Use RSS when players treat the world as **usable**. When they want to scout for a soft seam, harvest a wreck, render fat into lamp-oil, cook rations that matter, jury-rig a charm, bargain for access, or pull a secret out of a sealed channel. It works best when something is at stake. RSS is here to make those moments of *work*—the practical, grubby, miraculous labor between battles and landmarks—feel like the real adventure they are.
 
+## RSS in 5 Stages
+
+**Example Area:**
+> **Kestrel Wreck-Reef** (Level 9, Heat +2)  
+> The rusting remains of a shipwreck from the Second Breaking, now a reef 20 yards offshore.
+> - Arcane: 4
+> - Tech 6
+> - Attention 0
+> - Tags: [surveilled] [shipwreck] [salt]
+> - Nodes:
+>     - "Cracked Drone-Racks" [static] [metal]
+>     - "Humming Relay Obelisk" [active] [signal]
+>     - "Singing Ledger Shrine" [dynamic] [contracts]
+
+### 1. **Area Profile.**
+
+When players say “What can we get / make / learn here?” pick an Area, generate 0–3 Nodes and Tag them, then update the Area Profile (Level, Tags, Tick, Attention, Nodes). When action happens, use the lowest time scale that matters (Week / Watch / Turn).
+   - Level: pick 0–17 by “how complex / defended / alien / unstable / deep”.
+   - Tick: Based on Level. The Attention increase per "event" (+1/+2/+3) unless fiction overrides.
+   - Arcane: local noosphere weirdness/activity level (0–9+).
+   - Tech: common operational tech level (0-9+).
+   - Attention: The current Attention score (starts at 0, possibly higher)
+   - Tags: pick 2–3 that will change rulings (not just vibes).
+   - Nodes: 0-3 exploitable sites, see **Recon** for generating node details.
+
+### 2. **Recon.**
+
+The World Notices. Recon the nodes: poke, map, taste, listen, negotiate, probe the noösphere. Make the roll(s), take position, and Tick Attention when the work is loud, invasive, or obvious.
+
+### 3. **Salvage.**
+
+Make It Useful. Collect salvage to extract raw materials; then Refine them into resources, repairs, rations, charms, parts, leverage, rituals, and secrets. Salvage is never free: Attention ticks on the attempt, and hazards ride in the dust.
+
+### 4. **Secrets.**
+
+Cook / craft / hack / ritual: turn refined resources, recipes, and access into concrete effects (and new problems).
+
+### 5. **Aftermath.**
+
+Roll Hazards if triggered, apply consequences, and resolve cooldown (or escalation). AUpdate the sheet: inventories, resources, new gear, consumed gear, Bonus Dice, burdens/alignments, debts/favors, and any new Tags. If it can be traded, named, or argued about, record it. Areas may degrade, change Tags, or become unsafe—then the company decides: push deeper, lie low, or move on.
+
 ## Key Terms
 
 - **€:** "Cash," a standard currency unit equal to a laborer’s day wages. Named in a nod to ancient Chinese cash.
@@ -352,35 +393,6 @@ Attention rises fast. Cooling down takes longer because the world has memory. Pa
 
 Attention heat and cool down should always reflect the Area’s Tags. A [legal] Area cools through paperwork and patronage. A [holy] Area cools through rites and humility. A [surveilled] Area cools through spoofing and dead zones. A [void] Area cools when you stop looking at it too hard. If the party tries to cool down in a way that clashes with the Tags, reduce the effect or invert it: they don’t cool the place—they irritate it.
 
-## RSS in 5 Stages
-
-### 1. **Stake a Claim.**
-
-When players say “What can we get / make / learn here?” pick an Area, spot 0–3 Nodes and Tag them, then update the Area Profile (Level, Tags, Tick, Attention, Nodes). When action happens, use the lowest time scale that matters (Week / Watch / Turn).
-   - Level: pick 0–17 by “how defended / alien / unstable / deep”.
-   - Tick: Attention increase per "event" (+1/+2/+3) unless fiction overrides.
-   - Arcane: local noosphere weirdness/activity level (0–9+).
-   - Tech: common operational tech level (0-9+).
-   - Attention: The current Attention score (starts at 0, possibly higher)
-   - Tags: pick 2–3 that will change rulings (not just vibes).
-   - Nodes: 0-3 exploitable sites, see **Recon** for generating node details.
-
-### 2. **Recon.**
-
-The World Notices. Recon the nodes: poke, map, taste, listen, negotiate, probe the noösphere. Make the roll(s), take position, and Tick Attention when the work is loud, invasive, or obvious.
-
-### 3. **Salvage.**
-
-Make It Useful. Collect salvage to extract raw materials; then Refine them into resources, repairs, rations, charms, parts, leverage, rituals, and secrets. Salvage is never free: Attention ticks on the attempt, and hazards ride in the dust.
-
-### 4. **Secrets.**
-
-Pay the Costs. Update the sheet: inventories, resources, consumed gear, spent Bonus Dice, burdens/alignments, debts/favors, and any new Tags. If it can be traded, named, or argued about, record it.
-
-### 1. **Aftermath.**
-
-Roll Hazards if triggered, apply consequences, and resolve cooldown (or escalation). Areas can degrade, change Tags, or become unsafe—then the company decides: push deeper, lie low, or move on.
-
 ## Recon (Reconnaissance)
 
 ### Discoveries / Areas
@@ -389,7 +401,7 @@ Roll Hazards if triggered, apply consequences, and resolve cooldown (or escalati
 
 **When you arrive at a Destination:**
 
-You may Look for Discoveries (UVG procedure). On arrival, one PC makes a moderate relevant test (see Discovery Table results) by asking around, reading signs, bribing locals, scanning the noösphere, etc. Rotate who rolls. The first week's roll at a destination is free (€0); after that, you may attempt this at most once per week while you remain at this location, and extra investigations cost €1d6×10.
+You may Look for Discoveries: One PC makes a moderate (12) relevant test by asking around, reading signs, bribing locals, scanning the noösphere, etc. Rotate who rolls. The first week's roll at a destination is free (€0); after that, crews may attempt this at most once per week while they remain at this location, and extra investigations cost €1d6×10.
 
 **Discovery Table**
 
@@ -401,9 +413,11 @@ You may Look for Discoveries (UVG procedure). On arrival, one PC makes a moderat
 | 20–24 | 2 Discoveries. |
 | 25+ | 3 Discoveries. |
 
-**On a Discovery result:** generate a Discovery (choose or create in SDM/UVG fashion). In RSS terms, each Discovery is "one Area" by default. The referee may split a Discovery into 2–3 Areas if it’s clearly sprawling or layered.
+**Misfortune:** Roll for Misfortune. Use the Ultraviolet Grasslands "General Misfortune and Misery" or "Cruelty of the Road" tables when the area or region does not have a Misfortune table defined. The referee may have to adjust the result for the current situation or timescale. [@UVG_2e, _p._ _169_, _p._ _V_]
 
-**Big / sprawling / layered Discovery:** split a Discovery into **2–3 Areas** if it clearly contains distinct zones, factions, or approaches (e.g., “the wreck,” “the reef of broken drones,” “the pilgrim camp”). Each Area should be able to be worked/explored independently. A map Destination should usually top out at around **5 Areas or Discoveries** (unless the referee intentionally “zooms in” and makes the place a mini-region).
+**On a Discovery result:** Generate a Discovery (choose or create in SDM/UVG fashion). In RSS terms, each Discovery is "one Area" by default. The referee may split a Discovery into 2–3 Areas if it’s clearly sprawling or layered.
+
+**Big / sprawling / layered Discovery:** Split a Discovery into **2–3 Areas** if it clearly contains distinct zones, factions, or approaches (e.g., “the wreck,” “the reef of broken drones,” “the pilgrim camp”). Each Area should be able to be worked/explored independently. A map Destination should usually top out at around **5 Areas or Discoveries** (unless the referee intentionally “zooms in” and makes the place a mini-region).
 
 ### Area Nodes
 
@@ -504,7 +518,7 @@ telarus@dreamdeck-enyalios:~$ lares query --dev --async “align cash prices wit
 
 ## Secrets (Cooking, Crafting, Enchantment, Rituals)
 
-Cooking, crafting, enchanting, summoning, and other rituals require time, a recipe, some refined ingredients/resources (usually given as st, stones), and often secrets or other knowledge. These actions may attract Attention (referee call), and are often performed behind wards, at odd hours, and within limial spaces. These precautions may allow the riaulist to avoid Heat or Hazards.
+Cooking, crafting, enchanting, summoning, and other rituals require time, a recipe, some refined ingredients/resources (usually given as st, stones), and often secrets or other knowledge. These actions may attract Attention (referee call), and are often performed behind wards, at odd hours, and within liminal spaces. These precautions may allow the ritualist to avoid Heat or Hazards.
 
 Recipes are ritual items that take 1 sp (soap) of inventory space \- or the noöspheric equivalent. Common recipes yield consumables like dream-tonics, healing stews, memory crystals, Bonus Dice trinkets, etc. This can include:
 

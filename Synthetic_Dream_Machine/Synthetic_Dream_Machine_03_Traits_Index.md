@@ -643,7 +643,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 117
 > - usage:
 >   - scope: path; id: Vampire; index: 1
@@ -864,7 +864,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 16
 > - usage:
 >   - scope: path; id: Wild Mage; index: 4
@@ -952,7 +952,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Wild Mage; index: 2
 
@@ -1040,7 +1040,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 16
 > - usage:
 >   - scope: path; id: Wild Mage; index: 5
@@ -1129,7 +1129,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 135
 > - usage:
 >   - scope: path; id: Revenant; index: 4
@@ -1221,7 +1221,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 145
 > - usage:
 >   - scope: path; id: Vampire; index: 2
@@ -1284,7 +1284,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Commander; index: 0
 
@@ -1639,7 +1639,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 153
 > - usage:
 >   - scope: path; id: Vampire; index: 3
@@ -2007,7 +2007,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 141
 > - usage:
 >   - scope: path; id: Spirit; index: 3
@@ -2565,7 +2565,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 163
 > - usage:
 >   - scope: path; id: Vampire; index: 4
@@ -2627,7 +2627,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 145
 > - usage:
 >   - scope: path; id: Revenant; index: 1
@@ -3000,7 +3000,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Revenant; index: 6
 
@@ -3450,7 +3450,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Vampire; index: 6
 
@@ -3743,7 +3743,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 145
 > - usage:
 >   - scope: path; id: Revenant; index: 2
@@ -3953,7 +3953,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 141
 > - usage:
 >   - scope: path; id: Spirit; index: 4
@@ -4012,7 +4012,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 163
 > - usage:
 >   - scope: path; id: Vampire; index: 5
@@ -4157,7 +4157,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Wild Mage; index: 1
 
@@ -4247,7 +4247,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 149
 > - usage:
 >   - scope: path; id: Spirit; index: 5
@@ -4308,7 +4308,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 162
 > - usage:
 >   - scope: path; id: Spirit; index: 1
@@ -4395,7 +4395,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 17
 > - usage:
 >   - scope: path; id: Commander; index: 3
@@ -4582,7 +4582,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Commander; index: 4
 
@@ -4668,7 +4668,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 119
 > - usage:
 >   - scope: path; id: Revenant; index: 5
@@ -4700,7 +4700,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 16
 > - usage:
 >   - scope: path; id: Wild Mage; index: 6
@@ -4816,7 +4816,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Revenant; index: 0
 
@@ -5189,7 +5189,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 162
 > - usage:
 >   - scope: path; id: Commander; index: 2
@@ -5251,7 +5251,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Commander; index: 5
 
@@ -5610,7 +5610,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Spirit; index: 0
 
@@ -5783,7 +5783,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 141
 > - usage:
 >   - scope: path; id: Spirit; index: 2
@@ -5938,7 +5938,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Commander; index: 6
 
@@ -5967,7 +5967,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 162
 > - usage:
 >   - scope: path; id: Commander; index: 1
@@ -6418,7 +6418,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 139
 > - usage:
 >   - scope: path; id: Vampire; index: 0
@@ -6541,7 +6541,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 145
 > - usage:
 >   - scope: path; id: Revenant; index: 3
@@ -6604,7 +6604,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Spirit; index: 6
 
@@ -6696,7 +6696,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Wild Mage; index: 0
 
@@ -6819,7 +6819,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_03_FTLS_Paths; page: TBD
+>   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 > - usage:
 >   - scope: path; id: Wild Mage; index: 3
 
