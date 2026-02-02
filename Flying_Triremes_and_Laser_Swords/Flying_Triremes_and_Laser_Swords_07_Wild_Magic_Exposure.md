@@ -45,7 +45,7 @@ Then, choose one of the following resolution tables to generate an effect—
 | 6 | Chain surge: roll 1d3 results from Moderate table, all occur. |
 | 7 | Void vortex: 20 ’ radius pulls creatures to centre. Save, failure: moved/crushed, dealing 2d6 Life per round for 3 rounds. |
 | 8 | Time fracture: everyone in 60 ’ loses 1 minute of memory; reroll initiative. Characters who have already acted may not act again, but do not realize why. |
-| 9 | Anti‑Alignment magic field 30 ’ radius for 1d4 rounds (local Arcane rating is a penalty, adding to power prices). |
+| 9 | Anti‑magic field 30 ’ radius for 1d4 rounds (local Arcane rating is a penalty, adding to all power life/mana prices). |
 | 10 | Feedback Overload: caster’s next spell casts at +3 power price and ignores resistance/save. Then Corruption/Wild Magic exposure test. |
 | 11 | Drain: caster’s Life set to 1; their daemon regains 2d6 Hero Dice & makes a Danger Roll. |
 | 12 | All unNamed iron in 60 ’ oxidizes to dust instantly. No worked iron? Roll another Wild Severity test for an adjacent 60’ area (roll 1d6 for direction 1 = towards the nearest higher Flux scored location). |
@@ -81,7 +81,7 @@ Then, choose one of the following resolution tables to generate an effect—
 | 17 | Phantom noospheric marketplace: illusory stallholders appear, bartering useless trinkets for secrets; lasts 10 minutes. |
 | 18 | Roll 1d4 times on the Mild/Weird exposure table and apply all effects. |
 | 19 | Timeslip: caster is stunned for one round (astral glitch provides full cover) but acts twice on their next turn. |
-| 20 | A dream tear opens to the local source code —hostile astral spirit (L3) drifts through; referee rolls reaction with the local Arcane as a bonus or penalty. Are you misaligned? |
+| 20 | A dream tear opens to the local source code—astral spirit (L3) drifts through; referee rolls reaction with the local Arcane as a bonus or penalty (referee decides). Hostile? |
 
 ### Mild/Weird Wild Magic Exposure
 

@@ -268,12 +268,37 @@ root:
 
   campaigns_directory_link: &campaigns_directory_link
     label: "Directory"
-    href: "/Vaults/Campaigns/"
+    href: "/Campaigns/"
 
-  campaigns_vaults: &campaigns_vaults []
+  campaigns_neothracian_link: &campaigns_neothracian_link
+    label: "Neo-Thracian Nexus"
+    href: "/Campaigns/Neo-Thracian_Nexus/"
+
+  campaigns_newdelos_link: &campaigns_newdelos_link
+    label: "New Delos Nexus"
+    href: "/Campaigns/New_Delos_Nexus/"
+
+  campaigns_neothracian_caverns_link: &campaigns_neothracian_caverns_link
+    label: "The Caverns of Thracia"
+    href: "/Campaigns/Neo-Thracian_Nexus/The_Caverns_of_Thracia/"
+    download: "/Campaigns/Neo-Thracian Nexus/The Caverns of Thracia/The_Caverns_of_Thracia.md"
+
+  campaigns_neothracian_session_link: &campaigns_neothracian_session_link
+    label: "Session Zero — Caverns of Thracia"
+    href: "/Campaigns/Neo-Thracian_Nexus/The_Caverns_of_Thracia/Session_Zero/"
+    download: "/Campaigns/Neo-Thracian Nexus/The Caverns of Thracia/Session_Zero.md"
+
+  campaigns_vaults: &campaigns_vaults
+    - *campaigns_directory_link
+    - *campaigns_neothracian_link
+    - *campaigns_newdelos_link
 
   campaigns_header_links: &campaigns_header_links
     - *campaigns_directory_link
+    - *campaigns_neothracian_link
+    - *campaigns_neothracian_caverns_link
+    - *campaigns_neothracian_session_link
+    - *campaigns_newdelos_link
 
   reference: &reference_links
     - label: "Third-Party License"
@@ -392,6 +417,8 @@ context_map:
     context: sdm
   - prefix: "/Vaults/FTLS/"
     context: ftls
+  - prefix: "/Campaigns/"
+    context: campaigns
   - prefix: "/Vaults/Campaigns/"
     context: campaigns
   - prefix: "/Vaults/"

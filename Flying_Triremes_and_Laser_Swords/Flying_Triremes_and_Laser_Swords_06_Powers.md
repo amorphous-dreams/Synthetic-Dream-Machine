@@ -466,7 +466,7 @@ Power Level (P): 6
 Range (R): Self; effects extend to nearby nodes/glyphs in the local Nexus  
 Target (T): Self; plus up to (Level) nearby allies for linked actions  
 Duration (D): One scene, or until ended as noted below  
-Overcharge (Ox): x2 — ally limit becomes (Level \+ Thought); Backroom Access distance becomes (Level \+ Charisma) × 40 yd. x4 — you may use Backroom Access once without ending the Dream state; Mind-Surf can jump through two connected nodes in a chain.
+Overcharge (Ox): *x2* — ally limit becomes (Level \+ Thought); Backroom Access distance becomes (Level \+ Charisma) × 40 yd. *x4* — you may use Backroom Access once without ending the Dream state; Mind-Surf can jump through two connected nodes in a chain.
 
 Tags: \[anchored\] (to the local node/glyph topology), \[concentration\].
 
