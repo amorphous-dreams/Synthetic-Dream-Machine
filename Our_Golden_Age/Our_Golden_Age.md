@@ -1233,11 +1233,16 @@ Few moderns now retain the access blessing to travel in suspension, so the inter
 
 _Unlock Medical Buildertech, Sacred Pod Charm_
 
-**P:** 2 **R:** nearby
-
+**P:** 2 **R:** nearby  
 **T:** auld meditech **D:** hours
 
-> Code daemons in your blood speak to the oldtech and announce you as a hereditary "duck mountain prominence". Control healing machinery without the risk of mutations or degradation. Access suspension capsules. Use cold storage as a one-way time machine. **Overcharge:** the healing oldtech deals damage instead. **Note:** you can only store this power in human tissue—in yourself (as a trait) or in a suitable anchor, such as the mummified hand of Dr. N. A. Vec.
+> Code daemons in your blood speak to the oldtech and announce you as a hereditary "duck mountain prominence". Control healing machinery without the risk of mutations or degradation. Access suspension capsules. Use cold storage as a one-way time machine.
+> 
+> _Overcharge:_ the healing oldtech deals damage instead.
+> 
+> **Note:** you can only store this power in human tissue—in yourself (as a trait) or in a suitable anchor, such as the mummified hand of Dr. N. A. Vec.
+
+#### Cargospace
 
 | d6 | 1–4 Cargospace (Common) | 5–6 Cargospace (Rare) | αΩ Cargospace (Awake) |
 |---:|:---|:---|:---|
@@ -1501,29 +1506,29 @@ Few humans in this golden age have the patience, opportunity, or capacity to lea
 
 Characters with natural or native fluency may (with practice) acquire the following powers as innate traits:
 
-### Hero's Goldenmouth
+#### Hero's Goldenmouth
 
-Honeyed Words of the Trustworthy One
+_Honeyed Words of the Trustworthy One_
 
-**P:** 1 **R:** a crowded room or small courtyard
-
+**P:** 1 **R:** a crowded room or small courtyard  
 **T:** upstanding humans of your putative culture **D:** until reality forcefully intervenes (then save)
 
 > Pour yourself into your words, dramatic gestures, suggestions, and compelling straw men. After a few minutes of speechifying, spend 1 point of charisma, aura, or thought to charm your listeners. They find you persuasive, trustworthy, and likable enough to believe your 'truths' and give your ideas a shot. This is no mental domination, you are simply showing that your plans are in their best interest.
 > 
 > _Overcharge:_ charm through a telemagical medium such as vidy crystals or comm portals.
 
-### Adulation Rejuvenation
+#### Adulation Rejuvenation
 
-Polyempathic Vampirism
+_Polyempathic Vampirism_
 
-**P:** 2 **R:** an arena
-
+**P:** 2 **R:** an arena  
 **T:** a human mob that likes you **D:** several minutes at least
 
 > Tell a crowd what they want to hear and feed on their adulation, then save. Success: gain 1d3 temporary points of charisma and 1d4-2 life. Fail: regain 1 charisma.
 > 
-> _Overcharge:_ gain 1d3 temporary points of charisma. _Limit:_ works once per crowd, temporary charisma points cannot exceed base charisma score.
+> _Overcharge:_ Gain 1d3 temporary points of charisma. 
+> 
+> _Limit:_ Works once per crowd, temporary charisma points cannot exceed base charisma score.
 
 ### The Form of Speech
 
@@ -6536,12 +6541,11 @@ Now their voices fade, yet necrotechs can still reach across that gnawing silenc
 
 A cycle of communion powers is used to access these lost voices, their quality scaling with power level:
 
-### Whispers from the Void
+#### Whispers from the Void
 
 _Transmortal Communion_
 
-**P:** 1–8 (variable) **R:** touch
-
+**P:** 1–8 (variable) **R:** touch  
 **T:** a dead relic **D:** a few minutes (see tiers)
 
 > You press the relic to your skull and let your mind drift across the void-sea of nonexistence. Your eyes roll, your teeth gnash, strange post-mortal tongues spill from your lips, as you hunt the threads of consciousness remaining in the All-Mind. Then you bite and hold and drag the ghostly psyche out into the light once more.
@@ -6600,27 +6604,26 @@ Who was this worker before they became a worker? In what shape is this citizen d
 
 <a id="page_0167"></a>
 
-### Reuse the Shell
+#### Reuse the Shell
 
 _Post-Mortal Resources Onboarding_
 
-**P:** 1–12 (variable) **R:** breath
-
+**P:** 1–12 (variable) **R:** breath  
 **T:** an articulated shell **D:** while imbued
 
 > You blow life force, spirit, _ka_, into a prepared shell: a cleaned skeleton, a preserved corpse, a synthetic body, or other suitable physical form; imbuing it with a post-mortal vitality, creating a mindless servant that will perform its task indefinitely (or until it erodes to dust).
 >
 > It animates within a few hours. New instructions should preferably be properly encoded, to avoid errors.
 >
-> **1 Failed Shell:** Moves, but won't follow commands, a useless **müßiggänger** (L0) or idle-ambler.
+> **P: 1 Failed Shell:** Moves, but won't follow commands, a useless **müßiggänger** (L0) or idle-ambler.
 >
-> **2 Basic Shell:** The shell awakens into a shambling parody of life, a **langsamgänger** (L1) or slow-goer.
+> **P: 2 Basic Shell:** The shell awakens into a shambling parody of life, a **langsamgänger** (L1) or slow-goer.
 >
-> **5 Hope Shell:** Mortirobotic forces boost the shell's power, creating a post-mortal capable of carrying greater loads and leaping over obstacles—a **hüpfgänger** (L2) or hop-lurcher.
+> **P: 5 Hope Shell:** Mortirobotic forces boost the shell's power, creating a post-mortal capable of carrying greater loads and leaping over obstacles—a **hüpfgänger** (L2) or hop-lurcher.
 >
-> **8 Premium Shell:** Using a properly marinated, pickled, or mummified shell, scented with rare aromatics, and polished with nacreous oils, lets you craft a **lebendgänger** (L3, rosy) or live-walker, a post-mortal shell suitable for human-facing roles.
+> **P: 8 Premium Shell:** Using a properly marinated, pickled, or mummified shell, scented with rare aromatics, and polished with nacreous oils, lets you craft a **lebendgänger** (L3, rosy) or live-walker, a post-mortal shell suitable for human-facing roles.
 >
-> **12 Dangerous Shell:** For security purposes, a swiftghoul or **fressgänger** (L4, ravenous) is what you're looking for. This type of shell barely requires instructions; since it requires so much sustenance to function at its usual, heightened metabolic rate, it will attack and devour digestible organic matter unless specifically restrained.
+> **P: 12 Dangerous Shell:** For security purposes, a swiftghoul or **fressgänger** (L4, ravenous) is what you're looking for. This type of shell barely requires instructions; since it requires so much sustenance to function at its usual, heightened metabolic rate, it will attack and devour digestible organic matter unless specifically restrained.
 >
 > _Overcharge:_ You knit an echo of the shell's _ba_ or mind to the instruction _lemma_ stored in its head (usually in an ear or nostril for easy access), giving it a semblance of human intelligence and the ability to act independently. _Dangerous (9+):_ Corruption risk if you spend 9 or more life.
 
@@ -6656,12 +6659,11 @@ Where necrophony deals with accessing the residual _ba_ or minds of the deceased
 
 Some soul-thieves of little repute use little understood ancient powers, but these hardly generate enough reliable spiritual energy to maintain a power grid.
 
-### Siphon the Soul
+#### Siphon the Soul
 
 _Spiritual Energy Extraction_
 
-**P:** L (variable) **R:** touch
-
+**P:** L (variable) **R:** touch  
 **T:** a creature with a soul **D:** instant
 
 > First, prepare a battery, bottle, or other soul storage device. Second, ink the required metaphysical equations on your designated hand. Finally, strike your chosen self-offering, who is willing to give of their spirit. The price of the power is equal to the target creature's level. You and the target both roll saves, but you add your level to your save. Oh, wait, the target was a willing self-offering, right, so they're choosing to fail their save, right?
@@ -6673,8 +6675,9 @@ _Spiritual Energy Extraction_
 > | Pass | Fail | They lose one level and life equal to your level. You gain temporary life equal to your level, ready to store in that device. |
 > | Pass | Pass | They lose life equal to your level. |
 >
-> _Overcharge:_ You withdraw double the visceral energy, that is, the amounts of life lost or gained are doubled. _Dangerous:_ This spell definitely risks corruption.
-
+> _Overcharge:_ You withdraw double the visceral energy, that is, the amounts of life lost or gained are doubled.
+> 
+> _Dangerous:_ This spell definitely risks corruption.
 
 <a id="page_0169"></a>
 

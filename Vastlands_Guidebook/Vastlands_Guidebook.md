@@ -4565,10 +4565,10 @@ You hold in your hand a mintTM condition artifact from the Long Long Ago, a wond
 A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-Sin ZX. Also called the Prayer of the Five Permitted colors and the Ritual of the Unmentioned Hue. Spun swiftly, these powers look like white magic.
 
 **Red Mist**
+
 *Tactical Aggression Augment*
 
-**P:** 1 **R:** short, ~20m
-
+**P:** 1 **R:** short, ~20m  
 **T:** one creature **D:** a few minutes
 
 > Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save). It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
@@ -4576,10 +4576,10 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 > _Overcharge:_ Affect a number of creatures equal to your level + 1.
 
 **Orange Dream**
+
 *Forgotten Spider’s Labors*
 
-**P:** 1 **R:** whisper
-
+**P:** 1 **R:** whisper  
 **T:** one creature **D:** an hour
 
 > A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear immediately dangerous or risky.
@@ -4587,10 +4587,10 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 > _Overcharge:_ Even a hostile or violent creature listens, provided you can whisper in its ear.
 
 **Yellow Cloud**
+
 *Sands of Lost Times*
 
-**P:** 1 **R:** nearby
-
+**P:** 1 **R:** nearby  
 **T:** a 9m cube **D:** a few minutes
 
 > Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust irritates the lungs of air-breathers. After a few minutes, it blows away.
@@ -4598,10 +4598,10 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 > _Overcharge:_ Summon into shimmering immobility a wall of dust measuring 200 cubic meters.
 
 **Green Haven**
+
 *Arbor Sanctuary*
 
-**P:** 1 **R:** nearby
-
+**P:** 1 **R:** nearby  
 **T:** a 7m diameter sphere **D:** a night or a day
 
 > Convince shrubberies, grasses, brambles, and other plants to form a hedge domehome, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable while in the shrub wall. After a night or day, the plants return to their ordinary ways.
@@ -4609,10 +4609,10 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 > _Overcharge:_ Sculpt a thorny hedge wall measuring 200 meters square and 1 meter thick. Its thorns cut anyone pushing through like daggers (1d4 damage).
 
 **Blue Lotus**
+
 *Maximum Somatic Contentment*
 
-**P:** 1 **R:** short, ~5m
-
+**P:** 1 **R:** short, ~5m  
 **T:** one creature **D:** an hour
 
 > Soma’s bliss brings contentment to the target (save).
@@ -4624,10 +4624,10 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 > _Overcharge:_ Affect a number of creatures equal to your level + 1.
 
 **Purple Memories**
+
 *Comic Emotional Display*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** a creature **D:** several minutes
 
 > The target becomes susceptible to influence. The barest word or sensation triggers vivid memories, thoughts, and emotions. How could anyone keep thoughts or facts a secret in this state? Or resist a fine, rousing song? _Overcharge:_ Affect a number of creatures equal to twice your level.
@@ -4641,10 +4641,10 @@ A traditional projectile combat practiced by the gun monks of the Crater School.
 The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) of level 1 or higher. You can use a single anchor weapon for all the album powers. Skill with projectile weapons carries over to the Viridian powers.
 
 **Mother of Bullets**
+
 *Blood Made Lead*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** anchor weapon **D:** instant
 
 > Reloads your weapon as a free action, turning life force into semi-real projectiles.
@@ -4652,10 +4652,10 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 > _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
 
 **Dancing In The Hail**
+
 *Dodgebullet*
 
-**P:** 1 **R:** self
-
+**P:** 1 **R:** self  
 **T:** self **D:** one round
 
 > Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage).
@@ -4663,10 +4663,10 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 > _Overcharge:_ Any ranged attacks that hit deal half damage.
 
 **Ring of Lead**
+
 *Rapid Metal Spin Cycle*
 
-**P:** 1 **R:** adjacent
-
+**P:** 1 **R:** adjacent  
 **T:** all creatures **D:** one action
 
 > Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
@@ -4674,19 +4674,19 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 > _Overcharge:_ No attack roll required. *subject to how much ammo the anchor weapon holds.
 
 **Eyes of the Arrow**
+
 *Panoptic Projectile*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** one projectile **D:** a minute or so
 
 > Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor). _Overcharge:_ The projectile maneuvers in flight with the agility of a dove.
 
 **Counterfire**
+
 *Panoptic Projectile*
 
-**P:** 1 **R:** a middling hemisphere, ~12m
-
+**P:** 1 **R:** a middling hemisphere, ~12m  
 **T:** one attack **D:** interrupt
 
 > Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll.
@@ -4694,10 +4694,10 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 > _Overcharge:_ The attacker must save or be disarmed.
 
 **Depleted Heavy Metal Rain**
+
 *Bigger Bang*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** anchor weapon **D:** a few minutes
 
 > Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
@@ -4713,10 +4713,10 @@ A compilation of folk road magic by the ethnologist and hedge wizard Fritzu Na (
 No album makes the crooked road straighter.
 
 **Dampen Mass**
+
 *Nosigoro Logistical Augment*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** 1 sack **D:** 1 day
 
 > A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
@@ -4724,10 +4724,10 @@ No album makes the crooked road straighter.
 > _Overcharge:_ The mass is halved again. Alternately, it affects an object twice as large, or lasts a week instead.
 
 **Better Pastures**
+
 *Darehodo Patch Choice*
 
-**P:** 1 **R:** self
-
+**P:** 1 **R:** self  
 **T:** self **D:** 1 hour
 
 > Meditate at a crossroads for an hour, observe the flow of its energies, the flight of birds, the waft of milkweed seeds. Ask one objective yes / no question of the crossroads, and it shall answer. Will this path reach water within 50 miles? Is there green grass along that path within 20 km?
@@ -4735,10 +4735,10 @@ No album makes the crooked road straighter.
 > _Overcharge:_ Ask a second question or clarify the first.
 
 **Wing And Prayer**
+
 *Dirty Fixing*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** vehicle or steed **D:** 1 day
 
 > Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a burden for a day, but then the damage is worse.
@@ -4746,10 +4746,10 @@ No album makes the crooked road straighter.
 > _Overcharge:_ The fix lasts a week; but the damage is even worse after.
 
 **Roadfinder**
+
 *Blacktop Sniffer*
 
-**P:** 1 **R:** a day’s march
-
+**P:** 1 **R:** a day’s march  
 **T:** self **D:** 1 hour
 
 > Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
@@ -4757,10 +4757,10 @@ No album makes the crooked road straighter.
 > _Overcharge:_ The detection range is doubled, or the sense lasts a day.
 
 **Highway Cruiser**
+
 *Foolself Driving*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** vehicle or steed **D:** 1 day
 
 > Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to receive voice commands.
@@ -4768,10 +4768,10 @@ No album makes the crooked road straighter.
 > _Overcharge:_ The daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
 
 **Roadmaker**
+
 *Stradograd’s Engine of Civility*
 
-**P:** 6 **R:** one metric mile
-
+**P:** 6 **R:** one metric mile  
 **T:** rock and soil **D:** 1 day
 
 > By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month.
@@ -4785,10 +4785,10 @@ No album makes the crooked road straighter.
 Found on tablets pried from the petrified hand bones of the lich-vizier Akaula after the slow explosion dissipated and the ruins of the Hell of a Hundred Doors were demolished by the Army of Reason. Some argue that these tablets prove Akaula was working to seal the gates of the bad gods, not summon them. Nonsense. The official histories are true.
 
 **Suspended Insight**
+
 *Revelations of Pain*
 
-**P:** 1 **R:** self
-
+**P:** 1 **R:** self  
 **T:** thorn tree **D:** 1 hour
 
 > The wizard hangs upon a tree of thorns and gains +1 to an ability score for the rest of the day and a cryptic answer to a single question asked of the uncaring void. The answer has a 1-in-6 chance of being immediately helpful.
@@ -4796,10 +4796,10 @@ Found on tablets pried from the petrified hand bones of the lich-vizier Akaula a
 > _Overcharge:_ Gains +2 to an ability score and the answer has a 1-in-4 chance of being immediately helpful.
 
 **Thornstone Obelisk**
+
 *Razorblade Tree*
 
-**P:** 3 **R:** short (10m or so)
-
+**P:** 3 **R:** short (10m or so)  
 **T:** planted landcoral seed **D:** permanent
 
 > The petromancer spills their lifeblood, forcing the landcoral seed into sudden, explosive growth. A 5–8 meter tall limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket of razor branches suffers 1d4 damage. The speed of growth kills the landcoral.
@@ -4807,10 +4807,10 @@ Found on tablets pried from the petrified hand bones of the lich-vizier Akaula a
 > _Overcharge:_ the growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with caltrop-like landcoral shards.
 
 **Invoke Ub Dragon**
+
 *Local Reality Error Spark*
 
-**P:** 7 **R:** here
-
+**P:** 7 **R:** here  
 **T:** large local area of disturbed reality **D:** permanent
 
 > The summoner invokes the Ub code and condenses accumulated magitechnical disturbance into an eater. Its power depends on the level of disturbance (decided by the referee or a d10 roll). After the eater emerges, the local disturbance reduces one step; stuckforces loosen, energy snarls fade, radiation ghosts dim.
@@ -4826,10 +4826,10 @@ Found on tablets pried from the petrified hand bones of the lich-vizier Akaula a
 > _Overcharge:_ You have temporary control of the eater.
 
 **Eyes of Akaula**
+
 *Visions of the Dear Departed*
 
-**P:** 8 **R:** medium, ~50m
-
+**P:** 8 **R:** medium, ~50m  
 **T:** self **D:** 1 day
 
 > The seeker's eyes glow pale chartreuse and can see things invisible, hidden, departed, and dead.
@@ -4837,25 +4837,27 @@ Found on tablets pried from the petrified hand bones of the lich-vizier Akaula a
 > _Overcharge:_ The seeker gains a gaze attack that paralyzes the aforementioned things for 1d6 rounds (save).
 
 **Stoyevod’s Irreducible Crystallization of the Ego Complex**
+
 *Restoration of the Priceless One*
 
-**P:** 17 **R:** here
-
+**P:** 17 **R:** here  
 **T:** one dead hero **D:** permanent
 
 > This deeply immoral ritual tears a departed psyche from the All-Mind's cosmic consciousness. It steals the forgiven soul from the All-Fire of Creation-PreservationDestruction. It undoes the body's decay into the All Green of Life-Death-Rebirth.
 >
 > In a rapturous whirlwind, the hero is recreated from sacred fire and holy breath and perfect soil. They make their relife roll with advantage. All this ritual requires is the loving sacrifice of another human, and one more for each level of the hero.
 >
-> _Overcharge:_ The hero adds +20 to their relife roll or increases one of their ability scores by 1. _Dangerous:_ The sacrificial specialist will probably be corrupted by this spell.
+> _Overcharge:_ The hero adds +20 to their relife roll or increases one of their ability scores by 1.
+> 
+> _Dangerous:_ The sacrificial specialist will probably be corrupted by this spell.
 >
 > _In the Year of the Lambent Fox the Chosen One fell before her time and the people of the Milkweed faced certain doom. Stoyevod the Practitioner sacrificed 9 of his clone brothers and sisters to return the Chosen One and resume the Good and Proper Path of the Milkweed._
 
 **Akaula's Sacrificial Hero**
+
 *Purification of the Mouth of Hell*
 
-**P:** 21 **R:** touch
-
+**P:** 21 **R:** touch  
 **T:** chosen hero, large area **D:** permanent
 
 > The purifier uses the six sigils of binding to mark a hero to the slaughter. The hero loses 1 life per round. When they run out of life, their mind and soul erupt in a blaze of the Maker's fire. The fire banishes all daemons and aliens of double the hero's level or less in a 100 meter radius and shuts all dimensional and void gates for a number of years equal to the hero's level.
@@ -4869,10 +4871,10 @@ Found on tablets pried from the petrified hand bones of the lich-vizier Akaula a
 Powers implied in documents salvaged from the ends of existence. Fine scholars employed by the Institute of Industrial Accountability and Civilian Recycling (Purple Branch) have worked hard to recreate these powers for a modern audience. Not so much an album, as a box of incomprehensible odds and terrible ends.
 
 **Can Trip**
+
 *Two Left Feet Curse, Clumsy Cat-astrophe*
 
-**P:** 1 **R:** a few meters
-
+**P:** 1 **R:** a few meters  
 **T:** someone who can hear you **D:** instant
 
 > You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
@@ -4880,10 +4882,10 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 > _Overcharge:_ There’s no save. The target is tripping.
 
 **Tragic Missile**
+
 *Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator*
 
-**P:** 2 **R:** middling, ~30–50m
-
+**P:** 2 **R:** middling, ~30–50m  
 **T:** anything with a mind and soul **D:** instant
 
 > You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
@@ -4891,10 +4893,10 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 > _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
 **Hlod Person**
+
 *Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction*
 
-**P:** 4 **R:** close
-
+**P:** 4 **R:** close  
 **T:** a person **D:** 1 hour
 
 > Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff, unmoving, receptive to carpentry.
@@ -4902,10 +4904,10 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 > _Overcharge:_ The change is permanent.
 
 **Pyreball**
+
 *Instant Incendiary, Damora’s Placid Inferno*
 
-**P:** 6 **R:** touch, or as thrown
-
+**P:** 6 **R:** touch, or as thrown  
 **T:** 10m diameter sphere **D:** a day, then instant
 
 > You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6 damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
@@ -4913,10 +4915,10 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 > _Overcharge:_ The ball deals 10d6 damage, or its fires keep for a month.
 
 **Nihil Est!**
+
 *Life’s End Made Present, Hadi’s Self-Immolation Binding*
 
-**P:** 8 **R:** touch
-
+**P:** 8 **R:** touch  
 **T:** a sentient creature **D:** 1 year
 
 > Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
@@ -4926,10 +4928,10 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 > _Dangerous:_ No matter how powerful you are.
 
 **Big Wish**
+
 *Keep on Turning, Supplication of the Perverse Demiurge*
 
-**P:** 18 **R:** self
-
+**P:** 18 **R:** self  
 **T:** demiurge **D:** a day, then permanent.
 
 > You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge does its level best to misunderstand you, probably because it is an alien from out of time and space.
@@ -4947,17 +4949,17 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 <a id="page_0113"></a>
 
 **Access Noötree**
+
 *Localized Spirit Surf*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** one thinking tree **D:** 10 minutes
 
 > You unplug from your body and send your spirit-mind ( _ka-ba_ ) into the synthetic dreamspace of a local server tree. You can access the tree’s short-term memories, divine announcements, algorithmically generated human-interest novelties, and locally hosted offshoot dream realities.
 >
 > _Overcharge:_ Gain root-level access to the tree’s source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms. 
 >
-> Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert functioning guardians (L2d6, electrangelic) to your interventions.
+> **Note:** Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert functioning guardians (L2d6, electrangelic) to your interventions.
 
 <!-- Begin: Vastlands_Guidebook_06_Other_Paths_114-159 -->
 
@@ -6398,10 +6400,10 @@ You can carry no items because you are an item. Every weapon gains the power _Ob
 
 **Objective Telekinesis**
 
+
 _The Bending Fork, Made's Invisible Hand_
 
-**P:** 1 **R:** nearby
-
+**P:** 1 **R:** nearby  
 **T:** object **D:** a few minutes
 
 > Fragments of your form corrode, sublimate, and become an ectoplasmic hand with which you can caress, hold, crush, and discard. It is as strong as a weak human. Punching, it deals 1d3 damage.
@@ -6410,10 +6412,10 @@ _The Bending Fork, Made's Invisible Hand_
 
 **Suspended in the Light**
 
+
 _Luminous Grasp, Hard Light Hold_
 
-**P:** 1 **R:** nearby
-
+**P:** 1 **R:** nearby  
 **T:** creature or object **D:** instant
 
 > You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.

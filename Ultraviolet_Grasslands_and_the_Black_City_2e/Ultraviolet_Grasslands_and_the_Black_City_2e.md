@@ -7450,27 +7450,32 @@ These spells leave a lot of precise definitions up to you. They are listed with 
 
 _Inner Beauty Manifest, Mind Over Body_
 
-**R:** touch **T:** self **D:** 1 hour
+**P:** 2 **R:** touch  
+**T:** self **D:** 1 hour
 
 The wizard’s mind resculpts their features. They can resemble a specific person, provided the wizard has studied them up close, or a general type. No abilities are altered.
 
-Alternatively, the wizard can choose to gain gills, low-light vision, or another minor natural ability at the GM’s discretion. **Overcharge:** the effects are permanent.
+Alternatively, the wizard can choose to gain gills, low-light vision, or another minor natural ability at the GM’s discretion.
+
+_Overcharge:_ the effects are permanent.
 
 ### Animate Corpse
 
 _Artificial Post-Mortality, Wake the Shell_
 
-**R:** touch **T:** corpse **D:** permanent
+**P:** 2 **R:** touch  
+**T:** corpse **D:** permanent
 
 In 1 hour, a target reasonably intact human-sized corpse rises as a post-mortal zombie (p.209). The corpse is animated by a soul fragment and shreds of residual personality. It obeys simple orders given by the wizard, but must be reminded every 6 hours (or more frequently in a chaotic environment). A wizard can control a number of post-mortals equal to their Level without risk of rebellion.
 
-**Overcharge:** the corpse awakens instantly. Alternate: awakens as a higher-level or specialized post-mortal.
+_Overcharge:_ the corpse awakens instantly. Alternate: awakens as a higher-level or specialized post-mortal.
 
 ### Burdenbeast Modification
 
 _Art of Carriage, Usha’s Useful Mutation_
 
-**R:** touch **T:** creature **D:** permanent
+**P:** 2 **R:** touch  
+**T:** creature **D:** permanent
 
 The wizard modifies a human-sized or larger creature to carry an additional sack of goods. The ritual requires 6 hours and a sack of beast egg masses (€500). Unwilling targets get a save.
 
@@ -7478,25 +7483,30 @@ The wizard modifies a human-sized or larger creature to carry an additional sack
 
 _Harsh Awakening, Reality’s Cold Knife_
 
-**R:** 10m **T:** creature **D:** 0
+**P:** 2 **R:** 10m  
+**T:** creature **D:** 0
 
 The wizard uses a telechronic wave to purify the target’s brain of any impurities -- drugs or mind-altering spells. The target loses 1d6 Life and their recent memories become fuzzy. Unwilling targets get a save.
 
-**Overcharge:** The target loses 2d6 Life and forgets what happened in the last hour. Unwilling targets still save.
+_Overcharge:_ The target loses 2d6 Life and forgets what happened in the last hour. Unwilling targets still save.
 
 ### Dissolution and Resolution of the Spirit
 
 _Fey Slumber, Hard Reboot_
 
-**R:** touch **T:** a willing creature **D:** 1 day
+**P:** 2 **R:** touch  
+**T:** a willing creature **D:** 1 day
 
-The wizard dissolves a creature’s spirit, leaving an inert shell or pseudocorpse. After 1 day, the spirit "reboots", wiped clean of spiritual parasites, daemons, code-worms, or mind-affecting spells. **Overcharge:** The target is inert for a week. The reboot also repairs physical injuries and ailments.
+The wizard dissolves a creature’s spirit, leaving an inert shell or pseudocorpse. After 1 day, the spirit "reboots", wiped clean of spiritual parasites, daemons, code-worms, or mind-affecting spells.
+
+_Overcharge:_ The target is inert for a week. The reboot also repairs physical injuries and ailments.
 
 ### Dryland Sculpture
 
 _Utilitarian Livingstone Bungalow, Rite of Coral Form_
 
-**R:** touch **T:** 5m diameter area **D:** permanent
+**P:** 2 **R:** touch  
+**T:** 5m diameter area **D:** permanent
 
 Over 6 hours the wizard coaxes a livingstone brick (1 stone) to grow into a dryland coral form of any shape they want within the target area. Hemispheres are popular. Don’t forget a door.
 
@@ -7504,29 +7514,34 @@ Over 6 hours the wizard coaxes a livingstone brick (1 stone) to grow into a dryl
 
 _The Untiming Charm, Zundan’s Awakening of Aways_
 
-**R:** 3m **T:** object (tool or machine) **D:** 0
+**P:** 2 **R:** 3m  
+**T:** object (tool or machine) **D:** 0
 
 The wizard draws a 1 meter diameter chronomantic circle around the target object. When the drawing is complete, a flash of para-entropy restores the object to perfect function and decays everything else within the circle. The ritual takes 15 minutes.
 
-**Overcharge:** allows a 10 meter diameter circle.
+_Overcharge:_ allows a 10 meter diameter circle.
 
 ### Floating Disc
 
 _Shield of the Righteous, Mage’s Mule_
 
-**R:** 30m **T:** point **D:** 1 hour
+**P:** 2 **R:** 30m  
+**T:** point **D:** 1 hour
 
 The wizard creates a concave disc of stuckforce 1m in diameter. The disc hovers, can be pushed at a walking pace, and can be tilted to create an almost impenetrable barrier. The disc vanishes if it is more than 30m from the wizard.
 
-**Overcharge:** the disc can be up to 5m in diameter and moves at the wizard’s spoken command.
+_Overcharge:_ the disc can be up to 5m in diameter and moves at the wizard’s spoken command.
 
 ### Gem Bomb
 
 _Jeweler’s Fireball, Uzud’s Exploding Flower of Stone_
 
-**R:** touch **T:** gem **D:** 0
+**P:** 2 **R:** touch  
+**T:** gem **D:** 0
 
-The wizard carves an explosive forcefield into a gem worth at least €20. It explodes on impact, dealing 2d6 damage to all nearby. **Overcharge:** it explodes like a Fireball.
+The wizard carves an explosive forcefield into a gem worth at least €20. It explodes on impact, dealing 2d6 damage to all nearby.
+
+_Overcharge:_ it explodes like a Fireball.
 
 198 The Stuff
 
@@ -7536,27 +7551,36 @@ The wizard carves an explosive forcefield into a gem worth at least €20. It ex
 
 _Seka’s Spearcraft, Vorpalize_
 
-**R:** touch **T:** edged weapon **D:** 6 hours
+**P:** 2 **R:** touch  
+**T:** edged weapon **D:** 6 hours
 
-The wizard whispers to a weapon, imbuing it with cunning, lust, and humor. It deals +2 damage and can harm spirits, daemons and other intangibles for the spell’s duration. **Overcharge:** on a critical hit, the target must save or die.
+The wizard whispers to a weapon, imbuing it with cunning, lust, and humor. It deals +2 damage and can harm spirits, daemons and other intangibles for the spell’s duration.
+
+_Overcharge:_ on a critical hit, the target must save or die.
 
 ### Knock / Lock
 
 _Locksmith’s Lament, Seal of Hashoon_
 
-**R:** 10m **T:** lock **D:** permanent
+**P:** 2 **R:** 10m  
+**T:** lock **D:** permanent
 
 The wizard summons a fragment of consciousness into a target lock. Overjoyed, the dimly sentient object burbles at the edges of the wizard’s mind, begging to please. It unlocks or locks itself.
 
-Magical locks save with a bonus equal to their wizard’s Level. **Overcharge:** the door or portal is flung open or sealed, welded, or fused shut.
+Magical locks save with a bonus equal to their wizard’s Level.
+
+_Overcharge:_ the door or portal is flung open or sealed, welded, or fused shut.
 
 ### Linked Portals
 
 _Lesser Astral Voyage, Nilbreg’s Convenient Tunnel_
 
-**R:** touch **T:** area **D:** 30 minutes
+**P:** 2 **R:** touch  
+**T:** area **D:** 30 minutes
 
-The wizard draws two circles of 3 meter radius in the air. The circles are linked by an astral unreality bridge. Anything that enters one hoop exits the other unchanged, but with its vector of motion altered by the hoops’ position. Two hoops positioned above each other let an object fall to terminal velocity. **Overcharge:** the orientation of the portals can be adjusted at will.
+The wizard draws two circles of 3 meter radius in the air. The circles are linked by an astral unreality bridge. Anything that enters one hoop exits the other unchanged, but with its vector of motion altered by the hoops’ position. Two hoops positioned above each other let an object fall to terminal velocity.
+
+_Overcharge:_ the orientation of the portals can be adjusted at will.
 
 The portals can also be thrown up to 10 meters.
 
@@ -7564,49 +7588,63 @@ The portals can also be thrown up to 10 meters.
 
 _Abned’s Bottled Ba, Crystalized Mind_
 
-**R:** touch **T:** creature **D:** permanent
+**P:** 2 **R:** touch  
+**T:** creature **D:** permanent
 
 The wizard transfers an unconscious creature’s personality into a delicate crystal worth €1,000. The procedure erases the original personality. The process takes 30 minutes.
 
-**Overcharge:** the creature’s personality is copied, not erased. There is a 50% chance of catastrophic ego conflict or moral partitioning.
+_Overcharge:_ the creature’s personality is copied, not erased. There is a 50% chance of catastrophic ego conflict or moral partitioning.
 
 ### Process Food
 
 _Generate Pink Slime, Maker’s Manna_
 
-**R:** touch **T:** raw matter **D:** permanent
+**P:** 2 **R:** touch  
+**T:** raw matter **D:** permanent
 
-After a 1 hour ritual, the wizard turns a sack of inedible organic material into nutritious food (1 sack of supplies). Causes magic cancer if consumed for a prolonged period. **Overcharge:** creates food from inorganic matter.
+After a 1 hour ritual, the wizard turns a sack of inedible organic material into nutritious food (1 sack of supplies). Causes magic cancer if consumed for a prolonged period.
+
+_Overcharge:_ creates food from inorganic matter.
 
 ### Raise Dead
 
 _The Seventh Abomination, The Dark Hakaba_
 
-**R:** touch **T:** corpse **D:** permanent
+**P:** 2 **R:** touch  
+**T:** corpse **D:** permanent
 
-After a 6 hour ritual, the wizard calls back a creature’s soul and binds it to its corpse, creating an undead abomination and a parody of life. If the creature has been dead for more than 24 hours, only echoes of its personality and memories (Ba) remain. This spell must be overcharged to call back the soul of any creature of worth and potency. **Overcharge:** the wizard can give the raised creature one short command, which the creature will attempt to obey to the best of its abilities.
+After a 6 hour ritual, the wizard calls back a creature’s soul and binds it to its corpse, creating an undead abomination and a parody of life. If the creature has been dead for more than 24 hours, only echoes of its personality and memories (Ba) remain. This spell must be overcharged to call back the soul of any creature of worth and potency.
+
+_Overcharge:_ the wizard can give the raised creature one short command, which the creature will attempt to obey to the best of its abilities.
 
 ### Recall Soul
 
 _Necroflare, Ka-Theft_
 
-**R:** touch **T:** corpse **D:** 0
+**P:** 2 **R:** touch  
+**T:** corpse **D:** 0
 
-After a 1 hour ritual, the wizard calls back a creature’s soul, which erupts from the corpse as a coiling serpent of ectoplasmic fire. The soul can be captured in a golem, used to power obscene artifacts, or merely used for theatrical effect. This spell must be overcharged to call back the soul of any creature of worth and potency. **Overcharge:** the soul is bound in a portable wispy globe for up to 3 hours.
+After a 1 hour ritual, the wizard calls back a creature’s soul, which erupts from the corpse as a coiling serpent of ectoplasmic fire. The soul can be captured in a golem, used to power obscene artifacts, or merely used for theatrical effect. This spell must be overcharged to call back the soul of any creature of worth and potency.
+
+_Overcharge:_ the soul is bound in a portable wispy globe for up to 3 hours.
 
 ### Speak With Husk
 
 _Echoes of the Mind, Necrophone_
 
-**R:** 3m **T:** corpse **D:** 10 minutes
+**P:** 2 **R:** 3m  
+**T:** corpse **D:** 10 minutes
 
-The echoes of personality trapped in a corpse answer three questions posed by the wizard. The corpse can lie. **Overcharge:** the corpse carries on a full conversation for the spell’s duration. It cannot lie, but it can evade.
+The echoes of personality trapped in a corpse answer three questions posed by the wizard. The corpse can lie.
+
+_Overcharge:_ the corpse carries on a full conversation for the spell’s duration. It cannot lie, but it can evade.
 
 ### Supplicate the Rotting God
 
 _Turn Back the Wheel of Love and Death_
 
-**R:** touch **T:** corpse **D:** 0
+**P:** 2 **R:** touch  
+**T:** corpse **D:** 0
 
 The wizard sacrifices at least one sentient creature to restore one recently deceased creature to life. The total level of the target and the sacrifice(s) must be approximately equal. The ritual takes 1 hour per sacrifice and will go disastrously wrong if interrupted. The target is restored to life and a semblance of health for a year and a day.
 
@@ -7614,29 +7652,34 @@ The wizard sacrifices at least one sentient creature to restore one recently dec
 
 _Celestial Ladder, Craft Floating Platform_
 
-**R:** touch **T:** solid object **D:** 1 hour
+**P:** 2 **R:** touch  
+**T:** solid object **D:** 1 hour
 
 The wizard manually tethers an object to three physical points with strands of stuckforce. Once tethered, the object is immobile -- even if suspended in mid-air.
 
-**Overcharge:** the tether is permanent.
+_Overcharge:_ the tether is permanent.
 
 ### Toxin Render
 
 _Dwarf’s Diesel Distillation_
 
-**R:** 10m **T:** toxic waste **D:** 1 hour
+**P:** 2 **R:** 10m  
+**T:** toxic waste **D:** 1 hour
 
-The wizard uses a 1 hour ritual to convince ambient noösphere linked animalcules to gather a sack’s worth of toxic waste and convert it into usable vehicle or golem fuel. Corrodes engines if used for prolonged periods. **Overcharge:** converts material that is not toxic or is not waste.
+The wizard uses a 1 hour ritual to convince ambient noösphere linked animalcules to gather a sack’s worth of toxic waste and convert it into usable vehicle or golem fuel. Corrodes engines if used for prolonged periods.
+
+_Overcharge:_ converts material that is not toxic or is not waste.
 
 ### Yellow Foresight
 
 _Visions of the Cautious Merchant_
 
-**R:** 1km **T:** 100m diameter circle **D:** 0
+**P:** 2 **R:** 1km  
+**T:** 100m diameter circle **D:** 0
 
 The wizard consumes a soap’s worth of saffron (€10) and meditates for 1 hour to scan auras in the target area. They get a general idea of the number of sentients and the general mood. If the sentients are very different from the wizard, reading the mood may be impossible.
 
-**Overcharge:** consuming a dangerous amount (€100) of saffron lets the wizard implant a positive attitude into a few sentients.
+_Overcharge:_ consuming a dangerous amount (€100) of saffron lets the wizard implant a positive attitude into a few sentients.
 
 Spells 199
 

@@ -411,6 +411,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Fighter; index: 1
 
@@ -472,8 +473,11 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 14
+>   - book: Eternal_Return_Key; page: 7
 > - usage:
 >   - scope: other; id: Background; index: 0; note: Abstract character trait, anchors fictional positioning and routine competence.
+>   - scope: other; id: VLG Background Generator; note: Traditional Background Generator tables (VLG, p. 14) for 5d40 background prompts.
+>   - scope: other; id: ERK Background Generator; note: ERK LIVES tables (ERK, p. 7) for background/skillset prompts.
 
 ##### Example Backgrounds (Vastlands-style)
 
@@ -528,6 +532,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 151
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Trickster; index: 1
 
@@ -866,6 +871,7 @@ meta:
 > - source:
 >   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 16
+>   - book: Eternal_Return_Key; page: 12
 > - usage:
 >   - scope: path; id: Wild Mage; index: 4
 >   - scope: path; id: Wizard; index: 1
@@ -1698,6 +1704,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Fighter; index: 2
 
@@ -2168,6 +2175,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Traveler; index: 1
 
@@ -2280,6 +2288,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 16
+>   - book: Eternal_Return_Key; page: 12
 > - usage:
 >   - scope: path; id: Wizard; index: 3
 
@@ -2479,6 +2488,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Fighter; index: 0
 
@@ -2597,6 +2607,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Traveler; index: 2
 
@@ -2796,6 +2807,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Fighter; index: 3
 
@@ -3334,6 +3346,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Fighter; index: 4
 
@@ -3657,6 +3670,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 16
+>   - book: Eternal_Return_Key; page: 12
 > - usage:
 >   - scope: path; id: Wizard; index: 4
 
@@ -3924,6 +3938,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 16
+>   - book: Eternal_Return_Key; page: 12
 > - usage:
 >   - scope: path; id: Wizard; index: 5
 
@@ -4397,6 +4412,7 @@ meta:
 > - source:
 >   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Commander; index: 3
 >   - scope: path; id: Traveler; index: 4
@@ -4427,6 +4443,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Traveler; index: 5
 
@@ -4702,6 +4719,7 @@ meta:
 > - source:
 >   - book: Flying_Triremes_and_Laser_Swords_02_FTLS_Paths; page: TBD
 >   - book: Vastlands_Guidebook; page: 16
+>   - book: Eternal_Return_Key; page: 12
 > - usage:
 >   - scope: path; id: Wild Mage; index: 6
 >   - scope: path; id: Wizard; index: 6
@@ -5072,6 +5090,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Fighter; index: 5
 
@@ -5520,6 +5539,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 133
+>   - book: Eternal_Return_Key; page: 12
 > - usage:
 >   - scope: path; id: Noömagus; index: 5
 
@@ -5849,6 +5869,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Traveler; index: 6
 
@@ -6031,6 +6052,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 17
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Fighter; index: 6
 
@@ -6239,6 +6261,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 150
+>   - book: Eternal_Return_Key; page: 13
 > - usage:
 >   - scope: path; id: Trickster; index: 0
 
@@ -6791,6 +6814,7 @@ tags:
 meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 16
+>   - book: Eternal_Return_Key; page: 12
 > - usage:
 >   - scope: path; id: Wizard; index: 0
 

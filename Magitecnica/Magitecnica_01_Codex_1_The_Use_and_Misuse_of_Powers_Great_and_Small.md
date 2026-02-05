@@ -157,11 +157,12 @@ _Thornstone Obelisk_
 
 Razorblade Tree
 
-**P:** 3 **R:** 10m
-
+**P:** 3 **R:** 10m  
 **T:** planted landcoral seed **D:** permanent
 
-The petromancer spills their lifeblood, forcing the landcoral seed into sudden, explosive growth. A medium-sized limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket of razor branches suffers 1d4 damage. The terrible growth speed kills the landcoral. _Overcharge:_ the growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with stone shards like caltrops. This destroys the landcoral.
+The petromancer spills their lifeblood, forcing the landcoral seed into sudden, explosive growth. A medium-sized limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket of razor branches suffers 1d4 damage. The terrible growth speed kills the landcoral.
+
+_Overcharge:_ the growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with stone shards like caltrops. This destroys the landcoral.
 
 <a id="page_0006"></a>
 
@@ -762,8 +763,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 *Tactical Aggression Augment*
 
-**P:** 1 **R:** short, ~20m
-
+**P:** 1 **R:** short, ~20m  
 **T:** one creature **D:** a few minutes
 
 > Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save).
@@ -775,8 +775,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 *Maximum Somatic Contentment*
 
-**P:** 1 **R:** short, ~5m
-
+**P:** 1 **R:** short, ~5m  
 **T:** one creature **D:** an hour
 
 > Soma’s bliss brings contentment to the target (save).
@@ -789,8 +788,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 *Forgotten Spider’s Labors*
 
-**P:** 1 **R:** whisper
-
+**P:** 1 **R:** whisper  
 **T:** one creature **D:** an hour
 
 > A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear immediately dangerous or risky.
@@ -801,8 +799,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 *Arbor Sanctuary*
 
-**P:** 1 **R:** nearby
-
+**P:** 1 **R:** nearby  
 **T:** a 7m diameter sphere **D:** a night or a day
 
 > Convince shrubberies, grasses, brambles, and other plants to form a hedge domehome, a sanctuary to rest and hide in. Enemies need at least one turn to pass through the hedge. They are vulnerable while in the shrub wall. After
@@ -814,8 +811,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 *Sands of Lost Times*
 
-**P:** 1 **R:** nearby
-
+**P:** 1 **R:** nearby  
 **T:** a 9m cube **D:** a few minutes
 
 > Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust irritates the lungs of air-breathers. After a few minutes, it blows away.
@@ -826,8 +822,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 *Comic Emotional Display*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** a creature **D:** several minutes
 
 > The target becomes susceptible to influence. The barest word or sensation triggers vivid memories, thoughts, and emotions. How could anyone keep thoughts or facts a secret in this state? Or resist a fine, rousing song?
@@ -870,8 +865,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 *Nosigoro Logistical Augment*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** 1 sack **D:** 1 day
 
 > A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
@@ -882,8 +876,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 *Darehodo Patch Choice*
 
-**P:** 1 **R:** self
-
+**P:** 1 **R:** self  
 **T:** self **D:** 1 hour
 
 > Meditate at a crossroads for an hour, observe the flow of its energies, the flight of birds, the waft of milkweed seeds. Ask one objective yes / no question of the crossroads, and it shall answer. Will this path reach water
@@ -895,8 +888,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 *Dirty Fixing*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** vehicle or steed **D:** 1 day
 
 > Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a burden for a day, but then the damage is worse.
@@ -907,8 +899,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 *Blacktop Sniffer*
 
-**P:** 1 **R:** a day’s march
-
+**P:** 1 **R:** a day’s march  
 **T:** self **D:** 1 hour
 
 > Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
@@ -919,8 +910,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 *Foolself Driving*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** vehicle or steed **D:** 1 day
 
 > Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to receive voice commands.
@@ -931,8 +921,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 *Stradograd’s Engine of Civility*
 
-**P:** 6 **R:** one metric mile
-
+**P:** 6 **R:** one metric mile  
 **T:** rock and soil **D:** 1 day
 
 > By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a
@@ -980,8 +969,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 *Blood Made Lead*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** anchor weapon **D:** instant
 
 > Reloads your weapon as a free action, turning life force into semi-real projectiles.
@@ -992,8 +980,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 *Dodgebullet*
 
-**P:** 1 **R:** self
-
+**P:** 1 **R:** self  
 **T:** self **D:** one round
 
 > Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage).
@@ -1004,8 +991,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 *Rapid Metal Spin Cycle*
 
-**P:** 1 **R:** adjacent
-
+**P:** 1 **R:** adjacent  
 **T:** all creatures **D:** one action
 
 > Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
@@ -1016,8 +1002,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 *Panoptic Projectile*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** one projectile **D:** a minute or so
 
 > Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor).
@@ -1028,8 +1013,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 *Panoptic Projectile*
 
-**P:** 1 **R:** a middling hemisphere, ~12m
-
+**P:** 1 **R:** a middling hemisphere, ~12m  
 **T:** one attack **D:** interrupt
 
 > Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll.
@@ -1040,8 +1024,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 *Bigger Bang*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** anchor weapon **D:** a few minutes
 
 > Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
@@ -1058,8 +1041,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 *Two Left Feet Curse, Clumsy Cat-astrophe*
 
-**P:** 1 **R:** a few meters
-
+**P:** 1 **R:** a few meters  
 **T:** someone who can hear you **D:** instant
 
 > You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
@@ -1070,8 +1052,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 *Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator*
 
-**P:** 2 **R:** middling, ~30–50m
-
+**P:** 2 **R:** middling, ~30–50m  
 **T:** anything with a mind and soul **D:** instant
 
 > You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
@@ -1082,8 +1063,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 *Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction*
 
-**P:** 4 **R:** close
-
+**P:** 4 **R:** close  
 **T:** a person **D:** 1 hour
 
 > Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff, unmoving, receptive to carpentry.
@@ -1094,8 +1074,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 *Instant Incendiary, Damora’s Placid Inferno*
 
-**P:** 6 **R:** touch, or as thrown
-
+**P:** 6 **R:** touch, or as thrown  
 **T:** 10m diameter sphere **D:** a day, then instant
 
 > You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6
@@ -1107,8 +1086,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 *Life’s End Made Present, Hadi’s Self-Immolation Binding*
 
-**P:** 8 **R:** touch
-
+**P:** 8 **R:** touch  
 **T:** a sentient creature **D:** 1 year
 
 > Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
@@ -1122,8 +1100,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 *Keep on Turning, Supplication of the Perverse Demiurge*
 
-**P:** 18 **R:** self
-
+**P:** 18 **R:** self  
 **T:** demiurge **D:** a day, then permanent
 
 > You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge does its level best to misunderstand you, probably because it is an alien from out of time and space.

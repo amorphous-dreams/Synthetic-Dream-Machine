@@ -192,8 +192,7 @@ We don’t know who Usha was or even if she really existed. Based on a reading o
 
 *Biotic Corruption Augment, Cancer Bomb*
 
-**P:** 4 **R:** spitting distance
-
+**P:** 4 **R:** spitting distance  
 **T:** one creature **D:** a few minutes
 
 > You spit a corrosive bio-daemon that begins to rewrite the target’s genetic code. It writhes and twists, losing one turn, then saves.
@@ -228,8 +227,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Biotic Manipulation Augment, Mutation Bomb*
 
-**P:** 3 **R:** scratching distance
-
+**P:** 3 **R:** scratching distance  
 **T:** one creature **D:** 1d4 rounds
 
 > You speak to the target's genetic code, triggering unpredictable mutation. It suffers 1d6 damage per round for 1d4 rounds as flesh and bone warp and change. After, the target gains a random mutation that fills one of its slots. An unwilling target saves to avoid the mutation. Roll 1d6:
@@ -251,8 +249,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Biotic Enhancement Augment, Value Added Operation*
 
-**P:** 2 **R:** tickling distance
-
+**P:** 2 **R:** tickling distance  
 **T:** one creature less smart than yourself **D:** permanent
 
 > You manipulate the target’s genetic material, increasing its intelligence over several days. If it has a thought score, this increases by 1.
@@ -303,8 +300,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Biotic Fusion Augment, Meltflesh Hyperblot*
 
-**P:** 4 **R:** scalpel distance
-
+**P:** 4 **R:** scalpel distance  
 **T:** two creatures **D:** permanent
 
 > You splice two creatures into a single chimeric organism.
@@ -337,8 +333,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Biotic Integration Augment, Meetmeat*
 
-**P:** 6 **R:** bonesaw range
-
+**P:** 6 **R:** bonesaw range  
 **T:** one creature **D:** permanent
 
 > You surgically graft a new anatomy and associated trait into the target creature. You must have the relevant anatomy on hand to attempt a graft. The procedure takes a day and is dangerous to the target. Make a biomantic, medical, or other relevant test to integrate the xenograft:
@@ -378,8 +373,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Biotic Growth Augment, Root Meatmaker*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** one pound of biomatter **D:** permanent
 
 > Touch a tissue and watch it balloon fourteen-fold over an hour (from soap-sized to 1 stone).
@@ -396,8 +390,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Biotic Regeneration Augment, Systemic Limb Back Trigger*
 
-**P:** 3 **R:** touch
-
+**P:** 3 **R:** touch  
 **T:** one limb **D:** permanent
 
 > Regrow a non-critical destroyed tissue, limb or organ. Takes one hour. Please remove* damaged parts before regrowth for safety.
@@ -434,8 +427,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Somatic Insight Probe, Bodyreading*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** one creature **D:** ten minutes
 
 > You attune to a living organism, hearing the biohistory in its cells. After 10 minutes of contact, you may ask the referee three questions about the creature's medical history and status.
@@ -449,8 +441,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Bioatavistic Reformulation*
 
-**P:** 4 **R:** touch
-
+**P:** 4 **R:** touch  
 **T:** one creature **D:** permanent
 
 > You taste a creature's flesh or blood, unlocking genetic memories of its evolutionary past. Over the next hour you regress it to an ancestral form with gentle song. This is dangerous for the target and it suffers 1d8* damage from severe stress.
@@ -471,8 +462,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Automedical Self Repair*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** one creature **D:** 10 rounds
 
 > Your touch instructs an organism to start swiftly repairing itself. The target regenerates 1 life point per round. As the regeneration proceeds, wounds knit, broken bones set, and missing bits regrow. Injured areas remain tender and fragile for a week.
@@ -499,8 +489,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *Purposeful Biotic Evolution*
 
-**P:** 5 **R:** touch
-
+**P:** 5 **R:** touch  
 **T:** one creature **D:** permanent
 
 > After drinking a sample of the target’s spinal fluid, you may chant viridian rituals into its flesh, forcing a rapid evolution. This is dangerous for the target. After 1 day of troubled sleep it permanently gains either:
@@ -523,8 +512,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 *More Purposeful Biotic Evolution, Rehoryan’s Illegal Power*
 
-**P:** 11 **R:** touch
-
+**P:** 11 **R:** touch  
 **T:** one creature **D:** permanent
 
 > _This off-label power is not included in normal Rehoryan albums. This power can only be used on a creature that has already heard Rehoryan’s Prophetic Song, also known as Song 1._
@@ -552,8 +540,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 *Biotemporal Manipulation*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** one human’s worth of living organisms **D:** an hour
 
 > You alter the speed of a chosen biological process in the target, accelerating or retarding it as much as 10-fold. Processes include growth, gestation, decay, metabolism, disease progression, etc.
@@ -568,8 +555,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 *Synthetic Egg System*
 
-**P:** 3 **R:** touch
-
+**P:** 3 **R:** touch  
 **T:** one “egg” mass **D:** gestation period
 
 > You sculpt a viable egg and artificial uterus from biomatter. Using somatic manipulation, you spark parthenogenic development within the cradle. The egg gestates to term as normally required by the subject species.
@@ -588,8 +574,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 *Synthetic Marsupilism*
 
-**P:** 4 **R:** touch
-
+**P:** 4 **R:** touch  
 **T:** one creature **D:** permanent
 
 > You sculpt a viable marsupial pouch and womb structure within a creature's body, enabling it to gestate and carry an embryo to term. The pouch permanently occupies one slot.
@@ -606,8 +591,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 *Germline Modifier*
 
-**P:** 4 **R:** touch
-
+**P:** 4 **R:** touch  
 **T:** one embryo or egg **D:** permanent
 
 > You stretch a tendril of focused aura into an unborn organism to manipulate its developmental pathway, altering it to reach the upper or lower extremes of the species range in one aspect. The effect unfolds through the creature’s gestation and maturation.
@@ -651,8 +635,7 @@ Violet City Scale Library
 
 *Biocombat Implementation*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** one creature **D:** permanent
 
 > You coerce a creature's biology to express natural weapons like claws, spikes, horns, or venom. The manifestation depends on the creature's size and form. The modification occupies an inventory slot. The transformation requires 1 day.
@@ -675,8 +658,7 @@ Violet City Scale Library
 
 *Biodefense Integration*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** one creature **D:** permanent
 
 > You reshape a creature’s skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
@@ -731,8 +713,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 
 *Radical Metabolic Manipulation*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** one creature **D:** 10 minutes
 
 > You coerce the target into a fight or flight overdrive, boosting its physical abilities past their safe limits. The target gains +2 strength, endurance, and agility. It can lift more, leap farther, punch harder. When the overdrive fades, it gains 6 exhaustion burdens. These fade at a rate of one per hour.
@@ -747,8 +728,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 
 *Integrated Biological Warfare*
 
-**P:** 4 **R:** touch
-
+**P:** 4 **R:** touch  
 **T:** one creature **D:** permanent
 
 > You craft a custom symbiote that integrates into the target’s digestive tract. The crafting takes a day, the painless embedding another 8 hours. The symbiote occupies one inventory slot.
@@ -832,11 +812,10 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Iatric Priest Painkiller*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** 1 creature **D:** a day
 
-> You overridea creature's pain response, providing relief from pain and burdens. Wait, did the scribe mishear "anesthetic"?
+> You override a creature's pain response, providing relief from pain and burdens. Wait, did the scribe mishear "anesthetic"?
 > 
 > _Overcharge:_ It lasts a week.
 
@@ -844,8 +823,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Sanator's Empathy Ritual*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** 2 creatures **D:** several hours
 
 > You tap into a creature's essence and transfer one of its burdens—fatigue, injury, anxiety, or some other affliction—to another creature. During transfer it transforms into a spiritual stone, a healer's burden. It feels heavy and annoying within the receiver’s soul, but causes no permanent damage and dissipates normally with rest.
@@ -858,8 +836,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Serapefti's Ka-Ba Translation*
 
-**P:** 6 **R:** touch
-
+**P:** 6 **R:** touch  
 **T:** 1 patient and 1 host **D:** 1 day and night
 
 > You transfer a patient's essence into a new physical host. A perfect replica of the original body is ideal, but alternate hosts such as crude golems, animals, crystals and even vats of memory liquid can suffice. Changing forms may result in temporary psychophysical stress.
@@ -867,9 +844,24 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > **Patient Host Compatibility** Some complex transfers require a psychemantic or medimagical roll. If the host is non-compliant, roll twice and take the worse result (disadvantage). If the host is dead, the roll is more difficult.
 > 
-> **Similarity** **Effect** Identical no roll required Relative, Friend easy roll Same Species moderate roll Similar Lifeform hard roll (dog, cat, etc.) Alien Lifeform extreme roll (shrubbery, slime mold, alien) Essence Jewel moderate roll Golem, Crude extreme roll (clay, stone, bone) Golem, Polished hard roll (servos, porcelain, and crystal brain) Mundane Object extreme roll, disadvantage (sword, anvil, pot)
+> | Similarity | Effect |
+> | --- | --- |
+> | Identical | no roll required |
+> | Relative, Friend | easy roll |
+> | Same Species | moderate roll |
+> | Similar Lifeform | hard roll (dog, cat, etc.) |
+> | Alien Lifeform | extreme roll (shrubbery, slime mold, alien) |
+> | Essence Jewel | moderate roll |
+> | Golem, Crude | extreme roll (clay, stone, bone) |
+> | Golem, Polished | hard roll (servos, porcelain, and crystal brain) |
+> | Mundane Object | extreme roll, disadvantage (sword, anvil, pot) |
 > 
-> **Result** **Effect** nat. 1 Patient’s essence lost or replaced with a similar daemon! fail Transfer fails. Both targets exposed to moderate corruption. success Transfer succeeds. Host essence destroyed. nat. 20 Excellent transfer. Patient can choose to retain one of the host’s traits or skills.
+> | Result | Effect |
+> | --- | --- |
+> | nat. 1 | Patient’s essence lost or replaced with a similar daemon! |
+> | fail | Transfer fails. Both targets exposed to moderate corruption. |
+> | success | Transfer succeeds. Host essence destroyed. |
+> | nat. 20 | Excellent transfer. Patient can choose to retain one of the host’s traits or skills. |
 > 
 > _Overcharge:_ Attempt to overwrite the mind of a non-compliant host.
 
@@ -879,8 +871,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Hsu Doru's Preparatory Ritual*
 
-**P:** 6 **R:** touch
-
+**P:** 6 **R:** touch  
 **T:** 1 standard humanTM **D:** 1 hour
 
 > You activate a person’s standard humanTM construction seams® to painlessly unfold them like a flower for easier medical treatment. An open person may seriously injure themselves if not careful (3d6 damage per action). Treatments on an open person are significantly easier, the price of biomantic and medical powers used on them is halved.
@@ -893,8 +884,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Hsu Doru's Life Shunt*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** 2 creatures **D:** instant
 
 > You manipulate the underlying energy patterns to transfer life from one creature to another, or directly from your own reserves.
@@ -905,8 +895,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Wissa's Fountain of YouthificationTM*
 
-**P:** 6 **R:** touch
-
+**P:** 6 **R:** touch  
 **T:** 1 creature **D:** a week
 
 > You restore a creature to its biological state of a year earlier, while preserving most of its current memories.
@@ -919,8 +908,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Zdarovar's Rapid Healing*
 
-**P:** variable **R:** touch
-
+**P:** variable **R:** touch  
 **T:** 1 creature **D:** minutes
 
 > You invoke the oneiroi Quiscus and Sanatus to reach into a creature's essence and replace damaged code with a pristine version. This painful process deals damage equal to its power.
@@ -933,8 +921,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 *Medeorite's Healing Dream Ritual*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** 1 creature **D:** 3 days and nights
 
 > Your dream-form leads the patient into a deep, healing sleep. While asleep, they appear lifeless. After the spell concludes they awake rejuvenated, with one attribute restored or one burden lifted.
@@ -1020,8 +1007,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Simple Assimilator*
 
-**P:** 2 **R:** eating distance
-
+**P:** 2 **R:** eating distance  
 **T:** self **D:** imbued
 
 > You eat part of a creature you are familiar with to temporarily manifest one of its natural traits. A nail clipping or some fur will suffice.
@@ -1046,8 +1032,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Bioactive Communion*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** 2 creatures **D:** imbued
 
 > You forge an tele-empathic link between two similar creatures, such as between two mammals or two avian dinosaurs, by exchanging vital animalcules. They can now concentrate to communicate telepathically over significant distances.
@@ -1062,8 +1047,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Bioactive Fusion*
 
-**P:** 2 **R:** psychosurgical range
-
+**P:** 2 **R:** psychosurgical range  
 **T:** 1 creature **D:** imbue
 
 > You inject your mind into a creature, such as a cat or capybara, turning it into a drone under your telepathic control. Accessing a drone’s sensory experiences, memories, or skills requires conscious effort and concentration.
@@ -1080,8 +1064,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Formal Translation*
 
-**P:** 4 **R:** touch
-
+**P:** 4 **R:** touch  
 **T:** self **D:** imbued
 
 > You adopt the physical form of a roughly human-sized creature (say dogsized to horse-sized) you are familiar with and whose symbolic representation you own. This could be a tiger tattoo or a dodo doll. The transformation takes several minutes.
@@ -1102,8 +1085,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Colony Translation*
 
-**P:** 6 **R:** touch
-
+**P:** 6 **R:** touch  
 **T:** self **D:** imbued
 
 > Your skin splits and you collapse into a colony organism, such as a hive of bees, a nest of naked mole rats, or a swarm of spiders. You must be familiar with the species and own a suitable symbolic representation. The transformation takes several minutes.
@@ -1131,8 +1113,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Subconscious Translation*
 
-**P:** 1 **R:** self
-
+**P:** 1 **R:** self  
 **T:** self **D:** special
 
 > You give free reign to the darkest parts of yourself, transforming into a ravening aberrant horror born of your subconscious. You lose the ability to use powers or your higher mental faculties, but your strength, endurance, and melee attack all increase depending on your aura score:
@@ -1156,8 +1137,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Biodetector*
 
-**P:** 1 **R:** touch
-
+**P:** 1 **R:** touch  
 **T:** 1 creature **D:** imbue
 
 > You open your mind to the living patterns nearby. This expands your sensory repertoire and enhances your awareness.
@@ -1170,8 +1150,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Biojammer*
 
-**P:** 2 **R:** touch
-
+**P:** 2 **R:** touch  
 **T:** 1 creature **D:** imbue
 
 > You align your essence with the local ecosphere. Creatures unconsciously disregard your presence, facilitating stealth. _Alternatively_, you can make yourself stand out sharply, possibly distracting from other activities or gaining a social bonus like a peacock in full display.
@@ -1184,8 +1163,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 *Biomelt*
 
-**P:** 5 **R:** 0
-
+**P:** 5 **R:** 0  
 **T:** self or 1 creature **D:** 1 day and 1 night
 
 > The ecosphere consumes you. The living creatures of the area eat your body and your mind and personality travel unseen in the movement of birds and beetles, the sigh of grass and the creak of trees. When the spell ends, your body reconstitutes from dead organic matter over about a day.

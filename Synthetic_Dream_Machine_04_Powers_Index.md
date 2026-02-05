@@ -2,37 +2,59 @@
 
 <a id="sdm-power-table-of-contents"></a>
 
-- <a id="sdm-power-access-blessing-one-autosoma-anchor"></a> [Access Blessing One —— Autosoma](#sdm-power-access-blessing-one-autosoma)
+- <a id="sdm-power-access-blessing-one-autosoma-anchor"></a> [Access Blessing One — Autosoma](#sdm-power-access-blessing-one-autosoma)
 - <a id="sdm-power-access-no-tree-anchor"></a> [Access Noötree](#sdm-power-access-no-tree)
-- <a id="sdm-power-akaula-s-sacrificial-hero-anchor"></a> [Akaula'S Sacrificial Hero](#sdm-power-akaula-s-sacrificial-hero)
+- <a id="sdm-power-adulation-rejuvenation-anchor"></a> [Adulation Rejuvenation](#sdm-power-adulation-rejuvenation)
+- <a id="sdm-power-akaula-s-sacrificial-hero-anchor"></a> [Akaula's Sacrificial Hero](#sdm-power-akaula-s-sacrificial-hero)
+- <a id="sdm-power-alter-self-anchor"></a> [Alter Self](#sdm-power-alter-self)
+- <a id="sdm-power-animate-corpse-anchor"></a> [Animate Corpse](#sdm-power-animate-corpse)
 - <a id="sdm-power-anne-astec-anchor"></a> [Anne Astec](#sdm-power-anne-astec)
+- <a id="sdm-power-anti-babylon-anchor"></a> [Anti-Babylon](#sdm-power-anti-babylon)
 - <a id="sdm-power-better-pastures-anchor"></a> [Better Pastures](#sdm-power-better-pastures)
 - <a id="sdm-power-big-wish-anchor"></a> [Big Wish](#sdm-power-big-wish)
 - <a id="sdm-power-bloodsong-anchor"></a> [Bloodsong](#sdm-power-bloodsong)
 - <a id="sdm-power-blue-lotus-anchor"></a> [Blue Lotus](#sdm-power-blue-lotus)
 - <a id="sdm-power-burden-share-anchor"></a> [Burden Share](#sdm-power-burden-share)
+- <a id="sdm-power-burdenbeast-modification-anchor"></a> [Burdenbeast Modification](#sdm-power-burdenbeast-modification)
 - <a id="sdm-power-can-trip-anchor"></a> [Can Trip](#sdm-power-can-trip)
 - <a id="sdm-power-caustic-purification-anchor"></a> [Caustic Purification](#sdm-power-caustic-purification)
+- <a id="sdm-power-cerebral-purge-anchor"></a> [Cerebral Purge](#sdm-power-cerebral-purge)
+- <a id="sdm-power-chariot-of-the-divine-palace-anchor"></a> [Chariot of the Divine Palace](#sdm-power-chariot-of-the-divine-palace)
 - <a id="sdm-power-counterfire-anchor"></a> [Counterfire](#sdm-power-counterfire)
 - <a id="sdm-power-cut-the-sky-anchor"></a> [Cut the Sky](#sdm-power-cut-the-sky)
 - <a id="sdm-power-dampen-mass-anchor"></a> [Dampen Mass](#sdm-power-dampen-mass)
 - <a id="sdm-power-dancing-in-the-hail-anchor"></a> [Dancing in the Hail](#sdm-power-dancing-in-the-hail)
 - <a id="sdm-power-depleted-heavy-metal-rain-anchor"></a> [Depleted Heavy Metal Rain](#sdm-power-depleted-heavy-metal-rain)
+- <a id="sdm-power-dissolution-and-resolution-of-the-spirit-anchor"></a> [Dissolution and Resolution of the Spirit](#sdm-power-dissolution-and-resolution-of-the-spirit)
+- <a id="sdm-power-dryland-sculpture-anchor"></a> [Dryland Sculpture](#sdm-power-dryland-sculpture)
 - <a id="sdm-power-eategrate-anchor"></a> [Eategrate](#sdm-power-eategrate)
 - <a id="sdm-power-ecosphere-attunement-anchor"></a> [Ecosphere Attunement](#sdm-power-ecosphere-attunement)
 - <a id="sdm-power-ecosphere-immersion-anchor"></a> [Ecosphere Immersion](#sdm-power-ecosphere-immersion)
 - <a id="sdm-power-ecosphere-veil-anchor"></a> [Ecosphere Veil](#sdm-power-ecosphere-veil)
+- <a id="sdm-power-egregious-topology-anchor"></a> [Egregious Topology](#sdm-power-egregious-topology)
+- <a id="sdm-power-entropic-reversal-anchor"></a> [Entropic Reversal](#sdm-power-entropic-reversal)
+- <a id="sdm-power-essence-sift-anchor"></a> [Essence Sift](#sdm-power-essence-sift)
 - <a id="sdm-power-eyes-of-akaula-anchor"></a> [Eyes of Akaula](#sdm-power-eyes-of-akaula)
 - <a id="sdm-power-eyes-of-the-arrow-anchor"></a> [Eyes of the Arrow](#sdm-power-eyes-of-the-arrow)
+- <a id="sdm-power-floating-disc-anchor"></a> [Floating Disc](#sdm-power-floating-disc)
+- <a id="sdm-power-for-the-sky-is-a-sea-anchor"></a> [For the Sky is a Sea](#sdm-power-for-the-sky-is-a-sea)
+- <a id="sdm-power-gem-bomb-anchor"></a> [Gem Bomb](#sdm-power-gem-bomb)
 - <a id="sdm-power-green-haven-anchor"></a> [Green Haven](#sdm-power-green-haven)
 - <a id="sdm-power-ha-ka-ba-short-circuit-anchor"></a> [Ha-Ka-Ba Short Circuit](#sdm-power-ha-ka-ba-short-circuit)
+- <a id="sdm-power-hero-s-goldenmouth-anchor"></a> [Hero's Goldenmouth](#sdm-power-hero-s-goldenmouth)
 - <a id="sdm-power-highway-cruiser-anchor"></a> [Highway Cruiser](#sdm-power-highway-cruiser)
 - <a id="sdm-power-hlod-person-anchor"></a> [Hlod Person](#sdm-power-hlod-person)
+- <a id="sdm-power-imbue-edge-anchor"></a> [Imbue Edge](#sdm-power-imbue-edge)
+- <a id="sdm-power-impermissible-cleaver-anchor"></a> [Impermissible Cleaver](#sdm-power-impermissible-cleaver)
 - <a id="sdm-power-invoke-ub-dragon-anchor"></a> [Invoke Ub Dragon](#sdm-power-invoke-ub-dragon)
+- <a id="sdm-power-knock-lock-anchor"></a> [Knock / Lock](#sdm-power-knock-lock)
 - <a id="sdm-power-lay-in-wires-anchor"></a> [Lay in Wires](#sdm-power-lay-in-wires)
+- <a id="sdm-power-linked-portals-anchor"></a> [Linked Portals](#sdm-power-linked-portals)
+- <a id="sdm-power-magic-jar-anchor"></a> [Magic Jar](#sdm-power-magic-jar)
 - <a id="sdm-power-manybodied-anchor"></a> [Manybodied](#sdm-power-manybodied)
 - <a id="sdm-power-metempsychosis-anchor"></a> [Metempsychosis](#sdm-power-metempsychosis)
 - <a id="sdm-power-mother-of-bullets-anchor"></a> [Mother of Bullets](#sdm-power-mother-of-bullets)
+- <a id="sdm-power-motor-fixative-anchor"></a> [Motor Fixative](#sdm-power-motor-fixative)
 - <a id="sdm-power-nihil-est-anchor"></a> [Nihil Est!](#sdm-power-nihil-est)
 - <a id="sdm-power-nunka-s-biophysical-overdrive-anchor"></a> [Nunka’S Biophysical Overdrive](#sdm-power-nunka-s-biophysical-overdrive)
 - <a id="sdm-power-nunka-s-epidermal-sculpt-anchor"></a> [Nunka’S Epidermal Sculpt](#sdm-power-nunka-s-epidermal-sculpt)
@@ -43,15 +65,20 @@
 - <a id="sdm-power-orange-dream-anchor"></a> [Orange Dream](#sdm-power-orange-dream)
 - <a id="sdm-power-parasoma-transference-anchor"></a> [Parasoma Transference](#sdm-power-parasoma-transference)
 - <a id="sdm-power-primary-desenescence-anchor"></a> [Primary Desenescence](#sdm-power-primary-desenescence)
+- <a id="sdm-power-process-food-anchor"></a> [Process Food](#sdm-power-process-food)
 - <a id="sdm-power-purple-memories-anchor"></a> [Purple Memories](#sdm-power-purple-memories)
 - <a id="sdm-power-pyreball-anchor"></a> [Pyreball](#sdm-power-pyreball)
+- <a id="sdm-power-raise-dead-anchor"></a> [Raise Dead](#sdm-power-raise-dead)
 - <a id="sdm-power-real-time-rebuild-anchor"></a> [Real-Time Rebuild](#sdm-power-real-time-rebuild)
+- <a id="sdm-power-reason-s-harvest-anchor"></a> [Reason's Harvest](#sdm-power-reason-s-harvest)
+- <a id="sdm-power-recall-soul-anchor"></a> [Recall Soul](#sdm-power-recall-soul)
 - <a id="sdm-power-red-mist-anchor"></a> [Red Mist](#sdm-power-red-mist)
 - <a id="sdm-power-rehoryan-s-progressive-restoration-anchor"></a> [Rehoryan’S Progressive Restoration](#sdm-power-rehoryan-s-progressive-restoration)
 - <a id="sdm-power-rehoryan-s-prophetic-song-anchor"></a> [Rehoryan’S Prophetic Song](#sdm-power-rehoryan-s-prophetic-song)
 - <a id="sdm-power-rehoryan-s-prophetic-song-2-anchor"></a> [Rehoryan’S Prophetic Song 2](#sdm-power-rehoryan-s-prophetic-song-2)
 - <a id="sdm-power-rehoryan-s-vital-symphony-anchor"></a> [Rehoryan’S Vital Symphony](#sdm-power-rehoryan-s-vital-symphony)
 - <a id="sdm-power-rehoryan-s-vivid-regression-anchor"></a> [Rehoryan’S Vivid Regression](#sdm-power-rehoryan-s-vivid-regression)
+- <a id="sdm-power-reuse-the-shell-anchor"></a> [Reuse the Shell](#sdm-power-reuse-the-shell)
 - <a id="sdm-power-restorative-slumber-anchor"></a> [Restorative Slumber](#sdm-power-restorative-slumber)
 - <a id="sdm-power-ring-of-lead-anchor"></a> [Ring of Lead](#sdm-power-ring-of-lead)
 - <a id="sdm-power-roadfinder-anchor"></a> [Roadfinder](#sdm-power-roadfinder)
@@ -61,13 +88,18 @@
 - <a id="sdm-power-runo-s-parthenogenic-cradle-anchor"></a> [Runo’S Parthenogenic Cradle](#sdm-power-runo-s-parthenogenic-cradle)
 - <a id="sdm-power-runo-s-parthenogenic-pouch-anchor"></a> [Runo’S Parthenogenic Pouch](#sdm-power-runo-s-parthenogenic-pouch)
 - <a id="sdm-power-sense-allegiance-anchor"></a> [Sense Allegiance](#sdm-power-sense-allegiance)
+- <a id="sdm-power-siphon-the-soul-anchor"></a> [Siphon the Soul](#sdm-power-siphon-the-soul)
 - <a id="sdm-power-skinshift-anchor"></a> [Skinshift](#sdm-power-skinshift)
 - <a id="sdm-power-skinsplit-anchor"></a> [Skinsplit](#sdm-power-skinsplit)
 - <a id="sdm-power-skinwyrd-anchor"></a> [Skinwyrd](#sdm-power-skinwyrd)
+- <a id="sdm-power-speak-with-husk-anchor"></a> [Speak With Husk](#sdm-power-speak-with-husk)
 - <a id="sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex-anchor"></a> [Stoyevod’S Irreducible Crystallization of the Ego Complex](#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex)
+- <a id="sdm-power-supplicate-the-rotting-god-anchor"></a> [Supplicate the Rotting God](#sdm-power-supplicate-the-rotting-god)
 - <a id="sdm-power-suspended-in-the-light-anchor"></a> [Suspended in the Light](#sdm-power-suspended-in-the-light)
 - <a id="sdm-power-suspended-insight-anchor"></a> [Suspended Insight](#sdm-power-suspended-insight)
 - <a id="sdm-power-thornstone-obelisk-anchor"></a> [Thornstone Obelisk](#sdm-power-thornstone-obelisk)
+- <a id="sdm-power-three-point-immobility-anchor"></a> [Three-Point Immobility](#sdm-power-three-point-immobility)
+- <a id="sdm-power-toxin-render-anchor"></a> [Toxin Render](#sdm-power-toxin-render)
 - <a id="sdm-power-tragic-missile-anchor"></a> [Tragic Missile](#sdm-power-tragic-missile)
 - <a id="sdm-power-usha-s-chaos-trigger-anchor"></a> [Usha’S Chaos Trigger](#sdm-power-usha-s-chaos-trigger)
 - <a id="sdm-power-usha-s-chimera-splice-anchor"></a> [Usha’S Chimera Splice](#sdm-power-usha-s-chimera-splice)
@@ -76,12 +108,16 @@
 - <a id="sdm-power-usha-s-swift-rebuild-anchor"></a> [Usha’S Swift Rebuild](#sdm-power-usha-s-swift-rebuild)
 - <a id="sdm-power-usha-s-uplift-anchor"></a> [Usha’S Uplift](#sdm-power-usha-s-uplift)
 - <a id="sdm-power-usha-s-xenograft-anchor"></a> [Usha’S Xenograft](#sdm-power-usha-s-xenograft)
+- <a id="sdm-power-vegetable-of-birth-anchor"></a> [Vegetable of Birth](#sdm-power-vegetable-of-birth)
 - <a id="sdm-power-viridian-sun-anchor"></a> [Viridian Sun](#sdm-power-viridian-sun)
+- <a id="sdm-power-whispers-from-the-void-anchor"></a> [Whispers from the Void](#sdm-power-whispers-from-the-void)
 - <a id="sdm-power-wing-and-prayer-anchor"></a> [Wing and Prayer](#sdm-power-wing-and-prayer)
 - <a id="sdm-power-yellow-cloud-anchor"></a> [Yellow Cloud](#sdm-power-yellow-cloud)
+- <a id="sdm-power-yellow-foresight-anchor"></a> [Yellow Foresight](#sdm-power-yellow-foresight)
 
 ## Known Albums
 
+- **[UVG Spells](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0198)** (UVG2e)
 - **[The Sixfold Hexacenter](../Vastlands_Guidebook/Vastlands_Guidebook_05_Powers_94-113.md)** (VLG)
 - **[The Viridian Practice](../Vastlands_Guidebook/Vastlands_Guidebook_05_Powers_94-113.md)** (VLG)
 - **[Dawn’S Highway](../Vastlands_Guidebook/Vastlands_Guidebook_05_Powers_94-113.md)** (VLG)
@@ -89,7 +125,7 @@
 - **[Apocrypha of the O.s.](../Vastlands_Guidebook/Vastlands_Guidebook_05_Powers_94-113.md)** (VLG)
 - **[Access Noötree](../Vastlands_Guidebook/Vastlands_Guidebook_05_Powers_94-113.md)** (VLG)
 - **[Weapon Form Powers](../Vastlands_Guidebook/Vastlands_Guidebook_06_Other_Paths_114-159.md)** (VLG)
-- **[Weapon'S Eternal Purpose](../Vastlands_Guidebook/Vastlands_Guidebook_06_Other_Paths_114-159.md)** (VLG)
+- **[Weapon's Eternal Purpose](../Vastlands_Guidebook/Vastlands_Guidebook_06_Other_Paths_114-159.md)** (VLG)
 - **[Access Blessings (Ou( Golden Age Preview)](../Our_Golden_Age/index.md)** (OGA)
 - **[Arkhiatry Classics](../Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols_1-52.md)** (MTC2)
 - **[Nunka’S Automorph](../Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols_1-52.md)** (MTC2)
@@ -109,15 +145,16 @@
 >
 > _<Subtitle / invocation>_
 >
-> **P:** <Power> **R:** <Range>
->
+> **P:** <Power> **R:** <Range>  
 > **T:** <Target> **D:** <Duration>
 >
 > <Full power procedure/description exactly as written, including activation costs and narrative details.>
 >
+> _Overcharge:_ <Ox steps / 'again' & notes if any>
+>
 > _Dangerous:_ <Optional. Use only when the source has a standalone Dangerous note; keep patterns like ‘Dangerous for the target’ inside Overcharge lines or body text if they appear there.”>
 >
-> _Overcharge:_ <Ox steps / 'again' & notes if any>
+> **Note:** <Optional.>
 
 tags:
 >   [power]
@@ -131,13 +168,13 @@ meta:
 > - usage:
 >   - scope: <power|album|path|other>; id: <Album Name|Path Reference|…>; index: <##>; note: <extra context>
 >   - scope: <power|album|path|other>; id: <Alternate list>; note: <optional note about reuse>
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-<slug>-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-<slug>-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 ```
@@ -145,7 +182,7 @@ meta:
 ## Usage Notes
 
 - **Stat block recap.** Every power records Power (P), Range (R), Target (T), Duration (D), and Overcharge steps (Ox). Optional attributes/tags such as Anchored, Attack, Focus, Fueled, Imbued, Item, or Dangerous appear when relevant.
-- **Storage tags.** Use `[storage:trait]` when a power is inscribed as a trait, `[storage:item]` for spellbooks or devices, `[storage:burden]` for curses/brands, etc. Many entries will have multiple valid storage forms.
+- **Storage tags.** Use `[storage:trait]` when a power is held as a trait, `[storage:item]` for powers that can be stored in spellbooks or devices, `[storage:burden]` for curses/brands, etc. Many entries will have multiple valid storage forms.
 - **Tables for rolls.** If the source has roll/result lists (d6/d20, etc.), prefer a blockquote table.
 - **Overcharge ordering.** Put `_Overcharge:_` before `_Again (x#):_` and keep both italicized.
 - **Multi-source conflicts.** If multiple sources differ, prefer VLG+OGA; otherwise preserve source text verbatim and add a meta note.
@@ -159,23 +196,21 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Access Blessing One —— Autosoma** {#sdm-power-access-blessing-one-autosoma}
+## **Access Blessing One — Autosoma** {#sdm-power-access-blessing-one-autosoma}
 
-> **Access Blessing One —— Autosoma**
+> **Access Blessing One — Autosoma**
 >
 > _Unlock Medical Buildertech, Sacred Pod Charm_
 >
-> **P:** 2 **R:** nearby
->
+> **P:** 2 **R:** nearby  
 > **T:** auld meditech **D:** hours
 >
-> Code daemons in your blood speak to the oldtech and announce you as a hereditary “duck mountain prominence”.
-> Control healing machinery without the risk of mutations or degradation. Access suspension capsules. Use cold storage
-> as a one-way time machine.
-> Note: you can only store this power in human tissue—in yourself (as a trait) or in a suitable anchor, such as the
-> mummified hand of Dr. N. A. Vec.
+> Code daemons in your blood speak to the oldtech and announce you as a hereditary "duck mountain prominence". Control healing machinery without the risk of mutations or degradation. Access suspension capsules. Use cold storage as a one-way time machine.
 >
-> _Overcharge:_ The healing oldtech deals damage instead.
+> _Overcharge:_ the healing oldtech deals damage instead.
+>
+> **Note:** you can only store this power in human tissue—in yourself (as a trait) or in a suitable anchor, such as the
+> mummified hand of Dr. N. A. Vec.
 
 tags:
 >   [power]
@@ -187,16 +222,14 @@ meta:
 > - source:
 >   - book: Our_Golden_Age; page: 28
 > - usage:
->   - scope: power; id: Access Blessing One; note: Autosoma rite from Our Golden Age p.28.
+>   - scope: power; id: Access Blessing One — Autosoma; note: Autosoma rite from Our Golden Age p.28.
 
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-access-blessing-one-autosoma-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-access-blessing-one-autosoma-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -208,17 +241,17 @@ meta:
 >
 > _Localized Spirit Surf_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** one thinking tree **D:** 10 minutes
 >
-> You unplug from your body and send your spirit-mind (_ka-ba_) into the synthetic dreamspace of a local server tree.
+> You unplug from your body and send your spirit-mind ( _ka-ba_ ) into the synthetic dreamspace of a local server tree.
 > You can access the tree’s short-term memories, divine announcements, algorithmically generated human-interest
 > novelties, and locally hosted offshoot dream realities.
-> Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert
-> functioning guardians (L2d6, electrangelic) to your interventions.
 >
 > _Overcharge:_ Gain root-level access to the tree’s source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms.
+> 
+> **Note:** Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert
+> functioning guardians (L2d6, electrangelic) to your interventions.
 
 tags:
 >   [power]
@@ -230,28 +263,62 @@ meta:
 >   - book: Vastlands_Guidebook; page: 113
 > - usage:
 >   - scope: power; id: Access Noötree; note: Server tree rite from VG p.113.
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-access-no-tree-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-access-no-tree-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
 <div class="power-card" markdown="1">
 
-## **Akaula'S Sacrificial Hero** {#sdm-power-akaula-s-sacrificial-hero}
+## **Adulation Rejuvenation** {#sdm-power-adulation-rejuvenation}
 
-> **Akaula'S Sacrificial Hero**
+> **Adulation Rejuvenation**
+>
+> _Polyempathic Vampirism_
+>
+> **P:** 2 **R:** an arena  
+> **T:** a human mob that likes you **D:** several minutes at least
+>
+> Tell a crowd what they want to hear and feed on their adulation, then save. Success: gain 1d3 temporary points of charisma and 1d4-2 life. Fail: regain 1 charisma.
+>
+> _Overcharge:_ Gain 1d3 temporary points of charisma. 
+> 
+> _Limit:_ Works once per crowd, temporary charisma points cannot exceed base charisma score.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Our_Golden_Age; page: 37
+> - usage:
+>   - scope: power; id: The Power of Fluency; note: Adulation Rejuvenation from Our Golden Age p.37.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-adulation-rejuvenation-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Akaula's Sacrificial Hero** {#sdm-power-akaula-s-sacrificial-hero}
+
+> **Akaula's Sacrificial Hero**
 >
 > _Purification of the Mouth of Hell_
 >
-> **P:** 21 **R:** touch
->
+> **P:** 21 **R:** touch  
 > **T:** chosen hero, large area **D:** permanent
 >
 > The purifier uses the six sigils of binding to mark a hero to the slaughter. The hero loses 1 life per round. When
@@ -271,15 +338,86 @@ meta:
 >   - book: Vastlands_Guidebook; page: 111
 > - usage:
 >   - scope: power; id: Fundamental Purification of the Soil; note: Tablet rite from VG p.111.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-akaula-s-sacrificial-hero-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-akaula-s-sacrificial-hero-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Alter Self** {#sdm-power-alter-self}
+
+> **Alter Self**
+>
+> _Inner Beauty Manifest, Mind Over Body_
+>
+> **P:** 2 **R:** touch  
+> **T:** self **D:** 1 hour
+>
+> The wizard’s mind resculpts their features. They can resemble a specific person, provided the wizard has studied them up close, or a general type. No abilities are altered.
+>
+> Alternatively, the wizard can choose to gain gills, low-light vision, or another minor natural ability at the GM’s discretion.
+>
+> _Overcharge:_ the effects are permanent.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-alter-self-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Animate Corpse** {#sdm-power-animate-corpse}
+
+> **Animate Corpse**
+>
+> _Artificial Post-Mortality, Wake the Shell_
+>
+> **P:** 2 **R:** touch  
+> **T:** corpse **D:** permanent
+>
+> In 1 hour, a target reasonably intact human-sized corpse rises as a post-mortal zombie (@UVG, p. 209). The corpse is animated by a soul fragment and shreds of residual personality. It obeys simple orders given by the wizard, but must be reminded every 6 hours (or more frequently in a chaotic environment). A wizard can control a number of post-mortals equal to their Level without risk of rebellion.
+>
+> _Overcharge:_ The corpse awakens instantly. Alternate: awakens as a higher-level or specialized post-mortal.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+>   - scope: power; id: UVG2e Bestiary; note: Post-mortal zombie creature stats referenced inline (@UVG, p. 209).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-animate-corpse-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -291,11 +429,10 @@ meta:
 >
 > _Iatric Priest Painkiller_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** 1 creature **D:** a day
 >
-> You overridea creature's pain response, providing relief from pain and burdens. Wait, did the scribe mishear "anesthetic"?
+> You override a creature's pain response, providing relief from pain and burdens. Wait, did the scribe mishear "anesthetic"?
 >
 > _Overcharge:_ It lasts a week.
 
@@ -309,14 +446,49 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 37
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-anne-astec-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-anne-astec-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Anti-Babylon** {#sdm-power-anti-babylon}
+
+> **Anti-Babylon**
+>
+> _Universal Translation Protocol_
+>
+> **P:** 1 **R:** close  
+> **T:** 1 creature or object **D:** 1 hour
+>
+> There is a unified source code underlying reality. This spell lets the user communicate successfully with another entity: plant, animal, mineral, or data store. Entities without senses may have little to say.
+>
+> _Overcharge:_ All objects within arms' reach. Or short-range communication at a distance.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Eternal_Return_Key; page: 10
+> - usage:
+>   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-anti-babylon-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -328,8 +500,7 @@ meta:
 >
 > _Darehodo Patch Choice_
 >
-> **P:** 1 **R:** self
->
+> **P:** 1 **R:** self  
 > **T:** self **D:** 1 hour
 >
 > Meditate at a crossroads for an hour, observe the flow of its energies, the flight of birds, the waft of milkweed
@@ -349,14 +520,14 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
 >   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-better-pastures-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+>   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-better-pastures-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -368,8 +539,7 @@ meta:
 >
 > _Keep on Turning, Supplication of the Perverse Demiurge_
 >
-> **P:** 18 **R:** self
->
+> **P:** 18 **R:** self  
 > **T:** demiurge **D:** a day, then permanent
 >
 > You call upon a demiurge, an echo of the Builders, and command it to grant your wish. The demiurge does its level
@@ -395,15 +565,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 25
 > - usage:
 >   - scope: power; id: Apocrypha of the O.S.; note: Salvaged program from VG p.112.
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-big-wish-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-big-wish-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -415,8 +583,7 @@ meta:
 >
 > _Bioactive Communion_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** 2 creatures **D:** imbued
 >
 > You forge an tele-empathic link between two similar creatures, such as between two mammals or two avian dinosaurs, by exchanging vital animalcules. They can now concentrate to communicate telepathically over significant distances.
@@ -435,14 +602,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 46
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-bloodsong-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-bloodsong-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -454,8 +620,7 @@ meta:
 >
 > _Maximum Somatic Contentment_
 >
-> **P:** 1 **R:** short, ~5m
->
+> **P:** 1 **R:** short, ~5m  
 > **T:** one creature **D:** an hour
 >
 > Soma’s bliss brings contentment to the target (save).
@@ -475,14 +640,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 20
 > - usage:
 >   - scope: power; id: The Sixfold Hexacenter; note: Listed in album order on VG p.108.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-blue-lotus-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-blue-lotus-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -494,8 +658,7 @@ meta:
 >
 > _Sanator's Empathy Ritual_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** 2 creatures **D:** several hours
 >
 > You tap into a creature's essence and transfer one of its burdens—fatigue, injury, anxiety, or some other affliction—to another creature. During transfer it transforms into a spiritual stone, a healer's burden. It feels heavy and annoying within the receiver’s soul, but causes no permanent damage and dissipates normally with rest.
@@ -512,14 +675,46 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 37
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-burden-share-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-burden-share-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Burdenbeast Modification** {#sdm-power-burdenbeast-modification}
+
+> **Burdenbeast Modification**
+>
+> _Art of Carriage, Usha's Useful Mutation_
+>
+> **P:** 2 **R:** touch  
+> **T:** creature **D:** permanent
+>
+> The wizard modifies a human-sized or larger creature to carry an additional sack of goods. The ritual requires 6 hours and a sack of beast egg masses (€500). Unwilling targets get a save.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-burdenbeast-modification-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -531,8 +726,7 @@ meta:
 >
 > _Two Left Feet Curse, Clumsy Cat-astrophe_
 >
-> **P:** 1 **R:** a few meters
->
+> **P:** 1 **R:** a few meters  
 > **T:** someone who can hear you **D:** instant
 >
 > You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly
@@ -551,14 +745,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 25
 > - usage:
 >   - scope: power; id: Apocrypha of the O.S.; note: Salvaged program from VG p.112.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-can-trip-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-can-trip-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -570,13 +763,12 @@ meta:
 >
 > _Balance Purpose — Scatter the Unnaturals_
 >
-> **P:** 2 **R:** short
->
+> **P:** 2 **R:** short  
 > **T:** one creature **D:** instant
 >
 > You are the balance, the fulcrum of the world. Your touch will scatter the unnaturals like air plankton in moonlight.
+> 
 > Caustic Purification: remove an affliction and a benefit (save); cleanse toxins and life.
-> Object (d6): (1) dreamer opening a portal, (2) misunderstood scientist, (3) preacher of dire revolution, (4) adolescent throne-heir, (5) bitter, tragic wizard, (6) mother who loved one timelost.
 >
 > _Overcharge:_ (not listed)
 
@@ -589,15 +781,83 @@ meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 155
 > - usage:
->   - scope: power; id: Weapon Form; note: Eternal Purpose boon from VG 06 p.155.
+>   - scope: power; id: Weapon's Eternal Purpose; note: Weapon Path table entry (non-standard format) from Vastlands_Guidebook p.155.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-caustic-purification-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-caustic-purification-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Cerebral Purge** {#sdm-power-cerebral-purge}
+
+> **Cerebral Purge**
+>
+> _Harsh Awakening, Reality's Cold Knife_
+>
+> **P:** 2 **R:** 10m  
+> **T:** creature **D:** 0
+>
+> The wizard uses a telechronic wave to purify the target's brain of any impurities -- drugs or mind-altering spells. The target loses 1d6 Life and their recent memories become fuzzy. Unwilling targets get a save.
+>
+> _Overcharge:_ The target loses 2d6 Life and forgets what happened in the last hour. Unwilling targets still save.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-cerebral-purge-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Chariot of the Divine Palace** {#sdm-power-chariot-of-the-divine-palace}
+
+> **Chariot of the Divine Palace**
+>
+> _Volar's Rarefied Journey, Fireflight_
+>
+> **P:** 6 **R:** a short walk  
+> **T:** two people **D:** an hour and an hour
+>
+> Attune yourself to the fast star protocol. Shake your antennae at the sky like furious fists. Chant the chthonic coordinates. Summon the chariot of the divine palace. It comes, a flaming bolide, a star become a vessel. Less than an hour later it lands, like a fireball upon the land (10d6 damage to anyone caught in its 30 meter blast radius). Speak its pass spell and enter. You and one other. Speak the red word. Chant the cosmic coordinates. It rises. Once again it becomes bolide. Again, a fireball to all those who crowd about its shipmetal hull. Prepare yourself. An hour passes. You approach a fast star.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: There_A_Red_Door; page: 13
+> - usage:
+>   - scope: power; id: There, A Red Door; note: Travel site rite from There A Red Door booklet.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-chariot-of-the-divine-palace-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -609,8 +869,7 @@ meta:
 >
 > _Panoptic Projectile_
 >
-> **P:** 1 **R:** a middling hemisphere, ~12m
->
+> **P:** 1 **R:** a middling hemisphere, ~12m  
 > **T:** one attack **D:** interrupt
 >
 > Deflect an incoming attack, melee or ranged, with a projectile. Declare counterfire before the attack roll.
@@ -628,14 +887,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 24
 > - usage:
 >   - scope: power; id: The Viridian Practice; note: Gun monk tradition from VG p.109.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-counterfire-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-counterfire-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -647,13 +905,12 @@ meta:
 >
 > _Devastate Purpose — Planes of Hidden Damage_
 >
-> **P:** 2 **R:** short
->
+> **P:** 2 **R:** short  
 > **T:** one creature **D:** instant
 >
 > You must keep your true and awesome purpose secret for now. Even from yourself. But it will be great.
+> 
 > Cut the Sky: barely-visible planes deal 2d4* damage, sever limbs or heads.
-> Object (d6): (1) the eater of the sky, (2) gods' secret of life everlasting, (3) innocent breaker of barriers, (4) the one who is and is not, (5) the vile maker of humanity, (6) the child of the angelhunt.
 >
 > _Overcharge:_ 4d4* damage in a slightly larger area.
 
@@ -666,15 +923,14 @@ meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 155
 > - usage:
->   - scope: power; id: Weapon Form; note: Eternal Purpose boon from VG 06 p.155.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-cut-the-sky-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+>   - scope: power; id: Weapon's Eternal Purpose; note: Weapon Path table entry (non-standard format) from Vastlands_Guidebook p.155.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-cut-the-sky-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -686,8 +942,7 @@ meta:
 >
 > _Nosigoro Logistical Augment_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** 1 sack **D:** 1 day
 >
 > A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
@@ -703,16 +958,17 @@ meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 110
 >   - book: Magitecnica_Codex_1; page: 22
+>   - book: Eternal_Return_Key; page: 10
 > - usage:
 >   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-dampen-mass-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+>   - scope: power; id: Eternal Return Key; note: ERK lists this power as “Damp Mass.”
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-dampen-mass-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -724,8 +980,7 @@ meta:
 >
 > _Dodgebullet_
 >
-> **P:** 1 **R:** self
->
+> **P:** 1 **R:** self  
 > **T:** self **D:** one round
 >
 > Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major
@@ -744,14 +999,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 24
 > - usage:
 >   - scope: power; id: The Viridian Practice; note: Gun monk tradition from VG p.109.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-dancing-in-the-hail-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-dancing-in-the-hail-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -763,8 +1017,7 @@ meta:
 >
 > _Bigger Bang_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** anchor weapon **D:** a few minutes
 >
 > Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
@@ -782,15 +1035,81 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 24
 > - usage:
 >   - scope: power; id: The Viridian Practice; note: Gun monk tradition from VG p.109.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-depleted-heavy-metal-rain-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-depleted-heavy-metal-rain-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Dissolution and Resolution of the Spirit** {#sdm-power-dissolution-and-resolution-of-the-spirit}
+
+> **Dissolution and Resolution of the Spirit**
+>
+> _Fey Slumber, Hard Reboot_
+>
+> **P:** 2 **R:** touch  
+> **T:** a willing creature **D:** 1 day
+>
+> The wizard dissolves a creature's spirit, leaving an inert shell or pseudocorpse. After 1 day, the spirit reboots, wiped clean of spiritual parasites, daemons, code-worms, or mind-affecting spells.
+>
+> _Overcharge:_ The target is inert for a week. The reboot also repairs physical injuries and ailments.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-dissolution-and-resolution-of-the-spirit-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Dryland Sculpture** {#sdm-power-dryland-sculpture}
+
+> **Dryland Sculpture**
+>
+> _Utilitarian Livingstone Bungalow, Rite of Coral Form_
+>
+> **P:** 2 **R:** touch  
+> **T:** 5m diameter area **D:** permanent
+>
+> Over 6 hours the wizard coaxes a livingstone brick (1 stone) to grow into a dryland coral form of any shape they want within the target area. Hemispheres are popular. Don't forget a door.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-dryland-sculpture-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -802,8 +1121,7 @@ meta:
 >
 > _Simple Assimilator_
 >
-> **P:** 2 **R:** eating distance
->
+> **P:** 2 **R:** eating distance  
 > **T:** self **D:** imbued
 >
 > You eat part of a creature you are familiar with to temporarily manifest one of its natural traits. A nail clipping or some fur will suffice.
@@ -832,14 +1150,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 45
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-eategrate-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-eategrate-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -851,8 +1168,7 @@ meta:
 >
 > _Biodetector_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** 1 creature **D:** imbue
 >
 > You open your mind to the living patterns nearby. This expands your sensory repertoire and enhances your awareness.
@@ -871,14 +1187,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 51
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-ecosphere-attunement-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-ecosphere-attunement-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -890,23 +1205,18 @@ meta:
 >
 > _Biomelt_
 >
-> **P:** 5 **R:** 0
->
+> **P:** 5 **R:** 0  
 > **T:** self or 1 creature **D:** 1 day and 1 night
-
+> 
 > The ecosphere consumes you. The living creatures of the area eat your body and your mind and personality travel unseen in the movement of birds and beetles, the sigh of grass and the creak of trees. When the spell ends, your body reconstitutes from dead organic matter over about a day.
 >
 > Over the day spent in the ecosphere you gain a deep awareness of the local area and heal one burden or affliction as though you had a weeklong rest. You regain no life during your time in the circle of life.
 >
 > This power is dangerous for creatures other than yourself and costs double if cast on an unwilling target.
 >
->
->
 > **Ecoentheosis (trait)**
 >
-> - You are in mystic union with the local ecology. You can communicate
->
-> with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman’s axe, the joy of Spring’s blossoming, the tramping of an army, and the fall of a great oak.
+> - You are in mystic union with the local ecology. You can communicate with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman’s axe, the joy of Spring’s blossoming, the tramping of an army, and the fall of a great oak.
 >
 > _Overcharge:_ Persist as motes in the wind and microbes in the soil for up to 1 week before full reconstitution. Each day counts as a week’s rest. At the end of the week, save or permanently replace one of your traits with a deep panpsychic connection to the local ecology: the glen, dale, vale, grove, stream, lake, bay, or what have you. You may choose to fail this save.
 
@@ -920,16 +1230,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 52
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
-
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-ecosphere-immersion-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-ecosphere-immersion-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -941,8 +1248,7 @@ meta:
 >
 > _Biojammer_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** 1 creature **D:** imbue
 >
 > You align your essence with the local ecosphere. Creatures unconsciously disregard your presence, facilitating stealth. _Alternatively_, you can make yourself stand out sharply, possibly distracting from other activities or gaining a social bonus like a peacock in full display.
@@ -959,14 +1265,118 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 51
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-ecosphere-veil-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-ecosphere-veil-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Egregious Topology** {#sdm-power-egregious-topology}
+
+> **Egregious Topology**
+>
+> _Fractal Phase Shift_
+>
+> **P:** 1 **R:** touch  
+> **T:** 1 hand or stone **D:** 1 minute
+>
+> Irrational post-realistic mathemagic pushes an object into an anakata superposition with common matter. An item can pass through a door, a hand through a box lid.
+>
+> _Overcharge:_ Affects 1 person or sack.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Eternal_Return_Key; page: 10
+> - usage:
+>   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-egregious-topology-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Entropic Reversal** {#sdm-power-entropic-reversal}
+
+> **Entropic Reversal**
+>
+> _The Untiming Charm, Zundan's Awakening of Aways_
+>
+> **P:** 2 **R:** 3m  
+> **T:** object (tool or machine) **D:** 0
+>
+> The wizard draws a 1 meter diameter chronomantic circle around the target object. When the drawing is complete, a flash of para-entropy restores the object to perfect function and decays everything else within the circle. The ritual takes 15 minutes.
+>
+> _Overcharge:_ Allows a 10 meter diameter circle.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-entropic-reversal-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Essence Sift** {#sdm-power-essence-sift}
+
+> **Essence Sift**
+>
+> _Abstracted Attractor_
+>
+> **P:** 1 **R:** touch  
+> **T:** 1 stone or bottle **D:** 5 minutes
+>
+> By articulating the names and locations and velocities of one substance, it is drawn out of a mixture. Salt filters from water, organics rise from soil, water precipitates from air. The finer the name and knowledge, the more perfect the sift.
+>
+> _Overcharge:_ Two substances are drawn out at once. Or a sack's worth of substance is sifted over half an hour.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Eternal_Return_Key; page: 11
+> - usage:
+>   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-essence-sift-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -978,8 +1388,7 @@ meta:
 >
 > _Visions of the Dear Departed_
 >
-> **P:** 8 **R:** medium, ~50m
->
+> **P:** 8 **R:** medium, ~50m  
 > **T:** self **D:** 1 day
 >
 > The seeker’s eyes glow pale chartreuse and can see things invisible, hidden, departed, and dead.
@@ -996,14 +1405,13 @@ meta:
 >   - book: Vastlands_Guidebook; page: 111
 > - usage:
 >   - scope: power; id: Fundamental Purification of the Soil; note: Tablet rite from VG p.111.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-eyes-of-akaula-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-eyes-of-akaula-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1015,8 +1423,7 @@ meta:
 >
 > _Panoptic Projectile_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** one projectile **D:** a minute or so
 >
 > Bind a strand of your consciousness to a projectile. It acts like a remote eye (or other sensor).
@@ -1034,14 +1441,122 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 24
 > - usage:
 >   - scope: power; id: The Viridian Practice; note: Gun monk tradition from VG p.109.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-eyes-of-the-arrow-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-eyes-of-the-arrow-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Floating Disc** {#sdm-power-floating-disc}
+
+> **Floating Disc**
+>
+> _Shield of the Righteous, Mage's Mule_
+>
+> **P:** 2 **R:** 30m  
+> **T:** point **D:** 1 hour
+>
+> The wizard creates a concave disc of stuckforce 1m in diameter. The disc hovers, can be pushed at a walking pace, and can be tilted to create an almost impenetrable barrier. The disc vanishes if it is more than 30m from the wizard.
+>
+> _Overcharge:_ The disc can be up to 5m in diameter and moves at the wizard's spoken command.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-floating-disc-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **For the Sky is a Sea** {#sdm-power-for-the-sky-is-a-sea}
+
+> **For the Sky is a Sea**
+>
+> _Ritual Ascent into the Water Heavens_
+>
+> **P:** 4 **R:** self  
+> **T:** ka-ba **D:** 1 dream
+>
+> Take a spoonful of yerba-levante with your lesh-de-nuit and chant the six staircases of Sabo Recu, the Hitchiker.
+> Then, in your sleep, dream of the crystal ascender and make the sign of the Wind and the Green, and your dream idego, your spirit-second, will ascend to the Sea in the Sky. There, the painted ones will remove a burden from your soul and share one happy and one painful truth with you.
+>
+> _Overcharge:_ Propel yourself, waking, body and soul and mind together, into the Water Heavens for as long as a dream takes to unwalk itself.
+>
+> Idego: combination of a sentient creature's mind and personality. A time-stamped, specific sentient instance. Its *ba* in some cultures.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: There_A_Red_Door; page: 3
+> - usage:
+>   - scope: power; id: There, A Red Door; note: Noosphere rite from There A Red Door booklet.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-for-the-sky-is-a-sea-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Gem Bomb** {#sdm-power-gem-bomb}
+
+> **Gem Bomb**
+>
+> _Jeweler's Fireball, Uzud's Exploding Flower of Stone_
+>
+> **P:** 2 **R:** touch  
+> **T:** gem **D:** 0
+>
+> The wizard carves an explosive forcefield into a gem worth at least €20. It explodes on impact, dealing 2d6 damage to all nearby.
+>
+> _Overcharge:_ It explodes like a Fireball.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-gem-bomb-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1053,8 +1568,7 @@ meta:
 >
 > _Arbor Sanctuary_
 >
-> **P:** 1 **R:** nearby
->
+> **P:** 1 **R:** nearby  
 > **T:** a 7m diameter sphere **D:** a night or a day
 >
 > Convince shrubberies, grasses, brambles, and other plants to form a hedge domehome, a sanctuary to rest and hide
@@ -1074,14 +1588,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 20
 > - usage:
 >   - scope: power; id: The Sixfold Hexacenter; note: Listed in album order on VG p.108.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-green-haven-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-green-haven-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1093,13 +1606,12 @@ meta:
 >
 > _Error Purpose — Abort/Retry/Fail_
 >
-> **P:** 2 **R:** short
->
+> **P:** 2 **R:** short  
 > **T:** one creature **D:** instant
 >
 > This world was not meant to be. This world was not meant for you and me. This was not was not was.
+> 
 > Ha-Ka-Ba Short Circuit: target’s soul, mind, and body disconnect for 1 round (save); parts attacked individually gain a bonus.
-> Object (d6): (1) the moon detonator, (2) the fountain of white hands, (3) the sun eater, (4) the new star, (5) the eternal mind beyond space, (6) the electric MKR.
 >
 > _Overcharge:_ lasts 1d4 rounds.
 
@@ -1112,16 +1624,49 @@ meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 155
 > - usage:
->   - scope: power; id: Weapon Form; note: Eternal Purpose boon from VG 06 p.155.
+>   - scope: power; id: Weapon's Eternal Purpose; note: Weapon Path table entry (non-standard format) from Vastlands_Guidebook p.155.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-ha-ka-ba-short-circuit-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-ha-ka-ba-short-circuit-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Hero's Goldenmouth** {#sdm-power-hero-s-goldenmouth}
+
+> **Hero's Goldenmouth**
+>
+> _Honeyed Words of the Trustworthy One_
+>
+> **P:** 1 **R:** a crowded room or small courtyard  
+> **T:** upstanding humans of your putative culture **D:** until reality forcefully intervenes (then save)
+>
+> Pour yourself into your words, dramatic gestures, suggestions, and compelling straw men. After a few minutes of speechifying, spend 1 point of charisma, aura, or thought to charm your listeners. They find you persuasive, trustworthy, and likable enough to believe your “truths” and give your ideas a shot. This is no mental domination, you are simply showing that your plans are in their best interest.
+>
+> _Overcharge:_ Charm through a telemagical medium such as vidy crystals or comm portals.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Our_Golden_Age; page: 37
+> - usage:
+>   - scope: power; id: The Power of Fluency; note: Hero's Goldenmouth from Our Golden Age p.37.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-hero-s-goldenmouth-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1133,12 +1678,10 @@ meta:
 >
 > _Foolself Driving_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** vehicle or steed **D:** 1 day
 >
-> Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now
-> drives itself! Hopefully, the daemon understands your language to receive voice commands.
+> Summon a driver daemon from the noösphere and bind it to your vehicle or steed for a day. Lo, the chariot now drives itself! Hopefully, the daemon understands your language to receive voice commands.
 >
 > _Overcharge:_ The daemon is capable of more complex maneuvers and adapting to changing road situations, like stopped ambling lancers.
 
@@ -1153,14 +1696,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
 >   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-highway-cruiser-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-highway-cruiser-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1172,12 +1714,10 @@ meta:
 >
 > _Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction_
 >
-> **P:** 4 **R:** close
->
+> **P:** 4 **R:** close  
 > **T:** a person **D:** 1 hour
 >
-> Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff,
-> unmoving, receptive to carpentry.
+> Wave your hand like the six-times folded frond and watch your target become as a log of wood (save). Hard, stiff, unmoving, receptive to carpentry.
 >
 > _Overcharge:_ The change is permanent.
 
@@ -1192,14 +1732,93 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 25
 > - usage:
 >   - scope: power; id: Apocrypha of the O.S.; note: Salvaged program from VG p.112.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-hlod-person-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-hlod-person-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Imbue Edge** {#sdm-power-imbue-edge}
+
+> **Imbue Edge**
+>
+> _Seka's Spearcraft, Vorpalize_
+>
+> **P:** 2 **R:** touch  
+> **T:** edged weapon **D:** 6 hours
+>
+> The wizard whispers to a weapon, imbuing it with cunning, lust, and humor. It deals +2 damage and can harm spirits, daemons and other intangibles for the spell's duration.
+>
+> _Overcharge:_ On a critical hit, the target must save or die.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-imbue-edge-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Impermissible Cleaver** {#sdm-power-impermissible-cleaver}
+
+> **Impermissible Cleaver**
+>
+> _Dividing Reality Into Its Constituent Bodies_
+>
+> **P:** 1 **R:** touch  
+> **T:** small object **D:** an hour
+>
+> Use the protocols of the ten translations. Reach into the indivisible heart of a material object and break it.
+> Release its creative force. Reveal the lie that is matter. Watch. Caress the object in your hand. See, it breaks down over an hour. First, it is weakened, then it fractures, finally it crumbles into aetheric dust.
+>
+> _Overcharge:_ It collapses in but a minute and releases heat to burn and damage (1 damage per round).
+>
+> _Overcharge Again:_ It breaks down in a second. Explosion. Boom. Fragments. (1d6 damage to all nearby. Double to anyone next to the object.)
+>
+> _Overcharge Yet Again:_ Faster than the eye can see. (3d6 damage to all nearby.)
+>
+> _And Again:_ Boom. An eruption. Fire. Hole. The magitechnical fission makes a crater. (1d6 damage to far off targets, 8d6 to nearby, double to adjacent.)
+>
+> _More Overcharge! More:_ The object breaks down in one 216,000th part of a second, and within a millisecond the fireball is tens of metres across. By 100 milliseconds, it measures hundreds of meters. Using dice to simulate damage is pointless. The crater glows with spell radiance for days, and the source codes of living creatures in the vicinity are corrupted for weeks or months after the spell's detonation.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: There_A_Red_Door; page: 7
+> - usage:
+>   - scope: power; id: There, A Red Door; note: Electromagnificence rite from There A Red Door booklet.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-impermissible-cleaver-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1211,13 +1830,10 @@ meta:
 >
 > _Local Reality Error Spark_
 >
-> **P:** 7 **R:** here
->
+> **P:** 7 **R:** here  
 > **T:** large local area of disturbed reality **D:** permanent
 >
-> The summoner invokes the Ub code and condenses accumulated magitechnical disturbance into an eater. Its power
-> depends on the level of disturbance (decided by the referee or a d10 roll). After the eater emerges, the local
-> disturbance reduces one step; stuckforces loosen, energy snarls fade, radiation ghosts dim.
+> The summoner invokes the Ub code and condenses accumulated magitechnical disturbance into an eater. Its power depends on the level of disturbance (decided by the referee or a d10 roll). After the eater emerges, the local disturbance reduces one step; stuckforces loosen, energy snarls fade, radiation ghosts dim.
 > | d10 | Disturbance  | Eater Invoked | Level |
 > | --- | --- | --- | --- |
 > | <1 | undisturbed | **sparkly air plankton** | L0 (harmless) |
@@ -1238,14 +1854,48 @@ meta:
 >   - book: Vastlands_Guidebook; page: 111
 > - usage:
 >   - scope: power; id: Fundamental Purification of the Soil; note: Tablet rite from VG p.111.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-invoke-ub-dragon-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-invoke-ub-dragon-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Knock / Lock** {#sdm-power-knock-lock}
+
+> **Knock / Lock**
+>
+> _Locksmith's Lament, Seal of Hashoon_
+>
+> **P:** 2 **R:** 10m  
+> **T:** lock **D:** permanent
+>
+> The wizard summons a fragment of consciousness into a target lock. Overjoyed, the dimly sentient object burbles at the edges of the wizard's mind, begging to please. It unlocks or locks itself. Magical locks save with a bonus equal to their wizard's level.
+>
+> _Overcharge:_ The door or portal is flung open or sealed, welded, or fused shut.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-knock-lock-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1257,13 +1907,12 @@ meta:
 >
 > _Preserve Purpose — Maintain the Canopy_
 >
-> **P:** 2 **R:** short
->
+> **P:** 2 **R:** short  
 > **T:** one creature **D:** instant
 >
 > You are the agent of Stasis, the upkeeper of the dream, the maintainer of the canopy.
+> 
 > Lay In Wires: plunge into a creature, granting 10 life while draining 1 life per round for 12 rounds.
-> Object (d6): (1) world-eater's bleak city, (2) raveller of creation's seams, (3) forge of peoples' faiths, (4) undying traveler in time, (5) alien uniter of worlds, (6) subservience to the gods.
 >
 > _Overcharge:_ grants 30 life, target loses 4 life per round.
 
@@ -1276,15 +1925,84 @@ meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 155
 > - usage:
->   - scope: power; id: Weapon Form; note: Eternal Purpose boon from VG 06 p.155.
+>   - scope: power; id: Weapon's Eternal Purpose; note: Weapon Path table entry (non-standard format) from Vastlands_Guidebook p.155.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-lay-in-wires-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-lay-in-wires-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Linked Portals** {#sdm-power-linked-portals}
+
+> **Linked Portals**
+>
+> _Lesser Astral Voyage, Nilbreg's Convenient Tunnel_
+>
+> **P:** 2 **R:** touch  
+> **T:** area **D:** 30 minutes
+>
+> The wizard draws two circles of 3 meter radius in the air. The circles are linked by an astral unreality bridge. Anything that enters one hoop exits the other unchanged, but with its vector of motion altered by the hoops' position. Two hoops positioned above each other let an object fall to terminal velocity.
+>
+> _Overcharge:_ The orientation of the portals can be adjusted at will. The portals can also be thrown up to 10 meters.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-linked-portals-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Magic Jar** {#sdm-power-magic-jar}
+
+> **Magic Jar**
+>
+> _Abned's Bottled Ba, Crystalized Mind_
+>
+> **P:** 2 **R:** touch  
+> **T:** creature **D:** permanent
+>
+> The wizard transfers an unconscious creature's personality into a delicate crystal worth €1,000. The procedure erases the original personality. The process takes 30 minutes.
+>
+> _Overcharge:_ The creature's personality is copied, not erased. There is a 50% chance of catastrophic ego conflict or moral partitioning.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-magic-jar-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1296,14 +2014,12 @@ meta:
 >
 > _Bioactive Fusion_
 >
-> **P:** 2 **R:** psychosurgical range
->
+> **P:** 2 **R:** psychosurgical range  
 > **T:** 1 creature **D:** imbue
 >
 > You inject your mind into a creature, such as a cat or capybara, turning it into a drone under your telepathic control. Accessing a drone’s sensory experiences, memories, or skills requires conscious effort and concentration.
 >
 > Your control is anchored in a metaphysical anchor occupying an inventory slot. Dropping or dissolving the anchor ends the fusion, releasing the target.
->
 >
 > _Note:_ Dominating a creature whose mental attributes exceed your own is dangerous—it may take control of you instead! At the referee’s discretion, very alien creatures may be harder to control.
 >
@@ -1319,14 +2035,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 47
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-manybodied-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-manybodied-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1338,19 +2053,31 @@ meta:
 >
 > _Serapefti's Ka-Ba Translation_
 >
-> **P:** 6 **R:** touch
->
+> **P:** 6 **R:** touch  
 > **T:** 1 patient and 1 host **D:** 1 day and night
-
+> 
 > You transfer a patient's essence into a new physical host. A perfect replica of the original body is ideal, but alternate hosts such as crude golems, animals, crystals and even vats of memory liquid can suffice. Changing forms may result in temporary psychophysical stress.
->
->
 >
 > **Patient Host Compatibility** Some complex transfers require a psychemantic or medimagical roll. If the host is non-compliant, roll twice and take the worse result (disadvantage). If the host is dead, the roll is more difficult.
 >
-> **Similarity** **Effect** Identical no roll required Relative, Friend easy roll Same Species moderate roll Similar Lifeform hard roll (dog, cat, etc.) Alien Lifeform extreme roll (shrubbery, slime mold, alien) Essence Jewel moderate roll Golem, Crude extreme roll (clay, stone, bone) Golem, Polished hard roll (servos, porcelain, and crystal brain) Mundane Object extreme roll, disadvantage (sword, anvil, pot)
+> | Similarity | Effect |
+> | --- | --- |
+> | Identical | no roll required |
+> | Relative, Friend | easy roll |
+> | Same Species | moderate roll |
+> | Similar Lifeform | hard roll (dog, cat, etc.) |
+> | Alien Lifeform | extreme roll (shrubbery, slime mold, alien) |
+> | Essence Jewel | moderate roll |
+> | Golem, Crude | extreme roll (clay, stone, bone) |
+> | Golem, Polished | hard roll (servos, porcelain, and crystal brain) |
+> | Mundane Object | extreme roll, disadvantage (sword, anvil, pot) |
 >
-> **Result** **Effect** nat. 1 Patient’s essence lost or replaced with a similar daemon! fail Transfer fails. Both targets exposed to moderate corruption. success Transfer succeeds. Host essence destroyed. nat. 20 Excellent transfer. Patient can choose to retain one of the host’s traits or skills.
+> | Result | Effect |
+> | --- | --- |
+> | nat. 1 | Patient’s essence lost or replaced with a similar daemon! |
+> | fail | Transfer fails. Both targets exposed to moderate corruption. |
+> | success | Transfer succeeds. Host essence destroyed. |
+> | nat. 20 | Excellent transfer. Patient can choose to retain one of the host’s traits or skills. |
 >
 > _Overcharge:_ Attempt to overwrite the mind of a non-compliant host.
 
@@ -1364,14 +2091,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 38
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-metempsychosis-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-metempsychosis-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1383,8 +2109,7 @@ meta:
 >
 > _Blood Made Lead_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** anchor weapon **D:** instant
 >
 > Reloads your weapon as a free action, turning life force into semi-real projectiles.
@@ -1402,14 +2127,49 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 24
 > - usage:
 >   - scope: power; id: The Viridian Practice; note: Gun monk tradition from VG p.109.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-mother-of-bullets-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-mother-of-bullets-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Motor Fixative** {#sdm-power-motor-fixative}
+
+> **Motor Fixative**
+>
+> _Rental Upskill Initiative_
+>
+> **P:** 1 **R:** touch  
+> **T:** 1 creature **D:** 1 day
+>
+> Temporarily burns an observed practical skill into a brain. After watching a swimmer or flyer or gunner in action, the creature can perform the same.
+>
+> _Overcharge:_ It lasts a week instead.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Eternal_Return_Key; page: 11
+> - usage:
+>   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-motor-fixative-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1421,8 +2181,7 @@ meta:
 >
 > _Life’s End Made Present, Hadi’s Self-Immolation Binding_
 >
-> **P:** 8 **R:** touch
->
+> **P:** 8 **R:** touch  
 > **T:** a sentient creature **D:** 1 year
 >
 > Between one step and the next, you flicker between existence and non-existence, you age a year and a creature you touch disappears into the nothing of wormspace for a year. No save.
@@ -1443,14 +2202,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 25
 > - usage:
 >   - scope: power; id: Apocrypha of the O.S.; note: Salvaged program from VG p.112.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-nihil-est-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-nihil-est-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1462,10 +2220,9 @@ meta:
 >
 > _Radical Metabolic Manipulation_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** one creature **D:** 10 minutes
-
+> 
 > You coerce the target into a fight or flight overdrive, boosting its physical abilities past their safe limits. The target gains +2 strength, endurance, and agility. It can lift more, leap farther, punch harder. When the overdrive fades, it gains 6 exhaustion burdens. These fade at a rate of one per hour.
 >
 > _Overcharge:_ The target gains an additional 6 points to assign to strength, endurance, agility, attack, and defense as it sees fit. When the overdrive fades, besides the exhaustion the target also suffers 1d8 damage.
@@ -1482,14 +2239,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 32
 > - usage:
 >   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-nunka-s-biophysical-overdrive-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-nunka-s-biophysical-overdrive-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1501,8 +2257,7 @@ meta:
 >
 > _Biodefense Integration_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** one creature **D:** permanent
 >
 > You reshape a creature’s skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
@@ -1554,14 +2309,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 30
 > - usage:
 >   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-nunka-s-epidermal-sculpt-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-nunka-s-epidermal-sculpt-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1573,8 +2327,7 @@ meta:
 >
 > _Integrated Biological Warfare_
 >
-> **P:** 4 **R:** touch
->
+> **P:** 4 **R:** touch  
 > **T:** one creature **D:** permanent
 >
 > You craft a custom symbiote that integrates into the target’s digestive tract. The crafting takes a day, the painless embedding another 8 hours. The symbiote occupies one inventory slot.
@@ -1586,7 +2339,6 @@ meta:
 > 2. Writhing Thornstar. Short range. Entangling thorns in a small radius. Anyone passing through quickly suffers 1d6* damage. 3. Necrotic Fungaloid. Short range. Spore sac deals 1d8 damage on impact or when triggered on. Target must save or suffer 1d6 endurance damage as its lungs are attacked. 4. Snapping Moraykin. Close. Additional bite attack deals 1d6* damage. Automatically strikes enemies who are not expecting the host’s mouth to fold open and release a biting second mouth. 5. Green Grappler. Close. Tentacles grapple a target and make it very hard to pull away. 6. Sonic Hive. Short range. Hundreds of stinging insects pour forward, confusing, harassing, annoying. 7. Stunfish. Short range. A pulsating aerial jellyfish that wafts with the air currents. If struck, it detonates in a spectacular shockwave of light and electromagnetic radiation. Creatures near the jellyfish must save or are blinded and stunned for a few rounds. 8. Glue Cucumber. Short range. Spray of gooey yellow proteins glues the target to the surface. Hard save to break free.
 >
 > After attacking, the symbiote must regrow before it can be used again. This happens naturally in 1 week or more quickly, in an hour or so, if the host spends 1d4 life.
->
 >
 > `⚔︎`
 >
@@ -1602,16 +2354,15 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 33
 > - usage:
 >   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
-
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-nunka-s-spitting-symbiote-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-nunka-s-spitting-symbiote-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1623,12 +2374,10 @@ meta:
 >
 > _Biocombat Implementation_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** one creature **D:** permanent
 >
 > You coerce a creature's biology to express natural weapons like claws, spikes, horns, or venom. The manifestation depends on the creature's size and form. The modification occupies an inventory slot. The transformation requires 1 day.
->
 >
 > _Note:_ Multiple uses on a single individual are dangerous.
 >
@@ -1652,14 +2401,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 29
 > - usage:
 >   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-nunka-s-weapon-morph-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-nunka-s-weapon-morph-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1671,8 +2419,7 @@ meta:
 >
 > _The Bending Fork, Made’s Invisible Hand_
 >
-> **P:** 1 **R:** nearby
->
+> **P:** 1 **R:** nearby  
 > **T:** object **D:** a few minutes
 >
 > Fragments of your form corrode, sublimate, and become an ectoplasmic hand with which you can caress, hold, crush,
@@ -1690,14 +2437,13 @@ meta:
 >   - book: Vastlands_Guidebook; page: 154
 > - usage:
 >   - scope: power; id: Weapon Form; note: Granted to every Weapon Form chassis (VG 06 p.154).
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-objective-telekinesis-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-objective-telekinesis-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1709,8 +2455,7 @@ meta:
 >
 > _Hsu Doru's Preparatory Ritual_
 >
-> **P:** 6 **R:** touch
->
+> **P:** 6 **R:** touch  
 > **T:** 1 standard humanTM **D:** 1 hour
 >
 > You activate a person’s standard humanTM construction seams® to painlessly unfold them like a flower for easier medical treatment. An open person may seriously injure themselves if not careful (3d6 damage per action). Treatments on an open person are significantly easier, the price of biomantic and medical powers used on them is halved.
@@ -1729,14 +2474,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 39
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-open-person-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-open-person-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1748,8 +2492,7 @@ meta:
 >
 > _Forgotten Spider’s Labors_
 >
-> **P:** 1 **R:** whisper
->
+> **P:** 1 **R:** whisper  
 > **T:** one creature **D:** an hour
 >
 > A neutral or friendly creature agrees to do what you ask for an hour (no save), so long as it does not appear
@@ -1768,14 +2511,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 20
 > - usage:
 >   - scope: power; id: The Sixfold Hexacenter; note: Listed in album order on VG p.108.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-orange-dream-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-orange-dream-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1787,8 +2529,7 @@ meta:
 >
 > _Hsu Doru's Life Shunt_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** 2 creatures **D:** instant
 >
 > You manipulate the underlying energy patterns to transfer life from one creature to another, or directly from your own reserves.
@@ -1805,14 +2546,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 39
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-parasoma-transference-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-parasoma-transference-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1824,8 +2564,7 @@ meta:
 >
 > _Wissa's Fountain of YouthificationTM_
 >
-> **P:** 6 **R:** touch
->
+> **P:** 6 **R:** touch  
 > **T:** 1 creature **D:** a week
 >
 > You restore a creature to its biological state of a year earlier, while preserving most of its current memories.
@@ -1842,14 +2581,48 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 39
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-primary-desenescence-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-primary-desenescence-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Process Food** {#sdm-power-process-food}
+
+> **Process Food**
+>
+> _Generate Pink Slime, Maker's Manna_
+>
+> **P:** 2 **R:** touch  
+> **T:** raw matter **D:** permanent
+>
+> After a 1 hour ritual, the wizard turns a sack of inedible organic material into nutritious food (1 sack of supplies). Causes magic cancer if consumed for a prolonged period.
+>
+> _Overcharge:_ Creates food from inorganic matter.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-process-food-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1861,12 +2634,10 @@ meta:
 >
 > _Comic Emotional Display_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** a creature **D:** several minutes
 >
-> The target becomes susceptible to influence. The barest word or sensation triggers vivid memories, thoughts, and
-> emotions. How could anyone keep thoughts or facts a secret in this state? Or resist a fine, rousing song?
+> The target becomes susceptible to influence. The barest word or sensation triggers vivid memories, thoughts, and emotions. How could anyone keep thoughts or facts a secret in this state? Or resist a fine, rousing song?
 >
 > _Overcharge:_ Affect a number of creatures equal to twice your level.
 
@@ -1881,15 +2652,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 20
 > - usage:
 >   - scope: power; id: The Sixfold Hexacenter; note: Listed in album order on VG p.108.
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-purple-memories-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-purple-memories-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1901,13 +2670,10 @@ meta:
 >
 > _Instant Incendiary, Damora’s Placid Inferno_
 >
-> **P:** 6 **R:** touch, or as thrown
->
+> **P:** 6 **R:** touch, or as thrown  
 > **T:** 10m diameter sphere **D:** a day, then instant
 >
-> You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire
-> within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6
-> damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
+> You take a ball-sized burning ember from a pyre or bonfire and speak the placatory formulas to trap the entire fire within. When the ball strikes a hard surface (or is struck), all the trapped fires suddenly erupt, dealing 5d6 damage to all creatures caught in its blast radius. An unexploded ball dissipates harmlessly after a day.
 >
 > _Overcharge:_ The ball deals 10d6 damage, or its fires keep for a month.
 
@@ -1922,14 +2688,48 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 25
 > - usage:
 >   - scope: power; id: Apocrypha of the O.S.; note: Salvaged program from VG p.112.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-pyreball-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-pyreball-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Raise Dead** {#sdm-power-raise-dead}
+
+> **Raise Dead**
+>
+> _The Seventh Abomination, The Dark Hakaba_
+>
+> **P:** 2 **R:** touch  
+> **T:** corpse **D:** permanent
+>
+> After a 6 hour ritual, the wizard calls back a creature's soul and binds it to its corpse, creating an undead abomination and a parody of life. If the creature has been dead for more than 24 hours, only echoes of its personality and memories (Ba) remain. This spell must be overcharged to call back the soul of any creature of worth and potency.
+>
+> _Overcharge:_ The wizard can give the raised creature one short command, which the creature will attempt to obey to the best of its abilities.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-raise-dead-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1941,10 +2741,9 @@ meta:
 >
 > _Zdarovar's Rapid Healing_
 >
-> **P:** variable **R:** touch
->
+> **P:** variable **R:** touch  
 > **T:** 1 creature **D:** minutes
-
+> 
 > You invoke the oneiroi Quiscus and Sanatus to reach into a creature's essence and replace damaged code with a pristine version. This painful process deals damage equal to its power.
 >
 > **Power Settings:** P2 remove cosmetic blemishes P4 flush toxins or afflictions P6 restore a damaged organ to factory settings P10 regrow a limb P16 regrow a head or torso P25 rebuild a whole body from dust and fragments
@@ -1961,14 +2760,84 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 40
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-real-time-rebuild-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-real-time-rebuild-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Reason's Harvest** {#sdm-power-reason-s-harvest}
+
+> **Reason's Harvest**
+>
+> _All-Library Interface_
+>
+> **P:** 1 **R:** touch  
+> **T:** 1 item or book **D:** 1 minute
+>
+> The harvest protocol skims the ambient infotronium cloud of an object—essentially, it copies a book's worth of information directly into the user's mind.
+>
+> _Overcharge:_ Ten books' worth, but this is painful.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Eternal_Return_Key; page: 11
+> - usage:
+>   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-reason-s-harvest-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Recall Soul** {#sdm-power-recall-soul}
+
+> **Recall Soul**
+>
+> _Necroflare, Ka-Theft_
+>
+> **P:** 2 **R:** touch  
+> **T:** corpse **D:** 0
+>
+> After a 1 hour ritual, the wizard calls back a creature's soul, which erupts from the corpse as a coiling serpent of ectoplasmic fire. The soul can be captured in a golem, used to power obscene artifacts, or merely used for theatrical effect. This spell must be overcharged to call back the soul of any creature of worth and potency.
+>
+> _Overcharge:_ The soul is bound in a portable wispy globe for up to 3 hours.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-recall-soul-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1980,8 +2849,7 @@ meta:
 >
 > _Tactical Aggression Augment_
 >
-> **P:** 1 **R:** short, ~20m
->
+> **P:** 1 **R:** short, ~20m  
 > **T:** one creature **D:** a few minutes
 >
 > Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save).
@@ -2000,13 +2868,14 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 20
 > - usage:
 >   - scope: power; id: The Sixfold Hexacenter; note: Listed in album order on VG p.108.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-red-mist-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-red-mist-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
 
 </div>
@@ -2019,8 +2888,7 @@ meta:
 >
 > _Automedical Self Repair_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** one creature **D:** 10 rounds
 >
 > Your touch instructs an organism to start swiftly repairing itself. The target regenerates 1 life point per round. As the regeneration proceeds, wounds knit, broken bones set, and missing bits regrow. Injured areas remain tender and fragile for a week.
@@ -2053,13 +2921,14 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 21
 > - usage:
 >   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-rehoryan-s-progressive-restoration-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-rehoryan-s-progressive-restoration-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
 
 </div>
@@ -2072,24 +2941,25 @@ meta:
 >
 > _Purposeful Biotic Evolution_
 >
-> **P:** 5 **R:** touch
->
+> **P:** 5 **R:** touch  
 > **T:** one creature **D:** permanent
 >
 > After drinking a sample of the target’s spinal fluid, you may chant viridian rituals into its flesh, forcing a rapid evolution. This is dangerous for the target. After 1 day of troubled sleep it permanently gains either:
 >
 > New Trait:
 >
-> 1. night vision 2. tremorsense
+> 1. night vision
+> 
+> 2. tremorsense
 >
-> 3. intuitive mechanical repair aptitude 4. limited telepathy 5. hard vacuum resistance (survive 3 minutes with no ill effects) 6. radiation resistance or other similar evolved trait
+> 3. intuitive mechanical repair aptitude
+> 4. limited telepathy
+> 5. hard vacuum resistance (survive 3 minutes with no ill effects)
+> 6. radiation resistance or other similar evolved trait
 >
 > Eugenic Inheritance: +2 to one ability (not exceeding the normal maximum).
 >
->
 > _Note:_ Using this power on the same creature twice is very dangerous and may transform it into an acidic gelatinomorph.
->
-> ❂
 >
 > _Overcharge:_ Disabled for this power by order Magenta-cantaloupe-3.
 
@@ -2103,13 +2973,14 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 22
 > - usage:
 >   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-rehoryan-s-prophetic-song-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-rehoryan-s-prophetic-song-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
 
 </div>
@@ -2122,22 +2993,24 @@ meta:
 >
 > _More Purposeful Biotic Evolution, Rehoryan’s Illegal Power_
 >
-> **P:** 11 **R:** touch
->
+> **P:** 11 **R:** touch  
 > **T:** one creature **D:** permanent
 >
 > _This off-label power is not included in normal Rehoryan albums. This power can only be used on a creature that has already heard Rehoryan’s Prophetic Song, also known as Song 1._
 >
->
 > After eating a sample of the [missing], you may chant obsidian rituals into its vitals, encouraging a perfect evolution. This is very dangerous for the target. After 1 day of gentle sleep it permanently gains either:
 >
-> Far Evolved Trait: 1. gravistatic organ (can levitate in place) 2. televisual abilities (can see through another creature’s eyes) 3. photovitalic skin (meets 50% of nutritional needs) 4. improved bioluminescence (display 700 ads on your skin!) 5. incredible heat/cold tolerance 6. radiation immunity or other similar evolved trait
+> Far Evolved Trait:
+> 1. gravistatic organ (can levitate in place)
+> 2. televisual abilities (can see through another creature’s eyes)
+> 3. photovitalic skin (meets 50% of nutritional needs)
+> 4. improved bioluminescence (display 700 ads on your skin!)
+> 5. incredible heat/cold tolerance
+> 6. radiation immunity or other similar evolved trait
 >
 > Improved Eugenic: +3 to one ability (even above the normal maximum).
 >
 > _Note:_ Using this power on the same creature twice is very dangerous and has a 90% chance of turning it into a carnivorous polymorph or mimic.
->
-> ❂
 >
 > _Overcharge:_ none
 
@@ -2151,15 +3024,14 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 23
 > - usage:
 >   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-rehoryan-s-prophetic-song-2-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-rehoryan-s-prophetic-song-2-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
 
 </div>
@@ -2172,14 +3044,10 @@ meta:
 >
 > _Somatic Insight Probe, Bodyreading_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** one creature **D:** ten minutes
 >
 > You attune to a living organism, hearing the biohistory in its cells. After 10 minutes of contact, you may ask the referee three questions about the creature's medical history and status.
->
->
-> ❂
 >
 > _Overcharge:_ The attunement takes mere seconds. Or: you may listen for the biohistory of a dead organism or part thereof.
 
@@ -2193,14 +3061,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 19
 > - usage:
 >   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-rehoryan-s-vital-symphony-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-rehoryan-s-vital-symphony-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2212,8 +3079,7 @@ meta:
 >
 > _Bioatavistic Reformulation_
 >
-> **P:** 4 **R:** touch
->
+> **P:** 4 **R:** touch  
 > **T:** one creature **D:** permanent
 >
 > You taste a creature's flesh or blood, unlocking genetic memories of its evolutionary past. Over the next hour you regress it to an ancestral form with gentle song. This is dangerous for the target and it suffers 1d8* damage from severe stress.
@@ -2224,10 +3090,7 @@ meta:
 >
 > Finally, the target gains a primitive trait such as a prehensile tail, gripping feet, powerful fangs, curly fur, clawed fingers, or brachiating arms.
 >
->
 > _Note:_ Using this power on the same creature multiple times is very dangerous, with a large chance of creating a malevolent ooze.
->
-> ❂
 >
 > _Overcharge:_ The spell is not dangerous to the target, it suffers no stress damage, and it gets a bonus to save its original traits.
 
@@ -2241,14 +3104,62 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 20
 > - usage:
 >   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-rehoryan-s-vivid-regression-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-rehoryan-s-vivid-regression-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Reuse the Shell** {#sdm-power-reuse-the-shell}
+
+> **Reuse the Shell**
+>
+> _Post-Mortal Resources Onboarding_
+>
+> **P:** 1–12 (variable) **R:** breath  
+> **T:** an articulated shell **D:** while imbued
+>
+> You blow life force, spirit, _ka_, into a prepared shell: a cleaned skeleton, a preserved corpse, a synthetic body, or other suitable physical form; imbuing it with a post-mortal vitality, creating a mindless servant that will perform its task indefinitely (or until it erodes to dust).
+>
+> It animates within a few hours. New instructions should preferably be properly encoded, to avoid errors.
+>
+> **P: 1 Failed Shell:** Moves, but won't follow commands, a useless **müßiggänger** (L0) or idle-ambler.
+>
+> **P: 2 Basic Shell:** The shell awakens into a shambling parody of life, a **langsamgänger** (L1) or slow-goer.
+>
+> **P: 5 Hope Shell:** Mortirobotic forces boost the shell's power, creating a post-mortal capable of carrying greater loads and leaping over obstacles—a **hüpfgänger** (L2) or hop-lurcher.
+>
+> **P: 8 Premium Shell:** Using a properly marinated, pickled, or mummified shell, scented with rare aromatics, and polished with nacreous oils, lets you craft a **lebendgänger** (L3, rosy) or live-walker, a post-mortal shell suitable for human-facing roles.
+>
+> **P: 12 Dangerous Shell:** For security purposes, a swiftghoul or **fressgänger** (L4, ravenous) is what you're looking for. This type of shell barely requires instructions; since it requires so much sustenance to function at its usual, heightened metabolic rate, it will attack and devour digestible organic matter unless specifically restrained.
+>
+> _Overcharge:_ You knit an echo of the shell's _ba_ or mind to the instruction _lemma_ stored in its head (usually in an ear or nostril for easy access), giving it a semblance of human intelligence and the ability to act independently.  
+> 
+> _Dangerous (9+):_ Corruption risk if you spend 9 or more life.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Our_Golden_Age; page: 167
+> - usage:
+>   - scope: power; id: Mortirobotics; note: Reuse the Shell from Our Golden Age p.167.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-reuse-the-shell-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2260,8 +3171,7 @@ meta:
 >
 > _Medeorite's Healing Dream Ritual_
 >
-> **P:** 2 **R:** touch
->
+> **P:** 2 **R:** touch  
 > **T:** 1 creature **D:** 3 days and nights
 >
 > Your dream-form leads the patient into a deep, healing sleep. While asleep, they appear lifeless. After the spell concludes they awake rejuvenated, with one attribute restored or one burden lifted.
@@ -2278,16 +3188,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 40
 > - usage:
 >   - scope: power; id: ARKHIATRY CLASSICS; note: Magitecnica Codex 2 (Biomancy)
-
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-restorative-slumber-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-restorative-slumber-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2299,8 +3206,7 @@ meta:
 >
 > _Rapid Metal Spin Cycle_
 >
-> **P:** 1 **R:** adjacent
->
+> **P:** 1 **R:** adjacent  
 > **T:** all creatures **D:** one action
 >
 > Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
@@ -2318,14 +3224,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 24
 > - usage:
 >   - scope: power; id: The Viridian Practice; note: Gun monk tradition from VG p.109.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-ring-of-lead-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-ring-of-lead-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2337,8 +3242,7 @@ meta:
 >
 > _Blacktop Sniffer_
 >
-> **P:** 1 **R:** a day’s march
->
+> **P:** 1 **R:** a day’s march  
 > **T:** self **D:** 1 hour
 >
 > Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
@@ -2356,14 +3260,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
 >   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-roadfinder-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-roadfinder-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2375,14 +3278,10 @@ meta:
 >
 > _Stradograd’s Engine of Civility_
 >
-> **P:** 6 **R:** one metric mile
->
+> **P:** 6 **R:** one metric mile  
 > **T:** rock and soil **D:** 1 day
 >
-> By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a
-> faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a
-> metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without
-> additional fixatives and preparation, the faststone road surface decays in a month.
+> By the channeled powers of the great converter, Chem Caoutchouc, base reality is rearranged. Over a day, a faststone road grows from the land, theodolite straight, cambered and elevated, a fortunate 7 meters wide and a metric mile long. The road crosses swamps, sways across valleys, and bores tunnels through ridges. Without additional fixatives and preparation, the faststone road surface decays in a month.
 >
 > _Overcharge:_ The faststone sets into standardstone overnight, creating a surface that lasts a century without maintenance.
 
@@ -2397,15 +3296,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
 >   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-roadmaker-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-roadmaker-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2417,12 +3314,10 @@ meta:
 >
 > _Biotemporal Manipulation_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** one human’s worth of living organisms **D:** an hour
-
+> 
 > You alter the speed of a chosen biological process in the target, accelerating or retarding it as much as 10-fold. Processes include growth, gestation, decay, metabolism, disease progression, etc.
->
 >
 > _Overcharge:_ Make the process 100 times faster or slower. Dangerous for the target.
 >
@@ -2438,14 +3333,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 24
 > - usage:
 >   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-runo-s-biocatalysis-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-runo-s-biocatalysis-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2457,12 +3351,10 @@ meta:
 >
 > _Germline Modifier_
 >
-> **P:** 4 **R:** touch
->
+> **P:** 4 **R:** touch  
 > **T:** one embryo or egg **D:** permanent
-
+> 
 > You stretch a tendril of focused aura into an unborn organism to manipulate its developmental pathway, altering it to reach the upper or lower extremes of the species range in one aspect. The effect unfolds through the creature’s gestation and maturation.
->
 >
 > **Generic Aspects**
 >
@@ -2491,16 +3383,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 27
 > - usage:
 >   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
-
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-runo-s-ontogenic-editor-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-runo-s-ontogenic-editor-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2512,12 +3401,10 @@ meta:
 >
 > _Synthetic Egg System_
 >
-> **P:** 3 **R:** touch
->
+> **P:** 3 **R:** touch  
 > **T:** one “egg” mass **D:** gestation period
-
+> 
 > You sculpt a viable egg and artificial uterus from biomatter. Using somatic manipulation, you spark parthenogenic development within the cradle. The egg gestates to term as normally required by the subject species.
->
 >
 > _Overcharge:_ The gestation is 10 times faster than normal. Dangerous for the subject.
 >
@@ -2537,14 +3424,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 25
 > - usage:
 >   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-runo-s-parthenogenic-cradle-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-runo-s-parthenogenic-cradle-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2556,14 +3442,12 @@ meta:
 >
 > _Synthetic Marsupilism_
 >
-> **P:** 4 **R:** touch
->
+> **P:** 4 **R:** touch  
 > **T:** one creature **D:** permanent
 >
 > You sculpt a viable marsupial pouch and womb structure within a creature's body, enabling it to gestate and carry an embryo to term. The pouch permanently occupies one slot.
 >
 > _Note:_ Larger species may require larger pouches. Using this power on the same creature twice is very dangerous.
->
 >
 > _Overcharge:_ Sculpt three pouches occupying two slots. Dangerous for the subject.
 >
@@ -2579,14 +3463,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 26
 > - usage:
 >   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-runo-s-parthenogenic-pouch-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-runo-s-parthenogenic-pouch-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2598,13 +3481,12 @@ meta:
 >
 > _Doom Purpose — The Evil One Must Fall_
 >
-> **P:** 2 **R:** short
->
+> **P:** 2 **R:** short  
 > **T:** one creature **D:** instant
 >
 > You will kill the Evil One. Fortune will bring you to the befouler and your metal shall end that misbegotten one.
+> 
 > Sense Allegiance: read a creature’s ethics; evil creatures stunned for 1d4 rounds when brushed by your mind (save).
-> Object (d6): (1) your bearer, (2) closest friend, (3) born under a thrice-red star, (4) nameless beggar, (5) benevolent prince, (6) local deity most high.
 >
 > _Overcharge:_ (not listed)
 
@@ -2617,15 +3499,58 @@ meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 155
 > - usage:
->   - scope: power; id: Weapon Form; note: Eternal Purpose boon from VG 06 p.155.
+>   - scope: power; id: Weapon's Eternal Purpose; note: Weapon Path table entry (non-standard format) from Vastlands_Guidebook p.155.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-sense-allegiance-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-sense-allegiance-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Siphon the Soul** {#sdm-power-siphon-the-soul}
+
+> **Siphon the Soul**
+>
+> _Spiritual Energy Extraction_
+>
+> **P:** L (variable) **R:** touch  
+> **T:** a creature with a soul **D:** instant
+>
+> First, prepare a battery, bottle, or other soul storage device. Second, ink the required metaphysical equations on your designated hand. Finally, strike your chosen self-offering, who is willing to give of their spirit. The price of the power is equal to the target creature's level. You and the target both roll saves, but you add your level to your save. Oh, wait, the target was a willing self-offering, right, so they're choosing to fail their save, right?
+>
+> | You | They | Effect |
+> |:---|:---|:---|
+> | Fail | Fail | Each of you loses one level. |
+> | Fail | Pass | You lose one level. They gain temporary life equal to your level. |
+> | Pass | Fail | They lose one level and life equal to your level. You gain temporary life equal to your level, ready to store in that device. |
+> | Pass | Pass | They lose life equal to your level. |
+>
+> _Overcharge:_ You withdraw double the visceral energy, that is, the amounts of life lost or gained are doubled.
+> 
+> _Dangerous:_ This spell definitely risks corruption.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Our_Golden_Age; page: 168
+> - usage:
+>   - scope: power; id: Pneumenergetics; note: Siphon the Soul from Our Golden Age p.168.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-siphon-the-soul-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2637,8 +3562,7 @@ meta:
 >
 > _Formal Translation_
 >
-> **P:** 4 **R:** touch
->
+> **P:** 4 **R:** touch  
 > **T:** self **D:** imbued
 >
 > You adopt the physical form of a roughly human-sized creature (say dogsized to horse-sized) you are familiar with and whose symbolic representation you own. This could be a tiger tattoo or a dodo doll. The transformation takes several minutes.
@@ -2648,7 +3572,6 @@ meta:
 > You stay in your adopted form as long as you imbue it with your vital essence. Warning: occupying a strange skin can be dangerous, shifting your mind (after days) or even trapping your form (after weeks).
 >
 > _Note:_ if you are carrying the prepared skin of your chosen form, the power cost is halved and the transformation takes mere seconds.
->
 >
 > _Overcharge:_ Shift into much smaller (shrew-sized) or larger (mammoth-sized) forms.
 >
@@ -2664,14 +3587,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 48
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-skinshift-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-skinshift-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2683,10 +3605,9 @@ meta:
 >
 > _Colony Translation_
 >
-> **P:** 6 **R:** touch
->
+> **P:** 6 **R:** touch  
 > **T:** self **D:** imbued
-
+> 
 > Your skin splits and you collapse into a colony organism, such as a hive of bees, a nest of naked mole rats, or a swarm of spiders. You must be familiar with the species and own a suitable symbolic representation. The transformation takes several minutes.
 >
 > You gain the physical abilities and traits of the colony organism and lose access to traits that do not work in this form. So long as 10% of the colony survives, you can return to your normal form without harm. If less of the colony survives, you may lose traits and memories.
@@ -2694,8 +3615,6 @@ meta:
 > You stay in your adopted form as long as you imbue it with your vital essence. Warning: occupying a strange skin can be dangerous, shifting your mind (after days) or even trapping your form (after weeks).
 >
 > _Note:_ if you are carrying a preserved colony or hive, halve the power cost and transform in mere seconds.
->
->
 >
 > **Example Dangerous Colonies:** Venomous Spiders. Paralyze a creature with your attack. The first save is easy enough, but each successful attack adds a cumulative penalty.
 >
@@ -2717,14 +3636,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 49
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-skinsplit-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-skinsplit-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2736,10 +3654,9 @@ meta:
 >
 > _Subconscious Translation_
 >
-> **P:** 1 **R:** self
->
+> **P:** 1 **R:** self  
 > **T:** self **D:** special
-
+> 
 > You give free reign to the darkest parts of yourself, transforming into a ravening aberrant horror born of your subconscious. You lose the ability to use powers or your higher mental faculties, but your strength, endurance, and melee attack all increase depending on your aura score:
 >
 > **Aura** | **Effect**
@@ -2765,14 +3682,48 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 50
 > - usage:
 >   - scope: power; id: THE AWAKENED SPHERE; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-skinwyrd-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-skinwyrd-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Speak With Husk** {#sdm-power-speak-with-husk}
+
+> **Speak With Husk**
+>
+> _Echoes of the Mind, Necrophone_
+>
+> **P:** 2 **R:** 3m  
+> **T:** corpse **D:** 10 minutes
+>
+> The echoes of personality trapped in a corpse answer three questions posed by the wizard. The corpse can lie.
+>
+> _Overcharge:_ The corpse carries on a full conversation for the spell's duration. It cannot lie, but it can evade.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-speak-with-husk-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2784,19 +3735,18 @@ meta:
 >
 > _Restoration of the Priceless One_
 >
-> **P:** 17 **R:** here
->
+> **P:** 17 **R:** here  
 > **T:** one dead hero **D:** permanent
 >
 > This deeply immoral ritual tears a departed psyche from the All-Mind's cosmic consciousness. It steals the forgiven soul from the All-Fire of Creation-Preservation-Destruction. It undoes the body's decay into the All Green of Life-Death-Rebirth.
 >
 > In a rapturous whirlwind, the hero is recreated from sacred fire and holy breath and perfect soil. They make their relife roll with advantage. All this ritual requires is the loving sacrifice of another human, and one more for each level of the hero.
 >
-> _In the Year of the Lambent Fox the Chosen One fell before her time and the people of the Milkweed faced certain doom. Stoyevod the Practitioner sacrificed 9 of his clone brothers and sisters to return the Chosen One and resume the Good and Proper Path of the Milkweed._
->
+> _Overcharge:_ The hero adds +20 to their relife roll or increases one of their ability scores by 1.
+> 
 > _Dangerous:_ The sacrificial specialist will probably be corrupted by this spell.
 > 
-> _Overcharge:_ The hero adds +20 to their relife roll or increases one of their ability scores by 1.
+> _In the Year of the Lambent Fox the Chosen One fell before her time and the people of the Milkweed faced certain doom. Stoyevod the Practitioner sacrificed 9 of his clone brothers and sisters to return the Chosen One and resume the Good and Proper Path of the Milkweed._
 
 tags:
 >   [power]
@@ -2809,14 +3759,46 @@ meta:
 >   - book: Vastlands_Guidebook; page: 111
 > - usage:
 >   - scope: power; id: Fundamental Purification of the Soil; note: Tablet rite from VG p.111.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Supplicate the Rotting God** {#sdm-power-supplicate-the-rotting-god}
+
+> **Supplicate the Rotting God**
+>
+> _Turn Back the Wheel of Love and Death_
+>
+> **P:** 2 **R:** touch  
+> **T:** corpse **D:** 0
+>
+> The wizard sacrifices at least one sentient creature to restore one recently deceased creature to life. The total level of the target and the sacrifice(s) must be approximately equal. The ritual takes 1 hour per sacrifice and will go disastrously wrong if interrupted. The target is restored to life and a semblance of health for a year and a day.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-supplicate-the-rotting-god-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2828,12 +3810,10 @@ meta:
 >
 > _Luminous Grasp, Hard Light Hold_
 >
-> **P:** 1 **R:** nearby
->
+> **P:** 1 **R:** nearby  
 > **T:** creature or object **D:** instant
 >
-> You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard
-> light throttles them. They suffer 1d4 damage and lose their next action.
+> You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.
 >
 > _Overcharge:_ They suffer 1d8 damage instead.
 
@@ -2847,15 +3827,13 @@ meta:
 >   - book: Vastlands_Guidebook; page: 154
 > - usage:
 >   - scope: power; id: Weapon Form; note: Granted via the Hard Ring form (VG 06 p.154).
-
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-suspended-in-the-light-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-suspended-in-the-light-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2867,8 +3845,7 @@ meta:
 >
 > _Revelations of Pain_
 >
-> **P:** 1 **R:** self
->
+> **P:** 1 **R:** self  
 > **T:** thorn tree **D:** 1 hour
 >
 > The wizard hangs upon a tree of thorns and gains +1 to an ability score for the rest of the day and a cryptic
@@ -2887,14 +3864,13 @@ meta:
 >   - book: Vastlands_Guidebook; page: 111
 > - usage:
 >   - scope: power; id: Fundamental Purification of the Soil; note: Tablet rite from VG p.111.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-suspended-insight-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-suspended-insight-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2906,15 +3882,14 @@ meta:
 >
 > _Razorblade Tree_
 >
-> **P:** 3 **R:** short (10m or so)
->
+> **P:** 3 **R:** short (10m or so)  
 > **T:** planted landcoral seed **D:** permanent
 >
 > The petromancer spills their lifeblood, forcing the landcoral seed into sudden, explosive growth. A 5–8 meter tall
 > limestone tree erupts from the ground, dealing 2d6 damage to adjacent creatures. Anyone moving through its thicket
 > of razor branches suffers 1d4 damage. The speed of growth kills the landcoral.
 >
-> _Overcharge:_ The growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with caltrop-like landcoral shards.
+> _Overcharge:_ The growth is even more violent, dealing 6d6 damage to creatures in a small radius and scattering the ground with caltrop-like landcoral shards. This destroys the landcoral.
 
 tags:
 >   [power]
@@ -2927,14 +3902,83 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 5
 > - usage:
 >   - scope: power; id: Fundamental Purification of the Soil; note: Tablet rite from VG p.111.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-thornstone-obelisk-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-thornstone-obelisk-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Three-Point Immobility** {#sdm-power-three-point-immobility}
+
+> **Three-Point Immobility**
+>
+> _Celestial Ladder, Craft Floating Platform_
+>
+> **P:** 2 **R:** touch  
+> **T:** solid object **D:** 1 hour
+>
+> The wizard manually tethers an object to three physical points with strands of stuckforce. Once tethered, the object is immobile -- even if suspended in mid-air.
+>
+> _Overcharge:_ The tether is permanent.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-three-point-immobility-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## **Toxin Render** {#sdm-power-toxin-render}
+
+> **Toxin Render**
+>
+> _Dwarf's Diesel Distillation_
+>
+> **P:** 2 **R:** 10m  
+> **T:** toxic waste **D:** 1 hour
+>
+> The wizard uses a 1 hour ritual to convince ambient noosphere linked animalcules to gather a sack's worth of toxic waste and convert it into usable vehicle or golem fuel. Corrodes engines if used for prolonged periods.
+>
+> _Overcharge:_ Converts material that is not toxic or is not waste.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-toxin-render-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2946,8 +3990,7 @@ meta:
 >
 > _Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator_
 >
-> **P:** 2 **R:** middling, ~30–50m
->
+> **P:** 2 **R:** middling, ~30–50m  
 > **T:** anything with a mind and soul **D:** instant
 >
 > You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
@@ -2965,14 +4008,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 25
 > - usage:
 >   - scope: power; id: Apocrypha of the O.S.; note: Salvaged program from VG p.112.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-tragic-missile-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-tragic-missile-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2984,8 +4026,7 @@ meta:
 >
 > _Biotic Manipulation Augment, Mutation Bomb_
 >
-> **P:** 3 **R:** scratching distance
->
+> **P:** 3 **R:** scratching distance  
 > **T:** one creature **D:** 1d4 rounds
 >
 > You speak to the target's genetic code, triggering unpredictable mutation. It suffers 1d6 damage per round for 1d4 rounds as flesh and bone warp and change. After, the target gains a random mutation that fills one of its slots. An unwilling target saves to avoid the mutation. Roll 1d6:
@@ -3011,14 +4052,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 11
 > - usage:
 >   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-usha-s-chaos-trigger-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-usha-s-chaos-trigger-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3030,10 +4070,9 @@ meta:
 >
 > _Biotic Fusion Augment, Meltflesh Hyperblot_
 >
-> **P:** 4 **R:** scalpel distance
->
+> **P:** 4 **R:** scalpel distance  
 > **T:** two creatures **D:** permanent
-
+> 
 > You splice two creatures into a single chimeric organism.
 >
 > _Note:_ Both targets save. Unconscious targets do not save. Both targets must fail their saves for the power to work. Remember, hero dice can boost save targets ...
@@ -3041,8 +4080,6 @@ meta:
 > The hybrid retains the attributes of your choice (level, life points, ability scores, defenses, etc.). The new creature also has one trait from each of the originals (e.g. venom, vintner, flight, farrier, poison breath, apothecary).
 >
 > The painful splicing deals 4d8 damage to the new chimera. This cannot reduce it below 1 life.
->
->
 >
 > **What of its Mind**
 >
@@ -3069,14 +4106,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 14
 > - usage:
 >   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-usha-s-chimera-splice-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-usha-s-chimera-splice-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3088,8 +4124,7 @@ meta:
 >
 > _Biotic Corruption Augment, Cancer Bomb_
 >
-> **P:** 4 **R:** spitting distance
->
+> **P:** 4 **R:** spitting distance  
 > **T:** one creature **D:** a few minutes
 >
 > You spit a corrosive bio-daemon that begins to rewrite the target’s genetic code. It writhes and twists, losing one turn, then saves.
@@ -3112,14 +4147,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 9
 > - usage:
 >   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-usha-s-horrorshow-infestation-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-usha-s-horrorshow-infestation-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3131,8 +4165,7 @@ meta:
 >
 > _Biotic Growth Augment, Root Meatmaker_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** one pound of biomatter **D:** permanent
 >
 > Touch a tissue and watch it balloon fourteen-fold over an hour (from soap-sized to 1 stone).
@@ -3153,14 +4186,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 17
 > - usage:
 >   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-usha-s-replicator-strand-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-usha-s-replicator-strand-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3172,21 +4204,18 @@ meta:
 >
 > _Biotic Regeneration Augment, Systemic Limb Back Trigger_
 >
-> **P:** 3 **R:** touch
->
+> **P:** 3 **R:** touch  
 > **T:** one limb **D:** permanent
-
+> 
 > Regrow a non-critical destroyed tissue, limb or organ. Takes one hour. Please remove* damaged parts before regrowth for safety.
 >
 > _Overcharge:_ Regrow a critical organ or bodily system, like the digestive or circulatory system. These cannot be safely removed.
 >
 > _Again (x4):_ Regrow a body from a single limb or organ. Memories will not be restored.
 >
->
 > **[optional] Surgihackery**
 >
 > Removing a damaged tissue, limb or organ in the field, without a proper facility, deals 20 damage to the targ ... er ... patient. Reduce this amount by the result of a medical, biomantic, veterinary, or other relevant roll.
->
 >
 > **Unsafe Rebuilding**
 >
@@ -3211,14 +4240,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 18
 > - usage:
 >   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-usha-s-swift-rebuild-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-usha-s-swift-rebuild-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3230,10 +4258,9 @@ meta:
 >
 > _Biotic Enhancement Augment, Value Added Operation_
 >
-> **P:** 2 **R:** tickling distance
->
+> **P:** 2 **R:** tickling distance  
 > **T:** one creature less smart than yourself **D:** permanent
-
+> 
 > You manipulate the target’s genetic material, increasing its intelligence over several days. If it has a thought score, this increases by 1.
 >
 > _Note:_ Very dangerous for the target. Usually only works once per target.
@@ -3256,7 +4283,6 @@ meta:
 > -2 | mammal, reptile, bird
 > -1 | ape, corvid, dolphin, troglodyte
 > 0 | basic human
->
 >
 > **Love Your Maker**
 >
@@ -3282,14 +4308,13 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 12
 > - usage:
 >   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-usha-s-uplift-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-usha-s-uplift-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3301,10 +4326,9 @@ meta:
 >
 > _Biotic Integration Augment, Meetmeat_
 >
-> **P:** 6 **R:** bonesaw range
->
+> **P:** 6 **R:** bonesaw range  
 > **T:** one creature **D:** permanent
-
+> 
 > You surgically graft a new anatomy and associated trait into the target creature. You must have the relevant anatomy on hand to attempt a graft. The procedure takes a day and is dangerous to the target. Make a biomantic, medical, or other relevant test to integrate the xenograft:
 >
 > **Roll** | **Effect**
@@ -3317,8 +4341,6 @@ meta:
 > 20≤ | New trait occupies 1 slot.
 >
 > The patient can use the xenograft once they have healed from the procedure.
->
->
 >
 > **Recorded Xenografts** The following xenografts were seen by the cleanup crew after the Green Powder Island incident of —X4.
 >
@@ -3343,14 +4365,51 @@ meta:
 >   - book: Magitecnica_Codex_2; page: 15
 > - usage:
 >   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-usha-s-xenograft-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-usha-s-xenograft-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Vegetable of Birth** {#sdm-power-vegetable-of-birth}
+
+> **Vegetable of Birth**
+>
+> _Phytohysterical Genesis, Leek of Life_
+>
+> **P:** 5 **R:** touch  
+> **T:** a leek and a creature seed **D:** 50 + 1d100 days
+>
+> You take a well-treated leek and imbue it with the formulated spell. Next, take a prepared creature seed and implant it in the leek. The leek will grow to immense size and girth. Then, at its allotted time, it shall split, and a full-grown adult creature will emerge.
+>
+> _Overcharge:_ It grows to maturity in 2d8 days.
+>
+> You may regain any life imbued in the leek after the spell ends.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: There_A_Red_Door; page: 27
+> - usage:
+>   - scope: power; id: There, A Red Door; note: Biomantic rite from There A Red Door booklet.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-vegetable-of-birth-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3362,13 +4421,12 @@ meta:
 >
 > _Creation Purpose — Chosen Ones and Quilted Greens_
 >
-> **P:** 2 **R:** short
->
+> **P:** 2 **R:** short  
 > **T:** one creature **D:** instant
 >
 > You will anoint the Chosen One, bring the new life, translate the places of the machine men into eternal dust.
+> 
 > Viridian Sun: turn lights green and spawn quilted plants, dreaming trees, mammalian insects, avian arachnids, fungoid gastropods (L1).
-> Object (d6): (1) your bearer's sibling, (2) worst enemy, (3) dying old man, (4) wise whale, (5) tyrant's decadent heir, (6) zealous cultist.
 >
 > _Overcharge:_ spawn photosynth 'humans' (L2).
 
@@ -3381,15 +4439,60 @@ meta:
 > - source:
 >   - book: Vastlands_Guidebook; page: 155
 > - usage:
->   - scope: power; id: Weapon Form; note: Eternal Purpose boon from VG 06 p.155.
+>   - scope: power; id: Weapon's Eternal Purpose; note: Weapon Path table entry (non-standard format) from Vastlands_Guidebook p.155.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-viridian-sun-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-viridian-sun-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Whispers from the Void** {#sdm-power-whispers-from-the-void}
+
+> **Whispers from the Void**
+>
+> _Transmortal Communion_
+>
+> **P:** 1–8 (variable) **R:** touch  
+> **T:** a dead relic **D:** a few minutes (see tiers)
+>
+> You press the relic to your skull and let your mind drift across the void-sea of nonexistence. Your eyes roll, your teeth gnash, strange post-mortal tongues spill from your lips, as you hunt the threads of consciousness remaining in the All-Mind. Then you bite and hold and drag the ghostly psyche out into the light once more.
+>
+> | d8 | Psyche | Result |
+> | --- | --- | --- |
+> | 1 | **Fragmentary Whispers** | The conversation is halting and crude; the ghost’s attitude suffers. |
+> | 2 | **Naked Coherence** | A thin, strained voice emerges—barely workable for a normal exchange. |
+> | 3 | **Drawn Spirit** | Attracted to your _vis viva_, the ghost brightens and becomes eager to speak. |
+> | 4 | **Dominated Ghost** | Your force of will compels three clear answers, regardless of the psyche's mood. |
+> | 6 | **Dawnbound Servant** | You bind the mind until sunrise; it must remain and respond. |
+> | 8 | **Echo Consumed** | You swallow the ghost whole, trapping its essence in your mind. You can rifle through its memories, speak with its voice, and use its knowledge like your own until sunrise. |
+>
+> _Overcharge:_ You anchor the psychic ghost to the relic for a year. Thus bound, it cannot flee, but grows stranger and more resentful as the weeks pass.
+>
+> _Dangerous (6+):_ When you spend 6 or more life on necrophonic communion, you risk corruption—the lost minds' grudges and regrets becoming your obsessions.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:trait]
+
+meta:
+> - source:
+>   - book: Our_Golden_Age; page: 165
+> - usage:
+>   - scope: power; id: Necrophony; note: Whispers from the Void from Our Golden Age p.165.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-whispers-from-the-void-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3401,12 +4504,10 @@ meta:
 >
 > _Dirty Fixing_
 >
-> **P:** 1 **R:** touch
->
+> **P:** 1 **R:** touch  
 > **T:** vehicle or steed **D:** 1 day
 >
-> Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a
-> burden for a day, but then the damage is worse.
+> Use your faith to mend an axle or splint a leg. Your vehicle or steed temporarily gains 1d8 life and ignores a burden for a day, but then the damage is worse.
 >
 > _Overcharge:_ The fix lasts a week; but the damage is even worse after.
 
@@ -3421,14 +4522,13 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
 >   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
-
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-wing-and-prayer-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
-</div>
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-wing-and-prayer-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3440,12 +4540,10 @@ meta:
 >
 > _Sands of Lost Times_
 >
-> **P:** 1 **R:** nearby
->
+> **P:** 1 **R:** nearby  
 > **T:** a 9m cube **D:** a few minutes
 >
-> Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust
-> irritates the lungs of air-breathers. After a few minutes, it blows away.
+> Fine, obscuring yellow dust rises from the ground and hangs in the air, a veil no sight can pierce. The dust irritates the lungs of air-breathers. After a few minutes, it blows away.
 >
 > _Overcharge:_ Summon into shimmering immobility a wall of dust measuring 200 cubic meters.
 
@@ -3460,13 +4558,50 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 20
 > - usage:
 >   - scope: power; id: The Sixfold Hexacenter; note: Listed in album order on VG p.108.
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-yellow-cloud-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
-
-<div class="power-return">
-  &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Powers_Index/#sdm-power-yellow-cloud-anchor" aria-label="Back to previous page">
-    ↩ Back
-  </a>
 </div>
+
+<div class="power-card" markdown="1">
+
+## **Yellow Foresight** {#sdm-power-yellow-foresight}
+
+> **Yellow Foresight**
+>
+> _Visions of the Cautious Merchant_
+>
+> **P:** 2 **R:** 1km  
+> **T:** 100m diameter circle **D:** 0
+>
+> The wizard consumes a soap's worth of saffron (€10) and meditates for 1 hour to scan auras in the target area.
+> 
+> They get a general idea of the number of sentients and the general mood. If the sentients are very different from the wizard, reading the mood may be impossible.
+>
+> _Overcharge:_ Consuming a dangerous amount (€100) of saffron lets the wizard implant a positive attitude into a
+> few sentients.
+
+tags:
+>   [power]
+>   [type:ritual]
+>   [storage:item]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 199
+> - usage:
+>   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+  
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-power-yellow-foresight-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
