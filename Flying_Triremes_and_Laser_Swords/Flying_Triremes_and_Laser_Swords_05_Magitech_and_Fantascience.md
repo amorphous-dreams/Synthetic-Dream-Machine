@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Appendix G \- Grimoires'
+title: 'Magitech and Fantascience'
 published: true
 ---
 # Appendix G \- Grimoires

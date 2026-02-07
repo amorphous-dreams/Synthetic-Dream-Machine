@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'FTLS Paths'
+title: 'Flying Triremes and Laser Swords Paths'
 published: true
 ---
 # FTLS Paths

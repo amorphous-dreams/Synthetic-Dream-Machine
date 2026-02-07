@@ -1,9 +1,9 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Wild Magic'
+title: 'Wild Magic Exposure'
 published: true
 ---
-# Wild Magic
+# Wild Magic Exposure
 
 ## Violet ozone, upside‑down rain, vox feedback
 
