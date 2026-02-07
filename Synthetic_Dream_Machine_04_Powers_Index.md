@@ -152,7 +152,7 @@
 >
 > _Overcharge:_ <Ox steps / 'again' & notes if any>
 >
-> _Dangerous:_ <Optional. Use only when the source has a standalone Dangerous note; keep patterns like ‘Dangerous for the target’ inside Overcharge lines or body text if they appear there.”>
+> _Dangerous:_ <Optional. Use only when the source has a standalone Dangerous note; keep patterns like 'Dangerous for the target' inside Overcharge lines or body text if they appear there.”>
 >
 > **Note:** <Optional.>
 
@@ -245,10 +245,10 @@ meta:
 > **T:** one thinking tree **D:** 10 minutes
 >
 > You unplug from your body and send your spirit-mind ( _ka-ba_ ) into the synthetic dreamspace of a local server tree.
-> You can access the tree’s short-term memories, divine announcements, algorithmically generated human-interest
+> You can access the tree's short-term memories, divine announcements, algorithmically generated human-interest
 > novelties, and locally hosted offshoot dream realities.
 >
-> _Overcharge:_ Gain root-level access to the tree’s source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms.
+> _Overcharge:_ Gain root-level access to the tree's source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms.
 > 
 > **Note:** Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert
 > functioning guardians (L2d6, electrangelic) to your interventions.
@@ -359,9 +359,9 @@ meta:
 > **P:** 2 **R:** touch  
 > **T:** self **D:** 1 hour
 >
-> The wizard’s mind resculpts their features. They can resemble a specific person, provided the wizard has studied them up close, or a general type. No abilities are altered.
+> The wizard's mind resculpts their features. They can resemble a specific person, provided the wizard has studied them up close, or a general type. No abilities are altered.
 >
-> Alternatively, the wizard can choose to gain gills, low-light vision, or another minor natural ability at the GM’s discretion.
+> Alternatively, the wizard can choose to gain gills, low-light vision, or another minor natural ability at the GM's discretion.
 >
 > _Overcharge:_ the effects are permanent.
 
@@ -398,7 +398,7 @@ meta:
 >
 > In 1 hour, a target reasonably intact human-sized corpse rises as a post-mortal zombie (@UVG, p. 209). The corpse is animated by a soul fragment and shreds of residual personality. It obeys simple orders given by the wizard, but must be reminded every 6 hours (or more frequently in a chaotic environment). A wizard can control a number of post-mortals equal to their Level without risk of rebellion.
 >
-> _Overcharge:_ The corpse awakens instantly. Alternate: awakens as a higher-level or specialized post-mortal.
+> _Overcharge:_ the corpse awakens instantly. Alternate: awakens as a higher-level or specialized post-mortal.
 
 tags:
 >   [power]
@@ -519,8 +519,7 @@ meta:
 >   - book: Vastlands_Guidebook; page: 110
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
->   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
->   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+>   - scope: power; id: Dawn's Highway; note: Road magic rites from VG p.110.
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -623,8 +622,10 @@ meta:
 > **P:** 1 **R:** short, ~5m  
 > **T:** one creature **D:** an hour
 >
-> Soma’s bliss brings contentment to the target (save).
+> Soma's bliss brings contentment to the target (save).
+>
 > Success: it loses its next turn to a blissful reverie.
+>
 > Failure: it sits down, lost in blissful reverie for an hour.
 >
 > _Overcharge:_ Affect a number of creatures equal to your level + 1.
@@ -661,7 +662,7 @@ meta:
 > **P:** 2 **R:** touch  
 > **T:** 2 creatures **D:** several hours
 >
-> You tap into a creature's essence and transfer one of its burdens—fatigue, injury, anxiety, or some other affliction—to another creature. During transfer it transforms into a spiritual stone, a healer's burden. It feels heavy and annoying within the receiver’s soul, but causes no permanent damage and dissipates normally with rest.
+> You tap into a creature's essence and transfer one of its burdens—fatigue, injury, anxiety, or some other affliction—to another creature. During transfer it transforms into a spiritual stone, a healer's burden. It feels heavy and annoying within the receiver's soul, but causes no permanent damage and dissipates normally with rest.
 >
 > _Overcharge:_ The ritual takes several minutes, but inflicts 1d4 damage to each of the parties.
 
@@ -729,10 +730,10 @@ meta:
 > **P:** 1 **R:** a few meters  
 > **T:** someone who can hear you **D:** instant
 >
-> You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly
+> You wish someone sprawled and humbled, and your muttered curse may make it so. The target's shoelaces are suddenly
 > undone, or a stone or stick hops to trip them. They save or sprawl.
 >
-> _Overcharge:_ There’s no save. The target is tripping.
+> _Overcharge:_ There's no save. The target is tripping.
 
 tags:
 >   [power]
@@ -838,7 +839,9 @@ meta:
 > **P:** 6 **R:** a short walk  
 > **T:** two people **D:** an hour and an hour
 >
-> Attune yourself to the fast star protocol. Shake your antennae at the sky like furious fists. Chant the chthonic coordinates. Summon the chariot of the divine palace. It comes, a flaming bolide, a star become a vessel. Less than an hour later it lands, like a fireball upon the land (10d6 damage to anyone caught in its 30 meter blast radius). Speak its pass spell and enter. You and one other. Speak the red word. Chant the cosmic coordinates. It rises. Once again it becomes bolide. Again, a fireball to all those who crowd about its shipmetal hull. Prepare yourself. An hour passes. You approach a fast star.
+> Attune yourself to the fast star protocol! Shake your antennae at the sky like furious fists. Chant the chthonic coordinates! Summon the chariot of the divine palace! Behold! It comes, a flaming bolide, a star become a vessel! Less than an hour later it lands, like a fireball upon the land. That's 10d6 damage to anyone caught in its 30 meter blast radius. Speak its pass spell and enter. You and one other. Speak the red word. Chant the cosmic coordinates! Behold, it rises! Once again it becomes bolide. Again, a fireball to all those who crowd about its shipmetal hull. Prepare yourself. An hour passes. You approach a fast star.
+>
+> _Overcharge:_ Chant the crisis protocol! It comes down now, now, now, atop your head. Run swift, lest it blasts you as it lands!
 
 tags:
 >   [power]
@@ -945,7 +948,7 @@ meta:
 > **P:** 1 **R:** touch  
 > **T:** 1 sack **D:** 1 day
 >
-> A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
+> A sub-reality field halves the object's interactive mass. An object of 100 kilos acts like one of fifty.
 >
 > _Overcharge:_ The mass is halved again. Alternately, it affects an object twice as large, or lasts a week instead.
 
@@ -960,7 +963,7 @@ meta:
 >   - book: Magitecnica_Codex_1; page: 22
 >   - book: Eternal_Return_Key; page: 10
 > - usage:
->   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
+>   - scope: power; id: Dawn's Highway; note: Road magic rites from VG p.110.
 >   - scope: power; id: Eternal Return Key; note: ERK lists this power as “Damp Mass.”
   
   <div class="power-return">
@@ -1056,7 +1059,7 @@ meta:
 > **P:** 2 **R:** touch  
 > **T:** a willing creature **D:** 1 day
 >
-> The wizard dissolves a creature's spirit, leaving an inert shell or pseudocorpse. After 1 day, the spirit reboots, wiped clean of spiritual parasites, daemons, code-worms, or mind-affecting spells.
+> The wizard dissolves a creature's spirit, leaving an inert shell or pseudocorpse. After 1 day, the spirit "reboots", wiped clean of spiritual parasites, daemons, code-worms, or mind-affecting spells.
 >
 > _Overcharge:_ The target is inert for a week. The reboot also repairs physical injuries and ailments.
 
@@ -1126,7 +1129,7 @@ meta:
 >
 > You eat part of a creature you are familiar with to temporarily manifest one of its natural traits. A nail clipping or some fur will suffice.
 >
-> Each manifested trait occupies an inventory slot somewhere in your body as a 1 stone mass, but it doesn’t otherwise interfere with you and is painlessly reabsorbed when you deactivate the power.
+> Each manifested trait occupies an inventory slot somewhere in your body as a 1 stone mass, but it doesn't otherwise interfere with you and is painlessly reabsorbed when you deactivate the power.
 >
 > Traits may include:
 >
@@ -1216,9 +1219,9 @@ meta:
 >
 > **Ecoentheosis (trait)**
 >
-> - You are in mystic union with the local ecology. You can communicate with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman’s axe, the joy of Spring’s blossoming, the tramping of an army, and the fall of a great oak.
+> - You are in mystic union with the local ecology. You can communicate with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman's axe, the joy of Spring's blossoming, the tramping of an army, and the fall of a great oak.
 >
-> _Overcharge:_ Persist as motes in the wind and microbes in the soil for up to 1 week before full reconstitution. Each day counts as a week’s rest. At the end of the week, save or permanently replace one of your traits with a deep panpsychic connection to the local ecology: the glen, dale, vale, grove, stream, lake, bay, or what have you. You may choose to fail this save.
+> _Overcharge:_ Persist as motes in the wind and microbes in the soil for up to 1 week before full reconstitution. Each day counts as a week's rest. At the end of the week, save or permanently replace one of your traits with a deep panpsychic connection to the local ecology: the glen, dale, vale, grove, stream, lake, bay, or what have you. You may choose to fail this save.
 
 tags:
 >   [power]
@@ -1370,6 +1373,7 @@ meta:
 >   - book: Eternal_Return_Key; page: 11
 > - usage:
 >   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
+
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1391,7 +1395,7 @@ meta:
 > **P:** 8 **R:** medium, ~50m  
 > **T:** self **D:** 1 day
 >
-> The seeker’s eyes glow pale chartreuse and can see things invisible, hidden, departed, and dead.
+> The seeker's eyes glow pale chartreuse and can see things invisible, hidden, departed, and dead.
 >
 > _Overcharge:_ The seeker gains a gaze attack that paralyzes the aforementioned things for 1d6 rounds (save).
 
@@ -1497,12 +1501,11 @@ meta:
 > **P:** 4 **R:** self  
 > **T:** ka-ba **D:** 1 dream
 >
-> Take a spoonful of yerba-levante with your lesh-de-nuit and chant the six staircases of Sabo Recu, the Hitchiker.
-> Then, in your sleep, dream of the crystal ascender and make the sign of the Wind and the Green, and your dream idego, your spirit-second, will ascend to the Sea in the Sky. There, the painted ones will remove a burden from your soul and share one happy and one painful truth with you.
+> Take a spoonful of _yerba-levante_ with your _lesh-de-nuit_ and chant the six staircases of Sabo Reçu, the Hitchiker. Then, in your sleep, dream of the crystal ascender and make the sign of the Wind and the Green, and your dream idego\*, your spirit-second, will ascend to the Sea in the Sky. There, the painted ones will remove a burden from your soul and share one happy and one painful truth with you.
 >
 > _Overcharge:_ Propel yourself, waking, body and soul and mind together, into the Water Heavens for as long as a dream takes to unwalk itself.
 >
-> Idego: combination of a sentient creature's mind and personality. A time-stamped, specific sentient instance. Its *ba* in some cultures.
+> \*Idego: Combination of a sentient creature's mind and personality. A time-stamped, specific sentient instance. Its *ba* in some cultures.
 
 tags:
 >   [power]
@@ -1611,7 +1614,7 @@ meta:
 >
 > This world was not meant to be. This world was not meant for you and me. This was not was not was.
 > 
-> Ha-Ka-Ba Short Circuit: target’s soul, mind, and body disconnect for 1 round (save); parts attacked individually gain a bonus.
+> Ha-Ka-Ba Short Circuit: target's soul, mind, and body disconnect for 1 round (save); parts attacked individually gain a bonus.
 >
 > _Overcharge:_ lasts 1d4 rounds.
 
@@ -1646,9 +1649,9 @@ meta:
 > **P:** 1 **R:** a crowded room or small courtyard  
 > **T:** upstanding humans of your putative culture **D:** until reality forcefully intervenes (then save)
 >
-> Pour yourself into your words, dramatic gestures, suggestions, and compelling straw men. After a few minutes of speechifying, spend 1 point of charisma, aura, or thought to charm your listeners. They find you persuasive, trustworthy, and likable enough to believe your “truths” and give your ideas a shot. This is no mental domination, you are simply showing that your plans are in their best interest.
+> Pour yourself into your words, dramatic gestures, suggestions, and compelling straw men. After a few minutes of speechifying, spend 1 point of charisma, aura, or thought to charm your listeners. They find you persuasive, trustworthy, and likable enough to believe your 'truths' and give your ideas a shot. This is no mental domination, you are simply showing that your plans are in their best interest.
 >
-> _Overcharge:_ Charm through a telemagical medium such as vidy crystals or comm portals.
+> _Overcharge:_ charm through a telemagical medium such as vidy crystals or comm portals.
 
 tags:
 >   [power]
@@ -1695,7 +1698,7 @@ meta:
 >   - book: Vastlands_Guidebook; page: 110
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
->   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
+>   - scope: power; id: Dawn's Highway; note: Road magic rites from VG p.110.
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1712,7 +1715,7 @@ meta:
 
 > **Hlod Person**
 >
-> _Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction_
+> _Dyslexic Demon's Binding, Leshnik's Unforeseen Constriction_
 >
 > **P:** 4 **R:** close  
 > **T:** a person **D:** 1 hour
@@ -1788,16 +1791,15 @@ meta:
 > **P:** 1 **R:** touch  
 > **T:** small object **D:** an hour
 >
-> Use the protocols of the ten translations. Reach into the indivisible heart of a material object and break it.
-> Release its creative force. Reveal the lie that is matter. Watch. Caress the object in your hand. See, it breaks down over an hour. First, it is weakened, then it fractures, finally it crumbles into aetheric dust.
+> Use the protocols of the ten translations! Reach into the indivisible heart of a material object and break it. Release its creative force! Reveal the lie that is matter! Watch! Caress the object in your hand. See, it breaks down over an hour. First, it is weakened, then it fractures, finally it crumbles into aetheric dust!
 >
-> _Overcharge:_ It collapses in but a minute and releases heat to burn and damage (1 damage per round).
+> _Overcharge:_ It collapses in but a minute and releases heat to burn and damage! (1 damage per round)
 >
-> _Overcharge Again:_ It breaks down in a second. Explosion. Boom. Fragments. (1d6 damage to all nearby. Double to anyone next to the object.)
+> _Overcharge Again:_ It breaks down in a second! Explosion! Boom! Fragments! (1d6 damage to all nearby! Haha! Double to anyone next to the object!)
 >
-> _Overcharge Yet Again:_ Faster than the eye can see. (3d6 damage to all nearby.)
+> _Overcharge Yet Again:_ Faster than the eye can see! (3d6 damage to all nearby! Yes!)
 >
-> _And Again:_ Boom. An eruption. Fire. Hole. The magitechnical fission makes a crater. (1d6 damage to far off targets, 8d6 to nearby, double to adjacent.)
+> _And Again:_ Boom! An eruption! Fire! Hole! The magitechnical fission makes a crater! (1d6 damage to far off targets, 8d6 to nearby, double to adjacent!)
 >
 > _More Overcharge! More:_ The object breaks down in one 216,000th part of a second, and within a millisecond the fireball is tens of metres across. By 100 milliseconds, it measures hundreds of meters. Using dice to simulate damage is pointless. The crater glows with spell radiance for days, and the source codes of living creatures in the vicinity are corrupted for weeks or months after the spell's detonation.
 
@@ -2017,11 +2019,11 @@ meta:
 > **P:** 2 **R:** psychosurgical range  
 > **T:** 1 creature **D:** imbue
 >
-> You inject your mind into a creature, such as a cat or capybara, turning it into a drone under your telepathic control. Accessing a drone’s sensory experiences, memories, or skills requires conscious effort and concentration.
+> You inject your mind into a creature, such as a cat or capybara, turning it into a drone under your telepathic control. Accessing a drone's sensory experiences, memories, or skills requires conscious effort and concentration.
 >
 > Your control is anchored in a metaphysical anchor occupying an inventory slot. Dropping or dissolving the anchor ends the fusion, releasing the target.
 >
-> _Note:_ Dominating a creature whose mental attributes exceed your own is dangerous—it may take control of you instead! At the referee’s discretion, very alien creatures may be harder to control.
+> _Note:_ Dominating a creature whose mental attributes exceed your own is dangerous—it may take control of you instead! At the referee's discretion, very alien creatures may be harder to control.
 >
 > _Overcharge:_ You attempt to inject your mind into a larger creature, such as a man or mammoth.
 
@@ -2074,10 +2076,10 @@ meta:
 >
 > | Result | Effect |
 > | --- | --- |
-> | nat. 1 | Patient’s essence lost or replaced with a similar daemon! |
+> | nat. 1 | Patient's essence lost or replaced with a similar daemon! |
 > | fail | Transfer fails. Both targets exposed to moderate corruption. |
 > | success | Transfer succeeds. Host essence destroyed. |
-> | nat. 20 | Excellent transfer. Patient can choose to retain one of the host’s traits or skills. |
+> | nat. 20 | Excellent transfer. Patient can choose to retain one of the host's traits or skills. |
 >
 > _Overcharge:_ Attempt to overwrite the mind of a non-compliant host.
 
@@ -2114,7 +2116,7 @@ meta:
 >
 > Reloads your weapon as a free action, turning life force into semi-real projectiles.
 >
-> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
+> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power's price (2 + level).
 
 tags:
 >   [power]
@@ -2163,7 +2165,7 @@ meta:
 >   - book: Eternal_Return_Key; page: 11
 > - usage:
 >   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
-  
+
   <div class="power-return">
     &nbsp;&nbsp;
     <a class="js-back-link" href="#sdm-power-motor-fixative-anchor" aria-label="Back to previous page">
@@ -2179,7 +2181,7 @@ meta:
 
 > **Nihil Est!**
 >
-> _Life’s End Made Present, Hadi’s Self-Immolation Binding_
+> _Life's End Made Present, Hadi's Self-Immolation Binding_
 >
 > **P:** 8 **R:** touch  
 > **T:** a sentient creature **D:** 1 year
@@ -2214,9 +2216,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka’S Biophysical Overdrive** {#sdm-power-nunka-s-biophysical-overdrive}
+## **Nunka'S Biophysical Overdrive** {#sdm-power-nunka-s-biophysical-overdrive}
 
-> **Nunka’S Biophysical Overdrive**
+> **Nunka'S Biophysical Overdrive**
 >
 > _Radical Metabolic Manipulation_
 >
@@ -2238,7 +2240,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 32
 > - usage:
->   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: NUNKA'S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2251,16 +2253,16 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka’S Epidermal Sculpt** {#sdm-power-nunka-s-epidermal-sculpt}
+## **Nunka'S Epidermal Sculpt** {#sdm-power-nunka-s-epidermal-sculpt}
 
-> **Nunka’S Epidermal Sculpt**
+> **Nunka'S Epidermal Sculpt**
 >
 > _Biodefense Integration_
 >
 > **P:** 2 **R:** touch  
 > **T:** one creature **D:** permanent
 >
-> You reshape a creature’s skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
+> You reshape a creature's skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
 >
 > _Note:_ Multiple uses on a single individual are dangerous.
 >
@@ -2308,7 +2310,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 30
 > - usage:
->   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: NUNKA'S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2321,22 +2323,22 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka’S Spitting Symbiote** {#sdm-power-nunka-s-spitting-symbiote}
+## **Nunka'S Spitting Symbiote** {#sdm-power-nunka-s-spitting-symbiote}
 
-> **Nunka’S Spitting Symbiote**
+> **Nunka'S Spitting Symbiote**
 >
 > _Integrated Biological Warfare_
 >
 > **P:** 4 **R:** touch  
 > **T:** one creature **D:** permanent
 >
-> You craft a custom symbiote that integrates into the target’s digestive tract. The crafting takes a day, the painless embedding another 8 hours. The symbiote occupies one inventory slot.
+> You craft a custom symbiote that integrates into the target's digestive tract. The crafting takes a day, the painless embedding another 8 hours. The symbiote occupies one inventory slot.
 >
 > On command, the host can vomit forth part of the organism as a weapon, either directly at an enemy or onto terrain as a trap.
 >
 > Symbiote options include: 1. Caustic Slime Worm. Short range. 2d6 acid damage in a small radius. Save for half.
 >
-> 2. Writhing Thornstar. Short range. Entangling thorns in a small radius. Anyone passing through quickly suffers 1d6* damage. 3. Necrotic Fungaloid. Short range. Spore sac deals 1d8 damage on impact or when triggered on. Target must save or suffer 1d6 endurance damage as its lungs are attacked. 4. Snapping Moraykin. Close. Additional bite attack deals 1d6* damage. Automatically strikes enemies who are not expecting the host’s mouth to fold open and release a biting second mouth. 5. Green Grappler. Close. Tentacles grapple a target and make it very hard to pull away. 6. Sonic Hive. Short range. Hundreds of stinging insects pour forward, confusing, harassing, annoying. 7. Stunfish. Short range. A pulsating aerial jellyfish that wafts with the air currents. If struck, it detonates in a spectacular shockwave of light and electromagnetic radiation. Creatures near the jellyfish must save or are blinded and stunned for a few rounds. 8. Glue Cucumber. Short range. Spray of gooey yellow proteins glues the target to the surface. Hard save to break free.
+> 2. Writhing Thornstar. Short range. Entangling thorns in a small radius. Anyone passing through quickly suffers 1d6* damage. 3. Necrotic Fungaloid. Short range. Spore sac deals 1d8 damage on impact or when triggered on. Target must save or suffer 1d6 endurance damage as its lungs are attacked. 4. Snapping Moraykin. Close. Additional bite attack deals 1d6* damage. Automatically strikes enemies who are not expecting the host's mouth to fold open and release a biting second mouth. 5. Green Grappler. Close. Tentacles grapple a target and make it very hard to pull away. 6. Sonic Hive. Short range. Hundreds of stinging insects pour forward, confusing, harassing, annoying. 7. Stunfish. Short range. A pulsating aerial jellyfish that wafts with the air currents. If struck, it detonates in a spectacular shockwave of light and electromagnetic radiation. Creatures near the jellyfish must save or are blinded and stunned for a few rounds. 8. Glue Cucumber. Short range. Spray of gooey yellow proteins glues the target to the surface. Hard save to break free.
 >
 > After attacking, the symbiote must regrow before it can be used again. This happens naturally in 1 week or more quickly, in an hour or so, if the host spends 1d4 life.
 >
@@ -2353,7 +2355,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 33
 > - usage:
->   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: NUNKA'S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
   
   
   
@@ -2368,9 +2370,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka’s Weapon Morph** {#sdm-power-nunka-s-weapon-morph}
+## **Nunka's Weapon Morph** {#sdm-power-nunka-s-weapon-morph}
 
-> **Nunka’s Weapon Morph**
+> **Nunka's Weapon Morph**
 >
 > _Biocombat Implementation_
 >
@@ -2400,7 +2402,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 29
 > - usage:
->   - scope: power; id: NUNKA’S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: NUNKA'S AUTOMORPH; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2417,7 +2419,7 @@ meta:
 
 > **Objective Telekinesis**
 >
-> _The Bending Fork, Made’s Invisible Hand_
+> _The Bending Fork, Made's Invisible Hand_
 >
 > **P:** 1 **R:** nearby  
 > **T:** object **D:** a few minutes
@@ -2458,7 +2460,7 @@ meta:
 > **P:** 6 **R:** touch  
 > **T:** 1 standard humanTM **D:** 1 hour
 >
-> You activate a person’s standard humanTM construction seams® to painlessly unfold them like a flower for easier medical treatment. An open person may seriously injure themselves if not careful (3d6 damage per action). Treatments on an open person are significantly easier, the price of biomantic and medical powers used on them is halved.
+> You activate a person's standard humanTM construction seams® to painlessly unfold them like a flower for easier medical treatment. An open person may seriously injure themselves if not careful (3d6 damage per action). Treatments on an open person are significantly easier, the price of biomantic and medical powers used on them is halved.
 >
 > _Note_ : an unattended open person automatically reseals after 1 hour.
 >
@@ -2490,7 +2492,7 @@ meta:
 
 > **Orange Dream**
 >
-> _Forgotten Spider’s Labors_
+> _Forgotten Spider's Labors_
 >
 > **P:** 1 **R:** whisper  
 > **T:** one creature **D:** an hour
@@ -2668,7 +2670,7 @@ meta:
 
 > **Pyreball**
 >
-> _Instant Incendiary, Damora’s Placid Inferno_
+> _Instant Incendiary, Damora's Placid Inferno_
 >
 > **P:** 6 **R:** touch, or as thrown  
 > **T:** 10m diameter sphere **D:** a day, then instant
@@ -2796,7 +2798,7 @@ meta:
 >   - book: Eternal_Return_Key; page: 11
 > - usage:
 >   - scope: power; id: Eternal Return Key; note: Eternal Return Key Mays spell list.
-  
+
   <div class="power-return">
     &nbsp;&nbsp;
     <a class="js-back-link" href="#sdm-power-reason-s-harvest-anchor" aria-label="Back to previous page">
@@ -2852,7 +2854,7 @@ meta:
 > **P:** 1 **R:** short, ~20m  
 > **T:** one creature **D:** a few minutes
 >
-> Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save).
+> Rubra's need overcomes the target. Anger and passion boil, threatening to break its composure (save).
 > It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
 >
 > _Overcharge:_ Affect a number of creatures equal to your level + 1.
@@ -2882,9 +2884,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan’S Progressive Restoration** {#sdm-power-rehoryan-s-progressive-restoration}
+## **Rehoryan'S Progressive Restoration** {#sdm-power-rehoryan-s-progressive-restoration}
 
-> **Rehoryan’S Progressive Restoration**
+> **Rehoryan'S Progressive Restoration**
 >
 > _Automedical Self Repair_
 >
@@ -2907,8 +2909,6 @@ meta:
 >
 > _Note:_ this power does not cure illnesses or conditions.
 >
-> ❂
->
 > _Overcharge:_ Regenerate for 10 more rounds.
 
 tags:
@@ -2920,7 +2920,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 21
 > - usage:
->   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: REHORYAN'S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2935,16 +2935,16 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan’S Prophetic Song** {#sdm-power-rehoryan-s-prophetic-song}
+## **Rehoryan'S Prophetic Song** {#sdm-power-rehoryan-s-prophetic-song}
 
-> **Rehoryan’S Prophetic Song**
+> **Rehoryan'S Prophetic Song**
 >
 > _Purposeful Biotic Evolution_
 >
 > **P:** 5 **R:** touch  
 > **T:** one creature **D:** permanent
 >
-> After drinking a sample of the target’s spinal fluid, you may chant viridian rituals into its flesh, forcing a rapid evolution. This is dangerous for the target. After 1 day of troubled sleep it permanently gains either:
+> After drinking a sample of the target's spinal fluid, you may chant viridian rituals into its flesh, forcing a rapid evolution. This is dangerous for the target. After 1 day of troubled sleep it permanently gains either:
 >
 > New Trait:
 >
@@ -2972,7 +2972,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 22
 > - usage:
->   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: REHORYAN'S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2987,22 +2987,22 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan’S Prophetic Song 2** {#sdm-power-rehoryan-s-prophetic-song-2}
+## **Rehoryan'S Prophetic Song 2** {#sdm-power-rehoryan-s-prophetic-song-2}
 
-> **Rehoryan’S Prophetic Song 2**
+> **Rehoryan'S Prophetic Song 2**
 >
-> _More Purposeful Biotic Evolution, Rehoryan’s Illegal Power_
+> _More Purposeful Biotic Evolution, Rehoryan's Illegal Power_
 >
 > **P:** 11 **R:** touch  
 > **T:** one creature **D:** permanent
 >
-> _This off-label power is not included in normal Rehoryan albums. This power can only be used on a creature that has already heard Rehoryan’s Prophetic Song, also known as Song 1._
+> _This off-label power is not included in normal Rehoryan albums. This power can only be used on a creature that has already heard Rehoryan's Prophetic Song, also known as Song 1._
 >
 > After eating a sample of the [missing], you may chant obsidian rituals into its vitals, encouraging a perfect evolution. This is very dangerous for the target. After 1 day of gentle sleep it permanently gains either:
 >
 > Far Evolved Trait:
 > 1. gravistatic organ (can levitate in place)
-> 2. televisual abilities (can see through another creature’s eyes)
+> 2. televisual abilities (can see through another creature's eyes)
 > 3. photovitalic skin (meets 50% of nutritional needs)
 > 4. improved bioluminescence (display 700 ads on your skin!)
 > 5. incredible heat/cold tolerance
@@ -3023,7 +3023,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 23
 > - usage:
->   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: REHORYAN'S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3038,9 +3038,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan’S Vital Symphony** {#sdm-power-rehoryan-s-vital-symphony}
+## **Rehoryan'S Vital Symphony** {#sdm-power-rehoryan-s-vital-symphony}
 
-> **Rehoryan’S Vital Symphony**
+> **Rehoryan'S Vital Symphony**
 >
 > _Somatic Insight Probe, Bodyreading_
 >
@@ -3060,7 +3060,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 19
 > - usage:
->   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: REHORYAN'S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3073,9 +3073,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan’S Vivid Regression** {#sdm-power-rehoryan-s-vivid-regression}
+## **Rehoryan'S Vivid Regression** {#sdm-power-rehoryan-s-vivid-regression}
 
-> **Rehoryan’S Vivid Regression**
+> **Rehoryan'S Vivid Regression**
 >
 > _Bioatavistic Reformulation_
 >
@@ -3103,7 +3103,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 20
 > - usage:
->   - scope: power; id: REHORYAN’S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: REHORYAN'S BLOOD CANTICLE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3242,10 +3242,10 @@ meta:
 >
 > _Blacktop Sniffer_
 >
-> **P:** 1 **R:** a day’s march  
+> **P:** 1 **R:** a day's march  
 > **T:** self **D:** 1 hour
 >
-> Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
+> Sniff the world's road fields, 'gard the astral way-lines. Detect the nearest road a day's march or less away.
 >
 > _Overcharge:_ The detection range is doubled, or the sense lasts a day.
 
@@ -3259,7 +3259,7 @@ meta:
 >   - book: Vastlands_Guidebook; page: 110
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
->   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
+>   - scope: power; id: Dawn's Highway; note: Road magic rites from VG p.110.
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3276,7 +3276,7 @@ meta:
 
 > **Roadmaker**
 >
-> _Stradograd’s Engine of Civility_
+> _Stradograd's Engine of Civility_
 >
 > **P:** 6 **R:** one metric mile  
 > **T:** rock and soil **D:** 1 day
@@ -3295,7 +3295,7 @@ meta:
 >   - book: Vastlands_Guidebook; page: 110
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
->   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
+>   - scope: power; id: Dawn's Highway; note: Road magic rites from VG p.110.
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3308,14 +3308,14 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo’S Biocatalysis** {#sdm-power-runo-s-biocatalysis}
+## **Runo'S Biocatalysis** {#sdm-power-runo-s-biocatalysis}
 
-> **Runo’S Biocatalysis**
+> **Runo'S Biocatalysis**
 >
 > _Biotemporal Manipulation_
 >
 > **P:** 1 **R:** touch  
-> **T:** one human’s worth of living organisms **D:** an hour
+> **T:** one human's worth of living organisms **D:** an hour
 > 
 > You alter the speed of a chosen biological process in the target, accelerating or retarding it as much as 10-fold. Processes include growth, gestation, decay, metabolism, disease progression, etc.
 >
@@ -3332,7 +3332,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 24
 > - usage:
->   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: SIATO RUNO'S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3345,16 +3345,16 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo’S Ontogenic Editor** {#sdm-power-runo-s-ontogenic-editor}
+## **Runo'S Ontogenic Editor** {#sdm-power-runo-s-ontogenic-editor}
 
-> **Runo’S Ontogenic Editor**
+> **Runo'S Ontogenic Editor**
 >
 > _Germline Modifier_
 >
 > **P:** 4 **R:** touch  
 > **T:** one embryo or egg **D:** permanent
 > 
-> You stretch a tendril of focused aura into an unborn organism to manipulate its developmental pathway, altering it to reach the upper or lower extremes of the species range in one aspect. The effect unfolds through the creature’s gestation and maturation.
+> You stretch a tendril of focused aura into an unborn organism to manipulate its developmental pathway, altering it to reach the upper or lower extremes of the species range in one aspect. The effect unfolds through the creature's gestation and maturation.
 >
 > **Generic Aspects**
 >
@@ -3382,7 +3382,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 27
 > - usage:
->   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: SIATO RUNO'S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3395,9 +3395,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo’S Parthenogenic Cradle** {#sdm-power-runo-s-parthenogenic-cradle}
+## **Runo'S Parthenogenic Cradle** {#sdm-power-runo-s-parthenogenic-cradle}
 
-> **Runo’S Parthenogenic Cradle**
+> **Runo'S Parthenogenic Cradle**
 >
 > _Synthetic Egg System_
 >
@@ -3423,7 +3423,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 25
 > - usage:
->   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: SIATO RUNO'S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3436,9 +3436,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo’S Parthenogenic Pouch** {#sdm-power-runo-s-parthenogenic-pouch}
+## **Runo'S Parthenogenic Pouch** {#sdm-power-runo-s-parthenogenic-pouch}
 
-> **Runo’S Parthenogenic Pouch**
+> **Runo'S Parthenogenic Pouch**
 >
 > _Synthetic Marsupilism_
 >
@@ -3451,7 +3451,7 @@ meta:
 >
 > _Overcharge:_ Sculpt three pouches occupying two slots. Dangerous for the subject.
 >
-> _Synergy:_ Combine with _Runo’s Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
+> _Synergy:_ Combine with _Runo's Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
 
 tags:
 >   [power]
@@ -3462,7 +3462,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 26
 > - usage:
->   - scope: power; id: SIATO RUNO’S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: SIATO RUNO'S XENON GENESIS; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3486,7 +3486,7 @@ meta:
 >
 > You will kill the Evil One. Fortune will bring you to the befouler and your metal shall end that misbegotten one.
 > 
-> Sense Allegiance: read a creature’s ethics; evil creatures stunned for 1d4 rounds when brushed by your mind (save).
+> Sense Allegiance: read a creature's ethics; evil creatures stunned for 1d4 rounds when brushed by your mind (save).
 >
 > _Overcharge:_ (not listed)
 
@@ -3729,9 +3729,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Stoyevod’S Irreducible Crystallization of the Ego Complex** {#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex}
+## **Stoyevod'S Irreducible Crystallization of the Ego Complex** {#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex}
 
-> **Stoyevod’S Irreducible Crystallization of the Ego Complex**
+> **Stoyevod'S Irreducible Crystallization of the Ego Complex**
 >
 > _Restoration of the Priceless One_
 >
@@ -3813,7 +3813,7 @@ meta:
 > **P:** 1 **R:** nearby  
 > **T:** creature or object **D:** instant
 >
-> You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.
+> You glow, your bearer's hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.
 >
 > _Overcharge:_ They suffer 1d8 damage instead.
 
@@ -3960,7 +3960,7 @@ meta:
 >
 > The wizard uses a 1 hour ritual to convince ambient noosphere linked animalcules to gather a sack's worth of toxic waste and convert it into usable vehicle or golem fuel. Corrodes engines if used for prolonged periods.
 >
-> _Overcharge:_ Converts material that is not toxic or is not waste.
+> _Overcharge:_ converts material that is not toxic or is not waste.
 
 tags:
 >   [power]
@@ -3988,12 +3988,12 @@ meta:
 
 > **Tragic Missile**
 >
-> _Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator_
+> _Antipersonnel Guided Force Bolt, Cupid's Cranial Penetrator_
 >
 > **P:** 2 **R:** middling, ~30–50m  
 > **T:** anything with a mind and soul **D:** instant
 >
-> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
+> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity's mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
 >
 > _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
@@ -4020,9 +4020,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha’S Chaos Trigger** {#sdm-power-usha-s-chaos-trigger}
+## **Usha'S Chaos Trigger** {#sdm-power-usha-s-chaos-trigger}
 
-> **Usha’S Chaos Trigger**
+> **Usha'S Chaos Trigger**
 >
 > _Biotic Manipulation Augment, Mutation Bomb_
 >
@@ -4051,7 +4051,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 11
 > - usage:
->   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: USHA'S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4064,9 +4064,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha’S Chimera Splice** {#sdm-power-usha-s-chimera-splice}
+## **Usha'S Chimera Splice** {#sdm-power-usha-s-chimera-splice}
 
-> **Usha’S Chimera Splice**
+> **Usha'S Chimera Splice**
 >
 > _Biotic Fusion Augment, Meltflesh Hyperblot_
 >
@@ -4085,7 +4085,7 @@ meta:
 >
 > Before there were two minds, now there is one. Which is it?
 >
-> **d20** | **Creature’s Response**
+> **d20** | **Creature's Response**
 > --- | ---
 > ≤3 | A new mind, a melding of both that went before. And it hates you.
 > 4–7 | A dominant mind and a subordinate mind and they both hate you.
@@ -4105,7 +4105,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 14
 > - usage:
->   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: USHA'S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4118,16 +4118,16 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha’S Horrorshow Infestation** {#sdm-power-usha-s-horrorshow-infestation}
+## **Usha'S Horrorshow Infestation** {#sdm-power-usha-s-horrorshow-infestation}
 
-> **Usha’S Horrorshow Infestation**
+> **Usha'S Horrorshow Infestation**
 >
 > _Biotic Corruption Augment, Cancer Bomb_
 >
 > **P:** 4 **R:** spitting distance  
 > **T:** one creature **D:** a few minutes
 >
-> You spit a corrosive bio-daemon that begins to rewrite the target’s genetic code. It writhes and twists, losing one turn, then saves.
+> You spit a corrosive bio-daemon that begins to rewrite the target's genetic code. It writhes and twists, losing one turn, then saves.
 >
 > _Success:_ it suffers 4d6 damage as its body voids benign alien tumors.
 >
@@ -4135,7 +4135,7 @@ meta:
 >
 > _Extract:_ ripping the infestation out is tough and deals another 2d6* damage to the target. The creature (L4) continues to attack mindlessly.
 >
-> _Overcharge:_ the target automatically fails its save and immediately suffers 4d6* damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody’s control.
+> _Overcharge:_ the target automatically fails its save and immediately suffers 4d6* damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody's control.
 
 tags:
 >   [power]
@@ -4146,7 +4146,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 9
 > - usage:
->   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: USHA'S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4159,9 +4159,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha’S Replicator Strand** {#sdm-power-usha-s-replicator-strand}
+## **Usha'S Replicator Strand** {#sdm-power-usha-s-replicator-strand}
 
-> **Usha’S Replicator Strand**
+> **Usha'S Replicator Strand**
 >
 > _Biotic Growth Augment, Root Meatmaker_
 >
@@ -4172,9 +4172,9 @@ meta:
 >
 > _Save:_ if the tissue is part of an aware creature, the creature saves. If the save fails, the growth deals 2d4* damage over one hour. Cutting away the affected area deals 1d6 damage, the cutaway continues to grow.
 >
-> _Note:_ the growth does not produce high quality tissue. Grown meat is spongy and tough, expanded ivory is brittle and gnarled, extended hair is flakey and hard. It’s just ... bigger.
+> _Note:_ the growth does not produce high quality tissue. Grown meat is spongy and tough, expanded ivory is brittle and gnarled, extended hair is flakey and hard. It's just ... bigger.
 >
-> _Overcharge:_ Watch a stone’s worth of tissue grow to sack-sized in one hour. The growth deals 4d4* damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
+> _Overcharge:_ Watch a stone's worth of tissue grow to sack-sized in one hour. The growth deals 4d4* damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
 
 tags:
 >   [power]
@@ -4185,7 +4185,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 17
 > - usage:
->   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: USHA'S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4198,9 +4198,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha’S Swift Rebuild** {#sdm-power-usha-s-swift-rebuild}
+## **Usha'S Swift Rebuild** {#sdm-power-usha-s-swift-rebuild}
 
-> **Usha’S Swift Rebuild**
+> **Usha'S Swift Rebuild**
 >
 > _Biotic Regeneration Augment, Systemic Limb Back Trigger_
 >
@@ -4219,7 +4219,7 @@ meta:
 >
 > **Unsafe Rebuilding**
 >
-> Didn’t remove the damaged part first? Make a biomantic, medical, or other relevant roll.
+> Didn't remove the damaged part first? Make a biomantic, medical, or other relevant roll.
 >
 > **Effect** | 
 > --- |
@@ -4239,7 +4239,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 18
 > - usage:
->   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: USHA'S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4252,16 +4252,16 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha’S Uplift** {#sdm-power-usha-s-uplift}
+## **Usha'S Uplift** {#sdm-power-usha-s-uplift}
 
-> **Usha’S Uplift**
+> **Usha'S Uplift**
 >
 > _Biotic Enhancement Augment, Value Added Operation_
 >
 > **P:** 2 **R:** tickling distance  
 > **T:** one creature less smart than yourself **D:** permanent
 > 
-> You manipulate the target’s genetic material, increasing its intelligence over several days. If it has a thought score, this increases by 1.
+> You manipulate the target's genetic material, increasing its intelligence over several days. If it has a thought score, this increases by 1.
 >
 > _Note:_ Very dangerous for the target. Usually only works once per target.
 >
@@ -4288,7 +4288,7 @@ meta:
 >
 > Perhaps the creature is pleased with its new situation?
 >
-> **d20** | **Creature’s Response**
+> **d20** | **Creature's Response**
 > --- | ---
 > 1 | Outwardly pleased, secretly plots to overthrow its creator.
 > 2–7 | Brutally depressed by realization of its own mortality.
@@ -4296,7 +4296,7 @@ meta:
 > 13 | Disdainful of creator. Convinced it will discover, better truth.
 > 14–15 | Numb with shock of understanding.
 > 16–19 | Obsequious. Convinced the creator is a deity who understands all.
-> 20≤ | Understands you’re not so different. It’s mortals all the way down.
+> 20≤ | Understands you're not so different. It's mortals all the way down.
 
 tags:
 >   [power]
@@ -4307,7 +4307,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 12
 > - usage:
->   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: USHA'S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4320,9 +4320,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha’S Xenograft** {#sdm-power-usha-s-xenograft}
+## **Usha'S Xenograft** {#sdm-power-usha-s-xenograft}
 
-> **Usha’S Xenograft**
+> **Usha'S Xenograft**
 >
 > _Biotic Integration Augment, Meetmeat_
 >
@@ -4364,7 +4364,7 @@ meta:
 > - source:
 >   - book: Magitecnica_Codex_2; page: 15
 > - usage:
->   - scope: power; id: USHA’S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
+>   - scope: power; id: USHA'S WILD RIDE; note: Magitecnica Codex 2 (Biomancy)
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4386,11 +4386,11 @@ meta:
 > **P:** 5 **R:** touch  
 > **T:** a leek and a creature seed **D:** 50 + 1d100 days
 >
-> You take a well-treated leek and imbue it with the formulated spell. Next, take a prepared creature seed and implant it in the leek. The leek will grow to immense size and girth. Then, at its allotted time, it shall split, and a full-grown adult creature will emerge.
+> You take a well-treated leek and _imbue\*_ it with the formulated spell. Next, take a prepared creature seed and implant it in the leek. Behold, the leek will grow to immense size and girth. Then, at its allotted time, it shall split, and a full-grown adult creature will emerge!
 >
 > _Overcharge:_ It grows to maturity in 2d8 days.
 >
-> You may regain any life imbued in the leek after the spell ends.
+> **\*Note:** You may regain any life _imbued_ in the leek after the spell ends.
 
 tags:
 >   [power]
@@ -4465,7 +4465,7 @@ meta:
 >
 > | d8 | Psyche | Result |
 > | --- | --- | --- |
-> | 1 | **Fragmentary Whispers** | The conversation is halting and crude; the ghost’s attitude suffers. |
+> | 1 | **Fragmentary Whispers** | The conversation is halting and crude; the ghost's attitude suffers. |
 > | 2 | **Naked Coherence** | A thin, strained voice emerges—barely workable for a normal exchange. |
 > | 3 | **Drawn Spirit** | Attracted to your _vis viva_, the ghost brightens and becomes eager to speak. |
 > | 4 | **Dominated Ghost** | Your force of will compels three clear answers, regardless of the psyche's mood. |
@@ -4521,7 +4521,7 @@ meta:
 >   - book: Vastlands_Guidebook; page: 110
 >   - book: Magitecnica_Codex_1; page: 22
 > - usage:
->   - scope: power; id: Dawn’s Highway; note: Road magic rites from VG p.110.
+>   - scope: power; id: Dawn's Highway; note: Road magic rites from VG p.110.
   
   <div class="power-return">
     &nbsp;&nbsp;

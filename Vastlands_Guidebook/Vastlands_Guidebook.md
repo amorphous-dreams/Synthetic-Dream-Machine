@@ -4571,13 +4571,13 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 **P:** 1 **R:** short, ~20m  
 **T:** one creature **D:** a few minutes
 
-> Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save). It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
+> Rubra's need overcomes the target. Anger and passion boil, threatening to break its composure (save). It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
 >
 > _Overcharge:_ Affect a number of creatures equal to your level + 1.
 
 **Orange Dream**
 
-*Forgotten Spider’s Labors*
+*Forgotten Spider's Labors*
 
 **P:** 1 **R:** whisper  
 **T:** one creature **D:** an hour
@@ -4615,7 +4615,7 @@ A color theory psychemagic developed by the hypothetical wizard Spectrum Claire-
 **P:** 1 **R:** short, ~5m  
 **T:** one creature **D:** an hour
 
-> Soma’s bliss brings contentment to the target (save).
+> Soma's bliss brings contentment to the target (save).
 >
 > Success: it loses its next turn to a blissful reverie.
 >
@@ -4649,7 +4649,7 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 
 > Reloads your weapon as a free action, turning life force into semi-real projectiles.
 >
-> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
+> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power's price (2 + level).
 
 **Dancing In The Hail**
 
@@ -4706,7 +4706,7 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 
 <a id="page_0110"></a>
 
-##### DAWN’S HIGHWAY
+##### DAWN'S HIGHWAY
 
 A compilation of folk road magic by the ethnologist and hedge wizard Fritzu Na (AM/FM). Also called Road Magic by the uninformed, and the Way of Ways by the hobo hieratics of the Right Road.
 
@@ -4719,7 +4719,7 @@ No album makes the crooked road straighter.
 **P:** 1 **R:** touch  
 **T:** 1 sack **D:** 1 day
 
-> A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
+> A sub-reality field halves the object's interactive mass. An object of 100 kilos acts like one of fifty.
 >
 > _Overcharge:_ The mass is halved again. Alternately, it affects an object twice as large, or lasts a week instead.
 
@@ -4749,10 +4749,10 @@ No album makes the crooked road straighter.
 
 *Blacktop Sniffer*
 
-**P:** 1 **R:** a day’s march  
+**P:** 1 **R:** a day's march  
 **T:** self **D:** 1 hour
 
-> Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
+> Sniff the world's road fields, 'gard the astral way-lines. Detect the nearest road a day's march or less away.
 >
 > _Overcharge:_ The detection range is doubled, or the sense lasts a day.
 
@@ -4769,7 +4769,7 @@ No album makes the crooked road straighter.
 
 **Roadmaker**
 
-*Stradograd’s Engine of Civility*
+*Stradograd's Engine of Civility*
 
 **P:** 6 **R:** one metric mile  
 **T:** rock and soil **D:** 1 day
@@ -4836,14 +4836,14 @@ Found on tablets pried from the petrified hand bones of the lich-vizier Akaula a
 >
 > _Overcharge:_ The seeker gains a gaze attack that paralyzes the aforementioned things for 1d6 rounds (save).
 
-**Stoyevod’s Irreducible Crystallization of the Ego Complex**
+**Stoyevod's Irreducible Crystallization of the Ego Complex**
 
 *Restoration of the Priceless One*
 
 **P:** 17 **R:** here  
 **T:** one dead hero **D:** permanent
 
-> This deeply immoral ritual tears a departed psyche from the All-Mind's cosmic consciousness. It steals the forgiven soul from the All-Fire of Creation-PreservationDestruction. It undoes the body's decay into the All Green of Life-Death-Rebirth.
+> This deeply immoral ritual tears a departed psyche from the All-Mind's cosmic consciousness. It steals the forgiven soul from the All-Fire of Creation-Preservation-Destruction. It undoes the body's decay into the All Green of Life-Death-Rebirth.
 >
 > In a rapturous whirlwind, the hero is recreated from sacred fire and holy breath and perfect soil. They make their relife roll with advantage. All this ritual requires is the loving sacrifice of another human, and one more for each level of the hero.
 >
@@ -4877,24 +4877,24 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 **P:** 1 **R:** a few meters  
 **T:** someone who can hear you **D:** instant
 
-> You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
+> You wish someone sprawled and humbled, and your muttered curse may make it so. The target's shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
 >
-> _Overcharge:_ There’s no save. The target is tripping.
+> _Overcharge:_ There's no save. The target is tripping.
 
 **Tragic Missile**
 
-*Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator*
+*Antipersonnel Guided Force Bolt, Cupid's Cranial Penetrator*
 
 **P:** 2 **R:** middling, ~30–50m  
 **T:** anything with a mind and soul **D:** instant
 
-> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
+> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity's mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
 >
 > _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
 **Hlod Person**
 
-*Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction*
+*Dyslexic Demon's Binding, Leshnik's Unforeseen Constriction*
 
 **P:** 4 **R:** close  
 **T:** a person **D:** 1 hour
@@ -4905,7 +4905,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **Pyreball**
 
-*Instant Incendiary, Damora’s Placid Inferno*
+*Instant Incendiary, Damora's Placid Inferno*
 
 **P:** 6 **R:** touch, or as thrown  
 **T:** 10m diameter sphere **D:** a day, then instant
@@ -4916,7 +4916,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **Nihil Est!**
 
-*Life’s End Made Present, Hadi’s Self-Immolation Binding*
+*Life's End Made Present, Hadi's Self-Immolation Binding*
 
 **P:** 8 **R:** touch  
 **T:** a sentient creature **D:** 1 year
@@ -4955,9 +4955,9 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 **P:** 1 **R:** touch  
 **T:** one thinking tree **D:** 10 minutes
 
-> You unplug from your body and send your spirit-mind ( _ka-ba_ ) into the synthetic dreamspace of a local server tree. You can access the tree’s short-term memories, divine announcements, algorithmically generated human-interest novelties, and locally hosted offshoot dream realities.
+> You unplug from your body and send your spirit-mind ( _ka-ba_ ) into the synthetic dreamspace of a local server tree. You can access the tree's short-term memories, divine announcements, algorithmically generated human-interest novelties, and locally hosted offshoot dream realities.
 >
-> _Overcharge:_ Gain root-level access to the tree’s source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms. 
+> _Overcharge:_ Gain root-level access to the tree's source codes and find the mycelial doors that link it to the wider noösphere—Long Ago electronic world fragments, celestial memory palaces, and other micro-realms. 
 >
 > **Note:** Useful when the referee has a one shot or other odd dungeon ready. Be careful. Noise and commotion may alert functioning guardians (L2d6, electrangelic) to your interventions.
 
@@ -4983,7 +4983,7 @@ Beyond the wizard, traveler, and fighter, there are other paths characters may t
 
 7. **Manager.** An avatar of law, order, and procedure. You navigate forms and traditions, temples and bureaus. You wield the uniform, armor, and tools of your guild. Also, you can spend 1 life to detect if a creature is lying or not (90% accurate). (p128)
 
-8. **Noble.** You were born better. You don’t need to do anything, you just have to be. You are skilled with prestigious weapons and armors, rich with oldtech, imbued with fantascience. Also, spend a hero die to make lower class human see things your way. (p130)
+8. **Noble.** You were born better. You don't need to do anything, you just have to be. You are skilled with prestigious weapons and armors, rich with oldtech, imbued with fantascience. Also, spend a hero die to make lower class human see things your way. (p130)
 
 9. **Noömagus.** You call yourself a neon knight. Rejoice in memetic rituals and wield the powers electric, luminous and daemonic. Use synthetic and lumi nous weapons. Also, spend a hero die to remember a fact about any unknown item you hold. (p132)
 
@@ -5003,7 +5003,7 @@ Beyond the wizard, traveler, and fighter, there are other paths characters may t
 
 16. **Soldier.** You served in the not-wars at the edge of time. You know the weapons and armors of regulation; wandgun and shield, blade and combat suit. You gain +2 defense (+4 at expert, +6 at master). Also, when an ally stands next to you, they add your charisma to their defense score. (p146)
 
-17. **Tourist.** You are not from around here. Stumble into places you shouldn’t be. Visit sights meant to be hidden. By accident, of course. Wield the book, stick, and umbrella. Also, spend a hero die to enter a sealed or locked place. (p148)
+17. **Tourist.** You are not from around here. Stumble into places you shouldn't be. Visit sights meant to be hidden. By accident, of course. Wield the book, stick, and umbrella. Also, spend a hero die to enter a sealed or locked place. (p148)
 
 18. **Trickster.** Call yourself wind, dawn, and sun. Practice linguistic tricks, technomagical illusions, and gymnosophic techniques. Spend a hero die and someone you tricked thinks you helped them. (p150)
 
@@ -5122,7 +5122,7 @@ Other names: Bruxer Bruxereen, Filo 't Nit, Ganya o'Breggi, Ondin do Plaja, Secu
 
 4. **Reanimator.** Not only learned in the hidden scriptures, you carry sparks of the Once-Living God within you. Spend 1 life to reanimate a hound-sized beast for an hour, more for larger creatures.
 
-5. **Spelunker.** Growing up in a mountain drilling, you’ve ventured into deep places. Climbed, rappelled, dived, camped, foraged, marked, and mapped them. Also, gain a bonus when fighting in tight places.
+5. **Spelunker.** Growing up in a mountain drilling, you've ventured into deep places. Climbed, rappelled, dived, camped, foraged, marked, and mapped them. Also, gain a bonus when fighting in tight places.
 
 6. **Sporemark.** The mycelium is within you. You hear the all-fungus. Talk to trees and soil and rotting things. If injuries reduce you to 0 life, spending a day buried in living soil restores you to full health.
 
@@ -5165,9 +5165,9 @@ When there was just the One City, you were there. When again just one city remai
 
 1. **Salar LIX** suspects they were spawned out of order. Their auto-tutors pretend all is well in the Salar conglomerate, but LIX suspects something is wrong with the senior iterate. Also, wouldn't it be nice to retire to a life of rabbit fancying and duck hunting?
 
-2. **Koyoda VI** owns the smart rice generation facilities in the Orangeland New Paddy Sector. Well, owns is a strong word. They’re pretty sure the golems are keeping secrets. Perhaps they’re just a figurehead?
+2. **Koyoda VI** owns the smart rice generation facilities in the Orangeland New Paddy Sector. Well, owns is a strong word. They're pretty sure the golems are keeping secrets. Perhaps they're just a figurehead?
 
-3. **Nemor III** has owned the food factories, agricultural banks, and tattle generators of Yellowland Sector Tree for over two hundred years. They’re not about to let their body wearing thin stop them.
+3. **Nemor III** has owned the food factories, agricultural banks, and tattle generators of Yellowland Sector Tree for over two hundred years. They're not about to let their body wearing thin stop them.
 
 4. **Messara V** was reconstituted by the administration to help the vineries of East Six Redland finally turn a profit. After 13 grinding years, the shareholders are getting antsy and Messara is getting nervous.
 
@@ -5281,7 +5281,7 @@ Yet it held. It held like it had every time Adramwt had crossed since inheriting
 
 It was not forbidden for humans to build roads, but the
 
-Lord who had given the house to Adramwt’s lineage had supplied it with a slow gate. Was this not a clear sign of the Lord’s designs?
+Lord who had given the house to Adramwt's lineage had supplied it with a slow gate. Was this not a clear sign of the Lord's designs?
 
 Adramwt shuddered again. Eight hundred years, the prayers had kept the Lords content. Still, their minds were not as the minds of humans. They thought long and strange, and who could tell... perhaps these many years were but to tease deeper into heresy, into damnation.
 
@@ -5356,7 +5356,7 @@ There's always one. You couldn't adapt, wouldn't understand. They said your mind
 
 <a id="page_0127"></a>
 
-“Bagatto. Our blessed vessel, their accursed wizard. Awake, Bagatto,” intoned the chantler. The ritual synthetic had been repeating the villagers’ guidance prayers over the corpse-like form of the Fool for over a week as that reckless human’s idego traveled deep within the noösphere.
+“Bagatto. Our blessed vessel, their accursed wizard. Awake, Bagatto,” intoned the chantler. The ritual synthetic had been repeating the villagers' guidance prayers over the corpse-like form of the Fool for over a week as that reckless human's idego traveled deep within the noösphere.
 
 When the Fool Bagatto completed his petition to the Dancing Lord to expand the village orchards, he would need the guidance prayers to find his body once more.
 
@@ -5370,7 +5370,7 @@ When the Fool Bagatto completed his petition to the Dancing Lord to expand the v
 
 4. **Monk** ingested a dragon and the dragon rode him out into the vasty wilds. There he lived like a wolf for seven years, growing gaunt and toothsome. One day, the dragon was gone and Monk walked home.
 
-5. **Sanaryncis** left her body for a bobcat’s after accidentally disabling her humanity overrides. After a petition to the small gods of town and propriety, she regained her human rights.
+5. **Sanaryncis** left her body for a bobcat's after accidentally disabling her humanity overrides. After a petition to the small gods of town and propriety, she regained her human rights.
 
 6. **Vioma** was a golem before they were rebuilt as a human. But something went wrong and the machine came back. Now electric dreams crawl the transorganic flesh beneath their wooly hide.
 
@@ -5384,7 +5384,7 @@ Other names: Bob, Helio Moto, Iddo, Menes Trega, Padra Dor, Trismeniscus.
 
 3. **Holy Diver.** Too long you swam in the noösphere, hunting the marrow of forgotten knowledge. At last, the noösphere stared back into you and reworked your mind. You have an intuitive grasp of dreamwalking and dream portals. Spend 1 life to read where a portal leads.
 
-4. **Phylake’s Child.** They say your parent was a witch who seduced a holy guardian—an angel-demon called a phylake by scholars. Daemons talk to you and see you as one of their own.
+4. **Phylake's Child.** They say your parent was a witch who seduced a holy guardian—an angel-demon called a phylake by scholars. Daemons talk to you and see you as one of their own.
 
 5. **Soothsayer.** When no one else in a village can read, your interpretation of divine dreams from the ambient hum of the noötrees is invaluable. Grove, glade, mushroom and slime talk to you. Spend 1 life to talk to them.
 
@@ -5433,11 +5433,11 @@ Tyxo walked out to their desk, masking a limp. They had not saved up for a repai
 
 3. **Post-classical Rigel-14** is worried that a mix-up occurred when they were generated. They try to make up for it by working extra hard and applying for recombinant parental dispensation once a year.
 
-4. **Naster Calculator-7bis** has a deep affinity for numbers. They suspect this was encoded in them to keep them pliant, but they don’t mind. So long as they swim in numbers, their brain is happy.
+4. **Naster Calculator-7bis** has a deep affinity for numbers. They suspect this was encoded in them to keep them pliant, but they don't mind. So long as they swim in numbers, their brain is happy.
 
 5. **Rudra Housing-30k** has found peace in their new role as a park ranger after several transfers and a face change. Yet their past in housing overflow will come back to haunt them.
 
-6. **Moth Superior-15** oversees orimonate processing and memory implantation. The orimonates, ripeborn vatgrown humans, are crucial to the success of the Garden Path, so this task is a source of great pride to Moth. Recently, they’ve become anxious whether their own memories are real and what happened to their home village.
+6. **Moth Superior-15** oversees orimonate processing and memory implantation. The orimonates, ripeborn vatgrown humans, are crucial to the success of the Garden Path, so this task is a source of great pride to Moth. Recently, they've become anxious whether their own memories are real and what happened to their home village.
 
 Other names: Ilion Tixi, Leon Venale, Pirh 't Ei, Primovenio, Simplona Descente, Wada nu Waxen.
 
@@ -5497,7 +5497,7 @@ The best were Chosen. The Chosen are the best. The proof of aristocracy is a per
 
 Calissa de Freix breathed a sigh of relief as a human administrator answered. It was so hard to get through to professional help these days, the Garden Authority cycling her through a series of falschers instead.
 
-“This is the Mastress de Freix, I’ve been calling for days! I reported barbarians on my estates, but did they send phylakes? No! Instead of guardian angels to kick them out, the Authority downgraded my estates to an Orange zone and suggested I upgrade my defense budget. This is outrageous! The de Freix estates have been Green zone since the Second Armadillo Expansion. Over 30 generations! I demand you remedy this oversight, reinstate the Green zone designation and send over a senior phylake unit!”
+“This is the Mastress de Freix, I've been calling for days! I reported barbarians on my estates, but did they send phylakes? No! Instead of guardian angels to kick them out, the Authority downgraded my estates to an Orange zone and suggested I upgrade my defense budget. This is outrageous! The de Freix estates have been Green zone since the Second Armadillo Expansion. Over 30 generations! I demand you remedy this oversight, reinstate the Green zone designation and send over a senior phylake unit!”
 
 She heard the white-collar assume a defensive crouch.
 
@@ -5513,11 +5513,11 @@ She heard the white-collar assume a defensive crouch.
 
 <a id="page_0131"></a>
 
-4. **Offex y Vlaco** has trains and logistics in their blood. Well, hard-wired in their brain. Courtesy of a temple priest who suspects the gods may need proof of the family’s value again.
+4. **Offex y Vlaco** has trains and logistics in their blood. Well, hard-wired in their brain. Courtesy of a temple priest who suspects the gods may need proof of the family's value again.
 
 5. **Loess tu Bo of the Bo Freelords** is the only child not to have fallen to futility in the last 50 years. Something single-minded and simple about their passionate pursuit of rabbit breeding, perhaps?
 
-6. **Fourteen vom Cholan** is still unnamed, in case they go mad from prolonged contact with the luminous void creatures their family has traditionally used to manifest the Lords’ will. Still, they have survived a winter in the woods, hunting ferals for survival. Perhaps they will deserve a name soon. Something like Fourteen Skulls?
+6. **Fourteen vom Cholan** is still unnamed, in case they go mad from prolonged contact with the luminous void creatures their family has traditionally used to manifest the Lords' will. Still, they have survived a winter in the woods, hunting ferals for survival. Perhaps they will deserve a name soon. Something like Fourteen Skulls?
 
 Other names: Benedett' Eyecaught ys Ulacca, Common od Feltbait et Tantamount, Elegéant of the Ivory Army, Jandro de Grandtourist Inc., Pansacro Thirst-For Knowledge, Tor y Nunc vom Umber of the Slumbering Most Green (faithful branch).
 
@@ -5529,7 +5529,7 @@ Whence do these nobles claim to hail?
 
 2. **Knight.** Battler families helped the Lords homestead hell. Now they spend their lives in well-deserved luxury, hunting beasts and singing lays.
 
-3. **Sacrifex.** The divine light of the gods courses through their veins, a lineage of potential avatars the Lords would embody to manifest the Maker’s will during the Building of the Given World. Now they spend their lives in well-deserved luxury, rolling dice and hunting synthetics.
+3. **Sacrifex.** The divine light of the gods courses through their veins, a lineage of potential avatars the Lords would embody to manifest the Maker's will during the Building of the Given World. Now they spend their lives in well-deserved luxury, rolling dice and hunting synthetics.
 
 4. **Freelord.** Humans of parallel lineages to the Lords. Preserved as part of the basic architecture of the Garden. Now they spend their lives in well-deserved luxury, hunting daemons and playing cards.
 
@@ -5578,7 +5578,7 @@ _electric wizard, magnetic sorcerer_
 
 "Where do you think you're going?" it continued. "Yes, I see you hear me. You think I'll ask you to stay a while and listen? No, no... I am not that kind of daemon. You hear me now, now you cannot leave. Well, I suppose it doesn't matter to you... for you I am precisely that kind of daemon. But I was like you, once. A human of flesh and jewel and noösphere jack. Ah, I waffle. It must have been a century? Homespun smock, rattan sandals, shepherd's crook but no bi-comte's miter. You will do..."
 
-The noömagus’ slap knocked the shepherd awake.
+The noömagus' slap knocked the shepherd awake.
 
 "Beware, young Ookle! Don't go listening to every memory stone you find. Some are still alive and twitching with old ghosts too indecent to remain in their electric afterlives."
 
@@ -5612,7 +5612,7 @@ Other names: Hatman Issi, Iematalf, Noë Two-Copy, Orange Orbeyes, The Poncho, R
 
 4. **Power Scroller.** You're great at scrolls. You can take a power, prime it, and bind it to a physical object like a business card or napkin with locking glyphs. The scroll is imbued with your life force until someone activates it with the trigger word of your choice. You can spend a hero die to reduce the cost of a power imbued in a scroll by that amount (minimum 1). You can recover imbued life after the scroll is discharged.
 
-5. **Soul Fuel.** Find the _ka_ in all things. Use a nearby friend’s life force to fuel your powers. Also, spend a hero die and 1d4 life to recharge an omnibattery.
+5. **Soul Fuel.** Find the _ka_ in all things. Use a nearby friend's life force to fuel your powers. Also, spend a hero die and 1d4 life to recharge an omnibattery.
 
 6. **Veteran of the Psychic Wars.** You fought in the mind-stealer wars with lazgun and vibro machete. Add your bonus to saves against enchantments and mind control. Also, take half damage from ordinary mental blows, but double from mental critical hits.
 
@@ -5642,7 +5642,7 @@ _happy, living, working, dead_
 
 Malegatto the Cad methodically licked his paws smooth. Sinister superior, sinister inferior, dexter superior, dex...
 
-_snick_ . Dry clicker sedge breaking under a ponderous town-oaf’s foot. Three hundred paces. There was time. Dexter inferior. There, neat and tidy.
+_snick_ . Dry clicker sedge breaking under a ponderous town-oaf's foot. Three hundred paces. There was time. Dexter inferior. There, neat and tidy.
 
 _Snick, plop, snick_ . Two hundred and fifty paces. Malegatto pulled on his gloves and gripped his hunting lance.
 
@@ -5652,19 +5652,19 @@ Excellent. The trap had worked.
 
 Malegatto raised his lance and waited until the town-oaf entered the clearing where the Canopy drones had left the cargo. Biped, no augments, typical dream-worm.
 
-The town-oaf warbled an IFF song at the cargo and Malegatto’s daemon nudged the trapped cargo semimind to sing back. The target visibly straightened, flooded with courage by this song-symbol of the
+The town-oaf warbled an IFF song at the cargo and Malegatto's daemon nudged the trapped cargo semimind to sing back. The target visibly straightened, flooded with courage by this song-symbol of the
 
-Canopy’s omnipotence.
+Canopy's omnipotence.
 
-Malegatto’s face wrinkled with joy and hunger, exposing long canines. His synthetic subsystems took over, body switching to battery power, pausing breathing and heartbeat, turning still as a gun angel, a phylake on its panoptic column.
+Malegatto's face wrinkled with joy and hunger, exposing long canines. His synthetic subsystems took over, body switching to battery power, pausing breathing and heartbeat, turning still as a gun angel, a phylake on its panoptic column.
 
 The town-oaf snuffled around the cargo, crooning with joy, imagining the status they would gain from the new consignment of centrally-approved culture.
 
-Malegatto and his lance became one. His vision focused to its infrared targeting dot. Wind speed, moisture, density skimmed from the local smart flora’s vegetal noösphere.
+Malegatto and his lance became one. His vision focused to its infrared targeting dot. Wind speed, moisture, density skimmed from the local smart flora's vegetal noösphere.
 
 _Flash. Crack. Pop._
 
-The town-oaf was still crooning, but it was over. The lance’s ray had fried its soft place-holder precortex and executive jewel. Lobotomy at a distance.
+The town-oaf was still crooning, but it was over. The lance's ray had fried its soft place-holder precortex and executive jewel. Lobotomy at a distance.
 
 <a id="page_0135"></a>
 
@@ -5860,11 +5860,11 @@ Other names: Berlesc an'Namur, Corron Port, Filochet Torasc, Loru c'Magnac, Tere
 
 _source, code, reset_
 
-Xoras scrambled down the long sun-bleached slope of the great atmosphere engine. Their reinforced boots punched through the calcrete, leaving streaks of rust-raw gravel exposed to the sun’s harsh electric light.
+Xoras scrambled down the long sun-bleached slope of the great atmosphere engine. Their reinforced boots punched through the calcrete, leaving streaks of rust-raw gravel exposed to the sun's harsh electric light.
 
 The overgrown polyp writhed behind them. If that chaotic tangle of tentacles and post mechanical cancers tore free of its theca, it would take him and half the slope down into the excavated channel below.
 
-Xoras’s personal daemon piped up, “Left! Make for the willow wolves!”
+Xoras's personal daemon piped up, “Left! Make for the willow wolves!”
 
 Xoras thought a nod at the little ghost and accelerated, synthetic bioblasts releasing additional energy to his exhausted muscles. Leap, slide, scramble, leap. The willow wolves' blood-catchers whipped at them, but the razor thorns found no purchase on their builderskin overalls.
 
@@ -5880,9 +5880,9 @@ The shell of the bivouac was old, from the Seeding Period. It would withstand...
 
 “Brace!”
 
-Xoras shrieked as the buffer fields anchored them in the middle of the shell. Then the bivouac shifted as the polyp’s mad thrashing loosed the crusted regolith off the atmosphere engine’s iron-nickel flank.
+Xoras shrieked as the buffer fields anchored them in the middle of the shell. Then the bivouac shifted as the polyp's mad thrashing loosed the crusted regolith off the atmosphere engine's iron-nickel flank.
 
-“That’s what you get for walking into one of the Maker’s remnants unshielded,” grumbled the personal daemon.
+“That's what you get for walking into one of the Maker's remnants unshielded,” grumbled the personal daemon.
 
 “Hush, Lucréce, I need to focus...” _on not throwing up_, thought Xoras, as the shell rolled.
 
@@ -5894,7 +5894,7 @@ Xoras shrieked as the buffer fields anchored them in the middle of the shell. Th
 
 2. **Benush of the Doctor Love** carries some aspect of the initial dream of an eternal sanctuary for humanity. Not necessarily the benign aspect.
 
-3. **Suë of the Fourface** carries within a microcosm of the planned perfection of the Garden and an awareness of Heaven’s imperfection.
+3. **Suë of the Fourface** carries within a microcosm of the planned perfection of the Garden and an awareness of Heaven's imperfection.
 
 4. **Gula of the Hungry Condition** is consumed by the void the Maker felt after creating the Cosmos.
 
@@ -5961,11 +5961,11 @@ Ora et labora once dictated the terms of human life. Now, in this eternal civili
 
 “Servus humillimus, domine spectabilis,” murmured
 
-Chinja-5-dash as they awakened and the day’s admonitions scrolled through their mind’s eye. The lord had blessed them with their attention today. Meaning would fill them as their limbs toiled to perfect the plan.
+Chinja-5-dash as they awakened and the day's admonitions scrolled through their mind's eye. The lord had blessed them with their attention today. Meaning would fill them as their limbs toiled to perfect the plan.
 
 Chinja-5-dash frowned.
 
-Again, the dragon had come in the night. The monochrome scourge upon the human flock. It had dodged the fences of four villagers’ minds and infected them with error.
+Again, the dragon had come in the night. The monochrome scourge upon the human flock. It had dodged the fences of four villagers' minds and infected them with error.
 
 Today, Chinja-5-dash would again wield the cauterizing lance for Lord Cathedra.
 
@@ -5990,7 +5990,7 @@ Today, Chinja-5-dash would again wield the cauterizing lance for Lord Cathedra.
 
 3. **Eduard-13-pickles** is the 13th iteration of vegetable picklers. They practice with the jousting staff and plan an escape into the Vegetable Wilds with a band of merry brothers.
 
-4. **Golosh-10-aurochs** of the 10th batch of aurochs’ tenders loves them some animal friends. Now the local manager lord has ordered all those friends processed and tinned. Will Golosh stand for this?
+4. **Golosh-10-aurochs** of the 10th batch of aurochs' tenders loves them some animal friends. Now the local manager lord has ordered all those friends processed and tinned. Will Golosh stand for this?
 
 5. **Udjaya-5-stand** of the 5th batch of heavy industrial defenders would prefer to be a poet. But someone has to operate the exosuits keeping the vome infestation under control. Hmm. Control?
 
@@ -6043,11 +6043,11 @@ There you were, a child. There, your master. Your true love. Your child. Your fa
 
 Did .. you die? Was it... no. Wait. You can feel yourself.
 
-You’re here. You open your eyes. Dark. Calm down. Deep breaths.
+You're here. You open your eyes. Dark. Calm down. Deep breaths.
 
-You can’t breathe.
+You can't breathe.
 
-You can’t breathe because you have no lips. No throat. No lungs.
+You can't breathe because you have no lips. No throat. No lungs.
 
 You scream.
 
@@ -6164,7 +6164,7 @@ Other names: Baldrick Valeria Venizzia, Henrik Augusta Portiya Toleda, Kalpurnia
 | 4 | War Mask | A terrifying visage to frighten foes. A bonus against fear, too. | ward +2, 1 st | €10 |
 | 5 | Parasite | Patchflesh is a temporary fix. Recover 2d8 + level life or 1d4+1 ability damage, but suffer 1 burden. Remove with salt. Addictive. | single use, 1 sp | €75 |
 | 6 | Amber Wandgun | Shoots arcing bolts of pain and fire. Short range. | re 3, 2d6 dmg, 1 st | €100 |
-| 7 | Portable Shadow | Battle-hardened war shadow from the eternal struggle cloned and bound. Don’t lose the leash. Halves damage suffered from ghosts, daemons, and other aetherics. | ward +4, 2 st | €850 |
+| 7 | Portable Shadow | Battle-hardened war shadow from the eternal struggle cloned and bound. Don't lose the leash. Halves damage suffered from ghosts, daemons, and other aetherics. | ward +4, 2 st | €850 |
 | 8 | Hard Light Shield | Projection bracelet with a glittering force-shield. Vorpal edge. | armor +3, 1d4 dmg, 1 st | €925 |
 | 9 | Combat Suit | Spectral Satrapy steel-glass scales with atmo-symbiote. Scrubbers, filters, and bladders maintain environment for a few hours. | armor +5, re 3, 2 st | €1,500 |
 | 10 | Eisen Doppler Amulet | Spend 1 hero die to project your iron illusion (level and skills as PC, defense 19, 1d8 damage, only 1 life) nearby. | 1 st | €2,000 |
@@ -6258,7 +6258,7 @@ Once per career, when abducted or otherwise removed from play, the tourist can s
 
 The mimic stores 10 stones of gear in its cheek pouches. If the mimic gets lost, it teleports back to the tourist after a while. The mimic cannot be sold or traded away—it does not give up its chosen friend. It looks like (d6): (1) travel trunk, (2) crocodile valise, (3) clam suitcase, (4) wheeled case, (5) kevlar grip bag, (6) exotic tote. It moves on (d6): (1) metal spider legs, (2) millipede legs, (3) rubbery tentacles, (4) elegant bird legs, (5) many gnome feet, (6) biomech wheels.
 
-_Swallowing Attack:_ Once per session, spend a hero die. If the mimic’s next attack hits, it swallows its target. The target is lost in no-space, along with 1d6 random items stored in the mimic.
+_Swallowing Attack:_ Once per session, spend a hero die. If the mimic's next attack hits, it swallows its target. The target is lost in no-space, along with 1d6 random items stored in the mimic.
 
 <a id="page_0150"></a>
 
@@ -6272,7 +6272,7 @@ But it wasn't. But you didn't. How'd you pull that off? Who did you become in th
 
 **The Goods**
 
-What, this old thing? I’ve always had it and they didn’t need it anyway and I’ve never seen it before. No, no, I’m not interested in selling... what... you say you’d pay a mill-cash for it? You store this coin amulet at home? The com-bank?
+What, this old thing? I've always had it and they didn't need it anyway and I've never seen it before. No, no, I'm not interested in selling... what... you say you'd pay a mill-cash for it? You store this coin amulet at home? The com-bank?
 
 
 | d6 | What You Stole | From Whom | What It Does | But, Actually |
@@ -6292,27 +6292,27 @@ What, this old thing? I’ve always had it and they didn’t need it anyway and 
 
 2. **Draisine Ourdenski** was born into a tribe of rail riders, but found freedom in the Twin Scimitars cyclist cult, then rose to become the Big Hat of the All-Revolving Permanent Circus, and is now engaged in a very important plot to bring down the Grand Poobah of the Blue Pyramid. Honest.
 
-3. **Jelly Mangles** spent her youth in the electric luxury of Hometown Gardens 17b. She was disgusted to learn that she’d been living a hallucinatory overlay in an Emerald City pod farm. Afterwards, she devoted herself to tricking the trickmakers themselves, the false City Gods.
+3. **Jelly Mangles** spent her youth in the electric luxury of Hometown Gardens 17b. She was disgusted to learn that she'd been living a hallucinatory overlay in an Emerald City pod farm. Afterwards, she devoted herself to tricking the trickmakers themselves, the false City Gods.
 
-4. **Muggly** is a doghead from the deep rust country, raised to high society by the Duke D’Astar. The duke’s gone missing, so now it’s Muggly’s turn to save him with a chuckle and a knife-pistol.
+4. **Muggly** is a doghead from the deep rust country, raised to high society by the Duke D'Astar. The duke's gone missing, so now it's Muggly's turn to save him with a chuckle and a knife-pistol.
 
 5. **Shadowchild Venerable** is the unaging child, the cursed acolyte of the Flesh God, the unpredicted one. Or, perhaps, just an urchin with a magic clock?
 
 6. **Solém Fourface** carries faces in its carpet bag and dreams in its pocket. It offers old, strange daemons, wild gods from the un-humaned mountains.
 
-Other names: Belmorio ‘l Vito, Eshtva Ladra, Hi Cro-Do, Mikelo Teranos, Tarent King, Squnq Banansi.
+Other names: Belmorio 'l Vito, Eshtva Ladra, Hi Cro-Do, Mikelo Teranos, Tarent King, Squnq Banansi.
 
 **Trickster Traits**
 
-1. **Backstabber.** Wield knives and pistols. Deal double damage when a target doesn’t expect your attack.
+1. **Backstabber.** Wield knives and pistols. Deal double damage when a target doesn't expect your attack.
 
-2. **Expert Friends.** You know where to find skilled help and how to inspire people. Each pet or sidekick is an expert at one thing. That’s a +6 bonus.
+2. **Expert Friends.** You know where to find skilled help and how to inspire people. Each pet or sidekick is an expert at one thing. That's a +6 bonus.
 
-3. **Fake Out.** You know how to hide and lie low when needed. Reduced to 0 life? Spend a hero die, and that last blow didn’t connect.
+3. **Fake Out.** You know how to hide and lie low when needed. Reduced to 0 life? Spend a hero die, and that last blow didn't connect.
 
 4. **Pickpocket.** Skilled at sneaky stealing. Failed your roll? Save and no one noticed.
 
-5. **Bystander.** You’re good at looking innocent and harmless. Also, reduce damage from all area effects by your level. So, by 6 at level 6.
+5. **Bystander.** You're good at looking innocent and harmless. Also, reduce damage from all area effects by your level. So, by 6 at level 6.
 
 6. **Silver-Tongued.** You could (and do) talk the scales off a dragon. Spend a hero die and a creature believes you, no roll required.
 
@@ -6321,8 +6321,8 @@ Other names: Belmorio ‘l Vito, Eshtva Ladra, Hi Cro-Do, Mikelo Teranos, Tarent
 | d12 | Item | Description | Stats | Cost |
 | --- | --- | --- | --- | --- |
 | 1 | Smart Rope | Unties as needed. Wants to strangle its maker. | 20 meters, 1 st | €45 |
-| 2 | Skin Glove | A creepy synthetic flesh glove. It’s for the fingerprints, you see. | 1 sp | €50 |
-| 3 | Cryptic Clavus | It’s a card, it’s a key, it unlocks oldtech doors. Requires jiggery-pokery and a skill roll. | ward +1, 1 st | €75 |
+| 2 | Skin Glove | A creepy synthetic flesh glove. It's for the fingerprints, you see. | 1 sp | €50 |
+| 3 | Cryptic Clavus | It's a card, it's a key, it unlocks oldtech doors. Requires jiggery-pokery and a skill roll. | ward +1, 1 st | €75 |
 | 4 | Glitter Ball | Floating Long Long Ago disco orb. Follows simple instructions. | L0, 1 st | €120 |
 | 5 | Sleepy Coins | Look like gold wrapped in plastic. Exposed to the air, they sublimate into a soporific cloud. Save or sleep. | re 2, 1 sp | €200 |
 | 6 | Stranger in a Bottle | A synthetic person with fake memories trapped in an improbability superposition. Use it to inject some personality into a hollow shell or basic golem. | 1 sp | €200 |
@@ -6369,13 +6369,13 @@ Other names: Atomic Spirit, Bela Strega, Item UR, Omega Kaos, Tanta Yama, Unheim
 
 **Weapon Traits**
 
-1. **Cleanser.** Spend 1 charisma or 1d6 life to end another power or enchantment. Poof, it’s gone. Also, you can spend a hero die to instantly cleanse a small area: a stagnant pool of bacteria, a kitchen of dirty dishes, a bedroom of smelly socks, a car of dust, or a shrine of unholy curses and graffiti.
+1. **Cleanser.** Spend 1 charisma or 1d6 life to end another power or enchantment. Poof, it's gone. Also, you can spend a hero die to instantly cleanse a small area: a stagnant pool of bacteria, a kitchen of dirty dishes, a bedroom of smelly socks, a car of dust, or a shrine of unholy curses and graffiti.
 
-2. **Curse-Blessed.** A thinking creature (animal or person) cannot throw you away without your permission. They own you now, and that means you belong to them. Forever and ever, until you let them go. Or someone removes your curse... er... blessing... somehow. It’s best to keep your bearer happy, so they don’t try to have you removed. Maybe a few lies about their destiny? Also, you can communicate with any creature that is touching you telepathically and exude a mild mental sedative, which keeps them pliant and helpful in ordinary circumstances.
+2. **Curse-Blessed.** A thinking creature (animal or person) cannot throw you away without your permission. They own you now, and that means you belong to them. Forever and ever, until you let them go. Or someone removes your curse... er... blessing... somehow. It's best to keep your bearer happy, so they don't try to have you removed. Maybe a few lies about their destiny? Also, you can communicate with any creature that is touching you telepathically and exude a mild mental sedative, which keeps them pliant and helpful in ordinary circumstances.
 
 3. **Death Hunger.** You know everything about disassembling mortals. Also, track the enemies you kill in a battle. Every enemy killed gives you a cumulative +1 to attack rolls until the end of the battle. After the first kill, you growl and roar until the killing stops. Expert: the bonus is +2 per kill. Master: +3.
 
-4. **Demolisher.** Your critical hits are stronger (e.g., x2 becomes x3). Also, when you strike an object up to the size of a compact car, you can spend 1 strength or endurance to simply demolish it. Doors burst open, brick walls explode, wooden walls shatter into kindling, straw huts go flying, small golems crumple. You can also use this ability to turn a regular hit into a critical hit, or to double a critical hit. As a weapon (without strength or endurance), simply use your bearer’s abilities as fuel for your fury.
+4. **Demolisher.** Your critical hits are stronger (e.g., x2 becomes x3). Also, when you strike an object up to the size of a compact car, you can spend 1 strength or endurance to simply demolish it. Doors burst open, brick walls explode, wooden walls shatter into kindling, straw huts go flying, small golems crumple. You can also use this ability to turn a regular hit into a critical hit, or to double a critical hit. As a weapon (without strength or endurance), simply use your bearer's abilities as fuel for your fury.
 
 5. **Fatespun.** You are a magic item and any form of magic detection shows as much. You are incredibly durable for an object. Indeed, truly destroying you requires a quest: a special ritual, a special place, and a special time. Write the quest down, if you like. If you are physically destroyed (by running out of life, for example) or thrown away (e.g. into a lake, a deep ocean, a void portal) you reappear somewhere, close to your bearer or close to a potential new bearer, at a narratively opportune time (or in 2d4 weeks).
 
@@ -6392,7 +6392,7 @@ You can carry no items because you are an item. Every weapon gains the power _Ob
 | d6 | Form | Stats |
 | --- | --- | --- |
 | 1 | **Tooth of the Root Worm.** You are a small (roll d6): (1) knife, (2) spike, (3) claw, (4) fang, (5) thorn, or (6) hook, made of primordial bone. Within your honeycomb structure you can store one dose of poison. Servant cells or machines whisper, hint and nudge within you. Your bearer can implant you in their body. Now they can never lose you! Also, nobody needs to know you exist. | 1d3 damage, 1 sp |
-| 2 | **The Hard Ring.** You are a ring and occupy no inventory. You are made of (roll d6): (1) petrified tears, (2) graven ivory, (3) glittering gold, (4) black ice, (5) bleeding silver, or (6) captured light. You do no damage yourself, but you can use your bearer’s life and abilities to fuel your powers or deal damage directly. You gain the power _Suspended in the Light_. List it in your item inventory. | 1 sp |
+| 2 | **The Hard Ring.** You are a ring and occupy no inventory. You are made of (roll d6): (1) petrified tears, (2) graven ivory, (3) glittering gold, (4) black ice, (5) bleeding silver, or (6) captured light. You do no damage yourself, but you can use your bearer's life and abilities to fuel your powers or deal damage directly. You gain the power _Suspended in the Light_. List it in your item inventory. | 1 sp |
 | 3 | **Great Weapon.** You are a massive, epic, two-handed: (1) red iron axe (2d6), (2) blue steel sword (2d6), (3) glistening yellow rod (2d10), (4) roaring silver chainsaw (2d6), (5) hooked black flail (2d6), or (6) flaming white lance (1d12*). Your critical hits always deal at least x3 damage. Spend a hero die to break open a door, smash apart a treasure chest, destroy an engine block, rip down a tree, etc. | variable damage, 3 st |
 | 4 | **Weapon of Nobility.** You represent majesty, shimmering and cruel (roll d6): (1) golden sword (1d8), (2) shining bow (1d8), (3) lapis sceptre (1d8), (4) barbed flail (1d8), (5) jade spear (1d10), or (6) bronze dagger-axe (1d8). Your bearer is resistant to everything low and ignoble, taking half damage from peasant rabble or brigands. That said, nobility is in the eye of the beholder, so beware — your bearer takes double damage from anyone they believe is rightfully their superior. Also, any base or vile creature that touches you takes 1d4 damage and horrible blisters spread across their skin. | variable damage, 1 st |
 | 5 | **The Humblest of Tools.** You look like a simple farm tool or implement (roll d6): (1) sickle (1d4), (2) hammer (1d4), (3) cast-iron pot (1d4), (4) heavy samovar (1d3), (5) hoe (1d4), or (6) shovel (1d6). Given a day and a night, your cold iron can flow like soft wax and become a different tool of similar size and efficacy (e.g. a wrench, a pipe, a clothes iron, etc.). Also, your bearer has a bonus to relevant tests when they use you as a tool, letting them harvest incredible amounts of wheat in a short time, or cook incredibly good soup to impress a local master chef. | variable damage, 1 st |
@@ -6418,7 +6418,7 @@ _Luminous Grasp, Hard Light Hold_
 **P:** 1 **R:** nearby  
 **T:** creature or object **D:** instant
 
-> You glow, your bearer’s hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.
+> You glow, your bearer's hand glows, the air glows, and you lift your target a handsbreadth off the ground as hard light throttles them. They suffer 1d4 damage and lose their next action.
 >
 > _Overcharge:_ they suffer 1d8 damage instead.
 
@@ -6426,18 +6426,18 @@ _Luminous Grasp, Hard Light Hold_
 
 **Weapon's Eternal Purpose**
 
-One thing is crystal clear: your purpose. It may take forever to accomplish, but you don’t fret. You have time. Your purpose gives you comfort, as strange aeons rise and fall. Perhaps your memories fail? It is long this time. There are silences, darkness. Ages in crypts, aeons beneath seas. In time, a bearer will come to wield you and fulfill your purpose.
+One thing is crystal clear: your purpose. It may take forever to accomplish, but you don't fret. You have time. Your purpose gives you comfort, as strange aeons rise and fall. Perhaps your memories fail? It is long this time. There are silences, darkness. Ages in crypts, aeons beneath seas. In time, a bearer will come to wield you and fulfill your purpose.
 
 Your purpose permanently blocks a trait slot. Its power is available at once. The true object of your purpose is revealed once you reach level 9 (or earlier at the referee's discretion). Roll each column separately.
 
 | d6 | Purpose | Whispers | Power (P: 2, R: short, T: one, D: inst) | Object (d6) |
 | --- | --- | --- | --- | --- |
-| 1 | Doom | You will kill the Evil One. Fortune will bring you to the befouler and your metal shall end that misbegotten one. | Sense Allegiance: read a creature’s ethics; evil creatures stunned for 1d4 rounds when brushed by your mind (save). | (1) your bearer, (2) closest friend, (3) born under a thrice-red star, (4) nameless beggar, (5) benevolent prince, (6) local deity most high. |
+| 1 | Doom | You will kill the Evil One. Fortune will bring you to the befouler and your metal shall end that misbegotten one. | Sense Allegiance: read a creature's ethics; evil creatures stunned for 1d4 rounds when brushed by your mind (save). | (1) your bearer, (2) closest friend, (3) born under a thrice-red star, (4) nameless beggar, (5) benevolent prince, (6) local deity most high. |
 | 2 | Creation | You will anoint the Chosen One, bring the new life, translate the places of the machine men into eternal dust. | Viridian Sun: turn lights green and spawn quilted plants, dreaming trees, mammalian insects, avian arachnids, fungoid gastropods (L1); O: spawn photosynth 'humans' (L2). | (1) your bearer's sibling, (2) worst enemy, (3) dying old man, (4) wise whale, (5) tyrant's decadent heir, (6) zealous cultist. |
 | 3 | Balance | You are the balance, the fulcrum of the world. Your touch will scatter the unnaturals like air plankton in moonlight. | Caustic Purification: remove an affliction and a benefit (save); cleanse toxins and life. | (1) dreamer opening a portal, (2) misunderstood scientist, (3) preacher of dire revolution, (4) adolescent throne-heir, (5) bitter, tragic wizard, (6) mother who loved one timelost. |
 | 4 | Preserve | You are the agent of Stasis, the upkeeper of the dream, the maintainer of the canopy. | Lay In Wires: plunge into a creature, granting 10 life while draining 1 life per round for 12 rounds; O: grants 30 life, target loses 4 life per round. | (1) world-eater's bleak city, (2) raveller of creation's seams, (3) forge of peoples' faiths, (4) undying traveler in time, (5) alien uniter of worlds, (6) subservience to the gods. |
 | 5 | Devastate | You must keep your true and awesome purpose secret for now. Even from yourself. But it will be great. | Cut the Sky: barely-visible planes deal 2d4* damage, sever limbs or heads; O: 4d4* in a slightly larger area. | (1) the eater of the sky, (2) gods' secret of life everlasting, (3) innocent breaker of barriers, (4) the one who is and is not, (5) the vile maker of humanity, (6) the child of the angelhunt. |
-| 6 | Error: Abort/Retry/Fail | This world was not meant to be. This world was not meant for you and me. This was not was not was. | Ha-Ka-Ba Short Circuit: target’s soul, mind, and body disconnect for 1 round (save); parts attacked individually gain a bonus; O: lasts 1d4 rounds. | (1) the moon detonator, (2) the fountain of white hands, (3) the sun eater, (4) the new star, (5) the eternal mind beyond space, (6) the electric MKR. |
+| 6 | Error: Abort/Retry/Fail | This world was not meant to be. This world was not meant for you and me. This was not was not was. | Ha-Ka-Ba Short Circuit: target's soul, mind, and body disconnect for 1 round (save); parts attacked individually gain a bonus; O: lasts 1d4 rounds. | (1) the moon detonator, (2) the fountain of white hands, (3) the sun eater, (4) the new star, (5) the eternal mind beyond space, (6) the electric MKR. |
 
 **Your Purpose Fulfilled**
 
@@ -6596,7 +6596,7 @@ Other names: 'nDresho Miraíl, Leó 'n'Opera, Mirabel Verjut, Sulc an'Nunc, Ton 
 
 # APPNDX
 
-Here we are now, the end of our delightful dreams, the line, the limit, the edge of our builders’ grand design. Behold, they rise ominous, these ramparts. Beyond this _limes_, beyond these wise faces of warning and protection, these good parents who gaze out with death upon our nemeses, that is ruinland, that is despoil, that is nothing, that is _ubi dracones_ .
+Here we are now, the end of our delightful dreams, the line, the limit, the edge of our builders' grand design. Behold, they rise ominous, these ramparts. Beyond this _limes_, beyond these wise faces of warning and protection, these good parents who gaze out with death upon our nemeses, that is ruinland, that is despoil, that is nothing, that is _ubi dracones_ .
 
 <a id="page_0161"></a>
 
@@ -6816,7 +6816,7 @@ Variant traits (roll d6):
 > _"Is this list exhaustive? By the Spheres of Hy-Xaphon, no._ _Some of these are works I enjoyed. Some I found dreadful._ _Others, I just couldn't forget. Still, perhaps it offers novelties_ _apart from those commonplace in this more procedural era."_ —Luka Rejec, Summer 2025
 
 - 2001: A Space Odyssey (1968) - Stanley Kubrick
-- 666 (1972) - Aphrodite’s Child
+- 666 (1972) - Aphrodite's Child
 - Advaitic Songs (2012) - Om
 - The Adventures of Tintin (1929–76)
 - Adventure Time (2010–18) - Pendleton Ward
@@ -6830,7 +6830,7 @@ Variant traits (roll d6):
 - Arzach (1975) - Moebius (Jean Giraud)
 - Asterix the Gaul (1959–77) - René Goscinny & Albert Uderzo
 - At the Edge of Time (2010) - Blind Guardian
-- The Bees Made Honey in the Lion’s Skull (2008) - Earth
+- The Bees Made Honey in the Lion's Skull (2008) - Earth
 - Barbarella (1968) - Roger Vadim
 - Ben Hur (1959) - William Wyler
 - Bhagavad Gita (~100 BC) - Vyasa
@@ -6844,8 +6844,8 @@ Variant traits (roll d6):
 - Cage of Souls (2019) - Adrian Tchaikovsky
 - A Canticle for Leibowitz (1959) - Walter M Miller Jr
 - The Castle (1926) - Franz Kafka
-- Cat’s Cradle (1963) - Kurt Vonnegut
-- Childhood’s End (1953) - Arthur C Clarke
+- Cat's Cradle (1963) - Kurt Vonnegut
+- Childhood's End (1953) - Arthur C Clarke
 - Cities in Flight (1950–62) - James Blish
 - Classic Space (1978-88) - Lego
 - Cloud Atlas (2004) - David Mitchell
@@ -6893,7 +6893,7 @@ Variant traits (roll d6):
 
 <a id="page_0165"></a>
 
-- Journey to the West (16th c.) - Wu Cheng’en
+- Journey to the West (16th c.) - Wu Cheng'en
 - Kon-Tiki expedition (1947) - Thor Heyerdahl
 - Korgoth of Barbaria (2006) - Aaron Springer
 - Kyoto Gyoen National Garden (17th c.) - Kobori Enshu
@@ -6901,7 +6901,7 @@ Variant traits (roll d6):
 - Lateralus (2001) - Tool
 - Life of Brian (1979) - Monty Python
 - Lift Your Skinny Fists Like Antennas to Heaven (2000) - Godspeed You! Black Emperor
-- Logan’s Run (1976) - Michael Anderson
+- Logan's Run (1976) - Michael Anderson
 - Lord of Light (1967) - Roger Zelazny
 - The Lost World (1912) - Arthur Conan Doyle
 - Low Country (2016) - The Sword
@@ -6922,7 +6922,7 @@ Variant traits (roll d6):
 - The Mystery of the Abyss (1966) - Philippe Druillet
 - Nausicaä of the Valley of the Wind (1984) - H. Miyazaki
 - Nazca Lines (~500BC to ~500) - Nazca Culture
-- No Man’s Sky (2016+) - Hello Games
+- No Man's Sky (2016+) - Hello Games
 - Nuraghe (~1900 to ~750 BC) - Nuragic Culture
 - The Odyssey (~700 BC) - Homer
 - The Omega Man (1971) - Boris Sagal
@@ -6930,7 +6930,7 @@ Variant traits (roll d6):
 - One Hundred Years of Solitude (1967) - Gabriel García Márquez
 - One Thousand and One Nights (~1000) - Unknown
 - Ötzi (~3200 BC) - Ötztal Alps
-- Outlaws of the Marsh (mid 14th c.?) - Shi Nai’an
+- Outlaws of the Marsh (mid 14th c.?) - Shi Nai'an
 - Paranoia (1984) - Gelber, Costikyan, and Goldberg
 - Paranoid (1970) - Black Sabbath
 - Pavji rep: in druge kitajske basni (1986) - Maja Lavrač
@@ -6999,9 +6999,9 @@ Variant traits (roll d6):
 
 #### L. 3RD PARTY LICENSE
 
-I’m astonished by the people’s stories of their adventures in the Ultraviolet Grasslands and delighted by the adventures and creatures, stories and locations they’ve created. I promised a third party license a fair while ago, but the life of a solo game creator had its way with me. I played with making my own license for a while, but let’s be real: I’m one, you are many, and there are good licenses about. This one is based on the Mörk Borg license (https://morkborg.com/license/). Check out Mörk Borg if you prefer blackened death metal grim darkness to the polychrome psychedelia of the synthetic dream machine.
+I'm astonished by the people's stories of their adventures in the Ultraviolet Grasslands and delighted by the adventures and creatures, stories and locations they've created. I promised a third party license a fair while ago, but the life of a solo game creator had its way with me. I played with making my own license for a while, but let's be real: I'm one, you are many, and there are good licenses about. This one is based on the Mörk Borg license (https://morkborg.com/license/). Check out Mörk Borg if you prefer blackened death metal grim darkness to the polychrome psychedelia of the synthetic dream machine.
 
-Let’s get to it...
+Let's get to it...
 
 **i. Purpose**  
 This license lets you write games and build on the Synthetic Dream Machine, without waiting on my review or approval, and without me taking a cut.
@@ -7011,16 +7011,16 @@ As long as you follow a few basic rules.
 **ii. Content**
 
 **ii.a.** If you adhere to these terms you can publish free or commercial roleplaying game books and supplements based on and/or declaring compatibility with Synthetic Dream Machine (SDM) without express permission from either Luka Rejec or WTF Studio.  
-**ii.b.** You cannot reuse or translate art and text from my works without explicit permission. You may quote passages if you cite the source in-text (e.g. Luka Rejec _Ultraviolet Grasslands 2E_ 2022, 204). You can use the names of creatures, locations, objects, powers and other entities in the game world if you acknowledge the source somewhere in your work. The precise citation style doesn’t matter as long as the source is clear.  
+**ii.b.** You cannot reuse or translate art and text from my works without explicit permission. You may quote passages if you cite the source in-text (e.g. Luka Rejec _Ultraviolet Grasslands 2E_ 2022, 204). You can use the names of creatures, locations, objects, powers and other entities in the game world if you acknowledge the source somewhere in your work. The precise citation style doesn't matter as long as the source is clear.  
 **ii.c.** You can freely reuse and reference the rules and mechanics of Synthetic Dream Machine (SDM).
 
 **iii. Branding**
 
-**iii.a.** You can’t use the SDM, WTF Studio, Exalted Funeral, UVG, VLG, or other logos from my works without explicit permission.
+**iii.a.** You can't use the SDM, WTF Studio, Exalted Funeral, UVG, VLG, or other logos from my works without explicit permission.
 
 **iii.b.** You are allowed and encouraged (but not required) to use the SDM compatible logo or an SDM compatible logo of your own design.
 
-**iii.c.** You’re not allowed to give the impression that you are making an official SDM product or that I endorse or sponsor you in any way unless I’ve made special arrangements with you.
+**iii.c.** You're not allowed to give the impression that you are making an official SDM product or that I endorse or sponsor you in any way unless I've made special arrangements with you.
 
 **iv. Legal**
 
@@ -7039,7 +7039,7 @@ As long as you follow a few basic rules.
 **v. Conclusion**
 Make it weird, wonderful, and wild.
 
-Don’t bring modern hatreds and contemporary conflicts into your content. The world of _Our Golden Age_ is at the end of time and space. It faces other issues. Like the dark forest and the heat death of the gods.
+Don't bring modern hatreds and contemporary conflicts into your content. The world of _Our Golden Age_ is at the end of time and space. It faces other issues. Like the dark forest and the heat death of the gods.
 
 <a id="page_0167"></a>
 

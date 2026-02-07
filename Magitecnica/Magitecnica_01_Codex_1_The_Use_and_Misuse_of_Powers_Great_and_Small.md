@@ -766,7 +766,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 **P:** 1 **R:** short, ~20m  
 **T:** one creature **D:** a few minutes
 
-> Rubra’s need overcomes the target. Anger and passion boil, threatening to break its composure (save).
+> Rubra's need overcomes the target. Anger and passion boil, threatening to break its composure (save).
 > It rerolls its reaction roll with a single d8. Choose whether they add or subtract your charisma.
 > 
 > _Overcharge:_ Affect a number of creatures equal to your level + 1.
@@ -778,7 +778,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 **P:** 1 **R:** short, ~5m  
 **T:** one creature **D:** an hour
 
-> Soma’s bliss brings contentment to the target (save).
+> Soma's bliss brings contentment to the target (save).
 > Success: it loses its next turn to a blissful reverie.
 > Failure: it sits down, lost in blissful reverie for an hour.
 > 
@@ -786,7 +786,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 **Orange Dream**
 
-*Forgotten Spider’s Labors*
+*Forgotten Spider's Labors*
 
 **P:** 1 **R:** whisper  
 **T:** one creature **D:** an hour
@@ -831,7 +831,7 @@ The youth’s eyes widened and it whispered, “ahh.”
 
 <a id="page_0021"></a>
 
-### **C. Dawn’s Highway**
+### **C. Dawn's Highway**
 
 A compilation of folk road magic by the ethnologist and hedge wizard Fritzu Na (AM/FM). Also called Road Magic by the uninformed, and the Way of Ways by the hobo hieratics of the Right Road.
 
@@ -839,17 +839,17 @@ No album makes the crooked road straighter.
 
 _Runner of Roads_
 
-The prince’s lip wrinkled slightly as they beheld the quarterling blocking his entourage with its wheelbarrow. The quarterling did not see this, of course. Polite masks hid the prince’s faces.
+The prince's lip wrinkled slightly as they beheld the quarterling blocking his entourage with its wheelbarrow. The quarterling did not see this, of course. Polite masks hid the prince's faces.
 
-The servant ran forward, intuiting the prince’s distaste from the tension in their shoulders, and shouted, “you, little desert rat, off the road with you!”
+The servant ran forward, intuiting the prince's distaste from the tension in their shoulders, and shouted, “you, little desert rat, off the road with you!”
 
-The ferret-like quarterling straightened its shoulders and grimly invoked the path-right of pan-humanity. The milestone beside it glowed, confirming the quarterling’s human credentials.
+The ferret-like quarterling straightened its shoulders and grimly invoked the path-right of pan-humanity. The milestone beside it glowed, confirming the quarterling's human credentials.
 
 The prince rolled their eyes and a junior corper strode forward and performed the minimal polite bow, “greetings, fellow human traveler in the vast, away from Garden and the Green. Do you need aid?”
 
 “No, no, but your postal.  help. Your ambicyclic is large and strong, my wheelbarrow is small and humble. Good for roots, not for this.  ” with a dramatic flourish the quarterling pulled aside the patterned cloth to reveal a plaz case two cubits square.
 
-“Sarcopsykter!” yelped two of the prince’s corpers, disregarding their psychemorphic conditioning.
+“Sarcopsykter!” yelped two of the prince's corpers, disregarding their psychemorphic conditioning.
 
 The prince clamped down on this fragmentation and the junior spoke again, “it is not empty, I take it.”
 
@@ -868,7 +868,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 **P:** 1 **R:** touch  
 **T:** 1 sack **D:** 1 day
 
-> A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.
+> A sub-reality field halves the object's interactive mass. An object of 100 kilos acts like one of fifty.
 > 
 > _Overcharge:_ the mass is halved again. Or it affects an object twice the size. Or it lasts a week instead.
 
@@ -899,10 +899,10 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 *Blacktop Sniffer*
 
-**P:** 1 **R:** a day’s march  
+**P:** 1 **R:** a day's march  
 **T:** self **D:** 1 hour
 
-> Sniff the world’s road fields, ‘gard the astral way-lines. Detect the nearest road a day’s march or less away.
+> Sniff the world's road fields, 'gard the astral way-lines. Detect the nearest road a day's march or less away.
 > 
 > _Overcharge:_ The detection range is doubled, or the sense lasts a day.
 
@@ -919,7 +919,7 @@ The prince clamped down on this fragmentation and the junior spoke again, “it 
 
 **Roadmaker**
 
-*Stradograd’s Engine of Civility*
+*Stradograd's Engine of Civility*
 
 **P:** 6 **R:** one metric mile  
 **T:** rock and soil **D:** 1 day
@@ -945,7 +945,7 @@ The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) o
 
 Ξ
 
-_Wagon Fort Morning_ “She’s coming to!”
+_Wagon Fort Morning_ “She's coming to!”
 
 “About time.”
 
@@ -953,15 +953,15 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 “Water,” she croaked.
 
-“Quick, rehydrate her, then get her ready. You’re a wizard, yeah?” a grimy face floated into view.
+“Quick, rehydrate her, then get her ready. You're a wizard, yeah?” a grimy face floated into view.
 
 “No, granny, a techno.”
 
-“Yeah, she’s a wizard. Good. She’ll know how to use the big gun-ta.”
+“Yeah, she's a wizard. Good. She'll know how to use the big gun-ta.”
 
 “Gun-ta?”
 
-“The big tarret. Our golem took a worm to the brain. Can’t operate now. You’ll do, you’ll do. Come, quick, hydrate her! We don’t have much time!”
+“The big tarret. Our golem took a worm to the brain. Can't operate now. You'll do, you'll do. Come, quick, hydrate her! We don't have much time!”
 
 <a id="page_0024"></a>
 
@@ -974,7 +974,7 @@ Noë opened her eyes. Everything felt stiff and creased. Time felt strange. Fold
 
 > Reloads your weapon as a free action, turning life force into semi-real projectiles.
 > 
-> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power’s price (2 + level).
+> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power's price (2 + level).
 
 **Dancing In The Hail**
 
@@ -1044,24 +1044,24 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 **P:** 1 **R:** a few meters  
 **T:** someone who can hear you **D:** instant
 
-> You wish someone sprawled and humbled, and your muttered curse may make it so. The target’s shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
+> You wish someone sprawled and humbled, and your muttered curse may make it so. The target's shoelaces are suddenly undone, or a stone or stick hops to trip them. They save or sprawl.
 > 
-> _Overcharge:_ There’s no save. The target is tripping.
+> _Overcharge:_ There's no save. The target is tripping.
 
 **Tragic Missile**
 
-*Antipersonnel Guided Force Bolt, Cupid’s Cranial Penetrator*
+*Antipersonnel Guided Force Bolt, Cupid's Cranial Penetrator*
 
 **P:** 2 **R:** middling, ~30–50m  
 **T:** anything with a mind and soul **D:** instant
 
-> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity’s mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
+> You visualize a channel connecting the ambient energy fields with the ka-ba of an entity you can see. Once you release your visualization, the energies strike the entity's mindspace nexus, like a noöspheric homing missile. The painful effect deals 2d4 damage plus 2 per level of the target. The stronger they are, the harder tragedy strikes. The missile leaves no mark. Tragic missile cannot affect targets without a mind and soul.
 > 
 > _Overcharge:_ You visualize three channels at once, striking a single target thrice or three different targets.
 
 **Hlod Person**
 
-*Dyslexic Demon’s Binding, Leshnik’s Unforeseen Constriction*
+*Dyslexic Demon's Binding, Leshnik's Unforeseen Constriction*
 
 **P:** 4 **R:** close  
 **T:** a person **D:** 1 hour
@@ -1072,7 +1072,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **Pyreball**
 
-*Instant Incendiary, Damora’s Placid Inferno*
+*Instant Incendiary, Damora's Placid Inferno*
 
 **P:** 6 **R:** touch, or as thrown  
 **T:** 10m diameter sphere **D:** a day, then instant
@@ -1084,7 +1084,7 @@ Powers implied in documents salvaged from the ends of existence. Fine scholars e
 
 **Nihil Est!**
 
-*Life’s End Made Present, Hadi’s Self-Immolation Binding*
+*Life's End Made Present, Hadi's Self-Immolation Binding*
 
 **P:** 8 **R:** touch  
 **T:** a sentient creature **D:** 1 year

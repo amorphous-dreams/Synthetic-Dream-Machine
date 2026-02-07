@@ -111,11 +111,11 @@ _Ritual Ascent into the Water Heavens_
 **P:** 4 **R:** self  
 **T:** ka-ba **D:** 1 dream
 
-Take a spoonful of _yerba-levante_ with your _lesh-de-nuit_ and chant the six staircases of Sabo Reçu, the Hitchiker. Then, in your sleep, dream of the crystal ascender and make the sign of the Wind and the Green, and your dream idego*, your spirit-second, will ascend to the Sea in the Sky. There, the painted ones will remove a burden from your soul and share one happy and one painful truth with you.
+Take a spoonful of _yerba-levante_ with your _lesh-de-nuit_ and chant the six staircases of Sabo Reçu, the Hitchiker. Then, in your sleep, dream of the crystal ascender and make the sign of the Wind and the Green, and your dream idego\*, your spirit-second, will ascend to the Sea in the Sky. There, the painted ones will remove a burden from your soul and share one happy and one painful truth with you.
 
 _Overcharge:_ Propel yourself, waking, body and soul and mind together, into the Water Heavens for as long as a dream takes to unwalk itself.
 
-*Idego: Combination of a sentient creature’s mind and personality. A time-stamped, specific sentient instance. Its _ba_ in some cultures.
+\*Idego: Combination of a sentient creature's mind and personality. A time-stamped, specific sentient instance. Its *ba* in some cultures.
 
 
 <a id="page_0004"></a>
@@ -126,7 +126,9 @@ THIS PAGE INTENTIONALLY LEFT BLANK
 
 ## BARE-SOUL CREEK
 
-_West of the human, east of the angel._ "Alzate, levas en syêl te kôr-de-neum, rest-a'qi en kôr-du-sarq."
+_West of the human, east of the angel._
+
+"Alzate, levas en syêl te kôr-de-neum, rest-a'qi en kôr-du-sarq."
 
 The words of the flesh shaman come heavy, like the strikes of a bili-stick on a plantation zombie's wired back. This is no place for mind-beasts, spirits, daemons, or angels. Here, even the human spirit sleeps, disconnected from the noösphere. This narrow valley below the three dead mountains was desecrated by Ill-Nano, the Chaos Dwarf, and now no digital soul can pass its threshold, no electric eye can peer within.
 
@@ -142,6 +144,7 @@ THIS PAGE INTENTIONALLY LEFT BLANK
 ## IMPERMISSIBLE CLEAVER
 
 _Dividing Reality Into Its Constituent Bodies_
+
 **P:** 1 **R:** touch  
 **T:** small object **D:** an hour
 
@@ -149,13 +152,13 @@ Use the protocols of the ten translations! Reach into the indivisible heart of a
 
 _Overcharge:_ It collapses in but a minute and releases heat to burn and damage! (1 damage per round)
 
-**Overcharge Again:** It breaks down in a second! Explosion! Boom! Fragments! (1d6 damage to all nearby! Haha! Double to anyone next to the object!)
+_Overcharge Again:_ It breaks down in a second! Explosion! Boom! Fragments! (1d6 damage to all nearby! Haha! Double to anyone next to the object!)
 
-**Overcharge Yet Again:** Faster than the eye can see! (3d6 damage to all nearby! Yes!)
+_Overcharge Yet Again:_ Faster than the eye can see! (3d6 damage to all nearby! Yes!)
 
-**And Again:** Boom! An eruption! Fire! Hole! The magitechnical fission makes a crater! (1d6 damage to far off targets, 8d6 to nearby, double to adjacent!)
+_And Again:_ Boom! An eruption! Fire! Hole! The magitechnical fission makes a crater! (1d6 damage to far off targets, 8d6 to nearby, double to adjacent!)
 
-**More Overcharge! More:** The object breaks down in one 216,000th part of a second, and within a millisecond the fireball is tens of metres across. By 100 milliseconds, it measures hundreds of meters. Using dice to simulate damage is pointless. The crater glows with spell radiance for days, and the source codes of living creatures in the vicinity are corrupted for weeks or months after the spell's detonation.
+_More Overcharge! More:_ The object breaks down in one 216,000th part of a second, and within a millisecond the fireball is tens of metres across. By 100 milliseconds, it measures hundreds of meters. Using dice to simulate damage is pointless. The crater glows with spell radiance for days, and the source codes of living creatures in the vicinity are corrupted for weeks or months after the spell's detonation.
 
 <a id="page_0008"></a>
 
@@ -221,6 +224,7 @@ THIS PAGE INTENTIONALLY LEFT BLANK
 ## LADDER OUT OF THIS WORLD
 
 _A Heaven's Gate_
+
 An artifact for the agents divine, a shortcut ladder. At one end is an anchored portal, at the other a point of stillness.
 
 Make the gesture of immobility and press the button first, and the ladder stands motionless ... its still end fixed.
@@ -381,11 +385,11 @@ _Phytohysterical Genesis, Leek of Life_
 **P:** 5 **R:** touch  
 **T:** a leek and a creature seed **D:** 50 + 1d100 days
 
-You take a well-treated leek and _imbue*_ it with the formulated spell. Next, take a prepared creature seed and implant it in the leek. Behold, the leek will grow to immense size and girth. Then, at its allotted time, it shall split, and a full-grown adult creature will emerge!
+You take a well-treated leek and _imbue\*_ it with the formulated spell. Next, take a prepared creature seed and implant it in the leek. Behold, the leek will grow to immense size and girth. Then, at its allotted time, it shall split, and a full-grown adult creature will emerge!
 
 _Overcharge:_ It grows to maturity in 2d8 days.
 
-*You may regain any life _imbued_ in the leek after the spell ends.
+**\*Note:** You may regain any life _imbued_ in the leek after the spell ends.
 
 <a id="page_0028"></a>
 
