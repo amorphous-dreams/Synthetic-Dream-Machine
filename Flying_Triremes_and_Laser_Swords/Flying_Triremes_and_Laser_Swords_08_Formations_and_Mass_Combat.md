@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Formations & Mass Combat'
+published: true
+---
 # Formations & Mass Combat
 
 *A modular add‑on that sits cleanly on Vastlands’ core cadence: one attack roll (d20 \+ ability \+ skill vs Defense), then damage.*

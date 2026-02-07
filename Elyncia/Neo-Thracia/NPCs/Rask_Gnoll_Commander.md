@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Rask “Iron-Yip” Varkesh, Gnoll Commander (Level 2, Named)'
+published: true
+---
 # Rask “Iron-Yip” Varkesh, Gnoll Commander (Level 2, Named)
 
 **Concept:** siege-dog disciplinarian; war-as-ledger.

@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Recon, Salvage, Secrets (RSS System)'
+published: true
+---
 # Recon, Salvage, Secrets (RSS System)
 
 RSS stands for: *» Recon (Reconnaissance) » Salvage » Secrets*

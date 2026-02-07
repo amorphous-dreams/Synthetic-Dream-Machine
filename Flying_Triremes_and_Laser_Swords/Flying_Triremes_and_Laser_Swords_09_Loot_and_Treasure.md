@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Loot & Treasure'
+published: true
+---
 # Loot & Treasure
 
 # Loot Tables

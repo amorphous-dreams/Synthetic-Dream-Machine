@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Neo-Thracia Region Worksheet'
+published: true
+---
 ```shell
 Local Lares node: Enyalios-lararium // DreamNet link: stable (salt-air, cracked marble, low static)
 Task: Refine Neo-Thracian Nexus Region worksheet/outline (no full OGA writeup; tables described by function)

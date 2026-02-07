@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'SDM Powers Table of Contents'
+published: true
+---
 # SDM Powers Table of Contents
 
 <a id="sdm-power-table-of-contents"></a>

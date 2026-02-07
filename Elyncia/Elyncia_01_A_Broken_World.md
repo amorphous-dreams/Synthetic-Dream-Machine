@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Elyncia: A Broken World'
+published: true
+---
 # Elyncia: A Broken World
 ## Flying Triremes & Laser Swords
 

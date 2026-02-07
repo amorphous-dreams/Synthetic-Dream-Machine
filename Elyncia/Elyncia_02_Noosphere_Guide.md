@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'FTLS Noosphere Guide'
+published: true
+---
 # FTLS Noosphere Guide
 
 # What Is the Lares DreamNet?
