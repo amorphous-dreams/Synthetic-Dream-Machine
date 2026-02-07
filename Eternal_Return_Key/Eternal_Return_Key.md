@@ -24,7 +24,7 @@ product_id: "SDM-Eternal_Return_Key"
 
 <a id="page_0001"></a>
 
-![](../page_pngs/pages/page_0001.png)
+![](./images/page_0001.png)
 
 **SDM - ERK BAREGHOST v1.1**
 
