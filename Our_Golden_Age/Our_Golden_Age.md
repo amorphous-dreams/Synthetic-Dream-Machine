@@ -1,6 +1,6 @@
 ---
 # Layout & Page Setup
-layout: book_page
+layout: gruv_book_page_adapter
 title: "Our Golden Age"
 subtitle: "and the Mother Machine"
 description: "A psychedelic RPG setting for the SDM system set in the Rainbow Lands of the Circle Sea."

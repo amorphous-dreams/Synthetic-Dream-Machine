@@ -1,6 +1,6 @@
 ---
 # Layout & Page Setup
-layout: book_page
+layout: gruv_book_page_adapter
 title: "Vastlands Guidebook"
 subtitle: "Roleplaying At The End Of Time"
 description: "A psychedelic RPG guidebook for the Synthetic Dream Machine system set in the Vastlands at the end of time."

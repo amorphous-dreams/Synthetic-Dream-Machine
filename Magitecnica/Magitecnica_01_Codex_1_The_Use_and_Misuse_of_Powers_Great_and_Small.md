@@ -1,6 +1,6 @@
 ---
 # Layout & Page Setup
-layout: book_page
+layout: gruv_book_page_adapter
 title: "Magitecnica: Codex 1"
 subtitle: "The Use and Misuse of Powers Great and Small"
 description: "A volume of powers, rules, and spells for use with the SDM roleplaying system and the UVG Undying Earth trail setting."

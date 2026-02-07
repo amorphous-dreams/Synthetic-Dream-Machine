@@ -1,6 +1,6 @@
 ---
 # Layout & Page Setup
-layout: book_page
+layout: gruv_book_page_adapter
 title: "The Caverns of Thracia"
 subtitle: ""
 description: "A classic dungeon adventure by Jennell Jaquays set in the mysterious Caverns of Thracia."

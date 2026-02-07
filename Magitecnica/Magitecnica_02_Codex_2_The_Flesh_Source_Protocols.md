@@ -1,6 +1,6 @@
 ---
 # Layout & Page Setup
-layout: book_page
+layout: gruv_book_page_adapter
 title: "Magitecnica: Codex 2"
 subtitle: "The Flesh Source Protocols"
 description: "A volume of powers and items for use with the SDM roleplaying system and the UVG Undying Earth trail setting."
