@@ -1,9 +1,10 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Synthetic-Dream-Machine'
+title: 'Synthetic Dream Machine 3rd Party License '
 published: true
 ---
-# Synthetic-Dream-Machine
+# Synthetic Dream Machine 3rd Party License 
+
 An archive of SDM RPG material (Ultraviolet Grasslands / Vastlands Guidebok / Our Golden Age by Luka Rejec)
 
 <!-- Vastlands Guidebook Page 166 -->

@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Path Navigation Index'
+title: 'Paths Index'
 published: true
 ---
 # Path Navigation Index

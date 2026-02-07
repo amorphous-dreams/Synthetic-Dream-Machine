@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'SDM Powers Table of Contents'
+title: 'SDM Powers Index'
 published: true
 ---
 # SDM Powers Table of Contents
