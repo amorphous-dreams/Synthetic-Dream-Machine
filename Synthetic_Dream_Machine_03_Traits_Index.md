@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'SDM Traits Table of Contents'
+title: 'SDM Traits Index'
 published: true
 ---
 # SDM Traits Table of Contents
