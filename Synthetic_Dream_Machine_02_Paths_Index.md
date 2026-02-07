@@ -1,16 +1,16 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Paths Index'
+title: 'SDM Paths Index'
 published: true
 ---
-# Path Navigation Index
+# SDM Paths Navigation Index
 
 - FTLS = Flying Triremes and Laser Swords
 - OGA = Our Golden Age
 - VLG = Vastlands Guidebook
 - UVG = Ultraviolet Grasslands and the Black City 2e
 
-This file collects the **path-level structure** that directs players through the Synthetic Dream Machine’s path options. Each path below links to the trait entries in `Synthetic_Dream_Machine_03_Traits_Index.md` so you can jump straight from a path name to the trait details.
+This file collects the **path-level structure** that directs players through the Synthetic Dream Machine’s path options. Each path below links to the trait entries in [Synthetic_Dream_Machine_03_Traits_Index.md](Synthetic_Dream_Machine_03_Traits_Index.md) so you can jump straight from a path name to the trait details.
 
 - **[Wizard path](../Vastlands_Guidebook/Vastlands_Guidebook_02_Character_Creation_10-35.md#path-of-the-wizard)** (VLG)
   - [Wizard](Synthetic_Dream_Machine_03_Traits_Index.md#sdm-trait-wizard)
