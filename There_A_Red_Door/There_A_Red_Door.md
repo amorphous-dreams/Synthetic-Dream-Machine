@@ -80,23 +80,22 @@ Printed in the USA
 ## CONTENTS
 
 - Contents
-  - For the Sky is a Sea — 3
-  - Bare-Soul Creek — 5
-  - Impermissible Cleaver — 7
-  - Cloud Forest Lodge — 9
-  - Circlehome — 11
-  - Chariot of the Divine Palace — 13
-  - Ladder out of this World — 15
-  - Ta[r] Gmôt — 17
-  - Twin Sunset Observatory — 19
-  - Ambush the Atom Train — 21
-  - The Mouth in the Field — 23
-  - The River Source in Blood — 25
-  - Vegetable of Birth — 27
-  - Air Whale Egg — 29
-  - Sailing Hills — 31
-  - There, a Red Door — xxxiv
-  - 
+  - [For the Sky is a Sea — 3](#page_0003)
+  - [Bare-Soul Creek — 5](#page_0005)
+  - [Impermissible Cleaver — 7](#page_0007)
+  - [Cloud Forest Lodge — 9](#page_0009)
+  - [Circlehome — 11](#page_0011)
+  - [Chariot of the Divine Palace — 13](#page_0013)
+  - [Ladder out of this World — 15](#page_0015)
+  - [Ta[r] Gmôt — 17](#page_0017)
+  - [Twin Sunset Observatory — 19](#page_0019)
+  - [Ambush the Atom Train — 21](#page_0021)
+  - [The Mouth in the Field — 23](#page_0023)
+  - [The River Source in Blood — 25](#page_0025)
+  - [Vegetable of Birth — 27](#page_0027)
+  - [Air Whale Egg — 29](#page_0029)
+  - [Sailing Hills — 31](#page_0031)
+  - [There, a Red Door — xxxiv](#page_xxxiv)
 
 <a id="page_0002"></a>
 

@@ -6,51 +6,51 @@ published: true
 # Flying Triremes and Laser Swords
 
 ## Alpha Playtest
+```text
+operator-anon@dreamdeck:~
+$ ddate
+daemon-lares@dreamdeck:
+  ddate: X-Day, 40th Confusion, YOLD 5491
+
+operator-anon@dreamdeck:~
+$ cd documents/FTLS
+
+operator-anon@dreamdeck:~/documents/FTLS(main)
+$ lares open -mime text/vnd.tiddlywiki;mode=edit -uri "./Flying Triremes and Laser Swords - Alpha Playtest"
+daemon-lares@dreamdeck:
+  Loading...
+  ~/documents/FTLS/Alpha Playtest
+  # FTLS draft game rules. Alpha: Shard contents do not reflect final Playtest document structure.
+  end(uri)
+  Next query?
+
+operator-anon@dreamdeck:~/documents/FTLS(main)
+$ cd ~
+
+operator-anon@dreamdeck:~
+$ lares wiki -query "brief SDM status, then wait for next query"
+daemon-lares@dreamdeck:
+  Here is your UVG Third Party License Compliance State:
+  ✅ You credit sources when referencing UVG/SDM names, creatures, or locations.
+  ✅ You don't reuse art or text unless permitted; brief quotes require citation.
+  📜 You include disclaimers and don't use official logos or claim endorsement.
+  You are within the mesh of compliance.
+  Prepared for synthetic generation.
 ```
-operator-anon@dreamdeck:\~  
-$ddate
 
-\>ddate: X-Day, 40th Confusion, YOLD 5491  
-operator-anon@dreamdeck:\~  
-$cd documents/FTLS
+## Outline
 
-operator-anon@dreamdeck:\~/documents/FTLS(main)  
-$lares open \-mime text/vnd.tiddlywiki;mode=edit \-uri ./Flying Triremes and Laser Swords \- Alpha Playtest
+- [01 Flying Triremes and Laser Swords](Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md)
+- [02 FTLS Paths](Flying_Triremes_and_Laser_Swords_02_FTLS_Paths.md)
+- [03 OSR Heritage Traits](Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md)
+- [04 Recon, Salvage, Secrets](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md)
+- [05 Grimoires](Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md)
+- [06 Powers](Flying_Triremes_and_Laser_Swords_06_Powers.md)
+- [07 Wild Magic Exposure](Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md)
+- [08 Formations and Mass Combat](Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md)
+- [09 Loot and Treasure](Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md)
+- [10 Appendix Null - Referee Resources](Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md)
 
-\> Loading…  
-\> \~/documents/FTLS/Alpha Playtest  
-\> \# FTLS draft game rules. Alpha: Shard contents do not reflect final Playtest document structure.
-
-# Outline
-
-* 01 Flying Triremes and Laser Swords  
-* 02 FTLS Paths  
-* 03 OSR Heritage Traits  
-* 04 Recon, Salvage, Secrets  
-* 05 Grimoires  
-* 06 Powers  
-* 07 Wild Magic Exposure  
-* 08 Formations and Mass Combat  
-* 09 Loot and Treasure  
-* 10 Appendix Null \- Referee Resources
-
-\> end(uri)  
-\> Next query?  
-operator-anon@dreamdeck:\~/documents/FTLS(main)  
-$cd \~
-
-operator-anon@dreamdeck:\~  
-$lares wiki \-query “brief SDM status, then wait for next query”
-
-\>Here is your UVG Third Party License Compliance State:  
-\`\`\`  
-✅ You credit sources when referencing UVG/SDM names, creatures, or locations.  
-✅ You don’t reuse art or text unless permitted; brief quotes require citation.  
-📜 You include disclaimers and don’t use official logos or claim endorsement.  
-\`\`\`  
-\>You are within the mesh of compliance.  
-\> Prepared for synthetic generation.
-```
 ## SDM Note
 
 The core “Synthetic Dream Machine” (SDM) includes: Ultraviolet Grasslands and the Black City 2e, the Vastlands Guidebook, and Our Golden Age by Luka Rejec. Flying Triremes and Laser Swords (FTLS) builds on this modular base.

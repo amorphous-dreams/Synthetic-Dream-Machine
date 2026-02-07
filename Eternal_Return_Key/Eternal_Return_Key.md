@@ -71,35 +71,35 @@ To all who wander home or afar.
 
 [https://patreon.com/wizardthieffighter](https://patreon.com/wizardthieffighter)  
 
-- You — 3
-- _Remember_ — 4
-- _Rebirth_ — 5
-- _Hollow_ — 6
-- _Lives_ — 7
-- _Roadside_ — 8
-- _Scattered_ — 9
-- _Mays_ — 10
-- _Variates_ — 12
-- Character Sheet — 14
-- Home — 16
-- System — 32
+- [You — 3](#page_0003)
+- [_Remember_ — 4](#page_0004)
+- [_Rebirth_ — 5](#page_0005)
+- [_Hollow_ — 6](#page_0006)
+- [_Lives_ — 7](#page_0007)
+- [_Roadside_ — 8](#page_0008)
+- [_Scattered_ — 9](#page_0009)
+- [_Mays_ — 10](#page_0010)
+- [_Variates_ — 12](#page_0012)
+- [Character Sheet — 14](#page_0014)
+- [Home — 16](#page_0016)
+- [System — 32](#page_0032)
 
 System subsections:
-- _A. Roll_ — 31
-- _B. Level & Life & Hero Dice_ — 29
-- _C. Ability_ — 28
-- _D. Skill_ — 27
-- _E. Save_ — 26
-- _F. Defense_ — 26
-- _G. Conflict_ — 25
-- _H. Attack_ — 24
-- _I. Damage_ — 23
-- _J. Defeat_ — 22
-- _K. Morale_ — 21
-- _L. Rest & Recovery_ — 20
-- _M. Inventory_ — 19
-- _N. Powers: Oldtech & Fantascience_ — 18
-- _O. Experience_ — 17
+- [_A. Roll_ — 31](#page_0031)
+- [_B. Level & Life & Hero Dice_ — 29](#page_0029)
+- [_C. Ability_ — 28](#page_0028)
+- [_D. Skill_ — 27](#page_0027)
+- [_E. Save_ — 26](#page_0026)
+- [_F. Defense_ — 26](#page_0026)
+- [_G. Conflict_ — 25](#page_0025)
+- [_H. Attack_ — 24](#page_0024)
+- [_I. Damage_ — 23](#page_0023)
+- [_J. Defeat_ — 22](#page_0022)
+- [_K. Morale_ — 21](#page_0021)
+- [_L. Rest & Recovery_ — 20](#page_0020)
+- [_M. Inventory_ — 19](#page_0019)
+- [_N. Powers: Oldtech & Fantascience_ — 18](#page_0018)
+- [_O. Experience_ — 17](#page_0017)
 
 <a id="page_0003"></a>
 
@@ -1465,4 +1465,3 @@ secrets to free you of the daemon_ _Player and restore your will ...
 or at least oblivion._ ”  
 
 #### Read This Way ↞⤛
-
