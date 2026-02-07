@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Recon, Salvage, Secrets (RSS System)'
+title: 'Recon, Salvage, Secrets'
 published: true
 ---
 # Recon, Salvage, Secrets (RSS System)
