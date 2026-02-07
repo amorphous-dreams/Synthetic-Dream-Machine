@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Appendix Null \- Referee Resources'
+published: true
+---
 # Appendix Null \- Referee Resources
 
 # Mechanical Tags

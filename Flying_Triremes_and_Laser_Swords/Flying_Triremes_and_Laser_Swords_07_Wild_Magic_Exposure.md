@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Wild Magic'
+published: true
+---
 # Wild Magic
 
 ## Violet ozone, upside‑down rain, vox feedback

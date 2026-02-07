@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Session Zero — Caverns of Thracia Operation Dossier'
+published: true
+---
 # Session Zero — Caverns of Thracia Operation Dossier
 *Addressed from **The Lindwyrm** (New Delos Nexus) to **Lady Aki** (Grandmother Spider’s folk, Broken Isles) and crew*  
 *Cover: “Adventurers’ Guild”*

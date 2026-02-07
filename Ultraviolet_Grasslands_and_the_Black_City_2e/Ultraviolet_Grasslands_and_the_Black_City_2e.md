@@ -1,6 +1,6 @@
 ---
 # Layout & Page Setup
-layout: book_page
+layout: gruv_book_page_adapter
 title: "Ultraviolet Grasslands and the Black City"
 subtitle: "2e"
 description: "A psychedelic RPG road-trip setting and adventure for the Synthetic Dream Machine system."

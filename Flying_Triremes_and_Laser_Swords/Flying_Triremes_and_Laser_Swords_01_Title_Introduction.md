@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Flying Triremes and Laser Swords'
+published: true
+---
 # Flying Triremes and Laser Swords
 
 ## Alpha Playtest

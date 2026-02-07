@@ -1,10 +1,10 @@
 ---
 # Layout & Page Setup
-layout: book_page
+layout: gruv_book_page_adapter
 title: "Eternal Return Key"
 subtitle: "v1.10 BAREGHOST"
 description: "A Synthetic Dream Machine booklet."
-published: false
+published: true
 
 # Book Metadata
 author: "Luka Rejec"

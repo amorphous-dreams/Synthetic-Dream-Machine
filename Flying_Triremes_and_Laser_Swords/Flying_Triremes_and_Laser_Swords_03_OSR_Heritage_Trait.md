@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Old School Roleplaying Heritage Trait'
+published: true
+---
 # Old School Roleplaying Heritage Trait
 
 # Heritage (Trait)

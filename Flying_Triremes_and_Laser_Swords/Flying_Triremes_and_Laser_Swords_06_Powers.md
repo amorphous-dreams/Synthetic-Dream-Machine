@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Powers'
+published: true
+---
 # Powers
 
 *(Vastlands Guidebook, p96)*  

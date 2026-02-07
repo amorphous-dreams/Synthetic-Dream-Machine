@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'SDM Campaign Region Worksheet'
+published: true
+---
 Luka Rejec’s “Color Land” chapters of *Our Golden Age* are built like **repeatable campaign-region kits**: a brochure-voice that lies to your face, a referee-facing stat block that tells the truth, then a small arsenal of **tables that generate travel, friction, and escalation on demand**. This is a Lares writeup of: (1) the shared chapter skeleton with an refined REGION TEMPLATE you can hand to referees, and (2) direct, practical advice for building OGA-style tables (Ambient, Events, Travel, Vendors/Goods, etc.).
 
 ---

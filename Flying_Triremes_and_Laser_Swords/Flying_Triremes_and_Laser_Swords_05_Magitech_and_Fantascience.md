@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Appendix G \- Grimoires'
+published: true
+---
 # Appendix G \- Grimoires
 
 ## “A spell is only half‑real until it has a spine and a cover.” — Anon. Archivist‑Daemon

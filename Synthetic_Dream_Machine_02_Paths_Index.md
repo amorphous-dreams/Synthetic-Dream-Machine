@@ -1,3 +1,8 @@
+---
+layout: gruv_book_page_adapter
+title: 'Path Navigation Index'
+published: true
+---
 # Path Navigation Index
 
 - FTLS = Flying Triremes and Laser Swords
