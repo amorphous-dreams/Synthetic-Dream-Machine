@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Recon, Salvage, Secrets'
+title: 'Recon, Salvage, Secrets (RSS System)'
 published: true
 ---
 # Recon, Salvage, Secrets (RSS System)
@@ -67,7 +67,7 @@ Roll Hazards if triggered, apply consequences, and resolve cooldown (or escalati
 - **Company:** The moving unit of play (caravan, crew, flotilla, cell). Uses the weekly cadence rules.
 - **Exploding dice** (dX*): marked with an asterisk, on max result, roll an extra die and add it to the current total or pool. The d20 always explodes (see specific rules).
 - **Hazards:** The bite-back table; when you force the world, the world rolls teeth.
-- **Heat:** The **Tick Attention** rate, how quickly this area responds (+1 to +3 unmodified).
+- **Heat:** The **Tick Attention** rate, how quickly this area responds (+1 to +4 unmodified).
 - **Hero/Bonus Dice:** Daemon Hero Dice and Comfort / Protection / Speed (etc.) Dice. Meta-currency you spend to push when the work matters.
 - **Level (Area):** How hard it pushes back; how much you can extract per week (0–17). Level 0 Areas can’t sustain extraction safely; treat them as volatile, or metaphysically unhinged (See the Salvage rules).
 - **Nodes:** An Area's exploitable handles (yield + risk), usually 0–3 per Area. A name/description, a type tag (*static, active, dynamic*), and one additional descriptive tag. What you can find, make, or trigger.
@@ -111,12 +111,6 @@ The profile for an **Area** (also known as a Discovery in SDM). Tracks how hard 
 | **7–8** | High turbulence. Wards/filters/ritual discipline are baseline, not luxury. Ghosts and errors are common; the area has real “arcane weather” that can ruin a watch-scale operation if you don’t respect it. | Anchored sanctums, bonded talismans | Persistent haunts, reality jitter |
 | **9+** | Hazard-layer noösphere. The place itself is an active threat: background corruption, hostile resonance, cascade errors. Even careful play gets clipped; work here always leaves tracks in the medium. | Safe only in sealed bubbles | Maelstrom gusts, cascade failures |
 | **10–17** | Maelstrom-tier. Reality behaves like an opponent: time-slips, rule-changes, node-breakage, mythic feedback loops, audits by immortal subsystems. Interaction is procedural—keys, timing, permissions, appeasement. | Only by key/timing/permission | Timeline edits, ontic crashes |
-
-#### Optional: Overloaded Encounter Die
-
-Some tables like a single die that eats resources and spawns encounters at once. The Vastlands Guidebook calls this **Overloaded Encounter Dice** and frames it as an option for exploration periods. The encounter die still rolls, but certain faces also tick supplies, fatigue, light, heat, or attention.
-
-If the local **Arcane** score is above 5, or a faction carries the [Arcane Interference] tag (below), then Encounter Die rolls "explode" - a 6 on the d6 causes an immediate Danger Roll vs the local Arcane score by a random character in the group, then the referee re-rolls the Encounter die.
 
 #### Arcane Alignment
 
@@ -272,133 +266,9 @@ Magitech becomes indistinguishable from divine bureaucracy: oath-logic, keys, se
 
 *The Lares Lagrange Nodes are “Tech 10+” exemplars: they’re routing/stability infrastructure-daemons, not “gear.”*
 
-### Attention (0–20+)
-
-| Range | **Name** | Signal |
-| --- | --- | --- |
-| 0–6 | **Quiet** | Background suspicion; encounter die on 1 |
-| 7–12 | **Loud** | Organized attention; encounter die on 1–2 |
-| 13–19 | **Alarm** | Active escalation; encounter die on 1–3 |
-| 20 | **Emergency** | Active countermeasures; encounters are automatic when checked for |
-
-Attention measures how close the Area is to noticing you *as an active problem*. Attention can mean creatures, guards, spirits, systems, guilds, wards, reputation, paperwork, Intrusion Countermeasure Etheric-magitech (ICE), or “the ruin wakes up.”
-
-Increase Attention when the party takes an action that risks notice. Even on some successful actions, such as overt power use in a controlled Area (power spent above the Area Level), or a “clean success” achieved loudly (demolition, obvious drone swarms, daylight gate-picking).
-
-- **Recon:** trespass, wiretaps, breaking seals, scrying, bribery, or tailing.
-- **Salvage:** always, because extraction leaves scars.
-- **Secrets:** rituals, hacking, archive uplinks, because reality logs access attempts.
-
-| Heat by</br> Area Level | Low | Medium | High |
-| :---: | :---: | :---: | :---: |
-| Level | 0–6 | 7–12 | 13–17 |
-| Area **Heat** | **+1** | **+2** | **+3** |
-
-Track Attention using a stack of tokens, an oversized d20, or some other table facing flag. If an action feels like it should increase Attention, it probably should - **Tick Attention** (increase the score by the Area Heat value). These numbers do not model "reputation." They model **alarum**. At low Attention levels, the Area reacts calmly. At high levels, the Area reacts immediately. Note the Attention clock(s) scores when the PCs leave an area.
-
-- **Tick Attention** once per completed watch-scale operation (Recon / Collect / Refine / Ritual / Hack), modified by success/failure per the relevant table.
-- **Tick Attention** for any Turn-scale “loud moment” (breaking a seal, casting above Area Level, demolition), even mid-operation.
-- **Tick Attention** at most once per Turn unless the party does something obviously compounding (gunfight + explosion + summon).
-
-Run **one Attention clock** per Area by default. This could be a town, landmark location, "dungeon" level or sub-level, etc. Split into sub-clocks only when:
-- two factions respond differently and you want that friction,
-- two phenomena exist (guards + ward-net, or locals + ICE, wildlife + another crew) and each escalates on its own schedule.
-
-Some rare gear and powers may temporarily raise or lower an Area **Heat** rate. Heat size never drops below **+1** and Attention never goes below **0**. Nothing stays invisible forever. Not in the Vastlands. Not on Elyncia.
-
-#### 0–6: Quiet
-
-The Area barely registers you. Background suspicion. Stochastic pressure.
-
-At **Attention 0-6**, bring out the old school **Encounter Die**.
-
-**Encounter Die:** roll **1d6** at the cadence the scenario expects.
-- Dungeon turns often roll every 2 turns (every turn if the party is conspicuous).
-- A site infiltration might roll once per watch.
-- A city/town caper might roll per watch or per major scene beat.
-- A week of camp or destination actions assumes one encounter per week. If the referee wishes, they can instead roll and Encounter check once per day.
-
-On a **1**, trigger a Random Encounter (or a “complication encounter” such as suspicious questions, a nosy drone, a clerk with a stamp). Keep it setting-appropriate. The Attention level may modify the trigger range.
-
-> **Jaquays' Encounter Stack:**
-> 
-> Pre-roll a *list* of encounter results before play. Especially when tables chain into other tables (Area A references Area B, which references Area C), pre-rolling keeps the table moving and prevents recursive page-flipping. Cross off the next entry whenever your d6 roll shows an encounter. The dungeon feels alive. The referee stays sane. This turns Random Encounters into *flow* instead of *interruption*.
->
-> *Source:* JG-102 **Caverns of Thracia** by Jenell Jaquays
-
-**Pre-rolled Encounter Stacks:**
-
-Pre-roll 5–10 encounter results for each Area that has an encounter table. Not all entries on your tables should be "combat-ready" encounters, and some entries can be stacked encounters (roll twice, etc). If your encounter tables point into other Area tables, note the source next to each pre-rolled result. Cross an encounter off the stack when used in play, then roll the reaction and distance/approach using the SDM d6 tables. Refill your encounter stack(s) during downtime in the session.
-
-#### 7-12: Loud
-
-Someone commits to noticing. Organized attention. Patrol logic. Audit logic.
-
-When Attention crosses into the **7+** range, trigger one immediate, concrete sign:
-- a patrol passes close, a ward pings, a local fixer asks pointed questions, an ICE daemon starts watching the leylines.
-
-The whole posture of the Area has changed. Keep running encounter checks, but increase the chance:
-- encounter on **1–2** on the d6 (instead of only 1).
-- some encounters stop looking random; they start looking like *procedure* (shift change, sweeps, checkpoints, scans).
-
-#### 13-19: Alarm
-
-The Area starts spending resources to stop you. Doors close. Wards wake. Paperwork sharpens.
-
-When Attention crosses into the **13+** range, trigger an immediate escalation:
-- an immediate encounter, and
-- locks engage, wards harden, rival crews arrive, patrol leaders show up, guild paperwork hits the table like a guillotine.
-
-Encounter checks escalate:
-- encounter on **1–3** on the d6
-- Named characters encounters as independent agents (not random encounters)
-
-#### 20: Emergency
-
-Active countermeasures. The Area answers you *right now*.
-
-**20** is the maximum. Once the Attention clock is at maximum then further **Tick Attention** events do not add to the score, but may immediately draw the attention of the active countermeasures.
-
-At **20**, assume active countermeasures:
-- fight, chase, containment, purge, arrest, expulsion, quarantine, spiritual possession, black-bag paperwork. Pick the emergency response that fits the tags.
-
-Treat Encounters as automatic when checked for (every other turn - or every turn if the party is being conspicuous).
-
----
-
-#### Optional: Starting Hot
-
-Start Attention **above 0** when fiction demands it:
-- **1d6** if the crew already carries rumors, blood, contraband, or a fresh bounty.
-- **7** if the group enters with the Arcane Interference tag, or if the tags include [legal], [warded], [surveilled], [holy], [guild], [military] and the crew arrives acting like tourists with burglary tools.
-- **13** when the crew already triggered alarms here this week, or when a rival faction primed the site.
-
----
-
-#### Cooling Down (Bleeding Heat)
-
-Attention rises fast. Cooling down takes longer because the world has memory. Patrol routes, guild logs, ward-nets, gossip, and hungry spirits don’t reset just because you changed scenes. When the crew stops pushing the Area, Attention does start to drain. How fast it drains depends on the time scale you’re playing at. *Rule of thumb:* you can hide from eyes in minutes, but you can’t erase consequences in minutes.
-
-- **Stay Quiet (Turn):** Avoids events that **Tick Attention**.
-    If the party spends a turn *not* drawing attention (no prying, no extraction, no hacking, no rituals), they may attempt to *stay quiet*. 
-- **Calm Tensions (Turn):** -1 Attention, once every 3 Turns or so.
-    If they take direct actions to hide their presence or calm the local tension, the referee may allow a small drop in Attention (usually **–1**) once every several turns, not every turn.
-- **Lay Low (Watch):** –2 Attention.
-    A full watch spent *laying low* (hide, misdirection, decoys, bribery, paperwork, changing routes, letting the ruin “forget”) reduces Attention by **–2**.
-- **Leave (Week):** –2d6 Attention.
-    Leaving the Area and not returning for a week reduces Attention by **–2d6** as rumors cool, patrol rotations change, and the system’s “recent events” log rolls over. Note the remaining attention level. If you return, you return to the same heat. This place remembers *you*.
-
-**Cooldown is not a new phase.** It’s what happens when you choose *not* to do the loud thing, or when you spend time doing the boring thing on purpose.
-
-- **Hide / Cover / Blend:** become *uninteresting*; avoid checks; leave no obvious traces.
-- **Misdirect:** false trails, decoy signals, staged accidents, scapegoats (dangerous, but effective).
-- **Legitimize:** paperwork, permits, guild stamps, local patronage, “we belong here” rituals.
-- **Go quiet:** no magic, no drones, no open prying—use hands, tools, and patience.
-- **Change the problem:** pay a faction, shift blame, trade a secret for tolerance, leave and come back later.
-
-Attention heat and cool down should always reflect the Area’s Tags. A [legal] Area cools through paperwork and patronage. A [holy] Area cools through rites and humility. A [surveilled] Area cools through spoofing and dead zones. A [void] Area cools when you stop looking at it too hard. If the party tries to cool down in a way that clashes with the Tags, reduce the effect or invert it: they don’t cool the place—they irritate it.
-
 ## Recon (Reconnaissance)
+
+Recon starts before the first pry bar hits the wreckage: this section shows how crews leverage Discoveries as playable Areas, break each Area into workable Nodes, and then ride the Attention clock as pressure shifts from rumor to patrol to full response. Use the procedures below to find what a destination actually offers, decide what to touch, and track how the place answers through encounter checks, escalation bands, and random-complication flow.
 
 ### Discoveries / Areas
 
@@ -458,6 +328,135 @@ Examples:
 
 Players may note nodes on their maps, track them in their company journals, and buy/sell/trade the intel.
 
+### Encounter Die
+
+This old school roleplaying Encounter Die runs at operational tempo (turns and watches), not at UVG’s broad “one encounter per week” travel cadence: it checks pressure repeatedly while crews poke, salvage, or sneak, then ties outcomes to a rising Attention clock that shifts trigger ranges. SDM's weekly encounter procedure assumes one such encounter per week; where the Encounter/Event tables behave more like "random encounter table" generators that throw colorful complications, factions, and prompts into play.
+
+- **Dungeon turns:** roll every turn when the party is loud, slow, or leaving obvious traces; otherwise roll every 2 turns.
+- **Site infiltration:** roll once per watch, plus one extra roll whenever the crew causes a clear disturbance.
+- **City/town caper:** roll once per watch or at each major scene beat; pick one method at scene start and stick to it.
+- **Camp/destination week:** assume one encounter per week; if pressure is high, escalate to one check per day until the situation cools.
+
+#### Jaquays' Encounter Stack
+
+> _"Because the composition of some groups of wandering monsters would necessitate much flipping back and forth between pages to keep track of individual specifics, it is suggested by the designer that the referee **pre-roll several encounters on each level** and have them set up and ready to go before the game begins."_
+>
+> *Source:* JG-102 **Caverns of Thracia** by Jenell Jaquays
+
+A *list* of encounter results can be created before play. Especially when tables chain into other tables (Area A references Area B, which references Area C), pre-rolling keeps the table moving and prevents recursive page-flipping. Write up all the stats, gear, or other notes needed to run each scenario. Cross off the next entry whenever your d6 roll triggers an encounter and introduce it into play. The dungeon feels alive. The referee stays sane. This turns Random Encounters into *flow* instead of *interruption*.
+
+_Encounter Stacks:_ Pre-roll 5–10 encounter results for each Area that has an encounter table. Not all entries on your tables should be "combat-ready" encounters and some entries can be multiple-encounters (rolled twice, etc). If your encounter tables point into other Area tables, note the source next to each pre-rolled result. Cross an encounter off the stack when used in play, then roll the reaction and distance/approach using the SDM d6 tables. Refill your encounter stack(s) during downtime in the session.
+
+#### Optional: Overloaded Encounter Die
+
+Some tables like a single die that eats resources and spawns encounters at once. The Vastlands Guidebook calls this **Overloaded Encounter Dice** and frames it as an option for exploration periods. The encounter die still rolls, but certain faces also tick supplies, fatigue, light, heat, or attention.
+
+If the local **Arcane** score is above 5, or a faction carries the [Arcane Interference] tag (below), then Encounter Die rolls may "explode" - a 6 on the d6 causes an immediate Danger Roll vs the local Arcane score by a random character in the group, then the referee re-rolls the Encounter die.
+
+### Attention (0–20)
+
+Attention measures how close the Area is to noticing you *as an active problem*. Attention can mean creatures, guards, spirits, systems, guilds, wards, reputation, paperwork, Intrusion Countermeasure Etheric-magitech (ICE), or “the ruin wakes up.”
+
+| Attention</br> Range | **Status** | Signal |
+| --- | --- | --- |
+| 0–6 | **Quiet** | Background suspicion; encounter die on 1 |
+| 7–12 | **Loud** | Organized attention; encounter die on 1–2 |
+| 13–19 | **Alarm** | Active escalation; encounter die on 1–3 |
+| 20 | **Emergency** | Active countermeasures; encounters are automatic when checked for |
+
+Increase Attention when the party takes an action that risks notice. Even on some successful actions, such as overt power use in a controlled Area (power spent above the Area Level), or a “clean success” achieved loudly (demolition, obvious drone swarms, daylight gate-picking).
+
+- **Recon:** trespass, wiretaps, breaking seals, scrying, bribery, or tailing.
+- **Salvage:** always, because extraction leaves scars.
+- **Secrets:** rituals, hacking, archive uplinks, because reality logs access attempts.
+
+| Heat by</br> Area Level | Low | Medium | High | Epic |
+| :---: | :---: | :---: | :---: | :---: |
+| Level | 0–4 | 5–9 | 10–14 | 15+ |
+| Area **Heat** | **+1** | **+2** | **+3** | **+4** |
+
+Track Attention using a stack of tokens, an oversized d20, or some other table facing flag. If an action feels like it should increase Attention, it probably should - **Tick Attention** (increase the score by the Area Heat value). These numbers do not model "reputation." They model **alarum**. At low Attention levels, the Area reacts calmly. At high levels, the Area reacts immediately. Note the Attention clock(s) scores when the PCs leave an area.
+
+- **Tick Attention** once per completed watch-scale operation (Recon / Collect / Refine / Ritual / Hack), modified by success/failure per the relevant table.
+- **Tick Attention** for any Turn-scale “loud moment” (breaking a seal, casting above Area Level, demolition), even mid-operation.
+- **Tick Attention** at most once per Turn unless the party does something obviously compounding (gunfight + explosion + summon).
+
+Run **one Attention clock** per Area by default. This could be a town, landmark location, "dungeon" level or sub-level, etc. Split into sub-clocks only when:
+- two factions respond differently and you want that friction,
+- two phenomena exist (guards + ward-net, or locals + ICE, wildlife + another crew) and each escalates on its own schedule.
+
+Some rare gear and powers may temporarily raise or lower an Area **Heat** rate. Heat size never drops below **+1** and Attention never goes below **0**. Nothing stays invisible forever. Not in the Vastlands. Not on Elyncia.
+
+#### 0–6: Quiet
+
+The Area barely registers you. Background suspicion. Stochastic pressure.
+
+A **1** on the d6 encounter die triggers a Random Encounter (or a “complication encounter” such as suspicious questions, a nosy drone, a clerk with a stamp). Keep it setting-appropriate. The Attention level may modify the trigger range.
+
+#### 7-12: Loud
+
+Someone commits to noticing. Organized attention. Patrol logic. Audit logic.
+
+When Attention crosses into the **7+** range, trigger one immediate, concrete sign:
+- a patrol passes close, a ward pings, a local fixer asks pointed questions, an ICE daemon starts watching the leylines.
+
+The whole posture of the Area has changed. Keep running encounter checks, but increase the chance:
+- encounter on **1–2** on the d6 (instead of only 1).
+- some encounters stop looking random; they start looking like *procedure* (shift change, sweeps, checkpoints, scans).
+
+#### 13-19: Alarm
+
+The Area starts spending resources to stop you. Doors close. Wards wake. Paperwork sharpens.
+
+When Attention crosses into the **13+** range, trigger an immediate escalation:
+- an immediate encounter, and
+- locks engage, wards harden, rival crews arrive, patrol leaders show up, guild paperwork hits the table like a guillotine.
+
+Encounter checks escalate:
+- encounter on **1–3** on the d6
+- Named characters encounters as independent agents (not random encounters)
+
+#### 20: Emergency
+
+Active countermeasures. The Area answers you *right now*.
+
+**20** is the maximum. Once the Attention clock is at maximum then further **Tick Attention** events do not add to the score, but may immediately draw the attention of the active countermeasures.
+
+At **20**, assume active countermeasures:
+- fight, chase, containment, purge, arrest, expulsion, quarantine, spiritual possession, black-bag paperwork. Pick the emergency response that fits the tags.
+
+Treat Encounters as automatic when checked for (every other turn - or every turn if the party is being conspicuous).
+
+#### Optional: Starting Hot
+
+Start Attention **above 0** when fiction demands it:
+- **1d6** if the crew already carries rumors, blood, contraband, or a fresh bounty.
+- **7** if the group enters with the Arcane Interference tag, or if the tags include [legal], [warded], [surveilled], [holy], [guild], [military] and the crew arrives acting like tourists with burglary tools.
+- **13** when the crew already triggered alarms here this week, or when a rival faction primed the site.
+
+#### Cooling Down (Bleeding Heat)
+
+Attention rises fast. Cooling down takes longer because the world has memory. Patrol routes, guild logs, ward-nets, gossip, and hungry spirits don’t reset just because you changed scenes. When the crew stops pushing the Area, Attention does start to drain. How fast it drains depends on the time scale you’re playing at. *Rule of thumb:* you can hide from eyes in minutes, but you can’t erase consequences in minutes.
+
+- **Stay Quiet (Turn):** Avoids events that **Tick Attention**.
+    If the party spends a turn *not* drawing attention (no prying, no extraction, no hacking, no rituals), they may attempt to *stay quiet*. 
+- **Calm Tensions (Turn):** -1 Attention, once every 3 Turns or so.
+    If they take direct actions to hide their presence or calm the local tension, the referee may allow a small drop in Attention (usually **–1**) once every several turns, not every turn.
+- **Lay Low (Watch):** –2 Attention.
+    A full watch spent *laying low* (hide, misdirection, decoys, bribery, paperwork, changing routes, letting the ruin “forget”) reduces Attention by **–2**.
+- **Leave (Week):** –2d6 Attention.
+    Leaving the Area and not returning for a week reduces Attention by **–2d6** as rumors cool, patrol rotations change, and the system’s “recent events” log rolls over. Note the remaining attention level. If you return, you return to the same heat. This place remembers *you*.
+
+**Cooldown is not a new phase.** It’s what happens when you choose *not* to do the loud thing, or when you spend time doing the boring thing on purpose.
+
+- **Hide / Cover / Blend:** become *uninteresting*; avoid checks; leave no obvious traces.
+- **Misdirect:** false trails, decoy signals, staged accidents, scapegoats (dangerous, but effective).
+- **Legitimize:** paperwork, permits, guild stamps, local patronage, “we belong here” rituals.
+- **Go quiet:** no magic, no drones, no open prying—use hands, tools, and patience.
+- **Change the problem:** pay a faction, shift blame, trade a secret for tolerance, leave and come back later.
+
+Attention heat and cool down should always reflect the Area’s Tags. A [legal] Area cools through paperwork and patronage. A [holy] Area cools through rites and humility. A [surveilled] Area cools through spoofing and dead zones. A [void] Area cools when you stop looking at it too hard. If the party tries to cool down in a way that clashes with the Tags, reduce the effect or invert it: they don’t cool the place—they irritate it.
+
 ## Salvage (Collect & Refine)
 
 Once resources are found they must be collected and refined. A Salvage attempt requires 1 watch (4 hours), an accessible resource node or collected resources, one or more crew, and a suitable toolkit (e.g., Brimstone Fae Mining Kit, Adventurer's Guild Kitchen, Portable Forge Cart, Quantum Tinker’s Kit). An area can safely support a number of Salvage attempts per week equal to its Level, with most crew avoiding unstable Level 0 Areas. Large crews often run multiple attempts in parallel, or collect in one area, and refine their salvage in a nearby area.
@@ -515,30 +514,170 @@ To turn raw materials, power, and data shards into usable resources make a pool 
 
 Spend a Hero die to roll \+1d6 with the Collection roll or the Salvage pool. Spend a Comfort or Protection die to remove 1 point of Endurance/Aura damage or a Wear and Tear burden caused from Salvage or Hazards. Spend a Speed Die to gain [+] on a Collection roll, or to re-roll a die in a Salvage Dice pool.
 
-### Trading Resources
+### Trading Salvaged Resources
 
-Standard rate: 1 sk (sack) of refined salvage can be traded for 1 Bonus Die Trinket. Adjust cash prices by region & rarity. Use tags as guidance. Organizations offer rare rewards or special Bonus Dice trinkets for bulk trades (10+ sacks of refined resources).
+Price **refined salvage** as cash first, then convert to barter or favors if desired. These prices are for ingredients, not finished recipe outputs (gear, food, powers, relics).
 
-telarus@dreamdeck-enyalios:~$ lares query --dev --async “align cash prices with the Ultraviolet Grasslands 2.0 and Vastlands Guidebook example trade good material”
+1. **Base Cash Value (per 1 sk):**  
+   Set a base sack price by Area Level band and salvage type, then apply market/haggling below.
+
+    | Area Level Band | Market Band | [static] €/sk | [active] / [dynamic] €/sk |
+    |---:|:---|---:|---:|
+    | 0-4 | Low | 100 | 500 |
+    | 5-9 | Medium | 200 | 1,000 |
+    | 10-14 | High | 400 | 2,000 |
+    | 15+ | Epic | 800 | 4,000 |
+
+2. **Market Research Procedure (local demand/supply):**  
+   Yes. The characters can perform market research. [@UVG_2e, _p._ _172_]
+   - **1 day:** character finds out the price of a trade good in an adjacent destination.  
+   - **1 week:** character finds out the price of a trade good in a chain of three adjacent linked destinations.
+   For each destination, make a market roll:
+
+    | d20 | Price Factor | Notes |
+    |---:|---:|:---|
+    | 1 | 0 | It's taboo. Nobody talks about it. Like it doesn't exist. There certainly isn't a local morality cult that murders dealers. |
+    | 2 | 0 | No demand or brainwashing? They don't want it at all. |
+    | 3-6 | 0.5 | Low demand. |
+    | 7-12 | 1 | Normal market. |
+    | 13 | 1 | Depressed market. Haggling checks at a disadvantage. |
+    | 14-15 | 2 | Popular but illegal. Stiff penalties for captured dealers. |
+    | 16-17 | 2 | High demand. |
+    | 18 | 3 | Market bubble! 1 in 6 chance per caravan visit that the market has collapsed (roll 1d10 on this table). |
+    | 19 | 4 | The motherload! You're really in business now. 1 in 6 chance per caravan visit that the market has readjusted (roll again on this table). |
+    | 20 | 1 | Source! Buyers make haggling checks at an advantage, sellers at a disadvantage. |
+
+3. **Deal Procedure (haggling/terms):**  
+   When characters arrive at a destination they can negotiate a deal. [@UVG_2e, _p._ _172_]
+   - **1 day:** character finds a merchant and negotiates a deal. Roll on the haggling table.  
+   - **1 week:** character schmoozes, boozes and wines for `1d6 x 100` cash, then has advantage on the haggling roll.  
+   - **Selling:** multiply the price by the haggling factor.  
+   - **Buying:** divide the price by the haggling factor.
+
+    | d20 | Factor | Interesting Note |
+    |---:|---:|:---|
+    | 1 | 0 | Local authorities (or thugs?) confiscate the goods! |
+    | 2-5 | 0.5 | Ripped off! Was it knives in the milk or the fine print? |
+    | 6-13 | 1 | A fair and reasonable sale. |
+    | 14-17 | 1.2 | A solid, profitable sale. |
+    | 18-19 | 1.5 | A good trade. Anyone should be proud. |
+    | 20+ | 3 | This might be almost too good. Perhaps it wouldn't hurt to quickly skip town now... |
+
+4. **Tag / Rarity Adjustment:**  
+   Common tags: no change.  
+   In-demand, rare, or dangerous tags (e.g., [active], [void], region-critical): `+25%` to `+100%`.  
+   Tainted, illegal, oversupplied, or taboo goods: `-25%` to `-100%` (including no legal market).
+5. **Bulk Contracts (10+ sk):**  
+   Organizations usually negotiate contracts as cash, access, or rare rewards. Bonus Die trinkets may be included as part of the package.
+
+After cash value is set, parties may settle in goods, favors, debt relief, or trinkets.
+
+**Quick examples:**
+- Ingredient lot sale: 1 sk [static] from a Level 6 Area starts at €200, rolls normal market (`x1`), fair deal (`x1`), common tags (`x1`) -> final €200.
+- High-pressure lot sale: 1 sk [active] from a Level 12 Area starts at €2,000, rolls high-demand market (`x3`), good deal (`x1.5`), then gets a rare-dangerous tag uplift (`+50%`) -> final €13,500.
 
 ## Secrets (Cooking, Crafting, Enchantment, Rituals)
 
-Cooking, crafting, enchanting, summoning, and other rituals require time, a recipe, some refined ingredients/resources (usually given as st, stones), and often secrets or other knowledge. These actions may attract Attention (referee call), and are often performed behind wards, at odd hours, and within liminal spaces. These precautions may allow the ritualist to avoid Heat or Hazards.
+Cooking, crafting, enchanting, summoning, and other rituals require time, a recipe, some refined ingredients/resources (usually given as st, stones), and rare items or secrets. Ritual actions may attract Attention (referee call) and are often performed behind wards, at odd hours, and within liminal spaces. These precautions may allow the ritualist to avoid Heat or Hazards.
 
-Recipes are ritual items that take 1 sp (soap) of inventory space \- or the noöspheric equivalent. Common recipes yield consumables like dream-tonics, healing stews, memory crystals, Bonus Dice trinkets, etc. This can include:
+### Recipes
 
-- SDM Powers (from Powers/Albums of Power sections).
+**Recipes** are ritual items that take 1 sp (soap) of inventory space \- or the noöspheric equivalent. Common recipes yield consumables, gear, dream-tonics, healing stews, memory crystals, Bonus Dice trinkets, etc. This can include:
+
+- SDM Powers anchored into items.
 - Strange Items or Gear (via UVG and Vastlands item tables).
+- Gear mods and other customizations.
 - Other items or effects as the Referee and Player Daemons expand the deep lore.
 
-**Recipe / Ritual Examples** (Time cost: 1 watch)
+**New Recipe / Ritual Examples** (Time cost: 1 watch)
 
-| Recipe | Refined Resources (stones) | Consumable Effect |
+| Recipe | Refined Resources (stones) | Effect |
 | --- | --- | --- |
-| Flux-Gyoza | 1 st [static], 1 st [active] | Advantage on Danger Rolls for 1 watch (4 hours). |
-| Shardwine | 1 st [static], 1 st [active], 1 st [dynamic] | \+2d6 damage on next attack, then Attrition save |
-| Bone-Sifter Wand | 2 st [static], 1 st [dynamic] | Reroll a Salvage Collection roll 1/day. |
-| Bonus Die Trinket | 2 st [static] OR [dynamic], 1 st [active], 1 item | A ritual trinket item. Gain a Comfort/Protect/Speed die, spend it for bonus effect. |
+| Flux-Gyoza | 1 st [static] [vegetables], 1 st [active], some prepared dough (3 sp) | 1 stone (2 doses). Advantage on Danger Rolls for 1 watch (4 hours). |
+| Shardwine | 2 st [static] [wine], 1 st [active], 1 st [dynamic], some herbs | 2 stones (4 doses). \+2d6 damage on next attack, then Attrition save |
+| Bone-Sifter Staff | 2 st [static], 1 stone [static] [bone], 1 st [dynamic] | 2 stones, d8 damage. Reroll a Salvage Collection roll 1/day. |
+| Bonus Die Trinket | 2 st [static] OR [dynamic], 1 st [active], 1 item | Rare (requires x4 ingredient). 1 stone. A ritual trinket item. Gain a Comfort/Protect/Speed die, spend it for bonus effect. |
+
+**Referee Advice (designing recipes from SDM gear):**
+
+Start from a printed item in UVG, VLG, or OGA and copy two numbers: listed inventory bulk (`sp`/`st`/`sk`) and listed item market price (`€`). The recipe should consume twice (`x2`) the inventory bulk of the item in refined resources, and the resources `Base Cash Value` should be worth at least `50%` of the item's market price.
+
+Use refined salvage `Base Cash Value` for all recipe math. Actual transaction prices may differ due to market fluctuations (market research, deals, and tag/rarity adjustments), so players should track both values when buying or salvaging ingredients:
+- **Base Cash Value** (rules reference for recipe requirements).
+- **Transaction Value** (what was actually paid in play).
+
+The referee may list exact ingredients or special objects/secrets needed, or just list the tags required:
+- **Specific ingredient requirement:** `1 sk stabilized [active] mana, min €500`.
+- **Typed + tagged requirement:** `2 st [static], 2 st [dynamic] with [signal] or [memory], min €600`.
+
+Raise requirements for dangerous, illegal, or relic-grade outputs: use `80%` of item value for ingedient `Base Cash Value` and/or `x4` inventory bulk multipliers.
+
+### Example Recipes
+
+**Common Recipes**
+
+| Item | Base Profile | Final Cost (Inv + Base Cash Value) | Constraint / Output | Core Tags |
+| --- | --- | --- | --- | --- |
+| [Supplies, Voyager (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 sk`, `€10` | Inv: `2 sk`; Value: `>= €5` | Constraint: one-week consumables mix in sealed travel packaging. Output: complete voyager provisions bundle covering one traveler-week of routine overland needs. | `[rations] [water] [camp] [logistics]` |
+| [Water Purification Pills (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 sp`, `€5` | Inv: `2 sp`; Value: `>= €2.5` | Constraint: accurate tablet dosing and clean treatment chemistry. Output: 10-dose purification pack that makes roughly a week of water potable. | `[water] [purification] [sanitation]` |
+| [UV Lotion (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 sp`, `€5` | Inv: `2 sp`; Value: `>= €2.5` | Constraint: stable, skin-safe UV-blocking formula. Output: topical anti-UV prep suitable for radiant exposure and long daytime travel. | `[sun] [radiant] [skin] [protection]` |
+| [Nasal Filters (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 sp`, `€5` | Inv: `2 sp`; Value: `>= €2.5` | Constraint: proper fit and breathable filtration mesh. Output: personal filter set that suppresses foul-air nausea and reduces some inhaled toxin intake. | `[air] [filter] [respiratory] [toxin]` |
+| [Smart Rope (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 st`, `€10` | Inv: `2 st`; Value: `>= €5` | Constraint: 20m command-knot line with reliable tensile grade. Output: self-tying utility rope for rapid anchoring, binding, and extraction work. | `[rope] [binding] [climbing] [utility]` |
+| [Grappling Hook (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0082) | `2 st`, `€5` | Inv: `4 st`; Value: `>= €2.5` | Constraint: load-rated hook geometry plus standard rope pairing. Output: complete anchor-and-line ascent kit for wall scaling and vertical breach entry. | `[breach] [climb] [haul] [rope]` |
+| [Multi-Auto-Tool (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `2 st`, `€50` | Inv: `4 st`; Value: `>= €25` | Constraint: calibrated powered 75-tool actuator array. Output: compact all-in-one powered maintenance, trapwork, and lock-entry platform. | `[toolkit] [mechanical] [repair] [infiltration]` |
+| [Disintegrity Spray (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0083) | `1 st`, `€15` | Inv: `2 st`; Value: `>= €7.5` | Constraint: stable reagent canister with controlled spray pattern. Output: selective barrier-break spray for metals, plastics, locks, and light bars. | `[infiltration] [corrosive] [locks] [metal]` |
+| [Enviro Mask (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0083) | `1 st`, `€50` | Inv: `2 st`; Value: `>= €25` | Constraint: airtight seal and spore/gas-rated filter stack. Output: expedition respirator for contaminated atmospheres and spell-tainted air pockets. | `[air] [filter] [hazmat] [toxin]` |
+| [Oculars (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 st`, `€50` | Inv: `2 st`; Value: `>= €25` | Constraint: aligned zoom optics with stable rangefinder power. Output: recon optic suite with zoom, laser ranging, and signal clutter suppression. | `[optics] [recon] [rangefinding] [survey]` |
+| [Omnibattery (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 st`, `€50` | Inv: `2 st`; Value: `>= €25` | Constraint: safe single-cycle universal charge core. Output: universal one-use recharge brick for nearly any powered gear. | `[power] [charge] [energy] [portable]` |
+| [Curative Snake Oil (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 sp`, `€10` | Inv: `2 sp`; Value: `>= €5` | Constraint: stable broad-spectrum anti-venom/anti-parasite blend. Output: broad-spectrum field remedy for bites, bugs, rashes, blisters, and common ailments. | `[medicine] [remedy] [antitoxin] [fieldcare]` |
+| [VC Healing Lotion (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189) | `1 sp`, `€40` | Inv: `2 sp`; Value: `>= €20` | Constraint: sterile carrier with preserved regenerative actives. Output: high-potency restorative salve calibrated for major life recovery and physical stabilization. | `[healing] [recovery] [biological] [consumable]` |
+| [Shield (there is only one) (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0191) | `1 st`, `€5` | Inv: `2 st`; Value: `>= €2.5` | Constraint: reinforced +2 shield frame with sunder-safe break points. Output: standard +2 defensive shield that can be sacrificed to negate a hit. | `[shield] [defense] [cover] [armor]` |
+| [Shield Mk74c (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0075) | `1 st`, `€2` | Inv: `2 st`; Value: `>= €1` | Constraint: wicker/pleather integrity for routine impacts and sunder use. Output: cheap modern +2 shield with dependable sacrificial break behavior. | `[shield] [sunder] [defense] [wicker]` |
+| [Strapguard (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0075) | `1 st`, `€5` | Inv: `2 st`; Value: `>= €2.5` | Constraint: balanced forearm mount that keeps hands free. Output: +1 strapped guard that preserves hand availability for tools or weapons. | `[shield] [hands-free] [defense] [bracing]` |
+| [Field Glove (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0075) | `5 sp`, `€15` | Inv: `10 sp`; Value: `>= €7.5` | Constraint: controlled life-fed surge in living-wire gauntlet. Output: +1 gauntlet shield with emergency +1d6 defensive burst profile. | `[gauntlet] [field] [defense] [reactive]` |
+| [Nomad Robes (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0191) | `1 st`, `€10` | Inv: `2 st`; Value: `>= €5` | Constraint: breathable desert weave with mobile padded protection. Output: lightweight climate armor for hot routes and long marching days. | `[robes] [cloth] [heat] [travel]` |
+| [Ballistic Linen Suit (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0191) | `1 st`, `€100` | Inv: `2 st`; Value: `>= €50` | Constraint: taut ballistic weave and tailored fit. Output: refined light armor with discreet carry utility and reliable shot resistance. | `[linen] [ballistic] [armor] [tailored]` |
+| [Hazviral Suit (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0075) | `1 st`, `€150` | Inv: `2 st`; Value: `>= €75` | Constraint: intact synthskin seals and enviro interfaces. Output: light enviro armor suited for toxins, dehydration pressure, and contaminated zones. | `[hazmat] [enviro] [sealed] [armor]` |
+| [Steppe 'breaker (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `1 st`, `€14` | Inv: `2 st`; Value: `>= €7` | Constraint: anti-radiation fiber weave maintained under abrasion. Output: practical windbreaker with light armor value and energy/radiation mitigation profile. | `[windproof] [radiant] [travel] [armor]` |
+| [Pet Receiver (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `5 sp`, `€15` | Inv: `10 sp`; Value: `>= €7.5` | Constraint: tele-empathic tuning with anti-intrusion shielding. Output: cat-oriented ward cap for command telemetry and improved mind-control resistance. | `[telepathy] [signal] [ward] [catlord]` |
+| [Bow: first among weapons (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `1 st`, `€20` | Inv: `2 st`; Value: `>= €10` | Constraint: balanced limbs/string for consistent two-hand draw. Output: straightforward baseline bow platform for dependable medium-range fire. | `[bow] [ranged] [projectile] [quiet]` |
+| [Steppelander Composite Bow (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `1 st`, `€150` | Inv: `2 st`; Value: `>= €75` | Constraint: laminated composite limbs tuned for long draw and distant accuracy. Output: higher-power bow platform that extends effective range and impact over baseline bows. | `[bow] [ranged] [composite] [long-range]` |
+| [Crossbow (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `1 st`, `€25` | Inv: `2 st`; Value: `>= €12.5` | Constraint: reliable cocking/trigger geometry for reload cadence. Output: compact high-impact ranged frame with strict shot-by-shot reload behavior. | `[crossbow] [ranged] [reload] [projectile]` |
+| [Scavenger Bolter (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `2 st`, `€100` | Inv: `4 st`; Value: `>= €50` | Constraint: stable recycled action, feed path, and two-hand control. Output: rugged salvage-grade longarm with periodic reload cycle and common ammo profile. | `[bolter] [ammo] [ranged] [recycled]` |
+| [Axe (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0193) | `1 st`, `€5` | Inv: `2 st`; Value: `>= €2.5` | Constraint: tempered edge and secure haft socket. Output: multipurpose chopping sidearm that also functions as a daily utility tool. | `[axe] [melee] [chopping] [utility]` |
+| [Spear (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0193) | `1 st`, `€2` | Inv: `2 st`; Value: `>= €1` | Constraint: straight shaft with secure head binding. Output: versatile reach weapon with optional thrown attack profile. | `[spear] [reach] [throwing] [polearm]` |
+| [Dagger (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0193) | `5 sp`, `€2` | Inv: `10 sp`; Value: `>= €1` | Constraint: fine edge and grip balance for close/throw use. Output: concealable utility blade for backup combat, cutting, and quick-throw situations. | `[dagger] [concealed] [blade] [utility]` |
+| [Anarchist Skull (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `1 st`, `€15` | Inv: `2 st`; Value: `>= €7.5` | Constraint: secure fordite mount with durable ward etching. Output: compact +1 ward relic with strong symbolic and morale-signaling weight. | `[skull] [ward] [morale] [symbolic]` |
+| [Dungeoneer’s Kit (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0190) | `1 sk`, `€100` | Inv: `2 sk`; Value: `>= €50` | Constraint: full component completeness across delving functions. Output: integrated delving package for traps, obstacles, vertical movement, and route marking. | `[delving] [toolkit] [rope] [lamp]` |
+| [Mechanic’s Chest (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0190) | `1 sk`, `€200` | Inv: `2 sk`; Value: `>= €100` | Constraint: organized heavy toolset with consumables and spares. Output: full-spectrum repair chest for mechanical, structural, and improvised fabrication work. | `[toolkit] [repair] [machine] [metal]` |
+| [Adventure Kitchen (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0190) | `1 sk`, `€100` | Inv: `2 sk`; Value: `>= €50` | Constraint: portable stove, cookware, and prep kit integrity. Output: portable cooking station for reliable hot meals and improved ration conversion in camp. | `[cooking] [camp] [fire] [toolkit]` |
+
+**Iconic Recipes (restricted/relic tier)**
+
+For iconic outputs, apply one or both uplift knobs (as fiction demands): `x4` inventory bulk consumed and/or an `80%` `Base Cash Value` floor.
+
+| Item | Base Profile | Final Cost (Inv + Base Cash Value) | Risk / Constraint / Output | Core Tags |
+| --- | --- | --- | --- | --- |
+| [Blue God Blaster (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `1 st`, `€3,000` | Inv: `4 st`; Value: `>= €2,400` (`x4 + 80%`) | Risk: purge-level attention from cult panic or misfire. Constraint: forbidden necrotic emitter stack and toxic burst baffling. Output: close-range relic blaster that blankets a tight zone in divine-corrupted particle fire. | `[necrotic] [burst] [unholy] [restricted]` |
+| [Black City Matter Disruptor (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `1 st`, `€13,000` | Inv: `4 st`; Value: `>= €10,400` (`x4 + 80%`) | Risk: strategic surveillance and immediate seizure response. Constraint: keyed Black City calibration lore and hardened disruption coils. Output: long-range relic projector that destabilizes armored targets and entrenched fortifications. | `[void] [disruption] [relic] [long-range]` |
+| [Violent Cat Rifle Mk II (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `2 st`, `€649.95` | Inv: `4 st`; Value: `>= €519.96` (`80% only`) | Risk: licensing disputes and catlord seizure pressure. Constraint: cat-linked parts channels and caseless growth-ammo servicing. Output: prestige battle rifle delivering heavy, repeatable long-range stopping power. | `[catlord] [rifle] [ammo] [restricted]` |
+| [Monkey Wingblade (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `1 st`, `€200` | Inv: `2 st`; Value: `>= €160` (`80% only`) | Risk: contraband penalties and anti-cat retaliation. Constraint: spirit-shipmetal edge tuned for brief lift effects. Output: covert melee relic blade with short anti-gravity mobility spikes. | `[illegal] [blade] [levitation] [catlord]` |
+| [Fairy's Death (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `5 sp`, `€350` | Inv: `10 sp`; Value: `>= €280` (`80% only`) | Risk: political backlash and rapid enforcement crackdowns. Constraint: protected brittle glass edge and covert handling. Output: concealable precision knife specialized for targeted anti-faerie strikes. | `[illegal] [glass] [anti-fae] [concealed]` |
+| [Inquisition Squirtgun (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `5 sp`, `€300` | Inv: `10 sp`; Value: `>= €240` (`80% only`) | Risk: judicial escalation after bio-delivery misuse. Constraint: sterile pressure rig and controlled injector cartridges. Output: short-range injector weapon for toxins, serums, or ritual compounds. | `[injector] [toxin] [inquisition] [restricted]` |
+| [Skinchanger Suit (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0191) | `1 st`, `€2,000` | Inv: `4 st`; Value: `>= €1,000` (`x4 only`) | Risk: symbiote rejection harms wearer or handlers. Constraint: living feedstock with monitored bonding upkeep. Output: adaptive living armor that reshapes around changing threat and movement demands. | `[symbiote] [adaptive] [armor] [living]` |
+| [Full Archaic Armor (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0191) | `3 st`, `€5,000` | Inv: `12 st`; Value: `>= €4,000` (`x4 + 80%`) | Risk: semi-sentient drift and command-failure events. Constraint: binding rites, oath-gates, and strict power discipline. Output: high-end golem armor chassis with force projection and autonomous combat potential. | `[archaic] [golem] [warded] [semi-sentient]` |
+| [Vome Slagger (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `2 st`, `€1,500` | Inv: `4 st`; Value: `>= €1,200` (`80% only`) | Risk: collateral frag kills in confined spaces. Constraint: volatile chamber tolerances and safe reload handling. Output: medium-range frag projector that converts kills into secondary explosive pressure. | `[frag] [volatile] [vome] [ranged]` |
+| [Slagger Implant (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0194) | `2 st`, `€1,500` | Inv: `8 st`; Value: `>= €750` (`x4 only`) | Risk: rejection, infection, or identity destabilization. Constraint: skilled sterile surgery and post-op stabilization. Output: integrated frag emitter that frees hands and accelerates close-quarters lethality. | `[implant] [frag] [surgical] [weapon]` |
+| [Monochrome Mirror (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0079) | `3 st`, `€25,000` | Inv: `12 st`; Value: `>= €20,000` (`x4 + 80%`) | Risk: reflection rebound or hostile effect amplification. Constraint: emplaced anchors with tuned ward matrices. Output: fortress-grade defensive ward against beam, curse, and noetic assault channels. | `[mirror] [ward] [monochrome] [void]` |
+| [Autoportal Conflux (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0073) | `2 st`, `€7,500` | Inv: `8 st`; Value: `>= €6,000` (`x4 + 80%`) | Risk: misjump scatter or delayed rematerialization. Constraint: calibrated portal harmonics and authenticated pilot keying. Output: strike-entry relic that self-delivers operator and payload through unstable transit arcs. | `[portal] [teleport] [oldtech] [relic]` |
+| [White City Matter Creator (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0073) | `2 st`, `€10,000` | Inv: `8 st`; Value: `>= €8,000` (`x4 + 80%`) | Risk: duplication panic, confiscation, and market conflict. Constraint: attuned containment with lawful feedstock controls. Output: ranged matter-duplication engine for rapid logistical or tactical fabrication. | `[matter] [duplication] [oldtech] [relic]` |
+| [Hard Light Targe (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0075) | `1 st`, `€950` | Inv: `2 st`; Value: `>= €760` (`80% only`) | Risk: vorpal edge can maim nearby allies. Constraint: phase-stable force lattice under repeated impact. Output: weaponized +3 shield combining protective walling with limb-severing counterstrikes. | `[force] [shield] [vorpal] [relic]` |
+| [Gate Daemon Actuator (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0073) | `3 st`, `€4,500` | Inv: `12 st`; Value: `>= €3,600` (`x4 + 80%`) | Risk: gravity-shear failure can bisect crews. Constraint: exact spin-up order and ritual containment checks. Output: heavy relic shear weapon with localized gravity reorientation capability. | `[gravity] [gate-tech] [void] [relic]` |
+| [Brazen Minotaur (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0077) | `4 st`, `€5,000` | Inv: `16 st`; Value: `>= €4,000` (`x4 + 80%`) | Risk: bonding backlash and traumatic forced removal. Constraint: prayer cycle, biocost upkeep, and controlled attunement. Output: bonded golem armor that massively increases unarmed lethality and survivability. | `[bonded] [golem] [armor] [beast-tech]` |
+| [Levi Drive (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0187) | `4 sk`, `€7,000` | Inv: `16 sk`; Value: `>= €3,500` (`x4 only`) | Risk: strategic signature attracts interception quickly. Constraint: vehicle integration, load balancing, and disciplined routing. Output: hover/levitation drive module for sustained terrain-independent mobility. | `[levitation] [vehicle] [drive] [oldtech]` |
+| [Gravitic Belt (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0195) | `1 st`, `€10,000` | Inv: `2 st`; Value: `>= €8,000` (`80% only`) | Risk: field instability distorts local space. Constraint: secret-safe calibration and life-cost safety protocol. Output: personal gravity-vector artifact for abrupt movement and force-direction control. | `[gravity] [reality-warp] [artifact] [void]` |
+
+Baseline handling note: when UVG, VLG, and OGA variants differ use a tag to mark each variant.
 
 ## Aftermath
 
@@ -595,4 +734,3 @@ Each **week** the Area triggers a **Depatterning Hazard**. Roll on the Area **Ha
 **Void Scar:** After the **third** Depatterning Hazard in the same Area (total, ever), the Area becomes a **Void Scar**.
 - The Area is now a **dead zone** - landscapes washed of color with ghostly time echos or blinding mist past arm's length. Travel through it costs **+1 Week** (detours, containment, slow routes) unless you have a local **Secret**, and forces a Wear and Tear save each week.
 - Salvage here is **void-cursed**: any Salvage attempt automatically causes [void]-tagged Burdens for all characters. Some still attempt to pull secrets from the Void.
-
