@@ -79,7 +79,7 @@ Rules Cyclopedia source: `_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf`.
   - `Synthetic_Dream_Machine_01_Quickstart.md:223`
   - `Synthetic_Dream_Machine_01_Quickstart.md:448`
 - Canonical treasure consolidation chapter:
-- `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure`
+- `Synthetic_Dream_Machine_05_Gear_Index.md#loot-and-treasure-merged-from-legacy-sdm-06`
 - Salvage -> value -> trade chain:
   - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md:462`
   - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md:495`
@@ -139,7 +139,7 @@ For each `LT0X`:
 - Final cross-link back into `_todo/TODO_BECMI_Conversion.md` procedure map and next-step queue.
 
 ## Current Implementation Snapshot (FTLS 09 + SDM 05)
-- `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure` is the canonical SDM consolidation layer for loot/treasure market behavior.
+- `Synthetic_Dream_Machine_05_Gear_Index.md#loot-and-treasure-merged-from-legacy-sdm-06` is the canonical SDM consolidation layer for loot/treasure market behavior.
 - `FTLS 09` is now a runnable BECMI spiritual-successor overlay for `LT01-LT04`:
   - `LT01` includes a full `d20` loot table, Area-Level value bands, and linked sub-tables (`A-G`) for coin mix, gem/jewelry condition/grade/profile, special treasure, and relic yield.
   - `LT01` keeps `Treasure Table G` as a handoff into Chapter 05 magic-item procedure (`Magic Item Treasure Generation`); no separate `Table H` is maintained in Chapter 09.
@@ -155,7 +155,7 @@ For each `LT0X`:
 - This is now beyond placeholder baseline; next pass is RC/BECMI table/procedure ingestion as optional overlays within one spiritual-successor flow.
 
 ## Proposed Edit Targets (active implementation)
-- `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure` (canonical SDM treasure-generation consolidation chapter)
+- `Synthetic_Dream_Machine_05_Gear_Index.md#loot-and-treasure-merged-from-legacy-sdm-06` (canonical SDM treasure-generation consolidation chapter)
 - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md` (canonical FTLS magic-item generation procedure called by FTLS 09)
 - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md` (primary net-new synthesis target)
 - `Synthetic_Dream_Machine_01_Quickstart.md` (canonical unit/economy panels)
@@ -241,7 +241,7 @@ For each `LT0X`:
 - [x] Add explicit translation guardrails (`OSR intent`, `SDM/Luka expression`) to this TODO and chapter implementation.
 - [x] Confirm single spiritual-successor flow (no `SDM Default` / `RC Strict` mode bifurcation in chapter framing).
 - [ ] Re-add initial `LT01` RC->SDM conversion card (pilot mappings for coins/gems/jewelry/special/magic) in visible chapter text.
-- [x] Create SDM-numbered canonical treasure chapter: `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure`.
+- [x] Create SDM-numbered canonical treasure chapter: `Synthetic_Dream_Machine_05_Gear_Index.md#loot-and-treasure-merged-from-legacy-sdm-06`.
 - [x] Set FTLS 09 as BECMI spiritual-successor overlay grounded on SDM canonical treasure chapter.
 - [x] Integrate results back into `_todo/TODO_BECMI_Conversion.md` once pass is complete.
 - [x] Add Coin Mix `SDM Economy Weirdness` table (`1-3 Expected / 4-5 Surprising / 6 Error`) with concept references.

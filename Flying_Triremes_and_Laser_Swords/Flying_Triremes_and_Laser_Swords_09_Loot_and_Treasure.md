@@ -9,7 +9,7 @@ Treasure moves along roads, ruins, caravans, and rumor.
 A haul adds weight to the pack train, names to the ledger, and heat to the district.  
 Coin, relics, contracts, and strange cargo all pull factions into motion on the next week turn.
 
-This chapter extends [SDM 05 Gear Index (Loot and Treasure)](../Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure) with a fast referee loop:
+This chapter extends [SDM 05 Gear Index (Loot and Treasure)](../Synthetic_Dream_Machine_05_Gear_Index.md#loot-and-treasure-merged-from-legacy-sdm-06) with a fast referee loop:
 
 1. generate lots (random loot / hoard composition)  
 2. apply transport pressure (burden and throughput)  

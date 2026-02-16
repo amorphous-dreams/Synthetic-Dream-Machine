@@ -1,6 +1,6 @@
 ---
 layout: gruv_book_page_adapter
-title: 'Synthetic Dream Machine Quickstart'
+title: 'SDM Quickstart'
 published: true
 ---
 # SDM Quickstart
