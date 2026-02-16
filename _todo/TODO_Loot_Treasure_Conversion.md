@@ -1,5 +1,21 @@
 # TODO: Loot & Treasure Conversion Pass (BECMI/RC -> SDM+)
 
+## Status Snapshot (2026-02-16)
+- Core LT flow is implemented and runnable in `FTLS 09` (`LT01-LT04` baseline complete).
+- Magic-item specific generation was moved out of FTLS 09 and is now authoritative in:
+  - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+- FTLS 09 now keeps magic-item handling as:
+  - `Treasure Table G` handoff to Chapter 05 + brief referee guidance.
+- Current work is optional RC/BECMI overlay expansion and crosswalk polish.
+
+## Active Queue
+1. Add RC Ch.16 treasure letter-table overlays (`lair`/`carried`) as optional LT01/LT02 mode.
+2. Add RC gem/jewelry optional overlay modifiers (value/damage) on top of current default tables.
+3. Add RC magical-item sale optional overlay for LT04 (buyer search cadence + offer bounds).
+4. Expand magical-item buyer-search economics (collector/faction/auction pathing + obligations).
+5. Add explicit FTLS09 crosswalk appendix (`RC family -> SDM tags + default channel`).
+6. Add BECMI set-level optional deltas where they materially differ from RC.
+
 ## Purpose
 - Run a dedicated quality-confidence pass for loot and treasure procedures as a standalone workstream.
 - Convert BECMI/Rules Cyclopedia treasure play into SDM+ canonical procedures across:
@@ -63,7 +79,7 @@ Rules Cyclopedia source: `_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf`.
   - `Synthetic_Dream_Machine_01_Quickstart.md:223`
   - `Synthetic_Dream_Machine_01_Quickstart.md:448`
 - Canonical treasure consolidation chapter:
-  - `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure:1`
+- `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure`
 - Salvage -> value -> trade chain:
   - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md:462`
   - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md:495`
@@ -122,11 +138,12 @@ For each `LT0X`:
   - FTLS chapter implementation (especially chapter 09 replacement)
 - Final cross-link back into `_todo/TODO_BECMI_Conversion.md` procedure map and next-step queue.
 
-## Current Implementation Snapshot (FTLS 09 + SDM 06)
+## Current Implementation Snapshot (FTLS 09 + SDM 05)
 - `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure` is the canonical SDM consolidation layer for loot/treasure market behavior.
 - `FTLS 09` is now a runnable BECMI spiritual-successor overlay for `LT01-LT04`:
   - `LT01` includes a full `d20` loot table, Area-Level value bands, and linked sub-tables (`A-G`) for coin mix, gem/jewelry condition/grade/profile, special treasure, and relic yield.
-  - `LT01` now includes `Treasure Table H` for specific magic-item generation (RC-family cadence, SDM+ source resolution ladder) plus `Pre-Rolled Opposition Use` for encounter-ready seeded items.
+  - `LT01` keeps `Treasure Table G` as a handoff into Chapter 05 magic-item procedure (`Magic Item Treasure Generation`); no separate `Table H` is maintained in Chapter 09.
+  - Magic-item usage pressure guidance in Chapter 09 is now condensed to a `Referee Advice` section rather than a separate pre-rolled opposition subprocedure.
   - `LT01` now includes updated coin-mix economy weirdness (`1-3 Expected / 4-5 Surprising / 6 Error`) with OGA/FTLS concept references.
   - `LT02` includes hoard-band picks, area-tagged hoard profiles, risk riders, and explicit `Step 5` escalation hooks.
   - `LT03` separates on-foot vs pack-animal/vehicle overload handling, with speed guidance and source links.
@@ -139,6 +156,7 @@ For each `LT0X`:
 
 ## Proposed Edit Targets (active implementation)
 - `Synthetic_Dream_Machine_05_Gear_Index.md#sdm-loot-and-treasure` (canonical SDM treasure-generation consolidation chapter)
+- `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md` (canonical FTLS magic-item generation procedure called by FTLS 09)
 - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md` (primary net-new synthesis target)
 - `Synthetic_Dream_Machine_01_Quickstart.md` (canonical unit/economy panels)
 - Optional: small compatibility sidebars in `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md`
@@ -190,6 +208,7 @@ For each `LT0X`:
   - VLG has direct merchant-sale precedent in `Vastlands_Guidebook/Vastlands_Guidebook.md:1604`.
   - FTLS has a full market research + deal + haggling chain in `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md:519`, `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md:531`, `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md:550`.
   - `FTLS 09` presents a two-layer liquidation procedure (SDM06 market resolution + channel profile) with illicit-lot handling in the escalation hook step.
+  - `FTLS 05` now carries a dedicated `Magic-Item Market Procedure` section for magic-item sale framing and buyer-friction loop.
 - **Gaps lowering score:**
   - RC magical/special-item sale cadence (buyer search + offer bounds) is still missing as an explicit optional panel.
   - Multi-day magical-item buyer search economics are not yet expressed as a compact escalation mini-loop (collector/faction/auction paths).
@@ -228,13 +247,14 @@ For each `LT0X`:
 - [x] Add Coin Mix `SDM Economy Weirdness` table (`1-3 Expected / 4-5 Surprising / 6 Error`) with concept references.
 - [x] Rework gem/jewelry handling tables to runnable dice procedures (`d6` condition, `d100` grade + `2d6` size/quality, `d6 x d10` form + price bands).
 - [x] Fix LT04 fence-row cross-link (`Step 6` -> `Step 5`) to remove anchor drift.
-- [x] Add `Treasure Table H` specific magic-item generation packet (RC-family cadence -> SDM+ source resolution) and `Pre-Rolled Opposition Use` pass.
+- [x] Move specific magic-item generation to FTLS Chapter 05 and keep FTLS09 `Treasure Table G` as handoff-only reference.
 - [ ] Convert RC Ch.16 Treasure Type letter tables (`Treasure in Lair` / `Treasure Carried`) into optional LT01/LT02 generation mode.
 - [ ] Convert RC gem/jewelry value + damage handling into optional LT01/LT04 modifiers.
 - [x] Convert RC `Cashing Treasure` procedure (fee bands, town liquidity limit, refusal/fallback buyers) into LT04 overlay panel.
 - [ ] Convert RC magical item sale guidance into explicit LT04 optional procedure (buyer search cadence and offer bounds).
 - [ ] Expand magical-item buyer-search economics beyond current overlay (collector/faction/auction pathing and obligations).
 - [ ] Convert BECMI set-level treasure procedures (Basic/Expert/Companion/Master) into optional overlays where they differ from RC.
+- [x] Add in-chapter FTLS09 treasure-family mapping table (`Family`, `Recommended Tags`, `Usual Handling`).
 - [ ] Add one FTLS09 appendix mapping RC item/treasure families directly to current SDM tag schema and channel defaults.
 
 ## Detailed Source Notes (Reviewed)

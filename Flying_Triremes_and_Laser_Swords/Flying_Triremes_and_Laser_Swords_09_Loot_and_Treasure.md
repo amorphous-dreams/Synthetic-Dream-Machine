@@ -357,7 +357,7 @@ References: [SDM inventory + weekly cadence](../Synthetic_Dream_Machine_01_Quick
 
 Use canonical market research/deal tables from [SDM 05 Gear Index](../Synthetic_Dream_Machine_05_Gear_Index.md#market-research-and-liquidation), then pick a channel profile:
 
-Run liquidation in two layers: first apply one channel profile below to set cadence (`day/watch/week`), value pressure, and visibility risk (`Tick Attention` / Encounter Die complications); then resolve market research/deal outcomes from SDM 06.
+Run liquidation in two layers: first apply one channel profile below to set cadence (`day/watch/week`), value pressure, and visibility risk (`Tick Attention` / Encounter Die complications); then resolve market research/deal outcomes from SDM 05 Gear Index.
 
 | Channel | Best For | Time | Value Multiplier | Default Complication |
 |---|---|---|---:|---|

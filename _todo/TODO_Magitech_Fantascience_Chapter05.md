@@ -1,5 +1,21 @@
 # TODO: Chapter 05 RC Magic Item Procedure Migration
 
+## Status Snapshot (2026-02-16)
+- Pass 1 implementation is complete and active in:
+  - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+  - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md`
+- Single-source-of-truth is now enforced:
+  - Chapter 05 contains full magic-item generation procedure.
+  - Chapter 09 keeps `Treasure Table G` and a handoff reference to Chapter 05.
+- Active workstream is now Pass 2 (`RC -> SDM` terminology alignment/data-mining).
+
+## Active Queue (Pass 2)
+1. Build family-by-family `RC -> SDM` conversion index from current Chapter 05 outputs.
+2. Data-mine SDM sources for close analogues and attach citations.
+3. Assign confidence tags (`high`, `medium`, `low`) per mapping.
+4. Define terminology swap policy (`high`: replace, `medium/low`: keep legacy + alias).
+5. Apply controlled SDM terminology normalization pass in Chapter 05.
+
 ## Purpose
 - Create a first-pass migration spec for RC Treasure magic-item procedures into Chapter 05.
 - Preserve RC procedural cadence and table-facing flow for the migration window.
@@ -9,12 +25,11 @@
 ## Scope (Pass 1)
 - In scope:
   - RC procedure capture from `Chapter 16` pages `228-255` (within the wider chapter span `224-255`).
-  - Chapter 05 planned anchor and section map for full magic-item procedures.
-  - Chapter 09 planned reduction of `Treasure Table H` to a pointer block.
+  - Chapter 05 anchor and section map for full magic-item procedures.
+  - Chapter 09 handoff reduction to Chapter 05 (no separate in-chapter specific-item table).
   - Explicit exclusion of RC class-restriction mechanics.
   - Preserve recognizable RC item names, terms, and etymological language in procedure text.
 - Out of scope:
-  - Full line-by-line implementation inside Chapter 05 and Chapter 09 in this TODO pass.
   - Rebalancing all values, rarity weights, or economy assumptions beyond procedural mapping.
   - Adding optional role gates in Pass 1.
   - SDM-native renaming and terminology replacement of RC item outputs.
@@ -71,23 +86,24 @@
   3. If role limits are needed later, treat them as optional FTLS tags in a later pass, not Pass 1 core.
 
 ## Chapter 05 Target Structure
-- Planned anchor target:
+- Implemented anchor target:
   - `## Magic Item Treasure Generation`
-- Planned section order under that anchor:
+- Implemented section order under that anchor:
   1. generation flow
   2. use/limits
   3. cursed flow
   4. weapon branches
   5. magic-item market procedure
   6. creation
+  7. descriptive extraction (RC style pass)
 - Placement rule:
-  - Keep existing Grimoire material below this new top procedure block.
+  - Existing Grimoire material remains below the magic-item procedure block.
 
 ## Chapter 09 Reduction Plan
 1. Keep `Treasure Table G: Relic/Magic Yield`.
-2. Replace `Treasure Table H` body with a short pointer to Chapter 05 full rules.
-3. Remove duplicated detailed resolver logic from Chapter 09 once Chapter 05 is authoritative.
-- Planned pointer target:
+2. Keep Chapter 09 magic-item handling as a short handoff to Chapter 05 (no separate `Table H` block).
+3. Remove duplicated detailed resolver logic from Chapter 09 now that Chapter 05 is authoritative.
+- Implemented pointer target:
   - `Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md#magic-item-treasure-generation`
 
 ## Pass 2: SDM-ification and Data-Mining
@@ -121,9 +137,9 @@
 1. Scope test:
    - every major RC procedural band from `p228-p255` is represented in the trope list.
 2. Exclusion test:
-   - no class-restriction mechanics appear in planned Pass 1 outputs.
+   - no class-restriction mechanics appear in Pass 1 outputs.
 3. Link test:
-   - planned Chapter 09 pointer anchor resolves to planned Chapter 05 heading.
+   - Chapter 09 handoff anchor resolves to Chapter 05 heading.
 4. Duplication test:
    - single-source-of-truth rule is enforced (`Chapter 05 full`, `Chapter 09 pointer`).
 5. Readability test:
@@ -162,10 +178,13 @@
 - [x] Draft Chapter 05 magic-item market section (buy/sell framing + buyer-search friction only).
 - [x] Draft Chapter 05 creation loop section.
 - [x] Verify no class-restriction mechanics are included in Pass 1 core text.
-- [x] Reduce Chapter 09 Table H to a short pointer block.
+- [x] Remove Chapter 09 `Table H` and move specific-item generation authority to Chapter 05.
 - [x] Verify pointer target resolves to Chapter 05 anchor.
 - [x] Remove duplicated detailed resolver blocks from Chapter 09.
 - [x] Run final consistency pass for single-source-of-truth behavior.
+- [x] Normalize Chapter 05 section flow so core procedure order appears before long descriptive extraction.
+- [x] Normalize heading hierarchy for readability/navigation across Chapter 05.
+- [x] Keep Chapter 09 `Treasure Table G` as handoff-only reference to Chapter 05 (no separate `Table H` section).
 - [ ] Build Pass 2 `RC -> SDM` conversion index by item family.
 - [ ] Data-mine SDM books for close-enough conversion anchors with citations.
 - [ ] Assign confidence tags to each candidate mapping.
