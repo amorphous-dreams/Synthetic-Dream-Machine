@@ -64,6 +64,28 @@ published: true
 * \[line\], \[cone\], \[zone\] — effect geometry.  
 * \[touch\], \[self\], \[adjacent\] — targeting shorthand.
 
+## Recipe / Salvage Operations (FTLS)
+
+* \[survival\] — food, water, and ongoing field survivability.  
+* \[mobility\] — movement, traversal, extraction, or repositioning tools.  
+* \[infiltration\] — stealth entry, bypass, lockwork, and breach setup.  
+* \[recon\] — sensing, scouting, targeting, and intelligence gathering.  
+* \[navigation\] — routefinding, waymarking, and orientation systems.  
+* \[healing\] — restorative, antitoxin, and field medicine outputs.  
+* \[power\] — charging, batteries, and energy supply functions.  
+* \[armor\], \[shield\], \[ward\] — protection layers and defensive systems.  
+* \[melee\], \[ranged\] — primary combat role.  
+* \[toolkit\] — broad utility bundles and specialist kit sets.  
+* \[relic\] — restricted, iconic, or high-attention oldtech outputs.  
+* \[vehicle\] — vehicle-frame or vehicle-mobility components.  
+* \[utility\], \[consumable\], \[enviro\] — general function modifiers.
+
+Tag normalization for recipe tables:
+* Prefer \[healing\] over \[medical\].  
+* Prefer \[signal\] + \[recon\] over \[comms\] / \[surveillance\].  
+* Prefer \[mobility\] over \[movement\] / \[evac\].  
+* Prefer \[climb\] for explicit vertical traversal.
+
 ## Thematic Tags
 
 ### **Elements & Energies**

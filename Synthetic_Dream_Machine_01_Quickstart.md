@@ -664,7 +664,7 @@ Any PC. Bulk sales take a week.
 
 **Carousing (UVG 2e, p. 16)**
 
-Any PC. Spend a week & €1d6*x100, then gain that many XP & roll. Can't pay = [-] on roll. *exploding*
+Any PC. Spend a week & €1d6\*x100, then gain that many XP & roll. Can't pay = [-] on roll. \*exploding
 
 | roll ...and consequences | outcome |
 | --- | --- |
