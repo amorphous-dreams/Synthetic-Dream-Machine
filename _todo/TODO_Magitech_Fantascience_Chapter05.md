@@ -1,192 +1,128 @@
-# TODO: Chapter 05 RC Magic Item Procedure Migration
+# TODO: BECMI -> SDM Magic Item Conversion (Chapter 05+)
 
-## Status Snapshot (2026-02-16)
-- Pass 1 implementation is complete and active in:
+## Intent
+Convert BECMI/RC magic-item procedures into SDM chapter-ready form using the current canonical SDM model:
+- Core mechanics baseline: `Synthetic_Dream_Machine_01_Quickstart.md`
+- Gear/item/vehicle table surface: `Synthetic_Dream_Machine_05_Gear_Index.md` (near-final, catalog-focused)
+- Conversion-governance master: `_todo/TODO_BECMI_Conversion.md`
+- Loot integration acceptance: `_todo/TODO_Loot_Treasure_Conversion.md`
+
+This TODO is the execution tracker for magic-item conversion specifically.
+
+## Canonical Context (Locked)
+
+### Baseline Ownership
+- Quickstart owns core mechanics (inventory, advancement, hallmark lifecycle, caravan/trade core procedures).
+- Gear Index owns gear/item/vehicle catalogs and gear tables.
+- Magic-item generation and adjudication depth belongs in Chapter 05 magitech/fantascience lane.
+
+### Scope Boundary
+- This pass converts BECMI/RC magic-item procedure behavior into SDM structure.
+- This pass does not re-open Quickstart core rules or Gear catalog ownership.
+- Domain/tax systems remain out of scope for this pass.
+
+## Conversion Goals
+1. Preserve recognizable RC/BECMI procedural cadence for item generation and handling.
+2. Express converted procedure steps in SDM-native language and anchor structure.
+3. Keep Chapter 05 as single source of truth for detailed magic-item generation flow.
+4. Keep Loot and Gear chapters pointer-driven for magic-item generation details.
+5. Reduce adjudication ambiguity while keeping optional compatibility overlays explicit.
+
+## Conversion Standards
+- Mechanics-first, terminology-second:
+  - first convert procedure behavior; then normalize naming where appropriate.
+- No core-rule duplication:
+  - do not restate Quickstart core mechanics unless required as a concise pointer.
+- Gear consistency:
+  - when a procedure depends on item classes/tables, route to Gear anchors.
+- Overlay discipline:
+  - each RC/BECMI compatibility behavior must be optional and disableable.
+- Traceability:
+  - each converted subsection should map to source family and canonical SDM destination anchor.
+
+## Source Inputs
+- Primary conversion source:
+  - `_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf` (magic-item procedure bands)
+- SDM context sources:
+  - `Our_Golden_Age/Our_Golden_Age.md`
+  - `Vastlands_Guidebook/Vastlands_Guidebook.md`
+  - `Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`
+- Canonical destination references:
+  - `Synthetic_Dream_Machine_01_Quickstart.md`
+  - `Synthetic_Dream_Machine_05_Gear_Index.md`
+
+## Chapter Targets
+- Primary chapter target:
   - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+- Pointer-only chapter target:
   - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md`
-- Single-source-of-truth is now enforced:
-  - Chapter 05 contains full magic-item generation procedure.
-  - Chapter 09 keeps `Treasure Table G` and a handoff reference to Chapter 05.
-- Active workstream is now Pass 2 (`RC -> SDM` terminology alignment/data-mining).
 
-## Active Queue (Pass 2)
-1. Build family-by-family `RC -> SDM` conversion index from current Chapter 05 outputs.
-2. Data-mine SDM sources for close analogues and attach citations.
-3. Assign confidence tags (`high`, `medium`, `low`) per mapping.
-4. Define terminology swap policy (`high`: replace, `medium/low`: keep legacy + alias).
-5. Apply controlled SDM terminology normalization pass in Chapter 05.
+## Active Work Plan
 
-## Purpose
-- Create a first-pass migration spec for RC Treasure magic-item procedures into Chapter 05.
-- Preserve RC procedural cadence and table-facing flow for the migration window.
-- Make Chapter 05 the single source of truth for full magic-item treasure generation.
-- Keep Chapter 09 as a short pointer for full rules.
+### Phase 1: Procedure Inventory and Crosswalk
+- [ ] Build family-level crosswalk for magic-item procedures:
+  - generation,
+  - identification,
+  - charges/consumption,
+  - curse/complication handling,
+  - creation/fabrication,
+  - market buy/sell handling.
+- [ ] Mark each family as:
+  - `direct map`,
+  - `partial map`,
+  - `custom SDM procedure needed`.
 
-## Scope (Pass 1)
-- In scope:
-  - RC procedure capture from `Chapter 16` pages `228-255` (within the wider chapter span `224-255`).
-  - Chapter 05 anchor and section map for full magic-item procedures.
-  - Chapter 09 handoff reduction to Chapter 05 (no separate in-chapter specific-item table).
-  - Explicit exclusion of RC class-restriction mechanics.
-  - Preserve recognizable RC item names, terms, and etymological language in procedure text.
-- Out of scope:
-  - Rebalancing all values, rarity weights, or economy assumptions beyond procedural mapping.
-  - Adding optional role gates in Pass 1.
-  - SDM-native renaming and terminology replacement of RC item outputs.
+### Phase 2: Chapter 05 Procedure Consolidation
+- [ ] Consolidate all detailed generation/adjudication procedures in Chapter 05.
+- [ ] Ensure chapter internal structure follows runnable loop order:
+  - generate -> identify -> activate/use -> deplete/fail/curse -> repair/create -> market interface.
+- [ ] Remove/replace any duplicate procedure text in other chapters with pointers.
 
-## Source Span and Fidelity
-- Primary source band: `_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf`, `Chapter 16`, pages `228-255`.
-- Fidelity target: RC-close wording and procedure order, translated into FTLS chapter structure.
-- Style guardrail: capture procedure shape and adjudication loops; do not copy protected text verbatim.
-- Source priority for later implementation mapping:
-  1. `Our_Golden_Age/Our_Golden_Age.md`
-  2. `Vastlands_Guidebook/Vastlands_Guidebook.md`
-  3. `Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`
-  4. Other SDM/FTLS references
+### Phase 3: Gear/Quickstart Alignment
+- [ ] Verify no converted magic-item procedure conflicts with Quickstart core mechanics.
+- [ ] Verify table/category references align with current Gear Index headings/anchors.
+- [ ] Keep hallmark progression references aligned with Quickstart canonical upgrade model.
 
-## Procedural Tropes to Capture
-1. Main treasure-to-item flow:
-   - `Treasure result -> Magical Items Main Table -> subtable -> description resolver`.
-2. Temporary vs permanent item handling model.
-3. Identification-through-use/testing risk model.
-4. Use/activation operations:
-   - wear/use requirements
-   - concentration/action timing
-   - charges/consumption behavior
-5. Default adjudication constants:
-   - range/duration fallback behavior
-   - duration tracking responsibilities
-6. Cursed item handling loop:
-   - detection
-   - adjudication
-   - removal hierarchy
-7. DM control valve:
-   - reroll/reject/choose outcomes if a result harms campaign play.
-8. Weapon generation branch model:
-   - simple method vs detailed method
-   - modifier branch handling
-9. Sword/misc weapon secondary procedure tropes:
-   - extra modifiers
-   - special-opponent logic
-   - talent/power branch behavior
-10. Magic-item market procedures:
-    - buy/sell framing
-    - buyer acquisition friction
-11. Item creation procedures:
-    - prerequisites
-    - specialist/material gates
-    - success-roll model
-    - time/cost loop
-12. Artifact handling as a distinct high-tier exception track.
+### Phase 4: Loot Handoff Validation
+- [ ] Ensure Loot/Treasure chapter uses handoff references to Chapter 05 (not duplicate generation logic).
+- [ ] Validate end-to-end flow:
+  - treasure result -> magic-item handoff -> generation/adjudication -> table-facing outcome.
 
-## Explicit Exclusions
-- Locked for Pass 1:
-  1. Do not include RC class-restriction coding in Chapter 05 migration text.
-  2. Remove/avoid usability gating tokens like `(C) (M) (S)` as core mechanics.
-  3. If role limits are needed later, treat them as optional FTLS tags in a later pass, not Pass 1 core.
-
-## Chapter 05 Target Structure
-- Implemented anchor target:
-  - `## Magic Item Treasure Generation`
-- Implemented section order under that anchor:
-  1. generation flow
-  2. use/limits
-  3. cursed flow
-  4. weapon branches
-  5. magic-item market procedure
-  6. creation
-  7. descriptive extraction (RC style pass)
-- Placement rule:
-  - Existing Grimoire material remains below the magic-item procedure block.
-
-## Chapter 09 Reduction Plan
-1. Keep `Treasure Table G: Relic/Magic Yield`.
-2. Keep Chapter 09 magic-item handling as a short handoff to Chapter 05 (no separate `Table H` block).
-3. Remove duplicated detailed resolver logic from Chapter 09 now that Chapter 05 is authoritative.
-- Implemented pointer target:
-  - `Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md#magic-item-treasure-generation`
-
-## Pass 2: SDM-ification and Data-Mining
-- Purpose:
-  - Translate RC-first generated outputs into SDM-native language in a controlled second pass.
-- Inputs:
-  - RC-first Chapter 05 procedure text (Pass 1).
-  - SDM corpus candidates:
-    1. `Our_Golden_Age/Our_Golden_Age.md`
-    2. `Vastlands_Guidebook/Vastlands_Guidebook.md`
-    3. `Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`
-    4. `Synthetic_Dream_Machine_04_Powers_Index.md` and related SDM references
-- Method:
-  1. Build an `RC term -> SDM close-match` index by item family.
-  2. Mark each mapping with confidence (`high`, `medium`, `low`) and source citation.
-  3. Keep the rolled legacy name/term as the primary output during alignment; add SDM aliases only when useful.
-  4. Keep legacy aliases inline until confidence is high enough for primary-term swap.
-  5. Use high-confidence matches as base references for remaining conversions.
-  6. Leave no-close-match entries as RC term + alias note for later design pass.
-- Output:
-  - A conversion appendix or mapping table that can drive Chapter 05 terminology normalization without changing procedure order.
+### Phase 5: Optional Terminology Normalization
+- [ ] Apply controlled RC-term -> SDM-term naming normalization only after mechanics are stable.
+- [ ] Keep legacy aliases where mapping confidence is medium/low.
 
 ## Acceptance Criteria
-1. TODO explicitly covers RC procedural tropes from `p228-p255`.
-2. TODO explicitly states "no class restrictions in Pass 1."
-3. TODO defines Chapter 09 as pointer-only for full magic-item generation.
-4. TODO is decision-complete enough for single-pass implementation by another agent.
-5. TODO explicitly defers SDM-ification to Pass 2 with a data-mining mapping method.
 
-## Test and Validation Checklist
-1. Scope test:
-   - every major RC procedural band from `p228-p255` is represented in the trope list.
-2. Exclusion test:
-   - no class-restriction mechanics appear in Pass 1 outputs.
-3. Link test:
-   - Chapter 09 handoff anchor resolves to Chapter 05 heading.
-4. Duplication test:
-   - single-source-of-truth rule is enforced (`Chapter 05 full`, `Chapter 09 pointer`).
-5. Readability test:
-   - procedure order in Chapter 05 matches table-use flow at the table.
-6. Pass-separation test:
-   - Pass 1 retains RC naming/etymology and Pass 2 owns SDM term replacement.
-7. Mapping test:
-   - Pass 2 produces cited `RC -> SDM` close-match mappings with confidence tags.
+### A. Canonical Ownership
+- Chapter 05 contains complete magic-item generation/adjudication procedure.
+- Gear/Quickstart do not contain conflicting duplicate magic-item procedures.
 
-## Risks and Mitigations
-- Risk: anchor drift between plan and implementation.
-  - Mitigation: use exact heading text for Chapter 05 anchor and verify slug after edit.
-- Risk: procedural drift from RC sequence during rewrite.
-  - Mitigation: keep subsection order fixed to RC procedure cadence in this TODO.
-- Risk: duplicate logic remains in Chapter 09 after migration.
-  - Mitigation: enforce explicit de-duplication checkpoint in implementation checklist.
-- Risk: role restrictions creep back in through copied table notation.
-  - Mitigation: Pass 1 exclusion gate blocks `(C) (M) (S)` style restrictions.
+### B. Runnable Procedure Quality
+- Referee can run item generation and use handling from Chapter 05 without missing steps.
+- Procedure order is explicit and consistent.
 
-## Work Checklist
-- [x] Create Chapter 05 top anchor: `Magic Item Treasure Generation`.
-- [x] Draft Chapter 05 generation-flow section from RC procedure tropes.
-- [x] Draft Chapter 05 use/limits section.
-- [x] Draft Chapter 05 cursed-item loop section.
-- [x] Draft Chapter 05 weapon branch section.
-- [x] Add RC family-level resolver tropes block (Potions through Miscellaneous Weapons) under generation flow.
-- [x] Add condensed resolver microtables for Potions and Scrolls (RC naming retained, no class restrictions).
-- [x] Add condensed resolver microtables for Wands/Staves/Rods, Rings, and Miscellaneous Items.
-- [x] Add condensed resolver microprocedures for Armor/Shields, Missile Weapons/Missiles, Swords, and Miscellaneous Weapons.
-- [x] Add weapon secondary resolver tables (additional modifiers, opponent categories, talents, intelligent sword track).
-- [x] Add condensed RC-cadence description procedures (Potions, Scrolls, Wands/Staves/Rods, Rings/Misc handling notes).
-- [x] Apply source-alignment correction pass: charge defaults, spell-scroll count (`d6` style), ring/rod terms, armor power procedure, weapon secondary tables, and sip-identification skill gate.
-- [x] Add nostalgia-pass classic descriptive name lists for core item families (Potions, Scrolls, Wands/Staves/Rods, Rings, Miscellaneous Items).
-- [x] Expand nostalgia-pass descriptive lists for secondary classic sets (Armor/Shield special powers, Missile Talents, Sword intelligence/powers, Opponents, Additional-Modifier Talents).
-- [x] Refocus descriptive extraction into RC-style named sections (`Potion Descriptions`, `Scroll Descriptions`, `Wand/Staff/Rod Descriptions`, and related classic heading blocks).
-- [x] Draft Chapter 05 magic-item market section (buy/sell framing + buyer-search friction only).
-- [x] Draft Chapter 05 creation loop section.
-- [x] Verify no class-restriction mechanics are included in Pass 1 core text.
-- [x] Remove Chapter 09 `Table H` and move specific-item generation authority to Chapter 05.
-- [x] Verify pointer target resolves to Chapter 05 anchor.
-- [x] Remove duplicated detailed resolver blocks from Chapter 09.
-- [x] Run final consistency pass for single-source-of-truth behavior.
-- [x] Normalize Chapter 05 section flow so core procedure order appears before long descriptive extraction.
-- [x] Normalize heading hierarchy for readability/navigation across Chapter 05.
-- [x] Keep Chapter 09 `Treasure Table G` as handoff-only reference to Chapter 05 (no separate `Table H` section).
-- [ ] Build Pass 2 `RC -> SDM` conversion index by item family.
-- [ ] Data-mine SDM books for close-enough conversion anchors with citations.
-- [ ] Assign confidence tags to each candidate mapping.
-- [ ] Draft terminology-swap rules (`high` confidence swap, `medium/low` alias retention).
-- [ ] Apply SDM terminology normalization in Chapter 05 as a separate controlled pass.
+### C. Cross-Chapter Integrity
+- Gear and Loot references to Chapter 05 anchors resolve.
+- No stale links to retired headings or superseded sections.
+
+### D. Compatibility Overlay Safety
+- RC/BECMI-specific behaviors are clearly marked optional.
+- Baseline SDM behavior remains coherent with overlays disabled.
+
+## Validation Checklist
+- [ ] Crosswalk completeness reviewed for all targeted magic-item families.
+- [ ] Chapter 05 flow run-through completed for at least 3 item families.
+- [ ] Pointer integrity verified from Gear and Loot docs.
+- [ ] Anchor/link check passes across touched markdown files.
+- [ ] No baseline core-rule drift introduced in Quickstart.
+
+## Dependencies and Coordination
+- Depends on boundary lock in `_todo/TODO_SDM_Gear_Index_Master.md`.
+- Must stay compatible with acceptance model in `_todo/TODO_Loot_Treasure_Conversion.md`.
+- Must follow overlay standards in `_todo/TODO_BECMI_Conversion.md`.
+
+## Out of Scope
+- Full spells -> powers conversion (tracked in `_todo/TODO_BECMI_Conversion.md`, future pass F2).
+- Broad economy rebalance beyond magic-item procedure requirements.
+- Domain play integration.

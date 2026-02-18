@@ -9,7 +9,7 @@ Treasure moves along roads, ruins, caravans, and rumor.
 A haul adds weight to the pack train, names to the ledger, and heat to the district.  
 Coin, relics, contracts, and strange cargo all pull factions into motion on the next week turn.
 
-This chapter extends [SDM 05 Gear Index (Loot and Treasure)](../Synthetic_Dream_Machine_05_Gear_Index.md#loot-and-treasure-merged-from-legacy-sdm-06) with a fast referee loop:
+This chapter extends [SDM 05 Gear Index (Loot and Treasure)](../Synthetic_Dream_Machine_05_Gear_Index.md#canon-boundary-treasure-and-liquidation) with a fast referee loop:
 
 1. generate lots (random loot / hoard composition)  
 2. apply transport pressure (burden and throughput)  
@@ -355,9 +355,8 @@ References: [SDM inventory + weekly cadence](../Synthetic_Dream_Machine_01_Quick
 
 ## Liquidation and Fencing Treasure
 
-Use canonical market research/deal tables from [SDM 05 Gear Index](../Synthetic_Dream_Machine_05_Gear_Index.md#market-research-and-liquidation), then pick a channel profile:
 
-Run liquidation in two layers: first apply one channel profile below to set cadence (`day/watch/week`), value pressure, and visibility risk (`Tick Attention` / Encounter Die complications); then resolve market research/deal outcomes from SDM 05 Gear Index.
+Run liquidation in two layers: first apply one channel profile below to set cadence (`day/watch/week`), value pressure, and visibility risk (`Tick Attention` / Encounter Die complications); then resolve market research/deals with tables from [SDM Quickstart Company/Caravan Play](../Synthetic_Dream_Machine_01_Quickstart.md#market-research).
 
 | Channel | Best For | Time | Value Multiplier | Default Complication |
 |---|---|---|---:|---|

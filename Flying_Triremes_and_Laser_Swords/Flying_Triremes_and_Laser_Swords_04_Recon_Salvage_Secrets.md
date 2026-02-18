@@ -583,7 +583,7 @@ After cash value is set, parties may settle in goods, favors, debt relief, or tr
 
 When this chapter yields treasure (for example, from a `20!` Collection result), process it through Chapter 09 using these defaults:
 
-1. Treat `Synthetic_Dream_Machine_05_Gear_Index.md#loot-and-treasure-merged-from-legacy-sdm-06` as canonical treasure baseline; Chapter 09 is the BECMI spiritual-successor overlay.
+1. Treat `Synthetic_Dream_Machine_05_Gear_Index.md#canon-boundary-treasure-and-liquidation` as canonical treasure baseline; Chapter 09 is the BECMI spiritual-successor overlay.
 2. Use the same Area Level value band (`Low/Medium/High/Epic`) for both salvage and loot.
 3. Keep tag semantics consistent across chapters (`[illegal]`, `[hot]`, `[wanted]`, `[relic]`, `[intel]`).
 4. For Tier III+ hoards and major hauls, apply deterministic escalation hooks from Chapter 09 before normal trade resolution.
