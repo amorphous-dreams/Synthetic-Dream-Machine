@@ -3720,7 +3720,7 @@ Few modern humans know how to create powered vehicles and neither angels nor gol
 | 2 | bonework | foliage | anti-crash foam nozzles |
 | 3 | chitinweave | fur | gyroscopic auto-leveler |  |
 | 4 | dead golem | gelatin | hydrophobic seat covers |
-| 5 | extraherbal glass | integrated versificator |  |
+| 5 | extraherbal | glass | integrated versificator |
 | 6 | lime nomad | ivory | laminated prayer spindles |
 | 7 | long ago | jade | nine-axis suspension |
 | 8 | right roader | metal | retractable flag pole |
