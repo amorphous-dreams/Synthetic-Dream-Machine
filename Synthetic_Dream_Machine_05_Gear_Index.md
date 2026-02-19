@@ -4089,10 +4089,14 @@ The licensed reintegrator:
 > | 6 | Detritolite Delicacies | Preserved oldtech edibles harvested from the scrapstone cannery deposits. May cause toxicosis if prepared by an unskilled chef. Said to give unspecified powers and status. | €350 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:service-food]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: BLUE LAND > AZURE COMMERCIAL REINTEGRATION PARKS > Fully Vetted Nontoxic Comestables
 > - see-also:
 
   <div class="gear-return">
@@ -4119,10 +4123,14 @@ meta:
 > | Local (Off-channel) | Local porters are unreliable, as likely to be anthropophages as not. Automules are a better buy. Peacemaker defense golems (L4, bonded) make expensive porters, but worth it. | strange [€15–100] |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: BLUE LAND > Travel
 > - see-also:
 
   <div class="gear-return">
@@ -4150,10 +4158,14 @@ meta:
 > | 6 | Blue God Blaster | Unholy two-handed burst weapon cast from the metal sinews of the Dead God itself. Close, 4d8 necrotic, re 7, 1 st. | €1k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:weapon]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: BLUE LAND > AZURE COMMERCIAL REINTEGRATION PARKS > Weapons Against the Blue God
 > - see-also:
 
   <div class="gear-return">
@@ -4181,10 +4193,14 @@ meta:
 > |  | Archaic | Armor +7, heavy, powered & environmental, cumbersome, 3 st. |  |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:armor]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: BLUE LAND > AZURE COMMERCIAL REINTEGRATION PARKS > Reintegrated Blue Land Clothing
 > - see-also:
 
   <div class="gear-return">
@@ -4209,10 +4225,14 @@ meta:
 > | 4 | Flapper Mantoid | Sentient servantebeast with aerolithic bones. Not strictly legal for private use, but if you can afford a flapper, you can afford the fines. L3, carry 2, flying. | €3.5k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: BLUE LAND > AZURE COMMERCIAL REINTEGRATION PARKS > Blue Land Mobility
 > - see-also:
 
   <div class="gear-return">
@@ -4245,10 +4265,14 @@ meta:
 > | 12 | Singing Dreamskull | Definitely not from one of the Dead God's many drones. Dream into it to draw strength when accessing the noösphere or interacting with daemons. +1 endurance, +2 ward. 1 st. | €1.2k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:trade-goods]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: BLUE LAND > AZURE COMMERCIAL REINTEGRATION PARKS > Sundry Rustset Souvenirs
 > - see-also:
 
   <div class="gear-return">
@@ -4286,10 +4310,14 @@ Local humans and common travelers must use license bells (lbs), a category of lo
 > | Local (Peripheric) | Biomechanical vechs carry goods and people among the plantation towns and restricted facilities, and even out beyond the Rim, where locals whisper of wild vomes. | caravanite [€20] |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: PURPLE LAND > Travel
 > - see-also:
 
   <div class="gear-return">
@@ -4349,10 +4377,14 @@ The master of commerce is a:
 > | 6 | Steppe Burgers | Saddle meat, war bread, slices of bug-repellent onion. So edgy! | 1.5₧ (€10) |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:service-food]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: PURPLE LAND > PURR-PURR ENTREPÔTS > Human Approved Comestibles and Kibbles
 > - see-also:
 
   <div class="gear-return">
@@ -4380,10 +4412,14 @@ meta:
 > | 6 | Violent Cat Rifle Mk II | Sturdy caseless rifle that slowly grows its own bullets, like steel coffee beans. It doesn't look like other oldtech, but that's probably fine. Long, 2d10, re 4, 2 st. | 77.8₧ (€649.95) |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:weapon]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: PURPLE LAND > PURR-PURR ENTREPÔTS > Cat Approved and Disdained Weapons
 > - see-also:
 
   <div class="gear-return">
@@ -4410,10 +4446,14 @@ meta:
 > | 6 | Manambulator | A synthetic human body of fungal sinews and chitin-plate skin. For operation by one cat-sized person. Golem 10 life, +1 strength, Armor +4, powered 5, 7 st. | 225₧ (€NA) |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:armor]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: PURPLE LAND > PURR-PURR ENTREPÔTS > Purrfectly Cute Clothing
 > - see-also:
 
   <div class="gear-return">
@@ -4438,10 +4478,14 @@ meta:
 > | 4 | Amethyst Palanquin | Regal, carved from a single giant amethyst. Powered by the meditative purr of its passengers. L3, carry 2, slow, hovering, focus-motion. | 99.5₧ (€1.8k) |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: PURPLE LAND > PURR-PURR ENTREPÔTS > Violet Transport Systems
 > - see-also:
 
   <div class="gear-return">
@@ -4472,10 +4516,14 @@ meta:
 > | 10 | Gray Sponge | An alien macrobacterial sponge that filters one substance out of a body. Could be a toxin. Could be all the lymph. 1 st. | 39.95₧ (€224.95) |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:trade-goods]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: PURPLE LAND > PURR-PURR ENTREPÔTS > Friendly Master Memorabilia
 > - see-also:
 
   <div class="gear-return">
@@ -4558,10 +4606,14 @@ Today's trade-host is a:
 > | Peripheral (Rustcountry) | Ruster guides with automules and thinbreathers are recommended. Solitary travel can be dangerous, as the various iron human and falscher clans levy strange tolls and tarrifs. | exorbitant [€45] |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: RED LAND > Travel
 > - see-also:
 
   <div class="gear-return">
@@ -4588,10 +4640,14 @@ meta:
 > | 6 | Bloodwine | Orange-red regenerative vintage harvested under the Green Sun. A cup regrows a finger, the whole bottle an arm. Bottle contains 3.5 cups. | €125 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:service-food]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: RED LAND > FREEBLOOD VENDINGS > Fruits of Blood and Soil
 > - see-also:
 
   <div class="gear-return">
@@ -4618,10 +4674,14 @@ meta:
 > | 6 | Truebrass Ring | Powerfully antibiotic. Protects from all skin infections and most contact poisons. 1 sp. | €240 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:armor]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: RED LAND > FREEBLOOD VENDINGS > Red Land Dress and Wear
 > - see-also:
 
   <div class="gear-return">
@@ -4648,10 +4708,14 @@ meta:
 > | 6 | Long Ago Howler | Sonic blaster provokes dread, fear, and awe. Short, 2d8, re 10, small area, 1 st. | €1.5k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:weapon]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: RED LAND > FREEBLOOD VENDINGS > Human Liberty Insurance Gear
 > - see-also:
 
   <div class="gear-return">
@@ -4676,10 +4740,14 @@ meta:
 > | 4 | Dust Rover | Sungwood, sinew, chitin, and fungal filters. No metal parts! L3, carry 4, fast. | €1.8k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: RED LAND > FREEBLOOD VENDINGS > Unrusting Travel Options
 > - see-also:
 
   <div class="gear-return">
@@ -4712,10 +4780,14 @@ meta:
 > | 12 | Friendship Dome | Biomechanical autolobotomizer that makes a living or livingish creature smaller than a quadrodont (a type of pachyderm) pliable and easy to control. Single use, 4 st. | €750 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:trade-goods]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: RED LAND > FREEBLOOD VENDINGS > Sundry Russet Souvenirs
 > - see-also:
 
   <div class="gear-return">
@@ -4807,10 +4879,14 @@ meta:
 > FTLS source context: [Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources)
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:economy-synthesis]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: RED LAND > PACIFIC PHYLAKE TOWNS
 > - see-also:
 
   <div class="gear-return">
@@ -4878,10 +4954,14 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 > | Local (404) | Council-approved transport is not available for the unlost lands or the security territories. Duckie guides and grey-market vehicles such as off-book ancestor chariots or half-legal bycicles are unusually expensive. Be warned, nutripaste supplies are not guaranteed. | cash up front [€20+] |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: ORANGE LAND > Travel
 > - see-also:
 
   <div class="gear-return">
@@ -4908,10 +4988,14 @@ meta:
 > | 6 | Manna | Pellets of flavor secreted by servile insect feeding on holy cabbages. Food of the Cads. | €10 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:service-food]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: ORANGE LAND > AMBER STANDARD HEDONIC STATION > Fresh Food Only
 > - see-also:
 
   <div class="gear-return">
@@ -4938,10 +5022,14 @@ meta:
 > | 6 | Cad Robes | Bone scutes interwoven with living cotton ropes and padded silk pockets. Hidden inventory (+4 sp). Armor +3, ward +3, cool, 1 st. | €750 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:armor]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: ORANGE LAND > AMBER STANDARD HEDONIC STATION > Traditional Orange Land Attire
 > - see-also:
 
   <div class="gear-return">
@@ -4968,10 +5056,14 @@ meta:
 > | 6 | Ziggurat Rod | Must be charged in the local Cad House. Bolts of electromagical plasma fry flesh and circuit alike. May draw phylakes. Long range, restricted, 3d6 damage, reload 4, 2 st. | €750 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:weapon]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: ORANGE LAND > AMBER STANDARD HEDONIC STATION > Order Maintenance Equipment
 > - see-also:
 
   <div class="gear-return">
@@ -4996,10 +5088,14 @@ meta:
 > | 4 | Envoy Pod | Crystal pod riding the ancestral lines between Cad ziggurats. Includes amusingly neutered autopilot. L4, carry 1, fast, levitating, well-armored, immune to electromagic. | €3.2k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: ORANGE LAND > AMBER STANDARD HEDONIC STATION > Personal Travel Expression (Orange Land)
 > - see-also:
 
   <div class="gear-return">
@@ -5030,10 +5126,14 @@ meta:
 > | 10 | Precad Pamphlets | Illegal party materials that openly discuss the 404forgotten _süjgjes_ (don't speak settlements). Includes rumors of dark devices. May unlock sealed ancestral vaults. 5 sp. | €150 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:trade-goods]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: ORANGE LAND > AMBER STANDARD HEDONIC STATION > Approved Orange Land Comfort Purchases
 > - see-also:
 
   <div class="gear-return">
@@ -5098,10 +5198,14 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 > | In Town | Adjacent neighborhood: 15–60 minutes. Across the whole town: 30–120 minutes. Sidewalks, crawlways, stairwells, cable cars, and living rope bridges dominate. Roads, rails, and tubes are a symbiote monopoly reserved for local producers, notables, and allies. | free-ish [€0.01] |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: YELLOW LAND > Travel
 > - see-also:
 
   <div class="gear-return">
@@ -5128,10 +5232,14 @@ meta:
 > | 6 | Goldrhyme Pasta | Thick saffron and algae carbohydrate slabs. Hallucinogenic in large doses. | €15 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:service-food]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: YELLOW LAND > HELIODOR MERCANTILE STANDARD GOODS > Consume To Create
 > - see-also:
 
   <div class="gear-return">
@@ -5158,10 +5266,14 @@ meta:
 > | 6 | Phylake Feathers | The super-real frock lets you spend 1d4 life to avoid one hit per round. Ar +2, wrd +4, 1 st. | €1.2k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:armor]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: YELLOW LAND > HELIODOR MERCANTILE STANDARD GOODS > Fashion For You
 > - see-also:
 
   <div class="gear-return">
@@ -5188,10 +5300,14 @@ meta:
 > | 6 | Scalar Axe | Adamant-cut from a sand-dragon scale. Ignores 1 + str points of armor. Close, 2d6, 2 st. | €750 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:weapon]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: YELLOW LAND > HELIODOR MERCANTILE STANDARD GOODS > Self Defense Systems
 > - see-also:
 
   <div class="gear-return">
@@ -5216,10 +5332,14 @@ meta:
 > | 4 | Skitterloose | Megamorphic symbiote grown from géant tissue using reasonably cheap arthropod source codes. L3, carry 2, all-terrain, self-repairing, regenerating. | €1.8k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: YELLOW LAND > HELIODOR MERCANTILE STANDARD GOODS > Personal Travel Expression (Heliodor)
 > - see-also:
 
   <div class="gear-return">
@@ -5250,10 +5370,14 @@ meta:
 > | 10 | Voting Parasite | Looks like a livinglass seadragon-salamander hybrid. Attach to your spine to gain +1 ward and voting rights in your local Decapolitan city-state. Rebinding to a new city takes €1.5k, 1 week and 2d6 life. 5 sp (none if attached). | €1.5k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:trade-goods]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: YELLOW LAND > HELIODOR MERCANTILE STANDARD GOODS > Saffron Souvenirs Inc. Sym.
 > - see-also:
 
   <div class="gear-return">
@@ -5306,10 +5430,14 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 > | Local (Urban) | Adjacent district: 1–2 hours. Across the whole urban portalspace: 2d6* days. Within the major conurban zone old pod tubes and living sidewalks still offer rapid transit among the districts, even those infested by gangs, parasites, errors, and other unsavories. | statusless [€0.01] |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: GREEN LAND > Travel
 > - see-also:
 
   <div class="gear-return">
@@ -5336,10 +5464,14 @@ meta:
 > | 6 | Neolapine | Recently restored based on archival footage! Three flavors of jumping rodent! | €20 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:service-food]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: GREEN LAND > JOY GOOD DISPENSARY > Eat, Drink, Suck Air
 > - see-also:
 
   <div class="gear-return">
@@ -5366,10 +5498,14 @@ meta:
 > | 6 | Woody Me™ | A bespoke lamellar wooden golem slaved to hide your vulnerable human flesh. Unlikely to acquire free will with you inside, haha. Golem 15 life, Armor +3, strength +2, 3 st. | €500 |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:armor]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: GREEN LAND > JOY GOOD DISPENSARY > Appoint Thine Corps
 > - see-also:
 
   <div class="gear-return">
@@ -5396,10 +5532,14 @@ meta:
 > | 6 | Chain Axe | Sacred weapon of the Gardener Division. Deployed against E.L.F., rogue ancestors, wood golems, and escaped carnibotanics. Two-handed, 2d8, powered, 2 st. | €1.8k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:weapon]
+>   [chapter:gear-services]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: GREEN LAND > JOY GOOD DISPENSARY > Hunt Thine Nemesis
 > - see-also:
 
   <div class="gear-return">
@@ -5424,10 +5564,14 @@ meta:
 > | 4 | Corpsedrinker | Mindless, proto-archaic autogolem. Luxurious, sized for builders, feeds on the refined biomatter. Wheels big enough to crush bones. L5, carry 8, armored, rumbling, roaring. | €8k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:vehicle]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: GREEN LAND > JOY GOOD DISPENSARY > Enjoy Thine Ride
 > - see-also:
 
   <div class="gear-return">
@@ -5458,10 +5602,14 @@ meta:
 > | 10 | Legacy Pass | Proof that you are one of the original baseline humans born Long Long Ago. 1 sp. | €29k |
 
 tags:
->   [ ]
+>   [gear]
+>   [source:oga]
+>   [type:trade-goods]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
+>   - book: Our_Golden_Age; section: GREEN LAND > JOY GOOD DISPENSARY > Curios Et Knick Knacks
 > - see-also:
 
   <div class="gear-return">
