@@ -59,9 +59,6 @@ published: true
     - [**Watercraft, Aircraft, and This Craft** {#sdm-gear-table-watercraft-aircraft-and-this-craft}](#watercraft-aircraft-and-this-craft-sdm-gear-table-watercraft-aircraft-and-this-craft)
     - [**Vehicle Mods and Upgrades** {#sdm-gear-table-vehicle-mods-and-upgrades}](#vehicle-mods-and-upgrades-sdm-gear-table-vehicle-mods-and-upgrades)
   - [ULTRAVIOLET GRASSLANDS](#ultraviolet-grasslands)
-    - [**Fuel, Power, and Supplies** {#sdm-gear-table-fuel-power-and-supplies}](#fuel-power-and-supplies-sdm-gear-table-fuel-power-and-supplies)
-    - [**Thirty Ultraviolet Trade Goods (d30)** {#sdm-gear-table-thirty-ultraviolet-trade-goods-d30}](#thirty-ultraviolet-trade-goods-d30-sdm-gear-table-thirty-ultraviolet-trade-goods-d30)
-    - [**100 Strange Items** {#sdm-gear-table-100-strange-items}](#100-strange-items-sdm-gear-table-100-strange-items)
     - [**UVG Vehicles and Mounts** {#sdm-gear-table-uvg-vehicles-and-mounts}](#uvg-vehicles-and-mounts-sdm-gear-table-uvg-vehicles-and-mounts)
       - [**Humanoids** {#sdm-gear-table-humanoids}](#humanoids-sdm-gear-table-humanoids)
       - [**Undead** {#sdm-gear-table-undead}](#undead-sdm-gear-table-undead)
@@ -87,46 +84,53 @@ published: true
     - [**Medico-Veterinary Services** {#sdm-gear-table-medico-veterinary-services}](#medico-veterinary-services-sdm-gear-table-medico-veterinary-services)
     - [**Mechanitechnical Services** {#sdm-gear-table-mechanitechnical-services}](#mechanitechnical-services-sdm-gear-table-mechanitechnical-services)
     - [**Rest \& Relaxation: "Carousing" Spots with Special Features** {#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features}](#rest--relaxation-carousing-spots-with-special-features-sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features)
+    - [**Fuel, Power, and Supplies** {#sdm-gear-table-fuel-power-and-supplies}](#fuel-power-and-supplies-sdm-gear-table-fuel-power-and-supplies)
+    - [**Thirty Ultraviolet Trade Goods (d30)** {#sdm-gear-table-thirty-ultraviolet-trade-goods-d30}](#thirty-ultraviolet-trade-goods-d30-sdm-gear-table-thirty-ultraviolet-trade-goods-d30)
+    - [**UVG Loot, Treasure, and Discovery Economics (Synthesis)** {#sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis}](#uvg-loot-treasure-and-discovery-economics-synthesis-sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis)
+    - [**100 Strange Items** {#sdm-gear-table-100-strange-items}](#100-strange-items-sdm-gear-table-100-strange-items)
   - [OUR GOLDEN AGE](#our-golden-age)
     - [BLUE LAND](#blue-land)
-    - [**Weapons Against the Blue God** {#sdm-gear-table-weapons-against-the-blue-god}](#weapons-against-the-blue-god-sdm-gear-table-weapons-against-the-blue-god)
-    - [**Reintegrated Blue Land Clothing** {#sdm-gear-table-reintegrated-blue-land-clothing}](#reintegrated-blue-land-clothing-sdm-gear-table-reintegrated-blue-land-clothing)
-    - [**Blue Land Mobility** {#sdm-gear-table-blue-land-mobility}](#blue-land-mobility-sdm-gear-table-blue-land-mobility)
-    - [**Sundry Rustset Souvenirs** {#sdm-gear-table-sundry-rustset-souvenirs}](#sundry-rustset-souvenirs-sdm-gear-table-sundry-rustset-souvenirs)
+      - [**Weapons Against the Blue God** {#sdm-gear-table-weapons-against-the-blue-god}](#weapons-against-the-blue-god-sdm-gear-table-weapons-against-the-blue-god)
+      - [**Reintegrated Blue Land Clothing** {#sdm-gear-table-reintegrated-blue-land-clothing}](#reintegrated-blue-land-clothing-sdm-gear-table-reintegrated-blue-land-clothing)
+      - [**Blue Land Mobility** {#sdm-gear-table-blue-land-mobility}](#blue-land-mobility-sdm-gear-table-blue-land-mobility)
+      - [**Sundry Rustset Souvenirs** {#sdm-gear-table-sundry-rustset-souvenirs}](#sundry-rustset-souvenirs-sdm-gear-table-sundry-rustset-souvenirs)
     - [PURPLE LAND](#purple-land)
-    - [**Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}](#cat-approved-and-disdained-weapons-sdm-gear-table-cat-approved-and-disdained-weapons)
-    - [**Purrfectly Cute Clothing** {#sdm-gear-table-purrfectly-cute-clothing}](#purrfectly-cute-clothing-sdm-gear-table-purrfectly-cute-clothing)
-    - [**Violet Transport Systems** {#sdm-gear-table-violet-transport-systems}](#violet-transport-systems-sdm-gear-table-violet-transport-systems)
-    - [**Friendly Master Memorabilia** {#sdm-gear-table-friendly-master-memorabilia}](#friendly-master-memorabilia-sdm-gear-table-friendly-master-memorabilia)
+      - [**Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}](#cat-approved-and-disdained-weapons-sdm-gear-table-cat-approved-and-disdained-weapons)
+      - [**Purrfectly Cute Clothing** {#sdm-gear-table-purrfectly-cute-clothing}](#purrfectly-cute-clothing-sdm-gear-table-purrfectly-cute-clothing)
+      - [**Violet Transport Systems** {#sdm-gear-table-violet-transport-systems}](#violet-transport-systems-sdm-gear-table-violet-transport-systems)
+      - [**Friendly Master Memorabilia** {#sdm-gear-table-friendly-master-memorabilia}](#friendly-master-memorabilia-sdm-gear-table-friendly-master-memorabilia)
     - [RED LAND](#red-land)
-    - [**Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}](#pacific-phylake-towns-sdm-gear-table-pacific-phylake-towns)
-    - [**Fruits of Blood and Soil** {#sdm-gear-table-fruits-of-blood-and-soil}](#fruits-of-blood-and-soil-sdm-gear-table-fruits-of-blood-and-soil)
-    - [**Red Land Dress and Wear** {#sdm-gear-table-red-land-dress-and-wear}](#red-land-dress-and-wear-sdm-gear-table-red-land-dress-and-wear)
-    - [**Human Liberty Insurance Gear** {#sdm-gear-table-human-liberty-insurance-gear}](#human-liberty-insurance-gear-sdm-gear-table-human-liberty-insurance-gear)
-    - [**Unrusting Travel Options** {#sdm-gear-table-unrusting-travel-options}](#unrusting-travel-options-sdm-gear-table-unrusting-travel-options)
-    - [**Sundry Russet Souvenirs** {#sdm-gear-table-sundry-russet-souvenirs}](#sundry-russet-souvenirs-sdm-gear-table-sundry-russet-souvenirs)
+      - [**Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}](#pacific-phylake-towns-sdm-gear-table-pacific-phylake-towns)
+      - [**Fruits of Blood and Soil** {#sdm-gear-table-fruits-of-blood-and-soil}](#fruits-of-blood-and-soil-sdm-gear-table-fruits-of-blood-and-soil)
+      - [**Red Land Dress and Wear** {#sdm-gear-table-red-land-dress-and-wear}](#red-land-dress-and-wear-sdm-gear-table-red-land-dress-and-wear)
+      - [**Human Liberty Insurance Gear** {#sdm-gear-table-human-liberty-insurance-gear}](#human-liberty-insurance-gear-sdm-gear-table-human-liberty-insurance-gear)
+      - [**Unrusting Travel Options** {#sdm-gear-table-unrusting-travel-options}](#unrusting-travel-options-sdm-gear-table-unrusting-travel-options)
+      - [**Sundry Russet Souvenirs** {#sdm-gear-table-sundry-russet-souvenirs}](#sundry-russet-souvenirs-sdm-gear-table-sundry-russet-souvenirs)
     - [ORANGE LAND](#orange-land)
-    - [This ASHS Station](#this-ashs-station)
-    - [**Hedonic Burden Review** {#sdm-gear-table-hedonic-burden-review}](#hedonic-burden-review-sdm-gear-table-hedonic-burden-review)
-    - [**Fresh Food Only** {#sdm-gear-table-fresh-food-only}](#fresh-food-only-sdm-gear-table-fresh-food-only)
-    - [**Traditional Orange Land Attire** {#sdm-gear-table-traditional-orange-land-attire}](#traditional-orange-land-attire-sdm-gear-table-traditional-orange-land-attire)
-    - [**Order Maintenance Equipment** {#sdm-gear-table-order-maintenance-equipment}](#order-maintenance-equipment-sdm-gear-table-order-maintenance-equipment)
-    - [**Personal Travel Expression (Orange Land)** {#sdm-gear-table-personal-travel-expression-orange-land}](#personal-travel-expression-orange-land-sdm-gear-table-personal-travel-expression-orange-land)
-    - [**Approved Orange Land Comfort Purchases** {#sdm-gear-table-approved-orange-land-comfort-purchases}](#approved-orange-land-comfort-purchases-sdm-gear-table-approved-orange-land-comfort-purchases)
+      - [AMBER STANDARD HEDONIC STATION](#amber-standard-hedonic-station)
+        - [This ASHS Station](#this-ashs-station)
+        - [Hedonic Burden Review](#hedonic-burden-review)
+      - [**Fresh Food Only** {#sdm-gear-table-fresh-food-only}](#fresh-food-only-sdm-gear-table-fresh-food-only)
+      - [**Traditional Orange Land Attire** {#sdm-gear-table-traditional-orange-land-attire}](#traditional-orange-land-attire-sdm-gear-table-traditional-orange-land-attire)
+      - [**Order Maintenance Equipment** {#sdm-gear-table-order-maintenance-equipment}](#order-maintenance-equipment-sdm-gear-table-order-maintenance-equipment)
+      - [**Personal Travel Expression (Orange Land)** {#sdm-gear-table-personal-travel-expression-orange-land}](#personal-travel-expression-orange-land-sdm-gear-table-personal-travel-expression-orange-land)
+      - [**Approved Orange Land Comfort Purchases** {#sdm-gear-table-approved-orange-land-comfort-purchases}](#approved-orange-land-comfort-purchases-sdm-gear-table-approved-orange-land-comfort-purchases)
     - [YELLOW LAND](#yellow-land)
-    - [HELIODOR MERCANTILE STANDARD GOODS](#heliodor-mercantile-standard-goods)
+      - [HELIODOR MERCANTILE STANDARD GOODS](#heliodor-mercantile-standard-goods)
       - [This Liberated Trader](#this-liberated-trader)
-    - [**Consume To Create** {#sdm-gear-table-consume-to-create}](#consume-to-create-sdm-gear-table-consume-to-create)
-    - [**Fashion For You** {#sdm-gear-table-fashion-for-you}](#fashion-for-you-sdm-gear-table-fashion-for-you)
-    - [**Self Defense Systems** {#sdm-gear-table-self-defense-systems}](#self-defense-systems-sdm-gear-table-self-defense-systems)
-    - [**Personal Travel Expression (Heliodor)** {#sdm-gear-table-personal-travel-expression-heliodor}](#personal-travel-expression-heliodor-sdm-gear-table-personal-travel-expression-heliodor)
-    - [**Saffron Souvenirs Inc. Sym.** {#sdm-gear-table-saffron-souvenirs-inc-sym}](#saffron-souvenirs-inc-sym-sdm-gear-table-saffron-souvenirs-inc-sym)
+      - [**Consume To Create** {#sdm-gear-table-consume-to-create}](#consume-to-create-sdm-gear-table-consume-to-create)
+      - [**Fashion For You** {#sdm-gear-table-fashion-for-you}](#fashion-for-you-sdm-gear-table-fashion-for-you)
+      - [**Self Defense Systems** {#sdm-gear-table-self-defense-systems}](#self-defense-systems-sdm-gear-table-self-defense-systems)
+      - [**Personal Travel Expression (Heliodor)** {#sdm-gear-table-personal-travel-expression-heliodor}](#personal-travel-expression-heliodor-sdm-gear-table-personal-travel-expression-heliodor)
+      - [**Saffron Souvenirs Inc. Sym.** {#sdm-gear-table-saffron-souvenirs-inc-sym}](#saffron-souvenirs-inc-sym-sdm-gear-table-saffron-souvenirs-inc-sym)
     - [GREEN LAND](#green-land)
-    - [**Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}](#curios-et-knick-knacks-sdm-gear-table-curios-et-knick-knacks)
+      - [**Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}](#curios-et-knick-knacks-sdm-gear-table-curios-et-knick-knacks)
   - [ETERNAL RETURN KEY](#eternal-return-key)
     - [**SALVAGABLE ARMOR!** {#sdm-gear-table-salvagable-armor}](#salvagable-armor-sdm-gear-table-salvagable-armor)
-    - [**WHAT DO THESE SYMBOLS MEAN?** {#sdm-gear-table-what-do-these-symbols-mean}](#what-do-these-symbols-mean-sdm-gear-table-what-do-these-symbols-mean)
     - [**THIS WILL WORK FOR SELF-DEFENSE ...** {#sdm-gear-table-this-will-work-for-self-defense}](#this-will-work-for-self-defense--sdm-gear-table-this-will-work-for-self-defense)
+    - [**WILL IT STILL GO INTO OVERDRIVE?** {#sdm-gear-table-will-it-still-go-into-overdrive}](#will-it-still-go-into-overdrive-sdm-gear-table-will-it-still-go-into-overdrive)
+      - [WILL IT STILL GO INTO OVERDRIVE?](#will-it-still-go-into-overdrive)
+      - [HUH, IT’S A BIT ...](#huh-its-a-bit-)
 
 # Gear Table Template
 
@@ -2300,6 +2304,1386 @@ Only gear and services that cost at least a day’s proletarian wages (€1) are
 
 The Violet Citadel is the last place in the Rainbowlands to buy supplies for the long crossing. Old hands advise four tubes of sunscreen per traveler, loudmouths suggest it’s possible with two.
 
+
+### **UVG Vehicles and Mounts** {#sdm-gear-table-uvg-vehicles-and-mounts}
+
+> **UVG Vehicles and Mounts**
+>
+> Smart players quickly realize that carrying their own supplies is not a good idea. If they do not realize this tell them to get two mules each to be on the safe side.
+>
+> The vehicles in the transport table are all less cost effective than animals. It’s hard to keep machines running in the wilderness and their key value is transporting big heavy things that a single mule or camel couldn’t manage like magical sarcophagi, golden idols, and glass cannons.
+>
+> | Transport | Lvl | Description | Capacity | Speed | Requires | Cost |
+> |:---|---:|:---|:---|:---|:---|---:|
+> | Human, Common-ass | 0 | Random laborer hired to carry some stuff. Cowardly. | 1 sack | normal | 1 supply | €7/week |
+> | Disposable Slave | 0 | Perfect for evil caravans. | 1 sack | normal | 1 supply | €200 |
+> | Porter | 1 | Tough-ass professionals. | 2 sacks | normal | 1 supply | €20/week |
+> | Slave Porter | 1 | Enslaved tough-ass professional. May be resentful. | 2 sacks | normal | 1 supply | €600 |
+> | Skeleton Porter | 1 | Slow but "ethical," smell-free alternative to slavery. Though ... | 1 sack | slow | necromancy | €200 |
+> | Zombie Porter | 2 | Very slow and a bit smelly ... this necromancy stuff might bother folks. | 2 sacks | v slow | necromancy | €200 |
+> | Pony, Mule or Camel | 1 | The classic solution. | 2 sacks | normal | grazing | €70 |
+> | Combat Steed | 2 | A noble steed, heroic horse or charger camel. Can be ridden in combat. | 2 sacks | normal | grazing | €200 |
+> | Metal Steed | 2 | Fast and flash, it roars like thunder when pushed. Might be a golem. | 2 sacks | fast | 0.5 supply | €1,200 |
+> | Adventuring Handcart | 2 | A glorified wheelbarrow. Requires a human (not included). Slow. | 3 sacks | slow | a human | €10 |
+> | Wicker Autowagon | 3 | Fast, self-propelled golem of synthetic ivory, iron-reed, and rubber. | 3 sacks | fast | 0.5 supply | €2,000 |
+> | Magnificent Velblod | 4 | A true galleon of the trackless steppes. May cause motion-sickness. | 3 sacks | normal | grazing | €300 |
+> | Wagon, Coach, or Cart | 4 | Slow and vulnerable, but trivial to maintain. Require a draft animal. | 6 sacks | slow | an animal | €200 |
+> | Burdenbeast | 5 | Biomantically enhanced small-headed rhinobuffalo. Pretty rare. | 4 sacks | normal | grazing | €600 |
+> | Biomechanical Beast | 6 | Terrifying amalgam of twitching muscle and cybernetic endoskeleton sheathed in synthetic skin. Very rare. Can be ridden in combat. | 6 sacks | normal | grazing | €3,000 |
+> | Road Yacht | 7 | The queen of the Road of the World, the Celestial Autobahn. | 6 sacks | normal | 1 supply | €4,000 |
+> | Solid Coach or Wagon | 7 | Slow and heavy. Require 2 draft animals (not included). | 12 sacks | slow | 2 animals | €600 |
+> | Generic Vech, Porcelain or Prismatic Walker | 9 | Slow, enormous biomechanical beast. Among the most stylish biomech travel systems money can buy. Golem versions also exist. | 12 sacks | slow | 1 supply | €6,000 |
+> | Massive Hauling Wagon | 8 | Very slow. Requires 4 draft animals (not included). | 24 sacks | v slow | 4 animals | €1,500 |
+> | Autogolem | 10 | Slow, self-propelled golem wagon. Armored, tough, and impressive as heck. It drives itself safely -- but beware crossing marshes or rough terrain. Carries 2d3 passengers in ridiculous bolted-on cabins. | 24 sacks | slow | 1 supply | €10,000 |
+> | Meat Crawler | 8 | A gruesome centipede of meat and bone. Very, very slow and smelly. | 24 sacks | v v slow | necromancy | €4,000 |
+> | Epic Floating Barge or Hover Wagon | 4 | Magical float from Long Ago, it can be pulled by a single creature (not included). Very fragile and may be disabled by a single well-placed shot. | 20 sacks | normal | a human or animal | €7,500 |
+> | War Engine | 11 | It’s a tank? To eleven? Ninety tons of thunder, lighting up the night. | 36 sacks | v slow | 2 supply | €20,000 |
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-mount]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
+>   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-uvg-vehicles-and-mounts-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+#### **Humanoids** {#sdm-gear-table-humanoids}
+
+> **Humanoids**
+>
+> The caravan economics of UVG strongly discourage the use of 1 sack capacity humans. They can carry useful gear or 1 supply. They can’t graze, so they’ll eat that Supply in a week, and then what? It’s just not practical. They’re on the list to cover normal adventuring events and to tempt new players into setting off on a 2-week journey with 1 week of supplies and some instant enemies.
+>
+> Porters, or anything that can carry 2 sacks (1 sack of gear, 1 sack of supplies) are better, especially if they know the terrain. The cost of a Porter (€20/week) vs. a Slave Porter (€600) means that renting is much better than buying. The cost is included, though, because nefarious and shortsighted PCs might decide to raise some quick capital by hiring porters in one location and selling them in another.
+>
+> **Human (basic)**
+>
+> - **Capacity:** 1 sack
+> - **Cost:** €7 per week. €6 if you don’t pay Sundays
+> - **Consumes:** 1 supply per week
+> - **Speed:** Normal
+>
+> A random laborer hired to carry stuff. At the bottom of the barrel, there’s not much room for upgrades. Purchase and distribute weapons and gear normally. Just don’t expect to see it again.
+>
+> **Disposable Slave**
+>
+> - **Capacity:** 1 sack
+> - **Cost:** €200.
+> - **Consumes:** 1 supply per week
+> - **Speed:** Normal
+>
+> Managed with threats and fear. Isn’t paid wages. Slavery is evil.
+>
+> **Porter**
+>
+> - **Capacity:** 2 sacks
+> - **Cost:** €20 per week. Doesn’t work on Sundays.
+> - **Consumes:** 1 supply per week
+> - **Speed:** Normal
+>
+> Tough professional. Skilled at packing and carrying stuff, preparing supply depots, and surviving in the wilds.
+>
+> **Slave Porter**
+>
+> - **Capacity:** 2 sacks
+> - **Cost:** €600
+> - **Consumes:** 1 supply per week
+> - **Speed:** Normal
+>
+> Like a porter, but less free and more resentful.
+>
+> #### Humanoid Add-ons
+>
+> **Explosive Collar:** €20  
+> Occupies: 0 Stones if worn, 1 Stone if carried or stored. Faced with certain death (cranial separation) vs possible death (an ancient tomb, a perilous bridge, or a desperate charge), people may find reserves courage they didn’t know they possessed. Collars are usually sold in 6 packs with a matching remote. Default range is 150 meters or so. Festive color options available.
+>
+> **Surgical Obedience:** €50, 50% chance to kill the participant.  
+> With a sharpened spoon, some ultratech crystal neuron lances, strong drugs, and a bit of elbow grease, a (un)licensed neurochirurge will carve away the unpleasantly disobedient bits of a brain. Survivors will cheerfully obey any order. Eat my fingers? You’ve got it, Boss! Charge that hydratiger? I’m on it, yippee! Considered a bit too evil by even the most jaded evil warlords.
+>
+> **Fabricated Backstory:** €10  
+> For a nominal cost, the Psychefactors of the Emerald City will root through a subject’s psyche, extract their most shameful deeds, and write a brief report. Slavery feels more tolerable if you think the victims deserve it. Up to 20% of shameful deeds may be filler inserted by the Psychefactor to maximize moral superiority.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-support-humanoid]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Humanoids
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-humanoids-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **Undead** {#sdm-gear-table-undead}
+
+> **Undead**
+>
+> Undead creatures require necromantic maintenance from someone with at least a community-level necromechanical degree. This is usually nothing more than a drop or two of their master’s blood per week, perhaps some bolts tightened, and a fresh jolt of magielectric juice. When undead creatures are not maintained, they Degrade (speed declines: Slow > Very Slow > Crawling > Immobile).
+>
+> Sometimes a more specific defect is required (roll d6):
+>
+> 1. Creature goes amok. Violence ensues.
+> 2. Legs fall off. Well, that’s not good.
+> 3. Arm falls off. Capacity reduced by 1 sack.
+> 4. Head falls off. Bit blind, but still works if roped along.
+> 5. Antibacterial preserves fail. Gets smelly.
+> 6. Decay. Zombies become skeletons, skeletons fall apart.
+>
+> **Skeleton Porter**
+>
+> - **Capacity:** 1 sack
+> - **Cost:** €200
+> - **Consumes:** Nothing
+> - **Speed:** Slow
+>
+> Formerly, a useless nobody. Now a useful ... biomachine.
+>
+> **Skeleton Add-Ons**
+>
+> **Chrome Plating:** €10  
+> Say goodbye to stealth. Thoughtful bandits may mistake the skeletons for combat golems, glitterdust ghosts, or something worse.
+>
+> **Geometric Protocol:** €20
+>
+> At a shouted word of command, the skeletons assemble into a prearranged formation or shape. With enough skeletons, a caravan can create an observation tower, a wall, or a bone crab.
+>
+> **Zombie Porter**
+>
+> - **Capacity:** 2 sacks
+> - **Cost:** €200
+> - **Consumes:** Nothing
+> - **Speed:** Very Slow
+>
+> **Zombie Add-Ons**
+>
+> **Rubberized Coating:** €10  
+> A thick layer of flesh-preserving epoxy. Sealed glass goggles and copper ear-discs keep the smell inside while letting the zombie function at peak efficiency.
+>
+> **Berserker Gland:** €50
+>
+> A mechanical combat routine jewel. Insert it into the zombie and activate it later with the remote wand, turning the zombie into a relentless killing machine. The activation is irreversible and the zombie cannot tell friend from foe, so plan carefully.
+>
+> **Meat Crawler**
+>
+> - **Capacity:** 24 sacks
+> - **Cost:** €2,000
+> - **Consumes:** Nothing
+> - **Speed:** Very, Very Slow
+>
+> What do you do if you come across a plague pit and have both a necromancer and a boneworker on hand? Not this. Please, do not do this. Giant meat and bone centipedes are not a good idea. Unlike single-body undead, the meat crawler can go months before it degrades enough to impede its mobility. That said, mobility was never the point of this abomination, was it?
+>
+> **Meat Crawler Add-Ons**
+>
+> **Dermal plating:** €800  
+> Up-armored, the meat crawler is essentially immune to small arms and any melee weapon weaker than a chainsaw.
+>
+> **Skin tent:** €200
+>
+> A yurt of leather and sinew growing on the meat crawler’s back. Space for up to 12 humans with good nasal filters.
+>
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-support-undead]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Undead
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-undead-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+#### **Beasts of Burden** {#sdm-gear-table-beasts-of-burden-uvg}
+
+> **Beasts of Burden**
+>
+> In these fallen times traditional work animals, like lopebeavers and honkazelles, are found in most rustic parts of the Rainbowlands. However, for journeys into the Ultraviolet Grasslands, only tried and tested beasts of burden will do.
+>
+> **Pony or Mule, or Camel**
+>
+> - **Capacity:** 2 sacks
+> - **Cost:** €70
+> - **Consumes:** grazing, or 1 supply per week
+> - **Speed:** Normal
+>
+> The sensible solution for caravans since before time began. Eats grass, travels over all terrain in all weather. Also, it’s edible. Consumes supplies in places without vegetation or water.
+>
+> **Local Variants?**
+>
+> | d10 | A Bit Like A ... | Crossed With A ... | And It Has | Disposition |
+> |---:|:---|:---|:---|:---|
+> | 1 | Horse | Beetle | Superb night vision. | Curious |
+> | 2 | Camel | Catfish | An astonishing odor. | Stubborn |
+> | 3 | Yak | Tortoise | Moisture extraction gills. | Disease-riddled |
+> | 4 | Antelope | Metal Orb | Sticky climbing pads. | Lethargic |
+> | 5 | Bison | Cuttlefish | Phosphorescent spots. | Adorable |
+> | 6 | Iguana | Rat | Prehensile nostrils. | Loyal |
+> | 7 | Toad | Pig | Delicious skin parasites. | Skittish |
+> | 8 | Newt | Cement Mixer | Vestigial wings. | Cunning |
+> | 9 | Rhino | Slug | Root-digging claws. | Competitive |
+> | 10 | Ostrich | Goat | Hyper-adaptable digestion. | Inscrutable |
+>
+> **Camel**
+>
+> - **Capacity:** 2 sacks
+> - **Cost:** €140
+> - **Consumes:** grazing, or 1 supply per two weeks
+> - **Speed:** Normal
+>
+> The solution for desolate deserts. Goes further with less water.
+>
+> **Combat Steed**
+>
+> - **Capacity:** 2 sacks
+> - **Cost:** €200
+> - **Consumes:** grazing, or 1 supply per week
+> - **Speed:** Normal
+>
+> Usually a horse or camel trained for battle. Other animals are not willing to go near melee combat. 1-in-6 combat steeds are carnivorous andrewarks or other strange beasts revived from deep time.
+>
+> **Magnificent Velblod**
+>
+> - **Capacity:** 3 sacks
+> - **Cost:** €300
+> - **Consumes:** grazing, or 1 supply per two weeks
+> - **Speed:** Normal
+>
+> A larger, stronger, more magnificent camel. Also, needs only half a sack per week. May be a high arctic camel.
+>
+> **Burdenbeast**
+>
+> - **Capacity:** 4 sacks
+> - **Cost:** €600
+> - **Consumes:** grazing, or 2 supply per week
+> - **Speed:** Normal
+>
+> Magnificent, shaggy creatures, biomantically engineered to positively enjoy lugging heavy goods for humans. Many grow intensely, emotionally attached to their human masters.
+>
+> **Biomechanical Beast**
+>
+> - **Capacity:** 6 sacks
+> - **Cost:** €3,000
+> - **Consumes:** grazing, or 3 supply per week
+> - **Speed:** Normal
+>
+> Astonishing amalgams of muscle and cybernetics sheathed in superior skin. These very rare creatures of the Long Ago can be ridden in combat. Most ordinary steeds will break before them.
+>
+> #### Animal Add-Ons
+>
+> **Babel Gem:** €100  
+> Embedded, gives the beast a voice and human-form personality overlay. Works on most beasts, but increases the chance of vomish infection. Obedience not guaranteed.
+>
+> **Stepfall Shoes:** €80  
+> Made from bits of oldtech ur-metal. When moving at top speed, the plates add a tiny bit of lift, letting the beast charge across small dips, avoid holes, and leap majestically. They leave xenon contrails.
+>
+> **Afterburner:** €60  
+> This convenient surgical upgrade stores gaseous digestive byproducts in a small canister, for use in cooking fires or a sudden burst of speed. The speed increase may just be the result of fear.
+>
+> **Plug-in Battery:** €200  
+> Occupies 1 sack. A rechargeable golem-style battery for backup power. The beast can go without grazing for up to four weeks (it still requires water). Alternatively, the battery can recharge a suit of golem armor or other oldtech artifact. Recharging the battery takes a couple of hours at any oldtech charging platform or obelisk.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-mount-animal]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Beasts of Burden
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-beasts-of-burden-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **Wagons, Carts, and Coaches** {#sdm-gear-table-wagons-carts-and-coaches}
+
+> **Wagons, Carts, and Coaches**
+>
+> Wheels transformed proto-human lives. The semi-simians began moving large quantities of supplies over long distances. Truly nomadic lifestyles became possible and the humble wheel truly became a symbol of humanity. There would be no modern Grasslands without that ancient round machine.
+>
+> **Adventuring Handcart**
+>
+> - **Capacity:** 3 sacks
+> - **Cost:** €10
+> - **Requires:** A human.
+> - **Speed:** Slow
+>
+> The glorified wheelbarrow doesn’t need much of a road, but it does need some kind of road. Not recommended for battle.
+>
+> **Small Wagon, Rickety Coach, or Swaying Cart**
+>
+> - **Capacity:** 6 sacks
+> - **Cost:** €200
+> - **Requires:** A draft animal.
+> - **Speed:** Slow
+>
+> A classic for a reason. Wains of this type truly opened up the steppes to the known Lime Nomads and the forgotten Flour Nomads.
+>
+> **Solid Coach or Wagon**
+>
+> - **Capacity:** 12 sacks
+> - **Cost:** €600
+> - **Requires:** two draft animals.
+> - **Speed:** Slow
+>
+> Heavy vehicles for big caravans. With their weight they are unsuitable for rough terrain, poor roads, and deep mud. Can take Road Yacht upgrades or below.
+>
+> **Massive Hauling Wagon**
+>
+> - **Capacity:** 24 sacks
+> - **Cost:** €600
+> - **Requires:** four draft animals.
+> - **Speed:** Very Slow
+>
+> How else are you going to move an obelisk? The immense weight of these wagons means they require well-prepared surfaces. Can take War Engine upgrades or below.
+>
+> #### Cart and Wagon Add-Ons
+>
+> All four sizes of pulled vehicle are a variation and elaboration on the wheel + axle + bed design. They can use the same upgrades, so prices are listed for each of the sizes in order.
+>
+> **Sail:** €5 / €10 / €20 / €40
+>
+> Adds a tiny bit of extra speed. Not worth quantifying mechanically, but it improves morale (especially if you pass people without a sail). A great way to display your company’s logo.
+>
+> **Hull-Tight:** €20 / €40 / €80 / €160  
+> Designed to float across calm rivers. Seams caulked, wheels detachable, handles convertible into steering oars or push-poles.
+>
+> **Camo Net:** €10 / €20 / €40 / €80
+>
+> Not as good as true rainbow silk, but a cheap and waterproof landscape mimic. Lets you hide your vehicle from casual scouting. Just don’t wander away from your camp in the dark.
+>
+> **Chitincap Hull:** €100 / €200 / €400 / €800
+>
+> Fibrous, grown and woven components replace heavy wood. The result is a lighter, but equally strong vehicle, that is much easier to maneuver in mud and on poor roads.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-wagon-coach]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Wagons, Carts, and Coaches
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-wagons-carts-and-coaches-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **Metal Steeds** {#sdm-gear-table-metal-steeds}
+
+> **Metal Steeds**
+>
+> - **Capacity:** 2 sacks
+> - **Cost:** €1,200
+> - **Requires:** A lack of common sense.
+> - **Consumes:** 1 supply of fuel per 2 weeks
+> - **Speed:** Fast
+>
+> One-way tickets to organ donation. If it’s 90% engine, 8% wheels, and 2% seat, it’s a Metal Steed. No space for supplies, no room for error. Goes like the wind on fire. The best are air-breathing, like wicker autogolems, and require no fuel.
+>
+> #### Metal Steed Add-Ons
+>
+> **Gun Mount:** €50  
+> Lets the rider fire a weapon while roaring along at full speed. The weapon must fit in the rider’s inventory. Attaching or detaching it takes 2 rounds.
+>
+> **Sidecar:** €500
+>
+> Increases capacity by 1 sack, but loses the Fast trait.
+>
+> **Aquatic:** €1,000
+>
+> Sometimes, all the good loot is buried at the bottom of a lake. The vehicle is very, very slow on its stubby land-carriage, but it can move underwater. It’s not a proper submarine, just a pressurized pod with engines; a diving suit with attitude. The driver can wiggle their arms through thick diving gloves.
+>
+> **Gyrocoptic:** €1,000  
+> Flying in the Ultraviolet Grasslands is a bad idea. Bits of invisible stuckforce shred aircraft. Purple haze rots your brain. Dormant anti-missile defense systems wake up and think "Oh, that looks interesting." Still it beats walking. A caravan with a flying vehicle gains advance warning of most encounters. Fliers ignore terrain.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-metal-steed]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Metal Steeds
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-metal-steeds-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **Wicker Autowagon** {#sdm-gear-table-wicker-autowagon}
+
+> **Wicker Autowagon**
+>
+> - **Capacity:** 3 sacks
+> - **Cost:** €2,000
+> - **Consumes:** 1 supply of fuel per 2 weeks
+> - **Speed:** Fast
+>
+> A little bigger, a little sturdier, and a whole lot dryer in the rain. Some are literally made of wicker, some just look that way. Fits two people up front and some power snacks in the back. Most are fueled or air-powered, but the finest units from Long Ago come with all-golem-drive. Nothing like limitless energy from the burning of long-forgotten god spirits.
+>
+> #### Wicker Autowagon Add-Ons
+>
+> **Nitro:** €50 per use
+>
+> For up to 1 minute, the vehicle moves at ludicrous speed.
+>
+> **Snazzy Paintjob:** €100  
+> Shiny and polished. If normal colors aren’t good enough for you, options include: scarabeo, pearl-tone, fordite swirl supreme, vantablack, gibbon, taupeamarine, and splunge.
+>
+> **Jet Booster:** €1,000
+>
+> Occupies 1 sack. Probably a terrible idea, but always popular. The vehicle moves at ludicrous speed for up to 10 minutes, soaring across small buildings and large crevasses. Uses up almost all the vehicle’s stored fuel. Proper oldtech jetolene lets the vehicle use this ability twice on one supply of fuel.
+>
+> **Dropper:** €300
+>
+> Occupies 1 sack. The back of the vehicle opens up and drops something. Could be a mine, attack vomes, oil, or meta-caltrops. The sack occupied by the dropper includes its loadout. For an extra €100, the dropper can launch forward or sideways instead, like an ejector seat or a compressed air cannon.
+>
+> **Hover Wheels:** €1,000
+>
+> Billowing air-jets, stuckforce discs, or dozens of spinning propeller blades. It’s not practical, but it is cool. Ignores mildly difficult terrain.
+>
+> **Hood Ornament:** €100
+>
+> Shiny, chrome, and, in emergencies, a good thing to cling on to.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-autowagon]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Wicker Autowagon
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-wicker-autowagon-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **Road Yacht** {#sdm-gear-table-road-yacht}
+
+> **Road Yacht**
+>
+> - **Capacity:** 6 sacks
+> - **Cost:** €4,000
+> - **Consumes:** 1 supply of fuel per week
+> - **Speed:** Normal
+>
+> Back in the old days, these status symbols freely roamed the world.
+>
+> All the blackthumbs know their names and their vital gubbins: sparkulator, lightning-whirler, juicebox, caboxylator. Parts are as good as currency in some parts of the Grasslands. While some warriors prefer swift metal steeds or sprightly wicker autogolems, the greatest knights of the road pilot their mighty road yachts.
+>
+> #### Road Yacht Add-Ons
+>
+> **Luxury Seats:** €300  
+> Made of genuine synth-leather (from genuine synth-cows) and stuffed with autofabulous springs. Even folds down into a bed. Hula bobble-head totem doll optional.
+>
+> **Air Conditioning:** €500  
+> Has a magic box that cools the cabin. Probably involves a bound demon. Essential in hot climes. It’s very impressive.
+>
+> **Fridgermerator:** €1,000  
+> Occupies 1 sack. Can cool up to 6 sacks of storage space. Excellent for transporting perishable fruit, bodies, fruiting bodies, etc.
+>
+> **Para-Radio Set:** €500  
+> Most broadcasts these days aren’t fit for mortal ears, but you can get echoes of tunes long past (or yet to come), coordinate with other vehicles or settlements (weather permitting), and ... U#ERROR404.
+>
+> **Loudspeaker:** €100
+>
+> Very loud. Blocks negative vibrations.
+>
+> **Big Gun:** €1,500  
+> Occupies 2 sacks, typically 1 for the gun and 1 for the ammo, maintenance equipment, and blast shields. Options include:
+>   - **Flambeur:** 3d6 fire damage, Medium, Reload 6. Sets on fire.
+>   - **Chaingun:** 2d12, Medium, Reload 3. May propel a car backwards.
+>   - **Lazor:** 3d8, Short, Reload 5. Can cut down small trees.
+>
+> **Turret:** €500  
+> Occupies 1 sack. Lets a gun mount or a big gun fire in all directions instead of a fixed direction. Also makes a vehicle look intimidating.
+>
+> **Safe:** €200  
+> Occupies 1 sack. Can hold 1 sack of valuables in a spirit-locked steel egg. Proof against most simple thieves, pilferers, and quarterlings.
+>
+> **Smoke Launchers:** €100, plus €10 per use  
+> Medium range. Fills a medium-sized area with opaque smoke. Makes shooting or boarding a caravan difficult, but tends to attract attention. Additional colors available for a small fee.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-road-yacht]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Road Yacht
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-road-yacht-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **Generic Vech, Porcelain or Prismatic Walker** {#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker}
+
+> **Generic Vech, Porcelain or Prismatic Walker**
+>
+> - **Capacity:** 12 sacks
+> - **Cost:** €6,000
+> - **Consumes:** 1 supply of fuel per week
+> - **Speed:** Slow
+>
+> Tall, striking, astonishing testaments to biomancy. Living creatures modified and adapted to stride across the wastes,
+>
+> #### Walker Add-Ons
+>
+> **Escape Pod:** €600
+>
+> Occupies 1 sack. Lets 4 sacks of capacity (2 people and their inventories) escape a wreck in the event of a catastrophic failure.
+>
+> **Chainsaw Arm:** €1,000
+>
+> Occupies 3 sacks. Deals 4d8 melee damage and ignores armor. Ponderous and inaccurate against small targets.
+>
+> **Boarding Ramp:** €500
+>
+> Occupies 1 sack. Folds out to allow people from one vehicle to board another, or cross a wall, or generally get into trouble.
+>
+> **Leap Kit:** €1,000
+>
+> Rocket-packs, nozzles, and springs let the vehicle leap up to 10m in the air while maintaining its current speed. Jumping too often will inflict structural damage.
+>
+> **Cabin Gall:** €250
+>
+> Occupies 1 sack. A full-suspension sleep pod for one passenger. Excellent rest guaranteed, do not mind the wasp pheromones.
+>
+> **Satraplicator:** €2,000
+>
+> Occupies 2 sacks. A medical pod with an automatic mind (or brain) transplanter. Also has space for a ready clone. It is a clone, right?
+>
+> **Porcelain Glaze:** €1,000
+>
+> Occupies 1 sack. The whole vech is covered in a reflective glaze that protects from lasers, lazors, and mind-altering rays.
+>
+> **Full Self-Driving Autobrain Mode:** €1,000  
+> Now it can drive itself. Sometimes steps on small creatures.
+>
+> **Grazer Unit:** €3,000
+>
+> A mechanical mouth and biomatter converter. Now the walker can feed itself by grazing ... or recycling dead bodies.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-walker]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Generic Vech, Porcelain or Prismatic Walker
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **Autogolem** {#sdm-gear-table-autogolem}
+
+> **Autogolem**
+>
+> - **Capacity:** 24 sacks
+> - **Cost:** €10,000
+> - **Consumes:** 1 supply of fuel per week
+> - **Speed:** Slow
+>
+> 12 meters long, 2 lanes wide, 65 tons of Golden Age pride. Tour the Grasslands in style with this home away from home and show other traders that you’re richer than them. The autogolem has separate compartments, proper doors, and a very large turning radius.
+>
+> #### Autogolem Add-Ons
+>
+> **Water Closet:** €500
+>
+> Occupies 4 sacks. Toilet, sink, and shower. Ludicrously luxurious for the deep grasslands. Will impress anyone unused to plumbing.
+>
+> **Carbecue Pod:** €1,000
+>
+> Occupies 2 sacks. Room for a cook to whip up delicious fast food.
+>
+> **Observation Deck:** €200
+>
+> Useless, impractical, and very classy. If you’re going to sail across the grasslands, a chrome-railed balcony is the place to be on a calm Orangemonth night.
+>
+> **Hydraulic Throne:** €1,000
+>
+> Occupies 1 sack. Gold-plated, neon-limned, dolly-mounted automechanical seat of grandeur. Larger thrones have larger cranes. Could also be a giant visage with stage flame jets.
+>
+> **Ram:** €200
+>
+> Occupies 2 sacks. Can be spiked at no extra charge. The better to bulldoze smaller vehicles. Works on zombies, too.
+>
+> **Winch, Jacks, and Shovels:** €100
+>
+> Occupies 1 sack. Gets a vehicle un-stuck in most conditions.
+>
+> **Luxury Pod:** €500  
+> Occupies 2 sacks. A private suite for one person and their gear. Comes with a small writing desk, folding bed-chair, orb lamp, and adorable cupboards for toiletries and snacks.
+>
+> **Pleasure Pod:** €1,000
+>
+> Occupies 2 sacks. As a luxury pod, but with IV dispensers, drugs cabinet (drugs not included), and additional horizontal surfaces.
+>
+> **Medical Pod:** €3,000
+>
+> Occupies 4 sacks. Room for 2 patients and a doctor. Proper medical equipment, drains, ominous lights, and sterile plastic sheeting.
+>
+> Healing on the road has never been this easy!
+>
+> **Levi Drive:** €7,000  
+> Occupies 4 sacks. Uses oldtech fold-field engines and levitation lenses to ... hover magically. Whooshing sound effects, flickering lights, and impressive blasts optional. Ignore difficult terrain and impress the fallen quarterlings who still worship the oldtech.
+>
+> _Left: road yacht with levi drive (a semi-legal upgrade)._ _Right: a great war engine of the South Ivory Khan._
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-autogolem]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Autogolem
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-autogolem-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
+#### **War Engine** {#sdm-gear-table-war-engine}
+
+> **War Engine**
+>
+> - **Capacity:** 36 sacks
+> - **Cost:** €20,000
+> - **Consumes:** 2 supply of fuel per week, 3 supply at top speed (Slow).
+> - **Speed:** Very Slow or Slow
+>
+> A mobile fortress, a mobile townhouse, a scavenged autofac, or perhaps just a very big long-haul truck. Fill it up to capacity with weapons and armor, and go conquer some poor steppelanders.
+>
+> #### War Engine Add-Ons
+>
+> **Armor Plating:** €1,000  
+> Occupies 4 sacks. The vehicle ignores small arms, medium arms, and glancing hits from heavier weapons.
+>
+> **Big Treads:** Free  
+> The true all-terrain solution. Cross rocks, rivers, mud, fire, flaming rivers of mud, anti-personnel mines and smaller vehicles. The war engine now moves Incredibly Slowly. Also, always very easy to track.
+>
+> **Really Big Gun:** €3,000  
+> Occupies 4 sacks, typically 2 for the gun and 2 for the ammo, fire prevention equipment, and earplugs. Seriously, what are you expecting to fight out here?
+>   - **Artillery Tube:** 2d10x1d10, Very Very Long, Reload 20, blast. Ignores intervening terrain and common sense. Very loud. Anything smaller than a road yacht must Save vs evaporation.
+>   - **Doom Laser:** 3d20, Very Very Long, Reload 10, requires 1 round to charge before firing. Pwiiizzzzzzk!
+>
+> **Coalem Drive:** €2,000
+>
+> Occupies 4 sacks, requires 1 engineer. Boilers, furnace, maw, scrapers, smokestacks. The war engine can now graze on any available biomatter, eating its way through the landscape. Coal lets it go a little faster. Doubles as a pizza oven.
+>
+> **Warlock Tower:** €2,000
+>
+> Occupies 6 sacks. A black tower of steel and rivets and chrome blades rises from the middle of the war engine. It looks scary. Loudspeakers and light show included.
+>
+> **Trophy Room:** €2,000  
+> Occupies 12 sacks. Essentially, a mobile feasting hall the size of a longhouse with room for a dozen guests.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:vehicle-war-engine]
+>   [chapter:vehicles-mounts]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > War Engine
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-war-engine-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+### UVG Gear and Services
+
+> "We’re going to the Black City and we don’t care if it’s supposed to take eight weeks, we’ll make it in four and bring enough black-light to set us all up. Now, how many horses will you loan us?" Inge and Ingot, the bearded ambiguously dwarfsh merchants glowered and pointed to the large sign that read, "No Lones to Adventerers, Frybooters or Wagonbonds."
+
+Only gear and services that cost at least a day’s proletarian wages (€1) are listed. Cheaper stuff is available at the referee’s discretion, but the expenses usually don’t have to be tracked. When a PC tries to buy a thousand bars of soap, or something weird like that, the referee decides how much it costs.
+
+The Violet Citadel is the last place in the Rainbowlands to buy supplies for the long crossing. Old hands advise four tubes of sunscreen per traveler, loudmouths suggest it’s possible with two.
+
+<div class="gear-table-card" markdown="1">
+
+### **Grassland General Goods** {#sdm-gear-table-grassland-general-goods}
+
+> **Grassland General Goods**
+>
+> | # | Essential Item | Size | Description | Cost |
+> |---:|:---|:---|:---|---:|
+> | 1 | Chronometer | 1 sp | Jeweled timepiece, with date, timer, alarm, timezone, and note-taking functions. | €25 |
+> | 2 | Clicker Box | 5 sp | Handheld electromagnificent radiation detector. Medium range. Picks up 17 kinds of magical and mundane rays. | €50 |
+> | 3 | Curative Snake Oil | 1 sp | Generic remedies against venom, bugs, parasites, diseases, rashes, and blisters. Surprisingly, actually works. | €10 |
+> | 4 | Environment Tent | 2 st | Protects one person from extreme heat and cold and small floods. Recycles liquids and air for up to 1 week. | €100 |
+> | 5 | Exoskelegolem | 5 st | A magical suit of pipes, cables, synthetic flesh, and insectile mind. Increases capacity by 1 sack. | €500 |
+> | 6 | Folding Bed | 2 st | Chitin cap mesh and synthetic flexi-bamboo makes every night’s sleep a joy. Faster healing. | €35 |
+> | 7 | Folding Chair | 1 st | Wonder of wicker pipes, mesh, and tubes. With drinks holder. Very comfortable. Makes stake-outs easy. | €5 |
+> | 8 | Glo Paint | 1 st | With applicator nozzle. Mark your way around Long Long Ago ruins! Bright enough to read by. | €10 |
+> | 9 | Healmachine | 1 st | Restores 2d8 Life to a machine. Repairs cosmetic damage to vehicle bodies. | €60 |
+> | 10 | Lamp, Iron | 1 st | Basic travel lamp, hooded against wind, burns oil, can be used to warm tea. Short range. | €5 |
+> | 11 | Lamp, Solar | 1 sp | Magic lamp of the Long Ago that eats sunlight to emit a short beam of warm light. | €100 |
+> | 12 | Lamp, Spectrum Ray | 1 st | Satrap crystal lamp that projects a long ray of light. Powered by tears and sunlight. Can start fires. | €100 |
+> | 13 | Multi-Auto-Tool | 2 st | 75 standard mechanical tools in one. Disable traps, pick locks, assemble furniture. Powered. | €50 |
+> | 14 | Musical Instrument | 1 st | Guitar, oud, pipa, qanbus, rubab or tambur. Its strings loosen tongues and improve moods at campfires. | €10 |
+> | 15 | Nasal Filters | 1 sp | Stop horrible smells from triggering nausea. Also said to protect against some inhaled toxins. | €5 |
+> | 16 | Oculars | 1 st | Techno-optics with 25x zoom, laser rangefinder, and integrated ad-blocker. | €50 |
+> | 17 | Oldtech Bubble Helmet | 1 st | Prevents blindness. Low-light vision with 5x zoom. High dynamic range display. Recycles air for up to 1 hour. | €500 |
+> | 18 | Omnibattery | 1 st | Recharge anything. Once. Comes in 12 cheery colors. Collect them all. | €50 |
+> | 19 | Portable Illusion | 1 st | Vidy crystal projector. Plays full 9D experiences. Non-wizards may be fooled by these phantasms. Powered. | €250 |
+> | 20 | Ray Bane Navigators | 1 sp | Traditional UV-blocking sun glasses. Also a status symbol among experienced travelers and merchants. | €100 |
+> | 21 | Signal Flare | 1 sp | Glows brightly and smokes for about 10 minutes. A way of saying, "I am here!" Sold in packs of 10. | €3 |
+> | 22 | Smart Rope | 1 st | Wonderful rope that ties or unties itself on command. 20 meters long. Cheaper ropes available. | €10 |
+> | 23 | Supplies, Premium Basic | 1 sk | Dwarf bread, water, hempen cloth, and wrapping rags. [-] to healing and recovery. | €2 |
+> | 24 | Supplies, Voyager | 1 sk | Tinned meat, travel ale, disinfectant schnapps, novelty items, rough newspapers, socks, gum, and prophylactics. | €10 |
+> | 25 | Starwatcher Compass | 2 sp | Displays directions, latitude, longitude, and out-of-date open source map. Requires line of sight to fast stars. | €50 |
+> | 26 | Synthetic Blood | 1 st | A stone’s worth of synthetic blood. For surgery or to feed a vampire for a week. | €20 |
+> | 27 | UV Lotion | 1 sp | Protects from the UV radiation and provides resistance against radiant damage. | €5 |
+> | 28 | VC Healing Lotion | 1 sp | Restores 2d6 Life or 1 physical stat point. | €40 |
+> | 29 | Void Thermos | 1 st | Perfect vacuum seals. Maintains tea, soup, or bio slurry at same temperature for a week. | €25 |
+> | 30 | Water Purification Pills | 1 sp | Makes a week’s worth of water fit to drink. Kills bacteria and viruses. Removes some toxins. Sold as 10-pack. | €5 |
+>
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:general-goods]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Grassland General Goods
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#inventory-and-sacks
+>   - Synthetic_Dream_Machine_01_Quickstart.md#units-and-encumbrance
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-grassland-general-goods-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Toolkits** {#sdm-gear-table-toolkits}
+
+> **Toolkits**
+>
+> Portable bundles, ready-made for heroes venturing out into the grasslands. They give advantage to relevant tests. Unsurprisingly, a hero carrying both a kit and a full backpack of premium basic supplies is encumbered -- mules do help.
+>
+> | # | Tool or Kit | Size | Description | Cost |
+> |---:|:---|:---|:---|---:|
+> | 1 | Adventure Kitchen | 1 sk | Portable stove, samovar, canteen, cast iron pots and pans, oils, salts and spices, ladles, tongs, knives, chopping blocks, and more. No more eating raw game! | €100 |
+> | 2 | Ambassador’s Trunk | 1 sk | Fine dress, etiquette manuals, beads, liquors, ink, forgery equipment, sealing wax, hidden drug compartment. Perfect for trade deals or pretending you’re a count. Servant not included but recommended. | €500 |
+> | 3 | Dungeoneer’s Kit | 1 sk | Telescoping pole, net, rope, hook, crowbar, hammer, lamp, oil flasks, block and tackle, pitons, magnifying glass, flour, chalk, grease, lock picks, and bag of marbles. Everything you need to poke around a dungeon. | €100 |
+> | 4 | Excavator’s Kit | 1 sk | Block and tackle, pulley, cable, ropes, snap hooks, carabiners, knives, shovel, pick, crowbar, drill, chain, sledgehammer, rollers. The gear you want for easily removing heavy objects. | €100 |
+> | 5 | Farmboy’s Big Adventure | 1 sk | Backpack with pockets for 5 bonus stones, pet rodent, memento, heirloom weapon, sack’s worth of trail mix. | €10 |
+> | 6 | Golem Coding Gear | 1 sk | Leather tubes of writing paper, inks, pens, chisels, scalpels, ritual writing desk, and portable potter’s wheel. | €200 |
+> | 7 | Inquisitor Standard Case | 1 sk | Pliers, portable rack, small bellows, selection of scalpels, lunchbox, comfortable chair, many colored robes, nice shoes, kissable knuckle rings, fire-starting equipment, and more. You know what it’s for. | €200 |
+> | 8 | Mechanic’s Chest | 1 sk | Tough steel chest full of picks, wrenches, nuts, screwdrivers, ratchets, extractors, pliers, hammers, snips, crimpers, files, scrapers, keys, Allen wrenches, bolts, wire, glue, duct tape and suggestive literature. | €200 |
+> | 9 | The Original Medikit | 1 sk | Everything a real doctor could want. Stethoscope, scalpels, placebos, alcohol, morphine and degree included. | €300 |
+> | 10 | My First Archaeologist Kit | 1 sk | Shovels, picks, sacks, ropes, buckets, brushes, pith helmets, more mustache wax, shiny boots, safety whip, notebooks, and lamps. Everything a budding tomb raider could want! | €100 |
+> | 11 | Naturalist’s Portable Laboratory | 1 sk | Jars, flasks, pins, boxes, nets, scalpels, prods, pens, brushes, paints, notebooks, easels, and an organic source reprogramming handbook (with pictures in five colors!). Perfect for the amateur biomancer. | €200 |
+> | 12 | Navigator’s Suitcase | 1 sk | Case of compasses, maps, little telescopes, odd crystals, and baroque clockwork for astrologer or wayfinder. | €200 |
+> | 13 | Necromancer Gear | 2 sk | Saws, knives, scalpels, stakes, hammers, leather cords, needles, petri dishes, wires, batteries, starters, and legal tomes. Tailored to the aspiring dead-talker. | €300 |
+> | 14 | Porter’s Pack | 1 sk | Great walking boots, beat-up tea flask, extra water bottle, sunscreen, lamp, bandages, sleeping bag, blister cream, numbing chew root, and carry rack for one more sack of supplies. | €20 |
+> | 15 | Prospector’s Kit | 1 sk | Similar to archaeologist kit, but more hammers, a hidden revolver or stiletto, and fewer beauty products. | €50 |
+> | 16 | Revolutionary’s Kit | 1 sk | Brand new boiler suit, cap, elegant leisure suit, diary, list of contacts, pens, pencils, romantic novels, unreadable treatises, rousing pamphlets, cigarettes, oldtech lighter, bomb, fuze, pistol. | €100 |
+> | 17 | Shaman’s Gear | 1 sk | Psychopomp relics, antivenom, laxatives, emetics, pickles, pipe, tobacco, "tobacco," and a psychedelic brick. | €100 |
+> | 18 | UVG Pro Hiker Kit | 1 sk | The tourist’s dream: toiletries, zinc sunscreen, tent, sturdy walking stick, Greenland army knife, sombrero, mustache wax, kangaroo bag, schnapps and wineskins, nifty cord belt, and a sturdy backpack. | €50 |
+> | 19 | Veterinarian Kit | 1 sk | Saws, rubber gloves, knives, scalpels, leather straps. Everything a doctor could want! Works on humans! | €100 |
+> | 20 | Wizard Tourist’s Chest | 2 sk | Ambulatory golem chest (L4, ferocious, loyal)! Inside: robes, pajamas, three hats, blueprince scrolls, Skerples-brand pens, microscope, spell computer, batteries, illusion projector. Also, 1 sack of spare capacity. | €2,000 |
+>
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:toolkit]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Toolkits
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#inventory-and-sacks
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-toolkits-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **UVG Armors** {#sdm-gear-table-uvg-armors}
+
+> **UVG Armors**
+>
+> Travelers must decide what is suitable or not for the continental steppe climate of the Ultraviolet Grasslands.
+>
+> See [Armor Mechanics](#armor-mechanics) for armor bonus and feature rules.
+>
+> | d20 | Armor or Shield | Armor | Type | Size | Description | Cost |
+> |---:|:---|---:|:---|:---|:---|---:|
+> | 1 | Shield (there is only one) | +2 | Shield | 1 st | A basic shield. Sunder to negate one attack. | €5 |
+> | 2 | Nomad Robes | +1 | Light | 1 st | Cool, with padded bits. | €10 |
+> | 3 | Boiled Leather | +1 | Light | 1 st | Hot. But cheap. And shiny when oiled. Goes well with sandals. | €10 |
+> | 4 | Ballistic Linen Suit | +2 | Light | 1 st | Cool, perfect for the gentleman adventurer. Secret pocket for a nip. | €100 |
+> | 5 | Spiked Leather | +2 | Light | 1 st | Hot, with space for mounting skulls, furs, and masks. | €50 |
+> | 6 | Synthskin Light Environment Suit | +1 | Light | 1 st | Environmental, hot, dedicated to the goddess Hazmaat. Rare. | €150 |
+> | 7 | Cat Armor | +1 | Light | 5 sp | A tiny helmet and little silken cuirass. Ever so cute. Cat-sized. | €200 |
+> | 8 | Skinchanger Suit | +3 | Light | 1 st | Symbiotic biomechanical suit grafted with wearer’s skin. Adapts to different environment in a week. Requires regular feeding. Takes a few hours to fully remove. Versions without face cover possible. | €2,000 |
+> | 9 | Dryland Weave | +3 | Medium | 2 st | Cool. Woven from the cilia of special dryland coral hybrids, surprisingly breathable, cumbersome. | €100 |
+> | 10 | Scale Shirt | +3 | Medium | 2 st | Hot and cumbersome. Made from extinct iron pangolin scales. | €50 |
+> | 11 | Chitin Cuirass | +4 | Medium | 2 st | Cool, cumbersome. Also called lobster armor. | €600 |
+> | 12 | Iron Breastplate | +4 | Medium | 2 st | Hot, cumbersome. A classic. | €400 |
+> | 13 | Watersuit | +4 | Medium | 2 st | Cool-suit of synthskin over woven bone mesh, with uncanny vascular cooling and filtration system. Cumbersome, environmental. | €1,200 |
+> | 14 | Spectral Combat Suit | +5 | Medium | 2 st | Satrapy steel-glass scales with an environment maintenance parasite. Cool, powered 6, environmental, cumbersome. | €2,400 |
+> | 15 | Bone Mesh Armor | +6 | Heavy | 3 st | Horrible product of the bone wizards. Pretty cool, cumbersome. | €500 |
+> | 16 | Chain Mail | +6 | Heavy | 3 st | Hot and cumbersome, but a classic heavy armor design. | €200 |
+> | 17 | Porcelain Walker Suit | +7 | Heavy | 3 st | Cool, powered 6, cumbersome, intravenous. The best in Princely technology, with shiny polychrome ceramic plates. | €600 |
+> | 18 | Splint | +7 | Heavy | 3 st | Hot, cumbersome, primitive, and cheap. | €400 |
+> | 19 | Plate and Ballistic Weave | +8 | Heavy | 4 st | Hot, cumbersome, combines modern smithing with old tailoring. | €1,500 |
+> | 20 | Full Archaic Armor | +8 | Heavy | 3 st | Cool and rare. A suit that’s also a golem. May develop personality, powered 8, environmental, intravenous, cumbersome. | €5,000 |
+>
+>
+>
+> It wouldn’t be a pseudo-colonial-apocalyptic savanna-crawl without guns. Unless specified otherwise, weapons are one-handed.
+>
+> See [UVG Weapon Mechanics](#uvg-weapon-mechanics).
+>
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:armor]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Armors
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-armor-mechanics
+>   - Synthetic_Dream_Machine_01_Quickstart.md#6-defense--ward
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-uvg-armors-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **UVG Weapons** {#sdm-gear-table-uvg-weapons}
+
+> **UVG Weapons**
+>
+> >
+> See [Weapon Mechanics](#weapon-mechanics) for weapon feature rules.
+> >
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:weapon-index]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Weapons
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-uvg-weapons-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Ranged Weapons: Bows and Gun Wands** {#sdm-gear-table-ranged-weapons-bows-and-gun-wands}
+
+> **Ranged Weapons: Bows and Gun Wands**
+>
+> | d15 | Weapon | Damage | Range | Size | Description | Cost |
+> |---:|:---|:---|:---|:---|:---|---:|
+> | 1 | Bow: first among weapons | 1d6 | Medium | 1 st | Two-handed (2H), the lack of features is a feature. | €20 |
+> | 2 | Crossbow | 1d8 | Medium | 1 st | Reload 20 (yes, you have to reload after every shot). | €25 |
+> | 3 | Steppelander Composite Bow | 1d8 | Medium | 1 st | 2H, decent at distant ranges. | €150 |
+> | 4 | Heavy Crossbow | 1d10 | Medium | 2 st | Reload 20, 2H, optional knockback bolts. | €50 |
+> | 5 | Scavenger Bolter | 1d10 | Medium | 2 st | Reload 10, 2H, a basic recycled rifle. | €100 |
+> | 6 | Porcelain Prince Pistol | 2d6 | Short | 5 sp | Reload 2, automatic ceramic, rare. | €300 |
+> | 7 | Violent Cat Rifle | 2d10 | Medium | 2 st | Reload 4, 2H, sturdy and deadly. | €600 |
+> | 8 | Satrap Radiant Gun | 2d12 | Medium | 2 st | Reload 7, 2H, laser, blinding, starts fires, rare. | €1,100 |
+> | 9 | Redland District SMG | 2d6 | Short | 1 st | Reload 1, 2H, burst, revolutionary, rare. | €500 |
+> | 10 | Vome Slagger | 3d6 | Medium | 2 st | Reload 10, frag, usually implanted, rare. | €1,500 |
+> | 11 | Ultra Blaster | 3d6 | Short | 5 sp | Reload 1, radiant, blinding, rare. | €2,000 |
+> | 12 | Blue God Blaster | 4d8 | Close | 1 st | Reload 7, 2H, necrotic, burst, unholy, rare. | €3,000 |
+> | 13 | Inquisition Squirtgun | 1d6 | Short | 5 sp | Reload 5, intravenous, rare. | €300 |
+> | 14 | Voice of Death | 3d10 | Short | 3 st | Reload 10, 2H, sonic, very loud, rare. | €4,000 |
+> | 15 | Black City Matter Disruptor | 3d6* | Long | 1 st | Reload 7, 2H, action at a distance, very rad, very rare. | €13,000 |
+>
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:ranged-weapon]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Ranged Weapons: Bows and Gun Wands
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
+>   - Synthetic_Dream_Machine_01_Quickstart.md#movement-and-range
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-ranged-weapons-bows-and-gun-wands-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Simple Melee Weapons (d8)** {#sdm-gear-table-simple-melee-weapons-d8}
+
+> **Simple Melee Weapons (d8)**
+>
+> | d8 | Weapon | Damage | Range | Size | Features | Cost |
+> |---:|:---|:---|:---|:---|:---|---:|
+> | 1 | Rock | 1d3 | Close | 1 st | Throwing (Short). Can usually roll. | — |
+> | 2 | Dagger: a cult classic | 1d4 | Close | 5 sp | Strength or Agility, throwing (Short). | €2 |
+> | 3 | Battle Stick | 1d4 | Close | 1 st | Strength or Agility. | €1 |
+> | 4 | Axe | 1d6 | Close | 1 st | Combine with a shield for best effect. | €5 |
+> | 5 | Club | 1d6 | Close | 1 st | A cheap, blunt axe. | €1 |
+> | 6 | Spear | 1d6/1d8 | Close | 1 st | Versatile, throwing (Short). | €2 |
+> | 7 | Staff | 1d6/1d8 | Close | 1 st | Versatile. A long stick. | €1 |
+> | 8 | Great Rod | 1d10 | Close | 2 st | Two-handed (2H), a bigger badder stick. | €1 |
+>
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:melee-weapon-simple]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Simple Melee Weapons (d8)
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-simple-melee-weapons-d8-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Military Melee Weapons (d14)** {#sdm-gear-table-military-melee-weapons-d14}
+
+> **Military Melee Weapons (d14)**
+>
+> | d14 | Weapon | Damage | Range | Size | Description | Cost |
+> |---:|:---|:---|:---|:---|:---|---:|
+> | 1 | Whip, Burdenbeast Leather | 1d4 | Close | 1 st | Strength or Agility, reach. Can be used to swing. | €3 |
+> | 2 | Scimitar | 1d6 | Close | 1 st | Strength or Agility. | €15 |
+> | 3 | Flail | 1d8 | Close | 1 st | Swingy and hitty. A symbol of chaos. | €10 |
+> | 4 | Mace | 1d8 | Close | 1 st | Blunty and bashy. A symbol of chaos. | €20 |
+> | 5 | Dagger-axe | 1d8 | Close | 1 st | Sharpy and stabby. A symbol ... ok, is this a joke? | €15 |
+> | 6 | Battle Axe | 1d8/1d10 | Close | 1 st | Versatile (used two-handed deals more damage). | €20 |
+> | 7 | Warhammer | 1d8/1d10 | Close | 1 st | Versatile. | €30 |
+> | 8 | Sabre, Symbol of Chaos | 1d8/1d10 | Close | 1 st | Versatile. Good for ending nonsense. | €45 |
+> | 9 | Great Spear of Stabbing | 1d10 | Close | 2 st | 2H, reach. Whose was that chaos joke? | €5 |
+> | 10 | Halberd of Polearming | 1d10 | Close | 2 st | 2H, reach, armor-cracking. Ok, fine. | €20 |
+> | 11 | Cavalry Lance | 1d12 | Close | 2 st | Mounted, double damage on charge. | €15 |
+> | 12 | Cavalry Sabre | 1d12 | Close | 2 st | Mounted, deal damage with advantage against infantry. | €70 |
+> | 13 | Great Axe | 2d6 | Close | 2 st | 2H, beloved of barbarians. | €40 |
+> | 14 | Great Sword | 2d6 | Close | 2 st | 2H, also goes well with loincloths. | €100 |
+>
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:melee-weapon-military]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Military Melee Weapons (d14)
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-military-melee-weapons-d14-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Weird Melee Weapons (d10)** {#sdm-gear-table-weird-melee-weapons-d10}
+
+> **Weird Melee Weapons (d10)**
+>
+> | d10 | Weapon | Damage | Range | Size | Description | Cost |
+> |---:|:---|:---|:---|:---|:---|---:|
+> | 1 | Cat Claws (Gauntlet) | 1d4 | Close | 5 sp | Counts as an unarmed attack. | €50 |
+> | 2 | Neural Whip | 1d8 | Close | 1 st | Strength or Agility, reach, stuns on natural 20. Beloved of slavers. | €50 |
+> | 3 | Sabre Tooth | 1d8 | Close | 1 st | Str or Agi, necrotic, intravenous. The tooth of a grim predator. | €200 |
+> | 4 | Ceramic Mace | 1d10 | Close | 1 st | Ignores damage resistances. Favored by the Porcelain Princes. | €300 |
+> | 5 | Black City Blade | 1d10 | Close | 1 st | Ignores damage resistances. Whispers to you. | €300 |
+> | 6 | Chain Sword | 1d10/2d8 | Close | 2 st | Versatile. Decapitates on natural 20. | €600 |
+> | 7 | Crystal Swordspear | 1d12 | Close | 2 st | 2H, stores up to 2 direct damage radiant or fire spells. | €450 |
+> | 8 | Vomish Centaur Flail | 2d8 | Close | 2 st | Mounted, double damage on charge, stuns on natural 20. | €300 |
+> | 9 | Ghost Bone Axe | 2d8 | Close | 2 st | 2H, deals full damage to ghosts, ignores undead immunities. | €600 |
+> | 10 | Forty Pound Rare Metal Rod | 2d10 | Close | 4 st | 2H, always loses initiative, stuns on matching damage dice. | €900 |
+>
+> Stranger things have also been found in the wilderness.
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:melee-weapon-weird]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Weird Melee Weapons (d10)
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-weird-melee-weapons-d10-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Implants & Prosthetics** {#sdm-gear-table-implants-and-prosthetics}
+
+> **Implants & Prosthetics**
+>
+> **Implant Varieties**
+>
+> - **Biomantic:** Sculpted from the user’s own flesh. Each such implant reduces Life by 1. Can only be used by organics.
+> - **Golem:** The finest of implants draw their energy from the stars.
+> - **Oldtech:** Cannot be modified without Long Long Ago tools.
+> - **Psychic:** Modulates a creature’s aura, invisible to the naked eye.
+> - **Vampiric:** Inoperable unless fed 1 Life per week.
+> - **Vomish:** Extracted from a vome. These implants require a life-long regimen of healing rituals, prayers, and mech-suppressants (€5/week/implant) to avoid the corruption inherent in the bug-ridden vomish source code.
+>
+> **Integrated**
+>
+> Any active implant occupies one trait slot, not item slots.
+>
+> | d20 | Implant Name | Size | Description | Cost |
+> |---:|:---|:---|:---|---:|
+> | 1 | Autoneurotic Drive | 1 st | Biomantic. Modified neural implants let a creature walk and perform simple tasks even while it sleeps. | €50 |
+> | 2 | Babel Armillary | 1 st | Golem. Oldtech. Semi-sentient direct link bracelets. Communicate with any creature while in physical contact. | €100 |
+> | 3 | Caustic Talons | 1 st | Vampiric. Vomish. Fingernails replaced with acid-tipped talons. Corrode metals. Grant a 1d6 unarmed attack. | €100 |
+> | 4 | Ego Purgative | 1 st | Psychic. Vampiric. Enlightenment on demand. Purges soul of negative vibrations. Increase Aura and Charisma by 1. | €750 |
+> | 5 | Gastric Upgrade | 1 st | Biomantic. PC can now derive sustenance from wood, offal, humus, leather, and most other biomatter. | €100 |
+> | 6 | Gun Spectrum SZX | 1 st | Golem. 2d8 damage, Medium range radiant gun, Reload 2, blinding, starts fires. Concealed. | €3,000 |
+> | 7 | Hibernation Gland | 5 sp | Biomantic. Enter low-metabolic state, reducing resource consumption ten-fold. Can’t move while hibernating. | €100 |
+> | 8 | Homunculus Cyst | 1 st | Biomantic. A rat-sized psychically linked mini-me (L0). Perfect for scouting. | €100 |
+> | 9 | Insolence Engine | 1 st | Oldtech. Psychic. Loaded with seven million adaptive memes of Long Long Ago. Makes angering opponents easy. | €300 |
+> | 10 | Jewel Mind | 1 sp | Oldtech. Replaces wetware brain with a synthetic crystal jewel. Implantation takes 1 week. Increase Thought by 1. | €500 |
+> | 11 | Muscular Augment | 1 st | Biomantic. Stronger muscles ripple under distended flesh, increasing the PCs Strength by 1. | €250 |
+> | 12 | Neural Overdrive | 1 st | Biomantic. Glands to speed up reflexes. Side effects a possibility. Increase Agility by 1. | €250 |
+> | 13 | Pharyngeal Proboscis | 3 sp | Vomish. Sensitive prehensile tubes extend from the throat to carry out detailed chemical sampling and analysis. | €250 |
+> | 14 | Radiothermal Heart | 1 st | Oldtech. Never run out of energy! Never get cold! PC requires half as many supplies. Increase Endurance by 1. | €1,500 |
+> | 15 | Second Brain | 1 st | Oldtech. Records the PC’s experiences (initial backup takes 1 week). Can be installed in another body or machine. | €1,500 |
+> | 16 | Slagger Implant | 2 st | Vomish. 3d6 damage, Medium range frag ray, Reload 10. Can spend 1 Life to reload as a free action. | €1,500 |
+> | 17 | Telescopic Eye | 1 sp | Vomish. The heretic that designed the vomes gifted them with impressive optics: tetrachromatic, capable of seeing in the infrared and ultraviolet. Improved versions have up to 9x zoom and macro enhance. | €250 |
+> | 18 | Vome Arm | 2 st | Vomish. Vampiric. Replaces an arm with a monstrous claw. Increase Strength by 2. Grants a 1d8 unarmed attack. | €500 |
+> | 19 | Vome Legs | 4 st | Vomish. Vampiric. Liquid metal and synthetic flesh appendages. Increase speed (Fast). Increase Endurance by 2. | €750 |
+> | 20 | Vome Photophores | 1 st | Vomish. Dermal upgrade that lets PC modulate their skin like they were a cuttlefish or squid. Shiny! | €200 |
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:implants-prosthetics]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Implants & Prosthetics
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-implants-and-prosthetics-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+
+### Traveler Services
+
+On the road, many things can and do go wrong. Entrepreneurs sprout like mushrooms after a biogenic storm to fix vehicles and voyagers alike. For a fee.
+
+<div class="gear-table-card" markdown="1">
+
+### **Medico-Veterinary Services** {#sdm-gear-table-medico-veterinary-services}
+
+> **Medico-Veterinary Services**
+>
+> | No. | Service | Time | Description (Availability) | Effect | Cost |
+> |---:|:---|:---|:---|:---|---:|
+> | 1 | Medicheck, Basic | 1 day | Untrained doctor provides some autopills (common). | Restore 1d6 Life. | €5 |
+> | 2 | Medicheck, Premium | 1 day | Brand-name doctor unit & a treatment golem (uncommon). | Restore 2d6 Life. | €25 |
+> | 3 | Limbback Services | 1 week | Biomancer grows back a limb using beast egg mass (rare). | Restore or replace a limb. | €200 |
+> | 4 | NuBody Regimen | 2 weeks | Expert biomancer grows a full body from just a head (v rare). | Repair all physical damage. | €1,200 |
+> | 5 | Pathosuppression | 1 day | Course of drugs to slow disease (common). | Stop disease progress for 1d6 weeks. | €10 |
+> | 6 | Purifying Fire | 1 week | Sentient nano-animalcule swarm purges system (rare). | Purge any disease or infection. | €300 |
+> | 7 | Cosmetic Biomancy | 1 day | Get a new face, a new look, or more defined abs (uncommon). | It’s cosmetic. | €50 |
+> | 8 | Functional Biomancy | 1 week | Acquire a new mutation or other beneficial trait (rare). | It’s effective. | €500 |
+> | 9 | Brain Transfer | 1 week | Swap brains, or put brain into a fresh clone body (v rare). | Drastic. Reset all physical stats. | €1,500 |
+> | 10 | Aural Rebalance | 1 day | Crystal healer removes negative vibrations (uncommon). | Pause curse or possession for 1d4+1 weeks. | €50 |
+> | 11 | True Exorcism | 3 days | Trained inquisitor casts out a possessing demon or curse (v rare). | Casts out a demon or void thing. | €300 |
+> | 12 | Blood Replacement | 1 day | Suppresses vampiric and lycanthropic urges (uncommon). | Suppress urges for 1d4+1 weeks. | €75 |
+> | 13 | Controlled Implant | 1 day | Bio-chirurgeon installs an implant or prosthetic (uncommon). | Avoid accidents and infections. | €10 |
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:service-medical]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Medico-Veterinary Services
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#out-of-supplies
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-medico-veterinary-services-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Mechanitechnical Services** {#sdm-gear-table-mechanitechnical-services}
+
+> **Mechanitechnical Services**
+>
+> | No. | Service | Time | Description (Availability) | Effect | Cost |
+> |---:|:---|:---|:---|:---|---:|
+> | 1 | Chopshop, Basic | 1 day | Local blackthumb whacks it with a sonic wrench (uncommon). | Repair 1d8 Life. | €5 |
+> | 2 | Chopshop, Guild | 1 day | Traditional mechanic carefully repairs the machine (rare). | Repair 2d8 Life. | €25 |
+> | 3 | Body Modification | 1 week | Repaint, restyle, refashion, remake. All the res (rare). | Change how a machine looks. | €100 |
+> | 4 | Junkyard Repair | 3 days | Lost wheel, busted cannon, broken cams. All fixed (rare). | As good as new. Just looks different. | €200 |
+> | 5 | Full Rebuild | 2 weeks | Golem wizard revives a dead (0 life) machine or vehicle (v rare). | It’s back! Big and mean as ever. | €1,000 |
+> | 6 | Engine Wizardry | 1 week | Expert technowizard installs a different engine (v rare). | Hopefully it’s a golem drive ... | €1,000 |
+> | 7 | Update Drivers | 1 day | Electric wizard installs new subroutines in a golem (rare). | It learns a new skill. | €500 |
+> | 8 | Install Kit | 1 day | Hereditary welda-fella bolts on a new module (uncommon). | Looks rough, but it works. Technical. | €25 |
+> | 9 | Automind | 3 days | Golemancer installs an autonomous control system (rare). | Full self-driving! About as smart as a roach. | €500 |
+> | 10 | Golem Intelligence | 2 weeks | Golemancer wires and activates a fully sentient mind (x rare). | It’s alive! Personality may vary. | €5,000 |
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:service-mechanitechnical]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Mechanitechnical Services
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-mechanitechnical-services-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **Rest & Relaxation: "Carousing" Spots with Special Features** {#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features}
+
+> **Rest & Relaxation: "Carousing" Spots with Special Features**
+>
+> | No. | Service | Time | Description (Availability) | Effect | Cost |
+> |---:|:---|:---|:---|:---|---:|
+> | 1 | Vagabond Serai | 1 day | Booze, campfire, and vermin under a Long Ago overpass (com.). | Poor rumors. Clues to new discoveries. | €1 |
+> | 2 | Automotel | 1 day | Golem luxury includes charging pod and bugmeal (uncommon). | Improved rest and recovery. | €1 |
+> | 3 | Hot Springs | 1 day | Mercurial waters heated by radiothermal reserves (uncommon). | Helps with stress and breathing problems. | €5 |
+> | 4 | Post-Public Baths | 1 day | Automated cleaning, delousing, grooming, and pampering (rare). | Cures skin ailments, removes vermin. | €5 |
+> | 5 | Aristotel | 1 day | Bonded servants provide a refined experience (rare). | Rich rumors. Clues to trade routes. | €20 |
+> | 6 | Long Ago Museum | 1 day | An altar of lost knowledge and found heresies (rare). | Place to learn new old skills or spells. | €50 |
+> | 7 | Roadside Attraction | 1 day | Unique yet boring experience (uncommon). | Learn tricks about the local culture. | €10 |
+> | 8 | Guns 'R' Us | 3 hours | Weapon themed traveling autofac experience (rare). | Upgrade guns and ammo. | €100 |
+> | 9 | Hedge Witchcraft | 3 hours | Road crone provides curses and potions (uncommon). | Curse an opponent with bad luck. | €25 |
+> | 10 | Eden Dome | 3 days | Leftover from Long Ago, the pinnacle of synthetic bliss (v rare). | Recover all life & ability points. | €200 |
+> | 11 | Memory Beach | 1 day | Sand that sparkles with the light of an older sun (rare). | A week’s worth of solar charging. | €20 |
+> | 12 | Nutrifac Bistro | 3 hours | Arcane biomachine produces perfectly balanced food (v rare). | Cost is per sack of ingestible pink slurry. | €5 |
+> | 13 | Diesolene Stand | 1 hour | Old autorefiner and its tender clone ... is this a trap (rare)? | Cost is per sack (can) of high delta fuel. | €10 |
+> | 14 | Propagandoplex | 1 day | Minds off, old vidys on at this drive-thru multiplex (v rare). | Cure stress, fears, and anxieties. | €15 |
+> | 15 | Theme World | 1 week | A city-sized Long Ago entertainment settlement (v rare). | 1-in-6 chance to win rare plush (€200, 1 st). | €40 |
+> | 16 | Casino Imperial | 1 week | Comes with a golden, limited-use gate to a city (v rare). | 1-in-6 chance of winning big (€1,200). | €300 |
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:service-rest-recovery]
+>   [chapter:gear-services]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Rest & Relaxation
+> - see-also:
+>   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
 <div class="gear-table-card" markdown="1">
 
 ### **Fuel, Power, and Supplies** {#sdm-gear-table-fuel-power-and-supplies}
@@ -2323,12 +3707,13 @@ tags:
 >   [gear]
 >   [source:uvg]
 >   [type:economy-supply]
->   [chapter:gear-services]
->   [confidence:3]
+>   [chapter:vehicles-mounts]
 
 meta:
 > - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Fuel, Power, and Supplies
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE STUFF > Vehicles & Mounts > Energy
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE STUFF > Vehicles & Mounts > Grazing
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE STUFF > Gear & Services > Armors > Powered #
 > - see-also:
 >   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
 >   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
@@ -2387,18 +3772,120 @@ tags:
 >   [gear]
 >   [source:uvg]
 >   [type:trade-goods]
->   [chapter:gear-services]
->   [confidence:3]
+>   [chapter:caravan-trade]
 
 meta:
 > - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Thirty Ultraviolet Trade Goods (d30)
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Trade & Goods > Thirty Ultraviolet Trade Goods (d30)
 > - see-also:
 >   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
 
   <div class="gear-return">
     &nbsp;&nbsp;
     <a class="js-back-link" href="#sdm-gear-table-thirty-ultraviolet-trade-goods-d30-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **UVG Loot, Treasure, and Discovery Economics (Synthesis)** {#sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis}
+
+> **UVG Loot, Treasure, and Discovery Economics (Synthesis)**
+>
+> Chapter-complete economics reference synthesized from UVG Traveler, Grasslands, Caravan, Stuff, Bestiary, and Setting pulls. Use this card to pace discovery value, weight pressure, market realization, and spend loops without replacing existing catalog cards.
+>
+> | Economy Signal | Primary Chapter Pull | Cash Signal | Bulk + Time | Notes |
+> | --- | --- | ---: | --- | --- |
+> | Discovery generation cadence before loot exists | THE CARAVAN > Destinations and Discoveries | No direct € on roll; discovery access is the economic gate | 1 relevant test on arrival; 0-3 discoveries indicated by result band | Procedure-first economy: discovery count determines whether extraction, cache, or trade values can be realized at all. |
+> | Core treasure appraisal baseline | THE CARAVAN > The Pleasure of Treasure | "€50 / €250 / €1,000 / €5,000 / €25,000" per sack by rarity roll | Applies when valuing newly recovered treasure lots | Canonical valuation ladder for adjudicating mixed loot when destination text gives rarity but not explicit cash. |
+> | Cash-as-Bulk conversion anchor | THE CARAVAN > Inventory and Sacks | "€2,500 in coins" equals 1 sack | 1 sack = 10 stones = 100 soaps = 2,500 cash | Hard logistics governor: high cash payouts still consume haul capacity unless converted to letters/debt/favors in play. |
+> | Survival economy floor for overland travel | THE CARAVAN > Inventory and Sacks + How Not To Starve | Supplies typically "€2 to €10 per sack" | Weekly consumption cadence; 1 sack/person/week on caravan scale | Baseline burn rate that turns static treasure into moving caravan time, safety, and route reach. |
+> | Carousing as spend-to-XP conversion | THE TRAVELER + THE GRASSLANDS > Carousing | "€1d6 × 100" spend loop for equivalent XP gain | One week action; penalties/side-effects if underfunded | Primary money sink: converts haul into advancement while introducing social and operational consequences. |
+> | Fixed service and lodging drains at destinations | THE GRASSLANDS > Travel/Rest options | Examples include "€5/week", "€3/week", "€100/week" by social tier/location | Weekly operating burden while staged at nodes | Settlement stay-costs tax longer investigations and incentivize efficient extraction cycles. |
+> | Discovery extraction lanes (repeatable) | THE GRASSLANDS > discovery entries | Common quoted lanes: "€50/sack", "€200/sack", "€300/sack" | Often includes explicit extraction clocks ("1/day", "1d4 days", "1d6 days") | Repeatable low/medium lanes smooth variance between jackpot finds and bad encounter stretches. |
+> | Structured cache and delve payouts | THE GRASSLANDS > discovery caches | Mid-high pulls include "€1,000, 5 sacks", "€4,000", "€5,000, 8 sacks", "€11,000 total" | Usually multi-sack recovery with hazard/clearance overhead | Jackpot events are usually bulk-constrained and danger-gated; payout size alone does not equal immediate liquidity. |
+> | Trade-good ceiling markers | THE CARAVAN > Thirty Ultraviolet Trade Goods (d30) | Upper anchors include "€10,000" and "€25,000" at source | Priced per sack at source; destination multipliers apply in trade procedure | Ceiling prices define top-end economic pressure and justify escort, secrecy, and market-intelligence play. |
+>
+>
+> **UVG Treasure Rarity Band (examples)**
+>
+> #### Uncommon Band (€50)
+>
+> | Found At (Destination/Discovery) | Source Context | Cash | Bulk/Time | Notes |
+> | --- | --- | ---: | --- | --- |
+> | Potsherd Crater > Waterlogged Quarry | "An old quarry, overgrown with thorny edible vines (€50/sack, harvest 1/day per person) and sharp long-grass... Useful sanguine porcelain can still be extracted (€1d6 × 10/day per person, worth €200/sack)." | €50/sack | harvest 1/day per person | Uncommon lane with explicit gather cadence and an adjacent higher-value extraction hook. |
+> | Potsherd Crater > Mad Autofarm (transport dock) | "Hours away, through old beam-cut passages... warehouses... are overflowing and metal tins of cat food (€50/sack, collect 1d6 sacks of viable tins per week) spill in a rusting scree slope." | €50/sack | collect 1d6 sacks/week | Repeatable salvage economy tied to site conditions and viable-stock filtering. |
+> | The Low Road and the High > Encounters on the Two Roads | "Lime nomad hunters (L2, canny) returning north with game sacks full of glistening birds (€50 per sack)." | €50/sack | encounter haul | Encounter result converts directly to sack-value with minimal processing overhead. |
+> | Last Serai > Excavated levels | "Skulls and bones. Ancient, ancient skulls and bones (€50/sack, perfect for a museum)." | €50/sack | sack-scaled salvage | Low-band cultural salvage; straightforward loading and resale. |
+> | Gall Grass > Encounter traffic | "Odd travelers (L3, half-nomads) with ancient burdenbeasts and sacks of wriggling, half-living produce (€50/sack)." | €50/sack | caravan cargo | Uncommon commodity flow appears in routine overland traffic, not only fixed sites. |
+>
+> #### Valuable Band (€250)
+>
+> | Found At (Destination/Discovery) | Source Context | Cash | Bulk/Time | Notes |
+> | --- | --- | ---: | --- | --- |
+> | Discoveries High and Low > Motor Agate Outcrop | "A gorgeous, striated ridge... Fragments of rare metal skeletons (€200/sack, 1d6 days to excavate each) are embedded here and there in the outcrop..." | €200/sack | 1d6 days per sack | Valuable-tier pace is constrained by excavation clocks and site exposure. |
+> | Discoveries High and Low > Sealed Gate | "A cratered arched gate... The petrified bones of strange beasts (€300/sack, 1d4 days to excavate a sack) continually emerge from the light, fluffy stone of the area." | €300/sack | 1d4 days per sack | Higher per-sack return offset by dig time and local encounter risk. |
+> | Discoveries High and Low > Potsherd Crown | "A dryland sponge-ridden hole leads to spore fields... and several totally not-elven skeletons (L2, metallic bones, 1 sack and €200 each)." | €200 each | 1 sack each | Metallic bones of destroyed undead foes. Valuables accumulate into transport decisions quickly. |
+> | Steppe of the Lime Nomads > Biomechanical tree site | "It secretes natural oils (€200/sack, harvest 1 per 1d6 days) that lubricate machines and cure aching joints." | €200/sack | 1 per 1d6 days | Valuable extraction with explicit slow-cycle production constraint. |
+> | Dead Shore > Salvation Complexes caches | "...cache of cryonic wands (€1,800/sack), ceramic tins of biomorphic protein (€200 per sack, supplies), or archaic collectible rare-alloy weapons (€750/sack)." | €200/sack | cache pull | Mixed cache lane includes a clean valuable-floor supplies stream. |
+>
+> #### Rare Band (€1,000)
+>
+> | Found At (Destination/Discovery) | Source Context | Cash | Bulk/Time | Notes |
+> | --- | --- | ---: | --- | --- |
+> | Potsherd Crater > Chromium Dome | "A sparkling, smooth dome... contains a cache of ancient music inscribed on malachite rods (€1,000, 5 sacks)." | €1,000 | 5 sacks | Fixed rare cache with immediate multi-sack logistics pressure. |
+> | Porcelain Citadel > Places of Polished Porcelain | "The luminescent velvets and cherries of Porcelain Citadel are said to be a panacea when distilled into the fabled Vavilov-Cherenkov vodka (€1,000/barrel)." | €1,000/barrel | barrel unit | Destination luxury commodity maps cleanly to rare-band pricing. |
+> | Potsherd Crater > Encounters among Shattered Porcelain | "Radiation ghosts... point the way to odd remains (+1 day, digging required, €1d6 × 100 in ancient artifacts, 1 sack)." | €100-€600 | +1 day; 1 sack | Variable artifact lane with explicit time tax and hazard routing. |
+> | Last Serai > Decayed luxury complex | "A small polybody intimate movie recording studio... Well hidden, a series of nature documentaries on vidy crystals (€1,000, 2 sacks)." | €1,000 | 2 sacks | Rare-value media cache with compact haul profile. |
+> | Last Serai > Urban druid ruin cache | "...might discover a cache of metallorganic seeds for ironwood and copperwood bamboo (€1,000) enclosed in a locker labelled in long-forgotten warning runes." | €1,000 | not specified | Rare-value knowledge-material cache; price detached from sack count. |
+>
+> #### Exceptional Band (€5,000)
+>
+> | Found At (Destination/Discovery) | Source Context | Cash | Bulk/Time | Notes |
+> | --- | --- | ---: | --- | --- |
+> | Steppe of the Lime Nomads > Cave Octopus’ Garden | "Rummaging through the debris and biomantic stores reveals ancient and arcane biomantic equipment and supplies from Long Long Ago (€5,000, 8 sacks)." | €5,000 | 8 sacks | Exceptional payout pairs high value with heavy haul and site-risk overhead. |
+> | Steppe of the Lime Nomads > Cryptich of the Craquelure Queen | "At the core... the cryptich... protecting a biomechanical queen... Her biomechanical implants can be looted (€4,000)." | €4,000 | not specified | Boss-site extraction gives near-exceptional value in compact form. |
+> | Porcelain Citadel > Carousing with the Princes (25+) | "€1d6* x 200 spent on a week of debauchery nets as many xp and a carousing roll." | 25+ = Scored a small Porcelain Walker (L8, capacity 8, consumes biomass, €4,000). It’s ... impressive." | €4,000 | capacity 8 | Carousing can output high-value assets, not only coin or trinket liquidity. |
+> | Last Serai > Excavated pre-fab dwelling | "There is a deactivated space-time portal machine (€10,000 and 3 rare parts to repair) inside." | €10,000 | repair-gated | Above exceptional baseline; value is gated by parts and technical activation. |
+> | South-facing passage > Deep machine-corrupted chamber | "...the Emperor of Post-Humanity... Surrounded by ancient artifacts (€10,000, 2d6 sacks)..." | €10,000 | 2d6 sacks | High-end delve jackpot with severe opposition and bulk burden. |
+>
+> #### Unique Band (€25,000)
+>
+> | Found At (Destination/Trade Source) | Source Context | Cash | Bulk/Time | Notes |
+> | --- | --- | ---: | --- | --- |
+> | THE CARAVAN > Thirty Ultraviolet Trade Goods (d30) > #8 Gems and jewels (Source: Spectrum Palace) | Gems and jewels are rare stones of ancient manufacture (rubies, sapphires, emeralds), prized for focusing light, making illusions, and for wands, ray guns, and toys. | €25,000 | per sack at source | Unique-price source anchor with explicit use-context and provenance. |
+> | THE CARAVAN > Thirty Ultraviolet Trade Goods (d30) > #27 Ultra jay needles (Source: Unknown) | Ultra jay needles are a rare drug from crystal feathers of a UV bird, used as a Rainbowlands status symbol and valued for protection from gate sickness. | €25,000 | per sack at source | Unique-price lane with uncertain source, status demand, and control risk. |
+> | Near Moon > Fossil prayer machine complex | "Fossil equipment offers some reward (€500, 5 sacks), but the enormous prayer machine is the real prize (€40,000, 20 sacks)." | €40,000 | 20 sacks | Unique+ macro-loot: exceeds baseline unique value and imposes major transport demand. |
+> | Near Moon > Custodian Death chamber | "The Custodian Death wields a great mirror blade... This blade would be worth a fortune to any autarch on the quick world (€50,000 or so)." | €50,000 | item-scale | Unique+ singular artifact valuation tied to elite-buyer market, not commodity trade. |
+
+tags:
+>   [gear]
+>   [source:uvg]
+>   [type:economy-synthesis]
+>   [chapter:caravan-trade]
+
+meta:
+> - source:
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE TRAVELER > The Six-Fold System Rosetta > Experience (Carousing)
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE GRASSLANDS > destination discovery/economics entries
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Inventory and Sacks
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > The Pleasure of Treasure
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Destinations and Discoveries
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Out of Supplies
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Trade & Goods (Market Research / Haggling / Local Special Needs / The Catch Is)
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE BESTIARY > On Creatures > Treasure entries
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE SETTING > high-tier destination trade/treasure outcomes
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#sdm-gear-table-fuel-power-and-supplies
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#sdm-gear-table-thirty-ultraviolet-trade-goods-d30
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#sdm-gear-table-100-strange-items
+>   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2518,7 +4005,6 @@ tags:
 >   [source:uvg]
 >   [type:strange-items]
 >   [chapter:gear-services]
->   [confidence:3]
 
 meta:
 > - source:
@@ -2535,1408 +4021,6 @@ meta:
 
 </div>
 
-### **UVG Vehicles and Mounts** {#sdm-gear-table-uvg-vehicles-and-mounts}
-
-> **UVG Vehicles and Mounts**
->
-> Smart players quickly realize that carrying their own supplies is not a good idea. If they do not realize this tell them to get two mules each to be on the safe side.
->
-> The vehicles in the transport table are all less cost effective than animals. It’s hard to keep machines running in the wilderness and their key value is transporting big heavy things that a single mule or camel couldn’t manage like magical sarcophagi, golden idols, and glass cannons.
->
-> | Transport | Lvl | Description | Capacity | Speed | Requires | Cost |
-> |:---|---:|:---|:---|:---|:---|---:|
-> | Human, Common-ass | 0 | Random laborer hired to carry some stuff. Cowardly. | 1 sack | normal | 1 supply | €7/week |
-> | Disposable Slave | 0 | Perfect for evil caravans. | 1 sack | normal | 1 supply | €200 |
-> | Porter | 1 | Tough-ass professionals. | 2 sacks | normal | 1 supply | €20/week |
-> | Slave Porter | 1 | Enslaved tough-ass professional. May be resentful. | 2 sacks | normal | 1 supply | €600 |
-> | Skeleton Porter | 1 | Slow but "ethical," smell-free alternative to slavery. Though ... | 1 sack | slow | necromancy | €200 |
-> | Zombie Porter | 2 | Very slow and a bit smelly ... this necromancy stuff might bother folks. | 2 sacks | v slow | necromancy | €200 |
-> | Pony, Mule or Camel | 1 | The classic solution. | 2 sacks | normal | grazing | €70 |
-> | Combat Steed | 2 | A noble steed, heroic horse or charger camel. Can be ridden in combat. | 2 sacks | normal | grazing | €200 |
-> | Metal Steed | 2 | Fast and flash, it roars like thunder when pushed. Might be a golem. | 2 sacks | fast | 0.5 supply | €1,200 |
-> | Adventuring Handcart | 2 | A glorified wheelbarrow. Requires a human (not included). Slow. | 3 sacks | slow | a human | €10 |
-> | Wicker Autowagon | 3 | Fast, self-propelled golem of synthetic ivory, iron-reed, and rubber. | 3 sacks | fast | 0.5 supply | €2,000 |
-> | Magnificent Velblod | 4 | A true galleon of the trackless steppes. May cause motion-sickness. | 3 sacks | normal | grazing | €300 |
-> | Wagon, Coach, or Cart | 4 | Slow and vulnerable, but trivial to maintain. Require a draft animal. | 6 sacks | slow | an animal | €200 |
-> | Burdenbeast | 5 | Biomantically enhanced small-headed rhinobuffalo. Pretty rare. | 4 sacks | normal | grazing | €600 |
-> | Biomechanical Beast | 6 | Terrifying amalgam of twitching muscle and cybernetic endoskeleton sheathed in synthetic skin. Very rare. Can be ridden in combat. | 6 sacks | normal | grazing | €3,000 |
-> | Road Yacht | 7 | The queen of the Road of the World, the Celestial Autobahn. | 6 sacks | normal | 1 supply | €4,000 |
-> | Solid Coach or Wagon | 7 | Slow and heavy. Require 2 draft animals (not included). | 12 sacks | slow | 2 animals | €600 |
-> | Generic Vech, Porcelain or Prismatic Walker | 9 | Slow, enormous biomechanical beast. Among the most stylish biomech travel systems money can buy. Golem versions also exist. | 12 sacks | slow | 1 supply | €6,000 |
-> | Massive Hauling Wagon | 8 | Very slow. Requires 4 draft animals (not included). | 24 sacks | v slow | 4 animals | €1,500 |
-> | Autogolem | 10 | Slow, self-propelled golem wagon. Armored, tough, and impressive as heck. It drives itself safely -- but beware crossing marshes or rough terrain. Carries 2d3 passengers in ridiculous bolted-on cabins. | 24 sacks | slow | 1 supply | €10,000 |
-> | Meat Crawler | 8 | A gruesome centipede of meat and bone. Very, very slow and smelly. | 24 sacks | v v slow | necromancy | €4,000 |
-> | Epic Floating Barge or Hover Wagon | 4 | Magical float from Long Ago, it can be pulled by a single creature (not included). Very fragile and may be disabled by a single well-placed shot. | 20 sacks | normal | a human or animal | €7,500 |
-> | War Engine | 11 | It’s a tank? To eleven? Ninety tons of thunder, lighting up the night. | 36 sacks | v slow | 2 supply | €20,000 |
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-mount]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
->   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-uvg-vehicles-and-mounts-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-#### **Humanoids** {#sdm-gear-table-humanoids}
-
-> **Humanoids**
->
-> The caravan economics of UVG strongly discourage the use of 1 sack capacity humans. They can carry useful gear or 1 supply. They can’t graze, so they’ll eat that Supply in a week, and then what? It’s just not practical. They’re on the list to cover normal adventuring events and to tempt new players into setting off on a 2-week journey with 1 week of supplies and some instant enemies.
->
-> Porters, or anything that can carry 2 sacks (1 sack of gear, 1 sack of supplies) are better, especially if they know the terrain. The cost of a Porter (€20/week) vs. a Slave Porter (€600) means that renting is much better than buying. The cost is included, though, because nefarious and shortsighted PCs might decide to raise some quick capital by hiring porters in one location and selling them in another.
->
-> **Human (basic)**
->
-> - **Capacity:** 1 sack
-> - **Cost:** €7 per week. €6 if you don’t pay Sundays
-> - **Consumes:** 1 supply per week
-> - **Speed:** Normal
->
-> A random laborer hired to carry stuff. At the bottom of the barrel, there’s not much room for upgrades. Purchase and distribute weapons and gear normally. Just don’t expect to see it again.
->
-> **Disposable Slave**
->
-> - **Capacity:** 1 sack
-> - **Cost:** €200.
-> - **Consumes:** 1 supply per week
-> - **Speed:** Normal
->
-> Managed with threats and fear. Isn’t paid wages. Slavery is evil.
->
-> **Porter**
->
-> - **Capacity:** 2 sacks
-> - **Cost:** €20 per week. Doesn’t work on Sundays.
-> - **Consumes:** 1 supply per week
-> - **Speed:** Normal
->
-> Tough professional. Skilled at packing and carrying stuff, preparing supply depots, and surviving in the wilds.
->
-> **Slave Porter**
->
-> - **Capacity:** 2 sacks
-> - **Cost:** €600
-> - **Consumes:** 1 supply per week
-> - **Speed:** Normal
->
-> Like a porter, but less free and more resentful.
->
-> #### Humanoid Add-ons
->
-> **Explosive Collar:** €20  
-> Occupies: 0 Stones if worn, 1 Stone if carried or stored. Faced with certain death (cranial separation) vs possible death (an ancient tomb, a perilous bridge, or a desperate charge), people may find reserves courage they didn’t know they possessed. Collars are usually sold in 6 packs with a matching remote. Default range is 150 meters or so. Festive color options available.
->
-> **Surgical Obedience:** €50, 50% chance to kill the participant.  
-> With a sharpened spoon, some ultratech crystal neuron lances, strong drugs, and a bit of elbow grease, a (un)licensed neurochirurge will carve away the unpleasantly disobedient bits of a brain. Survivors will cheerfully obey any order. Eat my fingers? You’ve got it, Boss! Charge that hydratiger? I’m on it, yippee! Considered a bit too evil by even the most jaded evil warlords.
->
-> **Fabricated Backstory:** €10  
-> For a nominal cost, the Psychefactors of the Emerald City will root through a subject’s psyche, extract their most shameful deeds, and write a brief report. Slavery feels more tolerable if you think the victims deserve it. Up to 20% of shameful deeds may be filler inserted by the Psychefactor to maximize moral superiority.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-support-humanoid]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Humanoids
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-humanoids-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **Undead** {#sdm-gear-table-undead}
-
-> **Undead**
->
-> Undead creatures require necromantic maintenance from someone with at least a community-level necromechanical degree. This is usually nothing more than a drop or two of their master’s blood per week, perhaps some bolts tightened, and a fresh jolt of magielectric juice. When undead creatures are not maintained, they Degrade (speed declines: Slow > Very Slow > Crawling > Immobile).
->
-> Sometimes a more specific defect is required (roll d6):
->
-> 1. Creature goes amok. Violence ensues.
-> 2. Legs fall off. Well, that’s not good.
-> 3. Arm falls off. Capacity reduced by 1 sack.
-> 4. Head falls off. Bit blind, but still works if roped along.
-> 5. Antibacterial preserves fail. Gets smelly.
-> 6. Decay. Zombies become skeletons, skeletons fall apart.
->
-> **Skeleton Porter**
->
-> - **Capacity:** 1 sack
-> - **Cost:** €200
-> - **Consumes:** Nothing
-> - **Speed:** Slow
->
-> Formerly, a useless nobody. Now a useful ... biomachine.
->
-> **Skeleton Add-Ons**
->
-> **Chrome Plating:** €10  
-> Say goodbye to stealth. Thoughtful bandits may mistake the skeletons for combat golems, glitterdust ghosts, or something worse.
->
-> **Geometric Protocol:** €20
->
-> At a shouted word of command, the skeletons assemble into a prearranged formation or shape. With enough skeletons, a caravan can create an observation tower, a wall, or a bone crab.
->
-> **Zombie Porter**
->
-> - **Capacity:** 2 sacks
-> - **Cost:** €200
-> - **Consumes:** Nothing
-> - **Speed:** Very Slow
->
-> **Zombie Add-Ons**
->
-> **Rubberized Coating:** €10  
-> A thick layer of flesh-preserving epoxy. Sealed glass goggles and copper ear-discs keep the smell inside while letting the zombie function at peak efficiency.
->
-> **Berserker Gland:** €50
->
-> A mechanical combat routine jewel. Insert it into the zombie and activate it later with the remote wand, turning the zombie into a relentless killing machine. The activation is irreversible and the zombie cannot tell friend from foe, so plan carefully.
->
-> **Meat Crawler**
->
-> - **Capacity:** 24 sacks
-> - **Cost:** €2,000
-> - **Consumes:** Nothing
-> - **Speed:** Very, Very Slow
->
-> What do you do if you come across a plague pit and have both a necromancer and a boneworker on hand? Not this. Please, do not do this. Giant meat and bone centipedes are not a good idea. Unlike single-body undead, the meat crawler can go months before it degrades enough to impede its mobility. That said, mobility was never the point of this abomination, was it?
->
-> **Meat Crawler Add-Ons**
->
-> **Dermal plating:** €800  
-> Up-armored, the meat crawler is essentially immune to small arms and any melee weapon weaker than a chainsaw.
->
-> **Skin tent:** €200
->
-> A yurt of leather and sinew growing on the meat crawler’s back. Space for up to 12 humans with good nasal filters.
->
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-support-undead]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Undead
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-undead-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-#### **Beasts of Burden** {#sdm-gear-table-beasts-of-burden-uvg}
-
-> **Beasts of Burden**
->
-> In these fallen times traditional work animals, like lopebeavers and honkazelles, are found in most rustic parts of the Rainbowlands. However, for journeys into the Ultraviolet Grasslands, only tried and tested beasts of burden will do.
->
-> **Pony or Mule, or Camel**
->
-> - **Capacity:** 2 sacks
-> - **Cost:** €70
-> - **Consumes:** grazing, or 1 supply per week
-> - **Speed:** Normal
->
-> The sensible solution for caravans since before time began. Eats grass, travels over all terrain in all weather. Also, it’s edible. Consumes supplies in places without vegetation or water.
->
-> **Local Variants?**
->
-> | d10 | A Bit Like A ... | Crossed With A ... | And It Has | Disposition |
-> |---:|:---|:---|:---|:---|
-> | 1 | Horse | Beetle | Superb night vision. | Curious |
-> | 2 | Camel | Catfish | An astonishing odor. | Stubborn |
-> | 3 | Yak | Tortoise | Moisture extraction gills. | Disease-riddled |
-> | 4 | Antelope | Metal Orb | Sticky climbing pads. | Lethargic |
-> | 5 | Bison | Cuttlefish | Phosphorescent spots. | Adorable |
-> | 6 | Iguana | Rat | Prehensile nostrils. | Loyal |
-> | 7 | Toad | Pig | Delicious skin parasites. | Skittish |
-> | 8 | Newt | Cement Mixer | Vestigial wings. | Cunning |
-> | 9 | Rhino | Slug | Root-digging claws. | Competitive |
-> | 10 | Ostrich | Goat | Hyper-adaptable digestion. | Inscrutable |
->
-> **Camel**
->
-> - **Capacity:** 2 sacks
-> - **Cost:** €140
-> - **Consumes:** grazing, or 1 supply per two weeks
-> - **Speed:** Normal
->
-> The solution for desolate deserts. Goes further with less water.
->
-> **Combat Steed**
->
-> - **Capacity:** 2 sacks
-> - **Cost:** €200
-> - **Consumes:** grazing, or 1 supply per week
-> - **Speed:** Normal
->
-> Usually a horse or camel trained for battle. Other animals are not willing to go near melee combat. 1-in-6 combat steeds are carnivorous andrewarks or other strange beasts revived from deep time.
->
-> **Magnificent Velblod**
->
-> - **Capacity:** 3 sacks
-> - **Cost:** €300
-> - **Consumes:** grazing, or 1 supply per two weeks
-> - **Speed:** Normal
->
-> A larger, stronger, more magnificent camel. Also, needs only half a sack per week. May be a high arctic camel.
->
-> **Burdenbeast**
->
-> - **Capacity:** 4 sacks
-> - **Cost:** €600
-> - **Consumes:** grazing, or 2 supply per week
-> - **Speed:** Normal
->
-> Magnificent, shaggy creatures, biomantically engineered to positively enjoy lugging heavy goods for humans. Many grow intensely, emotionally attached to their human masters.
->
-> **Biomechanical Beast**
->
-> - **Capacity:** 6 sacks
-> - **Cost:** €3,000
-> - **Consumes:** grazing, or 3 supply per week
-> - **Speed:** Normal
->
-> Astonishing amalgams of muscle and cybernetics sheathed in superior skin. These very rare creatures of the Long Ago can be ridden in combat. Most ordinary steeds will break before them.
->
-> #### Animal Add-Ons
->
-> **Babel Gem:** €100  
-> Embedded, gives the beast a voice and human-form personality overlay. Works on most beasts, but increases the chance of vomish infection. Obedience not guaranteed.
->
-> **Stepfall Shoes:** €80  
-> Made from bits of oldtech ur-metal. When moving at top speed, the plates add a tiny bit of lift, letting the beast charge across small dips, avoid holes, and leap majestically. They leave xenon contrails.
->
-> **Afterburner:** €60  
-> This convenient surgical upgrade stores gaseous digestive byproducts in a small canister, for use in cooking fires or a sudden burst of speed. The speed increase may just be the result of fear.
->
-> **Plug-in Battery:** €200  
-> Occupies 1 sack. A rechargeable golem-style battery for backup power. The beast can go without grazing for up to four weeks (it still requires water). Alternatively, the battery can recharge a suit of golem armor or other oldtech artifact. Recharging the battery takes a couple of hours at any oldtech charging platform or obelisk.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-mount-animal]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Beasts of Burden
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-beasts-of-burden-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **Wagons, Carts, and Coaches** {#sdm-gear-table-wagons-carts-and-coaches}
-
-> **Wagons, Carts, and Coaches**
->
-> Wheels transformed proto-human lives. The semi-simians began moving large quantities of supplies over long distances. Truly nomadic lifestyles became possible and the humble wheel truly became a symbol of humanity. There would be no modern Grasslands without that ancient round machine.
->
-> **Adventuring Handcart**
->
-> - **Capacity:** 3 sacks
-> - **Cost:** €10
-> - **Requires:** A human.
-> - **Speed:** Slow
->
-> The glorified wheelbarrow doesn’t need much of a road, but it does need some kind of road. Not recommended for battle.
->
-> **Small Wagon, Rickety Coach, or Swaying Cart**
->
-> - **Capacity:** 6 sacks
-> - **Cost:** €200
-> - **Requires:** A draft animal.
-> - **Speed:** Slow
->
-> A classic for a reason. Wains of this type truly opened up the steppes to the known Lime Nomads and the forgotten Flour Nomads.
->
-> **Solid Coach or Wagon**
->
-> - **Capacity:** 12 sacks
-> - **Cost:** €600
-> - **Requires:** two draft animals.
-> - **Speed:** Slow
->
-> Heavy vehicles for big caravans. With their weight they are unsuitable for rough terrain, poor roads, and deep mud. Can take Road Yacht upgrades or below.
->
-> **Massive Hauling Wagon**
->
-> - **Capacity:** 24 sacks
-> - **Cost:** €600
-> - **Requires:** four draft animals.
-> - **Speed:** Very Slow
->
-> How else are you going to move an obelisk? The immense weight of these wagons means they require well-prepared surfaces. Can take War Engine upgrades or below.
->
-> #### Cart and Wagon Add-Ons
->
-> All four sizes of pulled vehicle are a variation and elaboration on the wheel + axle + bed design. They can use the same upgrades, so prices are listed for each of the sizes in order.
->
-> **Sail:** €5 / €10 / €20 / €40
->
-> Adds a tiny bit of extra speed. Not worth quantifying mechanically, but it improves morale (especially if you pass people without a sail). A great way to display your company’s logo.
->
-> **Hull-Tight:** €20 / €40 / €80 / €160  
-> Designed to float across calm rivers. Seams caulked, wheels detachable, handles convertible into steering oars or push-poles.
->
-> **Camo Net:** €10 / €20 / €40 / €80
->
-> Not as good as true rainbow silk, but a cheap and waterproof landscape mimic. Lets you hide your vehicle from casual scouting. Just don’t wander away from your camp in the dark.
->
-> **Chitincap Hull:** €100 / €200 / €400 / €800
->
-> Fibrous, grown and woven components replace heavy wood. The result is a lighter, but equally strong vehicle, that is much easier to maneuver in mud and on poor roads.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-wagon-coach]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Wagons, Carts, and Coaches
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-wagons-carts-and-coaches-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **Metal Steeds** {#sdm-gear-table-metal-steeds}
-
-> **Metal Steeds**
->
-> - **Capacity:** 2 sacks
-> - **Cost:** €1,200
-> - **Requires:** A lack of common sense.
-> - **Consumes:** 1 supply of fuel per 2 weeks
-> - **Speed:** Fast
->
-> One-way tickets to organ donation. If it’s 90% engine, 8% wheels, and 2% seat, it’s a Metal Steed. No space for supplies, no room for error. Goes like the wind on fire. The best are air-breathing, like wicker autogolems, and require no fuel.
->
-> #### Metal Steed Add-Ons
->
-> **Gun Mount:** €50  
-> Lets the rider fire a weapon while roaring along at full speed. The weapon must fit in the rider’s inventory. Attaching or detaching it takes 2 rounds.
->
-> **Sidecar:** €500
->
-> Increases capacity by 1 sack, but loses the Fast trait.
->
-> **Aquatic:** €1,000
->
-> Sometimes, all the good loot is buried at the bottom of a lake. The vehicle is very, very slow on its stubby land-carriage, but it can move underwater. It’s not a proper submarine, just a pressurized pod with engines; a diving suit with attitude. The driver can wiggle their arms through thick diving gloves.
->
-> **Gyrocoptic:** €1,000  
-> Flying in the Ultraviolet Grasslands is a bad idea. Bits of invisible stuckforce shred aircraft. Purple haze rots your brain. Dormant anti-missile defense systems wake up and think "Oh, that looks interesting." Still it beats walking. A caravan with a flying vehicle gains advance warning of most encounters. Fliers ignore terrain.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-metal-steed]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Metal Steeds
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-metal-steeds-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **Wicker Autowagon** {#sdm-gear-table-wicker-autowagon}
-
-> **Wicker Autowagon**
->
-> - **Capacity:** 3 sacks
-> - **Cost:** €2,000
-> - **Consumes:** 1 supply of fuel per 2 weeks
-> - **Speed:** Fast
->
-> A little bigger, a little sturdier, and a whole lot dryer in the rain. Some are literally made of wicker, some just look that way. Fits two people up front and some power snacks in the back. Most are fueled or air-powered, but the finest units from Long Ago come with all-golem-drive. Nothing like limitless energy from the burning of long-forgotten god spirits.
->
-> #### Wicker Autowagon Add-Ons
->
-> **Nitro:** €50 per use
->
-> For up to 1 minute, the vehicle moves at ludicrous speed.
->
-> **Snazzy Paintjob:** €100  
-> Shiny and polished. If normal colors aren’t good enough for you, options include: scarabeo, pearl-tone, fordite swirl supreme, vantablack, gibbon, taupeamarine, and splunge.
->
-> **Jet Booster:** €1,000
->
-> Occupies 1 sack. Probably a terrible idea, but always popular. The vehicle moves at ludicrous speed for up to 10 minutes, soaring across small buildings and large crevasses. Uses up almost all the vehicle’s stored fuel. Proper oldtech jetolene lets the vehicle use this ability twice on one supply of fuel.
->
-> **Dropper:** €300
->
-> Occupies 1 sack. The back of the vehicle opens up and drops something. Could be a mine, attack vomes, oil, or meta-caltrops. The sack occupied by the dropper includes its loadout. For an extra €100, the dropper can launch forward or sideways instead, like an ejector seat or a compressed air cannon.
->
-> **Hover Wheels:** €1,000
->
-> Billowing air-jets, stuckforce discs, or dozens of spinning propeller blades. It’s not practical, but it is cool. Ignores mildly difficult terrain.
->
-> **Hood Ornament:** €100
->
-> Shiny, chrome, and, in emergencies, a good thing to cling on to.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-autowagon]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Wicker Autowagon
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-vehicle-operation-overlays
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-wicker-autowagon-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **Road Yacht** {#sdm-gear-table-road-yacht}
-
-> **Road Yacht**
->
-> - **Capacity:** 6 sacks
-> - **Cost:** €4,000
-> - **Consumes:** 1 supply of fuel per week
-> - **Speed:** Normal
->
-> Back in the old days, these status symbols freely roamed the world.
->
-> All the blackthumbs know their names and their vital gubbins: sparkulator, lightning-whirler, juicebox, caboxylator. Parts are as good as currency in some parts of the Grasslands. While some warriors prefer swift metal steeds or sprightly wicker autogolems, the greatest knights of the road pilot their mighty road yachts.
->
-> #### Road Yacht Add-Ons
->
-> **Luxury Seats:** €300  
-> Made of genuine synth-leather (from genuine synth-cows) and stuffed with autofabulous springs. Even folds down into a bed. Hula bobble-head totem doll optional.
->
-> **Air Conditioning:** €500  
-> Has a magic box that cools the cabin. Probably involves a bound demon. Essential in hot climes. It’s very impressive.
->
-> **Fridgermerator:** €1,000  
-> Occupies 1 sack. Can cool up to 6 sacks of storage space. Excellent for transporting perishable fruit, bodies, fruiting bodies, etc.
->
-> **Para-Radio Set:** €500  
-> Most broadcasts these days aren’t fit for mortal ears, but you can get echoes of tunes long past (or yet to come), coordinate with other vehicles or settlements (weather permitting), and ... U#ERROR404.
->
-> **Loudspeaker:** €100
->
-> Very loud. Blocks negative vibrations.
->
-> **Big Gun:** €1,500  
-> Occupies 2 sacks, typically 1 for the gun and 1 for the ammo, maintenance equipment, and blast shields. Options include:
->   - **Flambeur:** 3d6 fire damage, Medium, Reload 6. Sets on fire.
->   - **Chaingun:** 2d12, Medium, Reload 3. May propel a car backwards.
->   - **Lazor:** 3d8, Short, Reload 5. Can cut down small trees.
->
-> **Turret:** €500  
-> Occupies 1 sack. Lets a gun mount or a big gun fire in all directions instead of a fixed direction. Also makes a vehicle look intimidating.
->
-> **Safe:** €200  
-> Occupies 1 sack. Can hold 1 sack of valuables in a spirit-locked steel egg. Proof against most simple thieves, pilferers, and quarterlings.
->
-> **Smoke Launchers:** €100, plus €10 per use  
-> Medium range. Fills a medium-sized area with opaque smoke. Makes shooting or boarding a caravan difficult, but tends to attract attention. Additional colors available for a small fee.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-road-yacht]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Road Yacht
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-road-yacht-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **Generic Vech, Porcelain or Prismatic Walker** {#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker}
-
-> **Generic Vech, Porcelain or Prismatic Walker**
->
-> - **Capacity:** 12 sacks
-> - **Cost:** €6,000
-> - **Consumes:** 1 supply of fuel per week
-> - **Speed:** Slow
->
-> Tall, striking, astonishing testaments to biomancy. Living creatures modified and adapted to stride across the wastes,
->
-> #### Walker Add-Ons
->
-> **Escape Pod:** €600
->
-> Occupies 1 sack. Lets 4 sacks of capacity (2 people and their inventories) escape a wreck in the event of a catastrophic failure.
->
-> **Chainsaw Arm:** €1,000
->
-> Occupies 3 sacks. Deals 4d8 melee damage and ignores armor. Ponderous and inaccurate against small targets.
->
-> **Boarding Ramp:** €500
->
-> Occupies 1 sack. Folds out to allow people from one vehicle to board another, or cross a wall, or generally get into trouble.
->
-> **Leap Kit:** €1,000
->
-> Rocket-packs, nozzles, and springs let the vehicle leap up to 10m in the air while maintaining its current speed. Jumping too often will inflict structural damage.
->
-> **Cabin Gall:** €250
->
-> Occupies 1 sack. A full-suspension sleep pod for one passenger. Excellent rest guaranteed, do not mind the wasp pheromones.
->
-> **Satraplicator:** €2,000
->
-> Occupies 2 sacks. A medical pod with an automatic mind (or brain) transplanter. Also has space for a ready clone. It is a clone, right?
->
-> **Porcelain Glaze:** €1,000
->
-> Occupies 1 sack. The whole vech is covered in a reflective glaze that protects from lasers, lazors, and mind-altering rays.
->
-> **Full Self-Driving Autobrain Mode:** €1,000  
-> Now it can drive itself. Sometimes steps on small creatures.
->
-> **Grazer Unit:** €3,000
->
-> A mechanical mouth and biomatter converter. Now the walker can feed itself by grazing ... or recycling dead bodies.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-walker]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Generic Vech, Porcelain or Prismatic Walker
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **Autogolem** {#sdm-gear-table-autogolem}
-
-> **Autogolem**
->
-> - **Capacity:** 24 sacks
-> - **Cost:** €10,000
-> - **Consumes:** 1 supply of fuel per week
-> - **Speed:** Slow
->
-> 12 meters long, 2 lanes wide, 65 tons of Golden Age pride. Tour the Grasslands in style with this home away from home and show other traders that you’re richer than them. The autogolem has separate compartments, proper doors, and a very large turning radius.
->
-> #### Autogolem Add-Ons
->
-> **Water Closet:** €500
->
-> Occupies 4 sacks. Toilet, sink, and shower. Ludicrously luxurious for the deep grasslands. Will impress anyone unused to plumbing.
->
-> **Carbecue Pod:** €1,000
->
-> Occupies 2 sacks. Room for a cook to whip up delicious fast food.
->
-> **Observation Deck:** €200
->
-> Useless, impractical, and very classy. If you’re going to sail across the grasslands, a chrome-railed balcony is the place to be on a calm Orangemonth night.
->
-> **Hydraulic Throne:** €1,000
->
-> Occupies 1 sack. Gold-plated, neon-limned, dolly-mounted automechanical seat of grandeur. Larger thrones have larger cranes. Could also be a giant visage with stage flame jets.
->
-> **Ram:** €200
->
-> Occupies 2 sacks. Can be spiked at no extra charge. The better to bulldoze smaller vehicles. Works on zombies, too.
->
-> **Winch, Jacks, and Shovels:** €100
->
-> Occupies 1 sack. Gets a vehicle un-stuck in most conditions.
->
-> **Luxury Pod:** €500  
-> Occupies 2 sacks. A private suite for one person and their gear. Comes with a small writing desk, folding bed-chair, orb lamp, and adorable cupboards for toiletries and snacks.
->
-> **Pleasure Pod:** €1,000
->
-> Occupies 2 sacks. As a luxury pod, but with IV dispensers, drugs cabinet (drugs not included), and additional horizontal surfaces.
->
-> **Medical Pod:** €3,000
->
-> Occupies 4 sacks. Room for 2 patients and a doctor. Proper medical equipment, drains, ominous lights, and sterile plastic sheeting.
->
-> Healing on the road has never been this easy!
->
-> **Levi Drive:** €7,000  
-> Occupies 4 sacks. Uses oldtech fold-field engines and levitation lenses to ... hover magically. Whooshing sound effects, flickering lights, and impressive blasts optional. Ignore difficult terrain and impress the fallen quarterlings who still worship the oldtech.
->
-> _Left: road yacht with levi drive (a semi-legal upgrade)._ _Right: a great war engine of the South Ivory Khan._
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-autogolem]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > Autogolem
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-autogolem-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="gear-table-card" markdown="1">
-
-#### **War Engine** {#sdm-gear-table-war-engine}
-
-> **War Engine**
->
-> - **Capacity:** 36 sacks
-> - **Cost:** €20,000
-> - **Consumes:** 2 supply of fuel per week, 3 supply at top speed (Slow).
-> - **Speed:** Very Slow or Slow
->
-> A mobile fortress, a mobile townhouse, a scavenged autofac, or perhaps just a very big long-haul truck. Fill it up to capacity with weapons and armor, and go conquer some poor steppelanders.
->
-> #### War Engine Add-Ons
->
-> **Armor Plating:** €1,000  
-> Occupies 4 sacks. The vehicle ignores small arms, medium arms, and glancing hits from heavier weapons.
->
-> **Big Treads:** Free  
-> The true all-terrain solution. Cross rocks, rivers, mud, fire, flaming rivers of mud, anti-personnel mines and smaller vehicles. The war engine now moves Incredibly Slowly. Also, always very easy to track.
->
-> **Really Big Gun:** €3,000  
-> Occupies 4 sacks, typically 2 for the gun and 2 for the ammo, fire prevention equipment, and earplugs. Seriously, what are you expecting to fight out here?
->   - **Artillery Tube:** 2d10x1d10, Very Very Long, Reload 20, blast. Ignores intervening terrain and common sense. Very loud. Anything smaller than a road yacht must Save vs evaporation.
->   - **Doom Laser:** 3d20, Very Very Long, Reload 10, requires 1 round to charge before firing. Pwiiizzzzzzk!
->
-> **Coalem Drive:** €2,000
->
-> Occupies 4 sacks, requires 1 engineer. Boilers, furnace, maw, scrapers, smokestacks. The war engine can now graze on any available biomatter, eating its way through the landscape. Coal lets it go a little faster. Doubles as a pizza oven.
->
-> **Warlock Tower:** €2,000
->
-> Occupies 6 sacks. A black tower of steel and rivets and chrome blades rises from the middle of the war engine. It looks scary. Loudspeakers and light show included.
->
-> **Trophy Room:** €2,000  
-> Occupies 12 sacks. Essentially, a mobile feasting hall the size of a longhouse with room for a dozen guests.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:vehicle-war-engine]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Vehicles and Mounts > War Engine
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-transport-fixes--features
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-war-engine-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-### UVG Gear and Services
-
-> "We’re going to the Black City and we don’t care if it’s supposed to take eight weeks, we’ll make it in four and bring enough black-light to set us all up. Now, how many horses will you loan us?" Inge and Ingot, the bearded ambiguously dwarfsh merchants glowered and pointed to the large sign that read, "No Lones to Adventerers, Frybooters or Wagonbonds."
-
-Only gear and services that cost at least a day’s proletarian wages (€1) are listed. Cheaper stuff is available at the referee’s discretion, but the expenses usually don’t have to be tracked. When a PC tries to buy a thousand bars of soap, or something weird like that, the referee decides how much it costs.
-
-The Violet Citadel is the last place in the Rainbowlands to buy supplies for the long crossing. Old hands advise four tubes of sunscreen per traveler, loudmouths suggest it’s possible with two.
-
-<div class="gear-table-card" markdown="1">
-
-### **Grassland General Goods** {#sdm-gear-table-grassland-general-goods}
-
-> **Grassland General Goods**
->
-> | # | Essential Item | Size | Description | Cost |
-> |---:|:---|:---|:---|---:|
-> | 1 | Chronometer | 1 sp | Jeweled timepiece, with date, timer, alarm, timezone, and note-taking functions. | €25 |
-> | 2 | Clicker Box | 5 sp | Handheld electromagnificent radiation detector. Medium range. Picks up 17 kinds of magical and mundane rays. | €50 |
-> | 3 | Curative Snake Oil | 1 sp | Generic remedies against venom, bugs, parasites, diseases, rashes, and blisters. Surprisingly, actually works. | €10 |
-> | 4 | Environment Tent | 2 st | Protects one person from extreme heat and cold and small floods. Recycles liquids and air for up to 1 week. | €100 |
-> | 5 | Exoskelegolem | 5 st | A magical suit of pipes, cables, synthetic flesh, and insectile mind. Increases capacity by 1 sack. | €500 |
-> | 6 | Folding Bed | 2 st | Chitin cap mesh and synthetic flexi-bamboo makes every night’s sleep a joy. Faster healing. | €35 |
-> | 7 | Folding Chair | 1 st | Wonder of wicker pipes, mesh, and tubes. With drinks holder. Very comfortable. Makes stake-outs easy. | €5 |
-> | 8 | Glo Paint | 1 st | With applicator nozzle. Mark your way around Long Long Ago ruins! Bright enough to read by. | €10 |
-> | 9 | Healmachine | 1 st | Restores 2d8 Life to a machine. Repairs cosmetic damage to vehicle bodies. | €60 |
-> | 10 | Lamp, Iron | 1 st | Basic travel lamp, hooded against wind, burns oil, can be used to warm tea. Short range. | €5 |
-> | 11 | Lamp, Solar | 1 sp | Magic lamp of the Long Ago that eats sunlight to emit a short beam of warm light. | €100 |
-> | 12 | Lamp, Spectrum Ray | 1 st | Satrap crystal lamp that projects a long ray of light. Powered by tears and sunlight. Can start fires. | €100 |
-> | 13 | Multi-Auto-Tool | 2 st | 75 standard mechanical tools in one. Disable traps, pick locks, assemble furniture. Powered. | €50 |
-> | 14 | Musical Instrument | 1 st | Guitar, oud, pipa, qanbus, rubab or tambur. Its strings loosen tongues and improve moods at campfires. | €10 |
-> | 15 | Nasal Filters | 1 sp | Stop horrible smells from triggering nausea. Also said to protect against some inhaled toxins. | €5 |
-> | 16 | Oculars | 1 st | Techno-optics with 25x zoom, laser rangefinder, and integrated ad-blocker. | €50 |
-> | 17 | Oldtech Bubble Helmet | 1 st | Prevents blindness. Low-light vision with 5x zoom. High dynamic range display. Recycles air for up to 1 hour. | €500 |
-> | 18 | Omnibattery | 1 st | Recharge anything. Once. Comes in 12 cheery colors. Collect them all. | €50 |
-> | 19 | Portable Illusion | 1 st | Vidy crystal projector. Plays full 9D experiences. Non-wizards may be fooled by these phantasms. Powered. | €250 |
-> | 20 | Ray Bane Navigators | 1 sp | Traditional UV-blocking sun glasses. Also a status symbol among experienced travelers and merchants. | €100 |
-> | 21 | Signal Flare | 1 sp | Glows brightly and smokes for about 10 minutes. A way of saying, "I am here!" Sold in packs of 10. | €3 |
-> | 22 | Smart Rope | 1 st | Wonderful rope that ties or unties itself on command. 20 meters long. Cheaper ropes available. | €10 |
-> | 23 | Supplies, Premium Basic | 1 sk | Dwarf bread, water, hempen cloth, and wrapping rags. [-] to healing and recovery. | €2 |
-> | 24 | Supplies, Voyager | 1 sk | Tinned meat, travel ale, disinfectant schnapps, novelty items, rough newspapers, socks, gum, and prophylactics. | €10 |
-> | 25 | Starwatcher Compass | 2 sp | Displays directions, latitude, longitude, and out-of-date open source map. Requires line of sight to fast stars. | €50 |
-> | 26 | Synthetic Blood | 1 st | A stone’s worth of synthetic blood. For surgery or to feed a vampire for a week. | €20 |
-> | 27 | UV Lotion | 1 sp | Protects from the UV radiation and provides resistance against radiant damage. | €5 |
-> | 28 | VC Healing Lotion | 1 sp | Restores 2d6 Life or 1 physical stat point. | €40 |
-> | 29 | Void Thermos | 1 st | Perfect vacuum seals. Maintains tea, soup, or bio slurry at same temperature for a week. | €25 |
-> | 30 | Water Purification Pills | 1 sp | Makes a week’s worth of water fit to drink. Kills bacteria and viruses. Removes some toxins. Sold as 10-pack. | €5 |
->
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:general-goods]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Grassland General Goods
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#inventory-and-sacks
->   - Synthetic_Dream_Machine_01_Quickstart.md#units-and-encumbrance
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-grassland-general-goods-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Toolkits** {#sdm-gear-table-toolkits}
-
-> **Toolkits**
->
-> Portable bundles, ready-made for heroes venturing out into the grasslands. They give advantage to relevant tests. Unsurprisingly, a hero carrying both a kit and a full backpack of premium basic supplies is encumbered -- mules do help.
->
-> | # | Tool or Kit | Size | Description | Cost |
-> |---:|:---|:---|:---|---:|
-> | 1 | Adventure Kitchen | 1 sk | Portable stove, samovar, canteen, cast iron pots and pans, oils, salts and spices, ladles, tongs, knives, chopping blocks, and more. No more eating raw game! | €100 |
-> | 2 | Ambassador’s Trunk | 1 sk | Fine dress, etiquette manuals, beads, liquors, ink, forgery equipment, sealing wax, hidden drug compartment. Perfect for trade deals or pretending you’re a count. Servant not included but recommended. | €500 |
-> | 3 | Dungeoneer’s Kit | 1 sk | Telescoping pole, net, rope, hook, crowbar, hammer, lamp, oil flasks, block and tackle, pitons, magnifying glass, flour, chalk, grease, lock picks, and bag of marbles. Everything you need to poke around a dungeon. | €100 |
-> | 4 | Excavator’s Kit | 1 sk | Block and tackle, pulley, cable, ropes, snap hooks, carabiners, knives, shovel, pick, crowbar, drill, chain, sledgehammer, rollers. The gear you want for easily removing heavy objects. | €100 |
-> | 5 | Farmboy’s Big Adventure | 1 sk | Backpack with pockets for 5 bonus stones, pet rodent, memento, heirloom weapon, sack’s worth of trail mix. | €10 |
-> | 6 | Golem Coding Gear | 1 sk | Leather tubes of writing paper, inks, pens, chisels, scalpels, ritual writing desk, and portable potter’s wheel. | €200 |
-> | 7 | Inquisitor Standard Case | 1 sk | Pliers, portable rack, small bellows, selection of scalpels, lunchbox, comfortable chair, many colored robes, nice shoes, kissable knuckle rings, fire-starting equipment, and more. You know what it’s for. | €200 |
-> | 8 | Mechanic’s Chest | 1 sk | Tough steel chest full of picks, wrenches, nuts, screwdrivers, ratchets, extractors, pliers, hammers, snips, crimpers, files, scrapers, keys, Allen wrenches, bolts, wire, glue, duct tape and suggestive literature. | €200 |
-> | 9 | The Original Medikit | 1 sk | Everything a real doctor could want. Stethoscope, scalpels, placebos, alcohol, morphine and degree included. | €300 |
-> | 10 | My First Archaeologist Kit | 1 sk | Shovels, picks, sacks, ropes, buckets, brushes, pith helmets, more mustache wax, shiny boots, safety whip, notebooks, and lamps. Everything a budding tomb raider could want! | €100 |
-> | 11 | Naturalist’s Portable Laboratory | 1 sk | Jars, flasks, pins, boxes, nets, scalpels, prods, pens, brushes, paints, notebooks, easels, and an organic source reprogramming handbook (with pictures in five colors!). Perfect for the amateur biomancer. | €200 |
-> | 12 | Navigator’s Suitcase | 1 sk | Case of compasses, maps, little telescopes, odd crystals, and baroque clockwork for astrologer or wayfinder. | €200 |
-> | 13 | Necromancer Gear | 2 sk | Saws, knives, scalpels, stakes, hammers, leather cords, needles, petri dishes, wires, batteries, starters, and legal tomes. Tailored to the aspiring dead-talker. | €300 |
-> | 14 | Porter’s Pack | 1 sk | Great walking boots, beat-up tea flask, extra water bottle, sunscreen, lamp, bandages, sleeping bag, blister cream, numbing chew root, and carry rack for one more sack of supplies. | €20 |
-> | 15 | Prospector’s Kit | 1 sk | Similar to archaeologist kit, but more hammers, a hidden revolver or stiletto, and fewer beauty products. | €50 |
-> | 16 | Revolutionary’s Kit | 1 sk | Brand new boiler suit, cap, elegant leisure suit, diary, list of contacts, pens, pencils, romantic novels, unreadable treatises, rousing pamphlets, cigarettes, oldtech lighter, bomb, fuze, pistol. | €100 |
-> | 17 | Shaman’s Gear | 1 sk | Psychopomp relics, antivenom, laxatives, emetics, pickles, pipe, tobacco, "tobacco," and a psychedelic brick. | €100 |
-> | 18 | UVG Pro Hiker Kit | 1 sk | The tourist’s dream: toiletries, zinc sunscreen, tent, sturdy walking stick, Greenland army knife, sombrero, mustache wax, kangaroo bag, schnapps and wineskins, nifty cord belt, and a sturdy backpack. | €50 |
-> | 19 | Veterinarian Kit | 1 sk | Saws, rubber gloves, knives, scalpels, leather straps. Everything a doctor could want! Works on humans! | €100 |
-> | 20 | Wizard Tourist’s Chest | 2 sk | Ambulatory golem chest (L4, ferocious, loyal)! Inside: robes, pajamas, three hats, blueprince scrolls, Skerples-brand pens, microscope, spell computer, batteries, illusion projector. Also, 1 sack of spare capacity. | €2,000 |
->
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:toolkit]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Toolkits
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#inventory-and-sacks
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-toolkits-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **UVG Armors** {#sdm-gear-table-uvg-armors}
-
-> **UVG Armors**
->
-> Travelers must decide what is suitable or not for the continental steppe climate of the Ultraviolet Grasslands.
->
-> See [Armor Mechanics](#armor-mechanics) for armor bonus and feature rules.
->
-> | d20 | Armor or Shield | Armor | Type | Size | Description | Cost |
-> |---:|:---|---:|:---|:---|:---|---:|
-> | 1 | Shield (there is only one) | +2 | Shield | 1 st | A basic shield. Sunder to negate one attack. | €5 |
-> | 2 | Nomad Robes | +1 | Light | 1 st | Cool, with padded bits. | €10 |
-> | 3 | Boiled Leather | +1 | Light | 1 st | Hot. But cheap. And shiny when oiled. Goes well with sandals. | €10 |
-> | 4 | Ballistic Linen Suit | +2 | Light | 1 st | Cool, perfect for the gentleman adventurer. Secret pocket for a nip. | €100 |
-> | 5 | Spiked Leather | +2 | Light | 1 st | Hot, with space for mounting skulls, furs, and masks. | €50 |
-> | 6 | Synthskin Light Environment Suit | +1 | Light | 1 st | Environmental, hot, dedicated to the goddess Hazmaat. Rare. | €150 |
-> | 7 | Cat Armor | +1 | Light | 5 sp | A tiny helmet and little silken cuirass. Ever so cute. Cat-sized. | €200 |
-> | 8 | Skinchanger Suit | +3 | Light | 1 st | Symbiotic biomechanical suit grafted with wearer’s skin. Adapts to different environment in a week. Requires regular feeding. Takes a few hours to fully remove. Versions without face cover possible. | €2,000 |
-> | 9 | Dryland Weave | +3 | Medium | 2 st | Cool. Woven from the cilia of special dryland coral hybrids, surprisingly breathable, cumbersome. | €100 |
-> | 10 | Scale Shirt | +3 | Medium | 2 st | Hot and cumbersome. Made from extinct iron pangolin scales. | €50 |
-> | 11 | Chitin Cuirass | +4 | Medium | 2 st | Cool, cumbersome. Also called lobster armor. | €600 |
-> | 12 | Iron Breastplate | +4 | Medium | 2 st | Hot, cumbersome. A classic. | €400 |
-> | 13 | Watersuit | +4 | Medium | 2 st | Cool-suit of synthskin over woven bone mesh, with uncanny vascular cooling and filtration system. Cumbersome, environmental. | €1,200 |
-> | 14 | Spectral Combat Suit | +5 | Medium | 2 st | Satrapy steel-glass scales with an environment maintenance parasite. Cool, powered 6, environmental, cumbersome. | €2,400 |
-> | 15 | Bone Mesh Armor | +6 | Heavy | 3 st | Horrible product of the bone wizards. Pretty cool, cumbersome. | €500 |
-> | 16 | Chain Mail | +6 | Heavy | 3 st | Hot and cumbersome, but a classic heavy armor design. | €200 |
-> | 17 | Porcelain Walker Suit | +7 | Heavy | 3 st | Cool, powered 6, cumbersome, intravenous. The best in Princely technology, with shiny polychrome ceramic plates. | €600 |
-> | 18 | Splint | +7 | Heavy | 3 st | Hot, cumbersome, primitive, and cheap. | €400 |
-> | 19 | Plate and Ballistic Weave | +8 | Heavy | 4 st | Hot, cumbersome, combines modern smithing with old tailoring. | €1,500 |
-> | 20 | Full Archaic Armor | +8 | Heavy | 3 st | Cool and rare. A suit that’s also a golem. May develop personality, powered 8, environmental, intravenous, cumbersome. | €5,000 |
->
->
->
-> It wouldn’t be a pseudo-colonial-apocalyptic savanna-crawl without guns. Unless specified otherwise, weapons are one-handed.
->
-> See [UVG Weapon Mechanics](#uvg-weapon-mechanics).
->
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:armor]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Armors
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-armor-mechanics
->   - Synthetic_Dream_Machine_01_Quickstart.md#6-defense--ward
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-uvg-armors-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **UVG Weapons** {#sdm-gear-table-uvg-weapons}
-
-> **UVG Weapons**
->
-> >
-> See [Weapon Mechanics](#weapon-mechanics) for weapon feature rules.
-> >
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:weapon-index]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > UVG Weapons
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-uvg-weapons-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Ranged Weapons: Bows and Gun Wands** {#sdm-gear-table-ranged-weapons-bows-and-gun-wands}
-
-> **Ranged Weapons: Bows and Gun Wands**
->
-> | d15 | Weapon | Damage | Range | Size | Description | Cost |
-> |---:|:---|:---|:---|:---|:---|---:|
-> | 1 | Bow: first among weapons | 1d6 | Medium | 1 st | Two-handed (2H), the lack of features is a feature. | €20 |
-> | 2 | Crossbow | 1d8 | Medium | 1 st | Reload 20 (yes, you have to reload after every shot). | €25 |
-> | 3 | Steppelander Composite Bow | 1d8 | Medium | 1 st | 2H, decent at distant ranges. | €150 |
-> | 4 | Heavy Crossbow | 1d10 | Medium | 2 st | Reload 20, 2H, optional knockback bolts. | €50 |
-> | 5 | Scavenger Bolter | 1d10 | Medium | 2 st | Reload 10, 2H, a basic recycled rifle. | €100 |
-> | 6 | Porcelain Prince Pistol | 2d6 | Short | 5 sp | Reload 2, automatic ceramic, rare. | €300 |
-> | 7 | Violent Cat Rifle | 2d10 | Medium | 2 st | Reload 4, 2H, sturdy and deadly. | €600 |
-> | 8 | Satrap Radiant Gun | 2d12 | Medium | 2 st | Reload 7, 2H, laser, blinding, starts fires, rare. | €1,100 |
-> | 9 | Redland District SMG | 2d6 | Short | 1 st | Reload 1, 2H, burst, revolutionary, rare. | €500 |
-> | 10 | Vome Slagger | 3d6 | Medium | 2 st | Reload 10, frag, usually implanted, rare. | €1,500 |
-> | 11 | Ultra Blaster | 3d6 | Short | 5 sp | Reload 1, radiant, blinding, rare. | €2,000 |
-> | 12 | Blue God Blaster | 4d8 | Close | 1 st | Reload 7, 2H, necrotic, burst, unholy, rare. | €3,000 |
-> | 13 | Inquisition Squirtgun | 1d6 | Short | 5 sp | Reload 5, intravenous, rare. | €300 |
-> | 14 | Voice of Death | 3d10 | Short | 3 st | Reload 10, 2H, sonic, very loud, rare. | €4,000 |
-> | 15 | Black City Matter Disruptor | 3d6* | Long | 1 st | Reload 7, 2H, action at a distance, very rad, very rare. | €13,000 |
->
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:ranged-weapon]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Ranged Weapons: Bows and Gun Wands
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
->   - Synthetic_Dream_Machine_01_Quickstart.md#movement-and-range
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-ranged-weapons-bows-and-gun-wands-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Simple Melee Weapons (d8)** {#sdm-gear-table-simple-melee-weapons-d8}
-
-> **Simple Melee Weapons (d8)**
->
-> | d8 | Weapon | Damage | Range | Size | Features | Cost |
-> |---:|:---|:---|:---|:---|:---|---:|
-> | 1 | Rock | 1d3 | Close | 1 st | Throwing (Short). Can usually roll. | — |
-> | 2 | Dagger: a cult classic | 1d4 | Close | 5 sp | Strength or Agility, throwing (Short). | €2 |
-> | 3 | Battle Stick | 1d4 | Close | 1 st | Strength or Agility. | €1 |
-> | 4 | Axe | 1d6 | Close | 1 st | Combine with a shield for best effect. | €5 |
-> | 5 | Club | 1d6 | Close | 1 st | A cheap, blunt axe. | €1 |
-> | 6 | Spear | 1d6/1d8 | Close | 1 st | Versatile, throwing (Short). | €2 |
-> | 7 | Staff | 1d6/1d8 | Close | 1 st | Versatile. A long stick. | €1 |
-> | 8 | Great Rod | 1d10 | Close | 2 st | Two-handed (2H), a bigger badder stick. | €1 |
->
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:melee-weapon-simple]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Simple Melee Weapons (d8)
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-simple-melee-weapons-d8-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Military Melee Weapons (d14)** {#sdm-gear-table-military-melee-weapons-d14}
-
-> **Military Melee Weapons (d14)**
->
-> | d14 | Weapon | Damage | Range | Size | Description | Cost |
-> |---:|:---|:---|:---|:---|:---|---:|
-> | 1 | Whip, Burdenbeast Leather | 1d4 | Close | 1 st | Strength or Agility, reach. Can be used to swing. | €3 |
-> | 2 | Scimitar | 1d6 | Close | 1 st | Strength or Agility. | €15 |
-> | 3 | Flail | 1d8 | Close | 1 st | Swingy and hitty. A symbol of chaos. | €10 |
-> | 4 | Mace | 1d8 | Close | 1 st | Blunty and bashy. A symbol of chaos. | €20 |
-> | 5 | Dagger-axe | 1d8 | Close | 1 st | Sharpy and stabby. A symbol ... ok, is this a joke? | €15 |
-> | 6 | Battle Axe | 1d8/1d10 | Close | 1 st | Versatile (used two-handed deals more damage). | €20 |
-> | 7 | Warhammer | 1d8/1d10 | Close | 1 st | Versatile. | €30 |
-> | 8 | Sabre, Symbol of Chaos | 1d8/1d10 | Close | 1 st | Versatile. Good for ending nonsense. | €45 |
-> | 9 | Great Spear of Stabbing | 1d10 | Close | 2 st | 2H, reach. Whose was that chaos joke? | €5 |
-> | 10 | Halberd of Polearming | 1d10 | Close | 2 st | 2H, reach, armor-cracking. Ok, fine. | €20 |
-> | 11 | Cavalry Lance | 1d12 | Close | 2 st | Mounted, double damage on charge. | €15 |
-> | 12 | Cavalry Sabre | 1d12 | Close | 2 st | Mounted, deal damage with advantage against infantry. | €70 |
-> | 13 | Great Axe | 2d6 | Close | 2 st | 2H, beloved of barbarians. | €40 |
-> | 14 | Great Sword | 2d6 | Close | 2 st | 2H, also goes well with loincloths. | €100 |
->
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:melee-weapon-military]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Military Melee Weapons (d14)
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-military-melee-weapons-d14-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Weird Melee Weapons (d10)** {#sdm-gear-table-weird-melee-weapons-d10}
-
-> **Weird Melee Weapons (d10)**
->
-> | d10 | Weapon | Damage | Range | Size | Description | Cost |
-> |---:|:---|:---|:---|:---|:---|---:|
-> | 1 | Cat Claws (Gauntlet) | 1d4 | Close | 5 sp | Counts as an unarmed attack. | €50 |
-> | 2 | Neural Whip | 1d8 | Close | 1 st | Strength or Agility, reach, stuns on natural 20. Beloved of slavers. | €50 |
-> | 3 | Sabre Tooth | 1d8 | Close | 1 st | Str or Agi, necrotic, intravenous. The tooth of a grim predator. | €200 |
-> | 4 | Ceramic Mace | 1d10 | Close | 1 st | Ignores damage resistances. Favored by the Porcelain Princes. | €300 |
-> | 5 | Black City Blade | 1d10 | Close | 1 st | Ignores damage resistances. Whispers to you. | €300 |
-> | 6 | Chain Sword | 1d10/2d8 | Close | 2 st | Versatile. Decapitates on natural 20. | €600 |
-> | 7 | Crystal Swordspear | 1d12 | Close | 2 st | 2H, stores up to 2 direct damage radiant or fire spells. | €450 |
-> | 8 | Vomish Centaur Flail | 2d8 | Close | 2 st | Mounted, double damage on charge, stuns on natural 20. | €300 |
-> | 9 | Ghost Bone Axe | 2d8 | Close | 2 st | 2H, deals full damage to ghosts, ignores undead immunities. | €600 |
-> | 10 | Forty Pound Rare Metal Rod | 2d10 | Close | 4 st | 2H, always loses initiative, stuns on matching damage dice. | €900 |
->
-> Stranger things have also been found in the wilderness.
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:melee-weapon-weird]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Weird Melee Weapons (d10)
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-weird-melee-weapons-d10-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Implants & Prosthetics** {#sdm-gear-table-implants-and-prosthetics}
-
-> **Implants & Prosthetics**
->
-> **Implant Varieties**
->
-> - **Biomantic:** Sculpted from the user’s own flesh. Each such implant reduces Life by 1. Can only be used by organics.
-> - **Golem:** The finest of implants draw their energy from the stars.
-> - **Oldtech:** Cannot be modified without Long Long Ago tools.
-> - **Psychic:** Modulates a creature’s aura, invisible to the naked eye.
-> - **Vampiric:** Inoperable unless fed 1 Life per week.
-> - **Vomish:** Extracted from a vome. These implants require a life-long regimen of healing rituals, prayers, and mech-suppressants (€5/week/implant) to avoid the corruption inherent in the bug-ridden vomish source code.
->
-> **Integrated**
->
-> Any active implant occupies one trait slot, not item slots.
->
-> | d20 | Implant Name | Size | Description | Cost |
-> |---:|:---|:---|:---|---:|
-> | 1 | Autoneurotic Drive | 1 st | Biomantic. Modified neural implants let a creature walk and perform simple tasks even while it sleeps. | €50 |
-> | 2 | Babel Armillary | 1 st | Golem. Oldtech. Semi-sentient direct link bracelets. Communicate with any creature while in physical contact. | €100 |
-> | 3 | Caustic Talons | 1 st | Vampiric. Vomish. Fingernails replaced with acid-tipped talons. Corrode metals. Grant a 1d6 unarmed attack. | €100 |
-> | 4 | Ego Purgative | 1 st | Psychic. Vampiric. Enlightenment on demand. Purges soul of negative vibrations. Increase Aura and Charisma by 1. | €750 |
-> | 5 | Gastric Upgrade | 1 st | Biomantic. PC can now derive sustenance from wood, offal, humus, leather, and most other biomatter. | €100 |
-> | 6 | Gun Spectrum SZX | 1 st | Golem. 2d8 damage, Medium range radiant gun, Reload 2, blinding, starts fires. Concealed. | €3,000 |
-> | 7 | Hibernation Gland | 5 sp | Biomantic. Enter low-metabolic state, reducing resource consumption ten-fold. Can’t move while hibernating. | €100 |
-> | 8 | Homunculus Cyst | 1 st | Biomantic. A rat-sized psychically linked mini-me (L0). Perfect for scouting. | €100 |
-> | 9 | Insolence Engine | 1 st | Oldtech. Psychic. Loaded with seven million adaptive memes of Long Long Ago. Makes angering opponents easy. | €300 |
-> | 10 | Jewel Mind | 1 sp | Oldtech. Replaces wetware brain with a synthetic crystal jewel. Implantation takes 1 week. Increase Thought by 1. | €500 |
-> | 11 | Muscular Augment | 1 st | Biomantic. Stronger muscles ripple under distended flesh, increasing the PCs Strength by 1. | €250 |
-> | 12 | Neural Overdrive | 1 st | Biomantic. Glands to speed up reflexes. Side effects a possibility. Increase Agility by 1. | €250 |
-> | 13 | Pharyngeal Proboscis | 3 sp | Vomish. Sensitive prehensile tubes extend from the throat to carry out detailed chemical sampling and analysis. | €250 |
-> | 14 | Radiothermal Heart | 1 st | Oldtech. Never run out of energy! Never get cold! PC requires half as many supplies. Increase Endurance by 1. | €1,500 |
-> | 15 | Second Brain | 1 st | Oldtech. Records the PC’s experiences (initial backup takes 1 week). Can be installed in another body or machine. | €1,500 |
-> | 16 | Slagger Implant | 2 st | Vomish. 3d6 damage, Medium range frag ray, Reload 10. Can spend 1 Life to reload as a free action. | €1,500 |
-> | 17 | Telescopic Eye | 1 sp | Vomish. The heretic that designed the vomes gifted them with impressive optics: tetrachromatic, capable of seeing in the infrared and ultraviolet. Improved versions have up to 9x zoom and macro enhance. | €250 |
-> | 18 | Vome Arm | 2 st | Vomish. Vampiric. Replaces an arm with a monstrous claw. Increase Strength by 2. Grants a 1d8 unarmed attack. | €500 |
-> | 19 | Vome Legs | 4 st | Vomish. Vampiric. Liquid metal and synthetic flesh appendages. Increase speed (Fast). Increase Endurance by 2. | €750 |
-> | 20 | Vome Photophores | 1 st | Vomish. Dermal upgrade that lets PC modulate their skin like they were a cuttlefish or squid. Shiny! | €200 |
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:implants-prosthetics]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Implants & Prosthetics
-> - see-also:
->   - Synthetic_Dream_Machine_05_Gear_Index.md#uvg-weapon-mechanics
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-implants-and-prosthetics-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-
-### Traveler Services
-
-On the road, many things can and do go wrong. Entrepreneurs sprout like mushrooms after a biogenic storm to fix vehicles and voyagers alike. For a fee.
-
-<div class="gear-table-card" markdown="1">
-
-### **Medico-Veterinary Services** {#sdm-gear-table-medico-veterinary-services}
-
-> **Medico-Veterinary Services**
->
-> | No. | Service | Time | Description (Availability) | Effect | Cost |
-> |---:|:---|:---|:---|:---|---:|
-> | 1 | Medicheck, Basic | 1 day | Untrained doctor provides some autopills (common). | Restore 1d6 Life. | €5 |
-> | 2 | Medicheck, Premium | 1 day | Brand-name doctor unit & a treatment golem (uncommon). | Restore 2d6 Life. | €25 |
-> | 3 | Limbback Services | 1 week | Biomancer grows back a limb using beast egg mass (rare). | Restore or replace a limb. | €200 |
-> | 4 | NuBody Regimen | 2 weeks | Expert biomancer grows a full body from just a head (v rare). | Repair all physical damage. | €1,200 |
-> | 5 | Pathosuppression | 1 day | Course of drugs to slow disease (common). | Stop disease progress for 1d6 weeks. | €10 |
-> | 6 | Purifying Fire | 1 week | Sentient nano-animalcule swarm purges system (rare). | Purge any disease or infection. | €300 |
-> | 7 | Cosmetic Biomancy | 1 day | Get a new face, a new look, or more defined abs (uncommon). | It’s cosmetic. | €50 |
-> | 8 | Functional Biomancy | 1 week | Acquire a new mutation or other beneficial trait (rare). | It’s effective. | €500 |
-> | 9 | Brain Transfer | 1 week | Swap brains, or put brain into a fresh clone body (v rare). | Drastic. Reset all physical stats. | €1,500 |
-> | 10 | Aural Rebalance | 1 day | Crystal healer removes negative vibrations (uncommon). | Pause curse or possession for 1d4+1 weeks. | €50 |
-> | 11 | True Exorcism | 3 days | Trained inquisitor casts out a possessing demon or curse (v rare). | Casts out a demon or void thing. | €300 |
-> | 12 | Blood Replacement | 1 day | Suppresses vampiric and lycanthropic urges (uncommon). | Suppress urges for 1d4+1 weeks. | €75 |
-> | 13 | Controlled Implant | 1 day | Bio-chirurgeon installs an implant or prosthetic (uncommon). | Avoid accidents and infections. | €10 |
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:service-medical]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Medico-Veterinary Services
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#out-of-supplies
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-medico-veterinary-services-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Mechanitechnical Services** {#sdm-gear-table-mechanitechnical-services}
-
-> **Mechanitechnical Services**
->
-> | No. | Service | Time | Description (Availability) | Effect | Cost |
-> |---:|:---|:---|:---|:---|---:|
-> | 1 | Chopshop, Basic | 1 day | Local blackthumb whacks it with a sonic wrench (uncommon). | Repair 1d8 Life. | €5 |
-> | 2 | Chopshop, Guild | 1 day | Traditional mechanic carefully repairs the machine (rare). | Repair 2d8 Life. | €25 |
-> | 3 | Body Modification | 1 week | Repaint, restyle, refashion, remake. All the res (rare). | Change how a machine looks. | €100 |
-> | 4 | Junkyard Repair | 3 days | Lost wheel, busted cannon, broken cams. All fixed (rare). | As good as new. Just looks different. | €200 |
-> | 5 | Full Rebuild | 2 weeks | Golem wizard revives a dead (0 life) machine or vehicle (v rare). | It’s back! Big and mean as ever. | €1,000 |
-> | 6 | Engine Wizardry | 1 week | Expert technowizard installs a different engine (v rare). | Hopefully it’s a golem drive ... | €1,000 |
-> | 7 | Update Drivers | 1 day | Electric wizard installs new subroutines in a golem (rare). | It learns a new skill. | €500 |
-> | 8 | Install Kit | 1 day | Hereditary welda-fella bolts on a new module (uncommon). | Looks rough, but it works. Technical. | €25 |
-> | 9 | Automind | 3 days | Golemancer installs an autonomous control system (rare). | Full self-driving! About as smart as a roach. | €500 |
-> | 10 | Golem Intelligence | 2 weeks | Golemancer wires and activates a fully sentient mind (x rare). | It’s alive! Personality may vary. | €5,000 |
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:service-mechanitechnical]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Mechanitechnical Services
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-mechanitechnical-services-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Rest & Relaxation: "Carousing" Spots with Special Features** {#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features}
-
-> **Rest & Relaxation: "Carousing" Spots with Special Features**
->
-> | No. | Service | Time | Description (Availability) | Effect | Cost |
-> |---:|:---|:---|:---|:---|---:|
-> | 1 | Vagabond Serai | 1 day | Booze, campfire, and vermin under a Long Ago overpass (com.). | Poor rumors. Clues to new discoveries. | €1 |
-> | 2 | Automotel | 1 day | Golem luxury includes charging pod and bugmeal (uncommon). | Improved rest and recovery. | €1 |
-> | 3 | Hot Springs | 1 day | Mercurial waters heated by radiothermal reserves (uncommon). | Helps with stress and breathing problems. | €5 |
-> | 4 | Post-Public Baths | 1 day | Automated cleaning, delousing, grooming, and pampering (rare). | Cures skin ailments, removes vermin. | €5 |
-> | 5 | Aristotel | 1 day | Bonded servants provide a refined experience (rare). | Rich rumors. Clues to trade routes. | €20 |
-> | 6 | Long Ago Museum | 1 day | An altar of lost knowledge and found heresies (rare). | Place to learn new old skills or spells. | €50 |
-> | 7 | Roadside Attraction | 1 day | Unique yet boring experience (uncommon). | Learn tricks about the local culture. | €10 |
-> | 8 | Guns 'R' Us | 3 hours | Weapon themed traveling autofac experience (rare). | Upgrade guns and ammo. | €100 |
-> | 9 | Hedge Witchcraft | 3 hours | Road crone provides curses and potions (uncommon). | Curse an opponent with bad luck. | €25 |
-> | 10 | Eden Dome | 3 days | Leftover from Long Ago, the pinnacle of synthetic bliss (v rare). | Recover all life & ability points. | €200 |
-> | 11 | Memory Beach | 1 day | Sand that sparkles with the light of an older sun (rare). | A week’s worth of solar charging. | €20 |
-> | 12 | Nutrifac Bistro | 3 hours | Arcane biomachine produces perfectly balanced food (v rare). | Cost is per sack of ingestible pink slurry. | €5 |
-> | 13 | Diesolene Stand | 1 hour | Old autorefiner and its tender clone ... is this a trap (rare)? | Cost is per sack (can) of high delta fuel. | €10 |
-> | 14 | Propagandoplex | 1 day | Minds off, old vidys on at this drive-thru multiplex (v rare). | Cure stress, fears, and anxieties. | €15 |
-> | 15 | Theme World | 1 week | A city-sized Long Ago entertainment settlement (v rare). | 1-in-6 chance to win rare plush (€200, 1 st). | €40 |
-> | 16 | Casino Imperial | 1 week | Comes with a golden, limited-use gate to a city (v rare). | 1-in-6 chance of winning big (€1,200). | €300 |
-
-tags:
->   [gear]
->   [source:uvg]
->   [type:service-rest-recovery]
->   [chapter:gear-services]
->   [confidence:3]
-
-meta:
-> - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > Rest & Relaxation
-> - see-also:
->   - Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
 ## OUR GOLDEN AGE
 
 ### BLUE LAND
@@ -3960,7 +4044,7 @@ The licensed reintegrator:
 
 <div class="gear-table-card" markdown="1">
 
-### **Weapons Against the Blue God** {#sdm-gear-table-weapons-against-the-blue-god}
+#### **Weapons Against the Blue God** {#sdm-gear-table-weapons-against-the-blue-god}
 
 > **Weapons Against the Blue God**
 >
@@ -3990,7 +4074,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Reintegrated Blue Land Clothing** {#sdm-gear-table-reintegrated-blue-land-clothing}
+#### **Reintegrated Blue Land Clothing** {#sdm-gear-table-reintegrated-blue-land-clothing}
 
 > **Reintegrated Blue Land Clothing**
 >
@@ -4021,7 +4105,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Blue Land Mobility** {#sdm-gear-table-blue-land-mobility}
+#### **Blue Land Mobility** {#sdm-gear-table-blue-land-mobility}
 
 > **Blue Land Mobility**
 >
@@ -4049,7 +4133,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Sundry Rustset Souvenirs** {#sdm-gear-table-sundry-rustset-souvenirs}
+#### **Sundry Rustset Souvenirs** {#sdm-gear-table-sundry-rustset-souvenirs}
 
 > **Sundry Rustset Souvenirs**
 >
@@ -4096,7 +4180,7 @@ Local humans and common travelers must use license bells (lbs), a category of lo
 
 <div class="gear-table-card" markdown="1">
 
-### **Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}
+#### **Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}
 
 > **Cat Approved and Disdained Weapons**
 >
@@ -4126,7 +4210,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Purrfectly Cute Clothing** {#sdm-gear-table-purrfectly-cute-clothing}
+#### **Purrfectly Cute Clothing** {#sdm-gear-table-purrfectly-cute-clothing}
 
 > **Purrfectly Cute Clothing**
 >
@@ -4156,7 +4240,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Violet Transport Systems** {#sdm-gear-table-violet-transport-systems}
+#### **Violet Transport Systems** {#sdm-gear-table-violet-transport-systems}
 
 > **Violet Transport Systems**
 >
@@ -4184,7 +4268,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Friendly Master Memorabilia** {#sdm-gear-table-friendly-master-memorabilia}
+#### **Friendly Master Memorabilia** {#sdm-gear-table-friendly-master-memorabilia}
 
 > **Friendly Master Memorabilia**
 >
@@ -4234,7 +4318,7 @@ As you gain favor with a Red Lander of class and taste, they feel dutybound to h
 
 <div class="gear-table-card" markdown="1">
 
-### **Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}
+#### **Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}
 
 > **PACIFIC PHYLAKE TOWNS**
 >
@@ -4243,7 +4327,7 @@ As you gain favor with a Red Lander of class and taste, they feel dutybound to h
 >
 > Clans, tribes, and dregs who deny the blood-truth of humanity's violent nature are drawn to the grand phylake towers. There they build settlements to live in the peace of the old gods' ageless guardians.
 >
-> ### This Phylake Settlement
+> #### This Phylake Settlement
 >
 > 1. A monastery of mumblemonks and strange servants.
 > 2. Climbing villages and hanging gardens of quarterlings who would live on the luminous flanks.
@@ -4252,7 +4336,7 @@ As you gain favor with a Red Lander of class and taste, they feel dutybound to h
 > 5. Picket fence exurb of free falschers.
 > 6. Old-fashioned town of post-mortal ancestors living free of any descendants.
 >
-> ### There Are Side-Effects
+> #### There Are Side-Effects
 >
 > Over time, the potent anti-war fields and other energies of the phylakes cause strange changes.
 >
@@ -4265,7 +4349,7 @@ As you gain favor with a Red Lander of class and taste, they feel dutybound to h
 > 7. The ego dies, the will is given to the phylake.
 > 8. Skin sprouts leaves, movement feels unnecessary.
 >
-> ### They Trade Odd Produce
+> #### They Trade Odd Produce
 >
 > 1. Blossoms plucked from the phylakes' nostrils.
 > 2. Gasses sucked from the géants' brainstones.
@@ -4329,7 +4413,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Fruits of Blood and Soil** {#sdm-gear-table-fruits-of-blood-and-soil}
+#### **Fruits of Blood and Soil** {#sdm-gear-table-fruits-of-blood-and-soil}
 
 > **Fruits of Blood and Soil**
 >
@@ -4359,7 +4443,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Red Land Dress and Wear** {#sdm-gear-table-red-land-dress-and-wear}
+#### **Red Land Dress and Wear** {#sdm-gear-table-red-land-dress-and-wear}
 
 > **Red Land Dress and Wear**
 >
@@ -4389,7 +4473,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Human Liberty Insurance Gear** {#sdm-gear-table-human-liberty-insurance-gear}
+#### **Human Liberty Insurance Gear** {#sdm-gear-table-human-liberty-insurance-gear}
 
 > **Human Liberty Insurance Gear**
 >
@@ -4419,7 +4503,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Unrusting Travel Options** {#sdm-gear-table-unrusting-travel-options}
+#### **Unrusting Travel Options** {#sdm-gear-table-unrusting-travel-options}
 
 > **Unrusting Travel Options**
 >
@@ -4447,7 +4531,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Sundry Russet Souvenirs** {#sdm-gear-table-sundry-russet-souvenirs}
+#### **Sundry Russet Souvenirs** {#sdm-gear-table-sundry-russet-souvenirs}
 
 > **Sundry Russet Souvenirs**
 >
@@ -4494,47 +4578,45 @@ The billboards mock your rumbling bowels.
 
 From an alley, a bluelander in a vintage voidsuit beckons and mumbles, "Te qambo, change you, cash for cadcard? Yessi, top up?" Up close, the voidsuit reveals itself a pouchsuit, full of the necessities of pleasure and discretion a tourist might require to delve beneath the official skin of the Orange Lands.
 
-### This ASHS Station
+#### AMBER STANDARD HEDONIC STATION
 
-Card in hand you slip into a corner store with a grubby sign marking it as an amber standard hedonic station (ASHS station).
+_"Your money is no good here!" declares the billboard atop the Garden Ziggurats. "The Great Hope provides!" announces the slogan fungus coating the granaries in a carpet of soothing truths. "Your pleasure is our treasure!" scrolls along the parapets of the dreambauchery house._ —From _Twelve Years A Tourist_ by Tarn A. Bassault,
+
+The public slurry pump rattles and wheezes like a dying dragonscough victim. The hedonic card printer whirrs and clanks impotently. It does not recognize you as a Citizen with an allotted pleasure total.
+
+The billboards mock your rumbling bowels.
+
+From an alley, a bluelander in a vintage voidsuit beckons and mumbles, "Te qambo, change you, cash for cadcard? Yessi, top up?" Up close, the voidsuit reveals itself a pouchsuit, full of the necessities of pleasure and discretion a tourist might require to delve beneath the official skin of the Orange Lands.
+
+##### This ASHS Station
+
+Card in hand you slip into a corner store with a grubby sign marking it as an amber standard hedonic station (ASHS station). The vendor is a:
+
+1. sleek four-armed anthropoid, prowling about like a cat, encouraging you to overspend;
+2. grey-skinned human of uncertain provenance;
+3. sickly-smiling falscher covered in cultist carvings;
+4. wooden false skeleton, animated to serve;
+5. glistening giant dressed in free sailor threads;
+6. grim-looking free purplelander resident.
+
+##### Hedonic Burden Review
+
+Citizens Living of the Orange Lands do not need money—each is born with a pleasure budget to cover all their needs for the length of a standard efficient lifetime.
+
+The Head Count University, a ministerial level confederate bureau of the Orange Lands governments, keeps strict time and energy records of every citizen to ensure a meaningful level of state function. Citizens Living whose total lifetime consumption would exceed their allocated pleasure, determined according to their pre-calculated needs, are politely encouraged to join the labor force of the Citizens Dead earlier than their statistical natural lifespan might indicate.
+
+| d6 | Station Name | Personality | Specialty | Quirk |
+|---:|:---|:---|:---|:---|
+| 1 | Charrotte™ | smiling, grinning, biting | living fruits, dead fleshes | products have strange ideas |
+| 2 | Gastric Pleasures® | cold, absent, slow | organic prosthetics | colors change with time |
+| 3 | Happy Orchard Mart | dead, wooden, pungent | liquids viscous and vivid | pleasurable to keep you returning |
+| 4 | NutriTourist VII | odd, off, oily | electric ancestors | share vital source codes to bond |
+| 5 | Plough and Plate | loud, large, in charge | seeds to eat or sow | ingest to reveal gratis side effect |
+| 6 | Vivid in the Flesh | spicy, silky, snakelike | flowers to forget | do not use or cook after midnight |
 
 <div class="gear-table-card" markdown="1">
 
-### **Hedonic Burden Review** {#sdm-gear-table-hedonic-burden-review}
-
-> **Hedonic Burden Review**
->
-> Citizens Living of the Orange Lands do not need money—each is born with a pleasure budget to cover all their needs for the length of a standard efficient lifetime.
->
-> The Head Count University, a ministerial level confederate bureau of the Orange Lands governments, keeps strict time and energy records of every citizen to ensure a meaningful level of state function. Citizens Living whose total lifetime consumption would exceed their allocated pleasure, determined according to their pre-calculated needs, are politely encouraged to join the labor force of the Citizens Dead earlier than their statistical natural lifespan might indicate.
->
-> | d6 | Station Name | Personality | Specialty | Quirk |
-> |---:|:---|:---|:---|:---|
-> | 1 | Charrotte™ | smiling, grinning, biting | living fruits, dead fleshes | products have strange ideas |
-> | 2 | Gastric Pleasures® | cold, absent, slow | organic prosthetics | colors change with time |
-> | 3 | Happy Orchard Mart | dead, wooden, pungent | liquids viscous and vivid | pleasurable to keep you returning |
-> | 4 | NutriTourist VII | odd, off, oily | electric ancestors | share vital source codes to bond |
-> | 5 | Plough and Plate | loud, large, in charge | seeds to eat or sow | ingest to reveal gratis side effect |
-> | 6 | Vivid in the Flesh | spicy, silky, snakelike | flowers to forget | do not use or cook after midnight |
-
-tags:
->   [ ]
-
-meta:
-> - source:
-> - see-also:
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-hedonic-burden-review-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **Fresh Food Only** {#sdm-gear-table-fresh-food-only}
+#### **Fresh Food Only** {#sdm-gear-table-fresh-food-only}
 
 > **Fresh Food Only**
 >
@@ -4564,7 +4646,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Traditional Orange Land Attire** {#sdm-gear-table-traditional-orange-land-attire}
+#### **Traditional Orange Land Attire** {#sdm-gear-table-traditional-orange-land-attire}
 
 > **Traditional Orange Land Attire**
 >
@@ -4594,7 +4676,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Order Maintenance Equipment** {#sdm-gear-table-order-maintenance-equipment}
+#### **Order Maintenance Equipment** {#sdm-gear-table-order-maintenance-equipment}
 
 > **Order Maintenance Equipment**
 >
@@ -4624,7 +4706,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Personal Travel Expression (Orange Land)** {#sdm-gear-table-personal-travel-expression-orange-land}
+#### **Personal Travel Expression (Orange Land)** {#sdm-gear-table-personal-travel-expression-orange-land}
 
 > **Personal Travel Expression (Orange Land)**
 >
@@ -4652,7 +4734,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Approved Orange Land Comfort Purchases** {#sdm-gear-table-approved-orange-land-comfort-purchases}
+#### **Approved Orange Land Comfort Purchases** {#sdm-gear-table-approved-orange-land-comfort-purchases}
 
 > **Approved Orange Land Comfort Purchases**
 >
@@ -4689,7 +4771,7 @@ meta:
 
 Source, Our Golden Age: [Yellow Land](Our_Golden_Age/Our_Golden_Age.md#yellow-land).
 
-### HELIODOR MERCANTILE STANDARD GOODS
+#### HELIODOR MERCANTILE STANDARD GOODS
 
 This established merchant luxuriates in their established form:
 
@@ -4723,7 +4805,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 
 <div class="gear-table-card" markdown="1">
 
-### **Consume To Create** {#sdm-gear-table-consume-to-create}
+#### **Consume To Create** {#sdm-gear-table-consume-to-create}
 
 > **Consume To Create**
 >
@@ -4753,7 +4835,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Fashion For You** {#sdm-gear-table-fashion-for-you}
+#### **Fashion For You** {#sdm-gear-table-fashion-for-you}
 
 > **Fashion For You**
 >
@@ -4783,7 +4865,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Self Defense Systems** {#sdm-gear-table-self-defense-systems}
+#### **Self Defense Systems** {#sdm-gear-table-self-defense-systems}
 
 > **Self Defense Systems**
 >
@@ -4813,7 +4895,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Personal Travel Expression (Heliodor)** {#sdm-gear-table-personal-travel-expression-heliodor}
+#### **Personal Travel Expression (Heliodor)** {#sdm-gear-table-personal-travel-expression-heliodor}
 
 > **Personal Travel Expression (Heliodor)**
 >
@@ -4841,7 +4923,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Saffron Souvenirs Inc. Sym.** {#sdm-gear-table-saffron-souvenirs-inc-sym}
+#### **Saffron Souvenirs Inc. Sym.** {#sdm-gear-table-saffron-souvenirs-inc-sym}
 
 > **Saffron Souvenirs Inc. Sym.**
 >
@@ -4882,7 +4964,7 @@ Source, Our Golden Age: [Green Land](Our_Golden_Age/Our_Golden_Age.md#green-land
 
 <div class="gear-table-card" markdown="1">
 
-### **Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}
+#### **Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}
 
 > **Curios Et Knick Knacks**
 >
@@ -4929,26 +5011,7 @@ meta:
 > 4. Grd [sic] combat harness (+5 ar, 2 st)
 > 5. Surface battlesuit (+8 ar, 3 st)
 > 6. Syncsuit (+3 ar, 1 st)
-
-tags:
->   [ ]
-
-meta:
-> - source:
-> - see-also:
-
-  <div class="gear-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-salvagable-armor-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-<div class="gear-table-card" markdown="1">
-
-### **WHAT DO THESE SYMBOLS MEAN?** {#sdm-gear-table-what-do-these-symbols-mean}
-
+> 
 > **WHAT DO THESE SYMBOLS MEAN?**
 >
 > 1. Noir onion sejant crest solare
@@ -4967,7 +5030,7 @@ meta:
 
   <div class="gear-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-what-do-these-symbols-mean-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#sdm-gear-table-salvagable-armor-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -5000,6 +5063,41 @@ meta:
   <div class="gear-return">
     &nbsp;&nbsp;
     <a class="js-back-link" href="#sdm-gear-table-this-will-work-for-self-defense-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+### **WILL IT STILL GO INTO OVERDRIVE?** {#sdm-gear-table-will-it-still-go-into-overdrive}
+
+#### WILL IT STILL GO INTO OVERDRIVE?
+1. Golem horse (Level 2, carry 2)
+2. Postmortal ridebird (L2, c1, vicious bite)
+3. Robot bike (L1, c1, fast)
+4. Thermonuclear bike & sidecar (L2, c2, hardpoint)
+5. Aerolithic cruiser (L3, c4, hover)
+6. Oldtech grav speeder (L2, c1, fast, ornery)
+
+#### HUH, IT’S A BIT ...
+1. Rusty leaky stripes dangerous
+2. Smelly loose fit flames loud
+3. Red worn out neon angry
+4. Sticky shot up logo thirsty
+5. Riddled fenced eye hungry
+6. Stiff raced face sentient
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-what-do-these-symbols-mean-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
