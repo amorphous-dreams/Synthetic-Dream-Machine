@@ -90,26 +90,40 @@ published: true
     - [**100 Strange Items** {#sdm-gear-table-100-strange-items}](#100-strange-items-sdm-gear-table-100-strange-items)
   - [OUR GOLDEN AGE](#our-golden-age)
     - [BLUE LAND](#blue-land)
+      - [AZURE COMMERCIAL REINTEGRATION PARKS](#azure-commercial-reintegration-parks)
+        - [This Commercial Reintegration Park](#this-commercial-reintegration-park)
+      - [**Fully Vetted Nontoxic Comestables** {#sdm-gear-table-fully-vetted-nontoxic-comestables}](#fully-vetted-nontoxic-comestables-sdm-gear-table-fully-vetted-nontoxic-comestables)
+      - [**Blue Land Travel Options** {#sdm-gear-table-blue-land-travel-options}](#blue-land-travel-options-sdm-gear-table-blue-land-travel-options)
       - [**Weapons Against the Blue God** {#sdm-gear-table-weapons-against-the-blue-god}](#weapons-against-the-blue-god-sdm-gear-table-weapons-against-the-blue-god)
       - [**Reintegrated Blue Land Clothing** {#sdm-gear-table-reintegrated-blue-land-clothing}](#reintegrated-blue-land-clothing-sdm-gear-table-reintegrated-blue-land-clothing)
       - [**Blue Land Mobility** {#sdm-gear-table-blue-land-mobility}](#blue-land-mobility-sdm-gear-table-blue-land-mobility)
       - [**Sundry Rustset Souvenirs** {#sdm-gear-table-sundry-rustset-souvenirs}](#sundry-rustset-souvenirs-sdm-gear-table-sundry-rustset-souvenirs)
     - [PURPLE LAND](#purple-land)
+      - [**Purple Land Travel Options** {#sdm-gear-table-purple-land-travel-options}](#purple-land-travel-options-sdm-gear-table-purple-land-travel-options)
+      - [This Felicitous Licensed Establishment](#this-felicitous-licensed-establishment)
+      - [Purr-Purr Exchange Rates](#purr-purr-exchange-rates)
+      - [**Human Approved Comestibles and Kibbles** {#sdm-gear-table-human-approved-comestibles-and-kibbles}](#human-approved-comestibles-and-kibbles-sdm-gear-table-human-approved-comestibles-and-kibbles)
       - [**Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}](#cat-approved-and-disdained-weapons-sdm-gear-table-cat-approved-and-disdained-weapons)
       - [**Purrfectly Cute Clothing** {#sdm-gear-table-purrfectly-cute-clothing}](#purrfectly-cute-clothing-sdm-gear-table-purrfectly-cute-clothing)
       - [**Violet Transport Systems** {#sdm-gear-table-violet-transport-systems}](#violet-transport-systems-sdm-gear-table-violet-transport-systems)
       - [**Friendly Master Memorabilia** {#sdm-gear-table-friendly-master-memorabilia}](#friendly-master-memorabilia-sdm-gear-table-friendly-master-memorabilia)
     - [RED LAND](#red-land)
-      - [**Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}](#pacific-phylake-towns-sdm-gear-table-pacific-phylake-towns)
+      - [FREEBLOOD VENDINGS](#freeblood-vendings)
+      - [Intoxicating Hosts](#intoxicating-hosts)
+      - [This Liberal Vending](#this-liberal-vending)
+      - [Honor as Currency](#honor-as-currency)
+      - [**Red Land Travel Options** {#sdm-gear-table-red-land-travel-options}](#red-land-travel-options-sdm-gear-table-red-land-travel-options)
       - [**Fruits of Blood and Soil** {#sdm-gear-table-fruits-of-blood-and-soil}](#fruits-of-blood-and-soil-sdm-gear-table-fruits-of-blood-and-soil)
       - [**Red Land Dress and Wear** {#sdm-gear-table-red-land-dress-and-wear}](#red-land-dress-and-wear-sdm-gear-table-red-land-dress-and-wear)
       - [**Human Liberty Insurance Gear** {#sdm-gear-table-human-liberty-insurance-gear}](#human-liberty-insurance-gear-sdm-gear-table-human-liberty-insurance-gear)
       - [**Unrusting Travel Options** {#sdm-gear-table-unrusting-travel-options}](#unrusting-travel-options-sdm-gear-table-unrusting-travel-options)
       - [**Sundry Russet Souvenirs** {#sdm-gear-table-sundry-russet-souvenirs}](#sundry-russet-souvenirs-sdm-gear-table-sundry-russet-souvenirs)
+      - [**Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}](#pacific-phylake-towns-sdm-gear-table-pacific-phylake-towns)
     - [ORANGE LAND](#orange-land)
       - [AMBER STANDARD HEDONIC STATION](#amber-standard-hedonic-station)
         - [This ASHS Station](#this-ashs-station)
         - [Hedonic Burden Review](#hedonic-burden-review)
+      - [**Orange Land Travel Options** {#sdm-gear-table-orange-land-travel-options}](#orange-land-travel-options-sdm-gear-table-orange-land-travel-options)
       - [**Fresh Food Only** {#sdm-gear-table-fresh-food-only}](#fresh-food-only-sdm-gear-table-fresh-food-only)
       - [**Traditional Orange Land Attire** {#sdm-gear-table-traditional-orange-land-attire}](#traditional-orange-land-attire-sdm-gear-table-traditional-orange-land-attire)
       - [**Order Maintenance Equipment** {#sdm-gear-table-order-maintenance-equipment}](#order-maintenance-equipment-sdm-gear-table-order-maintenance-equipment)
@@ -118,12 +132,20 @@ published: true
     - [YELLOW LAND](#yellow-land)
       - [HELIODOR MERCANTILE STANDARD GOODS](#heliodor-mercantile-standard-goods)
       - [This Liberated Trader](#this-liberated-trader)
+      - [**Yellow Land Travel Options** {#sdm-gear-table-yellow-land-travel-options}](#yellow-land-travel-options-sdm-gear-table-yellow-land-travel-options)
       - [**Consume To Create** {#sdm-gear-table-consume-to-create}](#consume-to-create-sdm-gear-table-consume-to-create)
       - [**Fashion For You** {#sdm-gear-table-fashion-for-you}](#fashion-for-you-sdm-gear-table-fashion-for-you)
       - [**Self Defense Systems** {#sdm-gear-table-self-defense-systems}](#self-defense-systems-sdm-gear-table-self-defense-systems)
       - [**Personal Travel Expression (Heliodor)** {#sdm-gear-table-personal-travel-expression-heliodor}](#personal-travel-expression-heliodor-sdm-gear-table-personal-travel-expression-heliodor)
       - [**Saffron Souvenirs Inc. Sym.** {#sdm-gear-table-saffron-souvenirs-inc-sym}](#saffron-souvenirs-inc-sym-sdm-gear-table-saffron-souvenirs-inc-sym)
     - [GREEN LAND](#green-land)
+      - [JOY GOOD DISPENSARY](#joy-good-dispensary)
+      - [This Dispensary](#this-dispensary)
+      - [**Green Land Travel Options** {#sdm-gear-table-green-land-travel-options}](#green-land-travel-options-sdm-gear-table-green-land-travel-options)
+      - [**Eat, Drink, Suck Air** {#sdm-gear-table-eat-drink-suck-air}](#eat-drink-suck-air-sdm-gear-table-eat-drink-suck-air)
+      - [**Appoint Thine Corps** {#sdm-gear-table-appoint-thine-corps}](#appoint-thine-corps-sdm-gear-table-appoint-thine-corps)
+      - [**Hunt Thine Nemesis** {#sdm-gear-table-hunt-thine-nemesis}](#hunt-thine-nemesis-sdm-gear-table-hunt-thine-nemesis)
+      - [**Enjoy Thine Ride** {#sdm-gear-table-enjoy-thine-ride}](#enjoy-thine-ride-sdm-gear-table-enjoy-thine-ride)
       - [**Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}](#curios-et-knick-knacks-sdm-gear-table-curios-et-knick-knacks)
   - [ETERNAL RETURN KEY](#eternal-return-key)
     - [**SALVAGABLE ARMOR!** {#sdm-gear-table-salvagable-armor}](#salvagable-armor-sdm-gear-table-salvagable-armor)
@@ -4021,6 +4043,8 @@ meta:
 
 ### BLUE LAND
 
+#### AZURE COMMERCIAL REINTEGRATION PARKS
+
 Source, Our Golden Age: [Blue Land](Our_Golden_Age/Our_Golden_Age.md#blue-land).
 
 "Everything and everyone is for sale! It's an amazing opportunity!" —Patchick Bel-Bel Ressorum-3, reintegration consultant, former peacemaker
@@ -4037,6 +4061,78 @@ The licensed reintegrator:
 4. shifty wagebound with ill-lifting skin;
 5. jittery lime nomad with metallic arachnid pets;
 6. three robed figures with identical ceramic masks.
+
+##### This Commercial Reintegration Park
+
+| d6 | Reintegration Park | Reintegrator Mien | Specialty | Product Quirk |
+|---:|:---|:---|:---|:---|
+| 1 | Resources & Resources | grasp, grippy, handsy | bacterial biomachines | overheats when excited |
+| 2 | Free People Options | polished, bony, silvery | animated dairy products | spreads like mold ... uh ... it's mold? |
+| 3 | Dairy Free Tech | mild, moist, moldy | lamarckian editors | adapts to better do its job |
+| 4 | Dead God Materials | dry, delighted, dark | detritolith extracts | technology decays near it |
+| 5 | Hydras and Hitches | fleshy, roiling, gassy | living fossils | randomly animates dead insects |
+| 6 | Aerolith Extractions | mechanical, technical | aerolith microstructures | prone to levitating |
+
+<div class="gear-table-card" markdown="1">
+
+#### **Fully Vetted Nontoxic Comestables** {#sdm-gear-table-fully-vetted-nontoxic-comestables}
+
+> **Fully Vetted Nontoxic Comestables**
+>
+> | d6 | Item | Notes | Cost |
+> |---:|:---|:---|---:|
+> | 1 | Scavvie Skewers | Swamp meats and tubers grilled on an engine block. Boost immunity, induce blue visions. | €2 |
+> | 2 | Odsettler Oathmeal | Porridge with pickled fruits, sealed with an oath to the unnamed god. Said to fortify willpower if one stays silent until the next dawn. | €3 |
+> | 3 | Peacemaker Pie | Military rations, mountain herbs, starchewed, and mineral spice. Boosts endurance. Overconsumption causes metallic warts. | €4 |
+> | 4 | Sacred Fondue | Bioluminescent cheese and thinking fungi. Improves night vision, grants unsettling dreams. | €10 |
+> | 5 | Aerolith Ambrosia | Also called "sky honey." Traded by the eusocial bee-human colonies from their protected aerolith islands. Enhance alertness. May triggers a fear of the dark. | €70 |
+> | 6 | Detritolite Delicacies | Preserved oldtech edibles harvested from the scrapstone cannery deposits. May cause toxicosis if prepared by an unskilled chef. Said to give unspecified powers and status. | €350 |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-fully-vetted-nontoxic-comestables-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+#### **Blue Land Travel Options** {#sdm-gear-table-blue-land-travel-options}
+
+> **Blue Land Travel Options**
+>
+> | Type | Status | Price |
+> |:---|:---|---:|
+> | Portal | A narrow week-walk thread links the Ruins Azure to Red End and Safranj. | official [€200] |
+> | Right Road | A week from the Ruins Azure to Metropolis (Emerald City) or the Violet City by armored bus. Soylent pink and hydration fluid are included. | [€30] |
+> | Coasthugger | A week to the Violet City or Metropolis by registered peacemaker vessel (bank). Local law usually by the same route (berth), but they're infested with cultures and take two weeks. | bunk / berth [€15 or €5] |
+> | Air Lane | The skies are thick with archaeomagical debris and closed to private travelers. Peacemakers flag people in need of cash offer interior flapper services. Flights to neighboring lands cost double. | [€200] |
+> | Local (River) | Heavily armored diesel golem barges chug the Indigo River and its tributaries. | rough [€5–30] |
+> | Local (Off-channel) | Local porters are unreliable, as likely to be anthropophages as not. Automules are a better buy. Peacemaker defense golems (L4, bonded) make expensive porters, but worth it. | strange [€15–100] |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-blue-land-travel-options-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
 
 <div class="gear-table-card" markdown="1">
 
@@ -4176,6 +4272,100 @@ Local humans and common travelers must use license bells (lbs), a category of lo
 
 <div class="gear-table-card" markdown="1">
 
+#### **Purple Land Travel Options** {#sdm-gear-table-purple-land-travel-options}
+
+> **Purple Land Travel Options**
+>
+> | Type | Status | Price |
+> |:---|:---|:---|
+> | Portal | There are no official portals in the Purple Land to guard the Circle against the Haze. | "lost" [€500] |
+> | Right Road | A week to the Ruins Azure from the Violet City. Another week beyond to reach the Emerald City. Buses and road trains with luxurious quadruped accommodations ply this busy route. | practical [€20–€30] |
+> | Catamaran | Licensed navettes ply the exclusive economic zone of the Violet City and keep the seas surprisingly free of pirates. A week to the Red Land District or the Ruins Azure. Beyond the Ruins Azure, only vessels with Inquisition sigils are allowed. | deck or cabin [€5 or €20] |
+> | Air Lane | The RLD, Ruins Azure, and Sailing Isles via a single air lane cleared from the Violet City and patrolled by the Flying Fox squadron. For the rest, razor sharp stuckforce fields make the sky lethal to the unwary. Locals recount how this arcane debris tore the Error Dragons to shreds during the Grand Invasion of '86. Expats believe the invasion never happened. | cat-egoric [€125] |
+> | Local (Core) | Registered golem buses ply the old roads to the settlements living and ghost. Plantations, pleasure palaces, and other facilities are not serviced. | humanitarian [€10] |
+> | Local (Peripheric) | Biomechanical vechs carry goods and people among the plantation towns and restricted facilities, and even out beyond the Rim, where locals whisper of wild vomes. | caravanite [€20] |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-purple-land-travel-options-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+#### This Felicitous Licensed Establishment
+
+#### Purr-Purr Exchange Rates
+
+The FBB adjusts exchange rates without notice. Not all currencies may be interchanged. Fees included.
+
+| Sell | Buy (FBB) | Black Market |
+|:---|:---|:---|
+| 1 cash (€) | 1d100 x 10 mlbs | 850 mlbs |
+| 100 brass bells (mlbs) | 1d6 albs | 2 albs |
+| 100 silver bells (albs) | 1d6 x 0.1 ₧ | 0.3 ₧ |
+| 1 favor-stone credit (₧) | €5 | €10 |
+
+For those who prefer things simple, 1 cash buys 500 brass bells, which buy 20 silver bells, which buy a quarter and dime of favor-stone. High-cat credit individuals may trade one favor-stone credit for €5, others get €2.
+
+The master of commerce is a:
+1. snake head grafted onto an animatronic dummy with a vocoder speaker;
+2. electric lucky cat with eyes that bore into you;
+3. jolly cat friend with dead eyes and a rictus smile;
+4. shifty wagabund with ill-fitting skin;
+5. jittery lime nomad with metallic arachnid pets;
+6. three robed figures with identical ceramic masks.
+
+| # | Establishment | Vendor Personality | Specialty | Product Quirk |
+|---:|:---|:---|:---|:---|
+| 1 | Last Table West | slow, drooling, glassy | steeds and servants | shares your secrets with the cats |
+| 2 | Fortunate Sun Wares | jerky, puppet-like, stringy | refurbished oldtech | follows you with its bubbling eyes |
+| 3 | Noon's Saleschurch | giggles, chortles, snorts | nootropics, entheogenics | stops working if not fed regularly |
+| 4 | Plantation Pleasures | slimy, gurgling, bubbly | exotic foodstuffs | glows when exposed to UV light |
+| 5 | Coffee and Cranium | soft, gentle, singing | congealed "magic" texts | grows if ingested or planted |
+| 6 | Excession Hatch IV | bird-like, taut, alert | affordable luxury toys | becomes translucent over time |
+
+<div class="gear-table-card" markdown="1">
+
+#### **Human Approved Comestibles and Kibbles** {#sdm-gear-table-human-approved-comestibles-and-kibbles}
+
+> **Human Approved Comestibles and Kibbles**
+>
+> | d6 | Item | Notes | Price |
+> |---:|:---|:---|---:|
+> | 1 | Human Kibble | Not really people, ha ha. Get the Qlonvet® brand! | 50 mlbs (€1) |
+> | 2 | Snake Frîtes | Made from a local string potato. Absorbs radiation. 10 xp. | 12 albs (€2) |
+> | 3 | Pet Slurry | Traditional human food. Restores 1d6 life, reduces initiative and thought by 1. | 100 mlbs (€4) |
+> | 4 | Haze Cake | Crushed condensed haze, flowers, and bone meal. May produce groovy visions. | 1₧ (€7) |
+> | 5 | Cat Coffee | Narcotic from pre-loved megacoffee berries. Sleep to restore lost mental attributes. | 100 albs (€20) |
+> | 6 | Steppe Burgers | Saddle meat, war bread, slices of bug-repellent onion. So edgy! | 1.5₧ (€10) |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-human-approved-comestibles-and-kibbles-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="gear-table-card" markdown="1">
+
 #### **Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}
 
 > **Cat Approved and Disdained Weapons**
@@ -4301,6 +4491,8 @@ meta:
 
 Source, Our Golden Age: [Red Land](Our_Golden_Age/Our_Golden_Age.md#red-land).
 
+#### FREEBLOOD VENDINGS
+
 Freedom is paid for in blood.
 Those who will not pay, cannot be free.
 
@@ -4308,89 +4500,62 @@ Those who will not pay, cannot be free.
 
 One travels to enrich oneself, does one not? Well, in the Red Land, the gentle visitor can fortify themselves body and soul, gaining life and wisdom. Materialist visitors are reminded that, R.L.D. ideologies notwithstanding, consumption is not the lifeblood of the Red Lands. These lands run on honor, tradition, blood and soil. For what is wealth if not land?
 
-Hosts in the Red Land are fond of plying visitors with their favored vintages. Turning down a toast or beverage is rather gauche. You don't want to be gauche to a blood-drinking vintner lord, do you?
+#### Intoxicating Hosts
+
+Hosts in the Red Land are fond of plying visitors with their favored vintages. Turning down a toast or beverage is rather _gauche_. You don't want to be _gauche_ to a blood-drinking vintner lord, do you?
+
+The rich wines of the Red Land, like other mind-altering beverages, intoxicate the indulging human. Each alcoholic unit of drink occupies a burden slot, one unit dissipates every 4 hours.
+
+#### This Liberal Vending
+
+#### Honor as Currency
 
 As you gain favor with a Red Lander of class and taste, they feel dutybound to host, dine, and wine you in proportion to your honor. This honor to cash conversion guide will help Greenlanders and other materialists.
 
+| # | Honor | Wine & Dine Value | Cash Loan |
+|---:|:---|:---|
+| 1 | Common | no | nil |
+| 2 | Unknown | €2 | nil |
+| 3 | Respectable | €10 | €35 |
+| 4 | Veritable | €50 | €150 |
+| 5 | Magisterial | €250 | €950 |
+| 6 | Majestic | €1.5k | €5k |
+
+The gentle traveler should be aware that overstaying one's welcome is a _faux pas_ and a surefire way to reduce your status. After all, it is by giving that one proves wealth and status, not by taking. No one likes a parasite.
+
+Today's trade-host is a:
+1. plain, plastic-draped, faceless mannikin ... huh;
+2. reflection in a looking glass, a remote ghost;
+3. sturdy dwarfer with a silver neck collar;
+4. vintner down on its luck, water in its veins;
+5. tenant trader with grey skin and eyes;
+6. ruster with symbiotes replacing most of its body, wheezing as it trundles about the vending.
+
+| # | Vending Name | Vendor Personality | Specialty | Product Quirk |
+|---:|:---|:---|:---|:---|
+| 1 | Bottle Perverse | kind, hopeless, cursed | glassware and ghosts | rings with the echo of new creation |
+| 2 | Budget Bunker | paranoid, fidgety, furry | golem and dress codes | autoresets to factory settings |
+| 3 | Chateau Cat Tails | stern, tense, scarred | farm labor beasts | call home at every opportunity |
+| 4 | Fang You Very Much | cackling, handsy, prim | protein beverages | shrivels if not bathed in salt |
+| 5 | Says Agrognome | short, supple, smarmy | sundry intoxicants | do not clean at night |
+| 6 | Steak and Sword | bloodless, thin, steely | rustland envirotech | bleeds orange fluid by moonlight |
+
+
 <div class="gear-table-card" markdown="1">
 
-#### **Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}
+#### **Red Land Travel Options** {#sdm-gear-table-red-land-travel-options}
 
-> **PACIFIC PHYLAKE TOWNS**
+> **Red Land Travel Options**
 >
-> _Between overman and underman,_
-> _is there room to live a human life?_ —Supplicant Schta Voyis, Extramural Settlement 442
->
-> Clans, tribes, and dregs who deny the blood-truth of humanity's violent nature are drawn to the grand phylake towers. There they build settlements to live in the peace of the old gods' ageless guardians.
->
-> #### This Phylake Settlement
->
-> 1. A monastery of mumblemonks and strange servants.
-> 2. Climbing villages and hanging gardens of quarterlings who would live on the luminous flanks.
-> 3. Wagon settlement of rebel vagabonds (_aperu_) who do not recognize the proper authorities of the cities.
-> 4. Lotus-farming collective community attempting to attain a group consciousness.
-> 5. Picket fence exurb of free falschers.
-> 6. Old-fashioned town of post-mortal ancestors living free of any descendants.
->
-> #### There Are Side-Effects
->
-> Over time, the potent anti-war fields and other energies of the phylakes cause strange changes.
->
-> 1. Eyes fade and are replaced with glowing screens.
-> 2. Appetites become strange and post-human.
-> 3. Bodies become translucent and luminous.
-> 4. Minds see places long lost to the present.
-> 5. Memories merge into procedurally generated slurry.
-> 6. Past and future are lost in an eternal now.
-> 7. The ego dies, the will is given to the phylake.
-> 8. Skin sprouts leaves, movement feels unnecessary.
->
-> #### They Trade Odd Produce
->
-> 1. Blossoms plucked from the phylakes' nostrils.
-> 2. Gasses sucked from the géants' brainstones.
-> 3. Lizards hunted among the monsters' toes.
-> 4. Livingstones grown from the creatures' bones.
-> 5. Waters percolated through the beasts' breasts.
-> 6. Protein strands shaved from their body cavities.
-> 7. Flesh excavated from their undying bodies.
-> 8. Ramblings transcribed from their twitching dreams.
->
-> It is precious, delicious, transcendent, life-changing, rare, limited, restricted, and oddly difficult to digest.
->
-> **SDM Synthesis: Odd Produce Trading Procedure (FTLS-aligned)**
->
-> Price odd produce as cash first, then convert to barter, favors, or debt relief if desired.
->
-> **Units and conversion**
-> - 1 **sack (sk)** = 10 **stones (st)** = 100 **soaps (sp)**
-> - **Stone-unit price** = sack price / 10
-> - **Soap-unit price** = sack price / 100
->
-> Use canonical caravan trade procedures in Quickstart:
-> - **Market Research:** [Synthetic_Dream_Machine_01_Quickstart.md#market-research](Synthetic_Dream_Machine_01_Quickstart.md#market-research)
-> - **Buying and Selling the Goods:** [Synthetic_Dream_Machine_01_Quickstart.md#buying-and-selling-the-goods](Synthetic_Dream_Machine_01_Quickstart.md#buying-and-selling-the-goods)
-> - **Haggling Table:** [Synthetic_Dream_Machine_01_Quickstart.md#haggling-table](Synthetic_Dream_Machine_01_Quickstart.md#haggling-table)
->
-> **FTLS add-on context for odd produce (base value before market/haggling):**
-> Set base sack price by Area Level band and produce class.
->
-> | Area Level Band | Market Band | [static] €/sk | [active] / [dynamic] €/sk |
-> |---:|:---|---:|---:|
-> | 0-4 | Low | 100 | 500 |
-> | 5-9 | Medium | 200 | 1,000 |
-> | 10-14 | High | 400 | 2,000 |
-> | 15+ | Epic | 800 | 4,000 |
->
-> **Tag / Rarity Adjustment (odd produce context):**
-> - In-demand, rare, or dangerous tags (e.g., [active], [void], region-critical): `+25%` to `+100%`.
-> - Tainted, illegal, oversupplied, or taboo goods: `-25%` to `-100%` (including no legal market).
->
-> **Bulk Contracts (10+ sk):**
-> - Organizations usually negotiate contracts as cash, access, or rare rewards.
-> - Bonus-die trinkets may be included as part of the package.
->
-> FTLS source context: [Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources)
+> | Type | Status | Price |
+> |:---|:---|:---|
+> | Portal | A narrow week-walk thread links Red End to Safranj and the City Azure. All portals are favorable. Portal outlawed in the Red Land District as affectations of the corrupt capitalist False Lords. | favorable [€50 / "free"] |
+> | Right Road | From the Tollem, a gilt-era velvet cruiser to Red End takes a week and includes food and liberal drinks, while a coalem cargo autobus to Oranje takes just as long and includes nothing. | liberal [€15] |
+> | Coasthugger | From the Red Land District, a week to the Violet City, two weeks to the Decapolis. Wallows from smaller ports like Protein Extraction or Out of Bounds are irregular. Privacy costs more. | steerage [€5 / €25] |
+> | Airbeast | Secure public air-cutter service from the RLD to the Emerald City takes a week along well-marked air lanes clear of archaeomagical debris. Private blimps from €100. | comradely [€50] |
+> | Local (Rivers) | Coalem lobogolem barges connect the towns of coast and river, though passage through the Red Land District is restricted. Free humans require no permits, but pay vein fees. | chugging [€3] |
+> | Local (Inland) | Lobogolem land-trains, automules, and walkers serve the inland towns and remote bunker villages beyond the confluence of the Wine and Blood rivers. Sentient golems are distrusted. | basic [€20] |
+> | Peripheral (Rustcountry) | Ruster guides with automules and thinbreathers are recommended. Solitary travel can be dangerous, as the various iron human and falscher clans levy strange tolls and tarrifs. | exorbitant [€45] |
 
 tags:
 >   [ ]
@@ -4401,7 +4566,7 @@ meta:
 
   <div class="gear-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-pacific-phylake-towns-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#sdm-gear-table-red-land-travel-options-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4561,18 +4726,105 @@ meta:
   </div>
 
 </div>
+<div class="gear-table-card" markdown="1">
+
+#### **Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}
+
+> **PACIFIC PHYLAKE TOWNS**
+>
+> _Between overman and underman,_
+> _is there room to live a human life?_ —Supplicant Schta Voyis, Extramural Settlement 442
+>
+> Clans, tribes, and dregs who deny the blood-truth of humanity's violent nature are drawn to the grand phylake towers. There they build settlements to live in the peace of the old gods' ageless guardians.
+>
+> #### This Phylake Settlement
+>
+> 1. A monastery of mumblemonks and strange servants.
+> 2. Climbing villages and hanging gardens of quarterlings who would live on the luminous flanks.
+> 3. Wagon settlement of rebel vagabonds (_aperu_) who do not recognize the proper authorities of the cities.
+> 4. Lotus-farming collective community attempting to attain a group consciousness.
+> 5. Picket fence exurb of free falschers.
+> 6. Old-fashioned town of post-mortal ancestors living free of any descendants.
+>
+> #### There Are Side-Effects
+>
+> Over time, the potent anti-war fields and other energies of the phylakes cause strange changes.
+>
+> 1. Eyes fade and are replaced with glowing screens.
+> 2. Appetites become strange and post-human.
+> 3. Bodies become translucent and luminous.
+> 4. Minds see places long lost to the present.
+> 5. Memories merge into procedurally generated slurry.
+> 6. Past and future are lost in an eternal now.
+> 7. The ego dies, the will is given to the phylake.
+> 8. Skin sprouts leaves, movement feels unnecessary.
+>
+> #### They Trade Odd Produce
+>
+> 1. Blossoms plucked from the phylakes' nostrils.
+> 2. Gasses sucked from the géants' brainstones.
+> 3. Lizards hunted among the monsters' toes.
+> 4. Livingstones grown from the creatures' bones.
+> 5. Waters percolated through the beasts' breasts.
+> 6. Protein strands shaved from their body cavities.
+> 7. Flesh excavated from their undying bodies.
+> 8. Ramblings transcribed from their twitching dreams.
+>
+> It is precious, delicious, transcendent, life-changing, rare, limited, restricted, and oddly difficult to digest.
+>
+> **SDM Synthesis: Odd Produce Trading Procedure (FTLS-aligned)**
+>
+> Price odd produce as cash first, then convert to barter, favors, or debt relief if desired.
+>
+> **Units and conversion**
+> - 1 **sack (sk)** = 10 **stones (st)** = 100 **soaps (sp)**
+> - **Stone-unit price** = sack price / 10
+> - **Soap-unit price** = sack price / 100
+>
+> Use canonical caravan trade procedures in Quickstart:
+> - **Market Research:** [Synthetic_Dream_Machine_01_Quickstart.md#market-research](Synthetic_Dream_Machine_01_Quickstart.md#market-research)
+> - **Buying and Selling the Goods:** [Synthetic_Dream_Machine_01_Quickstart.md#buying-and-selling-the-goods](Synthetic_Dream_Machine_01_Quickstart.md#buying-and-selling-the-goods)
+> - **Haggling Table:** [Synthetic_Dream_Machine_01_Quickstart.md#haggling-table](Synthetic_Dream_Machine_01_Quickstart.md#haggling-table)
+>
+> **FTLS add-on context for odd produce (base value before market/haggling):**
+> Set base sack price by Area Level band and produce class.
+>
+> | Area Level Band | Market Band | [static] €/sk | [active] / [dynamic] €/sk |
+> |---:|:---|---:|---:|
+> | 0-4 | Low | 100 | 500 |
+> | 5-9 | Medium | 200 | 1,000 |
+> | 10-14 | High | 400 | 2,000 |
+> | 15+ | Epic | 800 | 4,000 |
+>
+> **Tag / Rarity Adjustment (odd produce context):**
+> - In-demand, rare, or dangerous tags (e.g., [active], [void], region-critical): `+25%` to `+100%`.
+> - Tainted, illegal, oversupplied, or taboo goods: `-25%` to `-100%` (including no legal market).
+>
+> **Bulk Contracts (10+ sk):**
+> - Organizations usually negotiate contracts as cash, access, or rare rewards.
+> - Bonus-die trinkets may be included as part of the package.
+>
+> FTLS source context: [Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources)
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-pacific-phylake-towns-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
 
 ### ORANGE LAND
 
 Source, Our Golden Age: [Orange Land](Our_Golden_Age/Our_Golden_Age.md#orange-land).
-
-"Your money is no good here!" declares the billboard atop the Garden Ziggurats. "The Great Hope provides!" announces the slogan fungus coating the granaries in a carpet of soothing truths. "Your pleasure is our treasure!" scrolls along the parapets of the dreambauchery house. —From Twelve Years A Tourist by Tarn A. Bassault,
-
-The public slurry pump rattles and wheezes like a dying dragonscough victim. The hedonic card printer whirrs and clanks impotently. It does not recognize you as a Citizen with an allotted pleasure total.
-
-The billboards mock your rumbling bowels.
-
-From an alley, a bluelander in a vintage voidsuit beckons and mumbles, "Te qambo, change you, cash for cadcard? Yessi, top up?" Up close, the voidsuit reveals itself a pouchsuit, full of the necessities of pleasure and discretion a tourist might require to delve beneath the official skin of the Orange Lands.
 
 #### AMBER STANDARD HEDONIC STATION
 
@@ -4610,6 +4862,36 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 | 5 | Plough and Plate | loud, large, in charge | seeds to eat or sow | ingest to reveal gratis side effect |
 | 6 | Vivid in the Flesh | spicy, silky, snakelike | flowers to forget | do not use or cook after midnight |
 
+<div class="gear-table-card" markdown="1">
+
+#### **Orange Land Travel Options** {#sdm-gear-table-orange-land-travel-options}
+
+> **Orange Land Travel Options**
+>
+> | Type | Status | Price |
+> |:---|:---|:---|
+> | Portal | A wide week-walk path links Oranje to the Emerald and Violet Cities. The path to Oranje is a mere €25, but exits cost €150 on a good day. The Cads prefer to export grain, not people. | variable [€25 / €150] |
+> | Right Road | From Longdam, a week to the Tollem on the Red Edge, a little more to Safranj. Food haulers have priority, so beware if using a private wicker wagon. Buses include food and drinks. | prime cargo [€10] |
+> | Coasthugger | Regular services are temporarily out of service, pending the resolution of some minor pirate events. Unofficial coasthuggers, or even seacutter berths, are easy to find in Duck Haven and the other ghost docks—and even reasonably safe. €5 and several days take you to the Sailing Islands, €10 and another week see you in the Red Land District or Decapolis. | unlicensed deckhauler [€5 / €10] |
+> | Airbeast | The gales, silver and glow clouds, and other agrometeorological oldtech structures make the skies of the Orange Land too valuable to leave open to private travel. The Cads may have fliers, but for the rest air whales graze on air plankton in peace. | restricted [€200] |
+> | Local (Irr. Valley) | Bone trains, undead barges, and porters are the main modes of transport. The locals will say, "if you're in a rush, you're doing it wrong." Fortunately, nutripaste and the mildly intoxicating beverage Instruction are basically free everywhere. | slow lane [€5] |
+> | Local (404) | Council-approved transport is not available for the unlost lands or the security territories. Duckie guides and grey-market vehicles such as off-book ancestor chariots or half-legal bycicles are unusually expensive. Be warned, nutripaste supplies are not guaranteed. | cash up front [€20+] |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-orange-land-travel-options-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
 <div class="gear-table-card" markdown="1">
 
 #### **Fresh Food Only** {#sdm-gear-table-fresh-food-only}
@@ -4801,6 +5083,37 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 
 <div class="gear-table-card" markdown="1">
 
+#### **Yellow Land Travel Options** {#sdm-gear-table-yellow-land-travel-options}
+
+> **Yellow Land Travel Options**
+>
+> | Type | Status | Price |
+> |:---|:---|:---|
+> | Portal | A week-walk thread links the Saffron City to Red End and the Ruins Azure Special Zone. The reclusive Portal Gilded Opera auctions tickets every workday at the third gong in the Mixed Market. | reclusive [€200] |
+> | Right Road | Heavy freight caravans and atom trains link the inland free cities to the Emerald City and the Orange City. The Angel Smart Road Corporation offers insurance and protection. | semi-premy [€35] |
+> | Coasthugger | The coastal free cities turn to the sea for trade. From wallows to cutters, everything is available. The Sailing Isles and the Blue Land are a week away. | decksleeper [€10] |
+> | Undine Water | The Dolphin League, in alliance with the Saffron City, sail the Yellow River and open seas out to the Emerald City (1 week) and the Red Land District (2 weeks). Definitely not pirates. | premium [€30] |
+> | Airbeast | Gardener géants and Vulkana's particulate clouds make the skies unsafe over much of the Yellow Land. Further east, dust walls rake the Golden Desert, driving even land-crawlers to the fissure roads. Along the coast, gentle breezes offer airwhale pastures and blimp roads. | executive [€150] |
+> | Local | Walkers and vechs dominate the difficult local terrain, rails are few and often disrupted, while boat traffic is heavily regulated by the local peri-trader merchant clans. | affordable [€3–18] |
+> | In Town | Adjacent neighborhood: 15–60 minutes. Across the whole town: 30–120 minutes. Sidewalks, crawlways, stairwells, cable cars, and living rope bridges dominate. Roads, rails, and tubes are a symbiote monopoly reserved for local producers, notables, and allies. | free-ish [€0.01] |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-yellow-land-travel-options-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
 #### **Consume To Create** {#sdm-gear-table-consume-to-create}
 
 > **Consume To Create**
@@ -4956,8 +5269,175 @@ meta:
 
 Source, Our Golden Age: [Green Land](Our_Golden_Age/Our_Golden_Age.md#green-land).
 
-"There are no factions in the Green Land. Everyone works together in peace and harmony for the common weal." —Grand High Intern Sesti od Mamon, Ministry One
+#### JOY GOOD DISPENSARY
 
+_"Pleasure, treasure, big surprise! Monkey, donkey, dead inside! Fritter, titter, blessed watching eyes. Wriggly bread, have no pride!"_ —Pleasure Eyes 2bis, Procedural Classics Vol. 172
+
+All consumption is directed and controlled for the Greater GoodTM and private mercantile activity is strictly forbidden. All licensed dispensaries are provided by retail hives supervised by the Three Rites and tailored to the class-needs of the citizen.
+
+According to the _Guidebook on Human Cultivation (37th ed.)_ citizens are free to access dispensaries for the goods to live “free from the hedonic treadmill and in keeping with the collective best interest.” Practically, whether out of hunger, desperation, or boredom, most humans seek out non-dispensary vendors for food, goods, and memetics to supplement their allotted quotas.
+
+Despite regular “pruning actions”, illegal gray and green markets abound. Non-citizens cater to the upper strata who prefer the human touch that vegetal retail drones cannot manage. The falschers and lower classes self-organize bazaars in the hollows and roadlots of the towns and cities. Secret maps and code words can lead to some spectacular shopping discoveries.
+
+#### This Dispensary
+
+| d6 | Vendor | Personality | Specialty | Quirk |
+|---:|:---|:---|:---|:---|
+| 1 | ERROR Giver | glitching, cannibalistic | repurposed ex-humans | items crawl when not observed |
+| 2 | Falscher Dispensary | tremulous, hurried | seed-songs for the deaf | dead aetherial update modules |
+| 3 | Official Dispensary | slow, stern, judgmental | productivity matrix | items observe how they are used and comment on performance |
+| 4 | Autobazaar | bustling, rushed | biogolem upgrades | passcodes hide special items |
+| 5 | Illegal Smallshop | chatty, drunken, gloomy | handycrafted jury-rigs | regularly changes location to avoid pruning |
+| 6 | Paraluxury Experience | glossy, mystical, psychic | oldtech sensorials | demands a loyalty trust oath |
+
+<div class="gear-table-card" markdown="1">
+
+#### **Green Land Travel Options** {#sdm-gear-table-green-land-travel-options}
+
+> **Green Land Travel Options**
+>
+> | Type | Status | Price |
+> |:---|:---|:---|
+> | Portal | Week-walk paths to Oranje, the Violet City, and Babylon Beach [ERROR]. Ten-thousander portal currently offline for non-inquisition travelers. Angelic repair is imminent. Honest. | reclusive [€250] |
+> | Right Road | Safranj, Ruins Azure: 1 week. Violet City, Oranje: 2 weeks. Green travel options are more expensive, but security is guaranteed by the Inquisition. | premy [€50] |
+> | Coasthugger | Decapolis, Coast Unblue: 1 week. Violet City, Oranje: 3 weeks. RLD: 5 weeks. The Mother City has no fleet, licensing Riverfolk, Decapolitans, and exile Bluelanders. Cutthroat competition and vast commerce makes for plentiful, cheap, and sometimes dangerous travel. | rucksack touriste [€5–10] |
+> | Airbeast | Yellow Land, RLD: 1–2 weeks. Unsteady spherical geometries allow only the most skilled blimp pilots to approach the Mother City itself. Air cutters ply regular routes from Beryl Wheel and Dr. Love in the Barrier Islands at the south end of Metropole Lagoon. | exclusive [€100] |
+> | Local (Land) | Breathswark: 1 week. Moss Gap, Upper Green, Hydric Banks: 3 weeks. Wealthier users prefer private vechs, but unionized autogolems and corporatized coalem barges also link up the upper reaches of the Green Land. | basic to premy [€5–50] |
+> | Local (Urban) | Adjacent district: 1–2 hours. Across the whole urban portalspace: 2d6* days. Within the major conurban zone old pod tubes and living sidewalks still offer rapid transit among the districts, even those infested by gangs, parasites, errors, and other unsavories. | statusless [€0.01] |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-green-land-travel-options-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+#### **Eat, Drink, Suck Air** {#sdm-gear-table-eat-drink-suck-air}
+
+> **Eat, Drink, Suck Air**
+>
+> | d6 | Item | Description | Price |
+> |---:|:---|:---|---:|
+> | 1 | Woodoola | Sparkling truth-gas. Nutrient free. Refreshing, narcotic. Removes anxiety and ennui. | €0 |
+> | 2 | D-Grass | Vitamin rich plant matter of the day. Available in seventeen random shapes! | €1 |
+> | 3 | Neck Tar | Flavorful concentrated elementary life form “tube meat” juice. Flavorful. Honest. | €1 |
+> | 4 | Human Dish | Completely authentic prehistoric Old Soil five course meal. With edible plastic tray! | €5 |
+> | 5 | Builderfruit | One of the six original fruits of heaven. Expands the palate and unlock new senses. | €10 |
+> | 6 | Neolapine | Recently restored based on archival footage! Three flavors of jumping rodent! | €20 |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-eat-drink-suck-air-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+#### **Appoint Thine Corps** {#sdm-gear-table-appoint-thine-corps}
+
+> **Appoint Thine Corps**
+>
+> | d6 | Item | Description | Price |
+> |---:|:---|:---|---:|
+> | 1 | Moss Hat | A symbiotic colony of fungi, plants, and tiny arthropods. Perfumes the air and micro-doses your mind to keep away bad thoughts. Ward +2, [+] vs charms and nausea, 1 st. | €10 |
+> | 2 | Thorned Leather | Vegan leather armor with self-renewing thorns! If damaged, just supply with nutrients, water, and sunlight. Armor +2, increased grappling damage, 1 st. | €10 |
+> | 3 | Accountant Robes | Flowing dress in the style of the Three Rites. The high mathemagical thread count protects against metaphysical nonsense. Easy to clean. Armor +1, ward +2, 1 st. | €50 |
+> | 4 | Jump Poncho | Traditional seedship hooded poncho. Available in six bright colors. Seals to protect from environmental hazards. No air supply. Armor +1, ward +2, void resistant, waterproof, 1 st. | €95 |
+> | 5 | Corpocrat Uniform | Cumbersome and stifling in the subtropical heat, but it signals your status—respectable, willing to suffer to fit in. Stains easily. Ward +1, charisma +2, 3 st. | €100 |
+> | 6 | Woody Me™ | A bespoke lamellar wooden golem slaved to hide your vulnerable human flesh. Unlikely to acquire free will with you inside, haha. Golem 15 life, Armor +3, strength +2, 3 st. | €500 |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-appoint-thine-corps-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+#### **Hunt Thine Nemesis** {#sdm-gear-table-hunt-thine-nemesis}
+
+> **Hunt Thine Nemesis**
+>
+> | d6 | Item | Description | Price |
+> |---:|:---|:---|---:|
+> | 1 | Livingwood Battlestick | Dense, glowing rod. Sinks in waters and rebel melons. A badge of rank, it compels compliance. Does not trigger phylakes. Regrows if broken. 1d6, [+] to intimidate, 1 st. | €5 |
+> | 2 | Thawnette | Possibly a corrupted livingthorn net. Thrown, 1d4, very entangling, 1 st. | €5 |
+> | 3 | Spore Sack | A fungus-grenade hybrid of some sort. Lingering spores cause intoxication in mammals, blue circuits in golems. Thrown, small area, single use, 1 st. | €10 |
+> | 4 | Lignum Pistol | Living gun: a curious mix of sea squirt, cactus, and stabwillow. Each shot reduces its life by 1. Regrows overnight unless killed. Pistol 10 life, short range, 1d8, 1 st. | €85 |
+> | 5 | Aspera Ray | A ruby eye encased in a madwood amplifier. Introduced after the Last Vile Falscher Desecration. Three Rites only. Rifle, long range, 2d6, heat damage, powered, 2 st. | €750 |
+> | 6 | Chain Axe | Sacred weapon of the Gardener Division. Deployed against E.L.F., rogue ancestors, wood golems, and escaped carnibotanics. Two-handed, 2d8, powered, 2 st. | €1.8k |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-hunt-thine-nemesis-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+<div class="gear-table-card" markdown="1">
+
+#### **Enjoy Thine Ride** {#sdm-gear-table-enjoy-thine-ride}
+
+> **Enjoy Thine Ride**
+>
+> | d4 | Item | Description | Price |
+> |---:|:---|:---|---:|
+> | 1 | Bamboo Bike | A livingwood bicycle. Rotifer symbiote wheels. L1, carry 2, pedal-powered. | €10 |
+> | 2 | Arbreapart Spider | Giant crawling arthropod for three-dimensional environments. Surprisingly clean passenger cysts. L3, carry 5, slow, climbing, parachute upgrade available. | €400 |
+> | 3 | Goalsie | Aquatic flesh golem variant. Synthetic flesh, limited reason, muscular flippers, and a passenger belly. L7, carry 7, swift-swimming, slow-crawling. | €3k |
+> | 4 | Corpsedrinker | Mindless, proto-archaic autogolem. Luxurious, sized for builders, feeds on the refined biomatter. Wheels big enough to crush bones. L5, carry 8, armored, rumbling, roaring. | €8k |
+
+tags:
+>   [ ]
+
+meta:
+> - source:
+> - see-also:
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#sdm-gear-table-enjoy-thine-ride-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
 <div class="gear-table-card" markdown="1">
 
 #### **Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}
