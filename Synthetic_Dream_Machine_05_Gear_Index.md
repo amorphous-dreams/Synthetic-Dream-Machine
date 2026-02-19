@@ -6,8 +6,8 @@ published: true
 # SDM Gear Table of Contents
 - [SDM Gear Table of Contents](#sdm-gear-table-of-contents)
 - [Gear Table Template](#gear-table-template)
-  - [Gear-Focused Power Mechanics](#gear-focused-power-mechanics)
-    - [Gear-Focused Powers](#gear-focused-powers)
+- [SDM Gear Mechanics](#sdm-gear-mechanics)
+  - [Gear-Focused Powers](#gear-focused-powers)
     - [Nunka'S Epidermal Sculpt Reference Table](#nunkas-epidermal-sculpt-reference-table)
   - [Weapon Mechanics](#weapon-mechanics)
     - [UVG Weapon Mechanics](#uvg-weapon-mechanics)
@@ -161,9 +161,9 @@ meta:
 </div>
 ```
 
-## Gear-Focused Power Mechanics
+# SDM Gear Mechanics
 
-### Gear-Focused Powers
+## Gear-Focused Powers
 
 - [The Viridian Practice (source context)](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094): album context for hallmark projectile-weapon anchoring and gun-monk usage.
 - [Mother of Bullets](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-mother-of-bullets): interfaces with ammo/replenish flow for ranged gear and anchor weapons.
