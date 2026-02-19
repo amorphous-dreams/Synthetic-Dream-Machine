@@ -229,7 +229,7 @@ Reference table retained for body-mods/cyberwear/mutations/vome-implants context
 
 Bullets, swords, rocks, explosions, fireballs, gouges, and chokes. They hurt the body, but usually spare the soul. Civilized humans frown upon personal weapons, much to the delight of rapacious barbarians.
 
-Related item tables: [VLG Weapons](#vlg-weapons), [THIS WILL WORK FOR SELF-DEFENSE ...](#this-will-work-for-self-defense-), [Weapons Against the Blue God](#weapons-against-the-blue-god), [Cat Approved and Disdained Weapons](#cat-approved-and-disdained-weapons), [Self Defense Systems](#self-defense-systems).
+Related item tables: [VLG Weapons](#vlg-weapons), [THIS WILL WORK FOR SELF-DEFENSE ...](#sdm-gear-table-this-will-work-for-self-defense), [Weapons Against the Blue God](#sdm-gear-table-weapons-against-the-blue-god), [Cat Approved and Disdained Weapons](#sdm-gear-table-cat-approved-and-disdained-weapons), [Self Defense Systems](#sdm-gear-table-self-defense-systems).
 
 **Standard Fabricated Weapon Sizes**
 
