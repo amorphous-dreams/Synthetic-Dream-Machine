@@ -23,143 +23,141 @@ published: true
     - [UVG Transport Fixes \& Features](#uvg-transport-fixes--features)
 - [SDM Gear Index](#sdm-gear-index)
   - [VASTLANDS GUIDEBOOK](#vastlands-guidebook)
-    - [**One Strange Item** {#sdm-gear-table-vlg-one-strange-item}](#one-strange-item-sdm-gear-table-vlg-one-strange-item)
-    - [**Selling Your Strange Item** {#sdm-gear-table-selling-your-strange-item}](#selling-your-strange-item-sdm-gear-table-selling-your-strange-item)
+    - [One Strange Item {#sdm-gear-table-vlg-one-strange-item}](#one-strange-item-sdm-gear-table-vlg-one-strange-item)
+    - [Selling Your Strange Item {#sdm-gear-table-selling-your-strange-item}](#selling-your-strange-item-sdm-gear-table-selling-your-strange-item)
     - [COMBAT GEAR](#combat-gear)
-    - [**WEAPONS** {#sdm-gear-table-weapons}](#weapons-sdm-gear-table-weapons)
-    - [**ARMORS** {#sdm-gear-table-vlg-armors}](#armors-sdm-gear-table-vlg-armors)
-    - [**WARDS** {#sdm-gear-table-wards}](#wards-sdm-gear-table-wards)
+    - [WEAPONS {#sdm-gear-table-weapons}](#weapons-sdm-gear-table-weapons)
+    - [ARMORS {#sdm-gear-table-vlg-armors}](#armors-sdm-gear-table-vlg-armors)
+    - [WARDS {#sdm-gear-table-wards}](#wards-sdm-gear-table-wards)
     - [CUSTOM COMBAT GEAR](#custom-combat-gear)
-    - [**Weapon Mods (Priced)** {#sdm-gear-table-weapon-mods-priced}](#weapon-mods-priced-sdm-gear-table-weapon-mods-priced)
-    - [**Armor and Ward Mods (Priced)** {#sdm-gear-table-armor-and-ward-mods-priced}](#armor-and-ward-mods-priced-sdm-gear-table-armor-and-ward-mods-priced)
+    - [Weapon Mods (Priced) {#sdm-gear-table-weapon-mods-priced}](#weapon-mods-priced-sdm-gear-table-weapon-mods-priced)
+    - [Armor and Ward Mods (Priced) {#sdm-gear-table-armor-and-ward-mods-priced}](#armor-and-ward-mods-priced-sdm-gear-table-armor-and-ward-mods-priced)
     - [MISCELLANEOUS ITEMS](#miscellaneous-items)
-    - [**GADGETS**](#gadgets)
-    - [**Climbing \& Mobility** {#sdm-gear-table-gadgets-climbing-and-mobility}](#climbing--mobility-sdm-gear-table-gadgets-climbing-and-mobility)
-    - [**Surveillance \& Tracking** {#sdm-gear-table-gadgets-surveillance-and-tracking}](#surveillance--tracking-sdm-gear-table-gadgets-surveillance-and-tracking)
-    - [**Stealth \& Disguise** {#sdm-gear-table-gadgets-stealth-and-disguise}](#stealth--disguise-sdm-gear-table-gadgets-stealth-and-disguise)
-    - [**Security \& Infiltration** {#sdm-gear-table-gadgets-security-and-infiltration}](#security--infiltration-sdm-gear-table-gadgets-security-and-infiltration)
-    - [**Protection \& Safety** {#sdm-gear-table-gadgets-protection-and-safety}](#protection--safety-sdm-gear-table-gadgets-protection-and-safety)
-    - [**Magielectronics \& Power** {#sdm-gear-table-gadgets-magielectronics-and-power}](#magielectronics--power-sdm-gear-table-gadgets-magielectronics-and-power)
-    - [**Communication \& Control** {#sdm-gear-table-gadgets-communication-and-control}](#communication--control-sdm-gear-table-gadgets-communication-and-control)
-    - [**Travel \& Outdoors** {#sdm-gear-table-gadgets-travel-and-outdoors}](#travel--outdoors-sdm-gear-table-gadgets-travel-and-outdoors)
-    - [**Rest \& Recreation** {#sdm-gear-table-gadgets-rest-and-recreation}](#rest--recreation-sdm-gear-table-gadgets-rest-and-recreation)
-    - [**CONSUMABLES**](#consumables)
-    - [**Foods** {#sdm-gear-table-consumables-foods}](#foods-sdm-gear-table-consumables-foods)
-    - [**Drinks** {#sdm-gear-table-consumables-drinks}](#drinks-sdm-gear-table-consumables-drinks)
-    - [**Medicines** {#sdm-gear-table-consumables-medicines}](#medicines-sdm-gear-table-consumables-medicines)
-    - [**Recovery, Rest, and Relife Services** {#sdm-gear-table-vlg-recovery-rest-and-relife-services}](#recovery-rest-and-relife-services-sdm-gear-table-vlg-recovery-rest-and-relife-services)
-    - [**Drugs** {#sdm-gear-table-consumables-drugs}](#drugs-sdm-gear-table-consumables-drugs)
-    - [**Potions** {#sdm-gear-table-consumables-potions}](#potions-sdm-gear-table-consumables-potions)
-    - [**Supplies** {#sdm-gear-table-consumables-supplies}](#supplies-sdm-gear-table-consumables-supplies)
+    - [GADGETS](#gadgets)
+    - [Climbing \& Mobility {#sdm-gear-table-gadgets-climbing-and-mobility}](#climbing--mobility-sdm-gear-table-gadgets-climbing-and-mobility)
+    - [Surveillance \& Tracking {#sdm-gear-table-gadgets-surveillance-and-tracking}](#surveillance--tracking-sdm-gear-table-gadgets-surveillance-and-tracking)
+    - [Stealth \& Disguise {#sdm-gear-table-gadgets-stealth-and-disguise}](#stealth--disguise-sdm-gear-table-gadgets-stealth-and-disguise)
+    - [Security \& Infiltration {#sdm-gear-table-gadgets-security-and-infiltration}](#security--infiltration-sdm-gear-table-gadgets-security-and-infiltration)
+    - [Protection \& Safety {#sdm-gear-table-gadgets-protection-and-safety}](#protection--safety-sdm-gear-table-gadgets-protection-and-safety)
+    - [Magielectronics \& Power {#sdm-gear-table-gadgets-magielectronics-and-power}](#magielectronics--power-sdm-gear-table-gadgets-magielectronics-and-power)
+    - [Communication \& Control {#sdm-gear-table-gadgets-communication-and-control}](#communication--control-sdm-gear-table-gadgets-communication-and-control)
+    - [Travel \& Outdoors {#sdm-gear-table-gadgets-travel-and-outdoors}](#travel--outdoors-sdm-gear-table-gadgets-travel-and-outdoors)
+    - [Rest \& Recreation {#sdm-gear-table-gadgets-rest-and-recreation}](#rest--recreation-sdm-gear-table-gadgets-rest-and-recreation)
+    - [CONSUMABLES](#consumables)
+    - [Foods {#sdm-gear-table-consumables-foods}](#foods-sdm-gear-table-consumables-foods)
+    - [Drinks {#sdm-gear-table-consumables-drinks}](#drinks-sdm-gear-table-consumables-drinks)
+    - [Medicines {#sdm-gear-table-consumables-medicines}](#medicines-sdm-gear-table-consumables-medicines)
+    - [Recovery, Rest, and Relife Services {#sdm-gear-table-vlg-recovery-rest-and-relife-services}](#recovery-rest-and-relife-services-sdm-gear-table-vlg-recovery-rest-and-relife-services)
+    - [Drugs {#sdm-gear-table-consumables-drugs}](#drugs-sdm-gear-table-consumables-drugs)
+    - [Potions {#sdm-gear-table-consumables-potions}](#potions-sdm-gear-table-consumables-potions)
+    - [Supplies {#sdm-gear-table-consumables-supplies}](#supplies-sdm-gear-table-consumables-supplies)
     - [Vehicles and Mounts](#vehicles-and-mounts)
-    - [**Undead Transportation Solutions** {#sdm-gear-table-undead-transportation-solutions}](#undead-transportation-solutions-sdm-gear-table-undead-transportation-solutions)
-    - [**Conveyances: Wagons and More** {#sdm-gear-table-conveyances-wagons-and-more}](#conveyances-wagons-and-more-sdm-gear-table-conveyances-wagons-and-more)
-    - [**Beasts of Burden** {#sdm-gear-table-beasts-of-burden}](#beasts-of-burden-sdm-gear-table-beasts-of-burden)
-    - [**Autogolems** {#sdm-gear-table-autogolems}](#autogolems-sdm-gear-table-autogolems)
-    - [**Watercraft, Aircraft, and This Craft** {#sdm-gear-table-watercraft-aircraft-and-this-craft}](#watercraft-aircraft-and-this-craft-sdm-gear-table-watercraft-aircraft-and-this-craft)
-    - [**Vehicle Mods and Upgrades** {#sdm-gear-table-vehicle-mods-and-upgrades}](#vehicle-mods-and-upgrades-sdm-gear-table-vehicle-mods-and-upgrades)
+    - [Undead Transportation Solutions {#sdm-gear-table-undead-transportation-solutions}](#undead-transportation-solutions-sdm-gear-table-undead-transportation-solutions)
+    - [Conveyances: Wagons and More {#sdm-gear-table-conveyances-wagons-and-more}](#conveyances-wagons-and-more-sdm-gear-table-conveyances-wagons-and-more)
+    - [Beasts of Burden {#sdm-gear-table-beasts-of-burden}](#beasts-of-burden-sdm-gear-table-beasts-of-burden)
+    - [Autogolems {#sdm-gear-table-autogolems}](#autogolems-sdm-gear-table-autogolems)
+    - [Watercraft, Aircraft, and This Craft {#sdm-gear-table-watercraft-aircraft-and-this-craft}](#watercraft-aircraft-and-this-craft-sdm-gear-table-watercraft-aircraft-and-this-craft)
+    - [Vehicle Mods and Upgrades {#sdm-gear-table-vehicle-mods-and-upgrades}](#vehicle-mods-and-upgrades-sdm-gear-table-vehicle-mods-and-upgrades)
   - [ULTRAVIOLET GRASSLANDS](#ultraviolet-grasslands)
-    - [**UVG Vehicles and Mounts** {#sdm-gear-table-uvg-vehicles-and-mounts}](#uvg-vehicles-and-mounts-sdm-gear-table-uvg-vehicles-and-mounts)
-      - [**Humanoids** {#sdm-gear-table-humanoids}](#humanoids-sdm-gear-table-humanoids)
-      - [**Undead** {#sdm-gear-table-undead}](#undead-sdm-gear-table-undead)
-      - [**Beasts of Burden** {#sdm-gear-table-beasts-of-burden-uvg}](#beasts-of-burden-sdm-gear-table-beasts-of-burden-uvg)
-      - [**Wagons, Carts, and Coaches** {#sdm-gear-table-wagons-carts-and-coaches}](#wagons-carts-and-coaches-sdm-gear-table-wagons-carts-and-coaches)
-      - [**Metal Steeds** {#sdm-gear-table-metal-steeds}](#metal-steeds-sdm-gear-table-metal-steeds)
-      - [**Wicker Autowagon** {#sdm-gear-table-wicker-autowagon}](#wicker-autowagon-sdm-gear-table-wicker-autowagon)
-      - [**Road Yacht** {#sdm-gear-table-road-yacht}](#road-yacht-sdm-gear-table-road-yacht)
-      - [**Generic Vech, Porcelain or Prismatic Walker** {#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker}](#generic-vech-porcelain-or-prismatic-walker-sdm-gear-table-generic-vech-porcelain-or-prismatic-walker)
-      - [**Autogolem** {#sdm-gear-table-autogolem}](#autogolem-sdm-gear-table-autogolem)
-      - [**War Engine** {#sdm-gear-table-war-engine}](#war-engine-sdm-gear-table-war-engine)
+    - [UVG Vehicles and Mounts {#sdm-gear-table-uvg-vehicles-and-mounts}](#uvg-vehicles-and-mounts-sdm-gear-table-uvg-vehicles-and-mounts)
+      - [Humanoids {#sdm-gear-table-humanoids}](#humanoids-sdm-gear-table-humanoids)
+      - [Undead {#sdm-gear-table-undead}](#undead-sdm-gear-table-undead)
+      - [Beasts of Burden {#sdm-gear-table-beasts-of-burden-uvg}](#beasts-of-burden-sdm-gear-table-beasts-of-burden-uvg)
+      - [Wagons, Carts, and Coaches {#sdm-gear-table-wagons-carts-and-coaches}](#wagons-carts-and-coaches-sdm-gear-table-wagons-carts-and-coaches)
+      - [Metal Steeds {#sdm-gear-table-metal-steeds}](#metal-steeds-sdm-gear-table-metal-steeds)
+      - [Wicker Autowagon {#sdm-gear-table-wicker-autowagon}](#wicker-autowagon-sdm-gear-table-wicker-autowagon)
+      - [Road Yacht {#sdm-gear-table-road-yacht}](#road-yacht-sdm-gear-table-road-yacht)
+      - [Generic Vech, Porcelain or Prismatic Walker {#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker}](#generic-vech-porcelain-or-prismatic-walker-sdm-gear-table-generic-vech-porcelain-or-prismatic-walker)
+      - [Autogolem {#sdm-gear-table-autogolem}](#autogolem-sdm-gear-table-autogolem)
+      - [War Engine {#sdm-gear-table-war-engine}](#war-engine-sdm-gear-table-war-engine)
     - [UVG Gear and Services](#uvg-gear-and-services)
-    - [**Grassland General Goods** {#sdm-gear-table-grassland-general-goods}](#grassland-general-goods-sdm-gear-table-grassland-general-goods)
-    - [**Toolkits** {#sdm-gear-table-toolkits}](#toolkits-sdm-gear-table-toolkits)
-    - [**UVG Armors** {#sdm-gear-table-uvg-armors}](#uvg-armors-sdm-gear-table-uvg-armors)
-    - [**UVG Weapons** {#sdm-gear-table-uvg-weapons}](#uvg-weapons-sdm-gear-table-uvg-weapons)
-    - [**Ranged Weapons: Bows and Gun Wands** {#sdm-gear-table-ranged-weapons-bows-and-gun-wands}](#ranged-weapons-bows-and-gun-wands-sdm-gear-table-ranged-weapons-bows-and-gun-wands)
-    - [**Simple Melee Weapons (d8)** {#sdm-gear-table-simple-melee-weapons-d8}](#simple-melee-weapons-d8-sdm-gear-table-simple-melee-weapons-d8)
-    - [**Military Melee Weapons (d14)** {#sdm-gear-table-military-melee-weapons-d14}](#military-melee-weapons-d14-sdm-gear-table-military-melee-weapons-d14)
-    - [**Weird Melee Weapons (d10)** {#sdm-gear-table-weird-melee-weapons-d10}](#weird-melee-weapons-d10-sdm-gear-table-weird-melee-weapons-d10)
-    - [**Implants \& Prosthetics** {#sdm-gear-table-implants-and-prosthetics}](#implants--prosthetics-sdm-gear-table-implants-and-prosthetics)
+    - [Grassland General Goods {#sdm-gear-table-grassland-general-goods}](#grassland-general-goods-sdm-gear-table-grassland-general-goods)
+    - [Toolkits {#sdm-gear-table-toolkits}](#toolkits-sdm-gear-table-toolkits)
+    - [UVG Armors {#sdm-gear-table-uvg-armors}](#uvg-armors-sdm-gear-table-uvg-armors)
+    - [UVG Weapons {#sdm-gear-table-uvg-weapons}](#uvg-weapons-sdm-gear-table-uvg-weapons)
+    - [Ranged Weapons: Bows and Gun Wands {#sdm-gear-table-ranged-weapons-bows-and-gun-wands}](#ranged-weapons-bows-and-gun-wands-sdm-gear-table-ranged-weapons-bows-and-gun-wands)
+    - [Simple Melee Weapons (d8) {#sdm-gear-table-simple-melee-weapons-d8}](#simple-melee-weapons-d8-sdm-gear-table-simple-melee-weapons-d8)
+    - [Military Melee Weapons (d14) {#sdm-gear-table-military-melee-weapons-d14}](#military-melee-weapons-d14-sdm-gear-table-military-melee-weapons-d14)
+    - [Weird Melee Weapons (d10) {#sdm-gear-table-weird-melee-weapons-d10}](#weird-melee-weapons-d10-sdm-gear-table-weird-melee-weapons-d10)
+    - [Implants \& Prosthetics {#sdm-gear-table-implants-and-prosthetics}](#implants--prosthetics-sdm-gear-table-implants-and-prosthetics)
     - [Traveler Services](#traveler-services)
-    - [**Medico-Veterinary Services** {#sdm-gear-table-medico-veterinary-services}](#medico-veterinary-services-sdm-gear-table-medico-veterinary-services)
-    - [**Mechanitechnical Services** {#sdm-gear-table-mechanitechnical-services}](#mechanitechnical-services-sdm-gear-table-mechanitechnical-services)
-    - [**Rest \& Relaxation: "Carousing" Spots with Special Features** {#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features}](#rest--relaxation-carousing-spots-with-special-features-sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features)
-    - [**Fuel, Power, and Supplies** {#sdm-gear-table-fuel-power-and-supplies}](#fuel-power-and-supplies-sdm-gear-table-fuel-power-and-supplies)
-    - [**Thirty Ultraviolet Trade Goods (d30)** {#sdm-gear-table-thirty-ultraviolet-trade-goods-d30}](#thirty-ultraviolet-trade-goods-d30-sdm-gear-table-thirty-ultraviolet-trade-goods-d30)
-    - [**UVG Loot, Treasure, and Discovery Economics (Synthesis)** {#sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis}](#uvg-loot-treasure-and-discovery-economics-synthesis-sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis)
-    - [**100 Strange Items** {#sdm-gear-table-100-strange-items}](#100-strange-items-sdm-gear-table-100-strange-items)
+    - [Medico-Veterinary Services {#sdm-gear-table-medico-veterinary-services}](#medico-veterinary-services-sdm-gear-table-medico-veterinary-services)
+    - [Mechanitechnical Services {#sdm-gear-table-mechanitechnical-services}](#mechanitechnical-services-sdm-gear-table-mechanitechnical-services)
+    - [Rest \& Relaxation: "Carousing" Spots with Special Features {#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features}](#rest--relaxation-carousing-spots-with-special-features-sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features)
+    - [Fuel, Power, and Supplies {#sdm-gear-table-fuel-power-and-supplies}](#fuel-power-and-supplies-sdm-gear-table-fuel-power-and-supplies)
+    - [Thirty Ultraviolet Trade Goods (d30) {#sdm-gear-table-thirty-ultraviolet-trade-goods-d30}](#thirty-ultraviolet-trade-goods-d30-sdm-gear-table-thirty-ultraviolet-trade-goods-d30)
+    - [UVG Loot, Treasure, and Discovery Economics (Synthesis) {#sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis}](#uvg-loot-treasure-and-discovery-economics-synthesis-sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis)
+    - [100 Strange Items {#sdm-gear-table-100-strange-items}](#100-strange-items-sdm-gear-table-100-strange-items)
   - [OUR GOLDEN AGE](#our-golden-age)
     - [BLUE LAND](#blue-land)
     - [AZURE COMMERCIAL REINTEGRATION PARKS](#azure-commercial-reintegration-parks)
         - [This Commercial Reintegration Park](#this-commercial-reintegration-park)
-      - [**Fully Vetted Nontoxic Comestables** {#sdm-gear-table-fully-vetted-nontoxic-comestables}](#fully-vetted-nontoxic-comestables-sdm-gear-table-fully-vetted-nontoxic-comestables)
-      - [**Blue Land Travel Options** {#sdm-gear-table-blue-land-travel-options}](#blue-land-travel-options-sdm-gear-table-blue-land-travel-options)
-      - [**Weapons Against the Blue God** {#sdm-gear-table-weapons-against-the-blue-god}](#weapons-against-the-blue-god-sdm-gear-table-weapons-against-the-blue-god)
-      - [**Reintegrated Blue Land Clothing** {#sdm-gear-table-reintegrated-blue-land-clothing}](#reintegrated-blue-land-clothing-sdm-gear-table-reintegrated-blue-land-clothing)
-      - [**Blue Land Mobility** {#sdm-gear-table-blue-land-mobility}](#blue-land-mobility-sdm-gear-table-blue-land-mobility)
-      - [**Sundry Rustset Souvenirs** {#sdm-gear-table-sundry-rustset-souvenirs}](#sundry-rustset-souvenirs-sdm-gear-table-sundry-rustset-souvenirs)
+      - [Fully Vetted Nontoxic Comestables {#sdm-gear-table-fully-vetted-nontoxic-comestables}](#fully-vetted-nontoxic-comestables-sdm-gear-table-fully-vetted-nontoxic-comestables)
+      - [Blue Land Travel Options {#sdm-gear-table-blue-land-travel-options}](#blue-land-travel-options-sdm-gear-table-blue-land-travel-options)
+      - [Weapons Against the Blue God {#sdm-gear-table-weapons-against-the-blue-god}](#weapons-against-the-blue-god-sdm-gear-table-weapons-against-the-blue-god)
+      - [Reintegrated Blue Land Clothing {#sdm-gear-table-reintegrated-blue-land-clothing}](#reintegrated-blue-land-clothing-sdm-gear-table-reintegrated-blue-land-clothing)
+      - [Blue Land Mobility {#sdm-gear-table-blue-land-mobility}](#blue-land-mobility-sdm-gear-table-blue-land-mobility)
+      - [Sundry Rustset Souvenirs {#sdm-gear-table-sundry-rustset-souvenirs}](#sundry-rustset-souvenirs-sdm-gear-table-sundry-rustset-souvenirs)
     - [PURPLE LAND](#purple-land)
-      - [**Purple Land Travel Options** {#sdm-gear-table-purple-land-travel-options}](#purple-land-travel-options-sdm-gear-table-purple-land-travel-options)
+      - [Purple Land Travel Options {#sdm-gear-table-purple-land-travel-options}](#purple-land-travel-options-sdm-gear-table-purple-land-travel-options)
       - [This Felicitous Licensed Establishment](#this-felicitous-licensed-establishment)
       - [Purr-Purr Exchange Rates](#purr-purr-exchange-rates)
-      - [**Human Approved Comestibles and Kibbles** {#sdm-gear-table-human-approved-comestibles-and-kibbles}](#human-approved-comestibles-and-kibbles-sdm-gear-table-human-approved-comestibles-and-kibbles)
-      - [**Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}](#cat-approved-and-disdained-weapons-sdm-gear-table-cat-approved-and-disdained-weapons)
-      - [**Purrfectly Cute Clothing** {#sdm-gear-table-purrfectly-cute-clothing}](#purrfectly-cute-clothing-sdm-gear-table-purrfectly-cute-clothing)
-      - [**Violet Transport Systems** {#sdm-gear-table-violet-transport-systems}](#violet-transport-systems-sdm-gear-table-violet-transport-systems)
-      - [**Friendly Master Memorabilia** {#sdm-gear-table-friendly-master-memorabilia}](#friendly-master-memorabilia-sdm-gear-table-friendly-master-memorabilia)
+      - [Human Approved Comestibles and Kibbles {#sdm-gear-table-human-approved-comestibles-and-kibbles}](#human-approved-comestibles-and-kibbles-sdm-gear-table-human-approved-comestibles-and-kibbles)
+      - [Cat Approved and Disdained Weapons {#sdm-gear-table-cat-approved-and-disdained-weapons}](#cat-approved-and-disdained-weapons-sdm-gear-table-cat-approved-and-disdained-weapons)
+      - [Purrfectly Cute Clothing {#sdm-gear-table-purrfectly-cute-clothing}](#purrfectly-cute-clothing-sdm-gear-table-purrfectly-cute-clothing)
+      - [Violet Transport Systems {#sdm-gear-table-violet-transport-systems}](#violet-transport-systems-sdm-gear-table-violet-transport-systems)
+      - [Friendly Master Memorabilia {#sdm-gear-table-friendly-master-memorabilia}](#friendly-master-memorabilia-sdm-gear-table-friendly-master-memorabilia)
     - [RED LAND](#red-land)
       - [FREEBLOOD VENDINGS](#freeblood-vendings)
       - [Intoxicating Hosts](#intoxicating-hosts)
       - [This Liberal Vending](#this-liberal-vending)
       - [Honor as Currency](#honor-as-currency)
-      - [**Red Land Travel Options** {#sdm-gear-table-red-land-travel-options}](#red-land-travel-options-sdm-gear-table-red-land-travel-options)
-      - [**Fruits of Blood and Soil** {#sdm-gear-table-fruits-of-blood-and-soil}](#fruits-of-blood-and-soil-sdm-gear-table-fruits-of-blood-and-soil)
-      - [**Red Land Dress and Wear** {#sdm-gear-table-red-land-dress-and-wear}](#red-land-dress-and-wear-sdm-gear-table-red-land-dress-and-wear)
-      - [**Human Liberty Insurance Gear** {#sdm-gear-table-human-liberty-insurance-gear}](#human-liberty-insurance-gear-sdm-gear-table-human-liberty-insurance-gear)
-      - [**Unrusting Travel Options** {#sdm-gear-table-unrusting-travel-options}](#unrusting-travel-options-sdm-gear-table-unrusting-travel-options)
-      - [**Sundry Russet Souvenirs** {#sdm-gear-table-sundry-russet-souvenirs}](#sundry-russet-souvenirs-sdm-gear-table-sundry-russet-souvenirs)
-      - [**Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}](#pacific-phylake-towns-sdm-gear-table-pacific-phylake-towns)
+      - [Red Land Travel Options {#sdm-gear-table-red-land-travel-options}](#red-land-travel-options-sdm-gear-table-red-land-travel-options)
+      - [Fruits of Blood and Soil {#sdm-gear-table-fruits-of-blood-and-soil}](#fruits-of-blood-and-soil-sdm-gear-table-fruits-of-blood-and-soil)
+      - [Red Land Dress and Wear {#sdm-gear-table-red-land-dress-and-wear}](#red-land-dress-and-wear-sdm-gear-table-red-land-dress-and-wear)
+      - [Human Liberty Insurance Gear {#sdm-gear-table-human-liberty-insurance-gear}](#human-liberty-insurance-gear-sdm-gear-table-human-liberty-insurance-gear)
+      - [Unrusting Travel Options {#sdm-gear-table-unrusting-travel-options}](#unrusting-travel-options-sdm-gear-table-unrusting-travel-options)
+      - [Sundry Russet Souvenirs {#sdm-gear-table-sundry-russet-souvenirs}](#sundry-russet-souvenirs-sdm-gear-table-sundry-russet-souvenirs)
+      - [Pacific Phylake Towns {#sdm-gear-table-pacific-phylake-towns}](#pacific-phylake-towns-sdm-gear-table-pacific-phylake-towns)
     - [ORANGE LAND](#orange-land)
       - [AMBER STANDARD HEDONIC STATION](#amber-standard-hedonic-station)
         - [This ASHS Station](#this-ashs-station)
         - [Hedonic Burden Review](#hedonic-burden-review)
-      - [**Orange Land Travel Options** {#sdm-gear-table-orange-land-travel-options}](#orange-land-travel-options-sdm-gear-table-orange-land-travel-options)
-      - [**Fresh Food Only** {#sdm-gear-table-fresh-food-only}](#fresh-food-only-sdm-gear-table-fresh-food-only)
-      - [**Traditional Orange Land Attire** {#sdm-gear-table-traditional-orange-land-attire}](#traditional-orange-land-attire-sdm-gear-table-traditional-orange-land-attire)
-      - [**Order Maintenance Equipment** {#sdm-gear-table-order-maintenance-equipment}](#order-maintenance-equipment-sdm-gear-table-order-maintenance-equipment)
-      - [**Personal Travel Expression (Orange Land)** {#sdm-gear-table-personal-travel-expression-orange-land}](#personal-travel-expression-orange-land-sdm-gear-table-personal-travel-expression-orange-land)
-      - [**Approved Orange Land Comfort Purchases** {#sdm-gear-table-approved-orange-land-comfort-purchases}](#approved-orange-land-comfort-purchases-sdm-gear-table-approved-orange-land-comfort-purchases)
+      - [Orange Land Travel Options {#sdm-gear-table-orange-land-travel-options}](#orange-land-travel-options-sdm-gear-table-orange-land-travel-options)
+      - [Fresh Food Only {#sdm-gear-table-fresh-food-only}](#fresh-food-only-sdm-gear-table-fresh-food-only)
+      - [Traditional Orange Land Attire {#sdm-gear-table-traditional-orange-land-attire}](#traditional-orange-land-attire-sdm-gear-table-traditional-orange-land-attire)
+      - [Order Maintenance Equipment {#sdm-gear-table-order-maintenance-equipment}](#order-maintenance-equipment-sdm-gear-table-order-maintenance-equipment)
+      - [Personal Travel Expression (Orange Land) {#sdm-gear-table-personal-travel-expression-orange-land}](#personal-travel-expression-orange-land-sdm-gear-table-personal-travel-expression-orange-land)
+      - [Approved Orange Land Comfort Purchases {#sdm-gear-table-approved-orange-land-comfort-purchases}](#approved-orange-land-comfort-purchases-sdm-gear-table-approved-orange-land-comfort-purchases)
     - [YELLOW LAND](#yellow-land)
       - [HELIODOR MERCANTILE STANDARD GOODS](#heliodor-mercantile-standard-goods)
       - [This Liberated Trader](#this-liberated-trader)
-      - [**Yellow Land Travel Options** {#sdm-gear-table-yellow-land-travel-options}](#yellow-land-travel-options-sdm-gear-table-yellow-land-travel-options)
-      - [**Consume To Create** {#sdm-gear-table-consume-to-create}](#consume-to-create-sdm-gear-table-consume-to-create)
-      - [**Fashion For You** {#sdm-gear-table-fashion-for-you}](#fashion-for-you-sdm-gear-table-fashion-for-you)
-      - [**Self Defense Systems** {#sdm-gear-table-self-defense-systems}](#self-defense-systems-sdm-gear-table-self-defense-systems)
-      - [**Personal Travel Expression (Heliodor)** {#sdm-gear-table-personal-travel-expression-heliodor}](#personal-travel-expression-heliodor-sdm-gear-table-personal-travel-expression-heliodor)
-      - [**Saffron Souvenirs Inc. Sym.** {#sdm-gear-table-saffron-souvenirs-inc-sym}](#saffron-souvenirs-inc-sym-sdm-gear-table-saffron-souvenirs-inc-sym)
+      - [Yellow Land Travel Options {#sdm-gear-table-yellow-land-travel-options}](#yellow-land-travel-options-sdm-gear-table-yellow-land-travel-options)
+      - [Consume To Create {#sdm-gear-table-consume-to-create}](#consume-to-create-sdm-gear-table-consume-to-create)
+      - [Fashion For You {#sdm-gear-table-fashion-for-you}](#fashion-for-you-sdm-gear-table-fashion-for-you)
+      - [Self Defense Systems {#sdm-gear-table-self-defense-systems}](#self-defense-systems-sdm-gear-table-self-defense-systems)
+      - [Personal Travel Expression (Heliodor) {#sdm-gear-table-personal-travel-expression-heliodor}](#personal-travel-expression-heliodor-sdm-gear-table-personal-travel-expression-heliodor)
+      - [Saffron Souvenirs Inc. Sym. {#sdm-gear-table-saffron-souvenirs-inc-sym}](#saffron-souvenirs-inc-sym-sdm-gear-table-saffron-souvenirs-inc-sym)
     - [GREEN LAND](#green-land)
       - [JOY GOOD DISPENSARY](#joy-good-dispensary)
       - [This Dispensary](#this-dispensary)
-      - [**Green Land Travel Options** {#sdm-gear-table-green-land-travel-options}](#green-land-travel-options-sdm-gear-table-green-land-travel-options)
-      - [**Eat, Drink, Suck Air** {#sdm-gear-table-eat-drink-suck-air}](#eat-drink-suck-air-sdm-gear-table-eat-drink-suck-air)
-      - [**Appoint Thine Corps** {#sdm-gear-table-appoint-thine-corps}](#appoint-thine-corps-sdm-gear-table-appoint-thine-corps)
-      - [**Hunt Thine Nemesis** {#sdm-gear-table-hunt-thine-nemesis}](#hunt-thine-nemesis-sdm-gear-table-hunt-thine-nemesis)
-      - [**Enjoy Thine Ride** {#sdm-gear-table-enjoy-thine-ride}](#enjoy-thine-ride-sdm-gear-table-enjoy-thine-ride)
-      - [**Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}](#curios-et-knick-knacks-sdm-gear-table-curios-et-knick-knacks)
+      - [Green Land Travel Options {#sdm-gear-table-green-land-travel-options}](#green-land-travel-options-sdm-gear-table-green-land-travel-options)
+      - [Eat, Drink, Suck Air {#sdm-gear-table-eat-drink-suck-air}](#eat-drink-suck-air-sdm-gear-table-eat-drink-suck-air)
+      - [Appoint Thine Corps {#sdm-gear-table-appoint-thine-corps}](#appoint-thine-corps-sdm-gear-table-appoint-thine-corps)
+      - [Hunt Thine Nemesis {#sdm-gear-table-hunt-thine-nemesis}](#hunt-thine-nemesis-sdm-gear-table-hunt-thine-nemesis)
+      - [Enjoy Thine Ride {#sdm-gear-table-enjoy-thine-ride}](#enjoy-thine-ride-sdm-gear-table-enjoy-thine-ride)
+      - [Curios Et Knick Knacks {#sdm-gear-table-curios-et-knick-knacks}](#curios-et-knick-knacks-sdm-gear-table-curios-et-knick-knacks)
   - [ETERNAL RETURN KEY](#eternal-return-key)
-    - [**SALVAGABLE ARMOR!** {#sdm-gear-table-salvagable-armor}](#salvagable-armor-sdm-gear-table-salvagable-armor)
-    - [**THIS WILL WORK FOR SELF-DEFENSE ...** {#sdm-gear-table-this-will-work-for-self-defense}](#this-will-work-for-self-defense--sdm-gear-table-this-will-work-for-self-defense)
-    - [**WILL IT STILL GO INTO OVERDRIVE?** {#sdm-gear-table-will-it-still-go-into-overdrive}](#will-it-still-go-into-overdrive-sdm-gear-table-will-it-still-go-into-overdrive)
-      - [WILL IT STILL GO INTO OVERDRIVE?](#will-it-still-go-into-overdrive)
-      - [HUH, IT’S A BIT ...](#huh-its-a-bit-)
+    - [SALVAGABLE ARMOR! {#sdm-gear-table-salvagable-armor}](#salvagable-armor-sdm-gear-table-salvagable-armor)
+    - [THIS WILL WORK FOR SELF-DEFENSE ... {#sdm-gear-table-this-will-work-for-self-defense}](#this-will-work-for-self-defense--sdm-gear-table-this-will-work-for-self-defense)
+    - [WILL IT STILL GO INTO OVERDRIVE? {#sdm-gear-table-will-it-still-go-into-overdrive}](#will-it-still-go-into-overdrive-sdm-gear-table-will-it-still-go-into-overdrive)
 
 # Gear Table Template
 
 ```text
 <div class="gear-table-card" markdown="1">
 
-## **<Table Name Header>** {#sdm-gear-table-<slug>}
+## <Table Name Header> {#sdm-gear-table-<slug>}
 
 > **<Repeated Table Name Header>**
 >
@@ -795,7 +793,7 @@ Yet, some useful things for the traveler, for the voyager into the vast beyond t
 
 <div class="gear-table-card" markdown="1">
 
-### **One Strange Item** {#sdm-gear-table-vlg-one-strange-item}
+### One Strange Item {#sdm-gear-table-vlg-one-strange-item}
 
 > **One Strange Item**
 >
@@ -875,7 +873,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Selling Your Strange Item** {#sdm-gear-table-selling-your-strange-item}
+### Selling Your Strange Item {#sdm-gear-table-selling-your-strange-item}
 
 > **Selling Your Strange Item**
 >
@@ -915,7 +913,7 @@ meta:
 
 <a id="vlg-weapons"></a>
 
-### **WEAPONS** {#sdm-gear-table-weapons}
+### WEAPONS {#sdm-gear-table-weapons}
 
 > **WEAPONS**
 >
@@ -1039,7 +1037,7 @@ meta:
 
 <a id="vlg-armors"></a>
 
-### **ARMORS** {#sdm-gear-table-vlg-armors}
+### ARMORS {#sdm-gear-table-vlg-armors}
 
 > **ARMORS**
 >
@@ -1146,7 +1144,7 @@ meta:
 
 <a id="wards"></a>
 
-### **WARDS** {#sdm-gear-table-wards}
+### WARDS {#sdm-gear-table-wards}
 
 > **WARDS**
 >
@@ -1234,7 +1232,7 @@ See [VLG Custom Combat Gear Mechanics](#custom-combat-gear-mechanics).
 
 <a id="weapon-mods-priced"></a>
 
-### **Weapon Mods (Priced)** {#sdm-gear-table-weapon-mods-priced}
+### Weapon Mods (Priced) {#sdm-gear-table-weapon-mods-priced}
 
 > **Weapon Mods (Priced)**
 >
@@ -1291,7 +1289,7 @@ meta:
 
 <a id="armor-and-ward-mods-priced"></a>
 
-### **Armor and Ward Mods (Priced)** {#sdm-gear-table-armor-and-ward-mods-priced}
+### Armor and Ward Mods (Priced) {#sdm-gear-table-armor-and-ward-mods-priced}
 
 > **Armor and Ward Mods (Priced)**
 >
@@ -1347,13 +1345,13 @@ meta:
 
 ### MISCELLANEOUS ITEMS
 
-### **GADGETS**
+### GADGETS
 
 Gadgets rely on common sense. They do what they say they do. Interpret for fun. Roll d9 and d6 for a random gadget.
 
 <div class="gear-table-card" markdown="1">
 
-### **Climbing & Mobility** {#sdm-gear-table-gadgets-climbing-and-mobility}
+### Climbing & Mobility {#sdm-gear-table-gadgets-climbing-and-mobility}
 
 > **Climbing & Mobility**
 >
@@ -1387,7 +1385,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Surveillance & Tracking** {#sdm-gear-table-gadgets-surveillance-and-tracking}
+### Surveillance & Tracking {#sdm-gear-table-gadgets-surveillance-and-tracking}
 
 > **Surveillance & Tracking**
 >
@@ -1421,7 +1419,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Stealth & Disguise** {#sdm-gear-table-gadgets-stealth-and-disguise}
+### Stealth & Disguise {#sdm-gear-table-gadgets-stealth-and-disguise}
 
 > **Stealth & Disguise**
 >
@@ -1455,7 +1453,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Security & Infiltration** {#sdm-gear-table-gadgets-security-and-infiltration}
+### Security & Infiltration {#sdm-gear-table-gadgets-security-and-infiltration}
 
 > **Security & Infiltration**
 >
@@ -1489,7 +1487,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Protection & Safety** {#sdm-gear-table-gadgets-protection-and-safety}
+### Protection & Safety {#sdm-gear-table-gadgets-protection-and-safety}
 
 > **Protection & Safety**
 >
@@ -1523,7 +1521,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Magielectronics & Power** {#sdm-gear-table-gadgets-magielectronics-and-power}
+### Magielectronics & Power {#sdm-gear-table-gadgets-magielectronics-and-power}
 
 > **Magielectronics & Power**
 >
@@ -1557,7 +1555,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Communication & Control** {#sdm-gear-table-gadgets-communication-and-control}
+### Communication & Control {#sdm-gear-table-gadgets-communication-and-control}
 
 > **Communication & Control**
 >
@@ -1591,7 +1589,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Travel & Outdoors** {#sdm-gear-table-gadgets-travel-and-outdoors}
+### Travel & Outdoors {#sdm-gear-table-gadgets-travel-and-outdoors}
 
 > **Travel & Outdoors**
 >
@@ -1625,7 +1623,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Rest & Recreation** {#sdm-gear-table-gadgets-rest-and-recreation}
+### Rest & Recreation {#sdm-gear-table-gadgets-rest-and-recreation}
 
 > **Rest & Recreation**
 >
@@ -1658,13 +1656,13 @@ meta:
 
 </div>
 
-### **CONSUMABLES**
+### CONSUMABLES
 
 Single-use items such as air, drink, food, medicine, potions, poisons, and drugs. Prices are for twelve-packs with a replenish score of 2. Effects last a few hours unless specified otherwise. Single units sell for one tenth of the price and occupy a tenth of the space.
 
 <div class="gear-table-card" markdown="1">
 
-### **Foods** {#sdm-gear-table-consumables-foods}
+### Foods {#sdm-gear-table-consumables-foods}
 
 > **Foods**
 >
@@ -1700,7 +1698,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Drinks** {#sdm-gear-table-consumables-drinks}
+### Drinks {#sdm-gear-table-consumables-drinks}
 
 > **Drinks**
 >
@@ -1736,7 +1734,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Medicines** {#sdm-gear-table-consumables-medicines}
+### Medicines {#sdm-gear-table-consumables-medicines}
 
 > **Medicines**
 >
@@ -1772,7 +1770,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Recovery, Rest, and Relife Services** {#sdm-gear-table-vlg-recovery-rest-and-relife-services}
+### Recovery, Rest, and Relife Services {#sdm-gear-table-vlg-recovery-rest-and-relife-services}
 
 > **Recovery, Rest, and Relife Services**
 >
@@ -1833,7 +1831,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Drugs** {#sdm-gear-table-consumables-drugs}
+### Drugs {#sdm-gear-table-consumables-drugs}
 
 > **Drugs**
 >
@@ -1869,7 +1867,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Potions** {#sdm-gear-table-consumables-potions}
+### Potions {#sdm-gear-table-consumables-potions}
 
 > **Potions**
 >
@@ -1905,7 +1903,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Supplies** {#sdm-gear-table-consumables-supplies}
+### Supplies {#sdm-gear-table-consumables-supplies}
 
 > **Supplies**
 >
@@ -1946,7 +1944,7 @@ See [Vehicle and Mount Mechanics](#vehicle-and-mount-mechanics) for ride feature
 
 <div class="gear-table-card" markdown="1">
 
-### **Undead Transportation Solutions** {#sdm-gear-table-undead-transportation-solutions}
+### Undead Transportation Solutions {#sdm-gear-table-undead-transportation-solutions}
 
 > **Undead Transportation Solutions**
 >
@@ -1999,7 +1997,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Conveyances: Wagons and More** {#sdm-gear-table-conveyances-wagons-and-more}
+### Conveyances: Wagons and More {#sdm-gear-table-conveyances-wagons-and-more}
 
 > **Conveyances: Wagons and More**
 >
@@ -2052,7 +2050,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Beasts of Burden** {#sdm-gear-table-beasts-of-burden}
+### Beasts of Burden {#sdm-gear-table-beasts-of-burden}
 
 > **Beasts of Burden**
 >
@@ -2105,7 +2103,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Autogolems** {#sdm-gear-table-autogolems}
+### Autogolems {#sdm-gear-table-autogolems}
 
 > **Autogolems**
 >
@@ -2158,7 +2156,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Watercraft, Aircraft, and This Craft** {#sdm-gear-table-watercraft-aircraft-and-this-craft}
+### Watercraft, Aircraft, and This Craft {#sdm-gear-table-watercraft-aircraft-and-this-craft}
 
 > **Watercraft**
 >
@@ -2227,7 +2225,7 @@ meta:
 
 <a id="mods--upgrades"></a>
 
-### **Vehicle Mods and Upgrades** {#sdm-gear-table-vehicle-mods-and-upgrades}
+### Vehicle Mods and Upgrades {#sdm-gear-table-vehicle-mods-and-upgrades}
 
 > **Vehicle Mods and Upgrades**
 >
@@ -2327,7 +2325,7 @@ Only gear and services that cost at least a day’s proletarian wages (€1) are
 The Violet Citadel is the last place in the Rainbowlands to buy supplies for the long crossing. Old hands advise four tubes of sunscreen per traveler, loudmouths suggest it’s possible with two.
 
 
-### **UVG Vehicles and Mounts** {#sdm-gear-table-uvg-vehicles-and-mounts}
+### UVG Vehicles and Mounts {#sdm-gear-table-uvg-vehicles-and-mounts}
 
 > **UVG Vehicles and Mounts**
 >
@@ -2384,7 +2382,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Humanoids** {#sdm-gear-table-humanoids}
+#### Humanoids {#sdm-gear-table-humanoids}
 
 > **Humanoids**
 >
@@ -2462,7 +2460,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Undead** {#sdm-gear-table-undead}
+#### Undead {#sdm-gear-table-undead}
 
 > **Undead**
 >
@@ -2552,7 +2550,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Beasts of Burden** {#sdm-gear-table-beasts-of-burden-uvg}
+#### Beasts of Burden {#sdm-gear-table-beasts-of-burden-uvg}
 
 > **Beasts of Burden**
 >
@@ -2664,7 +2662,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Wagons, Carts, and Coaches** {#sdm-gear-table-wagons-carts-and-coaches}
+#### Wagons, Carts, and Coaches {#sdm-gear-table-wagons-carts-and-coaches}
 
 > **Wagons, Carts, and Coaches**
 >
@@ -2748,7 +2746,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Metal Steeds** {#sdm-gear-table-metal-steeds}
+#### Metal Steeds {#sdm-gear-table-metal-steeds}
 
 > **Metal Steeds**
 >
@@ -2799,7 +2797,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Wicker Autowagon** {#sdm-gear-table-wicker-autowagon}
+#### Wicker Autowagon {#sdm-gear-table-wicker-autowagon}
 
 > **Wicker Autowagon**
 >
@@ -2858,7 +2856,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Road Yacht** {#sdm-gear-table-road-yacht}
+#### Road Yacht {#sdm-gear-table-road-yacht}
 
 > **Road Yacht**
 >
@@ -2927,7 +2925,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Generic Vech, Porcelain or Prismatic Walker** {#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker}
+#### Generic Vech, Porcelain or Prismatic Walker {#sdm-gear-table-generic-vech-porcelain-or-prismatic-walker}
 
 > **Generic Vech, Porcelain or Prismatic Walker**
 >
@@ -2998,7 +2996,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Autogolem** {#sdm-gear-table-autogolem}
+#### Autogolem {#sdm-gear-table-autogolem}
 
 > **Autogolem**
 >
@@ -3076,7 +3074,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **War Engine** {#sdm-gear-table-war-engine}
+#### War Engine {#sdm-gear-table-war-engine}
 
 > **War Engine**
 >
@@ -3142,7 +3140,7 @@ The Violet Citadel is the last place in the Rainbowlands to buy supplies for the
 
 <div class="gear-table-card" markdown="1">
 
-### **Grassland General Goods** {#sdm-gear-table-grassland-general-goods}
+### Grassland General Goods {#sdm-gear-table-grassland-general-goods}
 
 > **Grassland General Goods**
 >
@@ -3203,7 +3201,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Toolkits** {#sdm-gear-table-toolkits}
+### Toolkits {#sdm-gear-table-toolkits}
 
 > **Toolkits**
 >
@@ -3255,7 +3253,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **UVG Armors** {#sdm-gear-table-uvg-armors}
+### UVG Armors {#sdm-gear-table-uvg-armors}
 
 > **UVG Armors**
 >
@@ -3316,7 +3314,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **UVG Weapons** {#sdm-gear-table-uvg-weapons}
+### UVG Weapons {#sdm-gear-table-uvg-weapons}
 
 > **UVG Weapons**
 >
@@ -3346,7 +3344,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Ranged Weapons: Bows and Gun Wands** {#sdm-gear-table-ranged-weapons-bows-and-gun-wands}
+### Ranged Weapons: Bows and Gun Wands {#sdm-gear-table-ranged-weapons-bows-and-gun-wands}
 
 > **Ranged Weapons: Bows and Gun Wands**
 >
@@ -3392,7 +3390,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Simple Melee Weapons (d8)** {#sdm-gear-table-simple-melee-weapons-d8}
+### Simple Melee Weapons (d8) {#sdm-gear-table-simple-melee-weapons-d8}
 
 > **Simple Melee Weapons (d8)**
 >
@@ -3429,7 +3427,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Military Melee Weapons (d14)** {#sdm-gear-table-military-melee-weapons-d14}
+### Military Melee Weapons (d14) {#sdm-gear-table-military-melee-weapons-d14}
 
 > **Military Melee Weapons (d14)**
 >
@@ -3473,7 +3471,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Weird Melee Weapons (d10)** {#sdm-gear-table-weird-melee-weapons-d10}
+### Weird Melee Weapons (d10) {#sdm-gear-table-weird-melee-weapons-d10}
 
 > **Weird Melee Weapons (d10)**
 >
@@ -3514,7 +3512,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Implants & Prosthetics** {#sdm-gear-table-implants-and-prosthetics}
+### Implants & Prosthetics {#sdm-gear-table-implants-and-prosthetics}
 
 > **Implants & Prosthetics**
 >
@@ -3582,7 +3580,7 @@ On the road, many things can and do go wrong. Entrepreneurs sprout like mushroom
 
 <div class="gear-table-card" markdown="1">
 
-### **Medico-Veterinary Services** {#sdm-gear-table-medico-veterinary-services}
+### Medico-Veterinary Services {#sdm-gear-table-medico-veterinary-services}
 
 > **Medico-Veterinary Services**
 >
@@ -3624,7 +3622,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Mechanitechnical Services** {#sdm-gear-table-mechanitechnical-services}
+### Mechanitechnical Services {#sdm-gear-table-mechanitechnical-services}
 
 > **Mechanitechnical Services**
 >
@@ -3663,7 +3661,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Rest & Relaxation: "Carousing" Spots with Special Features** {#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features}
+### Rest & Relaxation: "Carousing" Spots with Special Features {#sdm-gear-table-rest-and-relaxation-carousing-spots-with-special-features}
 
 > **Rest & Relaxation: "Carousing" Spots with Special Features**
 >
@@ -3708,7 +3706,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Fuel, Power, and Supplies** {#sdm-gear-table-fuel-power-and-supplies}
+### Fuel, Power, and Supplies {#sdm-gear-table-fuel-power-and-supplies}
 
 > **Fuel, Power, and Supplies**
 >
@@ -3750,7 +3748,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **Thirty Ultraviolet Trade Goods (d30)** {#sdm-gear-table-thirty-ultraviolet-trade-goods-d30}
+### Thirty Ultraviolet Trade Goods (d30) {#sdm-gear-table-thirty-ultraviolet-trade-goods-d30}
 
 > **Thirty Ultraviolet Trade Goods (d30)**
 >
@@ -3812,7 +3810,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **UVG Loot, Treasure, and Discovery Economics (Synthesis)** {#sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis}
+### UVG Loot, Treasure, and Discovery Economics (Synthesis) {#sdm-gear-table-uvg-loot-treasure-and-discovery-economics-synthesis}
 
 > **UVG Loot, Treasure, and Discovery Economics (Synthesis)**
 >
@@ -3911,7 +3909,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **100 Strange Items** {#sdm-gear-table-100-strange-items}
+### 100 Strange Items {#sdm-gear-table-100-strange-items}
 
 > **100 Strange Items**
 >
@@ -4075,7 +4073,7 @@ Due to poor trade links, Blue Land goods purchased abroad sell for 2d6 times the
 
 <div class="gear-table-card" markdown="1">
 
-#### **Fully Vetted Nontoxic Comestables** {#sdm-gear-table-fully-vetted-nontoxic-comestables}
+#### Fully Vetted Nontoxic Comestables {#sdm-gear-table-fully-vetted-nontoxic-comestables}
 
 > **Fully Vetted Nontoxic Comestables**
 >
@@ -4109,7 +4107,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Blue Land Travel Options** {#sdm-gear-table-blue-land-travel-options}
+#### Blue Land Travel Options {#sdm-gear-table-blue-land-travel-options}
 
 > **Blue Land Travel Options**
 >
@@ -4144,7 +4142,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Weapons Against the Blue God** {#sdm-gear-table-weapons-against-the-blue-god}
+#### Weapons Against the Blue God {#sdm-gear-table-weapons-against-the-blue-god}
 
 > **Weapons Against the Blue God**
 >
@@ -4178,7 +4176,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Reintegrated Blue Land Clothing** {#sdm-gear-table-reintegrated-blue-land-clothing}
+#### Reintegrated Blue Land Clothing {#sdm-gear-table-reintegrated-blue-land-clothing}
 
 > **Reintegrated Blue Land Clothing**
 >
@@ -4213,7 +4211,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Blue Land Mobility** {#sdm-gear-table-blue-land-mobility}
+#### Blue Land Mobility {#sdm-gear-table-blue-land-mobility}
 
 > **Blue Land Mobility**
 >
@@ -4245,7 +4243,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Sundry Rustset Souvenirs** {#sdm-gear-table-sundry-rustset-souvenirs}
+#### Sundry Rustset Souvenirs {#sdm-gear-table-sundry-rustset-souvenirs}
 
 > **Sundry Rustset Souvenirs**
 >
@@ -4296,7 +4294,7 @@ Local humans and common travelers must use license bells (lbs), a category of lo
 
 <div class="gear-table-card" markdown="1">
 
-#### **Purple Land Travel Options** {#sdm-gear-table-purple-land-travel-options}
+#### Purple Land Travel Options {#sdm-gear-table-purple-land-travel-options}
 
 > **Purple Land Travel Options**
 >
@@ -4363,7 +4361,7 @@ The master of commerce is a:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Human Approved Comestibles and Kibbles** {#sdm-gear-table-human-approved-comestibles-and-kibbles}
+#### Human Approved Comestibles and Kibbles {#sdm-gear-table-human-approved-comestibles-and-kibbles}
 
 > **Human Approved Comestibles and Kibbles**
 >
@@ -4398,7 +4396,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Cat Approved and Disdained Weapons** {#sdm-gear-table-cat-approved-and-disdained-weapons}
+#### Cat Approved and Disdained Weapons {#sdm-gear-table-cat-approved-and-disdained-weapons}
 
 > **Cat Approved and Disdained Weapons**
 >
@@ -4432,7 +4430,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Purrfectly Cute Clothing** {#sdm-gear-table-purrfectly-cute-clothing}
+#### Purrfectly Cute Clothing {#sdm-gear-table-purrfectly-cute-clothing}
 
 > **Purrfectly Cute Clothing**
 >
@@ -4466,7 +4464,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Violet Transport Systems** {#sdm-gear-table-violet-transport-systems}
+#### Violet Transport Systems {#sdm-gear-table-violet-transport-systems}
 
 > **Violet Transport Systems**
 >
@@ -4498,7 +4496,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Friendly Master Memorabilia** {#sdm-gear-table-friendly-master-memorabilia}
+#### Friendly Master Memorabilia {#sdm-gear-table-friendly-master-memorabilia}
 
 > **Friendly Master Memorabilia**
 >
@@ -4591,7 +4589,7 @@ Today's trade-host is a:
 
 <div class="gear-table-card" markdown="1">
 
-#### **Red Land Travel Options** {#sdm-gear-table-red-land-travel-options}
+#### Red Land Travel Options {#sdm-gear-table-red-land-travel-options}
 
 > **Red Land Travel Options**
 >
@@ -4626,7 +4624,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Fruits of Blood and Soil** {#sdm-gear-table-fruits-of-blood-and-soil}
+#### Fruits of Blood and Soil {#sdm-gear-table-fruits-of-blood-and-soil}
 
 > **Fruits of Blood and Soil**
 >
@@ -4660,7 +4658,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Red Land Dress and Wear** {#sdm-gear-table-red-land-dress-and-wear}
+#### Red Land Dress and Wear {#sdm-gear-table-red-land-dress-and-wear}
 
 > **Red Land Dress and Wear**
 >
@@ -4694,7 +4692,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Human Liberty Insurance Gear** {#sdm-gear-table-human-liberty-insurance-gear}
+#### Human Liberty Insurance Gear {#sdm-gear-table-human-liberty-insurance-gear}
 
 > **Human Liberty Insurance Gear**
 >
@@ -4728,7 +4726,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Unrusting Travel Options** {#sdm-gear-table-unrusting-travel-options}
+#### Unrusting Travel Options {#sdm-gear-table-unrusting-travel-options}
 
 > **Unrusting Travel Options**
 >
@@ -4760,7 +4758,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Sundry Russet Souvenirs** {#sdm-gear-table-sundry-russet-souvenirs}
+#### Sundry Russet Souvenirs {#sdm-gear-table-sundry-russet-souvenirs}
 
 > **Sundry Russet Souvenirs**
 >
@@ -4800,7 +4798,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Pacific Phylake Towns** {#sdm-gear-table-pacific-phylake-towns}
+#### Pacific Phylake Towns {#sdm-gear-table-pacific-phylake-towns}
 
 > **PACIFIC PHYLAKE TOWNS**
 >
@@ -4940,7 +4938,7 @@ The Head Count University, a ministerial level confederate bureau of the Orange 
 
 <div class="gear-table-card" markdown="1">
 
-#### **Orange Land Travel Options** {#sdm-gear-table-orange-land-travel-options}
+#### Orange Land Travel Options {#sdm-gear-table-orange-land-travel-options}
 
 > **Orange Land Travel Options**
 >
@@ -4974,7 +4972,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Fresh Food Only** {#sdm-gear-table-fresh-food-only}
+#### Fresh Food Only {#sdm-gear-table-fresh-food-only}
 
 > **Fresh Food Only**
 >
@@ -5008,7 +5006,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Traditional Orange Land Attire** {#sdm-gear-table-traditional-orange-land-attire}
+#### Traditional Orange Land Attire {#sdm-gear-table-traditional-orange-land-attire}
 
 > **Traditional Orange Land Attire**
 >
@@ -5042,7 +5040,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Order Maintenance Equipment** {#sdm-gear-table-order-maintenance-equipment}
+#### Order Maintenance Equipment {#sdm-gear-table-order-maintenance-equipment}
 
 > **Order Maintenance Equipment**
 >
@@ -5076,7 +5074,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Personal Travel Expression (Orange Land)** {#sdm-gear-table-personal-travel-expression-orange-land}
+#### Personal Travel Expression (Orange Land) {#sdm-gear-table-personal-travel-expression-orange-land}
 
 > **Personal Travel Expression (Orange Land)**
 >
@@ -5108,7 +5106,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Approved Orange Land Comfort Purchases** {#sdm-gear-table-approved-orange-land-comfort-purchases}
+#### Approved Orange Land Comfort Purchases {#sdm-gear-table-approved-orange-land-comfort-purchases}
 
 > **Approved Orange Land Comfort Purchases**
 >
@@ -5183,7 +5181,7 @@ Admittedly, most Yellow Land merchants are so far down the mercantile guild hier
 
 <div class="gear-table-card" markdown="1">
 
-#### **Yellow Land Travel Options** {#sdm-gear-table-yellow-land-travel-options}
+#### Yellow Land Travel Options {#sdm-gear-table-yellow-land-travel-options}
 
 > **Yellow Land Travel Options**
 >
@@ -5218,7 +5216,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Consume To Create** {#sdm-gear-table-consume-to-create}
+#### Consume To Create {#sdm-gear-table-consume-to-create}
 
 > **Consume To Create**
 >
@@ -5252,7 +5250,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Fashion For You** {#sdm-gear-table-fashion-for-you}
+#### Fashion For You {#sdm-gear-table-fashion-for-you}
 
 > **Fashion For You**
 >
@@ -5286,7 +5284,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Self Defense Systems** {#sdm-gear-table-self-defense-systems}
+#### Self Defense Systems {#sdm-gear-table-self-defense-systems}
 
 > **Self Defense Systems**
 >
@@ -5320,7 +5318,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Personal Travel Expression (Heliodor)** {#sdm-gear-table-personal-travel-expression-heliodor}
+#### Personal Travel Expression (Heliodor) {#sdm-gear-table-personal-travel-expression-heliodor}
 
 > **Personal Travel Expression (Heliodor)**
 >
@@ -5352,7 +5350,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Saffron Souvenirs Inc. Sym.** {#sdm-gear-table-saffron-souvenirs-inc-sym}
+#### Saffron Souvenirs Inc. Sym. {#sdm-gear-table-saffron-souvenirs-inc-sym}
 
 > **Saffron Souvenirs Inc. Sym.**
 >
@@ -5416,7 +5414,7 @@ Despite regular “pruning actions”, illegal gray and green markets abound. No
 
 <div class="gear-table-card" markdown="1">
 
-#### **Green Land Travel Options** {#sdm-gear-table-green-land-travel-options}
+#### Green Land Travel Options {#sdm-gear-table-green-land-travel-options}
 
 > **Green Land Travel Options**
 >
@@ -5450,7 +5448,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Eat, Drink, Suck Air** {#sdm-gear-table-eat-drink-suck-air}
+#### Eat, Drink, Suck Air {#sdm-gear-table-eat-drink-suck-air}
 
 > **Eat, Drink, Suck Air**
 >
@@ -5484,7 +5482,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Appoint Thine Corps** {#sdm-gear-table-appoint-thine-corps}
+#### Appoint Thine Corps {#sdm-gear-table-appoint-thine-corps}
 
 > **Appoint Thine Corps**
 >
@@ -5518,7 +5516,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Hunt Thine Nemesis** {#sdm-gear-table-hunt-thine-nemesis}
+#### Hunt Thine Nemesis {#sdm-gear-table-hunt-thine-nemesis}
 
 > **Hunt Thine Nemesis**
 >
@@ -5552,7 +5550,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Enjoy Thine Ride** {#sdm-gear-table-enjoy-thine-ride}
+#### Enjoy Thine Ride {#sdm-gear-table-enjoy-thine-ride}
 
 > **Enjoy Thine Ride**
 >
@@ -5584,7 +5582,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-#### **Curios Et Knick Knacks** {#sdm-gear-table-curios-et-knick-knacks}
+#### Curios Et Knick Knacks {#sdm-gear-table-curios-et-knick-knacks}
 
 > **Curios Et Knick Knacks**
 >
@@ -5625,7 +5623,7 @@ meta:
 
 <div class="gear-table-card" markdown="1">
 
-### **SALVAGABLE ARMOR!** {#sdm-gear-table-salvagable-armor}
+### SALVAGABLE ARMOR! {#sdm-gear-table-salvagable-armor}
 
 > **SALVAGABLE ARMOR!**
 >
@@ -5636,7 +5634,7 @@ meta:
 > 5. Surface battlesuit (+8 ar, 3 st)
 > 6. Syncsuit (+3 ar, 1 st)
 > 
-> **WHAT DO THESE SYMBOLS MEAN?**
+> #### WHAT DO THESE SYMBOLS MEAN?
 >
 > 1. Noir onion sejant crest solare
 > 2. Or skull rampant gate actif
@@ -5662,7 +5660,7 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **THIS WILL WORK FOR SELF-DEFENSE ...** {#sdm-gear-table-this-will-work-for-self-defense}
+### THIS WILL WORK FOR SELF-DEFENSE ... {#sdm-gear-table-this-will-work-for-self-defense}
 
 > **THIS WILL WORK FOR SELF-DEFENSE ...**
 >
@@ -5694,23 +5692,25 @@ meta:
 </div>
 <div class="gear-table-card" markdown="1">
 
-### **WILL IT STILL GO INTO OVERDRIVE?** {#sdm-gear-table-will-it-still-go-into-overdrive}
+### WILL IT STILL GO INTO OVERDRIVE? {#sdm-gear-table-will-it-still-go-into-overdrive}
 
-#### WILL IT STILL GO INTO OVERDRIVE?
-1. Golem horse (Level 2, carry 2)
-2. Postmortal ridebird (L2, c1, vicious bite)
-3. Robot bike (L1, c1, fast)
-4. Thermonuclear bike & sidecar (L2, c2, hardpoint)
-5. Aerolithic cruiser (L3, c4, hover)
-6. Oldtech grav speeder (L2, c1, fast, ornery)
-
-#### HUH, IT’S A BIT ...
-1. Rusty leaky stripes dangerous
-2. Smelly loose fit flames loud
-3. Red worn out neon angry
-4. Sticky shot up logo thirsty
-5. Riddled fenced eye hungry
-6. Stiff raced face sentient
+> **WILL IT STILL GO INTO OVERDRIVE?**
+>
+> 1. Golem horse (Level 2, carry 2)
+> 2. Postmortal ridebird (L2, c1, vicious bite)
+> 3. Robot bike (L1, c1, fast)
+> 4. Thermonuclear bike & sidecar (L2, c2, hardpoint)
+> 5. Aerolithic cruiser (L3, c4, hover)
+> 6. Oldtech grav speeder (L2, c1, fast, ornery)
+>
+> #### HUH, IT’S A BIT ...
+>
+> 1. Rusty leaky stripes dangerous
+> 2. Smelly loose fit flames loud
+> 3. Red worn out neon angry
+> 4. Sticky shot up logo thirsty
+> 5. Riddled fenced eye hungry
+> 6. Stiff raced face sentient
 
 tags:
 >   [ ]
@@ -5721,7 +5721,7 @@ meta:
 
   <div class="gear-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-gear-table-what-do-these-symbols-mean-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#sdm-gear-table-will-it-still-go-into-overdrive-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
