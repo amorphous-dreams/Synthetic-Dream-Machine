@@ -7,36 +7,82 @@ published: true
 
 Every half‑decent world is held together by three things: good stories, dubious cartography, and people determined to prove their grandparents wrong.
 
-> This Quickstart is a lens on the SDM, not a replacement for the Vastlands Guidebook + Our Golden Age.  
-> Our Golden Age advancement is the canonical default; legacy leveling remains as an optional mode.
+> This Quickstart is a lens on the SDM, not a replacement for the Vastlands Guidebook + Our Golden Age. Our Golden Age advancement is the canonical default; legacy leveling remains as an optional mode.
 
 # SDM Quickstart Table of Contents
 
 - [SDM Quickstart](#sdm-quickstart)
 - [SDM Quickstart Table of Contents](#sdm-quickstart-table-of-contents)
 - [SYNTHETIC DREAM MACHINE](#synthetic-dream-machine)
+  - [THE DIALOGUE](#the-dialogue)
   - [Typical Target Numbers](#typical-target-numbers)
+  - [Time + Equipment = Automatic Success](#time--equipment--automatic-success)
+  - [Roll When It Counts](#roll-when-it-counts)
+  - [Dice Oracles](#dice-oracles)
   - [Magic Numbers](#magic-numbers)
+  - [Force a Situation](#force-a-situation)
   - [Exploding Dice](#exploding-dice)
   - [Hero Dice (HD)](#hero-dice-hd)
+  - [APPROACHES](#approaches)
+  - [RELEVANT ABILITIES](#relevant-abilities)
 - [ENTITY METAPHYSICS](#entity-metaphysics)
   - [1. Character Creation Snapshot](#1-character-creation-snapshot)
   - [2. Levels \& Life](#2-levels--life)
   - [3. Ability Scores](#3-ability-scores)
   - [4. Traits \& Items](#4-traits--items)
-  - [5. Defense \& Ward](#5-defense--ward)
-  - [6. Conflict and Combat](#6-conflict-and-combat)
-    - [DEFEAT](#defeat)
-  - [7. Saves](#7-saves)
+  - [5. Saves](#5-saves)
     - [Your Save Is 13.](#your-save-is-13)
+  - [6. Defense \& Ward](#6-defense--ward)
+  - [7. Conflict and Combat](#7-conflict-and-combat)
   - [8. Group Rolls](#8-group-rolls)
-- [HOW INVENTORY WORKS](#how-inventory-works)
-  - [Burdens](#burdens)
-  - [Item and Trait Overflow](#item-and-trait-overflow)
-  - [Slots and Sizes](#slots-and-sizes)
-  - [Available Items and Packed Items](#available-items-and-packed-items)
-  - [Typical Burden: Wear and Tear](#typical-burden-wear-and-tear)
-- [INVEST YOUR EXPERIENCE](#invest-your-experience)
+- [INVENTORY](#inventory)
+  - [CHARACTER EQUIPMENT](#character-equipment)
+    - [HUMAN CLOTHES](#human-clothes)
+    - [ONE STRANGE ITEM](#one-strange-item)
+    - [ONE USEFUL KIT](#one-useful-kit)
+    - [STARTING CASH](#starting-cash)
+    - [EQUIPMENT](#equipment)
+    - [Interpreting Equipment](#interpreting-equipment)
+      - [Typical Use](#typical-use)
+  - [HOW ITEMS WORK](#how-items-work)
+    - [Suitable and Unsuitable Equipment](#suitable-and-unsuitable-equipment)
+  - [RESOURCES](#resources)
+    - [DROPPING ITEMS](#dropping-items)
+    - [IMPROVISING WITH ITEMS](#improvising-with-items)
+  - [BURDENS](#burdens)
+    - [Item and Trait Overflow](#item-and-trait-overflow)
+    - [Typical Burden: Wear and Tear](#typical-burden-wear-and-tear)
+- [CONFLICT AND COMBAT](#conflict-and-combat)
+  - [To Fight or Not](#to-fight-or-not)
+  - [Before the Conflict](#before-the-conflict)
+    - [Dangerous Environment](#dangerous-environment)
+    - [Dangerous NPCs](#dangerous-npcs)
+    - [It Came Out Of Nowhere](#it-came-out-of-nowhere)
+  - [Reaction Rolls](#reaction-rolls)
+    - [Flee \& Freeze \& Fawn](#flee--freeze--fawn)
+  - [Rounds](#rounds)
+  - [Initiative](#initiative)
+    - [Turn](#turn)
+    - [Actions](#actions)
+    - [Free Actions](#free-actions)
+  - [Improvising Actions](#improvising-actions)
+  - [Movement and Range](#movement-and-range)
+    - [Relative Zones](#relative-zones)
+    - [Indoor Zones](#indoor-zones)
+    - [Vehicular Action Zones](#vehicular-action-zones)
+  - [Morale](#morale)
+  - [Chase and Escape](#chase-and-escape)
+  - [DAMAGE](#damage)
+    - [Damage in Deadly Combat](#damage-in-deadly-combat)
+    - [Ability Score Damage](#ability-score-damage)
+  - [DEFEAT](#defeat)
+    - [DEATH AND HAKABA](#death-and-hakaba)
+  - [RECOVERY](#recovery)
+    - [REST](#rest)
+    - [RELIFE](#relife)
+- [EXPERIENCE](#experience)
+  - [EARNING EXPERIENCE](#earning-experience)
+  - [INVEST YOUR EXPERIENCE](#invest-your-experience)
   - [Basic Golden Age Upgrading](#basic-golden-age-upgrading)
     - [Levels, Hero Dice, and New Traits](#levels-hero-dice-and-new-traits)
     - [Life Upgrades](#life-upgrades)
@@ -93,6 +139,16 @@ Every half‑decent world is held together by three things: good stories, dubiou
 
 # SYNTHETIC DREAM MACHINE
 
+## THE DIALOGUE
+
+The heart of the game is the conversation between players and referee.
+
+1. The referee describes the situation facing the PCs.
+2. The players say what their characters do.
+3. The referee describes the outcome.
+4. The players say what their characters do now.
+5. Et cetera.
+
 ## Typical Target Numbers
 
 3 trivial, casual, banal (excellent odds)  
@@ -105,13 +161,60 @@ Every half‑decent world is held together by three things: good stories, dubiou
 
 d20 \+ ability (if applicable) \+ skill (if applicable)
 
+## Time + Equipment = Automatic Success
+
+A character with suitable equipment and few time constraints succeeds at ordinary tasks without rolling.
+
+## Roll When It Counts
+
+With long-duration activities, only roll when it counts.
+
+These are things like hiding, moving stealthily, standing guard all night, social posturing in a crowd, and similar ongoing activities. The roll should resolve the decisive moment, not every minute of setup.
+
 **Bonus and Penalty**
 
 The referee assigns a bonus [+] or penalty [-] to d20 rolls when circumstances favor or hinder a PC. The size of the modifier is up to the referee and more art than science.
 
 Traits, items, events, burdens, and more also give bonuses or penalties. The referee has final say when and how different modifiers combine.
 
+**Typical modifiers**
+
+| Modifier | Effect | % |
+| --- | --- | --- |
+| **+/-1** | A tiny modifier, barely noticeable in play. | 5% |
+| **+/-6** | A significant modifier, very noticeable even in a short scene. | 30% |
+| **+1d6 / -1d6** | A pretty random modifier, useful in muddled situations. | 17.5% |
+| **[+a] / [-d]** | Roll 2 dice and take the better or worse result. Also called advantage and disadvantage. Increases the probability of extreme natural rolls, while leaving the highest and lowest possible roll unchanged. | 16.6% |
+
 _Hard Limit Option:_ modifiers to a d20 **cannot exceed +/-13**. If they would exceed 13, the referee may rule an automatic success (or failure), or limit the modifier to +/-13 and also assign [+a] or [-d].
+
+## Dice Oracles
+
+When a player, including a referee, does not know what might happen in a situation and there is little risk, rolling dice on a table gives a working answer.
+
+**Quick d6 Oracle**
+
+| d6 | Outcome |
+| --- | --- |
+| **1–3** | common or expected outcome (50% odds) |
+| **4–5** | uncommon or unusual outcome (33% odds) |
+| **6** | rare or exceptional outcome (17% odds) |
+
+The referee can set up oracle die tables to suit the odds they want. 2d6 offers a bell curve, 1d10 offers more options, and so on.
+
+**Skilled d20 Oracle**
+
+| Roll | Outcome |
+| --- | --- |
+| **≤3** | nay and woe! |
+| **4–7** | nay |
+| **8–13** | perhaps, for a price |
+| **14–19** | yea |
+| **20≤** | yea and more! |
+
+This oracle is useful when a PC’s traits and abilities come into play.
+
+Roll d20 + modifier.
 
 ## Magic Numbers
 
@@ -122,12 +225,26 @@ Some natural rolls on the d20 are special.
 
 Yes, the d20 always explodes (see below).
 
+## Force a Situation
+
+When you roll precisely on target, PCs can sacrifice something to succeed. In a pinch, roll a d8:
+
+1. **Resources:** spend more ammo, charges or fuel.
+2. **Damage:** equipment or vehicles get marked.
+3. **Life:** the exertion saps the PC's plot armor.
+4. **Burden:** the exertion strains or injures the PC.
+5. **Alert:** opponents become aware of your efforts.
+6. **Benefit:** foes get a bonus on their turn.
+7. **Innocents:** allies or bystanders are injured.
+8. **Risk:** the situation becomes more dangerous down the line.
+
+The referee has final say on the choice of sacrifice.
+
 ## Exploding Dice
 
 When you roll the exploding die’s highest face, roll again and add the results together. Keep rolling as long as the die keeps showing its highest face.
 
-\> Exploding dice in SDM are marked with an asterisk (dX\*). D20s always explode,   
-even without an asterisk.
+\> Exploding dice in SDM are marked with an asterisk (dX\*). D20s always explode, even without an asterisk.
 
 ## Hero Dice (HD)
 
@@ -144,6 +261,71 @@ Traits and items may provide other uses for hero dice. Rare traits can modify th
 
 Tables may treat Hero Dice as purely narrative luck, or as literal daemon intervention, depending on tone.
 
+## APPROACHES
+
+How do PCs get things done?
+
+1. The referee presents a challenge.
+2. The PCs choose their approach.
+3. The referee gives clear feedback on the costs and odds of a chosen course of action.
+4. The PCs confirm or revise their approach.
+
+PC actions tend to fall into one of five types:
+
+- **impossible** under current circumstances
+- dependent on **pure luck**
+- determined by **natural ability**
+- a product of **skill and ability**
+- a **sure thing**
+
+The referee has different options in each situation.
+
+**Impossible**
+
+If a roll is impossible without a certain skill (or even with a skill), the referee may **disallow any roll** . Characters are not utter fools and the referee should advise the players that they need a different idea, possibly even suggesting an unimaginative and costly alternative.
+
+Players can’t read the referee’s mind, nor vice versa. The ref shouldn’t trap players with secret gotchas.
+
+**Pure Chance**
+
+The course of action leaves no room for skill, natural ability, or divine favor. The character **rolls a bare d20** .
+
+**Natural Ability Alone**
+
+When skill isn't a factor, or a character lacks any suitable skill. The character **rolls d20 + ability** .
+
+**Skill and Ability**
+
+Players aim for this situation, since it gives the best odds. The character **rolls d20 + ability + skill** .
+
+**Sure Thing**
+
+The outcome is certain and rolling is a waste of time. The referee suggests an outcome; if the player accepts, there is **no roll required** and play moves on. If the player wants an even better outcome, the referee proposes a risk and lets the player decide to roll or not.
+
+## RELEVANT ABILITIES
+
+Common sense usually dictates which abilities apply and which don’t. Strength helps with lifting heavy objects, agility with dodging rotten tomatoes, endurance with long marches.
+
+**Multiple Abilities Apply**
+
+Sometimes multiple abilities apply. PCs can choose which ability to use.
+
+The referee may apply penalties or bonuses to a particular ability.
+
+**Specific Abilities**
+
+Some situations prescribe specific abilities.
+
+Traits may also describe the specific abilities they use.
+
+**Alternate Abilities**
+
+Traits or items may allow alternate abilities in specific situations.
+
+**Missing Skill**
+
+When a character lacks a required trait for a task, the referee assigns a penalty as they see fit.
+
 # ENTITY METAPHYSICS
 
 ## 1. Character Creation Snapshot
@@ -157,6 +339,12 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
   * Level 0: no strange item, only €50.  
   * Level 1: strange item (VLG p.22), quantum gear kit (VLG p.23), €100.  
   * Higher levels: more cash.
+* **A Motive (optional)**:
+  * A motivation for ADVENTURE!
+  * See: [MOTIVE](Vastlands_Guidebook/Vastlands_Guidebook.md#motive).
+* **A Name (optional)**:
+  * "Unnamed" or generic characters do not use the six named Ability Scores, and instead use a *Bonus* Ability Score (See below).
+  * See: [NAME](Vastlands_Guidebook/Vastlands_Guidebook.md#name).
 
 ## 2. Levels & Life
 
@@ -164,7 +352,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
 * Most start at **Level 0**, unless otherwise noted.  
   * **Player Characters** and other **Primary Characters** (PCs) begin at **Level 0** by default. 
   * Referees may start them higher with bonus Experience, often enough for +1 Level, +1 Hero Die, +1 new Trait, and +4 Life (269+ xp).
-* Entities with Life begin with **4 Life** at Level 0. Life increases via **per‑point upgrades**.
+* Entities with Life begin with **4 Life** at Level 0. Life increases via **per‑point upgrades** (often notes as +X/level, with most entities gaining +4/level).
 * **Life cannot go below 0**-Roll Defeat instead if damaged below zero Life. Most characters flee or surrender earlier than this.
 * **Level cannot go below 0**—roll Defeat instead.
 
@@ -173,9 +361,9 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
 * **Generic Characters** have a single ability score: **Bonus**  
 * **Named Characters** (Player Daemon‑touched, etc.) use **Ability Scores** (+1 to \+5) instead of a generic bonus.  
 * **Six Abilities, grouped in three metaphysical pairs:**  
-  * **Ha** (form/body) → Aura, Endurance  
-  * **Ka** (energy/motion) → Charisma, Strength  
-  * **Ba** (mind/spirit) → Thought, Agility
+  * **Ha** (body, matter, structure, form, persistence, shape) → Aura, Endurance  
+  * **Ka** (soul, fire, drive, energy, thrust, movement) → Charisma, Strength  
+  * **Ba** (psyche, personality, change, path, choice) → Agility, Thought
 * **Ability scores cannot go below 0**—roll Defeat instead.
 
 ## 4. Traits & Items
@@ -191,40 +379,7 @@ Tables may treat Hero Dice as purely narrative luck, or as literal daemon interv
   * Expert \+6 bonus to rolls; good enough to teach
   * Master \+9 bonus to rolls; a rare master of this art
 
-## 5. Defense & Ward
-
-* **Defense (Physical)** \= 7 \+ Agility \+ Bonus (relevant Skill) \+ Armor  
-  * **UVG NPCs** are “skilled in Defense” (10 \+ Agility \+ Armor baseline).  
-* **Defense (Mental)** \= 7 \+ Thought \+ Bonus (relevant Skill) \+ Ward  
-  * **Ward** represents psychic and mental resilience, and provides **Save bonuses** and **mental defenses**. Granted by metaphysical trinkets and magitechnical artifacts known as "wards" that protect one's non-physical integrity. They also often protect against spells.
-* **Defense (Social)** \= 7 \+ Charisma \+ Bonus (relevant Skill) \+ Prestige  
-  * **Prestige** is a factional reputation from status symbols—titles, properties, valuable possessions, and admired traits—that enhance influence in relevant settings.
-
-## 6. Conflict and Combat
-
- Each attack type uses d20 \+ relevant ability \+ skill (if applicable). Most attacks target physical or metal **Defense**.
-
-1. **Melee** → Strength (e.g. ghost bone axe, machete)  
-2. **Ranged** → Agility (e.g. heat rod, wand pistol)  
-3. **Oldtech** → Thought (*Magitech,* e.g. brain‑slaved auto‑turret)  
-4. **Fantascience** → Charisma (*Sorcery,* e.g. mind whip, brain shackle)
-
-### DEFEAT
-
-Two situations always force a character to roll on the defeat table:
-
-- **Not enough life or level remaining**. If an effect would reduce a character below 0 life (or level), they are reduced to 0 life (or level) and must roll on the defeat table.
-- **Not enough ability remaining**. If an effect would reduce a character's ability below 0, it is reduced to 0 and they must roll on the defeat table.
-
-At the referee's discretion, other situations may impose defeat rolls (especially after failed saving throws):
-
-u Terrible foes, oversized enemies, ancient doom laser swords, and other sources of extreme damage.  
-u Dangerous or overwhelming ancient powers that extract extreme costs from their users.  
-u Deadly traps, tricks, perils, curses, and other obstacles.
-
-The referee should make it abundantly clear to attentive players when they are facing such dire threats. Springing a save or die effect on PCs without giving the chance to avoid it through smart play is not sporting.
-
-## 7. Saves
+## 5. Saves
 
 When nothing but blind luck will save you, roll d20 \+ ability over your saving roll target (or simply, your save). If you  succeed, you are saved.
 
@@ -243,51 +398,364 @@ Relevant and Irrelevant Abilities:
 
 \>Agility does not provide a save bonus. As soon as a character is aware of a threat, such as a landslide, it is no longer a blind luck situation. They are taking action, using traits and abilities to overcome a threat.
 
+Other Modifiers:
+
+* **Wards** usually provide a bonus to saving rolls. Some provide a blanket bonus to all saves, others only in certain circumstances.
+* **Traits** can provide a bonus or modify a character’s saving roll target.
+
+## 6. Defense & Ward
+
+* **Defense (Physical)** \= 7 \+ Agility \+ Bonus (relevant Skill) \+ Armor  
+  * **UVG NPCs** are “skilled in Defense” (10 \+ Agility \+ Armor baseline).  
+* **Defense (Mental)** \= 7 \+ Thought \+ Bonus (relevant Skill) \+ Ward  
+  * **Ward** represents psychic and mental resilience, and provides **Save bonuses** and **mental defenses**. Granted by metaphysical trinkets and magitechnical artifacts known as "wards" that protect one's non-physical integrity. They also often protect against spells.
+* **Defense (Social)** \= 7 \+ Charisma \+ Bonus (relevant Skill) \+ Prestige  
+  * **Prestige** is a factional reputation from status symbols—titles, properties, valuable possessions, and admired traits—that enhance influence in relevant settings.
+
+## 7. Conflict and Combat
+
+To attack, roll d20 \+ ability \+ skill over defense.
+
+Most attacks target physical or mental **Defense**.
+
+1. **Melee** → Strength (e.g. ghost bone axe, machete)  
+2. **Ranged** → Agility (e.g. heat rod, wand pistol)  
+3. **Oldtech** → Thought (*Magitech,* e.g. brain‑slaved auto‑turret)  
+4. **Fantascience** → Charisma (*Sorcery,* e.g. mind whip, brain shackle)
+
 ## 8. Group Rolls
 
 When the whole group is trying to accomplish something risky, a random character rolls for the whole group. Traits may modify this procedure.
 
-# HOW INVENTORY WORKS
+# INVENTORY
 
-Characters and other active entities have 2 standard inventories:
+Your inventory slots are a key game resource. Though a character might want to carry everything, the cruel laws of their synthetic reality forbid it. Every human PC has three basic inventories.
 
-* Gear: 7 \+ Strength slots  
-* Traits: 7 \+ Thought slots
+- Traits: **7 + thought** slots
+- Items: **7 + strength** slots
+- Burdens: **20** slots
 
-## Burdens
+Non-humans may bear more or less.
 
-Burdens are 20 special inventory slots for afflictions, traits, powers, and items that are so difficult to bear that they impose penalties to your actions.
+Example: a cute little cat lord PC has just **2 + ability (strength)** item inventory slots. They use a cat groom to carry things for them.
 
-\>Each burden imposes a \-1 to all rolls.
+Some traits may expand inventory slots.
 
-When a character suffers a burden, but they have no available slots for burdens, they collapse; catatonic until at least one burden is removed.
+**Pets and Sidekicks**
 
-## Item and Trait Overflow
+Each of a character’s pets and sidekicks occupies a trait or item inventory slot. This represents the character’s care and attention.
 
-If you run out of regular inventory slots for traits or items, you can store the excess among your burdens.
+**Powers and Spells**
 
-## Slots and Sizes
+Each power or spell occupies a trait or item inventory slot. This represents either a technomagical anchor or the engraved psycho-physical channels that grant the character access to this unnatural power.
+
+**Prosthetics and Augments**
+
+Each implant or modification occupies a trait or item inventory slot.
+
+**Additional Inventories**
+
+Traits and containers can create new sub-inventories. For example, a high-quality singing Long Ago backpack. Draw these on the character sheet or in a notebook.
+
+## CHARACTER EQUIPMENT
+
+Items are all the tools and treasures that expand a character’s abilities and possibilities. From a mundane wrench to a magitechnical spell anchor, from a suit of pleather armor to a biomechanical crab-head, all are items.
+
+You have **7 + strength** inventory slots for items.
+
+Each loose item or package occupies at least one item inventory slot. Other traits, items, and events can increase the number of item slots. Each item inventory slot is 1 stone in size.
+
+**At level 1 you start with:**
+
+- One strange item of ill-disclosed origin.
+- One useful kit—a sack of quantum gear that fits your background .
+- Some starting cash. €100 to be exact.
+
+A level 0 character starts without the strange item and with just €50 cash. A higher level character starts with more cash.
+
+### HUMAN CLOTHES
+
+Baseline humans have evolved to wear clothes. Any garments suitable for a tropical or temperate climate that such a character wears take up no inventory slots. You can describe them on the back of the character sheet.
+
+> _Example: boiler suit, ship overalls, field loincloth, civilian sarong._
+
+Additional sets of clothes, or garments that provide benefits or modifiers, occupy inventory slots as usual.
+
+> _Example: a corporate suit (1 st) provides status benefits and access to temples of finance, a classical toga (3 st) blocks one arm and marks the wearer as a member of the ruling class in some Decapolitan republics, nomad robes (1 st) serve as armor, very warm clothes (2 st) are useful in the domains of Winterwhite, an environment suit (1 st) protects against radiation ghosts, etc._
+
+Characters who are not evolved to wear clothes, such as cat lords, spectrum satraps, some golems, and other strange creatures, do not get a free inventory slot for the garments they wear.
+
+> _Example: a cat lord wearing a cute little jump suit (1 st) and knit cap with foopy antennae may not look annoyed, but they can’t carry quite as many sacrificial mouse victims as they might wish._
+
+### ONE STRANGE ITEM
+
+See: [VLG One Strange Item](Synthetic_Dream_Machine_05_Gear_Index.md#vlg-one-strange-item).
+
+### ONE USEFUL KIT
+
+A kit is a packed bundle of mundane tools that let a character do their job. A settled character can use their kit to make a living.
+
+You have **a kit for one of your background traits** . Draw a kit box on the back of your character sheet.
+
+The kit measures a whole sack (10 stones) in heft and includes up to 10 individual items. You don’t need to choose in advance exactly what is in your character’s kit—the items are in a quantum superposition until you define them as you play.
+
+> _Example: Noë has a background as a plumber (don’t ask) and starts with a plumber’s kit. Noë doesn’t list each individual item in the kit. As she adventures, she produces useful O-rings, allen wrenches, lengths of pipe, and sealing tape from her kit. She lists these in her kit box, leaving space for 6 more quantum items._
+
+The kit includes nothing better than a civilian weapon (1d6 damage) and no armor. You can buy more weapons and armor with your starting cash.
+
+The starting kit leaves most characters burdened when unpacked. You can stash it before exploring a dangerous location or entering a fight. A beast of burden may help transport your kit.
+
+### STARTING CASH
+
+Many kinds of cash are possible: the traditional luminous cowrie of the coastal communities (lb), the high-end plastic Casino gold piece (cgp) of the Red Land District, the traditional bunker-era duraplastic chit (dpc) of the Red and Orange Coprosperity Merchant Region, the sky-dragon scale (sds) of the Cat-affiliated knowledge societies, the prized ferroceramic puck-and-triangle of the Emerald City (fpck), and the completely ethereal noöspheric digital cash of the Dream Canopy (vdx).
+
+For simplicity, the abstract “€” symbol covers them all.
+
+You have **€50 + €50 per level** in physical currency. Enough to live on for a few months, if you are careful and boring. You’re not, though.
+
+That's not much per level, honestly.
+
+**What Cash Buys**
+
+Precisely how much €1 buys varies with place and time (and referee whim), but a reasonable baseline is 100 theoretical convertible imperial universal dollars from Finite Earth A.D. 2025 to €1. Example purchases:
+
+|Price|Purchase|
+|---|---|
+|€0.1|common meal or ingredient, mass tourist souvenir|
+|€1|day’s food and lodging for two proletarian baseline humans, basic tool, uncommon ingredient, fancy meal|
+|€10|day’s food and lodging for two mildly ­enhanced bourgeois humans, professional tool, rare ingredient, opera ticket|
+|€100|day’s food and lodging for two betterfolk aesthetically-augmented humans, rare or expert tool, very rare ingredients, basic vehicle, hut, small farm|
+|€1k|day’s food and lodging for two abmortal oligarchs, uncommon vehicle, small cottage, middling farm|
+|€10k|hour’s rock-hitting trip for an imperial executive unit, rare vehicle, comfortable residence, large farm or ranch|
+|€100k|nearly super-heroic augment, luxurious residence, plantation|
+|€1m|abmortality, seat on the neo-imperial shadow parliament, modest palace|
+
+A character can dream, right?
+
+### EQUIPMENT
+
+This world is not like that of Old Soil, with its wild west feudalism and deep-delving gong-farmers. Sufficiently advanced technology indistinguishable from magic abounds, if unevenly distributed. The modern human knows that wonders exist, though few can pretend to understand them. Too much knowledge exists even for the hive minds and synthetic intelligences, and more has been forgotten.
+
+What is magic? What mundane? That distinction is impractical. Somewhere in these vast lands nearly every item the human may dream up must already exist. Thus, to list all possible equipment... hubris!
+
+Yet, some useful things for the traveler, for the voyager into the vast beyond the edge of civilization? That, yes, let us list that.
+
+This chapter covers how equipment and resources work. For catalogs of weapons and armors, gadgets/tools/consumables, and vehicles/mounts, see [SDM Gear Index](Synthetic_Dream_Machine_05_Gear_Index.md#sdm-gear-index).
+
+### Interpreting Equipment
+
+To enumerate every use for a brick is an exercise in creativity. To do so for every item in the Vastlands is folly. When figuring out what to do with equipment in the game, before diving into its attributes, consider what it is and how it is described.
+
+1. **Natural Language.** Equipment does what its name suggests. Use common sense and improvise details as needed.
+2. **New or Improved Ability.** Equipment enables a character to perform tasks they couldn’t otherwise.
+
+PCs do not need to make rolls to succeed at a task if they are using appropriate equipment and aren’t under pressure or facing time constraints.
+
+> _Example: A raft allows characters to float, and climbing gear helps them scale surfaces they couldn’t free-climb._
+
+To create unique items, reskin or modify existing equipment and powers with the desired effects.
+
+Season to taste.
+
+#### Typical Use
+
+Sometimes, improvisation is not enough. For those situations, standard equipment attributes come into play. The following five are mechanics may see a lot of use:
+
+1. **Size.** Each ready item occupies at least one stone (1 st) of inventory. Packed items can occupy less space. Most PCs can carry at least 7 stones of gear without penalty. Stronger PCs can carry more.
+2. **Damage.** If combat breaks out, many items can serve as improvised weapons. A small personal weapon like a knife deals 1d4 damage, a civilian weapon like a fire axe deals 1d6 damage, and a military weapon like a lance deals 1d8 damage. Fragile items break after they hit. Clumsy items impose a penalty to attack rolls.
+3. **Notched and broken.** On a natural roll of 1, equipment is notched (put a small mark next to it). If you roll another natural 1 before repairing it, or if it suffers other damage, it breaks.
+4. **Penalty or Bonus.** Under pressure, characters without suitable equipment may receive a penalty for tasks they are skilled at. Conversely, having the perfect equipment for a job could provide a bonus.
+5. **Force the Situation.** If you miss your attack roll by one, you can sacrifice your equipment (damage it, deplete its ammo, etc.) to succeed. The referee may suggest other sacrifices.
+
+The referee makes the final decision.
+
+## HOW ITEMS WORK
 
 Item sizes in the Vastlands use abstract units that combine weight and bulk.
 
-size \= capacity. Example
+|Size|Equals|Example|
+|---|---|---|
+|1 sack (sk)|10 stones|Basic cargo unit, about as much as a human.|
+|1 stone (st)|10 soaps|Significant item; a saber, spear, shield, or shovel. About 7 kilograms or 15 pounds.|
+|1 soap (sp)|25 cash|Small item; a signal whistle, signet ring, spike, or bar of soap (surprisingly useful in the wastes!).|
+|1 cash (€)|some change|Standard currency unit equal to a laborer’s day wages. Named in a nod to ancient Chinese cash.|
 
-| Unit | Equals | Notes |
+Unless otherwise specified, an item takes up 1 stone of inventory space. 250 cash units take up 1 stone. A PC's money is usually a mix of cards, credit, notes, and units that fit in a wallet. Treat the wallet as part of their clothing.
+
+**Available Items and Packed Items**
+
+Available items take up at least one inventory slot each, regardless of size, but a character can use them immediately.
+
+> _Example: A readied dagger (5 sp) takes up a whole inventory slot (1 st)._ 
+
+Items can be packed away to save space. Readying a packed item for use takes at least one action.
+
+> _Example: Packed in a bundle, two daggers fit in a single inventory slot._
+
+Some equipment such as backpacks, pouches, purses, ammo belts, or clothing with hidden pockets can allow characters to pack away more gear than usual, effectively increasing their inventory.
+
+> _Example: Onion's synthetic skin backpack (1 st) allows him to pack away and carry 3 stones worth of small gear. Effectively, Onion can stuff 4 stones of items into a single inventory slot. However, retrieving a specific item from his backpack takes a whole action. Onion had better not pack away his inquisition squirtgun if he plans to use it._
+
+### Suitable and Unsuitable Equipment
+
+Under pressure, the referee can impose a penalty on characters without suitable equipment for tasks they are otherwise skilled at. Conversely, having precisely the right equipment can provide a bonus. The referee makes the final decision.
+
+## RESOURCES
+
+Some equipment requires resources to function: ammo for guns, charges for sorcelectric devices, fuel for golem vehicles, batteries for portable bard-simulacra.
+
+Precisely tracking resources is not always necessary— often, you may assume PCs have enough resources for the scene or session and can replenish their resources between scenes, off-screen.
+
+Generally, the only thing that matters is whether you:
+
+1. **have enough** resources: keep using your gear.
+2. **are running low** on resources: one use left.
+3. **have run out** of resources: take an action to reload, refuel, or otherwise replenish your gear.
+
+When using equipment, your d20 roll determines whether you have used up your resources or not.
+
+If no d20s are rolled during a scene, make a resource usage d20 roll each item used in the scene and see if anything is running low or has run out.
+
+**Running Low: Natural 13**
+
+Whenever you use an item and **roll a natural 13 you have only one use remaining**.
+
+**Running Out**
+
+Some items have a **replenish** score (e.g. **re 5** or **re 10** ).
+
+This number abstracts the number of bullets used in an attack or what percentage of the omnibattery the audiovisual illusion generator consumes replaying the iconic terror crabs scene from _Chat on a Hot Tin Roof_ to chase away the hobnoble goons.
+
+When you **roll the replenish score or less, resources run out**.
+
+> _Example: Noë uses the lifesign scanner (re 5) as she explores the facility floor; the mechanical ear listening for vital tremors. Cat relays what lifeforms are detected and grants a bonus against surprises. When they reach the elevator to the lower levels, Cat asks for a usage roll. Noë rolls a 4. The sensor beeps once and goes dark, its juice drained._
+
+Rolling a natural 13 always indicates a single use remaining, even if the replenish score is 13 or higher.
+
+**Charges vs Replenish #**
+
+Sometimes you may want to convert charges into a replenish number, or figure out how many bullets there are in a gun with a given replenish score.
+
+| Charges | re # | Charges | re # |
+| --- | --- | --- | --- |
+| 30+ | <0 | 5 | 4 |
+| 16–30 | 1 | 4 | 5 |
+| 10–15 | 2 | 3 | 7 |
+| 8–9 | 2 or 3 | 2 | 10 |
+| 6–7 | 3 or 4 | 1 | 20 |
+
+Anything with more than 20 charges doesn’t have a replenish score. It only runs out after rolling a natural 13.
+
+**Single-Use Replenishers**
+
+Fabricators still churn out these disposable refills.
+
+| d6 | Replenisher | Size | Cost |
+| --- | --- | --- | --- |
+| 1 | Dehydrated Pill | 1 sp | €20 |
+| 2 | Fillgut Synorg | 1 sp | €5 |
+| 3 | Microbattery | 1 sp | €7 |
+| 4 | Nanoammo | 1 sp | €100 |
+| 5 | Omnibattery | 1 st | €50 |
+| 6 | Power Cube | 1 st | €25 |
+
+> _Dehydrated Pill: water for a human-sized entity. Fillgut Synorg: human belly-fill. Microbattery: recharge a 1 st item. Nanoammo: for any weapon. Omnibattery: recharge anything. Power Cube: refuel any machine._
+
+**Cradles and Multi-Use Fabricators**
+
+Convenient devices crafted by the Builders in the before times. A day after consuming a sack of feedstock, they produce a sack of relevant supplies.
+
+| d6 | Microfabricator | Size | Cost | Notes |
+| --- | --- | --- | --- | --- |
+| 1 | Battery Bug | 1 sk | €1,100 | Giant battery-laying firefly. Eats waste, water, and sunlight. |
+| 2 | Enviro Genie | 1 sk | €500 | Consumes waste gases, liquids, and solids. Emits fresh air, water, and carbon. |
+| 3 | Fuel Maker | 2 sk | €1,200 | Condenses air, light, and a sack of organics into fuel. |
+| 4 | Heavy Metal Ammonite™ | 2 sk | €2,000 | Keep in metal-rich soup for best results. Creates an ammo pack in 10 minutes. |
+| 5 | Pink Slime Emitter | 2 sk | €1,000 | Turns organics into healthy Human Food™! Flavor sold separately. |
+| 6 | Teravolt Cradle | 1 sk | €660 | Armor fast-charger (one hour). Eats wide-spectrum radiation. |
+
+**Other Sources of Resources**
+
+Other ways to replenish gear exist. The listed cost is a guide for the referee to adjust based on local conditions.
+
+| Source | Size | Cost |
 | --- | --- | --- |
-| 1 sack (sk) | 10 stones | Basic cargo unit, about as much as a human. |
-| 1 stone (st) | 10 soaps | Significant item; a saber, spear, shield or shovel. About 7 kilograms or 15 pounds. |
-| 1 soap (sp) | 25 cash | Small item; a signal whistle, signet ring, spike or bar of soap (surprisingly useful in the wastes!). |
-| 1 cash (€) | some change | Standard currency unit equal to a laborer’s day wages. Named in a nod to ancient Chinese cash. |
+| Facility: shop, charging station, fueling port, etc. | building | €0.1–10 |
+| Portable: ammo box, charge pack, fuel can, etc. | 1 st | €1–200 |
+| Personal Fabricator. Consumes (roll d6): (1–3) sunlight, (4–5) life, (6) archaic energies. Generates 1d6-1 refills per day. | 1 sk | €500–8,000 |
 
-Unless otherwise specified, an item takes up 1 stone of inventory space.  
-250 cash units take up 1 stone. A PC's money is usually a mix of cards, credit, notes, and units that fit in a wallet.   
-Treat the wallet as part of their clothing.
+**Option 1: Precise Resources**
 
-## Available Items and Packed Items
+Sometimes it makes sense to track resources such as torches, oxygen, ammunition, charges, etc. The referee clearly declares situations or locations where resources serve as a clock or limit on PC activity.
 
-Available items take up at least one inventory slot each, regardless of size, but a character can use them immediately. Items can be packed away to save space. Readying a packed item for use takes at least one action. Some equipment such as backpacks, pouches, purses, ammo belts, or clothing with hidden pockets can allow characters to pack away more gear than usual, effectively increasing their inventory.
+> _Example: Our heroes prepare to explore the bunker of the clockwork demon. Cat taps a pencil thoughtfully and warns them, “It’s dark inside, and the air may be toxic. You’ll track clean air and light resources.” The PCs decide how much of their inventory to fill with these resources._
 
-## Typical Burden: Wear and Tear
+PCs subtract 1 unit of resources (say torches) per unit of game time or number of actions (say every 30 minutes or 3 exploration actions). In the UVG, this is the default for overland travel, with 1 sack of supplies used by each traveler each week of travel.
+
+**Option 2: Overloaded Encounter Dice**
+
+The referee adds resource consumption to the encounter die and rolls after each exploration period. Ideally, the encounter die is tailored to its location. For example:
+
+**d6 encounter die (derelict void palace)**
+
+| d6 | Result |
+| --- | --- |
+| 1 | dangerous encounter: (1–3) stranded plastic human (L1, false-memoried), (4–5) servitor spider (L3, unctuous and hungry), (6) void creature (L5, soul-sucking) |
+| 2 | encounter traces: (1–3) tracks, scuffs, leavings, (4–5) signs, warnings, desiccated gore, (6) portents, vidy journal, corpse |
+| 3 | light resource consumed |
+| 4 | oxygen resource consumed |
+| 5 | anxiously double-check just to be sure (spend one resource and gain +1 life) |
+| 6 | nothing |
+
+### DROPPING ITEMS
+
+A character can quickly drop one item or pack as a free action on their turn, reducing any penalties suffered from encumbrance. A quickly dropped item may break, get damaged, roll away, or otherwise suffer the consequences. The referee chooses a save target.
+
+> _Example: A pair of shoes chucked onto a grassy slope may roll downhill, a sack of stolen glass statuettes dropped on a marble floor may produce a lot of sharp glass caltrops._
+
+A character taking an action to carefully drop an item or pack avoids any risk of damaging their precious property.
+
+### IMPROVISING WITH ITEMS
+
+Items are not just bundles of game mechanics. They improve a character’s performance and let them do new things. Use common sense and imagination to figure out how to take advantage of your PC’s equipment.
+
+> _Example: Rafts let characters float, while climbing gear helps scale surfaces that are impossible to free-climb._
+
+## BURDENS
+
+Burdens are 20 special inventory slots for afflictions, traits, and items that are so difficult to bear that they impose penalties to your actions.
+
+**Each burden imposes a -1 to all rolls.**
+
+At 20 burdens, you can move or speak slowly and carefully, but can't take almost any other actions.
+
+### Item and Trait Overflow
+
+If you run out of regular inventory slots for traits or items, you can store the excess among your burdens.
+
+> _Example: Onion is carrying his equipment (8 st) and an armoire (10 st). With a strength of 1, he has 8 item slots. The armoire takes up ten burden slots, imposing a -10 penalty on all his rolls._
+
+Unwisely, or desperately, he tries to chase off a ligneous skeleton (L1, corken) with a blast of hot plasma from his wand-gun. He might still overcome and roll up on the skeleton’s stomping grounds (on a roll that beats the target 14 defense with a bonus of +5, even after deducting the penalty, an overall chance of 0 or 5 in 20 of landing a blow, depending on the double damage).
+
+Still, even a glancing blast from the hot plasma might frighten the ligneous skeleton. After all, cork burns so well, does it not?
+
+**Afflictions**
+
+Curses, diseases, mutations, corruptions, injuries, phobias, the impact of facing a true demon, and other afflictions occupy burden slots by default.
+
+> _Example: Fatigue (affliction) You are drained by your exertions or the actions of an ill-daemon. Reduces maximum life total by your level._
+
+Such afflictions often impose additional penalties in addition to the standard -1 to all rolls.
+
+Some spiritual and psychological afflictions may occupy trait slots instead, while diseases and physical injuries could occupy item slots at the referee's discretion.
+
+**Removing Burdens**
+
+Dropping cumbersome items immediately removes that burden. Releasing the magitechnical formulae of powers or spells also immediately removes that burden.
+
+Removing other traits requires psychosurgery, shamanic intervention, or an increased thought score. Removing afflictions is harder, requiring rest and care.
+
+### Typical Burden: Wear and Tear
 
 After significant exertion—an athletic competition, a grueling journey, an interminable battle, or another wearisome challenge—the referee may require the characters, their mounts, or vehicles to roll attrition saves.
 
@@ -299,7 +767,548 @@ Resting or healing cannot increase their life score above this reduced maximum u
 
 Each instance of wear and tear occupies a separate burden slot and applies independently.
 
-# INVEST YOUR EXPERIENCE
+# CONFLICT AND COMBAT
+
+## To Fight or Not
+
+When words have had their day, the struggle begins. This may be a fight with plasma machetes and ghostbreaker guns, but it can also be more abstract.
+
+Conflicts are risky for the PCs, so their procedure is more defined than most other game mechanics.
+
+1. The referee **outlines dangers** before a conflict breaks out.
+2. Conflicts are not inevitable. Often, **reaction rolls** determine NPC reactions.
+3. Conflicts **unfold in rounds** . Each round, the **sides roll initiative**, then act in turn.
+4. After a few rounds, one side usually tries to **flee**, **retreat** or **surrender** — either because of a failed morale roll (the opponents) or the players’ decision (the party).
+5. The winning side may get one final shot.
+6. The conflict ends. The winners survey the spoils of victory. The losers gnaw the bitter bones of defeat.
+
+If the PCs are not involved in a conflict, the referee can simply consult the dice oracle and narrate the results.
+
+## Before the Conflict
+
+In the vast majority of situations, the referee ensures the players know when their characters face a potential conflict. The referee also clarifies the possible stakes:
+
+death, dishonor, robbery, capture, etc.
+
+### Dangerous Environment
+
+The referee communicates when the characters have entered a high-threat environment, whether this is a dungeon, a war zone, or an abandoned warp factory.
+
+### Dangerous NPCs
+
+Likewise, the referee communicates when the characters encounter a creature or person who could be a threat if they become hostile.
+
+### It Came Out Of Nowhere
+
+It is best when the PCs choose to face danger because they feel the potential rewards outweigh the risks. Then, in those circumstances, surprise, ambushes, and sudden attacks may come into play.
+
+The referee should be wary of springing conflicts out of nowhere, without reason or foreshadowing. They have the entire Given World at their fingertips, they do not need this kind of unsportsmanlike trickery.
+
+## Reaction Rolls
+
+Sometimes, it is unclear how a group of NPCs should react to the player characters. This is often the case with random encounters while traveling. In such cases, the referee’s best friend is the reaction roll. Think of it as an oracle of behavior. To see how the NPCs behave, a **random PC rolls 2d6 + cha.**
+
+**NPC Reaction (2d6 + cha)**
+
+| 2d6 + cha | Reaction |
+| --- | --- |
+| **≤1** | They come at you, like raving agents of cosmic corruption. |
+| **2** | Aggressive, hostile. They attack, given half an excuse. |
+| **3–5** | Thanks, they hate you. |
+| **6–8** | Unsure, waffling, complicated, suspicious. |
+| **9–11** | Polite, understanding, sympathetic. |
+| **12** | Friendly, interested. They’ll help, given half a chance. |
+| **13≤** | They insist on helping, even if you don’t need help. Rude to say no, but they will waste your... Oh, dear. Cup of tea? |
+
+If the PC wants to provoke a conflict, they may subtract their charisma from the reaction roll instead. Nice, manipulative people get into fewer unchosen fights.
+
+Some traits may modify reaction rolls. The referee may apply penalties or bonuses depending on the PCs’ appearance and behavior.
+
+### Flee & Freeze & Fawn
+
+Most NPCs are not mindless abominations out for bile and blood. People and creatures who feel threatened by the PCs may flee instead of attacking. Creatures that feel particularly overpowered may cower in terror, beg for mercy, or offer to serve their new tyrants, the PCs.
+
+## Rounds
+
+When a conflict breaks out, play proceeds in rounds.
+
+1. Each round the sides roll initiative.
+2. Then, the side that won initiative acts.
+3. Next, the side that lost initiative acts.
+4. If one side suffered badly this round, the referee may decide they need to roll morale.
+5. Then, the round ends.
+
+The length of a round is cinematic, not precise. It’s long enough to do something meaningful. In a duel, a round might last mere seconds; with submarines chasing each other, it might last hours.
+
+## Initiative
+
+Every round, a random character from **each side rolls:** 
+
+**2d6 + agility**
+
+High roll goes first. Traits, circumstances, burdens, and the referee may apply other modifiers. The players decide their characters’ turn order when their side acts.
+
+**When initiative rolls are tied, chaos reigns** and everything happens at once. The PCs and their opponents take their turns, but damage and afflictions only take effect at the end of the round. This is how two duelling swellswords stab one another right dead and proper.
+
+### Turn
+
+Each round, each character gets a turn when their side acts. On their turn they **do something**.
+
+Characters need to be aware of where they are and what locations or creatures they can reach or target.
+
+Traits, items, and circumstances can give additional or special turn actions.
+
+### Actions
+
+On their turn, a character can do nearly anything the player comes up with. The referee adjudicates whether it requires any die rolls and whether bonuses or penalties are called for.
+
+Most turns, a character does some reasonable combination of **movement** through space and **interaction** with the environment and other characters.
+
+The actions described in the following paragraphs are ideas for things characters could do in a conflict and how to adjudicate some situations.
+
+**Movement Actions**
+
+You’re mostly moving around, maybe doing something else not too involved, like unholstering a carbine, reloading a carbine, or wondering whether you left your stove on when you left your house this morning to explore the sewers.
+
+1. **Disengage.** Carefully, guarding against counterattacks, you back away from close combat. You move nearby, just out of reach.
+2. **Flee.** Carelessly, you turn your back on your melee opponent and head far away. Your foe gets a free attack. Probably with a bonus. Foes with guns may also get free attacks. Beware.
+3. **Move.** You move nearby. Right there. No sweat, just a nice easy walk. You could combine this with readying a weapon to catch foes doing funny stuff.
+4. **Sprint.** You move somewhere farther away, over there. Just as fast as you can. Look out, you might trip on some obstacles, and if there are enemies about, they may get a free attack.
+5. **Charge.** You rush a nearby creature, getting a bonus to your attack. Attacks against you also get a bonus until your next turn.
+6. **Swing on Chandelier.** Or other swashbuckling affair. Lovely use of the environment. Roll agility. Success: a bonus with your next action (probably an attack combined with the swing). Failure: your foe gets a reaction attack with a bonus, or you’re put into a humorously compromised position.
+7. **Climb a Ladder.** Depending on ladder length, that’s probably all you’ll reasonably do this turn.
+8. **Drive.** Or direct a ridestrich. Steering, not crashing.
+
+**Attack Actions**
+
+Attacks are actions taken to directly damage your foes.
+
+Melee, ranged, oldtech, and fantascience are the four most common types of attacks, but others types are also possible. Traits and gear can unlock attacks with special effects, bonuses against specific targets, in certain environments, or from a character’s abilities.
+
+1. **Attack.** An adjacent foe with a melee weapon, or a more distant enemy with a suitable ranged weapon.
+2. **Skirmish.** You hop from behind cover, fire off a round, and hop back. The mobility isn’t great, but cover protects.
+3. **Careless Attack.** Attack with no regard for your safety. Get a bonus on your attack, but if your enemy survives they get a free counterattack.
+4. **Ready Attack.** Prepare to counterattack if a foe comes in range. If that happens, your attack resolves before your enemy’s. If it doesn’t come in range, your attack is wasted. The referee can use oracle dice to decide what enemies do, to keep things fair.
+5. **Suppressing Fire.** Lay down arrows, bullets, or maser blasts, imposing a penalty on your foes’ rolls.
+6. **Furious Attacks.** Roar as you unload your magazine into the monstrous rabbit of Blaargh. Spend your turn hacking away like a human possessed. No moving, no tactics, and your foes get a bonus against you on their turn, but you attack twice.
+
+**Tactical and Support Actions**
+
+1. **Take Cover.** You dive behind suitable terrain. Ranged attacks against you suffer a penalty.
+2. **Hide.** Make yourself discreet, so you can’t be targeted. Requires suitable cover or camouflage gear and a successful agility or thought roll.
+3. **Sneak Away.** If enemies can’t see you, you can move to a different location and surprise them, or flee without getting attacked.
+4. **Reload.** Some complicated or big weapons need a full action to reload.
+5. **Grab On.** Grab hold of a target. Probably requires a strength or agility roll. It can’t move away without dragging you along.
+6. **Hang On.** A kaiju lumbering away? Roll endurance or agility to hang on.
+7. **Hold Down.** Smaller? Make a strength roll to pin down a grabbed target. A pinned creature can’t move or attack anyone except you.
+8. **Help Hold.** Rush in to help an ally hold down a pinned target. It suffers a penalty to breaking loose.
+9. **Shake Off.** Attack an enemy that has grabbed or pinned you.
+10. **Defend.** Turtle down and don’t attack this round. Attacks against you suffer a penalty.
+11. **Protect.** Bat away blows against a target. Attacks against it are rolled with a penalty.
+12. **Drag Away an Ally.** Get your friend to safety. If they are conscious, they might struggle, forcing a strength roll.
+
+**Other Actions**
+
+1. **Use Power.** Sometimes known as casting a spell.
+2. **Control Power.** Not all powers are fire-and-forget affairs. Some, such as _Waxni’s Magic Cruise Missile_, require active control.
+3. **Chug Potion.** You drink a potion. Or apply an ointment. Or slap on a healing parasite.
+4. **Communication.** Command a golem, convey a complicated plan, or check instructions in the nöospheric post you have received.
+5. **Swap Tools.** Carefully stow the gear you’re using and ready something else. You can rush it: toss your current gear to the ground, pull out a hidden pistol, and use it with a penalty.
+6. **Pick a Peck of Pickled Peppers.** Or a pocket.
+7. **Activate Magic Door.** Or unlock a regular one that doesn’t say whoosh.
+
+### Free Actions
+
+Some actions, such as dropping a carried sack or responding to an opponent’s folly (such as their critical failure), are free actions.
+
+A character can take **at least one free action per round**.
+
+See: [Free Actions](Vastlands_Guidebook/Vastlands_Guidebook.md#free-actions).
+
+## Improvising Actions
+
+Not only can the players come up with new actions, they are encouraged to. Most player ideas fall into one of four categories, making improvisation easier for the referee.
+
+**Great Idea**
+
+PCs get a bonus on their attempt. The referee can offer more options (with extra danger) to tempt them.
+
+**Interesting Idea**
+
+The PCs get an extra effect or flavor if they succeed. To spice things up, their opponents may get a free counter if the attempt fails (or a bonus on their turn).
+
+**Risky Idea**
+
+The referee can offer an extra effect if the PC succeeds. After that, the PCs’ opponents get a free counter or a bonus on their turn.
+
+**Terrible Idea**
+
+The PC can attempt their plan, but there will be a cost. At the very least their opponents get a free action to stop them, possibly with a bonus if the idea is truly stupid.
+
+Obviously, the referee should not trick the PCs into thinking terrible ideas are good ideas. Springing save-or-die effects and similar disasters on PCs without proper build-up or clues is poor form.
+
+Sometimes allowing a terrible idea can make for a truly memorable scene—especially if the PC fairly survives against damnably dreadful odds.
+
+## Movement and Range
+
+The referee uses narrative zones to describe the scene and how characters and objects relate to one another. They note distances and ranges as they go, sketching a scene and clarifying as required by the players.
+
+Exactly how a character moves, where they can go, what they can reach, depends on the conflict—where it is happening, how it is being fought. Fighting on a moving train is different from squaring off in the Electronic Crypt of Saint Baastet or a running skirmish on horseback with cyber centaurs in the Ivory Plains. The goal is to have a shared understanding of a scene, not to keep perfectly accurate time-space records.
+
+| Zone | Range | On Foot (human scale) | In Autogolem (personal vehicle scale) |
+| --- | --- | --- | --- |
+| **here** | **close** | Adjacent. Melee combat. The thick of things. A small area, a few meters across. This side of the table, in arm’s reach. You may make a free attack against an adjacent enemy that disengages carelessly. | Side-by-side. Ramming range. Close enough to jump across, to throw a hand grenade. A small area, maybe 10m across. You may make a free attack against an adjacent vehicle trying to perform a delicate maneuver. |
+| **there** | **short** | Nearby. The other side of the table, out of reach. A middling area, maybe 10m across. You can close for melee combat with a nearby opponent. Or, you can retreat further away, keeping them at range while firing. | Nearby. Same block, off-ramp or tunnel. Small arms range. A middling area, say 50m across. Move in to ram a nearby opponent, or retreat to safety, keeping them in range of mounted guns. |
+| **over there** | **medium** | Far. Indoors, through a doorway or at the far end of a hall. A large area, maybe a few dozen meters across. Usually, you need 2 rounds to close with an opponent this far away. The first round to reduce the range to short range, the second to charge in for close combat. | Far. A stretch as long as a mile, a whole bridge, a stretch of streets, a series of switchbacks. Close enough to keep in sight but out of range of all personal arms and many vehicle weapons. A large area, as much as 100–200m across. Takes 2 rounds to reach an opponent. Possibly longer, if they're trying to evade you. |
+| **off-stage** | **long** | Distant. Very far. Indoors, a few rooms away, downstairs, or behind a closed door. Not visible. A massive area, possibly 100m across. At this range you need 3+ rounds to close with an opponent. Reaching them is more a chase than a conflict (see p57). | Very far. The dust of racing hovergolems on the horizon, the roar of heart-of-coal engines in a doomed canyon. Details are obscured. Enormous area, maybe a mile across. Reaching an opponent takes 3+ rounds. If trying to evade, it's a chase not a conflict (see p57). |
+
+### Relative Zones
+
+When a PC takes their turn, the referee summarizes their situation to help the players stay oriented.
+
+### Indoor Zones
+
+Indoors and in other confined areas, the movement and range zones may become smaller and more contingent, depending on doors, obstacles, stairs, ladders, passages, traps, and the like.
+
+### Vehicular Action Zones
+
+Outdoor scenes with fast-moving characters benefit from procedural zones, rather than precise maps. The referee sketches out the general area, then uses dice and a table to generate zones as required.
+
+| d6 | Here | Nearby | Stretch |
+| --- | --- | --- | --- |
+| **1** | flaming wreck | onrushing necrogolem | fungal ruinland |
+| **2** | debris | barricade | dying cityscape |
+| **3** | sharp curve | ramp | plateau edge |
+| **4** | bridge | tunnel | terraced fields |
+| **5** | paved straight | dirt straight | rugged coast |
+| **6** | T-junction | intersection | Babylon beach |
+
+## Morale
+
+The end comes first slow, then all at once.
+
+Most conflicts end not when one side is destroyed, but when it decides to stop fighting. Conflict goals might be:
+
+1. **Break** a mechanism within X rounds.
+2. **Distract** an opponent from their goals.
+3. **Escape** out of range of a howling tower.
+4. **Frighten** a foe by dealing Y damage in X rounds.
+5. **Learn** about a monster by surviving X rounds.
+6. **Move** an object from one location to another.
+7. **Protect** a target from injury for X rounds.
+8. **Show** superiority by avoiding injury for X rounds.
+
+Players usually decide when they want to stop fighting. The referee tests the NPCs’ morale to find out when they have had enough.
+
+**NPC Morale**
+
+Morale goes to 11, no higher. The brave have more, the cowardly less; the referee adjusts.
+
+By default, **NPC morale = 3 + half their level** .
+
+**Typical NPC Morale Scores**
+
+| Morale | Typical Score |
+| --- | --- |
+| **2** | craven cowards, rabbits and broken rabble |
+| **3–5** | sheep, civilians, levies |
+| **6–8** | militias, professionals, elites |
+| **9–10** | rare zealots, terrifying golems |
+| **11** | possessed, fearless, or doomed |
+
+Mere machines, things without self-preservation, Ø shells driven by extra-cosmic daemons have no morale scores and cannot test morale.
+
+**Player Character Morale**
+
+A PC has no morale score. The player, like a daemon from beyond the cosmic veil, rides their mortal shell. Though the PC feels terror, their player needs care not.
+
+> _“My hero is fearless!” the player might cackle._
+
+> _Their PC would know better. Bitterly, better._
+
+Some terrors can force PCs to save or flee, but morale is in the hands of their players.
+
+The referee can call for a morale roll for the players’ secondary characters if the PCs drive them recklessly, beyond sense and reason, toward likely doom.
+
+**Testing Morale**
+
+A leader was defeated, a horror from beyond the void appeared, the angels were harvested like sheaves of wheat, the levy’s spear beams glanced off the monster’s shimmery form like grains of millet. To some, victory seems suddenly impossible.
+
+**Morale is tested.**
+
+**Roll 2d6 to Test Morale** over morale equal to morale
+
+| Roll | Result |
+| --- | --- |
+| **over morale** | The NPC breaks: flees, retreats, surrenders or ends combat in some other way. The better trained, the steadier the withdrawal. |
+| **equal to morale** | The NPC redoubles their effort, hoping a last push brings victory. They gain a bonus on their next action. |
+| **under morale** | The NPC continues to struggle, grimly determined, resolute for now. |
+
+In groups, test a random character. Routs start with a single panicked flight.
+
+**Multiple Morale Tests**
+
+Circumstances may test characters’ morale multiple times, but not more than once per round.
+
+The referee may decide that a character who succeeds at several morale tests in a row fights to the bitter end. Three successes should be enough.
+
+## Chase and Escape
+
+Whether trying to close with distant characters or to retreat from a losing fight, it's a chase. In a chase, what matters is who wins and how long it takes.
+
+Only the pursuers roll—if they don't make an effort, the prey gets away. A random character in the pursuing group makes a group chase roll, adding endurance and any relevant skill bonuses.
+
+If the pursuers are faster, better-adapted, or otherwise advantaged in the environment, they get a bonus.
+
+If the prey is faster, more familiar with the terrain, stealthier, camouflaged, or otherwise harder to catch, the pursuers get a penalty to their roll.
+
+The referee can change the length of rounds between fight and chase to suit the narrative. While a round might be a few seconds in close combat, in the ensuing pursuit a round could be a minute or more.
+
+**Group Chase Roll**
+
+**d20 + end + relevant skill**
+
+| Roll | Result |
+| --- | --- |
+| **1–3** | Spend 2d6 rounds. Chase fails. Save or (roll d6): 1–3 (1) you are led astray, (2–3) you are lost, (4) lose 1 end, (5) lose 1d6 life, (6) get very dirty. |
+| **4–7** | Spend 1d6+1 rounds. Chase fails. |
+| **8–11** | Spend 1d4+1 rounds. Losing them. Roll again with disadvantage if you keep chasing. |
+| **12–14** | Spend 1d4+1 rounds. Gaining on them. Roll again with advantage if you keep chasing. |
+| **15–19** | Spend 1d6+1 rounds. You've caught the prey! Roll initiative. |
+| **20–24** | Spend 1d4 rounds. You've caught them! You win initiative. |
+| **25+** | Spend 1d4 rounds. You took a shortcut. They thought they'd escaped, but ... surprise! You're on top of them! |
+
+## DAMAGE
+
+All damage, unless specified otherwise, reduces a target’s life. Some powerful items or powers may reduce abilities or levels, deplete defenses, or impose other burdens and conditions.
+
+**Damage is Abstract**
+
+Reducing life doesn’t (necessarily) mean sprays of arterial blood. The precise effect depends on the narrative stakes. A creature could be gossipped to death, metaphorically. Once harangues and threats reduce it to 0 life, it might retreat, step aside, or be too brow-beaten to resist a killing blow.
+
+### Damage in Deadly Combat
+
+Sometimes, such as while dungeoncrawling or fighting in a battle, the stakes are life and death. The referee makes these stakes clear when the party enters such an environment, or when a conflict escalates.
+
+In such deadly combat, **if an effect would reduce a character below 0 life**, they are reduced to 0 life and must **roll on the defeat table**.
+
+Most **NPCs are out of the fight at 0 life**. This doesn't mean they are necessarily dead, but unless healed or somehow repaired, they are no longer active participants. Most sentient NPCs try to flee before this happens.
+
+### Ability Score Damage
+
+Some obnoxious attacks, traps, curses, or situations reduce ability scores: strength, endurance, agility, charisma, aura, or thought. These are serious shocks, which carry the risk of death.
+
+**If an effect would reduce a character's ability below 0**, it is reduced to 0 and they must **roll on the defeat table**.
+
+NPCs without defined abilities who suffer ability score damage reduce their level **and** attack bonus instead. **If either their level or attack bonus is reduced to 0, they are out of the fight.**
+
+**Burdens From Damage**
+
+Other obnoxious attacks, powers, curses, and circumstances can impose specific burdens on characters. These occupy inventory slots, reducing a character’s options, imposing situational penalties, and imposing additional penalties to rolls as they accumulate in a character’s burden inventory.
+
+Each burden in the burden inventory applies a -1 penalty to all rolls, including defeat table rolls.
+
+Most effects that impose burdens allow a save. The worst do not. Some burdens may specify additional effects: disease progresses over time, steps to cure the burden, etc. In all cases, the referee can adjust how burdens play out to better reflect the progress of the game.
+
+When a character suffers a burden, but they have no available slots for burdens, they collapse; catatonic until at least one burden is removed.
+
+**Burden Generator**
+
+Burdens can be nearly anything. Use this eight-by-eight table to come up with sources of suffering:
+
+| d8\\d8 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **1** | break | leg | tooth | cough | boil | horror | rib | brain |
+| **2** | sprain | arm | phobia | throat | blister | posterior | lung | bladder |
+| **3** | cripple | foot | delusion | tongue | ague | anterior | heart | bubble |
+| **4** | ache | hand | anxiety | blood | runs | ear | spleen | seam |
+| **5** | mad | eye | nose | wound | scar | tentacle | cavity | fracture |
+| **6** | divine | head | hubris | rupture | rage | rot | dream | intestine |
+| **7** | curse | sphincter | skin | burn | fascia | bone | bile | vertebra |
+| **8** | chalice | weep | puncture | seep | perforate | necrotic | dark | rainbow |
+
+## DEFEAT
+
+Two situations always force a character to roll on the defeat table:
+
+- **Not enough life or level remaining**. If an effect would reduce a character below 0 life (or level), they are reduced to 0 life (or level) and must roll on the defeat table.
+- **Not enough ability remaining**. If an effect would reduce a character's ability below 0, it is reduced to 0 and they must roll on the defeat table.
+
+At the referee's discretion, other situations may impose defeat rolls (especially after failed saving throws):
+
+- Terrible foes, oversized enemies, ancient doom laser swords, and other sources of extreme damage.  
+- Dangerous or overwhelming ancient powers that extract extreme costs from their users.  
+- Deadly traps, tricks, perils, curses, and other obstacles.
+
+The referee should make it abundantly clear to attentive players when they are facing such dire threats. Springing a save or die effect on PCs without giving the chance to avoid it through smart play is not sporting.
+
+**The Defeat Table**
+
+Roll 2d6 + endurance for physical damage or 2d6 + aura for mental damage. Or just plain 2d6 for entirely overwhelming damage, like a giant boulder or demisphere-wide psychic overload event.
+
+| 2d6 | Consequences |
+| --- | --- |
+| <=1 | **Destroyed.** The character is gone for at least the rest of this session, barring eerie divinitechnologies. |
+| 2-6 | **Dead.** Requires relife intervention to rebuild their body (ha) or personality (ba). |
+| 7 | **Knocked out.** Brain injury (-1 thought) burden. See you at the end of the fight. |
+| 8 | **Winded.** Weakness (-1 strength) burden. Lose next turn, then regain 1 life. |
+| 9 | **Strained.** Nauseating (-1 agility) burden. Lose next turn, then regain 1 life. |
+| 10 | **Scarred.** Defacing (-1 charisma) burden. Lose next turn, then regain 1 life. |
+| 11 | **Stunned.** Lose next turn, then regain 1 life. |
+| 12+ | **All ok!** Immediately regain 1 life. |
+
+Defeat table ability score damage can force an immediate second roll on the defeat table—and a doom spiral.
+
+**Relations of Life, Death, and Undeath**
+
+| Ha (Body) | Ka (Soul) | Ba (Psyche) | Entity |
+| --- | --- | --- | --- |
+| yes | yes | yes | Full person. Lich, human, animal, plant. |
+| yes | no | no | Corpse. Shell. Statue. |
+| no | yes | no | Spirit elemental. Living energy. |
+| no | no | yes | Echo. Ghost. Digital clone. |
+| yes | yes | no | Living dead. Ka-zombie, drone. |
+| yes | no | yes | Animate shell. Falscher, machine, ba-zombie. |
+| no | yes | yes | Living mind. Daemon, ultra, etc. |
+
+### DEATH AND HAKABA
+
+Every character, like every living thing in the Given World, is composed of the existential trinity of body (ha), soul (ka), and psyche (ba).
+
+**Ha** : Body, matter, structure, form, persistence, shape. Connects most naturally to the static abilities of aura and endurance.
+
+**Ka** : Soul, fire, drive, energy, thrust, movement. Connects to the active abilities of charisma and strength.
+
+**Ba** : Psyche, personality, change, path, choice. Connects to the dynamic abilities of agility and thought.
+
+**Concept Background**
+
+Ha-ka-ba is adapted from Ancient Egyptian conceptions of the person, as in the _Coffin Texts_ and _Book of th Dead_ . It also echoes many religious and philosophical ideas on the transmigration of souls.
+
+**In-Game Metaphysics**
+
+The soul provides the motive fire of consciousness, the psyche provides the unique direction of consciousness, and the body provides the vehicle.
+
+This trinity affects how the dead, the undead, and the resurrected behave.
+
+A creature killed by physical means becomes a classic corpse. A creature whose soul is destroyed leaves a perfect shell, easily turned into a flesh-golem servitor (sometimes called a zombie but actually a soulless automaton). A creature whose personality is annihilated presents the most unusual situation: their soul-body dyad remains physically alive, but completely malleable; entities of human intelligence without volition, loyal to their creator. Other permutations abound.
+
+Indeed, death is not the end.
+
+## RECOVERY
+
+### REST
+
+Living characters recover quite quickly.
+
+These later humans' bodies are blessed with strange powers of narrative healing.
+
+**Each week, remove one affliction** or insult. This may be:
+
+- Regain all missing life.
+- Fully restore one missing ability score.
+- Remove one burdensome affliction (terms and conditions apply).
+
+**Faster Recovery**
+
+Options exist if you can find them. Asking around this town, they offer (roll d20 + cha + relevant ability):
+
+| Price | Restoratives |
+| --- | --- |
+| cheap 1–10 (€2d6) | common healing unguents (restore 1d6 life), restorative tonics (restore 1 ability point or remove 1 burden) |
+| pricey 11–19 (€2d6 × 10) | uncommon medical packs (restore 2d6 life or 1d3 ability points), repair parasites (repair missing limbs, heal illnesses, or remove a complex burden such as a curse) |
+| dear 20–24 (€1d6 × 100) | full heal treatment (restore all missing life and ability points), rare oldtech replacements (replace limbs and organs with improved versions that have a 1-in-6 chance of permanently increasing an ability score by 1), divine blessings (remove any burden with a 1-in-6 chance of turning it into a somewhat useful trait) |
+| secret 25+ (€1d6 × 1,000) | Long Ago relife (revive the dead), legendary augments (upgrade human parts with the flesh of the First Creation, permanently increasing an ability score by 1 and with a 1-in-6 chance of a positive mutation), builder tech mods (strange magimechs enter the body, turning a burden into a useful trait) |
+
+Legendary recovery options may require more than money—that may also involve a small quest or journey.
+
+### RELIFE
+
+Death is not the end of your character’s service. The quality of their remains and the relife service provider may provide additional modifiers to the relife roll.
+
+**Body Available**
+
+_€1d6 x 100 + soul licensing fees_
+An aspera casket can spin a new soul into a relatively fresh body-personality dyad. Time since death affects memories and modifies personality. Top up the aspera casket with fresh soul-source as required. Caskets are available in all human settlements in good standing with the Ministry. If a casket is not available, it is because you or someone you know has sinned against reason and tradition and reality. It is your fault.
+
+| d20 + end | Consequences |
+| --- | --- |
+| 1–5 | Brain damage reduces your thought by 1. The rotting god reduces your charisma by 1. |
+| 6–10 | Your body requires vital bodily fluids (€1d6 × 10) weekly or it decays, losing 1 ability point. |
+| 11–15 | Your face is marked by the death you have lived. |
+| 16–19 | You seem untouched. |
+| 20+ | Your fear of not being is lessened. Gain +1 ward. |
+
+**Head Available**
+
+_€3d6 x 100 + body and soul integration tax_ 
+An aspera jar may keep just the head alive, though psychological adjustment may be difficult. A suitable clone or golem body can restore mobility. Please apply for a suitable body at your local Temple of Justified Expectations. If a body is not available, it is your own fault for not paying the tithes of insurance.
+
+| d20 + tho | Consequences |
+| --- | --- |
+| 1–5 | Your mind-body connection is damaged, reducing strength and agility by 1 each. |
+| 6–10 | When you suffer a burden, your mind-body connection overloads, stunning you for 1 round. |
+| 11–15 | Your hands tremble with the terror of the not. |
+| 16–19 | You seem normal. |
+| 20+ | Your new body is better. Gain 1 ability point. |
+
+**Jewel Available**
+
+_€1d6 x 1,000 + reincarnation penalty_ 
+You’ve had your jewel installed since birth, duplicating all your thoughts and experiences, haven’t you? A fully ripened clone or secondary provides fertile ground for reseeding your consciousness.
+
+| d20 + aur | Consequences |
+| --- | --- |
+| 1–5 | Is your reincarnation even really you? Reduce your aura by 1 and replace one trait with a random trait. |
+| 6–10 | Your personality is unstable. You have to study and keep notes for a number of weeks equal to your level. Each week you do not, save or replace one trait with a random trait. |
+| 11–15 | False memories threaten to overwhelm you. |
+| 16–19 | You seem like yourself. |
+| 20+ | Your reincarnation is surely improved. Gain a random trait or mutation. |
+
+**Shattered Husk**
+
+_€3d6 x 1,000 + gardening fine_ 
+Error. Jewel not available. Please contact the canopic jewel service point to install a new synthetic personality backup matrix. Error. Canopic service point map layer missing. Error. Omnimap missing.
+
+Traditionally, all Garden Humans had canopic jewels. What happened to yours? Are you even really human?
+
+| d20 + cha | Consequences |
+| --- | --- |
+| 1–5 | Reduce a random ability by 1d4 points. Objects age and decay in your presence. Suffer a random corruption. Your touch curdles milk. |
+| 6–10 | Set a random ability to 1d4-2 (minimum 0). Your presence blights plants. Your eyes turn white, but still see. Your touch is unpleasant. |
+| 11–15 | Set a random ability to 2. You repulse dogs, cats, and other sensitive pets. |
+| 16–19 | Swap two random abilities. Otherwise, you seem like you could still be you. |
+| 20+ | Increase your charisma or thought by 1. A void daemon (L4, whispering) occupies a trait slot. It says it is your friend and slave, but sometimes acts like your master. |
+
+# EXPERIENCE
+
+## EARNING EXPERIENCE
+
+As you complete adventures, visit new places, see strange sights, and overcome harrowing challenges, you earn experience. Sources of experience include:
+
+a. **Novelties.** When you explore, braving danger to see something new. Earn 1d6 × 10 xp per discovery or experience.  
+b. **Quests.** When your PC makes progress on some terrible quest. Earn 1d6 × 100 xp per session’s worth of progress.  
+c. **At the referee’s pleasure.** When you do something extraordinary, act in character, help the other players, and generally make the session memorable and fun. 1d6 × 10 per prosocial deed.  
+d. **Session attendance.** At the end of a session, earn 500 xp for showing up and being a good egg.  
+
+The referee can set other sources of experience, such as:
+e. **Scavengers.** Earn 1 xp per €1 of treasure recovered from an ancient ruin.  
+f. **Pícaros.** Earn 1d6 × 100 xp after spending that much cash carousing for a week and risking strange setbacks.  
+
+Later, you reflect on your strange experiences, so unlike your life before. When any PC achieves any party goals, every player rolls individually. The players can decide to swap rolls, so the most deserving gets the most experience.
+
+| Goal | How | Xp |
+|:---|:---|:---|
+| Session | Attend and be a good sport. | 300xp |
+| Discovery | Find the Sender's camp and figure out likely leads to the mystery (fuel for the Referee!). | 1d6 x 20xp |
+| Victory | Acquire the holy clavis before the Antagonist and get a head start on the Hollow House. | 2d6 x 20xp |
+| Survival | Barely escape or avoid a powerful foe. | 1d6 x 10xp |
+| Conquest | Defeat or outwit a powerful foe. | 2d6 x 10xp |
+| Death | Your PC was destroyed. | 300xp |
+
+You can now invest your experience in characters, pets, powers or equipment (see overleaf)—or save it for next session.
+
+## INVEST YOUR EXPERIENCE
 
 You bank your PCs' experiences. Places traveled, parties attended, creepy creatures engaged in dialog, mountains bested, ruins survived, treasures sold for profit, pleasures hunted down and carted off, etc. These experiences form a metapsychic currency (xp) which you then invest to increase the capabilities of your PCs, sidekicks, pets, friends, gear, powers, houses, or nearly anything else that makes sense. Each game object with invested xp occupies a trait or item slot on your primary character's sheet. Yes, your player character is also usually your primary character. PC is thus, conveniently, a double acronym. That said, you can have multiple PCs.
 

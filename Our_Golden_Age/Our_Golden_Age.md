@@ -7228,9 +7228,7 @@ Traducive Electromagics
 
 Sym., HS2-1 "Dream"
 
-Anyone can be a merchant in the
-
-Yellow Land. Everyone is a merchant in the Yellow Land. What are you if not a merchant when you buy your life cheap from your Maker and sell it dear to your owner of common capital and maker of beloved goods? If you are not a merchant, are you even a citizen?
+Anyone can be a merchant in the Yellow Land. Everyone is a merchant in the Yellow Land. What are you if not a merchant when you buy your life cheap from your Maker and sell it dear to your owner of common capital and maker of beloved goods? If you are not a merchant, are you even a citizen?
 
 Admittedly, most Yellow Land merchants are so far down the mercantile guild hierarchy that in another land they might be called workers-at-gigs or labor-beggars, yet—if they are citizens, they are guild members and thus own a coveted merchant evidence dragon spirit neck-lock chit.
 

@@ -6383,6 +6383,10 @@ Possible, but not smart. Moderate test once a week or something goes wrong (roll
 5. Straps break. Random cargo spills. Fragile things break.
 6. Random cargo crushed, loses half value. Badly packed, the fragile black light lotus leaf is now just so much powder.
 
+### Upgrading Vehicles and Mounts
+
+Customization is the name of the game. Smaller upgrades can be purchased for larger vehicles and creatures at double the cost. Some upgrades might not make sense at the referee’s discretion.
+
 ### Humanoids
 
 The caravan economics of UVG strongly discourage the use of 1 sack capacity humans. They can carry useful gear or 1 supply. They can’t graze, so they’ll eat that Supply in a week, and then what? It’s just not practical. They’re on the list to cover normal adventuring events and to tempt new players into setting off on a 2-week journey with 1 week of supplies and some instant enemies.
@@ -6415,10 +6419,6 @@ Managed with threats and fear. Isn’t paid wages. Slavery is evil.
 - **Speed:** Normal
 
 Tough professional. Skilled at packing and carrying stuff, preparing supply depots, and surviving in the wilds.
-
-### Upgrading Vehicles and Mounts
-
-Customization is the name of the game. Smaller upgrades can be purchased for larger vehicles and creatures at double the cost. Some upgrades might not make sense at the referee’s discretion.
 
 **Slave Porter**
 

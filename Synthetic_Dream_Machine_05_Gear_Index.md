@@ -4,52 +4,39 @@ title: 'SDM Gear Index'
 published: true
 ---
 # SDM Gear Table of Contents
-
 - [SDM Gear Table of Contents](#sdm-gear-table-of-contents)
 - [SDM Gear Rules](#sdm-gear-rules)
-  - [Core Units, Inventory, Burdens, Hallmarks](#core-units-inventory-burdens-hallmarks)
-    - [Canonical Core Mechanics (Quickstart)](#canonical-core-mechanics-quickstart)
-    - [Magitech and Fantascience](#magitech-and-fantascience)
-  - [Catalog-Derived Rules](#catalog-derived-rules)
-    - [Gear Handling and Starting Assets](#gear-handling-and-starting-assets)
-      - [VLG Equipment Overview](#vlg-equipment-overview)
-      - [RESOURCES](#resources)
-      - [VLG Character Equipment](#vlg-character-equipment)
-      - [HOW ITEMS WORK](#how-items-work)
-      - [DROPPING ITEMS](#dropping-items)
-      - [IMPROVISING WITH ITEMS](#improvising-with-items)
-      - [HUMAN CLOTHES](#human-clothes)
-      - [Selling Your Strange Item](#selling-your-strange-item)
-      - [VLG One Useful Kit](#vlg-one-useful-kit)
-      - [STARTING CASH](#starting-cash)
-    - [Armor and Weapon Mechanics](#armor-and-weapon-mechanics)
-      - [UVG Armor Mechanics](#uvg-armor-mechanics)
-      - [UVG Weapon Mechanics](#uvg-weapon-mechanics)
-      - [VLG Weapon Mechanics](#vlg-weapon-mechanics)
-      - [VLG Armor Mechanics](#vlg-armor-mechanics)
-      - [VLG Autonomous Armor and Ward Modes](#vlg-autonomous-armor-and-ward-modes)
-      - [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics)
-    - [Combat Ranges and Areas](#combat-ranges-and-areas)
-      - [Ranges and Areas](#ranges-and-areas)
-    - [Gear-Anchored Power Mechanics](#gear-anchored-power-mechanics)
-      - [**The Viridian Practice** (Power Album)](#the-viridian-practice-power-album)
-      - [**NUNKA'S EPIDERMAL SCULPT**](#nunkas-epidermal-sculpt)
-      - [**NUNKA'S WEAPON MORPH**](#nunkas-weapon-morph)
-      - [**Burdenbeast Modification**](#burdenbeast-modification)
-    - [Vehicle Load and Upgrade Rules](#vehicle-load-and-upgrade-rules)
-      - [Overloading](#overloading)
-      - [Upgrading Vehicles and Mounts](#upgrading-vehicles-and-mounts)
-      - [VLG Ride Operation Baselines](#vlg-ride-operation-baselines)
-      - [UVG Vehicle Operation Overlays](#uvg-vehicle-operation-overlays)
-      - [VLG Vehicle Mod Customization Mechanics](#vlg-vehicle-mod-customization-mechanics)
-    - [Vehicle Feature Mechanics](#vehicle-feature-mechanics)
-      - [VLG Vehicle Feature Mechanics](#vlg-vehicle-feature-mechanics)
-  - [Economy and Trade Overlays](#economy-and-trade-overlays)
-    - [Canonical Caravan Procedure Pointers](#canonical-caravan-procedure-pointers)
-  - [Hazards and Operational Constraints](#hazards-and-operational-constraints)
+  - [Gear-Focused Power Mechanics](#gear-focused-power-mechanics)
+    - [Gear-Focused Powers](#gear-focused-powers)
+    - [Nunka'S Epidermal Sculpt Reference Table](#nunkas-epidermal-sculpt-reference-table)
+  - [Weapon Mechanics](#weapon-mechanics)
+    - [UVG Weapon Mechanics](#uvg-weapon-mechanics)
+  - [Armor Mechanics](#armor-mechanics)
+    - [Wards Mechanics](#wards-mechanics)
+    - [UVG Armor Mechanics](#uvg-armor-mechanics)
+    - [VLG Autonomous Armor and Ward Modes](#vlg-autonomous-armor-and-ward-modes)
+  - [Custom Combat Gear Mechanics](#custom-combat-gear-mechanics)
+  - [Vehicle and Mount Mechanics](#vehicle-and-mount-mechanics)
+    - [VLG Vehicle Mods and Upgrades Mechanics](#vlg-vehicle-mods-and-upgrades-mechanics)
+    - [UVG Overloading](#uvg-overloading)
+    - [UVG Upgrading Vehicles and Mounts](#uvg-upgrading-vehicles-and-mounts)
+    - [UVG Vehicle Operation Overlays](#uvg-vehicle-operation-overlays)
+    - [UVG Transport Fixes \& Features](#uvg-transport-fixes--features)
 - [SDM Gear Index](#sdm-gear-index)
-  - [General Goods and Kits](#general-goods-and-kits)
+  - [Rule-Derived Commodity Tables](#rule-derived-commodity-tables)
+    - [Fuel, Power, and Supplies (Synthesized from Rules)](#fuel-power-and-supplies-synthesized-from-rules)
+  - [Curios and Souvenirs](#curios-and-souvenirs)
       - [VLG One Strange Item](#vlg-one-strange-item)
+      - [Selling Your Strange Item](#selling-your-strange-item)
+      - [100 Strange Items](#100-strange-items)
+      - [OGA Heliodor Mercantile Standard Goods](#oga-heliodor-mercantile-standard-goods)
+      - [This Liberated Trader](#this-liberated-trader)
+      - [Consume To Create](#consume-to-create)
+      - [Fashion For You](#fashion-for-you)
+      - [Self Defense Systems](#self-defense-systems)
+      - [Personal Travel Expression (Heliodor)](#personal-travel-expression-heliodor)
+      - [Saffron Souvenirs Inc. Sym.](#saffron-souvenirs-inc-sym)
+      - [Curios Et Knick Knacks](#curios-et-knick-knacks)
   - [Tools and Services](#tools-and-services)
     - [MISCELLANEOUS ITEMS](#miscellaneous-items)
       - [GADGETS](#gadgets)
@@ -72,12 +59,13 @@ published: true
       - [Traveler Services](#traveler-services)
       - [Medico-Veterinary Services](#medico-veterinary-services)
       - [Mechanitechnical Services](#mechanitechnical-services)
-  - [Armor and Weapons (Source Variants)](#armor-and-weapons-source-variants)
-    - [COMBAT GEAR](#combat-gear)
-      - [VLG Weapons](#vlg-weapons)
+  - [Combat Gear](#combat-gear)
+      - [Weapons](#weapons)
       - [VLG Armors](#vlg-armors)
       - [WARDS](#wards)
       - [CUSTOM COMBAT GEAR](#custom-combat-gear)
+      - [Weapon Mods (Priced)](#weapon-mods-priced)
+      - [Armor and Ward Mods (Priced)](#armor-and-ward-mods-priced)
       - [Traditional Orange Land Attire](#traditional-orange-land-attire)
       - [Weapons Against the Blue God](#weapons-against-the-blue-god)
       - [Reintegrated Blue Land Clothing](#reintegrated-blue-land-clothing)
@@ -99,8 +87,7 @@ published: true
       - [WHAT DO THESE SYMBOLS MEAN?](#what-do-these-symbols-mean)
       - [THIS WILL WORK FOR SELF-DEFENSE ...](#this-will-work-for-self-defense-)
   - [Vehicles and Mounts](#vehicles-and-mounts)
-      - [VLG Vehicles and Mounts](#vlg-vehicles-and-mounts)
-      - [MODS \& UPGRADES](#mods--upgrades)
+      - [Vehicle Mods and Upgrades](#vehicle-mods-and-upgrades)
       - [UVG Vehicles and Mounts](#uvg-vehicles-and-mounts)
       - [Humanoids](#humanoids)
       - [Humanoid Add-ons](#humanoid-add-ons)
@@ -121,387 +108,53 @@ published: true
       - [Autogolem Add-Ons](#autogolem-add-ons)
       - [War Engine](#war-engine)
       - [War Engine Add-Ons](#war-engine-add-ons)
-      - [Transport Fixes \& Features](#transport-fixes--features)
-  - [Curios and Souvenirs](#curios-and-souvenirs)
-      - [100 Strange Items](#100-strange-items)
-      - [OGA Heliodor Mercantile Standard Goods](#oga-heliodor-mercantile-standard-goods)
-      - [This Liberated Trader](#this-liberated-trader)
-      - [Consume To Create](#consume-to-create)
-      - [Fashion For You](#fashion-for-you)
-      - [Self Defense Systems](#self-defense-systems)
-      - [Personal Travel Expression (Heliodor)](#personal-travel-expression-heliodor)
-      - [Saffron Souvenirs Inc. Sym.](#saffron-souvenirs-inc-sym)
-      - [Curios Et Knick Knacks](#curios-et-knick-knacks)
 
 # SDM Gear Rules
 
-## Core Units, Inventory, Burdens, Hallmarks
+Note: Rules from The Vastlands Guidebook (VLG) superceed rules from Ultraviolet Grasslands and the Black City 2E (UVG).
 
-### Canonical Core Mechanics (Quickstart)
+## Gear-Focused Power Mechanics
 
-Core SDM mechanics are canonical in Quickstart:
+### Gear-Focused Powers
 
-- [Burdens](Synthetic_Dream_Machine_01_Quickstart.md#burdens)
-- [Item and Trait Overflow](Synthetic_Dream_Machine_01_Quickstart.md#item-and-trait-overflow)
-- [Slots and Sizes](Synthetic_Dream_Machine_01_Quickstart.md#slots-and-sizes)
-- [Golden Age Item Upgrading](Synthetic_Dream_Machine_01_Quickstart.md#golden-age-item-upgrading)
-- [Investing in Hallmarks](Synthetic_Dream_Machine_01_Quickstart.md#investing-in-hallmarks)
-- [Hero Dice (HD)](Synthetic_Dream_Machine_01_Quickstart.md#hero-dice-hd)
-- [Company/Caravan Play (UVG)](Synthetic_Dream_Machine_01_Quickstart.md#companycaravan-play-uvg)
+- [The Viridian Practice (source context)](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094): album context for hallmark projectile-weapon anchoring and gun-monk usage.
+- [Mother of Bullets](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-mother-of-bullets): interfaces with ammo/replenish flow for ranged gear and anchor weapons.
+- [Dancing in the Hail](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-dancing-in-the-hail): defensive ranged-combat stance tied to equipped projectile weapons.
+- [Ring of Lead](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-ring-of-lead): converts loaded/available ammo into adjacent multi-target weapon output.
+- [Depleted Heavy Metal Rain](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-depleted-heavy-metal-rain): modifies the next anchored weapon shot and its damage profile.
+- [Nunka'S Epidermal Sculpt](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-nunka-s-epidermal-sculpt): permanent body-mod effects that function as gear-adjacent defensive/utility loadout changes.
+- [Nunka's Weapon Morph](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-nunka-s-weapon-morph): creates natural weapon loadout equivalents as persistent creature modifications.
+- [Burdenbeast Modification](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-burdenbeast-modification): increases carry capacity and directly interfaces with sacks/load logistics.
 
+### Nunka'S Epidermal Sculpt Reference Table
 
-### Magitech and Fantascience
+Reference table retained for body-mods/cyberwear/mutations/vome-implants context. The modification occupies an inventory slot.
 
-Life fuels spells. Bodies (ha), spirits (ka), and memories (ba) are consumed by the alien fires of magic. Characters pay 2 life per level of the spell cast. So _Fireball_ (3rd level spell) costs 6 life.
-
-
-
-## Catalog-Derived Rules
-
-### Gear Handling and Starting Assets
-
-
-#### VLG Equipment Overview
-
-This world is not like that of Old Soil, with its wild west feudalism and deep-delving gong-farmers. Sufficiently advanced technology indistinguishable from magic abounds, if unevenly distributed. The modern human knows that wonders exist, though few can pretend to understand them. Too much knowledge exists even for the hive minds and synthetic intelligences, and more has been forgotten.
-
-What is magic? What mundane? That distinction is impractical. Somewhere in these vast lands nearly every item the human may dream up must already exist. Thus, to list all possible equipment... hubris!
-
-Yet, some useful things for the traveler, for the voyager into the vast beyond the edge of civilization? That, yes, let us list that.
-
-This chapter covers:
-
-1. how equipment and resources work
-
-2. weapons and armors
-
-3. gadgets, tools and consumables
-
-4. vehicles and mounts
-
-
-**Interpreting Equipment**
-
-To enumerate every use for a brick is an exercise in creativity. To do so for every item in the Vastlands is folly. When figuring out what to do with equipment in the game, before diving into its attributes, consider what it is and how it is described.
-
-1. **Natural Language.** Equipment does what its name suggests. Use common sense and improvise details as needed.
-
-2. **New or Improved Ability.** Equipment enables a character to perform tasks they couldn’t otherwise.
-
-PCs do not need to make rolls to succeed at a task if they are using appropriate equipment and aren’t under pressure or facing time constraints.
-
-> _Example: A raft allows characters to float, and climbing gear helps them scale surfaces they couldn’t free-climb._
-
-To create unique items, reskin or modify existing equipment and powers with the desired effects.
-
-Season to taste.
-
-**Typical Use**
-
-Sometimes, improvisation is not enough. For those situations, standard equipment attributes come into play. The following five are mechanics may see a lot of use:
-
-1. **Size.** Each ready item occupies at least one stone (1 st) of inventory. Packed items can occupy less space. Most PCs can carry at least 7 stones of gear without penalty. Stronger PCs can carry more. 2. **Damage.** If combat breaks out, many items can serve as improvised weapons. A small personal weapon like a knife deals 1d4 damage, a civilian weapon like a fire axe deals 1d6 damage, and a military weapon like a lance deals 1d8 damage. Fragile items break after they hit. Clumsy items impose a penalty to attack rolls.
-
-3. **Notched and broken.** On a natural roll of 1, equipment is notched (put a small mark next to it). If you roll another natural 1 before repairing it, or if it suffers other damage, it breaks. 4. **Penalty or Bonus.** Under pressure, characters without suitable equipment may receive a penalty for tasks they are skilled at. Conversely, having the perfect equipment for a job could provide a bonus.
-
-The referee makes the final decision.
-
-5. **Force the Situation.** If you miss your attack roll by one, you can sacrifice your equipment (damage it, deplete its ammo, etc.) to succeed. The referee may suggest other sacrifices.
-
-
-#### RESOURCES
-
-Some equipment requires resources to function: ammo for guns, charges for sorcelectric devices, fuel for golem vehicles, batteries for portable bard-simulacra.
-
-Precisely tracking resources is not always necessary— often, you may assume PCs have enough resources for the scene or session and can replenish their resources between scenes, off-screen.
-
-Generally, the only thing that matters is whether you:
-
-1. **have enough** resources: keep using your gear. 2. **are running low** on resources: one use left. 3. **have run out** of resources: take an action to reload, refuel, or otherwise replenish your gear.
-
-When using equipment, your d20 roll determines whether you have used up your resources or not.
-
-If no d20s are rolled during a scene, make a resource usage d20 roll each item used in the scene and see if anything is running low or has run out.
-
-**Running Low: Natural 13**
-
-Whenever you use an item and **roll a natural 13 you have only one use remaining**.
-
-> _Example: the last bullet slides into the chamber, the O2 meter reads 5%, the war suit beeps ominously._
-
-**Running Out**
-
-Some items have a **replenish** score (e.g. **re 5** or **re 10** ).
-
-This number abstracts the number of bullets used in an attack or what percentage of the omnibattery the audiovisual illusion generator consumes replaying the iconic terror crabs scene from _Chat on a Hot Tin Roof_ to chase away the hobnoble goons.
-
-When you **roll the replenish score or less, resources run out**.
-
-> _Example: Noë uses the lifesign scanner (re 5) as she explores the facility floor; the mechanical ear listening for vital tremors. Cat relays what lifeforms are detected and grants a bonus against surprises. When they reach the elevator to the lower levels, Cat asks for a usage roll. Noë rolls a 4. The sensor beeps once and goes dark, its juice drained._
-
-Rolling a natural 13 always indicates a single use remaining, even if the replenish score is 13 or higher.
-
-**Charges vs Replenish #**
-
-Sometimes you may want to convert charges into a replenish number, or figure out how many bullets there are in a gun with a given replenish score.
-
-| Charges | re # | Charges | re # |
-| --- | --- | --- | --- |
-| 30+ | <0 | 5 | 4 |
-| 16–30 | 1 | 4 | 5 |
-| 10–15 | 2 | 3 | 7 |
-| 8–9 | 2 or 3 | 2 | 10 |
-| 6–7 | 3 or 4 | 1 | 20 |
-
-Anything with more than 20 charges doesn’t have a replenish score. It only runs out after rolling a natural 13.
-
-
-**Single-Use Replenishers**
-
-Fabricators still churn out these disposable refills.
-
-| d6 | Replenisher | Size | Cost |
-| --- | --- | --- | --- |
-| 1 | Dehydrated Pill | 1 sp | €20 |
-| 2 | Fillgut Synorg | 1 sp | €5 |
-| 3 | Microbattery | 1 sp | €7 |
-| 4 | Nanoammo | 1 sp | €100 |
-| 5 | Omnibattery | 1 st | €50 |
-| 6 | Power Cube | 1 st | €25 |
-
-> _Dehydrated Pill: water for a human-sized entity. Fillgut Synorg: human belly-fill. Microbattery: recharge a 1 st item. Nanoammo: for any weapon. Omnibattery: recharge anything. Power Cube: refuel any machine._
-
-**Cradles and Multi-Use Fabricators**
-
-Convenient devices crafted by the Builders in the before times. A day after consuming a sack of feedstock, they produce a sack of relevant supplies.
-
-| d6 | Microfabricator | Size | Cost | Notes |
-| --- | --- | --- | --- | --- |
-| 1 | Battery Bug | 1 sk | €1,100 | Giant battery-laying firefly. Eats waste, water, and sunlight. |
-| 2 | Enviro Genie | 1 sk | €500 | Consumes waste gases, liquids, and solids. Emits fresh air, water, and carbon. |
-| 3 | Fuel Maker | 2 sk | €1,200 | Condenses air, light, and a sack of organics into fuel. |
-| 4 | Heavy Metal Ammonite™ | 2 sk | €2,000 | Keep in metal-rich soup for best results. Creates an ammo pack in 10 minutes. |
-| 5 | Pink Slime Emitter | 2 sk | €1,000 | Turns organics into healthy Human Food™! Flavor sold separately. |
-| 6 | Teravolt Cradle | 1 sk | €660 | Armor fast-charger (one hour). Eats wide-spectrum radiation. |
-
-**Other Sources of Resources**
-
-Other ways to replenish gear exist. The listed cost is a guide for the referee to adjust based on local conditions.
-
-| Source | Size | Cost |
-| --- | --- | --- |
-| Facility: shop, charging station, fueling port, etc. | building | €0.1–10 |
-| Portable: ammo box, charge pack, fuel can, etc. | 1 st | €1–200 |
-| Personal Fabricator. Consumes (roll d6): (1–3) sunlight, (4–5) life, (6) archaic energies. Generates 1d6-1 refills per day. | 1 sk | €500–8,000 |
-
-**Option 1: Precise Resources**
-
-Sometimes it makes sense to track resources such as torches, oxygen, ammunition, charges, etc. The referee clearly declares situations or locations where resources serve as a clock or limit on PC activity.
-
-> _Example: Our heroes prepare to explore the bunker of the clockwork demon. Cat taps a pencil thoughtfully and warns them, “It’s dark inside, and the air may be toxic. You’ll track clean air and light resources.” The PCs decide how much of their inventory to fill with these resources._
-
-PCs subtract 1 unit of resources (say torches) per unit of game time or number of actions (say every 30 minutes or 3 exploration actions). In the UVG, this is the default for overland travel, with 1 sack of supplies used by each traveler each week of travel.
-
-**Option 2: Overloaded Encounter Dice**
-
-The referee adds resource consumption to the encounter die and rolls after each exploration period. Ideally, the encounter die is tailored to its location. For example:
-
-**d6 encounter die (derelict void palace)**
-
-| d6 | Result |
+| Sculpt | Effect |
 | --- | --- |
-| 1 | dangerous encounter: (1–3) stranded plastic human (L1, false-memoried), (4–5) servitor spider (L3, unctuous and hungry), (6) void creature (L5, soul-sucking) |
-| 2 | encounter traces: (1–3) tracks, scuffs, leavings, (4–5) signs, warnings, desiccated gore, (6) portents, vidy journal, corpse |
-| 3 | light resource consumed |
-| 4 | oxygen resource consumed |
-| 5 | anxiously double-check just to be sure (spend one resource and gain +1 life) |
-| 6 | nothing |
-
-
-
-
-
-#### VLG Character Equipment
-
-Items are all the tools and treasures that expand a character’s abilities and possibilities. From a mundane wrench to a magitechnical spell anchor, from a suit of pleather armor to a biomechanical crab-head, all are items.
-
-You have **7 + strength** inventory slots for items.
-
-Each loose item or package occupies at least one item inventory slot. Other traits, items, and events can increase the number of item slots. Each item inventory slot is 1 stone in size.
-
-**At level 1 you start with:**
-
-- One strange item of ill-disclosed origin (p22).
-- One useful kit—a sack of quantum gear that fits your background (p23).
-- Some starting cash. €100 to be exact (p23).
-
-A level 0 character starts without the strange item and with just €50 cash. A higher level character starts with more cash.
-
-→ _Now get that strange item (p22)._ 
-
-#### HOW ITEMS WORK
-
-**Sizes**
-
-Item sizes in the Vastlands use abstract units that combine weight and bulk.
-
-|Size|Equals|Example|
-|---|---|---|
-|1 sack (sk)|10 stones|Basic cargo unit, about as much as a human.|
-|1 stone (st)|10 soaps|Significant item; a saber, spear, shield, or shovel. About 7 kilograms or 15 pounds.|
-|1 soap (sp)|25 cash|Small item; a signal whistle, signet ring, spike, or bar of soap (surprisingly useful in the wastes!).|
-|1 cash (€)|some change|Standard currency unit equal to a laborer’s day wages. Named in a nod to ancient Chinese cash.|
-
-Unless otherwise specified, an item takes up 1 stone of inventory space. 250 cash units take up 1 stone. A PC's money is usually a mix of cards, credit, notes, and units that fit in a wallet. Treat the wallet as part of their clothing.
-
-**Available Items and Packed Items**
-
-Available items take up at least one inventory slot each, regardless of size, but a character can use them immediately.
-
-> _Example: A readied dagger (5 sp) takes up a whole inventory slot (1 st)._ 
-
-Items can be packed away to save space. Readying a packed item for use takes at least one action.
-
-> _Example: Packed in a bundle, two daggers fit in a single inventory slot._
-
-Some equipment such as backpacks, pouches, purses, ammo belts, or clothing with hidden pockets can allow characters to pack away more gear than usual, effectively increasing their inventory.
-
-> _Example: Onion's synthetic skin backpack (1 st) allows him to pack away and carry 3 stones worth of small gear. Effectively, Onion can stuff 4 stones of items into a single inventory slot. However, retrieving a specific item from his backpack takes a whole action. Onion had better not pack away his inquisition squirtgun if he plans to use it._
-
-
-#### DROPPING ITEMS
-
-A character can quickly drop one item or pack as a free action on their turn, reducing any penalties suffered from encumbrance. A quickly dropped item may break, get damaged, roll away, or otherwise suffer the consequences. The referee chooses a save target.
-
-> _Example: A pair of shoes chucked onto a grassy slope may roll downhill, a sack of stolen glass statuettes dropped on a marble floor may produce a lot of sharp glass caltrops._
-
-A character taking an action to carefully drop an item or pack avoids any risk of damaging their precious property.
-
-#### IMPROVISING WITH ITEMS
-
-Items are not just bundles of game mechanics. They improve a character’s performance and let them do new things. Use common sense and imagination to figure out how to take advantage of your PC’s equipment.
-
-> _Example: Rafts let characters float, while climbing gear helps scale surfaces that are impossible to free-climb._
-
-#### HUMAN CLOTHES
-
-Baseline humans have evolved to wear clothes. Any garments suitable for a tropical or temperate climate that such a character wears take up no inventory slots. You can describe them on the back of the character sheet.
-
-> _Example: boiler suit, ship overalls, field loincloth, civilian sarong._
-
-Additional sets of clothes, or garments that provide benefits or modifiers, occupy inventory slots as usual.
-
-> _Example: a corporate suit (1 st) provides status benefits and access to temples of finance, a classical toga (3 st) blocks one arm and marks the wearer as a member of the ruling class in some Decapolitan republics, nomad robes (1 st) serve as armor, very warm clothes (2 st) are useful in the domains of Winterwhite, an environment suit (1 st) protects against radiation ghosts, etc._
-
-Characters who are not evolved to wear clothes, such as cat lords, spectrum satraps, some golems, and other strange creatures, do not get a free inventory slot for the garments they wear.
-
-> _Example: a cat lord wearing a cute little jump suit (1 st) and knit cap with foopy antennae may not look annoyed, but they can’t carry quite as many sacrificial mouse victims as they might wish._
-
-
-#### Selling Your Strange Item
-
-Figuring out what it does is a hassle. Why don’t you just sell it for quick cash? Everything will be ok!
-
-|Buyer|Where|Quick Cash|
-|---|---|---|
-|Random Merchant|Anywhere, really. Here?|€1d6* × 10|
-|Sage Patron|A remote location.|€1d6* × 100|
-|Legendary Collector|A dangerous location, behind a difficult quest.|€1d6* × 1000|
-
-The asterisk denotes an exploding die. On a roll of 6, roll again and add the results together. Keep rolling and adding dice as long as you keep rolling sixes.
-
-
-#### VLG One Useful Kit
-
-A kit is a packed bundle of mundane tools that let a character do their job. A settled character can use their kit to make a living.
-
-You have **a kit for one of your background traits** . Draw a kit box on the back of your character sheet.
-
-The kit measures a whole sack (10 stones) in heft and includes up to 10 individual items. You don’t need to choose in advance exactly what is in your character’s kit—the items are in a quantum superposition until you define them as you play.
-
-> _Example: Noë has a background as a plumber (don’t ask) and starts with a plumber’s kit. Noë doesn’t list each individual item in the kit. As she adventures, she produces useful O-rings, allen wrenches, lengths of pipe, and sealing tape from her kit. She lists these in her kit box, leaving space for 6 more quantum items._
-
-The kit includes nothing better than a civilian weapon (1d6 damage) and no armor. You can buy more weapons and armor with your starting cash.
-
-The starting kit leaves most characters burdened when unpacked. You can stash it before exploring a dangerous location or entering a fight. A beast of burden may help transport your kit.
-
-→ _Now: get your starting cash (right)._ 
-
-#### STARTING CASH
-
-Many kinds of cash are possible: the traditional luminous cowrie of the coastal communities (lb), the high-end plastic Casino gold piece (cgp) of the Red Land District, the traditional bunker-era duraplastic chit (dpc) of the Red and Orange Coprosperity Merchant Region, the sky-dragon scale (sds) of the Cat-affiliated knowledge societies, the prized ferroceramic puck-and-triangle of the Emerald City (fpck), and the completely ethereal noöspheric digital cash of the Dream Canopy (vdx).
-
-For simplicity, the abstract “€” symbol covers them all.
-
-You have **€50 + €50 per level** in physical currency. Enough to live on for a few months, if you are careful and boring. You’re not, though.
-
-That's not much per level, honestly.
-
-**What Cash Buys**
-
-Precisely how much €1 buys varies with place and time (and referee whim), but a reasonable baseline is 100 theoretical convertible imperial universal dollars from Finite Earth A.D. 2025 to €1. Example purchases:
-
-|Price|Purchase|
-|---|---|
-|€0.1|common meal or ingredient, mass tourist souvenir|
-|€1|day’s food and lodging for two proletarian baseline humans, basic tool, uncommon ingredient, fancy meal|
-|€10|day’s food and lodging for two mildly ­enhanced bourgeois humans, professional tool, rare ingredient, opera ticket|
-|€100|day’s food and lodging for two betterfolk aesthetically-augmented humans, rare or expert tool, very rare ingredients, basic vehicle, hut, small farm|
-|€1k|day’s food and lodging for two abmortal oligarchs, uncommon vehicle, small cottage, middling farm|
-|€10k|hour’s rock-hitting trip for an imperial executive unit, rare vehicle, comfortable residence, large farm or ranch|
-|€100k|nearly super-heroic augment, luxurious residence, plantation|
-|€1m|abmortality, seat on the neo-imperial shadow parliament, modest palace|
-
-A character can dream, right?
-
-
-### Armor and Weapon Mechanics
-
-
-#### UVG Armor Mechanics
-
-**Armor Bonus**
-
-The defensive bonus armor provides, assuming an ascending armor class. A simple defense score = **10 + Agility (or Dexterity) + Armor**.
-
-**Armor Features**
-
-- **Cool:** Looks good in a hot environment, but a thermal blanket is recommended at night because it gets chilly.
-- **Cumbersome:** Stealthy and nimble activities are more difficult in this armor.
-- **Environmental:** Magically provides advantage ([+]) to tests against environmental effects like acid, toxic clouds and dying of thirst. Often with magical hazmat runes or post-mechanical breathing implants.
-- **Hot:** Good in winter, but sucks in hot environments. After exertion, such as a battle, the hero needs a rest and water. Without such a breather, the hero may become fatigued.
-- **Intravenous:** Set up to inject a potion directly into the body with a free action.
-- **Powered #:** Uses a magical source of energy, be it solar prayers, thermonuclear batteries, blood sacrifice or something else. Armor has # charges and loses a charge after every combat or significant exertion. The wearer can also spend a charge to boost their combat prowess. A spare power source and automagical recharging cradle (or prayer altar) takes a whole sack and costs €500.
-- **Size:** As a rule, ordinary shields and light armors take one stone, medium armors take two stones, and heavy armors take three.
-
-
-#### UVG Weapon Mechanics
-
-**Weapon size**
-
-The average weapon weighs one stone. Light weapons take less space, heavy ones more.
-
-**Weapon Features**
-
-- **Ammo:** unless noted otherwise, ammo weighs one stone and costs **one tenth** the price of its weapon.
-- **Blinding:** if any damage dice roll maximum, the target is blinded for one round. Critical hits may blind permanently.
-- **Burst:** unload all your charges or ammo to deal damage in a small area. Targets can take cover and forfeit their next move for half damage. Targets already under cover take no damage if they forfeit their next move.
-- **Frag:** charged with epic energies beyond mortal ken. Slain enemies explode and deal 1d6 damage in a small area.
-- **Intravenous:** can be loaded with liquid toxins or holy water.
-- **Mounted:** a heavy one-handed weapon for mounted use. Does double damage when charging.
-- **Rare and restricted:** such equipment is hard to find, overpriced outside of the settlement that produces it, often controlled by some faction or powerful group and may provoke hostile reactions. Zombies are such a thing.
-- **Reach:** weapon is longer and attacks first in close combat.
-- **Relevant stats:** most ranged attacks use Agility, while melee attacks use Strength. Some weapons can use other stats.
-- **Reload #:** a weapon is out of ammo and needs to be reloaded after an attacking d20 shows the reload number or less. Reloading is an action. Skilled fighters reload for free.
-- **Throwing:** lots of weapons can be thrown, some are even made for it. Throwing a weapon at a nearby or close target is fine, but the attacker is at a disadvantage against far-off enemies.
-- **Two-Handed:** it’s big. Needs two hands (2H) to use properly.
-- **Versatile:** _can_ be used two-handed. In that case, its damage dice increase one step (1d6 becomes 1d8, 1d12 becomes 1d20).
-
-
-
-#### VLG Weapon Mechanics
+| Leathery Hide | armor +2 |
+| Fur, Feather or Fat Insulation | cold resistant |
+| Sweat or Radiators | heat resistant |
+| Scales | armor +3, reduced water loss |
+| Armored Nodules | armor +5, agility -1 |
+| Armored Plates | armor +8, agility -3 |
+| Rejuvenated | look a decade younger |
+| Soft Skin | armor -2, look younger |
+| Squishy | armor -5, agility +2 |
+| Vesicles | store liquids or gases, agility -1 |
+| Spines | attackers suffer 1d4 damage in close combat |
+| Lethal Spines | attackers suffer 1d8 damage in close combat, agility -1 |
+| Webbing / Gliding Surfaces | movement bonus, agility -1 |
+| Transparent | creepy |
+| Glowing | like a bioluminescent candle |
+| Camouflage | bonus to hide, conceal |
+| Slippery | bonus to grapple, escape |
+
+## Weapon Mechanics
 
 Bullets, swords, rocks, explosions, fireballs, gouges, and chokes. They hurt the body, but usually spare the soul. Civilized humans frown upon personal weapons, much to the delight of rapacious barbarians.
+
+Related item tables: [VLG Weapons](#vlg-weapons), [THIS WILL WORK FOR SELF-DEFENSE ...](#this-will-work-for-self-defense-), [Weapons Against the Blue God](#weapons-against-the-blue-god), [Cat Approved and Disdained Weapons](#cat-approved-and-disdained-weapons), [Self Defense Systems](#self-defense-systems).
 
 **Standard Fabricated Weapon Sizes**
 
@@ -546,7 +199,6 @@ Dimension and target numbers help the referee adjudicate effects. They may adjus
 | cone | 15° wide and <2m long | 30° wide and 4m long | 60° wide and 8m long | 90° wide and 16m long |
 | line | 2m | 8m | 32m | 128m |
 | # targets | one | a few (~1d4-1) | some (~2d6-2) | many (~2d12-2) |
-
 
 **Weapon Features**
 
@@ -593,11 +245,46 @@ Features can be anything, from an unusual but mundane aspect (decorated with Oni
 39. **Vital.** This weapon drains the user of 1 life (or more) each time it is used.
 40. **Vorpal.** Decapitating, bisecting, truncating on a natural 20 (or other specified natural roll). Turns one target into two ex-targets.
 
+### UVG Weapon Mechanics
 
+**Weapon size**
 
-#### VLG Armor Mechanics
+The average weapon weighs one stone. Light weapons take less space, heavy ones more.
+
+**Ranges and Areas**
+
+Like _The Black Hack_ (check it out), the UVG assumes abstract ranges and areas. Don’t worry too much about precise distances, keep combat sketchy and descriptive and _fast_. A weapon’s listed range is its optimal range -- attacks one category beyond that range are possible, but suffer major penalties [-].
+
+| Range | Area | Dimensions | Movement |
+|:---|:---|:---|:---|
+| Close | Small, 1 or 2 people. | 2 meters or 7 feet. | Adjacent. |
+| Short | Medium, 2 to 8 people. | 10 meters or 30 feet. | One move. |
+| Medium | Large, 3 to 18 people. | 40 meters or 120 feet. | Two moves. |
+| Long | Massive, a crowd. | Further away. Aim carefully. | Three or more moves. |
+
+**Weapon Features**
+
+- **Ammo:** unless noted otherwise, ammo weighs one stone and costs **one tenth** the price of its weapon.
+- **Blinding:** if any damage dice roll maximum, the target is blinded for one round. Critical hits may blind permanently.
+- **Burst:** unload all your charges or ammo to deal damage in a small area. Targets can take cover and forfeit their next move for half damage. Targets already under cover take no damage if they forfeit their next move.
+- **Frag:** charged with epic energies beyond mortal ken. Slain enemies explode and deal 1d6 damage in a small area.
+- **Intravenous:** can be loaded with liquid toxins or holy water.
+- **Mounted:** a heavy one-handed weapon for mounted use. Does double damage when charging.
+- **Rare and restricted:** such equipment is hard to find, overpriced outside of the settlement that produces it, often controlled by some faction or powerful group and may provoke hostile reactions. Zombies are such a thing.
+- **Reach:** weapon is longer and attacks first in close combat.
+- **Relevant stats:** most ranged attacks use Agility, while melee attacks use Strength. Some weapons can use other stats.
+- **Reload #:** a weapon is out of ammo and needs to be reloaded after an attacking d20 shows the reload number or less. Reloading is an action. Skilled fighters reload for free.
+- **Throwing:** lots of weapons can be thrown, some are even made for it. Throwing a weapon at a nearby or close target is fine, but the attacker is at a disadvantage against far-off enemies.
+- **Two-Handed:** it’s big. Needs two hands (2H) to use properly.
+- **Versatile:** _can_ be used two-handed. In that case, its damage dice increase one step (1d6 becomes 1d8, 1d12 becomes 1d20).
+
+Related item tables: [UVG Weapons](#uvg-weapons), [Ranged Weapons: Bows and Gun Wands](#ranged-weapons-bows-and-gun-wands), [Simple Melee Weapons (d8)](#simple-melee-weapons-d8), [Military Melee Weapons (d14)](#military-melee-weapons-d14), [Weird Melee Weapons (d10)](#weird-melee-weapons-d10).
+
+## Armor Mechanics
 
 Shells, carapaces, plates, harnesses, mails, masks, helms, force fields. Armors protect the soft flesh of the human mollusc against the terrible world. The civilized mock the ferals who go about in fur, with little faith in the guardian angel phylakes who block all harm. The outlanders suspect the divine guardians may be unreliable.
+
+Related item tables: [VLG Armors](#vlg-armors), [WARDS](#wards), [SALVAGABLE ARMOR!](#salvagable-armor), [WHAT DO THESE SYMBOLS MEAN?](#what-do-these-symbols-mean).
 
 **Armor Features**
 
@@ -634,15 +321,75 @@ Modern humans prefer 4 cubit armor, even 2.5 cubit armor in the Orange Lands, bu
 | armors | bracers | shield, linen | amber, chitin | porcelain, chain | automato |
 | bonus | 1–2 | 1–3 | 2–6 | 3–9 | 4–12 |
 
-
 **Modern and Ancient Shields**
 
 Interposed between fragile flesh and deadly bullet.
 
 The oldest myth that mentions humans using a shield is the drum-epic _Rise Into Hell_, when the ancestrats of protohumanity rebelled against the Deep Givers and clambered to the thin-sucking surface of Old Soil. There, Mastress Flearoth wielded a shield called Gravelgnaw (Rodigaia, in the dialect of the drum-epic). It reflected the blows of the Givers’ granite golems, crushing their fists with its three rotating heads.
 
+### Wards Mechanics
 
-#### VLG Autonomous Armor and Ward Modes
+Scarabs, necklaces, glasses, shawls, tomes, gems, scrolls, pectorals, amulets, bags, cloaks, caps, circlets, loincloths, and other relics coupling Long Ago oldtech and postmodern fantascience to protect from metaphysical harm. Anyone afraid of curses, charms, nocturnal terrors, mental necroscopy, ill fate, daemons of self-loathing, ghosts of doubt, mere misery or other uncommon psycho-spiritual assault would do well to kit themselves out with suitable wards.
+
+Related item tables: [WARDS](#wards).
+
+**Ward Features**
+
+All wards have features besides providing a bonus to saving throws. They may also have some armor features.
+
+1. **Album.** Holds 1d4+1 powers. Efficient storage!
+2. **Antimagic.** Spend 1d6+1 life to nullify an effect (save).
+3. **Armor.** Also serves as armor.
+4. **Auto.** Moves around. Claims to be alive.
+5. **Booster.** Adds ward bonus to another item or effect.
+6. **Corpsefed.** Double bonus for an hour after it eats.
+7. **Cramping.** Penalty to defense. Usually -1.
+8. **Deathlike.** Makes you look undead.
+9. **Emplaced.** Set up to generate a small warding aura.
+10. **Heretical.** Blasphemous technology. Don't get caught with it. Makes authorities hostile.
+11. **Implant.** Attaches to your body. 1 life to remove.
+12. **Jade.** Grants ward bonus against ghosts and spirits.
+13. **[Limited] Land.** Only works in one region.
+14. **Spell Eater.** Spend 1d4+1 life to capture a spell targeting you (save). Using it later takes an action.
+15. **Scary.** Applies ward bonus to foes' morale.
+16. **Stealthy.** Makes you more silent and sneaky.
+17. **Undreaming.** Spend 1d4 life to look past illusions.
+18. **Vessel.** Can carry up to a dozen drinkable doses.
+19. **Watchful.** Keeps an eye on you. Like an alarm.
+20. **Weapon.** Also serves as a weapon.
+
+**Standard Found Wards**
+
+Modern wards tend towards the jury-rigged pectoral, poorly inscribed amulet, or repurposed soul battery. The wards of Long Ago are available with more varieties, powers, and features. Some even move and talk and say they are alive.
+
+| Category | Trinket | Wearable | Portable | Bulky |
+| --- | --- | --- | --- | --- |
+| size | <1 st | 1 st | 1–2 st | 3+ st |
+| wards | scarab | circlet | pectoral | homunculo |
+| bonus | 1–5 | 1–5 | 2–7 | 3–9 |
+
+### UVG Armor Mechanics
+
+**Armor Bonus**
+
+The defensive bonus armor provides, assuming an ascending armor class. A simple defense score = **7 + Agility (or Dexterity) + Armor (+ Skill, optional)**. (Note: In UVG all characters are 'skilled in Defense', and have 7 +3 Base Defense.)
+
+**Armor Features**
+
+- **Cool:** Looks good in a hot environment, but a thermal blanket is recommended at night because it gets chilly.
+- **Cumbersome:** Stealthy and nimble activities are more difficult in this armor.
+- **Environmental:** Magically provides advantage ([+]) to tests against environmental effects like acid, toxic clouds and dying of thirst. Often with magical hazmat runes or post-mechanical breathing implants.
+- **Hot:** Good in winter, but sucks in hot environments. After exertion, such as a battle, the hero needs a rest and water. Without such a breather, the hero may become fatigued.
+- **Intravenous:** Set up to inject a potion directly into the body with a free action.
+- **Powered #:** Uses a magical source of energy, be it solar prayers, thermonuclear batteries, blood sacrifice or something else. Armor has # charges and loses a charge after every combat or significant exertion. The wearer can also spend a charge to boost their combat prowess. A spare power source and automagical recharging cradle (or prayer altar) takes a whole sack and costs €500.
+  See [Fuel, Supplies, and Power (Synthesized from Rules)](#fuel-supplies-and-power-synthesized-from-rules).
+- **Size:** As a rule, ordinary shields and light armors take one stone, medium armors take two stones, and heavy armors take three.
+
+Related item tables: [UVG Armors](#uvg-armors), [VLG Armors](#vlg-armors), [WARDS](#wards).
+
+### VLG Autonomous Armor and Ward Modes
+
+Related item tables: [VLG Armors](#vlg-armors), [WARDS](#wards).
 
 **Full Auto Destruction Mode**
 
@@ -681,21 +428,30 @@ The ward bonus translates into level, life, and other attributes. Sentience modu
 | +6 to +7 | 1d8 | L × 6 | 8 | 1d8 + 9 | L + 7 | L × 1d4* | Cold, harsh, thirsting for salvation. |
 | +8 to +10 | 1d10 | L × 8 | 9 | 1d10 + 10 | L + 9 | L × 1d4* | Yellow tangerine ray fracture ERROR. |
 
+## Custom Combat Gear Mechanics
 
-
-#### VLG Custom Combat Gear Mechanics
+Related item tables: [CUSTOM COMBAT GEAR](#custom-combat-gear), [Weapon Mods (Priced)](#weapon-mods-priced), [Armor and Ward Mods (Priced)](#armor-and-ward-mods-priced), [VLG Weapons](#vlg-weapons), [VLG Armors](#vlg-armors), [WARDS](#wards).
 
 Each item can support a number of upgrades or customizations equal to its level plus one. This is convenient, since most weapon or armor fresh out of its fabricator has no levels (that is, its level is 0).
 
 To customize an item further, characters level it up by investing experience and turning it into a **hallmark** item. Some treasured items (what simple types might call 'magic' items) are effectively the hallmarks of heroes or civilizations long gone and already have levels—upgrading them further is thus more expensive.
 
-| Lvl | Xp | Mods | Hallmark | Lvl | Xp | Mods | Hallmark |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 0 | 1 | - | 5 | 6,000 | 6 | quickened |
-| 1 | 300 | 2 | personal | 6 | 12,500 | 7 | resonant |
-| 2 | 750 | 3 | calibrated | 7 | 25,000 | 8 | awakened |
-| 3 | 1,500 | 4 | bound | 8 | 50,000 | 9 | ascended |
-| 4 | 3,000 | 5 | imbued | 9 | 99,999 | 10 | transcended |
+| Lvl | +Level XP | +New Trait XP | Combined XP | Mods | Hallmark |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 0 | 0 | 0 | 0 | 1 | - |
+| 1 | 150 | 150 | 300 | 2 | personal |
+| 2 | 380 | 380 | 760 | 3 | calibrated |
+| 3 | 750 | 750 | 1,500 | 4 | bound |
+| 4 | 1,500 | 1,500 | 3,000 | 5 | imbued |
+| 5 | 3,000 | 3,000 | 6,000 | 6 | quickened |
+| 6 | 6,250 | 6,250 | 12,500 | 7 | resonant |
+| 7 | 12,500 | 12,500 | 25,000 | 8 | awakened |
+| 8 | 25,000 | 25,000 | 50,000 | 9 | ascended |
+| 9 | 50,000 | 50,000 | 100,000 | 10 | transcended |
+
+Alignment note: this table is aligned to canonical OGA/Quickstart item-upgrade costs in `Golden Age Item Upgrading` (`Lvl/Roll/Dmg/Armor/Ward/Trait Table`), using separate tracks for `+Level` and `+Trait`.
+
+Mod-sourcing note: the `+New Trait XP` track can be substituted in play by discovering, acquiring, or fabricating equivalent mods/upgrades through the fiction, with referee approval.
 
 Upgrading an item may require materials, fees, skilled labor, traditional rituals, or hardcoded daemons who demand cash to unlock features.
 
@@ -705,260 +461,66 @@ customization cost = mod cost × total number of upgrades _or_ item base cost if
 
 Some mods are repeatable ( **R** ). Long Ago treasures and rare fabricators may provide access to level 0 items with inherent mods.
 
-**Weapon Mods**
+## Vehicle and Mount Mechanics
 
-Many fabricators (1-in-2) and golem smiths (1-in-3) have the skills preinstalled to manage the following modifications.
+When your feet won't do, when you're weary and the road goes ever on and on, few things are as satisfying as the bell of the ancient bus, the mechanical servant of the human settlements, programmed to transport. Well, a private golem cruiser or even a bicycle may be more satisfying, to be honest.
 
-| d8 | Standard Upgrades | R | Cost |
-| --- | --- | --- | --- |
-| 1 | Damage Boost — The most basic of weapon mods. +1 bonus per damage die (2d4 → 2d4+2). | y | €5 |
-| 2 | Styling — Inscription, gilding, etching, coloring, etc. Harder to steal and pawn. | y | €5 |
-| 3 | Glow — An eerie, radioactive glow tailored to your character. Bright as a torch. | n | €25 |
-| 4 | Bane Coat — Exotic coating (ultraviolet, gold) deals double damage to one type of target. | n | €50 |
-| 5 | Resistance — Weapon gets a +1d6 bonus to saves and breaks through one type of resistance. | n | €75 |
-| 6 | Precision — Precognitive daemons guide the weapon, granting a +1 bonus to attacks. | y | €100 |
-| 7 | Area Boost — Magitechnically tweaked to roughly double its area of effect. | y | €150 |
-| 8 | Range Boost — Greater range without sacrificing accuracy requires wholesale material editing. | y | €200 |
+**Ride Features**
 
-More extreme weapon customizations can get very expensive. Exotic fabricators may be required.
+Your friendly transportation, logistics, and combat solutions have many possibilities:
 
-| d12 | Postreality Customizations | R | Cost |
-| --- | --- | --- | --- |
-| 1 | Damage Upgrade — Increase the damage dice one step (2d4 → 2d6 → 2d8). | y | €100 |
-| 2 | Hammerspace — Item no longer occupies an inventory slot. It's a part of you, so to speak. | n | €150 |
-| 3 | Crippling — Target is slowed (save). Second strike immobilizes for 1d6 rounds (save). | n | €200 |
-| 4 | Draining — When it deals damage the wielder gains 1 temporary life. Lasts a few hours. | y | €200 |
-| 5 | Saboteur — Instead of damage: target is tripped, slowed, shoved, or blocked (hard save). | n | €250 |
-| 6 | Integrated — Size reduced one step (1 sk → 1 st → 1 sp) and attacks can be treated as unarmed. | y | €350 |
-| 7 | Remapped — It uses a different ability for its combat bonuses (e.g. aura for melee attacks). | n | €450 |
-| 8 | Vorpalization — Severs or destroys an extremity on a critical hit, or deals double critical damage. | n | €500 |
-| 9 | Atrophic — Deals 1 ability damage per hit. Choose target ability (strength, agility, etc.). | y | €600 |
-| 10 | Stunning — Strikes with a flash or shocking roar. Target loses 1 action (save). | n | €850 |
-| 11 | Sentience — The weapon gains a mind and +1d4 charisma, aura, and thought. | y | €1,000 |
-| 12 | Projector — Gains the ability to use one power (or spell). Uses its own level and abilities. | y | €1,250 |
+1. **All-Terrain.** Designed to overcome obstacles, grants a bonus in mud and snow. May consume more fuel.
 
+2. **Atom.** Converts matter into energy, like a sun.
 
-**Armor and Ward Mods**
+3. **Cart.** Lets your steed pull triple its normal capacity.
 
-Golem tailors (1-in-3) or barbarian armorsmiths (1-in-4) may manage the standard customizations.
+4. **Coalem.** False golem that eats compressed and fossilized biomatter. Some have converted themselves to eat other types of biomatter: oil, wood, carcasses, flesh, even blood.
 
-| d8 | Common Upgrades | R | Cost |
-| --- | --- | --- | --- |
-| 1 | Hardened — Improved plates, reactive tissues and absorbers increase armor defense by +1. | y | €10 |
-| 2 | Cooling Fins — fans, and vents. Suitable for hot environments. | n | €25 |
-| 3 | Heating Lining — seals, padding. Suitable for cold environments. | n | €25 |
-| 4 | Waterproof — Oils, rubbers, and wools. Keeps you dry and gains a bonus against electric attacks. | n | €25 |
-| 5 | Fashionable Embossing — filigree, inlay, etc. Boldly declares who you are. Grants +1 charisma. | n | €50 |
-| 6 | Gas-Tight Mask — rebreathers, and polymers to protect from environmental hazards. | n | €75 |
-| 7 | Silent — Swathed and padded to muffle sound. No penalty when sneaking about. | n | €100 |
-| 8 | Pocketses — Secret compartments hide a number of small items (1 sp) equal to its level. These items do not occupy additional inventory space. | n | €50 |
+5. **Combat.** Designed for combat. No penalties on its riders in combat, may even grant bonuses.
 
-Extreme armor upgrades may result in autonomous suits of armor. Beware if they go amok. Other armor features may also work as upgrades. The referee sets the final cost and requirements.
+6. **Dark.** This ride is not on any books. Its jewel is clouded. It is invisible to local gods and daemons.
 
-| d12 | Post Scarcity Customizations | R | Cost |
-| --- | --- | --- | --- |
-| 1 | Skull Warded — Protection from dark magics boosts saves. Grants ward +1. | y | €20 |
-| 2 | Life Field — Grants the wearer temporary life: 5 or its level, whichever is higher. | y | €100 |
-| 3 | Resistant — Take half damage from one type of damage (e.g. fire, acid, necrotic). | n | €150 |
-| 4 | Absorbing — Reduce its armor bonus by 1 to negate the damage from one attack. Unless it is living armor, spend €50 to repair each armor point. | n | €200 |
-| 5 | Streetfighter — Ghoulish wiring increases unarmed damage dice (1d3 → 1d6 → 1d8 → 1d10). | y | €300 |
-| 6 | Golem Servos — Boosts wearer strength, agility, or endurance by 1. | y | €400 |
-| 7 | Limited Flare — Dissipator fields limit damage one attack per round to 10. | y | €500 |
-| 8 | Jade-Marked — Absorbs one burden per week for the wearer. | y | €700 |
-| 9 | Aetherial — Also grants its defense against noöspheric attacks, ghosts, and ultras. | n | €800 |
-| 10 | Living — It's alive. Reduce its armor bonus by 1 to regain 1d4 life. Fed and allowed to rest, it regains 1 armor per week. | n | €900 |
-| 11 | Urbanweave — Miniaturized (-1 st, minimum 1 st) and styled to look more like civilian clothes. | n | €1,000 |
-| 12 | Automaton — Follows simple instructions, but has no mind of its own. Use the sentience weapon mod to give it a brain. Can 'walk' the wearer, making some endurance challenges trivial. Autocombat mode: gains +1d4 str, agi, & end. Life: 10 × level. Defense: 7 + armor + level. Attack: bonus = level. Damage: 1d6 + armor + level. | y | €1,500 |
+7. **Sled.** Lets your steed pull double its normal capacity. May include stretchers, ropes, rollers or skids.
 
+8. **Flying.** Dangerous in the west because of the mind-rotting Purple Haze and the razor stuckforce shards littering the sky. In civilized lands, painted statoliths and flags mark safe routes.
 
+9. **Fuel.** High-energy juices refined from biomass by biomagical-eating vat animalcules or domesticated autofacs. Some communities even refine their dead.
 
+10. **Golem.** True golem vehicles use near-inexhaustible radiothermal batteries. Each lasts for decades. Popular target for thieves.
 
-### Combat Ranges and Areas
+11. **Grazer.** Eats plants. In deserts, consumes a sack of supplies per week. Desert-adapted rides only consume half.
 
+12. **Pneuma[vore].** A soul-eater. One human soul powers even the largest vehicle or mount for a year.
 
-#### Ranges and Areas
+13. **Semi-Sentient.** There is something of a brain in this ride. It can steer itself and follow simple orders.
 
-Like _The Black Hack_ (check it out), the UVG assumes abstract ranges and areas. Don’t worry too much about precise distances, keep combat sketchy and descriptive and _fast_. A weapon’s listed range is its optimal range -- attacks one category beyond that range are possible, but suffer major penalties [-].
+14. **Sentient.** This ride is at least as smart as a human. It may be unionized.
 
-| Range | Area | Dimensions | Movement |
-|:---|:---|:---|:---|
-| Close | Small, 1 or 2 people. | 2 meters or 7 feet. | Adjacent. |
-| Short | Medium, 2 to 8 people. | 10 meters or 30 feet. | One move. |
-| Medium | Large, 3 to 18 people. | 40 meters or 120 feet. | Two moves. |
-| Long | Massive, a crowd. | Further away. Aim carefully. | Three or more moves. |
+15. **Solar.** Powered by the radiation of the Green Sun or other solar stars. May be keyed to a specific sun.
 
+16. **Vital.** Drains its user's life force for motion.
 
-### Gear-Anchored Power Mechanics
+17. **Undead.** This ride is powered by eldritch powers. It requires no upkeep, but makes you unpopular.
 
+18. **Underwater.** This ride goes under water—and keeps functioning. It may even resurface!
 
-#### **The Viridian Practice** (Power Album)
+19. **Void.** Keeps occupants safe in the terrible void outside the envelope of Heaven.
 
-A traditional projectile combat practiced by the gun monks of the Crater School. Legends say it was founded by the nameless gunslinger named Jill. Also called Gan-Fu by untrustworthy urban fans; bootleg versions have become popular in the Sailing Islands and other dens of disorder.
+20. **Water.** A watercraft. It floats.
 
-_Viridian Practice Album Features_
+**Standard Cultivated Human Rides**
 
-Skill with projectile weapons carries over to the Viridian powers.
+As specified by the One and Eternal Garden Path (revised 3rd yellow edition), humans can use any vehicles they create by themselves, without the inputs of self-willed or builder-made fabricators. Other vehicles are traditionally restricted. Modern humans don't quite understand what this means, but there are some standard rides found in the civil lands.
 
-The powers are anchored to a hallmark projectile weapon (gun, wand, bow, etc.) of level 1 or higher. You can use a single anchor weapon for all the powers in the album.
-
-**Mother of Bullets**
-
-*Blood Made Lead*
-
-**P:** 1 **R:** touch  
-**T:** anchor weapon **D:** instant
-
-> Reloads your weapon as a free action, turning life force into semi-real projectiles.
->
-> _Overcharge:_ The first semi-real projectile to strike a target deals extra damage equal to your level plus the power's price (2 + level).
-
-**Dancing In The Hail**
-
-*Dodgebullet*
-
-**P:** 1 **R:** self  
-**T:** self **D:** one round
-
-> Reduce your metaphysical “hit box” to the size of your weapon. All ranged attacks against you suffer major penalties (i.e. disadvantage).
->
-> _Overcharge:_ Any ranged attacks that hit deal half damage.
-
-**Ring of Lead**
-
-*Rapid Metal Spin Cycle*
-
-**P:** 1 **R:** adjacent  
-**T:** all creatures **D:** one action
-
-> Use the buzz saw stance to unload all your ammo at once, attacking every* adjacent creature with one action.
->
-> _Overcharge:_ No attack roll required. *subject to how much ammo the anchor weapon holds.
-
-**Depleted Heavy Metal Rain**
-
-*Bigger Bang*
-
-**P:** 1 **R:** touch  
-**T:** anchor weapon **D:** a few minutes
-
-> Imbue your next shot with an inertial error. Roll damage dice twice. The dice also explode.
->
-> _Overcharge:_ Roll damage dice thrice.
-
-
-
-#### **NUNKA'S EPIDERMAL SCULPT**
-
-*Biodefense Integration*
-
-**P:** 2 **R:** touch  
-**T:** one creature **D:** permanent
-
-> You reshape a creature's skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
->
-> _Note:_ Multiple uses on a single individual are dangerous.
->
-> **Epidermal Effects**
->
-> Some complex sculpts require a biomantic roll.
->
-> **Sculpt** | **Effect**
-> --- | ---
-> Leathery Hide | armor +2
-> Fur, Feather or Fat Insulation | cold resistant
-> Sweat or Radiators | heat resistant
-> Scales | armor +3, reduced water loss, (moderate)
-> Armored Nodules | armor +5, agility -1, (moderate)
-> Armored Plates | armor +8, agility -3, (hard)
-> Rejuvenated | look a decade younger
-> Soft Skin | armor -2, look younger, (moderate)
-> Squishy | armor -5, agility +2, (hard)
-> Vesicles | store liquids or gases, agility -1
-> Spines | attackers suffer 1d4 damage in close combat
-> Lethal Spines | attackers suffer 1d8 damage in close combat, agility -1, (hard)
-> Webbing / Gliding Surfaces | movement bonus, agility -1, (moderate)
-> Transparent | creepy
-> Glowing | like a bioluminescent candle, (easy)
-> Camouflage | bonus to hide, conceal, (easy)
-> Slippery | bonus to grapple, escape, (easy)
->
-> **Result** | **Effect**
-> --- | ---
-> ≤1 | Sculpt fails. Victim exposed to severe corruption.
-> fail | Sculpt succeeds. Patient exposed to moderate corruption.
-> success | Sculpt succeeds.
-> nat. 20 | Excellent sculpt. Increase bonus by 1 or reduce slots occupied by 1 (minimum 1).
->
-> If sculpting an unwilling target, a failed biomantic roll botches the sculpt and does not expose the target to corruption.
->
-> _Overcharge:_ The growths develop instantly, dealing 1d6* damage.
-
-
-#### **NUNKA'S WEAPON MORPH**
-
-*Biocombat Implementation*
-
-**P:** 2 **R:** touch  
-**T:** one creature **D:** permanent
-
-> You coerce a creature's biology to express natural weapons like claws, spikes, horns, or venom. The manifestation depends on the creature's size and form. The modification occupies an inventory slot. The transformation requires 1 day.
->
-> _Note:_ Multiple uses on a single individual are dangerous.
->
-> `⚔︎`
->
-> **Common Natural Weapons**
->
-> **Form** **Weapon** Cat-sized 1d4 damage Dog-sized 1d6 damage Human-sized 1d8 damage Horse-sized 1d12 damage Elephant-sized 2d10 damage Painful venom 1 agility damage and save or lose round. Paralytic venom each round, save or lose action. After 3 failed saves, paralyzed for an hour. After 3 successes, shake it off. Necrotic venom lose use of 1 limb for an hour, then 1d6 damage and save or limb starts to decay.
->
-> `⚔︎`
->
-> _Overcharge:_ The weapons erupt instantly in a traumatic burst dealing 1d6* damage.
-
-
-
-#### **Burdenbeast Modification**
-
-_Art of Carriage, Usha’s Useful Mutation_
-
-**P:** 2 **R:** touch  
-**T:** creature **D:** permanent
-
-The wizard modifies a human-sized or larger creature to carry an additional sack of goods. The ritual requires 6 hours and a sack of beast egg masses (€500). Unwilling targets get a save.
-
-
-
-### Vehicle Load and Upgrade Rules
-
-
-#### Overloading
-
-Possible, but not smart. Moderate test once a week or something goes wrong (roll d6):
-
-1. Engine dies. Lose a day replacing the engine (if you have one) or pull the vehicle to a machine shop.
-2. Exhausted animal. Lose 1d4 days resting or a 1-in-2 chance it dies at the end of the week.
-3. Broken axle. Lose 1d4 days to jury-rig a fix. A replacement axle costs a tenth of the vehicle’s cost.
-4. Lamed animal. It can’t carry anything for a week. Force it to carry cargo and it will be permanently crippled.
-5. Straps break. Random cargo spills. Fragile things break.
-6. Random cargo crushed, loses half value. Badly packed, the fragile black light lotus leaf is now just so much powder.
-
-#### Upgrading Vehicles and Mounts
-
-Customization is the name of the game. Smaller upgrades can be purchased for larger vehicles and creatures at double the cost. Some upgrades might not make sense at the referee’s discretion.
-
-**Slave Porter**
-
-- **Capacity:** 2 sacks
-- **Cost:** €600
-- **Consumes:** 1 supply per week
-- **Speed:** Normal
-
-Like a porter, but less free and more resentful.
-
-
-
-
-#### VLG Ride Operation Baselines
+| Attribute | Velocipede | Conveyance | Familiar Van | Golem Bus | Road Train |
+| --- | --- | --- | --- | --- | --- |
+| Level | 0–1 | 1–4 | 2–7 | 4–9 | 7–13 |
+| Size | skeleton-sized | cow-sized | greater unicorn-sized | indricothere-sized | whale-sized |
+| Capacity | 1–2 sk | 2–6 sk | 4–12 sk | 6–24 sk | 12–48 sk |
+| Speed | normal | slow | normal or fast | slow or normal | very slow or slow |
+| Power | pedal | pull or push | fuel or golem | coalem or golem | atom or pneuma |
+| Supply | 1 / wk | 2 / wk | 3 / wk | - | - |
 
 **Level and Non-Sentient Rides**
 
@@ -1021,8 +583,34 @@ Listed speeds are descriptive and relative—a horse's speed is relative to othe
 
 Different rides may consume different types of supplies (fuel, food, souls). Quantities are in sacks per week.
 
+### VLG Vehicle Mods and Upgrades Mechanics
 
-#### UVG Vehicle Operation Overlays
+Each ride can support a number of upgrades or customizations equal to its level plus one. A mod's cost represents work, rituals, fees, material, taxes, and other unexpected issues. Some mod costs scale with the ride's size (capacity). Weapons add attacks, but may require a dedicated gunner if the ride is not sentient (and possibly multi-brained). Many mods have additional effects: filling up capacity, increasing fuel use, or modifying other attributes.
+
+Related item tables: [MODS & UPGRADES](#mods--upgrades), [Transport Fixes & Features](#transport-fixes--features).
+
+### UVG Overloading
+
+Possible, but not smart. Moderate test once a week or something goes wrong (roll d6):
+
+Related item tables: [VLG Vehicles and Mounts](#vlg-vehicles-and-mounts), [UVG Vehicles and Mounts](#uvg-vehicles-and-mounts), [Transport Fixes & Features](#transport-fixes--features).
+
+1. Engine dies. Lose a day replacing the engine (if you have one) or pull the vehicle to a machine shop.
+2. Exhausted animal. Lose 1d4 days resting or a 1-in-2 chance it dies at the end of the week.
+3. Broken axle. Lose 1d4 days to jury-rig a fix. A replacement axle costs a tenth of the vehicle’s cost.
+4. Lamed animal. It can’t carry anything for a week. Force it to carry cargo and it will be permanently crippled.
+5. Straps break. Random cargo spills. Fragile things break.
+6. Random cargo crushed, loses half value. Badly packed, the fragile black light lotus leaf is now just so much powder.
+
+### UVG Upgrading Vehicles and Mounts
+
+Customization is the name of the game. Smaller upgrades can be purchased for larger vehicles and creatures at double the cost. Some upgrades might not make sense at the referee’s discretion.
+
+Related item tables: [MODS & UPGRADES](#mods--upgrades), [VLG Vehicles and Mounts](#vlg-vehicles-and-mounts), [UVG Vehicles and Mounts](#uvg-vehicles-and-mounts).
+
+### UVG Vehicle Operation Overlays
+
+Related item tables: [UVG Vehicles and Mounts](#uvg-vehicles-and-mounts), [Humanoids](#humanoids), [Undead](#undead), [Beasts of Burden](#beasts-of-burden), [Wagons, Carts, and Coaches](#wagons-carts-and-coaches).
 
 **Energy**
 
@@ -1031,6 +619,7 @@ Most vehicles burn synthetic fuel. Traditionally, this is refined from biomass w
 - Low-Q Diesolene, "Ole Belcher", costs €10 per sack and produces hot, iridescent smoke. Adds the "smoke" tag to a caravan.
 - Premium Guzzolene costs €20 per sack.
 - Oldtech Jetolene costs €50 per sack and adds the "fast" tag to a caravan. It burns white-hot and may explode engines.
+  See [Fuel, Supplies, and Power (Synthesized from Rules)](#fuel-supplies-and-power-synthesized-from-rules).
 
 **Carting**
 
@@ -1053,94 +642,109 @@ Each lasts for decades. They are popular targets for thieves.
 **Grazing**
 
 Herbivores usually eat grass and other plants. In deserts, they consume a sack of supplies per week. Common supplies cost €2 per sack, like for humans. Camels only consume half, they’re cool.
+See [Fuel, Supplies, and Power (Synthesized from Rules)](#fuel-supplies-and-power-synthesized-from-rules).
 
+### UVG Transport Fixes & Features
 
-#### VLG Vehicle Mod Customization Mechanics
+**Vehicle Features**
 
-Each ride can support a number of upgrades or customizations equal to its level plus one. A mod's cost represents work, rituals, fees, material, taxes, and other unexpected issues. Some mod costs scale with the ride's size (capacity). Weapons add attacks, but may require a dedicated gunner if the ride is not sentient (and possibly multi-brained). Many mods have additional effects: filling up capacity, increasing fuel use, or modifying other attributes.
+| d20 | Brands of Long Long Ago | Dubious Features |
+|---:|:---|:---|
+| 1 | Macaroni Integrale | Self-threading caps |
+| 2 | Atomkraftwagen | Anti-tampering engine configuration |
+| 3 | Spitz-Schnauzer | Synchrotronic gearbox |
+| 4 | Deus Machina | Electric transix variator |
+| 5 | Olive Garden | Dilithium superfluid compressors |
+| 6 | Singer Metal Humans | Dante’s Gate propulsion unit |
+| 7 | Void Y | Microhydraulic homeostatic brain |
+| 8 | <=5H1N3=> | Inhalator body air scoops |
+| 9 | Vanta-Chouette | Anti-rapture heartbeat sensors |
+| 10 | AXE Vehicle Lubricants | Nine-axis suspension struts |
+| 11 | Podzol Kozmos | Swivel bucket seats |
+| 12 | Vega Utopia Industries | Gyroscopic auto-leveler |
+| 13 | Barca Real ESL | Automatic anti-crash foam nozzles |
+| 14 | Omnisentience UI | Extruded poly-chromium trim |
+| 15 | Langmorgen KNVX | Telepathic key systems |
+| 16 | Three Ritual | Extensible omniadaptors |
+| 17 | Aquarius | Trained underbody rust slimes |
+| 18 | Maya Yuga | Mercurial dimagnetic levitation bearings |
+| 19 | Feltz & Filtz | Ghost-bone dry-clutch |
+| 20 | Sombrero Corporation | Hydrophobic faux-fur seat covers |
 
+**Vehicle Trouble**
 
+| d20 | What Broke? | How Do We Fix It? |
+|---:|:---|:---|
+| 1 | Sparkulators clogged. | Take ‘em out & file them. |
+| 2 | Lightning whirler isn’t whirling. | Squint and twiddle some screws. |
+| 3 | Fuel tube burst. | Run a new one. |
+| 4 | Brakes gone. | It’ll probably be fine. |
+| 5 | Flat tire. | Get the tools, patch ‘n’ swap. |
+| 6 | Radumilator blown. | Keep adding fluids on the go. |
+| 7 | Fuel pump seized. | Probably need a new one. |
+| 8 | Won’t hold pressure. | Time for bubblegum welding. |
+| 9 | Carbassimilator stuck. | Hit it with a wrench. |
+| 10 | Wheel bearings locked up. | Grease and hammer. |
+| 11 | Threw a belt. | Find something long & stretchy. |
+| 12 | Radiothermals leaking. | Duct tape time. |
+| 13 | Confuser unit ERROR. | Diagnosticator red button time. |
+| 14 | Transmission goes "clunk". | Take the whole thing off. |
+| 15 | It goes "grrtschuktuktuk." | Don’t use that gear. |
+| 16 | Thorbox won’t charge the battery. | Replace it. Maybe with a Zeusbox. |
+| 17 | Omnibattery won’t hold a charge. | Chemical ritual time. |
+| 18 | No dead dinosaur juice. | Get more juice. Add more juice. |
+| 19 | Hole in the metal-fragment shield. | Patch it, add liquid, pray. |
+| 20 | Piston went to space. | Needs a full rebuild. |
 
-### Vehicle Feature Mechanics
+**Animal (or Human) Trouble**
 
-
-#### VLG Vehicle Feature Mechanics
-
-When your feet won't do, when you're weary and the road goes ever on and on, few things are as satisfying as the bell of the ancient bus, the mechanical servant of the human settlements, programmed to transport. Well, a private golem cruiser or even a bicycle may be more satisfying, to be honest.
-
-**Ride Features**
-
-Your friendly transportation, logistics, and combat solutions have many possibilities:
-
-1. **All-Terrain.** Designed to overcome obstacles, grants a bonus in mud and snow. May consume more fuel.
-
-2. **Atom.** Converts matter into energy, like a sun.
-
-3. **Cart.** Lets your steed pull triple its normal capacity.
-
-4. **Coalem.** False golem that eats compressed and fossilized biomatter. Some have converted themselves to eat other types of biomatter: oil, wood, carcasses, flesh, even blood.
-
-5. **Combat.** Designed for combat. No penalties on its riders in combat, may even grant bonuses.
-
-6. **Dark.** This ride is not on any books. Its jewel is clouded. It is invisible to local gods and daemons.
-
-7. **Sled.** Lets your steed pull double its normal capacity. May include stretchers, ropes, rollers or skids.
-
-8. **Flying.** Dangerous in the west because of the mind-rotting Purple Haze and the razor stuckforce shards littering the sky. In civilized lands, painted statoliths and flags mark safe routes.
-
-9. **Fuel.** High-energy juices refined from biomass by biomagical-eating vat animalcules or domesticated autofacs. Some communities even refine their dead.
-
-10. **Golem.** True golem vehicles use near-inexhaustible radiothermal batteries. Each lasts for decades. Popular target for thieves.
-
-11. **Grazer.** Eats plants. In deserts, consumes a sack of supplies per week. Desert-adapted rides only consume half.
-
-12. **Pneuma[vore].** A soul-eater. One human soul powers even the largest vehicle or mount for a year.
-
-13. **Semi-Sentient.** There is something of a brain in this ride. It can steer itself and follow simple orders.
-
-14. **Sentient.** This ride is at least as smart as a human. It may be unionized.
-
-15. **Solar.** Powered by the radiation of the Green Sun or other solar stars. May be keyed to a specific sun.
-
-16. **Vital.** Drains its user's life force for motion.
-
-17. **Undead.** This ride is powered by eldritch powers. It requires no upkeep, but makes you unpopular.
-
-18. **Underwater.** This ride goes under water—and keeps functioning. It may even resurface!
-
-19. **Void.** Keeps occupants safe in the terrible void outside the envelope of Heaven.
-
-20. **Water.** A watercraft. It floats.
-
-
-## Economy and Trade Overlays
-
-Caravan and trade operation procedures are now canonical in [SDM Quickstart](Synthetic_Dream_Machine_01_Quickstart.md#companycaravan-play-uvg).
-
-### Canonical Caravan Procedure Pointers
-
-- [Running A Caravan](Synthetic_Dream_Machine_01_Quickstart.md#running-a-caravan)
-- [Misfortune: Luck of the Road](Synthetic_Dream_Machine_01_Quickstart.md#misfortune-luck-of-the-road)
-- [Destinations and Discoveries](Synthetic_Dream_Machine_01_Quickstart.md#destinations-and-discoveries)
-- [Trade & Goods](Synthetic_Dream_Machine_01_Quickstart.md#trade--goods)
-- [A First Caravan](Synthetic_Dream_Machine_01_Quickstart.md#a-first-caravan)
-
-## Hazards and Operational Constraints
-
-For caravan starvation and source corruption procedures, use Quickstart caravan canon:
-
-- [Out of Supplies](Synthetic_Dream_Machine_01_Quickstart.md#out-of-supplies)
-- [Source Code Corruption](Synthetic_Dream_Machine_01_Quickstart.md#source-code-corruption)
+| d20 | What’s the Matter? | How Do We Fix It? |
+|---:|:---|:---|
+| 1 | Threw a shoe. | New shoe (and maybe a farrier). |
+| 2 | Perambulator tendon pulled. | Long rest and light duties. |
+| 3 | Infected spottle-fly bites. | Apply soothing Liger balm daily. |
+| 4 | Runny yellows from bad water. | Antidiarrheals and extra water. |
+| 5 | Noxious flatulence. | Regular bleeding. Leeches? |
+| 6 | Secondary head growth. | Surgical decapitation. |
+| 7 | Sprained primary foot joint. | Rest, compression, pain killers. |
+| 8 | Gangrenous amoeboid cyst. | Limb amputation. Or antibiotics. |
+| 9 | Broken walker appendage. | Needs a new leg. |
+| 10 | Infectious omnivampirism. | Daily blood rations. Or a stake. |
+| 11 | Eye fell out. | A fresh optic seed. Or a patch. |
+| 12 | Bullet hole out of nowhere. | Duck and cover! Then bandage. |
+| 13 | Sudden philosophical bent. | Teach them to keep a journal. |
+| 14 | Intense and constant hunger. | Extra rations. De-worming pills. |
+| 15 | Hair loss and vomiting. | Anti-radiation medicine. |
+| 16 | Tremors and loss of motor control. | Please visit a neuromancer. |
+| 17 | Dryland flu. | Anti-virals and quarantine. |
+| 18 | Vivid hallucinations. | Dark glasses? |
+| 19 | Creeping, cosmic ennui. | Hide the pain, Kharold. |
+| 20 | Freak cosmic ray mind wipe. | Needs a new personality. |
 
 # SDM Gear Index
 
 Relocated verbatim catalog blocks grouped by final chapter function. Variants are intentionally preserved per Phase 0 decisions.
 
-## General Goods and Kits
+## Rule-Derived Commodity Tables
 
-**Rules Relocated**
+> Synthesized from SDM Gear Rules price points to keep mechanics text and shopping tables separated.
 
-Core handling mechanics were moved to [Gear Handling and Starting Assets](#gear-handling-and-starting-assets).
+### Fuel, Power, and Supplies (Synthesized from Rules)
+
+> Synthesized from these Rules blocks in `Synthetic_Dream_Machine_05_Gear_Index.md`:
+> `## Vehicle and Mount Mechanics` -> `### UVG Vehicle Operation Overlays` -> `**Energy**`
+> `## Vehicle and Mount Mechanics` -> `### UVG Vehicle Operation Overlays` -> `**Grazing**`
+> `## Armor Mechanics` -> `### UVG Armor Mechanics` -> `**Armor Features**` (`Powered #`)
+
+| Category | Item / Text Basis | Cost | Unit / Use | Notes |
+| --- | --- | ---: | --- | --- |
+| Fuel | Low-Q Diesolene ("Ole Belcher") | €10 | per sack | Produces hot, iridescent smoke and adds the `smoke` tag to a caravan. |
+| Fuel | Premium Guzzolene | €20 | per sack | Premium fuel tier (reliable). |
+| Fuel | Oldtech Jetolene | €50 | per sack | Adds the `fast` tag to a caravan; burns white-hot and may explode engines. |
+| Power | Portable charging unit | €500 | one sack | Powered-armor support; Spare power source + automagical recharging cradle (or prayer altar). |
+| Supplies | Common supplies | €2 | per sack | Desert baseline for herbivores is one sack per week; camels consume half. |
+
+## Curios and Souvenirs
 
 #### VLG One Strange Item
 
@@ -1199,14 +803,228 @@ Exactly what this item does is a mystery. It could turn out to be an item of pro
 |49|Artificial you. Only the face and one hand.|2 st|
 |50|Living seed of your ancestral house.|1 sp|
 
-→ _Next: Your useful starting kit (next page)._ 
+#### Selling Your Strange Item
 
-**Rules Relocated**
+Figuring out what it does is a hassle. Why don’t you just sell it for quick cash? Everything will be ok!
 
-See [Gear Handling and Starting Assets](#gear-handling-and-starting-assets).
+|Buyer|Where|Quick Cash|
+|---|---|---|
+|Random Merchant|Anywhere, really. Here?|€1d6* × 10|
+|Sage Patron|A remote location.|€1d6* × 100|
+|Legendary Collector|A dangerous location, behind a difficult quest.|€1d6* × 1000|
+
+The asterisk denotes an exploding die. On a roll of 6, roll again and add the results together. Keep rolling and adding dice as long as you keep rolling sixes.
+
+#### 100 Strange Items
+
+Found on a defeated creature or a sleeping traveler. Give one or both, as you prefer. The values in brackets are optional and don’t apply if there is a larger quantity of treasure. Obviously.
+
+1. Fossil skull inscribed with the Blue God’s accursed iconographs _or_ mirrored cowries (€5).
+2. Moss-covered human-bone elven flute _or_ moon coins (€5).
+3. Clockwork brain adjustment worm _or_ ivory chips (€5).
+4. Carving stone, very hard, perfect for writing deep dwarven poetry _or_ corundum dust (€10).
+5. Black mirror, mysterious _or_ trading sticks (€1).
+6. Tar candle, burns green _or_ clay seals (€5).
+7. Water-finding walking stick, Woodlander _or_ copper wire (€3).
+8. Memetic face-stealing mask _or_ vampire ash (€7).
+9. Horn of a great ram, filled with maggots _or_ bone coin (€5).
+10. Porcelain eye full of poems _or_ lapiz plug (€5).
+11. Spirit rope from herbal fibres _or_ silver wire (€10).
+12. Chroma flashlight, sun-charged _or_ pickled kumquats (€10).
+13. Ruby scalpel, sharp as a harpy’s tongue _or_ saffron sachet (€10).
+14. RLD pigeon with recording eyes _or_ blood porcelain stick (€10).
+15. Synth-skin backpack _or_ coral seed chip (€20).
+16. Fine chitin-woven boots _or_ lead coins (€1).
+17. Pen with hypodermic injector _or_ crystal coin (€10).
+18. Silver-banded ceramic wristwatch _or_ yellowlander scrip (€10).
+19. Half-There Isles fishing rod, collapsible _or_ malachite cogs (€13).
+20. Samovar and powerful cat coffee _or_ fastfoot teeth necklace (€7).
+21. Light-focusing crystal assembly, good for starting fires _or_ crystal rat skull (€15).
+22. Chitin chest with scalpels and saws _or_ silver shovel coins (€15).
+23. UV Cream+ against radiation _or_ silver finger bones (€15).
+24. Iconic White City rubber & silk breather suit _or_ jaspis ring (€15).
+25. Silk rope with spider eggs _or_ jade discs (€30).
+26. Surprisingly large and beautifully decorated Steppelander hat _or_ unlucky dice (€1).
+27. Greenlander tin of moustache wax, Petrolflower brand _or_ silvered marbles (€11).
+28. Unrusting odd-iron rod (1d6), marked with intricate patterns _or_ blue stone coins (€15).
+29. Tough poncho w. mutated beast teeth _or_ bronze bracelets (€15).
+30. Taxidermied Cat with pearl eyes and gold claws _or_ emerald city plastic scrip (€19).
+31. War vome brain in a lead-lined plaz box _or_ yellow bone coins (€20).
+32. Suspension cube powder in a static jar _or_ Violet City Coins (€20).
+33. Black iron & gold telescope w. crystal lenses _or_ iron coins (€20).
+34. Half a black moon key that opens the entrance of a deadly portal _or_ gold ring (€40).
+35. Half a white sun key that opens the _exit_ from a deadly portal _or_ strange tooth (€1).
+36. Holy Cogflower grammar book _or_ bronze grappling hook (€20).
+37. Mirrored Redland District sunglasses _or_ platinum coin (€20).
+38. Case of Redland wines, good vintage _or_ jade egg (€28).
+39. Orangeland metal guitar _or_ pit coins etched with faces (€12).
+40. Pouch decorated with dogs and flowers, inside dog’s tail root _or_ lapiz lazuli bracelets (€20).
+41. Bottle of Marmotfolk snake oil _or_ brass pipettes (€25).
+42. Diesel dwarf solar battery _or_ golden needles (€25).
+43. Mechanic’s chest with manual on walker maintenance _or_ malachite spoons (€25).
+44. Set of keys to an autowagon, a shopping list, and an obscure reference to a car gnome cult _or_ silver earrings (€25).
+45. Deed to a pair named Smart and Smarter _or_ silver pennies (€17).
+46. Ancient briefcase filled with old notes on a self-assembling walker _or_ ivory scales (€33).
+47. Alien gun (2d8), covered in a non-repeating pattern _or_ sanguine porcelain beads (€30).
+48. Bone quiver w. ivory arrows covered in quarterling poisons _or_ platinum lockpick (€30).
+49. Violet city lapis cat claw gauntlet (1d4) _or_ ivory rings (€30).
+50. Yellowlander gentleman’s helmet, with head still inside. In the mouth, a misread map to a buried treasure _or_ silver chain (€35).
+51. Assisted mecha-crampons and leather shorts _or_ gold wire (€35).
+52. Mechanical wind-up accordion _or_ silver darts (€35).
+53. Iridescent scale tent (Onion-and-Skull) _or_ platinum nails (€35).
+54. Vile psionic soul-stripping crystal, currently empty _or_ mummy ash pellet (€39).
+55. Bush doctor manual with living plants growing in its leaves _or_ tooth coins (€31).
+56. Autonom kit to create a synthetic organism -- only missing a brain _or_ glass brain bits (€35).
+57. Meta-Classical porcelain and synthetic sinew neural whip (1d8) _or_ stuckforce amulet (€35).
+58. Furry synthetic skin saddlebags stuffed with ammunition _or_ ur-obsidian test tubes (€70).
+59. Fancy Emerald City chain sword (1d10) _or_ empty batteries (€1).
+60. Dancing golden hamster in a silver cage, intelligent and knows of a secret deep road between two locations _or_ rare lard (€35).
+61. Polished carbon and electrum bardstone loaded with 256 songs _or_ bronze scalpels (€40).
+62. Spidersilk sack of Iron Kitty cat food _or_ silver shot glasses (€40).
+63. Chitin bustier with secret stash & a treacherous love letter _or_ tourmaline spheres (€47).
+64. Sky tree cloud-sucker net, recovers a bottle of water from air per day _or_ ling jerky (€33).
+65. Golem fire-projector eye (2d6) from a defense golem turret _or_ steel thread (€40).
+66. Spectrum Satrap crystal spear with a stored fire spell _or_ silver manacles (€40).
+67. Ur-glass brain of a Long Ago thief who stole abmortality from a Vile monarch _or_ gold neck rings (€40).
+68. Itinerant Inquisitor battle robes (armor +3) stained with thermophobic blood _or_ heretic ash pellets (€80).
+69. Rainbow ceramic hammer (1d10) of Jesus Thor, price tag missing _or_ dried sheep pellets (€1).
+70. Mouse biosculpted with two bat wings and a marsupial pouch _or_ titanium lock (€40).
+71. Prosthetic biomechanical arm with sword-fighting wrist augmentation _or_ bolt of rainbow silks (€500).
+72. Black barrel of yellowing arcane yoghurt _or_ wreath of malleable livingstone (€200).
+73. Chitin shield with biomechanical snakes woven into the boss _or_ scroll cases filled with arcane weather poetry (€100).
+74. Cyan lightmetal helmet with haze purifiers _or_ off-brand saffron briquettes (€150).
+75. Decapolitan guide to intrigue and war for beginners _or_ fancy chicken (€250).
+76. Ur-obsidian bottle of ancient fire water _or_ crystal and gold hypodermics (€300).
+77. Fetish servant made of giant centipede limbs, luminescent wood, and quarterling bones _or_ supply of felix whizz (€350).
+78. Bio-necromantic preserver parasite, keeps freshly dead ‘alive’ _or_ last steel nodule (€400).
+79. Lingish personality rewiring headphones _or_ vidy crystal with tales of a heroic age (€450).
+80. Sand dragon bone golem dog (L3, loyal, tough) _or_ rainbow joy worm (€550).
+81. Prohibited radiation gun from Long Long Ago (3d8) _or_ bi-mannerist porcelain vase set (€600).
+82. Ceramic energy container, in a pinch: a grenade _or_ silver and gold caltrops (€650).
+83. Idio-Brutalist ka-ba maintenance body, can preserve one soul-personality for centuries _or_ black light lotus pills (€700).
+84. Animated bone-work snake (L2, chuckling), can follow up to five simple commands _or_ Blue heresy poem cylinders (€750).
+85. Amber levitating disc of force and force control glove _or_ twin set of ultra jay needles (€800).
+86. Badass bandana, decorated with a map to a cursed treasure _or_ corundum drill bits (€850).
+87. Animated metaskeleton fungus horse (L2, carry 3) _or_ distilled personality juice (€900).
+88. Mind-burner hypnogun (deals Thought damage) _or_ karma dust plates (€950).
+89. Lumin shrubbery in a porcelain pot _or_ soul stone (€1,000).
+90. Old-fashioned and uncharismatic machine human butler (L1, etiquette protocols) _or_ bone coins of passage (€1,500).
+91. Set of six Rainbow grenades (3d6*, thrown) and a contract to destroy an ultra hideout _or_ azure energy charge coins (€2,000).
+92. Ancient Vile supersoldier serum, mostly works (increase 2 physical stats by 1d4-2, reduce 1 mental stat by 1d4-2) _or_ deep purple energy cubes (€2,500).
+93. Lingish disintegrator ray (3d6*, near) wrapped in the will and testament of an autofac architect _or_ weed of worship (€3,000).
+94. Golem servant (L2, kindly) and vidy player, loaded with a plaz steel vidy of machine rituals for opening the corners of the world _or_ Pre-Chromatic canon crown (€4,500).
+95. Kangaroo bag with a soulfire golem battery _or_ collectible set of vech activation cards (€5,000).
+96. Vome assimilator suit kit with command parasite _or_ Rider Years skin figurines (€6,000).
+97. Ultra communicator and soul translator, holds the final destination of the Zombie Democracy _or_ mythogogic diamond necklace (€7,000).
+98. Rainbow-feathered two-legged riding vech (L5, fast, carry 4) _or_ purger trophy (€8,000).
+99. Rare close combat weapon (1d12*) from when the Fast Stars shone, cursed by its last owner _or_ starbloom souvenir (€9,000).
+100. True prophecy in the memories of a grey ooze (L5, assimilating swarm) held in a stasis jar _or_ a first seed (€10,000).
+
+#### OGA Heliodor Mercantile Standard Goods
+
+This established merchant luxuriates in their established form:
+
+1. chitinous echinoderm vech,
+2. permaderm stonelocked lithic machine,
+3. hollowbrain golem man-carrier,
+4. brain in a vat of finmath augmentation juice,
+5. neurally augmented ambulatory spiniferous shrubbery,
+6. superior laminated plastic human with Good Looks™ upgrade.
+
+#### This Liberated Trader
+
+_"They don't make 'em like ole' Vidyscreen_ _Venera anymore. Look at this raw_ _throughput! The dynamic error control._ _The delicate embossing. The cryptorchid_ _watermarks. She chungs out ten faux-_ _dream vidyscreens a day and we, her_ _veneralboys, we're the only retailers. You_ _want a vidyscreen like they had in the old_ _days, dontcha? Special price, just for you_ _my high frontier friend, €349. Less than a_ _yearslave!"_ —Veneralboy Ta Vera,
+
+Traducive Electromagics
+
+Sym., HS2-1 "Dream"
+
+Anyone can be a merchant in the Yellow Land. Everyone is a merchant in the Yellow Land. What are you if not a merchant when you buy your life cheap from your Maker and sell it dear to your owner of common capital and maker of beloved goods? If you are not a merchant, are you even a citizen?
+
+Admittedly, most Yellow Land merchants are so far down the mercantile guild hierarchy that in another land they might be called workers-at-gigs or labor-beggars, yet—if they are citizens, they are guild members and thus own a coveted merchant evidence dragon spirit neck-lock chit.
+
+| d6 | Vendor | Personality | Specialty | Quirk |
+|---:|:---|:---|:---|:---|
+| 1 | Martial Pung Soothers | gurgling, staring, smiling | singing burdenbeasts | goods may emit uncanny odors |
+| 2 | Speculative Dynamics | hacking, reedy, wired | repurposed coproliths | serious stone golem compatibility |
+| 3 | Torsion Exopneumatics | bubbly, glossy, gilded | scavenged neoldtech | boiled-off serial numbers |
+| 4 | Pisces Exactomart | slippery, slimy, grimy | simulated psychoactives | expose to water for new features |
+| 5 | Chortley's Chopshop | growing, glowing, fanged | autonomous devices | living equipment or your skin back |
+| 6 | Soilborn Soul Systems | venomous, toxic, hot | aerosolized entertainment | products may exhibit soul leakage |
+
+#### Consume To Create
+
+| d6 | Item | Description | Price |
+|---:|:---|:---|:---|
+| 1 | Wolfwillow Sticks | Fried ambulatory wolfwillow limbs. A mildly toxic protein-rich crunch. | €1 |
+| 2 | Dwarfermite | Delicious black petrochemical spread. Keep away from sunlight or it may explode. | €2 |
+| 3 | Dustrancher Jerky | Made from dust ranch rats, not ranchers. Keeps forever. Add water to swallow. | €3 |
+| 4 | _Amuse_ Cube | Compact generative flavor meal. Taste changes with each bite! No regrets! | €6 |
+| 5 | Oldtech Synthmeal | Ultra-processed géant nutrifac packets. Forgotten spices and possibly indigestible. | €10 |
+| 6 | Goldrhyme Pasta | Thick saffron and algae carbohydrate slabs. Hallucinogenic in large doses. | €15 |
+
+#### Fashion For You
+
+| d6 | Item | Description | Price |
+|---:|:---|:---|:---|
+| 1 | Duster Vest | Lightweight aridwear. Looks 'authentically' native. Reduces water needs. Armor +2, 1 st. | €10 |
+| 2 | Cactuskeleton | Thorny symbiotic armor. Deals 1d4 damage to melee attackers. Feed it your life to increase its armor value (1 for 1) for a few hours. Armor +3, 1 st. | €75 |
+| 3 | Hallucinosilks | Adapted flowing opera robes confuse attackers, granting you a 50% chance to dodge the first attack that would hit you in combat. Armor +1, ward +2, 1 st. | €150 |
+| 4 | Géant Bark Skin | Lightweight terraforming tree plates absorb up to 10 points of damage. The bark has 10 life and regenerates 1 per day. Armor +3, ward +1, 2 st. | €300 |
+| 5 | Vulcanized Suit | Reduces incoming damage by 1 and grants electrical immunity. Armor +2, ward +2, 2 st. | €600 |
+| 6 | Phylake Feathers | The super-real frock lets you spend 1d4 life to avoid one hit per round. Ar +2, wrd +4, 1 st. | €1.2k |
+
+#### Self Defense Systems
+
+| d6 | Item | Description | Price |
+|---:|:---|:---|:---|
+| 1 | Yellow Spear | Metal-and-synthbone stepper polearm. Spend 1 life: it glows for an hour. Reach, 1d10, 2 st. | €25 |
+| 2 | Rib Bow | Self-winding crossbow from dead machine géant ribs. Long, 1d8, reliable, 1 st. | €100 |
+| 3 | Spicegun | Fires hallucinogenic saffron darts. Save or confused for 1d4 rounds. Long, 1d4, 1 st. | €200 |
+| 4 | Bloodthorn Tendril | With each new foe struck, more thorns grow, granting +1 damage. Without fresh blood, excess thorns wither after 15 minutes. Reach, 1d6, 1 st. | €250 |
+| 5 | Mood Blade | Your emotions fuel its elemental expression. Rage gives ice, fear emits fire, hate sparks electric, jealousy spits acid. Close, 1d8, 1 st. | €450 |
+| 6 | Scalar Axe | Adamant-cut from a sand-dragon scale. Ignores 1 + str points of armor. Close, 2d6, 2 st. | €750 |
+
+#### Personal Travel Expression (Heliodor)
+
+| d6 | Item | Description | Price |
+|---:|:---|:---|:---|
+| 1 | Autorickshaw | The self-balancing foot-powered cart of the masses. Cheap, rugged, dubiously branded. L2, carry 2, slow, more-terrain. +€200 for an integrated **runmonculus** (L1, automaton). | €100 |
+| 2 | Dieseler Discus | Dwarfer hover-disc improvised from off-the-shelf procedural oldtech remnants. Terrible fuel consumption. L3, carry 4, levitating. Propeller fans cost an extra €300. | €400 |
+| 3 | Solar Steed | Photosynthetic equine golem. Supercharges by day. L2, carry 2, fast (day), slow (night). | €700 |
+| 4 | Skitterloose | Megamorphic symbiote grown from géant tissue using reasonably cheap arthropod source codes. L3, carry 2, all-terrain, self-repairing, regenerating. | €1.8k |
+
+#### Saffron Souvenirs Inc. Sym.
+
+| d10 | Item | Description | Price |
+|---:|:---|:---|:---|
+| 1 | Original Carbon | Authentic pre-human seeding fossil. Heretical? An excellent paper weight. 1 st. | €5 |
+| 2 | Thornskin Wallet | Ethically sourced adapted prickly human leather. Self-sealing if cut. 2 sp. | €10 |
+| 3 | Poncho Keychain | Protects from sun, heat, and (some) mind-affecting rays. Folds into a keychain! 1 sp. | €25 |
+| 4 | Ranch Egg | Incubate your burdenbeast! Corruption leak a risk. Training manual not included. 1 st. | €45 |
+| 5 | Oldtech Table | Grows to full size and generates a breathable atmosphere. Consumes 1 life per hour. 1 st. | €95 |
+| 6 | Vital Thornseed | Water with 1 life's worth of blood to grow an instant barricade, entangling trap, or crawling caltrop. Warning: may root in flesh, handle with care. 1 sp. | €150 |
+| 7 | Hollow Compass | Spend 1 life and 5 minutes to generate a small-scale 3D radiant illusion map of surrounding structures. Great for navigating ruins! May attract **hollow eaters** (L5, interstitial). 1 st. | €200 |
+| 8 | Song Barnacles | Plant in your throat to taste color and sing in five octaves. May turn your speech into minimalist tonal polychrome music. | €350 |
+| 9 | Fossilblood Nose | Vibrates near petrochemicals. Explodes if used too vigorously (large 6d6* fireball). 2 st. | €750 |
+| 10 | Voting Parasite | Looks like a livinglass seadragon-salamander hybrid. Attach to your spine to gain +1 ward and voting rights in your local Decapolitan city-state. Rebinding to a new city takes €1.5k, 1 week and 2d6 life. 5 sp (none if attached). | €1.5k |
+
+#### Curios Et Knick Knacks
+
+| d10 | Item | Description | Price |
+|---:|:---|:---|---:|
+| 1 | Amusebox | Procedural human culture generator. Makes the days pass less painfully. 2 st. | €1 |
+| 2 | Shadowseeds | Plant in a bit of aerolith, water, and grow a portable air-purifying parasol! 1 sp. | €5 |
+| 3 | Rootdrinker | Fungus-and-glass bottle. Draws sweet water from trees. Feeds one person per day. 1 st. | €15 |
+| 4 | Groombat | A pet (L0, cute) bioengineered to care for plants and humans with plant symbiotes. 1 st. | €25 |
+| 5 | Soulsniffer | This modified leech (L0, not cute) is drawn to souls. Used to find the soulless. 1 sp. | €100 |
+| 6 | Copy Me | Beast-egg matter keyed to your essence. Duplicates in a week. Soul not included. 1 sk. | €750 |
+| 7 | Miller's Mud | Leftover soulmatter from the soul mills. Holds 1d100 life. Useful for powers. 1 sp. | €1.5k |
+| 8 | Shipsilk | Illegal extra-cosmic material. Impenetrable to divine sight. Bed-sheet sized. 1 sp. | €7k |
+| 9 | Buildergoggles | Living glasses with trapped daemons who report on the makeup, technomagical status, and psychic essence of things. Look ridiculous (charisma -1). 1 st. | €13k |
+| 10 | Legacy Pass | Proof that you are one of the original baseline humans born Long Long Ago. 1 sp. | €29k |
 
 ## Tools and Services
-
 
 ### MISCELLANEOUS ITEMS
 
@@ -1398,9 +1216,6 @@ Food, water, and essentials to keep a person or vehicle alive for a week.
 | 5 | Void Paste — Packets of vacuum-packed ever-freshTM food produced for the voidfarers of old. Absorbs ambient moisture when opened. Any moisture. | 2 sk | €500 |
 | 6 | Song-Ghost Fuel — Liquified trapped daemon emanations. Clean, dense fuel for your machine. May leave parapsychic phenomena behind after burning. | 2 sk | €1,000 |
 
-
-
-
 #### Rest & Relaxation: "Carousing" Spots with Special Features
 
 | No. | Service | Time | Description (Availability) | Effect | Cost |
@@ -1589,8 +1404,6 @@ Portable bundles, ready-made for heroes venturing out into the grasslands. They 
 
 Travelers must decide what is suitable or not for the continental steppe climate of the Ultraviolet Grasslands.
 
-**Rules Relocated**
-
 See [Armor and Weapon Mechanics](#armor-and-weapon-mechanics) for armor bonus and feature rules.
 
 | d20 | Armor or Shield | Armor | Type | Size | Description | Cost |
@@ -1620,13 +1433,9 @@ See [Armor and Weapon Mechanics](#armor-and-weapon-mechanics) for armor bonus an
 
 It wouldn’t be a pseudo-colonial-apocalyptic savanna-crawl without guns. Unless specified otherwise, weapons are one-handed.
 
-**Rules Relocated**
-
 See [Combat Ranges and Areas](#combat-ranges-and-areas).
 
 #### UVG Weapons
-
-**Rules Relocated**
 
 See [Armor and Weapon Mechanics](#armor-and-weapon-mechanics) for weapon feature rules.
 
@@ -1765,14 +1574,22 @@ On the road, many things can and do go wrong. Entrepreneurs sprout like mushroom
 
 #### Mechanitechnical Services
 
-## Armor and Weapons (Source Variants)
+| No. | Service | Time | Description (Availability) | Effect | Cost |
+|---:|:---|:---|:---|:---|---:|
+| 1 | Chopshop, Basic | 1 day | Local blackthumb whacks it with a sonic wrench (uncommon). | Repair 1d8 Life. | €5 |
+| 2 | Chopshop, Guild | 1 day | Traditional mechanic carefully repairs the machine (rare). | Repair 2d8 Life. | €25 |
+| 3 | Body Modification | 1 week | Repaint, restyle, refashion, remake. All the res (rare). | Change how a machine looks. | €100 |
+| 4 | Junkyard Repair | 3 days | Lost wheel, busted cannon, broken cams. All fixed (rare). | As good as new. Just looks different. | €200 |
+| 5 | Full Rebuild | 2 weeks | Golem wizard revives a dead (0 life) machine or vehicle (v rare). | It’s back! Big and mean as ever. | €1,000 |
+| 6 | Engine Wizardry | 1 week | Expert technowizard installs a different engine (v rare). | Hopefully it’s a golem drive ... | €1,000 |
+| 7 | Update Drivers | 1 day | Electric wizard installs new subroutines in a golem (rare). | It learns a new skill. | €500 |
+| 8 | Install Kit | 1 day | Hereditary welda-fella bolts on a new module (uncommon). | Looks rough, but it works. Technical. | €25 |
+| 9 | Automind | 3 days | Golemancer installs an autonomous control system (rare). | Full self-driving! About as smart as a roach. | €500 |
+| 10 | Golem Intelligence | 2 weeks | Golemancer wires and activates a fully sentient mind (x rare). | It’s alive! Personality may vary. | €5,000 |
 
+## Combat Gear
 
-### COMBAT GEAR
-
-#### VLG Weapons
-
-**Rules Relocated**
+#### Weapons
 
 See [Armor and Weapon Mechanics](#armor-and-weapon-mechanics) for core weapon mechanics.
 
@@ -1806,7 +1623,6 @@ By wrench and machete, the shadowed jungles of lost times must part.
 | 11 | Soul Siphon Spear — Whips like a cobra, drinking souls and leaving empty husks. Holds three souls. Spend one to animate it as a spear snake (L3 / 12 life) or to regain 1d6* life. | 2H, attune, fantascience | 2d6 | 1 st | €3,000 |
 | 12 | Wire-Ghoul Hammer-Axe — A thing of undead biomachinery, overgrown with wriggling, acid-belching flagellae. Double damage to heavily-armored enemies. | necrotic | 1d10 | 1 st | €750 |
 
-
 **Ranged Weapons**
 
 Guns can be seen in the oldest human concrete-art, found in the ruins of pre-Long Long Ago cave cities.
@@ -1835,7 +1651,6 @@ The baseline human body is finely adapted for throwing. All throwing weapons hav
 | 7 | Builderbang — The holy fragmentation grenade of elder times, treasured by inquisition grenadiers. | area L | 3d6* | 2 sp | €250 |
 | 8 | Slowtime — Creates a bubble of altered spacetime that lasts several rounds. Those within (save) only act every other round. Ranged attacks through the bubble suffer a penalty. | area M, 1d3/round | 1d3*/round | 1 st | €450 |
 
-
 **Terrible Ranged Weapons of the Long Ago**
 
 Strange things, perhaps never made by or meant for humans, perhaps the product of a more terrible age. They lurk in the ground, in vaults and time cysts, like rotten dragons’ teeth, waiting to tempt and destroy.
@@ -1862,10 +1677,6 @@ Strange things, perhaps never made by or meant for humans, perhaps the product o
 | 16 | Golem Killer — Gray-orange anti-mechanical emitter. Damage roll 13: target mech shuts down for an hour. | med, re 4, 2H, silent | 2d8* | 2 st | €2,000 |
 | 17 | Ultra Blaster — For void use, with fully shielded particle coils that function even in the subspace of the dullways. | short, re 1, blinding, radiant | 3d6 | 5 sp | €2,000 |
 | 18 | Crystal Siege Rod — Disintegration ray amplifier housed in a heavily glyphed brass and brazilwood casing. A leftover from the rationalist living god wars. Breaks open doors if any die rolls a natural 6. | short, re 4, 2H, clumsy, slow ×4 | 1d6 | 3 st | €2,000 |
-
-
-| **d30** | **Weapons of the Time of Rats and Worm Portals** | **Features** | **Dmg** | **Size** | **Cost** |
-| --- | --- | --- | --- | --- | --- |
 | 19 | Lamarckian Needler — This fleshy green wandgun turns your blood into corrupting serum. Max damage: corrupted. | short, attune, vital, intravenous, corrupting | 1d4* | 5 sp | €2,800 |
 | 20 | Replacer Rod — Replaces target with an almost identical copy of themselves (save). Ever after, they feel alien to themselves. | short, re 7, atrophy, fantascience | 2d4* & 1 tho | 1 st | €2,900 |
 | 21 | Blue God Blaster — Particle of the divine, subverted and converted into a toxic array for tunnel combat. | v. short, re 7, 2H, necrotic, burst | 4d8 | 1 st | €3,000 |
@@ -1879,12 +1690,9 @@ Strange things, perhaps never made by or meant for humans, perhaps the product o
 | 29 | Ultra Ba “Leapfrog” — Raygun and skull-cap combo that translates your personality into another body after reducing the target to 0 life. | short, re 10, 2H, attune, fantascience | 1d20 | 2 st | €17,500 |
 | 30 | Mazing Crown — Rays from its labyrinth jewel cause confusion (save). Minimum damage: target falls into a bubble maze dimension for a week. | short, re 3, hands-free, attune, fantascience | 2d12 | 1 st | €45,000 |
 
-
 #### VLG Armors
 
-**Rules Relocated**
-
-See [Armor and Weapon Mechanics](#armor-and-weapon-mechanics) for armor feature mechanics.
+See [Armor and Weapon Mechanics](#armor-and-weapon-mechanics), and [VLG Autonomous Armor and Ward Modes](#vlg-autonomous-armor-and-ward-modes) for armor feature mechanics.
 
 | d6 | Modern and Ancient Shields | Features | Armor | Size | Cost |
 | --- | --- | --- | --- | --- | --- |
@@ -1909,7 +1717,6 @@ Suits for fighting and even running away. Beloved of barbarians, riff-raff, band
 | 6 | Hazviral Suit — Synthskin suit designed by the goddess Haz-Maat. | enviro, hot | +2 | 1 st | €150 |
 | 7 | Syncsuit — Ancient spandex and living wire for direct proprioceptive control of a vech or void vessel. | interfacing | +3 | 1 st | €500 |
 | 8 | Shipmetal Shirt — Light as a boat shirt, tough as steel. | flare 8, cool | +3 | 1 st | €1,200 |
-
 
 **Medium Armors**
 
@@ -1939,8 +1746,6 @@ Stout suits for standing and defending.
 | 7 | Bunker Crawler — Shaped livingstone suit, with tether tentacles for crawling up and down tunnels. | hot, spiked, intravenous | +6 | 3 st | €4,000 |
 | 8 | Umbral Panoply — Hard shadow and synthsilk weave. | bulky, cool, camo | +9 | 3 st | €9,000 |
 
-
-
 **Classic Golem Armors**
 
 Living exoskeletons for soft humans powered by arcane sources. As a free action, you can activate a golem's burn mode for the rest of the scene by making a d20 usage roll. Warning! Burn mode may drain a golem's energy stores.
@@ -1954,54 +1759,9 @@ Living exoskeletons for soft humans powered by arcane sources. As a free action,
 | 5 | Full Archaic — This smart suit can fight without you inside (see full auto destruction mode). Warning: may develop a personality. | re 2, semi-sentient, large, weapon | +8 | 3 st | €5,000 | Gain +4 strength or a 20 life forcefield. |
 | 6 | Brazen Minotaur — Monstrosity of godmeat and astral bronze cooked up in the crypt vats of the Living Flesh God. Deals 1d10 damage with unarmed attacks. Bonds to its user; removal requires a day of prayer or 3d6 life. | re 3, bonded, weapon | +7 | 4 st | €5,000 | Gain +6 strength and a 30 life forcefield. |
 
-**Rules Relocated**
-
-See [VLG Autonomous Armor and Ward Modes](#vlg-autonomous-armor-and-ward-modes).
-
-
 #### WARDS
 
-Scarabs, necklaces, glasses, shawls, tomes, gems, scrolls, pectorals, amulets, bags, cloaks, caps, circlets, loincloths, and other relics coupling Long Ago oldtech and postmodern fantascience to protect from metaphysical harm. Anyone afraid of curses, charms, nocturnal terrors, mental necroscopy, ill fate, daemons of self-loathing, ghosts of doubt, mere misery or other uncommon psycho-spiritual assault would do well to kit themselves out with suitable wards.
-
-**Ward Features**
-
-All wards have features besides providing a bonus to saving throws. They may also have some armor features.
-
-1. **Album.** Holds 1d4+1 powers. Efficient storage!
-2. **Antimagic.** Spend 1d6+1 life to nullify an effect (save).
-3. **Armor.** Also serves as armor.
-4. **Auto.** Moves around. Claims to be alive.
-5. **Booster.** Adds ward bonus to another item or effect.
-6. **Corpsefed.** Double bonus for an hour after it eats.
-7. **Cramping.** Penalty to defense. Usually -1.
-8. **Deathlike.** Makes you look undead.
-9. **Emplaced.** Set up to generate a small warding aura.
-10. **Heretical.** Blasphemous technology. Don't get caught with it. Makes authorities hostile.
-11. **Implant.** Attaches to your body. 1 life to remove.
-12. **Jade.** Grants ward bonus against ghosts and spirits.
-13. **[Limited] Land.** Only works in one region.
-14. **Spell Eater.** Spend 1d4+1 life to capture a spell targeting you (save). Using it later takes an action.
-15. **Scary.** Applies ward bonus to foes' morale.
-16. **Stealthy.** Makes you more silent and sneaky.
-17. **Undreaming.** Spend 1d4 life to look past illusions.
-18. **Vessel.** Can carry up to a dozen drinkable doses.
-19. **Watchful.** Keeps an eye on you. Like an alarm.
-20. **Weapon.** Also serves as a weapon.
-
-**Standard Found Wards**
-
-Modern wards tend towards the jury-rigged pectoral, poorly inscribed amulet, or repurposed soul battery. The wards of Long Ago are available with more varieties, powers, and features. Some even move and talk and say they are alive.
-
-| Category | Trinket | Wearable | Portable | Bulky |
-| --- | --- | --- | --- | --- |
-| size | <1 st | 1 st | 1–2 st | 3+ st |
-| wards | scarab | circlet | pectoral | homunculo |
-| bonus | 1–5 | 1–5 | 2–7 | 3–9 |
-
-**Rules Relocated**
-
-See [VLG Autonomous Armor and Ward Modes](#vlg-autonomous-armor-and-ward-modes).
-
+See [Wards Mechanics](#wards-mechanics), and [VLG Autonomous Armor and Ward Modes](#vlg-autonomous-armor-and-ward-modes).
 
 **Trinkets**
 
@@ -2058,13 +1818,73 @@ Biomechanical engines, living coffins, homunculos, and other large wards weren't
 
 #### CUSTOM COMBAT GEAR
 
-**Rules Relocated**
-
 See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 
+#### Weapon Mods (Priced)
+
+Many fabricators (1-in-2) and golem smiths (1-in-3) have the skills preinstalled to manage the following modifications.
+
+| d8 | Standard Upgrades | R | Cost |
+| --- | --- | --- | --- |
+| 1 | Damage Boost — The most basic of weapon mods. +1 bonus per damage die (2d4 → 2d4+2). | y | €5 |
+| 2 | Styling — Inscription, gilding, etching, coloring, etc. Harder to steal and pawn. | y | €5 |
+| 3 | Glow — An eerie, radioactive glow tailored to your character. Bright as a torch. | n | €25 |
+| 4 | Bane Coat — Exotic coating (ultraviolet, gold) deals double damage to one type of target. | n | €50 |
+| 5 | Resistance — Weapon gets a +1d6 bonus to saves and breaks through one type of resistance. | n | €75 |
+| 6 | Precision — Precognitive daemons guide the weapon, granting a +1 bonus to attacks. | y | €100 |
+| 7 | Area Boost — Magitechnically tweaked to roughly double its area of effect. | y | €150 |
+| 8 | Range Boost — Greater range without sacrificing accuracy requires wholesale material editing. | y | €200 |
+
+More extreme weapon customizations can get very expensive. Exotic fabricators may be required.
+
+| d12 | Postreality Customizations | R | Cost |
+| --- | --- | --- | --- |
+| 1 | Damage Upgrade — Increase the damage dice one step (2d4 → 2d6 → 2d8). | y | €100 |
+| 2 | Hammerspace — Item no longer occupies an inventory slot. It's a part of you, so to speak. | n | €150 |
+| 3 | Crippling — Target is slowed (save). Second strike immobilizes for 1d6 rounds (save). | n | €200 |
+| 4 | Draining — When it deals damage the wielder gains 1 temporary life. Lasts a few hours. | y | €200 |
+| 5 | Saboteur — Instead of damage: target is tripped, slowed, shoved, or blocked (hard save). | n | €250 |
+| 6 | Integrated — Size reduced one step (1 sk → 1 st → 1 sp) and attacks can be treated as unarmed. | y | €350 |
+| 7 | Remapped — It uses a different ability for its combat bonuses (e.g. aura for melee attacks). | n | €450 |
+| 8 | Vorpalization — Severs or destroys an extremity on a critical hit, or deals double critical damage. | n | €500 |
+| 9 | Atrophic — Deals 1 ability damage per hit. Choose target ability (strength, agility, etc.). | y | €600 |
+| 10 | Stunning — Strikes with a flash or shocking roar. Target loses 1 action (save). | n | €850 |
+| 11 | Sentience — The weapon gains a mind and +1d4 charisma, aura, and thought. | y | €1,000 |
+| 12 | Projector — Gains the ability to use one power (or spell). Uses its own level and abilities. | y | €1,250 |
+
+#### Armor and Ward Mods (Priced)
+
+Golem tailors (1-in-3) or barbarian armorsmiths (1-in-4) may manage the standard customizations.
+
+| d8 | Common Upgrades | R | Cost |
+| --- | --- | --- | --- |
+| 1 | Hardened — Improved plates, reactive tissues and absorbers increase armor defense by +1. | y | €10 |
+| 2 | Cooling Fins — fans, and vents. Suitable for hot environments. | n | €25 |
+| 3 | Heating Lining — seals, padding. Suitable for cold environments. | n | €25 |
+| 4 | Waterproof — Oils, rubbers, and wools. Keeps you dry and gains a bonus against electric attacks. | n | €25 |
+| 5 | Fashionable Embossing — filigree, inlay, etc. Boldly declares who you are. Grants +1 charisma. | n | €50 |
+| 6 | Gas-Tight Mask — rebreathers, and polymers to protect from environmental hazards. | n | €75 |
+| 7 | Silent — Swathed and padded to muffle sound. No penalty when sneaking about. | n | €100 |
+| 8 | Pocketses — Secret compartments hide a number of small items (1 sp) equal to its level. These items do not occupy additional inventory space. | n | €50 |
+
+Extreme armor upgrades may result in autonomous suits of armor. Beware if they go amok. Other armor features may also work as upgrades. The referee sets the final cost and requirements.
+
+| d12 | Post Scarcity Customizations | R | Cost |
+| --- | --- | --- | --- |
+| 1 | Skull Warded — Protection from dark magics boosts saves. Grants ward +1. | y | €20 |
+| 2 | Life Field — Grants the wearer temporary life: 5 or its level, whichever is higher. | y | €100 |
+| 3 | Resistant — Take half damage from one type of damage (e.g. fire, acid, necrotic). | n | €150 |
+| 4 | Absorbing — Reduce its armor bonus by 1 to negate the damage from one attack. Unless it is living armor, spend €50 to repair each armor point. | n | €200 |
+| 5 | Streetfighter — Ghoulish wiring increases unarmed damage dice (1d3 → 1d6 → 1d8 → 1d10). | y | €300 |
+| 6 | Golem Servos — Boosts wearer strength, agility, or endurance by 1. | y | €400 |
+| 7 | Limited Flare — Dissipator fields limit damage one attack per round to 10. | y | €500 |
+| 8 | Jade-Marked — Absorbs one burden per week for the wearer. | y | €700 |
+| 9 | Aetherial — Also grants its defense against noöspheric attacks, ghosts, and ultras. | n | €800 |
+| 10 | Living — It's alive. Reduce its armor bonus by 1 to regain 1d4 life. Fed and allowed to rest, it regains 1 armor per week. | n | €900 |
+| 11 | Urbanweave — Miniaturized (-1 st, minimum 1 st) and styled to look more like civilian clothes. | n | €1,000 |
+| 12 | Automaton — Follows simple instructions, but has no mind of its own. Use the sentience weapon mod to give it a brain. Can 'walk' the wearer, making some endurance challenges trivial. Autocombat mode: gains +1d4 str, agi, & end. Life: 10 × level. Defense: 7 + armor + level. Attack: bonus = level. Damage: 1d6 + armor + level. | y | €1,500 |
 
 #### Traditional Orange Land Attire
-
 
 | d6 | Item | Description | Price |
 |---:|:---|:---|:---|
@@ -2074,12 +1894,6 @@ See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 | 4 | Amber Cuirass | Giant amber crab shell grown to fit a human. Wired for electromagical combat: spend 1d6 life to recharge a weapon. Armor +5, ward +2, 2 st. | €250 |
 | 5 | Spider Collar | Decapitated? This arachnofungal symbiote keeps your head alive and mobile. 2 st. | €350 |
 | 6 | Cad Robes | Bone scutes interwoven with living cotton ropes and padded silk pockets. Hidden inventory (+4 sp). Armor +3, ward +3, cool, 1 st. | €750 |
-
-
-
-
-
-
 
 #### Weapons Against the Blue God
 
@@ -2130,8 +1944,6 @@ See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 | 11 | Hydrated Fleshbag | Regrow any missing part! Even a head! Mutagenic. Restricted due to hydra toxins. 2 st. | €300 |
 | 12 | Singing Dreamskull | Definitely not from one of the Dead God's many drones. Dream into it to draw strength when accessing the noösphere or interacting with daemons. +1 endurance, +2 ward. 1 st. | €1.2k |
 
-
-
 #### Cat Approved and Disdained Weapons
 
 | # | Weapon | Description | Price |
@@ -2178,8 +1990,6 @@ See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 | 9 | Subconscious Serpent | A furry synthetic snake that attunes to your subconscious and gives you painful insights into yourself. Ward +2, 1 st. | 11.99₧ (€120) |
 | 10 | Gray Sponge | An alien macrobacterial sponge that filters one substance out of a body. Could be a toxin. Could be all the lymph. 1 st. | 39.95₧ (€224.95) |
 
-
-
 #### Fruits of Blood and Soil
 
 | # | Fruit | Description | Price |
@@ -2190,8 +2000,6 @@ See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 | 4 | _Honor Sausage_ | Pink slime dried in wind and sun to create a delicious, salty, arm-length cylinder of protein and fat. Also called "week-meat". Best with large quantities of dewerker beer. | €5 |
 | 5 | Vampire Wine | A bottle of the richest ruby vintage, infused with the flesh of creation. A cup restores 1 life to a human and 1d6 to a vampire. Bottle contains 3.75 cups. | €35 |
 | 6 | Bloodwine | Orange-red regenerative vintage harvested under the Green Sun. A cup regrows a finger, the whole bottle an arm. Bottle contains 3.5 cups. | €125 |
-
-
 
 #### Red Land Dress and Wear
 
@@ -2241,9 +2049,6 @@ See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 | 11 | Ectoplasmifactor | Crystal globe of sympathetic ectoplasmic animalcules. Shatter it and everything in a small area becomes intangible for an hour. 1 st. | €300 |
 | 12 | Friendship Dome | Biomechanical autolobotomizer that makes a living or livingish creature smaller than a quadrodont (a type of pachyderm) pliable and easy to control. Single use, 4 st. | €750 |
 
-
-
-
 #### Order Maintenance Equipment
 
 | d6 | Item | Description | Price |
@@ -2279,9 +2084,6 @@ See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 | 9 | Oranje Music Box | Opened, it projects entrancing holodancers. Save or bemused. Handcrafted. 1 st. | €100 |
 | 10 | Precad Pamphlets | Illegal party materials that openly discuss the 404forgotten _süjgjes_ (don't speak settlements). Includes rumors of dark devices. May unlock sealed ancestral vaults. 5 sp. | €150 |
 
-
-
-
 #### SALVAGABLE ARMOR!
 1. Ragger robe (+1 armor, 1 stone)
 2. Glass shield (+2 ar, 1 st)
@@ -2309,34 +2111,15 @@ See [VLG Custom Combat Gear Mechanics](#vlg-custom-combat-gear-mechanics).
 8. Pain projector (short, 1d4 & [-], 1 st)
 9. Disarray darter (short, 1d4 & save or lose action, 1 st)
 10. Rovoam’s divider (short, 3d6, 3 st) _alas, but once per day_'
-11. 
+
 ## Vehicles and Mounts
-
-
-#### VLG Vehicles and Mounts
-
-**Rules Relocated**
 
 See [Vehicle Feature Mechanics](#vehicle-feature-mechanics).
 
-**Standard Cultivated Human Rides**
+See [Standard Cultivated Human Rides](#standard-cultivated-human-rides).
 
-As specified by the One and Eternal Garden Path (revised 3rd yellow edition), humans can use any vehicles they create by themselves, without the inputs of self-willed or builder-made fabricators. Other vehicles are traditionally restricted. Modern humans don't quite understand what this means, but there are some standard rides found in the civil lands.
-
-| Attribute | Velocipede | Conveyance | Familiar Van | Golem Bus | Road Train |
-| --- | --- | --- | --- | --- | --- |
-| Level | 0–1 | 1–4 | 2–7 | 4–9 | 7–13 |
-| Size | skeleton-sized | cow-sized | greater unicorn-sized | indricothere-sized | whale-sized |
-| Capacity | 1–2 sk | 2–6 sk | 4–12 sk | 6–24 sk | 12–48 sk |
-| Speed | normal | slow | normal or fast | slow or normal | very slow or slow |
-| Power | pedal | pull or push | fuel or golem | coalem or golem | atom or pneuma |
-| Supply | 1 / wk | 2 / wk | 3 / wk | - | - |
-
-
-**Rules Relocated**
 
 See [VLG Ride Operation Baselines](#vlg-ride-operation-baselines).
-
 
 **Undead Transportation Solutions**
 
@@ -2370,8 +2153,6 @@ These old-fashioned unliving machines require a necromaintainer with a necromech
 
 **Conveyances: Wagons and More**
 
-**Conveyances: Wagons and More**
-
 Few modern humans know how to create powered vehicles and neither angels nor golems are willing to share, the first because they are inscrutable, the second because they are unionized. But carts? Carts, humans can make.
 
 | d6 | Conveyances: Wagons and More | Lvl | Cap | Spd | Sup | Cost |
@@ -2387,19 +2168,18 @@ Few modern humans know how to create powered vehicles and neither angels nor gol
 
 | D12 | Style | Trim | Feature |
 | --- | --- | --- | --- |
-| 1 | amberite cloth | absorbent armor gel |  |
-| 2 | bonework foliage | anti-crash foam nozzles |  |
-| 3 | chitinweave fur | gyroscopic auto-leveler |  |
-| 4 | dead golem gelatin | hydrophobic seat covers |  |
+| 1 | amberite | cloth | absorbent armor gel |
+| 2 | bonework | foliage | anti-crash foam nozzles |
+| 3 | chitinweave | fur | gyroscopic auto-leveler |  |
+| 4 | dead golem | gelatin | hydrophobic seat covers |
 | 5 | extraherbal glass | integrated versificator |  |
-| 6 | lime nomad ivory | laminated prayer spindles |  |
-| 7 | long ago jade | nine-axis suspension |  |
-| 8 | right roader metal | retractable flag pole |  |
-| 9 | scavenger resin | self-repairing axles |  |
-| 10 | sinew stone | swivel seats |  |
-| 11 | skin tile | thermal barrier wrap |  |
-| 12 | sungwood wire | tuber growth medium |  |
-
+| 6 | lime nomad | ivory | laminated prayer spindles |
+| 7 | long ago | jade | nine-axis suspension |
+| 8 | right roader | metal | retractable flag pole |
+| 9 | scavenger | resin | self-repairing axles |
+| 10 | sinew | stone | swivel seats |
+| 11 | skin | tile | thermal barrier wrap |
+| 12 | sungwood | wire | tuber growth medium |
 
 **Beasts of Burden**
 
@@ -2430,7 +2210,6 @@ In these fallen times traditional work animals, like lopebeavers and honkazelles
 | 10 | rhino | shrubbery | winged | loyal |
 | 11 | toad | slug | great claws | skittish |
 | 12 | yak | tortoise | hyperguts | stubborn |
-
 
 **Autogolems**
 
@@ -2506,10 +2285,7 @@ Various lighter-than-air vehicles and creatures used in the Swept Skies, where t
 | 11 | pumice skin | unusually fast and red |
 | 12 | weeping oil pores | lifeform detector |
 
-
-#### MODS & UPGRADES
-
-**Rules Relocated**
+#### Vehicle Mods and Upgrades
 
 See [VLG Vehicle Mod Customization Mechanics](#vlg-vehicle-mod-customization-mechanics).
 
@@ -2580,21 +2356,13 @@ See [VLG Vehicle Mod Customization Mechanics](#vlg-vehicle-mod-customization-mec
 | 59 | Watertight — Helps with floating, fording small streams, and such. Outboard not included. Fills 1 sk. | €10/sk |
 | 60 | Xenon Drive — Oldtech ur-metal cables grant minor anti-gravity and contrails at high speed. Fills 1 sk. | €40/cap |
 
-
-
-
-
-
 #### UVG Vehicles and Mounts
 
 Smart players quickly realize that carrying their own supplies is not a good idea. If they do not realize this tell them to get two mules each to be on the safe side.
 
 The vehicles in the transport table are all less cost effective than animals. It’s hard to keep machines running in the wilderness and their key value is transporting big heavy things that a single mule or camel couldn’t manage like magical sarcophagi, golden idols, and glass cannons.
 
-**Rules Relocated**
-
-See [UVG Vehicle Operation Overlays](#uvg-vehicle-operation-overlays).
-
+See [UVG Vehicle Operation Overlays](#uvg-vehicle-operation-overlays), and [Vehicle Load and Upgrade Rules](#vehicle-load-and-upgrade-rules).
 
 | Transport | Lvl | Description | Capacity | Speed | Requires | Cost |
 |:---|---:|:---|:---|:---|:---|---:|
@@ -2621,12 +2389,6 @@ See [UVG Vehicle Operation Overlays](#uvg-vehicle-operation-overlays).
 | Meat Crawler | 8 | A gruesome centipede of meat and bone. Very, very slow and smelly. | 24 sacks | v v slow | necromancy | €4,000 |
 | Epic Floating Barge or Hover Wagon | 4 | Magical float from Long Ago, it can be pulled by a single creature (not included). Very fragile and may be disabled by a single well-placed shot. | 20 sacks | normal | a human or animal | €7,500 |
 | War Engine | 11 | It’s a tank? To eleven? Ninety tons of thunder, lighting up the night. | 36 sacks | v slow | 2 supply | €20,000 |
-
-
-
-**Rules Relocated**
-
-See [Vehicle Load and Upgrade Rules](#vehicle-load-and-upgrade-rules).
 
 #### Humanoids
 
@@ -2661,6 +2423,15 @@ Managed with threats and fear. Isn’t paid wages. Slavery is evil.
 
 Tough professional. Skilled at packing and carrying stuff, preparing supply depots, and surviving in the wilds.
 
+**Slave Porter**
+
+- **Capacity:** 2 sacks
+- **Cost:** €600
+- **Consumes:** 1 supply per week
+- **Speed:** Normal
+
+Like a porter, but less free and more resentful.
+
 #### Humanoid Add-ons
 
 **Explosive Collar:** €20
@@ -2672,8 +2443,6 @@ Faced with certain death (cranial separation) vs possible death (an ancient tomb
 **Surgical Obedience:** €50, 50% chance to kill the participant. With a sharpened spoon, some ultratech crystal neuron lances, strong drugs, and a bit of elbow grease, a (un)licensed neurochirurge will carve away the unpleasantly disobedient bits of a brain. Survivors will cheerfully obey any order. Eat my fingers? You’ve got it, Boss! Charge that hydratiger? I’m on it, yippee! Considered a bit too evil by even the most jaded evil warlords.
 
 **Fabricated Backstory:** €10 For a nominal cost, the Psychefactors of the Emerald City will root through a subject’s psyche, extract their most shameful deeds, and write a brief report. Slavery feels more tolerable if you think the victims deserve it. Up to 20% of shameful deeds may be filler inserted by the Psychefactor to maximize moral superiority.
-
-
 
 #### Undead
 
@@ -2736,8 +2505,6 @@ What do you do if you come across a plague pit and have both a necromancer and a
 **Skin tent:** €200
 
 A yurt of leather and sinew growing on the meat crawler’s back. Space for up to 12 humans with good nasal filters.
-
-
 
 #### Beasts of Burden
 
@@ -2828,8 +2595,6 @@ This convenient surgical upgrade stores gaseous digestive byproducts in a small 
 
 **Plug-in Battery:** €200 Occupies 1 sack. A rechargeable golem-style battery for backup power. The beast can go without grazing for up to four weeks (it still requires water). Alternatively, the battery can recharge a suit of golem armor or other oldtech artifact. Recharging the battery takes a couple of hours at any oldtech charging platform or obelisk.
 
-
-
 #### Wagons, Carts, and Coaches
 
 Wheels transformed proto-human lives. The semi-simians began moving large quantities of supplies over long distances. Truly nomadic lifestyles became possible and the humble wheel truly became a symbol of humanity. There would be no modern Grasslands without that ancient round machine.
@@ -2912,8 +2677,6 @@ Sometimes, all the good loot is buried at the bottom of a lake. The vehicle is v
 
 **Gyrocoptic:** €1,000 Flying in the Ultraviolet Grasslands is a bad idea. Bits of invisible stuckforce shred aircraft. Purple haze rots your brain. Dormant anti-missile defense systems wake up and think "Oh, that looks interesting." Still it beats walking. A caravan with a flying vehicle gains advance warning of most encounters. Fliers ignore terrain.
 
-
-
 #### Wicker Autowagon
 
 - **Capacity:** 3 sacks
@@ -2992,8 +2755,6 @@ Occupies 1 sack. Can hold 1 sack of valuables in a spirit-locked steel egg. Proo
 
 Medium range. Fills a medium-sized area with opaque smoke. Makes shooting or boarding a caravan difficult, but tends to attract attention. Additional colors available for a small fee.
 
-
-
 #### Generic Vech, Porcelain or Prismatic Walker
 
 - **Capacity:** 12 sacks
@@ -3042,8 +2803,6 @@ Occupies 1 sack. The whole vech is covered in a reflective glaze that protects f
 **Grazer Unit:** €3,000
 
 A mechanical mouth and biomatter converter. Now the walker can feed itself by grazing ... or recycling dead bodies.
-
-
 
 #### Autogolem
 
@@ -3126,308 +2885,3 @@ Occupies 4 sacks, requires 1 engineer. Boilers, furnace, maw, scrapers, smokesta
 Occupies 6 sacks. A black tower of steel and rivets and chrome blades rises from the middle of the war engine. It looks scary. Loudspeakers and light show included.
 
 **Trophy Room:** €2,000 Occupies 12 sacks. Essentially, a mobile feasting hall the size of a longhouse with room for a dozen guests.
-
-
-
-#### Transport Fixes & Features
-
-**Vehicle Features**
-
-| d20 | Brands of Long Long Ago | Dubious Features |
-|---:|:---|:---|
-| 1 | Macaroni Integrale | Self-threading caps |
-| 2 | Atomkraftwagen | Anti-tampering engine configuration |
-| 3 | Spitz-Schnauzer | Synchrotronic gearbox |
-| 4 | Deus Machina | Electric transix variator |
-| 5 | Olive Garden | Dilithium superfluid compressors |
-| 6 | Singer Metal Humans | Dante’s Gate propulsion unit |
-| 7 | Void Y | Microhydraulic homeostatic brain |
-| 8 | <=5H1N3=> | Inhalator body air scoops |
-| 9 | Vanta-Chouette | Anti-rapture heartbeat sensors |
-| 10 | AXE Vehicle Lubricants | Nine-axis suspension struts |
-| 11 | Podzol Kozmos | Swivel bucket seats |
-| 12 | Vega Utopia Industries | Gyroscopic auto-leveler |
-| 13 | Barca Real ESL | Automatic anti-crash foam nozzles |
-| 14 | Omnisentience UI | Extruded poly-chromium trim |
-| 15 | Langmorgen KNVX | Telepathic key systems |
-| 16 | Three Ritual | Extensible omniadaptors |
-| 17 | Aquarius | Trained underbody rust slimes |
-| 18 | Maya Yuga | Mercurial dimagnetic levitation bearings |
-| 19 | Feltz & Filtz | Ghost-bone dry-clutch |
-| 20 | Sombrero Corporation | Hydrophobic faux-fur seat covers |
-
-**Vehicle Trouble**
-
-| d20 | What Broke? | How Do We Fix It? |
-|---:|:---|:---|
-| 1 | Sparkulators clogged. | Take ‘em out & file them. |
-| 2 | Lightning whirler isn’t whirling. | Squint and twiddle some screws. |
-| 3 | Fuel tube burst. | Run a new one. |
-| 4 | Brakes gone. | It’ll probably be fine. |
-| 5 | Flat tire. | Get the tools, patch ‘n’ swap. |
-| 6 | Radumilator blown. | Keep adding fluids on the go. |
-| 7 | Fuel pump seized. | Probably need a new one. |
-| 8 | Won’t hold pressure. | Time for bubblegum welding. |
-| 9 | Carbassimilator stuck. | Hit it with a wrench. |
-| 10 | Wheel bearings locked up. | Grease and hammer. |
-| 11 | Threw a belt. | Find something long & stretchy. |
-| 12 | Radiothermals leaking. | Duct tape time. |
-| 13 | Confuser unit ERROR. | Diagnosticator red button time. |
-| 14 | Transmission goes "clunk". | Take the whole thing off. |
-| 15 | It goes "grrtschuktuktuk." | Don’t use that gear. |
-| 16 | Thorbox won’t charge the battery. | Replace it. Maybe with a Zeusbox. |
-| 17 | Omnibattery won’t hold a charge. | Chemical ritual time. |
-| 18 | No dead dinosaur juice. | Get more juice. Add more juice. |
-| 19 | Hole in the metal-fragment shield. | Patch it, add liquid, pray. |
-| 20 | Piston went to space. | Needs a full rebuild. |
-
-**Animal (or Human) Trouble**
-
-| d20 | What’s the Matter? | How Do We Fix It? |
-|---:|:---|:---|
-| 1 | Threw a shoe. | New shoe (and maybe a farrier). |
-| 2 | Perambulator tendon pulled. | Long rest and light duties. |
-| 3 | Infected spottle-fly bites. | Apply soothing Liger balm daily. |
-| 4 | Runny yellows from bad water. | Antidiarrheals and extra water. |
-| 5 | Noxious flatulence. | Regular bleeding. Leeches? |
-| 6 | Secondary head growth. | Surgical decapitation. |
-| 7 | Sprained primary foot joint. | Rest, compression, pain killers. |
-| 8 | Gangrenous amoeboid cyst. | Limb amputation. Or antibiotics. |
-| 9 | Broken walker appendage. | Needs a new leg. |
-| 10 | Infectious omnivampirism. | Daily blood rations. Or a stake. |
-| 11 | Eye fell out. | A fresh optic seed. Or a patch. |
-| 12 | Bullet hole out of nowhere. | Duck and cover! Then bandage. |
-| 13 | Sudden philosophical bent. | Teach them to keep a journal. |
-| 14 | Intense and constant hunger. | Extra rations. De-worming pills. |
-| 15 | Hair loss and vomiting. | Anti-radiation medicine. |
-| 16 | Tremors and loss of motor control. | Please visit a neuromancer. |
-| 17 | Dryland flu. | Anti-virals and quarantine. |
-| 18 | Vivid hallucinations. | Dark glasses? |
-| 19 | Creeping, cosmic ennui. | Hide the pain, Kharold. |
-| 20 | Freak cosmic ray mind wipe. | Needs a new personality. |
-
-
-
-
-## Curios and Souvenirs
-
-
-#### 100 Strange Items
-
-Found on a defeated creature or a sleeping traveler. Give one or both, as you prefer. The values in brackets are optional and don’t apply if there is a larger quantity of treasure. Obviously.
-
-1. Fossil skull inscribed with the Blue God’s accursed iconographs _or_ mirrored cowries (€5).
-2. Moss-covered human-bone elven flute _or_ moon coins (€5).
-3. Clockwork brain adjustment worm _or_ ivory chips (€5).
-4. Carving stone, very hard, perfect for writing deep dwarven poetry _or_ corundum dust (€10).
-5. Black mirror, mysterious _or_ trading sticks (€1).
-6. Tar candle, burns green _or_ clay seals (€5).
-7. Water-finding walking stick, Woodlander _or_ copper wire (€3).
-8. Memetic face-stealing mask _or_ vampire ash (€7).
-9. Horn of a great ram, filled with maggots _or_ bone coin (€5).
-10. Porcelain eye full of poems _or_ lapiz plug (€5).
-11. Spirit rope from herbal fibres _or_ silver wire (€10).
-12. Chroma flashlight, sun-charged _or_ pickled kumquats (€10).
-13. Ruby scalpel, sharp as a harpy’s tongue _or_ saffron sachet (€10).
-14. RLD pigeon with recording eyes _or_ blood porcelain stick (€10).
-15. Synth-skin backpack _or_ coral seed chip (€20).
-16. Fine chitin-woven boots _or_ lead coins (€1).
-17. Pen with hypodermic injector _or_ crystal coin (€10).
-18. Silver-banded ceramic wristwatch _or_ yellowlander scrip (€10).
-19. Half-There Isles fishing rod, collapsible _or_ malachite cogs (€13).
-20. Samovar and powerful cat coffee _or_ fastfoot teeth necklace (€7).
-21. Light-focusing crystal assembly, good for starting fires _or_ crystal rat skull (€15).
-22. Chitin chest with scalpels and saws _or_ silver shovel coins (€15).
-23. UV Cream+ against radiation _or_ silver finger bones (€15).
-24. Iconic White City rubber & silk breather suit _or_ jaspis ring (€15).
-25. Silk rope with spider eggs _or_ jade discs (€30).
-26. Surprisingly large and beautifully decorated Steppelander hat _or_ unlucky dice (€1).
-27. Greenlander tin of moustache wax, Petrolflower brand _or_ silvered marbles (€11).
-28. Unrusting odd-iron rod (1d6), marked with intricate patterns _or_ blue stone coins (€15).
-29. Tough poncho w. mutated beast teeth _or_ bronze bracelets (€15).
-30. Taxidermied Cat with pearl eyes and gold claws _or_ emerald city plastic scrip (€19).
-31. War vome brain in a lead-lined plaz box _or_ yellow bone coins (€20).
-32. Suspension cube powder in a static jar _or_ Violet City Coins (€20).
-33. Black iron & gold telescope w. crystal lenses _or_ iron coins (€20).
-34. Half a black moon key that opens the entrance of a deadly portal _or_ gold ring (€40).
-35. Half a white sun key that opens the _exit_ from a deadly portal _or_ strange tooth (€1).
-36. Holy Cogflower grammar book _or_ bronze grappling hook (€20).
-37. Mirrored Redland District sunglasses _or_ platinum coin (€20).
-38. Case of Redland wines, good vintage _or_ jade egg (€28).
-39. Orangeland metal guitar _or_ pit coins etched with faces (€12).
-40. Pouch decorated with dogs and flowers, inside dog’s tail root _or_ lapiz lazuli bracelets (€20).
-41. Bottle of Marmotfolk snake oil _or_ brass pipettes (€25).
-42. Diesel dwarf solar battery _or_ golden needles (€25).
-43. Mechanic’s chest with manual on walker maintenance _or_ malachite spoons (€25).
-44. Set of keys to an autowagon, a shopping list, and an obscure reference to a car gnome cult _or_ silver earrings (€25).
-45. Deed to a pair named Smart and Smarter _or_ silver pennies (€17).
-46. Ancient briefcase filled with old notes on a self-assembling walker _or_ ivory scales (€33).
-47. Alien gun (2d8), covered in a non-repeating pattern _or_ sanguine porcelain beads (€30).
-48. Bone quiver w. ivory arrows covered in quarterling poisons _or_ platinum lockpick (€30).
-49. Violet city lapis cat claw gauntlet (1d4) _or_ ivory rings (€30).
-50. Yellowlander gentleman’s helmet, with head still inside. In the mouth, a misread map to a buried treasure _or_ silver chain (€35).
-51. Assisted mecha-crampons and leather shorts _or_ gold wire (€35).
-52. Mechanical wind-up accordion _or_ silver darts (€35).
-53. Iridescent scale tent (Onion-and-Skull) _or_ platinum nails (€35).
-54. Vile psionic soul-stripping crystal, currently empty _or_ mummy ash pellet (€39).
-55. Bush doctor manual with living plants growing in its leaves _or_ tooth coins (€31).
-56. Autonom kit to create a synthetic organism -- only missing a brain _or_ glass brain bits (€35).
-57. Meta-Classical porcelain and synthetic sinew neural whip (1d8) _or_ stuckforce amulet (€35).
-58. Furry synthetic skin saddlebags stuffed with ammunition _or_ ur-obsidian test tubes (€70).
-59. Fancy Emerald City chain sword (1d10) _or_ empty batteries (€1).
-60. Dancing golden hamster in a silver cage, intelligent and knows of a secret deep road between two locations _or_ rare lard (€35).
-61. Polished carbon and electrum bardstone loaded with 256 songs _or_ bronze scalpels (€40).
-62. Spidersilk sack of Iron Kitty cat food _or_ silver shot glasses (€40).
-63. Chitin bustier with secret stash & a treacherous love letter _or_ tourmaline spheres (€47).
-64. Sky tree cloud-sucker net, recovers a bottle of water from air per day _or_ ling jerky (€33).
-65. Golem fire-projector eye (2d6) from a defense golem turret _or_ steel thread (€40).
-66. Spectrum Satrap crystal spear with a stored fire spell _or_ silver manacles (€40).
-67. Ur-glass brain of a Long Ago thief who stole abmortality from a Vile monarch _or_ gold neck rings (€40).
-68. Itinerant Inquisitor battle robes (armor +3) stained with thermophobic blood _or_ heretic ash pellets (€80).
-69. Rainbow ceramic hammer (1d10) of Jesus Thor, price tag missing _or_ dried sheep pellets (€1).
-70. Mouse biosculpted with two bat wings and a marsupial pouch _or_ titanium lock (€40).
-71. Prosthetic biomechanical arm with sword-fighting wrist augmentation _or_ bolt of rainbow silks (€500).
-72. Black barrel of yellowing arcane yoghurt _or_ wreath of malleable livingstone (€200).
-73. Chitin shield with biomechanical snakes woven into the boss _or_ scroll cases filled with arcane weather poetry (€100).
-74. Cyan lightmetal helmet with haze purifiers _or_ off-brand saffron briquettes (€150).
-75. Decapolitan guide to intrigue and war for beginners _or_ fancy chicken (€250).
-76. Ur-obsidian bottle of ancient fire water _or_ crystal and gold hypodermics (€300).
-77. Fetish servant made of giant centipede limbs, luminescent wood, and quarterling bones _or_ supply of felix whizz (€350).
-78. Bio-necromantic preserver parasite, keeps freshly dead ‘alive’ _or_ last steel nodule (€400).
-79. Lingish personality rewiring headphones _or_ vidy crystal with tales of a heroic age (€450).
-80. Sand dragon bone golem dog (L3, loyal, tough) _or_ rainbow joy worm (€550).
-81. Prohibited radiation gun from Long Long Ago (3d8) _or_ bi-mannerist porcelain vase set (€600).
-82. Ceramic energy container, in a pinch: a grenade _or_ silver and gold caltrops (€650).
-83. Idio-Brutalist ka-ba maintenance body, can preserve one soul-personality for centuries _or_ black light lotus pills (€700).
-84. Animated bone-work snake (L2, chuckling), can follow up to five simple commands _or_ Blue heresy poem cylinders (€750).
-85. Amber levitating disc of force and force control glove _or_ twin set of ultra jay needles (€800).
-86. Badass bandana, decorated with a map to a cursed treasure _or_ corundum drill bits (€850).
-87. Animated metaskeleton fungus horse (L2, carry 3) _or_ distilled personality juice (€900).
-88. Mind-burner hypnogun (deals Thought damage) _or_ karma dust plates (€950).
-89. Lumin shrubbery in a porcelain pot _or_ soul stone (€1,000).
-90. Old-fashioned and uncharismatic machine human butler (L1, etiquette protocols) _or_ bone coins of passage (€1,500).
-91. Set of six Rainbow grenades (3d6*, thrown) and a contract to destroy an ultra hideout _or_ azure energy charge coins (€2,000).
-92. Ancient Vile supersoldier serum, mostly works (increase 2 physical stats by 1d4-2, reduce 1 mental stat by 1d4-2) _or_ deep purple energy cubes (€2,500).
-93. Lingish disintegrator ray (3d6*, near) wrapped in the will and testament of an autofac architect _or_ weed of worship (€3,000).
-94. Golem servant (L2, kindly) and vidy player, loaded with a plaz steel vidy of machine rituals for opening the corners of the world _or_ Pre-Chromatic canon crown (€4,500).
-95. Kangaroo bag with a soulfire golem battery _or_ collectible set of vech activation cards (€5,000).
-96. Vome assimilator suit kit with command parasite _or_ Rider Years skin figurines (€6,000).
-97. Ultra communicator and soul translator, holds the final destination of the Zombie Democracy _or_ mythogogic diamond necklace (€7,000).
-98. Rainbow-feathered two-legged riding vech (L5, fast, carry 4) _or_ purger trophy (€8,000).
-99. Rare close combat weapon (1d12*) from when the Fast Stars shone, cursed by its last owner _or_ starbloom souvenir (€9,000).
-100. True prophecy in the memories of a grey ooze (L5, assimilating swarm) held in a stasis jar _or_ a first seed (€10,000).
-
-
-
-
-
-
-
-#### OGA Heliodor Mercantile Standard Goods
-
-This established merchant luxuriates in their established form:
-
-1. chitinous echinoderm vech,
-2. permaderm stonelocked lithic machine,
-3. hollowbrain golem man-carrier,
-4. brain in a vat of finmath augmentation juice,
-5. neurally augmented ambulatory spiniferous shrubbery,
-6. superior laminated plastic human with Good Looks™ upgrade.
-
-#### This Liberated Trader
-
-_"They don't make 'em like ole' Vidyscreen_ _Venera anymore. Look at this raw_ _throughput! The dynamic error control._ _The delicate embossing. The cryptorchid_ _watermarks. She chungs out ten faux-_ _dream vidyscreens a day and we, her_ _veneralboys, we're the only retailers. You_ _want a vidyscreen like they had in the old_ _days, dontcha? Special price, just for you_ _my high frontier friend, €349. Less than a_ _yearslave!"_ —Veneralboy Ta Vera,
-
-Traducive Electromagics
-
-Sym., HS2-1 "Dream"
-
-Anyone can be a merchant in the
-
-Yellow Land. Everyone is a merchant in the Yellow Land. What are you if not a merchant when you buy your life cheap from your Maker and sell it dear to your owner of common capital and maker of beloved goods? If you are not a merchant, are you even a citizen?
-
-Admittedly, most Yellow Land merchants are so far down the mercantile guild hierarchy that in another land they might be called workers-at-gigs or labor-beggars, yet—if they are citizens, they are guild members and thus own a coveted merchant evidence dragon spirit neck-lock chit.
-
-| d6 | Vendor | Personality | Specialty | Quirk |
-|---:|:---|:---|:---|:---|
-| 1 | Martial Pung Soothers | gurgling, staring, smiling | singing burdenbeasts | goods may emit uncanny odors |
-| 2 | Speculative Dynamics | hacking, reedy, wired | repurposed coproliths | serious stone golem compatibility |
-| 3 | Torsion Exopneumatics | bubbly, glossy, gilded | scavenged neoldtech | boiled-off serial numbers |
-| 4 | Pisces Exactomart | slippery, slimy, grimy | simulated psychoactives | expose to water for new features |
-| 5 | Chortley's Chopshop | growing, glowing, fanged | autonomous devices | living equipment or your skin back |
-| 6 | Soilborn Soul Systems | venomous, toxic, hot | aerosolized entertainment | products may exhibit soul leakage |
-
-#### Consume To Create
-
-| d6 | Item | Description | Price |
-|---:|:---|:---|:---|
-| 1 | Wolfwillow Sticks | Fried ambulatory wolfwillow limbs. A mildly toxic protein-rich crunch. | €1 |
-| 2 | Dwarfermite | Delicious black petrochemical spread. Keep away from sunlight or it may explode. | €2 |
-| 3 | Dustrancher Jerky | Made from dust ranch rats, not ranchers. Keeps forever. Add water to swallow. | €3 |
-| 4 | _Amuse_ Cube | Compact generative flavor meal. Taste changes with each bite! No regrets! | €6 |
-| 5 | Oldtech Synthmeal | Ultra-processed géant nutrifac packets. Forgotten spices and possibly indigestible. | €10 |
-| 6 | Goldrhyme Pasta | Thick saffron and algae carbohydrate slabs. Hallucinogenic in large doses. | €15 |
-
-
-
-#### Fashion For You
-
-| d6 | Item | Description | Price |
-|---:|:---|:---|:---|
-| 1 | Duster Vest | Lightweight aridwear. Looks 'authentically' native. Reduces water needs. Armor +2, 1 st. | €10 |
-| 2 | Cactuskeleton | Thorny symbiotic armor. Deals 1d4 damage to melee attackers. Feed it your life to increase its armor value (1 for 1) for a few hours. Armor +3, 1 st. | €75 |
-| 3 | Hallucinosilks | Adapted flowing opera robes confuse attackers, granting you a 50% chance to dodge the first attack that would hit you in combat. Armor +1, ward +2, 1 st. | €150 |
-| 4 | Géant Bark Skin | Lightweight terraforming tree plates absorb up to 10 points of damage. The bark has 10 life and regenerates 1 per day. Armor +3, ward +1, 2 st. | €300 |
-| 5 | Vulcanized Suit | Reduces incoming damage by 1 and grants electrical immunity. Armor +2, ward +2, 2 st. | €600 |
-| 6 | Phylake Feathers | The super-real frock lets you spend 1d4 life to avoid one hit per round. Ar +2, wrd +4, 1 st. | €1.2k |
-
-#### Self Defense Systems
-
-| d6 | Item | Description | Price |
-|---:|:---|:---|:---|
-| 1 | Yellow Spear | Metal-and-synthbone stepper polearm. Spend 1 life: it glows for an hour. Reach, 1d10, 2 st. | €25 |
-| 2 | Rib Bow | Self-winding crossbow from dead machine géant ribs. Long, 1d8, reliable, 1 st. | €100 |
-| 3 | Spicegun | Fires hallucinogenic saffron darts. Save or confused for 1d4 rounds. Long, 1d4, 1 st. | €200 |
-| 4 | Bloodthorn Tendril | With each new foe struck, more thorns grow, granting +1 damage. Without fresh blood, excess thorns wither after 15 minutes. Reach, 1d6, 1 st. | €250 |
-| 5 | Mood Blade | Your emotions fuel its elemental expression. Rage gives ice, fear emits fire, hate sparks electric, jealousy spits acid. Close, 1d8, 1 st. | €450 |
-| 6 | Scalar Axe | Adamant-cut from a sand-dragon scale. Ignores 1 + str points of armor. Close, 2d6, 2 st. | €750 |
-
-#### Personal Travel Expression (Heliodor)
-
-| d6 | Item | Description | Price |
-|---:|:---|:---|:---|
-| 1 | Autorickshaw | The self-balancing foot-powered cart of the masses. Cheap, rugged, dubiously branded. L2, carry 2, slow, more-terrain. +€200 for an integrated **runmonculus** (L1, automaton). | €100 |
-| 2 | Dieseler Discus | Dwarfer hover-disc improvised from off-the-shelf procedural oldtech remnants. Terrible fuel consumption. L3, carry 4, levitating. Propeller fans cost an extra €300. | €400 |
-| 3 | Solar Steed | Photosynthetic equine golem. Supercharges by day. L2, carry 2, fast (day), slow (night). | €700 |
-| 4 | Skitterloose | Megamorphic symbiote grown from géant tissue using reasonably cheap arthropod source codes. L3, carry 2, all-terrain, self-repairing, regenerating. | €1.8k |
-
-#### Saffron Souvenirs Inc. Sym.
-
-| d10 | Item | Description | Price |
-|---:|:---|:---|:---|
-| 1 | Original Carbon | Authentic pre-human seeding fossil. Heretical? An excellent paper weight. 1 st. | €5 |
-| 2 | Thornskin Wallet | Ethically sourced adapted prickly human leather. Self-sealing if cut. 2 sp. | €10 |
-| 3 | Poncho Keychain | Protects from sun, heat, and (some) mind-affecting rays. Folds into a keychain! 1 sp. | €25 |
-| 4 | Ranch Egg | Incubate your burdenbeast! Corruption leak a risk. Training manual not included. 1 st. | €45 |
-| 5 | Oldtech Table | Grows to full size and generates a breathable atmosphere. Consumes 1 life per hour. 1 st. | €95 |
-| 6 | Vital Thornseed | Water with 1 life's worth of blood to grow an instant barricade, entangling trap, or crawling caltrop. Warning: may root in flesh, handle with care. 1 sp. | €150 |
-| 7 | Hollow Compass | Spend 1 life and 5 minutes to generate a small-scale 3D radiant illusion map of surrounding structures. Great for navigating ruins! May attract **hollow eaters** (L5, interstitial). 1 st. | €200 |
-| 8 | Song Barnacles | Plant in your throat to taste color and sing in five octaves. May turn your speech into minimalist tonal polychrome music. | €350 |
-| 9 | Fossilblood Nose | Vibrates near petrochemicals. Explodes if used too vigorously (large 6d6* fireball). 2 st. | €750 |
-| 10 | Voting Parasite | Looks like a livinglass seadragon-salamander hybrid. Attach to your spine to gain +1 ward and voting rights in your local Decapolitan city-state. Rebinding to a new city takes €1.5k, 1 week and 2d6 life. 5 sp (none if attached). | €1.5k |
-
-
-#### Curios Et Knick Knacks
-
-| d10 | Item | Description | Price |
-|---:|:---|:---|---:|
-| 1 | Amusebox | Procedural human culture generator. Makes the days pass less painfully. 2 st. | €1 |
-| 2 | Shadowseeds | Plant in a bit of aerolith, water, and grow a portable air-purifying parasol! 1 sp. | €5 |
-| 3 | Rootdrinker | Fungus-and-glass bottle. Draws sweet water from trees. Feeds one person per day. 1 st. | €15 |
-| 4 | Groombat | A pet (L0, cute) bioengineered to care for plants and humans with plant symbiotes. 1 st. | €25 |
-| 5 | Soulsniffer | This modified leech (L0, not cute) is drawn to souls. Used to find the soulless. 1 sp. | €100 |
-| 6 | Copy Me | Beast-egg matter keyed to your essence. Duplicates in a week. Soul not included. 1 sk. | €750 |
-| 7 | Miller's Mud | Leftover soulmatter from the soul mills. Holds 1d100 life. Useful for powers. 1 sp. | €1.5k |
-| 8 | Shipsilk | Illegal extra-cosmic material. Impenetrable to divine sight. Bed-sheet sized. 1 sp. | €7k |
-| 9 | Buildergoggles | Living glasses with trapped daemons who report on the makeup, technomagical status, and psychic essence of things. Look ridiculous (charisma -1). 1 st. | €13k |
-| 10 | Legacy Pass | Proof that you are one of the original baseline humans born Long Long Ago. 1 sp. | €29k |

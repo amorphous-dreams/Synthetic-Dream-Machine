@@ -34,6 +34,8 @@
 - Growing-through-play rules are in Quickstart and promoted to chapter-level visibility.
 - Gear chapter points to Quickstart for core mechanics and caravan/trade procedures.
 - Gear chapter remains focused on catalogs/tables and gear-specific rule lanes.
+- VLG character-equipment core procedures are canonical in Quickstart (`VLG Character Equipment`, `Slots and Sizes`, `Available Items and Packed Items`, `DROPPING ITEMS`, `IMPROVISING WITH ITEMS`, `STARTING CASH`).
+- Gear `Catalog-Derived Rules` now keeps only pointer links for those core procedures.
 
 ## Active Work Queue
 1. Keep Quickstart/Gear boundary clean:
@@ -47,6 +49,9 @@
 3. Source maintenance pass (OGA/VLG/UVG):
 - verify no core mechanics remain stranded in Gear when they belong in Quickstart.
 - verify no catalog/tables remain stranded in Quickstart when they belong in Gear.
+4. Character Creation lane follow-up:
+- keep `BACKGROUND TRAIT`, `PATH TRAIT`, and `FREE TRAIT` canonical in their index chapters (Traits/Paths), not Quickstart core.
+- keep `ONE STRANGE ITEM`, `VLG One Useful Kit`, and other catalog-heavy item tables in Gear.
 
 ## Definition of Done
 - Quickstart contains canonical core mechanics and caravan procedure blocks.

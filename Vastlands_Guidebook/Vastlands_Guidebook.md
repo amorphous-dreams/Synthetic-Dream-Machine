@@ -1755,7 +1755,9 @@ The PCs can try to do anything that makes sense in their situation. They are not
 
 How do PCs get things done?
 
-1. The referee presents a challenge. 2. The PCs choose their approach. 3. The referee gives clear feedback on the costs and odds of a chosen course of action.
+1. The referee presents a challenge.
+2. The PCs choose their approach.
+3. The referee gives clear feedback on the costs and odds of a chosen course of action.
 
 4. The PCs confirm or revise their approach.
 
@@ -1927,11 +1929,9 @@ Most NPCs are not mindless abominations out for bile and blood. People and creat
 When a conflict breaks out, play proceeds in rounds.
 
 1. Each round the sides roll initiative.
-
 2. Then, the side that won initiative acts.
-
-3. Next, the side that lost initiative acts. 4. If one side suffered badly this round, the referee may decide they need to roll morale.
-
+3. Next, the side that lost initiative acts.
+4. If one side suffered badly this round, the referee may decide they need to roll morale.
 5. Then, the round ends.
 
 The **length of a round is cinematic**, not precise. It’s long enough to do something meaningful. In a duel, a round might last mere seconds; with submarines chasing each other, it might last hours.
@@ -1972,7 +1972,14 @@ The actions described in the following paragraphs are ideas for things character
 
 You’re mostly moving around, maybe doing something else not too involved, like unholstering a carbine, reloading a carbine, or wondering whether you left your stove on when you left your house this morning to explore the sewers.
 
-1. **Disengage.** Carefully, guarding against counterattacks, you back away from close combat. You move nearby, just out of reach. 2. **Flee.** Carelessly, you turn your back on your melee opponent and head far away. Your foe gets a free attack. Probably with a bonus. Foes with guns may also get free attacks. Beware. 3. **Move.** You move nearby. Right there. No sweat, just a nice easy walk. You could combine this with readying a weapon to catch foes doing funny stuff. 4. **Sprint.** You move somewhere farther away, over there. Just as fast as you can. Look out, you might trip on some obstacles, and if there are enemies about, they may get a free attack. 5. **Charge.** You rush a nearby creature, getting a bonus to your attack. Attacks against you also get a bonus until your next turn. 6. **Swing on Chandelier.** Or other swashbuckling affair. Lovely use of the environment. Roll agility. Success: a bonus with your next action (probably an attack combined with the swing). Failure: your foe gets a reaction attack with a bonus, or you’re put into a humorously compromised position. 7. **Climb a Ladder.** Depending on ladder length, that’s probably all you’ll reasonably do this turn. 8. **Drive.** Or direct a ridestrich. Steering, not crashing.
+1. **Disengage.** Carefully, guarding against counterattacks, you back away from close combat. You move nearby, just out of reach.
+2. **Flee.** Carelessly, you turn your back on your melee opponent and head far away. Your foe gets a free attack. Probably with a bonus. Foes with guns may also get free attacks. Beware.
+3. **Move.** You move nearby. Right there. No sweat, just a nice easy walk. You could combine this with readying a weapon to catch foes doing funny stuff.
+4. **Sprint.** You move somewhere farther away, over there. Just as fast as you can. Look out, you might trip on some obstacles, and if there are enemies about, they may get a free attack.
+5. **Charge.** You rush a nearby creature, getting a bonus to your attack. Attacks against you also get a bonus until your next turn.
+6. **Swing on Chandelier.** Or other swashbuckling affair. Lovely use of the environment. Roll agility. Success: a bonus with your next action (probably an attack combined with the swing). Failure: your foe gets a reaction attack with a bonus, or you’re put into a humorously compromised position.
+7. **Climb a Ladder.** Depending on ladder length, that’s probably all you’ll reasonably do this turn.
+8. **Drive.** Or direct a ridestrich. Steering, not crashing.
 
 **Attack Actions**
 
@@ -1980,23 +1987,39 @@ Attacks are actions taken to directly damage your foes.
 
 Melee, ranged, oldtech, and fantascience are the four most common types of attacks, but others types are also possible. Traits and gear can unlock attacks with special effects, bonuses against specific targets, in certain environments, or from a character’s abilities.
 
-1. **Attack.** An adjacent foe with a melee weapon, or a more distant enemy with a suitable ranged weapon. 2. **Skirmish.** You hop from behind cover, fire off a round, and hop back. The mobility isn’t great, but cover protects. 3. **Careless Attack.** Attack with no regard for your safety. Get a bonus on your attack, but if your enemy survives they get a free counterattack. 4. **Ready Attack.** Prepare to counterattack if a foe comes in range. If that happens, your attack resolves before your enemy’s. If it doesn’t come in range, your attack is wasted. The referee can use oracle dice to decide what enemies do, to keep things fair. 5. **Suppressing Fire.** Lay down arrows, bullets, or maser blasts, imposing a penalty on your foes’ rolls. 6. **Furious Attacks.** Roar as you unload your magazine into the monstrous rabbit of Blaargh. Spend your turn hacking away like a human possessed. No moving, no tactics, and your foes get a bonus against you on their turn, but you attack twice.
+1. **Attack.** An adjacent foe with a melee weapon, or a more distant enemy with a suitable ranged weapon.
+2. **Skirmish.** You hop from behind cover, fire off a round, and hop back. The mobility isn’t great, but cover protects.
+3. **Careless Attack.** Attack with no regard for your safety. Get a bonus on your attack, but if your enemy survives they get a free counterattack.
+4. **Ready Attack.** Prepare to counterattack if a foe comes in range. If that happens, your attack resolves before your enemy’s. If it doesn’t come in range, your attack is wasted. The referee can use oracle dice to decide what enemies do, to keep things fair.
+5. **Suppressing Fire.** Lay down arrows, bullets, or maser blasts, imposing a penalty on your foes’ rolls.
+6. **Furious Attacks.** Roar as you unload your magazine into the monstrous rabbit of Blaargh. Spend your turn hacking away like a human possessed. No moving, no tactics, and your foes get a bonus against you on their turn, but you attack twice.
 
 <a id="page_0049"></a>
 
 **Tactical and Support Actions**
 
-1. **Take Cover.** You dive behind suitable terrain. Ranged attacks against you suffer a penalty. 2. **Hide.** Make yourself discreet, so you can’t be targeted. Requires suitable cover or camouflage gear and a successful agility or thought roll. 3. **Sneak Away.** If enemies can’t see you, you can move to a different location and surprise them, or flee without getting attacked. 4. **Reload.** Some complicated or big weapons need a full action to reload.
-
-5. **Grab On.** Grab hold of a target. Probably requires a strength or agility roll. It can’t move away without dragging you along. 6. **Hang On.** A kaiju lumbering away? Roll endurance or agility to hang on. 7. **Hold Down.** Smaller? Make a strength roll to pin down a grabbed target. A pinned creature can’t move or attack anyone except you.
-
-8. **Help Hold.** Rush in to help an ally hold down a pinned target. It suffers a penalty to breaking loose. 9. **Shake Off.** Attack an enemy that has grabbed or pinned you.
-
-10. **Defend.** Turtle down and don’t attack this round. Attacks against you suffer a penalty. 11. **Protect.** Bat away blows against a target. Attacks against it are rolled with a penalty. 12. **Drag Away an Ally.** Get your friend to safety. If they are conscious, they might struggle, forcing a strength roll.
+1. **Take Cover.** You dive behind suitable terrain. Ranged attacks against you suffer a penalty.
+2. **Hide.** Make yourself discreet, so you can’t be targeted. Requires suitable cover or camouflage gear and a successful agility or thought roll.
+3. **Sneak Away.** If enemies can’t see you, you can move to a different location and surprise them, or flee without getting attacked.
+4. **Reload.** Some complicated or big weapons need a full action to reload.
+5. **Grab On.** Grab hold of a target. Probably requires a strength or agility roll. It can’t move away without dragging you along.
+6. **Hang On.** A kaiju lumbering away? Roll endurance or agility to hang on.
+7. **Hold Down.** Smaller? Make a strength roll to pin down a grabbed target. A pinned creature can’t move or attack anyone except you.
+8. **Help Hold.** Rush in to help an ally hold down a pinned target. It suffers a penalty to breaking loose.
+9. **Shake Off.** Attack an enemy that has grabbed or pinned you.
+10. **Defend.** Turtle down and don’t attack this round. Attacks against you suffer a penalty.
+11. **Protect.** Bat away blows against a target. Attacks against it are rolled with a penalty.
+12. **Drag Away an Ally.** Get your friend to safety. If they are conscious, they might struggle, forcing a strength roll.
 
 **Other Actions**
 
-1. **Use Power.** Sometimes known as casting a spell. 2. **Control Power.** Not all powers are fire-and-forget affairs. Some, such as _Waxni’s Magic Cruise Missile_, require active control. 3. **Chug Potion.** You drink a potion. Or apply an ointment. Or slap on a healing parasite. 4. **Communication.** Command a golem, convey a complicated plan, or check instructions in the nöospheric post you have received. 5. **Swap Tools.** Carefully stow the gear you’re using and ready something else. You can rush it: toss your current gear to the ground, pull out a hidden pistol, and use it with a penalty. 6. **Pick a Peck of Pickled Peppers.** Or a pocket. 7. **Activate Magic Door.** Or unlock a regular one that doesn’t say whoosh.
+1. **Use Power.** Sometimes known as casting a spell.
+2. **Control Power.** Not all powers are fire-and-forget affairs. Some, such as _Waxni’s Magic Cruise Missile_, require active control.
+3. **Chug Potion.** You drink a potion. Or apply an ointment. Or slap on a healing parasite.
+4. **Communication.** Command a golem, convey a complicated plan, or check instructions in the nöospheric post you have received.
+5. **Swap Tools.** Carefully stow the gear you’re using and ready something else. You can rush it: toss your current gear to the ground, pull out a hidden pistol, and use it with a penalty.
+6. **Pick a Peck of Pickled Peppers.** Or a pocket.
+7. **Activate Magic Door.** Or unlock a regular one that doesn’t say whoosh.
 
 **Free Actions**
 
@@ -2007,10 +2030,13 @@ A character can take **at least one free action per round** .
 Typical free actions in an ordinary conflict:
 
 1. **Amble.** Nonchalantly.
-
 2. **Chew.** Gum.
-
-3. **Concentrate.** On one thing. 4. **Drop.** A held object. 5. **Drop.** To the ground. 6. **Jab.** The exposed flank of an oblivious falscher shoving past you with your elbow (or a shiv). 7. **Spit.** Out a curse (or a grunt of pain). 8. **Release.** Your _ka-ba_ mental form from the prison of your flesh (die).
+3. **Concentrate.** On one thing.
+4. **Drop.** A held object.
+5. **Drop.** To the ground.
+6. **Jab.** The exposed flank of an oblivious falscher shoving past you with your elbow (or a shiv).
+7. **Spit.** Out a curse (or a grunt of pain).
+8. **Release.** Your _ka-ba_ mental form from the prison of your flesh (die).
 
 The referee uses common sense and the conflict time frame to put a stop to nonsense like stacking a dozen free actions to time lock an enemy and explode it from the inside out with some obscurely argued edge case.
 
@@ -2052,8 +2078,11 @@ PCs get a bonus on their attempt. The referee can offer more options (with extra
 
 Some possible temptations the referee can offer:
 
-1. Capture a prize. If the PCs expose themselves to an attack, they might snatch a foe's weapon, steal a vehicle, or score a coup. 2. Double or nothing. They've done it, but for just a little more risk, they might double their success. 3. Gain acclaim. If the PCs succeed with a more difficult approach, they wow onlookers and cow opponents. 4. Negotiate from strength. By risking more and showing strength, they can gain a pause—a chance to parlay. Everyone gets to live! 5. Turn the tables. Having survived an onslaught or escaped a fight, they might seize a tactical counter at the cost of valuable resources.
-
+1. Capture a prize. If the PCs expose themselves to an attack, they might snatch a foe's weapon, steal a vehicle, or score a coup.
+2. Double or nothing. They've done it, but for just a little more risk, they might double their success.
+3. Gain acclaim. If the PCs succeed with a more difficult approach, they wow onlookers and cow opponents.
+4. Negotiate from strength. By risking more and showing strength, they can gain a pause—a chance to parlay. Everyone gets to live!
+5. Turn the tables. Having survived an onslaught or escaped a fight, they might seize a tactical counter at the cost of valuable resources.
 6. Win the scene. For an added risk, the players can end the fight, get the prize, or otherwise short circuit the scene.
 
 <a id="page_0051"></a>
@@ -2070,7 +2099,12 @@ The PCs get an extra effect or flavor if they succeed. To spice things up, their
 
 Possible additional costs of failure:
 
-1. PCs lose initiative and go last next turn. 2. The PCs or their equipment suffers wear and tear. 3. The opponents have a chance to steal the PCs gear or snatch their weapons. 4. The quarry has a chance to get away scot free. 5. Onlookers will find the PCs laughable or weak. 6. The tide turns, time is wasted, and the enemy will get reinforcements of some sort in 1d3 rounds.
+1. PCs lose initiative and go last next turn.
+2. The PCs or their equipment suffers wear and tear.
+3. The opponents have a chance to steal the PCs gear or snatch their weapons.
+4. The quarry has a chance to get away scot free.
+5. Onlookers will find the PCs laughable or weak.
+6. The tide turns, time is wasted, and the enemy will get reinforcements of some sort in 1d3 rounds.
 
 **Risky Idea**
 
@@ -2084,7 +2118,11 @@ The referee can offer an extra effect if the PC succeeds. After that, the PCs’
 
 Possible costs of risky maneuvers:
 
-1. Equipment used has only one charge remaining. 2. Surviving opponents all safely disengage and flee. 3. The PC needs to rest for a round or suffer fatigue. 4. Enemies learn about a weakness and have a permanent bonus against the PCs from then on. 5. Witnesses become hostile and unfriendly.
+1. Equipment used has only one charge remaining.
+2. Surviving opponents all safely disengage and flee.
+3. The PC needs to rest for a round or suffer fatigue.
+4. Enemies learn about a weakness and have a permanent bonus against the PCs from then on.
+5. Witnesses become hostile and unfriendly.
 
 6. The PCs can't move from their zone next round— perhaps a narrow, crumbling bridge with a coalfire demon in front and clackling cobblins behind.
 
@@ -2110,11 +2148,11 @@ Possible prices for terrible ideas:
 
 1. The agents of Law have a 50% chance of tackling the PC before they can shout their condemnation.
 
-2. The hench-shadows of
-
-Chaos have a 1-in-4 chance of possessing the PC when they open the soul-box.
-
-3. A spherical boulder rolls down a ramp towards the careless idol thieves. Save or squash, yeah? 4. The referee gives the PC's speech a 1-in-6 chance of convincing the Radiant Worm not to eat them. 5. The sheriff's men shoot the PC, then the PC shoots, then roll to see how much damage the PC took. 6. The ill-nano battlewagon goes over the cliff ... and so does the PC's royal racer. Roll next session to see if the PC can be raised as a charcoal revenant.
+2. The hench-shadows of Chaos have a 1-in-4 chance of possessing the PC when they open the soul-box.
+3. A spherical boulder rolls down a ramp towards the careless idol thieves. Save or squash, yeah?
+4. The referee gives the PC's speech a 1-in-6 chance of convincing the Radiant Worm not to eat them.
+5. The sheriff's men shoot the PC, then the PC shoots, then roll to see how much damage the PC took.
+6. The ill-nano battlewagon goes over the cliff ... and so does the PC's royal racer. Roll next session to see if the PC can be raised as a charcoal revenant.
 
 Obviously, the referee should not trick the PCs into thinking terrible ideas are good ideas. Springing save-ordie effects and similar disasters on PCs without proper build-up or clues is poor form.
 
@@ -2439,19 +2477,13 @@ Burdens can be nearly anything. Use this eight-by-eight table to come up with so
 
 Two situations always force a character to roll on the defeat table:
 
-- **Not enough life remaining** . If an effect would
-reduce a character below 0 life, they are reduced to
-
-0 life and must roll on the defeat table.
-- **Not enough ability remaining** . If an effect would
-reduce a character's ability below 0, it is reduced to
-0 and they must roll on the defeat table.
+- **Not enough life remaining** . If an effect would reduce a character below 0 life, they are reduced to 0 life and must roll on the defeat table.
+- **Not enough ability remaining** . If an effect would reduce a character's ability below 0, it is reduced to 0 and they must roll on the defeat table.
 
 At the referee's discretion, other situations may impose defeat rolls (especially after failed saving throws):
-
-u Terrible foes, oversized enemies, ancient doom laser swords, and other sources of extreme damage. u Dangerous or overwhelming ancient powers that extract extreme costs from their users.
-
-u Deadly traps, tricks, perils, curses, and other obstacles.
+- Terrible foes, oversized enemies, ancient doom laser swords, and other sources of extreme damage.
+- Dangerous or overwhelming ancient powers that extract extreme costs from their users.
+- Deadly traps, tricks, perils, curses, and other obstacles.
 
 The referee should make it abundantly clear to attentive players when they are facing such dire threats. Springing a save or die effect on PCs without giving the chance to avoid it through smart play is not sporting.
 
@@ -2459,23 +2491,16 @@ The referee should make it abundantly clear to attentive players when they are f
 
 Roll 2d6 + endurance for physical damage or 2d6 + aura for mental damage. Or just plain 2d6 for entirely overwhelming damage, like a giant boulder or demisphere-wide psychic overload event.
 
-**2d6** **Consequences**
-
-**Destroyed.** The character is gone for at ≤1 least the rest of this session, barring eerie divinitechnologies.
-
-**Dead.** Requires relife intervention to rebuild their 2–6 body (ha) or personality (ba).
-
-**Knocked out.** Brain injury (-1 thought) burden. 7 See you at the end of the fight.
-
-**Winded.** Weakness (-1 strength) burden. 8 Lose next turn, then regain 1 life.
-
-**Strained.** Nauseating (-1 agility) burden. 9 Lose next turn, then regain 1 life.
-
-**Scarred.** Defacing (-1 charisma) burden. 10 Lose next turn, then regain 1 life.
-
-11 **Stunned.** Lose next turn, then regain 1 life.
-
-12+ **All ok!** Immediately regain 1 life.
+| 2d6 | Consequences |
+| --- | --- |
+| <=1 | **Destroyed.** The character is gone for at least the rest of this session, barring eerie divinitechnologies. |
+| 2-6 | **Dead.** Requires relife intervention to rebuild their body (ha) or personality (ba). |
+| 7 | **Knocked out.** Brain injury (-1 thought) burden. See you at the end of the fight. |
+| 8 | **Winded.** Weakness (-1 strength) burden. Lose next turn, then regain 1 life. |
+| 9 | **Strained.** Nauseating (-1 agility) burden. Lose next turn, then regain 1 life. |
+| 10 | **Scarred.** Defacing (-1 charisma) burden. Lose next turn, then regain 1 life. |
+| 11 | **Stunned.** Lose next turn, then regain 1 life. |
+| 12+ | **All ok!** Immediately regain 1 life. |
 
 Defeat table ability score damage can force an immediate second roll on the defeat table—and a doom spiral.
 
@@ -2492,8 +2517,6 @@ Defeat table ability score damage can force an immediate second roll on the defe
 | yes | yes | no | Living dead. Ka-zombie, drone. |
 | yes | no | yes | Animate shell. Falscher, machine, ba-zombie. |
 | no | yes | yes | Living mind. Daemon, ultra, etc. |
-
-##### 61
 
 ##### DEATH AND HAKABA
 
@@ -2652,9 +2675,11 @@ Season to taste.
 
 Sometimes, improvisation is not enough. For those situations, standard equipment attributes come into play. The following five are mechanics may see a lot of use:
 
-1. **Size.** Each ready item occupies at least one stone (1 st) of inventory. Packed items can occupy less space. Most PCs can carry at least 7 stones of gear without penalty. Stronger PCs can carry more. 2. **Damage.** If combat breaks out, many items can serve as improvised weapons. A small personal weapon like a knife deals 1d4 damage, a civilian weapon like a fire axe deals 1d6 damage, and a military weapon like a lance deals 1d8 damage. Fragile items break after they hit. Clumsy items impose a penalty to attack rolls.
+1. **Size.** Each ready item occupies at least one stone (1 st) of inventory. Packed items can occupy less space. Most PCs can carry at least 7 stones of gear without penalty. Stronger PCs can carry more.
+2. **Damage.** If combat breaks out, many items can serve as improvised weapons. A small personal weapon like a knife deals 1d4 damage, a civilian weapon like a fire axe deals 1d6 damage, and a military weapon like a lance deals 1d8 damage. Fragile items break after they hit. Clumsy items impose a penalty to attack rolls.
 
-3. **Notched and broken.** On a natural roll of 1, equipment is notched (put a small mark next to it). If you roll another natural 1 before repairing it, or if it suffers other damage, it breaks. 4. **Penalty or Bonus.** Under pressure, characters without suitable equipment may receive a penalty for tasks they are skilled at. Conversely, having the perfect equipment for a job could provide a bonus.
+3. **Notched and broken.** On a natural roll of 1, equipment is notched (put a small mark next to it). If you roll another natural 1 before repairing it, or if it suffers other damage, it breaks.
+4. **Penalty or Bonus.** Under pressure, characters without suitable equipment may receive a penalty for tasks they are skilled at. Conversely, having the perfect equipment for a job could provide a bonus.
 
 The referee makes the final decision.
 
@@ -2670,7 +2695,9 @@ Precisely tracking resources is not always necessary— often, you may assume PC
 
 Generally, the only thing that matters is whether you:
 
-1. **have enough** resources: keep using your gear. 2. **are running low** on resources: one use left. 3. **have run out** of resources: take an action to reload, refuel, or otherwise replenish your gear.
+1. **have enough** resources: keep using your gear.
+2. **are running low** on resources: one use left.
+3. **have run out** of resources: take an action to reload, refuel, or otherwise replenish your gear.
 
 When using equipment, your d20 roll determines whether you have used up your resources or not.
 
@@ -3674,8 +3701,6 @@ These old-fashioned unliving machines require a necromaintainer with a necromech
 
 **Conveyances: Wagons and More**
 
-**Conveyances: Wagons and More**
-
 Few modern humans know how to create powered vehicles and neither angels nor golems are willing to share, the first because they are inscrutable, the second because they are unionized. But carts? Carts, humans can make.
 
 | d6 | Conveyances: Wagons and More | Lvl | Cap | Spd | Sup | Cost |
@@ -3691,18 +3716,18 @@ Few modern humans know how to create powered vehicles and neither angels nor gol
 
 | D12 | Style | Trim | Feature |
 | --- | --- | --- | --- |
-| 1 | amberite cloth | absorbent armor gel |  |
-| 2 | bonework foliage | anti-crash foam nozzles |  |
-| 3 | chitinweave fur | gyroscopic auto-leveler |  |
-| 4 | dead golem gelatin | hydrophobic seat covers |  |
+| 1 | amberite | cloth | absorbent armor gel |
+| 2 | bonework | foliage | anti-crash foam nozzles |
+| 3 | chitinweave | fur | gyroscopic auto-leveler |  |
+| 4 | dead golem | gelatin | hydrophobic seat covers |
 | 5 | extraherbal glass | integrated versificator |  |
-| 6 | lime nomad ivory | laminated prayer spindles |  |
-| 7 | long ago jade | nine-axis suspension |  |
-| 8 | right roader metal | retractable flag pole |  |
-| 9 | scavenger resin | self-repairing axles |  |
-| 10 | sinew stone | swivel seats |  |
-| 11 | skin tile | thermal barrier wrap |  |
-| 12 | sungwood wire | tuber growth medium |  |
+| 6 | lime nomad | ivory | laminated prayer spindles |
+| 7 | long ago | jade | nine-axis suspension |
+| 8 | right roader | metal | retractable flag pole |
+| 9 | scavenger | resin | self-repairing axles |
+| 10 | sinew | stone | swivel seats |
+| 11 | skin | tile | thermal barrier wrap |
+| 12 | sungwood | wire | tuber growth medium |
 
 <a id="page_0089"></a>
 
@@ -6071,7 +6096,8 @@ It doesn't hurt to try—if it turns out to be a bit much, just say the characte
 
 4. **Magpie Maud** felt fingers reaching, groping through the glue of history and lost time until they grasped her mind, dragged it forth, reassembled it, and set it once more in a physical shell. "Now, serve us well, timelost thief, and we shall restore you further!" And she did. Yet here she now is, in the dark again, under the lake. Was she betrayed?
 
-5. **Noddescur's** bones have gone dark in bog mud. Why is the barbarian hero, slain by the warc demiurge, needed now? 6. **Zum Laut** was glued together by a kindly anthropologist. Poor dear, such a rude surprise.
+5. **Noddescur's** bones have gone dark in bog mud. Why is the barbarian hero, slain by the warc demiurge, needed now?
+6. **Zum Laut** was glued together by a kindly anthropologist. Poor dear, such a rude surprise.
 
 Other names: The Brasswire Youth, Costoloc, Eärel, Mattock, Thousand Cowrie Man, Silver Lake Lady.
 
