@@ -3868,15 +3868,11 @@ tags:
 
 meta:
 > - source:
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE TRAVELER > The Six-Fold System Rosetta > Experience (Carousing)
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE GRASSLANDS > destination discovery/economics entries
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Inventory and Sacks
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > The Pleasure of Treasure
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Destinations and Discoveries
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Out of Supplies
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN > Trade & Goods (Market Research / Haggling / Local Special Needs / The Catch Is)
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE BESTIARY > On Creatures > Treasure entries
->   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE SETTING > high-tier destination trade/treasure outcomes
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE TRAVELER
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE GRASSLANDS
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE CARAVAN
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE BESTIARY
+>   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: THE SETTING
 > - see-also:
 >   - Synthetic_Dream_Machine_05_Gear_Index.md#sdm-gear-table-fuel-power-and-supplies
 >   - Synthetic_Dream_Machine_05_Gear_Index.md#sdm-gear-table-thirty-ultraviolet-trade-goods-d30
