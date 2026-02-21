@@ -357,20 +357,16 @@ Chitin-clad nomads who build walking hive-wagons and caravan fortresses. Silent 
 
 **Notes**
 
-Appearance — Humanoid ants, mottled carapace colours and glowing body paint that reflect clan or lineage.
-
-Names — Six-Who-Carries, Amber-Tarsus, Iron-Mandible, Glass-Brood.
-
-Motives / Ethics / Voice — Collective duty, resource thrift, voices clipped and dry in cadence.
-
-Culture — Ferment nectar into glow-mead, tend the mushroom farms with their Glow kin cousins. Ritual duels decide disputes, caravans keep sacred hive-altars at the heart of the great wain.
-
-Example Backgrounds — Architect Sapper (Artisan), Hive Sentry (Military), Fungus Tender (Merchant)
+* Appearance: Humanoid ants, mottled carapace colours and glowing body paint that reflect clan or lineage.
+* Names: Six-Who-Carries, Amber-Tarsus, Iron-Mandible, Glass-Brood.
+* Motives / Ethics / Voice: Collective duty, resource thrift, voices clipped and dry in cadence.
+* Culture: Ferment nectar into glow-mead, tend the mushroom farms with their Glow kin cousins. Ritual duels decide disputes, caravans keep sacred hive-altars at the heart of the great wain.
+* Example Backgrounds: Architect Sapper (Artisan), Hive Sentry (Military), Fungus Tender (Merchant)
 
 **Variants**
 
 * Alates: The winged ones, masters of spear and bow. Expert: Swap [Blindsight](#blindsight) for **[Alternate Movement](#alternate-movement) – Fly**
-* Soldier: Hive protectors, often augmented with magitech. Expert: Swap [Blindsight](#blindsight) for **[Ability Bonus – Fierce](#ability-bonus-fierce)**.
+* Soldier: Hive protectors, often augmented with magitech. *Expert*: Swap [Blindsight](#blindsight) for **[Ability Bonus – Fierce](#ability-bonus-fierce)**.
 * Far-Ranger: Restless explorers, foragers, and gatherers. *Master*: Swap [Polybody](#polybody) for **[Resilient Metabolism](#resilient-metabolism)** (advantage vs. poison, hunger, fatigue, environment hazards).
 
 
@@ -392,15 +388,11 @@ The **Awakened Vome** are an ancient noosphere infection made flesh and machine 
 
 **Notes**
 
-Appearance — Chitin plates, composite shells, sensor-cluster “eyes,” constant micro-gestures betraying network chatter.
-
-Names — 7-Alpha, 22-Delta, 113, 5-Seven, C4-Umbral, 99-Dawn.
-
-Motives / Ethics / Voice — Collective safety and data integrity; even alone, they speak in plural; analytical and direct.
-
-Culture — “Sync-rituals” to share updates, repairs, and memories; photovoltaic feeding; mineral infusion rites; taboo against corrupting hive-code.
-
-Example Backgrounds — Colony Sentinel (Scout), Apostate Fragment (Envoy), Magitech Merchant (Megitechnician)
+* Appearance: Chitin plates, composite shells, sensor-cluster “eyes,” constant micro-gestures betraying network chatter.
+* Names: 7-Alpha, 22-Delta, 113, 5-Seven, C4-Umbral, 99-Dawn.
+* Motives / Ethics / Voice: Collective safety and data integrity; even alone, they speak in plural; analytical and direct.
+* Culture: “Sync-rituals” to share updates, repairs, and memories; photovoltaic feeding; mineral infusion rites; taboo against corrupting hive-code.
+* Example Backgrounds: Colony Sentinel (Scout), Apostate Fragment (Envoy), Magitech Merchant (Megitechnician)
 
 **Variants**
 
@@ -426,15 +418,11 @@ Nocturnal gliders whose leather wings carry them between cliff-cities and cavern
 
 **Notes**
 
-Appearance — Slender bodies, oversized ears, dusk-coloured fur, eyes that catch stray gleams like polished stone.
-
-Names — Scree-Scree, K’thara, Ulriq, Frrnn.
-
-Motives / Ethics / Voice — Curiosity paired with intense clan loyalty. Speech is rapid chitter and echo-inflected vowels.
-
-Culture — Sky-fruit feasts under the full moon; wing-tattoos mark coming of age. Taboos on revealing guest secrets or drawing maps for outsiders.
-
-Example Backgrounds — Cavern Ranger (Scout), Echo-Monk (Military), Cliff Trader (Merchant)
+* Appearance: Slender bodies, oversized ears, dusk-coloured fur, eyes that catch stray gleams like polished stone.
+* Names: Scree-Scree, K’thara, Ulriq, Frrnn.
+* Motives / Ethics / Voice: Curiosity paired with intense clan loyalty. Speech is rapid chitter and echo-inflected vowels.
+* Culture: Sky-fruit feasts under the full moon; wing-tattoos mark coming of age. Taboos on revealing guest secrets or drawing maps for outsiders.
+* Example Backgrounds: Cavern Ranger (Scout), Echo-Monk (Military), Cliff Trader (Merchant)
 
 **Variants**
 
@@ -457,15 +445,11 @@ Broad-shouldered guardians with ember-bright spirits, the Bear Folk move like wa
 
 **Notes**
 
-Appearance — Towering, fur-cloaked figures; ember-glow eyes; charcoal-smudged muzzles; braid-rings of copper and bone; hearth-scar tattoos that warm when oaths are sworn.
-
-Names — Brum Hearth-Keeper, Ash-Paw, Urda Embermane, Kask of the Red Den, Norr Honeybound, Valka Winter-Step.
-
-Motives / Ethics / Voice — Loyalty, fair dealing, hospitality repaid; protective to a fault. Voices rumble like bellows, punctuated by dry humor and proverb.
-
-Culture — Winter-den gatherings with honey-mead feasts and ember-riddle contests; forging of hearth-stones seals clan bonds; strict taboo on extinguishing a guest-fire; travelers welcomed to the outer circle, never the inner unless named kin. Trail offerings (smoked fish, berries) mark safe paths; shamans keep ash-ledgers of oaths and debts.
-
-Example Backgrounds — Hearth-Warden (Military), Flame-Shaman (Sorcery), Mead-Runner (Merchant).
+* Appearance: Towering, fur-cloaked figures; ember-glow eyes; charcoal-smudged muzzles; braid-rings of copper and bone; hearth-scar tattoos that warm when oaths are sworn.
+* Names: Brum Hearth-Keeper, Ash-Paw, Urda Embermane, Kask of the Red Den, Norr Honeybound, Valka Winter-Step.
+* Motives / Ethics / Voice: Loyalty, fair dealing, hospitality repaid; protective to a fault. Voices rumble like bellows, punctuated by dry humor and proverb.
+* Culture: Winter-den gatherings with honey-mead feasts and ember-riddle contests; forging of hearth-stones seals clan bonds; strict taboo on extinguishing a guest-fire; travelers welcomed to the outer circle, never the inner unless named kin. Trail offerings (smoked fish, berries) mark safe paths; shamans keep ash-ledgers of oaths and debts.
+* Example Backgrounds: Hearth-Warden (Military), Flame-Shaman (Sorcery), Mead-Runner (Merchant).
 
 **Variants**
 
@@ -490,15 +474,11 @@ Feather-cloaked wanderers who ride the world’s thermal highways, **Bird Folk**
 
 **Notes**
 
-Appearance — Plumage varies by clan: sunset crimsons, storm-cloud greys, iridescent midnight blues. Lean, hollow-boned frames; bright, ringed eyes.
-
-Names — Khurra High-Thermal, Skay of the Rising Gyre, Tala Wind-Spoke.
-
-Motives / Ethics / Voice — Freedom, honour-debts, tale-swapping; voices whistle and click like distant gulls.
-
-Culture — Cliff-top aeries woven of cloud-silk; coming-of-age “first spiral” flights; taboo on caging any creature that flies; communal sky-charts painted on stretched hides; diet heavy on wind-dried fruits, glider fish, and aero-lith honey.
-
-Example Backgrounds — Sky-Ranger (Scout), Storm-Messenger (Envoy), Spirit‑Mask Bard (Sorcery).
+* Appearance: Plumage varies by clan: sunset crimsons, storm-cloud greys, iridescent midnight blues. Lean, hollow-boned frames; bright, ringed eyes.
+* Names: Khurra High-Thermal, Skay of the Rising Gyre, Tala Wind-Spoke.
+* Motives / Ethics / Voice: Freedom, honour-debts, tale-swapping; voices whistle and click like distant gulls.
+* Culture: Cliff-top aeries woven of cloud-silk; coming-of-age “first spiral” flights; taboo on caging any creature that flies; communal sky-charts painted on stretched hides; diet heavy on wind-dried fruits, glider fish, and aero-lith honey.
+* Example Backgrounds: Sky-Ranger (Scout), Storm-Messenger (Envoy), Spirit‑Mask Bard (Sorcery).
 
 **Variants**
 
@@ -522,15 +502,11 @@ Example Backgrounds — Sky-Ranger (Scout), Storm-Messenger (Envoy), Spirit‑Ma
 
 **Notes**
 
-Appearance — broad-shouldered, ash or ochre fur, ember-red eyes; trophy ribbons of hobgoblin cloth tied to braids.
-
-Names — Grugg, Snarla, Thrik, Mog-Ear, Rag-Shank.
-
-Motives / Ethics / Voice — speak in crackling whispers; prize full bellies, safe routes, and trophies from clever hunts.
-
-Culture — Dusk hunts, wordless meat-shares, taboos on loud metal. They trade pelts and scavenged relics with hobgoblin caravans; goblin parents still warn children of “the Boogey-Ones.”
-
-Example Backgrounds — Bandit Pathfinder (Scout), Shadow Trapper (Merchant), Moon-Fang Oracle (Envoy).
+* Appearance: broad-shouldered, ash or ochre fur, ember-red eyes; trophy ribbons of hobgoblin cloth tied to braids.
+* Names: Grugg, Snarla, Thrik, Mog-Ear, Rag-Shank.
+* Motives / Ethics / Voice: speak in crackling whispers; prize full bellies, safe routes, and trophies from clever hunts.
+* Culture: Dusk hunts, wordless meat-shares, taboos on loud metal. They trade pelts and scavenged relics with hobgoblin caravans; goblin parents still warn children of “the Boogey-Ones.”
+* Example Backgrounds: Bandit Pathfinder (Scout), Shadow Trapper (Merchant), Moon-Fang Oracle (Envoy).
 
 **Variants**
 
@@ -555,15 +531,11 @@ From midnight jackal and wolf clans that speak with prophets and spirits to red�
 
 **Notes**
 
-Appearance — fur hues follow lineage: russet, ash‑grey, dappled gold; expressive ears and brush tails; many carve bone or lacquer masks.
-
-Names — Vixen‑of‑Ash, Koji, Painted‑Song, Runs‑With‑Echoes, Tanu‑Kai.
-
-Motives / Ethics / Voice — speak in yips, whistles, and sly proverbs; value hospitality and clever trades.
-
-Culture — nocturnal moot‑fires, mask rites, communal pup rearing; taboo**:** abandon a companion in peril.
-
-Example Backgrounds — Scent‑Tracker (Scout), Moon‑Howl Skald (Envoy), Spirit‑Mask Bard (Sorcery).
+* Appearance: fur hues follow lineage: russet, ash‑grey, dappled gold; expressive ears and brush tails; many carve bone or lacquer masks.
+* Names: Vixen‑of‑Ash, Koji, Painted‑Song, Runs‑With‑Echoes, Tanu‑Kai.
+* Motives / Ethics / Voice: speak in yips, whistles, and sly proverbs; value hospitality and clever trades.
+* Culture: nocturnal moot‑fires, mask rites, communal pup rearing; taboo**:** abandon a companion in peril.
+* Example Backgrounds: Scent‑Tracker (Scout), Moon‑Howl Skald (Envoy), Spirit‑Mask Bard (Sorcery).
 
 **Variants**
 
@@ -590,15 +562,11 @@ Example Backgrounds — Scent‑Tracker (Scout), Moon‑Howl Skald (Envoy), Spir
 
 **Notes**
 
-Appearance — Mythic cats with jewel‑bright eyes, prehensile paws, and sometimes a serpent as a tail coiled like jewelry.
-
-Names — Brighteyes, Sleekums, Mazzo, Lady Elegant, Twinklestar, Mew‑Mew.
-
-Motives / Ethics / Voice — Entitlement worn like perfume; sudden violence when annoyed; voices like purrs that turn into commands.
-
-Culture — Sunlit salons where deals are made over saucers of narcotic coffee; charm‑sigils woven into rugs; taboos against ignoring a Cat Lord’s invitation (or worse — refusing it).
-
-Example Backgrounds — Velvet‑Court Emissary (Envoy), Prowling Duelist (Military), Dream‑Purr Witch (Sorcery).
+* Appearance: Mythic cats with jewel‑bright eyes, prehensile paws, and sometimes a serpent as a tail coiled like jewelry.
+* Names: Brighteyes, Sleekums, Mazzo, Lady Elegant, Twinklestar, Mew‑Mew.
+* Motives / Ethics / Voice: Entitlement worn like perfume; sudden violence when annoyed; voices like purrs that turn into commands.
+* Culture: Sunlit salons where deals are made over saucers of narcotic coffee; charm‑sigils woven into rugs; taboos against ignoring a Cat Lord’s invitation (or worse — refusing it).
+* Example Backgrounds: Velvet‑Court Emissary (Envoy), Prowling Duelist (Military), Dream‑Purr Witch (Sorcery).
 
 **Variants**
 
@@ -625,15 +593,11 @@ Chaos-touched travelers with oaths in their bones and second truths in their ski
 
 **Notes**
 
-Appearance — Human-passing silhouettes with evident tells: antlers, feathering along forearms, glossy chitin, leonine manes, lashing tails.
-
-Names — Ruun Wind-Withers, Selda of the Barding, Okiko Nine-Masks, Brassa Skor-Line, Kheleon Dawn-Mane, Thryssa Web-Trace.
-
-Motives / Ethics / Voice — Oathcraft, clan secrecy, reciprocity; voices carry drum-cadence, birdsong, or mask-speech.
-
-Culture — Barding rites, mask-dances, way-shrine offerings at crossroads; taboo: reveal morphic-lore to the untested.
-
-Example Backgrounds — Road Warden (Scout), Banner-Keeper (Envoy), Wind-Singer (Sorcery).
+* Appearance: Human-passing silhouettes with evident tells: antlers, feathering along forearms, glossy chitin, leonine manes, lashing tails.
+* Names: Ruun Wind-Withers, Selda of the Barding, Okiko Nine-Masks, Brassa Skor-Line, Kheleon Dawn-Mane, Thryssa Web-Trace.
+* Motives / Ethics / Voice: Oathcraft, clan secrecy, reciprocity; voices carry drum-cadence, birdsong, or mask-speech.
+* Culture: Barding rites, mask-dances, way-shrine offerings at crossroads; taboo: reveal morphic-lore to the untested.
+* Example Backgrounds: Road Warden (Scout), Banner-Keeper (Envoy), Wind-Singer (Sorcery).
 
 **Variants**
 
@@ -668,15 +632,11 @@ Scale-bound heirs of titanic sky-serpents, **Dragonborn** uphold labyrinthine ho
 
 **Notes**
 
-Appearance — scales of chroma-sheen or hammered metal; ember eyes; some bear wing-stubs, some spined crests.
-
-Names — Klauthrax, Aurix-Vara, Nalkyria, Vezzen-Steel, Jivali-Ember.
-
-Voice / Ethics — formal, resonant; status marked by gift-cycles; dishonor repaid in exact measures.
-
-Culture — newborns bathe in ancestral elements; treasure hoards are community banks (take one gem, repay two); taboo: break no contracted word.
-
-Background seeds — Hoard-Keeper, Sky-Palisade Guard, Void-Monk, Ember-Mint Assayer, Storm-Librarian.
+* Appearance: scales of chroma-sheen or hammered metal; ember eyes; some bear wing-stubs, some spined crests.
+* Names: Klauthrax, Aurix-Vara, Nalkyria, Vezzen-Steel, Jivali-Ember.
+* Voice / Ethics: formal, resonant; status marked by gift-cycles; dishonor repaid in exact measures.
+* Culture: newborns bathe in ancestral elements; treasure hoards are community banks (take one gem, repay two); taboo: break no contracted word.
+* Background seeds: Hoard-Keeper, Sky-Palisade Guard, Void-Monk, Ember-Mint Assayer, Storm-Librarian.
 
 **Variants**
 
@@ -716,15 +676,11 @@ Liminal themes of Dream, Octarine, Noosphere, Shadow – Rare cosmic brood; spea
 
 **Notes**
 
-Appearance — Stout, soot‑smudged, hair braided and threaded with wire; with soot‑darkened hands and eyes that glint like polished hematite.
-
-Names — Barag, Tholda, Kurrin, Osk, Dwena, Magra.
-
-Motives / Ethics / Voice — A favor is a gift, a lie a debt; voices like gravel and forge‑bellows.
-
-Culture —  Festival days with welding masks polished like masks of gods. Stone‑whisperers who keep old bargains, still leaving crafted “gifts” in exchange for rum and respect. Brimstone Court: the conclave where the secret of Named iron is guarded and the sacred gun‑forges burn day and night.
-
-Example Backgrounds — Forge‑Singer (Artisan), Brimstone Court Gun‑Smith (Magitech), Underhill Broker (Merchant).
+* Appearance: Stout, soot‑smudged, hair braided and threaded with wire; with soot‑darkened hands and eyes that glint like polished hematite.
+* Names: Barag, Tholda, Kurrin, Osk, Dwena, Magra.
+* Motives / Ethics / Voice: A favor is a gift, a lie a debt; voices like gravel and forge‑bellows.
+* Culture:  Festival days with welding masks polished like masks of gods. Stone‑whisperers who keep old bargains, still leaving crafted “gifts” in exchange for rum and respect. Brimstone Court: the conclave where the secret of Named iron is guarded and the sacred gun‑forges burn day and night.
+* Example Backgrounds: Forge‑Singer (Artisan), Brimstone Court Gun‑Smith (Magitech), Underhill Broker (Merchant).
 
 **Variants**
 
@@ -748,15 +704,11 @@ The **Elf** clans are paradoxes draped in velvet—envoys of unthinkable Courts,
 
 **Notes**
 
-Appearance — Angular beauty, void‑shadowed eyes, hair like moonlit ink or starlit fire.
-
-Names — Aeltheris, Jarethiel, Nyx, Seraphane, Calidra, Vaelor.
-
-Motives / Ethics / Voice — Courtly promises, sly cruelties, debts measured in centuries; voices like honey poured through crystal.
-
-Culture — Moon‑wine feasts under mirrored sky‑domes, ritual duels fought as much with etiquette as with blades, salons where voidjammer pilots trade stories with dream‑witches.
-
-Example Backgrounds — Voidjammer Helmsman (Navigator), Moon‑Court Duelist (Military), Dream‑Singer (Sorcery).
+* Appearance: Angular beauty, void‑shadowed eyes, hair like moonlit ink or starlit fire.
+* Names: Aeltheris, Jarethiel, Nyx, Seraphane, Calidra, Vaelor.
+* Motives / Ethics / Voice: Courtly promises, sly cruelties, debts measured in centuries; voices like honey poured through crystal.
+* Culture: Moon‑wine feasts under mirrored sky‑domes, ritual duels fought as much with etiquette as with blades, salons where voidjammer pilots trade stories with dream‑witches.
+* Example Backgrounds: Voidjammer Helmsman (Navigator), Moon‑Court Duelist (Military), Dream‑Singer (Sorcery).
 
 **Variants**
 
@@ -782,15 +734,11 @@ Hoof-light children of vine and song, **Faun Folk** live for the pulse of festiv
 
 **Notes**
 
-Appearance — Lean bodies, goat or deer legs, small curling horns, freckles like dappled sunlight; garlands of ivy, bells, or cork-wood pipes.
-
-Names — Thyrsos, Elara-Wine, Puckthorn, Nyri, Faelo, Bramble-Reed.
-
-Motives / Ethics / Voice — Seek celebration, freedom, and clever pranks; speak in lilting riffs, half-whistles, and teasing riddles.
-
-Culture — Grove festivals under full moons, wine rites where promises ferment, masquerade hunts through field and thicket; taboos around leaving a guest un-toasted.
-
-Example Backgrounds — Vineyard Skald (Envoy), Grove Warden (Scout), Wandering Bard (Sorcery).
+* Appearance: Lean bodies, goat or deer legs, small curling horns, freckles like dappled sunlight; garlands of ivy, bells, or cork-wood pipes.
+* Names: Thyrsos, Elara-Wine, Puckthorn, Nyri, Faelo, Bramble-Reed.
+* Motives / Ethics / Voice: Seek celebration, freedom, and clever pranks; speak in lilting riffs, half-whistles, and teasing riddles.
+* Culture: Grove festivals under full moons, wine rites where promises ferment, masquerade hunts through field and thicket; taboos around leaving a guest un-toasted.
+* Example Backgrounds: Vineyard Skald (Envoy), Grove Warden (Scout), Wandering Bard (Sorcery).
 
 **Variants**
 
@@ -815,15 +763,11 @@ Example Backgrounds — Vineyard Skald (Envoy), Grove Warden (Scout), Wandering 
 
 **Notes**
 
-Appearance — Furred humanoids with feline features and patterns. Slitted eyes, fangs, and expressive tails. Markings vary by clan: stripes, rosettes, golden manes, obsidian sleekness.
-
-Names — Vasha, Kuro, Taar’thun, Whisper-in-Grass, Nayari, Stalks-the-Dreamline.
-
-Motives / Ethics / Voice — Honor in precision. Loyalty earned by deed. Voices glide low and sharp, like wind through reeds.
-
-Culture — Spiced meats, smoked fish, tea from flower-honey and river mint. Stalking duels, purring meditation, carved claw-jewels passed through lineages. Taboos about ending a hunt without ritual closure.
-
-Example Backgrounds — Dream-Prowler (Scout), Shadow Duelist (Military), Rakshasa-Sworn (Sorcery)
+* Appearance: Furred humanoids with feline features and patterns. Slitted eyes, fangs, and expressive tails. Markings vary by clan: stripes, rosettes, golden manes, obsidian sleekness.
+* Names: Vasha, Kuro, Taar’thun, Whisper-in-Grass, Nayari, Stalks-the-Dreamline.
+* Motives / Ethics / Voice: Honor in precision. Loyalty earned by deed. Voices glide low and sharp, like wind through reeds.
+* Culture: Spiced meats, smoked fish, tea from flower-honey and river mint. Stalking duels, purring meditation, carved claw-jewels passed through lineages. Taboos about ending a hunt without ritual closure.
+* Example Backgrounds: Dream-Prowler (Scout), Shadow Duelist (Military), Rakshasa-Sworn (Sorcery)
 
 **Variants**
 
@@ -847,15 +791,11 @@ Example Backgrounds — Dream-Prowler (Scout), Shadow Duelist (Military), Raksha
 
 **Notes**
 
-Appearance — Glossy-skinned humanoids ranging from pale mint to deep obsidian green. Their eyes reflect moonlight like still ponds. Skin may pulse with bioluminescence during strong emotions or ritual states.
-
-Names — Croakshade, Mira-Klik, Thrumble, Drift-of-Bubbles, Echo-Tarn, Zala-Fen.
-
-Motives / Ethics / Voice — Frog Folk value change over permanence, and patience over haste—until it’s time to leap. Their voices vary: guttural bass tones, shimmering whistles, and harmonic vibrations used in layered conversation. Silence is a language, too.
-
-Culture — Feasts of sporecakes, firefly jelly, fermented tuber-root stew, and slow-boiled dragonfly broth. Name rites in moonlit pools; children remember past lives by touching sacred stones. Taboos on disrupting an holy echo-pond or water source. Move in scattered bands, often on seasonal migrations between holy springs and ley-fed swamps. “Ripples reveal the storm long before the sky does.”
-
-Example Backgrounds — Echo-Archer (Scout), Fen-Chanter (Sorcery), Knight Errant (Military)
+* Appearance: Glossy-skinned humanoids ranging from pale mint to deep obsidian green. Their eyes reflect moonlight like still ponds. Skin may pulse with bioluminescence during strong emotions or ritual states.
+* Names: Croakshade, Mira-Klik, Thrumble, Drift-of-Bubbles, Echo-Tarn, Zala-Fen.
+* Motives / Ethics / Voice: Frog Folk value change over permanence, and patience over haste—until it’s time to leap. Their voices vary: guttural bass tones, shimmering whistles, and harmonic vibrations used in layered conversation. Silence is a language, too.
+* Culture: Feasts of sporecakes, firefly jelly, fermented tuber-root stew, and slow-boiled dragonfly broth. Name rites in moonlit pools; children remember past lives by touching sacred stones. Taboos on disrupting an holy echo-pond or water source. Move in scattered bands, often on seasonal migrations between holy springs and ley-fed swamps. “Ripples reveal the storm long before the sky does.”
+* Example Backgrounds: Echo-Archer (Scout), Fen-Chanter (Sorcery), Knight Errant (Military)
 
 **Variants**
 
@@ -882,15 +822,11 @@ From fog-wrapped peaks to the fractured aero-lith mesas of the Astral Sea, the *
 
 **Notes**
 
-Appearance — 8–12 ft tall; skin like granite, clay, or wind-scoured earth; braided hair or wiry beards; tattoos scarred or inked to resemble cliff strata, eyes often glint with faint ley-line resonance.
-
-Names — Brakka Stonehollow, Kaalom Cloud-Brow, Elga Moss-Mantle, Ruun of the Thunder-Peak
-
-Motives / Ethics / Voice — Honor bound, clan-proud, protective of the small; slow to anger but unstoppable when roused. Voices like rolling thunder or the rumble of a shifting boulder.
-
-Culture — Root stews, smoked game, fermented highland brews. Rites of stone carving to record oaths; sky-drumming to call storms. Taboos on breaking a guest-gift, defacing clan carvings. They roam between seasonal holds; carry heavy tools or totems as symbols of status.
-
-Example Backgrounds — Stoneway Warden (Scout), Dream-Totemist (Sorcery), Pilgrim of the Shattered Cairn (Envoy)
+* Appearance: 8–12 ft tall; skin like granite, clay, or wind-scoured earth; braided hair or wiry beards; tattoos scarred or inked to resemble cliff strata, eyes often glint with faint ley-line resonance.
+* Names: Brakka Stonehollow, Kaalom Cloud-Brow, Elga Moss-Mantle, Ruun of the Thunder-Peak
+* Motives / Ethics / Voice: Honor bound, clan-proud, protective of the small; slow to anger but unstoppable when roused. Voices like rolling thunder or the rumble of a shifting boulder.
+* Culture: Root stews, smoked game, fermented highland brews. Rites of stone carving to record oaths; sky-drumming to call storms. Taboos on breaking a guest-gift, defacing clan carvings. They roam between seasonal holds; carry heavy tools or totems as symbols of status.
+* Example Backgrounds: Stoneway Warden (Scout), Dream-Totemist (Sorcery), Pilgrim of the Shattered Cairn (Envoy)
 
 **Variants**
 
@@ -915,15 +851,11 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 **Notes**
 
-Appearance — Soft glow along gills and freckles; cap-crowns like mantles; filament “hair”; spore halos in cold air; earthy perfumes that shift with mood.
-
-Names — Amanu, Myxa, Gloamcap, Trillia, Morchel, Sporix.
-
-Motives / Ethics / Voice — Stewardship, reciprocity, patient cunning. The tone is mellow and resonant to mirthful and distracted; [Psi-Speech](#psi-speech) carries taste/scent metaphors.
-
-Culture — Fermentation banquets; spore-communion rites to share maps and memories; taboos against wasteful flame; caravaners who chart DreamNet connections between Nexuses. Wood and bone-ceramic gear is common thanks to the Iron Curse.
-
-Example Backgrounds — Rot Warden (Scout), Relic Forager (Magitech), Spore-Seer (Sorcery).
+* Appearance: Soft glow along gills and freckles; cap-crowns like mantles; filament “hair”; spore halos in cold air; earthy perfumes that shift with mood.
+* Names: Amanu, Myxa, Gloamcap, Trillia, Morchel, Sporix.
+* Motives / Ethics / Voice: Stewardship, reciprocity, patient cunning. The tone is mellow and resonant to mirthful and distracted; [Psi-Speech](#psi-speech) carries taste/scent metaphors.
+* Culture: Fermentation banquets; spore-communion rites to share maps and memories; taboos against wasteful flame; caravaners who chart DreamNet connections between Nexuses. Wood and bone-ceramic gear is common thanks to the Iron Curse.
+* Example Backgrounds: Rot Warden (Scout), Relic Forager (Magitech), Spore-Seer (Sorcery).
 
 **Variants**
 
@@ -948,15 +880,11 @@ Example Backgrounds — Rot Warden (Scout), Relic Forager (Magitech), Spore-Seer
 
 **Notes**
 
-Appearance — Hyena-headed humanoids with spotted hides, narrow limbs, and ritual scarification. Mane-hair dyed with soot and ash.
-
-Names — Hrakna, Skulk-Bite, Vurn, Lakkta, Jozz-Watcher, Bone-Crunch
-
-Motives / Ethics / Voice — Loyalty to pack over all; survival by cleverness and strength; voices bark-laugh, snarl, or mutter.
-
-Culture — Never waste a kill, eat the heart to gain memory. War-drum rites carved on hide shields. Taboo about waste meat or dishonor the pack.
-
-Example Backgrounds — Bone-Drummer Bard (Sorcery), Pack-Warden (Scout), Ruin-Scavenger (Magitech).
+* Appearance: Hyena-headed humanoids with spotted hides, narrow limbs, and ritual scarification. Mane-hair dyed with soot and ash.
+* Names: Hrakna, Skulk-Bite, Vurn, Lakkta, Jozz-Watcher, Bone-Crunch
+* Motives / Ethics / Voice: Loyalty to pack over all; survival by cleverness and strength; voices bark-laugh, snarl, or mutter.
+* Culture: Never waste a kill, eat the heart to gain memory. War-drum rites carved on hide shields. Taboo about waste meat or dishonor the pack.
+* Example Backgrounds: Bone-Drummer Bard (Sorcery), Pack-Warden (Scout), Ruin-Scavenger (Magitech).
 
 **Variants**
 
@@ -982,15 +910,11 @@ Example Backgrounds — Bone-Drummer Bard (Sorcery), Pack-Warden (Scout), Ruin-S
 
 **Notes**
 
-Appearance — pocket-sized, sharp-toothed, skin like tarnished copper or sea-glass; over-large ears and glitter-ink tattoos that rewrite themselves when nobody looks.
-
-Names — Grib Coil-Snap, Fidget o’ the Broken Gear, Lady Kreeb of Lost Buttons, Snarla Thread-Thief, Zix the Third.
-
-Motives / Ethics / Voice — Mischief over malice; shiny things over sensible ones; voices like cracked bells and wind through drains.
-
-Culture — pop-up markets where “coin” may be favours, buttons, or memories; crown a new “Goblin King” nightly (sometimes a rat, sometimes a rock); taboo: cut a prank short before the punchline lands.
-
-Example Backgrounds — Banner-Bearer Bard (Sorcery), Lightning-Fist Acolyte (Military), Scrap Tinker (Magitechician).
+* Appearance: pocket-sized, sharp-toothed, skin like tarnished copper or sea-glass; over-large ears and glitter-ink tattoos that rewrite themselves when nobody looks.
+* Names: Grib Coil-Snap, Fidget o’ the Broken Gear, Lady Kreeb of Lost Buttons, Snarla Thread-Thief, Zix the Third.
+* Motives / Ethics / Voice: Mischief over malice; shiny things over sensible ones; voices like cracked bells and wind through drains.
+* Culture: pop-up markets where “coin” may be favours, buttons, or memories; crown a new “Goblin King” nightly (sometimes a rat, sometimes a rock); taboo: cut a prank short before the punchline lands.
+* Example Backgrounds: Banner-Bearer Bard (Sorcery), Lightning-Fist Acolyte (Military), Scrap Tinker (Magitechician).
 
 **Variants**
 
@@ -1015,15 +939,11 @@ The tiktoks, robot guardians, clay rune-etched philosophers, and warframes of th
 
 **Notes**
 
-Appearance — Heavy silhouettes, etched runes or plate seams, glowing eyes, slow but deliberate movement. Skin of marble, basalt, bronze, driftwood, or brass filigree.
-
-Names — Kallus, Omril, Rook, Bronzewain, Tik-Tok, Keshmet, Olmar, Granite Jack.
-
-Motives / Ethics / Voice — Direct, literal, stubborn; dislike waste and lies; some bound by ancient pacts. Voices are often deep, resonant, with grinding undertones.
-
-Culture — Communal “maintenance days,” ritual oiling or polishing, respectful storage of worn parts; eat for flavor, not fuel; rarely hurry unless defending an oath.
-
-Example Backgrounds — Temple Guardian (Military), Wandering Warframe (Scout), Clockwork Tinker (Magitech).
+* Appearance: Heavy silhouettes, etched runes or plate seams, glowing eyes, slow but deliberate movement. Skin of marble, basalt, bronze, driftwood, or brass filigree.
+* Names: Kallus, Omril, Rook, Bronzewain, Tik-Tok, Keshmet, Olmar, Granite Jack.
+* Motives / Ethics / Voice: Direct, literal, stubborn; dislike waste and lies; some bound by ancient pacts. Voices are often deep, resonant, with grinding undertones.
+* Culture: Communal “maintenance days,” ritual oiling or polishing, respectful storage of worn parts; eat for flavor, not fuel; rarely hurry unless defending an oath.
+* Example Backgrounds: Temple Guardian (Military), Wandering Warframe (Scout), Clockwork Tinker (Magitech).
 
 **Variants**
 
@@ -1048,15 +968,11 @@ Example Backgrounds — Temple Guardian (Military), Wandering Warframe (Scout), 
 
 **Notes**
 
-Appearance — Short and quick, feet calloused or bare, hair like tousled thistle.
-
-Names — Bramble, Kithra, Tansy, Willowjack, Nib, Pilcrow.
-
-Motives / Ethics / Voice — Hospitality given, hospitality owed; cautious mischief; voices like half‑remembered lullabies.
-
-Culture — Lantern feasts in hollow hills; roads marked with chalk‑sigils; taboos against breaking guest‑rites or insulting the host’s tableware.
-
-Example Backgrounds — Itinerant Cook (Merchant), Lantern Bearer (Scout), Road Scholar (Envoy).
+* Appearance: Short and quick, feet calloused or bare, hair like tousled thistle.
+* Names: Bramble, Kithra, Tansy, Willowjack, Nib, Pilcrow.
+* Motives / Ethics / Voice: Hospitality given, hospitality owed; cautious mischief; voices like half‑remembered lullabies.
+* Culture: Lantern feasts in hollow hills; roads marked with chalk‑sigils; taboos against breaking guest‑rites or insulting the host’s tableware.
+* Example Backgrounds: Itinerant Cook (Merchant), Lantern Bearer (Scout), Road Scholar (Envoy).
 
 **Variants**
 
@@ -1080,14 +996,11 @@ Where goblins court chaos and bugbears haunt the dark, **Hobgoblins** march in r
 
 **Notes**
 
-Appearance — rust-red or indigo skin, swept-back ears, brightly painted brows or masks.
-
-Names — Zhur-Sergeant, Liri Half-Step, Drummond the Saffron, Krix of Many Badges.
-
-Voice / Ethics — formal courtesy, battlefield humour, debts paid in gifts.
-Culture — nightly drill-dances, hoard-wine feasts, taboo against “naked steel” (every weapon must wear clan colours).
-
-Example Backgrounds — War-Drummer Bard (Sorcery), Lightning-Fist Acolyte (Military), Grell-Hunter (Scout).
+* Appearance: rust-red or indigo skin, swept-back ears, brightly painted brows or masks.
+* Names: Zhur-Sergeant, Liri Half-Step, Drummond the Saffron, Krix of Many Badges.
+* Voice / Ethics: formal courtesy, battlefield humour, debts paid in gifts.
+* Culture: nightly drill-dances, hoard-wine feasts, taboo against “naked steel” (every weapon must wear clan colours).
+* Example Backgrounds: War-Drummer Bard (Sorcery), Lightning-Fist Acolyte (Military), Grell-Hunter (Scout).
 
 **Variants**
 
@@ -1115,15 +1028,11 @@ In the Vastlands, all folk are human at heart; in Elyncia, *all human folk are f
 
 **Notes**
 
-Appearance — Infinite variation, from market‑hardened wanderers to velvet‑court diplomats.
-
-Names — Bran, Nia, Juno, Telar, Rafe, Aiko, Elira.
-
-Motives / Ethics / Voice — Curiosity that bleeds into meddling; loyalty that bleeds into rebellion; voices from every register of song, sermon, or satire.
-
-Culture — Patchwork societies that borrow and blend from every person they meet: road shrines to both mortal heroes and immortal fae lords, families that host pixie fosterlings, guilds who teach sword‑forms and spell‑forms in the same breath.
-
-Example Backgrounds — Road Scholar (Envoy), Deal‑Broker (Merchant), Troubleshooter (Magitech).
+* Appearance: Infinite variation, from market‑hardened wanderers to velvet‑court diplomats.
+* Names: Bran, Nia, Juno, Telar, Rafe, Aiko, Elira.
+* Motives / Ethics / Voice: Curiosity that bleeds into meddling; loyalty that bleeds into rebellion; voices from every register of song, sermon, or satire.
+* Culture: Patchwork societies that borrow and blend from every person they meet: road shrines to both mortal heroes and immortal fae lords, families that host pixie fosterlings, guilds who teach sword‑forms and spell‑forms in the same breath.
+* Example Backgrounds: Road Scholar (Envoy), Deal‑Broker (Merchant), Troubleshooter (Magitech).
 
 **Variants**
 
@@ -1149,15 +1058,11 @@ Sun-warmed scales, river-cool eyes, towering hulks and lithe dancers. **Lizard F
 
 **Notes**
 
-Appearance — tall and solid frames with emerald, ochre, or slate scales; fan crests or frills; tails used as rudders.
-
-Names — Sskara, Uru-Lom, Zheket, Mayaru, Naq-Quin.
-
-Motives / Ethics / Voice — calm, hissing cadence; respect for elders, waterways, and the midday sun.
-
-Culture — river-spirit totems carved from driftwood; communal sunbathing rites; taboo: never dam a sacred flow.
-
-Example Backgrounds — River Guide (Scout), Sun-Priest (envoy), Coral Mason (Artisan).
+* Appearance: tall and solid frames with emerald, ochre, or slate scales; fan crests or frills; tails used as rudders.
+* Names: Sskara, Uru-Lom, Zheket, Mayaru, Naq-Quin.
+* Motives / Ethics / Voice: calm, hissing cadence; respect for elders, waterways, and the midday sun.
+* Culture: river-spirit totems carved from driftwood; communal sunbathing rites; taboo: never dam a sacred flow.
+* Example Backgrounds: River Guide (Scout), Sun-Priest (envoy), Coral Mason (Artisan).
 
 **Variants**
 
@@ -1182,15 +1087,11 @@ Tall, lantern-eyed insect folk hunters with raptorial forelimbs and lacquered pr
 
 **Notes**
 
-Appearance — Tilted triangular faces, glossy eyes, petal-thin antennae; shell lacquer ranges jade to umber with ritual inlays.
-
-Names — K’xara, Thri-Sev, Mantiga, Lacquer-of-Blue, Resonant-Three.
-
-Motives / Ethics / Voice — Patient stalkers; prize clean hunts and worthy prey. Whisper-chitter speech punctuated by sudden clicks when excited.
-
-Culture — Molting rites under moonlight; exoskeleton lacquer guilds; flow-arts practice before dawn; taboo on wasteful killing. Famous saying: “Stillness draws the strike.”
-
-Example Backgrounds — Dream-Warden (Scout), Lighting-Fist Acolyte (Military), Shrine Keeper (Magitech).
+* Appearance: Tilted triangular faces, glossy eyes, petal-thin antennae; shell lacquer ranges jade to umber with ritual inlays.
+* Names: K’xara, Thri-Sev, Mantiga, Lacquer-of-Blue, Resonant-Three.
+* Motives / Ethics / Voice: Patient stalkers; prize clean hunts and worthy prey. Whisper-chitter speech punctuated by sudden clicks when excited.
+* Culture: Molting rites under moonlight; exoskeleton lacquer guilds; flow-arts practice before dawn; taboo on wasteful killing. Famous saying: “Stillness draws the strike.”
+* Example Backgrounds: Dream-Warden (Scout), Lighting-Fist Acolyte (Military), Shrine Keeper (Magitech).
 
 **Variants**
 
@@ -1215,15 +1116,11 @@ Thick-furred, earth-scented, and endlessly patient, the Marmot Folk dwell in lim
 
 **Notes**
 
-Appearance — Stocky, low-slung, with heavy claws and incisors always working at seeds or bits of bone. Their fur ranges from pale sandstone beige to dark basalt grey, often streaked with chalk dust. They adorn themselves with carved bone pendants and salt-thread charms.
-
-Names — Short and earthy: Brakka, Chru, Dovo, Elva, Fim, Garroo, Hraka, Juna, Kriv, Lova.
-
-Motives / Ethics / Voice — Protect their warrens, honor ancient bone-spirits, maintain quiet trade. Deep clan loyalty; will share food before gold; mistrust “loud folk” who trample stone. Low, grumbly mutters; a habit of “chewing” on words; long pauses as if tasting the air.
-
-Culture — Tuber stews, salt-curdled milk, roasted roots, and insect protein. Rites of bone-carving ceremonies mark births and deaths; the largest bone piece of a feast-animal becomes a shrine charm. Taboos on leaving a tunnel unwatched and unsealed, spilling salt, speaking a name three times in a row. They move in cautious single-file; carry heavy packs for trade but prefer to stay close to their warrens.
-
-Example Backgrounds — Warren Sentinel (Military), Tunnel Ranger (Scout), Bone Charm Crafter (Artisan).
+* Appearance: Stocky, low-slung, with heavy claws and incisors always working at seeds or bits of bone. Their fur ranges from pale sandstone beige to dark basalt grey, often streaked with chalk dust. They adorn themselves with carved bone pendants and salt-thread charms.
+* Names: Short and earthy: Brakka, Chru, Dovo, Elva, Fim, Garroo, Hraka, Juna, Kriv, Lova.
+* Motives / Ethics / Voice: Protect their warrens, honor ancient bone-spirits, maintain quiet trade. Deep clan loyalty; will share food before gold; mistrust “loud folk” who trample stone. Low, grumbly mutters; a habit of “chewing” on words; long pauses as if tasting the air.
+* Culture: Tuber stews, salt-curdled milk, roasted roots, and insect protein. Rites of bone-carving ceremonies mark births and deaths; the largest bone piece of a feast-animal becomes a shrine charm. Taboos on leaving a tunnel unwatched and unsealed, spilling salt, speaking a name three times in a row. They move in cautious single-file; carry heavy packs for trade but prefer to stay close to their warrens.
+* Example Backgrounds: Warren Sentinel (Military), Tunnel Ranger (Scout), Bone Charm Crafter (Artisan).
 
 **Variants**
 
@@ -1247,15 +1144,11 @@ Dragon-saved and sea-god blessed during the Second Breaking, Mer folk stride coa
 
 **Notes**
 
-Appearance — slick skin veined with opal scales; ripple-fringed ears; coral-grown jewelry; eyes like moonlit surf; some hide retractable fins or chitin carapace along arms or calves.
-
-Names — Ahira, Nerith, Moana, Kai, Ceallach, Tiare, Surya-Mako.
-
-Voice — cadenced like waves: hush-pause-crash; laughter rolls like pebbles.
-
-Culture — pearl-bone script, tide-oath contracts, storm festivals, trench-dragon pilgrimages; taboo: never waste fresh water at sea.
-
-Example Backgrounds — Coral Mason (Artisan), Tide-Cartographer (Scout), Dragon Emissary (Envoy).
+* Appearance: slick skin veined with opal scales; ripple-fringed ears; coral-grown jewelry; eyes like moonlit surf; some hide retractable fins or chitin carapace along arms or calves.
+* Names: Ahira, Nerith, Moana, Kai, Ceallach, Tiare, Surya-Mako.
+* Voice: cadenced like waves: hush-pause-crash; laughter rolls like pebbles.
+* Culture: pearl-bone script, tide-oath contracts, storm festivals, trench-dragon pilgrimages; taboo: never waste fresh water at sea.
+* Example Backgrounds: Coral Mason (Artisan), Tide-Cartographer (Scout), Dragon Emissary (Envoy).
 
 **Variants**
 
@@ -1297,15 +1190,11 @@ Nerthurians are those blessed by the spirit of Nerthus of the Vanir, elemental-k
 
 **Notes**
 
-Appearance — Towering forms of metal-veined stone, fossil-wood limbs, and green-lit eyes like slow lightning. Their skin might bloom moss in high-humidity or harden into obsidian gloss in lava-light.
-
-Names — Tharn-Mossdeep, Calia of the Singing Root, Bront Embermantle, Hollow-Glim.
-
-Motives / Ethics / Voice — Patience and permanence; speak in deliberate syllables layered with harmonic undertones. Hold memory sacred, consider impulsiveness a sign of decay.
-
-Culture — Rootsteep tea, fermented sporebreads, sun-cured lichen. Seasonal memory-spirals carved into stoneflesh; trance-rooting to commune with land-spirits. Taboos on cutting a live tree without singing a life-song; disrupting planting or funeral rites. Rarely move fast or far—but when they do, the landscape takes notice.
-
-Example Backgrounds — Architect Stone-Singer (Artisan), Verdant Warden (Scout), Wainwright/Shipwright (Magitech)
+* Appearance: Towering forms of metal-veined stone, fossil-wood limbs, and green-lit eyes like slow lightning. Their skin might bloom moss in high-humidity or harden into obsidian gloss in lava-light.
+* Names: Tharn-Mossdeep, Calia of the Singing Root, Bront Embermantle, Hollow-Glim.
+* Motives / Ethics / Voice: Patience and permanence; speak in deliberate syllables layered with harmonic undertones. Hold memory sacred, consider impulsiveness a sign of decay.
+* Culture: Rootsteep tea, fermented sporebreads, sun-cured lichen. Seasonal memory-spirals carved into stoneflesh; trance-rooting to commune with land-spirits. Taboos on cutting a live tree without singing a life-song; disrupting planting or funeral rites. Rarely move fast or far—but when they do, the landscape takes notice.
+* Example Backgrounds: Architect Stone-Singer (Artisan), Verdant Warden (Scout), Wainwright/Shipwright (Magitech)
 
 **Variants**
 
@@ -1335,15 +1224,11 @@ Broad-shouldered and sinew-wrapped, orcs stride the lands like living hills of m
 
 **Notes**
 
-Appearance — Standing 6–7 feet tall, orcs wear trophies of conquest: tusky grins, bone pendants, braided manes, and crudely hammered armor plates. Scars and ritual tattoos glow softly with noöspheric energy.
-
-Names — Short, guttural, and full of punch: Throg, Mazh, G’kar. Family epithets typically follow: “Skalebiter,” “Ironjaw,” or “Warheart.”
-
-Motives / Ethics / Voice — Driven by clan honor and battle-lust, orcs speak plainly: “Kill first, ask questions never.” They measure trust with deeds, not words, and laugh thunderously at danger.
-
-Culture — Charred game, spiced blood-broth, hearty root stews. A clan’s cook is as prized as its war-chief. The Trial of Blades at puberty; the Mark of the Fallen honoring ancestors in runic fire; Taboos around showing cowardice (shame-branding), broken oaths (blood debt), and dishonor of a fallen comrade (ritual burial required). Orc warbands travel light, favoring mobile camps on raised scree; they favor dawn marches to surprise foes.
-
-Example Backgrounds — Warband Judge (Envoy), Beleaguered Veteran (Military), Raider Exile (Scout).
+* Appearance: Standing 6–7 feet tall, orcs wear trophies of conquest: tusky grins, bone pendants, braided manes, and crudely hammered armor plates. Scars and ritual tattoos glow softly with noöspheric energy.
+* Names: Short, guttural, and full of punch: Throg, Mazh, G’kar. Family epithets typically follow: “Skalebiter,” “Ironjaw,” or “Warheart.”
+* Motives / Ethics / Voice: Driven by clan honor and battle-lust, orcs speak plainly: “Kill first, ask questions never.” They measure trust with deeds, not words, and laugh thunderously at danger.
+* Culture: Charred game, spiced blood-broth, hearty root stews. A clan’s cook is as prized as its war-chief. The Trial of Blades at puberty; the Mark of the Fallen honoring ancestors in runic fire; Taboos around showing cowardice (shame-branding), broken oaths (blood debt), and dishonor of a fallen comrade (ritual burial required). Orc warbands travel light, favoring mobile camps on raised scree; they favor dawn marches to surprise foes.
+* Example Backgrounds: Warband Judge (Envoy), Beleaguered Veteran (Military), Raider Exile (Scout).
 
 **Variants**
 
@@ -1368,15 +1253,11 @@ River-runners who treat whitewater as a road—fast, curious, and teamwork-proud
 
 **Notes**
 
-Appearance — Sleek, oil-sheen fur; whisker-fans that “read” turbulence; webbed hands with rope-calluses; waterproof scrip-pouches and driftwood charms.
-
- Names — Lutra Quickwater, Nerra Spray-Song, Eddy Skitter-Reed, Kiva Stone-Latch, Rill Copper-Wake, Brack of the Wharf.
-
-Motives / Ethics / Voice — Keep paths open, repay rescues, mock bullies. Bright, quick voices with whistles and click-beats for code.
-
-Culture — River-lodge feasts (smoked fish, stone-kettle stews), chalk-glyph waymarks on pilings, ropeway “sky roads” over canals; taboo on damming a livelihood stream without building a spirit-friendly bypass.
-
-Example Backgrounds — River Warden (Scout), Quartermaster (Merchant), Tech-Rigger (Magitech).
+* Appearance: Sleek, oil-sheen fur; whisker-fans that “read” turbulence; webbed hands with rope-calluses; waterproof scrip-pouches and driftwood charms.
+* Names: Lutra Quickwater, Nerra Spray-Song, Eddy Skitter-Reed, Kiva Stone-Latch, Rill Copper-Wake, Brack of the Wharf.
+* Motives / Ethics / Voice: Keep paths open, repay rescues, mock bullies. Bright, quick voices with whistles and click-beats for code.
+* Culture: River-lodge feasts (smoked fish, stone-kettle stews), chalk-glyph waymarks on pilings, ropeway “sky roads” over canals; taboo on damming a livelihood stream without building a spirit-friendly bypass.
+* Example Backgrounds: River Warden (Scout), Quartermaster (Merchant), Tech-Rigger (Magitech).
 
 **Variants**
 
@@ -1412,17 +1293,12 @@ Pane Touched folk are walking contradictions — pieces of dream, decree, and im
 
 **Notes**
 
-Appearance — Varies wildly: statuesque beings with radiant cracks, drifting silhouettes with masks for faces, captains with serpents for braids, and void‑fragments stitched into cloaks.
-
-Names — Grand or strange: Whispercoil, Foxfire‑on‑the‑Sea, Vox Tenebris, Glass‑Wing, Umbral‑Dawn.
-
-Names — Whispercoil, Foxfire-on-the-Sea, Vox Tenebris, Glass-Wing, Umbral-Dawn, Parallax
-
-Motives / Ethics / Voice — Some speak with calm inevitability, some with playful malice, some with the weary irony of half‑gods. Their words may echo, hum, or come from everywhere at once.
-
-Culture — Found wherever the unreal bleeds into the real: on skyjammer decks, in labyrinthine Courts, beneath starlit bridges where rituals are whispered. Their “holidays” are cosmic alignments, calendar glitches, or nights when too many moons rise.
-
-Example Backgrounds — Rift Emissary (Envoy), Void Court Fragment (Sorcery), Paradox Scribe (Artisan)
+* Appearance: Varies wildly: statuesque beings with radiant cracks, drifting silhouettes with masks for faces, captains with serpents for braids, and void‑fragments stitched into cloaks.
+* Names: Grand or strange: Whispercoil, Foxfire‑on‑the‑Sea, Vox Tenebris, Glass‑Wing, Umbral‑Dawn.
+* Names: Whispercoil, Foxfire-on-the-Sea, Vox Tenebris, Glass-Wing, Umbral-Dawn, Parallax
+* Motives / Ethics / Voice: Some speak with calm inevitability, some with playful malice, some with the weary irony of half‑gods. Their words may echo, hum, or come from everywhere at once.
+* Culture: Found wherever the unreal bleeds into the real: on skyjammer decks, in labyrinthine Courts, beneath starlit bridges where rituals are whispered. Their “holidays” are cosmic alignments, calendar glitches, or nights when too many moons rise.
+* Example Backgrounds: Rift Emissary (Envoy), Void Court Fragment (Sorcery), Paradox Scribe (Artisan)
 
 **Variants**
 
@@ -1452,17 +1328,12 @@ Porcelain Princes are not‑quite‑liches, scattering their soul across multipl
 
 **Notes**
 
-Appearance — Multiple identical bodies in porcelain masks and lacquered armor; some crack to show the pale, patchworked flesh beneath.
-
-Names — Vitreous Spark, Engobe Oxide, Clayfire Hundred, Meissen Unity.
-
-Motives / Ethics / Voice — “Eternal” survival, cartel‑like control of their polybody rites, conservative to a fault; voices echo in careful chorus.
-
-Motives / Ethics / Voice —
-
-Culture — Ceremonial maskings, body labs that grow new drones, decadent soirées where five mouths dine in unison and one body might not leave intact.
-
-Example Backgrounds — Masked Assassin (Military), Citadel Emissary (Envoy), Porcelain Walker Pilot (Scout).
+* Appearance: Multiple identical bodies in porcelain masks and lacquered armor; some crack to show the pale, patchworked flesh beneath.
+* Names: Vitreous Spark, Engobe Oxide, Clayfire Hundred, Meissen Unity.
+* Motives / Ethics / Voice: “Eternal” survival, cartel‑like control of their polybody rites, conservative to a fault; voices echo in careful chorus.
+* Motives / Ethics / Voice —
+* Culture: Ceremonial maskings, body labs that grow new drones, decadent soirées where five mouths dine in unison and one body might not leave intact.
+* Example Backgrounds: Masked Assassin (Military), Citadel Emissary (Envoy), Porcelain Walker Pilot (Scout).
 
 **Variants**
 
@@ -1487,15 +1358,11 @@ Quarterlings are the riotous, fearless little folk of Elyncia and the Vastlands 
 
 **Notes**
 
-Appearance — Small (3–4 ft) humanoids: fox‑ears, mossy tufts, soot‑smudged faces, blood‑streaked caps, greasy toolbelts, or faint inner glow.
-
-Names — Nibbin, Tashka, Clymber, Orfin, Grella, Mogget, Whistle‑in‑the‑Fog, Rattlejack, Drollin, Fizzwort.
-
-Motives / Ethics / Voice — Yapping, howling, shrill; even a whisper sounds like “OI\!”
-
-Culture — Clan feasts, stolen stew, mushroom ale, shrine graffiti, and too many contradictory myths about who started (and who ended) the Rebellion.
-
-Example Backgrounds — Thimble Duelist (Military), Dream Broker (Merchant), Magitech Fence (Magitech).
+* Appearance: Small (3–4 ft) humanoids: fox‑ears, mossy tufts, soot‑smudged faces, blood‑streaked caps, greasy toolbelts, or faint inner glow.
+* Names: Nibbin, Tashka, Clymber, Orfin, Grella, Mogget, Whistle‑in‑the‑Fog, Rattlejack, Drollin, Fizzwort.
+* Motives / Ethics / Voice: Yapping, howling, shrill; even a whisper sounds like “OI\!”
+* Culture: Clan feasts, stolen stew, mushroom ale, shrine graffiti, and too many contradictory myths about who started (and who ended) the Rebellion.
+* Example Backgrounds: Thimble Duelist (Military), Dream Broker (Merchant), Magitech Fence (Magitech).
 
 **Variants**
 
@@ -1545,15 +1412,11 @@ Rabbit Folk are Diana’s restless heroes — hearth‑tenders, riddlers, tricks
 
 **Notes**
 
-Appearance — Lean and long‑eared; fur from snowy white to umber brown; whiskers that twitch when magic hums.
-
-Names — Usami, Clover, Brindle, Thistle, Merriweather, Harelock, Hazel, Whim.
-
-Motives / Ethics / Voice — Impulsive curiosity, streaks of wisdom in strange places; voices often soft but quick, like a joke just waiting to be told.
-
-Culture — Foods: herbal stews, carrot wines, wild teas. Rites: spring festivals with moonlit dances; egg‑painting as minor divination. Taboos: stepping on a warren stone, spilling tea offered in trust. Travel Habits: wander widely, then return home with stories. Sayings: “The moon knows the way.” “A lucky paw never waits twice.”
-
-Example Backgrounds — Wandering Blade (Military), Hedge‑Witch (Sorcery), Trickster Oracle (Envoy).
+* Appearance: Lean and long‑eared; fur from snowy white to umber brown; whiskers that twitch when magic hums.
+* Names: Usami, Clover, Brindle, Thistle, Merriweather, Harelock, Hazel, Whim.
+* Motives / Ethics / Voice: Impulsive curiosity, streaks of wisdom in strange places; voices often soft but quick, like a joke just waiting to be told.
+* Culture: Foods: herbal stews, carrot wines, wild teas. Rites: spring festivals with moonlit dances; egg‑painting as minor divination. Taboos: stepping on a warren stone, spilling tea offered in trust. Travel Habits: wander widely, then return home with stories. Sayings: “The moon knows the way.” “A lucky paw never waits twice.”
+* Example Backgrounds: Wandering Blade (Military), Hedge‑Witch (Sorcery), Trickster Oracle (Envoy).
 
 **Variants**
 
@@ -1578,15 +1441,11 @@ The Rat Folk thrive in the gutters, warrens, and forgotten vaults of the world �
 
 **Notes**
 
-Appearance — Short and hunched, with fur ranging from soot‑grey to tawny brown; sharp whiskers, darting eyes, and tails that flick when thinking.
-
-Names — Skeeve, Marrowtail, Kitta, Whisk, Gnaw, Scuttle, Brassa, Tatter.
-
-Motives / Ethics / Voice — Loyalty to clan and secret ways; opportunistic but rarely cruel; voices are hushed, scratchy, and quick.
-
-Culture — Foods: stew‑bones, grain salvage, gutter‑greens. Rites: gutter‑weddings under dripping pipes, oath‑sworn “squeaks” marking a life debt. Taboos: drowning a rat, breaking a “squeak‑oath,” leaving a clan‑mark unheeded. Travel Habits: know every sewer, tunnel, and alley; often travel in packs or under disguise. Sayings: “The walls have tails.” “What the surface forgets, we remember.”
-
-Example Backgrounds — Gutter‑Scout (Scout), Guild Sneak (Rogue), Plague‑Speaker (Sorcery).
+* Appearance: Short and hunched, with fur ranging from soot‑grey to tawny brown; sharp whiskers, darting eyes, and tails that flick when thinking.
+* Names: Skeeve, Marrowtail, Kitta, Whisk, Gnaw, Scuttle, Brassa, Tatter.
+* Motives / Ethics / Voice: Loyalty to clan and secret ways; opportunistic but rarely cruel; voices are hushed, scratchy, and quick.
+* Culture: Foods: stew‑bones, grain salvage, gutter‑greens. Rites: gutter‑weddings under dripping pipes, oath‑sworn “squeaks” marking a life debt. Taboos: drowning a rat, breaking a “squeak‑oath,” leaving a clan‑mark unheeded. Travel Habits: know every sewer, tunnel, and alley; often travel in packs or under disguise. Sayings: “The walls have tails.” “What the surface forgets, we remember.”
+* Example Backgrounds: Gutter‑Scout (Scout), Guild Sneak (Rogue), Plague‑Speaker (Sorcery).
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1606,15 +1465,11 @@ Scaled conspirators who remember the first suns winding like serpents through th
 
 **Notes**
 
-Appearance — Jade, obsidian, or bronze scales; slit-pupil eyes; forked tongues that flicker with blue flame; some bear ornate hood-crests or cyber-gold implants.
-
-Names — Ssivara, Orochi-Zin, Kaalid, Coil-of-Dawn, Zin-Seth.
-
-Motives / Ethics / Voice — Soft sibilant speech; pursue hidden geometry of power; honor oaths sworn in venom and starlight.
-
-Culture — Secret Coil-Circles debate cosmology beneath ruin-pyramids; night markets trade dream-venom vials; taboo: breaking a sworn concentric oath.
-
-Example Backgrounds — Temple Cipher-Guard (Military), Relic-Broker (Magitech), Shadow Cartographer (Artisan).
+* Appearance: Jade, obsidian, or bronze scales; slit-pupil eyes; forked tongues that flicker with blue flame; some bear ornate hood-crests or cyber-gold implants.
+* Names: Ssivara, Orochi-Zin, Kaalid, Coil-of-Dawn, Zin-Seth.
+* Motives / Ethics / Voice: Soft sibilant speech; pursue hidden geometry of power; honor oaths sworn in venom and starlight.
+* Culture: Secret Coil-Circles debate cosmology beneath ruin-pyramids; night markets trade dream-venom vials; taboo: breaking a sworn concentric oath.
+* Example Backgrounds: Temple Cipher-Guard (Military), Relic-Broker (Magitech), Shadow Cartographer (Artisan).
 
 **Variants**
 
@@ -1643,15 +1498,11 @@ Prismatic “para‑humans” from the Violet Steppe and the Black City’s shim
 
 **Notes**
 
-Appearance — Skin and carapace shimmer from mother‑of‑pearl to oil‑slick black; eyes like cut gems.
-
-Names — Lazul, Corind, Opalin, Saphra, Prisme, Aurion
-
-Motives / Ethics / Voice — They “negotiate” reality itself; tones are courtly, commanding, occasionally blindingly smug.
-
-Culture — Prism‑banquets where wine is color‑coded for emotion; courts that outlaw “dull” colors; holy duels of projected light‑forms.
-
-Example Backgrounds — Prismatic Emissary (Envoy), Court Sorcerer (Sorcery), Light‑Sculpter (Artisan).
+* Appearance: Skin and carapace shimmer from mother‑of‑pearl to oil‑slick black; eyes like cut gems.
+* Names: Lazul, Corind, Opalin, Saphra, Prisme, Aurion
+* Motives / Ethics / Voice: They “negotiate” reality itself; tones are courtly, commanding, occasionally blindingly smug.
+* Culture: Prism‑banquets where wine is color‑coded for emotion; courts that outlaw “dull” colors; holy duels of projected light‑forms.
+* Example Backgrounds: Prismatic Emissary (Envoy), Court Sorcerer (Sorcery), Light‑Sculpter (Artisan).
 
 **Variants**
 
@@ -1676,15 +1527,11 @@ Humanoid spider fae who read fate in trembling threads and craft bamboo palaces 
 
 **Notes**
 
-Appearance — multi-limbed silhouettes, glossy carapace over humanoid torso, human faces with ocular clusters shimmering like dew.
-
-Names — Thrice‑Spun, Nox‑Web, Looming‑Lai, Silk‑Fang, Drift‑in‑Shadow, Docktor Claw
-
-Motives / Ethics / Voice — staccato clicks, polite detachment; value obligation nets over coins.
-
-Culture — Sun brewed dew-teas, candied insect sweets, mushroom broths. Rites of monthly web ceremonies and omen-reading; legendary deed-records stitched in silk. Taboos on cutting another’s thread without permission; burning silk in a shrine. They build orb temples spun from mist and bamboo.
-
-Example Backgrounds — Web‑Crafter (Artisan), Bamboo Architect (Artisan), Shadow Hunter (Scout).
+* Appearance: multi-limbed silhouettes, glossy carapace over humanoid torso, human faces with ocular clusters shimmering like dew.
+* Names: Thrice‑Spun, Nox‑Web, Looming‑Lai, Silk‑Fang, Drift‑in‑Shadow, Docktor Claw
+* Motives / Ethics / Voice: staccato clicks, polite detachment; value obligation nets over coins.
+* Culture: Sun brewed dew-teas, candied insect sweets, mushroom broths. Rites of monthly web ceremonies and omen-reading; legendary deed-records stitched in silk. Taboos on cutting another’s thread without permission; burning silk in a shrine. They build orb temples spun from mist and bamboo.
+* Example Backgrounds: Web‑Crafter (Artisan), Bamboo Architect (Artisan), Shadow Hunter (Scout).
 
 **Variants**
 
@@ -1718,15 +1565,11 @@ Tauran Folk are horned warriors born of shattered stone and defiant blood. Some 
 
 **Notes**
 
-Appearance — Massive bovine humanoids with thick hides, wide-set horns, and stone-chip jewelry.
-
-Names — Dor-Ax, Veera Ironhoof, Mazthak, Horn-of-Spires, Turrak the Unshaken
-
-Motives / Ethics / Voice — Loyal, proud, stubborn. Speak in deep, deliberate tones.
-
-Culture — Duel-pits and horn-blessing rites; taboo: collapsing a corridor without sacred cause.
-
-Example Backgrounds — Arena Champion (Military), Emissary of the Underground Courts (Envoy), Ashen Scout (Scout)
+* Appearance: Massive bovine humanoids with thick hides, wide-set horns, and stone-chip jewelry.
+* Names: Dor-Ax, Veera Ironhoof, Mazthak, Horn-of-Spires, Turrak the Unshaken
+* Motives / Ethics / Voice: Loyal, proud, stubborn. Speak in deep, deliberate tones.
+* Culture: Duel-pits and horn-blessing rites; taboo: collapsing a corridor without sacred cause.
+* Example Backgrounds: Arena Champion (Military), Emissary of the Underground Courts (Envoy), Ashen Scout (Scout)
 
 **Variants**
 
@@ -1751,15 +1594,11 @@ Trolls are wiry relatives of the towering giant folk. The first to turn wave‑j
 
 **Notes**
 
-Appearance — Tall (often 8–12 ft), skin from storm‑blue to moss‑grey, sometimes veined with glowing pebbles; tusks or horns common; scars set with blood-crystal magitech.
-
-Names — Korr, Brugg, Ulvik, Maika, Stone‑Eye, Sky‑Cairn.
-
-Motives / Ethics / Voice — Honor and hospitality clash with impish toll‑taking; voices like gravel, wind‑drums, and slow laughter.
-
-Culture — High‑Mountain Clans: carve stone‑spiral waystations & skyjammer moorings. Navigator Guilds: their sky‑wise elders teach star magic to worthy outsiders. Taboos on spilling blood on sacred peaks, refusing guest‑gift exchanges.
-
-Example Backgrounds — Skyjammer Pilot (Scout), Warband Leader (Military), Blood Crystal Artisan (Magitech).
+* Appearance: Tall (often 8–12 ft), skin from storm‑blue to moss‑grey, sometimes veined with glowing pebbles; tusks or horns common; scars set with blood-crystal magitech.
+* Names: Korr, Brugg, Ulvik, Maika, Stone‑Eye, Sky‑Cairn.
+* Motives / Ethics / Voice: Honor and hospitality clash with impish toll‑taking; voices like gravel, wind‑drums, and slow laughter.
+* Culture: High‑Mountain Clans: carve stone‑spiral waystations & skyjammer moorings. Navigator Guilds: their sky‑wise elders teach star magic to worthy outsiders. Taboos on spilling blood on sacred peaks, refusing guest‑gift exchanges.
+* Example Backgrounds: Skyjammer Pilot (Scout), Warband Leader (Military), Blood Crystal Artisan (Magitech).
 
 **Variants**
 
@@ -1787,15 +1626,11 @@ The Turtle Folk are adaptable wanderers and living shrines — patient, contempl
 
 **Notes**
 
-Appearance — Humanoid turtles and tortoises, shells painted with shrine symbols, graffiti prayers, or kintsugi cracks from old battles. Younger ones sport bright kerchiefs and “reenact” old Dream Net legends; the elders look like stone come alive.
-
-Names — Galapax, Meikhan, Donatro, Lhorange, Master Koru, Serenity‑in‑Stone.
-
-Motives / Ethics / Voice — Guard the roads, carry the shrines, live long enough to understand. Measured and thoughtful — with slang and catchphrases from Noospheric bleed‑through, “Totally shell‑shockin’\!”
-
-Culture — Tea ceremonies with river greens, hard tea cakes, and yes, occasionally “dream‑pizza.” Katas, calligraphy, and 3‑day meditations. Taboos on breaking another’s art, mocking an elder’s silence.
-
-Example Backgrounds — Thunder Fist Acolyte (Military), Dream Tech Broker (Merchant), Traveling Shrine Keeper (Envoy).
+* Appearance: Humanoid turtles and tortoises, shells painted with shrine symbols, graffiti prayers, or kintsugi cracks from old battles. Younger ones sport bright kerchiefs and “reenact” old Dream Net legends; the elders look like stone come alive.
+* Names: Galapax, Meikhan, Donatro, Lhorange, Master Koru, Serenity‑in‑Stone.
+* Motives / Ethics / Voice: Guard the roads, carry the shrines, live long enough to understand. Measured and thoughtful — with slang and catchphrases from Noospheric bleed‑through, “Totally shell‑shockin’\!”
+* Culture: Tea ceremonies with river greens, hard tea cakes, and yes, occasionally “dream‑pizza.” Katas, calligraphy, and 3‑day meditations. Taboos on breaking another’s art, mocking an elder’s silence.
+* Example Backgrounds: Thunder Fist Acolyte (Military), Dream Tech Broker (Merchant), Traveling Shrine Keeper (Envoy).
 
 **Variants**
 
@@ -1819,15 +1654,11 @@ Death was not the end — you rose again, whether by pact, curse, divine will, o
 
 **Notes**
 
-Appearance — Unmistakably post-mortal: lantern-glow in the chest or eyes, pallid skin with bone glints, funerary inks and warding knots, reliquary charms, and tidy repairwork where life once failed.
-
-Names — Severin Candlewright, Isola Last-Breath, Nyx Ossuary, Brother Meridian, Kade Salt-Promise, Tamsin Gravebright.
-
-Motives / Ethics / Voice — Vows and unfinished work are gravity. They prize measured justice, memory kept true, and debts paid forward. Voices run dry-echoed, wind-through-hollow, or lantern-soft.
-
-Culture — They trade passage songs for true names, refresh funerary inks each new moon, and carry bell-sigils with letters of passage. Cold-iron nails in thresholds are taboo, as is oath-breaking on consecrated ground or scattering a reliquary without witness. Though they don’t need food, they accept hospitality—salt sweets, ash-tea, bone-broth—to bind guest-rights, and they prefer shrine roads and night caravans while keeping a second ledger of favors owed to the living. Common sayings: “A kept vow is a second life,” “Name it, and the road remembers,” and “Let the quiet speak.”
-
-Example Backgrounds — Licensed necrotech (Magitech), Oath-Bound Warden (Scout), Archivist-Scribe (Artisan).
+* Appearance: Unmistakably post-mortal: lantern-glow in the chest or eyes, pallid skin with bone glints, funerary inks and warding knots, reliquary charms, and tidy repairwork where life once failed.
+* Names: Severin Candlewright, Isola Last-Breath, Nyx Ossuary, Brother Meridian, Kade Salt-Promise, Tamsin Gravebright.
+* Motives / Ethics / Voice: Vows and unfinished work are gravity. They prize measured justice, memory kept true, and debts paid forward. Voices run dry-echoed, wind-through-hollow, or lantern-soft.
+* Culture: They trade passage songs for true names, refresh funerary inks each new moon, and carry bell-sigils with letters of passage. Cold-iron nails in thresholds are taboo, as is oath-breaking on consecrated ground or scattering a reliquary without witness. Though they don’t need food, they accept hospitality—salt sweets, ash-tea, bone-broth—to bind guest-rights, and they prefer shrine roads and night caravans while keeping a second ledger of favors owed to the living. Common sayings: “A kept vow is a second life,” “Name it, and the road remembers,” and “Let the quiet speak.”
+* Example Backgrounds: Licensed necrotech (Magitech), Oath-Bound Warden (Scout), Archivist-Scribe (Artisan).
 
 **Variants:**
 
