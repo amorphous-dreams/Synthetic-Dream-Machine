@@ -441,6 +441,8 @@ Nocturnal gliders whose leather wings carry them between cliff-cities and cavern
 * Expert (+6): **[Ability Bonus – Spirited](#ability-bonus-spirited)**
 * Master (+9): **[Size](#size) – Large**
 
+**Description**
+
 Broad-shouldered guardians with ember-bright spirits, the Bear Folk move like walking hearths—slow until the moment they aren’t. They prize story circles, guest-right, and the defense of friends and forest alike, carrying war-hammers as readily as honey jars. In battle they crash like avalanches; in peace they carve hearth-stones, brew smoky meads, and remember debts by the glow of coals. Playing one means leaning into hospitality with steel behind it: laugh first, lift boulders second, and only rage when the fire truly needs stoking.
 
 **Notes**
