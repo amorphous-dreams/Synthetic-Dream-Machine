@@ -6312,34 +6312,25 @@ Smart players quickly realize that carrying their own supplies is not a good ide
 
 The vehicles in the transport table are all less cost effective than animals. It’s hard to keep machines running in the wilderness and their key value is transporting big heavy things that a single mule or camel couldn’t manage like magical sarcophagi, golden idols, and glass cannons.
 
-**Energy**
-
-Most vehicles burn synthetic fuel. Traditionally, this is refined from biomass with the use of biomagical eating animalcules and alchemical vats, or with a domesticated autofac. Some remote communities even refine their dead into energy.
-
+**Energy**  
+Most vehicles burn synthetic fuel. Traditionally, this is refined from biomass with the use of biomagical eating animalcules and alchemical vats, or with a domesticated autofac. Some remote communities even refine their dead into energy.  
 - Low-Q Diesolene, "Ole Belcher", costs €10 per sack and produces hot, iridescent smoke. Adds the "smoke" tag to a caravan.
 - Premium Guzzolene costs €20 per sack.
 - Oldtech Jetolene costs €50 per sack and adds the "fast" tag to a caravan. It burns white-hot and may explode engines.
 
-**Carting**
-
+**Carting**  
 Wheels are great. A creature can pull triple its normal capacity. A creature pulling one load can’t also carry a second load. Just no.
 
-**Dragging**
-
+**Dragging**  
 Using improvised stretchers, ropes, rollers or skids, a creature can pull double its normal capacity.
 
-**Flying**
-
+**Flying**  
 Not a good idea because of the Purple Haze, which rots human minds. At least, that’s what natives say. Also, there are fragments of stuckforce littering the sky, an invisible cutting hazard.
 
-**Golem**
+**Golem**  
+Golem vehicles use near-inexhaustible radiothermal batteries. Each lasts for decades. They are popular targets for thieves.
 
-Golem vehicles use near-inexhaustible radiothermal batteries.
-
-Each lasts for decades. They are popular targets for thieves.
-
-**Grazing**
-
+**Grazing**  
 Herbivores usually eat grass and other plants. In deserts, they consume a sack of supplies per week. Common supplies cost €2 per sack, like for humans. Camels only consume half, they’re cool.
 
 | Transport | Lvl | Description | Capacity | Speed | Requires | Cost |
@@ -6383,6 +6374,10 @@ Possible, but not smart. Moderate test once a week or something goes wrong (roll
 5. Straps break. Random cargo spills. Fragile things break.
 6. Random cargo crushed, loses half value. Badly packed, the fragile black light lotus leaf is now just so much powder.
 
+### Upgrading Vehicles and Mounts
+
+Customization is the name of the game. Smaller upgrades can be purchased for larger vehicles and creatures at double the cost. Some upgrades might not make sense at the referee’s discretion.
+
 ### Humanoids
 
 The caravan economics of UVG strongly discourage the use of 1 sack capacity humans. They can carry useful gear or 1 supply. They can’t graze, so they’ll eat that Supply in a week, and then what? It’s just not practical. They’re on the list to cover normal adventuring events and to tempt new players into setting off on a 2-week journey with 1 week of supplies and some instant enemies.
@@ -6416,10 +6411,6 @@ Managed with threats and fear. Isn’t paid wages. Slavery is evil.
 
 Tough professional. Skilled at packing and carrying stuff, preparing supply depots, and surviving in the wilds.
 
-### Upgrading Vehicles and Mounts
-
-Customization is the name of the game. Smaller upgrades can be purchased for larger vehicles and creatures at double the cost. Some upgrades might not make sense at the referee’s discretion.
-
 **Slave Porter**
 
 - **Capacity:** 2 sacks
@@ -6431,15 +6422,14 @@ Like a porter, but less free and more resentful.
 
 ### Humanoid Add-ons
 
-**Explosive Collar:** €20
+**Explosive Collar:** €20  
+Occupies: 0 Stones if worn, 1 Stone if carried or stored. Faced with certain death (cranial separation) vs possible death (an ancient tomb, a perilous bridge, or a desperate charge), people may find reserves courage they didn’t know they possessed. Collars are usually sold in 6 packs with a matching remote. Default range is 150 meters or so. Festive color options available.
 
-Occupies: 0 Stones if worn, 1 Stone if carried or stored.
+**Surgical Obedience:** €50, 50% chance to kill the participant.  
+With a sharpened spoon, some ultratech crystal neuron lances, strong drugs, and a bit of elbow grease, a (un)licensed neurochirurge will carve away the unpleasantly disobedient bits of a brain. Survivors will cheerfully obey any order. Eat my fingers? You’ve got it, Boss! Charge that hydratiger? I’m on it, yippee! Considered a bit too evil by even the most jaded evil warlords.
 
-Faced with certain death (cranial separation) vs possible death (an ancient tomb, a perilous bridge, or a desperate charge), people may find reserves courage they didn’t know they possessed. Collars are usually sold in 6 packs with a matching remote. Default range is 150 meters or so. Festive color options available.
-
-**Surgical Obedience:** €50, 50% chance to kill the participant. With a sharpened spoon, some ultratech crystal neuron lances, strong drugs, and a bit of elbow grease, a (un)licensed neurochirurge will carve away the unpleasantly disobedient bits of a brain. Survivors will cheerfully obey any order. Eat my fingers? You’ve got it, Boss! Charge that hydratiger? I’m on it, yippee! Considered a bit too evil by even the most jaded evil warlords.
-
-**Fabricated Backstory:** €10 For a nominal cost, the Psychefactors of the Emerald City will root through a subject’s psyche, extract their most shameful deeds, and write a brief report. Slavery feels more tolerable if you think the victims deserve it. Up to 20% of shameful deeds may be filler inserted by the Psychefactor to maximize moral superiority.
+**Fabricated Backstory:** €10  
+For a nominal cost, the Psychefactors of the Emerald City will root through a subject’s psyche, extract their most shameful deeds, and write a brief report. Slavery feels more tolerable if you think the victims deserve it. Up to 20% of shameful deeds may be filler inserted by the Psychefactor to maximize moral superiority.
 
 Vehicles & Mounts 181
 
@@ -6469,10 +6459,10 @@ Formerly, a useless nobody. Now a useful ... biomachine.
 
 **Skeleton Add-Ons**
 
-**Chrome Plating:** €10 Say goodbye to stealth. Thoughtful bandits may mistake the skeletons for combat golems, glitterdust ghosts, or something worse.
+**Chrome Plating:** €10  
+Say goodbye to stealth. Thoughtful bandits may mistake the skeletons for combat golems, glitterdust ghosts, or something worse.
 
-**Geometric Protocol:** €20
-
+**Geometric Protocol:** €20  
 At a shouted word of command, the skeletons assemble into a prearranged formation or shape. With enough skeletons, a caravan can create an observation tower, a wall, or a bone crab.
 
 **Zombie Porter**
@@ -6484,10 +6474,10 @@ At a shouted word of command, the skeletons assemble into a prearranged formatio
 
 **Zombie Add-Ons**
 
-**Rubberized Coating:** €10 A thick layer of flesh-preserving epoxy. Sealed glass goggles and copper ear-discs keep the smell inside while letting the zombie function at peak efficiency.
+**Rubberized Coating:** €10  
+A thick layer of flesh-preserving epoxy. Sealed glass goggles and copper ear-discs keep the smell inside while letting the zombie function at peak efficiency.
 
-**Berserker Gland:** €50
-
+**Berserker Gland:** €50  
 A mechanical combat routine jewel. Insert it into the zombie and activate it later with the remote wand, turning the zombie into a relentless killing machine. The activation is irreversible and the zombie cannot tell friend from foe, so plan carefully.
 
 **Meat Crawler**
@@ -6501,10 +6491,10 @@ What do you do if you come across a plague pit and have both a necromancer and a
 
 **Meat Crawler Add-Ons**
 
-**Dermal plating:** €800 Up-armored, the meat crawler is essentially immune to small arms and any melee weapon weaker than a chainsaw.
+**Dermal plating:** €800  
+Up-armored, the meat crawler is essentially immune to small arms and any melee weapon weaker than a chainsaw.
 
-**Skin tent:** €200
-
+**Skin tent:** €200  
 A yurt of leather and sinew growing on the meat crawler’s back. Space for up to 12 humans with good nasal filters.
 
 182 The Stuff
@@ -6586,19 +6576,17 @@ Astonishing amalgams of muscle and cybernetics sheathed in superior skin. These 
 
 ### Animal Add-Ons
 
-**Babel Gem:** €100
-
+**Babel Gem:** €100  
 Embedded, gives the beast a voice and human-form personality overlay. Works on most beasts, but increases the chance of vomish infection. Obedience not guaranteed.
 
-**Stepfall Shoes:** €80
-
+**Stepfall Shoes:** €80  
 Made from bits of oldtech ur-metal. When moving at top speed, the plates add a tiny bit of lift, letting the beast charge across small dips, avoid holes, and leap majestically. They leave xenon contrails.
 
-**Afterburner:** €60
-
+**Afterburner:** €60  
 This convenient surgical upgrade stores gaseous digestive byproducts in a small canister, for use in cooking fires or a sudden burst of speed. The speed increase may just be the result of fear.
 
-**Plug-in Battery:** €200 Occupies 1 sack. A rechargeable golem-style battery for backup power. The beast can go without grazing for up to four weeks (it still requires water). Alternatively, the battery can recharge a suit of golem armor or other oldtech artifact. Recharging the battery takes a couple of hours at any oldtech charging platform or obelisk.
+**Plug-in Battery:** €200  
+Occupies 1 sack. A rechargeable golem-style battery for backup power. The beast can go without grazing for up to four weeks (it still requires water). Alternatively, the battery can recharge a suit of golem armor or other oldtech artifact. Recharging the battery takes a couple of hours at any oldtech charging platform or obelisk.
 
 Vehicles & Mounts 183
 
@@ -6648,18 +6636,16 @@ How else are you going to move an obelisk? The immense weight of these wagons me
 
 All four sizes of pulled vehicle are a variation and elaboration on the wheel + axle + bed design. They can use the same upgrades, so prices are listed for each of the sizes in order.
 
-**Sail:** €5 / €10 / €20 / €40
-
+**Sail:** €5 / €10 / €20 / €40  
 Adds a tiny bit of extra speed. Not worth quantifying mechanically, but it improves morale (especially if you pass people without a sail). A great way to display your company’s logo.
 
-**Hull-Tight:** €20 / €40 / €80 / €160 Designed to float across calm rivers. Seams caulked, wheels detachable, handles convertible into steering oars or push-poles.
+**Hull-Tight:** €20 / €40 / €80 / €160  
+Designed to float across calm rivers. Seams caulked, wheels detachable, handles convertible into steering oars or push-poles.
 
-**Camo Net:** €10 / €20 / €40 / €80
-
+**Camo Net:** €10 / €20 / €40 / €80  
 Not as good as true rainbow silk, but a cheap and waterproof landscape mimic. Lets you hide your vehicle from casual scouting. Just don’t wander away from your camp in the dark.
 
-**Chitincap Hull:** €100 / €200 / €400 / €800
-
+**Chitincap Hull:** €100 / €200 / €400 / €800  
 Fibrous, grown and woven components replace heavy wood. The result is a lighter, but equally strong vehicle, that is much easier to maneuver in mud and on poor roads.
 
 ### Metal Steeds
@@ -6674,17 +6660,17 @@ One-way tickets to organ donation. If it’s 90% engine, 8% wheels, and 2% seat,
 
 ### Metal Steed Add-Ons
 
-**Gun Mount:** €50 Lets the rider fire a weapon while roaring along at full speed. The weapon must fit in the rider’s inventory. Attaching or detaching it takes 2 rounds.
+**Gun Mount:** €50  
+Lets the rider fire a weapon while roaring along at full speed. The weapon must fit in the rider’s inventory. Attaching or detaching it takes 2 rounds.
 
-**Sidecar:** €500
-
+**Sidecar:** €500  
 Increases capacity by 1 sack, but loses the Fast trait.
 
-**Aquatic:** €1,000
-
+**Aquatic:** €1,000  
 Sometimes, all the good loot is buried at the bottom of a lake. The vehicle is very, very slow on its stubby land-carriage, but it can move underwater. It’s not a proper submarine, just a pressurized pod with engines; a diving suit with attitude. The driver can wiggle their arms through thick diving gloves.
 
-**Gyrocoptic:** €1,000 Flying in the Ultraviolet Grasslands is a bad idea. Bits of invisible stuckforce shred aircraft. Purple haze rots your brain. Dormant anti-missile defense systems wake up and think "Oh, that looks interesting." Still it beats walking. A caravan with a flying vehicle gains advance warning of most encounters. Fliers ignore terrain.
+**Gyrocoptic:** €1,000  
+Flying in the Ultraviolet Grasslands is a bad idea. Bits of invisible stuckforce shred aircraft. Purple haze rots your brain. Dormant anti-missile defense systems wake up and think "Oh, that looks interesting." Still it beats walking. A caravan with a flying vehicle gains advance warning of most encounters. Fliers ignore terrain.
 
 184 The Stuff
 
@@ -6701,26 +6687,22 @@ A little bigger, a little sturdier, and a whole lot dryer in the rain. Some are 
 
 ### Wicker Autowagon Add-Ons
 
-**Nitro:** €50 per use
-
+**Nitro:** €50 per use  
 For up to 1 minute, the vehicle moves at ludicrous speed.
 
-**Snazzy Paintjob:** €100 Shiny and polished. If normal colors aren’t good enough for you, options include: scarabeo, pearl-tone, fordite swirl supreme, vantablack, gibbon, taupeamarine, and splunge.
+**Snazzy Paintjob:** €100  
+Shiny and polished. If normal colors aren’t good enough for you, options include: scarabeo, pearl-tone, fordite swirl supreme, vantablack, gibbon, taupeamarine, and splunge.
 
-**Jet Booster:** €1,000
-
+**Jet Booster:** €1,000  
 Occupies 1 sack. Probably a terrible idea, but always popular. The vehicle moves at ludicrous speed for up to 10 minutes, soaring across small buildings and large crevasses. Uses up almost all the vehicle’s stored fuel. Proper oldtech jetolene lets the vehicle use this ability twice on one supply of fuel.
 
-**Dropper:** €300
-
+**Dropper:** €300  
 Occupies 1 sack. The back of the vehicle opens up and drops something. Could be a mine, attack vomes, oil, or meta-caltrops. The sack occupied by the dropper includes its loadout. For an extra €100, the dropper can launch forward or sideways instead, like an ejector seat or a compressed air cannon.
 
-**Hover Wheels:** €1,000
-
+**Hover Wheels:** €1,000  
 Billowing air-jets, stuckforce discs, or dozens of spinning propeller blades. It’s not practical, but it is cool. Ignores mildly difficult terrain.
 
-**Hood Ornament:** €100
-
+**Hood Ornament:** €100  
 Shiny, chrome, and, in emergencies, a good thing to cling on to.
 
 ### Road Yacht
@@ -6736,36 +6718,34 @@ All the blackthumbs know their names and their vital gubbins: sparkulator, light
 
 ### Road Yacht Add-Ons
 
-**Luxury Seats:** €300 Made of genuine synth-leather (from genuine synth-cows) and stuffed with autofabulous springs.
+**Luxury Seats:** €300  
+Made of genuine synth-leather (from genuine synth-cows) and stuffed with autofabulous springs. Even folds down into a bed. Hula bobble-head totem doll optional.
 
-Even folds down into a bed. Hula bobble-head totem doll optional.
+**Air Conditioning:** €500  
+Has a magic box that cools the cabin. Probably involves a bound demon. Essential in hot climes. It’s very impressive.
 
-**Air Conditioning:** €500 Has a magic box that cools the cabin. Probably involves a bound demon. Essential in hot climes. It’s very impressive.
+**Fridgermerator:** €1,000  
+Occupies 1 sack. Can cool up to 6 sacks of storage space. Excellent for transporting perishable fruit, bodies, fruiting bodies, etc.
 
-**Fridgermerator:** €1,000 Occupies 1 sack. Can cool up to 6 sacks of storage space. Excellent for transporting perishable fruit, bodies, fruiting bodies, etc.
+**Para-Radio Set:** €500  
+Most broadcasts these days aren’t fit for mortal ears, but you can get echoes of tunes long past (or yet to come), coordinate with other vehicles or settlements (weather permitting), and ... U#ERROR404.
 
-**Para-Radio Set:** €500 Most broadcasts these days aren’t fit for mortal ears, but you can get echoes of tunes long past (or yet to come), coordinate with other vehicles or settlements (weather permitting), and ... U#ERROR404.
-
-**Loudspeaker:** €100
-
+**Loudspeaker:** €100  
 Very loud. Blocks negative vibrations.
 
-**Big Gun:** €1,500 Occupies 2 sacks, typically 1 for the gun and 1 for the ammo, maintenance equipment, and blast shields. Options include:
+**Big Gun:** €1,500  
+Occupies 2 sacks, typically 1 for the gun and 1 for the ammo, maintenance equipment, and blast shields. Options include:  
+- **Flambeur:** 3d6 fire damage, Medium, Reload 6. Sets on fire.
+- **Chaingun:** 2d12, Medium, Reload 3. May propel a car backwards.
+- **Lazor:** 3d8, Short, Reload 5. Can cut down small trees.
 
-**Flambeur:** 3d6 fire damage, Medium, Reload 6. Sets on fire.
+**Turret:** €500  
+Occupies 1 sack. Lets a gun mount or a big gun fire in all directions instead of a fixed direction. Also makes a vehicle look intimidating.
 
-**Chaingun:** 2d12, Medium, Reload 3. May propel a car backwards.
-
-**Lazor:** 3d8, Short, Reload 5. Can cut down small trees.
-
-**Turret:** €500 Occupies 1 sack. Lets a gun mount or a big gun fire in all directions instead of a fixed direction. Also makes a vehicle look intimidating.
-
-**Safe:** €200
-
+**Safe:** €200  
 Occupies 1 sack. Can hold 1 sack of valuables in a spirit-locked steel egg. Proof against most simple thieves, pilferers, and quarterlings.
 
-**Smoke Launchers:** €100, plus €10 per use
-
+**Smoke Launchers:** €100, plus €10 per use  
 Medium range. Fills a medium-sized area with opaque smoke. Makes shooting or boarding a caravan difficult, but tends to attract attention. Additional colors available for a small fee.
 
 Vehicles & Mounts 185
@@ -6783,12 +6763,10 @@ Tall, striking, astonishing testaments to biomancy. Living creatures modified an
 
 ### Walker Add-Ons
 
-**Escape Pod:** €600
-
+**Escape Pod:** €600  
 Occupies 1 sack. Lets 4 sacks of capacity (2 people and their inventories) escape a wreck in the event of a catastrophic failure.
 
-**Chainsaw Arm:** €1,000
-
+**Chainsaw Arm:** €1,000  
 Occupies 3 sacks. Deals 4d8 melee damage and ignores armor.
 
 Ponderous and inaccurate against small targets.
@@ -6836,43 +6814,35 @@ A mechanical mouth and biomatter converter. Now the walker can feed itself by gr
 
 ### Autogolem Add-Ons
 
-**Water Closet:** €500
-
+**Water Closet:** €500  
 Occupies 4 sacks. Toilet, sink, and shower. Ludicrously luxurious for the deep grasslands. Will impress anyone unused to plumbing.
 
-**Carbecue Pod:** €1,000
-
+**Carbecue Pod:** €1,000  
 Occupies 2 sacks. Room for a cook to whip up delicious fast food.
 
-**Observation Deck:** €200
-
+**Observation Deck:** €200  
 Useless, impractical, and very classy. If you’re going to sail across the grasslands, a chrome-railed balcony is the place to be on a calm Orangemonth night.
 
-**Hydraulic Throne:** €1,000
-
+**Hydraulic Throne:** €1,000  
 Occupies 1 sack. Gold-plated, neon-limned, dolly-mounted automechanical seat of grandeur. Larger thrones have larger cranes. Could also be a giant visage with stage flame jets.
 
-**Ram:** €200
-
+**Ram:** €200  
 Occupies 2 sacks. Can be spiked at no extra charge. The better to bulldoze smaller vehicles. Works on zombies, too.
 
-**Winch, Jacks, and Shovels:** €100
-
+**Winch, Jacks, and Shovels:** €100  
 Occupies 1 sack. Gets a vehicle un-stuck in most conditions.
 
-**Luxury Pod:** €500 Occupies 2 sacks. A private suite for one person and their gear. Comes with a small writing desk, folding bed-chair, orb lamp, and adorable cupboards for toiletries and snacks.
+**Luxury Pod:** €500  
+Occupies 2 sacks. A private suite for one person and their gear. Comes with a small writing desk, folding bed-chair, orb lamp, and adorable cupboards for toiletries and snacks.
 
-**Pleasure Pod:** €1,000
-
+**Pleasure Pod:** €1,000  
 Occupies 2 sacks. As a luxury pod, but with IV dispensers, drugs cabinet (drugs not included), and additional horizontal surfaces.
 
-**Medical Pod:** €3,000
+**Medical Pod:** €3,000  
+Occupies 4 sacks. Room for 2 patients and a doctor. Proper medical equipment, drains, ominous lights, and sterile plastic sheeting. Healing on the road has never been this easy!
 
-Occupies 4 sacks. Room for 2 patients and a doctor. Proper medical equipment, drains, ominous lights, and sterile plastic sheeting.
-
-Healing on the road has never been this easy!
-
-**Levi Drive:** €7,000 Occupies 4 sacks. Uses oldtech fold-field engines and levitation lenses to ... hover magically. Whooshing sound effects, flickering lights, and impressive blasts optional. Ignore difficult terrain and impress the fallen quarterlings who still worship the oldtech.
+**Levi Drive:** €7,000  
+Occupies 4 sacks. Uses oldtech fold-field engines and levitation lenses to ... hover magically. Whooshing sound effects, flickering lights, and impressive blasts optional. Ignore difficult terrain and impress the fallen quarterlings who still worship the oldtech.
 
 _Left: road yacht with levi drive (a semi-legal upgrade)._ _Right: a great war engine of the South Ivory Khan._
 
@@ -6887,25 +6857,25 @@ A mobile fortress, a mobile townhouse, a scavenged autofac, or perhaps just a ve
 
 ### War Engine Add-Ons
 
-**Armor Plating:** €1,000 Occupies 4 sacks. The vehicle ignores small arms, medium arms, and glancing hits from heavier weapons.
+**Armor Plating:** €1,000  
+Occupies 4 sacks. The vehicle ignores small arms, medium arms, and glancing hits from heavier weapons.
 
-**Big Treads:** Free The true all-terrain solution. Cross rocks, rivers, mud, fire, flaming rivers of mud, anti-personnel mines and smaller vehicles. The war engine now moves Incredibly Slowly. Also, always very easy to track.
+**Big Treads:** Free  
+The true all-terrain solution. Cross rocks, rivers, mud, fire, flaming rivers of mud, anti-personnel mines and smaller vehicles. The war engine now moves Incredibly Slowly. Also, always very easy to track.
 
-**Really Big Gun:** €3,000 Occupies 4 sacks, typically 2 for the gun and 2 for the ammo, fire prevention equipment, and earplugs. Seriously, what are you expecting to fight out here?
+**Really Big Gun:** €3,000  
+Occupies 4 sacks, typically 2 for the gun and 2 for the ammo, fire prevention equipment, and earplugs. Seriously, what are you expecting to fight out here?  
+- **Artillery Tube:** 2d10x1d10, Very Very Long, Reload 20, blast. Ignores intervening terrain and common sense. Very loud. Anything smaller than a road yacht must Save vs evaporation.
+- **Doom Laser:** 3d20, Very Very Long, Reload 10, requires 1 round to charge before firing. Pwiiizzzzzzk!
 
-**Artillery Tube:** 2d10x1d10, Very Very Long, Reload 20, blast. Ignores intervening terrain and common sense. Very loud. Anything smaller than a road yacht must Save vs evaporation.
-
-**Doom Laser:** 3d20, Very Very Long, Reload 10, requires 1 round to charge before firing. Pwiiizzzzzzk!
-
-**Coalem Drive:** €2,000
-
+**Coalem Drive:** €2,000  
 Occupies 4 sacks, requires 1 engineer. Boilers, furnace, maw, scrapers, smokestacks. The war engine can now graze on any available biomatter, eating its way through the landscape. Coal lets it go a little faster. Doubles as a pizza oven.
 
-**Warlock Tower:** €2,000
-
+**Warlock Tower:** €2,000  
 Occupies 6 sacks. A black tower of steel and rivets and chrome blades rises from the middle of the war engine. It looks scary. Loudspeakers and light show included.
 
-**Trophy Room:** €2,000 Occupies 12 sacks. Essentially, a mobile feasting hall the size of a longhouse with room for a dozen guests.
+**Trophy Room:** €2,000  
+Occupies 12 sacks. Essentially, a mobile feasting hall the size of a longhouse with room for a dozen guests.
 
 Vehicles & Mounts 187
 
@@ -7815,7 +7785,7 @@ Level to Generic Creature Translator
 
 ## **A-Z of Lifeforms**
 
-**Autofac**
+### Autofac
 
 Artificial organisms or organic machines created in a forgotten age—perhaps by combining wizards and autonomous vehicles in an unholy union. Sages speculate they were once designed to produce useful commodities. Now, most are leaking menaces, spewing fumes as they ravage the land to churn out odd, dangerous, and mostly useless artifacts or oozes.
 
@@ -7878,7 +7848,7 @@ This One is Special Because It ...
 
 <a id="page_0204"></a>
 
-**Cat Lord of the Violet City (Cat)**
+### Cat Lord of the Violet City (Cat)
 
 The Purple God(dess), divinity of magic, and most prominent deity of the Violet City has a fondness for cats. Indeed, cats are the rulers of the Purple Land—through their doting human servants.
 
@@ -7956,7 +7926,7 @@ They have cute little opposable thumbs, sharp claws and a keen sense of smell. I
 
 - **Cat Pet:** A secondary character. The cat pet’s goal in life is to feed, groom, and care for “their” cat. Usually human.
 
-**Fetish**
+### Fetish
 
 Matter imbued with a spirit or demon drawn to a wizard’s sacrifice.
 
@@ -8017,7 +7987,7 @@ Most wizards can create a basic wicker and bone fetish by sacrificing their vita
 | Strong | L4, Life 32, punching, weakening aura | 6 life, 3 ability points |
 | Giant | L5, Life 50, devouring, destroying | 8 life, 3 ability points |
 
-**Golem**
+### Golem
 
 Soulless automaton powered directly from the source of creation. A few industrious golems may uplift a tribe into a civilized city or turn a small city-state into a powerful empire. Poorly built, damaged, or jury-rigged golems are known to go amok or explode catastrophically. Recall the Salt Reassembly Incident of the 7th year of the Era of Saffron Ascendant.
 
@@ -8072,7 +8042,7 @@ Golems as PCs
 
 <a id="page_0206"></a>
 
-**Great Folk**
+### Great Folk
 
 A human collective that developed from a behemoth maintenance caste Long Long Ago. Their stories are a bit garbled, but when the Gods of the Great Beasts died / disappeared / ascended into the higher world, the Great Folk took their place. Their palaces slowly crumbled and the beasts died without the Gods’ motive spirits, but the Great Folk survived. Within the narrow confines of their gargantuan corpse worlds they thrived, becoming some of the best bone-sculptors and sinew-stitchers in the Steppe.
 
@@ -8138,7 +8108,7 @@ Deeply strange to Rainbowlanders in custom and look, the great folk are neverthe
 
 - **Mandatory Skills:** Hard-wired biomancy and animal husbandry aptitudes at the cost of other traits.
 
-**Human (Rainbowlander)**
+### Human (Rainbowlander)
 
 Common pan-humanity includes all the close‐to-baseline sentient and soulful post-humans. This includes retro-humans, dwarfs, half-elfs, halflings, quarterlings, and half-orcs.
 
@@ -8205,7 +8175,7 @@ Humans as PCs
 
 Humans can change their minds during character creation or afterwards, rearrange their abilities, mix and match backgrounds, and choose how they look pretty much at will. Do they want little horns, pointy tails, and golem-derived legs? Sure, fine—so long as they can explain it. If using classes, they can advance as any class.
 
-**Marmotfolk (Human?)**
+### Marmotfolk (Human?)
 
 Outsiders call these humans the Marmotfolk and a glance explains why.
 
@@ -8272,7 +8242,7 @@ Marmotfolk as PCs
 
 <a id="page_0208"></a>
 
-**Porcelain Prince (Para Human)**
+### Porcelain Prince (Para Human)
 
 Steppeland not-quite-liches who seek immortality by spreading their vital cognitive essence among several bodies linked by real‐time glandular psyche-to-psyche links. They are unified by their cartelist monopoly on polybody magical techniques and centered around the Porcelain Citadel. Widely regarded as decadent and weak, though the criticist theoreticians of the New Orangery School argue that they are a strong influence on the BureaucratCorporativists of the Emerald City Incorporation. Their own name for themselves, if they even have one, is not common knowledge.
 
@@ -8350,7 +8320,7 @@ A polybody may involve a merger of bodies and psyches, rather than outright domi
 
 <a id="page_0209"></a>
 
-**Post-Mortal**
+### Post-Mortal
 
 There’s always somebody trying to cheat death. Long Ago, perhaps, one could become abmortal. Now, those secrets are lost and the proof is in these sad creatures.
 
@@ -8403,7 +8373,7 @@ So you died. Ok, what now?
 
 - **Repair:** Requires a necro-biomancer and fresh parts.
 
-**Radiation Ghost**
+### Radiation Ghost
 
 Accreted remnants of personalities fried into the fabric of space and smeared across the vastness of time.
 
@@ -8450,7 +8420,7 @@ This radiation ghost ...
 
 <a id="page_0210"></a>
 
-**Quarterling**
+### Quarterling
 
 Many waffling sages say that quarterlings are merely obscure human phenotypes which retain lingish characteristics, from exceptional hand-eye coordination to unusual fur coverage.
 
@@ -8520,7 +8490,7 @@ Quarterling Clannotype Generator
 
 <a id="page_0211"></a>
 
-**Spectrum Satrap (Para-Human)**
+### Spectrum Satrap (Para-Human)
 
 Para-human cult or clan living far to the west. They travel in great prismatic walkers and are fond of illusions and radiant magics.
 
@@ -8594,7 +8564,7 @@ Restoring a Satrap body costs around €5,000. Satraps in good standing have acc
 
 <a id="page_0212"></a>
 
-**Steppe Nomad, Steppelander (Humans)**
+### Steppe Nomad, Steppelander (Humans)
 
 The uncommon humanity of the vast steppes, inheritors of the Long Ago, warriors against the vast madness left by fall after fall. Many changes were made to them Long Ago: from light fur and dappled patterns to snake eyes or gills. Still, though cityborn might disagree, the Steppelanders are as human as they come.
 
@@ -8666,7 +8636,7 @@ All share these traits and skills.
 
 <a id="page_0213"></a>
 
-**Ultra (After-Human)**
+### Ultra (After-Human)
 
 Body-hopping spirits that rewrite the spiritual vital essence of their hosts to suit their needs. If they truly exist, and are not simply fish tales, they live in the wildest of wild places.
 
@@ -8752,7 +8722,7 @@ A fresh body-personality is like a new shoe, tight and stiff in all the wrong pl
 
 <a id="page_0214"></a>
 
-**Vech, Sentient**
+### Vech, Sentient
 
 Long ago, even before the demiurges gave the world to the living, the line between evolved life and machine life blurred. Microscopic synthetics crawled in the bloodstreams, meat machines served the creators, and post-organic plants vivified whole cities. Meanwhile, human-brained void swimmers played the solar fire lines and engineered gravity to build constellations of living worlds in the sky.
 
@@ -8807,7 +8777,7 @@ This Magnificent Vech ...
 
 <a id="page_0215"></a>
 
-**Vomes (Violent Mechanisms)**
+### Vomes (Violent Mechanisms)
 
 Self-replicating synthetic organism or auto-golems, many of them hive-minded. They do not seem to have any overarching organization, most seem incapable of communication. But ... are they truly as mad and half-witted as they seem?
 
@@ -8893,7 +8863,7 @@ Vome PCs can gain mutations (p.200) or implants (p.194) as integrated traits whe
 
 <a id="page_0216"></a>
 
-**Water People or Cold Vomes**
+### Water People or Cold Vomes
 
 Living mostly beneath the limpid surface of Three Sticks Lake is a strange people. Their neighbors call them “cold vomes” because of their cold flesh or “water people” because they are amphibious. But what are they, really?
 
@@ -10574,7 +10544,7 @@ Any PC. Bulk sales take a week.
 
 **Carousing (P16)**
 
-Any PC. Spend a week & €1d6*x100, then gain that many XP & roll. Can't pay = [-] on roll. *exploding*
+Any PC. Spend a week & €1d6\*x100, then gain that many XP & roll. Can't pay = [-] on roll. \*exploding
 
 | roll ...and consequences | outcome |
 | --- | --- |

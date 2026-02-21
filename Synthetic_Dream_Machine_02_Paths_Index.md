@@ -3,7 +3,7 @@ layout: gruv_book_page_adapter
 title: 'SDM Paths Index'
 published: true
 ---
-# SDM Paths Navigation Index
+# SDM Paths Index
 
 - FTLS = Flying Triremes and Laser Swords
 - OGA = Our Golden Age

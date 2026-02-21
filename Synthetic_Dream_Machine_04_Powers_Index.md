@@ -7,152 +7,128 @@ published: true
 
 <a id="sdm-power-table-of-contents"></a>
 
-- <a id="sdm-power-access-blessing-one-autosoma-anchor"></a> [Access Blessing One — Autosoma](#sdm-power-access-blessing-one-autosoma)
-- <a id="sdm-power-access-no-tree-anchor"></a> [Access Noötree](#sdm-power-access-no-tree)
-- <a id="sdm-power-adulation-rejuvenation-anchor"></a> [Adulation Rejuvenation](#sdm-power-adulation-rejuvenation)
-- <a id="sdm-power-akaula-s-sacrificial-hero-anchor"></a> [Akaula's Sacrificial Hero](#sdm-power-akaula-s-sacrificial-hero)
-- <a id="sdm-power-alter-self-anchor"></a> [Alter Self](#sdm-power-alter-self)
-- <a id="sdm-power-animate-corpse-anchor"></a> [Animate Corpse](#sdm-power-animate-corpse)
-- <a id="sdm-power-anne-astec-anchor"></a> [Anne Astec](#sdm-power-anne-astec)
-- <a id="sdm-power-anti-babylon-anchor"></a> [Anti-Babylon](#sdm-power-anti-babylon)
-- <a id="sdm-power-better-pastures-anchor"></a> [Better Pastures](#sdm-power-better-pastures)
-- <a id="sdm-power-big-wish-anchor"></a> [Big Wish](#sdm-power-big-wish)
-- <a id="sdm-power-bloodsong-anchor"></a> [Bloodsong](#sdm-power-bloodsong)
-- <a id="sdm-power-blue-lotus-anchor"></a> [Blue Lotus](#sdm-power-blue-lotus)
-- <a id="sdm-power-burden-share-anchor"></a> [Burden Share](#sdm-power-burden-share)
-- <a id="sdm-power-burdenbeast-modification-anchor"></a> [Burdenbeast Modification](#sdm-power-burdenbeast-modification)
-- <a id="sdm-power-can-trip-anchor"></a> [Can Trip](#sdm-power-can-trip)
-- <a id="sdm-power-caustic-purification-anchor"></a> [Caustic Purification](#sdm-power-caustic-purification)
-- <a id="sdm-power-cerebral-purge-anchor"></a> [Cerebral Purge](#sdm-power-cerebral-purge)
-- <a id="sdm-power-chariot-of-the-divine-palace-anchor"></a> [Chariot of the Divine Palace](#sdm-power-chariot-of-the-divine-palace)
-- <a id="sdm-power-counterfire-anchor"></a> [Counterfire](#sdm-power-counterfire)
-- <a id="sdm-power-cut-the-sky-anchor"></a> [Cut the Sky](#sdm-power-cut-the-sky)
-- <a id="sdm-power-dampen-mass-anchor"></a> [Dampen Mass](#sdm-power-dampen-mass)
-- <a id="sdm-power-dancing-in-the-hail-anchor"></a> [Dancing in the Hail](#sdm-power-dancing-in-the-hail)
-- <a id="sdm-power-depleted-heavy-metal-rain-anchor"></a> [Depleted Heavy Metal Rain](#sdm-power-depleted-heavy-metal-rain)
-- <a id="sdm-power-dissolution-and-resolution-of-the-spirit-anchor"></a> [Dissolution and Resolution of the Spirit](#sdm-power-dissolution-and-resolution-of-the-spirit)
-- <a id="sdm-power-dryland-sculpture-anchor"></a> [Dryland Sculpture](#sdm-power-dryland-sculpture)
-- <a id="sdm-power-eategrate-anchor"></a> [Eategrate](#sdm-power-eategrate)
-- <a id="sdm-power-ecosphere-attunement-anchor"></a> [Ecosphere Attunement](#sdm-power-ecosphere-attunement)
-- <a id="sdm-power-ecosphere-immersion-anchor"></a> [Ecosphere Immersion](#sdm-power-ecosphere-immersion)
-- <a id="sdm-power-ecosphere-veil-anchor"></a> [Ecosphere Veil](#sdm-power-ecosphere-veil)
-- <a id="sdm-power-egregious-topology-anchor"></a> [Egregious Topology](#sdm-power-egregious-topology)
-- <a id="sdm-power-entropic-reversal-anchor"></a> [Entropic Reversal](#sdm-power-entropic-reversal)
-- <a id="sdm-power-essence-sift-anchor"></a> [Essence Sift](#sdm-power-essence-sift)
-- <a id="sdm-power-eyes-of-akaula-anchor"></a> [Eyes of Akaula](#sdm-power-eyes-of-akaula)
-- <a id="sdm-power-eyes-of-the-arrow-anchor"></a> [Eyes of the Arrow](#sdm-power-eyes-of-the-arrow)
-- <a id="sdm-power-floating-disc-anchor"></a> [Floating Disc](#sdm-power-floating-disc)
-- <a id="sdm-power-for-the-sky-is-a-sea-anchor"></a> [For the Sky is a Sea](#sdm-power-for-the-sky-is-a-sea)
-- <a id="sdm-power-gem-bomb-anchor"></a> [Gem Bomb](#sdm-power-gem-bomb)
-- <a id="sdm-power-green-haven-anchor"></a> [Green Haven](#sdm-power-green-haven)
-- <a id="sdm-power-ha-ka-ba-short-circuit-anchor"></a> [Ha-Ka-Ba Short Circuit](#sdm-power-ha-ka-ba-short-circuit)
-- <a id="sdm-power-hero-s-goldenmouth-anchor"></a> [Hero's Goldenmouth](#sdm-power-hero-s-goldenmouth)
-- <a id="sdm-power-highway-cruiser-anchor"></a> [Highway Cruiser](#sdm-power-highway-cruiser)
-- <a id="sdm-power-hlod-person-anchor"></a> [Hlod Person](#sdm-power-hlod-person)
-- <a id="sdm-power-imbue-edge-anchor"></a> [Imbue Edge](#sdm-power-imbue-edge)
-- <a id="sdm-power-impermissible-cleaver-anchor"></a> [Impermissible Cleaver](#sdm-power-impermissible-cleaver)
-- <a id="sdm-power-invoke-ub-dragon-anchor"></a> [Invoke Ub Dragon](#sdm-power-invoke-ub-dragon)
-- <a id="sdm-power-knock-lock-anchor"></a> [Knock / Lock](#sdm-power-knock-lock)
-- <a id="sdm-power-lay-in-wires-anchor"></a> [Lay in Wires](#sdm-power-lay-in-wires)
-- <a id="sdm-power-linked-portals-anchor"></a> [Linked Portals](#sdm-power-linked-portals)
-- <a id="sdm-power-magic-jar-anchor"></a> [Magic Jar](#sdm-power-magic-jar)
-- <a id="sdm-power-manybodied-anchor"></a> [Manybodied](#sdm-power-manybodied)
-- <a id="sdm-power-metempsychosis-anchor"></a> [Metempsychosis](#sdm-power-metempsychosis)
-- <a id="sdm-power-mother-of-bullets-anchor"></a> [Mother of Bullets](#sdm-power-mother-of-bullets)
-- <a id="sdm-power-motor-fixative-anchor"></a> [Motor Fixative](#sdm-power-motor-fixative)
-- <a id="sdm-power-nihil-est-anchor"></a> [Nihil Est!](#sdm-power-nihil-est)
-- <a id="sdm-power-nunka-s-biophysical-overdrive-anchor"></a> [Nunka’S Biophysical Overdrive](#sdm-power-nunka-s-biophysical-overdrive)
-- <a id="sdm-power-nunka-s-epidermal-sculpt-anchor"></a> [Nunka’S Epidermal Sculpt](#sdm-power-nunka-s-epidermal-sculpt)
-- <a id="sdm-power-nunka-s-spitting-symbiote-anchor"></a> [Nunka’S Spitting Symbiote](#sdm-power-nunka-s-spitting-symbiote)
-- <a id="sdm-power-nunka-s-weapon-morph-anchor"></a> [Nunka’S Weapon Morph](#sdm-power-nunka-s-weapon-morph)
-- <a id="sdm-power-objective-telekinesis-anchor"></a> [Objective Telekinesis](#sdm-power-objective-telekinesis)
-- <a id="sdm-power-open-person-anchor"></a> [Open Person](#sdm-power-open-person)
-- <a id="sdm-power-orange-dream-anchor"></a> [Orange Dream](#sdm-power-orange-dream)
-- <a id="sdm-power-parasoma-transference-anchor"></a> [Parasoma Transference](#sdm-power-parasoma-transference)
-- <a id="sdm-power-primary-desenescence-anchor"></a> [Primary Desenescence](#sdm-power-primary-desenescence)
-- <a id="sdm-power-process-food-anchor"></a> [Process Food](#sdm-power-process-food)
-- <a id="sdm-power-purple-memories-anchor"></a> [Purple Memories](#sdm-power-purple-memories)
-- <a id="sdm-power-pyreball-anchor"></a> [Pyreball](#sdm-power-pyreball)
-- <a id="sdm-power-raise-dead-anchor"></a> [Raise Dead](#sdm-power-raise-dead)
-- <a id="sdm-power-real-time-rebuild-anchor"></a> [Real-Time Rebuild](#sdm-power-real-time-rebuild)
-- <a id="sdm-power-reason-s-harvest-anchor"></a> [Reason's Harvest](#sdm-power-reason-s-harvest)
-- <a id="sdm-power-recall-soul-anchor"></a> [Recall Soul](#sdm-power-recall-soul)
-- <a id="sdm-power-red-mist-anchor"></a> [Red Mist](#sdm-power-red-mist)
-- <a id="sdm-power-rehoryan-s-progressive-restoration-anchor"></a> [Rehoryan’S Progressive Restoration](#sdm-power-rehoryan-s-progressive-restoration)
-- <a id="sdm-power-rehoryan-s-prophetic-song-anchor"></a> [Rehoryan’S Prophetic Song](#sdm-power-rehoryan-s-prophetic-song)
-- <a id="sdm-power-rehoryan-s-prophetic-song-2-anchor"></a> [Rehoryan’S Prophetic Song 2](#sdm-power-rehoryan-s-prophetic-song-2)
-- <a id="sdm-power-rehoryan-s-vital-symphony-anchor"></a> [Rehoryan’S Vital Symphony](#sdm-power-rehoryan-s-vital-symphony)
-- <a id="sdm-power-rehoryan-s-vivid-regression-anchor"></a> [Rehoryan’S Vivid Regression](#sdm-power-rehoryan-s-vivid-regression)
-- <a id="sdm-power-reuse-the-shell-anchor"></a> [Reuse the Shell](#sdm-power-reuse-the-shell)
-- <a id="sdm-power-restorative-slumber-anchor"></a> [Restorative Slumber](#sdm-power-restorative-slumber)
-- <a id="sdm-power-ring-of-lead-anchor"></a> [Ring of Lead](#sdm-power-ring-of-lead)
-- <a id="sdm-power-roadfinder-anchor"></a> [Roadfinder](#sdm-power-roadfinder)
-- <a id="sdm-power-roadmaker-anchor"></a> [Roadmaker](#sdm-power-roadmaker)
-- <a id="sdm-power-runo-s-biocatalysis-anchor"></a> [Runo’S Biocatalysis](#sdm-power-runo-s-biocatalysis)
-- <a id="sdm-power-runo-s-ontogenic-editor-anchor"></a> [Runo’S Ontogenic Editor](#sdm-power-runo-s-ontogenic-editor)
-- <a id="sdm-power-runo-s-parthenogenic-cradle-anchor"></a> [Runo’S Parthenogenic Cradle](#sdm-power-runo-s-parthenogenic-cradle)
-- <a id="sdm-power-runo-s-parthenogenic-pouch-anchor"></a> [Runo’S Parthenogenic Pouch](#sdm-power-runo-s-parthenogenic-pouch)
-- <a id="sdm-power-sense-allegiance-anchor"></a> [Sense Allegiance](#sdm-power-sense-allegiance)
-- <a id="sdm-power-siphon-the-soul-anchor"></a> [Siphon the Soul](#sdm-power-siphon-the-soul)
-- <a id="sdm-power-skinshift-anchor"></a> [Skinshift](#sdm-power-skinshift)
-- <a id="sdm-power-skinsplit-anchor"></a> [Skinsplit](#sdm-power-skinsplit)
-- <a id="sdm-power-skinwyrd-anchor"></a> [Skinwyrd](#sdm-power-skinwyrd)
-- <a id="sdm-power-speak-with-husk-anchor"></a> [Speak With Husk](#sdm-power-speak-with-husk)
-- <a id="sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex-anchor"></a> [Stoyevod’S Irreducible Crystallization of the Ego Complex](#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex)
-- <a id="sdm-power-supplicate-the-rotting-god-anchor"></a> [Supplicate the Rotting God](#sdm-power-supplicate-the-rotting-god)
-- <a id="sdm-power-suspended-in-the-light-anchor"></a> [Suspended in the Light](#sdm-power-suspended-in-the-light)
-- <a id="sdm-power-suspended-insight-anchor"></a> [Suspended Insight](#sdm-power-suspended-insight)
-- <a id="sdm-power-thornstone-obelisk-anchor"></a> [Thornstone Obelisk](#sdm-power-thornstone-obelisk)
-- <a id="sdm-power-three-point-immobility-anchor"></a> [Three-Point Immobility](#sdm-power-three-point-immobility)
-- <a id="sdm-power-toxin-render-anchor"></a> [Toxin Render](#sdm-power-toxin-render)
-- <a id="sdm-power-tragic-missile-anchor"></a> [Tragic Missile](#sdm-power-tragic-missile)
-- <a id="sdm-power-usha-s-chaos-trigger-anchor"></a> [Usha’S Chaos Trigger](#sdm-power-usha-s-chaos-trigger)
-- <a id="sdm-power-usha-s-chimera-splice-anchor"></a> [Usha’S Chimera Splice](#sdm-power-usha-s-chimera-splice)
-- <a id="sdm-power-usha-s-horrorshow-infestation-anchor"></a> [Usha’S Horrorshow Infestation](#sdm-power-usha-s-horrorshow-infestation)
-- <a id="sdm-power-usha-s-replicator-strand-anchor"></a> [Usha’S Replicator Strand](#sdm-power-usha-s-replicator-strand)
-- <a id="sdm-power-usha-s-swift-rebuild-anchor"></a> [Usha’S Swift Rebuild](#sdm-power-usha-s-swift-rebuild)
-- <a id="sdm-power-usha-s-uplift-anchor"></a> [Usha’S Uplift](#sdm-power-usha-s-uplift)
-- <a id="sdm-power-usha-s-xenograft-anchor"></a> [Usha’S Xenograft](#sdm-power-usha-s-xenograft)
-- <a id="sdm-power-vegetable-of-birth-anchor"></a> [Vegetable of Birth](#sdm-power-vegetable-of-birth)
-- <a id="sdm-power-viridian-sun-anchor"></a> [Viridian Sun](#sdm-power-viridian-sun)
-- <a id="sdm-power-whispers-from-the-void-anchor"></a> [Whispers from the Void](#sdm-power-whispers-from-the-void)
-- <a id="sdm-power-wing-and-prayer-anchor"></a> [Wing and Prayer](#sdm-power-wing-and-prayer)
-- <a id="sdm-power-yellow-cloud-anchor"></a> [Yellow Cloud](#sdm-power-yellow-cloud)
-- <a id="sdm-power-yellow-foresight-anchor"></a> [Yellow Foresight](#sdm-power-yellow-foresight)
-
-## Known Albums and Source Groups
-
-- **[UVG2e Spells](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0198)** (UVG2e)
-- **[UVG2e Bestiary](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0201)** (UVG2e source group)
-- **[The Sixfold Hexacenter](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094)** (VLG)
-- **[The Viridian Practice](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094)** (VLG)
-- **[Dawn’S Highway](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094)** (VLG)
-- **[Fundamental Purification of the Soil](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094)** (VLG)
-- **[Apocrypha of the O.s.](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094)** (VLG)
-- **[Access Noötree](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094)** (VLG)
-- **[Weapon Form Powers](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0152)** (VLG)
-- **[Weapon's Eternal Purpose](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0152)** (VLG)
-- **[Access Blessing One — Autosoma](Our_Golden_Age/Our_Golden_Age.md#page_0028)** (OGA source group)
-- **[Access Blessings (Our Golden Age Preview)](Our_Golden_Age/Our_Golden_Age.md)** (OGA source group)
-- **[The Power of Fluency](Our_Golden_Age/Our_Golden_Age.md)** (OGA source group)
-- **[Necrophony](Our_Golden_Age/Our_Golden_Age.md)** (OGA source group)
-- **[Mortirobotics](Our_Golden_Age/Our_Golden_Age.md)** (OGA source group)
-- **[Pneumenergetics](Our_Golden_Age/Our_Golden_Age.md)** (OGA source group)
-- **[Arkhiatry Classics](Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md)** (MTC2)
-- **[Nunka’S Automorph](Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md)** (MTC2)
-- **[Rehoryan’S Blood Canticle](Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md)** (MTC2)
-- **[Siato Runo’S Xenon Genesis](Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md)** (MTC2)
-- **[The Awakened Sphere](Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md)** (MTC2)
-- **[Usha’S Wild Ride](Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md)** (MTC2)
-- **[There, A Red Door](There_A_Red_Door/There_A_Red_Door.md)** (source group)
-- **[Eternal Return Key](Eternal_Return_Key/Eternal_Return_Key.md)** (source group)
-
+  - [Known Albums and Source Groups](#known-albums-and-source-groups) <a id="known-albums-and-source-groups-anchor"></a>
+- [Power Template](#power-template) <a id="power-template-anchor"></a>
+  - [Usage Notes](#usage-notes) <a id="usage-notes-anchor"></a>
+- [SDM Powers Index](#sdm-powers-index) <a id="sdm-powers-index-anchor"></a>
+  - [Access Blessing One — Autosoma](#access-blessing-one-autosoma) <a id="access-blessing-one-autosoma-anchor"></a>
+  - [Access Noötree](#access-nootree) <a id="access-nootree-anchor"></a>
+  - [Adulation Rejuvenation](#adulation-rejuvenation) <a id="adulation-rejuvenation-anchor"></a>
+  - [Akaula's Sacrificial Hero](#akaulas-sacrificial-hero) <a id="akaulas-sacrificial-hero-anchor"></a>
+  - [Alter Self](#alter-self) <a id="alter-self-anchor"></a>
+  - [Animate Corpse](#animate-corpse) <a id="animate-corpse-anchor"></a>
+  - [Anne Astec](#anne-astec) <a id="anne-astec-anchor"></a>
+  - [Anti-Babylon](#anti-babylon) <a id="anti-babylon-anchor"></a>
+  - [Better Pastures](#better-pastures) <a id="better-pastures-anchor"></a>
+  - [Big Wish](#big-wish) <a id="big-wish-anchor"></a>
+  - [Bloodsong](#bloodsong) <a id="bloodsong-anchor"></a>
+  - [Blue Lotus](#blue-lotus) <a id="blue-lotus-anchor"></a>
+  - [Burden Share](#burden-share) <a id="burden-share-anchor"></a>
+  - [Burdenbeast Modification](#burdenbeast-modification) <a id="burdenbeast-modification-anchor"></a>
+  - [Can Trip](#can-trip) <a id="can-trip-anchor"></a>
+  - [Caustic Purification](#caustic-purification) <a id="caustic-purification-anchor"></a>
+  - [Cerebral Purge](#cerebral-purge) <a id="cerebral-purge-anchor"></a>
+  - [Chariot of the Divine Palace](#chariot-of-the-divine-palace) <a id="chariot-of-the-divine-palace-anchor"></a>
+  - [Counterfire](#counterfire) <a id="counterfire-anchor"></a>
+  - [Cut the Sky](#cut-the-sky) <a id="cut-the-sky-anchor"></a>
+  - [Dampen Mass](#dampen-mass) <a id="dampen-mass-anchor"></a>
+  - [Dancing in the Hail](#dancing-in-the-hail) <a id="dancing-in-the-hail-anchor"></a>
+  - [Depleted Heavy Metal Rain](#depleted-heavy-metal-rain) <a id="depleted-heavy-metal-rain-anchor"></a>
+  - [Dissolution and Resolution of the Spirit](#dissolution-and-resolution-of-the-spirit) <a id="dissolution-and-resolution-of-the-spirit-anchor"></a>
+  - [Dryland Sculpture](#dryland-sculpture) <a id="dryland-sculpture-anchor"></a>
+  - [Eategrate](#eategrate) <a id="eategrate-anchor"></a>
+  - [Ecosphere Attunement](#ecosphere-attunement) <a id="ecosphere-attunement-anchor"></a>
+  - [Ecosphere Immersion](#ecosphere-immersion) <a id="ecosphere-immersion-anchor"></a>
+  - [Ecosphere Veil](#ecosphere-veil) <a id="ecosphere-veil-anchor"></a>
+  - [Egregious Topology](#egregious-topology) <a id="egregious-topology-anchor"></a>
+  - [Entropic Reversal](#entropic-reversal) <a id="entropic-reversal-anchor"></a>
+  - [Essence Sift](#essence-sift) <a id="essence-sift-anchor"></a>
+  - [Eyes of Akaula](#eyes-of-akaula) <a id="eyes-of-akaula-anchor"></a>
+  - [Eyes of the Arrow](#eyes-of-the-arrow) <a id="eyes-of-the-arrow-anchor"></a>
+  - [Floating Disc](#floating-disc) <a id="floating-disc-anchor"></a>
+  - [For the Sky is a Sea](#for-the-sky-is-a-sea) <a id="for-the-sky-is-a-sea-anchor"></a>
+  - [Gem Bomb](#gem-bomb) <a id="gem-bomb-anchor"></a>
+  - [Green Haven](#green-haven) <a id="green-haven-anchor"></a>
+  - [Ha-Ka-Ba Short Circuit](#ha-ka-ba-short-circuit) <a id="ha-ka-ba-short-circuit-anchor"></a>
+  - [Hero's Goldenmouth](#heros-goldenmouth) <a id="heros-goldenmouth-anchor"></a>
+  - [Highway Cruiser](#highway-cruiser) <a id="highway-cruiser-anchor"></a>
+  - [Hlod Person](#hlod-person) <a id="hlod-person-anchor"></a>
+  - [Imbue Edge](#imbue-edge) <a id="imbue-edge-anchor"></a>
+  - [Impermissible Cleaver](#impermissible-cleaver) <a id="impermissible-cleaver-anchor"></a>
+  - [Invoke Ub Dragon](#invoke-ub-dragon) <a id="invoke-ub-dragon-anchor"></a>
+  - [Knock / Lock](#knock-lock) <a id="knock-lock-anchor"></a>
+  - [Lay in Wires](#lay-in-wires) <a id="lay-in-wires-anchor"></a>
+  - [Linked Portals](#linked-portals) <a id="linked-portals-anchor"></a>
+  - [Magic Jar](#magic-jar) <a id="magic-jar-anchor"></a>
+  - [Manybodied](#manybodied) <a id="manybodied-anchor"></a>
+  - [Metempsychosis](#metempsychosis) <a id="metempsychosis-anchor"></a>
+  - [Mother of Bullets](#mother-of-bullets) <a id="mother-of-bullets-anchor"></a>
+  - [Motor Fixative](#motor-fixative) <a id="motor-fixative-anchor"></a>
+  - [Nihil Est!](#nihil-est) <a id="nihil-est-anchor"></a>
+  - [Nunka'S Biophysical Overdrive](#nunkas-biophysical-overdrive) <a id="nunkas-biophysical-overdrive-anchor"></a>
+  - [Nunka'S Epidermal Sculpt](#nunkas-epidermal-sculpt) <a id="nunkas-epidermal-sculpt-anchor"></a>
+  - [Nunka'S Spitting Symbiote](#nunkas-spitting-symbiote) <a id="nunkas-spitting-symbiote-anchor"></a>
+  - [Nunka's Weapon Morph](#nunkas-weapon-morph) <a id="nunkas-weapon-morph-anchor"></a>
+  - [Objective Telekinesis](#objective-telekinesis) <a id="objective-telekinesis-anchor"></a>
+  - [Open Person](#open-person) <a id="open-person-anchor"></a>
+  - [Orange Dream](#orange-dream) <a id="orange-dream-anchor"></a>
+  - [Parasoma Transference](#parasoma-transference) <a id="parasoma-transference-anchor"></a>
+  - [Primary Desenescence](#primary-desenescence) <a id="primary-desenescence-anchor"></a>
+  - [Process Food](#process-food) <a id="process-food-anchor"></a>
+  - [Purple Memories](#purple-memories) <a id="purple-memories-anchor"></a>
+  - [Pyreball](#pyreball) <a id="pyreball-anchor"></a>
+  - [Raise Dead](#raise-dead) <a id="raise-dead-anchor"></a>
+  - [Real-Time Rebuild](#real-time-rebuild) <a id="real-time-rebuild-anchor"></a>
+  - [Reason's Harvest](#reasons-harvest) <a id="reasons-harvest-anchor"></a>
+  - [Recall Soul](#recall-soul) <a id="recall-soul-anchor"></a>
+  - [Red Mist](#red-mist) <a id="red-mist-anchor"></a>
+  - [Rehoryan'S Progressive Restoration](#rehoryans-progressive-restoration) <a id="rehoryans-progressive-restoration-anchor"></a>
+  - [Rehoryan'S Prophetic Song](#rehoryans-prophetic-song) <a id="rehoryans-prophetic-song-anchor"></a>
+  - [Rehoryan'S Prophetic Song 2](#rehoryans-prophetic-song-2) <a id="rehoryans-prophetic-song-2-anchor"></a>
+  - [Rehoryan'S Vital Symphony](#rehoryans-vital-symphony) <a id="rehoryans-vital-symphony-anchor"></a>
+  - [Rehoryan'S Vivid Regression](#rehoryans-vivid-regression) <a id="rehoryans-vivid-regression-anchor"></a>
+  - [Reuse the Shell](#reuse-the-shell) <a id="reuse-the-shell-anchor"></a>
+  - [Restorative Slumber](#restorative-slumber) <a id="restorative-slumber-anchor"></a>
+  - [Ring of Lead](#ring-of-lead) <a id="ring-of-lead-anchor"></a>
+  - [Roadfinder](#roadfinder) <a id="roadfinder-anchor"></a>
+  - [Roadmaker](#roadmaker) <a id="roadmaker-anchor"></a>
+  - [Runo'S Biocatalysis](#runos-biocatalysis) <a id="runos-biocatalysis-anchor"></a>
+  - [Runo'S Ontogenic Editor](#runos-ontogenic-editor) <a id="runos-ontogenic-editor-anchor"></a>
+  - [Runo'S Parthenogenic Cradle](#runos-parthenogenic-cradle) <a id="runos-parthenogenic-cradle-anchor"></a>
+  - [Runo'S Parthenogenic Pouch](#runos-parthenogenic-pouch) <a id="runos-parthenogenic-pouch-anchor"></a>
+  - [Sense Allegiance](#sense-allegiance) <a id="sense-allegiance-anchor"></a>
+  - [Siphon the Soul](#siphon-the-soul) <a id="siphon-the-soul-anchor"></a>
+  - [Skinshift](#skinshift) <a id="skinshift-anchor"></a>
+  - [Skinsplit](#skinsplit) <a id="skinsplit-anchor"></a>
+  - [Skinwyrd](#skinwyrd) <a id="skinwyrd-anchor"></a>
+  - [Speak With Husk](#speak-with-husk) <a id="speak-with-husk-anchor"></a>
+  - [Stoyevod'S Irreducible Crystallization of the Ego Complex](#stoyevods-irreducible-crystallization-of-the-ego-complex) <a id="stoyevods-irreducible-crystallization-of-the-ego-complex-anchor"></a>
+  - [Supplicate the Rotting God](#supplicate-the-rotting-god) <a id="supplicate-the-rotting-god-anchor"></a>
+  - [Suspended in the Light](#suspended-in-the-light) <a id="suspended-in-the-light-anchor"></a>
+  - [Suspended Insight](#suspended-insight) <a id="suspended-insight-anchor"></a>
+  - [Thornstone Obelisk](#thornstone-obelisk) <a id="thornstone-obelisk-anchor"></a>
+  - [Three-Point Immobility](#three-point-immobility) <a id="three-point-immobility-anchor"></a>
+  - [Toxin Render](#toxin-render) <a id="toxin-render-anchor"></a>
+  - [Tragic Missile](#tragic-missile) <a id="tragic-missile-anchor"></a>
+  - [Usha'S Chaos Trigger](#ushas-chaos-trigger) <a id="ushas-chaos-trigger-anchor"></a>
+  - [Usha'S Chimera Splice](#ushas-chimera-splice) <a id="ushas-chimera-splice-anchor"></a>
+  - [Usha'S Horrorshow Infestation](#ushas-horrorshow-infestation) <a id="ushas-horrorshow-infestation-anchor"></a>
+  - [Usha'S Replicator Strand](#ushas-replicator-strand) <a id="ushas-replicator-strand-anchor"></a>
+  - [Usha'S Swift Rebuild](#ushas-swift-rebuild) <a id="ushas-swift-rebuild-anchor"></a>
+  - [Usha'S Uplift](#ushas-uplift) <a id="ushas-uplift-anchor"></a>
+  - [Usha'S Xenograft](#ushas-xenograft) <a id="ushas-xenograft-anchor"></a>
+  - [Vegetable of Birth](#vegetable-of-birth) <a id="vegetable-of-birth-anchor"></a>
+  - [Viridian Sun](#viridian-sun) <a id="viridian-sun-anchor"></a>
+  - [Whispers from the Void](#whispers-from-the-void) <a id="whispers-from-the-void-anchor"></a>
+  - [Wing and Prayer](#wing-and-prayer) <a id="wing-and-prayer-anchor"></a>
+  - [Yellow Cloud](#yellow-cloud) <a id="yellow-cloud-anchor"></a>
+  - [Yellow Foresight](#yellow-foresight) <a id="yellow-foresight-anchor"></a>
 # Power Template
 
 ```text
 <div class="power-card" markdown="1">
 
-## **<Power Name>** {#sdm-power-<slug>}
+## <Power Name>
 
 > **<Power Name>**
 >
@@ -184,7 +160,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-<slug>-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#<slug>-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -204,12 +180,7 @@ meta:
 
 # SDM Powers Index
 
-*Canonical repository for SDM powers. Use this document to record every power card, regardless of whether the power is stored as a trait, item, burden, or location-bound wonder.*
-
-
-<div class="power-card" markdown="1">
-
-## **Access Blessing One — Autosoma** {#sdm-power-access-blessing-one-autosoma}
+## Access Blessing One — Autosoma
 
 > **Access Blessing One — Autosoma**
 >
@@ -239,7 +210,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-access-blessing-one-autosoma-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#access-blessing-one-autosoma-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -248,7 +219,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Access Noötree** {#sdm-power-access-no-tree}
+## Access Noötree
 
 > **Access Noötree**
 >
@@ -279,7 +250,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-access-no-tree-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#access-nootree-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -288,7 +259,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Adulation Rejuvenation** {#sdm-power-adulation-rejuvenation}
+## Adulation Rejuvenation
 
 > **Adulation Rejuvenation**
 >
@@ -316,7 +287,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-adulation-rejuvenation-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#adulation-rejuvenation-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -325,7 +296,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Akaula's Sacrificial Hero** {#sdm-power-akaula-s-sacrificial-hero}
+## Akaula's Sacrificial Hero
 
 > **Akaula's Sacrificial Hero**
 >
@@ -354,7 +325,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-akaula-s-sacrificial-hero-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#akaulas-sacrificial-hero-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -363,7 +334,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Alter Self** {#sdm-power-alter-self}
+## Alter Self
 
 > **Alter Self**
 >
@@ -391,7 +362,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-alter-self-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#alter-self-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -400,7 +371,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Animate Corpse** {#sdm-power-animate-corpse}
+## Animate Corpse
 
 > **Animate Corpse**
 >
@@ -427,7 +398,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-animate-corpse-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#animate-corpse-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -436,7 +407,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Anne Astec** {#sdm-power-anne-astec}
+## Anne Astec
 
 > **Anne Astec**
 >
@@ -462,7 +433,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-anne-astec-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#anne-astec-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -471,7 +442,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Anti-Babylon** {#sdm-power-anti-babylon}
+## Anti-Babylon
 
 > **Anti-Babylon**
 >
@@ -498,7 +469,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-anti-babylon-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#anti-babylon-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -507,7 +478,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Better Pastures** {#sdm-power-better-pastures}
+## Better Pastures
 
 > **Better Pastures**
 >
@@ -536,7 +507,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-better-pastures-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#better-pastures-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -545,7 +516,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Big Wish** {#sdm-power-big-wish}
+## Big Wish
 
 > **Big Wish**
 >
@@ -580,7 +551,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-big-wish-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#big-wish-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -589,7 +560,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Bloodsong** {#sdm-power-bloodsong}
+## Bloodsong
 
 > **Bloodsong**
 >
@@ -617,7 +588,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-bloodsong-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#bloodsong-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -626,7 +597,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Blue Lotus** {#sdm-power-blue-lotus}
+## Blue Lotus
 
 > **Blue Lotus**
 >
@@ -657,7 +628,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-blue-lotus-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#blue-lotus-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -666,7 +637,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Burden Share** {#sdm-power-burden-share}
+## Burden Share
 
 > **Burden Share**
 >
@@ -692,7 +663,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-burden-share-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#burden-share-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -701,7 +672,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Burdenbeast Modification** {#sdm-power-burdenbeast-modification}
+## Burdenbeast Modification
 
 > **Burdenbeast Modification**
 >
@@ -725,7 +696,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-burdenbeast-modification-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#burdenbeast-modification-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -734,7 +705,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Can Trip** {#sdm-power-can-trip}
+## Can Trip
 
 > **Can Trip**
 >
@@ -762,7 +733,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-can-trip-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#can-trip-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -771,7 +742,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Caustic Purification** {#sdm-power-caustic-purification}
+## Caustic Purification
 
 > **Caustic Purification**
 >
@@ -799,7 +770,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-caustic-purification-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#caustic-purification-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -808,7 +779,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Cerebral Purge** {#sdm-power-cerebral-purge}
+## Cerebral Purge
 
 > **Cerebral Purge**
 >
@@ -834,7 +805,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-cerebral-purge-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#cerebral-purge-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -843,7 +814,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Chariot of the Divine Palace** {#sdm-power-chariot-of-the-divine-palace}
+## Chariot of the Divine Palace
 
 > **Chariot of the Divine Palace**
 >
@@ -870,7 +841,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-chariot-of-the-divine-palace-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#chariot-of-the-divine-palace-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -879,7 +850,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Counterfire** {#sdm-power-counterfire}
+## Counterfire
 
 > **Counterfire**
 >
@@ -906,7 +877,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-counterfire-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#counterfire-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -915,7 +886,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Cut the Sky** {#sdm-power-cut-the-sky}
+## Cut the Sky
 
 > **Cut the Sky**
 >
@@ -943,7 +914,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-cut-the-sky-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#cut-the-sky-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -952,7 +923,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Dampen Mass** {#sdm-power-dampen-mass}
+## Dampen Mass
 
 > **Dampen Mass**
 >
@@ -981,7 +952,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-dampen-mass-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#dampen-mass-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -990,7 +961,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Dancing in the Hail** {#sdm-power-dancing-in-the-hail}
+## Dancing in the Hail
 
 > **Dancing in the Hail**
 >
@@ -1018,7 +989,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-dancing-in-the-hail-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#dancing-in-the-hail-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1027,7 +998,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Depleted Heavy Metal Rain** {#sdm-power-depleted-heavy-metal-rain}
+## Depleted Heavy Metal Rain
 
 > **Depleted Heavy Metal Rain**
 >
@@ -1054,7 +1025,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-depleted-heavy-metal-rain-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#depleted-heavy-metal-rain-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1063,7 +1034,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Dissolution and Resolution of the Spirit** {#sdm-power-dissolution-and-resolution-of-the-spirit}
+## Dissolution and Resolution of the Spirit
 
 > **Dissolution and Resolution of the Spirit**
 >
@@ -1089,7 +1060,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-dissolution-and-resolution-of-the-spirit-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#dissolution-and-resolution-of-the-spirit-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1098,7 +1069,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Dryland Sculpture** {#sdm-power-dryland-sculpture}
+## Dryland Sculpture
 
 > **Dryland Sculpture**
 >
@@ -1122,7 +1093,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-dryland-sculpture-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#dryland-sculpture-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1131,7 +1102,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Eategrate** {#sdm-power-eategrate}
+## Eategrate
 
 > **Eategrate**
 >
@@ -1169,7 +1140,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-eategrate-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#eategrate-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1178,7 +1149,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Ecosphere Attunement** {#sdm-power-ecosphere-attunement}
+## Ecosphere Attunement
 
 > **Ecosphere Attunement**
 >
@@ -1206,7 +1177,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-ecosphere-attunement-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ecosphere-attunement-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1215,7 +1186,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Ecosphere Immersion** {#sdm-power-ecosphere-immersion}
+## Ecosphere Immersion
 
 > **Ecosphere Immersion**
 >
@@ -1249,7 +1220,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-ecosphere-immersion-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ecosphere-immersion-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1258,7 +1229,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Ecosphere Veil** {#sdm-power-ecosphere-veil}
+## Ecosphere Veil
 
 > **Ecosphere Veil**
 >
@@ -1284,7 +1255,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-ecosphere-veil-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ecosphere-veil-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1293,7 +1264,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Egregious Topology** {#sdm-power-egregious-topology}
+## Egregious Topology
 
 > **Egregious Topology**
 >
@@ -1319,7 +1290,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-egregious-topology-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#egregious-topology-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1328,7 +1299,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Entropic Reversal** {#sdm-power-entropic-reversal}
+## Entropic Reversal
 
 > **Entropic Reversal**
 >
@@ -1354,7 +1325,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-entropic-reversal-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#entropic-reversal-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1363,7 +1334,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Essence Sift** {#sdm-power-essence-sift}
+## Essence Sift
 
 > **Essence Sift**
 >
@@ -1390,7 +1361,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-essence-sift-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#essence-sift-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1399,7 +1370,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Eyes of Akaula** {#sdm-power-eyes-of-akaula}
+## Eyes of Akaula
 
 > **Eyes of Akaula**
 >
@@ -1425,7 +1396,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-eyes-of-akaula-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#eyes-of-akaula-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1434,7 +1405,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Eyes of the Arrow** {#sdm-power-eyes-of-the-arrow}
+## Eyes of the Arrow
 
 > **Eyes of the Arrow**
 >
@@ -1461,7 +1432,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-eyes-of-the-arrow-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#eyes-of-the-arrow-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1470,7 +1441,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Floating Disc** {#sdm-power-floating-disc}
+## Floating Disc
 
 > **Floating Disc**
 >
@@ -1496,7 +1467,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-floating-disc-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#floating-disc-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1505,7 +1476,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **For the Sky is a Sea** {#sdm-power-for-the-sky-is-a-sea}
+## For the Sky is a Sea
 
 > **For the Sky is a Sea**
 >
@@ -1534,7 +1505,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-for-the-sky-is-a-sea-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#for-the-sky-is-a-sea-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1543,7 +1514,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Gem Bomb** {#sdm-power-gem-bomb}
+## Gem Bomb
 
 > **Gem Bomb**
 >
@@ -1569,7 +1540,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-gem-bomb-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#gem-bomb-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1578,7 +1549,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Green Haven** {#sdm-power-green-haven}
+## Green Haven
 
 > **Green Haven**
 >
@@ -1607,7 +1578,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-green-haven-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#green-haven-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1616,7 +1587,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Ha-Ka-Ba Short Circuit** {#sdm-power-ha-ka-ba-short-circuit}
+## Ha-Ka-Ba Short Circuit
 
 > **Ha-Ka-Ba Short Circuit**
 >
@@ -1644,7 +1615,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-ha-ka-ba-short-circuit-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ha-ka-ba-short-circuit-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1653,7 +1624,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Hero's Goldenmouth** {#sdm-power-hero-s-goldenmouth}
+## Hero's Goldenmouth
 
 > **Hero's Goldenmouth**
 >
@@ -1679,7 +1650,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-hero-s-goldenmouth-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#heros-goldenmouth-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1688,7 +1659,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Highway Cruiser** {#sdm-power-highway-cruiser}
+## Highway Cruiser
 
 > **Highway Cruiser**
 >
@@ -1715,7 +1686,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-highway-cruiser-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#highway-cruiser-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1724,7 +1695,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Hlod Person** {#sdm-power-hlod-person}
+## Hlod Person
 
 > **Hlod Person**
 >
@@ -1751,7 +1722,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-hlod-person-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#hlod-person-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1760,7 +1731,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Imbue Edge** {#sdm-power-imbue-edge}
+## Imbue Edge
 
 > **Imbue Edge**
 >
@@ -1786,7 +1757,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-imbue-edge-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#imbue-edge-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1795,7 +1766,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Impermissible Cleaver** {#sdm-power-impermissible-cleaver}
+## Impermissible Cleaver
 
 > **Impermissible Cleaver**
 >
@@ -1830,7 +1801,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-impermissible-cleaver-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#impermissible-cleaver-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1839,7 +1810,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Invoke Ub Dragon** {#sdm-power-invoke-ub-dragon}
+## Invoke Ub Dragon
 
 > **Invoke Ub Dragon**
 >
@@ -1872,7 +1843,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-invoke-ub-dragon-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#invoke-ub-dragon-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1881,7 +1852,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Knock / Lock** {#sdm-power-knock-lock}
+## Knock / Lock
 
 > **Knock / Lock**
 >
@@ -1907,7 +1878,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-knock-lock-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#knock-lock-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1916,7 +1887,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Lay in Wires** {#sdm-power-lay-in-wires}
+## Lay in Wires
 
 > **Lay in Wires**
 >
@@ -1944,7 +1915,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-lay-in-wires-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#lay-in-wires-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1953,7 +1924,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Linked Portals** {#sdm-power-linked-portals}
+## Linked Portals
 
 > **Linked Portals**
 >
@@ -1979,7 +1950,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-linked-portals-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#linked-portals-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -1988,7 +1959,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Magic Jar** {#sdm-power-magic-jar}
+## Magic Jar
 
 > **Magic Jar**
 >
@@ -2014,7 +1985,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-magic-jar-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#magic-jar-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2023,7 +1994,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Manybodied** {#sdm-power-manybodied}
+## Manybodied
 
 > **Manybodied**
 >
@@ -2053,7 +2024,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-manybodied-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#manybodied-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2062,7 +2033,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Metempsychosis** {#sdm-power-metempsychosis}
+## Metempsychosis
 
 > **Metempsychosis**
 >
@@ -2109,7 +2080,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-metempsychosis-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#metempsychosis-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2118,7 +2089,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Mother of Bullets** {#sdm-power-mother-of-bullets}
+## Mother of Bullets
 
 > **Mother of Bullets**
 >
@@ -2145,7 +2116,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-mother-of-bullets-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#mother-of-bullets-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2154,7 +2125,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Motor Fixative** {#sdm-power-motor-fixative}
+## Motor Fixative
 
 > **Motor Fixative**
 >
@@ -2181,7 +2152,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-motor-fixative-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#motor-fixative-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2190,7 +2161,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nihil Est!** {#sdm-power-nihil-est}
+## Nihil Est!
 
 > **Nihil Est!**
 >
@@ -2220,7 +2191,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-nihil-est-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#nihil-est-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2229,7 +2200,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka'S Biophysical Overdrive** {#sdm-power-nunka-s-biophysical-overdrive}
+## Nunka'S Biophysical Overdrive
 
 > **Nunka'S Biophysical Overdrive**
 >
@@ -2257,7 +2228,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-nunka-s-biophysical-overdrive-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#nunkas-biophysical-overdrive-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2266,7 +2237,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka'S Epidermal Sculpt** {#sdm-power-nunka-s-epidermal-sculpt}
+## Nunka'S Epidermal Sculpt
 
 > **Nunka'S Epidermal Sculpt**
 >
@@ -2327,7 +2298,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-nunka-s-epidermal-sculpt-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#nunkas-epidermal-sculpt-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2336,7 +2307,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka'S Spitting Symbiote** {#sdm-power-nunka-s-spitting-symbiote}
+## Nunka'S Spitting Symbiote
 
 > **Nunka'S Spitting Symbiote**
 >
@@ -2374,7 +2345,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-nunka-s-spitting-symbiote-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#nunkas-spitting-symbiote-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2383,7 +2354,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Nunka's Weapon Morph** {#sdm-power-nunka-s-weapon-morph}
+## Nunka's Weapon Morph
 
 > **Nunka's Weapon Morph**
 >
@@ -2419,7 +2390,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-nunka-s-weapon-morph-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#nunkas-weapon-morph-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2428,7 +2399,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Objective Telekinesis** {#sdm-power-objective-telekinesis}
+## Objective Telekinesis
 
 > **Objective Telekinesis**
 >
@@ -2455,7 +2426,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-objective-telekinesis-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#objective-telekinesis-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2464,7 +2435,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Open Person** {#sdm-power-open-person}
+## Open Person
 
 > **Open Person**
 >
@@ -2492,7 +2463,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-open-person-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#open-person-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2501,7 +2472,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Orange Dream** {#sdm-power-orange-dream}
+## Orange Dream
 
 > **Orange Dream**
 >
@@ -2529,7 +2500,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-orange-dream-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#orange-dream-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2538,7 +2509,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Parasoma Transference** {#sdm-power-parasoma-transference}
+## Parasoma Transference
 
 > **Parasoma Transference**
 >
@@ -2564,7 +2535,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-parasoma-transference-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#parasoma-transference-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2573,7 +2544,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Primary Desenescence** {#sdm-power-primary-desenescence}
+## Primary Desenescence
 
 > **Primary Desenescence**
 >
@@ -2599,7 +2570,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-primary-desenescence-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#primary-desenescence-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2608,7 +2579,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Process Food** {#sdm-power-process-food}
+## Process Food
 
 > **Process Food**
 >
@@ -2634,7 +2605,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-process-food-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#process-food-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2643,7 +2614,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Purple Memories** {#sdm-power-purple-memories}
+## Purple Memories
 
 > **Purple Memories**
 >
@@ -2670,7 +2641,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-purple-memories-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#purple-memories-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2679,7 +2650,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Pyreball** {#sdm-power-pyreball}
+## Pyreball
 
 > **Pyreball**
 >
@@ -2706,7 +2677,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-pyreball-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#pyreball-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2715,7 +2686,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Raise Dead** {#sdm-power-raise-dead}
+## Raise Dead
 
 > **Raise Dead**
 >
@@ -2741,7 +2712,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-raise-dead-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#raise-dead-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2750,7 +2721,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Real-Time Rebuild** {#sdm-power-real-time-rebuild}
+## Real-Time Rebuild
 
 > **Real-Time Rebuild**
 >
@@ -2778,7 +2749,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-real-time-rebuild-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#real-time-rebuild-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2787,7 +2758,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Reason's Harvest** {#sdm-power-reason-s-harvest}
+## Reason's Harvest
 
 > **Reason's Harvest**
 >
@@ -2814,7 +2785,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-reason-s-harvest-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#reasons-harvest-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2823,7 +2794,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Recall Soul** {#sdm-power-recall-soul}
+## Recall Soul
 
 > **Recall Soul**
 >
@@ -2849,7 +2820,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-recall-soul-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#recall-soul-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2858,7 +2829,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Red Mist** {#sdm-power-red-mist}
+## Red Mist
 
 > **Red Mist**
 >
@@ -2886,7 +2857,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-red-mist-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#red-mist-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2897,7 +2868,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan'S Progressive Restoration** {#sdm-power-rehoryan-s-progressive-restoration}
+## Rehoryan'S Progressive Restoration
 
 > **Rehoryan'S Progressive Restoration**
 >
@@ -2937,7 +2908,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-rehoryan-s-progressive-restoration-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#rehoryans-progressive-restoration-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -2948,7 +2919,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan'S Prophetic Song** {#sdm-power-rehoryan-s-prophetic-song}
+## Rehoryan'S Prophetic Song
 
 > **Rehoryan'S Prophetic Song**
 >
@@ -2989,7 +2960,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-rehoryan-s-prophetic-song-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#rehoryans-prophetic-song-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3000,7 +2971,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan'S Prophetic Song 2** {#sdm-power-rehoryan-s-prophetic-song-2}
+## Rehoryan'S Prophetic Song 2
 
 > **Rehoryan'S Prophetic Song 2**
 >
@@ -3040,7 +3011,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-rehoryan-s-prophetic-song-2-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#rehoryans-prophetic-song-2-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3051,7 +3022,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan'S Vital Symphony** {#sdm-power-rehoryan-s-vital-symphony}
+## Rehoryan'S Vital Symphony
 
 > **Rehoryan'S Vital Symphony**
 >
@@ -3077,7 +3048,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-rehoryan-s-vital-symphony-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#rehoryans-vital-symphony-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3086,7 +3057,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Rehoryan'S Vivid Regression** {#sdm-power-rehoryan-s-vivid-regression}
+## Rehoryan'S Vivid Regression
 
 > **Rehoryan'S Vivid Regression**
 >
@@ -3120,7 +3091,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-rehoryan-s-vivid-regression-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#rehoryans-vivid-regression-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3129,7 +3100,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Reuse the Shell** {#sdm-power-reuse-the-shell}
+## Reuse the Shell
 
 > **Reuse the Shell**
 >
@@ -3169,7 +3140,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-reuse-the-shell-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#reuse-the-shell-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3178,7 +3149,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Restorative Slumber** {#sdm-power-restorative-slumber}
+## Restorative Slumber
 
 > **Restorative Slumber**
 >
@@ -3204,7 +3175,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-restorative-slumber-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#restorative-slumber-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3213,7 +3184,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Ring of Lead** {#sdm-power-ring-of-lead}
+## Ring of Lead
 
 > **Ring of Lead**
 >
@@ -3240,7 +3211,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-ring-of-lead-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ring-of-lead-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3249,7 +3220,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Roadfinder** {#sdm-power-roadfinder}
+## Roadfinder
 
 > **Roadfinder**
 >
@@ -3276,7 +3247,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-roadfinder-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#roadfinder-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3285,7 +3256,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Roadmaker** {#sdm-power-roadmaker}
+## Roadmaker
 
 > **Roadmaker**
 >
@@ -3312,7 +3283,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-roadmaker-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#roadmaker-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3321,7 +3292,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo'S Biocatalysis** {#sdm-power-runo-s-biocatalysis}
+## Runo'S Biocatalysis
 
 > **Runo'S Biocatalysis**
 >
@@ -3349,7 +3320,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-runo-s-biocatalysis-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#runos-biocatalysis-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3358,7 +3329,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo'S Ontogenic Editor** {#sdm-power-runo-s-ontogenic-editor}
+## Runo'S Ontogenic Editor
 
 > **Runo'S Ontogenic Editor**
 >
@@ -3399,7 +3370,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-runo-s-ontogenic-editor-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#runos-ontogenic-editor-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3408,7 +3379,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo'S Parthenogenic Cradle** {#sdm-power-runo-s-parthenogenic-cradle}
+## Runo'S Parthenogenic Cradle
 
 > **Runo'S Parthenogenic Cradle**
 >
@@ -3440,7 +3411,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-runo-s-parthenogenic-cradle-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#runos-parthenogenic-cradle-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3449,7 +3420,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Runo'S Parthenogenic Pouch** {#sdm-power-runo-s-parthenogenic-pouch}
+## Runo'S Parthenogenic Pouch
 
 > **Runo'S Parthenogenic Pouch**
 >
@@ -3479,7 +3450,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-runo-s-parthenogenic-pouch-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#runos-parthenogenic-pouch-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3488,7 +3459,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Sense Allegiance** {#sdm-power-sense-allegiance}
+## Sense Allegiance
 
 > **Sense Allegiance**
 >
@@ -3516,7 +3487,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-sense-allegiance-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#sense-allegiance-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3525,7 +3496,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Siphon the Soul** {#sdm-power-siphon-the-soul}
+## Siphon the Soul
 
 > **Siphon the Soul**
 >
@@ -3560,7 +3531,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-siphon-the-soul-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#siphon-the-soul-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3569,7 +3540,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Skinshift** {#sdm-power-skinshift}
+## Skinshift
 
 > **Skinshift**
 >
@@ -3603,7 +3574,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-skinshift-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#skinshift-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3612,7 +3583,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Skinsplit** {#sdm-power-skinsplit}
+## Skinsplit
 
 > **Skinsplit**
 >
@@ -3652,7 +3623,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-skinsplit-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#skinsplit-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3661,7 +3632,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Skinwyrd** {#sdm-power-skinwyrd}
+## Skinwyrd
 
 > **Skinwyrd**
 >
@@ -3698,7 +3669,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-skinwyrd-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#skinwyrd-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3707,7 +3678,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Speak With Husk** {#sdm-power-speak-with-husk}
+## Speak With Husk
 
 > **Speak With Husk**
 >
@@ -3733,7 +3704,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-speak-with-husk-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#speak-with-husk-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3742,7 +3713,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Stoyevod'S Irreducible Crystallization of the Ego Complex** {#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex}
+## Stoyevod'S Irreducible Crystallization of the Ego Complex
 
 > **Stoyevod'S Irreducible Crystallization of the Ego Complex**
 >
@@ -3775,7 +3746,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-stoyevod-s-irreducible-crystallization-of-the-ego-complex-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#stoyevods-irreducible-crystallization-of-the-ego-complex-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3784,7 +3755,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Supplicate the Rotting God** {#sdm-power-supplicate-the-rotting-god}
+## Supplicate the Rotting God
 
 > **Supplicate the Rotting God**
 >
@@ -3808,7 +3779,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-supplicate-the-rotting-god-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#supplicate-the-rotting-god-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3817,7 +3788,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Suspended in the Light** {#sdm-power-suspended-in-the-light}
+## Suspended in the Light
 
 > **Suspended in the Light**
 >
@@ -3843,7 +3814,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-suspended-in-the-light-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#suspended-in-the-light-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3852,7 +3823,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Suspended Insight** {#sdm-power-suspended-insight}
+## Suspended Insight
 
 > **Suspended Insight**
 >
@@ -3880,7 +3851,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-suspended-insight-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#suspended-insight-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3889,7 +3860,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Thornstone Obelisk** {#sdm-power-thornstone-obelisk}
+## Thornstone Obelisk
 
 > **Thornstone Obelisk**
 >
@@ -3918,7 +3889,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-thornstone-obelisk-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#thornstone-obelisk-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3927,7 +3898,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Three-Point Immobility** {#sdm-power-three-point-immobility}
+## Three-Point Immobility
 
 > **Three-Point Immobility**
 >
@@ -3953,7 +3924,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-three-point-immobility-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#three-point-immobility-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3962,7 +3933,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Toxin Render** {#sdm-power-toxin-render}
+## Toxin Render
 
 > **Toxin Render**
 >
@@ -3988,7 +3959,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-toxin-render-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#toxin-render-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -3997,7 +3968,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Tragic Missile** {#sdm-power-tragic-missile}
+## Tragic Missile
 
 > **Tragic Missile**
 >
@@ -4024,7 +3995,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-tragic-missile-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#tragic-missile-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4033,7 +4004,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha'S Chaos Trigger** {#sdm-power-usha-s-chaos-trigger}
+## Usha'S Chaos Trigger
 
 > **Usha'S Chaos Trigger**
 >
@@ -4068,7 +4039,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-usha-s-chaos-trigger-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ushas-chaos-trigger-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4077,7 +4048,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha'S Chimera Splice** {#sdm-power-usha-s-chimera-splice}
+## Usha'S Chimera Splice
 
 > **Usha'S Chimera Splice**
 >
@@ -4122,7 +4093,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-usha-s-chimera-splice-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ushas-chimera-splice-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4131,7 +4102,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha'S Horrorshow Infestation** {#sdm-power-usha-s-horrorshow-infestation}
+## Usha'S Horrorshow Infestation
 
 > **Usha'S Horrorshow Infestation**
 >
@@ -4163,7 +4134,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-usha-s-horrorshow-infestation-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ushas-horrorshow-infestation-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4172,7 +4143,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha'S Replicator Strand** {#sdm-power-usha-s-replicator-strand}
+## Usha'S Replicator Strand
 
 > **Usha'S Replicator Strand**
 >
@@ -4202,7 +4173,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-usha-s-replicator-strand-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ushas-replicator-strand-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4211,7 +4182,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha'S Swift Rebuild** {#sdm-power-usha-s-swift-rebuild}
+## Usha'S Swift Rebuild
 
 > **Usha'S Swift Rebuild**
 >
@@ -4256,7 +4227,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-usha-s-swift-rebuild-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ushas-swift-rebuild-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4265,7 +4236,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha'S Uplift** {#sdm-power-usha-s-uplift}
+## Usha'S Uplift
 
 > **Usha'S Uplift**
 >
@@ -4324,7 +4295,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-usha-s-uplift-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ushas-uplift-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4333,7 +4304,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Usha'S Xenograft** {#sdm-power-usha-s-xenograft}
+## Usha'S Xenograft
 
 > **Usha'S Xenograft**
 >
@@ -4381,7 +4352,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-usha-s-xenograft-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#ushas-xenograft-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4390,7 +4361,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Vegetable of Birth** {#sdm-power-vegetable-of-birth}
+## Vegetable of Birth
 
 > **Vegetable of Birth**
 >
@@ -4419,7 +4390,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-vegetable-of-birth-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#vegetable-of-birth-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4428,7 +4399,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Viridian Sun** {#sdm-power-viridian-sun}
+## Viridian Sun
 
 > **Viridian Sun**
 >
@@ -4456,7 +4427,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-viridian-sun-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#viridian-sun-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4465,7 +4436,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Whispers from the Void** {#sdm-power-whispers-from-the-void}
+## Whispers from the Void
 
 > **Whispers from the Void**
 >
@@ -4502,7 +4473,7 @@ meta:
 
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-whispers-from-the-void-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#whispers-from-the-void-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4511,7 +4482,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Wing and Prayer** {#sdm-power-wing-and-prayer}
+## Wing and Prayer
 
 > **Wing and Prayer**
 >
@@ -4538,7 +4509,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-wing-and-prayer-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#wing-and-prayer-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4547,7 +4518,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Yellow Cloud** {#sdm-power-yellow-cloud}
+## Yellow Cloud
 
 > **Yellow Cloud**
 >
@@ -4574,7 +4545,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-yellow-cloud-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#yellow-cloud-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
@@ -4583,7 +4554,7 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## **Yellow Foresight** {#sdm-power-yellow-foresight}
+## Yellow Foresight
 
 > **Yellow Foresight**
 >
@@ -4612,7 +4583,7 @@ meta:
   
   <div class="power-return">
     &nbsp;&nbsp;
-    <a class="js-back-link" href="#sdm-power-yellow-foresight-anchor" aria-label="Back to previous page">
+    <a class="js-back-link" href="#yellow-foresight-anchor" aria-label="Back to previous page">
       ↩ Back
     </a>
   </div>
