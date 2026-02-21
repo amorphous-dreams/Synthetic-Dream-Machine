@@ -3348,7 +3348,7 @@ Extreme armor upgrades may result in autonomous suits of armor. Beware if they g
 
 <a id="page_0082"></a>
 
-#### MISCELL ANEOUS ITEMS
+#### MISCELLANEOUS ITEMS
 
 ##### GADGETS
 
@@ -3552,43 +3552,24 @@ When your feet won't do, when you're weary and the road goes ever on and on, few
 Your friendly transportation, logistics, and combat solutions have many possibilities:
 
 1. **All-Terrain.** Designed to overcome obstacles, grants a bonus in mud and snow. May consume more fuel.
-
 2. **Atom.** Converts matter into energy, like a sun.
-
 3. **Cart.** Lets your steed pull triple its normal capacity.
-
 4. **Coalem.** False golem that eats compressed and fossilized biomatter. Some have converted themselves to eat other types of biomatter: oil, wood, carcasses, flesh, even blood.
-
 5. **Combat.** Designed for combat. No penalties on its riders in combat, may even grant bonuses.
-
 6. **Dark.** This ride is not on any books. Its jewel is clouded. It is invisible to local gods and daemons.
-
 7. **Sled.** Lets your steed pull double its normal capacity. May include stretchers, ropes, rollers or skids.
-
 8. **Flying.** Dangerous in the west because of the mind-rotting Purple Haze and the razor stuckforce shards littering the sky. In civilized lands, painted statoliths and flags mark safe routes.
-
 9. **Fuel.** High-energy juices refined from biomass by biomagical-eating vat animalcules or domesticated autofacs. Some communities even refine their dead.
-
 10. **Golem.** True golem vehicles use near-inexhaustible radiothermal batteries. Each lasts for decades. Popular target for thieves.
-
 11. **Grazer.** Eats plants. In deserts, consumes a sack of supplies per week. Desert-adapted rides only consume half.
-
 12. **Pneuma[vore].** A soul-eater. One human soul powers even the largest vehicle or mount for a year.
-
 13. **Semi-Sentient.** There is something of a brain in this ride. It can steer itself and follow simple orders.
-
 14. **Sentient.** This ride is at least as smart as a human. It may be unionized.
-
 15. **Solar.** Powered by the radiation of the Green Sun or other solar stars. May be keyed to a specific sun.
-
 16. **Vital.** Drains its user's life force for motion.
-
 17. **Undead.** This ride is powered by eldritch powers. It requires no upkeep, but makes you unpopular.
-
 18. **Underwater.** This ride goes under water—and keeps functioning. It may even resurface!
-
 19. **Void.** Keeps occupants safe in the terrible void outside the envelope of Heaven.
-
 20. **Water.** A watercraft. It floats.
 
 **Standard Cultivated Human Rides**

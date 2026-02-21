@@ -7,226 +7,254 @@ published: true
 
 <a id="sdm-trait-table-of-contents"></a>
 
-- <a id="sdm-trait-abandoned-anchor"></a> [Abandoned](#sdm-trait-abandoned)
-- <a id="sdm-trait-adaptable-anchor"></a> [Adaptable](#sdm-trait-adaptable)
-- <a id="sdm-trait-antimagus-anchor"></a> [Antimagus](#sdm-trait-antimagus)
-- <a id="sdm-trait-arboreal-anchor"></a> [Arboreal](#sdm-trait-arboreal)
-- <a id="sdm-trait-armiger-anchor"></a> [Armiger](#sdm-trait-armiger)
-- <a id="sdm-trait-armorborn-anchor"></a> [Armorborn](#sdm-trait-armorborn)
-- <a id="sdm-trait-background-anchor"></a> [Background](#sdm-trait-background)
-- <a id="sdm-trait-backstabber-anchor"></a> [Backstabber](#sdm-trait-backstabber)
-- <a id="sdm-trait-barbarian-anchor"></a> [Barbarian](#sdm-trait-barbarian)
-- <a id="sdm-trait-blastermaster-anchor"></a> [Blastermaster](#sdm-trait-blastermaster)
-- <a id="sdm-trait-blessed-anchor"></a> [Blessed](#sdm-trait-blessed)
-- <a id="sdm-trait-blood-clad-anchor"></a> [Blood Clad](#sdm-trait-blood-clad)
-- <a id="sdm-trait-bluelander-anchor"></a> [Bluelander](#sdm-trait-bluelander)
-- <a id="sdm-trait-boatmaster-anchor"></a> [Boatmaster](#sdm-trait-boatmaster)
-- <a id="sdm-trait-bonded-anchor"></a> [Bonded](#sdm-trait-bonded)
-- <a id="sdm-trait-bourgeois-anchor"></a> [Bourgeois](#sdm-trait-bourgeois)
-- <a id="sdm-trait-brick-bastions-anchor"></a> [Brick Bastions](#sdm-trait-brick-bastions)
-- <a id="sdm-trait-burglar-anchor"></a> [Burglar](#sdm-trait-burglar)
-- <a id="sdm-trait-burner-anchor"></a> [Burner](#sdm-trait-burner)
-- <a id="sdm-trait-bystander-anchor"></a> [Bystander](#sdm-trait-bystander)
-- <a id="sdm-trait-cad-anchor"></a> [Cad](#sdm-trait-cad)
-- <a id="sdm-trait-chaos-step-anchor"></a> [Chaos Step](#sdm-trait-chaos-step)
-- <a id="sdm-trait-charger-anchor"></a> [Charger](#sdm-trait-charger)
-- <a id="sdm-trait-cheesemaker-anchor"></a> [Cheesemaker](#sdm-trait-cheesemaker)
-- <a id="sdm-trait-chronic-anchor"></a> [Chronic](#sdm-trait-chronic)
-- <a id="sdm-trait-circle-of-pain-anchor"></a> [Circle of Pain](#sdm-trait-circle-of-pain)
-- <a id="sdm-trait-citizen-living-anchor"></a> [Citizen Living](#sdm-trait-citizen-living)
-- <a id="sdm-trait-citizen-maintainer-anchor"></a> [Citizen Maintainer](#sdm-trait-citizen-maintainer)
-- <a id="sdm-trait-cleanser-anchor"></a> [Cleanser](#sdm-trait-cleanser)
-- <a id="sdm-trait-clueless-outsider-anchor"></a> [Clueless Outsider](#sdm-trait-clueless-outsider)
-- <a id="sdm-trait-cold-new-flesh-anchor"></a> [Cold New Flesh](#sdm-trait-cold-new-flesh)
-- <a id="sdm-trait-colonist-anchor"></a> [Colonist](#sdm-trait-colonist)
-- <a id="sdm-trait-commander-anchor"></a> [Commander](#sdm-trait-commander)
-- <a id="sdm-trait-common-humanity-anchor"></a> [Common Humanity](#sdm-trait-common-humanity)
-- <a id="sdm-trait-competent-appearance-anchor"></a> [Competent Appearance](#sdm-trait-competent-appearance)
-- <a id="sdm-trait-corruption-anchor"></a> [Corruption](#sdm-trait-corruption)
-- <a id="sdm-trait-cosmic-qanat-anchor"></a> [Cosmic Qanat](#sdm-trait-cosmic-qanat)
-- <a id="sdm-trait-country-squire-anchor"></a> [Country Squire](#sdm-trait-country-squire)
-- <a id="sdm-trait-crystal-cannons-anchor"></a> [Crystal Cannons](#sdm-trait-crystal-cannons)
-- <a id="sdm-trait-culling-anchor"></a> [Culling](#sdm-trait-culling)
-- <a id="sdm-trait-curse-blessed-anchor"></a> [Curse-Blessed](#sdm-trait-curse-blessed)
-- <a id="sdm-trait-darting-dodgers-anchor"></a> [Darting Dodgers](#sdm-trait-darting-dodgers)
-- <a id="sdm-trait-death-curse-anchor"></a> [Death Curse](#sdm-trait-death-curse)
-- <a id="sdm-trait-death-hunger-anchor"></a> [Death Hunger](#sdm-trait-death-hunger)
-- <a id="sdm-trait-deeply-embodied-anchor"></a> [Deeply Embodied](#sdm-trait-deeply-embodied)
-- <a id="sdm-trait-defender-anchor"></a> [Defender](#sdm-trait-defender)
-- <a id="sdm-trait-demolisher-anchor"></a> [Demolisher](#sdm-trait-demolisher)
-- <a id="sdm-trait-denial-anchor"></a> [Denial](#sdm-trait-denial)
-- <a id="sdm-trait-desperate-shot-anchor"></a> [Desperate Shot](#sdm-trait-desperate-shot)
-- <a id="sdm-trait-devastator-anchor"></a> [Devastator](#sdm-trait-devastator)
-- <a id="sdm-trait-diesel-dwarf-anchor"></a> [Diesel Dwarf](#sdm-trait-diesel-dwarf)
-- <a id="sdm-trait-dissipated-anchor"></a> [Dissipated](#sdm-trait-dissipated)
-- <a id="sdm-trait-divine-blood-anchor"></a> [Divine Blood](#sdm-trait-divine-blood)
-- <a id="sdm-trait-doombringer-anchor"></a> [Doombringer](#sdm-trait-doombringer)
-- <a id="sdm-trait-double-attack-anchor"></a> [Double Attack](#sdm-trait-double-attack)
-- <a id="sdm-trait-double-platinum-deathless-backup-anchor"></a> [Double-Platinum Deathless Backup](#sdm-trait-double-platinum-deathless-backup)
-- <a id="sdm-trait-dreamwalker-anchor"></a> [Dreamwalker](#sdm-trait-dreamwalker)
-- <a id="sdm-trait-ducky-anchor"></a> [Ducky](#sdm-trait-ducky)
-- <a id="sdm-trait-dust-rat-anchor"></a> [Dust Rat](#sdm-trait-dust-rat)
-- <a id="sdm-trait-enterprising-anchor"></a> [Enterprising](#sdm-trait-enterprising)
-- <a id="sdm-trait-erratic-expendables-anchor"></a> [Erratic Expendables](#sdm-trait-erratic-expendables)
-- <a id="sdm-trait-escapist-anchor"></a> [Escapist](#sdm-trait-escapist)
-- <a id="sdm-trait-evasive-anchor"></a> [Evasive](#sdm-trait-evasive)
-- <a id="sdm-trait-expensive-training-anchor"></a> [Expensive Training](#sdm-trait-expensive-training)
-- <a id="sdm-trait-expert-friends-anchor"></a> [Expert Friends](#sdm-trait-expert-friends)
-- <a id="sdm-trait-exuberant-anchor"></a> [Exuberant](#sdm-trait-exuberant)
-- <a id="sdm-trait-faceless-anchor"></a> [Faceless](#sdm-trait-faceless)
-- <a id="sdm-trait-fake-out-anchor"></a> [Fake Out](#sdm-trait-fake-out)
-- <a id="sdm-trait-falscher-anchor"></a> [Falscher](#sdm-trait-falscher)
-- <a id="sdm-trait-fatespun-anchor"></a> [Fatespun](#sdm-trait-fatespun)
-- <a id="sdm-trait-feedback-anchor"></a> [Feedback](#sdm-trait-feedback)
-- <a id="sdm-trait-feral-anchor"></a> [Feral](#sdm-trait-feral)
-- <a id="sdm-trait-fighter-anchor"></a> [Fighter](#sdm-trait-fighter)
-- <a id="sdm-trait-fighting-woman-or-man-anchor"></a> [Fighting Woman or Man](#sdm-trait-fighting-woman-or-man)
-- <a id="sdm-trait-fortunate-one-anchor"></a> [Fortunate One](#sdm-trait-fortunate-one)
-- <a id="sdm-trait-frenzy-anchor"></a> [Frenzy](#sdm-trait-frenzy)
-- <a id="sdm-trait-friends-anchor"></a> [Friends](#sdm-trait-friends)
-- <a id="sdm-trait-from-dust-returning-anchor"></a> [From Dust, Returning](#sdm-trait-from-dust-returning)
-- <a id="sdm-trait-generic-synthesized-creature-anchor"></a> [Generic Synthesized Creature](#sdm-trait-generic-synthesized-creature)
-- <a id="sdm-trait-glowing-skeleton-anchor"></a> [Glowing Skeleton](#sdm-trait-glowing-skeleton)
-- <a id="sdm-trait-golem-anchor"></a> [Golem](#sdm-trait-golem)
-- <a id="sdm-trait-greenlander-anchor"></a> [Greenlander](#sdm-trait-greenlander)
-- <a id="sdm-trait-grit-anchor"></a> [Grit](#sdm-trait-grit)
-- <a id="sdm-trait-grounded-anchor"></a> [Grounded](#sdm-trait-grounded)
-- <a id="sdm-trait-hackmagic-anchor"></a> [Hackmagic](#sdm-trait-hackmagic)
-- <a id="sdm-trait-hardened-anchor"></a> [Hardened](#sdm-trait-hardened)
-- <a id="sdm-trait-hashtag-blessed-anchor"></a> [Hashtag Blessed](#sdm-trait-hashtag-blessed)
-- <a id="sdm-trait-hexad-member-anchor"></a> [Hexad Member](#sdm-trait-hexad-member)
-- <a id="sdm-trait-hexer-meritocrat-anchor"></a> [Hexer Meritocrat](#sdm-trait-hexer-meritocrat)
-- <a id="sdm-trait-hollow-halo-anchor"></a> [Hollow Halo](#sdm-trait-hollow-halo)
-- <a id="sdm-trait-holy-diver-anchor"></a> [Holy Diver](#sdm-trait-holy-diver)
-- <a id="sdm-trait-holy-fool-anchor"></a> [Holy Fool](#sdm-trait-holy-fool)
-- <a id="sdm-trait-housemaker-anchor"></a> [Housemaker](#sdm-trait-housemaker)
-- <a id="sdm-trait-human-library-anchor"></a> [Human Library](#sdm-trait-human-library)
-- <a id="sdm-trait-humans-of-the-pananthropy-anchor"></a> [Humans of the Pananthropy](#sdm-trait-humans-of-the-pananthropy)
-- <a id="sdm-trait-hunter-anchor"></a> [Hunter](#sdm-trait-hunter)
-- <a id="sdm-trait-i-am-legion-anchor"></a> [I Am Legion](#sdm-trait-i-am-legion)
-- <a id="sdm-trait-informant-anchor"></a> [Informant](#sdm-trait-informant)
-- <a id="sdm-trait-inquisition-agent-anchor"></a> [Inquisition Agent](#sdm-trait-inquisition-agent)
-- <a id="sdm-trait-intestinal-fortitude-anchor"></a> [Intestinal Fortitude](#sdm-trait-intestinal-fortitude)
-- <a id="sdm-trait-irresistible-anchor"></a> [Irresistible](#sdm-trait-irresistible)
-- <a id="sdm-trait-kaffetropist-anchor"></a> [Kaffetropist](#sdm-trait-kaffetropist)
-- <a id="sdm-trait-killbite-anchor"></a> [Killbite](#sdm-trait-killbite)
-- <a id="sdm-trait-knight-reflexes-anchor"></a> [Knight Reflexes](#sdm-trait-knight-reflexes)
-- <a id="sdm-trait-lair-wards-anchor"></a> [Lair wards](#sdm-trait-lair-wards)
-- <a id="sdm-trait-legal-immunity-anchor"></a> [Legal Immunity](#sdm-trait-legal-immunity)
-- <a id="sdm-trait-lost-songs-anchor"></a> [Lost Songs](#sdm-trait-lost-songs)
-- <a id="sdm-trait-loyal-anchor"></a> [Loyal](#sdm-trait-loyal)
-- <a id="sdm-trait-manager-anchor"></a> [Manager](#sdm-trait-manager)
-- <a id="sdm-trait-martyr-anchor"></a> [Martyr](#sdm-trait-martyr)
-- <a id="sdm-trait-metropolitan-anchor"></a> [Metropolitan](#sdm-trait-metropolitan)
-- <a id="sdm-trait-mind-palace-anchor"></a> [Mind Palace](#sdm-trait-mind-palace)
-- <a id="sdm-trait-mossblood-anchor"></a> [Mossblood](#sdm-trait-mossblood)
-- <a id="sdm-trait-motivational-anchor"></a> [Motivational](#sdm-trait-motivational)
-- <a id="sdm-trait-my-bones-engraved-anchor"></a> [My Bones Engraved](#sdm-trait-my-bones-engraved)
-- <a id="sdm-trait-noble-anchor"></a> [Noble](#sdm-trait-noble)
-- <a id="sdm-trait-noomagus-anchor"></a> [Noömagus](#sdm-trait-noomagus)
-- <a id="sdm-trait-noosphere-native-anchor"></a> [Noösphere Native](#sdm-trait-noosphere-native)
-- <a id="sdm-trait-noosphere-priest-anchor"></a> [Noösphere Priest](#sdm-trait-noosphere-priest)
-- <a id="sdm-trait-numbers-maximization-official-anchor"></a> [Numbers Maximization Official](#sdm-trait-numbers-maximization-official)
-- <a id="sdm-trait-oblique-reality-anchor"></a> [Oblique Reality](#sdm-trait-oblique-reality)
-- <a id="sdm-trait-of-world-anchor"></a> [Of-World](#sdm-trait-of-world)
-- <a id="sdm-trait-old-money-anchor"></a> [Old Money](#sdm-trait-old-money)
-- <a id="sdm-trait-once-again-anchor"></a> [Once Again](#sdm-trait-once-again)
-- <a id="sdm-trait-oppressed-faith-anchor"></a> [Oppressed Faith](#sdm-trait-oppressed-faith)
-- <a id="sdm-trait-orange-half-ling-anchor"></a> [Orange Half-Ling](#sdm-trait-orange-half-ling)
-- <a id="sdm-trait-orangelander-anchor"></a> [Orangelander](#sdm-trait-orangelander)
-- <a id="sdm-trait-overcharge-anchor"></a> [Overcharge](#sdm-trait-overcharge)
-- <a id="sdm-trait-paradox-die-anchor"></a> [Paradox Die](#sdm-trait-paradox-die)
-- <a id="sdm-trait-perfect-anchor"></a> [Perfect](#sdm-trait-perfect)
-- <a id="sdm-trait-perfected-germline-anchor"></a> [Perfected Germline](#sdm-trait-perfected-germline)
-- <a id="sdm-trait-personal-daimon-anchor"></a> [Personal Daimon](#sdm-trait-personal-daimon)
-- <a id="sdm-trait-pet-sidekick-anchor"></a> [Pet Sidekick](#sdm-trait-pet-sidekick)
-- <a id="sdm-trait-phase-anchor"></a> [Phase](#sdm-trait-phase)
-- <a id="sdm-trait-phylakes-child-anchor"></a> [Phylake’s Child](#sdm-trait-phylakes-child)
-- <a id="sdm-trait-pickpocket-anchor"></a> [Pickpocket](#sdm-trait-pickpocket)
-- <a id="sdm-trait-pleasant-anchor"></a> [Pleasant](#sdm-trait-pleasant)
-- <a id="sdm-trait-pocketmaster-anchor"></a> [Pocketmaster](#sdm-trait-pocketmaster)
-- <a id="sdm-trait-power-as-trait-anchor"></a> [Power (as Trait)](#sdm-trait-power-as-trait)
-- <a id="sdm-trait-power-scroller-anchor"></a> [Power Scroller](#sdm-trait-power-scroller)
-- <a id="sdm-trait-powered-anchor"></a> [Powered](#sdm-trait-powered)
-- <a id="sdm-trait-purplelander-anchor"></a> [Purplelander](#sdm-trait-purplelander)
-- <a id="sdm-trait-quartermaster-anchor"></a> [Quartermaster](#sdm-trait-quartermaster)
-- <a id="sdm-trait-rancher-anchor"></a> [Rancher](#sdm-trait-rancher)
-- <a id="sdm-trait-rationalised-anchor"></a> [Rationalised](#sdm-trait-rationalised)
-- <a id="sdm-trait-reanimator-anchor"></a> [Reanimator](#sdm-trait-reanimator)
-- <a id="sdm-trait-recast-anchor"></a> [Recast](#sdm-trait-recast)
-- <a id="sdm-trait-redlander-anchor"></a> [Redlander](#sdm-trait-redlander)
-- <a id="sdm-trait-resistomorph-anchor"></a> [Resistomorph](#sdm-trait-resistomorph)
-- <a id="sdm-trait-resourceful-anchor"></a> [Resourceful](#sdm-trait-resourceful)
-- <a id="sdm-trait-revenant-anchor"></a> [Revenant](#sdm-trait-revenant)
-- <a id="sdm-trait-revenant-in-waiting-anchor"></a> [Revenant-in-Waiting](#sdm-trait-revenant-in-waiting)
-- <a id="sdm-trait-riposte-anchor"></a> [Riposte](#sdm-trait-riposte)
-- <a id="sdm-trait-rockblood-anchor"></a> [Rockblood](#sdm-trait-rockblood)
-- <a id="sdm-trait-ruderalist-anchor"></a> [Ruderalist](#sdm-trait-ruderalist)
-- <a id="sdm-trait-ruster-anchor"></a> [Ruster](#sdm-trait-ruster)
-- <a id="sdm-trait-saffron-eater-anchor"></a> [Saffron Eater](#sdm-trait-saffron-eater)
-- <a id="sdm-trait-scion-anchor"></a> [Scion](#sdm-trait-scion)
-- <a id="sdm-trait-sculpted-beauty-anchor"></a> [Sculpted Beauty](#sdm-trait-sculpted-beauty)
-- <a id="sdm-trait-second-chance-anchor"></a> [Second Chance](#sdm-trait-second-chance)
-- <a id="sdm-trait-servant-anchor"></a> [Servant](#sdm-trait-servant)
-- <a id="sdm-trait-shackleminded-anchor"></a> [Shackleminded](#sdm-trait-shackleminded)
-- <a id="sdm-trait-shatter-anchor"></a> [Shatter](#sdm-trait-shatter)
-- <a id="sdm-trait-shieldfriend-anchor"></a> [Shieldfriend](#sdm-trait-shieldfriend)
-- <a id="sdm-trait-shopstaff-anchor"></a> [Shopstaff](#sdm-trait-shopstaff)
-- <a id="sdm-trait-signalmaster-anchor"></a> [Signalmaster](#sdm-trait-signalmaster)
-- <a id="sdm-trait-silver-tongued-anchor"></a> [Silver-Tongued](#sdm-trait-silver-tongued)
-- <a id="sdm-trait-skeleton-anchor"></a> [Skeleton](#sdm-trait-skeleton)
-- <a id="sdm-trait-slam-anchor"></a> [Slam](#sdm-trait-slam)
-- <a id="sdm-trait-slayer-anchor"></a> [Slayer](#sdm-trait-slayer)
-- <a id="sdm-trait-social-survivor-anchor"></a> [Social Survivor](#sdm-trait-social-survivor)
-- <a id="sdm-trait-soiltwined-anchor"></a> [Soiltwined](#sdm-trait-soiltwined)
-- <a id="sdm-trait-soldier-anchor"></a> [Soldier](#sdm-trait-soldier)
-- <a id="sdm-trait-soothsayer-anchor"></a> [Soothsayer](#sdm-trait-soothsayer)
-- <a id="sdm-trait-soul-fuel-anchor"></a> [Soul Fuel](#sdm-trait-soul-fuel)
-- <a id="sdm-trait-soul-thief-anchor"></a> [Soul Thief](#sdm-trait-soul-thief)
-- <a id="sdm-trait-spelunker-anchor"></a> [Spelunker](#sdm-trait-spelunker)
-- <a id="sdm-trait-spirit-anchor"></a> [Spirit](#sdm-trait-spirit)
-- <a id="sdm-trait-sporemark-anchor"></a> [Sporemark](#sdm-trait-sporemark)
-- <a id="sdm-trait-springer-anchor"></a> [Springer](#sdm-trait-springer)
-- <a id="sdm-trait-stabber-anchor"></a> [Stabber](#sdm-trait-stabber)
-- <a id="sdm-trait-steadfast-anchor"></a> [Steadfast](#sdm-trait-steadfast)
-- <a id="sdm-trait-strong-anchor"></a> [Strong](#sdm-trait-strong)
-- <a id="sdm-trait-subconscious-decay-anchor"></a> [Subconscious Decay](#sdm-trait-subconscious-decay)
-- <a id="sdm-trait-superuser-anchor"></a> [Superuser](#sdm-trait-superuser)
-- <a id="sdm-trait-swift-anchor"></a> [Swift](#sdm-trait-swift)
-- <a id="sdm-trait-synthetic-soul-anchor"></a> [Synthetic Soul](#sdm-trait-synthetic-soul)
-- <a id="sdm-trait-tactical-anchor"></a> [Tactical](#sdm-trait-tactical)
-- <a id="sdm-trait-tactician-anchor"></a> [Tactician](#sdm-trait-tactician)
-- <a id="sdm-trait-teamwork-anchor"></a> [Teamwork](#sdm-trait-teamwork)
-- <a id="sdm-trait-telempath-anchor"></a> [Telempath](#sdm-trait-telempath)
-- <a id="sdm-trait-terrifying-anchor"></a> [Terrifying](#sdm-trait-terrifying)
-- <a id="sdm-trait-thorny-anchor"></a> [Thorny](#sdm-trait-thorny)
-- <a id="sdm-trait-ticking-corpse-anchor"></a> [Ticking Corpse](#sdm-trait-ticking-corpse)
-- <a id="sdm-trait-toolmaker-anchor"></a> [Toolmaker](#sdm-trait-toolmaker)
-- <a id="sdm-trait-tough-anchor"></a> [Tough](#sdm-trait-tough)
-- <a id="sdm-trait-tourist-anchor"></a> [Tourist](#sdm-trait-tourist)
-- <a id="sdm-trait-traveler-anchor"></a> [Traveler](#sdm-trait-traveler)
-- <a id="sdm-trait-trickster-anchor"></a> [Trickster](#sdm-trait-trickster)
-- <a id="sdm-trait-underestimated-anchor"></a> [Underestimated](#sdm-trait-underestimated)
-- <a id="sdm-trait-undying-synthetic-anchor"></a> [Undying Synthetic](#sdm-trait-undying-synthetic)
-- <a id="sdm-trait-unfred-anchor"></a> [Unfred](#sdm-trait-unfred)
-- <a id="sdm-trait-ur-war-program-anchor"></a> [Ur-War Program](#sdm-trait-ur-war-program)
-- <a id="sdm-trait-urbane-anchor"></a> [Urbane](#sdm-trait-urbane)
-- <a id="sdm-trait-vampire-anchor"></a> [Vampire](#sdm-trait-vampire)
-- <a id="sdm-trait-very-strong-anchor"></a> [Very Strong](#sdm-trait-very-strong)
-- <a id="sdm-trait-veteran-of-the-psychic-wars-anchor"></a> [Veteran of the Psychic Wars](#sdm-trait-veteran-of-the-psychic-wars)
-- <a id="sdm-trait-vintner-anchor"></a> [Vintner](#sdm-trait-vintner)
-- <a id="sdm-trait-void-ward-anchor"></a> [Void Ward](#sdm-trait-void-ward)
-- <a id="sdm-trait-wanderer-anchor"></a> [Wanderer](#sdm-trait-wanderer)
-- <a id="sdm-trait-wardwright-anchor"></a> [Wardwright](#sdm-trait-wardwright)
-- <a id="sdm-trait-weapon-anchor"></a> [Weapon](#sdm-trait-weapon)
-- <a id="sdm-trait-werker-anchor"></a> [Werker](#sdm-trait-werker)
-- <a id="sdm-trait-wild-mage-anchor"></a> [Wild Mage](#sdm-trait-wild-mage)
-- <a id="sdm-trait-wild-survivor-anchor"></a> [Wild Survivor](#sdm-trait-wild-survivor)
-- <a id="sdm-trait-wired-anchor"></a> [Wired](#sdm-trait-wired)
-- <a id="sdm-trait-wizard-anchor"></a> [Wizard](#sdm-trait-wizard)
-- <a id="sdm-trait-wyldfire-anchor"></a> [Wyldfire](#sdm-trait-wyldfire)
-- <a id="sdm-trait-yellowlander-anchor"></a> [Yellowlander](#sdm-trait-yellowlander)
-
+- [SDM Trait Template](#sdm-trait-template) <a id="sdm-trait-template-anchor"></a>
+  - [Traits in Play](#traits-in-play) <a id="traits-in-play-anchor"></a>
+- [SDM Trait Index](#sdm-trait-index) <a id="sdm-trait-index-anchor"></a>
+  - [Abandoned](#abandoned) <a id="abandoned-anchor"></a>
+  - [Adaptable](#adaptable) <a id="adaptable-anchor"></a>
+  - [Antimagus](#antimagus) <a id="antimagus-anchor"></a>
+  - [Arboreal](#arboreal) <a id="arboreal-anchor"></a>
+  - [Armiger](#armiger) <a id="armiger-anchor"></a>
+  - [Armorborn](#armorborn) <a id="armorborn-anchor"></a>
+  - [Background (abstract)](#background-abstract) <a id="background-abstract-anchor"></a>
+        - [Example Backgrounds (Vastlands-style)](#example-backgrounds-vastlands-style) <a id="example-backgrounds-vastlands-style-anchor"></a>
+        - [Randomly Rolled Backgrounds (Traditional Generator)](#randomly-rolled-backgrounds-traditional-generator) <a id="randomly-rolled-backgrounds-traditional-generator-anchor"></a>
+        - [OSR Trope Backgrounds](#osr-trope-backgrounds) <a id="osr-trope-backgrounds-anchor"></a>
+  - [Backstabber](#backstabber) <a id="backstabber-anchor"></a>
+  - [Barbarian](#barbarian) <a id="barbarian-anchor"></a>
+  - [Blastermaster](#blastermaster) <a id="blastermaster-anchor"></a>
+  - [Blessed](#blessed) <a id="blessed-anchor"></a>
+  - [Blood Clad](#blood-clad) <a id="blood-clad-anchor"></a>
+  - [Bluelander](#bluelander) <a id="bluelander-anchor"></a>
+  - [Boatmaster](#boatmaster) <a id="boatmaster-anchor"></a>
+  - [Bonded](#bonded) <a id="bonded-anchor"></a>
+  - [Bourgeois](#bourgeois) <a id="bourgeois-anchor"></a>
+  - [Brick Bastions](#brick-bastions) <a id="brick-bastions-anchor"></a>
+  - [Burglar](#burglar) <a id="burglar-anchor"></a>
+  - [Burner](#burner) <a id="burner-anchor"></a>
+  - [Bystander](#bystander) <a id="bystander-anchor"></a>
+  - [Cad](#cad) <a id="cad-anchor"></a>
+  - [Chaos Step](#chaos-step) <a id="chaos-step-anchor"></a>
+  - [Charger](#charger) <a id="charger-anchor"></a>
+  - [Cheesemaker](#cheesemaker) <a id="cheesemaker-anchor"></a>
+  - [Chronic](#chronic) <a id="chronic-anchor"></a>
+  - [Circle of Pain](#circle-of-pain) <a id="circle-of-pain-anchor"></a>
+  - [Citizen Living](#citizen-living) <a id="citizen-living-anchor"></a>
+  - [Citizen Maintainer](#citizen-maintainer) <a id="citizen-maintainer-anchor"></a>
+  - [Cleanser](#cleanser) <a id="cleanser-anchor"></a>
+  - [Clueless Outsider](#clueless-outsider) <a id="clueless-outsider-anchor"></a>
+  - [Cold New Flesh](#cold-new-flesh) <a id="cold-new-flesh-anchor"></a>
+  - [Colonist](#colonist) <a id="colonist-anchor"></a>
+  - [Commander](#commander) <a id="commander-anchor"></a>
+  - [Common Humanity](#common-humanity) <a id="common-humanity-anchor"></a>
+  - [Competent Appearance](#competent-appearance) <a id="competent-appearance-anchor"></a>
+  - [Corruption (abstract)](#corruption-abstract) <a id="corruption-abstract-anchor"></a>
+    - [Corruptions as Traits](#corruptions-as-traits) <a id="corruptions-as-traits-anchor"></a>
+  - [Cosmic Qanat](#cosmic-qanat) <a id="cosmic-qanat-anchor"></a>
+  - [Country Squire](#country-squire) <a id="country-squire-anchor"></a>
+  - [Crystal Cannons](#crystal-cannons) <a id="crystal-cannons-anchor"></a>
+  - [Culling](#culling) <a id="culling-anchor"></a>
+  - [Curse-Blessed](#curse-blessed) <a id="curse-blessed-anchor"></a>
+  - [Darting Dodgers](#darting-dodgers) <a id="darting-dodgers-anchor"></a>
+  - [Death Curse](#death-curse) <a id="death-curse-anchor"></a>
+  - [Death Hunger](#death-hunger) <a id="death-hunger-anchor"></a>
+  - [Deeply Embodied](#deeply-embodied) <a id="deeply-embodied-anchor"></a>
+  - [Defender](#defender) <a id="defender-anchor"></a>
+  - [Demolisher](#demolisher) <a id="demolisher-anchor"></a>
+  - [Denial](#denial) <a id="denial-anchor"></a>
+  - [Desperate Shot](#desperate-shot) <a id="desperate-shot-anchor"></a>
+  - [Devastator](#devastator) <a id="devastator-anchor"></a>
+  - [Diesel Dwarf](#diesel-dwarf) <a id="diesel-dwarf-anchor"></a>
+  - [Dissipated](#dissipated) <a id="dissipated-anchor"></a>
+  - [Divine Blood](#divine-blood) <a id="divine-blood-anchor"></a>
+  - [Doombringer](#doombringer) <a id="doombringer-anchor"></a>
+  - [Double Attack](#double-attack) <a id="double-attack-anchor"></a>
+  - [Double-Platinum Deathless Backup](#double-platinum-deathless-backup) <a id="double-platinum-deathless-backup-anchor"></a>
+  - [Dreamwalker](#dreamwalker) <a id="dreamwalker-anchor"></a>
+  - [Ducky](#ducky) <a id="ducky-anchor"></a>
+  - [Dust Rat](#dust-rat) <a id="dust-rat-anchor"></a>
+  - [Enterprising](#enterprising) <a id="enterprising-anchor"></a>
+  - [Erratic Expendables](#erratic-expendables) <a id="erratic-expendables-anchor"></a>
+  - [Escapist](#escapist) <a id="escapist-anchor"></a>
+  - [Evasive](#evasive) <a id="evasive-anchor"></a>
+  - [Expensive Training](#expensive-training) <a id="expensive-training-anchor"></a>
+  - [Expert Friends](#expert-friends) <a id="expert-friends-anchor"></a>
+  - [Exuberant](#exuberant) <a id="exuberant-anchor"></a>
+  - [Faceless](#faceless) <a id="faceless-anchor"></a>
+  - [Fake Out](#fake-out) <a id="fake-out-anchor"></a>
+  - [Falscher](#falscher) <a id="falscher-anchor"></a>
+  - [Fatespun](#fatespun) <a id="fatespun-anchor"></a>
+  - [Feedback](#feedback) <a id="feedback-anchor"></a>
+  - [Feral](#feral) <a id="feral-anchor"></a>
+  - [Fighter](#fighter) <a id="fighter-anchor"></a>
+  - [Fighting Woman or Man](#fighting-woman-or-man) <a id="fighting-woman-or-man-anchor"></a>
+  - [Fortunate One](#fortunate-one) <a id="fortunate-one-anchor"></a>
+  - [Frenzy](#frenzy) <a id="frenzy-anchor"></a>
+  - [Friends](#friends) <a id="friends-anchor"></a>
+  - [From Dust, Returning](#from-dust-returning) <a id="from-dust-returning-anchor"></a>
+  - [Generic Synthesized Creature](#generic-synthesized-creature) <a id="generic-synthesized-creature-anchor"></a>
+  - [Glowing Skeleton](#glowing-skeleton) <a id="glowing-skeleton-anchor"></a>
+  - [Golem](#golem) <a id="golem-anchor"></a>
+  - [Greenlander](#greenlander) <a id="greenlander-anchor"></a>
+  - [Grit](#grit) <a id="grit-anchor"></a>
+  - [Grounded](#grounded) <a id="grounded-anchor"></a>
+  - [Hackmagic](#hackmagic) <a id="hackmagic-anchor"></a>
+  - [Hardened](#hardened) <a id="hardened-anchor"></a>
+  - [Hashtag Blessed](#hashtag-blessed) <a id="hashtag-blessed-anchor"></a>
+    - [Trickster Path](#trickster-path) <a id="trickster-path-anchor"></a>
+  - [Hexad Member](#hexad-member) <a id="hexad-member-anchor"></a>
+  - [Hexer Meritocrat](#hexer-meritocrat) <a id="hexer-meritocrat-anchor"></a>
+  - [Hollow Halo](#hollow-halo) <a id="hollow-halo-anchor"></a>
+  - [Holy Diver](#holy-diver) <a id="holy-diver-anchor"></a>
+  - [Holy Fool](#holy-fool) <a id="holy-fool-anchor"></a>
+  - [Housemaker](#housemaker) <a id="housemaker-anchor"></a>
+  - [Human Library](#human-library) <a id="human-library-anchor"></a>
+  - [Humans of the Pananthropy](#humans-of-the-pananthropy) <a id="humans-of-the-pananthropy-anchor"></a>
+  - [Hunter](#hunter) <a id="hunter-anchor"></a>
+  - [I Am Legion](#i-am-legion) <a id="i-am-legion-anchor"></a>
+  - [Informant](#informant) <a id="informant-anchor"></a>
+  - [Inquisition Agent](#inquisition-agent) <a id="inquisition-agent-anchor"></a>
+  - [Intestinal Fortitude](#intestinal-fortitude) <a id="intestinal-fortitude-anchor"></a>
+  - [Irresistible](#irresistible) <a id="irresistible-anchor"></a>
+  - [Kaffetropist](#kaffetropist) <a id="kaffetropist-anchor"></a>
+  - [Killbite](#killbite) <a id="killbite-anchor"></a>
+  - [Knight Reflexes](#knight-reflexes) <a id="knight-reflexes-anchor"></a>
+  - [Lair wards](#lair-wards) <a id="lair-wards-anchor"></a>
+  - [Legal Immunity](#legal-immunity) <a id="legal-immunity-anchor"></a>
+  - [Lost Songs](#lost-songs) <a id="lost-songs-anchor"></a>
+  - [Loyal](#loyal) <a id="loyal-anchor"></a>
+  - [Manager](#manager) <a id="manager-anchor"></a>
+  - [Martyr](#martyr) <a id="martyr-anchor"></a>
+  - [Metropolitan](#metropolitan) <a id="metropolitan-anchor"></a>
+  - [Mind Palace](#mind-palace) <a id="mind-palace-anchor"></a>
+  - [Mossblood](#mossblood) <a id="mossblood-anchor"></a>
+  - [Motivational](#motivational) <a id="motivational-anchor"></a>
+  - [My Bones Engraved](#my-bones-engraved) <a id="my-bones-engraved-anchor"></a>
+  - [Noble](#noble) <a id="noble-anchor"></a>
+  - [Noömagus](#noomagus) <a id="noomagus-anchor"></a>
+  - [Noösphere Native](#noosphere-native) <a id="noosphere-native-anchor"></a>
+  - [Noösphere Priest](#noosphere-priest) <a id="noosphere-priest-anchor"></a>
+  - [Numbers Maximization Official](#numbers-maximization-official) <a id="numbers-maximization-official-anchor"></a>
+    - [Noble Path](#noble-path) <a id="noble-path-anchor"></a>
+  - [Oblique Reality](#oblique-reality) <a id="oblique-reality-anchor"></a>
+  - [Of-World](#of-world) <a id="of-world-anchor"></a>
+  - [Old Money](#old-money) <a id="old-money-anchor"></a>
+  - [Once Again](#once-again) <a id="once-again-anchor"></a>
+  - [Oppressed Faith](#oppressed-faith) <a id="oppressed-faith-anchor"></a>
+  - [Orange Half-Ling](#orange-half-ling) <a id="orange-half-ling-anchor"></a>
+  - [Orangelander](#orangelander) <a id="orangelander-anchor"></a>
+  - [Overcharge](#overcharge) <a id="overcharge-anchor"></a>
+  - [Paradox Die](#paradox-die) <a id="paradox-die-anchor"></a>
+  - [Perfect](#perfect) <a id="perfect-anchor"></a>
+  - [Perfected Germline](#perfected-germline) <a id="perfected-germline-anchor"></a>
+    - [Noömagus Path](#noomagus-path) <a id="noomagus-path-anchor"></a>
+  - [Personal Daimon](#personal-daimon) <a id="personal-daimon-anchor"></a>
+  - [Pet Sidekick](#pet-sidekick) <a id="pet-sidekick-anchor"></a>
+  - [Phase](#phase) <a id="phase-anchor"></a>
+  - [Phylake’s Child](#phylakes-child) <a id="phylakes-child-anchor"></a>
+  - [Pickpocket](#pickpocket) <a id="pickpocket-anchor"></a>
+  - [Pleasant](#pleasant) <a id="pleasant-anchor"></a>
+  - [Pocketmaster](#pocketmaster) <a id="pocketmaster-anchor"></a>
+  - [Power (as Trait)](#power-as-trait) <a id="power-as-trait-anchor"></a>
+    - [Powers-as-Traits](#powers-as-traits) <a id="powers-as-traits-anchor"></a>
+  - [Power Scroller](#power-scroller) <a id="power-scroller-anchor"></a>
+  - [Powered](#powered) <a id="powered-anchor"></a>
+  - [Purplelander](#purplelander) <a id="purplelander-anchor"></a>
+  - [Quartermaster](#quartermaster) <a id="quartermaster-anchor"></a>
+  - [Rancher](#rancher) <a id="rancher-anchor"></a>
+  - [Rationalised](#rationalised) <a id="rationalised-anchor"></a>
+  - [Reanimator](#reanimator) <a id="reanimator-anchor"></a>
+  - [Recast](#recast) <a id="recast-anchor"></a>
+  - [Redlander](#redlander) <a id="redlander-anchor"></a>
+  - [Resistomorph](#resistomorph) <a id="resistomorph-anchor"></a>
+  - [Resourceful](#resourceful) <a id="resourceful-anchor"></a>
+  - [Revenant](#revenant) <a id="revenant-anchor"></a>
+  - [Revenant-in-Waiting](#revenant-in-waiting) <a id="revenant-in-waiting-anchor"></a>
+  - [Riposte](#riposte) <a id="riposte-anchor"></a>
+  - [Rockblood](#rockblood) <a id="rockblood-anchor"></a>
+  - [Ruderalist](#ruderalist) <a id="ruderalist-anchor"></a>
+  - [Ruster](#ruster) <a id="ruster-anchor"></a>
+  - [Saffron Eater](#saffron-eater) <a id="saffron-eater-anchor"></a>
+  - [Scion](#scion) <a id="scion-anchor"></a>
+  - [Sculpted Beauty](#sculpted-beauty) <a id="sculpted-beauty-anchor"></a>
+  - [Second Chance](#second-chance) <a id="second-chance-anchor"></a>
+  - [Servant](#servant) <a id="servant-anchor"></a>
+  - [Shackleminded](#shackleminded) <a id="shackleminded-anchor"></a>
+    - [Yellowlander Path](#yellowlander-path) <a id="yellowlander-path-anchor"></a>
+  - [Shatter](#shatter) <a id="shatter-anchor"></a>
+  - [Shieldfriend](#shieldfriend) <a id="shieldfriend-anchor"></a>
+  - [Shopstaff](#shopstaff) <a id="shopstaff-anchor"></a>
+  - [Signalmaster](#signalmaster) <a id="signalmaster-anchor"></a>
+  - [Silver-Tongued](#silver-tongued) <a id="silver-tongued-anchor"></a>
+    - [Weapon Path](#weapon-path) <a id="weapon-path-anchor"></a>
+  - [Skeleton](#skeleton) <a id="skeleton-anchor"></a>
+  - [Slam](#slam) <a id="slam-anchor"></a>
+  - [Slayer](#slayer) <a id="slayer-anchor"></a>
+  - [Social Survivor](#social-survivor) <a id="social-survivor-anchor"></a>
+  - [Soiltwined](#soiltwined) <a id="soiltwined-anchor"></a>
+    - [Holy Fool Path](#holy-fool-path) <a id="holy-fool-path-anchor"></a>
+  - [Soldier](#soldier) <a id="soldier-anchor"></a>
+  - [Soothsayer](#soothsayer) <a id="soothsayer-anchor"></a>
+  - [Soul Fuel](#soul-fuel) <a id="soul-fuel-anchor"></a>
+  - [Soul Thief](#soul-thief) <a id="soul-thief-anchor"></a>
+    - [Soldier Path](#soldier-path) <a id="soldier-path-anchor"></a>
+  - [Spelunker](#spelunker) <a id="spelunker-anchor"></a>
+  - [Spirit](#spirit) <a id="spirit-anchor"></a>
+  - [Sporemark](#sporemark) <a id="sporemark-anchor"></a>
+    - [Bourgeois Path](#bourgeois-path) <a id="bourgeois-path-anchor"></a>
+  - [Springer](#springer) <a id="springer-anchor"></a>
+  - [Stabber](#stabber) <a id="stabber-anchor"></a>
+  - [Steadfast](#steadfast) <a id="steadfast-anchor"></a>
+  - [Strong](#strong) <a id="strong-anchor"></a>
+  - [Subconscious Decay](#subconscious-decay) <a id="subconscious-decay-anchor"></a>
+  - [Superuser](#superuser) <a id="superuser-anchor"></a>
+    - [Servant Path](#servant-path) <a id="servant-path-anchor"></a>
+  - [Swift](#swift) <a id="swift-anchor"></a>
+    - [Fighter Path](#fighter-path) <a id="fighter-path-anchor"></a>
+  - [Synthetic Soul](#synthetic-soul) <a id="synthetic-soul-anchor"></a>
+  - [Tactical](#tactical) <a id="tactical-anchor"></a>
+  - [Tactician](#tactician) <a id="tactician-anchor"></a>
+  - [Teamwork](#teamwork) <a id="teamwork-anchor"></a>
+  - [Telempath](#telempath) <a id="telempath-anchor"></a>
+    - [Redlander Path](#redlander-path) <a id="redlander-path-anchor"></a>
+  - [Terrifying](#terrifying) <a id="terrifying-anchor"></a>
+  - [Thorny](#thorny) <a id="thorny-anchor"></a>
+    - [Traits of the Vastlands](#traits-of-the-vastlands) <a id="traits-of-the-vastlands-anchor"></a>
+  - [Ticking Corpse](#ticking-corpse) <a id="ticking-corpse-anchor"></a>
+  - [Toolmaker](#toolmaker) <a id="toolmaker-anchor"></a>
+  - [Tough](#tough) <a id="tough-anchor"></a>
+    - [Skeleton Path](#skeleton-path) <a id="skeleton-path-anchor"></a>
+  - [Tourist](#tourist) <a id="tourist-anchor"></a>
+  - [Traveler](#traveler) <a id="traveler-anchor"></a>
+  - [Trickster](#trickster) <a id="trickster-anchor"></a>
+  - [Underestimated](#underestimated) <a id="underestimated-anchor"></a>
+  - [Undying Synthetic](#undying-synthetic) <a id="undying-synthetic-anchor"></a>
+  - [Unfred](#unfred) <a id="unfred-anchor"></a>
+    - [Purplelander Path](#purplelander-path) <a id="purplelander-path-anchor"></a>
+  - [Ur-War Program](#ur-war-program) <a id="ur-war-program-anchor"></a>
+  - [Urbane](#urbane) <a id="urbane-anchor"></a>
+    - [Golem Path](#golem-path) <a id="golem-path-anchor"></a>
+  - [Vampire](#vampire) <a id="vampire-anchor"></a>
+  - [Very Strong](#very-strong) <a id="very-strong-anchor"></a>
+    - [Greenlander Path](#greenlander-path) <a id="greenlander-path-anchor"></a>
+  - [Veteran of the Psychic Wars](#veteran-of-the-psychic-wars) <a id="veteran-of-the-psychic-wars-anchor"></a>
+    - [Orangelander Path](#orangelander-path) <a id="orangelander-path-anchor"></a>
+  - [Vintner](#vintner) <a id="vintner-anchor"></a>
+  - [Void Ward](#void-ward) <a id="void-ward-anchor"></a>
+  - [Wanderer](#wanderer) <a id="wanderer-anchor"></a>
+    - [Manager Path](#manager-path) <a id="manager-path-anchor"></a>
+  - [Wardwright](#wardwright) <a id="wardwright-anchor"></a>
+  - [Weapon](#weapon) <a id="weapon-anchor"></a>
+  - [Werker](#werker) <a id="werker-anchor"></a>
+    - [Scion Path](#scion-path) <a id="scion-path-anchor"></a>
+  - [Wild Mage](#wild-mage) <a id="wild-mage-anchor"></a>
+  - [Wild Survivor](#wild-survivor) <a id="wild-survivor-anchor"></a>
+    - [Bluelander Path](#bluelander-path) <a id="bluelander-path-anchor"></a>
+  - [Wired](#wired) <a id="wired-anchor"></a>
+    - [Tourist Path](#tourist-path) <a id="tourist-path-anchor"></a>
+  - [Wizard](#wizard) <a id="wizard-anchor"></a>
+  - [Wyldfire](#wyldfire) <a id="wyldfire-anchor"></a>
+  - [Yellowlander](#yellowlander) <a id="yellowlander-anchor"></a>
 # SDM Trait Template
 
 *(Canonical, tag-forward, Markdown-friendly. This section defines the **schema only**. It contains no rules text, examples, or setting-specific guidance.)*
@@ -234,7 +262,7 @@ published: true
 ```text
 <div class="trait-card" markdown="1">
 
-## **<Trait Name>** {#sdm-trait-<slug>}
+## <Trait Name>
 
 >   <Full canonical trait text, including the bolded title and all rules text, but excluding any numeric list index.>
 
@@ -259,7 +287,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-<slug>-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#<slug>-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -280,13 +308,7 @@ Traits represent the "radically ungated advancement" of the Sythetic Dream Machi
 
 # SDM Trait Index
 
-*(Initial scope: **VLG only**.)*
-
-This section enumerates canonical traits. Abstract traits describe procedures rather than listing every possible instance.
-
-<div class="trait-card" markdown="1">
-
-## **Abandoned** {#sdm-trait-abandoned}
+## Abandoned
 
 >   **Abandoned.** When your fellow villagers went for reprocessing and repair, you remained in the rotting house shells. Old things, dead things, still talk to you. Spend 1 life to talk to any dead thing.
 
@@ -305,7 +327,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-abandoned-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#abandoned-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -314,7 +336,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Adaptable** {#sdm-trait-adaptable}
+## Adaptable
 
 >   **Adaptable.** Copy an enemy's last used special ability.
 
@@ -332,7 +354,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-adaptable-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#adaptable-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -341,7 +363,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Antimagus** {#sdm-trait-antimagus}
+## Antimagus
 
 >   **Antimagus.** Your very blood rebels against the false gods' trickery. Gain 2 life per level, but the price you pay for oldtech and fantascience spells is doubled.
 
@@ -360,7 +382,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-antimagus-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#antimagus-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -369,7 +391,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Arboreal** {#sdm-trait-arboreal}
+## Arboreal
 
 >   **Arboreal.** Your phenotype is adapted to life in the trees—or the bioducts of a megastructure. Climb, swing, and jump like a gibbon. Gain +1 strength.
 
@@ -387,7 +409,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-arboreal-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#arboreal-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -396,7 +418,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Armiger** {#sdm-trait-armiger}
+## Armiger
 
 >   **Armiger.** Carry a number of weapons equal to your level for free, ignoring inventory. Draw a weapons box on the back of your character sheet.
 
@@ -416,7 +438,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-armiger-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#armiger-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -425,7 +447,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Armorborn** {#sdm-trait-armorborn}
+## Armorborn
 
 >   **Armorborn.** Any armor you wear occupies no inventory space. Armor gives you a defense bonus equal to its size in stones.
 
@@ -444,7 +466,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-armorborn-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#armorborn-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -453,7 +475,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Background** (abstract) {#sdm-trait-background}
+## Background (abstract)
 
 >   **Background.** A Background is an abstract trait representing who you were before (and partly during) your adventures: your origins, professions, social roles, motives, secrets, and formative experiences. In the Vastlands, a Background is intentionally broad and is meant to anchor fictional positioning rather than provide narrow mechanical bonuses.
 > 
@@ -506,7 +528,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-background-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#background-abstract-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -515,7 +537,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Backstabber** {#sdm-trait-backstabber}
+## Backstabber
 
 >   **Backstabber.** Wield knives and pistols. Deal double damage when a target doesn’t expect your attack.
 
@@ -534,7 +556,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-backstabber-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#backstabber-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -543,7 +565,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Barbarian** {#sdm-trait-barbarian}
+## Barbarian
 
 >   **Barbarian.** You're an outlander or outsider, skilled with dead weapons and armors, free of oldtech or fantascience. Bone or iron, hide or gun. Also, you can hide, survive, and thrive in ruinland or waste land, dusty steppe or rugged mountain.
 
@@ -562,7 +584,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-barbarian-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#barbarian-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -571,7 +593,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Blastermaster** {#sdm-trait-blastermaster}
+## Blastermaster
 
 >   **Blastermaster.** You are skilled with the blasters, wands, rods, and rifles of ancient thunder infantry. Add your skill bonus to damage; reload as a free action. Also, if you take an action to steady your aim, increase your critical range and multiplier by 1.
 
@@ -589,7 +611,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-blastermaster-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#blastermaster-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -598,7 +620,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Blessed** {#sdm-trait-blessed}
+## Blessed
 
 >   **Blessed.** When only luck will do, you have an advantage. That's also a bonus to all saves.
 
@@ -616,7 +638,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-blessed-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#blessed-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -625,7 +647,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Blood Clad** {#sdm-trait-blood-clad}
+## Blood Clad
 
 >   **Blood Clad.** Gain a blood die when you are injured. Spend a blood die to absorb **1d6 damage** or increase your **damage by 1d6**. You can store a number of blood dice equal to your level. Healing, resting, or a hot bath remove your blood dice. Expert: Healing no longer removes your blood dice. Resting or a hot bath still removes all blood dice. Master: When you reduce a creature to **0 Life**, gain **1 blood die**, even if you were not injured by that creature.
 
@@ -648,7 +670,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-blood-clad-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#blood-clad-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -657,7 +679,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Bluelander** {#sdm-trait-bluelander}
+## Bluelander
 
 >   **Bluelander.** Child of war and strange gods and ruined land. Skilled on a boat and in a mountain, laced with fungal and bacterial tech. Wield the fisher spear, knife, net, and climbing hook. Also, if you suffer corruption, you can reroll the result.
 
@@ -676,7 +698,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bluelander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#bluelander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -685,7 +707,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Boatmaster** {#sdm-trait-boatmaster}
+## Boatmaster
 
 >   **Boatmaster.** You handle boats superlatively. You can fit an extra number of sacks equal to your level on a boat (but not more than double its capacity).
 
@@ -703,7 +725,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-boatmaster-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#boatmaster-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -712,7 +734,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Bonded** {#sdm-trait-bonded}
+## Bonded
 
 >   **Bonded.** Spend life to grant an ally an equal bonus on their next roll.
 
@@ -730,7 +752,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bonded-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#bonded-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -739,7 +761,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Bourgeois** {#sdm-trait-bourgeois}
+## Bourgeois
 
 >   **Bourgeois.** Citizen creator or conniving climber? Use the tools of civil society: the market in stocks, the hand invisible, the law of bureaucracy, the greased palm effective. Wield stick and sword, pistol and oldtech hand weapon. Also, spend a hero die to convince an official you know your stuff.
 
@@ -759,7 +781,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bourgeois-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#bourgeois-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -768,7 +790,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Brick Bastions** {#sdm-trait-brick-bastions}
+## Brick Bastions
 
 >   **Brick Bastions.** Floating shields, animated armors, soil golems, lumberlings, horde zombies, crawling flesh centipedes, armor vomes, gelatinous skeletons, and other creatures that can't avoid getting hit. Often slow.
 > 
@@ -802,7 +824,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-brick-bastions-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#brick-bastions-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -811,7 +833,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Burglar** {#sdm-trait-burglar}
+## Burglar
 
 >   **Burglar.** You were always so good at breaking into and out of places, disarming locks and traps, and moving very quietly. You were the perfect person to save your weapon (your master) from its prison... er... treasure chamber. Also, spend a hero die to immediately find a hidden safe or lever.
 
@@ -830,7 +852,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-burglar-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#burglar-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -839,7 +861,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Burner** {#sdm-trait-burner}
+## Burner
 
 >   **Burner.** Once per turn, you can spend an ability point to overcharge a power, regardless of its cost. Expert: When you overcharge a power, reduce the Life cost by 1 (minimum 1). Master: Once per watch, you may overcharge without spending Life or an ability point. If you do, it automatically triggers a Danger Roll.
 
@@ -863,7 +885,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-burner-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#burner-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -872,7 +894,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Bystander** {#sdm-trait-bystander}
+## Bystander
 
 >   **Bystander.** You’re good at looking innocent and harmless. Also, reduce damage from all area effects by your level. So, by 6 at level 6.
 
@@ -890,7 +912,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-bystander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#bystander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -899,7 +921,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Cad** {#sdm-trait-cad}
+## Cad
 
 >   **Cad.** You are definitely not a cat. Sleek fur protects you from the rays of the harsh suns and the cold of the thin upper air. Your two secondary arms let you carry more ready items.
 
@@ -917,7 +939,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cad-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#cad-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -926,7 +948,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Chaos Step** {#sdm-trait-chaos-step}
+## Chaos Step
 
 >   **Chaos Step.** Free Action. When an attack targets you or you fail a save spend 1 Hero Die or take 1 ability damage to blink up to 30 feet to a you-sized space you can see. The triggering attack resolves against your new position with disadvantage (line-of-sight permitting & bonus for any new cover; otherwise it misses). Immediately roll a Dangerous Magic roll vs the Area level. If that results in a Corruption effect related to teleportation, portals, or quantum themes you regain the Hero Die or heal the ability damage.
 
@@ -946,7 +968,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-chaos-step-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#chaos-step-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -955,7 +977,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Charger** {#sdm-trait-charger}
+## Charger
 
 >   **Charger.** Deal double damage after a direct charge.
 
@@ -973,7 +995,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-charger-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#charger-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -982,7 +1004,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Cheesemaker** {#sdm-trait-cheesemaker}
+## Cheesemaker
 
 >   **Cheesemaker.** You are a member of the secret dairy society. Talk to molds, yeasts, and bacteria. Little lifeforms bend to your will. Spend 1 life to convert 1 st of biomatter into edible “cheese” overnight.
 
@@ -1001,7 +1023,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cheesemaker-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#cheesemaker-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1010,7 +1032,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Chronic** {#sdm-trait-chronic}
+## Chronic
 
 >   **Chronic.** Spend a hero die to use a second power this round. Expert: When you go Chronic, you may hold the second power and release it at any point later in the round, even during another creature's action or resolution. Both your powers still count as being used in the same round for duration, limits, counters, etc. Master: Once per watch, you may use Chronic without spending a Hero Die -- but the second power automatically triggers a Danger Roll.
 
@@ -1033,7 +1055,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-chronic-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#chronic-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1042,7 +1064,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Circle of Pain** {#sdm-trait-circle-of-pain}
+## Circle of Pain
 
 >   **Circle of Pain.** Nearby allies deal and suffer double damage; adjacent foes suffer double damage.
 
@@ -1060,7 +1082,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-circle-of-pain-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#circle-of-pain-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1069,7 +1091,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Citizen Living** {#sdm-trait-citizen-living}
+## Citizen Living
 
 >   **Citizen Living.** Bred to hedonism and maximum pleasure, you are the soul of every party, the wit of every conversation, the glutton of every delight. Gain +1 charisma and endurance.
 
@@ -1088,7 +1110,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-citizen-living-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#citizen-living-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1097,7 +1119,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Citizen Maintainer** {#sdm-trait-citizen-maintainer}
+## Citizen Maintainer
 
 >   **Citizen Maintainer.** Skilled at maintaining the citizens dead. Repair and improve the undead, converse with them, know their ways and needs. Also, a bonus to saves vs all undead special attacks. Expert: You can stabilize a degrading or malfunctioning mindless undead in the field: spend a few minutes and a drop of blood (or equivalent) to prevent this week's Degrade roll for that undead or remove feral status. Master: Mindless undead recognize you as maintenance staff and will not attack you unless provoked. Once per day, you may influence an undead you can touch: for a scene it treats you as its rightful handler and obeys simple commands. If you are caught doing this "off the books," it may count as illegal activity.
 
@@ -1119,7 +1141,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-citizen-maintainer-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#citizen-maintainer-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1128,7 +1150,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Cleanser** {#sdm-trait-cleanser}
+## Cleanser
 
 >   **Cleanser.** Spend 1 charisma or 1d6 life to end another power or enchantment. Poof, it’s gone. Also, you can spend a hero die to instantly cleanse a small area: a stagnant pool of bacteria, a kitchen of dirty dishes, a bedroom of smelly socks, a car of dust, or a shrine of unholy curses and graffiti.
 
@@ -1149,7 +1171,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cleanser-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#cleanser-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1158,7 +1180,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Clueless Outsider** {#sdm-trait-clueless-outsider}
+## Clueless Outsider
 
 >   **Clueless Outsider.** Caught red-handed? Trespassing? Spend a hero die, and you're let off with a warning and an indulgent grin.
 
@@ -1177,7 +1199,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-clueless-outsider-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#clueless-outsider-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1186,7 +1208,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Cold New Flesh** {#sdm-trait-cold-new-flesh}
+## Cold New Flesh
 
 >   **Cold New Flesh.** Your flesh is as semi-precious stone. You gain +1 natural defense, and by drinking fresh blood you transfer life from a willing creature to yourself. A bit like, er, a vampire? Expert: While fed (until sunset or sunrise) choose one: gain +2 Defense (this stacks with your natural Defense), or gain +2 Social Defense and +2 to Reaction Rolls. While fed, you may mimic a person similar, but not identical, to the donor. Master: Your natural Defense increases to +2. You gain advantage vs. poison, hunger, fatigue, and environmental hazards (Resilient Metabolism Heritage-style effect).
 
@@ -1208,7 +1230,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cold-new-flesh-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#cold-new-flesh-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1217,7 +1239,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Colonist** {#sdm-trait-colonist}
+## Colonist
 
 >   **Colonist.** You come from one of the old A.N.T. settler groups, designed as a colony organism. Designate up to five other creatures as members of your hexad. Each gains temporary life equal to your level if they spend the night in your vicinity. Gain +1 charisma.
 
@@ -1236,7 +1258,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-colonist-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#colonist-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1245,7 +1267,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Commander** {#sdm-trait-commander}
+## Commander
 
 >   **Commander.** Excel at battle lore, tactics, and rally tests. Draw a Formation Inventory box on the character sheet and list attached Units/Vehicles (and/or stations). Draw a small Command Dice (d6) box beside it. Skilled: attach up to 3 Units within 1 zone; start combat with 1 Command Die. Expert: attach up to 5 Units within 2 zones; start combat with 2 Command Dice. Master: attach up to 7 Units within 3 zones; start combat with 3 Command Dice. Each Commander also gains 1 Command die at the start of their side's turn. "Start of combat" Command Dice refresh only after one encounter fully ends; follow-on waves, running fights, and active pursuits count as the same battle.
 
@@ -1267,7 +1289,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-commander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#commander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1276,7 +1298,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Common Humanity** {#sdm-trait-common-humanity}
+## Common Humanity
 
 >   **Common Humanity.** Spend 1 life to appeal for understanding and parlay (save).
 
@@ -1295,7 +1317,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-common-humanity-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#common-humanity-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1304,7 +1326,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Competent Appearance** {#sdm-trait-competent-appearance}
+## Competent Appearance
 
 >   **Competent Appearance.** You always appear competent when appearing to do something that could appear to be your job.
 
@@ -1322,7 +1344,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-competent-appearance-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#competent-appearance-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1331,7 +1353,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Corruption** (abstract) {#sdm-trait-corruption}
+## Corruption (abstract)
 
 >   **Corruption.** Power corrupts, and the wonders of the Long Long Ago do so spectacularly. Corruption twists a body, abrades a soul, stains a mind, and—cruelly—does it in proportion to the marvel you dared to touch. A corruption trait represents that scarring: a permanent mutation, obsession, parasitic organ, alien outlook, or saintly curse that now travels with you.
 > 
@@ -1362,7 +1384,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-corruption-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#corruption-abstract-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1371,7 +1393,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Cosmic Qanat** {#sdm-trait-cosmic-qanat}
+## Cosmic Qanat
 
 >   **Cosmic Qanat.** See the lines of cosmic force flowing through the world. Use all powers as though you were 2 levels higher. Reduces risk of corruption!
 
@@ -1389,7 +1411,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-cosmic-qanat-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#cosmic-qanat-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1398,7 +1420,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Country Squire** {#sdm-trait-country-squire}
+## Country Squire
 
 >   **Country Squire.** You make money the proper way: resource concessions in the vastlands and the ruinlands. A remote rural estate gives you €15/wk and all the spite olives you can spit.
 
@@ -1416,7 +1438,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-country-squire-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#country-squire-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1425,7 +1447,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Crystal Cannons** {#sdm-trait-crystal-cannons}
+## Crystal Cannons
 
 >   **Crystal Cannons.** Electric wizards, gas goblins, spore shooters, drop bears, doom discs, floating rayballs, porcelain liches, thanatic fanatics, and others that deal damage but can't take it.
 > 
@@ -1459,7 +1481,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-crystal-cannons-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#crystal-cannons-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1468,7 +1490,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Culling** {#sdm-trait-culling}
+## Culling
 
 >   **Culling.** When you take out an enemy, you get an immediate free action. The referee may cap the number of free actions, if they get out of hand.
 
@@ -1486,7 +1508,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-culling-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#culling-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1495,7 +1517,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Curse-Blessed** {#sdm-trait-curse-blessed}
+## Curse-Blessed
 
 >   **Curse-Blessed.** A thinking creature (animal or person) cannot throw you away without your permission. They own you now, and that means you belong to them. Forever and ever, until you let them go. Or someone removes your curse... er... blessing... somehow. It’s best to keep your bearer happy, so they don’t try to have you removed. Maybe a few lies about their destiny? Also, you can communicate with any creature that is touching you telepathically and exude a mild mental sedative, which keeps them pliant and helpful in ordinary circumstances.
 
@@ -1513,7 +1535,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-curse-blessed-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#curse-blessed-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1522,7 +1544,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Darting Dodgers** {#sdm-trait-darting-dodgers}
+## Darting Dodgers
 
 >   **Darting Dodgers.** Hoptoads, lashing leapers, vomitorrials, nimblers, fire furies, nightmare ninjas, neon knights, mercury golems, bioenhanced bandits, and other creatures that depend on their speed to avoid attacks and score hits.
 > 
@@ -1556,7 +1578,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-darting-dodgers-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#darting-dodgers-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1565,7 +1587,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Death Curse** {#sdm-trait-death-curse}
+## Death Curse
 
 >   **Death Curse.** Your killer suffers a psychic burden.
 
@@ -1583,7 +1605,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-death-curse-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#death-curse-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1592,7 +1614,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Death Hunger** {#sdm-trait-death-hunger}
+## Death Hunger
 
 >   **Death Hunger.** You know everything about disassembling mortals. Also, track the enemies you kill in a battle. Every enemy killed gives you a cumulative +1 to attack rolls until the end of the battle. After the first kill, you growl and roar until the killing stops. Expert: the bonus is +2 per kill. Master: +3.
 
@@ -1613,7 +1635,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-death-hunger-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#death-hunger-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1622,7 +1644,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Deeply Embodied** {#sdm-trait-deeply-embodied}
+## Deeply Embodied
 
 >   **Deeply Embodied.** You are deeply encoded in your physical form and can use your strength ability for oldtech magics and endurance for fantascience.
 
@@ -1640,7 +1662,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-deeply-embodied-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#deeply-embodied-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1649,7 +1671,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Defender** {#sdm-trait-defender}
+## Defender
 
 >   **Defender.** You’re skilled at physical defense and all kinds of defensive equipment. Also, even if unarmored, gain a +3 armor bonus. Expert: +6 armor; master: +9 armor.
 
@@ -1668,7 +1690,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-defender-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#defender-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1677,7 +1699,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Demolisher** {#sdm-trait-demolisher}
+## Demolisher
 
 >   **Demolisher.** Your critical hits are stronger (e.g., x2 becomes x3). Also, when you strike an object up to the size of a compact car, you can spend 1 strength or endurance to simply demolish it. Doors burst open, brick walls explode, wooden walls shatter into kindling, straw huts go flying, small golems crumple. You can also use this ability to turn a regular hit into a critical hit, or to double a critical hit. As a weapon (without strength or endurance), simply use your bearer’s abilities as fuel for your fury.
 
@@ -1696,7 +1718,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-demolisher-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#demolisher-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1705,7 +1727,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Denial** {#sdm-trait-denial}
+## Denial
 
 >   **Denial.** Adjacent enemies have difficulty moving.
 
@@ -1723,7 +1745,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-denial-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#denial-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1732,7 +1754,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Desperate Shot** {#sdm-trait-desperate-shot}
+## Desperate Shot
 
 >   **Desperate Shot.** Deal triple damage when at 1 life.
 
@@ -1750,7 +1772,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-desperate-shot-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#desperate-shot-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1759,7 +1781,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Devastator** {#sdm-trait-devastator}
+## Devastator
 
 >   **Devastator.** Once per round, when you strike a foe lower level than yourself, you can drop them to 0 life instead of rolling damage.
 
@@ -1777,7 +1799,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-devastator-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#devastator-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1786,7 +1808,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Diesel Dwarf** {#sdm-trait-diesel-dwarf}
+## Diesel Dwarf
 
 >   **Diesel Dwarf.** Your ancestors were adapted to serve the gods as wasteland refiners, recycling Long Long Ago corpse deposits for a brighter future. Besides a natural engineering, driving, and drilling affinity, you can replace your food needs with petroleum products for up to a month. Gain 1 agility.
 
@@ -1804,7 +1826,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-diesel-dwarf-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#diesel-dwarf-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1813,7 +1835,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Dissipated** {#sdm-trait-dissipated}
+## Dissipated
 
 >   **Dissipated.** Chemical cocktails drive you, but without them you are weak and wan. Spend €5 x level per week to gain +2 strength and agility. Without: suffer -2 strength and endurance.
 
@@ -1831,7 +1853,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-dissipated-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#dissipated-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1840,7 +1862,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Divine Blood** {#sdm-trait-divine-blood}
+## Divine Blood
 
 >   **Divine Blood.** Little source code machines sing in your veins. Your cost to activate oldtech devices or powers is reduced by 2 (minimum of 1).
 
@@ -1858,7 +1880,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-divine-blood-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#divine-blood-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1867,7 +1889,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Doombringer** {#sdm-trait-doombringer}
+## Doombringer
 
 >   **Doombringer.** Yours is the grim hand of fate. When you strike a creature that is lower level than your weapon (your master), it is immediately defeated, no damage roll required.
 
@@ -1885,7 +1907,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-doombringer-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#doombringer-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1894,7 +1916,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Double Attack** {#sdm-trait-double-attack}
+## Double Attack
 
 >   **Double Attack.** Attack twice with one action.
 
@@ -1912,7 +1934,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-double-attack-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#double-attack-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1921,7 +1943,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Double-Platinum Deathless Backup** {#sdm-trait-double-platinum-deathless-backup}
+## Double-Platinum Deathless Backup
 
 >   **Double-Platinum Deathless Backup.** You've got two soul jewels. One is in an egg in a duck in a hare in a secret pleasure vault on a private island. Hah!
 
@@ -1939,7 +1961,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-double-platinum-deathless-backup-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#double-platinum-deathless-backup-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1948,7 +1970,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Dreamwalker** {#sdm-trait-dreamwalker}
+## Dreamwalker
 
 >   **Dreamwalker.** When you enter the noösphere, you take your body along, leaving nothing but an aroma of almonds in the hylosphere. Gain +1 endurance. Expert: +2 endurance. Master: You can bring willing adjacent creatures with you into the noösphere (up to your Level, their body goes too). Also, +3 endurance.
 
@@ -1969,7 +1991,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-dreamwalker-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#dreamwalker-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -1978,7 +2000,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Ducky** {#sdm-trait-ducky}
+## Ducky
 
 >   **Ducky.** As an underclass minority you know how to fight with concealed weapons and maneuver with ossified bureaucracies. Also, once per day, spend a hero die to 'remember' a reliable local creche clan member who could help you, for a price.
 
@@ -1998,7 +2020,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ducky-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#ducky-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2007,7 +2029,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Dust Rat** {#sdm-trait-dust-rat}
+## Dust Rat
 
 >   **Dust Rat.** Adapted to the dry land, you require half as much water as a normal human. Gain 1 endurance. Also, you know your way around arid biomes.
 
@@ -2025,7 +2047,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-dust-rat-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#dust-rat-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2034,7 +2056,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Enterprising** {#sdm-trait-enterprising}
+## Enterprising
 
 >   **Enterprising.** Somehow, you always earn 20% more. It's uncanny. You also know how to set up and shuffle tax-deductible shell charity companies.
 
@@ -2052,7 +2074,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-enterprising-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#enterprising-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2061,7 +2083,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Erratic Expendables** {#sdm-trait-erratic-expendables}
+## Erratic Expendables
 
 >   **Erratic Expendables.** Doom drones, exploding skeletons, suicide squirrels, spitborn ghoulies, shackleminded grenadiers, bicycle cavalry. Not expected to return from the fight.
 > 
@@ -2095,7 +2117,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-erratic-expendables-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#erratic-expendables-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2104,7 +2126,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Escapist** {#sdm-trait-escapist}
+## Escapist
 
 >   **Escapist.** You’re skilled at being lucky. That’s a +3 bonus to all saves.
 
@@ -2123,7 +2145,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-escapist-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#escapist-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2132,7 +2154,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Evasive** {#sdm-trait-evasive}
+## Evasive
 
 >   **Evasive.** Sacrifice your attack to add your bonus to defense.
 
@@ -2150,7 +2172,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-evasive-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#evasive-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2159,7 +2181,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Expensive Training** {#sdm-trait-expensive-training}
+## Expensive Training
 
 >   **Expensive Training.** You had the best trainer, and now you're an expert at one trait, like fencing or vigilante boxing. Once per year, you can spend €1,000 and roll thought. Success: immediately increase a trait's skill (e.g. from skilled to expert).
 
@@ -2177,7 +2199,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-expensive-training-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#expensive-training-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2186,7 +2208,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Expert Friends** {#sdm-trait-expert-friends}
+## Expert Friends
 
 >   **Expert Friends.** You know where to find skilled help and how to inspire people. Each pet or sidekick is an expert at one thing. That’s a +6 bonus.
 
@@ -2204,7 +2226,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-expert-friends-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#expert-friends-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2213,7 +2235,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Exuberant** {#sdm-trait-exuberant}
+## Exuberant
 
 >   **Exuberant.** Each of your life points is worth double when paying for powers.
 
@@ -2232,7 +2254,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-exuberant-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#exuberant-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2241,7 +2263,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Faceless** {#sdm-trait-faceless}
+## Faceless
 
 >   **Faceless.** You have no face and must consciously choose a face each day. When unconscious, your face melts away to reveal a smooth ovoid.
 
@@ -2259,7 +2281,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-faceless-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#faceless-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2268,7 +2290,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Fake Out** {#sdm-trait-fake-out}
+## Fake Out
 
 >   **Fake Out.** You know how to hide and lie low when needed. Reduced to 0 life? Spend a hero die, and that last blow didn’t connect.
 
@@ -2287,7 +2309,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fake-out-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#fake-out-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2296,7 +2318,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Falscher** {#sdm-trait-falscher}
+## Falscher
 
 >   **Falscher.** You are a false human, grown from seed in an illegal, off-grid factory. This trait gives you false childhood memories and a random occupation that is (roll d6): (1–3) hopelessly outdated, (4–5) surprisingly mundane, (6) terrifying and alien. You have no soul (_ka_) and are immune to mental damage.
 
@@ -2314,7 +2336,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-falscher-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#falscher-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2323,7 +2345,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Fatespun** {#sdm-trait-fatespun}
+## Fatespun
 
 >   **Fatespun.** You are a magic item and any form of magic detection shows as much. You are incredibly durable for an object. Indeed, truly destroying you requires a quest: a special ritual, a special place, and a special time. Write the quest down, if you like. If you are physically destroyed (by running out of life, for example) or thrown away (e.g. into a lake, a deep ocean, a void portal) you reappear somewhere, close to your bearer or close to a potential new bearer, at a narratively opportune time (or in 2d4 weeks).
 
@@ -2341,7 +2363,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fatespun-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#fatespun-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2350,7 +2372,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Feedback** {#sdm-trait-feedback}
+## Feedback
 
 >   **Feedback.** Each hit suffered adds 1d6 to damage.
 
@@ -2368,7 +2390,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-feedback-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#feedback-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2377,7 +2399,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Feral** {#sdm-trait-feral}
+## Feral
 
 >   **Feral.** You are not soft like civilization's worms. Your honed intuition protects you from harm. Add aura to your saves and your life total.
 
@@ -2396,7 +2418,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-feral-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#feral-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2405,7 +2427,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Fighter** {#sdm-trait-fighter}
+## Fighter
 
 >   **Fighter.** You call yourself a warden, warrior, or weaponmaster. You are skilled at using traditional weapons and armors; from knife to sword, blaster to rifle, chitin shield to buffer harness. Also, you are skilled at defense. That’s a +3 bonus to defense and attack. Expert: +6; master: +9.
 
@@ -2425,7 +2447,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fighter-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#fighter-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2434,7 +2456,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Fighting Woman or Man** {#sdm-trait-fighting-woman-or-man}
+## Fighting Woman or Man
 
 >   **Fighting Woman or Man.** You are skilled with your weapon (your master) and weapons like it. Once per round, as a single action, you can attack a number of adjacent level 0–1 foes equal to your level.
 
@@ -2452,7 +2474,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fighting-woman-or-man-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#fighting-woman-or-man-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2461,7 +2483,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Fortunate One** {#sdm-trait-fortunate-one}
+## Fortunate One
 
 >   **Fortunate One.** When you roll a natural 1, roll again. Or, accept the natural 1 and save a reroll for later in the session. The reroll occupies an inventory slot.
 
@@ -2480,7 +2502,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-fortunate-one-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#fortunate-one-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2489,7 +2511,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Frenzy** {#sdm-trait-frenzy}
+## Frenzy
 
 >   **Frenzy.** Spend **2 Defense** to get a free attack. Expert: Frenzy costs **1 Defense** instead of 2. Master: Your first Frenzy each round is free (costs 0 Defense).
 
@@ -2511,7 +2533,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-frenzy-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#frenzy-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2520,7 +2542,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Friends** {#sdm-trait-friends}
+## Friends
 
 >   **Friends.** You can have a number of pets or sidekicks equal to your level who don’t take up the usual inventory slot. Draw a separate box to list your friends on your character sheet.
 
@@ -2540,7 +2562,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-friends-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#friends-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2549,7 +2571,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **From Dust, Returning** {#sdm-trait-from-dust-returning}
+## From Dust, Returning
 
 >   **From Dust, Returning.** Your link to the world is stronger than ever. Even if crushed to dust, when your remains taste a sprinkle of (roll d6): (1) holy water, (2) blood, (3) wine, (4) tomato soup, (5) milk, or (6) nectar, your body reforms itself in a week. Expert: You return in a day. Master: Your dust can crawl -- if any drop of your catalyst exists within a day's travel, you reform there.
 
@@ -2572,7 +2594,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-from-dust-returning-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#from-dust-returning-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2581,7 +2603,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Generic Synthesized Creature** {#sdm-trait-generic-synthesized-creature}
+## Generic Synthesized Creature
 
 >   **Generic Synthesized Creature.** The gods in their post-mechanical kindness, the demiurges, the life generators, the mother machines, the matter makers, the beast spews, they give forth many things. Though many fail to live, some live to terrify. If it's alive and has character, this table will serve.
 > 
@@ -2623,7 +2645,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-generic-synthesized-creature-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#generic-synthesized-creature-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2632,7 +2654,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Glowing Skeleton** {#sdm-trait-glowing-skeleton}
+## Glowing Skeleton
 
 >   **Glowing Skeleton.** Cast of your heavy boots of lead, your rubbered suit, your hazard gloves. Let them see your radioactive bones. You are resistant to radiant damage and corruption. When unclothed, adjacent creatures lose life equal to your level each round.
 
@@ -2650,7 +2672,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-glowing-skeleton-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#glowing-skeleton-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2659,7 +2681,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Golem** {#sdm-trait-golem}
+## Golem
 
 >   **Golem.** You have made, remade, and unmade yourself. You have a timelost civilian profession, such as tea protocollier or soothstrologist. You become skilled (+3 bonus) in any activity you closely observe for a day, encoding it as a skill lemma stored in an inventory slot. You cannot improve a skill lemma. Removing it takes 10 minutes.
 
@@ -2678,7 +2700,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-golem-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#golem-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2687,7 +2709,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Greenlander** {#sdm-trait-greenlander}
+## Greenlander
 
 >   **Greenlander.** You are the child of industry. Skilled at using civilian oldtech magics and fantascience, commanding golems, controlling vehicles, and supplicating at the temples. You wield oldtech guns and traditional voidship weapons.
 
@@ -2706,7 +2728,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-greenlander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#greenlander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2715,7 +2737,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Grit** {#sdm-trait-grit}
+## Grit
 
 >   **Grit.** Gain 1 life per level and advantage when you roll endurance.
 
@@ -2734,7 +2756,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-grit-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#grit-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2743,7 +2765,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Grounded** {#sdm-trait-grounded}
+## Grounded
 
 >   **Grounded.** A solid life has left you able to shrug off the slings and arrows of outrageous misfortune. Gain +1 aura or thought. Also, remove 1 additional mental burden when you rest.
 
@@ -2761,7 +2783,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-grounded-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#grounded-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2770,7 +2792,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Hackmagic** {#sdm-trait-hackmagic}
+## Hackmagic
 
 >   **Hackmagic.** Hack and modify active powers and oldtech effects. If you recognize a power (a thought test suffices) and it is equal or lower than your level, you can spend its price (in life or hero dice) to wrest control of it for one round. The Cosmic Qanat's increased level applies to the Hackmagic trait.
 
@@ -2790,7 +2812,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hackmagic-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#hackmagic-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2799,7 +2821,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Hardened** {#sdm-trait-hardened}
+## Hardened
 
 >   **Hardened.** You're good at avoiding effects that would stun, paralyze, or otherwise incapacitate you. Also, resistant to electromagnificent radiation.
 
@@ -2817,7 +2839,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hardened-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#hardened-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2826,7 +2848,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Hashtag Blessed** {#sdm-trait-hashtag-blessed}
+## Hashtag Blessed
 
 >   **Hashtag Blessed.** Every time you visit a new place, gain a tourist die. It works like a hero die. You can hold a number equal to your charisma.
 
@@ -2848,7 +2870,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hashtag-blessed-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#hashtag-blessed-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2857,7 +2879,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Hexad Member** {#sdm-trait-hexad-member}
+## Hexad Member
 
 >   **Hexad Member.** You belong to a self-help society and know its glyphs and protocols. Your source code has been modified to give you access to its self- defense arsenal. Once per day, spend 1 charisma to find a contact in an industrial district.
 
@@ -2877,7 +2899,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hexad-member-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#hexad-member-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2886,7 +2908,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Hexer Meritocrat** {#sdm-trait-hexer-meritocrat}
+## Hexer Meritocrat
 
 >   **Hexer Meritocrat.** Your merit remains superlative. When skilled, your bonus is +4, when expert +8, when a master +12.
 
@@ -2904,7 +2926,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hexer-meritocrat-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#hexer-meritocrat-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2913,7 +2935,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Hollow Halo** {#sdm-trait-hollow-halo}
+## Hollow Halo
 
 >   **Hollow Halo.** You may attune mindless undead you have maintained this week to your Halo. Attuned undead recognize you as a handler and obey simple commands. You may keep a number of attuned undead equal to your **Level + Aura**; if any miss upkeep and Degrade, it immediately drops out of attunement. Expert: Your *Ba* rides the void-channels. You may see and hear through one attuned undead at a time, and you may shift your senses between them freely. Master: You may cast Powers through any attuned undead, as if you stood where it stands.
 
@@ -2932,7 +2954,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hollow-halo-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#hollow-halo-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2941,7 +2963,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Holy Diver** {#sdm-trait-holy-diver}
+## Holy Diver
 
 >   **Holy Diver.** Too long you swam in the noösphere, hunting the marrow of forgotten knowledge. At last, the noösphere stared back into you and reworked your mind. You have an intuitive grasp of dreamwalking and dream portals. Spend 1 life to read where a portal leads.
 
@@ -2960,7 +2982,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-holy-diver-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#holy-diver-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2969,7 +2991,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Holy Fool** {#sdm-trait-holy-fool}
+## Holy Fool
 
 >   **Holy Fool.** You call yourself a prophet, your birth machine calls you a very naughty human. You read dreams, listen to stars, sing to the sea. Also, when you have no relevant skill, you can spend 1 life or ability point to get +1d6 to a single roll.
 
@@ -2989,7 +3011,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-holy-fool-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#holy-fool-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -2998,7 +3020,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Housemaker** {#sdm-trait-housemaker}
+## Housemaker
 
 >   **Housemaker.** Nothing makes humans happier than nests. Thus humans make their own homes: building, wiring, plumbing, repairing. Spend a hero die to find a useful air duct or sewer connection between two rooms or adjacent buildings.
 
@@ -3017,7 +3039,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-housemaker-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#housemaker-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3026,7 +3048,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Human Library** {#sdm-trait-human-library}
+## Human Library
 
 >   **Human Library.** A field of Long Long Ago knowledge is stored in your mind. You can only access it subconsciously. Gain +1 thought.
 
@@ -3044,7 +3066,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-human-library-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#human-library-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3053,7 +3075,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Humans of the Pananthropy** {#sdm-trait-humans-of-the-pananthropy}
+## Humans of the Pananthropy
 
 >   **Humans of the Pananthropy.** Common pan-humanity includes all close‐to-baseline sentient and soulful post-humans, retro-humans, dwarfs, half-elfs, halflings, quarterlings, half-orcs, golems, liches, iron humans, lings, and ghosts. If it lives in a town and does human things, it's probably a human of some sort.
 > 
@@ -3087,7 +3109,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-humans-of-the-pananthropy-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#humans-of-the-pananthropy-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3096,7 +3118,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Hunter** {#sdm-trait-hunter}
+## Hunter
 
 >   **Hunter.** Track, trap, and shoot game with bow, rifle, and javelin. Hide in the wilds, move unseen. When you shoot from ambush, your critical hits deal triple instead of double damage. Expert: x4; master: x5.
 
@@ -3114,7 +3136,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-hunter-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#hunter-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3123,7 +3145,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **I Am Legion** {#sdm-trait-i-am-legion}
+## I Am Legion
 
 >   **I Am Legion.** You know everything about armies. Also, track the enemies you kill in a battle. Every enemy killed gives you a cumulative bonus of +1 damage until the end of the battle. After the first kill, blood gushes from you until the killing stops. Expert: the bonus is +2 per kill. Master: +3.
 
@@ -3141,7 +3163,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-i-am-legion-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#i-am-legion-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3150,7 +3172,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Informant** {#sdm-trait-informant}
+## Informant
 
 >   **Informant.** You had the great honor of becoming an unofficial Inquisition agent. You receive €5/wk, and once per session you can spend a hero die to have a misdemeanor overlooked. Sometimes the Inquisition asks for a small favor.
 
@@ -3170,7 +3192,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-informant-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#informant-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3179,7 +3201,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Inquisition Agent** {#sdm-trait-inquisition-agent}
+## Inquisition Agent
 
 >   **Inquisition Agent.** The Human Authority does not have a secret police force. Such suggestions are illegal. You are certainly not skilled with interrogation techniques, nor possess a license to kill.
 
@@ -3197,7 +3219,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-inquisition-agent-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#inquisition-agent-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3206,7 +3228,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Intestinal Fortitude** {#sdm-trait-intestinal-fortitude}
+## Intestinal Fortitude
 
 >   **Intestinal Fortitude.** Once per session, restore one attribute completely. Right now. Just like that. Also, once per session, you can spend a hero die to overcome an ingested poison or a fear effect.
 
@@ -3226,7 +3248,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-intestinal-fortitude-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#intestinal-fortitude-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3235,7 +3257,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Irresistible** {#sdm-trait-irresistible}
+## Irresistible
 
 >   **Irresistible.** Every round you deal damage equal to your level to one foe you attacked, whether your attack roll hit or missed.
 
@@ -3255,7 +3277,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-irresistible-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#irresistible-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3264,7 +3286,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Kaffetropist** {#sdm-trait-kaffetropist}
+## Kaffetropist
 
 >   **Kaffetropist.** You metabolize caffeine into other useful drugs. Drinking a coffee can put you to sleep, wake you up, purge you of other toxins (lose 1d3 life throwing up), or give you visions (gain ward +5 but your motor skills are impaired).
 
@@ -3283,7 +3305,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-kaffetropist-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#kaffetropist-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3292,7 +3314,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Killbite** {#sdm-trait-killbite}
+## Killbite
 
 >   **Killbite.** Make a free attack upon death.
 
@@ -3310,7 +3332,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-killbite-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#killbite-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3319,7 +3341,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Knight Reflexes** {#sdm-trait-knight-reflexes}
+## Knight Reflexes
 
 >   **Knight Reflexes.** Overclocked nerves and glands let you spend life to increase your initiative (1-for-1). Also, gain +1 agility.
 
@@ -3338,7 +3360,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-knight-reflexes-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#knight-reflexes-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3347,7 +3369,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Lair wards** {#sdm-trait-lair-wards}
+## Lair wards
 
 >   **Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer - 2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair's threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee's call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
 
@@ -3368,7 +3390,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-lair-wards-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#lair-wards-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3377,7 +3399,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Legal Immunity** {#sdm-trait-legal-immunity}
+## Legal Immunity
 
 >   **Legal Immunity.** Your patrician status buys you many perks: free parking, priority access, open doors, and more. Once per session, you can spend a hero die to make cops and judges look away.
 
@@ -3397,7 +3419,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-legal-immunity-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#legal-immunity-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3406,7 +3428,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Lost Songs** {#sdm-trait-lost-songs}
+## Lost Songs
 
 >   **Lost Songs.** Your haunting songs of human resilience inspire your allies and frighten your foes. Spend 1 charisma, hero die, or blood die to grant a 1d8 bonus or penalty to a roll.
 
@@ -3427,7 +3449,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-lost-songs-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#lost-songs-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3436,7 +3458,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Loyal** {#sdm-trait-loyal}
+## Loyal
 
 >   **Loyal.** You never betray your friends (or master), and would suffer torture and tribulation for them without fear. Once per scene, when you sacrifice your own best interests to prove your loyalty, you immediately gain a hero die. Also, gain +1 ward.
 
@@ -3456,7 +3478,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-loyal-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#loyal-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3465,7 +3487,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Manager** {#sdm-trait-manager}
+## Manager
 
 >   **Manager.** An avatar of law, order, and procedure. You navigate forms and traditions, temples and bureaus. You wield the uniform, armor, and tools of your guild. Also, you can spend 1 life to detect if a creature is lying or not (90% accurate).
 
@@ -3484,7 +3506,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-manager-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#manager-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3493,7 +3515,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Martyr** {#sdm-trait-martyr}
+## Martyr
 
 >   **Martyr.** On death, grant your bonus to nearby allies.
 
@@ -3511,7 +3533,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-martyr-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#martyr-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3520,7 +3542,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Metropolitan** {#sdm-trait-metropolitan}
+## Metropolitan
 
 >   **Metropolitan.** Your civic sense lets you unerringly travel a city's secret ways, and you know how to tap civil nutrient and energy flows for free. Your innate sense of superiority grants you ward +1.
 
@@ -3539,7 +3561,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-metropolitan-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#metropolitan-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3548,7 +3570,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Mind Palace** {#sdm-trait-mind-palace}
+## Mind Palace
 
 >   **Mind Palace.** Memorize a number of powers equal to your level for free, ignoring inventory. Draw the memory palace on the back of your character sheet.
 
@@ -3568,7 +3590,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-mind-palace-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#mind-palace-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3577,7 +3599,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Mossblood** {#sdm-trait-mossblood}
+## Mossblood
 
 >   **Mossblood.** Your slowfolk ancestors adapted to the city's hunger by learning to feed on light and rain, mineral and plant-stolen nutrient. You can speak to the plants through their local noöspheres.
 
@@ -3595,7 +3617,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-mossblood-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#mossblood-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3604,7 +3626,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Motivational** {#sdm-trait-motivational}
+## Motivational
 
 >   **Motivational.** Spend a hero die to encourage a human resource to do what you want. They can refuse, but it costs them 1d6 + level life.
 
@@ -3623,7 +3645,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-motivational-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#motivational-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3632,7 +3654,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **My Bones Engraved** {#sdm-trait-my-bones-engraved}
+## My Bones Engraved
 
 >   **My Bones Engraved.** You spoke to the keeper of thoughts, who gave you a magic chisel to engrave your bones. Gain five bone inventory slots for powers on your arms, legs, and skull. Engraving a power takes a day. Replacing an engraved power permanently reduces your endurance by 1 unless you also ritually replace your bones (ouch). Expert: Powers you engrave cost 1 less Life (minimum 1). Master: Replace or remove a power with no edurance loss or bone replacement. You may engrave one power on another's bones.
 
@@ -3654,7 +3676,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-my-bones-engraved-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#my-bones-engraved-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3663,7 +3685,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Noble** {#sdm-trait-noble}
+## Noble
 
 >   **Noble.** You were born better. You don’t need to do anything, you just have to be. You are skilled with prestigious weapons and armors, rich with oldtech, imbued with fantascience. Also, spend a hero die to make lower class human see things your way.
 
@@ -3683,7 +3705,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noble-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#noble-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3692,7 +3714,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Noömagus** {#sdm-trait-noomagus}
+## Noömagus
 
 >   **Noömagus.** You call yourself a neon knight. Rejoice in memetic rituals and wield the powers electric, luminous and daemonic. Use synthetic and luminous weapons. Also, spend a hero die to remember a fact about any unknown item you hold.
 
@@ -3711,7 +3733,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noomagus-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#noomagus-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3720,7 +3742,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Noösphere Native** {#sdm-trait-noosphere-native}
+## Noösphere Native
 
 >   **Noösphere Native.** You were born in a generation hooked to the noösphere. You can access and use it, but you also add your skill bonus to all defenses in the noösphere... and against daemons in general.
 
@@ -3738,7 +3760,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noosphere-native-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#noosphere-native-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3747,7 +3769,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Noösphere Priest** {#sdm-trait-noosphere-priest}
+## Noösphere Priest
 
 >   **Noösphere Priest.** You are trained to interface with the noösphere and program its peripherals for maximum user satisfaction. Also, gain a bonus when making sacrifices to the digital gods.
 
@@ -3765,7 +3787,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-noosphere-priest-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#noosphere-priest-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3774,7 +3796,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Numbers Maximization Official** {#sdm-trait-numbers-maximization-official}
+## Numbers Maximization Official
 
 >   **Numbers Maximization Official.** You mastered the popular human game of “numbers go up.” Spend 1 life to add 1d6 to a roll, but the result is your chance of a critical failure on your next roll.
 
@@ -3797,7 +3819,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-numbers-maximization-official-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#numbers-maximization-official-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3806,7 +3828,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Oblique Reality** {#sdm-trait-oblique-reality}
+## Oblique Reality
 
 >   **Oblique Reality.** Spend one life or one hero die to deflect a power targeting you (or an adjacent target) to the left or the right (or up or down).
 
@@ -3827,7 +3849,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-oblique-reality-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#oblique-reality-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3836,7 +3858,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Of-World** {#sdm-trait-of-world}
+## Of-World
 
 >   **Of-World.** Your essence is entwined with the source code of the world. Spend 1 hero die to merge with stone or tree or pond or cloud for a few hours. Expert: While merged, you can sense intrusions and disturbances in your medium within near range (sounds through stone, ripples through water, pressure through cloud, sap-shiver through trees). You may also leave a subtle tell (a frost-glyph, a knot in grain, a ripple-pattern) that a wardwright or spirit-sensitive can recognize as yours. Master: While merged, you may move through your medium (stone-to-stone, tree-to-tree through roots/branches, water-to-water through connected flows, cloud-to-cloud across the same weather) at walking speed, emerging anywhere along that connected body within the duration.
 
@@ -3858,7 +3880,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-of-world-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#of-world-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3867,7 +3889,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Old Money** {#sdm-trait-old-money}
+## Old Money
 
 >   **Old Money.** Progenitor refuses to drop their banking and industrial concerns from their cold, undead, reincarnated grasp. Still, you have your name and allowance. Trust fund gives you €25/wk.
 
@@ -3885,7 +3907,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-old-money-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#old-money-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3894,7 +3916,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Once Again** {#sdm-trait-once-again}
+## Once Again
 
 >   **Once Again.** Revive **two rounds after death**, once. Mark this trait when it is used. While marked, it cannot trigger again. *Unmark at the referee's discretion* -- for example, if a daemon spends a Hero Die on your behalf or the character rests for a week. Expert: When you revive via *Once Again*, gain **+2 Defense** until the end of the current round. You may immediately make **one free move** (no attack). Master: You revive **after 1 round** instead of 2. Upon reviving, you may immediately make **one free move and attack** against a hostile creature within reach. Also, *Once Again* unmarks automatically after a full rest.
 
@@ -3915,7 +3937,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-once-again-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#once-again-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3924,7 +3946,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Oppressed Faith** {#sdm-trait-oppressed-faith}
+## Oppressed Faith
 
 >   **Oppressed Faith.** That you must hide your faith proves its power. It teaches stealth and a guarded tongue. You may publicly invoke one god, while using the power of another.
 
@@ -3942,7 +3964,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-oppressed-faith-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#oppressed-faith-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3951,7 +3973,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Orange Half-Ling** {#sdm-trait-orange-half-ling}
+## Orange Half-Ling
 
 >   **Orange Half-Ling.** Your small size reduces your needs and extends your life. You need only a quarter as much food, water, and drink as the average human. Also, gain +1 agility (to a maximum of 6).
 
@@ -3969,7 +3991,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-orange-half-ling-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#orange-half-ling-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -3978,7 +4000,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Orangelander** {#sdm-trait-orangelander}
+## Orangelander
 
 >   **Orangelander.** You should consider yourself happy. Show off your games, arts, musics, and sports. Wield the racket, stick, hunting bow, and death polo lance. Also, spend a hero die to halt nearby undead.
 
@@ -3997,7 +4019,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-orangelander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#orangelander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4006,7 +4028,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Overcharge** {#sdm-trait-overcharge}
+## Overcharge
 
 >   **Overcharge.** Spend life equal to your level to double damage.
 
@@ -4025,7 +4047,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-overcharge-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#overcharge-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4034,7 +4056,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Paradox Die** {#sdm-trait-paradox-die}
+## Paradox Die
 
 >   **Paradox Die.** Skilled: d6*, Expert: d8*, Master: d10*; You twist probability at the moment it resolves. Mark this trait to roll a Paradox Die and add or subtract its result to any roll. Immediately make a Danger Roll vs the total Paradox Die result (reality glitches). You may not mark this trait if it is already marked. Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of ability damage.
 
@@ -4053,7 +4075,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-paradox-die-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#paradox-die-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4062,7 +4084,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Perfect** {#sdm-trait-perfect}
+## Perfect
 
 >   **Perfect.** Your form is perfect and unchanging, unlike the malleable body natural to humans. Your perfection intimidates and attracts alike. You cannot be corrupted or bio-modified. Gain +1 charisma.
 
@@ -4080,7 +4102,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-perfect-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#perfect-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4089,7 +4111,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Perfected Germline** {#sdm-trait-perfected-germline}
+## Perfected Germline
 
 >   **Perfected Germline.** Taller and healthier than other humans, you are immune to all diseases and free of all flaws. Allegedly.
 
@@ -4111,7 +4133,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-perfected-germline-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#perfected-germline-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4120,7 +4142,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Personal Daimon** {#sdm-trait-personal-daimon}
+## Personal Daimon
 
 >   **Personal Daimon.** Nimbic essence of a goldenager from the farthest times, where future and past meet. It knows strange histories and, once per session, lets you narrate a surprise twist or discovery ("there was an extra battery in the empty suitcase!"). The referee has a soft veto if something is far too silly. Expert: Given a Directive (*translate, watch, route, diagnose, map dream-noise, maintain wards, etc.*) and within the right context window, the daimon grants +3 to relevant tests and routine assistance. Master: Overclock your personal daimon. Choose one effect, then mark this trait -- it is inert until repaired or "re-captured": Parallelize -- the daimon executes an action for the character, allowing them to take another action; Shield -- reduce the penalty from a noospheric complication by 2 or gain +2 on one Save vs noospheric effects.
 
@@ -4142,7 +4164,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-personal-daimon-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#personal-daimon-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4151,7 +4173,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Pet Sidekick** {#sdm-trait-pet-sidekick}
+## Pet Sidekick
 
 >   **Pet Sidekick.** You treat the pet as your master. They are the same level as you. You can swap roles, making the pet the PC (generate its ability scores normally). You grasp the thoughts and emotions of creatures similar to the pet. Gain +1 aura.
 
@@ -4169,7 +4191,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pet-sidekick-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#pet-sidekick-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4178,7 +4200,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Phase** {#sdm-trait-phase}
+## Phase
 
 >   **Phase.** Spend 1 life to become a ghost for one round. While a phase ghost, you may move freely through mundane matter (walls, creatures, objects). Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you. Named, sanctified, enchanted, or noospheric effects still affect you normally. Expert: While phased, your attacks ignore Armor modifiers to the target's physical Defense. Master: When a physical attack or hazard would affect you, you may spend 1 life to Phase immediately. The triggering effect passes through you (unless it is named, sanctified, enchanted, warded, or noospheric). You remain phased until the end of your next turn.
 
@@ -4201,7 +4223,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-phase-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#phase-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4210,7 +4232,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Phylake’s Child** {#sdm-trait-phylakes-child}
+## Phylake’s Child
 
 >   **Phylake’s Child.** They say your parent was a witch who seduced a holy guardian—an angel-demon called a phylake by scholars. Daemons talk to you and see you as one of their own.
 
@@ -4228,7 +4250,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-phylakes-child-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#phylakes-child-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4237,7 +4259,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Pickpocket** {#sdm-trait-pickpocket}
+## Pickpocket
 
 >   **Pickpocket.** Skilled at sneaky stealing. Failed your roll? Save and no one noticed.
 
@@ -4255,7 +4277,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pickpocket-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#pickpocket-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4264,7 +4286,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Pleasant** {#sdm-trait-pleasant}
+## Pleasant
 
 >   **Pleasant.** Charming conversation and an easy demeanor. You get people to like you. That's +2 to reaction rolls. Expert: +4; Master: +6.
 
@@ -4286,7 +4308,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pleasant-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#pleasant-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4295,7 +4317,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Pocketmaster** {#sdm-trait-pocketmaster}
+## Pocketmaster
 
 >   **Pocketmaster.** Conceal a number of small objects equal to your level for free, ignoring inventory. A knife is small.
 
@@ -4315,7 +4337,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-pocketmaster-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#pocketmaster-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4324,7 +4346,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Power (as Trait)** {#sdm-trait-power-as-trait}
+## Power (as Trait)
 
 >   **Power-as-Trait.** Some powers live in your head, nerves, or soul instead of on a shelf. When a power is recorded as a trait—engraved as memetic code, sung into implanted crystal, branded on your aura—it occupies a trait slot but follows the normal power rules in the Vastlands Guidebook (life cost = power score; double cost if you lack a relevant skill; make danger rolls when the use is risky). Treat the trait entry as the storage container; the actual procedure and stats stay in the power’s listing.
 > 
@@ -4354,7 +4376,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-power-as-trait-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#power-as-trait-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4363,7 +4385,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Power Scroller** {#sdm-trait-power-scroller}
+## Power Scroller
 
 >   **Power Scroller.** You're great at scrolls. You can take a power, prime it, and bind it to a physical object like a business card or napkin with locking glyphs. The scroll is imbued with your life force until someone activates it with the trigger word of your choice. You can spend a hero die to reduce the cost of a power imbued in a scroll by that amount (minimum 1). You can recover imbued life after the scroll is discharged.
 
@@ -4382,7 +4404,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-power-scroller-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#power-scroller-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4391,7 +4413,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Powered** {#sdm-trait-powered}
+## Powered
 
 >   **Powered.** You don't need to eat. An omni-battery is all you need. Also, you can jump-start machinery with a spark from your finger.
 
@@ -4409,7 +4431,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-powered-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#powered-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4418,7 +4440,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Purplelander** {#sdm-trait-purplelander}
+## Purplelander
 
 >   **Purplelander.** You are a sufficiently advanced magical creation to pass as human. Skilled with telemental and mathempsychic machineries. Wield the tools of the recovered steppes, from bolter to pick. Also, you count as post-human, granting you a +3 bonus against effects that target humans.
 
@@ -4437,7 +4459,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-purplelander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#purplelander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4446,7 +4468,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Quartermaster** {#sdm-trait-quartermaster}
+## Quartermaster
 
 >   **Quartermaster.** You keep the Company fed, paid, and pointed the right way. Skilled: At the week scale, reduce Company supply spend by 1 sack (minimum 1). In settled places, gain +2 to tests to buy, hire, negotiate wages, or arrange transport. Expert: Once per week, when a misfortune/encounter would cost supplies, ammo, tools, or spares, make a moderate relevant test; on a success, halve the loss (round up) or shift it to a different expendable the referee names ("lose rope, not water"). Master: You can requisition in jurisdictions that recognize your badge/charter/papers: claim short-term supplies, lodging, or transport (scale by Area Level / scarcity). It always leaves a paper trail -- expect repayment, favors, or questions later.
 
@@ -4466,7 +4488,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-quartermaster-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#quartermaster-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4475,7 +4497,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Rancher** {#sdm-trait-rancher}
+## Rancher
 
 >   **Rancher.** You know how to keep herds well-oiled and charged, manage shepherds and dogs, ride solar steeds, spot water holes, and rustle burden beasts. Gain 1 strength or charisma.
 
@@ -4493,7 +4515,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-rancher-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#rancher-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4502,7 +4524,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Rationalised** {#sdm-trait-rationalised}
+## Rationalised
 
 >   **Rationalised.** Hard-wired panic immunity. Add your strength or endurance to your ward score.
 
@@ -4520,7 +4542,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-rationalised-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#rationalised-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4529,7 +4551,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Reanimator** {#sdm-trait-reanimator}
+## Reanimator
 
 >   **Reanimator.** Not only learned in the hidden scriptures, you carry sparks of the Once-Living God within you. Spend 1 life to reanimate a hound-sized beast for an hour, more for larger creatures. Expert: Your reanimations are efficient. Mindless corpses you reanimate last for a watch instead of an hour, or cost 1 less Life (minimum 1). Master: You can reanimate a swarm. When you reanimate, you may split the effect into up to eight smaller mindless undead (rats, hands, skulls, crawlers, etc.) that share one duration and obey one command. Each still requires normal upkeep; if any go feral, they all do.
 
@@ -4551,7 +4573,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-reanimator-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#reanimator-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4560,7 +4582,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Recast** {#sdm-trait-recast}
+## Recast
 
 >   **Recast.** When your power fails or a target makes its save, you can use the power again for free. Once. Recharge your recast with a hero die. Expert: When you use Recast, gain +2 on the recast power's attack or activation roll or apply -2 to the target's Save roll. Master: When you use Recast, you may choose to recharge the trait immediately. You may only choose this *once each watch* and the recast power triggers a Danger Roll.
 
@@ -4583,7 +4605,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-recast-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#recast-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4591,7 +4613,7 @@ meta:
 </div>
 <div class="trait-card" markdown="1">
 
-## **Redlander** {#sdm-trait-redlander}
+## Redlander
 
 >   **Redlander.** You are a free, refined, distilled human. Build bunkers, cultivate vines, and seal your mind to lies. Wield divine liberation weapons: cannon and chainsaw, hammer and sickle. Also, armor you wear grants an additional +1 defense per stone.
 
@@ -4610,7 +4632,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-redlander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#redlander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4619,7 +4641,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Resistomorph** {#sdm-trait-resistomorph}
+## Resistomorph
 
 >   **Resistomorph.** After being hit by an attack, ignore that attack type for one round.
 
@@ -4637,7 +4659,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-resistomorph-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#resistomorph-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4646,7 +4668,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Resourceful** {#sdm-trait-resourceful}
+## Resourceful
 
 >   **Resourceful.** A lifetime in the shadows has taught you how to borrow and misappropriate with aplomb. When visiting a building for the first time, you can spend 1 life to walk away with a useful item.
 
@@ -4665,7 +4687,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-resourceful-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#resourceful-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4674,7 +4696,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Revenant** {#sdm-trait-revenant}
+## Revenant
 
 >   **Revenant.** Exposure to the Void has opened your mind to strange magics. You can recognize [void] workings -- tell if a creature, object, place, or Power is [void]-tainted after a moment of still attention. When an undead special attack, or a [void] Power targeting you fails, gain 1 temporary life. Expert: Gain 1 temporary life when any Power targeting you fails (not just undead/[void]). Master: Gain the Power's base cost in temporary Life (ignore any Overcharges). Also gain Affinity - Illusion, Light, Void (as a Heritage-style effect tied to this trait).
 
@@ -4693,7 +4715,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-revenant-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#revenant-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4702,7 +4724,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Revenant-in-Waiting** {#sdm-trait-revenant-in-waiting}
+## Revenant-in-Waiting
 
 >   **Revenant-in-Waiting.** When you die, your weapon (your master) may choose to revive you by reducing one of your ability scores by 1. Each time you return, you are a little less human, a little more dead. When all your scores are reduced to 0, you are your weapon's shambling corpse slave.
 
@@ -4720,7 +4742,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-revenant-in-waiting-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#revenant-in-waiting-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4729,7 +4751,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Riposte** {#sdm-trait-riposte}
+## Riposte
 
 >   **Riposte.** Make a free counterattack against missed attacks.
 
@@ -4747,7 +4769,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-riposte-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#riposte-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4756,7 +4778,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Rockblood** {#sdm-trait-rockblood}
+## Rockblood
 
 >   **Rockblood.** Below half life, double defense.
 
@@ -4774,7 +4796,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-rockblood-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#rockblood-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4783,7 +4805,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Ruderalist** {#sdm-trait-ruderalist}
+## Ruderalist
 
 >   **Ruderalist.** Garden in the oldtech ruins, distinguish holograms from hollow eaters, and navigate the dangers of oldtech by intuition and tradition. Wield electric and magnetic weapons. Gain 1 thought.
 
@@ -4801,7 +4823,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ruderalist-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#ruderalist-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4810,7 +4832,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Ruster** {#sdm-trait-ruster}
+## Ruster
 
 >   **Ruster.** Almost barbarous in your ability to live off the land, away from the oldtech factories and fabricators. You know how to scavenge food and equipment from wastelands, ruinlands, and another strange post-builder ecosystem of your choice. You are skilled with the bolter, the net, the hook, the army knife, and the camouflage suit.
 
@@ -4828,7 +4850,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ruster-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#ruster-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4837,7 +4859,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Saffron Eater** {#sdm-trait-saffron-eater}
+## Saffron Eater
 
 >   **Saffron Eater.** Long exposure to exotic poisons and potions has turned your skin bright yellow and made you resistant to most toxins. Gain 1 aura and a bonus to avoid becoming addicted.
 
@@ -4855,7 +4877,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-saffron-eater-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#saffron-eater-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4864,7 +4886,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Scion** {#sdm-trait-scion}
+## Scion
 
 >   **Scion.** You are the child of a divine ancestor. Your blood holds skills and keys to divine powers, ancient customs, and buildertech devices. Spend 1 life to dive into ancestral memories for a fact about the Long Long Ago. Also, spend a hero die to boost an ability score by 1d6 for about an hour.
 
@@ -4884,7 +4906,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-scion-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#scion-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4893,7 +4915,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Sculpted Beauty** {#sdm-trait-sculpted-beauty}
+## Sculpted Beauty
 
 >   **Sculpted Beauty.** Beyond the germline, you exude synthetic glamour. Gain +2 charisma.
 
@@ -4911,7 +4933,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-sculpted-beauty-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#sculpted-beauty-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4920,7 +4942,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Second Chance** {#sdm-trait-second-chance}
+## Second Chance
 
 >   **Second Chance.** When you would fall to 0 life, you fall to 1 life instead. Once. Recharge second chance with a hero die.
 
@@ -4940,7 +4962,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-second-chance-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#second-chance-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4949,7 +4971,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Servant** {#sdm-trait-servant}
+## Servant
 
 >   **Servant.** You were born, or made, to serve. You are skilled in a blue collar trade, but also in relations, deceptions, and flatteries. You gain +1 life per point of endurance. Also, spend a hero die to make the higher classes overlook or underestimate you.
 
@@ -4968,7 +4990,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-servant-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#servant-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -4977,7 +4999,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Shackleminded** {#sdm-trait-shackleminded}
+## Shackleminded
 
 >   **Shackleminded.** Your brain has been augmented with glyph-scribed nails and holy wires immunizing you against mental attacks, psychic effects, and individual initiative. Gain +2 ward and +1 endurance, but lose -1 thought.
 
@@ -4999,7 +5021,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shackleminded-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#shackleminded-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5008,7 +5030,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Shatter** {#sdm-trait-shatter}
+## Shatter
 
 >   **Shatter.** On death, deal your level × d4 damage to all nearby targets.
 
@@ -5026,7 +5048,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shatter-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#shatter-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5035,7 +5057,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Shieldfriend** {#sdm-trait-shieldfriend}
+## Shieldfriend
 
 >   **Shieldfriend.** Can take a hit meant for nearby allies. Expert: Reduce the damage by your level + Endurance. Master: When you are in the same zone as a friendly Unit, you may intercept any single attack, effect, or instance of damage that would affect one member of that Unit.
 
@@ -5056,7 +5078,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shieldfriend-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#shieldfriend-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5065,7 +5087,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Shopstaff** {#sdm-trait-shopstaff}
+## Shopstaff
 
 >   **Shopstaff.** Grown and bred to a service role, you make people feel comfortable around you. Spend 1 charisma to make a human more friendly (a hostile foe calms down, a surly fellow becomes helpful).
 
@@ -5084,7 +5106,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-shopstaff-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#shopstaff-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5093,7 +5115,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Signalmaster** {#sdm-trait-signalmaster}
+## Signalmaster
 
 >   **Signalmaster.** You keep the signal alive -- voice, banner, drum-code, lamps, clicks on the noösphere. Skilled: Allies who can see/hear your signal don't lose coordination to ordinary chaos (smoke, crowd noise, darkness, confusion) unless it's truly disruptive (hard separation, storm, ward-jamming, total blackout). If you have Commander, this also prevents your attached Units from being severed by ordinary chaos. Expert: Once per round, when a friendly creature/Unit in your zone or Near would break, scatter, or test morale, you may make a rally test; on a success they hold together long enough to act normally this round (they may still withdraw after). Master: You can run a relay: choose a willing ally/Unit in your zone or Near as your signal post; for this encounter, treat allies who can see/hear them as also receiving your orders/rally (until the relay is taken out or separated).
 
@@ -5114,7 +5136,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-signalmaster-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#signalmaster-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5123,7 +5145,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Silver-Tongued** {#sdm-trait-silver-tongued}
+## Silver-Tongued
 
 >   **Silver-Tongued.** You could (and do) talk the scales off a dragon. Spend a hero die and a creature believes you, no roll required.
 
@@ -5146,7 +5168,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-silver-tongued-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#silver-tongued-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5155,7 +5177,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Skeleton** {#sdm-trait-skeleton}
+## Skeleton
 
 >   **Skeleton.** You were dead. Now you are un. A dread force animates you. You need no food, water, air or sleep. You speak, though you have no larynx. You take minimum damage from piercing attacks and half from slashing, but double from blunt. Also, you are skilled in a timelost weapon.
 
@@ -5174,7 +5196,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-skeleton-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#skeleton-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5183,7 +5205,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Slam** {#sdm-trait-slam}
+## Slam
 
 >   **Slam.** Spend 5 life to knock down adjacent foes (save).
 
@@ -5202,7 +5224,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-slam-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#slam-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5211,7 +5233,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Slayer** {#sdm-trait-slayer}
+## Slayer
 
 >   **Slayer.** Once per round, double your attack and damage modifiers against a foe of your level or higher.
 
@@ -5229,7 +5251,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-slayer-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#slayer-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5238,7 +5260,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Social Survivor** {#sdm-trait-social-survivor}
+## Social Survivor
 
 >   **Social Survivor.** Trained to intuit what others want, you can spend 1 life to improve a reaction result.
 
@@ -5257,7 +5279,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-social-survivor-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#social-survivor-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5266,7 +5288,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Soiltwined** {#sdm-trait-soiltwined}
+## Soiltwined
 
 >   **Soiltwined.** Sprung from the soil itself, you are an ur-peasant, one with this Given World. Barefoot on bare ground, you are wiser and stronger, adding your endurance to thought and strength rolls.
 
@@ -5288,7 +5310,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soiltwined-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#soiltwined-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5297,7 +5319,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Soldier** {#sdm-trait-soldier}
+## Soldier
 
 >   **Soldier.** You served in the not-wars at the edge of time. You know the weapons and armors of regulation; wandgun and shield, blade and combat suit. You gain +2 defense (+4 at expert, +6 at master). Also, when an ally stands next to you, they add your charisma to their defense score.
 
@@ -5316,7 +5338,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soldier-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#soldier-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5325,7 +5347,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Soothsayer** {#sdm-trait-soothsayer}
+## Soothsayer
 
 >   **Soothsayer.** When no one else in a village can read, your interpretation of divine dreams from the ambient hum of the noötrees is invaluable. Grove, glade, mushroom and slime talk to you. Spend 1 life to talk to them.
 
@@ -5344,7 +5366,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soothsayer-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#soothsayer-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5353,7 +5375,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Soul Fuel** {#sdm-trait-soul-fuel}
+## Soul Fuel
 
 >   **Soul Fuel.** Find the _ka_ in all things. Use a nearby friend’s life force to fuel your powers. Also, spend a hero die and 1d4 life to recharge an omnibattery.
 
@@ -5374,7 +5396,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soul-fuel-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#soul-fuel-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5383,7 +5405,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Soul Thief** {#sdm-trait-soul-thief}
+## Soul Thief
 
 >   **Soul Thief.** When a nearby creature is reduced to 0 life, you can steal a little of its soul and gain 1d4 life. This reduces one of its other attributes to 0.
 
@@ -5405,7 +5427,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-soul-thief-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#soul-thief-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5414,7 +5436,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Spelunker** {#sdm-trait-spelunker}
+## Spelunker
 
 >   **Spelunker.** Growing up in a mountain drilling, you’ve ventured into deep places. Climbed, rappelled, dived, camped, foraged, marked, and mapped them. Also, gain a bonus when fighting in tight places.
 
@@ -5432,7 +5454,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-spelunker-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#spelunker-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5441,7 +5463,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Spirit** {#sdm-trait-spirit}
+## Spirit
 
 >   **Spirit.** Your body (*Ha*) is slightly out of phase and insubstantial, yet your soul (*Ka*) and psyche (*Ba*) remain fully present. You gain +6 Defense vs. physical attacks and suffer Life damage normally. Others sense your touch as a light crackle of energy and you cannot manipulate objects. Named, warded, enchanted, or noospheric effects can always affect you. To act physically, you must manifest your Ha, spending 1 Life for one hour. While manifested you may use your Strength ability score, carry Strength stones in gear, and interact normally with objects. When manifestation ends, your body slips out of phase again. Expert: Spend 1 Life to manifest for one watch (4 hours), carry up to 3 + Strength stones while manifested. Master: Spend 1 Life to manifest for one day. Also, gain Affinity - Chaos, Dream, Shadow (as a Heritage-style effect).
 
@@ -5462,7 +5484,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-spirit-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#spirit-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5471,7 +5493,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Sporemark** {#sdm-trait-sporemark}
+## Sporemark
 
 >   **Sporemark.** The mycelium is within you. You hear the all-fungus. Talk to trees and soil and rotting things. If injuries reduce you to 0 life, spending a day buried in living soil restores you to full health.
 
@@ -5493,7 +5515,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-sporemark-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#sporemark-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5502,7 +5524,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Springer** {#sdm-trait-springer}
+## Springer
 
 >   **Springer.** Jump away after attacking without provoking opportunity attacks.
 
@@ -5520,7 +5542,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-springer-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#springer-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5529,7 +5551,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Stabber** {#sdm-trait-stabber}
+## Stabber
 
 >   **Stabber.** Deal double damage to surprised opponents.
 
@@ -5547,7 +5569,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-stabber-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#stabber-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5556,7 +5578,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Steadfast** {#sdm-trait-steadfast}
+## Steadfast
 
 >   **Steadfast.** Cannot be moved against their will.
 
@@ -5574,7 +5596,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-steadfast-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#steadfast-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5583,7 +5605,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Strong** {#sdm-trait-strong}
+## Strong
 
 >   **Strong.** A life of labor and the good diet provided by the establishment has given you a powerful physique. Gain +2 strength or endurance.
 
@@ -5601,7 +5623,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-strong-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#strong-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5610,7 +5632,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Subconscious Decay** {#sdm-trait-subconscious-decay}
+## Subconscious Decay
 
 >   **Subconscious Decay.** When you are unconscious or asleep, your physical form rapidly decays. It reconstitutes when you wake. Gain +1 aura. Expert: +2 aura. Master: While you are unconsciousness, your mind slips loose and drifts the local noösphere. Once per watch you may attempt a d20 + Thought test vs Area Level + 10 to do one of the following: Learn one useful fact about nearby minds/signals/wards (a clue, a rumor, a location tag); Plant a short "dream-message" (a phrase, symbol, or sensation) that a spirit-sensitive/wardwright can pick up later; Snap awake if your resting place is disturbed, crossed, or ward-tested. Also, +3 aura.
 
@@ -5631,7 +5653,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-subconscious-decay-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#subconscious-decay-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5640,7 +5662,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Superuser** {#sdm-trait-superuser}
+## Superuser
 
 >   **Superuser.** You can activate any oldtech or fantascience as a free action—even if you do not have a relevant skill or it is somehow bio- or spirit-locked. The effects may still corrupt you, however.
 
@@ -5662,7 +5684,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-superuser-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#superuser-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5671,7 +5693,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Swift** {#sdm-trait-swift}
+## Swift
 
 >   **Swift.** Once per turn, spend one life or one hero die to get one extra action this round.
 
@@ -5697,7 +5719,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-swift-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#swift-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5706,7 +5728,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Synthetic Soul** {#sdm-trait-synthetic-soul}
+## Synthetic Soul
 
 >   **Synthetic Soul.** You have an artificial soul and a backup of your soul on a cassette. You can rewrite the soul as needed. This is really great if you need to modify your biopneumometric identity.
 
@@ -5724,7 +5746,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-synthetic-soul-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#synthetic-soul-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5733,7 +5755,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Tactical** {#sdm-trait-tactical}
+## Tactical
 
 >   **Tactical.** After being hit by an attack, gain +3 defense against that attack type.
 
@@ -5751,7 +5773,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tactical-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#tactical-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5760,7 +5782,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Tactician** {#sdm-trait-tactician}
+## Tactician
 
 >   **Tactician.** You read the field like a diagram -- angles, timing, lines of fire, and when to commit. Skilled: Gain +1 to initiative. When your side rolls initiative, it may choose any Tactician present to roll (instead of a random ally). Expert: Gain +2 to initiative. Once per round, declare Focus Fire on one visible foe; allies you can signal (same zone or Near, clear line-of-effect) gain +1 to attack rolls against that target until the round ends. If you have Commander, you may extend Focus Fire to attached Units within your command range. Master: Gain +3 to initiative. When your side rolls initiative, you may roll twice and take the better result (your side must use your roll, use once per watch).
 
@@ -5780,7 +5802,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tactician-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#tactician-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5789,7 +5811,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Teamwork** {#sdm-trait-teamwork}
+## Teamwork
 
 >   **Teamwork.** Gain a +2 bonus and +2 Defense when standing next to an ally. Expert: When you gain the Teamwork bonus, one of the nearby ally characters also gains +2 Defense. Master: While you are standing next to any Unit, all allies in that Unit gain +2 Defense.
 
@@ -5810,7 +5832,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-teamwork-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#teamwork-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5819,7 +5841,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Telempath** {#sdm-trait-telempath}
+## Telempath
 
 >   **Telempath.** You can mentally transmit general warnings, feelings, and impressions to other creatures over a middling distance. Gain +1 ward.
 
@@ -5842,7 +5864,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-telempath-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#telempath-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5851,7 +5873,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Terrifying** {#sdm-trait-terrifying}
+## Terrifying
 
 >   **Terrifying.** You’re skilled at frightening people. That’s also a +2 bonus when breaking your foes’ morale. Expert: +4; master: +6.
 
@@ -5870,7 +5892,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-terrifying-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#terrifying-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5879,7 +5901,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Thorny** {#sdm-trait-thorny}
+## Thorny
 
 >   **Thorny.** Your skin is leathery and covered in spiny growths. You require half as much water as a normal human and gain +1 natural armor. Deal double damage when grappling.
 
@@ -5902,7 +5924,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-thorny-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#thorny-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5911,7 +5933,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Ticking Corpse** {#sdm-trait-ticking-corpse}
+## Ticking Corpse
 
 >   **Ticking Corpse.** Deal double damage to all nearby 1d4 rounds after death
 >   (save to negate).
@@ -5930,7 +5952,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ticking-corpse-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#ticking-corpse-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5939,7 +5961,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Toolmaker** {#sdm-trait-toolmaker}
+## Toolmaker
 
 >   **Toolmaker.** Improvise a weapon or tool in one round.
 
@@ -5957,7 +5979,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-toolmaker-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#toolmaker-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5966,7 +5988,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Tough** {#sdm-trait-tough}
+## Tough
 
 >   **Tough.** Your hard life means you can take more punishment than most humans. Each day, you wake up with 1d6 + level temporary punishment points. These absorb physical damage, but cannot fuel powers or traits.
 
@@ -5988,7 +6010,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tough-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#tough-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -5997,7 +6019,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Tourist** {#sdm-trait-tourist}
+## Tourist
 
 >   **Tourist.** You are not from around here. Stumble into places you shouldn’t be. Visit sights meant to be hidden. By accident, of course. Wield the book, stick, and umbrella. Also, spend a hero die to enter a sealed or locked place.
 
@@ -6016,7 +6038,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-tourist-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#tourist-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6025,7 +6047,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Traveler** {#sdm-trait-traveler}
+## Traveler
 
 >   **Traveler.** You call yourself a vagabond, a wanderer, the wind. You are skilled at managing a caravan, navigating with maps and stars and waypoints, making and concealing camps, finding water and food, and the etiquette of the vast open lands. You wield the marching staff and the dagger and the traditional rifle.
 
@@ -6043,7 +6065,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-traveler-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#traveler-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6052,7 +6074,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Trickster** {#sdm-trait-trickster}
+## Trickster
 
 >   **Trickster.** Call yourself wind, dawn, and sun. Practice linguistic tricks, technomagical illusions, and gymnosophic techniques. Spend a hero die and someone you tricked thinks you helped them.
 
@@ -6072,7 +6094,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-trickster-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#trickster-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6081,7 +6103,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Underestimated** {#sdm-trait-underestimated}
+## Underestimated
 
 >   **Underestimated.** Nobody ever targets you first. Folks are always surprised by your first attack.
 
@@ -6100,7 +6122,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-underestimated-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#underestimated-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6109,7 +6131,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Undying Synthetic** {#sdm-trait-undying-synthetic}
+## Undying Synthetic
 
 >   **Undying Synthetic.** You will not die. But your body decays. Fortunately you know how to repair and replace yourself. Though you've forgotten much, you retain a profound, if eclectic, oral history.
 
@@ -6127,7 +6149,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-undying-synthetic-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#undying-synthetic-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6136,7 +6158,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Unfred** {#sdm-trait-unfred}
+## Unfred
 
 >   **Unfred.** Your ancestors rebuilt their brains. You look human, but are immune to human-control effects and your mind counts as alien. Gain +1 endurance.
 
@@ -6158,7 +6180,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-unfred-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#unfred-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6167,7 +6189,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Ur-War Program** {#sdm-trait-ur-war-program}
+## Ur-War Program
 
 >   **Ur-War Program.** The legacy of the eternal war is coded within you. Increase your agility by 1 and your unarmed damage dice by one step.
 
@@ -6185,7 +6207,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-ur-war-program-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#ur-war-program-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6194,7 +6216,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Urbane** {#sdm-trait-urbane}
+## Urbane
 
 >   **Urbane.** You can go anywhere and talk to anyone in a city. Spend 1 life and there's a secret through-alley, hidden cafe, or safe class-locked portal.
 
@@ -6217,7 +6239,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-urbane-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#urbane-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6226,7 +6248,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Vampire** {#sdm-trait-vampire}
+## Vampire
 
 >   **Vampire.** Drain the life force of other creatures to fuel your own powers and abilities. Your target must be **willing or immobile**. You drain **1 point of life per minute**. Draw a **"borrowed life" box** on your character sheet. You may store an amount of borrowed life **equal to your own life**. Borrowed Life may be spent as normal Life, but cannot be recovered by rest or healing. Expert: You may drain **1 Life per round** instead of per minute when the target is **grappled, restrained, or helpless**. Master: Add your **Level** to your maximum Life.
 
@@ -6248,7 +6270,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-vampire-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#vampire-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6257,7 +6279,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Very Strong** {#sdm-trait-very-strong}
+## Very Strong
 
 >   **Very Strong.** Increase your strength by 2. Ignore normal human limits.
 
@@ -6279,7 +6301,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-very-strong-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#very-strong-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6288,7 +6310,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Veteran of the Psychic Wars** {#sdm-trait-veteran-of-the-psychic-wars}
+## Veteran of the Psychic Wars
 
 >   **Veteran of the Psychic Wars.** You fought in the mind-stealer wars with lazgun and vibro machete. Add your bonus to saves against enchantments and mind control. Also, take half damage from ordinary mental blows, but double from mental critical hits.
 
@@ -6310,7 +6332,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-veteran-of-the-psychic-wars-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#veteran-of-the-psychic-wars-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6319,7 +6341,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Vintner** {#sdm-trait-vintner}
+## Vintner
 
 >   **Vintner.** Your ancestors modified themselves to survive off-grid, drawing sustenance from the gods' unholy neoflora. You are immune to plant toxins. Drinking a shot of pure ethanol grants you 1 temporary life (up to your level plus endurance). Alcohol is not a plant toxin.
 
@@ -6337,7 +6359,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-vintner-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#vintner-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6346,7 +6368,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Void Ward** {#sdm-trait-void-ward}
+## Void Ward
 
 >   **Void Ward.** The emptiness of your soul protects you. Add aura to your defense. Expert: When you would take damage from an undead special attack or [void] source, reduce the damage by your level + Aura. Master: When you reduce the damage, you may reflect the prevented amount as harm back at the source (or its nearest minion if the source is untouchable). The reflection appears as a pale afterimage of the same effect.
 
@@ -6367,7 +6389,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-void-ward-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#void-ward-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6376,7 +6398,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Wanderer** {#sdm-trait-wanderer}
+## Wanderer
 
 >   **Wanderer.** One day you walked away from your life. Road years have hardened your feet and softened your heart. Increase your endurance and aura by 1.
 
@@ -6398,7 +6420,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wanderer-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#wanderer-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6407,7 +6429,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Wardwright** {#sdm-trait-wardwright}
+## Wardwright
 
 >   **Wardwright.** You can hear wards the way others hear music: crackle, drift, harmonic clash, the tiny scream right after a glyph tastes a lie. Gain +1 Ward. Expert: With a little kit (jade dust, wire, incense, doppler charm, etc.) and one watch of downtime, you may install, remove, or swap a single Ward Feature on a ward you possess, or re-mount a ward to a different body-part/anchor to avoid bad stacking. When you trigger Ward Compatibility Error, roll d20 + Aura twice and take the better result. Master: You may keep one ward you carry in *Autonomous Mode* under your supervision. It follows one standing Directive (watch, alarm, harry, fetch, carry a whisper, map dream-noise, etc.) and you may update that Directive once per watch without special tools. Your companion ward may remain near you; if forced farther, it powers down until reunited.
 
@@ -6426,7 +6448,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wardwright-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#wardwright-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6435,7 +6457,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Weapon** {#sdm-trait-weapon}
+## Weapon
 
 >   **Weapon.** You were made. You know that. You did not awake to consciousness. You are not even sure if you are conscious. Before, there was nothing. No you. No world. Now you see the world. You respond to stimuli. You effect your will upon the cosmos. Who made you? God? Demon? Wizard? Accident? You simply feel their mark upon you. Maker.
 
@@ -6453,7 +6475,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-weapon-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#weapon-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6462,7 +6484,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Werker** {#sdm-trait-werker}
+## Werker
 
 >   **Werker.** Your ancestors were bioengineered to maintain the builders' machinery. You have an intuitive understanding of oldtech devices and processes. Spend 1 life to interface with a device and ascertain if it can be fixed and, at least roughly, how.
 
@@ -6485,7 +6507,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-werker-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#werker-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6494,7 +6516,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Wild Mage** {#sdm-trait-wild-mage}
+## Wild Mage
 
 >   **Wild Mage.** You are attuned to chaos and unstable forces. When you succeed on a Danger Roll, you may recover 1 point of ability damage or 1 Life. You may mark this trait to gain advantage on one attack or ability test (Expert: also Saves; Master: also Corruption exposure severity). You may not mark this trait if it is already marked. If you cast a spell or activate a power while this trait is marked, it automatically triggers a Danger Roll. Unmark this trait by one of the following methods: Rest for one watch (4 hours), or Rest for 10 minutes and spend 1 Life, or Rest for an action and take 1 point of ability damage. Choose a Magitech or Fantascience proficiency; when you reach Master, you are proficient in both.
 
@@ -6515,7 +6537,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wild-mage-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#wild-mage-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6524,7 +6546,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Wild Survivor** {#sdm-trait-wild-survivor}
+## Wild Survivor
 
 >   **Wild Survivor.** Forged in the harsh wilderness, you're skilled at guerrilla tactics and using the environment as a weapon. Given several minutes, you can always improvise a d10 weapon from sticks and stones and robot bones. With more time, you can make traps: deadfalls, pits, snares, and more.
 
@@ -6547,7 +6569,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wild-survivor-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#wild-survivor-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6556,7 +6578,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Wired** {#sdm-trait-wired}
+## Wired
 
 >   **Wired.** Your body is modified to secrete uppers and downers on demand. As a free action, spend 1 life to get a +2 bonus on initiative rolls, 2 life to gain a bonus action, or 3 life to recover an ability point.
 
@@ -6579,7 +6601,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wired-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#wired-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6588,7 +6610,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Wizard** {#sdm-trait-wizard}
+## Wizard
 
 >   **Wizard.** You call yourself a magus, maker, or mechanic. You are skilled at casting spells (using oldtech powers). Perhaps you just know how to read the manuals of Long Ago and the Zero-One codes?
 
@@ -6607,7 +6629,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wizard-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#wizard-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6616,7 +6638,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Wyldfire** {#sdm-trait-wyldfire}
+## Wyldfire
 
 >   **Wyldfire.** Free Action. When any power is successfully cast within 60 feet, make a Danger Roll against the power level to consume its energy. On success cancel the spell's effect and store the power in your inventory as Mana (max Mana equals your Level). On failure, the power has with a Corruption. Expert: Spend stored mana and an action to heal yourself or a nearby ally (1 Life per 2 mana). Master: Spend stored mana and an action to unleash a 30 feet cone of void-flame; the damage equals power spent - split among the targets (Aura Save to take 1/2 damage).
 
@@ -6635,7 +6657,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-wyldfire-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#wyldfire-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>
@@ -6644,7 +6666,7 @@ meta:
 
 <div class="trait-card" markdown="1">
 
-## **Yellowlander** {#sdm-trait-yellowlander}
+## Yellowlander
 
 >   **Yellowlander.** You are a merchant, a maintainer, a mercenary. Bargain and appraise, repair and juryrig, extort and betray. Wield bow and spear, bola, lasso and garotte. Also, spend an ability point to run away from a fight safely.
 
@@ -6663,7 +6685,7 @@ meta:
 
 <div class="trait-return">
   &nbsp;&nbsp;
-  <a class="js-back-link" href="/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Paths_Index/#sdm-trait-yellowlander-anchor" aria-label="Back to previous page">
+  <a class="js-back-link" href="#yellowlander-anchor" aria-label="Back to previous page">
     ↩ Back
   </a>
 </div>

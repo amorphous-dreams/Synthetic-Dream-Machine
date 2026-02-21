@@ -5,8 +5,6 @@ published: true
 ---
 # Old School Roleplaying Heritage Trait
 
-# Heritage (Trait)
-
 Heritage is a birthright, lineage, construction, or mythic origin that shapes how you exist in the world. It grants fictional positioning, esoteric permissions, and a small package of concrete effects. Choose a heritage descriptor (e.g. Goblin Folk, Awakened Golem, Deathless Revenant, Star-Marked Human). This descriptor defines what kinds of lore, rituals, environments, and effects naturally apply to you. In Flying Triremes and Laser Swords games, Heritage is free at character creation and does not occupy a Trait Inventory slot. draw a "Heritage" box on your character sheet:
 
 **Skilled**: +3 to heritage-related lore and research. Three Heritage effects.
@@ -25,7 +23,7 @@ Notes:
 
 ### Marking Your Heritage Trait
 
-Some Heritage effects have special rules, including marking the trait in order to activate certain abilities (place a mark or check next to the JHeritage box on your character sheet). You may not mark this trait if it is already marked. Unmark your Heritage by resting for one watch (4 hours), resting for 10 minutes and spending 1 Life, or resting for one action and taking 1 Ability damage.
+Some Heritage effects have special rules, including marking the trait in order to activate certain abilities (place a mark or check next to the Heritage box on your character sheet). You may not mark this trait if it is already marked. Unmark your Heritage by resting for one watch (4 hours), resting for 10 minutes and spending 1 Life, or resting for one action and taking 1 Ability damage.
 
 ## Heritage Table of Contents
 

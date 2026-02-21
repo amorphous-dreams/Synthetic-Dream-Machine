@@ -6312,34 +6312,25 @@ Smart players quickly realize that carrying their own supplies is not a good ide
 
 The vehicles in the transport table are all less cost effective than animals. It’s hard to keep machines running in the wilderness and their key value is transporting big heavy things that a single mule or camel couldn’t manage like magical sarcophagi, golden idols, and glass cannons.
 
-**Energy**
-
-Most vehicles burn synthetic fuel. Traditionally, this is refined from biomass with the use of biomagical eating animalcules and alchemical vats, or with a domesticated autofac. Some remote communities even refine their dead into energy.
-
+**Energy**  
+Most vehicles burn synthetic fuel. Traditionally, this is refined from biomass with the use of biomagical eating animalcules and alchemical vats, or with a domesticated autofac. Some remote communities even refine their dead into energy.  
 - Low-Q Diesolene, "Ole Belcher", costs €10 per sack and produces hot, iridescent smoke. Adds the "smoke" tag to a caravan.
 - Premium Guzzolene costs €20 per sack.
 - Oldtech Jetolene costs €50 per sack and adds the "fast" tag to a caravan. It burns white-hot and may explode engines.
 
-**Carting**
-
+**Carting**  
 Wheels are great. A creature can pull triple its normal capacity. A creature pulling one load can’t also carry a second load. Just no.
 
-**Dragging**
-
+**Dragging**  
 Using improvised stretchers, ropes, rollers or skids, a creature can pull double its normal capacity.
 
-**Flying**
-
+**Flying**  
 Not a good idea because of the Purple Haze, which rots human minds. At least, that’s what natives say. Also, there are fragments of stuckforce littering the sky, an invisible cutting hazard.
 
-**Golem**
+**Golem**  
+Golem vehicles use near-inexhaustible radiothermal batteries. Each lasts for decades. They are popular targets for thieves.
 
-Golem vehicles use near-inexhaustible radiothermal batteries.
-
-Each lasts for decades. They are popular targets for thieves.
-
-**Grazing**
-
+**Grazing**  
 Herbivores usually eat grass and other plants. In deserts, they consume a sack of supplies per week. Common supplies cost €2 per sack, like for humans. Camels only consume half, they’re cool.
 
 | Transport | Lvl | Description | Capacity | Speed | Requires | Cost |
@@ -7794,7 +7785,7 @@ Level to Generic Creature Translator
 
 ## **A-Z of Lifeforms**
 
-**Autofac**
+### Autofac
 
 Artificial organisms or organic machines created in a forgotten age—perhaps by combining wizards and autonomous vehicles in an unholy union. Sages speculate they were once designed to produce useful commodities. Now, most are leaking menaces, spewing fumes as they ravage the land to churn out odd, dangerous, and mostly useless artifacts or oozes.
 
@@ -7857,7 +7848,7 @@ This One is Special Because It ...
 
 <a id="page_0204"></a>
 
-**Cat Lord of the Violet City (Cat)**
+### Cat Lord of the Violet City (Cat)
 
 The Purple God(dess), divinity of magic, and most prominent deity of the Violet City has a fondness for cats. Indeed, cats are the rulers of the Purple Land—through their doting human servants.
 
@@ -7935,7 +7926,7 @@ They have cute little opposable thumbs, sharp claws and a keen sense of smell. I
 
 - **Cat Pet:** A secondary character. The cat pet’s goal in life is to feed, groom, and care for “their” cat. Usually human.
 
-**Fetish**
+### Fetish
 
 Matter imbued with a spirit or demon drawn to a wizard’s sacrifice.
 
@@ -7996,7 +7987,7 @@ Most wizards can create a basic wicker and bone fetish by sacrificing their vita
 | Strong | L4, Life 32, punching, weakening aura | 6 life, 3 ability points |
 | Giant | L5, Life 50, devouring, destroying | 8 life, 3 ability points |
 
-**Golem**
+### Golem
 
 Soulless automaton powered directly from the source of creation. A few industrious golems may uplift a tribe into a civilized city or turn a small city-state into a powerful empire. Poorly built, damaged, or jury-rigged golems are known to go amok or explode catastrophically. Recall the Salt Reassembly Incident of the 7th year of the Era of Saffron Ascendant.
 
@@ -8051,7 +8042,7 @@ Golems as PCs
 
 <a id="page_0206"></a>
 
-**Great Folk**
+### Great Folk
 
 A human collective that developed from a behemoth maintenance caste Long Long Ago. Their stories are a bit garbled, but when the Gods of the Great Beasts died / disappeared / ascended into the higher world, the Great Folk took their place. Their palaces slowly crumbled and the beasts died without the Gods’ motive spirits, but the Great Folk survived. Within the narrow confines of their gargantuan corpse worlds they thrived, becoming some of the best bone-sculptors and sinew-stitchers in the Steppe.
 
@@ -8117,7 +8108,7 @@ Deeply strange to Rainbowlanders in custom and look, the great folk are neverthe
 
 - **Mandatory Skills:** Hard-wired biomancy and animal husbandry aptitudes at the cost of other traits.
 
-**Human (Rainbowlander)**
+### Human (Rainbowlander)
 
 Common pan-humanity includes all the close‐to-baseline sentient and soulful post-humans. This includes retro-humans, dwarfs, half-elfs, halflings, quarterlings, and half-orcs.
 
@@ -8184,7 +8175,7 @@ Humans as PCs
 
 Humans can change their minds during character creation or afterwards, rearrange their abilities, mix and match backgrounds, and choose how they look pretty much at will. Do they want little horns, pointy tails, and golem-derived legs? Sure, fine—so long as they can explain it. If using classes, they can advance as any class.
 
-**Marmotfolk (Human?)**
+### Marmotfolk (Human?)
 
 Outsiders call these humans the Marmotfolk and a glance explains why.
 
@@ -8251,7 +8242,7 @@ Marmotfolk as PCs
 
 <a id="page_0208"></a>
 
-**Porcelain Prince (Para Human)**
+### Porcelain Prince (Para Human)
 
 Steppeland not-quite-liches who seek immortality by spreading their vital cognitive essence among several bodies linked by real‐time glandular psyche-to-psyche links. They are unified by their cartelist monopoly on polybody magical techniques and centered around the Porcelain Citadel. Widely regarded as decadent and weak, though the criticist theoreticians of the New Orangery School argue that they are a strong influence on the BureaucratCorporativists of the Emerald City Incorporation. Their own name for themselves, if they even have one, is not common knowledge.
 
@@ -8329,7 +8320,7 @@ A polybody may involve a merger of bodies and psyches, rather than outright domi
 
 <a id="page_0209"></a>
 
-**Post-Mortal**
+### Post-Mortal
 
 There’s always somebody trying to cheat death. Long Ago, perhaps, one could become abmortal. Now, those secrets are lost and the proof is in these sad creatures.
 
@@ -8382,7 +8373,7 @@ So you died. Ok, what now?
 
 - **Repair:** Requires a necro-biomancer and fresh parts.
 
-**Radiation Ghost**
+### Radiation Ghost
 
 Accreted remnants of personalities fried into the fabric of space and smeared across the vastness of time.
 
@@ -8429,7 +8420,7 @@ This radiation ghost ...
 
 <a id="page_0210"></a>
 
-**Quarterling**
+### Quarterling
 
 Many waffling sages say that quarterlings are merely obscure human phenotypes which retain lingish characteristics, from exceptional hand-eye coordination to unusual fur coverage.
 
@@ -8499,7 +8490,7 @@ Quarterling Clannotype Generator
 
 <a id="page_0211"></a>
 
-**Spectrum Satrap (Para-Human)**
+### Spectrum Satrap (Para-Human)
 
 Para-human cult or clan living far to the west. They travel in great prismatic walkers and are fond of illusions and radiant magics.
 
@@ -8573,7 +8564,7 @@ Restoring a Satrap body costs around €5,000. Satraps in good standing have acc
 
 <a id="page_0212"></a>
 
-**Steppe Nomad, Steppelander (Humans)**
+### Steppe Nomad, Steppelander (Humans)
 
 The uncommon humanity of the vast steppes, inheritors of the Long Ago, warriors against the vast madness left by fall after fall. Many changes were made to them Long Ago: from light fur and dappled patterns to snake eyes or gills. Still, though cityborn might disagree, the Steppelanders are as human as they come.
 
@@ -8645,7 +8636,7 @@ All share these traits and skills.
 
 <a id="page_0213"></a>
 
-**Ultra (After-Human)**
+### Ultra (After-Human)
 
 Body-hopping spirits that rewrite the spiritual vital essence of their hosts to suit their needs. If they truly exist, and are not simply fish tales, they live in the wildest of wild places.
 
@@ -8731,7 +8722,7 @@ A fresh body-personality is like a new shoe, tight and stiff in all the wrong pl
 
 <a id="page_0214"></a>
 
-**Vech, Sentient**
+### Vech, Sentient
 
 Long ago, even before the demiurges gave the world to the living, the line between evolved life and machine life blurred. Microscopic synthetics crawled in the bloodstreams, meat machines served the creators, and post-organic plants vivified whole cities. Meanwhile, human-brained void swimmers played the solar fire lines and engineered gravity to build constellations of living worlds in the sky.
 
@@ -8786,7 +8777,7 @@ This Magnificent Vech ...
 
 <a id="page_0215"></a>
 
-**Vomes (Violent Mechanisms)**
+### Vomes (Violent Mechanisms)
 
 Self-replicating synthetic organism or auto-golems, many of them hive-minded. They do not seem to have any overarching organization, most seem incapable of communication. But ... are they truly as mad and half-witted as they seem?
 
@@ -8872,7 +8863,7 @@ Vome PCs can gain mutations (p.200) or implants (p.194) as integrated traits whe
 
 <a id="page_0216"></a>
 
-**Water People or Cold Vomes**
+### Water People or Cold Vomes
 
 Living mostly beneath the limpid surface of Three Sticks Lake is a strange people. Their neighbors call them “cold vomes” because of their cold flesh or “water people” because they are amphibious. But what are they, really?
 
