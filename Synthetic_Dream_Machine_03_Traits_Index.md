@@ -131,9 +131,9 @@ published: true
   - [Motivational](#motivational) <a id="motivational-anchor"></a>
   - [My Bones Engraved](#my-bones-engraved) <a id="my-bones-engraved-anchor"></a>
   - [Noble](#noble) <a id="noble-anchor"></a>
-  - [Noömagus](#noomagus) <a id="noomagus-anchor"></a>
-  - [Noösphere Native](#noosphere-native) <a id="noosphere-native-anchor"></a>
-  - [Noösphere Priest](#noosphere-priest) <a id="noosphere-priest-anchor"></a>
+  - [Noömagus](#noömagus) <a id="noomagus-anchor"></a>
+  - [Noösphere Native](#noösphere-native) <a id="noosphere-native-anchor"></a>
+  - [Noösphere Priest](#noösphere-priest) <a id="noosphere-priest-anchor"></a>
   - [Numbers Maximization Official](#numbers-maximization-official) <a id="numbers-maximization-official-anchor"></a>
     - [Noble Path](#noble-path) <a id="noble-path-anchor"></a>
   - [Oblique Reality](#oblique-reality) <a id="oblique-reality-anchor"></a>
@@ -147,7 +147,7 @@ published: true
   - [Paradox Die](#paradox-die) <a id="paradox-die-anchor"></a>
   - [Perfect](#perfect) <a id="perfect-anchor"></a>
   - [Perfected Germline](#perfected-germline) <a id="perfected-germline-anchor"></a>
-    - [Noömagus Path](#noomagus-path) <a id="noomagus-path-anchor"></a>
+    - [Noömagus Path](#noömagus-path) <a id="noomagus-path-anchor"></a>
   - [Personal Daimon](#personal-daimon) <a id="personal-daimon-anchor"></a>
   - [Pet Sidekick](#pet-sidekick) <a id="pet-sidekick-anchor"></a>
   - [Phase](#phase) <a id="phase-anchor"></a>

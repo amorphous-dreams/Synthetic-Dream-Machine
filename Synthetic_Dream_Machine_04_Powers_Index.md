@@ -7,12 +7,11 @@ published: true
 
 <a id="sdm-power-table-of-contents"></a>
 
-  - [Known Albums and Source Groups](#known-albums-and-source-groups) <a id="known-albums-and-source-groups-anchor"></a>
 - [Power Template](#power-template) <a id="power-template-anchor"></a>
   - [Usage Notes](#usage-notes) <a id="usage-notes-anchor"></a>
 - [SDM Powers Index](#sdm-powers-index) <a id="sdm-powers-index-anchor"></a>
-  - [Access Blessing One — Autosoma](#access-blessing-one-autosoma) <a id="access-blessing-one-autosoma-anchor"></a>
-  - [Access Noötree](#access-nootree) <a id="access-nootree-anchor"></a>
+  - [Access Blessing One — Autosoma](#access-blessing-one--autosoma) <a id="access-blessing-one-autosoma-anchor"></a>
+  - [Access Noötree](#access-noötree) <a id="access-nootree-anchor"></a>
   - [Adulation Rejuvenation](#adulation-rejuvenation) <a id="adulation-rejuvenation-anchor"></a>
   - [Akaula's Sacrificial Hero](#akaulas-sacrificial-hero) <a id="akaulas-sacrificial-hero-anchor"></a>
   - [Alter Self](#alter-self) <a id="alter-self-anchor"></a>
@@ -56,7 +55,7 @@ published: true
   - [Imbue Edge](#imbue-edge) <a id="imbue-edge-anchor"></a>
   - [Impermissible Cleaver](#impermissible-cleaver) <a id="impermissible-cleaver-anchor"></a>
   - [Invoke Ub Dragon](#invoke-ub-dragon) <a id="invoke-ub-dragon-anchor"></a>
-  - [Knock / Lock](#knock-lock) <a id="knock-lock-anchor"></a>
+  - [Knock / Lock](#knock--lock) <a id="knock-lock-anchor"></a>
   - [Lay in Wires](#lay-in-wires) <a id="lay-in-wires-anchor"></a>
   - [Linked Portals](#linked-portals) <a id="linked-portals-anchor"></a>
   - [Magic Jar](#magic-jar) <a id="magic-jar-anchor"></a>
