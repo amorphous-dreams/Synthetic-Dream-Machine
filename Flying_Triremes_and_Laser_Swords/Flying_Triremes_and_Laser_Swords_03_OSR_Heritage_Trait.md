@@ -32,47 +32,47 @@ Some Heritage effects have special rules, including marking the trait in order t
 | Heritage | Hook | Skilled | Expert/Master | Variants |
 | --- | --- | --- | --- | --- |
 | <a id="heritage-ant-folk-row"></a>[Ant Folk](#ant-folk) | Silent hive scouts | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• [Coordination](#coordination) (+1 per 2 allies within 10 yd)<br>• [Psi-Speech](#psi-speech) (telepathy) | • [Blindsight](#blindsight) (pheromone sense; (Level+Thought)×10 yd) (Expert)<br>• [Polybody](#polybody) (Level+2 bodies) (Master) | Alates / Soldier / Far-Ranger |
-| <a id="heritage-awakened-vome-row"></a>[Awakened Vome](#awakened-vome) | Runaway vome nodes | • [Affinity](#affinity-vome-magitech) — Vome Magitech ([biomancy] [metal] [vome])<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat)<br>• Choose one | • [Polybody](#polybody) (Level+2 bodies) or flex (Expert)<br>• [Deathless](#deathless) (upkeep; sacrifice to recover) or flex (Master) | Solar-Forged / Scout-Brood / Echo-Core Veteran |
-| <a id="heritage-bat-folk-row"></a>[Bat Folk](#bat-folk) | Nocturnal couriers | • [Alternate Movement](#alternate-movement) (Fly)<br>• [Blindsight](#blindsight) (sonar; (Level+Thought)×10 yd)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Nimble](#nimble) (free disengage/cover/hide) (Expert)<br>• [Affinity](#affinity-air-song-storm) — Air • Song • Storm ([air] [song] [storm]) (Master) | Blood-Wing / Echo-Singer |
-| <a id="heritage-bear-folk-row"></a>[Bear Folk](#bear-folk) | Hearth guardians | • [Ability Bonus – Fierce](#ability-bonus-fierce) (+1 STR, +6 yd)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Ability Bonus – Solid](#ability-bonus-solid) (+1 END, +1 Life/level) | • [Ability Bonus – Spirited](#ability-bonus-spirited) (+1 Aura, +1 Life/level) (Expert)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) (Master) | Honey Sage / Ice-Hide |
-| <a id="heritage-bird-folk-row"></a>[Bird Folk](#bird-folk) | Sky messengers | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Alternate Movement](#alternate-movement) (Fly)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Affinity](#affinity-air-song-storm) — Air • Song • Storm ([air] [song] [storm]) (Expert)<br>• [Chimeric Body](#chimeric-body) (2 stored effects) (Master) | Talon Guards |
+| <a id="heritage-awakened-vome-row"></a>[Awakened Vome](#awakened-vome) | Runaway vome nodes | • [Affinity](#affinity---vome-magitech) — Vome Magitech ([biomancy] [metal] [vome])<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat)<br>• Choose one | • [Polybody](#polybody) (Level+2 bodies) or flex (Expert)<br>• [Deathless](#deathless) (upkeep; sacrifice to recover) or flex (Master) | Solar-Forged / Scout-Brood / Echo-Core Veteran |
+| <a id="heritage-bat-folk-row"></a>[Bat Folk](#bat-folk) | Nocturnal couriers | • [Alternate Movement](#alternate-movement) (Fly)<br>• [Blindsight](#blindsight) (sonar; (Level+Thought)×10 yd)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Nimble](#nimble) (free disengage/cover/hide) (Expert)<br>• [Affinity](#affinity---air--song--storm) — Air • Song • Storm ([air] [song] [storm]) (Master) | Blood-Wing / Echo-Singer |
+| <a id="heritage-bear-folk-row"></a>[Bear Folk](#bear-folk) | Hearth guardians | • [Ability Bonus – Fierce](#ability-bonus--fierce) (+1 STR, +6 yd)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Ability Bonus – Solid](#ability-bonus--solid) (+1 END, +1 Life/level) | • [Ability Bonus – Spirited](#ability-bonus--spirited) (+1 Aura, +1 Life/level) (Expert)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) (Master) | Honey Sage / Ice-Hide |
+| <a id="heritage-bird-folk-row"></a>[Bird Folk](#bird-folk) | Sky messengers | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Alternate Movement](#alternate-movement) (Fly)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Affinity](#affinity---air--song--storm) — Air • Song • Storm ([air] [song] [storm]) (Expert)<br>• [Chimeric Body](#chimeric-body) (2 stored effects) (Master) | Talon Guards |
 | <a id="heritage-bugbear-row"></a>[Bugbear](#bugbear) | Shadow-stalking bruisers | • [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Coordination](#coordination) (+1 per 2 allies within 10 yd) (Master) | Night-Howler / Moonlight Dancer |
-| <a id="heritage-canid-folk-row"></a>[Canid Folk](#canid-folk) | Pack tacticians | • [Ability Bonus – Fierce](#ability-bonus-fierce) (+1 STR, +6 yd)<br>• [Coordination](#coordination) (+1 per 2 allies within 10 yd)<br>• [Darkvision](#darkvision) (20 yd) | • [Inspiration](#inspiration) (aura) (Expert)<br>• [Affinity](#affinity-masks-totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Coyote/Jackal/Wolf / Fox / Painted Dog / Tanuki |
-| <a id="heritage-cat-lord-row"></a>[Cat Lord](#cat-lord) | Velvet salon tyrants | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear)<br>• [Psi-Speech](#psi-speech) (telepathy) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity-serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Void Prowler / Moon Stalker |
+| <a id="heritage-canid-folk-row"></a>[Canid Folk](#canid-folk) | Pack tacticians | • [Ability Bonus – Fierce](#ability-bonus--fierce) (+1 STR, +6 yd)<br>• [Coordination](#coordination) (+1 per 2 allies within 10 yd)<br>• [Darkvision](#darkvision) (20 yd) | • [Inspiration](#inspiration) (aura) (Expert)<br>• [Affinity](#affinity---masks--totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Coyote/Jackal/Wolf / Fox / Painted Dog / Tanuki |
+| <a id="heritage-cat-lord-row"></a>[Cat Lord](#cat-lord) | Velvet salon tyrants | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear)<br>• [Psi-Speech](#psi-speech) (telepathy) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity---serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Void Prowler / Moon Stalker |
 | <a id="heritage-chimeric-folk-centaur-mythic-shifter-row"></a>[Chimeric Folk* (Centaur, Mythic, Shifter)](#chimeric-folk-centaur-mythic-shifter) | Mythic oathbound shapeshifters | • [Affinity](#affinity) — choice tags<br>• [Chimeric Body](#chimeric-body) (2 stored effects)<br>• Choose one Heritage effect | • [Chimeric Legacy](#chimeric-legacy) (chimeric forms gain +1 effect, +6 yd) (Expert)<br>• Master flex effect | Centaur Families / Mythic Families / Shifter Families |
-| <a id="heritage-dragonborn-row"></a>[Dragonborn](#dragonborn) | Honor-hoarding wyrmkith | • [Affinity](#affinity) — dragon tag set<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• Choose one Heritage effect | • [Chimeric Body](#chimeric-body) (2 stored effects) (Expert)<br>• [Affinity](#affinity-serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Chromatic / Metallic / Gem / Dream |
-| <a id="heritage-dwarf-row"></a>[Dwarf](#dwarf) | Named-iron artisans | • [Ability Bonus – Solid](#ability-bonus-solid) (+1 END, +1 Life/level)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat) | • [Affinity](#affinity-fire-metal-ceramic) — Fire • Metal • Ceramic ([fire] [metal] [ceramic]) (Expert)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) (Master) | Volcano Clan Elder |
-| <a id="heritage-elf-row"></a>[Elf](#elf) | Glamour-drunk void envoys | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Lucky](#lucky) (reroll once) | • [Affinity](#affinity-illusion-light-void) — Illusion • Light • Void ([illusion] [light] [void]) (Expert)<br>• [Psi-Speech](#psi-speech) (telepathy) (Master) | Void Envoy / Glass-Mask Courtier / Shadow Elves |
-| <a id="heritage-faun-folk-row"></a>[Faun Folk](#faun-folk) | Festival guides & hosts | • [Ability Bonus – Fortunate](#ability-bonus-fortunate) (+1 CHA, +1 Ward)<br>• [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Affinity](#affinity-hearth-ways) — Hearth & Ways ([hearth] [protection] [travel]) (Expert)<br>• [Inspiration](#inspiration) (aura) (Master) | Forest Piper / Mountain Satyr |
-| <a id="heritage-feline-folk-row"></a>[Feline Folk](#feline-folk) | Shadow sprinters | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Darkvision](#darkvision) (20 yd) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Cheetah Clans |
-| <a id="heritage-frog-folk-row"></a>[Frog Folk](#frog-folk) | Amphibious ritual scouts | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Alternate Movement](#alternate-movement) (Climb) (Expert)<br>• [Affinity](#affinity-water-ice-steam) — Water • Ice • Steam ([water] [ice] [steam]) (Master) | Tree-Frog / Combat Toad / Salamander / Limbo Spawn |
-| <a id="heritage-giant-folk-row"></a>[Giant Folk](#giant-folk) | Mountain totem wardens | • [Ability Bonus – Solid](#ability-bonus-solid) (+1 END, +1 Life/level)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Ability Bonus – Spirited](#ability-bonus-spirited) (+1 Aura, +1 Life/level) (Expert)<br>• [Affinity](#affinity-masks-totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Stone-Singer Lodge / Cloud-Runner Lodge |
-| <a id="heritage-glow-kin-fungi-folk-row"></a>[Glow Kin (Fungi Folk)](#glow-kin-fungi-folk) | Sporelight diplomats | • [Ability Bonus – Spirited](#ability-bonus-spirited) (+1 Aura, +1 Life/level)<br>• [Affinity](#affinity-fungus-spore) — Fungus & Spore ([biomancy] [dream] [spore])<br>• [Psi-Speech](#psi-speech) (telepathy) | • [Resilient Metabolism](#resilient-metabolism) (Expert)<br>• [Affinity](#affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Myconid Clans / Slime Kin |
-| <a id="heritage-gnoll-folk-row"></a>[Gnoll Folk](#gnoll-folk) | Cackling pack shock | • [Ability Bonus – Fierce](#ability-bonus-fierce) (+1 STR, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Coordination](#coordination) (+1 per 2 allies within 10 yd) | • [Blood Scent](#blood-scent) (Expert)<br>• [Inspiration](#inspiration) (aura) (Master) | Bone Oracle / Shadow Gnoll / Warband Stalker |
-| <a id="heritage-goblin-row"></a>[Goblin](#goblin) | Anarchic tinkers | • [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Jack of All Trades](#jack-of-all-trades) (Expert)<br>• [Affinity](#affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Crystal Court |
-| <a id="heritage-golem-row"></a>[Golem](#golem) | Stubborn oathbound constructs | • [Deathless](#deathless) (upkeep; sacrifice to recover)<br>• choose two ([Ability Bonus](#ability-bonus)/[Affinity](#affinity)/[Armoured Body](#armoured-body) (+1 Armor/+1 Ward)/[Inner Fire](#inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick (Armour x2/Chimeric/[Coordination](#coordination) (+1 per 2 allies within 10 yd))<br>• [Affinity](#affinity-serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Noospheric Agent / Spore-War Veteran |
-| <a id="heritage-halfling-row"></a>[Halfling](#halfling) | Wandering hearthkeepers | • [Lucky](#lucky) (reroll once)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Affinity](#affinity-hearth-ways) — Hearth & Ways ([hearth] [protection] [travel]) (Expert)<br>• [Jack of All Trades](#jack-of-all-trades) (Master) | Shireling |
-| <a id="heritage-hobgoblin-row"></a>[Hobgoblin](#hobgoblin) | Riot-drilled companies | • [Coordination](#coordination) (+1 per 2 allies within 10 yd)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity-masks-totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Tribal Standard Bearer / Grell Hunter |
-| <a id="heritage-human-row"></a>[Human](#human) | Adaptable crossroads schemers | • [Jack of All Trades](#jack-of-all-trades)<br>• Bonus Background slot<br>• Choose one Heritage effect | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity-hearth-ways) — Hearth & Ways ([hearth] [protection] [travel]) (Master) | Changeling / Frontierling / Rainbowlander |
-| <a id="heritage-lizard-folk-row"></a>[Lizard Folk](#lizard-folk) | Sun-basking riverwrights | • [Ability Bonus – Solid](#ability-bonus-solid) (+1 END, +1 Life/level)<br>• [Alternate Movement](#alternate-movement) (Swim)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) | • [Affinity](#affinity-water-ice-steam) — Water • Ice • Steam ([water] [ice] [steam]) (Expert)<br>• [Affinity](#affinity-serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Deepwater Clans / Dinosaurids |
-| <a id="heritage-mantis-folk-row"></a>[Mantis Folk](#mantis-folk) | Meditative blade-priests | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) | • [Nimble](#nimble) (free disengage/cover/hide) (Expert)<br>• [Affinity](#affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Orchid Monastery / Spore-War Veteran |
-| <a id="heritage-marmot-folk-row"></a>[Marmot Folk](#marmot-folk) | Bone-salt burrowers | • [Affinity](#affinity-blood-bone-biomancy) — Blood • Bone • Biomancy ([blood] [bone] [biomancy])<br>• [Affinity](#affinity-earth-stone-wood) — Earth • Stone • Wood ([earth] [stone] [wood])<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Darkvision](#darkvision) (20 yd) (Expert)<br>• [Alternate Movement](#alternate-movement) (Burrow) (Master) | Cliff Marmots |
-| <a id="heritage-mer-folk-row"></a>[Mer Folk*](#mer-folk) | Tide-shifting emissaries | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Affinity](#affinity-water-ice-steam) — Water • Ice • Steam ([water] [ice] [steam])<br>• [Chimeric Body](#chimeric-body) (2 stored effects) | • [Resilient Metabolism](#resilient-metabolism) (Expert)<br>• [Chimeric Legacy](#chimeric-legacy) (chimeric forms gain +1 effect, +6 yd) (Master) | Reef Clans / Cold Vome / Selkie / Shark / Crab |
-| <a id="heritage-nerthurian-earthen-stone-folk-row"></a>[Nerthurian (Earthen/Stone Folk)](#nerthurian-earthenstone-folk) | Geomantic wainwrights | • [Affinity](#affinity-earth-stone-wood) — Earth • Stone • Wood ([earth] [stone] [wood])<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Inspiration](#inspiration) (aura) (Expert)<br>• [Affinity](#affinity-masks-totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Dryad / Obsidian Vanguard |
-| <a id="heritage-orc-ork-row"></a>[Orc (Ork)](#orc-ork) | Ferocious oath warbands | • [Aggressive](#aggressive) (rush)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat) | • [Ability Bonus – Fierce](#ability-bonus-fierce) (+1 STR, +6 yd) (Expert)<br>• [Ability Bonus – Solid](#ability-bonus-solid) (+1 END, +1 Life/level) (Master) | Cauldron Borne / Niho Puaʻa |
-| <a id="heritage-otter-folk-row"></a>[Otter Folk](#otter-folk) | River couriers | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Alternate Movement](#alternate-movement) (Swim) | • [Aggressive](#aggressive) (rush) (Expert)<br>• [Affinity](#affinity-water-ice-steam) — Water • Ice • Steam ([water] [ice] [steam]) (Master) | Badger Folk / Marten-Weasel Clans |
+| <a id="heritage-dragonborn-row"></a>[Dragonborn](#dragonborn) | Honor-hoarding wyrmkith | • [Affinity](#affinity) — dragon tag set<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• Choose one Heritage effect | • [Chimeric Body](#chimeric-body) (2 stored effects) (Expert)<br>• [Affinity](#affinity---serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Chromatic / Metallic / Gem / Dream |
+| <a id="heritage-dwarf-row"></a>[Dwarf](#dwarf) | Named-iron artisans | • [Ability Bonus – Solid](#ability-bonus--solid) (+1 END, +1 Life/level)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat) | • [Affinity](#affinity---fire--metal--ceramic) — Fire • Metal • Ceramic ([fire] [metal] [ceramic]) (Expert)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) (Master) | Volcano Clan Elder |
+| <a id="heritage-elf-row"></a>[Elf](#elf) | Glamour-drunk void envoys | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Lucky](#lucky) (reroll once) | • [Affinity](#affinity---illusion--light--void) — Illusion • Light • Void ([illusion] [light] [void]) (Expert)<br>• [Psi-Speech](#psi-speech) (telepathy) (Master) | Void Envoy / Glass-Mask Courtier / Shadow Elves |
+| <a id="heritage-faun-folk-row"></a>[Faun Folk](#faun-folk) | Festival guides & hosts | • [Ability Bonus – Fortunate](#ability-bonus--fortunate) (+1 CHA, +1 Ward)<br>• [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Affinity](#affinity---hearth--ways) — Hearth & Ways ([hearth] [protection] [travel]) (Expert)<br>• [Inspiration](#inspiration) (aura) (Master) | Forest Piper / Mountain Satyr |
+| <a id="heritage-feline-folk-row"></a>[Feline Folk](#feline-folk) | Shadow sprinters | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Darkvision](#darkvision) (20 yd) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Cheetah Clans |
+| <a id="heritage-frog-folk-row"></a>[Frog Folk](#frog-folk) | Amphibious ritual scouts | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Alternate Movement](#alternate-movement) (Climb) (Expert)<br>• [Affinity](#affinity---water--ice--steam) — Water • Ice • Steam ([water] [ice] [steam]) (Master) | Tree-Frog / Combat Toad / Salamander / Limbo Spawn |
+| <a id="heritage-giant-folk-row"></a>[Giant Folk](#giant-folk) | Mountain totem wardens | • [Ability Bonus – Solid](#ability-bonus--solid) (+1 END, +1 Life/level)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Ability Bonus – Spirited](#ability-bonus--spirited) (+1 Aura, +1 Life/level) (Expert)<br>• [Affinity](#affinity---masks--totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Stone-Singer Lodge / Cloud-Runner Lodge |
+| <a id="heritage-glow-kin-fungi-folk-row"></a>[Glow Kin (Fungi Folk)](#glow-kin-fungi-folk) | Sporelight diplomats | • [Ability Bonus – Spirited](#ability-bonus--spirited) (+1 Aura, +1 Life/level)<br>• [Affinity](#affinity---fungus--spore) — Fungus & Spore ([biomancy] [dream] [spore])<br>• [Psi-Speech](#psi-speech) (telepathy) | • [Resilient Metabolism](#resilient-metabolism) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Myconid Clans / Slime Kin |
+| <a id="heritage-gnoll-folk-row"></a>[Gnoll Folk](#gnoll-folk) | Cackling pack shock | • [Ability Bonus – Fierce](#ability-bonus--fierce) (+1 STR, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Coordination](#coordination) (+1 per 2 allies within 10 yd) | • [Blood Scent](#blood-scent) (Expert)<br>• [Inspiration](#inspiration) (aura) (Master) | Bone Oracle / Shadow Gnoll / Warband Stalker |
+| <a id="heritage-goblin-row"></a>[Goblin](#goblin) | Anarchic tinkers | • [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Jack of All Trades](#jack-of-all-trades) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Crystal Court |
+| <a id="heritage-golem-row"></a>[Golem](#golem) | Stubborn oathbound constructs | • [Deathless](#deathless) (upkeep; sacrifice to recover)<br>• choose two ([Ability Bonus](#ability-bonus)/[Affinity](#affinity)/[Armoured Body](#armoured-body) (+1 Armor/+1 Ward)/[Inner Fire](#inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick (Armour x2/Chimeric/[Coordination](#coordination) (+1 per 2 allies within 10 yd))<br>• [Affinity](#affinity---serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Noospheric Agent / Spore-War Veteran |
+| <a id="heritage-halfling-row"></a>[Halfling](#halfling) | Wandering hearthkeepers | • [Lucky](#lucky) (reroll once)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Affinity](#affinity---hearth--ways) — Hearth & Ways ([hearth] [protection] [travel]) (Expert)<br>• [Jack of All Trades](#jack-of-all-trades) (Master) | Shireling |
+| <a id="heritage-hobgoblin-row"></a>[Hobgoblin](#hobgoblin) | Riot-drilled companies | • [Coordination](#coordination) (+1 per 2 allies within 10 yd)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity---masks--totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Tribal Standard Bearer / Grell Hunter |
+| <a id="heritage-human-row"></a>[Human](#human) | Adaptable crossroads schemers | • [Jack of All Trades](#jack-of-all-trades)<br>• Bonus Background slot<br>• Choose one Heritage effect | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity---hearth--ways) — Hearth & Ways ([hearth] [protection] [travel]) (Master) | Changeling / Frontierling / Rainbowlander |
+| <a id="heritage-lizard-folk-row"></a>[Lizard Folk](#lizard-folk) | Sun-basking riverwrights | • [Ability Bonus – Solid](#ability-bonus--solid) (+1 END, +1 Life/level)<br>• [Alternate Movement](#alternate-movement) (Swim)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) | • [Affinity](#affinity---water--ice--steam) — Water • Ice • Steam ([water] [ice] [steam]) (Expert)<br>• [Affinity](#affinity---serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Deepwater Clans / Dinosaurids |
+| <a id="heritage-mantis-folk-row"></a>[Mantis Folk](#mantis-folk) | Meditative blade-priests | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) | • [Nimble](#nimble) (free disengage/cover/hide) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Orchid Monastery / Spore-War Veteran |
+| <a id="heritage-marmot-folk-row"></a>[Marmot Folk](#marmot-folk) | Bone-salt burrowers | • [Affinity](#affinity---blood--bone--biomancy) — Blood • Bone • Biomancy ([blood] [bone] [biomancy])<br>• [Affinity](#affinity---earth--stone--wood) — Earth • Stone • Wood ([earth] [stone] [wood])<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Darkvision](#darkvision) (20 yd) (Expert)<br>• [Alternate Movement](#alternate-movement) (Burrow) (Master) | Cliff Marmots |
+| <a id="heritage-mer-folk-row"></a>[Mer Folk*](#mer-folk) | Tide-shifting emissaries | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Affinity](#affinity---water--ice--steam) — Water • Ice • Steam ([water] [ice] [steam])<br>• [Chimeric Body](#chimeric-body) (2 stored effects) | • [Resilient Metabolism](#resilient-metabolism) (Expert)<br>• [Chimeric Legacy](#chimeric-legacy) (chimeric forms gain +1 effect, +6 yd) (Master) | Reef Clans / Cold Vome / Selkie / Shark / Crab |
+| <a id="heritage-nerthurian-earthen-stone-folk-row"></a>[Nerthurian (Earthen/Stone Folk)](#nerthurian-earthenstone-folk) | Geomantic wainwrights | • [Affinity](#affinity---earth--stone--wood) — Earth • Stone • Wood ([earth] [stone] [wood])<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Inspiration](#inspiration) (aura) (Expert)<br>• [Affinity](#affinity---masks--totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Dryad / Obsidian Vanguard |
+| <a id="heritage-orc-ork-row"></a>[Orc (Ork)](#orc-ork) | Ferocious oath warbands | • [Aggressive](#aggressive) (rush)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat) | • [Ability Bonus – Fierce](#ability-bonus--fierce) (+1 STR, +6 yd) (Expert)<br>• [Ability Bonus – Solid](#ability-bonus--solid) (+1 END, +1 Life/level) (Master) | Cauldron Borne / Niho Puaʻa |
+| <a id="heritage-otter-folk-row"></a>[Otter Folk](#otter-folk) | River couriers | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Alternate Movement](#alternate-movement) (Swim) | • [Aggressive](#aggressive) (rush) (Expert)<br>• [Affinity](#affinity---water--ice--steam) — Water • Ice • Steam ([water] [ice] [steam]) (Master) | Badger Folk / Marten-Weasel Clans |
 | <a id="heritage-plane-touched-row"></a>[Plane Touched*](#plane-touched) | Reality-frayed avatars | • [Lucky](#lucky) (reroll once)<br>• choose two weird effects ([Affinity](#affinity)/[Alternate Movement](#alternate-movement)/[Size](#size)/[Psi-Speech](#psi-speech)) | • Extra effect or upgrade (Expert)<br>• [Paradox Die](#plane-touched) (d6) (Master) | Chaos-Mind / Elemental Scion / Gorgonne / Meta-Angel / Void-Child |
 | <a id="heritage-porcelain-prince-row"></a>[Porcelain Prince](#porcelain-prince) | Polybody cartel liches | • [Coordination](#coordination) (+1 per 2 allies within 10 yd)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat)<br>• [Polybody](#polybody) (Lv+2 drones) | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) (Expert)<br>• [Citadel Sorcery](#porcelain-prince) (Master) | Ceramics Broker / Shard-Haunted Prince |
-| <a id="heritage-quarterling-row"></a>[Quarterling](#quarterling) | Mischief clans in pocket size | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• [Lucky](#lucky) (reroll once)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Inspiration](#inspiration) (aura) (Expert)<br>• [Affinity](#affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Brownie / Pixie / Spriggan / Kobold / Red Cap / Gremlin / Gnome |
-| <a id="heritage-rabbit-folk-row"></a>[Rabbit Folk](#rabbit-folk) | Restless lucky roamers | • [Ability Bonus – Quick](#ability-bonus-quick) (+1 AGI, +6 yd)<br>• [Lucky](#lucky) (reroll once)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Ability Bonus – Fortunate](#ability-bonus-fortunate) (+1 CHA, +1 Ward) (Expert)<br>• [Ability Bonus – Spirited](#ability-bonus-spirited) (+1 Aura, +1 Life/level) (Master) | Hearth-Tender / Cryptid Hare |
-| <a id="heritage-rat-folk-row"></a>[Rat Folk](#rat-folk) | Secret-path scavengers | • [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Resilient Metabolism](#resilient-metabolism) (Expert)<br>• [Affinity](#affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | — |
-| <a id="heritage-serpent-folk-row"></a>[Serpent Folk](#serpent-folk) | Immortal dream conspirators | • [Ability Bonus – Fortunate](#ability-bonus-fortunate) (+1 CHA, +1 Ward)<br>• [Ability Bonus – Spirited](#ability-bonus-spirited) (+1 Aura, +1 Life/level)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Affinity](#affinity-serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Expert)<br>• [Deathless](#deathless) (upkeep; sacrifice to recover) (Master) | Cobra Oracle / Naga Mystic |
-| <a id="heritage-spectrum-satrap-row"></a>[Spectrum Satrap](#spectrum-satrap) | Prismatic envoys | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• choose two (eg [Ability Bonus – Spirited](#ability-bonus-spirited) (+1 Aura, +1 Life/level) / [Affinity](#affinity-illusion-light-void) — Illusion • Light • Void ([illusion] [light] [void]) / [Psi-Speech](#psi-speech)) | • Blinding Brilliance (Expert)<br>• Prismatic Ascension (Master) | Chroma Courtier / Umbral Satrap |
-| <a id="heritage-spider-folk-row"></a>[Spider Folk](#spider-folk) | Silk diplomats | • [Affinity](#affinity-silk-web) — Silk & Web ([illusion] [silk] [web])<br>• [Alternate Movement](#alternate-movement) (Climb)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) | • [Affinity](#affinity-illusion-light-void) — Illusion • Light • Void ([illusion] [light] [void]) (Expert)<br>• [Affinity](#affinity-chaos-dream-shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Arachne Touched / Burrow-Spinner Families / Scorpion Sun-Hunters |
-| <a id="heritage-tauran-folk-row"></a>[Tauran Folk](#tauran-folk) | Labyrinth guardians | • [Ability Bonus – Fierce](#ability-bonus-fierce) (+1 STR, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Inspiration](#inspiration) (aura) (Expert)<br>• Labyrinth Soul (Master) | Uroch Trail-Keepers / Broken Horned |
-| <a id="heritage-troll-row"></a>[Troll](#troll) | Mischief tollkeepers | • [Aggressive](#aggressive) (rush)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) (Expert)<br>• [Affinity](#affinity-earth-stone-wood) — Earth • Stone • Wood ([earth] [stone] [wood]) or [Affinity](#affinity-air-song-storm) — Air • Song • Storm ([air] [song] [storm]) (Master) | Ash-Troll / Reef-Troll |
-| <a id="heritage-turtle-folk-row"></a>[Turtle Folk](#turtle-folk) | Radical walking shrines | • [Armoured Body](#armoured-body) ×2 (+2 Armor/+2 Ward)<br>• Choose one ([Ability Bonus](#ability-bonus)/move) | • [Affinity](#affinity-water-ice-steam) — Water • Ice • Steam ([water] [ice] [steam]) (Expert)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat) (Master) | Shrineback Pilgrim |
-| <a id="heritage-undead-post-mortal-row-2"></a>[Undead (Post Mortal)*](#undead-post-mortal) | Vow-bound revenants | • [Deathless](#deathless) upkeep<br>• Choose two ([Ability Bonus](#ability-bonus)/[Affinity](#affinity-blood-bone-biomancy) [blood] [bone] [biomancy]/[Armoured Body](#armoured-body) (+1 Armor/+1 Ward)/[Darkvision](#darkvision)/[Inner Fire](#inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick<br>• [Affinity](#affinity-chaos-dream-shadow) [chaos] [dream] [shadow] (Master) | Candle-Heart / Mirth-Touched / Salt-Bone |
+| <a id="heritage-quarterling-row"></a>[Quarterling](#quarterling) | Mischief clans in pocket size | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• [Lucky](#lucky) (reroll once)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Inspiration](#inspiration) (aura) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Brownie / Pixie / Spriggan / Kobold / Red Cap / Gremlin / Gnome |
+| <a id="heritage-rabbit-folk-row"></a>[Rabbit Folk](#rabbit-folk) | Restless lucky roamers | • [Ability Bonus – Quick](#ability-bonus--quick) (+1 AGI, +6 yd)<br>• [Lucky](#lucky) (reroll once)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Ability Bonus – Fortunate](#ability-bonus--fortunate) (+1 CHA, +1 Ward) (Expert)<br>• [Ability Bonus – Spirited](#ability-bonus--spirited) (+1 Aura, +1 Life/level) (Master) | Hearth-Tender / Cryptid Hare |
+| <a id="heritage-rat-folk-row"></a>[Rat Folk](#rat-folk) | Secret-path scavengers | • [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Resilient Metabolism](#resilient-metabolism) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | — |
+| <a id="heritage-serpent-folk-row"></a>[Serpent Folk](#serpent-folk) | Immortal dream conspirators | • [Ability Bonus – Fortunate](#ability-bonus--fortunate) (+1 CHA, +1 Ward)<br>• [Ability Bonus – Spirited](#ability-bonus--spirited) (+1 Aura, +1 Life/level)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Affinity](#affinity---serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Expert)<br>• [Deathless](#deathless) (upkeep; sacrifice to recover) (Master) | Cobra Oracle / Naga Mystic |
+| <a id="heritage-spectrum-satrap-row"></a>[Spectrum Satrap](#spectrum-satrap) | Prismatic envoys | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward)<br>• choose two (eg [Ability Bonus – Spirited](#ability-bonus--spirited) (+1 Aura, +1 Life/level) / [Affinity](#affinity---illusion--light--void) — Illusion • Light • Void ([illusion] [light] [void]) / [Psi-Speech](#psi-speech)) | • Blinding Brilliance (Expert)<br>• Prismatic Ascension (Master) | Chroma Courtier / Umbral Satrap |
+| <a id="heritage-spider-folk-row"></a>[Spider Folk](#spider-folk) | Silk diplomats | • [Affinity](#affinity---silk--web) — Silk & Web ([illusion] [silk] [web])<br>• [Alternate Movement](#alternate-movement) (Climb)<br>• [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) | • [Affinity](#affinity---illusion--light--void) — Illusion • Light • Void ([illusion] [light] [void]) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Arachne Touched / Burrow-Spinner Families / Scorpion Sun-Hunters |
+| <a id="heritage-tauran-folk-row"></a>[Tauran Folk](#tauran-folk) | Labyrinth guardians | • [Ability Bonus – Fierce](#ability-bonus--fierce) (+1 STR, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Inspiration](#inspiration) (aura) (Expert)<br>• Labyrinth Soul (Master) | Uroch Trail-Keepers / Broken Horned |
+| <a id="heritage-troll-row"></a>[Troll](#troll) | Mischief tollkeepers | • [Aggressive](#aggressive) (rush)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat)<br>• [Size](#size) (Large; ×2 rations; +10 Life; 10 st gear) | • [Armoured Body](#armoured-body) (+1 Armor/+1 Ward) (Expert)<br>• [Affinity](#affinity---earth--stone--wood) — Earth • Stone • Wood ([earth] [stone] [wood]) or [Affinity](#affinity---air--song--storm) — Air • Song • Storm ([air] [song] [storm]) (Master) | Ash-Troll / Reef-Troll |
+| <a id="heritage-turtle-folk-row"></a>[Turtle Folk](#turtle-folk) | Radical walking shrines | • [Armoured Body](#armoured-body) ×2 (+2 Armor/+2 Ward)<br>• Choose one ([Ability Bonus](#ability-bonus)/move) | • [Affinity](#affinity---water--ice--steam) — Water • Ice • Steam ([water] [ice] [steam]) (Expert)<br>• [Inner Fire](#inner-fire) (+2 slots, +1 Defeat) (Master) | Shrineback Pilgrim |
+| <a id="heritage-undead-post-mortal-row-2"></a>[Undead (Post Mortal)*](#undead-post-mortal) | Vow-bound revenants | • [Deathless](#deathless) upkeep<br>• Choose two ([Ability Bonus](#ability-bonus)/[Affinity](#affinity---blood--bone--biomancy) [blood] [bone] [biomancy]/[Armoured Body](#armoured-body) (+1 Armor/+1 Ward)/[Darkvision](#darkvision)/[Inner Fire](#inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick<br>• [Affinity](#affinity---chaos--dream--shadow) [chaos] [dream] [shadow] (Master) | Candle-Heart / Mirth-Touched / Salt-Bone |
 
 ## A Brief Word on the Heritage Trait
 
@@ -120,85 +120,85 @@ Choose the same Ability Bonus a second time to raise the bonus to +2 and repea
 
 Mark your Heritage trait to shape 1 stone of the tagged substance / essence, operate tagged magitech or sorcerous artifacts, or otherwise bring the Affinity’s lens to bear. Powers with the Affinity’s tags cost 1 less Power (minimum 1). Different Affinities may stack if the Power carries those tags.
 
-### Affinity — Illusion • Light • Void
+### Affinity - Illusion • Light • Void
 
 Tags: \[illusion\] \[light\] \[void\]
 
 Weave fae-charms and reality edits, bend radiance and reflection, or veil yourself in void-glamours. Illusion includes prismatic glamour and the push-pull of reality/unreality.
 
-### Affinity — Chaos • Dream • Shadow
+### Affinity - Chaos • Dream • Shadow
 
 Tags: \[chaos\] \[dream\] \[shadow\]
 
  Reshape noospheric dream-code and umbra, weaponize paradox and darkness, and interact with things in dream-states, shadow-states, or ghost-echoes. Chaos contains the push-pull of order and disorder held in creative tension.
 
-### Affinity — Earth • Stone • Wood
+### Affinity - Earth • Stone • Wood
 
 Tags: \[earth\] \[stone\] \[wood\]
 
 Speak the language of stone, granite, slate, marble, bark, and beam: raise walls, carve way-shrines, tend to field and forest. Growth and masonry answer your touch like old friends, offering tools, shelters, and sanctuaries. Sense weight, pressure, and the slow patience of the ground.
 
-### Affinity — Fire • Metal • Ceramic
+### Affinity - Fire • Metal • Ceramic
 
 Tags: \[fire\] \[metal\] \[ceramic\]
 
 Command fire with kilns, crucibles, and ally-spirits; temper edges, apply ballistic-proof glaze, call sparks to heel, and join ceramics to glass. Your work sings with resonance—named blades, lacquered armor, porcelain wards.
 
-### Affinity — Water • Ice • Steam
+### Affinity - Water • Ice • Steam
 
 Tags: \[water\] \[ice\] \[steam\]
 
 Shape currents, freeze and thaw water, and coax pressure into engines or geysers. Decant fog, sculpt frost, and coax memory from the rivers’ currents. These powers often grant pressure protection or water-breathing.
 
-### Affinity — Air • Song • Storm
+### Affinity - Air • Song • Storm
 
 Tags: \[air\] \[song\] \[storm\]
 
 Ride thermals, call gales, and braid thunder into rhythm. Conduct winds and storms like an orchestra—songs, chants, and drumbeats steer weather and carry words. Skies open where you point.
 
-### Affinity — Force • Lightning • Magnetism
+### Affinity - Force • Lightning • Magnetism
 
 Tags: \[force\] \[lightning\] \[magnetism\]
 
 Hurl invisible kinetics and sketch geometry in the air; make fields that cradle, crush, or pin an army like moths. Grip the unseen scaffolds of the world and yank: vectors snap taut, inertia buckles, space folds, and force-arcs crawl like silver spiders across your knuckles.
 
-### Affinity — Blood • Bone • Biomancy
+### Affinity - Blood • Bone • Biomancy
 
 Tags: \[blood\] \[bone\] \[biomancy\]
 
 Distill humors, set fractures with whispered rites, and ring thresholds with salt-wards against infections. Knit sinew, carve forms, and seal pacts with preservative alchemy. Your craft binds memory to matter. Life’s ledger and death’s archive live in your kit.
 
-### Affinity — Fungus & Spore
+### Affinity - Fungus & Spore
 
 Tags: \[biomancy\] \[dream\] \[spore\]
 
 Brew medicines and ferment secret potions. Thread living circuits through soil and stone alike. Whisper across root-nets, trade memories as pheromone data-packets, and bloom spore-storms that feed, blind, or enthrall.
 
-### Affinity — Hearth & Ways
+### Affinity - Hearth & Ways
 
 Tags: \[hearth\] \[protection\] \[travel\]
 
 Coax warmth from damp tinder, find the hidden rest-nook, and read crossroads gossip in dust and chalk. You invite luck to sit by the fire, and travel quickens for those who share your table.
 
-### Affinity — Masks & Totems
+### Affinity - Masks & Totems
 
 Tags: \[illusion\] \[totem\] \[spirit\]
 
 Carve personas for ideas and homes for small gods; bargain with noospheric-minds through color and ritual. Wake a location-spirit’s memory; bargain with spirits of the wilds, trade favors with a household guardian.
 
-### Affinity — Serpent Energy
+### Affinity - Serpent Energy
 
 Tags:  \[biomancy\] \[chaos\] \[mana\]
 
 Tune the subtle body—chakras, breath, mood—and strike with gaze or mantra. Manipulate the “mystic fire” (vril/qi/orgone), entrain crowds with rhythm, and still a foe with gaze. The world’s heartbeat keeps time with yours.
 
-### Affinity — Silk & Web
+### Affinity - Silk & Web
 
 Tags: \[illusion\] \[silk\] \[web\]
 
 Spin lines, sheets, glamours, and snares from web‑silk. Weave fashion, harness, sail, or trap from a thought and a spool; reroute pursuit with sticky geometry and elegant pranks.
 
-### Affinity — Vome Magitech
+### Affinity - Vome Magitech
 
 Tags: \[biomancy\] \[metal\] \[vome\]
 
@@ -366,7 +366,7 @@ Chitin-clad nomads who build walking hive-wagons and caravan fortresses. Silent 
 **Variants**
 
 * Alates: The winged ones, masters of spear and bow. Expert: Swap [Blindsight](#blindsight) for **[Alternate Movement](#alternate-movement) – Fly**
-* Soldier: Hive protectors, often augmented with magitech. *Expert*: Swap [Blindsight](#blindsight) for **[Ability Bonus – Fierce](#ability-bonus-fierce)**.
+* Soldier: Hive protectors, often augmented with magitech. *Expert*: Swap [Blindsight](#blindsight) for **[Ability Bonus – Fierce](#ability-bonus--fierce)**.
 * Far-Ranger: Restless explorers, foragers, and gatherers. *Master*: Swap [Polybody](#polybody) for **[Resilient Metabolism](#resilient-metabolism)** (advantage vs. poison, hunger, fatigue, environment hazards).
 
 
@@ -377,8 +377,8 @@ Chitin-clad nomads who build walking hive-wagons and caravan fortresses. Silent 
 
 ## Awakened Vome
 
-* Skilled (+3): **[Affinity – Vome Magitech](#affinity-vome-magitech), [Inner Fire](#inner-fire), Choose one**
-  * Common choices: **[Ability Bonus – Spirited](#ability-bonus-spirited), [Aggressive](#aggressive), [Amorphous Body](#amorphous-body), [Blood Scent](#blood-scent), [Deathless](#deathless), [Armoured Body](#armoured-body), [Nimble](#nimble), [Polybody](#polybody), [Psi-Speech](#psi-speech), [Resilient Metabolism](#resilient-metabolism), [Size](#size), [Vome Upgrade](#vome-upgrade)**
+* Skilled (+3): **[Affinity – Vome Magitech](#affinity---vome-magitech), [Inner Fire](#inner-fire), Choose one**
+  * Common choices: **[Ability Bonus – Spirited](#ability-bonus--spirited), [Aggressive](#aggressive), [Amorphous Body](#amorphous-body), [Blood Scent](#blood-scent), [Deathless](#deathless), [Armoured Body](#armoured-body), [Nimble](#nimble), [Polybody](#polybody), [Psi-Speech](#psi-speech), [Resilient Metabolism](#resilient-metabolism), [Size](#size), [Vome Upgrade](#vome-upgrade)**
 * Expert (+6): **[Polybody](#polybody)** or **Choose one**
 * Master (+9): **[Deathless](#deathless)** or **Choose one**
 
@@ -410,7 +410,7 @@ The **Awakened Vome** are an ancient noosphere infection made flesh and machine 
 
 * Skilled (+3): **[Alternate Movement](#alternate-movement) – Fly, [Blindsight](#blindsight), [Size](#size) – Small**
 * Expert (+6): **[Nimble](#nimble)**
-* Master (+9): **[Affinity – Air • Song • Storm](#affinity-air-song-storm)**
+* Master (+9): **[Affinity – Air • Song • Storm](#affinity---air--song--storm)**
 
 **Description**
 
@@ -437,8 +437,8 @@ Nocturnal gliders whose leather wings carry them between cliff-cities and cavern
 
 ## Bear Folk
 
-* Skilled (+3): **[Ability Bonus – Fierce](#ability-bonus-fierce), [Darkvision](#darkvision), [Ability Bonus – Solid](#ability-bonus-solid)**
-* Expert (+6): **[Ability Bonus – Spirited](#ability-bonus-spirited)**
+* Skilled (+3): **[Ability Bonus – Fierce](#ability-bonus--fierce), [Darkvision](#darkvision), [Ability Bonus – Solid](#ability-bonus--solid)**
+* Expert (+6): **[Ability Bonus – Spirited](#ability-bonus--spirited)**
 * Master (+9): **[Size](#size) – Large**
 
 **Description**
@@ -455,8 +455,8 @@ Broad-shouldered guardians with ember-bright spirits, the Bear Folk move like wa
 
 **Variants**
 
-* Honey Sage: Mead-seers who read the future in ferment and flame. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus-fierce) with **[Ability Bonus – Fortunate](#ability-bonus-fortunate)**.
-* Ice‑Hide: Glacier wardens with heavy gear, rimed-fur and breath like fog. Expert: Swap [Ability Bonus – Spirited](#ability-bonus-spirited) for **[Armoured Body](#armoured-body)**.
+* Honey Sage: Mead-seers who read the future in ferment and flame. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus--fierce) with **[Ability Bonus – Fortunate](#ability-bonus--fortunate)**.
+* Ice‑Hide: Glacier wardens with heavy gear, rimed-fur and breath like fog. Expert: Swap [Ability Bonus – Spirited](#ability-bonus--spirited) for **[Armoured Body](#armoured-body)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -466,8 +466,8 @@ Broad-shouldered guardians with ember-bright spirits, the Bear Folk move like wa
 
 ## Bird Folk
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Alternate Movement](#alternate-movement) – Fly, [Nimble](#nimble)**
-* Expert (+6): **[Affinity – Air • Song • Storm](#affinity-air-song-storm)**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Alternate Movement](#alternate-movement) – Fly, [Nimble](#nimble)**
+* Expert (+6): **[Affinity – Air • Song • Storm](#affinity---air--song--storm)**
 * Master (+9): **[Chimeric Body](#chimeric-body)**
 
 **Description**
@@ -484,7 +484,7 @@ Feather-cloaked wanderers who ride the world’s thermal highways, **Bird Folk**
 
 **Variants**
 
-* Talon Guards: Emphasise heavy dive-strikes. Skilled: Swap [Ability Bonus – Quick](#ability-bonus-quick) for **[Ability Bonus – Fierce](#ability-bonus-fierce)**.
+* Talon Guards: Emphasise heavy dive-strikes. Skilled: Swap [Ability Bonus – Quick](#ability-bonus--quick) for **[Ability Bonus – Fierce](#ability-bonus--fierce)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -512,7 +512,7 @@ Feather-cloaked wanderers who ride the world’s thermal highways, **Bird Folk**
 
 **Variants**
 
-* Night-Howler: Shadow-scouts who sign pacts with hobgoblin companies. Expert: Swap [Lucky](#lucky) with **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)** (eerie howls and dark magics).
+* Night-Howler: Shadow-scouts who sign pacts with hobgoblin companies. Expert: Swap [Lucky](#lucky) with **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)** (eerie howls and dark magics).
 * Moonlight Dancer: The Moon-Fang phylake cult bears faintly glowing fangs. Expert: Swap [Lucky](#lucky) with **Illusion • Light • Void** (lunar glows, veiling illusions).
 
 
@@ -523,9 +523,9 @@ Feather-cloaked wanderers who ride the world’s thermal highways, **Bird Folk**
 
 ## Canid Folk
 
-* Skilled (+3): **[Ability Bonus – Fierce](#ability-bonus-fierce), [Coordination](#coordination), [Darkvision](#darkvision)**
+* Skilled (+3): **[Ability Bonus – Fierce](#ability-bonus--fierce), [Coordination](#coordination), [Darkvision](#darkvision)**
 * Expert (+6): **[Inspiration](#inspiration)**
-* Master (+9): **[Affinity – Masks & Totems](#affinity-masks-totems)**
+* Master (+9): **[Affinity – Masks & Totems](#affinity---masks--totems)**
 
 **Description**
 
@@ -542,9 +542,9 @@ From midnight jackal and wolf clans that speak with prophets and spirits to red�
 **Variants**
 
 * Coyote, Jackal & Wolf: Most common variant in the clans. The outdated myth of a single “Alpha” amuses them— true packs lead by consensus and charisma. Many of these folk practice the lunar rites of [Chimeric Body](#chimeric-body). Expert: Swap [Inspiration](#inspiration) with **[Lucky](#lucky)** or **[Chimeric Body](#chimeric-body)** – choose either mythic dire-animal or hybrid war-beast.
-* Fox: Clever vulpini tricksters. [Lucky](#lucky) companions in tight scrapes and fond of riddles. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus-fierce) with **[Ability Bonus](#ability-bonus) –** **Fortunate**. Expert: Swap [Inspiration](#inspiration) with **[Lucky](#lucky)** or **[Chimeric Body](#chimeric-body)**.
+* Fox: Clever vulpini tricksters. [Lucky](#lucky) companions in tight scrapes and fond of riddles. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus--fierce) with **[Ability Bonus](#ability-bonus) –** **Fortunate**. Expert: Swap [Inspiration](#inspiration) with **[Lucky](#lucky)** or **[Chimeric Body](#chimeric-body)**.
 * Painted Dog: Cooperative hunter‑guardians. Famous for endurance chases across the steppe. Expert: Swap [Inspiration](#inspiration) with **[Blood Scent](#blood-scent)**.
-* Tanuki: Mask‑smiths & shapeshifting pranksters. [Affinity](#affinity) crafts are often shaped as pottery or leaf magic. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus-fierce) for **[Lucky](#lucky)**. Expert: Swap [Inspiration](#inspiration) with **[Chimeric Body](#chimeric-body)** (mythic animal form).
+* Tanuki: Mask‑smiths & shapeshifting pranksters. [Affinity](#affinity) crafts are often shaped as pottery or leaf magic. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus--fierce) for **[Lucky](#lucky)**. Expert: Swap [Inspiration](#inspiration) with **[Chimeric Body](#chimeric-body)** (mythic animal form).
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -554,9 +554,9 @@ From midnight jackal and wolf clans that speak with prophets and spirits to red�
 
 ## Cat Lord
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Size](#size) – Small, Psi‑Speech**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Size](#size) – Small, Psi‑Speech**
 * Expert (+6): **[Lucky](#lucky)**
-* Master (+9): **[Affinity – Serpent Energy](#affinity-serpent-energy)**
+* Master (+9): **[Affinity – Serpent Energy](#affinity---serpent-energy)**
 
 **Description**
 
@@ -573,7 +573,7 @@ From midnight jackal and wolf clans that speak with prophets and spirits to red�
 **Variants**
 
 * Void Prowler: Battle‑tempered and wear their poise like armor. Expert: Swap [Lucky](#lucky) for **[Armoured Body](#armoured-body)** (+1 Armor & \+1 Ward).
-* Moon Stalker: Turn moonlight, mirrors, and half‑truths into weapons and toys. Master: Swap [Affinity – Serpent Energy](#affinity-serpent-energy) for **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**.
+* Moon Stalker: Turn moonlight, mirrors, and half‑truths into weapons and toys. Master: Swap [Affinity – Serpent Energy](#affinity---serpent-energy) for **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -584,8 +584,8 @@ From midnight jackal and wolf clans that speak with prophets and spirits to red�
 ## Chimeric Folk (Centaur, Mythic, Shifter)
 
 * Skilled (+3): **[Affinity](#affinity) \- Choose one, [Chimeric Body](#chimeric-body)**, **Choose one**
-   *[Affinity](#affinity) choices determine a mythic resonance (faerie polarity / elemental suite) that flavors your forms and rites.*
-   *Common 3rd choices:* **[Chimeric Body](#chimeric-body) (x2), [Alternate Movement](#alternate-movement) (Climb/Fly/Swim), [Armoured Body](#armoured-body), [Ability Bonus](#ability-bonus) (Quick/Fierce/Solid), [Nimble](#nimble), [Coordination](#coordination), [Inner Fire](#inner-fire), [Darkvision](#darkvision).**
+  * [Affinity](#affinity) choices determine a mythic resonance (faerie polarity / elemental suite) that flavors your forms and rites.
+  * Common 3rd choices: **[Chimeric Body](#chimeric-body) (x2), [Alternate Movement](#alternate-movement) (Climb/Fly/Swim), [Armoured Body](#armoured-body), [Ability Bonus](#ability-bonus) (Quick/Fierce/Solid), [Nimble](#nimble), [Coordination](#coordination), [Inner Fire](#inner-fire), [Darkvision](#darkvision).**
 * Expert (+6): **[Chimeric Legacy](#chimeric-legacy)** (see Variants)
 * Master (+9): **Choose one**
 
@@ -603,17 +603,12 @@ Chaos-touched travelers with oaths in their bones and second truths in their ski
 
 **Variants**
 
-#### Centaur Families
-
-**Centaur** (Human/Horse), **Bariaur/Ramtaur** (Human/Goat-Sheep), **Cervitaur/Hybsil** (Human/Deer), **Leonid** (Human/Leopard-Lion). Your chimeric form is part humanoid and part beast. Skilled: **[Chimeric Body](#chimeric-body)** – common choices include **[Ability Bonus – Fierce](#ability-bonus-fierce), [Ability Bonus – Quick](#ability-bonus-quick), [Ability Bonus – Solid](#ability-bonus-solid), [Inner Fire](#inner-fire).** Expert: Your **[Chimeric Legacy](#chimeric-legacy)** lets you adopt an advanced hybrid form.
-
-#### Mythic Families
-
-**Harpy / Vulture Folk** (Gale-Singers), **Kirin / Qilin** (Dream-Walker), **Shedu / Lamassu** (Threshold-Keeper), **Manticore** (Court-Predator), **Sphinx** (Riddle-Bearer), **Gryphon / Hippogriff** (Sky-Keeper). Your chimeric form resembles a mythic beast. These fae are often found protecting and guiding groups of their non-folk mythic beasts. Skilled: **[Chimeric Body](#chimeric-body)** – common choices include an **[Affinity](#affinity)** or an **[Alternate Movement](#alternate-movement), [Lucky](#lucky), [Inner Fire](#inner-fire), or [Psi-Speech](#psi-speech).** Expert: Your **[Chimeric Legacy](#chimeric-legacy)** lets you adopt an advanced mythic form.
-
-#### Shifter Families
-
-**Hengeyokai** (Beast Lords), **Werebeasts** (Primal Hybrids). Followers of secret paths. They carry the secret of dire animal forms, hybrid war forms, or both. Skilled: **[Chimeric Body](#chimeric-body)** – common choices include **[Ability Bonus – Fierce](#ability-bonus-fierce), [Ability Bonus – Quick](#ability-bonus-quick), [Aggressive](#aggressive), [Blood Scent](#blood-scent).** Expert: Your **[Chimeric Legacy](#chimeric-legacy)** lets you adopt an advanced beastial form.
+* ### Centaur Families
+  **Centaur** (Human/Horse), **Bariaur/Ramtaur** (Human/Goat-Sheep), **Cervitaur/Hybsil** (Human/Deer), **Leonid** (Human/Leopard-Lion). Your chimeric form is part humanoid and part beast. Skilled: **[Chimeric Body](#chimeric-body)** – common choices include **[Ability Bonus – Fierce](#ability-bonus--fierce), [Ability Bonus – Quick](#ability-bonus--quick), [Ability Bonus – Solid](#ability-bonus--solid), [Inner Fire](#inner-fire).** Expert: Your **[Chimeric Legacy](#chimeric-legacy)** lets you adopt an advanced hybrid form.
+* ### Mythic Families
+  **Harpy / Vulture Folk** (Gale-Singers), **Kirin / Qilin** (Dream-Walker), **Shedu / Lamassu** (Threshold-Keeper), **Manticore** (Court-Predator), **Sphinx** (Riddle-Bearer), **Gryphon / Hippogriff** (Sky-Keeper). Your chimeric form resembles a mythic beast. These fae are often found protecting and guiding groups of their non-folk mythic beasts. Skilled: **[Chimeric Body](#chimeric-body)** – common choices include an **[Affinity](#affinity)** or an **[Alternate Movement](#alternate-movement), [Lucky](#lucky), [Inner Fire](#inner-fire), or [Psi-Speech](#psi-speech).** Expert: Your **[Chimeric Legacy](#chimeric-legacy)** lets you adopt an advanced mythic form.
+* ### Shifter Families
+  **Hengeyokai** (Beast Lords), **Werebeasts** (Primal Hybrids). Followers of secret paths. They carry the secret of dire animal forms, hybrid war forms, or both. Skilled: **[Chimeric Body](#chimeric-body)** – common choices include **[Ability Bonus – Fierce](#ability-bonus--fierce), [Ability Bonus – Quick](#ability-bonus--quick), [Aggressive](#aggressive), [Blood Scent](#blood-scent).** Expert: Your **[Chimeric Legacy](#chimeric-legacy)** lets you adopt an advanced beastial form.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -624,9 +619,9 @@ Chaos-touched travelers with oaths in their bones and second truths in their ski
 ## Dragonborn
 
 * Skilled (+3): **[Affinity](#affinity) –** Choose a tag-set, **[Armoured Body](#armoured-body), Choose one**
-  * Common choices: **[Ability Bonus – Spirited](#ability-bonus-spirited), [Alternate Movement](#alternate-movement) – Fly, [Alternate Movement](#alternate-movement) – Climb, [Inner Fire](#inner-fire)**
+  * Common choices: **[Ability Bonus – Spirited](#ability-bonus--spirited), [Alternate Movement](#alternate-movement) – Fly, [Alternate Movement](#alternate-movement) – Climb, [Inner Fire](#inner-fire)**
 * Expert (+6): **[Chimeric Body](#chimeric-body)**
-* Master (+9): **[Affinity – Serpent Energy](#affinity-serpent-energy)**
+* Master (+9): **[Affinity – Serpent Energy](#affinity---serpent-energy)**
 
 **Description**
 
@@ -642,23 +637,15 @@ Scale-bound heirs of titanic sky-serpents, **Dragonborn** uphold labyrinthine ho
 
 **Variants**
 
-Expert: The Dragonborn clans practice the Draconic lineage of **[Chimeric Body](#chimeric-body)**, shifting from draconic humanoids to six limbed mythic beasts. Common chimeric form effect choices include **[Aggressive](#aggressive)**, **[Alternate Movement](#alternate-movement) \- Fly/Hover**, **[Ability Bonus – Solid](#ability-bonus-solid)**, and **[Size](#size) – Large**.
-
-#### Chromatic
-
-Chromatic themes of Red, Blue, Green, Black, White – Most common elemental variant. Mercurial, proud raiders; favour lightning duels & sky-games. Often learn breath weapon powers. Skilled: Many choose **[Alternate Movement](#alternate-movement) \- Fly** to soar the updrafts in all forms while saving another choice for [Chimeric Body](#chimeric-body) at Expert.
-
-#### Metallic
-
-Metallic themes of Gold, Silver, Bronze, Copper – Philosophic wardens; keep hoards of treaties & relics. Skilled: Many choose **[Alternate Movement](#alternate-movement) – Hover** (slow fall; sail on warm up-drafts and mana currents).
-
-#### Gem
-
-Jeweled themes of Amethyst, Emerald, Sapphire, Onyx – Psychic crystal-singers and void duelists; luminous mirrors of thought & light. Skilled: Choose **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**.
-
-Dream
-
-Liminal themes of Dream, Octarine, Noosphere, Shadow – Rare cosmic brood; speak in stellar equations and lost riddles, practices shadow-fire magics. Skilled: Choose **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**.
+* Expert: The Dragonborn clans practice the Draconic lineage of **[Chimeric Body](#chimeric-body)**, shifting from draconic humanoids to six limbed mythic beasts. Common chimeric form effect choices include **[Aggressive](#aggressive)**, **[Alternate Movement](#alternate-movement) \- Fly/Hover**, **[Ability Bonus – Solid](#ability-bonus--solid)**, and **[Size](#size) – Large**.
+* ### Chromatic
+  Chromatic themes of Red, Blue, Green, Black, White – Most common elemental variant. Mercurial, proud raiders; favour lightning duels & sky-games. Often learn breath weapon powers. Skilled: Many choose **[Alternate Movement](#alternate-movement) \- Fly** to soar the updrafts in all forms while saving another choice for [Chimeric Body](#chimeric-body) at Expert.
+* ### Metallic
+  Metallic themes of Gold, Silver, Bronze, Copper – Philosophic wardens; keep hoards of treaties & relics. Skilled: Many choose **[Alternate Movement](#alternate-movement) – Hover** (slow fall; sail on warm up-drafts and mana currents).
+* ### Gem
+  Jeweled themes of Amethyst, Emerald, Sapphire, Onyx – Psychic crystal-singers and void duelists; luminous mirrors of thought & light. Skilled: Choose **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**.
+* ### Dream
+  Liminal themes of Dream, Octarine, Noosphere, Shadow – Rare cosmic brood; speak in stellar equations and lost riddles, practices shadow-fire magics. Skilled: Choose **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -668,8 +655,8 @@ Liminal themes of Dream, Octarine, Noosphere, Shadow – Rare cosmic brood; spea
 
 ## Dwarf
 
-* Skilled (+3): **[Ability Bonus – Solid](#ability-bonus-solid), [Darkvision](#darkvision), [Inner Fire](#inner-fire)**
-* Expert (+6): **[Affinity – Fire • Metal • Ceramic](#affinity-fire-metal-ceramic)**
+* Skilled (+3): **[Ability Bonus – Solid](#ability-bonus--solid), [Darkvision](#darkvision), [Inner Fire](#inner-fire)**
+* Expert (+6): **[Affinity – Fire • Metal • Ceramic](#affinity---fire--metal--ceramic)**
 * Master (+9): **[Armoured Body](#armoured-body)**
 
 **Description**
@@ -696,8 +683,8 @@ Liminal themes of Dream, Octarine, Noosphere, Shadow – Rare cosmic brood; spea
 
 ## Elf
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Darkvision](#darkvision), [Lucky](#lucky)**
-* Expert (+6): **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Darkvision](#darkvision), [Lucky](#lucky)**
+* Expert (+6): **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**
 * Master (+9): **Psi‑Speech**
 
 **Description**
@@ -716,7 +703,7 @@ The **Elf** clans are paradoxes draped in velvet—envoys of unthinkable Courts,
 
 * Void Envoy: These elves carry the void’s hunger with them; their grace is a shield as much as an invitation. Master: Swap Psi‑Speech for **[Armoured Body](#armoured-body)**.
 * Glass‑Mask Courtier: Endlessly adaptable, trained in mortal manners and void‑court graces alike. Master: Swap Psi‑Speech for **[Jack of All Trades](#jack-of-all-trades)**.
-* Shadow Elves: More comfortable in the shadows and dream-realms than the bright light of the crystal ballrooms. Expert: Swap [Affinity – Illusion • Light • Void](#affinity-illusion-light-void) for **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**.
+* Shadow Elves: More comfortable in the shadows and dream-realms than the bright light of the crystal ballrooms. Expert: Swap [Affinity – Illusion • Light • Void](#affinity---illusion--light--void) for **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -726,8 +713,8 @@ The **Elf** clans are paradoxes draped in velvet—envoys of unthinkable Courts,
 
 ## Faun Folk
 
-* Skilled (+3): **[Ability Bonus – Fortunate](#ability-bonus-fortunate), [Ability Bonus – Quick](#ability-bonus-quick), [Nimble](#nimble)**
-* Expert (+6): **[Affinity – Hearth & Ways](#affinity-hearth-ways)**
+* Skilled (+3): **[Ability Bonus – Fortunate](#ability-bonus--fortunate), [Ability Bonus – Quick](#ability-bonus--quick), [Nimble](#nimble)**
+* Expert (+6): **[Affinity – Hearth & Ways](#affinity---hearth--ways)**
 * Master (+9): **[Inspiration](#inspiration)**
 
 **Description**
@@ -744,7 +731,7 @@ Hoof-light children of vine and song, **Faun Folk** live for the pulse of festiv
 
 **Variants**
 
-* Forest Piper: Artisans and followers of Pan the god of fields, groves, and wooded glens. Expert: Swap [Affinity – Hearth & Ways](#affinity-hearth-ways) with **[Affinity – Masks & Totems](#affinity-masks-totems)**
+* Forest Piper: Artisans and followers of Pan the god of fields, groves, and wooded glens. Expert: Swap [Affinity – Hearth & Ways](#affinity---hearth--ways) with **[Affinity – Masks & Totems](#affinity---masks--totems)**
 * Mountain Satyr: Rocky-horned climbers who duel atop sheer pillars. Skilled: Swap Quick with **[Alternate Movement](#alternate-movement) – Climb**.
 
 
@@ -755,9 +742,9 @@ Hoof-light children of vine and song, **Faun Folk** live for the pulse of festiv
 
 ## **Feline Folk**
 
-* Skilled (+3):  **[Ability Bonus – Quick](#ability-bonus-quick), [Aggressive](#aggressive), [Darkvision](#darkvision)**
+* Skilled (+3):  **[Ability Bonus – Quick](#ability-bonus--quick), [Aggressive](#aggressive), [Darkvision](#darkvision)**
 * Expert (+6): **[Lucky](#lucky)**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**
 
 **Description**
 
@@ -783,9 +770,9 @@ Hoof-light children of vine and song, **Faun Folk** live for the pulse of festiv
 
 ## Frog Folk
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Nimble](#nimble), [Size](#size) – Small**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Nimble](#nimble), [Size](#size) – Small**
 * Expert (+6): **[Alternate Movement](#alternate-movement) – Climb**
-* Master (+9): **[Affinity – Water • Ice • Steam](#affinity-water-ice-steam)**
+* Master (+9): **[Affinity – Water • Ice • Steam](#affinity---water--ice--steam)**
 
 **Description**
 
@@ -804,7 +791,7 @@ Hoof-light children of vine and song, **Faun Folk** live for the pulse of festiv
 * Tree-Frog: Arboreal leapers, bounding branch to branch with sure-footed grace. Skilled/Expert: at Skilled gain **[Alternate Movement](#alternate-movement) – Climb**, and at Expert gain **[Nimble](#nimble)**.
 * Combat Toads: Battle-hardened amphibians of the marsh, stout and unyielding. Skilled: Swap [Size](#size) – Small with **[Armoured Body](#armoured-body)**.
 * Salamander: Elemental-born frog-kin, their bodies smolder with brimstone. Expert: Swap [Alternate Movement](#alternate-movement) – Climb with **[Affinity](#affinity) – Elements Fire • Metal • Ceramic**.
-* Limbo Spawn: Eldritch marsh-wanderers of the Ultraviolet and beyond. Expert: Swap [Alternate Movement](#alternate-movement) – Climb with **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow).** Master: Swap [Affinity – Water • Ice • Steam](#affinity-water-ice-steam) with **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void).**
+* Limbo Spawn: Eldritch marsh-wanderers of the Ultraviolet and beyond. Expert: Swap [Alternate Movement](#alternate-movement) – Climb with **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow).** Master: Swap [Affinity – Water • Ice • Steam](#affinity---water--ice--steam) with **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void).**
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -814,9 +801,9 @@ Hoof-light children of vine and song, **Faun Folk** live for the pulse of festiv
 
 ## Giant Folk
 
-* Skilled (+3): **[Ability Bonus – Solid](#ability-bonus-solid), [Inner Fire](#inner-fire), [Size](#size) – Large**
-* Expert (+6): **[Ability Bonus – Spirited](#ability-bonus-spirited)**
-* Master (+9): **[Affinity – Masks & Totems](#affinity-masks-totems)**
+* Skilled (+3): **[Ability Bonus – Solid](#ability-bonus--solid), [Inner Fire](#inner-fire), [Size](#size) – Large**
+* Expert (+6): **[Ability Bonus – Spirited](#ability-bonus--spirited)**
+* Master (+9): **[Affinity – Masks & Totems](#affinity---masks--totems)**
 
 **Description**
 
@@ -832,8 +819,8 @@ From fog-wrapped peaks to the fractured aero-lith mesas of the Astral Sea, the *
 
 **Variants**
 
-* Stone-Singer Lodge: Stone workers and sky watchers. Expert: Swap [Ability Bonus – Spirited](#ability-bonus-spirited) with **[Affinity – Earth • Stone • Wood](#affinity-earth-stone-wood)**. Master: Swap [Affinity – Masks & Totems](#affinity-masks-totems) with **[Affinity – Air • Song • Storm](#affinity-air-song-storm).**
-* Cloud-Runner Lodge: Airship crewmates and ridge-runners. Expert: Swap [Ability Bonus – Spirited](#ability-bonus-spirited) with **[Ability Bonus – Quick](#ability-bonus-quick)**. Master: Swap [Affinity – Masks & Totems](#affinity-masks-totems) with **[Affinity – Air • Song • Storm](#affinity-air-song-storm).**
+* Stone-Singer Lodge: Stone workers and sky watchers. Expert: Swap [Ability Bonus – Spirited](#ability-bonus--spirited) with **[Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood)**. Master: Swap [Affinity – Masks & Totems](#affinity---masks--totems) with **[Affinity – Air • Song • Storm](#affinity---air--song--storm).**
+* Cloud-Runner Lodge: Airship crewmates and ridge-runners. Expert: Swap [Ability Bonus – Spirited](#ability-bonus--spirited) with **[Ability Bonus – Quick](#ability-bonus--quick)**. Master: Swap [Affinity – Masks & Totems](#affinity---masks--totems) with **[Affinity – Air • Song • Storm](#affinity---air--song--storm).**
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -843,9 +830,9 @@ From fog-wrapped peaks to the fractured aero-lith mesas of the Astral Sea, the *
 
 ## Glow Kin (Fungi Folk)
 
-* Skilled (+3): **[Ability Bonus – Spirited](#ability-bonus-spirited), [Affinity — Fungus & Spore](#affinity-fungus-spore), Psi‑Speech**
+* Skilled (+3): **[Ability Bonus – Spirited](#ability-bonus--spirited), [Affinity - Fungus & Spore](#affinity---fungus--spore), Psi‑Speech**
 * Expert (+6): **[Resilient Metabolism](#resilient-metabolism)**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**
 
 **Description**
 
@@ -861,8 +848,8 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 **Variants**
 
-* Myconid Clans: Subterranean mushroom communes that tend ancestral spore-archives and breed ritual strains for war, healing, and song. Skilled: Some Glow kin swap [Ability Bonus – Spirited](#ability-bonus-spirited) with another [Ability Bonus](#ability-bonus), often **[Ability Bonus – Solid](#ability-bonus-solid)**. Master: Choose another **[Affinity](#affinity)** to represent your fungal heritage associations.
-* Slime Kin: Gelatinous offshoots of the mycelial web who can choose to wear clothing, or seep through keyholes, who split to multitask and rejoin to share a campfire. Skilled: swap [Ability Bonus – Spirited](#ability-bonus-spirited) with **[Amorphous Body](#amorphous-body)**. Master: Swap [Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow) with **[Polybody](#polybody).**
+* Myconid Clans: Subterranean mushroom communes that tend ancestral spore-archives and breed ritual strains for war, healing, and song. Skilled: Some Glow kin swap [Ability Bonus – Spirited](#ability-bonus--spirited) with another [Ability Bonus](#ability-bonus), often **[Ability Bonus – Solid](#ability-bonus--solid)**. Master: Choose another **[Affinity](#affinity)** to represent your fungal heritage associations.
+* Slime Kin: Gelatinous offshoots of the mycelial web who can choose to wear clothing, or seep through keyholes, who split to multitask and rejoin to share a campfire. Skilled: swap [Ability Bonus – Spirited](#ability-bonus--spirited) with **[Amorphous Body](#amorphous-body)**. Master: Swap [Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow) with **[Polybody](#polybody).**
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -872,7 +859,7 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 ## Gnoll Folk
 
-* Skilled (+3): **[Ability Bonus – Fierce](#ability-bonus-fierce), [Aggressive](#aggressive), [Coordination](#coordination)**
+* Skilled (+3): **[Ability Bonus – Fierce](#ability-bonus--fierce), [Aggressive](#aggressive), [Coordination](#coordination)**
 * Expert (+6): **[Blood Scent](#blood-scent)**
 * Master (+9): **[Inspiration](#inspiration)**
 
@@ -890,8 +877,8 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 **Variants**
 
-* Bone Oracle: Spirit workers with masks carved from scavenged bone. Master: Swap [Inspiration](#inspiration) for **[Affinity – Masks & Totems](#affinity-masks-totems)**.
-* Shadow Gnoll: Dusk-stalkers whose laughter echoes through dreams. Master: Swap [Inspiration](#inspiration) for **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**.
+* Bone Oracle: Spirit workers with masks carved from scavenged bone. Master: Swap [Inspiration](#inspiration) for **[Affinity – Masks & Totems](#affinity---masks--totems)**.
+* Shadow Gnoll: Dusk-stalkers whose laughter echoes through dreams. Master: Swap [Inspiration](#inspiration) for **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**.
 * Warband Stalker: Scarred berserkers who “absorb strength” from fallen foes. Skilled: Swap [Coordination](#coordination) for **[Inner Fire](#inner-fire)**.
 
 
@@ -904,7 +891,7 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 * Skilled (+3): **[Darkvision](#darkvision), [Nimble](#nimble), [Size](#size) – Small**
 * Expert (+6): **[Jack of All Trades](#jack-of-all-trades)**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**
 
 **Description**
 
@@ -920,7 +907,7 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 **Variants**
 
-* Crystal Court Goblin: These goblins serve the Labyrinth’s elusive fae lord, juggling glass spheres and rewriting hallways. Expert: Swap [Jack of All Trades](#jack-of-all-trades) with **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**.
+* Crystal Court Goblin: These goblins serve the Labyrinth’s elusive fae lord, juggling glass spheres and rewriting hallways. Expert: Swap [Jack of All Trades](#jack-of-all-trades) with **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -931,9 +918,9 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 ## Golem
 
 * Skilled (+3): **[Deathless](#deathless), Choose two**
-  * Common choices: **[Ability Bonus – Solid](#ability-bonus-solid), [Ability Bonus – Spirited](#ability-bonus-spirited), [Affinity – Earth • Stone • Wood](#affinity-earth-stone-wood), [Affinity – Fire • Metal • Ceramic](#affinity-fire-metal-ceramic), [Armoured Body](#armoured-body), [Inner Fire](#inner-fire)**
+  * Common choices: **[Ability Bonus – Solid](#ability-bonus--solid), [Ability Bonus – Spirited](#ability-bonus--spirited), [Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood), [Affinity – Fire • Metal • Ceramic](#affinity---fire--metal--ceramic), [Armoured Body](#armoured-body), [Inner Fire](#inner-fire)**
 * Expert (+6): Common choices include **[Armoured Body](#armoured-body)** (x2), **[Chimeric Body](#chimeric-body),** or **[Coordination](#coordination)**
-* Master (+9): **[Affinity – Serpent Energy](#affinity-serpent-energy)**
+* Master (+9): **[Affinity – Serpent Energy](#affinity---serpent-energy)**
 
 **Description**
 
@@ -949,7 +936,7 @@ The tiktoks, robot guardians, clay rune-etched philosophers, and warframes of th
 
 **Variants**
 
-* Embodied Noospheric Agent – Manifestations of Dream Net subroutines in physical shells of glass, ceramic, or flowing sand. Skilled: Choose **[Ability Bonus – Spirited](#ability-bonus-spirited)** and **[Amorphous Body](#amorphous-body)** (living negentropy, shifting materials).
+* Embodied Noospheric Agent – Manifestations of Dream Net subroutines in physical shells of glass, ceramic, or flowing sand. Skilled: Choose **[Ability Bonus – Spirited](#ability-bonus--spirited)** and **[Amorphous Body](#amorphous-body)** (living negentropy, shifting materials).
 * Spore-War Veteran – Rust-scarred, campaign-worn constructs built for endless battles. Skilled: Choose **[Inner Fire](#inner-fire)** and **[Armoured Body](#armoured-body)** for hardened armor plates; forged for relentless endurance.
 
 
@@ -961,7 +948,7 @@ The tiktoks, robot guardians, clay rune-etched philosophers, and warframes of th
 ## Halfling
 
 * Skilled (+3): **[Lucky](#lucky), [Nimble](#nimble), [Size](#size) – Small**
-* Expert (+6): **[Affinity – Hearth & Ways](#affinity-hearth-ways)**
+* Expert (+6): **[Affinity – Hearth & Ways](#affinity---hearth--ways)**
 * Master (+9): **[Jack of All Trades](#jack-of-all-trades)**
 
 **Description**
@@ -990,7 +977,7 @@ The tiktoks, robot guardians, clay rune-etched philosophers, and warframes of th
 
 * Skilled (+3): **[Coordination](#coordination), [Darkvision](#darkvision), [Nimble](#nimble)**
 * Expert (+6): **[Lucky](#lucky)**
-* Master (+9): **[Affinity – Masks & Totems](#affinity-masks-totems)**
+* Master (+9): **[Affinity – Masks & Totems](#affinity---masks--totems)**
 
 **Description**
 
@@ -1007,7 +994,7 @@ Where goblins court chaos and bugbears haunt the dark, **Hobgoblins** march in r
 **Variants**
 
 * Tribal Standard Bearer: Often found in command, these hobgoblins inspire their faction and lead from the front. Expert: Swap [Lucky](#lucky) with **[Inspiration](#inspiration).**
-* Grell Hunter: The hobgoblin clans were devastated by Grell in the Spore-Wars and now lead a loose organization of hunter factions. Master: Swap [Affinity – Masks & Totems](#affinity-masks-totems) with **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**	
+* Grell Hunter: The hobgoblin clans were devastated by Grell in the Spore-Wars and now lead a loose organization of hunter factions. Master: Swap [Affinity – Masks & Totems](#affinity---masks--totems) with **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**	
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1020,7 +1007,7 @@ Where goblins court chaos and bugbears haunt the dark, **Hobgoblins** march in r
 * Skilled (+3): **[Jack of All Trades](#jack-of-all-trades), Bonus Background, Choose one**
   * Choose or roll one bonus Background; it counts as a Heritage effect rather than taking a full Trait slot, then choose any one Heritage effect.
 * Expert (+6): **[Lucky](#lucky)**
-* Master (+9): **[Affinity – Hearth & Ways](#affinity-hearth-ways)**
+* Master (+9): **[Affinity – Hearth & Ways](#affinity---hearth--ways)**
 
 **Description**
 
@@ -1038,7 +1025,7 @@ In the Vastlands, all folk are human at heart; in Elyncia, *all human folk are f
 
 **Variants**
 
-* Changeling: Humans born closer to the Fae Courts, they weave illusion and dream‑logic with ease. Skilled: Choose **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)** or **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**.
+* Changeling: Humans born closer to the Fae Courts, they weave illusion and dream‑logic with ease. Skilled: Choose **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)** or **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**.
 * Frontierling: These humans are toughened by wild spaces and long marches. Skilled: Choose **[Inner Fire](#inner-fire)**.
 * Rainbowlander: Folk from Gaia? Skilled: Choose an **[Affinity](#affinity)** and a **Background** that aligns with your family’s heritage or your personal backstory in the lands around the Circle Sea.
 
@@ -1051,8 +1038,8 @@ In the Vastlands, all folk are human at heart; in Elyncia, *all human folk are f
 ## Lizard Folk
 
 * Skilled (+3): **[Ability Bonus](#ability-bonus) — Solid, [Alternate Movement](#alternate-movement) – Swim, [Armoured Body](#armoured-body)**
-* Expert (+6): **[Affinity – Water • Ice • Steam](#affinity-water-ice-steam)**
-* Master (+9): **[Affinity – Serpent Energy](#affinity-serpent-energy)**
+* Expert (+6): **[Affinity – Water • Ice • Steam](#affinity---water--ice--steam)**
+* Master (+9): **[Affinity – Serpent Energy](#affinity---serpent-energy)**
 
 **Description**
 
@@ -1079,9 +1066,9 @@ Sun-warmed scales, river-cool eyes, towering hulks and lithe dancers. **Lizard F
 
 ## Mantis Folk
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Aggressive](#aggressive), [Armoured Body](#armoured-body)**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Aggressive](#aggressive), [Armoured Body](#armoured-body)**
 * Expert (+6): **[Nimble](#nimble)**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**
 
 **Description**
 
@@ -1108,7 +1095,7 @@ Tall, lantern-eyed insect folk hunters with raptorial forelimbs and lacquered pr
 
 ## Marmot Folk
 
-* Skilled (+3): **[Affinity – Blood • Bone • Biomancy](#affinity-blood-bone-biomancy), [Affinity – Earth • Stone • Wood](#affinity-earth-stone-wood), [Size](#size) – Small**
+* Skilled (+3): **[Affinity – Blood • Bone • Biomancy](#affinity---blood--bone--biomancy), [Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood), [Size](#size) – Small**
 * Expert (+6): **[Darkvision](#darkvision)**
 * Master (+9): **[Alternate Movement](#alternate-movement) – Burrow** – Can dig tunnels through soft earth at regular speed, and limestone at 6 yd/round, enough for a single Marmot Folk.
 
@@ -1136,7 +1123,7 @@ Thick-furred, earth-scented, and endlessly patient, the Marmot Folk dwell in lim
 
 ## Mer Folk
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Affinity – Water • Ice • Steam](#affinity-water-ice-steam), [Chimeric Body](#chimeric-body)**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Affinity – Water • Ice • Steam](#affinity---water--ice--steam), [Chimeric Body](#chimeric-body)**
 * Expert (+6):  **[Resilient Metabolism](#resilient-metabolism)**
 * Master (+9): **[Chimeric Legacy](#chimeric-legacy)**
 
@@ -1154,25 +1141,16 @@ Dragon-saved and sea-god blessed during the Second Breaking, Mer folk stride coa
 
 **Variants**
 
-#### Reef Clans
-
-The standard variant, Mer folk of all types and themes. Like the centaur and harpy clans they practice [Chimeric Body](#chimeric-body) magics, walking the land and also shifting to a “hybrid” form more attuned with their local waters. Almost all Mer folk chose **[Alternate Movement](#alternate-movement) – Swim** as one of their chimeric form effects.
-
-#### "Cold Vome" Void Mer Folk
-
-Pale, deep-trench kin with bioluminescent veins, glassy eyes who barter with strange logic machines. Skilled: Swap [Affinity – Water • Ice • Steam](#affinity-water-ice-steam) with **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)** (polar light, dark brine). Chimeric forms often carry cephalopod, jellyfish, or stranger animal traits. These folk often carry \[void\] tagged breath charms and pressure wards.
-
-#### Selkie Clans
-
-Shore-roaming otter, seal, dolphin, and sea-mammal kin, keepers of hide-magic and fog ballads. Skilled: Swap [Ability Bonus – Quick](#ability-bonus-quick) with **[Armoured Body](#armoured-body)** (mystic otter-hide, etc). Their chimeric forms often take the shape of dire sea-mammals.
-
-#### Shark Clans
-
-[Aggressive](#aggressive) couriers of the Blue Rush currents; questors of the deeps near the Astral Sea; folk who honor the Wild Hunt. Skilled: Swap [Ability Bonus – Quick](#ability-bonus-quick) with **[Aggressive](#aggressive)**. Most shark folk take **[Blood Scent](#blood-scent)** as one of their chimeric form effects.
-
-#### Crab Clans
-
-Ocean and dry-land reef-builders clad in living carapace, these clans include master coral-smiths and architects. Skilled: Swap [Ability Bonus – Quick](#ability-bonus-quick) with **[Armoured Body](#armoured-body)** (carapace plating). Common chimeric form choices include either **[Nimble](#nimble)** or **[Size](#size) – Large**, and either **[Alternate Movement](#alternate-movement)– Swim**, or **[Alternate Movement](#alternate-movement) – Climb**.
+* ### Reef Clans
+  The standard variant, Mer folk of all types and themes. Like the centaur and harpy clans they practice [Chimeric Body](#chimeric-body) magics, walking the land and also shifting to a “hybrid” form more attuned with their local waters. Almost all Mer folk chose **[Alternate Movement](#alternate-movement) – Swim** as one of their chimeric form effects.
+* ### "Cold Vome" Void Mer Folk
+  Pale, deep-trench kin with bioluminescent veins, glassy eyes who barter with strange logic machines. Skilled: Swap [Affinity – Water • Ice • Steam](#affinity---water--ice--steam) with **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)** (polar light, dark brine). Chimeric forms often carry cephalopod, jellyfish, or stranger animal traits. These folk often carry \[void\] tagged breath charms and pressure wards.
+* ### Selkie Clans
+  Shore-roaming otter, seal, dolphin, and sea-mammal kin, keepers of hide-magic and fog ballads. Skilled: Swap [Ability Bonus – Quick](#ability-bonus--quick) with **[Armoured Body](#armoured-body)** (mystic otter-hide, etc). Their chimeric forms often take the shape of dire sea-mammals.
+* ### Shark Clans
+  [Aggressive](#aggressive) couriers of the Blue Rush currents; questors of the deeps near the Astral Sea; folk who honor the Wild Hunt. Skilled: Swap [Ability Bonus – Quick](#ability-bonus--quick) with **[Aggressive](#aggressive)**. Most shark folk take **[Blood Scent](#blood-scent)** as one of their chimeric form effects.
+* ### Crab Clans
+  Ocean and dry-land reef-builders clad in living carapace, these clans include master coral-smiths and architects. Skilled: Swap [Ability Bonus – Quick](#ability-bonus--quick) with **[Armoured Body](#armoured-body)** (carapace plating). Common chimeric form choices include either **[Nimble](#nimble)** or **[Size](#size) – Large**, and either **[Alternate Movement](#alternate-movement)– Swim**, or **[Alternate Movement](#alternate-movement) – Climb**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1182,7 +1160,7 @@ Ocean and dry-land reef-builders clad in living carapace, these clans include ma
 
 ## Nerthurian (Earthen/Stone Folk)
 
-* Skilled (+3): **[Affinity – Earth • Stone • Wood](#affinity-earth-stone-wood), [Armoured Body](#armoured-body)**. **[Size](#size) – Large**
+* Skilled (+3): **[Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood), [Armoured Body](#armoured-body)**. **[Size](#size) – Large**
 * Expert (+6): **[Inspiration](#inspiration)**
 * Master (+9): **[Affinity](#affinity) \- Masks & Totems**
 
@@ -1200,13 +1178,10 @@ Nerthurians are those blessed by the spirit of Nerthus of the Vanir, elemental-k
 
 **Variants**
 
-#### Dryad (Green Folk)
-
-Grove-wardens whose sapwood bodies carry sunlight and birdsong; they speak with hollow-tree shrines and bind paths with wreath and ribbon. Master crafters of grown wood and shaped stone. Skilled: Swap [Size](#size) – Large with **[Power from the Sun](#power-from-the-sun)**. Expert: Swap [Inspiration](#inspiration) with **[Alternate Movement](#alternate-movement) – Climb** (arboreal traversal at normal Speed.
-
-#### Obsidian Vanguard
-
-Flowing stone figures bearing obsidian glass armor, dagger-axe polearms, and spiked-hammers. Those who channel ley-currents and social resonance, often serving as negotiators between fae factions. Expert: Swap [Inspiration](#inspiration) with **[Inner Fire](#inner-fire).** Master: Swap [Affinity](#affinity) \- Masks & Totems with **[Affinity – Serpent Energy](#affinity-serpent-energy)**.
+* ### Dryad (Green Folk)
+  Grove-wardens whose sapwood bodies carry sunlight and birdsong; they speak with hollow-tree shrines and bind paths with wreath and ribbon. Master crafters of grown wood and shaped stone. Skilled: Swap [Size](#size) – Large with **[Power from the Sun](#power-from-the-sun)**. Expert: Swap [Inspiration](#inspiration) with **[Alternate Movement](#alternate-movement) – Climb** (arboreal traversal at normal Speed.
+* ### Obsidian Vanguard
+  Flowing stone figures bearing obsidian glass armor, dagger-axe polearms, and spiked-hammers. Those who channel ley-currents and social resonance, often serving as negotiators between fae factions. Expert: Swap [Inspiration](#inspiration) with **[Inner Fire](#inner-fire).** Master: Swap [Affinity](#affinity) \- Masks & Totems with **[Affinity – Serpent Energy](#affinity---serpent-energy)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1217,8 +1192,8 @@ Flowing stone figures bearing obsidian glass armor, dagger-axe polearms, and spi
 ## Orc (Ork)
 
 * Skilled (+3): **[Aggressive](#aggressive), [Darkvision](#darkvision), [Inner Fire](#inner-fire)**
-* Expert (+6): **[Ability Bonus – Fierce](#ability-bonus-fierce)**
-* Master (+9): **[Ability Bonus – Solid](#ability-bonus-solid)**
+* Expert (+6): **[Ability Bonus – Fierce](#ability-bonus--fierce)**
+* Master (+9): **[Ability Bonus – Solid](#ability-bonus--solid)**
 
 **Description**
 
@@ -1234,7 +1209,7 @@ Broad-shouldered and sinew-wrapped, orcs stride the lands like living hills of m
 
 **Variants**
 
-* Cauldron Borne: Reborn in witch-vats and clan cauldrons, they bear alchemical scar-runes. They slip between shadow and waking to unnerve foes and twist fate sideways. Skilled: Swap [Inner Fire](#inner-fire) for **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**.
+* Cauldron Borne: Reborn in witch-vats and clan cauldrons, they bear alchemical scar-runes. They slip between shadow and waking to unnerve foes and twist fate sideways. Skilled: Swap [Inner Fire](#inner-fire) for **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**.
 * Niho Puaʻa: The tusked clans and pig-men orcs of the archipelagos. Many of Elyncia’s pig folk clans have been enslaved by the alien Grell and used as bio-enhanced shock troopers. Skilled: Swap [Darkvision](#darkvision) for **[Armoured Body](#armoured-body)**.
 
 
@@ -1245,9 +1220,9 @@ Broad-shouldered and sinew-wrapped, orcs stride the lands like living hills of m
 
 ## Otter Folk
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Nimble](#nimble), [Alternate Movement](#alternate-movement) – Swim**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Nimble](#nimble), [Alternate Movement](#alternate-movement) – Swim**
 * Expert (+6): **[Aggressive](#aggressive)**
-* Master (+9): **[Affinity – Water • Ice • Steam](#affinity-water-ice-steam)**
+* Master (+9): **[Affinity – Water • Ice • Steam](#affinity---water--ice--steam)**
 
 **Description**
 
@@ -1263,8 +1238,8 @@ River-runners who treat whitewater as a road—fast, curious, and teamwork-proud
 
 **Variants**
 
-* **Badger Folk —** Stone-backed burrow-wardens with shovel-paws and engineer patience. At Skilled, replace **[Alternate Movement](#alternate-movement) – Swim** with **[Alternate Movement](#alternate-movement) – Burrow**. At Master, replace **[Affinity – Water • Ice • Steam](#affinity-water-ice-steam)** with **[Affinity – Earth • Stone • Wood](#affinity-earth-stone-wood)**.
-* **Marten–Weasel Clans —** Roof-line couriers and chimney-sneaks who live by clever routes and shared codes. At Skilled, replace **[Alternate Movement](#alternate-movement) – Swim** with **[Alternate Movement](#alternate-movement) – Climb**. At Master, replace **[Affinity – Water • Ice • Steam](#affinity-water-ice-steam)** with **[Affinity – Hearth & Ways](#affinity-hearth-ways)**.
+* **Badger Folk —** Stone-backed burrow-wardens with shovel-paws and engineer patience. At Skilled, replace **[Alternate Movement](#alternate-movement) – Swim** with **[Alternate Movement](#alternate-movement) – Burrow**. At Master, replace **[Affinity – Water • Ice • Steam](#affinity---water--ice--steam)** with **[Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood)**.
+* **Marten–Weasel Clans —** Roof-line couriers and chimney-sneaks who live by clever routes and shared codes. At Skilled, replace **[Alternate Movement](#alternate-movement) – Swim** with **[Alternate Movement](#alternate-movement) – Climb**. At Master, replace **[Affinity – Water • Ice • Steam](#affinity---water--ice--steam)** with **[Affinity – Hearth & Ways](#affinity---hearth--ways)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1276,7 +1251,7 @@ River-runners who treat whitewater as a road—fast, curious, and teamwork-proud
 
 * Skilled (+3): **[Lucky](#lucky), Choose two**
   * Common choices:
-    * **[Ability Bonus – Spirited](#ability-bonus-spirited)**
+    * **[Ability Bonus – Spirited](#ability-bonus--spirited)**
     * **[Affinity](#affinity) –** Choose a tag set.
     * **[Aggressive](#aggressive)** – hair‑serpents snap, halo‑wings buffet, strange limbs lash.
     * **[Alternate Movement](#alternate-movement)** – climb, hover glide, wings, slither, swim.
@@ -1304,13 +1279,13 @@ Pane Touched folk are walking contradictions — pieces of dream, decree, and im
 
 **Variants**
 
-When you choose **Pane Touched**, you may shape your weirdness with one of these themes, or work with the Referee to design your own:
+* When you choose **Pane Touched**, you may shape your weirdness with one of these themes, or work with the Referee to design your own:
 
 * **📜 Chaos‑Mind** — Skilled: Choose **[Polybody](#polybody)**; your many selves write, erase, or amend reality in three or more places at once. Choose one other effect. Expert: Consider **[Jack of All Trades](#jack-of-all-trades)** for access to the akashic records.
 * **🔥 Elemental Scion —** **Skilled:** choose **[Affinity](#affinity) — Elemental Triad** (select one). Your form shows a subtle tell—ember-breath, frost-veins, azure halo, marrow-runes, or porcelain sheen. Choose one other effect. Expert: consider **[Alternate Movement](#alternate-movement)** keyed to your element (burrow for earth/stone/metal; swim for ice/steam/water; hover-glide for sky), or harden into your medium with **[Armoured Body](#armoured-body)**; survival-minded scions often take **[Resilient Metabolism](#resilient-metabolism)** for deserts, peaks, pressure, or cold.
-* **🐍 Gorgonne** — Skilled: Choose **[Affinity – Serpent Energy](#affinity-serpent-energy)**; your hair‑serpents are spirit‑familiars and your clan teaches the *Serpent’s Gaze* power (heritage power, 50% discount) which you can overcharge for strange effects. Choose one other effect. Expert: the spirit-serpent folk often choose **Chimeric Form** or **[Inspiration](#inspiration)** and collect other secret powers.
+* **🐍 Gorgonne** — Skilled: Choose **[Affinity – Serpent Energy](#affinity---serpent-energy)**; your hair‑serpents are spirit‑familiars and your clan teaches the *Serpent’s Gaze* power (heritage power, 50% discount) which you can overcharge for strange effects. Choose one other effect. Expert: the spirit-serpent folk often choose **Chimeric Form** or **[Inspiration](#inspiration)** and collect other secret powers.
 * **👼 Meta‑Angel** — Skilled: Choose **[Size](#size)** (Large or Small) and **[Affinity](#affinity) \- Illusion • Light • Void**; you carry radiance, celestial edicts, or the stillness of perfect symmetry. Expert: consider **[Chimeric Body](#chimeric-body)** with **[Alternate Movement](#alternate-movement) – Fly** and **[Inspiration](#inspiration)** for a standing aura-effect.
-* **🌌 Void‑Child** — Skilled: Void-children often choose **[Affinity](#affinity) \- Illusion • Light • Void** to walk the paths of eldritch light and glamour. Choose one other effect. Expert: Choose **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**; you can cut with silence, paint with nightmares, or wear darkness like a robe.
+* **🌌 Void‑Child** — Skilled: Void-children often choose **[Affinity](#affinity) \- Illusion • Light • Void** to walk the paths of eldritch light and glamour. Choose one other effect. Expert: Choose **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**; you can cut with silence, paint with nightmares, or wear darkness like a robe.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1339,8 +1314,8 @@ Porcelain Princes are not‑quite‑liches, scattering their soul across multipl
 
 **Variants**
 
-* Ceramics Broker: Merchants who leverage social manipulation and decadent trade diplomacy. Skilled: Swap [Inner Fire](#inner-fire) for **[Ability Bonus – Spirited](#ability-bonus-spirited)**.
-* Shard‑Haunted Prince: These are the ritual artisans and makers of the Citadel. Skilled: Swap [Coordination](#coordination) for **[Affinity – Fire • Metal • Ceramic](#affinity-fire-metal-ceramic)**
+* Ceramics Broker: Merchants who leverage social manipulation and decadent trade diplomacy. Skilled: Swap [Inner Fire](#inner-fire) for **[Ability Bonus – Spirited](#ability-bonus--spirited)**.
+* Shard‑Haunted Prince: These are the ritual artisans and makers of the Citadel. Skilled: Swap [Coordination](#coordination) for **[Affinity – Fire • Metal • Ceramic](#affinity---fire--metal--ceramic)**
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1352,7 +1327,7 @@ Porcelain Princes are not‑quite‑liches, scattering their soul across multipl
 
 * Skilled (+3): **[Armoured Body](#armoured-body), [Lucky](#lucky), [Size](#size) – Small**
 * Expert (+6): **[Inspiration](#inspiration)**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow).**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow).**
 
 **Description**
 
@@ -1368,33 +1343,20 @@ Quarterlings are the riotous, fearless little folk of Elyncia and the Vastlands 
 
 **Variants**
 
-#### Brownie
-
-The most common Quarterling \- the scrappy Mac Feegle types \- loud cheese-raiders, sneaky pie‑thieves, and drunken brawlers with proud clan myths of their Long Long Ago Glorious Rebellion. Their Quarterling cousins add even stranger flavors.
-
-#### Pixie
-
-Winged agents of chaos and wonder—equal parts living prank, and trickster‑courtier. Wings from dragonfly‑glass to neon‑etched gossamer; clothes stitched from leaves, circuitry, or salvaged glamour. Some flit between tree branches and teacups; others ride data‑streams and voidjammer wake‑tides. Skilled: Swap [Armoured Body](#armoured-body) for **[Alternate Movement](#alternate-movement) – Fly**. Expert: Swap [Inspiration](#inspiration) with **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**.
-
-#### Spriggan / Boggart
-
-Moss‑covered hedge‑folk, coaxing vines to overgrow fences and tangling trespassers in brambles. Often communes with local plant spirits via totem magics. Spriggan clans know the secret Power of **Giant Growth** (see Giant Kin). Expert: Swap [Inspiration](#inspiration) with **[Affinity – Masks & Totems](#affinity-masks-totems)**.
-
-#### Kobold
-
-Clever and yipping trap‑mad tunnel dwellers, wiring pits, nets, and dart storms into chain‑reaction death puzzles. Skilled: Swap [Armoured Body](#armoured-body) for **[Nimble](#nimble)**.
-
-#### Red Cap
-
-Mad quarterling gangs who soak their hats in blood and shriek for “a bit of red” at every toll gate. Skilled: Swap [Lucky](#lucky) for **[Aggressive](#aggressive)**. Expert: Swap [Inspiration](#inspiration) with **[Blood Scent](#blood-scent)**.
-
-#### Gremlin / Imp
-
-Devious masters of noospheric tricks and complicated agreements. Skilled: Swap [Armoured Body](#armoured-body) for **[Alternate Movement](#alternate-movement) – Fly**. Expert: Swap [Inspiration](#inspiration) with **Jinx** – mark your Heritage trait and choose a device, artifact, or mechanism you can touch or clearly perceive. It **malfunctions** the next time it is used; the user suffers Disadvantage on that action and you trigger a Magic Hazard check at the table’s standard difficulty for the scene. Referees may allow a Save to negate for robust, low-magic mechanisms.
-
-#### Gnome
-
-Curious void‑touched tinkers, glowing from within and muttering secrets of the dark of the deep spaces and the void between stars. Skilled: Swap [Armoured Body](#armoured-body) for **[Inner Fire](#inner-fire)**. Expert: Swap [Inspiration](#inspiration) for **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**.
+* ### Brownie
+  The most common Quarterling \- the scrappy Mac Feegle types \- loud cheese-raiders, sneaky pie‑thieves, and drunken brawlers with proud clan myths of their Long Long Ago Glorious Rebellion. Their Quarterling cousins add even stranger flavors.
+* ### Pixie
+  Winged agents of chaos and wonder—equal parts living prank, and trickster‑courtier. Wings from dragonfly‑glass to neon‑etched gossamer; clothes stitched from leaves, circuitry, or salvaged glamour. Some flit between tree branches and teacups; others ride data‑streams and voidjammer wake‑tides. Skilled: Swap [Armoured Body](#armoured-body) for **[Alternate Movement](#alternate-movement) – Fly**. Expert: Swap [Inspiration](#inspiration) with **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**.
+* ### Spriggan / Boggart
+  Moss‑covered hedge‑folk, coaxing vines to overgrow fences and tangling trespassers in brambles. Often communes with local plant spirits via totem magics. Spriggan clans know the secret Power of **Giant Growth** (see Giant Kin). Expert: Swap [Inspiration](#inspiration) with **[Affinity – Masks & Totems](#affinity---masks--totems)**.
+* ### Kobold
+  Clever and yipping trap‑mad tunnel dwellers, wiring pits, nets, and dart storms into chain‑reaction death puzzles. Skilled: Swap [Armoured Body](#armoured-body) for **[Nimble](#nimble)**.
+* ### Red Cap
+  Mad quarterling gangs who soak their hats in blood and shriek for “a bit of red” at every toll gate. Skilled: Swap [Lucky](#lucky) for **[Aggressive](#aggressive)**. Expert: Swap [Inspiration](#inspiration) with **[Blood Scent](#blood-scent)**.
+* ### Gremlin / Imp
+  Devious masters of noospheric tricks and complicated agreements. Skilled: Swap [Armoured Body](#armoured-body) for **[Alternate Movement](#alternate-movement) – Fly**. Expert: Swap [Inspiration](#inspiration) with **Jinx** – mark your Heritage trait and choose a device, artifact, or mechanism you can touch or clearly perceive. It **malfunctions** the next time it is used; the user suffers Disadvantage on that action and you trigger a Magic Hazard check at the table’s standard difficulty for the scene. Referees may allow a Save to negate for robust, low-magic mechanisms.
+* ### Gnome
+  Curious void‑touched tinkers, glowing from within and muttering secrets of the dark of the deep spaces and the void between stars. Skilled: Swap [Armoured Body](#armoured-body) for **[Inner Fire](#inner-fire)**. Expert: Swap [Inspiration](#inspiration) for **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1404,9 +1366,9 @@ Curious void‑touched tinkers, glowing from within and muttering secrets of the
 
 ## Rabbit Folk
 
-* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus-quick), [Lucky](#lucky), [Nimble](#nimble)**
-* Expert (+6): **[Ability Bonus – Fortunate](#ability-bonus-fortunate)**
-* Master (+9): **[Ability Bonus – Spirited](#ability-bonus-spirited)**
+* Skilled (+3): **[Ability Bonus – Quick](#ability-bonus--quick), [Lucky](#lucky), [Nimble](#nimble)**
+* Expert (+6): **[Ability Bonus – Fortunate](#ability-bonus--fortunate)**
+* Master (+9): **[Ability Bonus – Spirited](#ability-bonus--spirited)**
 
 **Description**
 
@@ -1422,8 +1384,8 @@ Rabbit Folk are Diana’s restless heroes — hearth‑tenders, riddlers, tricks
 
 **Variants**
 
-* Hearth‑Tender: Wanderers who carry the warren with them: a folding shrine, a soot-smudged teacup, and the knack for turning any campfire into home. Expert: Swap [Ability Bonus – Fortunate](#ability-bonus-fortunate) with **[Affinity – Hearth & Ways](#affinity-hearth-ways)**.
-* Cryptid Hare (Pooka): Moon-outlined silhouettes glimpsed only in rain or neon backlighting; they tip nonexistent hats, nudge fate with gentle asides, and leave you laughing at jokes no one else heard. Expert: Swap [Ability Bonus – Quick](#ability-bonus-quick) with **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**. Master: Swap [Ability Bonus – Spirited](#ability-bonus-spirited) with **Psi‑Speech.**
+* Hearth‑Tender: Wanderers who carry the warren with them: a folding shrine, a soot-smudged teacup, and the knack for turning any campfire into home. Expert: Swap [Ability Bonus – Fortunate](#ability-bonus--fortunate) with **[Affinity – Hearth & Ways](#affinity---hearth--ways)**.
+* Cryptid Hare (Pooka): Moon-outlined silhouettes glimpsed only in rain or neon backlighting; they tip nonexistent hats, nudge fate with gentle asides, and leave you laughing at jokes no one else heard. Expert: Swap [Ability Bonus – Quick](#ability-bonus--quick) with **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**. Master: Swap [Ability Bonus – Spirited](#ability-bonus--spirited) with **Psi‑Speech.**
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1435,7 +1397,7 @@ Rabbit Folk are Diana’s restless heroes — hearth‑tenders, riddlers, tricks
 
 * Skilled (+3): **[Darkvision](#darkvision), [Nimble](#nimble), [Size](#size) – Small**
 * Expert (+6): **[Resilient Metabolism](#resilient-metabolism)**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**
 
 **Description**
 
@@ -1457,8 +1419,8 @@ The Rat Folk thrive in the gutters, warrens, and forgotten vaults of the world �
 
 ## Serpent Folk
 
-* Skilled (+3): **[Ability Bonus – Fortunate](#ability-bonus-fortunate), [Ability Bonus – Spirited](#ability-bonus-spirited), [Nimble](#nimble)**
-* Expert (+6): **[Affinity – Serpent Energy](#affinity-serpent-energy)**
+* Skilled (+3): **[Ability Bonus – Fortunate](#ability-bonus--fortunate), [Ability Bonus – Spirited](#ability-bonus--spirited), [Nimble](#nimble)**
+* Expert (+6): **[Affinity – Serpent Energy](#affinity---serpent-energy)**
 * Master (+9): **[Deathless](#deathless)**
 
 **Description**
@@ -1475,8 +1437,8 @@ Scaled conspirators who remember the first suns winding like serpents through th
 
 **Variants**
 
-* Cobra Oracle: Hood patterns hypnotise; royal courts pay for their dream-testimony. Skilled: Swap **[Ability Bonus – Spirited](#ability-bonus-spirited)** for **[Psi-Speech](#psi-speech)**.
-* Naga Mystic: Pass on the secret rites of serpentine tails instead of legs; distant cousins of sky-wyrms. Skilled: Swap **[Ability Bonus – Spirited](#ability-bonus-spirited)** with **[Chimeric Body](#chimeric-body),** your chimeric form has **[Alternate Movement](#alternate-movement) – Climb** and one other effect.
+* Cobra Oracle: Hood patterns hypnotise; royal courts pay for their dream-testimony. Skilled: Swap **[Ability Bonus – Spirited](#ability-bonus--spirited)** for **[Psi-Speech](#psi-speech)**.
+* Naga Mystic: Pass on the secret rites of serpentine tails instead of legs; distant cousins of sky-wyrms. Skilled: Swap **[Ability Bonus – Spirited](#ability-bonus--spirited)** with **[Chimeric Body](#chimeric-body),** your chimeric form has **[Alternate Movement](#alternate-movement) – Climb** and one other effect.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1487,7 +1449,7 @@ Scaled conspirators who remember the first suns winding like serpents through th
 ## Spectrum Satrap
 
 * Skilled (+3): **[Armoured Body](#armoured-body) ×1**, **Choose two**
-  * Common choices: **[Ability Bonus – Spirited](#ability-bonus-spirited),** **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void), Psi‑Speech**
+  * Common choices: **[Ability Bonus – Spirited](#ability-bonus--spirited),** **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void), Psi‑Speech**
 * Expert (+6): **Blinding Brilliance** – Mark your Heritage trait to flare with impossible light (20 yd radius). All creatures must Save vs Aura. Hostiles who fail are blinded for 1d6 rounds (roll once for all targets). Allies who succeed gain Advantage on their next roll.
 * Master (+9): **Prismatic Ascension** – Mark your Heritage trait to become a coherent lightform entity for one watch (4h). In this state:
   * You fly at double Speed and may slip through a keyhole‑wide gap.
@@ -1508,8 +1470,8 @@ Prismatic “para‑humans” from the Violet Steppe and the Black City’s shim
 
 **Variants**
 
-* Chroma Courtier: These Satraps are diplomats whose mirror-helms shimmer with etiquette glyphs; they duel with cutting compliments and projected light-forms, tuning their hues to sway crowds and unnerve rivals. Skilled: Swap [Armoured Body](#armoured-body) ×2 for **[Armoured Body](#armoured-body)** and **[Ability Bonus – Spirited](#ability-bonus-spirited)**.
-* Umbral Satrap: Eclipse-born shadow envoys who trade in forgotten memories, and command shadows to stitch corridors between sleeping courts. Skilled: Swap [Affinity – Illusion • Light • Void](#affinity-illusion-light-void) for **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**.
+* Chroma Courtier: These Satraps are diplomats whose mirror-helms shimmer with etiquette glyphs; they duel with cutting compliments and projected light-forms, tuning their hues to sway crowds and unnerve rivals. Skilled: Swap [Armoured Body](#armoured-body) ×2 for **[Armoured Body](#armoured-body)** and **[Ability Bonus – Spirited](#ability-bonus--spirited)**.
+* Umbral Satrap: Eclipse-born shadow envoys who trade in forgotten memories, and command shadows to stitch corridors between sleeping courts. Skilled: Swap [Affinity – Illusion • Light • Void](#affinity---illusion--light--void) for **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1519,9 +1481,9 @@ Prismatic “para‑humans” from the Violet Steppe and the Black City’s shim
 
 ## Spider Folk
 
-* Skilled (+3): **[Affinity – Silk & Web](#affinity-silk-web), [Alternate Movement](#alternate-movement) – Climb, [Armoured Body](#armoured-body)**
-* Expert (+6): **[Affinity – Illusion • Light • Void](#affinity-illusion-light-void)**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**
+* Skilled (+3): **[Affinity – Silk & Web](#affinity---silk--web), [Alternate Movement](#alternate-movement) – Climb, [Armoured Body](#armoured-body)**
+* Expert (+6): **[Affinity – Illusion • Light • Void](#affinity---illusion--light--void)**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**
 
 **Description**
 
@@ -1537,17 +1499,12 @@ Humanoid spider fae who read fate in trembling threads and craft bamboo palaces 
 
 **Variants**
 
-#### Arachne Touched
-
-Spider and scorpion fae that hold the secret (or curse) of a chimeric form. Most often these fae can shift into medium sized “monstrous” spiders or scorpions, or a humanoid/arachnid hybrid form – but rarely both. Expert: Swap [Affinity – Illusion • Light • Void](#affinity-illusion-light-void) with **[Chimeric Body](#chimeric-body)**. Spider fae’s chimeric forms tend to be very unique, with little known trends besides **[Nimble](#nimble)** and sometimes **[Size](#size)** changes.
-
-#### Burrow‑Spinner Families
-
-Trap‑door lair makers in dunes and ruins, they scavenge for lost magitech and many have befriended the wandering Spore-War Veterans and other insect fae. Skilled: Swap [Alternate Movement](#alternate-movement) – Climb with **[Alternate Movement](#alternate-movement) – Burrow**.
-
-#### Scorpion Sun‑Hunters
-
-Desert day‑ranger patrols, chitin tinted sunset red; clan valor bound to solar trials. Skilled: Swap [Alternate Movement](#alternate-movement) – Climb with **[Ability Bonus – Fierce](#ability-bonus-fierce)**. Gain a natural Stinger (1d4 damage, poison; Save or suffer 1 Aura damage).
+* ### Arachne Touched
+  Spider and scorpion fae that hold the secret (or curse) of a chimeric form. Most often these fae can shift into medium sized “monstrous” spiders or scorpions, or a humanoid/arachnid hybrid form – but rarely both. Expert: Swap [Affinity – Illusion • Light • Void](#affinity---illusion--light--void) with **[Chimeric Body](#chimeric-body)**. Spider fae’s chimeric forms tend to be very unique, with little known trends besides **[Nimble](#nimble)** and sometimes **[Size](#size)** changes.
+* ### Burrow‑Spinner Families
+  Trap‑door lair makers in dunes and ruins, they scavenge for lost magitech and many have befriended the wandering Spore-War Veterans and other insect fae. Skilled: Swap [Alternate Movement](#alternate-movement) – Climb with **[Alternate Movement](#alternate-movement) – Burrow**.
+* ### Scorpion Sun‑Hunters
+  Desert day‑ranger patrols, chitin tinted sunset red; clan valor bound to solar trials. Skilled: Swap [Alternate Movement](#alternate-movement) – Climb with **[Ability Bonus – Fierce](#ability-bonus--fierce)**. Gain a natural Stinger (1d4 damage, poison; Save or suffer 1 Aura damage).
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1557,7 +1514,7 @@ Desert day‑ranger patrols, chitin tinted sunset red; clan valor bound to solar
 
 ## Tauran Folk
 
-* **Skilled (+3): [Ability Bonus – Fierce](#ability-bonus-fierce), [Aggressive](#aggressive), [Size](#size) – Large**
+* **Skilled (+3): [Ability Bonus – Fierce](#ability-bonus--fierce), [Aggressive](#aggressive), [Size](#size) – Large**
 * **Expert (+6):**  **[Inspiration](#inspiration)**
 * **Master (+9): Labyrinth Soul** – Once per day gain [+] against confusion, psychic powers, and illusions for a watch (4 hours). While leading a caravan or party through complex terrain—such as dungeons, underground zones, or pattern-fractured spaces—you gain Advantage on all navigation, escape, or structural analysis tests.
 
@@ -1575,8 +1532,8 @@ Tauran Folk are horned warriors born of shattered stone and defiant blood. Some 
 
 **Variants**
 
-* Uroch Trail-Keepers: Ancestral herdsmen who shape a land’s paths and memory. Expert: Swap [Inspiration](#inspiration) for **[Affinity – Earth • Stone • Wood](#affinity-earth-stone-wood).**
-* The Broken Horned: Emissaries of calm judgment and sudden wrath. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus-fierce) for **[Ability Bonus – Spirited](#ability-bonus-spirited)**.
+* Uroch Trail-Keepers: Ancestral herdsmen who shape a land’s paths and memory. Expert: Swap [Inspiration](#inspiration) for **[Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood).**
+* The Broken Horned: Emissaries of calm judgment and sudden wrath. Skilled: Swap [Ability Bonus – Fierce](#ability-bonus--fierce) for **[Ability Bonus – Spirited](#ability-bonus--spirited)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1588,7 +1545,7 @@ Tauran Folk are horned warriors born of shattered stone and defiant blood. Some 
 
 * Skilled (+3): **[Aggressive](#aggressive), [Inner Fire](#inner-fire), [Size](#size) – Large**
 * Expert (+6): **[Armoured Body](#armoured-body)**
-* Master (+9): Choose **[Affinity – Earth • Stone • Wood](#affinity-earth-stone-wood)** or **[Affinity – Air • Song • Storm](#affinity-air-song-storm)**
+* Master (+9): Choose **[Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood)** or **[Affinity – Air • Song • Storm](#affinity---air--song--storm)**
 
 **Description**
 
@@ -1604,8 +1561,8 @@ Trolls are wiry relatives of the towering giant folk. The first to turn wave‑j
 
 **Variants**
 
-* Ash‑Troll: Those who sculpt lava & metal instead of pure stone. Master: choose **[Affinity – Fire • Metal • Ceramic](#affinity-fire-metal-ceramic)**.
-* Reef‑Troll: Nautical oni and bridge‑lurking tricksters. These trolls ride hybrid sky‑canoes that can dive beneath the waves. Skilled: Swap [Inner Fire](#inner-fire) for **[Alternate Movement](#alternate-movement) – Swim**. Master: Choose **[Affinity – Water • Ice • Steam](#affinity-water-ice-steam)**.
+* Ash‑Troll: Those who sculpt lava & metal instead of pure stone. Master: choose **[Affinity – Fire • Metal • Ceramic](#affinity---fire--metal--ceramic)**.
+* Reef‑Troll: Nautical oni and bridge‑lurking tricksters. These trolls ride hybrid sky‑canoes that can dive beneath the waves. Skilled: Swap [Inner Fire](#inner-fire) for **[Alternate Movement](#alternate-movement) – Swim**. Master: Choose **[Affinity – Water • Ice • Steam](#affinity---water--ice--steam)**.
 
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>
@@ -1617,9 +1574,9 @@ Trolls are wiry relatives of the towering giant folk. The first to turn wave‑j
 
 * Skilled (+3): **[Armoured Body](#armoured-body) ×2, Choose one**
   * Common choices:
-    * **[Ability Bonus – Solid](#ability-bonus-solid)** or **[Ability Bonus – Spirited](#ability-bonus-spirited)**; Earth and sky monks who dance to their internal beat.
+    * **[Ability Bonus – Solid](#ability-bonus--solid)** or **[Ability Bonus – Spirited](#ability-bonus--spirited)**; Earth and sky monks who dance to their internal beat.
     * **[Alternate Movement](#alternate-movement) – Swim**; River and sea monks who flow with the water currents.
-* **Expert (+6): [Affinity – Water • Ice • Steam](#affinity-water-ice-steam)**
+* **Expert (+6): [Affinity – Water • Ice • Steam](#affinity---water--ice--steam)**
 * **Master (+9): [Inner Fire](#inner-fire)**
 
 **Description**
@@ -1647,9 +1604,9 @@ The Turtle Folk are adaptable wanderers and living shrines — patient, contempl
 ## Undead (Post Mortal)
 
 * Skilled (+3): **[Deathless](#deathless), Choose two**
-  * Common choices: **[Ability Bonus – Solid](#ability-bonus-solid), [Ability Bonus – Spirited](#ability-bonus-spirited),** **[Ability Bonus – Spirited](#ability-bonus-spirited), [Affinity – Blood • Bone • Biomancy](#affinity-blood-bone-biomancy), [Armoured Body](#armoured-body), [Darkvision](#darkvision), [Inner Fire](#inner-fire)**
+  * Common choices: **[Ability Bonus – Solid](#ability-bonus--solid), [Ability Bonus – Spirited](#ability-bonus--spirited),** **[Ability Bonus – Spirited](#ability-bonus--spirited), [Affinity – Blood • Bone • Biomancy](#affinity---blood--bone--biomancy), [Armoured Body](#armoured-body), [Darkvision](#darkvision), [Inner Fire](#inner-fire)**
 * Expert (+6): **Choose one**
-* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity-chaos-dream-shadow)**
+* Master (+9): **[Affinity – Chaos • Dream • Shadow](#affinity---chaos--dream--shadow)**
 
 **Description:**
 Death was not the end — you rose again, whether by pact, curse, divine will, or sheer contrariness. Undead folk run the spectrum from benevolent guardians to gleeful tricksters to cold predators. Your former life might still whisper in your bones, or you may have shed it entirely.
@@ -1664,8 +1621,8 @@ Death was not the end — you rose again, whether by pact, curse, divine will, o
 
 **Variants:**
 
-* Candle-Heart Revenant: Wax-heart burns brighter with every good deed. Skilled: Choose **[Inner Fire](#inner-fire)** and **[Affinity – Blood • Bone • Biomancy](#affinity-blood-bone-biomancy)**.
-* Mirth-Touched Shade: Your ever-changing guise hides the truth within. Skilled: Choose **[Ability Bonus – Spirited](#ability-bonus-spirited)** and **[Affinity – Masks & Totems](#affinity-masks-totems)**
+* Candle-Heart Revenant: Wax-heart burns brighter with every good deed. Skilled: Choose **[Inner Fire](#inner-fire)** and **[Affinity – Blood • Bone • Biomancy](#affinity---blood--bone--biomancy)**.
+* Mirth-Touched Shade: Your ever-changing guise hides the truth within. Skilled: Choose **[Ability Bonus – Spirited](#ability-bonus--spirited)** and **[Affinity – Masks & Totems](#affinity---masks--totems)**
 * Salt-Bone Draugr: Tide-bound returned-ones. Skilled: Choose **[Armoured Body](#armoured-body)** and **[Alternate Movement](#alternate-movement) – Swim**.
 
 <div class="heritage-return"><a href="#heritage-table-of-contents">↩ Back to Heritage Table</a></div>

@@ -7319,7 +7319,7 @@ Found on a defeated creature or a sleeping traveler. Give one or both, as you pr
 12. Chroma flashlight, sun-charged _or_ pickled kumquats (€10).
 13. Ruby scalpel, sharp as a harpy’s tongue _or_ saffron sachet (€10).
 14. RLD pigeon with recording eyes _or_ blood porcelain stick (€10).
-15. Synth-skin backpack _or_ coral seed chip (€20).
+15. Synth-skin backpack (1st, holds 3 st small items) _or_ coral seed chip (€20).
 16. Fine chitin-woven boots _or_ lead coins (€1).
 17. Pen with hypodermic injector _or_ crystal coin (€10).
 18. Silver-banded ceramic wristwatch _or_ yellowlander scrip (€10).
