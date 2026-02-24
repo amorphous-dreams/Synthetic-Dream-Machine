@@ -112,6 +112,7 @@ published: true
     - [Watercraft, Aircraft](#watercraft-aircraft) <a id="watercraft-aircraft-anchor"></a>
     - [Vehicle Mods and Upgrades](#vehicle-mods-and-upgrades) <a id="vehicle-mods-and-upgrades-anchor"></a>
   - [PATH GEAR](#path-gear) <a id="path-gear-anchor"></a>
+    - [VLG Synthesized Combat Referenes](#vlg-synthesized-combat-referenes) <a id="vlg-synthesized-combat-referenes-anchor"></a>
 - [ULTRAVIOLET GRASSLANDS](#ultraviolet-grasslands) <a id="ultraviolet-grasslands-anchor"></a>
   - [UVG COMBAT GEAR](#uvg-combat-gear) <a id="uvg-combat-gear-anchor"></a>
     - [UVG WEAPONS](#uvg-weapons) <a id="uvg-weapons-anchor"></a>
@@ -2821,6 +2822,332 @@ The quartermaster squints over your papers, checks your boots, then taps a chipp
 
 Source, Vastlands Guidebook: [Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
+<div class="gear-table-card" markdown="1">
+
+### VLG Synthesized Path Gear
+
+> **VLG Synthesized Path Gear**
+>
+> Verbatim pull from Path d12 item tables (with the `d12` column removed), then regrouped into type synthesis tables.
+>
+> Full 240-row coverage across all Other Paths item tables.
+>
+> Primary type precedence for hybrid items: `weapon > armor > ward > implant > mod > non-combat`.
+>
+> `Path Implants` includes only entries whose primary type resolves to `implant` (hybrids stay under their higher-priority type table).
+>
+> `Source Context` carries path tag + item tags + rarity label in code ticks.
+>
+> #### Path Weapons
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Sturdy Stick | Grants a bonus on long walks there (or back again). | 1d6 dmg, 1 st | €1 | [path:tourist] [type:weapon] [melee] `Uncommon (~€50)` |
+> | Guide Book | The thin sheets provide a lot of toilet paper. Also, spend a hero die to wrestle a useful fact or shortcut from this brick. | 1d4 dmg, 1 st | €3 | [path:tourist] [type:weapon] [melee] `Uncommon (~€50)` |
+> | Plantation Pick | This field tool also crushes vome skulls (x4 crit). | 1d6 dmg, 1 st | €10 | [path:purplelander] [type:weapon] [melee] `Uncommon (~€50)` |
+> | Umbrella Gun | Protects from rain and has a single surprising shot. Short range, reload 20. | 2d6 dmg, 1 st | €15 | [path:tourist] [type:weapon] [ranged] `Uncommon (~€50)` |
+> | Jousting Staff | Sturdy combat walking stick made of authentic synthetic wood. | 1d6+1 dmg, 1 st | €25 | [path:servant] [type:weapon] [melee] `Uncommon (~€50)` |
+> | Rib Bow | Crossbow made from dead machine parts. Won't let you down. | long, re 20, 1d8 dmg, 1 st | €25 | [path:yellowlander] [type:weapon] [ranged] [re] `Uncommon (~€50)` |
+> | Walking Stick Sword | Elegant. Helps with walking. Also, concealed. | 1d6 dmg, 1 st | €45 | [path:manager] [type:weapon] [melee] `Uncommon (~€50)` |
+> | Holy Arrow | This killed you. Deals double damage to those who deny the Gods. Retains an intangible tether to your slayer. | 1 sp | €50 | [path:skeleton] [type:weapon] [melee] `Uncommon (~€50)` |
+> | Yellow Dart | Metal-and-bone spear. Spend 1 life to make it glow for an hour. | reach, 2H, 1d10, 2 st | €50 | [path:yellowlander] [type:weapon] [melee] [reach] [fueled] `Uncommon (~€50)` |
+> | Lifestealer Syringe | Extract 1 life per round from a pliant creature. Healing transfer function not installed. Where to store the life force ... | 1d2 dmg, 3 sp | €75 | [path:noömagus] [type:weapon] [melee] [fueled] `Uncommon (~€50)` |
+> | Amber Wandgun | Shoots arcing bolts of pain and fire. Short range. | re 3, 2d6 dmg, 1 st | €100 | [path:soldier] [type:weapon] [ranged] [re] `Uncommon (~€50)` |
+> | Piezo Mace | Integrates with your biocircuits. As a free action, spend 1d6 life to deal double damage on your attack. | 1d8 dmg, 1 st | €125 | [path:golem] [type:weapon] [type:implant] [melee] [fueled] `Uncommon (~€50)` |
+> | Scave Bolter | An elegant, long range gun from a simpler age. | re 2, 2H, 1d8+1 dmg, 2 st | €150 | [path:purplelander] [type:weapon] [ranged] [re] `Valuable (~€250)` |
+> | Omnibatteries | 12 single-use NRFB batteries. Recharge any 1 stone item. Explode if punctured or thrown against a hard object. | throwing, area S, re 2, 2d6 dmg, 1 st | €200 | [path:noömagus] [type:weapon] [ranged] [re] [throwing] [area] `Valuable (~€250)` |
+> | Void Gun | Low-impact razor fragments shred flesh but leave void hulls intact. Useless against suits with armor +5 or better. | short, re 3, 2d6 dmg, 1 st | €200 | [path:skeleton] [type:weapon] [ranged] [re] `Valuable (~€250)` |
+> | Dream Bone Knife | Cuts ghosts and daemons. | 1d4+1 dmg, 5 sp | €250 | [path:holy-fool] [type:weapon] [melee] `Valuable (~€250)` |
+> | Hard Light Scepter | Once, void marine wizards called this a lazgun. We know better now. Charge with an omnibattery. Adjustable energy output. | 1d8 dmg, 1 st | €250 | [path:noömagus] [type:weapon] [melee] `Valuable (~€250)` |
+> | Golem Grenade | Smart enough that you have to talk it into exploding. Large area. | 8d6 dmg, 1 st | €275 | [path:bluelander] [type:weapon] [melee] `Valuable (~€250)` |
+> | Golden Horn | A knife made from the metal horns of a golden goat. Fancy. | 1d4+2 dmg, 1 st | €350 | [path:bluelander] [type:weapon] [melee] `Valuable (~€250)` |
+> | Shipgun | Short range flesh-shredder that won't damage a voidhull. Deals triple damage to unarmored targets. | re 3, 1d4+1 dmg, 1 st | €500 | [path:greenlander] [type:weapon] [ranged] [re] `Valuable (~€250)` |
+> | Hunting Lance | A precise oldtech beam-spear. In melee it deals 1d8 damage and long range 1d12 dmg, consumes no charge. | 1d12 dmg, 1 st | €600 | [path:orangelander] [type:weapon] [ranged] [melee] [oldtech] `Valuable (~€250)` |
+> | Swagger Stick (*BILI Brand*) | A spiritual microfission translator lets you spend 1 life to deal 1d12 damage with this elegant walking stick. | 1d4 dmg, 1 st | €649 | [path:bourgeois] [type:weapon] [melee] [fueled] `Rare (~€1,000)` |
+> | Sensory Overloader | Flashy oldtech gun. Very visible in the dark. Target loses an action when struck (save). | short re 4, 1d4 dmg, 1 st | €650 | [path:manager] [type:weapon] [ranged] [re] [oldtech] `Rare (~€1,000)` |
+> | Shipsteel Stiletto | Long, thin, sharp blade of perfect metal. Easily concealed. | 1d4+1 dmg, 3 sp | €750 | [path:trickster] [type:weapon] [melee] `Rare (~€1,000)` |
+> | Builder Blaster | 4 of 6 shots left. The license daemon has been exorcised. Needs a buildertech port to recharge. | re 4, 2H, 3d8 dmg, 1 st | €800 | [path:servant] [type:weapon] [ranged] [re] `Rare (~€1,000)` |
+> | Ceremonial Axe | Its oldtech power spent, yet a symbol of status. Grants cha +2. | 2H, 1d8 dmg, 3 st | €800 | [path:barbarian] [type:weapon] [melee] [oldtech] `Rare (~€1,000)` |
+> | Ghost Bone Sabre | The noöspheric bones deal full damage to spirits. | 1d10, 1 st | €950 | [path:skeleton] [type:weapon] [melee] `Rare (~€1,000)` |
+> | Eyegun | Looks like an eye, shoots like a lance. Long range. Re 5. | 2d6 dmg, 1 sp | €1,000 | [path:golem] [type:weapon] [ranged] [melee] `Rare (~€1,000)` |
+> | In-Arm Pistol | Concealed oldtech EM-ray (emmaray in the local patois). Spend 1 life to recharge. | 1d6 dmg, 1 st | €1,099 | [path:bourgeois] [type:weapon] [type:implant] [ranged] [fueled] [oldtech] `Rare (~€1,000)` |
+> | Zunkwaffel Wandgun | The undead suppression pistol temporarily disrupts their animating force (save or knocked out for a minute). | 2d6 dmg, 1 st | €1,200 | [path:orangelander] [type:weapon] [ranged] `Rare (~€1,000)` |
+> | Isolation Injection | Like a scalpel, the oldtech overwhelms the mind. Target loses the ability to communicate for an hour (save). Short range. | 1d8 dmg, 1 st | €1,299 | [path:bourgeois] [type:weapon] [ranged] [oldtech] `Rare (~€1,000)` |
+> | Stakehammer | Cracks armor and pierces unliving hearts. Double damage to vampires. | 1d8+1 dmg, 2 st | €1,375 | [path:redlander] [type:weapon] [melee] `Rare (~€1,000)` |
+> | Oldtech Dagger-Axe | A symbol of power. Spend 1 life to deal x2 dmg. Grants cha +2. | 2H, 1d6 dmg, 2 st | €2,000 | [path:noble] [type:weapon] [melee] [fueled] [oldtech] `Rare (~€1,000)` |
+> | Wratosek | Grand two-handed sword forged of shipmetal in a distant age. | 2d6 dmg, 1 st | €2,000 | [path:barbarian] [type:weapon] [melee] `Rare (~€1,000)` |
+> | Elegant Eater Sword | An energy blade. Vorpal. Cuts through most things. | re 5, 1d8 dmg, 5 sp | €2,099 | [path:bourgeois] [type:weapon] [ranged] [melee] [re] `Rare (~€1,000)` |
+> | Dale Four-Four | Sentient Long Long Ago four-shot bolter of many colors. Settings: stun (1d4 rounds save), burn (1d6), disintegrate (4d4). | 1d6 dmg, 1 st | €4,000 | [path:trickster] [type:weapon] [melee] `Exceptional (~€5,000)` |
+> | Builder Blade | Oldtech no-matter knife. Cuts anything (slowly). Recharge in sunlight. | re 4, 1d4 dmg, 1 st | €4,500 | [path:scion] [type:weapon] [ranged] [melee] [re] [oldtech] `Exceptional (~€5,000)` |
+> | Gorotorok | Ominous semi-sentient two-handed chainsword assembled by source engineers on a distant star in a distant age. | 3d6 dmg, 2 st | €4,500 | [path:noble] [type:weapon] [melee] `Exceptional (~€5,000)` |
+> | Glass Cannon | Fires your blood as toxic shards. Targets are nauseated (save) and suffer a penalty to physical actions. Spend 3 life to reload. | long, re 5, 2H, 1d12 dmg, 1 st | €4,995 | [path:redlander] [type:weapon] [ranged] [re] [fueled] `Exceptional (~€5,000)` |
+> | Ancient Jezail | Killed a builderspawn Long Ago? Maker-charged, long range. | 1d12 dmg, 2 st | €5,000 | [path:barbarian] [type:weapon] [ranged] `Exceptional (~€5,000)` |
+> | Garden Jezail | Killed a Vile One in the Long Ago? Builder-charged, long range. | re 2, 2H, 2d8 dmg, 3 st | €7,500 | [path:noble] [type:weapon] [ranged] [re] `Exceptional (~€5,000)` |
+> | Illusion Gun | A target "killed" by this short range oldtech gun saves vs death. If they succeed, they are reduced to 1 life and knocked out instead. | 1d10 dmg, 1 st | €8,000 | [path:scion] [type:weapon] [ranged] [oldtech] `Exceptional (~€5,000)` |
+> | The Spear Named | Each time it wounds a foe, it roars and gains +3 on its next attack. Blood Drinker resets when you switch foes; two-handed, it deals 1d12 damage. | reach, 1d10 dmg, 1 st | €9,000 | [path:barbarian] [type:weapon] [melee] [reach] `Exceptional (~€5,000)` |
+> | Nightblade | The gibbering spirit of the Eater in Darkness dwells in this blade. Each blow reduces its target's level by 1. If this would reduce its level below 0 it dies. | 1d8 dmg, 1 st | €13,500 | [path:soldier] [type:weapon] [melee] `Exceptional (~€5,000)` |
+>
+> #### Path Armor
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Pointy Helmet | Sacrifice to negate one critical hit. Headbutt for 1d8 damage. | armor +1, 1 st | €5 | [path:soldier] [type:armor] [wear] `Uncommon (~€50)` |
+> | Leather Harness | Shows off oiled physique. +2 free weapon item slots. | armor +1, 1 st | €30 | [path:bearer] [type:armor] [wear] `Uncommon (~€50)` |
+> | Friendly Anklet | So your master can always find and save you! | armor +1, 1 st | €50 | [path:bearer] [type:armor] `Uncommon (~€50)` |
+> | Golem Carcass | You call it “friend.” | armor +3, 2 st | €50 | [path:holy-fool] [type:armor] `Uncommon (~€50)` |
+> | Anti-Static Robes | Reduce spell blowback. Bonus to saves vs corruption and oldtech. | armor +1, 1 st | €75 | [path:noömagus] [type:armor] [wear] [oldtech] `Uncommon (~€50)` |
+> | Battle Briefcase | Protect magidocs and blue prince scrolls. Serves as a shield. | armor +1, 1 st | €100 | [path:manager] [type:armor] [shield] [wear] `Uncommon (~€50)` |
+> | Fur Kilt | Impressive. Grants +1 charisma. | armor +1, 1 st | €120 | [path:bearer] [type:armor] [wear] `Uncommon (~€50)` |
+> | Sungwood Shield | Light shield of living symbiotic wood. Your blood can regrow it. | armor +2, 1 st | €125 | [path:greenlander] [type:armor] [shield] `Uncommon (~€50)` |
+> | Mosswear | A living weave of mycelial threads and mossy friends, perfect for hiding in the deep old woods. Protects from toxins and gas. | armor +2, 1 st | €200 | [path:greenlander] [type:armor] [enviro] `Valuable (~€250)` |
+> | Sacribracers | Roll a hero die to suffer twice that much damage instead of an ally. | armor +1, 1 st | €200 | [path:bearer] [type:armor] `Valuable (~€250)` |
+> | Fungal Harness | Its moisture halves fire damage and sustains you in dry places. | armor +4, 2 st | €225 | [path:bluelander] [type:armor] [wear] `Valuable (~€250)` |
+> | Shield | Living tissue over translucent crystal ribbing. Always regrows within a week of destruction. Placed in a door, it forms an airtight seal. Probably from a dead void ship. | armor +2, 1 st | €250 | [path:skeleton] [type:armor] [shield] `Valuable (~€250)` |
+> | Fallen Empire Armor | Porcelain and olivine plates over slippery organo-metallic mesh. | armor +5, 2 st | €300 | [path:barbarian] [type:armor] `Valuable (~€250)` |
+> | Ruffle Coat | The socially acceptable coat, its silksteel protects as leather. Refined lifestyle pockets offer 7 sp of free inventory. | armor +2, 1 st | €350 | [path:manager] [type:armor] [wear] `Valuable (~€250)` |
+> | Rational Helm | Blocks empathy, crushes pity, useful HUD. | armor +1, ward +1, 1 st | €375 | [path:purplelander] [type:armor] [type:ward] [wear] [warded] [item] `Valuable (~€250)` |
+> | Yellow Poncho | Protects from sun, heat, and mind-affecting rays. | armor +1, ward +2, 1 st | €375 | [path:yellowlander] [type:armor] [type:ward] [wear] [warded] [item] [mind] `Valuable (~€250)` |
+> | Leatherman Suit | Hides your bones. Is looking like a leather golem better? | armor +4, 2 st | €400 | [path:skeleton] [type:armor] [wear] `Valuable (~€250)` |
+> | Crow Armor | Puffs up to slow your falls. Popular with wyvern riders. | armor +4, 2 st | €450 | [path:redlander] [type:armor] `Valuable (~€250)` |
+> | Sacrificial Robes | For facing gods in temple and daemons on the battlefield. | arm +2, wrd +2, 2 st | €500 | [path:noble] [type:armor] [type:ward] [wear] [warded] [item] [spirit] `Valuable (~€250)` |
+> | Camelskin Jerkin | Sturdy living leather with tassels and secret pockets. Good for looking nondescript. | armor +3, 1 st | €600 | [path:trickster] [type:armor] [wear] `Valuable (~€250)` |
+> | Amber Suit | Full suit of armor grown from a biomorphically slaved amber crab. | armor +6, 3 st | €700 | [path:orangelander] [type:armor] [wear] `Rare (~€1,000)` |
+> | War Furs | Striped to show strength. | armor +2, str +1, 1 st | €750 | [path:purplelander] [type:armor] [wear] `Rare (~€1,000)` |
+> | Hard Light Shield | Projection bracelet with a glittering force-shield. Vorpal edge. | armor +3, 1d4 dmg, 1 st | €925 | [path:soldier] [type:armor] [shield] `Rare (~€1,000)` |
+> | Buffer Harness II | Intelligent forcefields let you spend 2 life to cap maximum damage from any attacks at 6 until the start of your next round. | armor +3, 1 st | €949 | [path:bourgeois] [type:armor] [fueled] [wear] `Rare (~€1,000)` |
+> | Combat Suit | Spectral Satrapy steel-glass scales with atmo-symbiote. Scrubbers, filters, and bladders maintain environment for a few hours. | armor +5, re 3, 2 st | €1,500 | [path:soldier] [type:armor] [re] [wear] [enviro] `Rare (~€1,000)` |
+> | Living Suit | Synthetic anthropoid flesh to protect your endoskeleton. | armor +1, life +5, 1 st | €2,000 | [path:golem] [type:armor] [wear] `Rare (~€1,000)` |
+> | EM Harness | Protects positronic innards, halving radiant and electric damage. | arm +3, wrd +3, 2 st | €2,500 | [path:golem] [type:armor] [type:ward] [wear] [warded] [item] `Rare (~€1,000)` |
+> | Empire Armor | Sanguine plates over flesh-mesh. Feed 1 life per day or half bonus. | armor +8, 3 st | €2,500 | [path:noble] [type:armor] [fueled] `Rare (~€1,000)` |
+> | Daemonskin Mask | Ornate. Spend 1 hero die to terrify the rabble into flight (save). | arm +1, wrd +2, 1 st | €3,000 | [path:noble] [type:armor] [type:ward] [wear] [warded] [item] [spirit] `Exceptional (~€5,000)` |
+> | Noble Riding Gear | Looks spiffy, and the jacket was advertised as quite bullet-proof. | armor +5, 1 st | €3,500 | [path:servant] [type:armor] `Exceptional (~€5,000)` |
+> | This Old Thing | A tatty, silvery undershirt from ages ago. Probably not worth much. | armor +4, 1 st | €4,500 | [path:tourist] [type:armor] `Exceptional (~€5,000)` |
+> | Godskin Mask | Ornate. Spend 1 hero die to terrify cityfolk into flight (save). | arm +1, wrd +2, 1 st | €5,000 | [path:barbarian] [type:armor] [type:ward] [wear] [warded] [item] `Exceptional (~€5,000)` |
+> | Mindvault Helm | A traditional helm, of godbone and shipmetal, it blocks the Vile One's mental assaults. Sunder to negate all damage from a critical hit. | armor +1, ward +3, 1 st | €7,500 | [path:redlander] [type:armor] [type:ward] [wear] [warded] [item] [mind] `Exceptional (~€5,000)` |
+> | Second Skin | Void-capable force-bonded syn-tissue. Wearable under other armor. | armor +2, 1 st | €10k | [path:scion] [type:armor] [type:implant] [enviro] `Exceptional (~€5,000)` |
+> | Godbone Exoskeleton | Gruesome golem armor, replenished with your hero dice. Burn: gain armor +5, +20 temporary life and +3 strength. | re 5, 3 st | €16k | [path:scion] [type:armor] [re] [wear] `Unique (~€25,000)` |
+>
+> #### Path Wards
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Better Life Pamphlets | Promises. | ward +1, 1 st | €5 | [path:holy-fool] [type:ward] [item] `Uncommon (~€50)` |
+> | Old Friend's Head | Pickled by dark wizardry. It possesses one skill you lack. Once per day, spend a hero die and it eats a spell—stopping an incoming harmful power from affecting you. To everyone but you it is just the disturbing shrunken head of some nameless barbarian loser. | ward +1, 1 st | €5 | [path:barbarian] [type:ward] [item] `Uncommon (~€50)` |
+> | War Mask | A terrifying visage to frighten foes. A bonus against fear, too. | ward +2, 1 st | €10 | [path:soldier] [type:ward] [item] [mind] `Uncommon (~€50)` |
+> | Bravery Goggles | Hide scary sights. May impose a large penalty. | ward +1, 1 sp | €15 | [path:bearer] [type:ward] [item] `Uncommon (~€50)` |
+> | Dust Face | Full-face mask protects against dust, haze, spores, and toxins. | ward +1, 1 st | €25 | [path:yellowlander] [type:ward] [item] `Uncommon (~€50)` |
+> | Dusty Orb | Teleview of a lovely little town. It reminds you of home, but matches nothing you've seen. Linked to a secret observation portal. | ward +1, 3 sp | €30 | [path:skeleton] [type:ward] [item] [mind] `Uncommon (~€50)` |
+> | Collar of Happiness | Injects you with happy juice when you feel sad. | ward +2, re 3, 1 st | €50 | [path:servant] [type:ward] [re] [item] `Uncommon (~€50)` |
+> | Lucky Bone Orb | You suspect it was your maker's. Years in your memory pouch have polished it into a sphere. Plagued by bad vibrations. | ward +2, 1 sp | €50 | [path:golem] [type:ward] [item] `Uncommon (~€50)` |
+> | Shrunken Head | Belonged to previous bearer? Stores a single power. | ward +2, 1 st | €69 | [path:bearer] [type:ward] [item] `Uncommon (~€50)` |
+> | Cryptic Clavus | It's a card, it's a key, it unlocks oldtech doors. Requires jiggery-pokery and a skill roll. | ward +1, 1 st | €75 | [path:trickster] [type:ward] [item] [oldtech] `Uncommon (~€50)` |
+> | Driver License | This holomorphic amulet lets you drive in the Metropolis. You can also try to command autogolems with it (hard test). | ward +1, 1 sp | €75 | [path:greenlander] [type:ward] [item] `Uncommon (~€50)` |
+> | Pass Person | A magic document that gives a bonus to bypassing officials and guards. | ward +1, 1 sp | €145 | [path:tourist] [type:ward] [item] `Uncommon (~€50)` |
+> | Blisscandy | Keeps bad thoughts away, prevents betrayals. Reduces charisma and agility by 1. Bad thoughts and ability scores return after a day. | ward +3, re 2, 1 sp | €150 | [path:bearer] [type:ward] [re] [item] [mind] `Valuable (~€250)` |
+> | Bodylectric Bracers | Talk to machines as though they were your siblings. | ward +1, 1 st | €150 | [path:noömagus] [type:ward] [item] `Valuable (~€250)` |
+> | Collar of Life | Store up to 3 life for powers. It doesn't care where you got it. | ward +1, 1 st | €150 | [path:noömagus] [type:ward] [fueled] [item] `Valuable (~€250)` |
+> | Dead God Tooth | A bonus to catching and storing powers and spells cast at you. | ward +1, 1 st | €150 | [path:bluelander] [type:ward] [item] `Valuable (~€250)` |
+> | Mental Shackles | Glyph-crusted head implants that protect you from mind control and thoughts of not doing what you're told. | ward +3, 1 st | €150 | [path:servant] [type:ward] [type:implant] [item] [mind] `Valuable (~€250)` |
+> | Rustbeast Cloak | Hide in the rusty wastes. Halve damage from iron weapons. | ward +1, 1 st | €225 | [path:redlander] [type:ward] [item] `Valuable (~€250)` |
+> | Old Friend's Poem | On a scroll in a sacrificial godskin chest-piece amulet. | ward +1, 1 sp | €250 | [path:noble] [type:ward] [item] `Valuable (~€250)` |
+> | Glass Skull | It can hold three powers. It sings at dawn. Whose was it? | ward +1, 1 st | €500 | [path:skeleton] [type:ward] [item] `Valuable (~€250)` |
+> | Personal Daemon | It knows things it shouldn't, gives advice you can't follow. Spend 1 life to get a quick infodump on the local area. | ward +1, 1 st | €500 | [path:scion] [type:ward] [fueled] [item] [spirit] `Valuable (~€250)` |
+> | Mermaid's Kiss | You store it in a little jar. It keeps all your fears away. | ward +2, 1 st | €550 | [path:holy-fool] [type:ward] [item] [mind] `Valuable (~€250)` |
+> | Bunker Pass | Oldtech amulet that proves you're a true human, allowed to shelter in the anti-god bunkers that stud the Red Land. Also, opens wise doors. | ward +2, 1 st | €650 | [path:redlander] [type:ward] [item] [oldtech] `Rare (~€1,000)` |
+> | Astral Pin | Can hold one soul. 1-in-6 chance it already does. | ward +2, 1 sp | €665 | [path:greenlander] [type:ward] [item] [spirit] `Rare (~€1,000)` |
+> | Booster Bracelet | Break it to negate an attack. | ward +2, 2 sp | €699 | [path:bourgeois] [type:ward] [item] `Rare (~€1,000)` |
+> | Maintain Bracelet | Marks the wearer as undead to undead creatures. | ward +1, 1 st | €750 | [path:orangelander] [type:ward] [item] `Rare (~€1,000)` |
+> | Echoing Top Hat | It whispers etiquette, rank, and status guidance into your mind. | ward +1, 1 st | €799 | [path:bourgeois] [type:ward] [item] [mind] `Rare (~€1,000)` |
+> | Book of True Thought | Written by the master's master, it holds every answer. With it, spend a hero die to find your way. Works 5-in-6 times. | ward +3, 1 st | €800 | [path:bearer] [type:ward] [item] [mind] `Rare (~€1,000)` |
+> | Zu Helmet | It receives voices from beyond. Groans with the voices of desert and mountain. It lets you speak to ghosts and phantoms. | ward +1, 1 st | €800 | [path:skeleton] [type:ward] [item] [spirit] `Rare (~€1,000)` |
+> | Portable Shadow | Battle-hardened war shadow from the eternal struggle cloned and bound. Don't lose the leash. Halves damage suffered from ghosts, daemons, and other aetherics. | ward +4, 2 st | €850 | [path:soldier] [type:ward] [item] [spirit] `Rare (~€1,000)` |
+> | Fairy Key | Pass through a fairy cat portal. | ward +1, 2 sp | €895 | [path:purplelander] [type:ward] [item] `Rare (~€1,000)` |
+> | Simmersuit | Traditional jumpsuit that clearly displays your status and duties. | ward +3, 1 st | €1,000 | [path:greenlander] [type:ward] [item] `Rare (~€1,000)` |
+> | Fireward Circlet | The semi-sentient band of daemon-matrix jewels protects your identity. Spend 1 life to block your mind for 1 round. | ward +3, 1 st | €1,100 | [path:manager] [type:ward] [fueled] [item] [mind] [spirit] `Rare (~€1,000)` |
+> | Rotting Angel's Ring | Taken off a dying phylake, it opens spirit doors. | ward +3, 1 sp | €1,300 | [path:holy-fool] [type:ward] [item] [spirit] `Rare (~€1,000)` |
+> | Abominable Paw | The preserved paw of some gloomy human phenotype from the distant north. It doubles the effects of your curses. | ward +3, 1 st | €1,500 | [path:bluelander] [type:ward] [item] `Rare (~€1,000)` |
+> | Second Heart | A backup heart. Stores stolen life equal to your level. | ward +1, 2 st | €1,995 | [path:redlander] [type:ward] [type:implant] [fueled] [item] `Rare (~€1,000)` |
+> | Fresh Face | Feed it blood every day (1 life) so it stays rosy. | ward +1, 1 st | €2,000 | [path:skeleton] [type:ward] [fueled] [item] `Rare (~€1,000)` |
+> | Solaris Disc | Fancy headgear uses light and fire to block hostile powers. Also, it absorbs solar energy to recharge 1 omnibattery per day. | ward +2, 1 st | €2,500 | [path:noömagus] [type:ward] [item] `Rare (~€1,000)` |
+> | Safety Blanket | Possibly a large towel. Grants invisibility vs very large and stupid predators. | ward +4, 1 st | €2,950 | [path:tourist] [type:ward] [item] `Rare (~€1,000)` |
+> | Power Broker Amulet | Spend 1d6 life to absorb one power used against you. Wield the power for free—once. Resetting the amulet requires an action. | ward +1, 1 sp | €6,500 | [path:scion] [type:ward] [fueled] [item] `Exceptional (~€5,000)` |
+> | Phylake Clavus | A key that lets you pass unseen in front of an angel. Or daemon. | ward +3, 1 st | €20k | [path:noble] [type:ward] [item] [spirit] `Unique (~€25,000)` |
+>
+> #### Path Implants
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Noöjack | Extension plug to the local noösphere. Also stores 3 vidys. | implant, 1 sp | €50 | [path:noömagus] [type:implant] [network] `Uncommon (~€50)` |
+> | Nu-Face Mk III | A perfectly sculpted and poised face. Remove it to reveal your skull, synthetic muscles, and titanium hard-points. | charisma +1, 1 st | €1,199 | [path:bourgeois] [type:implant] [cyber] `Rare (~€1,000)` |
+> | Synthetic Subsystem | This battery-powered organ maintains vital functions when food, water, and air grow scarce. Plugs into most human phenotypes. | re 5, 1 st | €2,000 | [path:orangelander] [type:implant] [cyber] [re] `Rare (~€1,000)` |
+>
+> #### Path Consumables
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Motor Chung | Six glittery vials. Consume no more than an hour before use. Spend 1 life to gain a bonus action this turn. | re 3, 1 sp | €3 | [path:soldier] [type:consumable] [re] [fueled] [single-use] `Uncommon (~€50)` |
+> | Blood Brandy | Thickened bloodwine. Restores 1d6+1 ability or life points. Intoxicating. | 1 st | €10 | [path:redlander] [type:consumable] [fueled] [single-use] `Uncommon (~€50)` |
+> | Red Juice | Master secretes it every morning. Says it's healthy. Grants +1d8 temporary life and +2 strength. Withdrawal: after a day without, reduce strength and thought by 2. | 1 sp | €15 | [path:bearer] [type:consumable] [single-use] `Uncommon (~€50)` |
+> | Coffee Bonbons | Candy that hides a burden for a day. May cause twitching. | re 2, 1 st | €20 | [path:purplelander] [type:consumable] [re] [single-use] `Uncommon (~€50)` |
+> | Omnifleisch | Syntetik™ brand universal undead food. Keeps 'em looking fresh! | re 3, 1 sk | €20 | [path:orangelander] [type:consumable] [re] [single-use] `Uncommon (~€50)` |
+> | Rotblood Scent | Perfume to smell unappealing to ghouls and vampires. | 1 sp | €20 | [path:redlander] [type:consumable] [single-use] `Uncommon (~€50)` |
+> | Holy Human Herbs | Burn them to create a sacred space and chase away daemons. | 5 sp | €25 | [path:barbarian] [type:consumable] [single-use] `Uncommon (~€50)` |
+> | Felix Whizz Six-Pack | The energy drink grants 1d4 temporary life. Mildly addictive. | re 4, 1 st | €49 | [path:bourgeois] [type:consumable] [re] [single-use] `Uncommon (~€50)` |
+> | Drywood Gourd | The predatory wood of this gourd absorbs fluids all on its own. Great for drying damp clothes or dehydrating enemies. | 1 st | €50 | [path:bluelander] [type:consumable] [single-use] `Uncommon (~€50)` |
+> | Parasite | Patchflesh is a temporary fix. Recover 2d8 + level life or 1d4+1 ability damage, but suffer 1 burden. Remove with salt. Addictive. | single use, 1 sp | €75 | [path:soldier] [type:consumable] [single-use] `Uncommon (~€50)` |
+> | Organic Paste | Processed human life in a tube! 10 life for activating powers. | 10 life, 1 st | €100 | [path:bluelander] [type:consumable] [single-use] `Uncommon (~€50)` |
+> | Sun's Caress | A special sunscreen that heals you as you turn a lovely shade of fried. Recover 1d6 life after a few hours in the sun. | re 3, 1 st | €100 | [path:holy-fool] [type:consumable] [re] [single-use] `Uncommon (~€50)` |
+> | Mindwipers | Think a thought you would forget, then eat these pills. | re 5, 1 sp | €200 | [path:greenlander] [type:consumable] [re] [single-use] `Valuable (~€250)` |
+> | Sleepy Coins | Look like gold wrapped in plastic. Exposed to the air, they sublimate into a soporific cloud. Save or sleep. | re 2, 1 sp | €200 | [path:trickster] [type:consumable] [re] [single-use] `Valuable (~€250)` |
+> | Smart Lubricants | Tiny synthetic animalcules smooth your joints and reduce wear and tear. Each dose removes 1 golem burden. | re 4, 1 st | €250 | [path:golem] [type:consumable] [re] [single-use] `Valuable (~€250)` |
+> | Saffron Snuff | Inhale to clear your head or gain 1d4 aura for an hour. | re 1, 1 sp | €250 | [path:yellowlander] [type:consumable] [re] [single-use] `Valuable (~€250)` |
+> | Nip Lotion | Makes you smell nice to Cat Lords. | charisma +2, re 7, 1 sp | €350 | [path:purplelander] [type:consumable] [re] [single-use] `Valuable (~€250)` |
+> | Metapills | Pop daily. Reduce max life by 1, but get a bonus save against diseases. | re 1, 1 sp | €300 | [path:tourist] [type:consumable] [re] [single-use] `Valuable (~€250)` |
+>
+> #### Path Tools/Kits
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Standing Bed | A tubular steel frame to lean on and rest while 'keeping watch.' | 1 st | €1 | [path:soldier] [type:tool] [kit] `Uncommon (~€50)` |
+> | Polishing Kit | Perfect for keeping jewelry and weapons looking impressive. | 1 st | €3 | [path:bearer] [type:tool] [kit] `Uncommon (~€50)` |
+> | Pre-Fall Firemaker | Sippo brand. Includes lighter fluid. | 1 sp | €10 | [path:barbarian] [type:tool] [refillable] `Uncommon (~€50)` |
+> | Social Credit Tattoo | Proof of what a good person you are. Free access to corporate dormitories and food slurry dispensaries! Do not resuscitate! | — | €10 | [path:servant] [type:tool] [kit] `Uncommon (~€50)` |
+> | Odd Lock Picks | Well-used. Open doors and crack autogolem route guidance brains. | 1 st | €20 | [path:servant] [type:tool] [kit] `Uncommon (~€50)` |
+> | Null Thermos | Almost zero heat loss! | 1 st | €55 | [path:purplelander] [type:tool] [kit] `Uncommon (~€50)` |
+> | Reading Monocle | Translates 72 supported languages. Censorship module included. | 1 sp | €70 | [path:manager] [type:tool] [kit] `Uncommon (~€50)` |
+> | Traveler Kit | Porta-stove, samovar, canteen, cast iron pot, oils, salts, spices, ladles, tongs, knives, and chopping block. No more raw game! | 1 sk | €75 | [path:barbarian] [type:tool] [kit] `Uncommon (~€50)` |
+> | Machination Kit | Wrenches, pliers, wires, solders, blue prince scrolls, machine mantras, and more to keep an old fabricator ticking over. | 1 sk | €125 | [path:yellowlander] [type:tool] [kit] `Uncommon (~€50)` |
+> | Cunning Watch | Tells time and etiquette. | charisma +1, 1 sp | €250 | [path:manager] [type:tool] [kit] `Valuable (~€250)` |
+> | Book of Regulations | Like a lockpick set for bureaucracies and organizations. | 1 st | €300 | [path:manager] [type:tool] [kit] `Valuable (~€250)` |
+> | Pause | Declaration of Daemon suspension incantation cylinder, hooked to a wind-up speaker. Spend 1 life: nearby daemon loses their turn (save). | 1 st | €400 | [path:yellowlander] [type:tool] [fueled] [kit] `Valuable (~€250)` |
+> | CordwoodTM Jumpsuit & Headset | A virtual room with noösphere access on the go. A house of your own even if you have nowhere to sleep. | 2 st | €450 | [path:holy-fool] [type:tool] [kit] `Valuable (~€250)` |
+> | Golemechanic Kit | Everything you need to repair and maintain yourself. | re 2, 1 sk | €500 | [path:golem] [type:tool] [re] [kit] `Valuable (~€250)` |
+> | Mightier Pen | Bonus to legal and oldtech scrolls; opens ministry doors. | aura +1, 1 sp | €700 | [path:manager] [type:tool] [kit] [oldtech] `Rare (~€1,000)` |
+> | Book of Hellaesthetics | Words to cause pain or take it away. Spend 2 life to restore or remove (save) 1d6+1 life. Seal to recharge overnight. | re 5, 1 st | €800 | [path:holy-fool] [type:tool] [re] [fueled] [kit] `Rare (~€1,000)` |
+> | Eisen Doppler Amulet | Spend 1 hero die to project your iron illusion (level and skills as PC, defense 19, 1d8 damage, only 1 life) nearby. | 1 st | €2,000 | [path:soldier] [type:tool] [fueled] [kit] `Rare (~€1,000)` |
+> | Vidy Unity Box | Long Long Ago holo-plays such as Willow Wolf's Wall and Temple of the Serpent King. Brings folks together in a soft blue glow. | 2 st | €2,000 | [path:bluelander] [type:tool] [kit] `Rare (~€1,000)` |
+> | Ring of Divisibility | Spend 1 life to split yourself into two half-sized copies. Lasts several minutes. Feels weird. | 1 sp | €3,500 | [path:trickster] [type:tool] [fueled] [kit] `Exceptional (~€5,000)` |
+> | Doormaker | This empathic brushpen lets you draw doors in livingstone and shipmetal structures. Originally made for Metropolis maintainers. Eraser sold separately. | re 7, restricted, 1 st | €4,500 | [path:greenlander] [type:tool] [re] [kit] `Exceptional (~€5,000)` |
+> | Force Harness | Reactive defense. Spend 1 hero die to negate one attack. | 1 st | €9,250 | [path:scion] [type:tool] [kit] `Exceptional (~€5,000)` |
+> | Court Kit | Snuff box, spice tongs, tumblers, coffee cups, brushes, combs, pins, rings, heels, girdles, scrolls, voice modulators and more. | 1 sk | €15k | [path:noble] [type:tool] [kit] `Unique (~€25,000)` |
+>
+> #### Path Clothes/Wearables
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Cat Collar | Proof of Cat Lord service. Guarantees bedding and protein. | 5 sp | €5 | [path:purplelander] [type:utility-device] [wear] [collar] [status] `Uncommon (~€50)` |
+> | Hard Leash | Oldtech fibers so strong, they'll never snap. 6m long. | 2 sp | €5 | [path:yellowlander] [type:utility-device] [wear] [pet] [collar] [oldtech] `Uncommon (~€50)` |
+> | Hedonic Accumulator | This wearable adds up how much you have cost the community! Also tallies how many years of useful labor you will provide after death. | 1 sp | €5 | [path:orangelander] [type:utility-device] [wear] [status] `Uncommon (~€50)` |
+> | Shapeless Hat | Protects from rain, sun, flies, and spores. Bonus to disappearing in a crowd. | 1 st | €5 | [path:tourist] [type:utility-device] [wear] [headgear] `Uncommon (~€50)` |
+> | Comfy Sandals | Show off your socks as you walk in style! | 6 sp | €20 | [path:tourist] [type:utility-device] [wear] [footwear] `Uncommon (~€50)` |
+> | Skin Glove | A creepy synthetic flesh glove. It's for the fingerprints, you see. | 1 sp | €50 | [path:trickster] [type:utility-device] [wear] [disguise] `Uncommon (~€50)` |
+> | City Shoes | Soft soles to find your way around a city with your eyes closed. | 5 sp | €60 | [path:manager] [type:utility-device] [wear] [footwear] `Uncommon (~€50)` |
+> | Third Ear | Hear master's voice at a distance. Pretty nifty. | 1 sp | €65 | [path:bearer] [type:utility-device] [wear] [audio] `Uncommon (~€50)` |
+> | Harshfield Uniform | Rugged striped outdoor labor suit with built-in climate control for work in hot and freezing conditions. | 1 st | €75 | [path:servant] [type:utility-device] [wear] [clothing] [enviro] `Uncommon (~€50)` |
+> | Air Compressor | Biomechanical mask for breathing in low-pressure conditions. | loud, 1 st | €85 | [path:orangelander] [type:utility-device] [wear] [mask] [enviro] `Uncommon (~€50)` |
+> | Dumb Veil | Obscures mental emanations. Hides intelligence. | 5 sp | €85 | [path:purplelander] [type:utility-device] [wear] [veil] [mind-shield] `Uncommon (~€50)` |
+> | Cinnabar Shoes | Pass without trace in ruins and abandoned bunkers. | 1 st | €95 | [path:redlander] [type:utility-device] [wear] [footwear] [stealth] `Uncommon (~€50)` |
+> | Gold Leaf | Enough to plate yourself thrice! Look like a protocol golem. | 1 sp | €100 | [path:golem] [type:utility-device] [wear] [clothing] [golem] `Uncommon (~€50)` |
+> | Snakeskin Shoes | Show you've got class. Make mongeese love you, but not snakes. | charisma +1, 5 sp | €100 | [path:noömagus] [type:utility-device] [wear] [footwear] [social] `Uncommon (~€50)` |
+> | Poly-Ocular Visor | With three removable eyes. Roll 'em, pose 'em, stick 'em on a wall. | long range, 1 st | €265 | [path:orangelander] [type:utility-device] [wear] [visor] [sensor] `Valuable (~€250)` |
+> | Spotted Lion's Cloak | Grants a lion's bravery, chases away fear, and provides steppe camo. | 1 st | €300 | [path:barbarian] [type:utility-device] [wear] [clothing] [camo] `Valuable (~€250)` |
+> | Tinkling Shoes | Pretty bells ensure you won't pass unheard. | charisma +1, 1 st | €300 | [path:purplelander] [type:utility-device] [wear] [footwear] [social] `Valuable (~€250)` |
+> | Cloak of the City | Pass without trace in town. Become one with the brickwork. | 1 st | €349 | [path:bourgeois] [type:utility-device] [wear] [clothing] [stealth] `Valuable (~€250)` |
+> | Second Face | Another face, stored in a nutrient gel in a preservative bag. | 1 st | €550 | [path:trickster] [type:utility-device] [wear] [disguise] `Valuable (~€250)` |
+> | Indigo Face | A mask of pure crystal, a lost noble's visage. Passkey or money? | aura +1, 1 st | €640 | [path:bluelander] [type:utility-device] [wear] [mask] [disguise] [passkey] `Rare (~€1,000)` |
+> | Living Flesh | One Pound of Sunlight keeps it alive, but it must feed on wriggling, living tissue to grow and entirely coat your bones. | life +4, 5 sp | €670 | [path:skeleton] [type:utility-device] [wear] [clothing] [skeleton] [fueled] `Rare (~€1,000)` |
+> | Twilight Shades | Low-light 360° wraparounds for nightclubs and deep woods. | 1 st | €700 | [path:greenlander] [type:utility-device] [wear] [eyewear] `Rare (~€1,000)` |
+> | Living Shoes | They smell and lick, make tracking easier, warn you of dangers. | 1 st | €800 | [path:scion] [type:utility-device] [wear] [footwear] `Rare (~€1,000)` |
+> | Ceramic Visage | A gentle face to soothe soft-flesh humans. | charisma +2, 1 st | €850 | [path:golem] [type:utility-device] [wear] [mask] [social] `Rare (~€1,000)` |
+> | Blindgod | A face mask that hides your soul and mind from daemons and divines. | end +1, 1 st | €3,000 | [path:redlander] [type:utility-device] [wear] [mask] [mind-shield] `Exceptional (~€5,000)` |
+> | Master Eyeball | In a preservative jar. Lets you pass for higher class. | charisma +1, 1 st | €4,500 | [path:servant] [type:utility-device] [wear] [disguise] [status] `Exceptional (~€5,000)` |
+> | Face Crab | Wear it to look like someone nice and established and not at all like you. The crab needs an hour and 1d4 life to replace its face. Obviously, it also needs a fresh human face. Very illegal. | 1 st | €5,000 | [path:servant] [type:utility-device] [wear] [mask] [disguise] `Exceptional (~€5,000)` |
+>
+> #### Path Utility/Devices
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Old Key | It looks mundane, but you know it's a transcendental key for an omni lock. The address is in a ruined city. What does it hide? | aura +1, 1 sp | €1 | [path:skeleton] [type:utility-device] [key] [passage] `Uncommon (~€50)` |
+> | Water Extractor | Extracts all the moisture from a cubic decimeter of matter in less than a minute. Bottle not included. Reusable. | 1 st | €10 | [path:yellowlander] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Scroll Disk Belt | Store 3 floppy power diskettes and activate with a button! | 1 st | €25 | [path:noömagus] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Soup Thermos | Nutrislurry and other stew-category fluids stay edible forever. | 1 st | €25 | [path:manager] [type:utility-device] [portable] [refillable] `Uncommon (~€50)` |
+> | Tikker Clicker | An ancient clock that vibrates and buzzes when it detects corrupting energies. Grants bonus against corruption. | 1 sp | €30 | [path:yellowlander] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Sand Dragon Scale | Incredibly hard, can grind anything save ur-diamond. | 1 st | €40 | [path:yellowlander] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Smart Rope | Unties as needed. Wants to strangle its maker. | 20 meters, 1 st | €45 | [path:trickster] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Jet Credit Ring | Spend €1,000 now, pay later. Or skip corporate jurisdiction. | 1 sp | €49 | [path:bourgeois] [type:utility-device] [credential] [credit] `Uncommon (~€50)` |
+> | Tree-Reader | Speak with over 30 kinds of tree! | 1 st | €65 | [path:orangelander] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Photomeme | Demon crystal records what you see. Its magnetic brain stores 360 images. | 1 st | €75 | [path:tourist] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Void-Certified Sleeping Bag | Rest easy, even if your fast star springs a leak! Stolen. | 1 st | €100 | [path:holy-fool] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Radioactive Rodent Skull | One night, its owner bit you and you had an epiphany. | aura +1, 2 sp | €125 | [path:holy-fool] [type:utility-device] [portable] `Uncommon (~€50)` |
+> | Tree-Plug | Fungo-mechanical charging unit that draws energy from smart trees to power omnibatteries and other devices. 1d4 hours per charge. | 2 st | €150 | [path:orangelander] [type:utility-device] [portable] `Valuable (~€250)` |
+> | Flesh Pocket | This symbiote lets you hide objects (1 st) inside yourself! The hidden object counts as clothes—not taking up inventory space. | 1 st | €300 | [path:bearer] [type:utility-device] [portable] `Valuable (~€250)` |
+> | Spirit Hand | Ectoplasmic third hand anchored in your aura. Occupies a trait slot. | 1 st | €375 | [path:scion] [type:utility-device] [portable] `Valuable (~€250)` |
+> | Blood Deed | They owe you €1,000 or a body. | 1 sp | €500 | [path:greenlander] [type:utility-device] [contract] [claim] `Valuable (~€250)` |
+> | Shipstone Skull | An ancestor turned metamorphic. It whispers, sometimes lies. | thought +1, 2 st | €750 | [path:bluelander] [type:utility-device] [portable] `Rare (~€1,000)` |
+> | Spotted Lion's Paw | Imbued with a lion's power. | strength +1, 1 st | €750 | [path:noble] [type:utility-device] [portable] `Rare (~€1,000)` |
+> | Green Figurine | It says it is a true god? It promises you're special. | aura +2, 5 sp | €800 | [path:greenlander] [type:utility-device] [portable] `Rare (~€1,000)` |
+> | Escape Button | Put it on a wall, push it, and a door appears. Single-use. | 1 sp | €1,000 | [path:tourist] [type:utility-device] [portable] `Rare (~€1,000)` |
+> | Reliquary | Acrylic translucent plastic puck that softens and hardens with your thoughts. Safely stores a fragment of radiance or human personality. | 1 st | €1,250 | [path:redlander] [type:utility-device] [portable] `Rare (~€1,000)` |
+> | Power Scroll Printer | Insert a pliant human hand to extract life (and blood) to imbue power into a synthskin scroll. Sacrifice 1d6 life to refill. | re 3, 2 st | €1,450 | [path:noömagus] [type:utility-device] [re] [portable] `Rare (~€1,000)` |
+> | Copypasta Egg | Feed it €500 of materials and hold it for a week to copy your body. | 1 sk | €1,500 | [path:golem] [type:utility-device] [portable] `Rare (~€1,000)` |
+> | Pouch of Rubies | Quite illegal. Where did you get those? | charisma +2, 1 sp | €3,000 | [path:servant] [type:utility-device] [portable] `Exceptional (~€5,000)` |
+> | Estate Key | Lucky day! An estate worth €15/wk can be yours if you clear out the falscher infestation. It's just 2d10 days' travel away. | 1 sp | €3,500 | [path:greenlander] [type:utility-device] [key] [deed] `Exceptional (~€5,000)` |
+> | Folk Hero Source Code | A stack of source cards that teaches a mother machine how to reincarnate a folk hero of the pre-feline times. | thought +1, 2 st | €4,000 | [path:purplelander] [type:utility-device] [portable] `Exceptional (~€5,000)` |
+> | Travel Deck | Private portal cards to 54 great houses. Many are now toxic husks. | 2 sp | €25k | [path:noble] [type:utility-device] [portable] `Unique (~€25,000)` |
+> | Black Mandible | You know this metal bone came from a Builder. A god, of sorts. | 3 sp | 3rr0r | [path:scion] [type:utility-device] [portable] `Unique (~€25,000)` |
+>
+> #### Path Vehicles/Mounts
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Folding Boat | Paddles included. | cap 4, 5 st | €75 | [path:bluelander] [type:vehicle] [mount] `Uncommon (~€50)` |
+> | Walking Bed | A kind of golem. | L1, capacity 1 | €100 | [path:holy-fool] [type:vehicle] [mount] `Uncommon (~€50)` |
+> | Cad Bird | A 2-meter cariamid. Swift and scary, with beak and claw. | L3, capacity 1 | €300 | [path:orangelander] [type:vehicle] [mount] `Valuable (~€250)` |
+> | Plug-In Chimeric | Hybrid burdenbeast with a dome head and electric discharge. | L5, capacity 3 | €550 | [path:yellowlander] [type:vehicle] [mount] `Valuable (~€250)` |
+> | Metal Steed | Roars like thunder, gleams like a chrome elemental. | L2, cap 2, fast | €700 | [path:barbarian] [type:vehicle] [mount] `Rare (~€1,000)` |
+> | Centaur Cradle (vehicle mod) | Four wheels, shock absorbers, tubular struts and a plug-in drive. Turns a walkergolem into a simple, fast autogolem. | cap +2, 1 sk | €1,250 | [path:golem] [type:mod] [type:vehicle] [mobility] `Rare (~€1,000)` |
+> | Golem Steed | Belches fire, burns like an ash elemental. Charges like a truck. | L3, capacity 3 | €1,500 | [path:noble] [type:vehicle] [mount] `Rare (~€1,000)` |
+> | Motogolem | Named Harm. Electric, so feed it omnibatteries. | L2, cap 2, fast | €1,690 | [path:servant] [type:vehicle] [mount] `Rare (~€1,000)` |
+> | Builderhorse | Eight legs, synthetic skin, composite bones, old-school clock-brain. | L3, cap 4, fast | €2,500 | [path:scion] [type:vehicle] [mount] `Rare (~€1,000)` |
+> | Articulated G-Wagon | Six wheels, seven gears, and a solar omnibattery. | L4, capacity 5 | €2,700 | [path:manager] [type:vehicle] [mount] `Rare (~€1,000)` |
+> | Limousine Golem | An elegant living machine to project gravitas. Roads only. | L4, capacity 6 | €3,299 | [path:bourgeois] [type:vehicle] [mount] `Exceptional (~€5,000)` |
+> | Friend Horse | It talks, but will not share its name. | L4, cap 2 | €NA | [path:soldier] [type:vehicle] [mount] `Unique (~€25,000)` |
+>
+> #### Path Companions/Entities
+>
+> | Item | Description | Stats | Cost | Source Context |
+> | --- | --- | --- | --- | --- |
+> | Potted Plant | The first lifeform you found after awakening on a dead fast star. | sentient, 1 st | €1 | [path:golem] [type:companion] [entity] `Uncommon (~€50)` |
+> | Pet Bird | Of no known species. Of foul speech. | L0, 1 st | €5 | [path:scion] [type:companion] [entity] `Uncommon (~€50)` |
+> | Little Pyramid | Tiny mummy (L6, groaning) inside! Smash pyramid to set it free... | 2 sp | €15 | [path:skeleton] [type:companion] [entity] `Uncommon (~€50)` |
+> | Glitter Ball | Floating Long Long Ago disco orb. Follows simple instructions. | L0, 1 st | €120 | [path:trickster] [type:companion] [entity] `Uncommon (~€50)` |
+> | Stranger in a Bottle | A synthetic person with fake memories trapped in an improbability superposition. Use it to inject some personality into a hollow shell or basic golem. | 1 sp | €200 | [path:trickster] [type:companion] [entity] `Valuable (~€250)` |
+> | Dead Language Daemon | A noösphere spirit trapped in a shell of glass and steel. Translates dead languages. Invents rude limericks and dainty sonnets. | 1 sp | €499 | [path:noömagus] [type:companion] [entity] `Valuable (~€250)` |
+> | Comprehender | Caius the A Long Ago daemon in an earring that correctly translates 5-in-6 texts, and catastrophically mistranslates the other 1-in-6. | 1 sp | €495 | [path:tourist] [type:companion] [entity] `Valuable (~€250)` |
+> | Flower Pot of the Living Avatar | Keeps any plant alive. Who needs green fingers? | 1 st | €700 | [path:holy-fool] [type:companion] [entity] `Rare (~€1,000)` |
+> | Vicious Bird | This pet is no one's friend. It curses like a star sailor. | L1, 6 life | NA | [path:bluelander] [type:companion] [entity] `Unique (~€25,000)` |
+> | Friend Spider | It might actually be a coal elemental? Or a carbon golem? “Sooty” is very fire resistant and likes flowers. | L0, tiny (1 sp) | NA | [path:trickster] [type:companion] [entity] `Unique (~€25,000)` |
+>
+tags:
+>   [gear]
+>   [source:vlg]
+>   [type:path-reference-synthesis]
+>   [chapter:other-paths]
+
+meta:
+> - source:
+>   - book: Vastlands_Guidebook; section: OTHER PATHS > Path Item Tables
+> - see-also:
+>   - Synthetic_Dream_Machine_05_Gear_Index.md#path-gear
+
+  <div class="gear-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#vlg-synthesized-combat-referenes-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
 <div class="gear-table-card" markdown="1">
 
 ### Barbarian Items
