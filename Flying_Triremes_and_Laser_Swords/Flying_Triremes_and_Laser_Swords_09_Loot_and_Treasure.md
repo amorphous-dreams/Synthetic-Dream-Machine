@@ -24,15 +24,15 @@ For each looted cache or major hoard, record:
   - `Bulk` and `Base Value`  
 - `Source` (site/node/encounter)  
 - `Channel` and `Realized Value` (when liquidated)  
-- `Attention/Heat changes` and any queued weekly event fallout
+- `Attention/Tick changes` and any queued weekly event fallout
 
 ## Terminology
 
 - **Base Value:** pre-sale value before channel/time/risk modifiers.  
 - **Realized Value:** final value after sale/contract/channel modifiers, losses, and constraints.  
-- **Heat (RSS):** area response rate (`+1` to `+4`), used when you **Tick Attention**.  
+- **Tick (RSS):** area response rate (`+1` to `+4`), used when you **Tick Attention**.  
 - **Attention (RSS):** current notice clock (`0-20`) with bands `Quiet`/`Loud`/`Alarm`/`Emergency`.  
-- **Tick Attention (RSS verb):** add Area Heat to Area Attention.  
+- **Tick Attention (RSS verb):** add Area Tick to Area Attention.  
 - **Encounter Die check (RSS):** d6 encounter check; trigger range follows Attention band.
 
 ## Quickstart Procedure (Referee)
@@ -146,7 +146,7 @@ SDM Economy Weirdness (optional `1d6`, once per major lot):
 Concept references:
 - Cash abstraction / liquid assets: [OGA `Cash Assets`](../Our_Golden_Age/Our_Golden_Age.md#cash-assets).
 - Multi-currency exchange volatility and fee spread: [OGA `Purr-Purr Exchange Rates`](../Our_Golden_Age/Our_Golden_Age.md#purr-purr-exchange-rates).
-- `Tick Attention` and heat escalation interface: [FTLS 04 `RSS Attention`](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [FTLS 09 `Step 5: Escalation Hooks`](#step-5-escalation-hooks).
+- `Tick Attention` and tick escalation interface: [FTLS 04 `RSS Attention`](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [FTLS 09 `Step 5: Escalation Hooks`](#step-5-escalation-hooks).
 
 Referee note: keep the local medium in fiction (coin, bells, cards, scrip, credits, oath-tokens), but settle outcomes in `cash`.
 
@@ -314,9 +314,9 @@ Hoards carry risk.
 | 5 | Claimed property. A faction or authority arrives soon. |
 | 6 | Bait cache. Tick Attention twice and run an immediate Encounter Die check. |
 
-RSS handoff: when a rider says **Tick Attention**, increase Attention by Area Heat and apply band crossings immediately (`Quiet 0-6`, `Loud 7-12`, `Alarm 13-19`, `Emergency 20`), including any immediate signs/escalations from RSS `Attention` rules.
+RSS handoff: when a rider says **Tick Attention**, increase Attention by Area Tick.
 
-RSS references: [Attention (0–20)](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Tick Attention cadence](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Cooling Down (Bleeding Heat)](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-cooling-down).
+RSS references: [Attention (0–20)](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Tick Attention cadence](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Cooling Down](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-cooling-down).
 
 ### Step 5: Escalation Hooks
 
@@ -328,7 +328,7 @@ Apply in this order:
    - `>= 10 sk` or `>= 5,000 cash` -> pre-roll one **Surprising** Event for next week.  
    - `>= 20 sk` or `>= 10,000 cash` -> pre-roll one **Error** Event for next week (highest band only).  
    - If using OGA `I.N.T.R.`, use matching bands (`Surprising -> Nuisance/Trouble`, `Error -> Trouble/Rupture`).  
-   - Log the pre-rolled Event and current Attention/Heat mods in the `Treasure Profile`; carry Area Attention forward until reduced by RSS cooldown.  
+   - Log the pre-rolled Event and current Attention/Tick mods in the `Treasure Profile`; carry Area Attention forward until reduced by RSS cooldown.  
 
 ## Transport, Burden, and Throughput
 
@@ -387,7 +387,7 @@ Procedure:
 3. **Refusal conditions (any may apply):** no ready coin, suspicious provenance, suspected magical/illegal origin, or buyer risk intolerance.
 4. **Fallback private buyer (on refusal):** offer `20-80%` (`2d4 x 10%`) of stated value; usually 1 day and local appraisal scene.
 5. **Jewelry breakup option:** if broken into parts, lose up to `50%` value before further sale math.
-6. **Heat coupling:** attempts to cash out `[illegal]`, `[hot]`, or `[wanted]` lots should trigger [Step 5 `Illicit lots`](#step-5-escalation-hooks) handling.
+6. **Hot goods:** attempts to cash out `[illegal]`, `[hot]`, or `[wanted]` lots should trigger [Step 5 `Illicit lots`](#step-5-escalation-hooks) handling.
 
 Test prompts:
 - Gem conversion in small settlement: `12,000` cash gem at pop `3,000` should fail direct cash-out (split/travel/fallback required).  
