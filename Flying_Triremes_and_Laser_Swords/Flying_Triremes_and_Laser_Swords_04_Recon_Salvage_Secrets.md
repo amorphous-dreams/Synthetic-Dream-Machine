@@ -31,9 +31,9 @@ Use RSS when players treat the world as **usable**. When they want to scout for 
 >
 > The rusting remains of a shipwreck from the Second Breaking, now a reef 20 yards offshore.
 >
-> At **Level 9**, this is a serious but workable operation zone: brittle structure, trapped compartments, and meaningful risk, but enough depth for multiple watches of careful recon and salvage. With **Tick +2**, pressure rises at a visible pace, so crews can run a few clean operations before the response hardens; sloppy sequencing burns that margin fast. At **Attention 0**, the crew still has initiative and plausible deniability, making this the best moment to map exits, stage tools, and choose the first node.
->
-> **Arcane 6** means the place is humming and half-listening: shrine-song in the rust, relay ghosts in the spray, memetic static in the edges of speech. Manageable, not tame. **Tech 8** puts the wreck in an industrial oldtech band: relay logic, drone racks, and machine protocols are readable to trained crews and profitable to salvage. But this band is brittle in cascade, so rushed bypass work can wake linked safeties, ping distant monitors, and burn good salvage before you can name it.
+> At **Level 9**, this is a serious but workable operation zone: brittle structure, trapped compartments, and meaningful risk, but enough depth for multiple watches of careful recon and salvage. **Arcane 6** means the place is humming and half-listening: shrine-song in the rust, relay ghosts in the spray, memetic static in the edges of speech. Manageable, not tame. **Tech 8** puts the wreck in an industrial oldtech band: relay logic, drone racks, and machine protocols are readable to trained crews and profitable to salvage. But this tech leveld is brittle in cascade, so rushed bypass work can wake linked security AIs, ping distant monitors, and burn good salvage before you can recover it.
+> 
+> With **Tick +2**, pressure rises at a visible pace, so crews can run a few clean operations before the response hardens; sloppy sequencing burns that margin fast. At **Attention 0**, the crew still has initiative and plausible deniability, making this the best moment to map exits, stage tools, and choose the first node.
 
 ### 1. **Area Profile.**
 
@@ -271,10 +271,10 @@ Increase Attention when the party takes an action that risks notice. Even on som
 - **Salvage:** always, because extraction leaves scars.
 - **Secrets:** rituals, hacking, archive uplinks, because reality logs access attempts.
 
-| Tick | Low | Medium | High | Epic |
+| Area | Low | Medium | High | Epic |
 | :---: | :---: | :---: | :---: | :---: |
 | Level | 0–7 | 8–11 | 12–15 | 16–20 |
-| Area **Tick** | **+1** | **+2** | **+3** | **+4** |
+| **Tick** | **+1** | **+2** | **+3** | **+4** |
 
 Track Attention using a stack of tokens, an oversized d20, or some other table facing flag. If an action feels like it should increase Attention, it probably should - **Tick Attention** (increase the score by the Area Tick value). These numbers do not model "reputation." They model **alarum**. At low Attention levels, the Area reacts calmly. At high levels, the Area reacts immediately. Note the Attention clock(s) scores when the PCs leave an area.
 
