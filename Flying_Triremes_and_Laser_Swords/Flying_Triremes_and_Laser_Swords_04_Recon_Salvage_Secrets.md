@@ -17,7 +17,62 @@ RSS also assumes the world pushes back. The more you poke at a place, the more i
 
 Use RSS when players treat the world as **usable**. When they want to scout for a soft seam, harvest a wreck, render fat into lamp-oil, cook rations that matter, jury-rig a charm, bargain for access, or pull a secret out of a sealed channel. It works best when something is at stake. RSS is here to make those moments of *work*—the practical, grubby, miraculous labor between battles and landmarks—feel like the real adventure they are.
 
+## Company Gameplay at a Glance
+
+RSS is the main procedural engine for **Company** gameplay. Travel gets the company to a place worth working. RSS takes over when the group starts asking operational questions: what the company can attempt this week, what the Area can yield, how loud the work is, what gets consumed, what gets produced, and who begins to notice.
+
+Run RSS when the expedition is acting as a company rather than as isolated individuals. That includes caravans, survey crews, flotillas, shrine expeditions, salvage unions, cult cells, maintenance teams, pirate bands, civic details, and mercenary outfits. The company is the moving unit of play. Individual characters still matter, but RSS cares about their organization, tools, roles, signatures, and capacity to keep working through pressure.
+
+### Travel Gameplay Arrives Here
+
+Travel gameplay should hand off to RSS when the group reaches a destination, frontier approach, stopover, route-side discovery, district, wreck field, shrine complex, market, ruin, battlefield, or any other place that can sustain meaningful work over watches or weeks.
+
+At the moment of arrival, establish:
+
+- what the company came here to do,
+- what local constraint immediately matters,
+- what Area or Discovery is now in play,
+- what faction, legal, environmental, or noospheric pressure is already present.
+
+### Delve Gameplay Branches from Here
+
+Stay in Company mode as long as the main question is operational: scouting, extraction, staging, negotiation, supply use, cooldown, and week-scale movement of the company as a whole.
+
+Branch to **Delve** when the question becomes site-immediate and character-proximate: room entry, breach timing, trap handling, line-of-sight danger, short-range pursuit, encounter-by-encounter exploration, or any obstacle best resolved in turns rather than watches or weeks.
+
+When that site question is answered, return to Company gameplay and update the company state with what the delve changed: losses, injuries, signatures, salvage, secrets, leverage, attention, debts, and new opportunities.
+
+## Company Sheet
+
+Track the company as a shared operational record using the same logic SDM already uses for caravans: who is backing the expedition, what it can carry, what it consumes per week, where it is headed, and what discoveries or obligations are now attached to it.
+
+At minimum, record:
+
+- **company name** and what kind of outfit it is,
+- **patron / paymaster / owner**,
+- **officers / key specialists / hallmarks** acting for the group,
+- **current destination, route, or base**,
+- **supplies** in SDM terms,
+- **cargo, sacks, or notable company inventory**,
+- **company tags**,
+- **active burdens, debts, favors, permits, claims, or legal trouble**,
+- **current faction tie or standing arrangement**.
+
+If the table already uses a caravan sheet, do not replace it. Add RSS fields onto it. The important thing is that the record preserves SDM state that already matters mechanically: weekly supply pressure, cargo capacity, destination procedure, discovery follow-up, and market-facing consequences.
+
+The company sheet should answer three questions at a glance: who is funding or steering this expedition, what it can currently sustain and transport, and what trouble, leverage, or obligations it is carrying into the next week.
+
 ## RSS in 5 Stages
+
+When Travel resolves into Company gameplay, first do the setup work: arrive, name the immediate objective, establish the Area or Discovery now in play, and note the company state that matters for this operation.
+
+Then run RSS through these five stages:
+
+1. Profile the Area.
+2. Recon the Nodes.
+3. Salvage and Refine.
+4. Discover Secrets.
+5. Resolve Aftermath and decide what happens next.
 
 **Example Area:**  
 > **Kestrel-Wreck Reef** (Level 9, Tick +2, Attention 0)  
@@ -35,9 +90,9 @@ Use RSS when players treat the world as **usable**. When they want to scout for 
 > 
 > With **Tick +2**, pressure rises at a visible pace, so crews can run a few clean operations before the response hardens; sloppy sequencing burns that margin fast. At **Attention 0**, the crew still has initiative and plausible deniability, making this the best moment to map exits, stage tools, and choose the first node.
 
-### 1. **Area Profile.**
+### 1. **Profile the Area**
 
-The profile for an **Area** (also known as a Discovery in SDM). Tracks how hard it pushes back (**Level**), how fast it reacts (**Tick**), how active it is now (**Attention**), the noospheric weirdness and activity level (**Arcane**), the common technology level (**Tech**), and what it’s like (**Tags**). Note any discovered **Nodes** here—plus whatever else you need at the table.
+Create the profile for an **Area** (also known as a Discovery in SDM). Tracks how hard it pushes back (**Level**), how fast it reacts (**Tick**), how active it is now (**Attention**), the noospheric weirdness and activity level (**Arcane**), the common technology level (**Tech**), and what it’s like (**Tags**). Note any discovered **Nodes** here—plus whatever else you need at the table.
    - Level: pick 0–20 by “how complex / defended / alien / unstable / deep”.
    - Tick: Based on Level. The Attention increase per "event" (+1 to +4) unless fiction overrides.
    - Attention: The current Attention score (starts at 0, possibly higher)
@@ -48,21 +103,21 @@ The profile for an **Area** (also known as a Discovery in SDM). Tracks how hard 
 
 When players say “What can we get / make / learn here?” pick an Area, generate 0–3 Nodes and Tag them. When action happens, use the lowest time scale that matters (Week / Watch / Turn).
 
-### 2. **Recon.**
+### 2. **Recon the Nodes**
 
 The World Notices. Recon the nodes: poke, map, taste, listen, negotiate, probe the noösphere. Make the roll(s), take position, and Tick Attention when the work is loud, invasive, or obvious.
 
-### 3. **Salvage.**
+### 3. **Salvage and Refine**
 
 Make It Useful. Collect salvage to extract raw materials; then Refine them into resources, repairs, rations, charms, parts, leverage, rituals, and secrets. Salvage is never free: Attention ticks on the attempt, and hazards may ride in the dust.
 
-### 4. **Secrets.**
+### 4. **Discover Secrets**
 
 Cook, craft, hack, and perform rituals: convert refined resources, recipes, and access into concrete outputs such as consumables, gear mods, powers-in-items, permissions, wards, and leverage. Secrets work is where crews stop merely extracting value and start rewriting local conditions. Like Salvage, it leaves signatures - so when the method is loud, invasive, or politically visible, Tick Attention and be ready for complications.
 
-### 5. **Aftermath.**
+### 5. **Resolve Aftermath**
 
-Roll Hazards if triggered, apply consequences, and resolve cooldown (or escalation). Update the sheet: inventories, resources, new gear, consumed gear, Bonus Dice, burdens/alignments, debts/favors, and any new Tags. If it can be traded, named, or argued about, record it. Areas may degrade, change Tags, or become unsafe—then the company decides: push deeper, lie low, or move on.
+Roll Hazards if triggered, apply consequences, and resolve cooldown (or escalation). Update the sheet: inventories, resources, new gear, consumed gear, Bonus Dice, burdens/alignments, debts/favors, and any new Tags. If it can be traded, named, or argued about, record it. Areas may degrade, change Tags, or become unsafe. Then the company decides: push deeper, lie low, negotiate, split attention, or move on.
 
 ## Key Terms
 

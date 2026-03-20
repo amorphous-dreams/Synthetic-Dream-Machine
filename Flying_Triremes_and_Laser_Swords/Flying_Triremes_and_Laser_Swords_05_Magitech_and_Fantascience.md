@@ -5,94 +5,307 @@ published: true
 ---
 # Magitech and Fantascience
 
-## Magic Item Treasure Generation
+Use this chapter for **objects and systems**: relics, devices, consumables, archives, weapons, wards, and impossible tools. Do not use it for powers in general. When the question turns to how a person activates, prices, stores, or overcharges a power, go to Chapter 06. When the question turns to a strange object's identity, testing, cost, failure, desirability, or modification, stay here.
 
-Use this procedure whenever treasure generation indicates a magical item.
+Run the procedure as an anomalous object loop:
 
-Legacy class-use markers from imported RC tables are not used in this chapter. Ignore `(C) (M) (S)`-style class gating.
+1. classify the object,
+2. identify and test it,
+3. activate, carry, or install it,
+4. track limits, failure, and curse risk,
+5. repair, modify, bind, or rebuild it,
+6. record who now wants it, fears it, licenses it, or seizes it.
 
-Section order:
-1. `Generation Flow`
-2. `Use and Limits`
-3. `Cursed Items`
-4. `Weapon Branches`
-5. `Magic-Item Market Procedure`
-6. `Creation`
-7. `Descriptive Extraction (RC Style Pass)`
+## What Counts as Magitech
 
-Legacy naming rule (current pass):
-- Keep recognizable RC item names, terms, and etymological language as written.
-- Do not rename rolled items into SDM-native labels in this pass.
-- SDM references are used as behavior anchors and close-match notes, not as replacement names.
+Think of magitech as the lane where **magic becomes gear**.
 
-### 1. Generation Flow
+The key mechanical split stays simple: **magitech uses Thought**. When an item rewards pattern-reading, occult interface work, sign interpretation, ritual procedure, or careful reasoning through a weird machine's logic, treat it as magitech.
 
-Use this procedure when Chapter 09 calls for relic/magic yield resolution.
+In SDM book terms, magitech covers UVG machine relics and charged oddities, VLG wards and strange items, and OGA shrines, signals, relics, and noospheric devices. It may come ritualized, haunted, half-alive, temple-bound, guild-licensed, or socially restricted, but it still works as an **object** with a trigger, bearer, interface, maintenance burden, and failure profile. Ward-lamps, bottled daemons, charged staves, signal seals, shrine relays, anti-curse scarabs, and portable noosphere hacks all fit here.
 
-Magic Item Yield Table (`d100`):
+At the table, magitech usually shows up through procedure:
 
-| d100 | Yield Class (RC term, SDM alias) | SDM+ Link / Note |
-|---:|---|---|
-| 01-25 | Potions (potion/oil/elixir) | consumables in [VLG](../Vastlands_Guidebook/Vastlands_Guidebook.md) |
-| 26-37 | Scrolls (scroll/formula/map) | documents and powers in [SDM 04](../Synthetic_Dream_Machine_04_Powers_Index.md) |
-| 38-46 | Wands / Staves / Rods (wand/staff/rod-equivalent) | charged relic tool, limited uses |
-| 47-52 | Rings (ring/amulet/charm) | wearable relic with one defining effect |
-| 53-62 | Miscellaneous Items (utility relic/oddity) | use [VLG d50 Strange Item](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0022) where suitable |
-| 63-72 | Armor / Shields (armor/ward item) | defensive relic with cost or condition |
-| 73-83 | Missile Weapons / Missiles (missile weapon/missile relic) | ranged relic output; set ammo behavior by source |
-| 84-92 | Swords (sword relic) | martial relic, often claim-bearing |
-| 93-00 | Miscellaneous Weapons (miscellaneous weapon relic) | unusual weapon profile; on unstable fiction, add `[wanted]` or `[taboo]` |
+- you can carry, wear, install, socket, load, or deploy it,
+- it uses a clear trigger mode such as `worn`, `held`, `command`, `placed`, or `charged`,
+- players can identify, test, break, drain, bind, repair, seize, or steal it,
+- bad use or repeated use leaves evidence behind.
 
-Strange item source pointers:
-- [VLG: One Strange Item (d50)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0022) and [VLG: Selling Your Strange Item](../Vastlands_Guidebook/Vastlands_Guidebook.md#selling-your-strange-item).  
-- [UVG: 100 Strange Items (d100)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0196).  
+## What Counts as Fantascience
 
-When treasure yields a magical item, run this sequence:
+Think of fantascience as the lane where impossible science still arrives as **things**.
 
-1. Roll `1d100` on `Magic Item Yield Table`.
-2. Roll on the matching subtable (or weapon branch table) to determine the exact item.
-3. Resolve item behavior with the rules below (`Use and Limits`, `Cursed Items`, and `Weapon Branches`).
-4. Record output fields: `tags`, `bulk`, `usage`, `risk`.
+The key mechanical split stays just as simple: **fantascience uses Charisma**. When an item rewards command presence, live interface, imposed will, social authority over responsive systems, or the nerve to make dangerous apparatus answer you, treat it as fantascience.
 
-Table-use rule: if any random result would cause clear campaign problems, reroll or choose a different result.
+In SDM book terms, fantascience covers UVG "oldtech" and impossible vehicles, VLG grimoires, implants, and strange devices, and OGA buildertech, signal launchers, machine-voices, and dangerous apparatus. It still comes to the table as a device, platform, formula, medium, or protocol rather than as free-floating spellcasting. Grimoires, strange engines, memory hardware, old weapons, portal components, doctrine machines, and laboratory oddities often sit in this lane.
 
-Output defaults by family:
+Use a practical boundary: if the table focuses on **the thing** and its interface, stay in this chapter. If the table focuses on **the power itself** apart from any item, go to Chapter 06.
 
-| Family | Default Tags | Default Bulk | Usage Flag | Risk Note |
-|---|---|---:|---|---|
-| Potions | `[consumable] [arcane] [perishable]` | `1 sp` | `consumable` | `stable` |
-| Scrolls | `[intel] [arcane] [copyable]` | `1 sp` | `consumable` | `temperamental` |
-| Wands/Staves/Rods | `[relic] [tool] [charged]` | `1 st` | `charged` | `temperamental` |
-| Rings | `[relic] [wearable] [status]` | `1 sp` | `equipped` | `stable` |
-| Miscellaneous Items | `[relic] [oddity] [utility]` | `1 sp` | `equipped` | `temperamental` |
-| Armor/Shields | `[relic] [armor] [ward]` | `1 st` | `equipped` | `stable` |
-| Missile Weapons/Missiles | `[relic] [weapon] [ranged]` | `1 st` | `equipped` | `stable` |
-| Swords | `[relic] [weapon] [claim]` | `1 st` | `equipped` | `stable` |
-| Miscellaneous Weapons | `[relic] [weapon] [odd-profile]` | `1 st` | `equipped` | `temperamental` |
+## Item Output Record
 
-#### Family Resolver Tropes (RC Extraction Pass)
+Whenever this chapter resolves an object, record it in an SDM-facing format:
 
-Use these as recognizable resolver cues when expanding each family into full subtables.
+- **object name**
+- **class / family**
+- **tags**
+- **bulk / slot pressure**
+- **trigger mode**
+- **usage**
+- **risk**
+- **likely company consequence**
+- **likely legal / faction / divine attention**
 
-| Family | Resolver Cadence (procedure) | RC-Recognizable Tropes to Preserve |
-|---|---|---|
-| Potions | Roll potion result; if a special result appears, roll special potion power and apply duration logic. | Includes control-style potions, opposite/incompatible interactions, and side-effect risk on mixed use. |
-| Scrolls | Roll scroll form first, then resolve embedded effect set (message, map, spell, ward, trap, curse). | Scrolls are usually consumed on use; cursed or trapped scripts can trigger immediately on read. |
-| Wands/Staves/Rods | Roll item kind, then roll effect; set charges by kind when not explicitly stated. | Wands and staves are charge-driven; rods are usually persistent tools with no charge track. |
-| Rings | Roll ring type directly from ring subtable. | High-impact outliers (for example spell storing or wish-tier rings) use control-valve review before placement. |
-| Miscellaneous Items | Roll item directly from broad miscellany table, then apply any internal charge/use rule on that item. | Largest family; includes utility oddities, command-word devices, and campaign-warping curios. |
-| Armor/Shields | Roll armor size/type, then roll magical modifier and special-power chance. | Uses AC-modifier progression and a separate special-power branch when triggered. |
-| Missile Weapons/Missiles | Roll whether weapon or ammunition, then roll base magical bonus and any additional modifier chance. | Ammunition can appear in bundles; extra modifier logic mirrors other weapon branches. |
-| Swords | Roll sword type and base bonus, then check for intelligence and extra modifiers. | Intelligence track includes communication/languages/powers; opponent/talent riders remain a distinct branch. |
-| Miscellaneous Weapons | Roll weapon class and weapon type, then roll bonus and optional additional modifier. | Uses shared additional-modifier logic (opponent bonus or talent branch) with non-sword weapon forms. |
+If the result cannot fit that record, the object still needs conversion work.
 
-#### Resolver Microtables (Pass 1A)
+Tagging note:
+- prefer functional tags first: `[consumable]`, `[weapon]`, `[armor]`, `[shield]`, `[ward]`, `[utility]`, `[mobility]`, `[recon]`, `[healing]`, `[signal]`
+- add source tags next when they matter: `[oldtech]`, `[fantascience]`, `[ritual]`, `[portal]`, `[curse]`
+- use `[attune]`, `[hands-free]`, `[fueled]`, and `[dangerous]` only when the object's procedure actually invokes that rule weight
+- add `[relic]` only when the object's singularity, claim, taboo, or institutional heat matters in play
 
-These condensed tables are for at-table generation speed in this pass. Keep classic item naming. Full subtable expansion remains a later extraction step.
+## Family Placement and Conversion Notes
 
-Potions Microtable (`1d20`):
+Use this section to place an object in the right FTLS lane before you resolve its exact family details in `### 2. Determine the Family and Details`.
 
-| d20 | Potion Result (classic term) | Resolver Note |
+Practical placement:
+- put it in **Field gear and practical weird objects** if the crew can carry it, test it, and use it as expedition gear without changing who immediately notices them
+- put it in **Relics, buildertech, and restricted apparatus** if it is named, singular, claim-bearing, shrine-linked, regulated, militarily sensitive, or likely to trigger seizure, licensing, or cult attention
+- put it in **Conversion, modding, faults, and curses** if the real question is repair, depletion, rebuild, curse profile, salvage conversion, or dangerous modification
+
+Family bias:
+- field gear usually catches potions, scrolls, wands/staves/rods, rings/charms, miscellaneous oddities, armor/shields, and most missile weapons
+- relics and restricted apparatus usually catch swords first, then singular miscellaneous weapons, shrine devices, buildertech, and politically hot war gear
+- any family can jump lanes if the object carries unusual signatures, legal pressure, faction claims, or obvious curse/fault behavior
+
+Attention bias:
+- consumables and ordinary-use field gear usually start low unless rare, addictive, sealed, or taboo
+- wearable relics, war gear, and charged devices usually start medium and rise fast when visibly elite, doctrinal, or military
+- named weapons, shrine relics, buildertech, and singular apparatus should start high unless the table has a strong reason to hide them
+
+## Field Gear and Practical Weird Objects
+
+This lane carries the VLG-first side of the chapter: portable weird gear, consumables, ward-like objects, charged tools, field albums, and practical oddities that crews can actually carry, test, and use on expedition.
+
+Favor these assumptions here:
+
+- the object should feel usable, portable, and slot-relevant,
+- the object should help a company do work rather than only inflate treasure math,
+- the object should resolve cleanly into Gear Index-style tags, bulk, and trigger modes,
+- the object may still go wrong, but it should first read as gear.
+
+## Relics, Buildertech, and Restricted Apparatus
+
+Some objects function as routine field tools. Others show up as relics: named, scarce, regulated, cursed, claim-bearing, or politically dangerous. The more singular the item, the less likely it behaves like ordinary market gear. Powerful devices draw attention from buyers, factions, inspectors, thieves, shrine authorities, daemons, and anyone else with a reason to control access.
+
+When an item is important enough to change who notices the company, treat it as more than treasure. Record who would seize it, license it, ban it, worship it, or buy it quietly.
+
+Favor these assumptions here:
+
+- powerful relics draw institutions, shrines, inspectors, cults, and factions,
+- buildertech should feel dangerous, rare, and politically consequential,
+- god-sign, signal logic, and noosphere pressure belong in testing, failure, and aftermath,
+- intelligent or claim-bearing weapons should behave like social problems, not just better bonuses.
+- add `[relic]` when the object's singularity, claim, shrine tie, or legal heat matters; keep more specific functional tags alongside it instead of letting `[relic]` do all the work.
+
+## Conversion, Modding, Faults, and Curses
+
+Use this lane for anything that alters, depletes, binds, repairs, modifies, or rebuilds an object. Chapter 04 supplies the inputs. This chapter decides what those inputs can become and what the conversion now costs in signatures, heat, curse risk, or legal exposure. Chapter 07 handles severe danger and corruption once the object crosses into blowback. Chapter 09 handles sale, fencing, and long-form liquidation.
+
+Conversion record rule:
+- Chapter 04 provides extraction and refined inputs.
+- Chapter 05 decides what those become: repaired relics, modified devices, fresh consumables, rebuilt weapons, ward gear, or archive media.
+- If conversion changes faction heat, legal status, or curse profile, record that here before the item enters Chapter 09 market flow.
+
+## Anomolous Object Procedure
+
+Use this as the primary Chapter 05 loop. The sections below tell you how to classify, test, use, and record an object in FTLS terms before you ever need the legacy support layer.
+
+### 1. Choose or Classify the Object
+
+Start from how the object enters play:
+
+- treasure result from Chapter 09,
+- recovered salvage or rebuilt apparatus from Chapter 04,
+- shrine issue, faction grant, or noosphere find,
+- bespoke relic chosen for a site, patron, or enemy.
+
+First decide whether the object reads as:
+
+- field gear and practical weird object,
+- relic, buildertech, or restricted apparatus,
+- conversion, modding, fault, or curse case.
+
+If the table is really asking about an object, stay here. If the table starts asking about a power apart from any object, go to Chapter 06.
+
+### 2. Determine the Family and Details
+
+Pick the closest family, then resolve its details here before you drop to legacy expansion.
+
+Use this step in order:
+1. roll or choose the family
+2. note the lane and default output
+3. go to the matching family entry in the catalog and run its detail block
+4. finish with that family entry's handling, use, and consequence notes
+
+| `1d100` | Family | Primary Lane | Default Output |
+|---:|---|---|---|
+| 01-25 | Potions / Oils / Elixirs | Field gear | `[consumable] [healing]`, `1 sp`, usually `stable` |
+| 26-37 | Scrolls / Formulae / Map-Documents | Field gear | `[rite] [apocrypha]`, `1 sp`, usually `temperamental` |
+| 38-46 | Wands / Staves / Rods | Field gear | `[oldtech] [signal]`, `1 st`, usually `temperamental` |
+| 47-52 | Rings / Amulets / Charms | Field gear | `[ward] [utility]`, `1 sp`, usually `stable` |
+| 53-62 | Miscellaneous Items / Strange Items / Oddities | Field gear | `[utility] [oldtech]`, `1 sp`, usually `temperamental` |
+| 63-72 | Armor / Shields / Wards | Field gear | `[armor] [ward]`, `1 st`, usually `stable` |
+| 73-83 | Missile Weapons / Missiles | Field gear | `[weapon] [ranged]`, `1 st`, usually `stable` |
+| 84-92 | Swords | Relics / restricted apparatus | `[weapon] [melee]`, `1 st`, usually `stable` |
+| 93-00 | Miscellaneous Weapons | Relics / restricted apparatus | `[weapon] [melee]`, `1 st`, usually `temperamental` |
+
+Use the matching family entry first. Use legacy expansion only when an imported module needs denser named-effect coverage than that family block provides.
+
+### 3. Identify and Safe-Test
+
+Start with observation, markings, residue, context, and prior ownership. Then move to controlled testing.
+
+- safe testing should reveal enough to make a play decision,
+- unsafe testing should risk depletion, curse trigger, bad interface response, or unwanted notice,
+- charged, sealed, taboo, or shrine-linked objects should telegraph instability before they punish use.
+- telegraph unstable interfaces honestly: heat bloom, signal noise, pressure shifts, wrong dreams, blood-draw, static taste, hostile script, or attention spikes.
+- if a sip, touch, reading pass, or handling test would reasonably reveal the effect, give a partial truth rather than a blank.
+
+Use Thought for magitech-facing testing. Use Charisma for fantascience-facing command interfaces. Some objects may call for other abilities. Route severe backlash to Chapter 07.
+
+Shared defaults:
+- temporary items are consumed on use or exhausted by charges,
+- permanent items stay effective while properly worn, wielded, carried, or installed,
+- if an effect's range or duration goes unstated, treat it as `6th-level` output,
+- if a temporary duration goes unstated, use `1d6 + 6` turns unless the item says otherwise.
+
+### 4. Activate, Carry, Equip, or Install
+
+Once identified enough to matter, decide how the object operates:
+
+- `consumable`
+- `equipped`
+- `held`
+- `command`
+- `placed`
+- `charged`
+- `installed`
+
+Record the trigger mode and usage model. If the item does not have a clear bearer, trigger, and operating context, it still needs Chapter 05 refinement.
+
+Shared handling defaults:
+- wear a ring, carry a shield, and use other gear in its proper manner,
+- treat protective worn items as active while worn,
+- if a temporary effect does not consume the item immediately, require the user to hold it and concentrate,
+- while concentrating on such an item, the user cannot cast powers or take other major actions in that round,
+- resolve item activation in the round's magic/items timing,
+- detection and control effects can be blocked by lead sheet, metal about `1'` thick, or stone about `10'` thick.
+
+### 5. Resolve Charges, Limits, and Failure
+
+Track the object's working limits directly.
+
+- consumables spend themselves,
+- charged tools spend charges,
+- persistent wards and relics stay active while worn, carried, installed, or sustained,
+- unstable devices should fail in ways that change the scene, not just fizzle silently.
+- if charges are unknown, track them privately until use, scanning, or breakdown reveals them,
+- if charges are not listed: wand `3d10`, staff `2d20`, rod has no charge track unless the item says otherwise,
+- drinking a potion in combat takes one round,
+- if a second incompatible potion is taken while another is active, the user is sick and inactive for 3 turns.
+
+If a failure would clearly become corruption, severe exposure, or magical catastrophe, hand off to Chapter 07.
+
+### 6. Resolve Curse, Binding, or Side Effect
+
+Do not assume every object comes clean.
+
+- curses can invert a benefit,
+- bindings can trap the bearer in a relationship,
+- side effects can draw inspectors, shrines, daemons, cults, or rivals,
+- named weapons and singular relics should behave like social complications as often as they behave like upgrades.
+- a curse triggers as soon as its trigger condition is met: `wear`, `wield`, `read`, `drink`, or `activate`
+- a remove-curse effect may suppress a curse briefly: `1d20` rounds
+- permanent removal needs stronger magic, ritual work, quest service, or equivalent campaign effort
+
+Record cursed output as `risk: unstable`; add `[wanted]` or `[taboo]` when fallout follows.
+
+Use this step to decide whether the object remains normal field gear or crosses into restricted `[relic]` apparatus.
+
+### 7. Keep, Convert, Quarantine, or Move
+
+After first use, decide what the company does with the object:
+
+- keep it in the field kit,
+- assign it to an officer or specialist,
+- quarantine it,
+- strip or mod it through this chapter,
+- pass it to Chapter 09 for sale, leverage, or discreet disposal.
+
+Chapter 04 owns extraction and inputs. Chapter 09 owns liquidation. Chapter 05 decides what kind of object the company actually has in hand.
+
+### 8. Record the Consequence
+
+Every resolved object should end as an SDM-facing record:
+
+- object name,
+- class / family,
+- tags,
+- bulk / slot pressure,
+- trigger mode,
+- usage model,
+- risk note,
+- likely company consequence,
+- likely legal / faction / divine attention.
+
+That record is the real Chapter 05 output.
+
+## Anomolous Object Catalog
+
+Use these family entries as the chapter's primary catalog. They preserve old-school shapes, but present them in FTLS/SDM terms.
+
+Imported-material rule:
+- if an old-school module names a classic item directly, keep the classic name,
+- use the family block here as the FTLS wrapper around it,
+- use the legacy support layer below only when you need denser named-effect coverage.
+
+Catalog use order:
+1. read the family's `Profile` for interface, trigger mode, tags, and bulk
+2. run the family's `Run` steps
+3. roll on the family microtable or microprocedure when you need the exact classic result
+4. finish with `Record`
+
+### Potions / Oils / Elixirs
+
+These are bottled wards, volatile draughts, and dose-bound oddities. Crews use them because they solve a problem now, but every vial also invites bad mixing, bad labels, or a bad moment to discover what was really in it.
+
+Quick use:
+1. set the dose type and visible cues
+2. test by sip or trigger by full dose
+3. record duration, mixing risk, and company use
+
+Profile:
+- interface: usually Thought to identify; ingestion or application to trigger
+- trigger mode: `drunk`, `applied`, `burned`, or `broken`
+- default tags: `[consumable] [healing]`
+- default bulk: `1 sp`
+
+Run:
+1. Classify the dose as `restoration`, `mobility`, `control`, `perception`, `protection`, `transformation`, or `hazard`.
+2. Roll or choose the exact dose. Color, odor, residue, and bottle marks should hint, not prove.
+3. A tiny sip with an appropriate skill can identify the effect without spending the dose. A full dose usually takes one round and begins immediately.
+4. If another incompatible dose is already active, the user is sick and inactive for 3 turns. Control doses should keep HD threshold, line-of-effect, and no-suicide limits.
+
+Record:
+- add tags such as `[healing]`, `[mobility]`, `[recon]`, `[ward]`, `[poison]`, or `[enviro]`
+- use company consequence to say what the crew can now survive, force, bypass, or test
+- keep attention low by default unless the dose is addictive, cultic, forbidden, or singular
+
+#### Potions Microtable (`1d20`)
+
+When `Potions / Oils / Elixirs` are rolled, roll the dose. On a special result, roll the follow-up rider.
+
+| d20 | Potion Result (classic term) | Notes |
 |---:|---|---|
 | 1 | Healing | Restore HP per system healing baseline. |
 | 2 | Extra-Healing | Stronger healing tier than standard Healing. |
@@ -115,9 +328,37 @@ Potions Microtable (`1d20`):
 | 19 | Poison | Harmful potion; save and onset follow poison procedure. |
 | 20 | Special Potion | Roll `1d6`: `1-2` unusual utility, `3-4` volatile side effect, `5` cursed inversion, `6` referee choice. |
 
-Scrolls Microtable (`1d20`):
+### Scrolls / Formulae / Map-Documents
 
-| d20 | Scroll Result (classic term) | Resolver Note |
+These are readable triggers: ward texts, one-use rites, sealed messages, trap scripts, and maps that want to change where the company goes next.
+
+Quick use:
+1. set the script form and embedded effect
+2. read, reveal, or place it under the right conditions
+3. record what it opens, protects, announces, or traps
+
+Profile:
+- interface: Thought for reading and parsing; sometimes Charisma when command or address matters
+- trigger mode: `read`, `spoken`, `revealed`, or `placed`
+- default tags: `[rite] [apocrypha]`
+- default bulk: `1 sp`
+
+Run:
+1. Classify the script as `spell`, `protection`, `message`, `map`, `trap`, `portal`, `questioning`, or `archive oddity`.
+2. Roll or choose the exact script, then declare its target, destination, boundary, or payload.
+3. Reading requires focused reading; interruption voids the attempt for the round. Spell-scroll release normally consumes the script unless it says otherwise.
+4. Cursed, trapped, mistranslated, or misaddressed scripts should produce fallout rather than silent failure.
+
+Record:
+- add tags such as `[ward]`, `[navigation]`, `[mark]`, `[seal]`, `[portal]`, `[ritual]`, or `[relic]`
+- use risk note for mistranslation, curse, seal, bait, or political heat
+- use company consequence to say what route, shelter, warning, access, or claim the script creates
+
+#### Scrolls Microtable (`1d20`)
+
+When `Scrolls / Formulae / Map-Documents` are rolled, set script form first, then apply the embedded effect.
+
+| d20 | Scroll Result (classic term) | Notes |
 |---:|---|---|
 | 1-8 | Spell Scroll | Roll `1d6` spells: `1-3` one spell, `4-5` two spells, `6` three spells; choose from campaign spell list without class gating. |
 | 9-10 | Protection Scroll | Set protection target (creature type, element, or magic-effect category) and boundary rules. |
@@ -132,9 +373,38 @@ Scrolls Microtable (`1d20`):
 | 19 | Travel | Teleport/translation/travel effect with destination constraints. |
 | 20 | Questing or Portals | Assign binding objective script or portal-opening sequence. |
 
-Wands, Staves, and Rods Microtable (`1d20`):
+### Wands / Staves / Rods
 
-| d20 | Result (classic term) | Resolver Note |
+These are conductors, command pieces, shrine handles, and oldtech emitters. They promise clean utility, but most of them carry hidden depletion, ugly geometry, or the wrong kind of public signature.
+
+Quick use:
+1. set whether the device is a wand, staff, or rod
+2. identify the effect profile and activation act
+3. track charges, signal bleed, and institutional trouble
+
+Profile:
+- interface: magitech usually uses Thought; fantascience-facing command devices often use Charisma
+- trigger mode: `held`, `pointed`, `struck`, or `command`
+- default tags: `[oldtech] [signal]`
+- default bulk: `1 st`
+
+Run:
+1. Classify the device as `wand`, `staff`, or `rod`.
+2. Roll or choose the exact effect, then set whether it works by charge spend, persistent function, strike delivery, or command sequence.
+3. Activation needs the item in hand and an explicit act: word, gesture, strike, or command.
+4. Default charge spend is one per activation unless the item says otherwise. If charges are unknown, track them privately. When charges reach zero, the object goes inert until restored by campaign method.
+5. Show hidden depletion, rebound geometry, overload, or public signal bleed before collapse.
+
+Record:
+- add tags such as `[recon]`, `[signal]`, `[weapon]`, `[healing]`, `[oldtech]`, `[fantascience]`, or `[relic]`
+- use risk note for hidden depletion, overload, backlash, rebound geometry, or public signal bleed
+- use company consequence to say whether the item gives the crew breach force, control leverage, detection reach, or institutional trouble
+
+#### Wands, Staves, and Rods Microtable (`1d20`)
+
+When `Wands / Staves / Rods` are rolled, set item kind, then the exact effect. Use the shared charge defaults in step 5 if the item gives none.
+
+| d20 | Result (classic term) | Notes |
 |---:|---|---|
 | 1 | Wand of Enemy Detection | Detection arc; blocked by insulation limits. |
 | 2 | Wand of Magic Detection | Detect active magic and enchanted objects in range. |
@@ -157,12 +427,37 @@ Wands, Staves, and Rods Microtable (`1d20`):
 | 19 | Rod of Weaponry | Generates or channels weapon-form magical force. |
 | 20 | Rod of the Wyrm | High-tier draconic rod profile; referee oversight recommended. |
 
-Wand/Staff/Rod charge rule:
-- If charges are not listed: wand `3d10`, staff `2d20`, rod no charge track unless item text says otherwise.
+### Rings / Amulets / Charms
 
-Rings Microtable (`1d20`):
+These are worn wards, status objects, and body-interface relics. Small things like these often change who gets protected, who gets tempted, and who starts behaving strangely in public.
 
-| d20 | Ring Result (classic term) | Resolver Note |
+Quick use:
+1. set the wearable's main effect
+2. decide whether wearing alone works or command is needed
+3. record conflict, temptation, and officer-level consequence
+
+Profile:
+- interface: passive while worn; sometimes Thought to understand and Charisma to command singular effects
+- trigger mode: `worn`
+- default tags: `[ward] [utility]`
+- default bulk: `1 sp`
+
+Run:
+1. Classify the wearable as `ward`, `proofing device`, `control charm`, `status ring`, `body-interface item`, or `singular outlier`.
+2. Roll or choose the exact effect, then set whether wearing alone works or whether command, concentration, oath, or situation matters.
+3. Worn items usually work continuously once understood.
+4. If multiple rings conflict, the strongest effect applies and weaker ones are suppressed. Misidentification, compulsion, and temptation should stay visible in play.
+
+Record:
+- add tags such as `[ward]`, `[curse]`, `[oath]`, `[relic]`, `[hands-free]`, or `[attune]` when those mechanics actually apply
+- use risk note for misidentification, compulsion, public visibility, or temptation
+- use company consequence to say whether the item protects a key officer, marks status, changes negotiation, or creates a secrecy problem
+
+#### Rings Microtable (`1d20`)
+
+When `Rings / Amulets / Charms` are rolled, set the exact wearable effect directly.
+
+| d20 | Ring Result (classic term) | Notes |
 |---:|---|---|
 | 1 | Ring of Animal Control | Control branch keyed to beasts by HD threshold. |
 | 2 | Ring of Delusion | Cursed/misleading ring; identification may misreport function. |
@@ -185,9 +480,37 @@ Rings Microtable (`1d20`):
 | 19 | Ring of Truthfulness | Enforces truth-speaking pressure while active. |
 | 20 | Ring of Truthlessness | Enforces false-speech pressure while active. |
 
-Miscellaneous Items Microtable (`1d20`):
+### Miscellaneous Items / Strange Items / Oddities
 
-| d20 | Item Result (classic term) | Resolver Note |
+This is the broad utility lane: strange tools, archive devices, awkward conveniences, and relics that refuse to fit cleaner families. This is where the chapter gets most Luka.
+
+Quick use:
+1. classify the oddity by job
+2. lock in bearer, trigger mode, and operating context
+3. record the weirdness it introduces into company play
+
+Profile:
+- interface: whichever stat best matches the object; Thought by default
+- trigger mode: `worn`, `held`, `command`, or `placed`
+- default tags: `[utility] [oldtech]`
+- default bulk: `1 sp`
+
+Run:
+1. Classify the object as `container`, `travel tool`, `sense device`, `binding object`, `body gear`, `utility relic`, `summoning piece`, or `cursed oddity`.
+2. Roll or choose the exact oddity, then lock in bearer, trigger mode, and operating context.
+3. If imported material gives a classic name, keep it. If the core recognizers feel too tame, VLG or UVG strange-item tables can push it sideways.
+4. Visible weirdness should follow: binding fallout, logistics distortion, summoned trouble, or social alarm.
+
+Record:
+- add tags such as `[mobility]`, `[recon]`, `[signal]`, `[portal]`, `[summon]`, `[curse]`, `[oldtech]`, or `[relic]`
+- use risk note for hidden traps, public misfires, binding fallout, logistics distortion, or singular weirdness
+- use company consequence to say whether the item changes carrying capacity, mobility, scouting, secrecy, access, or specialist leverage
+
+#### Miscellaneous Items Microtable (`1d20`)
+
+When `Miscellaneous Items / Strange Items / Oddities` are rolled, roll direct from the oddity table, then record trigger mode and obvious risk.
+
+| d20 | Item Result (classic term) | Notes |
 |---:|---|---|
 | 1 | Bag of Holding | Capacity expansion with container-risk handling. |
 | 2 | Boots of Levitation | Vertical movement utility item. |
@@ -210,7 +533,40 @@ Miscellaneous Items Microtable (`1d20`):
 | 19 | Manual/Tome (attribute gain) | Read-and-train advancement item with one-use limit. |
 | 20 | Cursed Miscellaneous Item | Roll cursed effect and bind trigger condition. |
 
-Armor/Shields Microprocedure:
+### Armor / Shields / Wards
+
+These are warded protection pieces, relic harnesses, and sacred or military defenses that announce more than mere caution once someone straps them on.
+
+Quick use:
+1. set armor or shield form
+2. set defense bonus and any special branch
+3. record who can wear it safely and who will notice it
+
+Profile:
+- interface: worn or carried; usually passive until a special power is called
+- trigger mode: `worn` or `carried`
+- default tags: `[armor] [ward]`
+- default bulk: `1 st`
+
+Run:
+1. Classify the item as `armor`, `shield`, `ward harness`, `relic plate`, or `special defense piece`.
+2. Set the defense band first, then check for a special branch.
+3. Worn or carried defense should work immediately; special powers should declare whether they are automatic, commanded, or once-per-scene/day.
+4. Curses, affiliation broadcast, or collapse under special stress should show up as operational cost.
+
+Record:
+- add tags such as `[shield]`, `[ward]`, `[curse]`, `[relic]`, `[hands-free]`, or `[attune]` when those mechanics actually apply
+- use risk note for bind-on-wear curse, affiliation broadcast, collapse under special stress, or overconfidence
+- use company consequence to say whether the item hardens a front-line officer, enables site entry, or marks the crew as carrying restricted military or sacred gear
+
+Old-school shape:
+- expect defense bonus bands, special-power branches, and cursed armor
+- classic powers here include absorption, charm, energy drain, ethereality, fly, haste, invisibility, reflection, and remove curse
+
+#### Armor / Shields Microprocedure
+
+When `Armor / Shields / Wards` are rolled, set form, set defense, then check for a special branch.
+
 1. Roll item form by source cadence: choose armor group (`Banded/Scale/Leather`, `Chain`, `Plate/Suit`, `Shield`) or a combined shield form.
 2. Roll `1d100` for AC modifier by group:
 
@@ -248,7 +604,36 @@ Armor/Shields Microprocedure:
 | 11 | reflection |
 | 12 | remove curse |
 
-Missile Weapons/Missiles Microprocedure:
+### Missile Weapons / Missiles
+
+These are ranged relics, sanctioned war gear, and magical ammunition. Even the clean versions leave a signature; the dirty ones leave witnesses, fires, or questions.
+
+Quick use:
+1. set weapon versus ammunition bundle
+2. set the bonus band and any rider
+3. record battlefield signature, scrutiny, and burn-out
+
+Profile:
+- interface: equipped and fired
+- trigger mode: `fired`
+- default tags: `[weapon] [ranged]`
+- default bulk: `1 st`
+
+Run:
+1. Classify the result as `missile weapon`, `ammunition bundle`, or `singular ranged relic`.
+2. Set the base bonus first, then add range rider, opponent rider, or missile talent.
+3. State whether the magic lives in one shot, a bundle, or a longer arc.
+4. Battlefield signature, scrutiny, friendly-fire complications, and burn-out should matter immediately.
+
+Record:
+- add tags such as `[ranged]`, `[signal]`, `[healing]`, `[oldtech]`, `[relic]`, or `[dangerous]` when the object actually triggers danger mechanics
+- use risk note for burn-out, battlefield signature, scrutiny, or friendly-fire complications
+- use company consequence to say whether the item extends reach, solves a monster problem, supports siege action, or gives the crew sanctioned war gear
+
+#### Missile Weapons / Missiles Microprocedure
+
+When `Missile Weapons / Missiles` are rolled, set the weapon form first, then the bonus band, then any rider branch.
+
 1. Roll `1d6` output:
 
 | `1d6` | Output |
@@ -282,7 +667,40 @@ Missile Weapons/Missiles Microprocedure:
 | 11 | speaking |
 | 12 | stunning |
 
-Swords Microprocedure:
+### Swords
+
+Treat swords as the clearest bridge from old-school magic weapon logic into FTLS relic logic: named blades, claim-bearing weapons, shrine swords, and motive-bearing companions.
+
+Quick use:
+1. set sword form and base bonus
+2. check intelligence, motive, and extra edge
+3. record who can command it and what claims it carries
+
+Profile:
+- interface: equipped and wielded, sometimes socially negotiated
+- trigger mode: `wielded`
+- default tags: `[weapon] [melee]`
+- default bulk: `1 st`
+
+Run:
+1. Set the sword's form and base bonus.
+2. Check whether it stays a simple relic blade or becomes named, intelligent, or claim-bearing.
+3. Reveal motive, communication, or command resistance early.
+4. Ego pressure, shrine claim, and lineage burden should act like relationships, not just bonuses.
+
+Record:
+- add tags such as `[oath]`, `[hallmark]`, `[curse]`, `[relic]`, `[attune]`, or `[dangerous]` when those mechanics actually apply
+- use risk note for ego pressure, style demand, lineage burden, or shrine and faction claims
+- use company consequence to say whether the sword creates command legitimacy, rivalry, taboo heat, or a battlefield anchor
+
+Old-school shape:
+- expect bonus swords, intelligent swords, opponent bonuses, and extraordinary weapon talents
+- sword personality may include communication modes, languages, powers, and ego conflict
+
+#### Swords Microprocedure
+
+When `Swords` are rolled, set the weapon form first, then the bonus band, then any rider branch.
+
 1. Roll sword type `1d6`: `1` normal, `2` short, `3` broad, `4` bastard, `5` two-handed, `6` referee choice.
 2. Roll base bonus `1d6`:
 
@@ -293,10 +711,55 @@ Swords Microprocedure:
 | 5 | `+3` |
 | 6 | `+4` |
 
-3. Roll `1d6` intelligence chance: on `1` sword is intelligent; roll communication, powers, and motive.
+3. Roll `1d6` intelligence chance: on `1` the sword is intelligent; roll communication, powers, and motive.
 4. Roll `1d6` additional-modifier chance: on `1-2`, add opponent bonus or talent rider.
 
-Miscellaneous Weapons Microprocedure:
+#### Intelligent Sword Track (condensed)
+
+1. Check intelligence: roll `1d6`; on `1`, the sword is intelligent.
+2. Roll `1d6` INT band:
+   - `1-2` low cunning
+   - `3-4` alert and strategic
+   - `5` very intelligent
+   - `6` exceptional intellect
+3. Roll communication mode `1d6`: empathy, speech, telepathy, runic dream, emotional surge, audible voice.
+4. Roll powers `1d6`: `1-3` one power, `4-5` two powers, `6` three powers.
+5. Roll motive/alignment tension: if wielder goals oppose sword motive, require contest checks for command authority.
+
+### Miscellaneous Weapons
+
+These are non-sword war relics with stranger profiles: axes, hammers, polearms, flexible weapons, thrown relics, and dangerous apparatus disguised as arms.
+
+Quick use:
+1. set weapon class and specific form
+2. set the bonus band and any rider
+3. record awkwardness, signature, and contraband pressure
+
+Profile:
+- interface: equipped and wielded
+- trigger mode: `wielded` or `thrown`
+- default tags: `[weapon] [melee]`
+- default bulk: `1 st`
+
+Run:
+1. Classify the weapon as `impact`, `edged`, `polearm`, `thrown`, `flexible`, or `apparatus-weapon`.
+2. Choose specific form, set the base bonus, then add opponent rider, battlefield utility talent, elemental rider, or stranger profile.
+3. Thrown and apparatus-weapons should declare where the effect rides.
+4. Awkwardness, conspicuousness, specialist-only use, and contraband pressure should matter alongside combat benefit.
+
+Record:
+- add tags such as `[weapon]`, `[melee]`, `[ranged]`, `[oldtech]`, `[relic]`, or `[dangerous]` when the object actually triggers danger mechanics
+- use risk note for awkwardness, conspicuousness, practical specialist-only use, or open-carry danger
+- use company consequence to say whether the item creates a breach option, anti-monster edge, officer signature, or contraband problem
+
+Old-school shape:
+- expect bonus bands, opponent riders, and elemental or utility talents
+- keep unusual weapon silhouettes without restoring class locks
+
+#### Miscellaneous Weapons Microprocedure
+
+When `Miscellaneous Weapons` are rolled, set the weapon form first, then the bonus band, then any rider branch.
+
 1. Roll weapon class `1d6`: `1` blunt, `2` edged, `3` polearm, `4` thrown, `5` flexible, `6` referee choice.
 2. Roll specific weapon type by class (axe, mace, spear, hammer, dagger, sling variant, and similar).
 3. Roll base bonus `1d6`:
@@ -310,11 +773,9 @@ Miscellaneous Weapons Microprocedure:
 
 4. Roll `1d6` additional-modifier chance: on `1`, add opponent bonus or a weapon talent rider.
 
-Weapon Secondary Resolvers (RC Extraction Pass):
+#### Additional Weapon Modifier Table (`1d100`)
 
-Additional Weapon Modifier Table (`1d100`):
-
-| d100 | Additional Modifier | Resolver Note |
+| d100 | Additional Modifier | Notes |
 |---:|---|---|
 | 01-33 | `+1` extra vs opponent | Use for miscellaneous-weapon cadence. |
 | 34-57 | `+2` extra vs opponent | Use for miscellaneous-weapon cadence. |
@@ -326,7 +787,7 @@ Additional Weapon Modifier Table (`1d100`):
 Sword-only adjustment:
 - For swords, use source-weighted sword bands: `01-29 +1 vs opponent`, `30-50 +2`, `51-64 +3`, `65-72 +4`, `73-75 +5`, `76-00 talent`.
 
-Opponents Table (`1d100`):
+#### Opponents Table (`1d100`)
 
 | d100 | Opponent Category |
 |---:|---|
@@ -345,9 +806,9 @@ Opponents Table (`1d100`):
 | 89-94 | Water-breathing monsters |
 | 95-00 | Weapon-using monsters |
 
-Talents Table (`1d100`):
+#### Talents Table (`1d100`)
 
-| d100 | Talent | Resolver Note |
+| d100 | Talent | Notes |
 |---:|---|---|
 | 01-05 | Breathing | Enables breathing adaptation for hostile environments. |
 | 06-12 | Charming | Adds influence pressure in social or combat contact. |
@@ -371,135 +832,34 @@ Talents Table (`1d100`):
 | 95-99 | Watching | Persistent vigilance/sensing rider. |
 | 00 | Wishing | Wish-tier outlier; referee oversight required. |
 
-Intelligent Sword Track (condensed):
-1. Check intelligence: roll `1d6`; on `1`, sword is intelligent.
-2. Roll `1d6` INT band:
-   - `1-2` low cunning
-   - `3-4` alert and strategic
-   - `5` very intelligent
-   - `6` exceptional intellect
-3. Roll communication mode `1d6`: empathy, speech, telepathy, runic dream, emotional surge, audible voice.
-4. Roll powers `1d6`: `1-3` one power, `4-5` two powers, `6` three powers.
-5. Roll motive/alignment tension: if wielder goals oppose sword motive, require contest checks for command authority.
+#### Quick Weapon-Family Method
 
-Description Procedures (RC Cadence, condensed):
-
-Potion description procedure:
-1. Determine physical cue (color, clarity, odor, container marks). Cue is suggestive, not definitive.
-2. If a potion is being tested rather than fully consumed: with an appropriate skill, a tiny sip identifies the effect; otherwise, give a partial hint only.
-3. A full dose is normally one use; effect begins immediately unless the potion states delayed onset.
-4. If duration is unstated, use chapter default duration; if permanent, record that explicitly.
-5. If a second incompatible potion is consumed while one is active, apply sickness/inactivity as listed in `Use and Limits`.
-6. For control-type potions, cap affected targets by HD/size band and preserve insulation/line-of-effect limits where relevant.
-
-Scroll description procedure:
-1. Determine scroll form (spell, protection, map/message, special script, cursed).
-2. Reading a scroll requires focused reading; interruption voids that reading attempt for the round.
-3. Spell scrolls are consumed on successful cast release unless a repeating rule says otherwise.
-4. Protection scrolls must define target category, boundary shape, and duration at activation.
-5. Cursed scrolls trigger on read unless identified and countered first; resolve through cursed-item loop.
-6. Map/message scrolls must define exact payload (location, route, warning, or code phrase) at generation time.
-
-Wand/Staff/Rod description procedure:
-1. Determine exact item and charge state (or non-charge state for persistent rods).
-2. Activation requires item in hand and an explicit activation act (word, gesture, strike, or command mode).
-3. Default charge spend is one per activation unless the item text lists a different cost.
-4. If charges are unknown, track privately and reveal only through use/testing.
-5. When charges reach zero, item becomes inert until restored by explicit campaign method.
-
-Ring and miscellaneous handling notes:
-- Rings: worn items with persistent or triggered effects; if multiple rings conflict, strongest effect applies and weaker is suppressed.
-- Miscellaneous items: always record trigger mode (`worn`, `held`, `command`, `placed`) to prevent ambiguity at table.
-
-### 2. Use and Limits
-
-Item model:
-- **Temporary items:** consumed on use or exhausted by charges.
-- **Permanent items:** continuously effective when properly worn or wielded.
-
-Identification:
-- Items are usually identified by testing them in play.
-- Testing may trigger poison, curse, or hostile side effects.
-
-Activation and handling:
-- A ring must be worn, a shield must be carried, and other gear must be used in its proper manner.
-- Protective worn items are normally active while worn.
-- For temporary effects that are not consumed immediately, the user must hold the item and concentrate.
-- While concentrating on such an item, the user cannot cast spells or take other actions in that round.
-- Item activation resolves in the round's magic/items timing.
-- Charge counts are unknown until spent through use or scanned with a Power.
-
-Default effect constants:
-- If range or duration is not stated, treat the effect as `6th-level` caster output.
-- If temporary duration is not stated, use `1d6 + 6` turns unless the item text says otherwise.
-
-Insulation limit:
-- Detection/control effects can be blocked by lead sheet, metal about `1'` thick, or stone about `10'` thick.
-
-Potion timing:
-- Drinking a potion in combat takes one round.
-- If a second incompatible potion is taken while another is active, the user is sick and inactive for 3 turns.
-
-### 3. Cursed Items
-
-Any treasure result may be cursed.
-
-Cursed-item procedure:
-1. Determine whether the item carries a curse when identified or activated.
-2. Apply the curse as soon as its trigger condition is met (wear, wield, read, drink, activate).
-3. A remove-curse effect may suppress a curse briefly (`1d20` rounds).
-4. Permanent removal requires stronger magic (typically high-level caster support), high-tier ritual work, quest service, or equivalent campaign effort.
-5. Record cursed output as `risk note: unstable`; add `[wanted]` or `[taboo]` where fallout follows.
-
-Curses may invert bonuses, bind equipment, force compulsive behavior, or impose escalating narrative costs.
-
-### 4. Weapon Branches
-
-Use one of two methods.
-
-Simple method (recommended for lower-power generation):
 1. Roll `1d6` for branch:
    - `1-2` missile weapon or missile
    - `3-4` sword
    - `5-6` miscellaneous weapon
-2. Roll `1d100` on the selected branch list.
-3. Apply base magical bonus and listed rider effects.
+2. Roll the matching subtable.
+3. Apply base bonus and any listed rider effects.
 
-Detailed method (for higher-power or more specific generation):
-1. Roll weapon family and class band.
-2. Roll magical bonus band (`+1` to `+5`).
-3. Roll additional-modifier chance.
-4. If successful, roll secondary modifier type:
-   - extra bonus vs opponent category
-   - talent/power branch
-5. For swords, roll intelligence/power track when indicated by the result.
+## Legacy Old-School Effect Coverage
 
-Class-only locks from legacy subtables are ignored in this chapter.
 
-### 5. Magic-Item Market Procedure
+### Legacy Retention and Conversion Support
 
-This section handles magical item trade only. Use Chapter 09 for general loot cash-out procedures.
+#### 5. Legacy Building, Modding, and Salvage Conversion
 
-Market loop:
-1. Declare sale path: patron broker, faction buyer, collector circuit, or private auction.
-2. Run buyer search as an active process, not an automatic transaction.
-3. Resolve offer quality against item risk, notoriety, and urgency.
-4. On refusal, convert outcome to obligation, favor debt, or delayed sale queue.
-
-Default assumption: many magical items are traded for favors, leverage, or access before straight cash.
-
-### 6. Creation
+Use this section only for imported-material creation math and edge conversion cases beyond the FTLS core lane text.
 
 Prerequisites:
-- Creator is normally `level 9+`.
-- Creator must know the relevant effect.
-- Creator must work with a suitable specialist/crafter.
-- Rare components are required for each major effect track.
+- Expect the creator to reach at least `level 9`.
+- Require the creator to know the relevant effect.
+- Require work with a suitable specialist/crafter.
+- Require rare components for each major effect track.
 
 Chance of success:
 - Roll once per effect track:
   - `((INT or WIS) + level) x 2 - (3 x spell level) = success %`
-- Failure consumes the attempt's time and material commitment.
+- Let failure consume the attempt's time and material commitment.
 
 Time and cost:
 - Base creation time is `1 week + 1 day per 1,000 gp` equivalent cost (rounded up).
@@ -516,11 +876,15 @@ Armor/weapon baseline formulas:
 Creation output record:
 - `Item: ... / Tags: ... / Bulk: ... / Usage: equipped|consumable|charged|unstable / Risk: stable|temperamental|unstable`
 
-### 7. Descriptive Extraction (RC Style Pass)
+### Legacy Family Effect Coverage
 
-This pass uses direct-source extraction cadence and wording. Any legacy class/user references in the extracted text are nostalgia-only notes and are not mechanical gating in FTLS.
+Use this layer for dense named-effect lookup after the core procedure, catalog, and family microtables have already done the main work.
+Any legacy class/user references in the extracted text are nostalgia-only notes and are not mechanical gating in FTLS.
 
-#### Potion Descriptions
+#### Legacy Potion Descriptions
+
+Use this block when an imported module or treasure table names a specific classic potion and the family entry above is not enough by itself.
+
 Potions. Some guidelines regarding potions are given in the following text.
 
 Appearance: Potions are usually found in small glass vials. Each potion has a different smell and color—even two potions with the same effect appear completely different until used. A character sipping the potion (taking just a taste) will realize what the potion's effect is; the character can then label the potion and keep it for later use. Sipping a potion does not decrease the potion's effect or duration, although sipping a poisoned potion will cause the character to suffer the poison's effects.
@@ -704,7 +1068,10 @@ Undead Control: The user may control up to 18 Hit Dice of undead monsters. The u
 
 Water Breathing: The user can freely breathe either water or air (as the magic-user spell) for 4 hours.
 
-#### Scroll Descriptions
+#### Legacy Scroll Descriptions
+
+Use this block when an imported module or treasure table names a specific classic scroll and you need direct old-school effect density at the table.
+
 Scrolls. A scroll is a piece of old paper or parchment upon which a high-level magic-user, elf, or cleric has written a magical formula.
 
 It is also possible to generate maps via scrolls as noted on the Magical Item Subtable: 2. Scrolls; these maps are cartographic diagrams of a particular area (often one where treasure is hidden or lost cities are to be found). Some guidelines regarding scrolls are given in the following text.
@@ -806,7 +1173,10 @@ Trapping: This scroll can create one trap. The type of trap differs by the place
 
 Truth: This scroll is blank when found. The user may ask a question of any living being within 30'; the complete and true answer appears on the scroll, read from the victim's mind by a powerful version of ESP. Note that the answer is true only within the limits of the victim's knowledge. The scroll will display one answer per day.
 
-#### Wand Descriptions
+#### Legacy Wand Descriptions
+
+Use this block when an imported module or treasure table names a specific classic wand and you need direct old-school effect density at the table.
+
 A wand normally has 2d10 charges when found, and a staff 3d10; the DM rolls the number, keeps the result to themselves, and tracks the character's use of the wand or staff.
 
 If desired, the DM may use a larger number of charges: 3d10 for a wand, 2d20 for a staff. Rods are permanent items that do not require charges. Each use of a power costs one charge unless noted otherwise. Each item may be used once per round at most.
@@ -857,7 +1227,10 @@ per secret door found.
 
 Wand of Trap Detection: This wand will point at all traps within 20', one at a time, at a cost of one charge per trap found.
 
-#### Staff Descriptions
+#### Legacy Staff Descriptions
+
+Use this block when an imported module or treasure table names a specific classic staff and you need direct old-school effect density at the table.
+
 The staves listed in Magical Item Subtable: 3. Wands, Staves, and Rods, page 229, are described in the following text.
 
 Staff of Commanding: Traditionally associated with all spellcasters, this magical item has all the powers of the rings of animal, human, and plant control (see the individual descriptions under "Rings," below).
@@ -951,7 +1324,10 @@ Staff of Wizardry: staff of power, plus the magic-user spell effects of invisibi
 
 wand). In addition, the user may break the staff, which releases all of its power at once. This final strike is an explosion that inflicts 8 points of damage per charge remaining in the staff. All creatures within 30' (including the user!) take damage (but all may make a saving throw vs. staff for half damage).
 
-#### Rod Descriptions
+#### Legacy Rod Descriptions
+
+Use this block when an imported module or treasure table names a specific classic rod and you need direct old-school effect density at the table.
+
 The rods listed in Magical Item Subtable: 3. Wands, Staves, and Rods, page 229, are described in the following text.
 
 Rod of Cancellation: This rod is usable by any character. It will work only once, but it will drain any magical item it hits, making that item forever nonmagical. The target is treated as having an armor class of 9. The DM may adjust the armor class of an item if it is being used in combat (such as when trying to hit a sword). Intelligent magical swords and + 5 magical items may resist the effect of the rod if the user makes a saving throw vs. wands. This merely indicates successful resistance, and the rod still retains its power. A sword +5 with intelligence, for example, gains a +2 bonus to the saving throw.
@@ -995,7 +1371,10 @@ Rod of the Wyrm: Traditionally associated with any character, there are three ty
 
 Each is a rod + 5 and each inflicts 1d8 + 5 (6-13) points of damage per hit (but without Strength bonuses). Once per day, the rod may be turned into a small dragon of the appropriate type. The created dragon has 30 hit points and can only be affected by magic (weapons, spells, etc.). It will understand and faithfully serve the user of the rod to the best of its ability; for example, it can act as messenger, steed, or guard. It will fight to the death unless commanded otherwise. The dragon knows no spells. It will return to rod form on command; if slain in dragon form, however, it cannot return to rod form and is forever destroyed. Spells and other magical forms of healing can be used to heal the creature, if desired, but not after it is killed. If a dragon is created by a user of a different alignment, the dragon will attack the user immediately, fighting to the death. When this occurs, it cannot be commanded to return to rod form.
 
-#### Ring Descriptions
+#### Legacy Ring Descriptions
+
+Use this block when an imported module or treasure table names a specific classic ring and you need direct old-school effect density at the table.
+
 Rings. A magical ring must be worn on a finger or thumb to function. However, a ring may also be carried and then put on when needed. Only one magical ring can be worn per hand. If more than that are worn, the rings negate each other and none will function, with the exception of a ring of weakness. Any ring may be used by any character class.
 
 The rings listed in Magical Item Subtable: 4. Rings, page 229, are described in the following text.
@@ -1093,7 +1472,10 @@ Wishes: A ring of wishes is an extremely powerful item. Wishes must be handled v
 
 X-ray Vision: The wearer may see a distance of up to 30', even through a wall and into the space beyond, by standing still and concentrating. The effect may be blocked by gold or lead. The wearer can inspect one 10' x 10' area per use (which requires a full turn), and he will be able to see any traps or secret doors in the area examined. The ring allows the wearer to see through items less dense than stone (such as cloth, wood, or water) more easily, to a range of 60'. The ring may be used up to 1 turn per hour.
 
-#### Miscellaneous Item Descriptions
+#### Legacy Miscellaneous Item Descriptions
+
+Use this block when an imported module or treasure table names a specific classic miscellaneous item and you need direct old-school effect density at the table.
+
 Miscellaneous Magical Items. Each of the items listed in this section may be used by any character class and up to once per round, unless noted otherwise. Most of the given effects either work automatically or are activated by concentration alone. There is no limit to the many types of magical items possible; the devices and effects given here are a mere sampling. The DM may create others as desired, with nearly any powers as appropriate. However, when designing such items, keep the balance of the game in mind. If an item duplicates clerical powers, for example, it may cause clerics themselves to become less useful in the game. Keep such items rare and limit them by giving them expendable charges, lest they adversely affect the game.
 
 The magical items listed in Magical Item Subtable: 5. Miscellaneous Items, page 229, are described in the following text.
@@ -1314,7 +1696,10 @@ The DM may select or randomly determine the results of the spin. If desired, the
 
 Wheel, Square: This odd "wheel," the size of a normal wagon wheel, is useless on roads and other flat terrain because it is perfectly square. However, when mounted properly on a wagon, it magically allows movement through mountain and desert terrain where there is no road. A wagon with one square wheel can be pulled by two horses and can move at 20'/turn; with two wheels, 30'/turn; with three, 40'/turn; and with four, the normal rate of 60'/turn is possible.
 
-#### Armor and Shields Descriptions
+#### Legacy Armor and Shields Descriptions
+
+Use this block when an imported module or treasure table names specific classic magical armor or a shield and you need direct old-school effect density at the table.
+
 Armor and Shields.
 
 To use the Magical Item Subtable: 6. Armor and Shields on page 230, roll 1d100 to determine the size of armor and check the appropriate column. Then roll 1d100 to determine type of armor (leather, banded, plate, etc.). If a result indicates a type of armor not used in a DM's campaign (for instance, some DMs don't allow suit armor), reroll for a new result. Using the appropriate column for the type of armor (or shield) identified on the Armor Class Modifier subtable, check for the AC modifier and subtract the bonus from the base AC rating for that type of armor. Also check for the chance of special powers on the same subtable. If the percentage listed or less is rolled for the special power, consult the Special Powers subtable. (Special powers are described below.) The base armor classes and the final AC ratings when modified by a magical bonus are outlined below. Keep in mind that a shield, is used, has its AC added to that of the character's armor.
@@ -1379,7 +1764,10 @@ Remove Curse: This armor or shield cannot itself be cursed when found. When comm
 
 Note: This item will function a total of three times, at a maximum rate of once per day. After its three charges are used, no other special abilities remain and it cannot be recharged; the item does remain magical, however, regardless of spent charges.
 
-#### Missile Weapons and Missiles Descriptions
+#### Legacy Missile Weapons and Missiles Descriptions
+
+Use this block when an imported module or treasure table names a specific classic missile weapon, missile talent, or magical ammunition result and you need direct old-school effect density at the table.
+
 Missile Weapons and Missiles. A missile weapon is a weapon (bow, sling, etc.) that launches ammunition through the air, and a missile is the ammunition (arrow, stone, etc.) a missile weapon launches. All magical missile weapons have bonuses that give them additional pluses to both attack and damage rolls. Magical missiles (such as an arrow + 2) also have bonuses to both attack and damage rolls. As noted in the text on "Magical Weapon Subtables," page 228, there are two methods of randomly generating weapons. The first, recommended for character levels 1-10, is a single table. If the DM has decided to place a magical missile weapon or missile in a treasure hoard, he or she can simply roll 1d100 on the Magical Weapon Generation Table (page 230), find the result in the appropriate column, and place the item in the treasure. When stocking treasure troves with magical missile weapons and missiles for characters who are above level 10, the DM can use the same table—or he or she can use the more specific but more complex method of random treasure generation, the Random Missile Weapon and Missile Generation Checklist. Note that if both a missile and the missile weapon firing it have bonuses, the total of their bonuses and effects will apply in all cases. For example, a crossbow +2 shooting a quarrel +3 would have a + 5 chance of attack and would do + 5 of damage if the attack roll is successful. Likewise, normal arrows shot by a long bow +1 can harm gargoyles (which are damaged only by magic). A magical missile normally becomes nonmagical after one use, regardless of whether the attempt hits a target (its bonus to the attack roll disappears). However, if the missile has a talent, a missed shot will not destroy the magic unless noted otherwise in the following missile talent descriptions. Usually, if the missile is retrieved after a missed shot, it may be reused with its magical bonuses intact.
 
 The talents listed in the Missile Talents subtable (in the Magical Item Subtable: 7. Missile Weapons and Missiles, page 230) are described in the following text.
@@ -1450,7 +1838,10 @@ Wounding: When a missile with the wounding talent strikes a target creature, it 
 
 any type, etc.). However, no undead creature or construct (golem, living statue, etc.) can be wounded with this talent, and such creatures suffer only the initial damage.
 
-#### Sword Descriptions
+#### Legacy Sword Descriptions
+
+Use this block when an imported module or treasure table names a specific classic magical sword and you need direct old-school effect density at the table.
+
 Swords. A magical sword's bonus is added to both its attack rolls and damage rolls. Some swords also have an additional bonus that is used only when fighting a special type of opponent. Other swords may have bonuses or modifiers such as the ability to cast certain spell effects. The DM may wish to refer to such spells to find the exact effect. Note that each effect can only be used once per day and that no meditating is needed to gain the spellcasting ability.
 
 As noted in the text on "Magical Weapon Subtables," page 228, there are two methods of randomly generating swords. The first, recommended for character levels 1-10, is a single table. If the DM has decided to place a magical sword in a treasure hoard, he or she can simply roll 1d100 on the Magical Weapon Generation Table (page 230), find the result in the appropriate column, and place the item in the treasure. When stocking treasure troves with magical swords for characters who are above level 10, the DM can use the same table—or he or she can use the more specific but more complex method of random sword generation, the Random Sword Generation Checklist.
@@ -1464,11 +1855,11 @@ Random Sword Generation Checklist:
 
 Weapon Class. Magical weapons typically must be made by a special procedure, usually performed by a magic-user or cleric working in conjunction with a blacksmith or armorer. Weapon class is a measure of the difficulty of that item's construction. The weapon tables give the weapon class for each weapon. Generally, Class A weapons are small and temporary magical items, the most frequently found; Class D weapons are the largest and rarest as they require the most work. At the DM's option, other new weapons may be invented. Each new weapon should be categorized as to one of the four weapon classes,
 
-#### Additional Weapon Modifiers: Opponents
+#### Legacy Additional Weapon Modifiers: Opponents
 
 Use opponent categories from the source list: `bugs`, `constructs`, `dragonkind`, `enchanted monsters`, `giantkind`, `lycanthropes`, `planar monsters`, `regenerating monsters`, `reptiles and dinosaurs`, `spell-immune monsters`, `spellcasters`, `undead`, `water-breathing monsters`, and `weapon-using monsters`.
 
-#### Additional Weapon Modifiers: Talents
+#### Legacy Additional Weapon Modifiers: Talents
 
 Use talent categories from the source list: `breathing`, `charming`, `deceiving`, `defending`, `deflecting`, `draining`, `extinguishing`, `finding`, `flaming`, `flying`, `healing`, `hiding`, `holding`, `lighting`, `silencing`, `slicing`, `slowing`, `speeding`, `translating`, `watching`, and `wishing`.
 
@@ -1476,11 +1867,12 @@ Artifact rule:
 - Artifacts are high-tier exceptions, not routine treasure.
 - If introduced, treat them as campaign-shaping items with bespoke adjudication.
 
----
 
-## Albums, Anchored Powers, Grimoires
+## Field Archives, Albums, and Grimoires
 
 “A spell is only half‑real until it has a spine and a cover.” — Anon. Archivist‑Daemon
+
+Use this section as the VLG-first archive lane inside Chapter 05. Grimoires, albums, and anchored archives belong here when the table focuses on the object as a carried library, modded device, or relic archive. When the table focuses on the power API itself, hand back to Chapter 06.
 
 ### 1. What is a Grimoire?
 

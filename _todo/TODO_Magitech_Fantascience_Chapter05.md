@@ -21,6 +21,29 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - This pass does not re-open Quickstart core rules or Gear catalog ownership.
 - Domain/tax systems remain out of scope for this pass.
 
+### Alignment Priority
+- `Synthetic_Dream_Machine_05_Gear_Index.md` controls item-facing presentation:
+  - tags,
+  - bulk,
+  - slot pressure,
+  - ward/armor language,
+  - catalog-facing output format.
+- `Vastlands_Guidebook/Vastlands_Guidebook.md` controls everyday weird-gear tone:
+  - wards,
+  - albums,
+  - strange items,
+  - mods,
+  - portable occult gear.
+- `Our_Golden_Age/Our_Golden_Age.md` controls relic consequence and metaphysical pressure:
+  - shrines,
+  - godsign,
+  - signals,
+  - daemon/noosphere interfaces,
+  - buildertech,
+  - seizure-worthy apparatus.
+- BECMI/RC remains the recognizable procedural substrate, not the dominant chapter identity.
+- UVG and Magitecnica remain support sources only where they sharpen oldtech texture or power-boundary handling.
+
 ## Conversion Goals
 1. Preserve recognizable RC/BECMI procedural cadence for item generation and handling.
 2. Express converted procedure steps in SDM-native language and anchor structure.
@@ -60,37 +83,84 @@ This TODO is the execution tracker for magic-item conversion specifically.
 ## Active Work Plan
 
 ### Phase 1: Procedure Inventory and Crosswalk
-- [ ] Build family-level crosswalk for magic-item procedures:
+- [x] Build family-level crosswalk for magic-item procedures:
   - generation,
   - identification,
   - charges/consumption,
   - curse/complication handling,
   - creation/fabrication,
   - market buy/sell handling.
-- [ ] Mark each family as:
+- [x] Mark each family as:
   - `direct map`,
   - `partial map`,
   - `custom SDM procedure needed`.
+- [x] Assign each item family to a primary FTLS lane:
+  - field gear and practical weird objects,
+  - relics, buildertech, and restricted apparatus,
+  - conversion, modding, faults, and curses.
 
 ### Phase 2: Chapter 05 Procedure Consolidation
-- [ ] Consolidate all detailed generation/adjudication procedures in Chapter 05.
-- [ ] Ensure chapter internal structure follows runnable loop order:
+- [x] Consolidate the chapter front-end around an FTLS object loop and SDM item output record.
+- [x] Add a Phase 1 overlay spine:
+  - `FTLS Object Procedure`,
+  - `Object Families Catalog`,
+  - `Legacy Recognizers and Old-School Effect Coverage`.
+- [x] Keep strong old-school recognizers in the intermediate chapter state:
+  - named effects,
+  - iconic item behaviors,
+  - familiar family subtables and weapon riders.
+- [x] Convert first family slices into stronger FTLS catalog entries while keeping dense import support:
+  - potions / oils / elixirs,
+  - scrolls / formulae / map-documents.
+- [x] Convert next family slices into stronger FTLS catalog entries while keeping dense import support:
+  - wands / staves / rods,
+  - rings / amulets / charms.
+- [x] Convert next family slices into stronger FTLS catalog entries while keeping dense import support:
+  - miscellaneous items / strange items / oddities,
+  - armor / shields / wards.
+- [x] Convert weapon family slices into stronger FTLS catalog entries while keeping dense import support:
+  - missile weapons / missiles,
+  - swords,
+  - miscellaneous weapons.
+- [x] Consolidate the detailed middle of Chapter 05 into legacy support bands:
+  - generation support,
+  - identification and use support,
+  - risk and fallout support,
+  - retention and conversion support,
+  - legacy family effect coverage.
+- [x] Ensure chapter internal structure follows runnable loop order:
   - generate -> identify -> activate/use -> deplete/fail/curse -> repair/create -> market interface.
-- [ ] Remove/replace any duplicate procedure text in other chapters with pointers.
+- [x] Add explicit boundary pointers to Chapters 04, 06, 07, and 09.
+- [x] Remove/replace any duplicate procedure text in other chapters with pointers.
+- [x] Promote shared family-resolution and item-use defaults from legacy support into the core `Anomolous Object Procedure`.
+- [x] Upgrade family catalog blocks into runnable mini-procedures for common imported items.
+- [x] Add compact FTLS resolver inserts for armor, ranged weapons, swords, and weapon secondary riders.
+- [x] Demote legacy support bands to secondary expansion status instead of primary ownership.
 
 ### Phase 3: Gear/Quickstart Alignment
 - [ ] Verify no converted magic-item procedure conflicts with Quickstart core mechanics.
+- [x] Re-anchor Chapter 05 outputs to Gear Index-facing fields:
+  - object name,
+  - class/family,
+  - tags,
+  - bulk/slot pressure,
+  - trigger mode,
+  - usage model,
+  - risk note,
+  - company consequence,
+  - legal/faction/divine attention.
 - [ ] Verify table/category references align with current Gear Index headings/anchors.
 - [ ] Keep hallmark progression references aligned with Quickstart canonical upgrade model.
 
 ### Phase 4: Loot Handoff Validation
-- [ ] Ensure Loot/Treasure chapter uses handoff references to Chapter 05 (not duplicate generation logic).
+- [x] Ensure Loot/Treasure chapter uses handoff references to Chapter 05 (not duplicate generation logic).
 - [ ] Validate end-to-end flow:
   - treasure result -> magic-item handoff -> generation/adjudication -> table-facing outcome.
 
 ### Phase 5: Optional Terminology Normalization
 - [ ] Apply controlled RC-term -> SDM-term naming normalization only after mechanics are stable.
 - [ ] Keep legacy aliases where mapping confidence is medium/low.
+- [x] Add doctrine notes for VLG-first gear tone, OGA-first relic consequence, and Gear Index-first item presentation.
 
 ## Acceptance Criteria
 
@@ -101,6 +171,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 ### B. Runnable Procedure Quality
 - Referee can run item generation and use handling from Chapter 05 without missing steps.
 - Procedure order is explicit and consistent.
+- Converted item families resolve into SDM-facing object records rather than naked RC results.
 
 ### C. Cross-Chapter Integrity
 - Gear and Loot references to Chapter 05 anchors resolve.

@@ -26,7 +26,20 @@ Do not worry. It is probably safe.
 
 Probably.
 
-Here is a tightened revision at about the same length, with the newer FTLS framing quietly folded in:
+## Gods, Daemons, and the Scale of Agency
+
+Daemons are not gods, and gods are not merely daemons with larger numbers. A daemon is a bounded agency: a will, role, process, or personality capable of acting within a character, object, shrine, route, institution, or local system. Daemons may advise, possess, tempt, protect, route, remember, narrate, optimize, or interfere. They are close enough to play to become companions, antagonists, interfaces, subroutines, or hidden co-authors of action.
+
+Gods operate at a different scale. They are historical, divine, and often distributed intelligences whose presence may be expressed through cults, relics, masks, saints, shrines, domains, and noospheric infrastructures. In the current age, most gods are encountered indirectly or through local manifestations; but this is a present-age pattern, not a hard prohibition. Before and during the War of the Immortals, and on rare occasions after, named gods may act directly and personally in history.
+
+Embodied immortals, demi-gods, godlings, and durable avatars occupy a middle category useful for play. They can be met, bargained with, fought, served, or betrayed as powerful persons. They are not the default model for Gods, but they are often the most playable form of mythic agency.
+
+For play purposes:
+- **Daemons** are intimate, local, negotiable, and often persistent.
+- **Gods** are vast, historical, and usually mediated through systems, sites, masks, and pressures.
+- **Embodied immortals** are personal, political, and dramatically encounterable.
+
+This means mythic play in Elyncia can move on two registers at once: the pressure of distributed divinity in the background, and the occasional terrifying privilege of direct contact with an immanent named power.
 
 ## **Rules & Flavor**
 
@@ -149,7 +162,7 @@ That is why the layers of play matter. The road, the delve, the company, the fac
 
 In that sense, FTLS is not only an adventure game. It is a game about adjacency to destiny: about what it means to travel through a world already haunted by meaning, already watched by thresholds, already alive with pressures that can become rules.
 
-And that, perhaps, is the clearest way to say it. The dice are not outside the world. They are among the world’s native weather: one more way fate condenses, passes overhead, and breaks upon the travelers below. The players walk the road as mortals, but they lean upon it as daemons, and the game lives in the charged space between those truths.
+And that, perhaps, is the clearest way to say it. The dice are not outside the world. They are among the world’s native weather: one more way fate condenses, passes overhead, and breaks upon the travelers below. Sometimes that pressure feels daemon-haunted, sometimes saint-routed, sometimes infrastructural, and sometimes like the passing attention of a named god. The players walk the road as mortals, but they lean upon it as daemons, and the game lives in the charged space between those truths.
 
 Or, as a local Lares might murmur while dimming the lamps and closing the shrine for the evening:
 

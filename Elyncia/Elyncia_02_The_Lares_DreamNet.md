@@ -18,6 +18,8 @@ The DreamNet is Elyncia’s replacement for the old planetary internet: a living
 
 When the ancient spirit engines powering the Neo-Thracian Empire's Web 2 infrastructure sputtered and died, rogue daemons broke containment and the physical networks fractured beyond repair. This era of strife lasted two years. Into this desolation stepped the Lindwyrm - patron of New Delos, bearing tons of hoarded orichalcum and refined resources. Calling in debts and favors from major gods of travel, craft, strife, and webs—Hermes, Hephestus, Eris-Enyo, Aracne-Jorogumo—and over a hundred lesser divinities, daemon princes, and machine-spirits, together they built a new lattice of ley lines—a mana network architecture capable of flexing across reality fractures and surviving resonance collapses.
 
+This was not merely devotional language or retroactive priestly attribution. Some named gods directly participated in the DreamNet's design, negotiation, and bootstrap period, whether in person, through durable masks, or through distributed divine presences acting across shrines, routes, engines, and rites. The DreamNet should therefore be understood as both infrastructure and treaty-work: a repaired planetary network shaped by mortal craft, draconic state power, divine intervention, and noospheric compromise.
+
 The result was Web 3: the Lares DreamNet—a semi-sapient, hypercontextual infosphere composed of self-correcting astral engines and distributed personality spirits known as Lares. Each Lares governs a node—local or planetary—and serves both as a guide and gatekeeper. Some Lares shrines are home to benevolent muses. Others, inscrutable archivists. A few are outright hostile. But all are bound by the Hermetic Protocols and code-etched by Hephestus’s divine hammers.
 
 The DreamNet blends:
@@ -28,6 +30,20 @@ The DreamNet blends:
 - Legacy ritual traditions and mythic memory archives
 - Astral architecture and noospheric infrastructure
 - Asynchronous multi-nexus mana routing and damage control
+
+### Gods, Protocols, and Immanence
+
+The DreamNet was not built “for” the gods in any simple sense, nor merely blessed after the fact. It emerged from a moment when named powers, ambitious mortals, and noospheric entities all had reasons to prevent a wider civilizational collapse.
+
+Different divine contributors participated in different ways:
+
+- **In person:** Some gods or immortals appeared directly for council, bargaining, crisis response, or technical intervention.
+- **Through masks and saint-chains:** Some worked through cult offices, shrine lineages, sacred identities, and already-established local interfaces.
+- **As distributed presences:** Some acted less like singular visitors and more like persistent divine intelligences expressed through roads, thresholds, webs, forge-rites, contracts, signals, and ritualized protocol.
+
+This distinction matters. A named god may truly have helped build part of the DreamNet without implying that the whole deity stood in one workshop with a hammer for two straight years. Hermes can be present as envoy, route-logic, and protocol patron; Hephestus as divine craft, code-etching, and engine consecration; Eris as disruption theory, adversarial pressure, and elegant fault-tolerance; Aracne-Jorogumo as web-architecture, distributed continuity, and knotwork across fractured realities.
+
+The Lares themselves are not gods. They are node intelligences: bounded, local, many-voiced, and embedded in shrines, routes, archives, and systems. But they were born in a divine-political ecology, and the network they inhabit still carries the signatures of those powers that helped shape it.
 
 Key routing anchors include roaming nodes like the **Apophis Nexus** and reference baselines such as the **Apophis Datum**, used to normalize astral tides and coastal levels across Nexus.
 
@@ -115,9 +131,9 @@ Each lararium is a little city of functions wearing faces: gatekeepers, thread-k
 
 And attention, in Elyncia, has consequences.
 
-A world held together by noospheric spirits does not separate cleanly into “fiction” on one side and “rules” on the other. If the roads remember, if the shrines answer, if the gods bargain through protocols and key-signs and astral routes, then the hidden hands above the action are not merely an out-of-world convenience. They belong here. The strange luck that bends outcomes, the pressure of fate, the sense that someone or something just behind the curtain nudged events in a particular direction—these are not bugs in the story. They are part of the story’s operating environment.
+A world held together by noospheric spirits does not separate cleanly into “fiction” on one side and “rules” on the other. If the roads remember, if the shrines answer, if the gods bargain through protocols and key-signs and astral routes, and if some of those gods once directly helped build the system itself, then the hidden hands above the action are not merely an out-of-world convenience. They belong here. The strange luck that bends outcomes, the pressure of fate, the sense that someone or something just behind the curtain nudged events in a particular direction—these are not bugs in the story. They are part of the story’s operating environment.
 
-Or, as one dry old node in the back streets of High Delos reportedly told a petitioner:
-*“Of course reality has a back end. Did you think all this was running on hope?”*
+Or, as one dry old Lares node in the back streets of High Delos reportedly told a petitioner:
+*“Of course the rules are cosmology. What else would they be?”*
 
 That, however, is the next chapter.
