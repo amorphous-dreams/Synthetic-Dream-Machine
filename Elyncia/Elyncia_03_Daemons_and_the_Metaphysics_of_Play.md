@@ -119,15 +119,13 @@ Trust, betrayal, and uncertainty are not left to table vibes alone; they are for
 
 If daemon play works, it works for the same reason: because what might otherwise be an airy “narrative layer” is given teeth, limits, and spendable force.
 
-Certainly. Here is a single merged subsection that keeps the game references while giving the whole passage one clear arc:
-
 ### OSR Bedrock and Revival
 
 The great gift of **BECMI** is that it reveals scope as a ladder. **Basic** teaches the crawl: torches, traps, danger, attrition, teamwork. **Expert** opens the map: wilderness, sea travel, routes, hazards, and domains in embryo. **Companion** hands over command: rulers, armies, wars, obligations, and political gravity. **Master** expands toward the mythic and planar. **Immortal** admits, with a perfectly straight face, that the endgame of adventure may be cosmology itself.
 
 This is not merely power inflation. It is a theory of campaign growth. The game changes what it is about as the characters rise through it. Scope broadens. Responsibility broadens. The player’s meaningful horizon broadens. Later editions often sheared these layers apart, isolating dungeon play, wilderness play, rulership, planar travel, and cosmic stakes into separate styles. But the OSR, at its best, remembers that the old engine was powerful precisely because it could widen without breaking.
 
-When the OSR revival gathered force, it was not nostalgia sealed in amber. It was salvage. Designers dug through **OD&D**, **B/X**, and **BECMI** looking for procedures, pressures, and freedoms that later editions had paved over. Out of that excavation came a wave of descendants, each carrying forward some crucial fragment of the old chassis. **Dungeon Crawl Classics** insisted that danger and weirdness should feel genuinely dangerous and weird. **OSRIC** preserved the denser Gygaxian machinery. **Labyrinth Lord** proved the old bones could be legally restated and hacked forward. **Lamentations of the Flame Princess** fused familiar procedures with surreal horror. **Into the Odd** and **Electric Bastionland** showed how much could be done with radical clarity and minimal rules. **Troika!** demonstrated that psychedelic tone and sharp procedure could coexist happily. **Mörk Borg** made presentation itself feel like doctrine. **Old School Essentials** restored B/X with surgical precision. **Knave** and **Cairn** pushed the toolkit ideal toward even lighter, sharper forms.
+When the OSR revival gathered force, it was not nostalgia sealed in amber. It was salvage. Designers dug through **OD&D**, **B/X**, and **BECMI** looking for procedures, pressures, and freedoms that later editions had paved over. Out of that excavation came a wave of descendants, each carrying forward some crucial fragment of the old chassis. **Dungeon Crawl Classics** insisted that danger and weirdness should feel genuinely dangerous and weird. **OSRIC** preserved the denser Gygaxian machinery. **Labyrinth Lord** proved the old bones could be legally restated and hacked forward. **Lamentations of the Flame Princess** fused familiar procedures with surreal horror. **Into the Odd** and **Electric Bastionland** showed how much could be done with radical clarity and minimal rules. **Troika!** demonstrated that psychedelic tone and sharp procedure could coexist happily. **Mörk Borg** made presentation itself feel like doctrine. **Old School Essentials** restored B/X with surgical precision., while **Knave** and **Cairn** pushed the toolkit ideal toward even lighter, sharper forms.
 
 What this revival reopened was permission. It reminded designers that the old severity, openness, and expanding scope could survive contact with new aesthetics: neon ruin-poetry, metal album dread, surreal logistics, ultraviolet hallucination. In that sense, the modern OSR does not abandon the BECMI ladder; it repaints it in stranger colors and keeps climbing.
 
@@ -141,7 +139,7 @@ From *Earthdawn*, it takes the conviction that mechanics are metaphysics made vi
 
 All of that converges in one central design belief:
 
-**the daemon layer is the Immortal tier, translated sideways and downward into active play from the beginning.**
+**the daemon layer is the Immortal tier, translated sideways and downward into active play from the very beginning.**
 
 Not postponed until godhood. Not sealed in an appendix. Not reserved for the campaign’s far horizon. It is present from the start, though bounded, braided directly into mortal play. The players are both vulnerable travelers in the dust and mythic agencies leaning on the scales. They are caravaners and meddlers, operators and omens, pawns within the world and hidden pressures moving through it.
 
