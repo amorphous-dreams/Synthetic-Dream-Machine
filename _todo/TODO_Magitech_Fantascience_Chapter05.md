@@ -51,6 +51,38 @@ This TODO is the execution tracker for magic-item conversion specifically.
 4. Keep Loot and Gear chapters pointer-driven for magic-item generation details.
 5. Reduce adjudication ambiguity while keeping optional compatibility overlays explicit.
 
+## State of Play
+- Chapter 05 front-end procedure is usable: the FTLS object loop, identification flow, charge/failure handling, curse handling, and consequence recording are in place.
+- Family catalogs exist for potions, scrolls, wands/staves/rods, rings, miscellaneous items, armor/shields/wards, missile weapons, swords, and miscellaneous weapons.
+- Numeric ontology pass is locked doctrine: BECMI character/caster levels, creature HD, and spell tiers convert to SDM `Level` and `Power Level` by the rules below.
+- Phase A mechanical cleanup is complete in the current manuscript pass and preserves BECMI-facing names while replacing the remaining internal D&D assumptions.
+- Armor/shield Defense has been corrected to SDM additive armor bonuses and is now the model example for `retain API, replace internals`.
+- Remaining work is now mostly bridge and consistency work: spell-to-power interfacing, deferred classic-name mappings, back-half system conversion, and final chapter-wide consistency.
+
+## API Conversion Doctrine
+
+### Public API Surface to Preserve
+- Preserve classic item names.
+- Preserve classic spell and effect names when they serve as recognizers.
+- Preserve familiar family labels and subtable names where they improve lookup and nostalgia.
+- Preserve BECMI-facing labels as the user-facing API surface, not as rules authority.
+
+### Internal Implementation to Replace
+- `AC` and descending-defense logic become additive `Armor` and `Defense`.
+- `hit points` become `Life`.
+- Class gates become Traits, practices, bearer requirements, or gear-compatibility constraints.
+- BECMI spell tiers become SDM `Power Level`.
+- BECMI character/caster level and monster `HD` become SDM `Level`.
+- Attack math, save math, and combat modifiers become SDM roll language, save language, and `[+]` / `[-]`.
+
+### Reference Priority
+- `Synthetic_Dream_Machine_01_Quickstart.md` is the rules truth.
+- `Synthetic_Dream_Machine_05_Gear_Index.md` controls item math, item presentation, tags, armor/ward/weapon scale, and slot/bulk language.
+- `Synthetic_Dream_Machine_04_Powers_Index.md` controls storage/use language for anything that behaves like stored, triggered, reflected, repeated, or anchored powers.
+- `Synthetic_Dream_Machine_03_Traits_Index.md` is the reference for classless identity replacements and bearer-facing trait hooks.
+- `Synthetic_Dream_Machine_06_Campaign_Regions.md` only matters when location, faction, or world-process context materially affects an item.
+- `Vastlands_Guidebook`, `Our_Golden_Age`, and `Ultraviolet_Grasslands_and_the_Black_City_2e` guide tone, weirdness, and object identity; they do not overrule SDM mechanics.
+
 ## Conversion Standards
 - Mechanics-first, terminology-second:
   - first convert procedure behavior; then normalize naming where appropriate.
@@ -62,6 +94,95 @@ This TODO is the execution tracker for magic-item conversion specifically.
   - each RC/BECMI compatibility behavior must be optional and disableable.
 - Traceability:
   - each converted subsection should map to source family and canonical SDM destination anchor.
+
+## Conversion Reference Notes
+
+### Numeric Ontology Template
+- Use this as a conversion reference, not as chapter-front matter.
+- Convert BECMI character- and caster-level references to SDM `Level` by halving and always rounding up.
+- Convert BECMI creature `HD` references to SDM `Level` by halving and always rounding up. Do not confuse legacy `HD` with SDM `Hero Dice (HD)`.
+- Convert BECMI spell tiers to SDM `Power Level` with `Spell Level x2`; cantrips and other minor at-will or `x/day` free effects become `Power Level 1`.
+- Chapter-facing text should be `SDM only`; keep source numbers here, not inline in the manuscript.
+- Preferred numeric buckets:
+  - `Level` for entity potency, caster potency, summon strength, dispel/remove-curse force, and creature-filter thresholds
+  - `Power Level` for storage limits, archive capacity, spell eligibility, and direct spell-tier conversion
+- Reference examples:
+  - `3 HD -> Level 2`
+  - `7 HD -> Level 4`
+  - `15 HD -> Level 8`
+  - `26th level caster -> Level 13 practitioner`
+  - `36th level cleric -> Level 18 holy practitioner`
+  - `1st-level spell -> Power Level 2`
+  - `4th-level spell -> Power Level 8`
+  - `cantrip/minor at-will or x/day effect -> Power Level 1`
+
+### Exceptional Ability Template
+- Use this as a conversion reference, not as chapter-front matter.
+- When a legacy item says an ability becomes `exceptional`, `exceptionally high`, or otherwise exceeds normal human limits, convert it to SDM as follows:
+  - treat the boosted ability as `+5` for as long as the effect lasts,
+  - if the bearer already has `+5`, do not increase it further; instead grant `[+]` on the first directly relevant roll each round or scene,
+  - apply the boosted value to any derived SDM stat that clearly uses that ability.
+- Adventure-facing guidance for item rewrites:
+  - Strength: use for forcing, lifting, carrying, climbing, smashing, and similar brute-force gates; if force is the only real obstacle and footing/time are favorable, allow success without a roll.
+  - Agility: use for stunts, balance, stealth movement, dodging, and physical Defense.
+  - Endurance: use for poison, disease, exposure, fatigue, and bodily-hardship saves; body-hardening effects may also grant `5` temporary Life, lost first.
+  - Thought, Charisma, Aura: use when the item's interface or the active obstacle is clearly routed through that ability.
+- Preferred item-description pattern:
+  - say exactly which ability becomes `+5`,
+  - note any direct derived-stat effect that matters in play,
+  - note any special rider such as temporary Life or unarmed damage,
+  - avoid pointing the reader to an abstract rule block unless the chapter already has a stable inline rules glossary.
+
+## Shared Phase Tracker
+
+### Phase A: Mechanical Resolution Cleanup
+- Remove remaining hidden D&D math while keeping item names and family labels intact.
+- Convert `saving throw` variants into SDM save language.
+- Convert `attack roll` / `to hit` / `easier to hit` text into Defense modifiers, attack bonuses, or `[+]` / `[-]`.
+- Convert `morale` / `reaction` imports into Quickstart procedures or neutral referee calls.
+- Convert `no saving throw` to `no save`.
+- Convert lingering experience-level loss and combatant-level logic to SDM `Level`.
+- Status: completed in the current Chapter 05 manuscript pass.
+- Completion notes:
+  - `Staff of Harming`, `Snake Staff`, `Animal Control`, `Drums of Panic`, `Reflection`, and the remaining flagged missile entries now use SDM-native attack/save/disposition wording.
+  - Quickstart morale remains an allowed explicit import where it is already canonical and cleaner than bespoke fear text.
+  - Chapter-facing prose no longer relies on `attack roll`, `reaction`, `save vs`, `caster level`, `spell level`, `level loss`, or `THAC0`.
+
+### Phase B: Power / Spell API Bridge
+- Keep classic names like `Spell Scroll`, `Ring of Spell Storing`, `Staff of Healing`, and `Raise Dead`.
+- Route internal behavior through SDM `power` language.
+- Use `Power Level` for storage, eligibility, and capacity.
+- Use `Level` for source force, dispel/counterforce, summon strength, and curse removal strength.
+- Add TODO-side bridge notes for ambiguous or unmapped classic spell names.
+- Deferred bridge examples from the Phase A completion pass:
+  - `Staff of Elemental Power` effect names and elemental counter-negation phrasing
+  - `Staff of Power` and `Staff of Wizardry` spell-name bundles
+  - ring and armor entries that still preserve classic effect names as recognizers without a full SDM `power` mapping
+
+### Phase C: Family-by-Family Internal Conversion
+- Standardize each family in this order:
+  1. Potions / Oils / Elixirs
+  2. Scrolls / Formulae / Map-Documents
+  3. Wands / Staves / Rods
+  4. Rings / Amulets / Charms
+  5. Miscellaneous Items / Strange Items / Oddities
+  6. Armor / Shields / Wards
+  7. Missile Weapons / Missiles
+  8. Swords
+  9. Miscellaneous Weapons
+- For each family, standardize trigger/activation model, bearer requirements, resolution language, damage/Defense/save scale, control/charm/fear/drain behavior, charge/depletion/failure model, and the SDM-facing output record.
+
+### Phase D: Back-Half System Conversion
+- Convert `Legacy Building, Modding, and Salvage Conversion` into SDM-native formulas and thresholds.
+- Convert `Field Archives, Albums, and Grimoires` into SDM-native archive/storage procedure language.
+- Route formulas through SDM `Level`, `Power Level`, slots, burdens, and Gear/Powers anchors.
+- Remove remaining `INT/WIS`, spell-slot, and gp/enchantment assumptions from chapter-facing prose unless preserved only as TODO notes.
+
+### Phase E: Final Consistency and Acceptance Pass
+- Verify Chapter 05 no longer depends on forbidden mechanics terms in chapter-facing prose.
+- Verify consistent use of `Level`, `Power Level`, `Armor`, `Ward`, `Life`, and `Defense`.
+- Verify each family preserves BECMI-facing labels while using SDM-facing internals only.
+- Sync accepted doctrine and remaining exceptions back into this TODO and the master conversion TODO.
 
 ## Source Inputs
 - Primary conversion source:
@@ -162,6 +283,11 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - [ ] Keep legacy aliases where mapping confidence is medium/low.
 - [x] Add doctrine notes for VLG-first gear tone, OGA-first relic consequence, and Gear Index-first item presentation.
 
+## Acceptance Notes for API Conversion
+- A referee should be able to run Chapter 05 without knowing D&D attack, save, or descending-AC math.
+- A classic item or spell name may remain as a label, but its surrounding procedure must be SDM-native.
+- Each converted family should resolve directly into SDM-facing object records and chapter-runnable item behavior.
+
 ## Acceptance Criteria
 
 ### A. Canonical Ownership
@@ -187,6 +313,12 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - [ ] Pointer integrity verified from Gear and Loot docs.
 - [ ] Anchor/link check passes across touched markdown files.
 - [ ] No baseline core-rule drift introduced in Quickstart.
+
+## Current Wording Rules Locked by Phase A
+- Use `attack`, `melee attack`, or explicit Defense targets instead of `attack roll`.
+- Use SDM save language or Quickstart morale directly instead of mixed morale/resolve/reaction phrasing.
+- Use neutral referee disposition language when controlled creatures are released and the outcome is situational.
+- Preserve classic spell/effect names only as recognizers until the Phase B bridge assigns them explicit SDM `power` behavior.
 
 ## Dependencies and Coordination
 - Depends on boundary lock in `_todo/TODO_SDM_Gear_Index_Master.md`.
