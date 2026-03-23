@@ -32,7 +32,7 @@ This TODO defines acceptance criteria, implementation sequence, and validation g
 
 ### D. Navigation and Link Health
 - All loot conversion references to Quickstart/Gear anchors resolve.
-- No stale links to retired anchors/legacy chapter names.
+- No stale links to retired anchors/superseded chapter names.
 
 ### E. Playtest Readiness
 - At least one runnable example each for:
@@ -56,7 +56,7 @@ This TODO defines acceptance criteria, implementation sequence, and validation g
 
 4. Finalization
 - acceptance checklist sign-off.
-- freeze baseline and move future changes to explicit enhancement queue.
+- lock baseline and move future changes to explicit enhancement queue.
 
 ## Validation Checklist
 - [ ] End-to-end loot loop is present and internally consistent.

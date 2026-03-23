@@ -26,7 +26,9 @@ Base model (locked):
 - Numeric ontology is locked policy for active conversion work: BECMI level, HD, and spell-tier references already map to SDM `Level` and `Power Level`.
 - Class locks and most D&D ability-score terminology have already been removed or reduced in active chapter conversion.
 - Armor/shield Defense has been corrected from descending AC assumptions to SDM additive armor bonuses.
-- The remaining conversion burden is primarily internal implementation cleanup: roll math, save language, combat modifiers, spell-to-power interfacing, and chapter-wide consistency.
+- The full staged spell corpus now exists across the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
+- That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped family layer, and completed grouped-`partial` to Phase 1 sync.
+- The remaining conversion burden is now narrower: strengthen grouped `custom` doctrine notes, continue targeted `undecided` cleanup, and turn the strongest relationships into chapter-ready bridge rules.
 
 ## API Conversion Doctrine
 
@@ -68,7 +70,7 @@ Base model (locked):
 - Character and caster level scaling: convert BECMI character/caster levels to SDM `Level` by halving and always rounding up.
 - Hit-Dice scaling: convert BECMI `HD` creature potency to SDM `Level` by halving and always rounding up. This is separate from SDM `Hero Dice (HD)`.
 - Spell-to-power scaling: `Spell Level x2 = SDM Power Level`; cantrips and other minor at-will or `x/day` free effects map to `Power Level 1`.
-- Manuscript presentation policy: Chapter-facing text should be `SDM only`; legacy values stay in TODO/reference notes, not inline in the manuscript.
+- Manuscript presentation policy: Chapter-facing text should be `SDM only`; source reference values stay in TODO/reference notes, not inline in the manuscript.
 
 ## Numeric Ontology Reference
 - Use `Level` for entity potency, caster potency, summon strength, curse removal strength, dispelling strength, and other force-of-source references.
@@ -88,7 +90,7 @@ Base model (locked):
 
 ### Phase A: Mechanical Resolution Cleanup
 - Remove hidden D&D math while preserving classic names and labels.
-- Convert save language, attack math, morale/reaction references, and legacy combat modifiers into SDM-native resolution.
+- Convert save language, attack math, morale/reaction references, and source-era combat modifiers into SDM-native resolution.
 - Use this phase to eliminate remaining descending-AC-era logic and disguised THAC0 assumptions.
 
 ### Phase B: Power / Spell API Bridge
@@ -130,18 +132,20 @@ Base model (locked):
 - SDM consolidation master:
   - `_todo/TODO_SDM_Gear_Index_Master.md`
 
+
 ## Active Queue
-1. Re-validate overlay assumptions against current Quickstart/Gear canon.
-2. Keep overlay docs free of core-rules duplication.
-3. Maintain short crosswalk notes from RC terms to SDM anchors.
-4. Treat API-surface preservation with internal SDM replacement as the default conversion mode for Chapter 05 and adjacent passes.
+1. Keep the spell/effect crosswalk in lockstep: grouped status changes or note promotions must be mirrored back into Phase 1 immediately.
+2. Finish the next focused `custom` and `undecided` cleanup passes with priority on Chapter 05/06 bridge value.
+3. Convert the strongest crosswalk relationships into reusable bridge doctrine for storage, trigger, counterforce, traversal, and restoration handling.
+4. Re-validate overlay assumptions against current Quickstart/Gear canon as downstream manuscript edits resume.
+5. Treat API-surface preservation with internal SDM replacement as the default conversion mode for Chapter 05 and adjacent passes.
 
 ## Activities Checklist
 - [ ] Build/refresh BECMI -> SDM crosswalk index by subsystem (`B/E/C/M/I` lanes).
 - [ ] Add short procedure excerpts (paraphrase + source refs) for each active overlay lane.
 - [ ] Draft `Siege-as-Dungeon` procedure in FTLS format (watch-based).
 - [ ] Draft `Immortal/Spheres in SDM+` reference page (factional physics + world-process play).
-- [ ] Reconcile `I03` carryover rules with `C04` nexus update procedure.
+- [ ] Reconcile `I03` overlay interaction rules with `C04` nexus update procedure.
 - [ ] Validate each overlay against current Quickstart/Gear anchors.
 - [ ] Mark each overlay as optional/default-off/default-on explicitly.
 - [ ] Add disable-path note for each overlay (how to revert to pure SDM baseline).
@@ -151,26 +155,14 @@ Base model (locked):
 
 ## Future TODO Passes
 
-### F1: Magic Items -> Magitech and Fantascience
-- [ ] Build family-by-family crosswalk (`RC/BECMI magic item families` -> `SDM magitech/fantascience lanes`).
-- [ ] Keep procedure conversion separate from terminology conversion (mechanics first, naming pass second).
-- [ ] Route converted generation flow to Chapter 05 canonical anchors.
-- [ ] Define compatibility tags for legacy behaviors where direct SDM mappings are partial.
-- [ ] Validate loot handoff integrity (`treasure yield -> item generation -> use/constraints`).
-- [ ] Add acceptance test set:
-  - permanent item path,
-  - consumable/charged item path,
-  - cursed/complication-bearing item path.
-- [ ] Use Chapter 05 armor/shield conversion as the model pattern for `retain BECMI API surface, replace internal mechanics`.
-
-### F2: Spells -> Powers
-- [ ] Treat `_todo/TODO_BECMI_Spell_Material_Staging_*.md` as the canonical staged spell corpus for this pass.
-- [ ] Build spell-pattern crosswalk into SDM Powers taxonomy.
-- [ ] Preserve canonical OSR spell names as the primary crosswalk row keys and Chapter 06 lookup surface.
-- [ ] Record existing stylized entries from `Synthetic_Dream_Machine_04_Powers_Index.md` as named SDM variants with `see` handling, not as replacements for canonical spell names.
+### F1: Spells -> Powers
+- [x] Treat `_todo/TODO_BECMI_Spell_Material_Staging_*.md` as the canonical staged spell corpus for this pass.
+- [x] Preserve canonical OSR spell names as the primary crosswalk row keys and Chapter 06 lookup surface.
+- [x] Record existing stylized entries from `Synthetic_Dream_Machine_04_Powers_Index.md` as named SDM variants with `see` handling, not as replacements for canonical spell names.
+- [x] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`, `undecided`).
+- [ ] Deepen the spell-pattern crosswalk from status tagging into chapter-ready SDM Powers doctrine.
 - [ ] Apply locked scaling constants (`Spell Level x2 = SDM Power Level`; cantrip floor).
 - [ ] Define conversion rules for range/duration/targeting in SDM procedure language.
-- [ ] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`).
 - [ ] Use the manuscript pattern `canonical spell first, variant callout second` whenever a Luka-style descendant already exists (for example: `Magic Missile` -> `see Tragic Missile`).
 - [ ] Route outputs to canonical powers destinations and quick-reference anchors.
 - [ ] Use FTLS Chapter 06 as the first major destination chapter for the full staged spell corpus and crosswalk outputs.
@@ -178,6 +170,20 @@ Base model (locked):
   - direct attack/control,
   - utility/exploration,
   - summon/transform/exception cases.
+- [ ] Add relationship notes for likely combined-power / overcharge families where several classic spells may collapse into one SDM progression.
+- [ ] Mark likely locked-rider families where higher Overcharge effects should require RSS, archive, corruption-cleaning, or other campaign-side unlock work before safe use.
+
+### F2: Magic Items -> Magitech and Fantascience
+- [ ] Build family-by-family crosswalk (`RC/BECMI magic item families` -> `SDM magitech/fantascience lanes`).
+- [ ] Keep procedure conversion separate from terminology conversion (mechanics first, naming pass second).
+- [ ] Route converted generation flow to Chapter 05 canonical anchors.
+- [ ] Define compatibility tags for source behaviors where direct SDM mappings are partial.
+- [ ] Validate loot handoff integrity (`treasure yield -> item generation -> use/constraints`).
+- [ ] Add acceptance test set:
+  - permanent item path,
+  - consumable/charged item path,
+  - cursed/complication-bearing item path.
+- [ ] Use Chapter 05 armor/shield conversion as the model pattern for `retain BECMI API surface, replace internal mechanics`.
   
 
 ### Other Passes
@@ -192,6 +198,6 @@ Base model (locked):
 - Future pass outputs must include explicit canonical SDM anchor references.
 
 ## Done Criteria
-- Overlay work references canonical SDM anchors, not legacy chapter structures.
+- Overlay work references canonical SDM anchors, not superseded chapter structures.
 - Overlay toggles are explicit and local (no global ambiguity).
 - Loot/magic-item overlays remain compatible with consolidated Quickstart+Gear model.

@@ -277,7 +277,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 ### 06 Powers
 **Purpose**
 - Carry the shared power system API.
-- Consume the canonical staged spell corpus and its crosswalk as the primary legacy source for the FTLS powers build.
+- Consume the canonical staged spell corpus and its crosswalk as the primary source corpus for the FTLS powers build.
 
 **Preserve**
 - Any character can use any power.
@@ -291,6 +291,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - [ ] Add `Overcharge and Risk`.
 - [ ] Add `Powers by Tradition / Source`.
 - [ ] Add `Powers by Gameplay Scale`.
+- [ ] Add doctrine for conversion-family powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.
 - [ ] Tighten chapter around:
   - activation,
   - storage,

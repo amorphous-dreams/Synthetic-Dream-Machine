@@ -45,7 +45,7 @@ Default to acting, editing, and verifying rather than only describing what shoul
 - BECMI character/caster level -> SDM `Level = ceil(old / 2)`
 - BECMI creature `HD` -> SDM `Level = ceil(HD / 2)`
 - BECMI spell level -> SDM `Power Level = max(1, spell level x 2)`
-- Chapter-facing prose should be `SDM only`; legacy source values belong in `_todo/` notes, not the manuscript.
+- Chapter-facing prose should be `SDM only`; source reference values belong in `_todo/` notes, not the manuscript.
 
 ## 3) Canonical Reference Order
 Use these sources in this order when making conversion decisions:
@@ -68,6 +68,8 @@ Primary manuscript target:
 - Numeric ontology doctrine is already locked and partially applied.
 - Class locks and most D&D ability-score language have already been removed or reduced.
 - Armor/shield Defense has already been corrected to SDM additive armor bonuses and should be treated as the model example for `retain API, replace internals`.
+- `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` now contains the full flat spell/effect catalog, preserved cross-tradition class/spell tags, and the SDM-first grouped family workspace.
+- Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on strengthening grouped `custom` notes and reducing the remaining `undecided` edge cases.
 - `_todo/` docs already contain:
   - `State of Play`
   - `API Conversion Doctrine`
@@ -84,23 +86,28 @@ Do not revert these changes.
 Resume from the current shared phase tracker in `_todo/TODO_Magitech_Fantascience_Chapter05.md`.
 
 ### Immediate priority: Phase B
-Build the `power/spell API bridge` inside Chapter 05 and its supporting TODO notes.
+Consume the stronger crosswalk doctrine to finish the `power/spell API bridge` inside Chapter 05 and its supporting TODO notes.
 
 Focus on:
-- classic spell and effect names that still function only as recognizers
+- classic spell and effect names that still function only as recognizers inside Chapter 05 item entries
 - storage, eligibility, and capacity language that should become explicit `Power Level` handling
 - source-force, summon-strength, dispel, and curse-removal language that should become explicit `Level` handling
 - TODO-side notes for ambiguous or not-yet-mapped classic names
 - immediate deferred examples:
   - `Staff of Elemental Power` effect names and elemental counter-negation phrasing
   - `Staff of Power` and `Staff of Wizardry` spell-name bundles
-  - ring and armor entries that still preserve classic effect names without a full SDM `power` bridge
+  - ring, staff, and scroll-interface - and other magic item entries that still preserve classic effect names without a full SDM `power` bridge
 
 Acceptance for this phase:
 - classic names remain visible, but internal behavior routes through SDM `power` language
 - `Power Level` is used consistently for storage, eligibility, and capacity
 - `Level` is used consistently for source force, dispel/counterforce, summon strength, and curse-removal strength
 - ambiguous classic names are recorded in `_todo/` notes instead of being half-converted in manuscript prose
+
+### Forward Plan After Phase B
+- Use the crosswalk's strengthened `custom` notes to decide which Chapter 05 recognizers need bespoke item-interface doctrine rather than family-level inheritance.
+- Re-run Gear/Loot pointer validation after the bridge wording is stabilized.
+- Leave Chapter 06-facing spell-family deepening in `_todo/` unless the operator explicitly asks for manuscript drafting there.
 
 ### Next priority: Phase C
 Resume family-by-family internal conversion only after the Phase B bridge rules are explicit enough to apply consistently.

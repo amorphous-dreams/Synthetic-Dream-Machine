@@ -42,7 +42,7 @@ Current artifact layout:
     - magic-item identification / activation / charge / damage / sale / use restrictions
     - spell research / copying / books / lost books / item creation procedures
     - artifact / immortal-power-adjacent interpretation text
-- Freeze decision:
+- Scope decision:
   - extraction should now be treated as functionally complete for the targeted spell + magic-item curation scope
   - any later extraction work should be limited to newly discovered concrete defects or a separate creature-focused scan
 

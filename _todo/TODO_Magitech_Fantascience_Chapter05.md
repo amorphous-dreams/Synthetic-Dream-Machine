@@ -57,7 +57,9 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - Numeric ontology pass is locked doctrine: BECMI character/caster levels, creature HD, and spell tiers convert to SDM `Level` and `Power Level` by the rules below.
 - Phase A mechanical cleanup is complete in the current manuscript pass and preserves BECMI-facing names while replacing the remaining internal D&D assumptions.
 - Armor/shield Defense has been corrected to SDM additive armor bonuses and is now the model example for `retain API, replace internals`.
-- Remaining work is now mostly bridge and consistency work: spell-to-power interfacing, deferred classic-name mappings, back-half system conversion, and final chapter-wide consistency.
+- The spell/effect crosswalk that feeds Chapter 05 and Chapter 06 now has a full flat catalog, preserved cross-tradition class/spell metadata, and an SDM-first grouped family layer.
+- Grouped `partial` rows have been synced back into the flat catalog; the current crosswalk cleanup focus is strengthening grouped `custom` notes and resolving remaining `undecided` edge cases.
+- Remaining Chapter 05 work is now mostly downstream bridge and consistency work: consume the stronger crosswalk doctrine for item-interface rows, finish deferred classic-name mappings, and run cross-chapter validation.
 
 ## API Conversion Doctrine
 
@@ -100,7 +102,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 ### Numeric Ontology Template
 - Use this as a conversion reference, not as chapter-front matter.
 - Convert BECMI character- and caster-level references to SDM `Level` by halving and always rounding up.
-- Convert BECMI creature `HD` references to SDM `Level` by halving and always rounding up. Do not confuse legacy `HD` with SDM `Hero Dice (HD)`.
+- Convert BECMI creature `HD` references to SDM `Level` by halving and always rounding up. Do not confuse source `HD` with SDM `Hero Dice (HD)`.
 - Convert BECMI spell tiers to SDM `Power Level` with `Spell Level x2`; cantrips and other minor at-will or `x/day` free effects become `Power Level 1`.
 - Chapter-facing text should be `SDM only`; keep source numbers here, not inline in the manuscript.
 - Preferred numeric buckets:
@@ -118,7 +120,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 
 ### Exceptional Ability Template
 - Use this as a conversion reference, not as chapter-front matter.
-- When a legacy item says an ability becomes `exceptional`, `exceptionally high`, or otherwise exceeds normal human limits, convert it to SDM as follows:
+- When a source item says an ability becomes `exceptional`, `exceptionally high`, or otherwise exceeds normal human limits, convert it to SDM as follows:
   - treat the boosted ability as `+5` for as long as the effect lasts,
   - if the bearer already has `+5`, do not increase it further; instead grant `[+]` on the first directly relevant roll each round or scene,
   - apply the boosted value to any derived SDM stat that clearly uses that ability.
@@ -157,7 +159,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - Minimum viable bridge inputs now live in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`, but that document is now being expanded into the full canonical spell crosswalk for Chapter 06 rather than remaining a Chapter 05-only bridge sheet.
 - Phase B should explicitly clear these bridge tasks before any Phase C family conversion resumes:
   - confirm seeded crosswalk coverage for the Chapter 05 recognizer set,
-  - mark each seeded entry as `direct`, `partial`, `custom`, or `undecided`,
+  - confirm the seeded entries keep current `direct`, `partial`, `custom`, or `undecided` status after each focused cleanup,
   - resolve deferred bundle notes for `Staff of Elemental Power`, `Staff of Power`, and `Staff of Wizardry`,
   - record the SDM-facing storage / trigger / counterforce rule for each `partial` item-effect.
 - Phase B acceptance gate:
@@ -182,7 +184,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - For each family, standardize trigger/activation model, bearer requirements, resolution language, damage/Defense/save scale, control/charm/fear/drain behavior, charge/depletion/failure model, and the SDM-facing output record.
 
 ### Phase D: Back-Half System Conversion
-- Convert `Legacy Building, Modding, and Salvage Conversion` into SDM-native formulas and thresholds.
+- Convert `Building, Modding, and Salvage Conversion` into SDM-native formulas and thresholds.
 - Convert `Field Archives, Albums, and Grimoires` into SDM-native archive/storage procedure language.
 - Route formulas through SDM `Level`, `Power Level`, slots, burdens, and Gear/Powers anchors.
 - Remove remaining `INT/WIS`, spell-slot, and gp/enchantment assumptions from chapter-facing prose unless preserved only as TODO notes.
@@ -234,7 +236,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - [x] Add a Phase 1 overlay spine:
   - `FTLS Object Procedure`,
   - `Object Families Catalog`,
-  - `Legacy Recognizers and Old-School Effect Coverage`.
+  - `Classic Recognizers and Old-School Effect Coverage`.
 - [x] Keep strong old-school recognizers in the intermediate chapter state:
   - named effects,
   - iconic item behaviors,
@@ -252,20 +254,20 @@ This TODO is the execution tracker for magic-item conversion specifically.
   - missile weapons / missiles,
   - swords,
   - miscellaneous weapons.
-- [x] Consolidate the detailed middle of Chapter 05 into legacy support bands:
+- [x] Consolidate the detailed middle of Chapter 05 into compatibility support bands:
   - generation support,
   - identification and use support,
   - risk and fallout support,
   - retention and conversion support,
-  - legacy family effect coverage.
+  - source-family effect coverage.
 - [x] Ensure chapter internal structure follows runnable loop order:
   - generate -> identify -> activate/use -> deplete/fail/curse -> repair/create -> market interface.
 - [x] Add explicit boundary pointers to Chapters 04, 06, 07, and 09.
 - [x] Remove/replace any duplicate procedure text in other chapters with pointers.
-- [x] Promote shared family-resolution and item-use defaults from legacy support into the core `Anomolous Object Procedure`.
+- [x] Promote shared family-resolution and item-use defaults from compatibility support into the core `Anomolous Object Procedure`.
 - [x] Upgrade family catalog blocks into runnable mini-procedures for common imported items.
 - [x] Add compact FTLS resolver inserts for armor, ranged weapons, swords, and weapon secondary riders.
-- [x] Demote legacy support bands to secondary expansion status instead of primary ownership.
+- [x] Demote compatibility support bands to secondary expansion status instead of primary ownership.
 
 ### Phase 3: Gear/Quickstart Alignment
 - [ ] Verify no converted magic-item procedure conflicts with Quickstart core mechanics.
@@ -289,7 +291,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 
 ### Phase 5: Optional Terminology Normalization
 - [ ] Apply controlled RC-term -> SDM-term naming normalization only after mechanics are stable.
-- [ ] Keep legacy aliases where mapping confidence is medium/low.
+- [ ] Keep source aliases where mapping confidence is medium/low.
 - [x] Add doctrine notes for VLG-first gear tone, OGA-first relic consequence, and Gear Index-first item presentation.
 
 ## Acceptance Notes for API Conversion
@@ -318,11 +320,16 @@ This TODO is the execution tracker for magic-item conversion specifically.
 
 ## Validation Checklist
 - [ ] Crosswalk completeness reviewed for all targeted magic-item families.
-- [ ] Phase B recognizer set seeded and reviewed in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
+- [x] Phase B recognizer set seeded and reviewed in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
 - [ ] Chapter 05 flow run-through completed for at least 3 item families.
 - [ ] Pointer integrity verified from Gear and Loot docs.
 - [ ] Anchor/link check passes across touched markdown files.
 - [ ] No baseline core-rule drift introduced in Quickstart.
+
+## Forward Plan
+1. Use the improved crosswalk notes to finish Chapter 05 bridge rules for stored, delayed, absorbed, and reflected spell effects.
+2. Revisit the deferred bundled recognizers (`Staff of Elemental Power`, `Staff of Power`, `Staff of Wizardry`) using the current crosswalk doctrine instead of ad hoc item-local notes.
+3. Run the remaining Gear and Loot pointer/integrity checks once the bridge wording stabilizes.
 
 ## Current Wording Rules Locked by Phase A
 - Use `attack`, `melee attack`, or explicit Defense targets instead of `attack roll`.
