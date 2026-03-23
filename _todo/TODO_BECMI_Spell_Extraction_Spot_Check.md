@@ -46,6 +46,31 @@ Current artifact layout:
   - extraction should now be treated as functionally complete for the targeted spell + magic-item curation scope
   - any later extraction work should be limited to newly discovered concrete defects or a separate creature-focused scan
 
+## Full Table QA Pass - 2026-03-22
+
+- Basic:
+  - reviewed the Turning Undead table, spell lists, and adjacent structured spell-property blocks
+  - result: no blocking row/column defects found
+- Expert:
+  - reviewed the leveled spell lists, spell-expansion sections, and structured spell-property blocks
+  - result: no blocking row/column defects found
+- Companion:
+  - reviewed treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, and miscellaneous-item tables
+  - result: table-local OCR scars were cleaned in the generator, the densest treasure tables were rewritten into sequential readable tables, and no blocking row/column defects remain
+- Master:
+  - reviewed the cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables
+  - result: the top cleric and magic-user matrices were reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions
+- Immortals:
+  - reviewed the sphere-factor matrix, sample cost table, duration and mental-effect tables, and magical-effect index anchors
+  - result: no blocking row/column defects found
+- Rules Cyclopedia:
+  - reviewed the clerical, magical, and druidic spell lists plus the later reconstructed spellcaster and scroll tables
+  - result: no blocking row/column defects found
+
+Chapter 06 readiness:
+- the staged corpus is now table-stable enough for spell-patterning and crosswalk expansion work
+- the former Master top-matrix blocker is now cleared
+
 ## New Sections Cleanup Ledger
 
 - `Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items`

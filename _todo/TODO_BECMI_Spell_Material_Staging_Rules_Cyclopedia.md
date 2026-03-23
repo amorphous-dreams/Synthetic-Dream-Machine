@@ -15,9 +15,9 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
+- Status: reviewed 2026-03-22
+- Scope checked: clerical, magical, and druidic spell lists plus the later reconstructed spellcaster and scroll tables.
+- Result: no blocking row/column defects found in the visible Rules Cyclopedia table and list regions.
 ### Chapter 3: Spells and Spellcasting
 
 - Extraction note: hybrid RC extraction: pages 33-34 are split into labeled layout-column slices for readable setup prose and spell-list presentation, while pages 35-59 use TSV coordinate reflow with three reading-order columns to eliminate left/right interleave in spell descriptions.

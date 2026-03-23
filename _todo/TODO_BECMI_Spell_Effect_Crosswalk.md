@@ -4,7 +4,8 @@ This document is the downstream handoff artifact for the completed BECMI spell-m
 
 Purpose:
 - track classic spell and effect names across the staged core books
-- support Chapter 05 power / spell bridge work
+- build the full canonical spell crosswalk from the staged corpus
+- support FTLS Chapter 06 powers drafting as the next major downstream consumer
 - support the broader `F2: Spells -> Powers` conversion pass
 
 Source corpus:
@@ -20,13 +21,14 @@ Rules for this artifact:
 - Use the staged corpus as the source of truth; do not copy from PDFs ad hoc.
 - Preserve classic names as lookup keys.
 - Do not convert terminology to SDM terms until a mapping decision is recorded.
-- Creature-specific spellcaster scans remain out of scope for this first pass.
+- Creature-specific spellcaster scans remain out of scope unless they are required to clarify the spell corpus itself.
 
-## First-Pass Scope
+## Active Phase Scope
 
-- Chapter 05-relevant spell and effect names first
-- spell and effect names that directly govern magic-item behavior
-- supporting doctrine names where the effect itself is procedural rather than a simple spell title
+- Full staged spell corpus first
+- all classic spell and effect names that will feed Chapter 06 powers work
+- spellcasting doctrine and support procedures where the effect is procedural rather than just a title
+- Chapter 05-relevant names remain important, but they are now a subset of the broader Chapter 06-facing pass
 
 Examples:
 - `Dispel Magic`
@@ -54,9 +56,10 @@ Use one row per classic spell or effect name, with these fields:
 
 ## Immediate Next Work
 
-- seed this crosswalk with the Chapter 05 spell/effect names that appear in item entries
-- record at least one source-book anchor for each name from the staged corpus
-- defer actual SDM mapping decisions until the bridge pass begins
+- expand from the Chapter 05 seed batch into a full staged spell crosswalk
+- record at least one source-book anchor for every staged spell or reusable spell-effect name
+- group entries by spell family / function where that will help Chapter 06 powers drafting
+- defer final SDM wording until the powers pass begins, but do record mapping status and pattern notes as the corpus grows
 
 ## Seed Batch A: Chapter 05 Bridge Starters
 
@@ -89,6 +92,6 @@ Use one row per classic spell or effect name, with these fields:
 
 ## Implementation Notes
 
-- This seed batch is intentionally minimum viable and Chapter 05-driven, not a full spell catalog.
-- `partial` is being used where the classic recognizer is clear but the SDM implementation will need storage, retention, trigger, or bearer-language bridge text.
-- Use this table as the immediate input to Phase B work in `_todo/TODO_Magitech_Fantascience_Chapter05.md`.
+- This seed batch remains valid, but it is now only the first slice of a larger full-spell crosswalk.
+- `partial` is being used where the classic recognizer is clear but the SDM implementation will need storage, retention, trigger, bearer-language, or powers-taxonomy bridge text.
+- The staged corpus should now be expanded outward from this seed batch until Chapter 06 can treat the crosswalk as canonical spell-source infrastructure.

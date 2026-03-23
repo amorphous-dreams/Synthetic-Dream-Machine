@@ -15,9 +15,9 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
+- Status: reviewed 2026-03-22
+- Scope checked: cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables.
+- Result: the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.
 ### Master Cleric, Druid, and Magic-User Spell Material
 
 - Extraction note: section-aware Master spell extraction using anchored TSV reflow across the actual cleric, druid, and magic-user pages instead of one broad line-range block. The section is split into cleric, druid, and magic-user sub-blocks so high-level spell lists and descriptions remain attached to the right class pages.
@@ -36,128 +36,66 @@ Each spell in the list below is followed by a
 reference to the full text of the spell. C =
 D&D Companion Set Players Manual
 (page number for the 1984 edition).
+
 CLERIC EXPERIENCE TABLE
 Spells by Spell Level
-Level
-XP
-1 2 3 4 5 6 7
-7 7
-6 6 5
-1,900,000
-8 7
-2,000,000
-6 6 6
-8 7
-7 7 6
-2,100,000
-8 7
-7 7 6
-2,200,000
-7 7 7
-8 8
-2,300,000
-8 8 8 8 7
-2,400,000
-8 8 8 8 7
-2,500,000
-9 8 8 8 8
-2,600,000
-9 9 8 8 8 8
-2,700,000
-9 9 9 9 8 8
-2,800,000
-2,900,000
-9 9 9 9 9 9 9
-Hit points: + 1 per level, with no Constitu-
-tion effect.
+
+Level  XP         1  2  3  4  5  6  7
+26     1,900,000  8  7  7  6  6  5  5
+27     2,000,000  8  8  7  6  6  6  5
+28     2,100,000  8  8  7  7  7  6  5
+29     2,200,000  8  8  7  7  7  6  6
+30     2,300,000  8  8  8  7  7  7  6
+31     2,400,000  8  8  8  8  8  7  6
+32     2,500,000  9  8  8  8  8  7  7
+33     2,600,000  9  9  8  8  8  8  7
+34     2,700,000  9  9  9  8  8  8  8
+35     2,800,000  9  9  9  9  9  8  8
+36     2,900,000  9  9  9  9  9  9  9
+
+Hit points: +1 per level, with no Constitution effect.
+
 CLERIC SAVING THROW TABLE
-Level:
-25-28 29-32 33-36
-DeathRay or Poison
-Magic Wands
-Paralysis or
-Turn to Stone
-Dragon Breath
-Rod, Staff, or Spell
+
+Category               25-28  29-32  33-36
+Death Ray or Poison    3      2      2
+Magic Wands            4      3      2
+Paralysis or Stone     4      3      2
+Dragon Breath          4      3      2
+Rod, Staff, or Spell   4      3      2
+
 CLERIC TURNING UNDEAD TABLE
-Cleric's Level
-Undead
-25-28
-29-32
-33-36
-Skeleton
-D#
-D#
-D#
-Zombie
-D+
-D#
-D#
-Ghoul
-D+
-D+
-D#
-Wight
-D+
-D+
-D+
-Wraith
-D+
-D+
-D+
-Mummy
-D+
-D+
-D+
-D+
-D+
-Spectre
-D
-D+
-Vampire
-D
-D
-Phantom
-D
-D
-D
-Haunt
-D
-D
-D
-Spirit
-D
-D
-D
-Nightshade
-D
-D
-D
-T
-T
-T
-Lich
-T
-T
-T
-Special
-T
-automatic Turn, 2d6 Hit Dice of
-undead
-D automatic Destroy, 2d6 Hit Dice
-D + automatic Destroy, 366 Hit Dice
-D# automatic Destroy, 4d6 Hit Dice
+
+Undead      25-28  29-32  33-36
+Skeleton    D#     D#     D#
+Zombie      D+     D#     D#
+Ghoul       D+     D+     D#
+Wight       D+     D+     D+
+Wraith      D+     D+     D+
+Mummy       D+     D+     D+
+Spectre     D      D+     D+
+Vampire     D      D      D
+Phantom     D      D      D
+Haunt       D      D      D
+Spirit      D      D      D
+Nightshade  D      D      D
+Lich        T      T      T
+Special     T      T      T
+
+T   automatic Turn, 2d6 Hit Dice of undead
+D   automatic Destroy, 2d6 Hit Dice
+D+  automatic Destroy, 3d6 Hit Dice
+D#  automatic Destroy, 4d6 Hit Dice
+
 SEVENTH-LEVEL CLERIC SPELLS
-1. Earthquake (C 13)
+1. Earthquake (C13)
 2. Holy Word (C13)
-3. Raise Dead Fully* ((213)
+3. Raise Dead Fully* (C13)
 4. Restore* (C13)
 5. Survival (described below)
 6. Travel (described below)
 7. Wish (page 4)
 8. Wizardry (page 4)
-Seventh-Level
-Cleric Spells
 Survival
 Range: Touch
 Duration: One hour per level of the caster
@@ -187,7 +125,7 @@ This spell allows the cleric to move quickly
 and freely, even between the planes of existence.
 The caster (only) may fly in the same manner as
 given by the magic-user spell, with a movement
-rate of 360 feet (1 20 feet).
+rate of 360 feet (120 feet).
 The cleric can also enter a nearby plane of
 existence, simply by concentrating for one
 round. A maximum of one plane per turn may
@@ -204,7 +142,7 @@ not send them while remaining behind.
 While this spell is in effect, the caster (only)
 may assume gaseous form by concentrating for
 one full round. (If interrupted, no change
-occurs.) Unliie the potion effect, all equipment
+occurs.) Unlike the potion effect, all equipment
 carried also becomes part of the same gaseous
 cloud. In this form, the caster may travel at
 double the normal flying rate: 720 feet per turn
@@ -348,7 +286,7 @@ If used on an item imbedded in an oppo-
 nent (such as an arrow or dagger), the crea-
 ture may remove the item but loses initiative
 for that round (and takes the appropriate heat
-damage as well). Note thatheat damage dis-
+damage as well). Note that heat damage dis-
 rupts concentration; the victim cannot cast
 spells during any round in which damage is
 inflicted by this spell.
@@ -477,69 +415,68 @@ Magic-user
 All details on spell casting are given in the
 D&D Basic and Expert sets. Any spell
 marked with an asterisk (*) may be reversed,
-as given in the spell description. All revers-
-ible magic-user spells must be memorized in
+as given in the spell description. All reversible
+magic-user spells must be memorized in
 reversed form to be used.
-C = D&D Companion Set Players Man-
-ual (page number for the 1984 edition).
+C = D&D Companion Set Players Manual
+(page number for the 1984 edition).
+
 MAGIC-USER SAVING THROW TABLE
-Level:
-25-28 29-32 33-36
-Death Ray or Poison
-Magic Wands
-Paralysis or Stone
-Dragon Breath
-Rod, Staffor Spell
-Spells
-Any damage-causing spell can produce a
-maximum of 20 dice (of whatever type is
-applicable) of damage.
-EIGHTH-LEVEL
-MAGIC-USER SPELLS
-. .Clone (described below)
--+ 1
-2.Create Magical Monsters (page 7)
-k3.Dance (C24)
-4.Explosive Cloud (C24) -
-5.Force Field (page 8)
+
+Category                    25-27  28-30  31-33  34-36
+Death Ray or Poison         4      3      3      2
+Magic Wands                4      4      3      2
+Paralysis or Turn to Stone 5      4      3      2
+Dragon Breath              4      3      2      2
+Rod, Staff, or Spell       5      4      3      2
+
+Special Note: Any damage-causing spell can produce a maximum of 20 dice (of whatever type is applicable) of damage.
+
 MAGIC-USER EXPERIENCE TABLE
-Level
-XP
-2,850,000
-3,000,000
-3,150,000
-3,300,000
-3,450,000
-3,600,000
-3,750,000
-3,900,000
-4,050,000
-4,200,000
-4,350,000
-Hit points: + 1 per level, with no Constitution effect.
-6.Mass Charm* ((224)
-7.Mind Barrier* (C24)
-8.Permanence (C25)
-9.Polymorph Any Object (C25)
-10.Power Word Blind (C25)
--
-11 .Symbol (C25)
-12.Travel (page 8)
+Spells by Spell Level
+
+Level  XP         1  2  3  4  5  6  7  8  9
+26     2,850,000  7  7  7  6  6  5  5  4  3
+27     3,000,000  7  7  7  6  6  5  5  5  4
+28     3,150,000  8  8  7  6  6  6  6  5  4
+29     3,300,000  8  8  7  7  7  6  6  5  5
+30     3,450,000  8  8  8  7  7  7  6  6  5
+31     3,600,000  8  8  8  7  7  7  7  6  6
+32     3,750,000  9  8  8  8  8  7  7  7  6
+33     3,900,000  9  9  9  8  8  8  7  7  7
+34     4,050,000  9  9  9  9  8  8  8  8  7
+35     4,200,000  9  9  9  9  9  9  8  8  8
+36     4,350,000  9  9  9  9  9  9  9  9  9
+
+Hit points: +1 per level, with no Constitution effect.
+
+EIGHTH-LEVEL MAGIC-USER SPELLS
+1. Clone (described below)
+2. Create Magical Monsters (page 7)
+3. Dance (C24)
+4. Explosive Cloud (C24)
+5. Force Field (page 8)
+6. Mass Charm* (C24)
+7. Mind Barrier* (C24)
+8. Permanence (C25)
+9. Polymorph Any Object (C25)
+10. Power Word Blind (C25)
+11. Symbol (C25)
+12. Travel (page 8)
+
 NINTH-LEVEL MAGIC-USER SPELLS
-1 .Contingency (page 8)
-2.Create Any Monster (page 8)
-3.Gate* ((226)
--4.Heal (page 9)
-5.Immunity (page 9)
-6.Maze (C26)
-7.Meteor Swarm (C26)
-8.Power Word Kill (C26)
--
-9.Prismatic Wall (page 9)
-10.Shapechange (page 9)
-11 .Timestop (page 10)
-.12.Wish (page 10)
-Eighth-Level Magic-User Spells
+1. Contingency (page 8)
+2. Create Any Monster (page 8)
+3. Gate* (C26)
+4. Heal (page 9)
+5. Immunity (page 9)
+6. Maze (C26)
+7. Meteor Swarm (C26)
+8. Power Word Kill (C26)
+9. Prismatic Wall (page 9)
+10. Shapechange (page 9)
+11. Timestop (page 10)
+12. Wish (page 10)
 Clone
 Range: 10 feet
 Duration: Permanent
@@ -549,11 +486,10 @@ A clone is an exact duplicate of another liv-
 ing creature, grown from a piece of the origi-
 nal by using this spell. The piece need not be
 alive at the time the spell is cast.
-Spells by Spell Level
 A human or demi-human clone is rare and
 may be very dangerous. A clone of any other
 living creature is a more common thing called
-a sirnulacrum. A character can have only one
+a simulacrum. A character can have only one
 clone at a time; attempts at making multiple
 clones of a single character automatically fail.
 Undead and constructs cannot be cloned,
@@ -574,7 +510,7 @@ ries possessed by the original at the time the
 flesh was taken. This is a very important
 point. For example, a 20th-level magic-user
 might leave a pound of flesh with a scroll of this
-spell, so thathe might be restored if lost; but if
+spell, so that he might be restored if lost; but if
 the character gains another ten levels of expe-
 rience and then dies, the clone will be the
 younger, less-experienced, 20th- level form.
@@ -665,16 +601,13 @@ isks) can be created. The range and duration
 are double those of the lesser spell. All other
 details are the same: the creatures are chosen
 by the caster, appear out of thin air, and
-ish at the end of the spell duration.
+vanish at the end of the spell duration.
 Characters - Magic-User
 The total number of Hit Dice of monsters
 appearing is equal to the level of the magic-
 user casting the spell. Humans and demi-
 humans may not be created by this spell, but
-undead are permitted. Creatures of 1-1 Hit
-Die are counted as 1 Hit Die; creatures of ' / z
-Hit Die or less are counted as ' / z Hit Die
-each.
+undead are permitted. Creatures of 1-1 Hit Die are counted as 1 Hit Die; creatures of 1/2 Hit Die or less are counted as 1/2 Hit Die each.
 Special Note: To create a construct (as
 defined in the Companion Set DM's Book,
 page 21), the proper materials must be used
@@ -2994,7 +2927,7 @@ permanent effects, Penalties can be dispelled.
 the user's mental state (including new
 desires, mental aberrations, or even posses-
 sion by another being), privately explain the
-situation to the player, and ask thathe or she
+situation to the player, and ask that he or she
 continue to play the character, incorporating
 the change. O r else make the character an
 NPC: (temporarily or permanently, as

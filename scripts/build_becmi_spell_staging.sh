@@ -430,6 +430,34 @@ Source PDF:
 HDR
 }
 
+set_table_qa_note() {
+  local file="$1"
+  local status="$2"
+  local scope="$3"
+  local result="$4"
+  local old new
+
+  old=$(cat <<'EOF'
+## Table Check QA Pass
+
+- Status: pending iterative QA
+- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
+- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
+EOF
+)
+
+  new=$(cat <<EOF
+## Table Check QA Pass
+
+- Status: $status
+- Scope checked: $scope
+- Result: $result
+EOF
+)
+
+  OLD_BLOCK="$old" NEW_BLOCK="$new" perl -0pi -e 'BEGIN { $old = $ENV{OLD_BLOCK}; $new = $ENV{NEW_BLOCK}; } s/\Q$old\E/$new/s' "$file"
+}
+
 cleanup_output() {
   perl -0pi -e '
   s/DUNGEONS 8c DRAGONS[@”’"]?characters/DUNGEONS & DRAGONS characters/g;
@@ -1694,12 +1722,270 @@ This roll may be modified; for example, if a character is hit by a rockslide, De
 If an item is damaged, it may either be partially damaged or completely destroyed. For items with magical bonuses, one or more points may be lost, because of damage (DM's choice). Potions, scrolls, and rings should be completely destroyed by any severe damage.
 TXT
   printf '\n[Companion treasure tables: magic-item tables]\n' >> "$OUT"
-  render_layout_pages "$pdf" 81 83 0.2 \
-    | awk '
-        /^10\. Armor or Shield/ { exit }
-        started || /^Treasures$/ { started = 1 }
-        started { print }
-      ' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+3b. Types of Jewelry
+Value (in gp): Common 100-3,000; Uncommon 4,000-10,000; Rare 15,000-50,000
+
+Roll  Common         Uncommon       Rare
+1     Anklet         Armband        Amulet
+2     Beads          Belt           Crown
+3     Bracelet       Collar         Diadem
+4     Brooch         Earring        Medallion
+5     Buckle         Four-leaf Clover Orb
+6     Cameo          Heart          Ring
+7     Chain          Leaf           Scarab
+8     Clasp          Necklace       Scepter
+9     Locket         Pendant        Talisman
+10    Pin            Rabbit's Foot  Tiara
+
+5. Potion
+
+d%     Type of Potion
+01-02  Agility
+03     Animal Control
+04-06  Antidote
+07-08  Blending
+09-10  Bug Repellant
+11-12  Clairaudience
+13-14  Clairvoyance
+15-16  Climbing
+17-18  Defense
+19-20  Diminution (B)
+21-24  Delusion (X)
+25     Dragon Control
+26-27  Dreamspeech
+28     Elasticity
+29-30  Elemental Form
+31-32  ESP (B)
+33     Ethereality
+34-36  Fire Resistance (X)
+37-39  Flying (X)
+40-41  Fortitude
+42     Freedom
+43-45  Gaseous Form (B)
+46     Giant Control (X)
+47-49  Giant Strength (X)
+50-51  Growth (B)
+52-57  Healing (B)
+58-60  Heroism (X)
+61     Human Control (X)
+62-64  Invisibility (B)
+65-66  Invulnerability (X)
+67-68  Levitation (B)
+69-70  Longevity (X)
+71     Luck
+72     Merging
+73-74  Plant Control (X)
+75-77  Poison (B)
+78-80  Polymorph Self (X)
+81-82  Sight
+83-84  Speech
+85-88  Speed (X)
+89-90  Strength
+91-93  Super-healing
+94-96  Swimming
+97     Treasure Finding (X)
+98     Undead Control (X)
+99-00  Water Breathing
+
+6. Scroll
+
+d%     Type of Scroll
+01-03  Communication
+04-05  Creation
+06-13  Curse (occurs when read; B)*
+14     Delay (S)
+15-17  Equipment
+18-19  Illumination
+20-21  Mages (S)
+22-25  Map to Normal treasure (B)'
+26-28  Map to magical treasure (B)*
+29-30  Map to combined treasure (X)'
+31     Map to special treasure (X)'
+32-34  Mapping
+35-36  Portals
+37-42  Protection from Elementals (X)
+43-50  Protection from Lycanthropes (B)
+51-54  Protection from Magic (X)
+55-61  Protection from Undead (B)
+62-63  Questioning
+64     Repetition (S)
+65-66  Seeing
+67-68  Shelter
+69-71  Spell Catching
+72-96  Spells (see below)*
+97-98  Trapping
+99-00  Truth
+
+* More information is given in this set.
+
+4. All Magic Items
+
+d%     Use Table
+01-25  5. Potion
+26-37  6. Scroll
+38-46  7. Wand, Staff, or Rod
+47-52  8. Ring
+53-62  9. Misc. Magic Item
+63-72  10. Armor or Shield
+73-83  11. Missile or Device
+84-92  12. Sword
+93-00  13. Misc. Weapon
+
+SPELL SCROLLS
+
+6a. Type of Scroll
+
+d%     Type
+01-70  Magic-User
+71-95  Cleric
+96-00  Druid
+
+6b. Level of Spell
+
+Spell Level  Cleric or Druid  Magic-User
+1            01-34            01-28
+2            35-58            29-49
+3            59-76            50-64
+4            77-88            65-75
+5            89-95            76-84
+6            96-99            85-91
+7            00               92-96
+8            --               97-99
+9            --               00
+
+Roll for only one type per scroll; then find the level of each spell separately.
+
+7. Wand, Staff, or Rod
+
+d%     Type of Wand, Staff, or Rod
+01-05  Wand of Cold (M) (X)
+06-10  Wand of Enemy Detection (M) (B)
+11-14  Wand of Fear (M) (X)
+15-19  Wand of Fire Balls (M) (X)
+20-23  Wand of Illusion (M) (X)
+24-28  Wand of Lightning Bolts (M) (X)
+29-33  Wand of Magic Detection (M) (B)
+34-38  Wand of Metal Detection (M) (X)
+39-42  Wand of Negation (M) (X)
+43-47  Wand of Paralyzation (M) (B)
+48-52  Wand of Polymorphing (M) (X)
+53-56  Wand of Secret Door Detection (M) (X)
+57-60  Wand of Trap Detection (M) (X)
+61     Staff of Commanding (S) (X)
+62-63  Staff of Dispelling
+64-66  Staff of the Druids (DR)
+67-69  Staff of an Element (M)
+70-71  Staff of Harming (C)
+72-78  Staff of Healing (C) (B)
+79     Staff of Power (M) (X)
+80-82  Snake Staff (C) (B)
+83-85  Staff of Striking (S) (X)
+86-87  Staff of Withering (C) (X)
+88     Staff of Wizardry (M) (X)
+89-90  Rod of Cancellation (B)
+91     Rod of Dominion
+92     Rod of Health (C)
+93-94  Rod of Inertia (N)
+95     Rod of Parrying
+96     Rod of Victory
+97-99  Rod of Weaponry
+00     Rod of the Wyrm
+
+Charges:
+Wand   3-30 (3d10)
+Staff  2-40 (2d20)
+Rod    no charges
+
+8. Ring
+
+d%     Type of Ring
+01-02  Animal Control (B)
+03-08  Delusion (X)
+09     Djinni Summoning (X)
+10-13  Ear Ring
+14-17  Elemental Adaptation
+18-23  Fire Resistance (B)
+24-26  Holiness (C)
+27     Human Control (X)
+28-32  Invisibility (B)
+33-35  Life Protection
+36-38  Memory (S)
+39-40  Plant Control (X)
+41-45  Protection, +1
+46-48  Protection, +2
+49-50  Protection, +3
+51     Protection, +4
+52-55  Quickness
+56     Regeneration (X)
+57-59  Remedies
+60-61  Safety
+62-64  Seeing
+65-67  Spell Eating
+68-69  Spell Storing (X)
+70-71  Spell Turning (X)
+72-75  Survival
+76-77  Telekinesis (X)
+78-81  Truth
+82-84  Truthfulness
+85-86  Truthlessness
+87-91  Water Walking (B)
+92-96  Weakness (B)
+97-98  Wishes
+99-00  X-Ray Vision (X)
+
+9. Miscellaneous Items
+
+d%     Type of Miscellaneous Item
+01-02  Amulet of Protection from Crystal Balls and ESP (X)
+03-04  Bag of Devouring (B)
+05-09  Bag of Holding (B)
+10-12  Boat, Undersea
+13-14  Boots of Levitation (X)
+15-17  Boots of Speed (X)
+18-19  Boots of Traveling and Leaping (X)
+20     Bowl of Commanding Water Elementals (X)
+21     Brazier of Commanding Fire Elementals (X)
+22-23  Broom of Flying (X)
+24     Censer of Controlling Air Elementals (X)
+25-27  Chime of Time
+28-29  Crystal Ball (M) (B)
+30     Crystal Ball with Clairaudience (M) (X)
+31     Crystal Ball with ESP (M) (X)
+32-33  Displacer Cloak (X)
+34     Drums of Panic (X)
+35     Efreeti Bottle (X)
+36-38  Eggs of Wonder
+39-40  Elven Cloak (B)
+41-42  Elven Boots (B)
+43     Flying Carpet (X)
+44-45  Gauntlets of Ogre Power (B)
+46-47  Girdle of Giant Strength (X)
+48-49  Helm of Alignment Changing (B)
+50-51  Helm of Reading (X)
+52     Helm of Telepathy (B)
+53     Helm of Teleportation (M) (X)
+54     Horn of Blasting (X)
+55-57  Lamp of Long Burning
+58-59  Lamp, Hurricane
+60-61  Medallion of ESP, 30' range (B)
+62     Medallion of ESP, 90' range (X)
+63     Mirror of Life Trapping (X)
+64-66  Muzzle of Training
+67-68  Nail, Finger
+69-71  Nail of Pointing
+72-76  Ointment
+77-79  Pouch of Security
+80-82  Quill of Copying (S)
+83-86  Rope of Climbing (B)
+87-88  Scarab of Protection (X)
+89-91  Slate of Identification (S)
+92     Stone of Controlling Earth Elementals (X)
+93-94  Talisman of Elemental Travel
+95-97  Wheel of Floating
+98     Wheel of Fortune
+99-00  Wheel, Square
+TXT
   printf '\n[Companion treasure descriptions: scrolls, wands\/staves\/rods, rings, and miscellaneous items]\n' >> "$OUT"
   render_tsv_cols_pages_anchored_until "$pdf" 81 93 '185,370' '6. Scrolls' '10. Armor and Shields' >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
@@ -1714,11 +2000,155 @@ master_spell_block_named() {
   printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
   printf '```text\n' >> "$OUT"
   printf '[Master pages 5-6: cleric spell material]\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 5 6 '185,370' 'Cleric' 'Characters - Cleric, Druid' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+Cleric
+All rules on spell casting are given in the
+D&D Basic and Expert sets.
+Any spell marked with an asterisk (*) may
+be reversed, as given in the spell description.
+Any reversible cleric spell may be reversed
+during the casting and need not be memo-
+rized in reversed form.
+Each spell in the list below is followed by a
+reference to the full text of the spell. C =
+D&D Companion Set Players Manual
+(page number for the 1984 edition).
+
+CLERIC EXPERIENCE TABLE
+Spells by Spell Level
+
+Level  XP         1  2  3  4  5  6  7
+26     1,900,000  8  7  7  6  6  5  5
+27     2,000,000  8  8  7  6  6  6  5
+28     2,100,000  8  8  7  7  7  6  5
+29     2,200,000  8  8  7  7  7  6  6
+30     2,300,000  8  8  8  7  7  7  6
+31     2,400,000  8  8  8  8  8  7  6
+32     2,500,000  9  8  8  8  8  7  7
+33     2,600,000  9  9  8  8  8  8  7
+34     2,700,000  9  9  9  8  8  8  8
+35     2,800,000  9  9  9  9  9  8  8
+36     2,900,000  9  9  9  9  9  9  9
+
+Hit points: +1 per level, with no Constitution effect.
+
+CLERIC SAVING THROW TABLE
+
+Category               25-28  29-32  33-36
+Death Ray or Poison    3      2      2
+Magic Wands            4      3      2
+Paralysis or Stone     4      3      2
+Dragon Breath          4      3      2
+Rod, Staff, or Spell   4      3      2
+
+CLERIC TURNING UNDEAD TABLE
+
+Undead      25-28  29-32  33-36
+Skeleton    D#     D#     D#
+Zombie      D+     D#     D#
+Ghoul       D+     D+     D#
+Wight       D+     D+     D+
+Wraith      D+     D+     D+
+Mummy       D+     D+     D+
+Spectre     D      D+     D+
+Vampire     D      D      D
+Phantom     D      D      D
+Haunt       D      D      D
+Spirit      D      D      D
+Nightshade  D      D      D
+Lich        T      T      T
+Special     T      T      T
+
+T   automatic Turn, 2d6 Hit Dice of undead
+D   automatic Destroy, 2d6 Hit Dice
+D+  automatic Destroy, 3d6 Hit Dice
+D#  automatic Destroy, 4d6 Hit Dice
+
+SEVENTH-LEVEL CLERIC SPELLS
+1. Earthquake (C13)
+2. Holy Word (C13)
+3. Raise Dead Fully* (C13)
+4. Restore* (C13)
+5. Survival (described below)
+6. Travel (described below)
+7. Wish (page 4)
+8. Wizardry (page 4)
+TXT
+  render_tsv_cols_pages_anchored_until "$pdf" 5 6 '185,370' 'Cleric' 'Characters - Cleric, Druid' \
+    | awk 'started || /^Survival$/ { started = 1; print }' >> "$OUT"
   printf '\n[Master pages 6-7: druid spell material]\n' >> "$OUT"
   render_tsv_cols_pages_anchored_until "$pdf" 6 7 '185,370' 'Druid' 'Characters - Fighter, Magic-User' >> "$OUT"
   printf '\n[Master pages 8-10: magic-user spell material]\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 8 10 '185,370' 'Magic-user' 'Weapon Mastery' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+Magic-user
+All details on spell casting are given in the
+D&D Basic and Expert sets. Any spell
+marked with an asterisk (*) may be reversed,
+as given in the spell description. All reversible
+magic-user spells must be memorized in
+reversed form to be used.
+C = D&D Companion Set Players Manual
+(page number for the 1984 edition).
+
+MAGIC-USER SAVING THROW TABLE
+
+Category                    25-27  28-30  31-33  34-36
+Death Ray or Poison         4      3      3      2
+Magic Wands                4      4      3      2
+Paralysis or Turn to Stone 5      4      3      2
+Dragon Breath              4      3      2      2
+Rod, Staff, or Spell       5      4      3      2
+
+Special Note: Any damage-causing spell can produce a maximum of 20 dice (of whatever type is applicable) of damage.
+
+MAGIC-USER EXPERIENCE TABLE
+Spells by Spell Level
+
+Level  XP         1  2  3  4  5  6  7  8  9
+26     2,850,000  7  7  7  6  6  5  5  4  3
+27     3,000,000  7  7  7  6  6  5  5  5  4
+28     3,150,000  8  8  7  6  6  6  6  5  4
+29     3,300,000  8  8  7  7  7  6  6  5  5
+30     3,450,000  8  8  8  7  7  7  6  6  5
+31     3,600,000  8  8  8  7  7  7  7  6  6
+32     3,750,000  9  8  8  8  8  7  7  7  6
+33     3,900,000  9  9  9  8  8  8  7  7  7
+34     4,050,000  9  9  9  9  8  8  8  8  7
+35     4,200,000  9  9  9  9  9  9  8  8  8
+36     4,350,000  9  9  9  9  9  9  9  9  9
+
+Hit points: +1 per level, with no Constitution effect.
+
+EIGHTH-LEVEL MAGIC-USER SPELLS
+1. Clone (described below)
+2. Create Magical Monsters (page 7)
+3. Dance (C24)
+4. Explosive Cloud (C24)
+5. Force Field (page 8)
+6. Mass Charm* (C24)
+7. Mind Barrier* (C24)
+8. Permanence (C25)
+9. Polymorph Any Object (C25)
+10. Power Word Blind (C25)
+11. Symbol (C25)
+12. Travel (page 8)
+
+NINTH-LEVEL MAGIC-USER SPELLS
+1. Contingency (page 8)
+2. Create Any Monster (page 8)
+3. Gate* (C26)
+4. Heal (page 9)
+5. Immunity (page 9)
+6. Maze (C26)
+7. Meteor Swarm (C26)
+8. Power Word Kill (C26)
+9. Prismatic Wall (page 9)
+10. Shapechange (page 9)
+11. Timestop (page 10)
+12. Wish (page 10)
+TXT
+  render_tsv_cols_pages_anchored_until "$pdf" 8 10 '185,370' 'Magic-user' 'Weapon Mastery' \
+    | awk 'started || /^Clone$/ { started = 1; print }' >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
 }
 
@@ -1925,6 +2355,7 @@ basic_spell_lists_and_descriptions_block_named 'Spell Lists and Basic Spell Desc
 basic_higher_level_spells_block_named 'Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books' 'curated Basic reconstruction from DM pages 17-18 for higher-level cleric and magic-user spell guidance, plus a short player-facing spell-book/lost-book carryover from the earlier magic-user section so this staging block keeps the spell-allocation and lost-book procedures attached to the higher-level guidance.'
 basic_scrolls_block_named 'Scrolls and Spell-Adjacent Treasure Text' 'curated Basic reconstruction from treasure pages 42-45, combining the scroll/ring material with the surrounding item-operation rules that matter for later spell and magic-item curation: identification, permanent vs. temporary behavior, concentration and charge rules, potion duration and interaction rules, wand/staff/rod use restrictions, and selected miscellaneous devices with strong spell-adjacent procedures.'
 cleanup_output
+set_table_qa_note "$BASIC_OUT" 'reviewed 2026-03-22' 'Turning Undead table, spell lists, and adjacent structured spell-property blocks.' 'no blocking row/column defects found in the visible Basic table and list regions.'
 
 OUT="$EXPERT_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Expert' 'TSR 1012B - Set 2 Expert Rules.pdf'
@@ -1932,6 +2363,7 @@ expert_spell_expansions_block_named 'Clerical and Magic-User Spell Expansions' '
 expert_research_block_named 'Research and Lost Spell Books' 'curated Expert reconstruction from pages 27-28, replacing the contaminated line-range slice with the actual research procedures, item-creation examples, and lost spell-book recovery guidance.'
 expert_magic_items_block_named 'Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 'curated Expert reconstruction from treasure pages 60-65, combining cursed-item doctrine, general magic-item operation notes, scroll procedures, ring procedures, wand/staff/rod procedures, and selected miscellaneous magic items with strong spell-adjacent relevance.'
 cleanup_output
+set_table_qa_note "$EXPERT_OUT" 'reviewed 2026-03-22' 'leveled spell lists, spell-expansion sections, and structured spell-property blocks.' 'no blocking row/column defects found in the visible Expert table and list regions.'
 perl -0pi -e 's/any one creature within IO\x27\. The spell may/any one creature within 10\x27. The spell may/g;' "$EXPERT_OUT"
 
 OUT="$COMP_OUT"
@@ -1939,9 +2371,23 @@ write_header 'TODO: BECMI Spell Material Staging - Companion' 'TSR 1013 - Set 3 
 companion_spell_block_named 'High-Level Cleric and Druid Spell Material' 'section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric and druid class pages, split so the cleric spell block starts at the real fifth-level cleric heading and the druid transition begins at the actual druid section instead of earlier class spill.' "$COMP_PDF"
 companion_magic_items_block_named 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 'section-aware Companion treasure extraction combining an anchored buying/selling procedure block, a curated damage-to-magic-items procedure block, readable layout tables for scrolls/wands-rings-miscellaneous items, and TSV-reflowed item descriptions for scrolls, spell-catching, staffs, rods, rings, quill copying, and elemental-travel items.' "$COMP_PDF"
 cleanup_output
+set_table_qa_note "$COMP_OUT" 'reviewed 2026-03-22' 'treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, and miscellaneous-item tables.' 'no blocking row/column defects remain, and the densest Companion table block has been rewritten into sequential readable tables for easier human scanning.'
 perl -0pi -e 's/100t the local magic shop/loot the local magic shop/g;' "$COMP_OUT"
 perl -0pi -e 's/pic-\ntures of creatures within loo\x27, in any area/pic-\ntures of creatures within 100\x27, in any area/g;' "$COMP_OUT"
 perl -0pi -e 's/5\x27xlO\x27xl\x27/5\x27x10\x27x1\x27/g;' "$COMP_OUT"
+ perl -0pi -e 's/0 1-03/01-03/g;' "$COMP_OUT"
+ perl -0pi -e 's/06- 13/06-13/g;' "$COMP_OUT"
+ perl -0pi -e 's/09- 10/09-10/g;' "$COMP_OUT"
+ perl -0pi -e 's/2 1-24/21-24/g;' "$COMP_OUT"
+ perl -0pi -e 's/83-84\./83-84/g;' "$COMP_OUT"
+ perl -0pi -e 's/97-99\s+a/97-99      8/g;' "$COMP_OUT"
+ perl -0pi -e 's/Diminution B\)/Diminution \(B\)/g;' "$COMP_OUT"
+ perl -0pi -e 's/number o f charges/number of charges/g;' "$COMP_OUT"
+ perl -0pi -e 's/3dlO/3d10/g;' "$COMP_OUT"
+ perl -0pi -e 's/see be!ow/see below/g;' "$COMP_OUT"
+ perl -0pi -e 's/6a\. Typeof/6a. Type of/g;' "$COMP_OUT"
+ perl -0pi -e 's/41-42 Elven Boots \(B\) \\\s+I/41-42 Elven Boots \(B\)/g;' "$COMP_OUT"
+ perl -0pi -e 's/98 Wheel of Fortune\s+-\s+\//98 Wheel of Fortune/g;' "$COMP_OUT"
 
 OUT="$MASTER_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Master' 'TSR 1021 - Set 4 Master Rules.pdf'
@@ -1949,6 +2395,7 @@ master_spell_block_named 'Master Cleric, Druid, and Magic-User Spell Material' '
 master_nonhuman_block_named 'Non-Human Spellcasters and Special Spellcaster Procedures' 'section-aware Master extraction using anchored TSV reflow across the actual Spell Casters (Non-Human), special monster spellcaster, undead spellcaster, and undead-control pages instead of the earlier broad procedures slice.' "$MASTER_PDF"
 master_artifacts_block_named 'Artifact Power Doctrine and Artifact Effect Procedures' 'final targeted Master addition from the actual artifact-doctrine pages, capturing artifact purpose, activation, power limits, recharging, intelligence, adverse effects, attack/destruction rules, and power-category guidance that Immortals explicitly relies on for non-spell magical effects. The named-artifact catalog is intentionally excluded.' "$MASTER_PDF"
 cleanup_output
+set_table_qa_note "$MASTER_OUT" 'reviewed 2026-03-22' 'cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables.' 'the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.'
 perl -0pi -e '
   s/^\x27[[:space:]]*\n//mg;
   s/\(B41, X11 \)/\(B41, X11\)/g;
@@ -2191,12 +2638,24 @@ perl -0pi -e '
   s/Hit points bonus \+ 1 per Hit Die \(DR\n\s*IT\)/Hit points bonus \+ 1 per Hit Die \(DR 1T\)/g;
   s/Hit points bonus \+ 3 per Hit Die \(DR\n\s*IT\)/Hit points bonus \+ 3 per Hit Die \(DR 1T\)/g;
   s/40\x27\/4000cn/40\x27\/4,000 cn/g;
+  s/automatic Destroy, 366 Hit Dice/automatic Destroy, 3d6 Hit Dice/g;
+  s/\nSpells by Spell Level\nA human or demi-human clone is rare/\nA human or demi-human clone is rare/g;
+  s/\brate of 360 feet \(1 20 feet\)\./rate of 360 feet \(120 feet\)./g;
+  s/\bUnliie\b/Unlike/g;
+  s/Note thatheat damage dis-/Note that heat damage dis-/g;
+  s/\bsirnulacrum\b/simulacrum/g;
+  s/\bthathe\b/that he/g;
+  s/\bish at the end of the spell duration\./vanish at the end of the spell duration./g;
+  s/creatures of '\'' \/ z Hit Die or less are counted as '\'' \/ z Hit Die each\./creatures of 1\/2 Hit Die or less are counted as 1\/2 Hit Die each./g;
+  s/Creatures of 1-1 Hit Die are counted as 1 Hit Die; creatures of '\'' \/ z Hit Die or less are counted as '\'' \/ z Hit Die/Creatures of 1-1 Hit Die are counted as 1 Hit Die; creatures of 1\/2 Hit Die or less are counted as 1\/2 Hit Die/g;
+  s/Creatures of 1-1 Hit\nDie are counted as 1 Hit Die; creatures of '\'' \/ z\nHit Die or less are counted as '\'' \/ z Hit Die\neach\./Creatures of 1-1 Hit Die are counted as 1 Hit Die; creatures of 1\/2 Hit Die or less are counted as 1\/2 Hit Die each./g;
 ' "$MASTER_OUT"
 
 OUT="$IMM_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Immortals' 'TSR 1017 - Set 5 Immortals Rules.pdf'
 immortals_magic_block_named 'Section 3: Immortal Magic' 'section-aware Immortals extraction from the actual Section 3 pages using labeled page-and-column slices across pages 18-21 so the chart-heavy opening, continuation prose, and alphabetical effect explanations remain readable without later Section 4 spill.' "$IMM_PDF"
 cleanup_output
+set_table_qa_note "$IMM_OUT" 'reviewed 2026-03-22' 'sphere-factor matrix, sample cost table, duration and mental-effect tables, and magical-effect index anchors.' 'no blocking row/column defects found in the visible Immortals table regions.'
 perl -0pi -e '
   s/^\s*Immortal Magic\s*\n//mg;
   s/^\s*(18|19)\s*\n//mg;
@@ -2323,6 +2782,7 @@ tsv_cols_block_named 'Scrolls' 'TSV coordinate reflow across the RC scroll secti
 tsv_cols_block_named 'Spell Research' 'anchored TSV coordinate reflow from the actual RC spell-research page to replace the earlier mis-extracted line-range block.' "$RC_PDF" 255 255 '185,370' 'Spell Research'
 page_cols_block_named 'Index to Spells' 'three-column extraction from the RC appendix index page using cropped per-column text to preserve alphabetical reading order.' "$RC_PDF" 300 300 "15 15 175 770" "195 15 180 770" "380 15 175 770"
 cleanup_output
+set_table_qa_note "$RC_OUT" 'reviewed 2026-03-22' 'clerical, magical, and druidic spell lists plus the later reconstructed spellcaster and scroll tables.' 'no blocking row/column defects found in the visible Rules Cyclopedia table and list regions.'
 
 cat > "$INDEX_OUT" <<'HDR'
 # TODO: BECMI Spell Material Staging

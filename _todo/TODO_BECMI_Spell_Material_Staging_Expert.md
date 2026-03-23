@@ -15,9 +15,9 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
+- Status: reviewed 2026-03-22
+- Scope checked: leveled spell lists, spell-expansion sections, and structured spell-property blocks.
+- Result: no blocking row/column defects found in the visible Expert table and list regions.
 ### Clerical and Magic-User Spell Expansions
 
 - Extraction note: stitched Expert spell extraction: clerical spell pages 7-11 and magic-user spell pages 13-18 use separate TSV coordinate reflow passes so the real spell sections stay in source order and the intervening fighter/thief class tables are excluded.

@@ -277,6 +277,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 ### 06 Powers
 **Purpose**
 - Carry the shared power system API.
+- Consume the canonical staged spell corpus and its crosswalk as the primary legacy source for the FTLS powers build.
 
 **Preserve**
 - Any character can use any power.
@@ -306,9 +307,10 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 
 **Dependencies**
 - Strongly tied to Chapters 05 and 07.
+- Depends on the full BECMI/RC staged spell corpus and spell crosswalk reaching canonical-source status before the chapter can be drafted cleanly.
 
 **Priority**
-- `Next`
+- `Now after canonical spell staging`
 
 ### 07 Wild Magic Exposure
 **Purpose**

@@ -154,7 +154,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - Use `Power Level` for storage, eligibility, and capacity.
 - Use `Level` for source force, dispel/counterforce, summon strength, and curse removal strength.
 - Add TODO-side bridge notes for ambiguous or unmapped classic spell names.
-- Minimum viable bridge inputs now live in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` under `Seed Batch A: Chapter 05 Bridge Starters`.
+- Minimum viable bridge inputs now live in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`, but that document is now being expanded into the full canonical spell crosswalk for Chapter 06 rather than remaining a Chapter 05-only bridge sheet.
 - Phase B should explicitly clear these bridge tasks before any Phase C family conversion resumes:
   - confirm seeded crosswalk coverage for the Chapter 05 recognizer set,
   - mark each seeded entry as `direct`, `partial`, `custom`, or `undecided`,
@@ -162,6 +162,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
   - record the SDM-facing storage / trigger / counterforce rule for each `partial` item-effect.
 - Phase B acceptance gate:
   - do not treat Phase B as complete until the Chapter 05 recognizer set has source anchors, mapping status, and enough bridge text to let family conversion proceed without ad hoc spell interpretation.
+- Chapter 05 is now a downstream consumer of the broader full-spell pass rather than the phase-defining driver for spell staging scope.
 - Deferred bridge examples from the Phase A completion pass:
   - `Staff of Elemental Power` effect names and elemental counter-negation phrasing
   - `Staff of Power` and `Staff of Wizardry` spell-name bundles
@@ -335,6 +336,6 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - Must follow overlay standards in `_todo/TODO_BECMI_Conversion.md`.
 
 ## Out of Scope
-- Full spells -> powers conversion (tracked in `_todo/TODO_BECMI_Conversion.md`, future pass F2).
+- Owning or redefining the full staged spell corpus itself; that work now belongs to the active spell-staging and spell-crosswalk phase feeding Chapter 06.
 - Broad economy rebalance beyond magic-item procedure requirements.
 - Domain play integration.

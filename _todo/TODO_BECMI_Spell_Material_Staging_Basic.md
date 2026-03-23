@@ -15,9 +15,9 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
+- Status: reviewed 2026-03-22
+- Scope checked: Turning Undead table, spell lists, and adjacent structured spell-property blocks.
+- Result: no blocking row/column defects found in the visible Basic table and list regions.
 ### Cleric Rules, Turning, and First-Level Spell Procedures
 
 - Extraction note: page-aware Basic extraction from the actual cleric special-abilities page, split by column so Turning Undead procedure, the undead table, and spellcasting guidance stay in readable source order.

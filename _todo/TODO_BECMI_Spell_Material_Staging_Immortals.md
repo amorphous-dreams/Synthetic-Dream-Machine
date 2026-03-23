@@ -15,9 +15,9 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
+- Status: reviewed 2026-03-22
+- Scope checked: sphere-factor matrix, sample cost table, duration and mental-effect tables, and magical-effect index anchors.
+- Result: no blocking row/column defects found in the visible Immortals table regions.
 ### Section 3: Immortal Magic
 
 - Extraction note: section-aware Immortals extraction from the actual Section 3 pages using labeled page-and-column slices across pages 18-21 so the chart-heavy opening, continuation prose, and alphabetical effect explanations remain readable without later Section 4 spill.

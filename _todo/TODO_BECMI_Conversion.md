@@ -164,11 +164,13 @@ Base model (locked):
 - [ ] Use Chapter 05 armor/shield conversion as the model pattern for `retain BECMI API surface, replace internal mechanics`.
 
 ### F2: Spells -> Powers
+- [ ] Treat `_todo/TODO_BECMI_Spell_Material_Staging_*.md` as the canonical staged spell corpus for this pass.
 - [ ] Build spell-pattern crosswalk into SDM Powers taxonomy.
 - [ ] Apply locked scaling constants (`Spell Level x2 = SDM Power Level`; cantrip floor).
 - [ ] Define conversion rules for range/duration/targeting in SDM procedure language.
 - [ ] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`).
 - [ ] Route outputs to canonical powers destinations and quick-reference anchors.
+- [ ] Use FTLS Chapter 06 as the first major destination chapter for the full staged spell corpus and crosswalk outputs.
 - [ ] Add validation scenario set:
   - direct attack/control,
   - utility/exploration,

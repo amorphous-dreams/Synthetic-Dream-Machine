@@ -15,9 +15,9 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
+- Status: reviewed 2026-03-22
+- Scope checked: treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, and miscellaneous-item tables.
+- Result: no blocking row/column defects remain, and the densest Companion table block has been rewritten into sequential readable tables for easier human scanning.
 ### High-Level Cleric and Druid Spell Material
 
 - Extraction note: section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric and druid class pages, split so the cleric spell block starts at the real fifth-level cleric heading and the druid transition begins at the actual druid section instead of earlier class spill.
@@ -519,154 +519,268 @@ This roll may be modified; for example, if a character is hit by a rockslide, De
 If an item is damaged, it may either be partially damaged or completely destroyed. For items with magical bonuses, one or more points may be lost, because of damage (DM's choice). Potions, scrolls, and rings should be completely destroyed by any severe damage.
 
 [Companion treasure tables: magic-item tables]
-  3b. Types of Jewelry                  5. Potion                                 6. Scroll
+3b. Types of Jewelry
+Value (in gp): Common 100-3,000; Uncommon 4,000-10,000; Rare 15,000-50,000
 
-         TYPES OF JEWELRY                     d%         Type of Potion               d%      Type of Scroll
-            Value (in gp)
-                                             01-02       Agility                     0 1-03   Communication
-  100-3,000               15,000-              03        Animal Control              04-05    Creation
-    1d10    4,000-10,000  50,000
-                                             04-06      Antidote                     06- 13   Curse (occurs when read; B)*
-  Common     Uncommon      Rare
-                                             07-08       Blending                      14     Delay (S)
- 1 Anklet   Armband         Amulet           09- 10     Bug Repellant                15-17    Equipment
- 2 Beads    Belt            Crown
-                                             11-12                                   18-19    Illumination
-                                                        Clairaudience
- 3 Bracelet Collar          Diadem
-                                             13-14      Clairvoyance                 20-21    Mages (S)
- 4 Brooch Earring           Medallion
- 5 Buckle Four-leaf         Orb              15-16      Climbing                     22-25    Map to Normal treasure (B)'
-             Clover                          17-18      Defense                      26-28    Map to magical treasure (B)*
- 6 Cameo Heart              Ring             19-20      Diminution B)                29-30    Map to combined treasure (X)'
- 7 Chain    Leaf            Scarab          2 1-24      Delusion (X)                   31     Map to special treasure (X)'
- 8 Clasp    Necklace        Scepter           25        Dragon Control               32-34    Mapping
- 9 Locket Pendant           Talisman        26-27       Dreamspeech                  35-36    Portals
-10 Pin      Rabbit's Foot   Tiara             28        Elasticity                   37-42    Protection from Elementals (X)
-                                            29-30       Elemental form               43-50    Protection from Lycanthropes (B)
-                                            31-32       ESP (B)                      51-54    Protection from Magic (X)
-                                              33        Ethereality                  55-61    Protection from Undead (B)
-                                            34-36       Fire Resistance (X)          62-63    Questioning
-                                            37-39       Flying (X)                    64      Repetition (S)
-                                            40-41       Fortitude                    65-66    Seeing
-                                              42        Freedom                      67-68    Shelter
-                                              97        Treasure Finding (X)         69-71   Spell Catching
-                                            43-45       Gaseous Form (B)             72-96    Spells (see be!ow)*
-                                              46        Giant Control (X)'           97-98    Trapping
-                                            47-49       Giant Strength (X)           99-00    Truth
-                                            50-51       Growth (B)
-                                                                                  * More information is given in this set
-                                            52-57       Healing (B)
-                                            58-60       Heroism (X)
-                                              61        Human Control (X)
-                                            62-64       Invisibility (B)
-                                                                                             SPELL SCROLLS
-                                            65-66       Invulnerability (X)
-                                                                                   6a. Typeof         6b. Level of
-                                            67-68       Levitation (B)
-                                                                                      Scroll              Spell
-                                            69-70       Longevity (X)*
-                                                                                                 Cleric
-4. All Magic Items                            71        Luck
-                                                                                                   or             Spell
-                                              72        Merging
-                                                                                  d%    Type     Druid M-U Level
-                                            73-74       Plant Control (X)
-           MAGIC ITEM TYPE                  75-77       Poison (B)                01-70    Magic-
-    d%       Use Table:
-                                            78-80       Polymorph Self (X)                 User        01-34     01-28      1
-   01-25      5. Potion                     81-82       Sight                     71-95    Cleric      35-58     29-49      2
-   26-37      6. Scroll                     83-84.      Speech                    96-00    Druid       59-76     50-64      3
-   38-46      7. Wand, Staff, or Rod
-                                            85-88       Speed (X)                                      77-88     65-75      4
-   47-52      8. Ring
-                                            89-90       Strength                                       89-95     76-84      5
-   53-62      9. Misc. Magic Item
-   63-72     10. Armor or Shield            91-93       Super-healing                                  96-99     85-91      6
-   73-83     11. Missile or Device          94-96       Swimming                                        00       92-96      7
-   84-92     12. Sword                        98        Undead Control (X)                                       97-99      a
-   93-00     13. Misc. Weapon               99-00       Water Breathing                                           00        9
-                                        * More information is given in this set   Roll for only one type per scroll; then   find
-                                                                                  the level of each spell separately.
+Roll  Common         Uncommon       Rare
+1     Anklet         Armband        Amulet
+2     Beads          Belt           Crown
+3     Bracelet       Collar         Diadem
+4     Brooch         Earring        Medallion
+5     Buckle         Four-leaf Clover Orb
+6     Cameo          Heart          Ring
+7     Chain          Leaf           Scarab
+8     Clasp          Necklace       Scepter
+9     Locket         Pendant        Talisman
+10    Pin            Rabbit's Foot  Tiara
 
-                                                                                                                     Treasures
+5. Potion
 
-7. Wand, Staff, or Rod                                                                    8. Ring
+d%     Type of Potion
+01-02  Agility
+03     Animal Control
+04-06  Antidote
+07-08  Blending
+09-10  Bug Repellant
+11-12  Clairaudience
+13-14  Clairvoyance
+15-16  Climbing
+17-18  Defense
+19-20  Diminution (B)
+21-24  Delusion (X)
+25     Dragon Control
+26-27  Dreamspeech
+28     Elasticity
+29-30  Elemental Form
+31-32  ESP (B)
+33     Ethereality
+34-36  Fire Resistance (X)
+37-39  Flying (X)
+40-41  Fortitude
+42     Freedom
+43-45  Gaseous Form (B)
+46     Giant Control (X)
+47-49  Giant Strength (X)
+50-51  Growth (B)
+52-57  Healing (B)
+58-60  Heroism (X)
+61     Human Control (X)
+62-64  Invisibility (B)
+65-66  Invulnerability (X)
+67-68  Levitation (B)
+69-70  Longevity (X)
+71     Luck
+72     Merging
+73-74  Plant Control (X)
+75-77  Poison (B)
+78-80  Polymorph Self (X)
+81-82  Sight
+83-84  Speech
+85-88  Speed (X)
+89-90  Strength
+91-93  Super-healing
+94-96  Swimming
+97     Treasure Finding (X)
+98     Undead Control (X)
+99-00  Water Breathing
 
- d%      Type of Wand, Staff, or Rod           d%      Type of Wand, Staff, or Rod           d%       Type of Ring
+6. Scroll
 
-                                               67-69   Staff of an Element (M)               01-02    Animal Control (B)
- 01-05   Wand of Cold (M) (X)
-                                               70-71   Staff of Harming (C)                  03-08    Delusion (X)
- 06-10   Wand of Enemy Detection (M) (B)
-                                               72-78   Staff of Healing (C) (B)                09     Djinni Summoning (X)
- 11-14   Wand of Fear (M) (X)
-                                                79     Staff of Power (M) (X)                10-13    Ear ring
- 15-19   Wand of Fire Balls (M) (X)
-                                               80-82   Snake Staff (C) (B)                   14-17    Elemental Adaptation
- 20-23   Wand of Illusion (M) (X)
-                                               83-85   Staff of Striking (S) (X)             18-23    Fire Resistance (B)
- 24-28   Wand of Lightning Bolts (M) (X)
-                                               86-87   Staff of Withering (C) (X)            24-26    Holiness (C)
- 29-33   Wand of Magic Detection (M) (B)
-                                                88     Staff of Wizardry (M) (X)               27     Human Control (X)
- 34-38   Wand of Metal Detection (M) (X)
-                                               89-90   Rod of Cancellation (B)               28-32    Invisibility (B)
- 39-42   Wand of Negation (M) (X)
- 43-47   Wand of Paralyzation (M) (B)            91    Rod of Dominion                       33-35    Life Protection
-                                                                                             36-38    Memory (S)
- 48-52   Wand of Polymorphing (M) (X)            92    Rod of Health (C)
- 53-56   Wand of Sec. Door Detection (M) (X)   93-94   Rod of Inertia (N)                    39-40    Plant Control (X)
-         Wand of Trap Detection (M) (X)          95    Rod of Parrying                       41-45    Protection, +1
- 57-60
-   61    Staff of Commanding (S) (X)             96    Rod of Victory                        46-48    Protection, +2
-                                               97-99   Rod of Weaponry                       49-50    Protection, +3
- 62-63   Staff of Dispelling
-                                                 00    Rod of the Wyrm                         51     Protection, +4
- 64-66   Staff of the Druids (DR)
-                                                                                             52-55    Quickness
-Roll to find the number o f charges in each:                                                   56     Regeneration (X)
-Wand: 3-30 (3dlO)                                                                            57-59    Remedies
-Staff 2-40 (2d20)                                                                            60-61    Safety
-Rods have no charges.                                                                        62-64    Seeing
-                                                                                             65-67    Spell Eating
-                                                                                             68-69    Spell Storing (X)
-                                                                                             70-71    Spell Turning (X)
-                                                                                             72-75    Survival
-                                                                                             76-77    Telekinesis (X)
-9. Miscellaneous Items                                                                        78-81   Truth
-                                                                                             82-84    Truthfulness
-                                                                                             85-86    Truthlessness
-  d % Type of Miscellaneous Item                d%     Type of Miscellaneous Item             87-91   Water Walking (B)
-  01-02 Amulet of Protection from Crystal      44-45 Gauntlets of Ogre Power (B)             92-96    Weakness (B)
-         Balls and ESP (X)                     46-47 Girdle of Giant Strength (X)             97-98   Wishes
-  03-04 Bag of Devouring (B)                   48-49 Helm of Alignment Changing (B)           99-00   X-Ray Vision (X)
-  05-09 Bag of Holding (B)                     50-51 Helm of Reading (X)
-  10-12 Boat, Undersea                          52   Helm of Telepathy (B)
-  13-14 Boots of Levitation (X)                  53  Helm of Teleportation (M) (X)
-  15-17 Boots of Speed (X)                       54  Horn of Blasting (X)
-  18-19 Boots of Traveling and Leaping (X)     55-57 Lamp of Long Burning
-    20 Bowl of Commanding Water Ele-           58-59 Lamp, Hurricane
-         mentals (X)                           60-61 Medallion of ESP, 30' range (B)
-    21 Brazier of Commanding Fire Ele-           62  Medallion of ESP, 90' range (X)
-         mentals (X)                             63  Mirror of Life Trapping (X)
-  22-23 Broom of Flying (X)                    64-66 Muzzle of Training
-    24 Censer of Controlling Air Elemen-       67-68 Nail, Finger
-         tals (X)                              69-71 Nail of Pointing
-  25-27 Chime of Time                          72-76 Ointment
-  28-29 Crystal Ball (M) (B)                   77-79 Pouch of Security
-    30 Crystal Ball with Clairaudience         80-82 Quill of Copying (S)
-         (M)(X)                                83-86 Rope of Climbing (B)
-    31 Crystal Ball with ESP (M) (X)           87-88 Scarab of Protection (X)
-   32-33 Displacer Cloak (X)                   89-91 Slate of Identification (S)
-    34 Drums of Panic (X)                        92  Stone of Controlling Earth Elemen-
-    35 Efreeti Bottle (X)                            tals (X)
-   36-38 Eggs of Wonder                        93-94 Talisman of Elemental Travel
-   39-40 Elven Cloak (B)                       95-97 Wheel of Floating
-   41-42 Elven Boots (B) \   I
-                                                98 Wheel of Fortune                                                    -   /
+d%     Type of Scroll
+01-03  Communication
+04-05  Creation
+06-13  Curse (occurs when read; B)*
+14     Delay (S)
+15-17  Equipment
+18-19  Illumination
+20-21  Mages (S)
+22-25  Map to Normal treasure (B)'
+26-28  Map to magical treasure (B)*
+29-30  Map to combined treasure (X)'
+31     Map to special treasure (X)'
+32-34  Mapping
+35-36  Portals
+37-42  Protection from Elementals (X)
+43-50  Protection from Lycanthropes (B)
+51-54  Protection from Magic (X)
+55-61  Protection from Undead (B)
+62-63  Questioning
+64     Repetition (S)
+65-66  Seeing
+67-68  Shelter
+69-71  Spell Catching
+72-96  Spells (see below)*
+97-98  Trapping
+99-00  Truth
 
-    43 Flying Carpet (X)                       99-00 Wheel, Square
+* More information is given in this set.
+
+4. All Magic Items
+
+d%     Use Table
+01-25  5. Potion
+26-37  6. Scroll
+38-46  7. Wand, Staff, or Rod
+47-52  8. Ring
+53-62  9. Misc. Magic Item
+63-72  10. Armor or Shield
+73-83  11. Missile or Device
+84-92  12. Sword
+93-00  13. Misc. Weapon
+
+SPELL SCROLLS
+
+6a. Type of Scroll
+
+d%     Type
+01-70  Magic-User
+71-95  Cleric
+96-00  Druid
+
+6b. Level of Spell
+
+Spell Level  Cleric or Druid  Magic-User
+1            01-34            01-28
+2            35-58            29-49
+3            59-76            50-64
+4            77-88            65-75
+5            89-95            76-84
+6            96-99            85-91
+7            00               92-96
+8            --               97-99
+9            --               00
+
+Roll for only one type per scroll; then find the level of each spell separately.
+
+7. Wand, Staff, or Rod
+
+d%     Type of Wand, Staff, or Rod
+01-05  Wand of Cold (M) (X)
+06-10  Wand of Enemy Detection (M) (B)
+11-14  Wand of Fear (M) (X)
+15-19  Wand of Fire Balls (M) (X)
+20-23  Wand of Illusion (M) (X)
+24-28  Wand of Lightning Bolts (M) (X)
+29-33  Wand of Magic Detection (M) (B)
+34-38  Wand of Metal Detection (M) (X)
+39-42  Wand of Negation (M) (X)
+43-47  Wand of Paralyzation (M) (B)
+48-52  Wand of Polymorphing (M) (X)
+53-56  Wand of Secret Door Detection (M) (X)
+57-60  Wand of Trap Detection (M) (X)
+61     Staff of Commanding (S) (X)
+62-63  Staff of Dispelling
+64-66  Staff of the Druids (DR)
+67-69  Staff of an Element (M)
+70-71  Staff of Harming (C)
+72-78  Staff of Healing (C) (B)
+79     Staff of Power (M) (X)
+80-82  Snake Staff (C) (B)
+83-85  Staff of Striking (S) (X)
+86-87  Staff of Withering (C) (X)
+88     Staff of Wizardry (M) (X)
+89-90  Rod of Cancellation (B)
+91     Rod of Dominion
+92     Rod of Health (C)
+93-94  Rod of Inertia (N)
+95     Rod of Parrying
+96     Rod of Victory
+97-99  Rod of Weaponry
+00     Rod of the Wyrm
+
+Charges:
+Wand   3-30 (3d10)
+Staff  2-40 (2d20)
+Rod    no charges
+
+8. Ring
+
+d%     Type of Ring
+01-02  Animal Control (B)
+03-08  Delusion (X)
+09     Djinni Summoning (X)
+10-13  Ear Ring
+14-17  Elemental Adaptation
+18-23  Fire Resistance (B)
+24-26  Holiness (C)
+27     Human Control (X)
+28-32  Invisibility (B)
+33-35  Life Protection
+36-38  Memory (S)
+39-40  Plant Control (X)
+41-45  Protection, +1
+46-48  Protection, +2
+49-50  Protection, +3
+51     Protection, +4
+52-55  Quickness
+56     Regeneration (X)
+57-59  Remedies
+60-61  Safety
+62-64  Seeing
+65-67  Spell Eating
+68-69  Spell Storing (X)
+70-71  Spell Turning (X)
+72-75  Survival
+76-77  Telekinesis (X)
+78-81  Truth
+82-84  Truthfulness
+85-86  Truthlessness
+87-91  Water Walking (B)
+92-96  Weakness (B)
+97-98  Wishes
+99-00  X-Ray Vision (X)
+
+9. Miscellaneous Items
+
+d%     Type of Miscellaneous Item
+01-02  Amulet of Protection from Crystal Balls and ESP (X)
+03-04  Bag of Devouring (B)
+05-09  Bag of Holding (B)
+10-12  Boat, Undersea
+13-14  Boots of Levitation (X)
+15-17  Boots of Speed (X)
+18-19  Boots of Traveling and Leaping (X)
+20     Bowl of Commanding Water Elementals (X)
+21     Brazier of Commanding Fire Elementals (X)
+22-23  Broom of Flying (X)
+24     Censer of Controlling Air Elementals (X)
+25-27  Chime of Time
+28-29  Crystal Ball (M) (B)
+30     Crystal Ball with Clairaudience (M) (X)
+31     Crystal Ball with ESP (M) (X)
+32-33  Displacer Cloak (X)
+34     Drums of Panic (X)
+35     Efreeti Bottle (X)
+36-38  Eggs of Wonder
+39-40  Elven Cloak (B)
+41-42  Elven Boots (B)
+43     Flying Carpet (X)
+44-45  Gauntlets of Ogre Power (B)
+46-47  Girdle of Giant Strength (X)
+48-49  Helm of Alignment Changing (B)
+50-51  Helm of Reading (X)
+52     Helm of Telepathy (B)
+53     Helm of Teleportation (M) (X)
+54     Horn of Blasting (X)
+55-57  Lamp of Long Burning
+58-59  Lamp, Hurricane
+60-61  Medallion of ESP, 30' range (B)
+62     Medallion of ESP, 90' range (X)
+63     Mirror of Life Trapping (X)
+64-66  Muzzle of Training
+67-68  Nail, Finger
+69-71  Nail of Pointing
+72-76  Ointment
+77-79  Pouch of Security
+80-82  Quill of Copying (S)
+83-86  Rope of Climbing (B)
+87-88  Scarab of Protection (X)
+89-91  Slate of Identification (S)
+92     Stone of Controlling Earth Elementals (X)
+93-94  Talisman of Elemental Travel
+95-97  Wheel of Floating
+98     Wheel of Fortune
+99-00  Wheel, Square
 
 [Companion treasure descriptions: scrolls, wands\/staves\/rods, rings, and miscellaneous items]
 6. Scrolls
