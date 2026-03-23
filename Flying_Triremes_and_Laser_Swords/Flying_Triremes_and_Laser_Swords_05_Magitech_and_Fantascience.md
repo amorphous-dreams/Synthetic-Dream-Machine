@@ -41,6 +41,16 @@ In SDM book terms, fantascience covers UVG "oldtech" and impossible vehicles, VL
 
 Use a practical boundary: if the table focuses on **the thing** and its interface, stay in this chapter. If the table focuses on **the power itself** apart from any item, go to Chapter 06.
 
+## Time Ontology
+
+Chapter 05 prefers **turn** as its exploration-scale time unit. A delve **turn** is **10 minutes**.
+
+Use this reading throughout the chapter:
+
+- when Chapter 05 text says `turn`, it means `10 minutes`
+- when imported BECMI or other legacy material says plain `turn`, read it as `10 minute turn` unless the entry clearly means some other unit
+- keep `round` for combat-scale timing; do not collapse rounds into delve turns.
+
 ## Item Output Record
 
 Whenever this chapter resolves an object, record it in an SDM-facing format:
@@ -177,7 +187,7 @@ Shared defaults:
 - temporary items are consumed on use or exhausted by charges,
 - permanent items stay effective while properly worn, wielded, carried, or installed,
 - if an effect's range or duration goes unstated, treat it as a `Level 3` character's output,
-- if a temporary duration goes unstated, use `1d6 + 6` turns unless the item says otherwise.
+- if a temporary duration goes unstated, use `1d6 + 6` turns (70-120 minutes) unless the item says otherwise.
 
 ### 4. Activate, Carry, Equip, or Install
 
@@ -267,6 +277,7 @@ Use these family entries as the chapter's primary catalog. They preserve old-sch
 Imported-material rule:
 - if an old-school module names a classic item directly, keep the classic name,
 - use the family block here as the FTLS wrapper around it,
+- read `turn` durations in this chapter as `turn (10 minutes)` unless the entry clearly states otherwise,
 - use the legacy support layer below only when you need denser named-effect coverage.
 
 Catalog use order:
@@ -334,7 +345,7 @@ Appearance: Potions are usually found in small glass vials. Each potion has a di
 
 Level of Effect: If the range of the potion's effect is not stated, treat it as a `Level 3` character's output.
 
-Duration: Unless stated otherwise, the effect of a potion lasts 7-12 turns. Roll 1d6 + 6 to determine the potion's duration. Only the referee should know the exact duration; they roll for duration and keep track of it when a character uses a potion.
+Duration: Unless stated otherwise, the effect of a potion lasts 7-12 turns (70-120 minutes). Roll 1d6 + 6 to determine the potion's duration. Only the referee should know the exact duration; they roll for duration and keep track of it when a character uses a potion.
 
 Dosage: Usually the entire contents of a vial is a single dose. The entire potion must be drunk for the potion to have the listed effect. If a potion does not follow this guideline, the text will say so.
 
@@ -400,7 +411,7 @@ Dreamspeech: If the user speaks to one sleeping or paralyzed creature within 30'
 
 Elasticity: The user may stretch their body, plus all equipment carried, to nearly any form, flat, long, and so on, to a maximum of 30' long or a minimum of 1" thick. Items carried cannot be used or dropped unless they are first returned to normal form. While in "stretched" form, the user cannot attack or use powers, but takes half damage from blunt weapons (mace, hammer, giant-thrown boulder, etc.). The effect lasts for 1 turn only.
 
-Elemental Form: There are four types of this potion: Air, Earth, Fire, and Water (equal chances for each). The user may change into the form of an elemental of the appropriate type and back to normal form as often as desired while the potion lasts. Each change of form takes 1 round. While in elemental form, no special immunities are gained, but the special attacks of each elemental are usable. Note that a hostile-banishing or warding effect will not automatically block a character using this potion. The user's Defense and Life do not change. The duration is 1 delve turn only (10 minutes).
+Elemental Form: There are four types of this potion: Air, Earth, Fire, and Water (equal chances for each). The user may change into the form of an elemental of the appropriate type and back to normal form as often as desired while the potion lasts. Each change of form takes 1 round. While in elemental form, no special immunities are gained, but the special attacks of each elemental are usable. Note that a hostile-banishing or warding effect will not automatically block a character using this potion. The user's Defense and Life do not change. The duration is 1 turn only (10 minutes).
 
 ESP: This potion grants thought-sense. The user can "hear" the thoughts, if any, of one creature within 60' by concentrating for one full round in one direction. The user can "hear" through 2' of rock, but a thin coating of lead will block the effect.
 
@@ -449,7 +460,7 @@ All wounds taken during the duration of the potion, including energy drains, are
 
 Human Control: The user may control up to `3` total Levels of humans at once; two Level `0` humans count together as Level `1`. The effect has a 60' range, and the charm lasts only as long as the potion's duration.
 
-Invisibility: This potion makes the user invisible. When a character becomes invisible, all the items, but not other creatures, carried and worn by the user also become invisible. Any invisible item becomes visible again when it leaves the character's possession. The referee may allow players to divide a single potion into as many as six sips, each of which works normally but lasts only one delve turn (10 minutes).
+Invisibility: This potion makes the user invisible. When a character becomes invisible, all the items, but not other creatures, carried and worn by the user also become invisible. Any invisible item becomes visible again when it leaves the character's possession. The referee may allow players to divide a single potion into as many as six sips, each of which works normally but lasts only one turn (10 minutes).
 
 Invulnerability: The user's Defense and saves gain a bonus of 2 for the duration of the potion. If used more than once per week, the only effect is sickness.
 

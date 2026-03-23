@@ -154,6 +154,14 @@ This TODO is the execution tracker for magic-item conversion specifically.
 - Use `Power Level` for storage, eligibility, and capacity.
 - Use `Level` for source force, dispel/counterforce, summon strength, and curse removal strength.
 - Add TODO-side bridge notes for ambiguous or unmapped classic spell names.
+- Minimum viable bridge inputs now live in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` under `Seed Batch A: Chapter 05 Bridge Starters`.
+- Phase B should explicitly clear these bridge tasks before any Phase C family conversion resumes:
+  - confirm seeded crosswalk coverage for the Chapter 05 recognizer set,
+  - mark each seeded entry as `direct`, `partial`, `custom`, or `undecided`,
+  - resolve deferred bundle notes for `Staff of Elemental Power`, `Staff of Power`, and `Staff of Wizardry`,
+  - record the SDM-facing storage / trigger / counterforce rule for each `partial` item-effect.
+- Phase B acceptance gate:
+  - do not treat Phase B as complete until the Chapter 05 recognizer set has source anchors, mapping status, and enough bridge text to let family conversion proceed without ad hoc spell interpretation.
 - Deferred bridge examples from the Phase A completion pass:
   - `Staff of Elemental Power` effect names and elemental counter-negation phrasing
   - `Staff of Power` and `Staff of Wizardry` spell-name bundles
@@ -309,6 +317,7 @@ This TODO is the execution tracker for magic-item conversion specifically.
 
 ## Validation Checklist
 - [ ] Crosswalk completeness reviewed for all targeted magic-item families.
+- [ ] Phase B recognizer set seeded and reviewed in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
 - [ ] Chapter 05 flow run-through completed for at least 3 item families.
 - [ ] Pointer integrity verified from Gear and Loot docs.
 - [ ] Anchor/link check passes across touched markdown files.
