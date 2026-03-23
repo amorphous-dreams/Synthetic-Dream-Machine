@@ -166,9 +166,12 @@ Base model (locked):
 ### F2: Spells -> Powers
 - [ ] Treat `_todo/TODO_BECMI_Spell_Material_Staging_*.md` as the canonical staged spell corpus for this pass.
 - [ ] Build spell-pattern crosswalk into SDM Powers taxonomy.
+- [ ] Preserve canonical OSR spell names as the primary crosswalk row keys and Chapter 06 lookup surface.
+- [ ] Record existing stylized entries from `Synthetic_Dream_Machine_04_Powers_Index.md` as named SDM variants with `see` handling, not as replacements for canonical spell names.
 - [ ] Apply locked scaling constants (`Spell Level x2 = SDM Power Level`; cantrip floor).
 - [ ] Define conversion rules for range/duration/targeting in SDM procedure language.
 - [ ] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`).
+- [ ] Use the manuscript pattern `canonical spell first, variant callout second` whenever a Luka-style descendant already exists (for example: `Magic Missile` -> `see Tragic Missile`).
 - [ ] Route outputs to canonical powers destinations and quick-reference anchors.
 - [ ] Use FTLS Chapter 06 as the first major destination chapter for the full staged spell corpus and crosswalk outputs.
 - [ ] Add validation scenario set:
