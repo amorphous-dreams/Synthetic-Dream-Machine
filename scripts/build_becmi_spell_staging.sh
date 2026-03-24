@@ -340,6 +340,23 @@ tsv_cols_block_named() {
   printf '\n```\n\n' >> "$OUT"
 }
 
+tsv_cols_block_named_until() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+  local start_page="$4"
+  local end_page="$5"
+  local bounds="$6"
+  local anchor="$7"
+  local stop_anchor="$8"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" "$start_page" "$end_page" "$bounds" "$anchor" "$stop_anchor" >> "$OUT"
+  printf '\n```\n\n' >> "$OUT"
+}
+
 text_anchored_until() {
   local file="$1"
   local start="$2"
@@ -456,6 +473,26 @@ EOF
 )
 
   OLD_BLOCK="$old" NEW_BLOCK="$new" perl -0pi -e 'BEGIN { $old = $ENV{OLD_BLOCK}; $new = $ENV{NEW_BLOCK}; } s/\Q$old\E/$new/s' "$file"
+}
+
+append_table_qa_lines() {
+  local file="$1"
+  local extra
+  local tmp
+
+  extra=$(cat)
+  tmp=$(mktemp)
+  awk -v extra="$extra" '
+    {
+      print
+      if (!done && $0 ~ /^- Result:/) {
+        print ""
+        print extra
+        done = 1
+      }
+    }
+  ' "$file" > "$tmp"
+  mv "$tmp" "$file"
 }
 
 cleanup_output() {
@@ -732,6 +769,49 @@ cleanup_output() {
   s/afire ball/a fire ball/g;
   s/c h a m/charm/g;
   s/m g x j a r/magic jar/g;
+  # General: OCR lowercase-l swapped for digit-1 in dice notation (ld6, ld6T, ld4r etc.)
+  s/\bld([0-9]+)/1d$1/g;
+  # General: split "H D" from three-column PDF extraction (16 H D -> 16 HD)
+  s/\b([0-9\/]+) H D\b/$1 HD/g;
+  s/\bH D\b/HD/g;
+  # General: common short-word column splits
+  s/ o f / of /g;
+  s/\bi f\b/if/g;
+  s/\bi t\b/it/g;
+  # Companion item-description column-split regressions
+  s/6-2 1\b/6-21/g;
+  s/\(1d8\.5\)/(1d8+5)/g;
+  s/rod 4 , and inflicts/rod +4, and inflicts/g;
+  s/ring ofprotection \+[f1]/ring of protection +1/g;
+  s/Protection e l , \x272, \x273, or \+4\)/Protection (+1, +2, +3, or +4)/g;
+  s/ \+f\b/ +1/g;
+  s/\bsuccessfull\b/successful/g;
+  s/: 1-4 \x271; 5-7 = 2; 8-9 = 3; 10 = 4\./: 1-4 = 1; 5-7 = 2; 8-9 = 3; 10 = 4./g;
+  # Master artifact power table column-split regressions
+  s/missiles, 1d6 \+ 1\n\s+D each;/missiles, 1d6 + 1 damage each;/g;
+  s/EF 1 pth,/EF 1 pt,/g;
+  s/7 \+ ; X16\)/7+; X16)/g;
+  s/1d20, subtracts any/1d20, subtract any/g;
+  # Master named-artifact catalog OCR cleanup
+  s/\birito\b/into/g;
+  s/\bMag;ic\b/Magic/g;
+  s/\b10 7%\b/10%/g;
+  s/\biirtifact\b/artifact/g;
+  s/\bRechiarging\b/Recharging/g;
+  s/\bVal1ue\b/Value/g;
+  s/\bfriom\b/from/g;
+  s/the: user acquires/the user acquires/g;
+  s/\bChaotiIC\b/Chaotic/g;
+  s/\brecharced\b/recharged/g;
+  s/\bfir:st\b/first/g;
+  s/\brequirir ig\b/requiring/g;
+  s/\bArt ifacts\b/Artifacts/g;
+  s/\b1the\b/the/g;
+  s/\bgerieral\b/general/g;
+  s/\b4lA\b/4\/A/g;
+  s/\b3lB\b/3\/B/g;
+  s/\b41D\b/4\/D/g;
+  s/\bYour No:\b/Your Notes:/g;
   s/\n{3,}/\n\n/g;
 ' "$OUT"
 }
@@ -1654,6 +1734,8 @@ companion_spell_block_named() {
   printf '\n[Companion pages 15-17: druid transition, philosophy, and spell material]\n' >> "$OUT"
   render_tsv_cols_pages_anchored_until "$pdf" 15 17 '185,370' 'Druid' 'Fighter' \
     | awk 'start || $0 == "Druid" { start = 1; print }' >> "$OUT"
+  printf '\n[Companion pages 22-28: magic-user 5th-9th level spell material]\n' >> "$OUT"
+  render_tsv_cols_pages_anchored "$pdf" 22 28 '185,370' 'FIFTH LEVEL MAGIC-USER SPELLS' >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
 }
 
@@ -2205,6 +2287,96 @@ master_nonhuman_block_named() {
   printf '\n```\n\n' >> "$OUT"
 }
 
+master_procedures_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+  local am_example_patch
+
+  am_example_patch=$(cat <<'TXT'
+instead. The weapon, shield, and armor are not checked, since they are permanent items. When the DM checks the anti-magic again at the start of the next round, the bless effect remains active, but the bonuses no longer apply from any cancelled effects.
+
+One turn after the character leaves the A-M area, the fighter's polymorph and haste effects return. The fighter can continue the polymorph effect for 5-10 rounds more and the haste effect for about four turns more. The bless effect lasts 7-12 turns, counting both the combat rounds and the turn spent under the A-M effect; the haste countdown likewise continues while the effect is suppressed.
+TXT
+)
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[Master procedures page 2: Anti-Magic Effects]\n' >> "$OUT"
+  {
+    pdftotext -layout -nodiag -nopgbrk -f 40 -l 40 -x 0 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 40 -l 40 -x 190 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 40 -l 40 -x 380 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
+    printf '\n'
+  } \
+    | awk 'started || /^Anti-Magic Effects$/ { started = 1; print }' \
+    | awk 'stopped { next } /^Character Notes$/ { stopped = 1; next } { print }' \
+    | awk 'skip { if (/^about four turns more\.$/) skip = 0; next } /^instead\. The weapon,$/ { skip = 1; next } { print }' \
+    | sed \
+        -e '/^[[:space:]]*Procedures[[:space:]]*$/d' \
+        -e '/^[[:space:]]*The following procedures are covered in[[:space:]]*$/d' \
+        -e '/^[[:space:]]*this section:[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Dominion Income and XP[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Encounters[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Experience Point Values[[:space:]]*$/d' \
+        -e '/^[[:space:]]*X P of Selected Monsters[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Hit Roll Charts \(Monsters\)[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Immortals[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Intelligence[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Mystics[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Reality Shifts[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Record Keeping[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Spell Casters \(Non-Human\)[[:space:]]*$/d' \
+        -e '/^[[:space:]]*Undead Lieges and Pawns[[:space:]]*$/d' \
+        -e '/^[[:space:]]*2[[:space:]]*$/d' \
+        -e 's/This ray.s A-M value is 100%/This ray\x27s A-M value is 100%;/' \
+        -e 's/ofexistence/of existence/g' \
+        -e 's/Ele mental/Ele-\nmental/g' \
+        -e 's/Spheres o$/Spheres of/' \
+        -e 's/Sphere o$/Sphere of/' \
+        -e 's/Power (Matter, Energy, Time, and Thought$/Power (Matter, Energy, Time, and Thought)/' \
+        -e 's/one or more o$/one or more of/' \
+        -e 's/avoid most o$/avoid most of/' \
+        -e 's/magical item is moved out of the ray, i$/magical item is moved out of the ray, it/' \
+        -e 's/hasreeffect/haste effect/g' \
+        -e 's/sword ofspeed-/sword of speed-/' \
+        -e 's/porion offlying/potion of flying/g' \
+        -e 's/porion of polymorph self/potion of polymorph self/g' \
+    | awk -v patch="$am_example_patch" '
+        !inserted && /^3\. Area spell effects$/ {
+          print ""
+          print patch
+          print ""
+          inserted = 1
+        }
+        { print }
+      ' \
+    >> "$OUT"
+  printf '\n[Master procedures page 6: Dispel Magic]\n' >> "$OUT"
+  {
+    pdftotext -layout -nodiag -nopgbrk -f 44 -l 44 -x 0 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 44 -l 44 -x 190 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 44 -l 44 -x 380 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
+    printf '\n'
+  } \
+    | awk 'started || /^Dispel Magic$/ { started = 1; print }' \
+    | awk 'stopped { next } /^Dominion Income and XP$/ { stopped = 1; next } { print }' \
+    | sed \
+        -e '/^[[:space:]]*Procedures[[:space:]]*$/d' \
+        -e '/^[[:space:]]*6[[:space:]]*$/d' \
+      -e 's/ringofspellstoring/ring of spell storing/g' \
+      -e 's/ring of spell storingare/ring of spell storing are/g' \
+        -e 's/Ifthe/If the/g' \
+        -e 's/ofwonder/of wonder/g' \
+    >> "$OUT"
+  printf '\n```\n\n' >> "$OUT"
+}
+
 master_artifacts_block_named() {
   local label="$1"
   local note="$2"
@@ -2268,6 +2440,674 @@ master_artifacts_block_named() {
     | sed '/^[[:space:]]*Artifacts[[:space:]]*$/d' \
     | awk 'BEGIN{blank=0} /^[[:space:]]*$/ {blank++; if (blank <= 1) print ""; next} {blank=0; print}' \
     >> "$OUT"
+
+  printf '\n```\n\n' >> "$OUT"
+}
+
+master_named_artifacts_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[Master named-artifact pages 56-63: curated source-derived catalog block]\n\n' >> "$OUT"
+
+  cat >> "$OUT" <<'TXT'
+The "Known" Artifacts
+The following section gives full details for several known artifacts. Each has been constructed using the following system; each is also based on material from myths, legends, and works of literature. You are free to modify any and all of the powers given, and this is recommended if your players have read this booklet of rules. Some space is left below each description for your notes on actual powers.
+
+The introduction of any artifact into a campaign should be preceded by rumors or myths of its existence. General information about each artifact is given in a separate introductory paragraph which may be read to the players. You may elaborate on the information given, or may discredit it entirely, developing your own backgrounds.
+
+ARMET BY WAYLAND
+This is a tight-fitting helmet with bevor (chinpiece) and movable visor, crafted by the legendary Immortal armorer Wayland Smith. Some claim that it makes the wearer invulnerable to all attacks.
+
+Magnitude: Lesser artifact.
+Power Limits: 3/A, 3/B, 2/C, 3/D
+Sphere: Matter (Fighters, earth)
+Suggested Powers (PP 225):
+B3 Fly 25 PP
+D1 Invisibility 20 PP
+D1 Immunity 100 PP
+D2 -8 AC bonus 80 PP
+
+Activation: The Armet is not active when acquired. It is activated if the user wears it while slaying any large or huge dragon. The user may be aided in the battle, but must either inflict at least 1/2 the damage needed to kill the monster or personally deliver the blow that slays.
+
+CLAW OF MIGHTY SIMURGH
+Long ago, a great roc-like bird appeared to a wandering cleric. The bird said it was Immortal, and had already seen three cycles of life on earth, each ending in destruction by water, ice, and fire. It gave one of its smallest claws (a mere 2 feet long) to the cleric. Explaining its powers, the Mighty Simurgh asked that it be used for the betterment of mankind. The cleric did what she could, but lives no more, and the claw has apparently fallen into the clutches of Chaos.
+
+Description: Curved talon 25 inches long, made of an ivory-like substance.
+Magnitude: Minor artifact.
+Power Limits: 2/A, 2/B, 2/C, 2/D
+Sphere: Time (Clerics, water)
+Suggested Powers (PP 100):
+A3 Calm others 30
+A5 Turn bonus, +2 + 1d6 HD 20
+B2 Predict weather 10
+D3 Immune to poison 40
+
+Activation: The artifact is active when acquired.
+Use of Powers: Once the claw is claimed, full knowledge is granted telepathically during the user's first sleep.
+Suggested Handicap (1), activated when first power is used: The user loathes violence, urges peace to all living things, and refuses to attack anyone unless attacked. This effect does not cover undead.
+Suggested Penalty (1), 25% chance whenever rainfall, flooding, tornado, falling snow, or similar weather is witnessed: Service. The user imagines that the Simurgh has demanded an interview. The user must gather a party to go to the far northern mountains, leaving within 3 days. The effect wears off when the mountains are reached.
+Source: Ancient Middle Eastern legend.
+Further Research: This is a recurrent but very general theme, a great being that has lived forever and possesses the knowledge of the ages. Look for similar recurrent themes among the myths of different cultures; related items can prove suitable for artifact design, and usable in nearly any setting.
+
+COMB OF THE KORRIGANS
+A group of nine powerful elves took a rare woodland creature (the Korrigan) as their symbol. Successful as a mortal group, they resumed their close friendship after all reached Immortality. Together they created this item to aid mortal elves to reach Immortality, but only if they strive toward representing the best of elvenkind. The Korrigans became nearly legendary in mortal life, commonly using shapechanging and haste in their travels and combats, and this device presumably bestows similar powers.
+
+Description: Hair comb, 5 inches long, made of pink bone-like substance, fine teeth.
+Magnitude: Lesser artifact.
+Power Limits: 3/A, 3/B, 2/C, 3/D
+Sphere: Energy (Magic-users, fire)
+Suggested Powers (PP 215):
+A1 Poison breath 50
+B3 Haste 30
+C1 Produce fire 15
+Cure disease 20
+Cure wounds, critical 35
+D2 Polymorph self 65
+
+Activation: The comb is not active when acquired. If it is left within a burning fire for 1 full turn, it is activated, but will not reveal powers. Thereafter, whenever the user befriends an elf (loaning money, curing, aiding in battle, and so forth), one power is revealed telepathically, to a maximum of 1 per day, in order of power.
+Use of Powers: A power is invoked when a given combination of the comb's teeth are plucked, producing a nearly inaudible musical tone.
+Suggested Handicaps (2):
+1. When first power is used: User starts turning into an elf (1st level); the process takes 3 months to complete. The user becomes aware of minor changes, including animosity toward dwarves, in 2 weeks. The change stops completely as soon as the artifact is no longer owned, but the change back to normal also takes 3 months.
+2. Energy drain: User loses 3 levels of experience when Poison Breath is first used.
+Suggested Penalties (3; #1 appears 4 in 6, others each 1 in 6):
+1. Slow spell effect centered on user.
+2. Polymorph other spell effect upon user, to turn into an eagle.
+3. Memory penalty: User cannot memorize any spells of the highest spell level he or she can normally study. Effect is cumulative if not removed.
+Source: Breton folklore.
+Further Research: Various works on folklore of the British Isles (Irish, Scottish, and Gaelic), such as Celtic Myth and Legend, by Charles Squire. See fays (or fees or faeries), druids of ancient Gaul, the Lamignak elves, Fountain Women of French folklore, and A Field Guide to the Little People (Arrowsmith and Moorse, 1977).
+
+DIAMOND ORB OF TYCHE
+This item appears to be a crystal ball, but is somewhat larger (about 18 inches across) and glows softly with a white light filled with sparkling colors. It was crafted by the powerful Immortal Tyche, said to control chance and the fortunes of mankind. It is a powerful artifact of Chaos, but is not necessarily evil, and is said to bring good fortune to the user, for a time.
+
+Magnitude: Greater artifact.
+Power Limits: 4/A, 3/B, 3/C, 4/D
+Sphere: Thought (Thieves, air)
+Suggested Powers (PP 405):
+Pick pockets 100% 80
+X-ray vision 80
+Gaseous form 30
+Container, 40,000 cn 80
+Remove traps 75% 60
+Confuse alignment 15
+Hide in shadow 70% 60
+
+Activation: The artifact is active when found. The user gets a feeling of inspiration when gazing into the orb. The artifact grants the knowledge of one power when one consecutive hour is spent gazing, to a maximum of 1 power per day, given in order of PP cost.
+Use of Powers: By gazing into the orb and concentrating on a power, the user acquires that power after 1-3 rounds.
+Suggested Handicaps (3):
+1. When first used: Magic error. The user has a 10% chance of failure whenever attempting to cast a spell or use any magic item requiring a command word.
+2. When pick pockets is first used: Alignment change to Chaotic, or to Neutral.
+3. If, as a container, the artifact is ever completely filled: Recharging begins to cost. The orb stops recharging by itself, and must be given treasure equal to 100 gp value per 1 PP recharged.
+Suggested Penalties: Standard chances, totally random adverse effects of 50 PP cost or less affecting the caster, from Tables A3, B3, D4, and D5.
+Source: Greek mythology.
+Further Research: See general works on mythology, with reference to the Greek myths and gods, especially the goddess of chance or Good Fortune.
+
+FIERY BRAND OF MASAUWU
+The legendary Guardian of Death, Masauwu (possibly another name for Orcus) is greatly feared. It is rumored that he walks across the entire earth every night, appearing as a dark-skinned giant clad in animal skins and carrying a flaming torch. This device is sometimes left for others to use, especially if they will further his causes. It has horrible and awesome powers, but if the user impresses Masauwu by employing it often and with diligence, he may grant even greater ones.
+
+Description: This is a club-like torch, 4 feet long. It is not normally burning when found. If lit, it can only be extinguished by water.
+Magnitude: Greater artifact.
+Power Limits: 4/A, 3/B, 3/C, 4/D
+Sphere: Entropy (Death)
+Suggested Powers (PP 450):
+A1 Meteor swarm 100
+A1 Obliterate 90
+A4 Turn as CL 36 95
+A5 Spell damage bonus, 1, 2, 3 = 4 80
+B2 Detect invisible 35
+B3 Teleport 50
+
+Activation: The artifact is active when found. Each time the user slays another creature by using the item, knowledge of 1 power is granted, to a maximum of 2 per day. The artifact may be wielded as a club. Powers are revealed in order of PP cost.
+Use of Powers: The artifact must be lit for any powers to function, issuing forth from the flames, on command.
+Suggested Handicaps (3):
+1. When the first power is used: Constitution score drops 5 points, minimum score 3.
+2. When turn undead is first used: Energy drain; user loses 3 levels.
+3. When spell damage bonus is first used to augment meteor swarm: Doom is sent. User and artifact will utterly vanish, but leave all equipment carried, either when user is next struck by any undead creature, or when spell damage bonus is applied to the meteor swarm a third time.
+Suggested Penalties (5, standard chances of appearance, equal chances for each):
+1. Cause critical wounds, cast at user; saving throw applies.
+2. Attract undead: If adventuring underground or outdoors after dark, 2-8 undead arrive in 1-6 rounds. All are of one type; roll 1d12 to find Hit Dice type.
+3. Operating Cost: User loses 20% of all treasure owned, not counting magic.
+4. Die: User drops dead instantly, no saving throw. Can be normally raised.
+5. Poison gas: Artifact releases 20,000 cubic feet of purple gas. Each victim within it must make a Saving Throw vs. Poison, with a -2 penalty, or die. User is not affected by the gas.
+Source: Hopi (American Indian) legends.
+Further Research: From the North American Indians; see various pamphlets from universities and museums of the United States, especially for Hopi Indian legends. Truth of a Hopi by Edmund Nequatewa (Museum of Northern Arizona, Flagstaff). Note also that the lord of the Overworld and Guardian of the dead appears in legends of many other tribes.
+
+GIRDLE OF ARMIDA
+Armida was once a famous sorceress in a far land. To help her achieve the greatest heights in her craft, her immortal uncle, Idraote, gave her this girdle. However, she used it to tempt and confuse paladins, generally bringing confusion and discord to others. Having fallen to petty abuse of her powers, Armida did not reach her Immortal goal; but the girdle remains, to tempt and possibly aid other magic-users to become Paragons. It is supposedly watched over by Idraote to this day.
+
+Description: This is a simple human-sized leather belt, though it will shrink or enlarge to fit any user. It is ornately tooled with arcane symbols which describe its powers and command words; however, this ancient language of magic can only be deciphered by a read magic spell from a 30th or higher level caster.
+Magnitude: Minor artifact.
+Power Limits: 2/A, 1/B, 2/C, 3/D
+Sphere: Energy (Magic-users, fire)
+Suggested Powers (PP 100):
+A2 Charm monster 30
+A2 Confusion 25
+C2 Change odors 15
+D2 Memorize +3 spell levels 30
+
+Activation: The girdle is active when found.
+Use of Powers: Powers are activated by command words given on the girdle.
+Suggested Handicap (1, when first used): Extra damage. Whenever the user is struck by any natural weapon (claw, bite, and so forth), he or she takes 1-10 points of extra damage. This becomes 1 less point of damage for each 10 days that pass after the artifact is no longer owned, vanishing in 100 days.
+Suggested Penalties (2):
+1. Whenever either attack, charm or confusion, is cast at a Lawful or Neutral creature, hold person is cast at the user; saving throw applies.
+2. At standard chances: size change; the user gains or loses, equal chances, 50% of current height.
+Source: Italian literary romance works dealing with the First Crusade (1096-1099).
+Further Research: See a translation of the romantic epic Gerusalemme Liberata (Jerusalem Delivered) by Torquato Tasso (1581).
+
+HUMBABA'S GLARING EYE
+The huge one-eyed monster Humbaba was fought long ago by a great hero, named Gilgamesh. Its eye was taken after its defeat, and was made into an artifact by Ninsun, a powerful Immortal. It eventually caused Gilgamesh to seek immortality above all else, but he failed, and was eventually destroyed. The Eye remains, a famed symbol of death and destruction. The Eye is said to provide the powers of the original monster, including breath and gaze weapons.
+
+Description: This appears to be a mummified monstrous eyeball, 4 inches in diameter. It is reddish white in color, with a black iris and many bulging red arteries and blue veins.
+Magnitude: Lesser artifact.
+Power Limits: 3/A, 2/B, 2/C, 3/D
+Sphere: Energy (Magic-users, fire)
+Suggested Powers (PP 190):
+A1 Cause disease 25
+A1 Fire breath 60
+A3 Flesh to stone 50
+C3 Summon weather 55
+
+Activation: The eye is active when found, but it is difficult to gain knowledge of the powers. The user must employ ESP or clairvoyance, and look through the eye into a reflecting surface, such as a mirror or water. In the reflection of the center of the eye, the user may read the name of one effect and its command word, if the language can be understood, thus requiring a read language at the same time. The information changes each midnight, to that of a randomly determined power; thus, many readings may be required before all the powers are revealed.
+Use of Powers: The eye does not grant powers to its user, but produces the effects itself; it may be accurately aimed with very little practice.
+Suggested Handicap (1): The user becomes obsessed with seeking Immortality. Every 10 days, a Saving Throw vs. Spells is made, the first with a -1 penalty, the second with -2, the third with -3, and so forth. A failed saving throw forces the user to choose and begin to actively pursue one of the routes to Immortality, forsaking all other activities.
+Suggested Penalties (2, standard chances):
+1. Body part change: The user's head enlarges to 4 times normal size, large enough to accommodate Humbaba's Glaring Eye, if the user lacks one. This effect is not cumulative.
+2. Age: The user becomes 10-40 years older. No saving throw applies, but the effect may be dispelled.
+Source: Babylonian myths.
+Further Research: The Epic of Gilgamesh (circa 2000 B.C.) and general references on mythology, especially Sumerian and Babylonian.
+
+HYMIR'S STEAMING CALDRON
+The vain Immortal giant Hymir created this device to produce vast amounts of superb ale for his own enjoyment, and for his friends Thor and other Immortals. Its powers can, however, be used in other ways.
+
+Description: This is a black iron kettle with a handle, of a type normally found in kitchens. It is about 18 inches across and 1 foot tall.
+Magnitude: Minor artifact.
+Power Limits: 2/A, 1/B, 2/C, 3/D
+Sphere: Time (Clerics, water)
+Suggested Powers (PP 35):
+A1 Create poison* 40
+B4 Container, 10,000 cn 20
+C1 Create water 20
+C2 Change tastes 20
+*Note: The only poison this will create is alcohol.
+
+Activation: The kettle is inactive when found. The user may activate it by filling it with water and heating it over a fire. The user may read the powers and command words in the rising bubbles by using a read magic spell. However, it is impossible to exactly duplicate Hymir's formula for the taste of his ale, unless a sample of his ale has been tasted.
+Use of Powers: Each power is triggered by command words. The user may give the commands from up to 10 feet away. However, each power applies only to the contents of the kettle.
+Suggested Handicap (1): Fumbling; whenever the user attacks another with either a weapon or spell, he or she has 1 chance in 6 of fumbling the attack.
+Suggested Penalty (1): Memory penalty, with different effects as detailed below.
+Spell caster: After memorizing spells, the user immediately forgets 1 spell of each odd-numbered spell level, up to 1 each of 1st, 3rd, 5th, 7th, and 9th level spells.
+Non-spellcaster: The user immediately forgets how to use 1 weapon.
+Source: Scandinavian mythology.
+Further Research: See general reference works on mythology, especially referring to the giants of the Norse myths, which are different from D&D game giants; Hymir is a minor character, usually appearing only in references to Thor and the Midgard Serpent.
+
+IVORY PLUME OF MAAT
+This small but exquisitely crafted feather-shaped brooch was created by a great Paladin, the beautiful fighter Maat. She was a many-talented mortal, and strove always to promote good over evil. Her device is said to enable the user to follow in her noble footsteps, doing good deeds and furthering the cause of Law and Justice.
+
+Description: The plume is 3 inches long, made of very fine ivory.
+Magnitude: Greater artifact.
+Power Limits: 4/A, 3/B, 3/C, 4/D
+Sphere: Matter (Fighters, earth)
+Suggested Powers (PP 490):
+A1 Dispel evil 40
+A2 Geas 50
+A4 Continual light 35
+A4 Turn as CL 24 70
+B1 Lie detection 50
+B2 Know alignment 20
+B2 Choose Option 45
+C2 Purify food + water 10
+C2 Repair normal objects 10
+D1 Remove fear 10
+D2 +4 Saving Throw bonus 50
+D3 Immune to disease 20
+D3 Immune to energy drain 80
+
+Activation: The plume is active when acquired. Knowledge of the powers is immediately telepathically granted to any user who is a Paladin or Lawful Knight. Any other would-be user must gain the knowledge through a contact other plane or commune spell, by asking Maat directly.
+Use of Powers: Each power can be activated by mental command alone.
+Suggested Handicaps (3):
+1. When first used: alignment changes to Lawful; if already Lawful, become more rigidly so, and work more actively to defeat Chaos.
+2. Magic error: An 80% chance of error applies whenever the user casts a spell, or uses a magical device requiring a command word, to harm any Lawful or Neutral creature that has no evil intentions.
+3. Recharging: The artifact will not recharge itself. Whenever the user slays a chaotic creature, or any creature with evil intentions, while openly wearing the plume, 1 PP is recharged for each 100 XPV of the creature slain, rounded up. When the artifact is fully charged, excess recharge power is ignored.
+Suggested Penalties (5):
+1. Whenever the item is touched: If the creature touching the plume is Chaotic or has evil intentions, obliterate is cast at the creature, no saving throw, and uses 90 PP.
+2. When first used: Wall of stone forms as a closed cylinder around the user. However, if the user closes his or her eyes, thinks of justice or Maat, and steps forward, the wall vanishes when touched. The wall is completely invulnerable to outside attacks, including a wish. If the wall is destroyed or damaged by the user, he or she thereafter takes double damage from all physical attacks, no saving throw, and unremovable, as a Handicap.
+3. If the user ever slays a Lawful creature, the user is immediately reduced to -10 hp and dies, no saving throw.
+4. At standard chances: Harden. A volume of up to 30,000 cubic feet of mud, mire, swamp, or other muck suddenly dries completely, if within 120 feet of the user.
+5. At standard chances: Opponents. 1-4 Chaotic enemies condense magically from the air, within 30 feet of the user. All the creatures are of one type; the type has a number of Hit Dice equal to 31-50% (1d20 + 10%) of the user's levels. The creatures are native to the user's plane of existence, considering undead native to any plane. Each opponent has maximum possible hit points. Neither side has surprise.
+Source: Egyptian mythology.
+Further Research: The Book of the Dead, translated by E. A. Wallis Budge, and other references on Egyptian mythology. Maat, goddess of absolute order, was wife of Thoth, god of knowledge, and daughter of Ra, the highest ruler and sun god of the mythos, and assisted in the work of creation.
+
+ORTNIT'S LANCE OF DOOM
+It is not known how the hero Ortnit, or Hartnit, acquired this powerful weapon. The device's origin is also a mystery. Ortnit defeated many giants with it, so it may have great powers against this ilk; but he was later slain ignominiously by a small white dragon, which is odd considering his legendary power. The weapon remains, but is often shunned, rumored to bring death to any user.
+
+Description: This is an ornately scribed lance, entirely sheathed in light metal, which can only be used when riding a mount, base damage 2d6.
+Magnitude: Minor artifact.
+Power Limits: 2/A, 1/B, 2/C, 3/D
+Sphere: Entropy (Death)
+Suggested Powers (PP 95):
+Lance +5, +10 vs. Giants
+Weapon Talent: Translating 10
+A3 Hold monster 35
+A2 Dodge any missile 50
+
+Activation: The hold monster power is activated whenever the lance first strikes a creature. At that time, the user discovers that he or she feels capable of dodging missiles, the other power, and can discover the use, but not the cost, of that power through practice.
+Use of Powers: Knowledge of the existence of the hold power can be deduced by observing results, but is never explained. The translating talent appears automatically as well; the user simply understands, somehow, all languages heard as long as the lance is held. The dodge power is activated as soon as the user tries to dodge a missile.
+Suggested Handicap (1): The user loses 1/3 of all treasure carried each time he or she uses the lance to slay a creature.
+Suggested Penalty (1): This takes effect when any creature is struck with the lance, but may not become apparent until much later. The user takes double normal damage from all blows or breaths of any dragon for one full day. The user may make the usual Saving Throw vs. a dragon's breath, taking only full normal damage if the attempt succeeds.
+Source: Germanic legends.
+Further Research: Refer to the medieval German epic poems composed in the 13th century and collected in Das Heldenbuch (The Book of Heroes). In this and other works, see references to Ortnit and his brother Wolfdietrich. Legends of another Germanic hero, Dietrich of Bern, were based on Theodoric the Great, King of the Ostrogoths, 454-526 A.D. The famous epic poem The Nibelungenlied is another source, based loosely on the Scandinavian Volsunga Saga with added material unique to Germanic legend.
+
+PILEUS
+The Pileus (pill-A-us) was made deliberately similar to the red Liberty Cap, a long-time symbol of freedom. An Immortal Paragon mage named Saturnius created it to bring freedom to enslaved mortals. It is rumored that the wearer of this device will remain free forever, and can free all those who suffer imprisonment of any sort.
+
+Description: This item is a simple red felt cap, which will enlarge or shrink to fit any user. It must be worn for its powers to be used.
+Magnitude: Minor artifact.
+Power Limits: 2/A, 1/B, 2/C, 3/D
+Sphere: Energy (Magic-users, fire)
+Suggested Powers (PP 100):
+B3 Dimension door 25
+C3 Knock 20
+D1 Free person 25
+D3 Immune to paralysis 30
+
+Activation: This cap is inactive when acquired, and will remain inactive until the would-be user wears it while freeing from imprisonment another of his or her race. The night after this act, the user receives knowledge of the cap's powers and command words, through dreams.
+Use of Powers: The pileus produces its effects, either upon the user or at some object within range, whenever the user mentally commands it to do so.
+Suggested Handicap (1): Repel others. The user slowly develops a repulsive invisible aura; the reaction rolls of all those coming within 30 feet are penalized -3 when the artifact is first used. However, treat any Attack result on the Reaction Table as Flee in disgust instead. Other characters may make saving throws to tolerate the repulsion, but the given penalty applies to those rolls as well. A new saving throw must be made for each hour spent in the user's presence.
+Suggested Penalty (1, standard chances): Rot. One body part becomes diseased and falls off in 1 hour. This affects toes first, one by one, then fingers, ears, nose, and then limbs. A cure disease applied before the part falls off will negate the effect, at least for that occurrence.
+Source: Roman and French history.
+Further Research: The Liberty Cap is a common symbol of freedom in history. The red pileus, a Phrygian cap of red felt, was placed upon a slave's head during the ceremony of manumission. It was used regularly in the Roman Empire, and appeared in the French Revolution (1789-1799) as the Bonnet Rouge.
+
+RAINBOW SCARF OF SINBAD
+The success of the famous adventurer Sinbad the Sailor, whose whereabouts and even existence are now dubious, is said to have been caused by this simple item of apparel. Especially made to aid the Epic Hero on his way to Immortality, this device must be worn at all times. It may bring luck and intelligence, but will bring hazardous adventure as well if even a tenth of the legends of Sinbad are true.
+
+Description: This is a silk scarf, 2 feet square, decorated in swirls of rainbow colors.
+Magnitude: Minor artifact.
+Power Limits: 2/A, 1/B, 2/C, 3/D
+Sphere: Thought (Thieves, air)
+Suggested Powers (PP 90):
+A2 Cause fear 10
+A5 Bless 10
+B4 Container, 10,000 cn 10
+C3 Open locks 75% 10
+D2 +2 Saving Throw bonus 25
+D2 Intelligence to 18 20
+
+Activation: The artifact is not active when acquired. If it is worn while the user travels by sea, the powers of the scarf may be read in passing sea mists, by using both read magic and detect invisible spells, at the maximum rate of 1 power per hour.
+Use of Powers: Any power revealed can be produced by thought alone, without uttering any command words. However, the Intelligence 18 power is produced automatically whenever the open locks power is called forth unless the user specifies otherwise.
+Suggested Handicap (1): When the item is first used, the user's Wisdom drops by 4 points.
+Suggested Penalty (1, standard chances): 1-4 hostile monsters of some type magically appear within 30 feet of the user. Select or randomly determine any monster from 1 to 12 Hit Dice.
+Source: Arabian folklore.
+Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, and similar material.
+
+SHARD OF SAKKRAD
+According to very old legends, the original home of mankind was in the middle of a vast mountain, so huge that the sun was said to rise from one of its peaks and set on the opposite. The entire base of this mountain is the fabled emerald Sakkrad; its reflection gives the azure hue to the sky. One small piece of that emerald, this very shard, was stolen by a djinni, who subsequently vanished from existence; the shard has never reappeared. It is said to hold unimaginable power; some say that mortal man was not meant to have it, and cannot possibly control it. Others dismiss it as pure legend. Yet despite the tales, many adventurers of great fame and power have gone in search of it; none are known to have returned.
+
+Description: This is a 3-foot-long imperfect hexagonal crystal of azure hue, with sharp edges and pointed ends.
+Magnitude: Major artifact.
+Power Limits: 4/A, 4/B, 4/C, 5/D
+Sphere: Matter (Fighters, earth)
+Suggested Powers (PP 750):
+Disintegrate 80
+Mass charm 75
+Polymorph any object 75
+Detect magic 15
+Plane travel 65
+Telekinesis 40
+Create any monster 100
+Automatic healing 100
+Shapechange 100
+Luck 100
+
+Activation: The shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
+Use of Powers: A power is granted to the user when the proper command word is spoken. It remains until used or until the user stops touching the item.
+Suggested Handicaps (4; #1 appears when the item is first used; others appear in sequence whenever the user draws on a 100 point power):
+1. Magic error: A 25% chance of error occurs whenever the user casts a spell or utters any command words, except those used on the shard.
+2. Operating Costs: The user loses 10% of all treasure owned, and loses 10% each time a 100 point power is employed thereafter.
+3. Greed: Anyone seeing the user produce any visible effect of the shard's powers must make a Saving Throw vs. Spells, with a -4 penalty to the roll, or immediately attack the user with intention to possess the shard.
+4. Doom: The next time the user employs a 100 point power, there is a 5% chance that an Immortal will arrive. This chance increases by 2% each time a 100 point power is used again. If the Immortal arrives, all within sight range have the choice of watching or looking away. Each of those watching must make a Saving Throw vs. Death Ray, with a -10 penalty to the roll, or die. Each of those looking away may make a Saving Throw vs. Spells; if successful, no further effect occurs, but if failed, each must make the previously mentioned Saving Throw vs. Death Ray. The Immortal departs within 1 round, taking the user and all of his or her non-living valuables, wherever they may be. The shard is not taken, but is teleported to a random location within 10,000 miles.
+Suggested Penalties (8; 20% chance of appearance when any power is used; equal chances for each):
+1. Delayed blast fire ball within 10' of user, set to detonate in 1-4 rounds; normal saving throw applies to all victims.
+2. User takes 40 points of damage.
+3. Healing error: When the automatic healing power is next triggered, it drains the usual 100 PP but cures only 10 points of damage, or fails utterly to cure any other effect, poison, disease, and so forth.
+4. The user is struck with Paranoia.
+5. Memory lapse: The user suddenly and completely forgets how to cast spells, if a spell user, or how to use weapons for 2-20 days; no saving throw.
+6. The user is struck by Withdrawal; Saving Throw vs. Spells applies, but with a -5 penalty.
+7. Anti-Magic 100%, 10' radius emanating from the artifact. The Anti-Magic will remain until wished away, or until the user washes it in the water at either the north pole or the south pole.
+8. Saving Throw penalty: A -8 penalty applies to the user's Saving Throws vs. fire-type attacks.
+Source: North African creation myth.
+Further Research: This item is loosely based on a creation myth common in Africa and Asia Minor.
+
+TOME OF SSU-MA
+The Immortal Hero Ssu-Ma is said to be the father of written knowledge, bringing mankind from barbaric chaos to civilization. His Great Tome is said to gather knowledge of all sorts from the very air itself, and is thus able to provide information on anything in existence.
+
+Description: This large, bulky book is 5 feet square and nearly a foot thick. Its covers are each half an inch thick, fastened securely by a built-in lock. The covers are not marked in any way.
+Magnitude: Lesser artifact.
+Power Limits: 3/A, 2/B, 2/C, 4/D
+Sphere: Thought (Thieves, air)
+Suggested Powers (PP 250):
+A2 Feeblemind 40
+B2 Lore 70
+B2 Mapmaking 55
+C2 Repair normal objects 10
+C3 Open locks 25
+D2 Memorize +5 spell levels 50
+
+Activation: The lock on the book cannot be opened magically, and open locks attempts suffer a +50% penalty to the roll. Anyone who fails to pick the lock can never succeed in opening it. The contents of the book cannot be examined until the lock and book are opened. The first page of the book explains all of its powers, their PP costs, and the page references where the command words and instructions for each power can be found. The tome can be read easily by anyone.
+Use of Powers: The tome's contents explain how the user, drawing on the power of the tome, can produce the effects of the given powers. The pages of the book cannot be used as materials for the effects, such as mapping.
+Suggested Handicaps (2):
+1. When first used the user suffers a -6 penalty to Strength score.
+2. Body part change: The user becomes hunchbacked, and suffers a +4 penalty to Armor Class and a -4 penalty to all Hit rolls because of this deformity.
+Suggested Penalties (3, standard chances):
+1. User involuntarily assumes gaseous form.
+2. Memory lapse: The user immediately forgets any 1st level spells memorized.
+3. Service: The user is suddenly compelled to map an entire level of a nearby dungeon, using the tome, and will assemble an expedition to do so, leaving within 3 days. This effect ends when the map is completed.
+Source: Ssu-ma Ch'ien, an historical figure.
+Further Research: Shih chi (Records of the Historian) by Ssu-ma Ch'ien (145-90 B.C.) is called the first major Chinese historical work. For more information on this scholar, see Ssu-ma Ch'ien: Grand Historian of China, by Burton Watson (1958). For details of Chinese mythology, see Asiatic Mythology by James Hackin et alia, and Chinese Mythology by Anthony Christie.
+
+VERTHANDI'S INVINCIBLE HOURGLASS
+Verthandi, a very powerful Immortal of Time, gave mortals the ability to control Time itself, through this marvelous creation. Its powers are said to be unlimited, both in scope and danger.
+
+Description: This item is a 3-foot-tall construction of glass and wood, identical to a normal hourglass, wooden frame around a wasp-waist glass containing sand, except for its size.
+Magnitude: Lesser artifact.
+Power Limits: 3/A, 2/B, 2/C, 5/D
+Sphere: Time (Clerics, water)
+Suggested Powers (PP 250):
+A2 Sleep 15
+A3 Slow 25
+B1 Timekeeping 10
+C2 Timestop 100
+C3 Wish 100
+
+Activation: The hourglass is active when found. The powers are automatically and magically revealed to the user, in time, and never otherwise. Powers are revealed in order of their PP costs, timestop coming before wish. One power is revealed during sleep at each full moon, every 28 days. One additional power may, 25% chance, be revealed if the user is affected by haste or a potion of speed.
+Use of Powers: Any power is activated by inverting the hourglass and concentrating on the power desired while watching the flowing sand. The power is granted to the user after watching for a number of seconds equal to the PP cost. If concentration is broken before the power is acquired, the PP cost is still deducted, although no power is gained.
+Suggested Handicaps (2):
+1. When first used: A 10' cubic white mist issues from the hourglass, collecting around the user only. The user is immune to the mist's effects. Any victim within the gas must make a Saving Throw vs. Spells, with a -4 penalty, or age 10-40 years.
+2. When either 100 point power is used, forgetfulness occurs. After memorizing spells, the user forgets 1-4 randomly selected spells. These are immediately revealed. If the user memorizes them again, to fill the loss, another 1-4 randomly selected spells vanish in the same way.
+Suggested Penalties (3; 10% chance of occurrence whenever either 100 point power is used; equal chances for each):
+1. Aging: The user ages 1-6 years; no saving throw applies.
+2. Disintegrate: The user must make a Saving Throw vs. Spells or suffer a variation of the normal spell effect, appearing to wither, age extremely rapidly, and crumble to dust. The body may be recovered by a wish, and the user then restored to normal form by applying a raise dead fully.
+3. Ability score penalty: The user loses 6-11 (1d6 + 5) points of Strength, to a minimum Strength of 3.
+Source: Norse mythology.
+Further Research: See standard works, referring to the following names. Verthandi is one of the Norns of Norse legend, the immortal beings who rule the fates of men and gods alike. Verthandi rules the Present, Urdur (or Urdhr, or Urth) the Past, and Skuld, who wears a veil, the Future. Each of the Norns may provide ideas for other artifacts.
+
+WIFE OF ILMARINEN
+The legendary Immortal craftsman Ilmarinen once used his great skills to create a companion entirely of gold and silver. However, the result was too cold to even be approached. Appearing as a metallic golem, it was given special powers when freed, and is said to reside in far northern reaches, either alone or with its current master.
+
+Description: The wife appears to be a metal statue of an extremely attractive human female clad in robes. The entire statue is made of a sparkling mixture of gold and silver.
+Magnitude: Minor artifact.
+Power Limits: 2/A, 1/B, 2/C, 3/D
+Sphere: Matter (Fighters, earth)
+Suggested Powers (PP 100):
+A1 Ice breath 55
+A1 Ice storm 45
+
+Activation: The wife is always active.
+Use of Powers: The powers of the wife are used by the artifact alone, not granted to the user. The wife can speak any language it hears, and will explain its powers to any who ask, unless ordered not to. However, the artifact cannot be controlled until a special command word is uttered. Once this command is spoken, the wife will obey either mental or verbal commands from the user. The command word can only be obtained from Ilmarinen himself, by using a commune or contact other plane, from a previous user of the artifact, or by a wish.
+Suggested Handicap (1): When control is gained, the user becomes aware that the wife cannot recharge itself. It can eat gold or silver. For each 100 gp value of those metals eaten, the artifact recharges 1 PP.
+Suggested Penalty (1; 1 in 6 chance of occurrence whenever a power is used): Instead of attacking as directed, the wife aims her attack at the user; normal saving throws apply, but the user gains a +4 bonus for the second and subsequent appearances of this effect.
+Other Details: AC -20; hp 100; AT 1 power; D by power; MV 90' (30'); AL N. The wife will not attack by any means other than its powers.
+Source: Finnish mythology.
+Further Research: See the Finnish national epic poem Kalevala, compiled by Elias Lonnrott in the late 19th century.
+TXT
+
+  printf '\n```\n\n' >> "$OUT"
+}
+
+master_other_magic_items_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+[Master pages 63-64: Other Magic Items appendix]
+Other Magic Items
+The following legendary magic items are mentioned in history, myths, legends, and literature. You may easily develop them into either artifacts or powerful but standard magic items. Further research is recommended.
+
+Consumables and Sustainers
+
+Ambrosia: This is a potion of Immortality, but with a short duration. Repeated drinks are needed to maintain Immortal status.
+
+Apples of Bragi: In Scandinavian legend, Bragi, son of Odin, had a magically inexhaustible supply of these items. Each can cure weariness, decay of power, ill temper, or failing health.
+
+Elixir: In Arabic legend, this powder was sprinkled on wounds of battle, curing them. Treat as a potion of healing, but applied instead of consumed.
+
+Holy Grail: This vessel of literary fame was the cup at the Last Supper, carried to England by Joseph of Arimathea. It was said to provide food, drink, and spiritual sustenance for the life of the custodian. This term may have originally been used in reference to the platter of the Paschal lamb, again at the Last Supper.
+
+Travel, Motion, and Conveyance
+
+Arrow of Abaris: Abaris the Hyperborean, a Greek sage in the 6th century BC, once received a magic arrow from the god Apollo. The arrow enabled him to become invisible, cure disease, fly by riding the arrow as if it were a broom, and divine the future.
+
+Bag of Aeolus: In Homer's Odyssey, this bag, named for the god of winds, contains a divine essence. When opened, it blows Odysseus' ship back to its starting point.
+
+Carpet, Solomon's Magic: This item, made of green silk, was legended to have carried not only Solomon and his great throne but also all of his army.
+
+Horse, flying: Clavileno, an enchanted wooden rocking horse described in Cervantes' Don Quixote, could fly and carry an armed rider. It was guided by a pin in its forehead.
+
+Prophecy, Memory, and Fortune Items
+
+Books, Sibylline: These were written prophecies, carefully preserved in ancient Rome and occasionally consulted on matters of great import. There were nine scrolls at first, offered for sale to Rome by the seeress Almathaea. The Romans refused her price, so she burned three and offered the rest again at the same price. After another refusal, she burned three more and sold the remaining three at the original price. They were preserved in a stone chest, with two custodians at first and later 10 and then 15. Finally placed in gilt cases at the base of the statue of Apollo on Palatine Hill, they were burned in the great fire of Nero's fame.
+
+Necklace of Harmonia: Harmonia, daughter of the Greek gods Ares and Aphrodite, was given a magical necklace when she married Cadmus. Though relatively unremarkable at the time, the necklace brought disaster to all subsequent owners.
+
+Odrovir: In Norse legend, a great war took place between the Aesir, the 24 gods of heaven, Asgard, and the Vanir, the nature gods of Noatun. At its peaceful conclusion both sides spat into a jar, providing their mixed essences as hostage to peace. Kvasir, the wisest of all men, was made of the spittle. His blood, mixed with honey, was called Odrovir, or Odhrevir; all who partook of it became poets.
+
+Ring of Amasis: Amasis, King of Egypt, advised his incredibly lucky friend Polycrates, King of Samos, to discard something of great value to balance the Fates. Polycrates threw a prized ring into the sea, but it was later found in a fish on the king's dinner table. Amasis promptly recognized this sign from the gods and broke off relations with his friend; shortly thereafter, Polycrates was brutally slain.
+
+Ring of the Nibelungen: Made famous by Richard Wagner's 1876 opera, this item comes from several Scandinavian legends, including the Volsunga Saga, Nibelungenlied, Elder and Younger Eddas, and the Eckelied. The ring was part of an entire hoard in the Rhine river, guarded by the Rhine Maidens until Alberich gained it by foreswearing love. The greedy dwarf cursed the item, and when the ring was later taken by gods and heroes for various uses, it brought doom to all, resulting even in the destruction of Asgard and the gods.
+
+Productive and Hoard Items
+
+Mill: A magic mill in the Finnish Kalevala, called the Sampo, could grind out meal, salt, or gold from straw on command.
+
+Draupnir: In Scandinavian legend, the famed magic ring made by Odin for the dwarves. Every nine nights it produced eight non-magical rings equal in size and beauty to itself, and is thus a fertility symbol.
+
+Named Sword Corpus
+
+Swords: Many magical swords can be found in myth and literature. The following list is only a sampling; further research is recommended to ascertain appropriate powers.
+Angurvadal, Stream of Anguish, was owned by the hero of Frithiofs Saga, a 13th century Scandinavian work.
+Arondight, sword of Launcelot of the Lake, was mentioned in several Arthurian legends.
+Balisarda, a sword of slicing, was made by the witch Falerina in the 1487 romance epic Orlando Innamorato, Roland in Love, by Matteo Maria Boiardo.
+Balmung was the sword of Siegfried in Scandinavian legend. It was made by Wieland, a Germanic name for the immortal blacksmith Volund, known as Wayland Smith to the English.
+Colada was the sword of the Spanish hero El Cid, first described in a poem of an unknown Castilian bard in 1140. The hero was Ruy Diaz de Bivar, 1043-1099, also called el Campeador, the Champion.
+Courtain, the Short Sword, was used by Ogier the Dane, a Paladin of Charlemagne and the folk hero of Denmark. The smith Munifican took three years to make Courtain.
+Durandan, also Durandal, Durandana, or the Inflexible, was the sword of Roland, given him by Charlemagne. It once belonged to Hector, the noble chieftain of Homer's Iliad, and Roland, also called Orlando, is the hero of several literary works including the Chanson de Roland and later Italian romances.
+Excalibur, or Escalibor in the Old French, was the fabled sword of King Arthur. It was also referred to as Caliburn by Geoffrey of Monmouth and Caledvwlch in the Mabinogion, or Caladbolg in Irish legend, meaning hard belly. The name is linked to the Latin ex calce liberare, to liberate from the stone.
+Flarnberge, or Floberge, meaning Flame Cutter, was a sword of Charlemagne.
+Glorius, sword of the hero Oliver, broke nine swords made by the famed smiths Ansias, Galas, and Munifican.
+Gram, German for grief, was another famous sword of Siegfried.
+Joyeuse, French for joyous, was a greatsword of Charlemagne and took three years to make, by the smith Gallas.
+Mimung, sword of the hero Wittich, was loaned to Siegfried for a time.
+Morglay, Big Glaive, was the sword of Sir Bevis of English lore. Morglay was then a common generic term for sword.
+Nagelring, Nail-Ring, was the sword of Dietrich of Bern, a hero in the Germanic Heldenbuch and Nibelungenlied.
+Philippan was the sword of Mark Antony, a member of the Second Triumvirate of Rome, 43 BC.
+Sauvagine was another of Ogier's swords, also made by Munifican.
+TXT
+
+  printf '\n```\n\n' >> "$OUT"
+}
+
+rc_item_enchantment_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+[RC pages 250-252: Making Magical Items]
+Making Magical Items
+At higher experience levels, magic-users and clerics can create magical items. Most characters who create magical items are magic-users. When a cleric is trying to create magical items, substitute Wisdom for the magic-user's Intelligence when using the methods in this section.
+
+To create any magical item, the character must be at least 9th level. Some magical items require the character to be of higher level.
+
+A number of factors need to be considered when making magical items, including spell effects, specialists or skills needed, spell components, enchantment time, and the chance of success.
+
+Spell Effects
+The spellcaster must know a spell relating to the magical effect that he wants the object to have. For example, if he is trying to make a flying carpet, he must know the fly spell. If he does not know the spell, he cannot enchant an item with a similar effect.
+
+Specialists or Skills
+The spellcaster must hire and work with a specialist who can make the type of physical object to be enchanted, or else personally know the appropriate general skill if those optional rules are in use. The spellcaster and specialist must work together while the item is being created; a spellcaster cannot simply enchant a normal finished object after the fact.
+
+Spell Components
+For every spell with which a spellcaster is trying to enchant an object, he must find some sort of rare element or component, typically involving a long or difficult adventure. The DM determines exactly what that component is.
+
+Chance of Success
+When a character tries to create a specific type of magical item, success is rolled on d100 using the character's Intelligence or Wisdom, current level, and the level of the spell involved. The base formula is:
+([Int + Lvl] x 2) - (3 x spell level) = %
+
+If the character rolls that number or less on d100, he has succeeded in enchanting the item. If he fails, all the gold pieces, time, and materials are lost.
+
+The Process of Enchantment
+Once all the spells are determined and all the rare components are assembled, the process of enchantment may begin. Since this process varies for magical items, the Rules Cyclopedia divides the procedure into armor and weapons on one hand and miscellaneous items on the other.
+
+Enchantment Time
+Enchantment time is one week plus one day for each 1,000 gp spent on the item. During this time, the spellcaster must be working steadily in the workshop for eight hours per day. More hours will not speed the process. Fewer hours slow it. A break of one or two days slows the process accordingly; more than two days spoils the enchantment and ruins the project.
+
+Multiple Enchantments
+If an item has several separate spell effects, the creator must roll a chance of success for each spell effect. Each successful roll indicates the item gains that power. A failure means the corresponding effect is lost and no further enchantments may be added, though earlier successful enchantments remain.
+
+Spells of Variable Power Levels
+When creating magical items, spellcasters must conform to the ordinary limits of similar items already found in the game. When in doubt, find an example in the treasure listings and use that as a limitation. When beginning to create magical items, become familiar with the dispel magic spell description; it describes what happens to permanent items when struck with dispel magic spells.
+
+Recharging Items
+The cost of recharging items is equal to the original cost of charges: 10% of the initial enchantment cost multiplied by the number of charges restored. Items with charges cannot be recharged beyond the original number of charges they had when they were created.
+
+[RC page 145: Damage to Magical Items]
+Damage to Magical Items
+Any item may be damaged by rough treatment. Armor and weapons are made to withstand a great amount of punishment, but breath weapons, long falls, pools of acid, rockslides, and other cases of extreme damage should require checks for items carried.
+
+If an item is damaged, it may either be partially damaged or completely destroyed. For items with magical bonuses, one or more points may be lost due to damage, at the DM's choice. Potions and scrolls should be completely destroyed by any severe damage.
+
+To check for damage to items, roll 1d4 or 1d6, using 1d6 if the chance of damage is high. If the result is greater than the item's Strength, interpreted here as its magical toughness or number of pluses, the item is damaged. The text suggests treating a potion or scroll as a +1 item, a wand or staff as +2, and permanent miscellaneous items as +3 for this purpose.
+TXT
+  printf '\n```\n\n' >> "$OUT"
+}
+
+rc_constructs_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+[RC page 253: Magical Constructs]
+Making Magical Constructs
+Constructs (magical monsters such as golems and gargoyles) are created much as magical treasures are. For some of the steps listed in this section the DM can refer to the previous section on "Making Magical Items."
+
+Where the text refers to magic-users' chances based on Intelligence, substitute a cleric's Wisdom as appropriate. The spellcaster creating the construct must be of 18th experience level or a level equal to the HD of the construct being created, whichever is greater. If the construct has more than 36 HD, the DM can either refuse to allow the character to create it or can limit its creation to 36th level characters only.
+
+If the construct is to have up to two special abilities (that is, from zero to two abilities), the magic-user must have the create magical monsters spell. (A cleric can use a wish spell for this purpose instead.)
+
+If the construct is to have any special abilities that would give it three or more asterisks, the magic-user must have the create any monster spell instead. A cleric cannot create a construct of this power level.
+
+For information on finding rare components, see "Spell Components" under "Making Magical Items," above.
+
+Costs and Time
+Construct cost: 2,000 gp per HD + 5,000 gp per asterisk (as noted in the monster descriptions in Chapter 14).
+
+Once a spellcaster has acquired the rare component, he can begin work on a construct, but he will have to spend a lot of money. The construct cost includes money that goes toward buying the basic materials that make up the construct and buying special, rare, expensive materials that aid in its enchantment.
+
+Constructs, however, only take the same amount of time to create as do other magical items: one week plus one day per 1,000 gp of cost. Like magical items, constructs are also subject to the same time constrictions noted under "Enchantment Time" in the section above on making magical items.
+
+Chance of Success
+Once the spellcaster has expended the necessary time and gp on a construct, he can roll to see if the enchantment is a success. His chance of success is somewhat different from the chance for making magical items; it is as follows:
+([Int + Lvl] x 2) - (HD + number of asterisks) = %
+
+Example: A Wisdom 18, 20th level cleric wants to create a bronze golem (20 HD, 2 asterisks). She's already gone on her quest to find the essential components, spent 50,000 gp on materials, and spent 57 days in the enchantment process. Now it's time for her to check her chance of success. Her chance is ([18 + 20] x 2) - (20 + 2) = 54%.
+
+If the roll fails, then the enchantment fails, too. The cleric loses all the time, effort, and money she has expended.
+
+Existing vs. New Constructs
+When the player wants to create a construct from Chapter 14, look up the abilities of that monster. If the player wants to create an all-new kind of construct, the DM must decide whether to allow this.
+
+If so, the player designs the construct according to the monster statistics format in Chapter 14. The DM then decides whether the construct is possible by looking over the construct's statistics and abilities. If they are significantly better than those of existing constructs that are at similar HD values, then the player should tone them down until they correspond more to the abilities of existing constructs.
+
+New Construct Guidelines
+There are some basic guidelines for creating new constructs, as outlined in the following text.
+
+Hit Dice: A lesser construct can have from 1 to 6 HD; a greater construct can have from 1 to 36.
+
+Immunities: Lesser constructs (such as living statues) are immune to poison; gases; charm, sleep, and other mind-affecting and illusion spells. However, they can be harmed by normal weapons. This set of immunities is worth one asterisk (*). Greater constructs (such as golems) are additionally immune to attacks from non-magical weapons. This is worth another asterisk. Some constructs have extra, individual immunities (such as to cold, to fire, etc.), but these vary from construct to construct. Each individual immunity (or group of related immunities, at the DM's discretion) is worth another asterisk, which increases its cost.
+
+[RC page 254: construct continuation and nondispellable frame requirements]
+Healing: Constructs do not heal normally; they must be healed by magic. Unless otherwise stated, a construct can be healed by any spell that heals humans and demihumans. However, the DM can substitute another spell that heals a specific type of construct. For example, a construct that is a mechanical monstrosity might be "healed" by a lightning bolt, recovering hit points equal to the damage theoretically inflicted by the spell. It would be immune to that spell in combat, but it would not be healed by ordinary healing magic.
+
+Number of Attacks: A construct can have anywhere from one to four attacks in a round, as the DM decides.
+
+Damage: A construct, in any combat round, can do no more damage in combat than three times its HD in hit points, and it's not inappropriate to limit that damage to twice its HD in hit points. That damage represents the maximum possible damage the construct could roll, and the damage should be divided among all its attacks.
+
+Reproduction: Constructs do not reproduce; there are never "baby gargoyles," for example. For each construct a spellcaster wants to create, he will have to repeat the creation process at the same costs, length of time, and chance of success.
+
+Special Attacks: Some constructs have special, unusual attacks (such as poison-gas breath or crushing hugs). The DM can approve, veto, or modify any special attack chosen by the player creating the construct. Each special attack is worth another asterisk (*) and, as always, each asterisk increases the construct's cost.
+
+The Frame
+The entire frame of the construction will have to be enchanted. On a ship, the frame consists of the hull, topdeck, and masts. On a building, the frame consists of all exterior walls and an area of flooring at least as large as the building or complex. The walls may be of wood, stone, or metal; the flooring must be of stone or metal.
+
+The frame must be created through the use of spells that create permanent, nondispellable physical objects. These spells, listed in Chapter 3, include wood form, stone form, and related form spells. Normal building techniques can't make a structure strong enough to stand up to regular moving, so the magic-user must use spells. Interior partitions, such as the floors of a building or interior decks of a ship, may be constructed in the non-magical fashion.
+TXT
+
+  printf '\n```\n\n' >> "$OUT"
+}
+
+immortals_pp_context_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+[Immortals pages 5-6: Section 1 changes, XP->PP conversion, and rank/level frame]
+Section 1: Changes
+
+The most basic and far-reaching change in the existing game system involves the character's current Experience Points. The XP total is converted to Power Points, which affect other game mechanics.
+
+Start by converting the total XP earned in mortal life to a new figure, Power Points (PP). Each 10,000 XP are worth 1 PP, rounded up.
+
+A character's PP total determines his status and rank. Higher ranks of Immortals in ascending order of Power are Celestial, Empyreal, Eternal, and Hierarch.
+
+Level is still used to describe an amount of progress within each rank, again using experience (now counted in Power Points) as the yardstick.
+
+Record your PP total in two places: one track for the permanent PP total and one for current (variable) PP. When PP are spent for temporary effects, or regenerated afterward, modify only the current total. Modify both totals only if PP are permanently expended or if new Power is received.
+
+If the Immortal's permanent Power total ever reaches zero, the Immortal's life force is extinguished.
+
+[Immortals page 7: ability-score advancement costs by rank]
+Power Cost Per Point / Maximum Ability Score
+
+Temporal: 10 PP per point, maximum 25
+Celestial: 20 PP per point, maximum 50
+Empyreal: 40 PP per point, maximum 75
+Eternal: 80 PP per point, maximum 100
+Hierarch: 160 PP per point
+
+As one requirement for gaining each next higher rank, all three scores of an Immortal's Greater Talent must be raised to the maximum. If the character's total GT is not at its maximum, he or she is not eligible to advance.
+
+[Immortals pages 10-11: Section 2 frame, Spheres, Bias, and PP recovery]
+Section 2: New Characters Information
+
+Some old and familiar details that have always been assumed, such as the five senses, are carefully scrutinized, and new character details are added.
+
+Spheres: Each route to Immortality corresponds to one of four Spheres (Matter, Energy, Time, Thought). Sphere relationship affects interaction doctrine and later magic costs.
+
+Bias: The relation between an Immortal and a Plane of Existence can be hostile, neutral, or friendly. Bias determines regeneration behavior for Power, hit points, and ability scores.
+
+Power Point Recovery: Immortal Power Points regenerate automatically at a rate determined by planar or local bias. Regeneration requires no concentration or expenditure.
+
+If an Immortal exists on several planes at once (commonly on the Home Plane and one or more others), apply the least favorable bias that applies.
+
+Physical Recovery: Natural or enhanced regeneration affects hit point losses and Power losses, with details modified by bias and by any active effects that increase regeneration rate.
+TXT
 
   printf '\n```\n\n' >> "$OUT"
 }
@@ -2355,7 +3195,13 @@ basic_spell_lists_and_descriptions_block_named 'Spell Lists and Basic Spell Desc
 basic_higher_level_spells_block_named 'Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books' 'curated Basic reconstruction from DM pages 17-18 for higher-level cleric and magic-user spell guidance, plus a short player-facing spell-book/lost-book carryover from the earlier magic-user section so this staging block keeps the spell-allocation and lost-book procedures attached to the higher-level guidance.'
 basic_scrolls_block_named 'Scrolls and Spell-Adjacent Treasure Text' 'curated Basic reconstruction from treasure pages 42-45, combining the scroll/ring material with the surrounding item-operation rules that matter for later spell and magic-item curation: identification, permanent vs. temporary behavior, concentration and charge rules, potion duration and interaction rules, wand/staff/rod use restrictions, and selected miscellaneous devices with strong spell-adjacent procedures.'
 cleanup_output
-set_table_qa_note "$BASIC_OUT" 'reviewed 2026-03-22' 'Turning Undead table, spell lists, and adjacent structured spell-property blocks.' 'no blocking row/column defects found in the visible Basic table and list regions.'
+set_table_qa_note "$BASIC_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'Turning Undead table, spell lists, and adjacent structured spell-property blocks.' 'no blocking row/column defects found in the visible Basic table and list regions.'
+append_table_qa_lines "$BASIC_OUT" <<'EOF'
+- Capture confidence: **0.93**
+- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures are all staged from the Basic source. Remaining issues are OCR texture and ordinary line-wrap scars, not structural coverage gaps.
+- ToC cross-check: Basic spell and treasure sections remain fully accounted for in staging, including player spell pages, DM higher-level spell guidance, and the treasure/magic-item wrapper pages.
+- Gap priority: LOW — no material source-evidence gap found during the 2026-03-23 survey.
+EOF
 
 OUT="$EXPERT_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Expert' 'TSR 1012B - Set 2 Expert Rules.pdf'
@@ -2363,15 +3209,27 @@ expert_spell_expansions_block_named 'Clerical and Magic-User Spell Expansions' '
 expert_research_block_named 'Research and Lost Spell Books' 'curated Expert reconstruction from pages 27-28, replacing the contaminated line-range slice with the actual research procedures, item-creation examples, and lost spell-book recovery guidance.'
 expert_magic_items_block_named 'Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 'curated Expert reconstruction from treasure pages 60-65, combining cursed-item doctrine, general magic-item operation notes, scroll procedures, ring procedures, wand/staff/rod procedures, and selected miscellaneous magic items with strong spell-adjacent relevance.'
 cleanup_output
-set_table_qa_note "$EXPERT_OUT" 'reviewed 2026-03-22' 'leveled spell lists, spell-expansion sections, and structured spell-property blocks.' 'no blocking row/column defects found in the visible Expert table and list regions.'
+set_table_qa_note "$EXPERT_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'leveled spell lists, spell-expansion sections, and structured spell-property blocks.' 'no blocking row/column defects found in the visible Expert table and list regions.'
+append_table_qa_lines "$EXPERT_OUT" <<'EOF'
+- Capture confidence: **0.89**
+- Coverage note: Core Expert cleric and magic-user spell expansions, research, and lost-book procedures are staged cleanly. The miscellaneous magic-item run is intentionally selective rather than exhaustive, with RC acting as the canonical item-property backstop for omitted non-spell-adjacent entries.
+- ToC cross-check: Expert CONTENTS review found the spell sections and research/lost-book procedures accounted for. The remaining omission is partial coverage of the page 65 miscellaneous magic-item list.
+- Gap priority: MEDIUM-LOW — remaining gap is secondary item-catalog completeness, not core spell procedure coverage.
+EOF
 perl -0pi -e 's/any one creature within IO\x27\. The spell may/any one creature within 10\x27. The spell may/g;' "$EXPERT_OUT"
 
 OUT="$COMP_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Companion' 'TSR 1013 - Set 3 Companion Set.pdf'
-companion_spell_block_named 'High-Level Cleric and Druid Spell Material' 'section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric and druid class pages, split so the cleric spell block starts at the real fifth-level cleric heading and the druid transition begins at the actual druid section instead of earlier class spill.' "$COMP_PDF"
+companion_spell_block_named 'High-Level Cleric, Druid, and Magic-User Spell Material' 'section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric, druid, and magic-user class pages, split so each spell block starts at its real section heading instead of earlier class spill.' "$COMP_PDF"
 companion_magic_items_block_named 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 'section-aware Companion treasure extraction combining an anchored buying/selling procedure block, a curated damage-to-magic-items procedure block, readable layout tables for scrolls/wands-rings-miscellaneous items, and TSV-reflowed item descriptions for scrolls, spell-catching, staffs, rods, rings, quill copying, and elemental-travel items.' "$COMP_PDF"
 cleanup_output
-set_table_qa_note "$COMP_OUT" 'reviewed 2026-03-22' 'treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, and miscellaneous-item tables.' 'no blocking row/column defects remain, and the densest Companion table block has been rewritten into sequential readable tables for easier human scanning.'
+set_table_qa_note "$COMP_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the new 5th-9th level magic-user spell block.' 'no blocking row/column defects remain, and the densest Companion table block has been rewritten into sequential readable tables for easier human scanning.'
+append_table_qa_lines "$COMP_OUT" <<'EOF'
+- Capture confidence: **0.91** (UP from 0.78 after staging the Companion MU 5th-9th spell run)
+- Coverage note: Cleric 5th-7th level spells, Druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, and the spell-adjacent item section are now all staged from Companion source text. Remaining concerns are OCR texture and later comparison work against RC wording, not missing primary Companion spell content.
+- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, and `Magic-user Spells: Fifth to Ninth Level` are now represented in staging. The former MU spell gap is closed by the pages 22-28 TSV extraction block.
+- Gap priority: LOW — primary Companion spell coverage gap closed on 2026-03-23; remaining work is cleanup and version-difference review.
+EOF
 perl -0pi -e 's/100t the local magic shop/loot the local magic shop/g;' "$COMP_OUT"
 perl -0pi -e 's/pic-\ntures of creatures within loo\x27, in any area/pic-\ntures of creatures within 100\x27, in any area/g;' "$COMP_OUT"
 perl -0pi -e 's/5\x27xlO\x27xl\x27/5\x27x10\x27x1\x27/g;' "$COMP_OUT"
@@ -2388,14 +3246,29 @@ perl -0pi -e 's/5\x27xlO\x27xl\x27/5\x27x10\x27x1\x27/g;' "$COMP_OUT"
  perl -0pi -e 's/6a\. Typeof/6a. Type of/g;' "$COMP_OUT"
  perl -0pi -e 's/41-42 Elven Boots \(B\) \\\s+I/41-42 Elven Boots \(B\)/g;' "$COMP_OUT"
  perl -0pi -e 's/98 Wheel of Fortune\s+-\s+\//98 Wheel of Fortune/g;' "$COMP_OUT"
+ perl -0pi -e 's/Boat, Undersea:/Travel, Passage, and Conveyance Seeds\n\nBoat, Undersea:/g;' "$COMP_OUT"
+ perl -0pi -e 's/Chime of Time:/Time, Light, and Sudden Event Seeds\n\nChime of Time:/g;' "$COMP_OUT"
+ perl -0pi -e 's/Muzzle of Training:/Control, Detection, and Trick Devices\n\nMuzzle of Training:/g;' "$COMP_OUT"
+ perl -0pi -e 's/Ointment:/Consumables and Security Tools\n\nOintment:/g;' "$COMP_OUT"
+ perl -0pi -e 's/Quill of Copying:/Copying, Identification, and Elemental Passage\n\nQuill of Copying:/g;' "$COMP_OUT"
+ perl -0pi -e 's/Wheel of Floating:/Wheels, Motion, and Fortune Devices\n\nWheel of Floating:/g;' "$COMP_OUT"
 
 OUT="$MASTER_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Master' 'TSR 1021 - Set 4 Master Rules.pdf'
 master_spell_block_named 'Master Cleric, Druid, and Magic-User Spell Material' 'section-aware Master spell extraction using anchored TSV reflow across the actual cleric, druid, and magic-user pages instead of one broad line-range block. The section is split into cleric, druid, and magic-user sub-blocks so high-level spell lists and descriptions remain attached to the right class pages.' "$MASTER_PDF"
 master_nonhuman_block_named 'Non-Human Spellcasters and Special Spellcaster Procedures' 'section-aware Master extraction using anchored TSV reflow across the actual Spell Casters (Non-Human), special monster spellcaster, undead spellcaster, and undead-control pages instead of the earlier broad procedures slice.' "$MASTER_PDF"
-master_artifacts_block_named 'Artifact Power Doctrine and Artifact Effect Procedures' 'final targeted Master addition from the actual artifact-doctrine pages, capturing artifact purpose, activation, power limits, recharging, intelligence, adverse effects, attack/destruction rules, and power-category guidance that Immortals explicitly relies on for non-spell magical effects. The named-artifact catalog is intentionally excluded.' "$MASTER_PDF"
+master_procedures_block_named 'Anti-Magic Effects and Dispel Magic Procedures' 'targeted Master procedures extraction using column crops from the actual Procedures pages so the anti-magic doctrine, examples, touch-dispel rules, and item-interaction notes remain readable without the section index or dominion spill.' "$MASTER_PDF"
+master_artifacts_block_named 'Artifact Power Doctrine and Artifact Effect Procedures' 'final targeted Master addition from the actual artifact-doctrine pages, capturing artifact purpose, activation, power limits, recharging, intelligence, adverse effects, attack/destruction rules, and power-category guidance that Immortals explicitly relies on for non-spell magical effects. The named-artifact catalog is emitted separately below as its own staged section.' "$MASTER_PDF"
+master_named_artifacts_block_named 'Named Artifact Catalog' 'targeted Master expansion across the known-artifact catalog pages, now rebuilt as a curated source-derived block so the full artifact packaging, activation framing, power bundles, drawbacks, and reference notes remain readable and complete as source evidence.' "$MASTER_PDF"
+master_other_magic_items_block_named 'Other Legendary Magic Items Appendix' 'targeted Master appendix addition from pages 63-64, curating the post-catalog legendary-item list so mythic item seeds and reference examples remain attached to the artifact section as readable source evidence.' "$MASTER_PDF"
 cleanup_output
-set_table_qa_note "$MASTER_OUT" 'reviewed 2026-03-22' 'cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables.' 'the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.'
+set_table_qa_note "$MASTER_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables.' 'the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.'
+append_table_qa_lines "$MASTER_OUT" <<'EOF'
+- Capture confidence: **0.95** (UP from 0.91 after staging the Master procedure gap)
+- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, artifact doctrine, named artifacts, and the post-catalog appendix are now staged from Master source text. Remaining issues are ordinary OCR texture and later cleanup, not major source-evidence gaps.
+- ToC cross-check: Core spell, procedures, and artifact sections are now accounted for in the Master lane, including `Anti-Magic Effects` and `Dispel Magic` from the Procedures section.
+- Gap priority: LOW — the previously documented Master procedure gap is closed.
+EOF
 perl -0pi -e '
   s/^\x27[[:space:]]*\n//mg;
   s/\(B41, X11 \)/\(B41, X11\)/g;
@@ -2600,7 +3473,7 @@ perl -0pi -e '
   s/DR 12T X12/DR 12T; X12/g;
   s/Anti-Animal Shell \(DR 40T C16\)/Anti-Animal Shell \(DR 40T; C16\)/g;
   s/10\x27radius/10\x27 radius/g;
-  s/t he/the/g;
+  s/\bt h e\b/the/g;
   s/to l turn/to 1 turn/g;
   s/See "Thief Ability\s*\.\.\s*\n\s*3,/See "Thief Ability"/g;
   s/at up to 112 normal rate/at up to 1\/2 normal rate/g;
@@ -2653,9 +3526,16 @@ perl -0pi -e '
 
 OUT="$IMM_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Immortals' 'TSR 1017 - Set 5 Immortals Rules.pdf'
+immortals_pp_context_block_named 'Sections 1-2: Power Point Conversion, Rank Progression, and Recovery Context' 'targeted Immortals context block from Sections 1-2 (pages 5-11), preserving the XP-to-PP conversion frame, permanent-vs-current PP bookkeeping, rank/level advancement gates, and the planar-bias regeneration context needed to interpret Section 3 power-cost and recovery references.' "$IMM_PDF"
 immortals_magic_block_named 'Section 3: Immortal Magic' 'section-aware Immortals extraction from the actual Section 3 pages using labeled page-and-column slices across pages 18-21 so the chart-heavy opening, continuation prose, and alphabetical effect explanations remain readable without later Section 4 spill.' "$IMM_PDF"
 cleanup_output
-set_table_qa_note "$IMM_OUT" 'reviewed 2026-03-22' 'sphere-factor matrix, sample cost table, duration and mental-effect tables, and magical-effect index anchors.' 'no blocking row/column defects found in the visible Immortals table regions.'
+set_table_qa_note "$IMM_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'sphere-factor matrix, sample cost table, duration and mental-effect tables, and magical-effect index anchors.' 'no blocking row/column defects found in the visible Immortals table regions.'
+append_table_qa_lines "$IMM_OUT" <<'EOF'
+- Capture confidence: **0.95** (UP from 0.94 after staging Sections 1-2 PP framing context)
+- Coverage note: Immortals Sections 1-3 are now represented in staging for magic-context use: Sections 1-2 provide PP conversion/rank/recovery framing, and Section 3 provides the primary Immortal Magic corpus.
+- ToC cross-check: Immortals section structure now has explicit staged context across both the Section 1-2 framing layer and the Section 3 spell/effect layer.
+- Gap priority: LOW — no remaining structural source-evidence gap identified for current Immortals spell/material scope.
+EOF
 perl -0pi -e '
   s/^\s*Immortal Magic\s*\n//mg;
   s/^\s*(18|19)\s*\n//mg;
@@ -2683,6 +3563,8 @@ perl -0pi -e '
   s/Immortals in any form\. Magical effects cre-\nated by Immortals/Immortals in any form. Magical effects created by Immortals/g;
   s/effects \(q\.v\.\), and with certain changes logi-\ncal for Immortal application/effects \(q\.v\.\), and with certain changes logical for Immortal application/g;
   s/no effect on an incorporeal being\. Magical\n effects created by mortals have no effect on\n Immortals in any form\. Magical effects cre-\n ated by Immortals have standard effects on\n other Immortals—subject to Anti-Magic\n effects \(q\.v\.\), and with certain changes logi-\n cal for Immortal application\./no effect on an incorporeal being. Magical\neffects created by mortals have no effect on\nImmortals in any form. Magical effects created by Immortals have standard effects on\nother Immortals—subject to Anti-Magic\neffects \(q.v.\), and with certain changes logical for Immortal application./g;
+  s/Any effect\s+previously limited to "self can be delivered\s+by touch to any creature when produced by\s+an Immortal\./Any effect previously limited to "self" can be delivered by touch to any creature when produced by an Immortal./g;
+  s/^ "Action" in this usage/"Action" in this usage/mg;
   s/This effec-\ntive/This effective/g;
   s/Celestial \(HD 25\) poly-\nmorphs/Celestial \(HD 25\) polymorphs/g;
   s/chance of fail-\nure/chance of failure/g;
@@ -2780,9 +3662,28 @@ mixed_chapter3_block_named 'Chapter 3: Spells and Spellcasting' 'hybrid RC extra
 mixed_monster_spellcasters_block_named 'Monster Spellcasters' 'hybrid RC extraction: page 215 uses TSV coordinate reflow for prose, page 216 is rebuilt from separate coordinate-driven table, right-column spell-list, and left-column notes extracts, and page 217 returns to TSV reflow plus a preserved layout splice for the undead-control table.' "$RC_PDF"
 tsv_cols_block_named 'Scrolls' 'TSV coordinate reflow across the RC scroll section to remove three-column interleave while preserving bullet lists and long descriptions.' "$RC_PDF" 234 235 '185,370' 'Scrolls'
 tsv_cols_block_named 'Spell Research' 'anchored TSV coordinate reflow from the actual RC spell-research page to replace the earlier mis-extracted line-range block.' "$RC_PDF" 255 255 '185,370' 'Spell Research'
+rc_item_enchantment_block_named 'Magic Item Enchantment, Recharging, and Item Damage Procedures' 'targeted RC Chapter 16 and procedure-layer addition from the magical-item creation pages plus the dedicated item-damage page, capturing spell-effect requirements, specialist and component requirements, chance of success, enchantment time, multiple-enchantment handling, recharge costs, dispel relevance, and damage/destruction handling for magical items.' "$RC_PDF"
+rc_constructs_block_named 'Construct Enchantment and Magical Constructs' 'targeted RC Chapter 16 addition from the actual Magical Constructs pages, capturing construct creation prerequisites, spell gates, cost and time, success chance, HD and immunity guidance, healing rules, damage ceilings, reproduction limits, special attacks, and the nondispellable-frame requirement referenced by Create Any Monster.' "$RC_PDF"
+tsv_cols_block_named_until 'Chapter 16 Item Description Catalog (Potions, Wands/Staves/Rods, Rings, Miscellaneous Items, and Swords)' 'anchored TSV coordinate reflow across RC Chapter 16 item-description pages, starting at the Potions heading and stopping before the Chapter 16 wrap-up/cashout section to preserve the canonical item-property descriptions in reading order.' "$RC_PDF" 232 249 '185,370' 'Potions' 'Cashing Treasure'
 page_cols_block_named 'Index to Spells' 'three-column extraction from the RC appendix index page using cropped per-column text to preserve alphabetical reading order.' "$RC_PDF" 300 300 "15 15 175 770" "195 15 180 770" "380 15 175 770"
 cleanup_output
-set_table_qa_note "$RC_OUT" 'reviewed 2026-03-22' 'clerical, magical, and druidic spell lists plus the later reconstructed spellcaster and scroll tables.' 'no blocking row/column defects found in the visible Rules Cyclopedia table and list regions.'
+set_table_qa_note "$RC_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'clerical, magical, and druidic spell lists plus the later reconstructed spellcaster and scroll tables.' 'no blocking row/column defects found in the visible Rules Cyclopedia table and list regions.'
+append_table_qa_lines "$RC_OUT" <<'EOF'
+- Capture confidence: **0.95** (UP from 0.90 after staging the RC Chapter 16 item-description catalog)
+- Coverage note: RC spell descriptions, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog (potions, wands/staves/rods, rings, miscellaneous items, swords) are now staged from RC source text. Remaining concerns are OCR texture and optional cleanup, not source-evidence coverage gaps.
+- ToC cross-check: RC Chapter 16 procedure and item-description sections are now represented in staging, including the item-property description run that was previously missing.
+- Gap priority: LOW — the previously documented RC item-description gap is closed.
+EOF
+perl -0pi -e '
+  s/\b1dl2\b/1d12/g;
+  s/\b2dl2\b/2d12/g;
+  s/\b2dl0\b/2d10/g;
+  s/\b2dlO\b/2d10/g;
+  s/\b3dl0\b/3d10/g;
+  s/\b6dl0\b/6d10/g;
+  s/\b7dl0\b/7d10/g;
+  s/\bdl00\b/d100/g;
+' "$RC_OUT"
 
 cat > "$INDEX_OUT" <<'HDR'
 # TODO: BECMI Spell Material Staging

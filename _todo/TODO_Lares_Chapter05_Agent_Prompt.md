@@ -26,6 +26,9 @@ Continue the Chapter 05 conversion from BECMI/RC magic-item internals to SDM int
 
 Default to acting, editing, and verifying rather than only describing what should be done.
 
+Preflight gate for this handoff:
+- If Chapter 06 Powers design decisions are not locked and Chapter 06 is not yet `alpha`, stop and redirect execution to Chapter 06 work first.
+
 ## 2) Locked Conversion Doctrine
 
 ### Preserve the API Surface
@@ -85,7 +88,10 @@ Do not revert these changes.
 ## 5) Immediate Work Queue
 Resume from the current shared phase tracker in `_todo/TODO_Magitech_Fantascience_Chapter05.md`.
 
-### Immediate priority: Phase B
+### Immediate priority: sequencing gate check
+Before any new Chapter 05 edits, confirm Chapter 06 has locked design decisions and reached `alpha` status.
+
+### Next priority after gate: Phase B
 Consume the stronger crosswalk doctrine to finish the `power/spell API bridge` inside Chapter 05 and its supporting TODO notes.
 
 Focus on:

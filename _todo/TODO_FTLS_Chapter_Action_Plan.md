@@ -83,13 +83,13 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 ## Highest-Value Drafting Sequence
 1. `01 Introduction`
 2. `04 Recon, Salvage, Secrets`
-3. `05 Magitech and Fantascience`
+3. `06 Powers` (design decisions locked, then alpha completion)
 4. `08 Formations and Mass Combat`
 5. `10 Appendix Null - Referee Resources`
 6. `02 FTLS Paths`
 7. `09 Loot and Treasure`
 8. `07 Wild Magic Exposure`
-9. `06 Powers`
+9. `05 Magitech and Fantascience` (resume only after Chapter 06 alpha gate)
 10. `03 OSR Heritage Traits`
 
 ## Chapter Work Queue
@@ -270,9 +270,10 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - Needs Chapter 06 for powers boundary.
 - Needs Chapter 07 for dangerous failure.
 - Needs Chapter 09 for sale / retention fallout.
+- Chapter 05 bridge and conversion continuation is gated on Chapter 06 reaching alpha state.
 
 **Priority**
-- `Now`
+- `After Chapter 06 alpha gate`
 
 ### 06 Powers
 **Purpose**
@@ -285,12 +286,18 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - Activation price remains life equal to power level, with ability-point substitution and higher costs when unskilled.
 
 **Add / Refactor**
-- [ ] Add `Skills and Powers`.
-- [ ] Add `Paying for Power`.
-- [ ] Add `Power Tags and Storage`.
-- [ ] Add `Overcharge and Risk`.
-- [ ] Add `Powers by Tradition / Source`.
-- [ ] Add `Powers by Gameplay Scale`.
+- [x] Lock `Chapter 06 Design Decisions` in chapter-facing doctrine before prose expansion:
+  - canonical activation flow,
+  - payment and substitution boundaries,
+  - storage model and payload semantics,
+  - overcharge unlock doctrine,
+  - chapter-facing Level vs Power Level examples.
+- [x] Add `Skills and Powers`.
+- [x] Add `Paying for Power`.
+- [x] Add `Power Tags and Storage`.
+- [x] Add `Overcharge and Risk`.
+- [x] Add `Powers by Tradition / Source`.
+- [x] Add `Powers by Gameplay Scale`.
 - [ ] Add doctrine for conversion-family powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.
 - [ ] Tighten chapter around:
   - activation,
@@ -305,13 +312,14 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
   - faction,
   - mythic.
 - [ ] Replace magic re-explanations elsewhere with pointers back to this chapter.
+- [ ] Finalize Chapter 06 to `alpha` state before any new Chapter 05 bridge batches.
 
 **Dependencies**
 - Strongly tied to Chapters 05 and 07.
 - Depends on the full BECMI/RC staged spell corpus and spell crosswalk reaching canonical-source status before the chapter can be drafted cleanly.
 
 **Priority**
-- `Now after canonical spell staging`
+- `Immediate`
 
 ### 07 Wild Magic Exposure
 **Purpose**
@@ -469,6 +477,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - [ ] Terminology is normalized across revised chapters: choose `X mode`, `X gameplay`, or simply `X` by context, with lowercase `mode` / `gameplay` in running text.
 - [ ] Chapter 01 clearly names all five gameplay modes and explains when zoom changes.
 - [ ] Chapter 04 reads as the operational center of Company Gameplay.
+- [ ] Chapter 06 design decisions are locked and the chapter is in `alpha` state before Chapter 05 bridge work resumes.
 - [ ] Chapter 05 does not absorb powers-in-general.
 - [ ] Chapter 06 does not duplicate item/relic procedure from Chapter 05.
 - [ ] Chapter 07 states exactly when danger, corruption, and escalation rolls occur.

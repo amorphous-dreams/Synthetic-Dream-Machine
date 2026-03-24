@@ -15,9 +15,62 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22
+- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
 - Scope checked: sphere-factor matrix, sample cost table, duration and mental-effect tables, and magical-effect index anchors.
 - Result: no blocking row/column defects found in the visible Immortals table regions.
+
+- Capture confidence: **0.95** (UP from 0.94 after staging Sections 1-2 PP framing context)
+- Coverage note: Immortals Sections 1-3 are now represented in staging for magic-context use: Sections 1-2 provide PP conversion/rank/recovery framing, and Section 3 provides the primary Immortal Magic corpus.
+- ToC cross-check: Immortals section structure now has explicit staged context across both the Section 1-2 framing layer and the Section 3 spell/effect layer.
+- Gap priority: LOW — no remaining structural source-evidence gap identified for current Immortals spell/material scope.
+### Sections 1-2: Power Point Conversion, Rank Progression, and Recovery Context
+
+- Extraction note: targeted Immortals context block from Sections 1-2 (pages 5-11), preserving the XP-to-PP conversion frame, permanent-vs-current PP bookkeeping, rank/level advancement gates, and the planar-bias regeneration context needed to interpret Section 3 power-cost and recovery references.
+
+```text
+[Immortals pages 5-6: Section 1 changes, XP->PP conversion, and rank/level frame]
+Section 1: Changes
+
+The most basic and far-reaching change in the existing game system involves the character's current Experience Points. The XP total is converted to Power Points, which affect other game mechanics.
+
+Start by converting the total XP earned in mortal life to a new figure, Power Points (PP). Each 10,000 XP are worth 1 PP, rounded up.
+
+A character's PP total determines his status and rank. Higher ranks of Immortals in ascending order of Power are Celestial, Empyreal, Eternal, and Hierarch.
+
+Level is still used to describe an amount of progress within each rank, again using experience (now counted in Power Points) as the yardstick.
+
+Record your PP total in two places: one track for the permanent PP total and one for current (variable) PP. When PP are spent for temporary effects, or regenerated afterward, modify only the current total. Modify both totals only if PP are permanently expended or if new Power is received.
+
+If the Immortal's permanent Power total ever reaches zero, the Immortal's life force is extinguished.
+
+[Immortals page 7: ability-score advancement costs by rank]
+Power Cost Per Point / Maximum Ability Score
+
+Temporal: 10 PP per point, maximum 25
+Celestial: 20 PP per point, maximum 50
+Empyreal: 40 PP per point, maximum 75
+Eternal: 80 PP per point, maximum 100
+Hierarch: 160 PP per point
+
+As one requirement for gaining each next higher rank, all three scores of an Immortal's Greater Talent must be raised to the maximum. If the character's total GT is not at its maximum, he or she is not eligible to advance.
+
+[Immortals pages 10-11: Section 2 frame, Spheres, Bias, and PP recovery]
+Section 2: New Characters Information
+
+Some old and familiar details that have always been assumed, such as the five senses, are carefully scrutinized, and new character details are added.
+
+Spheres: Each route to Immortality corresponds to one of four Spheres (Matter, Energy, Time, Thought). Sphere relationship affects interaction doctrine and later magic costs.
+
+Bias: The relation between an Immortal and a Plane of Existence can be hostile, neutral, or friendly. Bias determines regeneration behavior for Power, hit points, and ability scores.
+
+Power Point Recovery: Immortal Power Points regenerate automatically at a rate determined by planar or local bias. Regeneration requires no concentration or expenditure.
+
+If an Immortal exists on several planes at once (commonly on the Home Plane and one or more others), apply the least favorable bias that applies.
+
+Physical Recovery: Natural or enhanced regeneration affects hit point losses and Power losses, with details modified by bias and by any active effects that increase regeneration rate.
+
+```
+
 ### Section 3: Immortal Magic
 
 - Extraction note: section-aware Immortals extraction from the actual Section 3 pages using labeled page-and-column slices across pages 18-21 so the chart-heavy opening, continuation prose, and alphabetical effect explanations remain readable without later Section 4 spill.
@@ -119,15 +172,12 @@ other Immortals—subject to Anti-Magic
 effects (q.v.), and with certain changes logical for Immortal application.
 An Immortal may apply magical effects to
 his or her physical form, or may apply them
-to some other creature or object. Any effect
-previously limited to "self can be delivered
-by touch to any creature when produced by
-an Immortal. Immortal power expands the
+to some other creature or object. Any effect previously limited to "self" can be delivered by touch to any creature when produced by an Immortal. Immortal power expands the
 scope of many such effects.
 During any one round, an Immortal may
 take one physical action per natural attack
 form or one magical action, but not both.
- "Action" in this usage refers to any physical
+"Action" in this usage refers to any physical
 attacks, defense, or miscellaneous physical or
 magical effect. Multiple physical attacks are
 possible if the Immortal form possesses several natural methods of attack (eg. a bear can

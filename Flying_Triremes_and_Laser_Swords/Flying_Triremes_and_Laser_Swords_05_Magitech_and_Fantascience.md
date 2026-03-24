@@ -716,6 +716,12 @@ Wand of Trap Detection: This wand will point at all traps within 20', one at a t
 
 #### Legacy Staff Descriptions
 
+Phase B bridge rule for bundled recognizers:
+- Classic effect names in bundled entries are recognizer labels, not slot-era mechanics.
+- Resolve stored or emitted payloads as SDM powers.
+- Use `Power Level` for payload size/capacity.
+- Use `Level` for source force when dispelling, countering, summoning, or curse-removal thresholds.
+
 Staff of Commanding: This magical item has all the powers of the rings of animal, human, and plant control (see the individual descriptions under "Rings," below).
 
 Staff of Dispelling: The touch of this item has the same effect as a dispel effect from a Level `8` practitioner, but it will affect only the item or magical effect touched. Any potion or scroll touched is completely destroyed, and any permanent magical item touched becomes nonmagical for `1d4` rounds (including armor and weapons). This effect may be permanently harmful to intelligent swords (referee's choice). Each use of the staff costs one charge.
@@ -771,7 +777,7 @@ Staff of Healing: It may only be used once per day per person, but it will heal 
 | Cure serious wounds | 2 charges |
 | Neutralize poison | 2 charges |
 
-Staff of Power: This item can be used as a staff of striking and can also be used to create any of the following effects, each doing 8d6 damage: fireball, lightning bolt, and ice storm. It can also create a continual-light effect or move 2,400 cn of weight by telekinesis, as the ring.
+Staff of Power: This item can be used as a staff of striking and can also emit a bundled high-tier power suite: `fireball`, `lightning bolt`, `ice storm`, `continual light`, and `telekinesis`. Treat these names as recognizers. Offensive effects in this suite inflict 8d6 damage as written and are handled as `Power Level 8` payloads. The telekinetic channel is equivalent to moving 2,400 cn per activation. Where source-force checks matter (counterforce clashes, suppression fields, or ward contests), treat the staff as a `Level 8` source.
 
 Snake Staff: Upon command, the staff turns into a snake and coils around the creature struck. The command may be spoken when the victim is hit. The victim may make an Aura save to avoid the serpent's coil. Any human-sized or smaller victim will be held helpless for 1d4 turns, unless the snake is ordered by the owner to release the victim before that time. Larger creatures cannot be ensnared in the snake's coils. The snake's characteristics are as follows.
 
@@ -785,7 +791,9 @@ Staff of Withering: One hit from this staff ages the victim 10 years. One or two
 
 Undead are not affected by this item.
 
-Staff of Wizardry: staff of power, plus invisibility, passwall, web, and elemental-summoning style effects. It may also be used to create a whirlwind or shoot a cone of paralyzation. In addition, the user may break the staff, which releases all of its power at once. This final strike is an explosion that inflicts 8 points of damage per charge remaining in the staff. All creatures within 30', including the user, take damage, but may make an Aura save for half.
+Staff of Wizardry: This contains the full `Staff of Power` suite plus `invisibility`, `passwall`, `web`, elemental-summoning style effects, whirlwind shaping, and cone-style paralyzation. Treat all listed names as recognizers for SDM power payloads. Unless a stricter limit is obvious from the effect text, resolve this bundle at `Power Level 8`, with `Power Level 9` allowed for the most extreme effects (major summoning or wide control events) at referee discretion. For source-force contests, treat the staff as `Level 9`.
+
+If broken intentionally, the staff releases all remaining charges at once. This final strike inflicts 8 points of damage per remaining charge to all creatures within 30', including the user; affected creatures may make an Aura save for half.
 
 #### Legacy Rod Descriptions
 
@@ -941,9 +949,9 @@ Seeing: Once each day, the wearer of this ring can see all things plainly, as if
 
 The effect lasts for 3 turns.
 
-Spell Eating: Although this ring appears and functions as a ring of spell turning, it has an extra detrimental effect if the user prepares, anchors, or stores powers internally. After the wearer uses a power while the ring is worn, the ring "eats" the remaining prepared or memorized powers. The ring cannot be removed after it has eaten the wearer's powers until a remove curse effect is applied by a suitably powerful practitioner. That remedy only permits removal and does not change the ring's nature; an even stronger purifying or dispelling effect may turn it into a normal ring of spell turning.
+Spell Eating: Although this ring appears and functions as a ring of spell turning, it has an extra detrimental effect if the user keeps internal power payloads ready (anchored, staged, or otherwise preloaded). After the wearer uses a power while the ring is worn, the ring "eats" the remaining ready payloads. The ring cannot be removed after it has eaten the wearer's payloads until a remove curse effect is applied by a suitably powerful practitioner. That remedy only permits removal and does not change the ring's nature; an even stronger purifying or dispelling effect may turn it into a normal ring of spell turning.
 
-Spell Storing: When found, this ring has 1d6 powers stored within it. Those exact powers are the limit of the ring's capacity and they cannot be changed unless someone deliberately loads new ones into it. When the ring is put on, the wearer magically knows what effects are stored and how to use them. After a power is used, it may be replaced by a practitioner who channels the replacement power directly into the ring. The ring will not absorb powers thrown at the wearer. The stored powers use the lowest tier and minimum force needed to produce them. The referee should choose the stored effects.
+Spell Storing: When found, this ring has 1d6 powers stored within it. Those exact payloads are the ring's active capacity profile until deliberately reloaded. When the ring is put on, the wearer magically knows what effects are stored and how to use them. After a payload is used, it may be replaced by a practitioner who channels a replacement directly into the ring. The ring will not absorb powers thrown at the wearer. Treat each stored payload by `Power Level`; the default load uses the lowest tier and minimum force needed to produce each effect. The referee should choose the stored effects.
 
 Spell Turning: This ring reflects `2d6` hostile powers back to their source per day so that the wearer is not affected by those attacks. Only direct cast powers are reflected, not monster-style innate abilities or item-generated effects. Once the ring's daily limit is reached, it becomes useless for the rest of the day.
 

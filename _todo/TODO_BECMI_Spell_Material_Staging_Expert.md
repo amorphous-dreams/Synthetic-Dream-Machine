@@ -15,9 +15,14 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22
+- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
 - Scope checked: leveled spell lists, spell-expansion sections, and structured spell-property blocks.
 - Result: no blocking row/column defects found in the visible Expert table and list regions.
+
+- Capture confidence: **0.89**
+- Coverage note: Core Expert cleric and magic-user spell expansions, research, and lost-book procedures are staged cleanly. The miscellaneous magic-item run is intentionally selective rather than exhaustive, with RC acting as the canonical item-property backstop for omitted non-spell-adjacent entries.
+- ToC cross-check: Expert CONTENTS review found the spell sections and research/lost-book procedures accounted for. The remaining omission is partial coverage of the page 65 miscellaneous magic-item list.
+- Gap priority: MEDIUM-LOW — remaining gap is secondary item-catalog completeness, not core spell procedure coverage.
 ### Clerical and Magic-User Spell Expansions
 
 - Extraction note: stitched Expert spell extraction: clerical spell pages 7-11 and magic-user spell pages 13-18 use separate TSV coordinate reflow passes so the real spell sections stay in source order and the intervening fighter/thief class tables are excluded.
@@ -309,7 +314,7 @@ differ, the spirit may reply in riddles.
 Striking
 Range: 30'
 Duration: 1 turn
-Effect: ld6 bonus to damage on 1 weapon
+Effect: 1d6 bonus to damage on 1 weapon
 This spell allows any one weapon to inflict
 1-6 additional points of damage per attack
 (like a magical staff of striking). The
@@ -1332,7 +1337,7 @@ means the caster has made a highly de-
 tailed personal study of the landing point.
 For each teleport, the DM rolls d%. If the
 result is other than "Success," the recipient
-arrives 10-100 (ld10x10) feet above or be-
+arrives 10-100 (1d10x10) feet above or be-
 low the desired destination. If "Too High,"
 the recipient falls, taking damage on im-
 pact (1-6 points of damage per 10' fallen).

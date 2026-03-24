@@ -15,9 +15,14 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22
+- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
 - Scope checked: Turning Undead table, spell lists, and adjacent structured spell-property blocks.
 - Result: no blocking row/column defects found in the visible Basic table and list regions.
+
+- Capture confidence: **0.93**
+- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures are all staged from the Basic source. Remaining issues are OCR texture and ordinary line-wrap scars, not structural coverage gaps.
+- ToC cross-check: Basic spell and treasure sections remain fully accounted for in staging, including player spell pages, DM higher-level spell guidance, and the treasure/magic-item wrapper pages.
+- Gap priority: LOW — no material source-evidence gap found during the 2026-03-23 survey.
 ### Cleric Rules, Turning, and First-Level Spell Procedures
 
 - Extraction note: page-aware Basic extraction from the actual cleric special-abilities page, split by column so Turning Undead procedure, the undead table, and spellcasting guidance stay in readable source order.
@@ -1103,7 +1108,7 @@ Range: 0
 Duration: 6 turns
 Effect: The magic-user only
 With this spell, the magic-user creates
-1-4 (ld4) additional images which look
+1-4 (1d4) additional images which look
 and act exactly the same as the magic-
 user. The images appear and remain
 next to the magic-user, moving if the
@@ -1145,7 +1150,7 @@ This spell never inflicts any real
 damage! Those "killed" by it will merely
 fall unconscious, those "turned to stone"
 will be paralyzed, and so forth. The
-effects wear off in 1-4 (ld4) turns.
+effects wear off in 1-4 (1d4) turns.
 Web
 Range: 10'
 Duration: 48 turns
@@ -1160,7 +1165,7 @@ score of 9-12) will take 2-8 (2d4) turns to
 break through the web. Flames (from a
 torch, for example) will destroy the web
 in 2 rounds, but all creatures within the
-web will be burned for 1-6 (ld6) points
+web will be burned for 1-6 (1d6) points
 of damage. Anyone wearing Gauntlets
 of Ogre Power (a magical treasure) can
 break free of a web in 4 rounds.

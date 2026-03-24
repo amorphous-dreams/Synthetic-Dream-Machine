@@ -9,6 +9,9 @@ Convert BECMI/RC magic-item procedures into SDM chapter-ready form using the cur
 
 This TODO is the execution tracker for magic-item conversion specifically.
 
+Current sequencing gate:
+- New Chapter 05 bridge batches are paused until Chapter 06 Powers has design decisions locked and reaches `alpha` state.
+
 ## Canonical Context (Locked)
 
 ### Baseline Ownership
@@ -169,6 +172,11 @@ This TODO is the execution tracker for magic-item conversion specifically.
   - `Staff of Elemental Power` effect names and elemental counter-negation phrasing
   - `Staff of Power` and `Staff of Wizardry` spell-name bundles
   - ring and armor entries that still preserve classic effect names as recognizers without a full SDM `power` mapping
+- Phase B bridge delta (2026-03-23, batch 1):
+  - added explicit bundled-recognizer bridge rules in Chapter 05 `Legacy Staff Descriptions`
+  - converted `Staff of Power` and `Staff of Wizardry` bundle wording to explicit `Power Level` payload language with stated `Level` source-force handling
+  - removed slot-era `prepared or memorized` wording from `Ring of Spell Eating` and rewired it to SDM-ready payload terminology
+  - clarified `Ring of Spell Storing` as `Power Level` payload capacity handling rather than slot retention
 
 ### Phase C: Family-by-Family Internal Conversion
 - Standardize each family in this order:
@@ -213,6 +221,11 @@ This TODO is the execution tracker for magic-item conversion specifically.
   - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md`
 
 ## Active Work Plan
+
+### Sequencing Gate: Chapter 06 First
+- [ ] Confirm Chapter 06 design decisions are locked for activation, payment, storage, overcharge, and scale semantics.
+- [ ] Confirm Chapter 06 is in `alpha` state.
+- [ ] Resume Phase B Chapter 05 bridge work only after both gate checks are complete.
 
 ### Phase 1: Procedure Inventory and Crosswalk
 - [x] Build family-level crosswalk for magic-item procedures:
@@ -321,15 +334,17 @@ This TODO is the execution tracker for magic-item conversion specifically.
 ## Validation Checklist
 - [ ] Crosswalk completeness reviewed for all targeted magic-item families.
 - [x] Phase B recognizer set seeded and reviewed in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
+- [x] Phase B bridge batch 1 landed in Chapter 05 for deferred staff/ring recognizer bundles (`Staff of Elemental Power`, `Staff of Power`, `Staff of Wizardry`, `Spell Eating`, `Spell Storing`).
+- [ ] Chapter 06 design decisions locked and Chapter 06 `alpha` status confirmed before new Chapter 05 batches.
 - [ ] Chapter 05 flow run-through completed for at least 3 item families.
 - [ ] Pointer integrity verified from Gear and Loot docs.
 - [ ] Anchor/link check passes across touched markdown files.
 - [ ] No baseline core-rule drift introduced in Quickstart.
 
 ## Forward Plan
-1. Use the improved crosswalk notes to finish Chapter 05 bridge rules for stored, delayed, absorbed, and reflected spell effects.
-2. Revisit the deferred bundled recognizers (`Staff of Elemental Power`, `Staff of Power`, `Staff of Wizardry`) using the current crosswalk doctrine instead of ad hoc item-local notes.
-3. Run the remaining Gear and Loot pointer/integrity checks once the bridge wording stabilizes.
+1. Hold new Chapter 05 bridge edits while Chapter 06 powers design decisions are finalized and the chapter reaches `alpha`.
+2. Resume Chapter 05 bridge rules for stored, delayed, absorbed, and reflected spell effects using the locked Chapter 06 API semantics.
+3. Run the remaining Gear and Loot pointer/integrity checks once resumed bridge wording stabilizes.
 
 ## Current Wording Rules Locked by Phase A
 - Use `attack`, `melee attack`, or explicit Defense targets instead of `attack roll`.

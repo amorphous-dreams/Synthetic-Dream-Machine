@@ -33,7 +33,8 @@ Current artifact layout:
   - remaining end-of-line hyphenations are now mostly ordinary source texture and table/list density rather than meaning-breaking OCR failures
 - Magic/meta candidate review:
   - one real high-value extraction gap was found and closed during the final review: Master artifact power doctrine and artifact-effect procedures
-  - the Master staging file now includes artifact purpose, activation, power limits, recharging, intelligence, adverse effects, attack/destruction rules, and power-category guidance, while intentionally excluding the named-artifact catalog
+  - the Master staging file now includes artifact purpose, activation, power limits, recharging, intelligence, adverse effects, attack/destruction rules, power-category guidance, a curated readable named-artifact catalog block through Wife of Ilmarinen, and the post-catalog `Other Magic Items` appendix
+  - the Rules Cyclopedia staging file now includes both the general magical-item creation procedure layer and the Chapter 16 `Magical Constructs` guidance referenced by `Create Any Monster`, covering spell-effect prerequisites, specialist and component requirements, chance of success, enchantment time, multiple-enchantment handling, recharge costs, item damage rules, construct prerequisites, costs, time, immunity guidance, healing, attack limits, reproduction limits, special attacks, and nondispellable-frame requirements
   - the current corpus already contains at least one staged source for:
     - anti-magic / dispel / curse doctrine
     - magical range / duration modification rules
@@ -45,6 +46,23 @@ Current artifact layout:
 - Scope decision:
   - extraction should now be treated as functionally complete for the targeted spell + magic-item curation scope
   - any later extraction work should be limited to newly discovered concrete defects or a separate creature-focused scan
+
+## PDF ToC Confidence Survey - 2026-03-23
+
+Cross-checked each source PDF's table of contents and section headings against the current staging file sections. Confidence scores updated in both staging files and the Conversion master.
+
+### Findings by Lane
+
+- **B (0.91 → 0.93)**: No structural gaps found. Basic PDF ToC reviewed — player spell content (pages 25-42), DM higher-level spell guidance (pages 17-18), and treasure sections (pages 42-45) all accounted for. Remaining issue is OCR texture only.
+- **E (0.87 → 0.89)**: Expert PDF CONTENTS reviewed. All core spell sections (1-6 cleric + MU) and research/lost spell books are staged. Expert miscellaneous magic items (page 65) are only partially staged — items selected for spell-adjacency were kept, remainder omitted. RC canonical backstop covers the gap for item property reference.
+- **C (0.89 → 0.91)**: The former Companion **Magic-User Spells: 5th through 9th Level** gap is now closed. A new Companion TSV extraction block stages pages 22-28 under `FIFTH LEVEL MAGIC-USER SPELLS` through `NINTH LEVEL MAGIC-USER SPELLS`, restoring the full Companion MU spell run to this lane. Confidence now rises above the prior baseline because the lane has both the original cleric/druid material and the recovered Companion-specific MU wording in one staging file.
+- **M (0.90 → 0.95)**: Master PDF PROCEDURES section gap is now closed. `Anti-Magic Effects` and `Dispel Magic` are staged from the Master Procedures pages with readable extraction for A-M doctrine, duration rules, examples, touch-dispel handling, and item-interaction notes. Remaining Master work is cleanup-level OCR normalization, not missing source-evidence.
+- **I (0.94 → 0.95)**: Immortals Set ToC verified — 6 sections. Section 3 (Immortal Magic) remains staged, and Sections 1-2 PP conversion/rank/recovery framing context are now additionally staged for cost-interpretation and recovery-reference continuity.
+- **RC (0.88 → 0.95)**: RC Chapter 16 ToC cross-checked. `Making Magical Items`, `Making Magical Constructs`, and the individual **item description** catalog (Potions, Wands/Staves/Rods, Rings, Miscellaneous Items, and Swords; pages 228-249 approx.) are now staged via anchored TSV reflow. Remaining RC work is cleanup-level OCR normalization, not missing source-evidence.
+
+### Unstaged Sections Now Priority-Queued
+
+No structural unstaged section remains in the current spell/material extraction scope. Remaining work is cleanup-focused (OCR texture, dense table readability polish, and optional completeness refinements in already staged lanes).
 
 ## Full Table QA Pass - 2026-03-22
 
@@ -75,9 +93,9 @@ Chapter 06 readiness:
 
 - `Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items`
   - extraction mode: mixed Companion reconstruction using curated procedure blocks, readable layout-table slices, and TSV-reflowed item descriptions
-  - structural issues found: earlier treasure/procedure spill, damaged price/capacity tables, and list/table readability problems
-  - cleanup used: anchored section start, rebuilt price table, compact table normalization for `Spell Catching`, and narrow phrase cleanup only where emitted output still broke meaning
-  - remaining acceptable residue: raw source spacing noise and some table-density texture in the treasure tables
+  - structural issues found: earlier treasure/procedure spill, damaged price/capacity tables, list/table readability problems, and a long flat miscellaneous-item sample run that was harder to scan as context
+  - cleanup used: anchored section start, rebuilt price table, compact table normalization for `Spell Catching`, narrow phrase cleanup only where emitted output still broke meaning, and post-build heading inserts to group the sampled miscellaneous-item descriptions into scan-friendly buckets
+  - remaining acceptable residue: raw source spacing noise and some table-density texture in the treasure tables, but the miscellaneous seed run is now easier to scan by function
 - `Master -> Non-Human Spellcasters and Special Spellcaster Procedures`
   - extraction mode: anchored TSV page reflow plus explicit reconstructed undead-control table and trimmed page-tail cleanup
   - structural issues found: flattened undead-control matrix, procedure spill from neighboring layout columns, and noisy tail residue on the final page
@@ -88,10 +106,25 @@ Chapter 06 readiness:
   - structural issues found: clipped right-column doctrine text, mixed-column collisions in the opening pages, dense gutter contamination in the power-table pages, and the need to exclude the named-artifact catalog while keeping the doctrine and power tables
   - cleanup used: section-specific stitched extraction, right-column replacement with layout-character slices, tighter per-page cropped layout columns for the dense power pages, and narrow emitted-phrase fixes only where clipping still broke meaning
   - remaining acceptable residue: ordinary table density, source hyphenation, and local lexical scars in the doctrine and power tables; page-level reading order is now stable and the section remains usable without catalog spill
+- `Master -> Named Artifact Catalog`
+  - extraction mode: fully curated source-derived block assembled from Master pages 56-63 after crop-based extraction proved too interleaved and truncated for stable downstream use
+  - structural issues found: page 57-62 column collisions, heading loss, gutter contamination, OCR scars in power lines, and truncation at Verthandi when the crop-backed range stopped too early
+  - cleanup used: rebuilt the catalog as a deterministic source-derived block covering the `Known Artifacts` opener, named artifact entries from `Armet by Wayland` through `Wife of Ilmarinen`, and normalized only obvious OCR damage while preserving source ordering and meaning
+  - remaining acceptable residue: a few power-category letters are omitted where the source crop was not stable enough to recover them confidently, but the named-artifact catalog is now readable, contiguous, and complete for the Master artifact run staged here
+- `Master -> Other Legendary Magic Items Appendix`
+  - extraction mode: curated source-derived block assembled from the post-catalog Master appendix pages 63-64
+  - structural issues found: heavy three-column appendix interleave, proper-name OCR scars in the item and sword lists, and cross-column sentence fracture in the sword exemplars
+  - cleanup used: rebuilt the appendix into a contiguous reference list and grouped it into item-family buckets covering consumables, prophecy/fortune items, travel items, productive/hoard items, and the sampled sword corpus while preserving source meaning and reference utility
+  - remaining acceptable residue: name normalization is conservative where OCR and legend-variant spellings diverge, but the appendix is now readable, better structured for scanning, and directly usable as source-backed item-seed context
+- `Rules Cyclopedia -> Magic Item Enchantment, Recharging, and Item Damage Procedures`
+  - extraction mode: curated source-derived RC procedure block assembled from the magical-item creation pages and the dedicated item-damage page
+  - structural issues found: the source pages are heavily interleaved across three columns, mixing examples, side notes, and neighboring text in ways that make straight page extraction noisy for downstream use
+  - cleanup used: retained source-derived wording while curating the item-enchantment factors, chance formula, enchantment time, multiple-enchantment handling, recharge rules, dispel relevance, and damage/destruction procedure into a single contiguous evidence block; later added generator-side dice-token normalization for malformed OCR notations (`1dl2`, `2dl2`, `2dl0`, `2dlO`, `3dl0`, `6dl0`, `7dl0`, `dl00`)
+  - remaining acceptable residue: example compression and ordinary source simplification, but the item-creation meta-context is now staged in readable form and directly supports the new construct section
 - `Immortals -> Section 3: Immortal Magic`
   - extraction mode: labeled page-and-column layout extraction across pages 18-21
   - structural issues found: chart-heavy opening density, page-header residue, and broken multiline effect phrases
-  - cleanup used: labeled page slices, exact multiline phrase repairs, and Immortals-only wrap cleanup
+  - cleanup used: labeled page slices, exact multiline phrase repairs, Immortals-only wrap cleanup, and a later generator-level fix for the malformed `"self"` touch-delivery sentence plus adjacent `"Action"` label wrap artifact
   - remaining acceptable residue: chart density and long-line texture only
 - `Rules Cyclopedia -> Monster Spellcasters`
   - extraction mode: hybrid RC extraction with TSV prose reflow, reconstructed tables, and stitched notes/spell-list slices
@@ -184,6 +217,8 @@ Chapter 06 readiness:
   - hybrid `Chapter 3` extraction
   - mixed table handling for `Monster Spellcasters`
   - TSV reflow for `Scrolls` and `Spell Research`
+  - curated Chapter 16 magical-item creation and item-damage extraction
+  - stitched Chapter 16 construct-enchantment extraction for `Magical Constructs`
   - cropped-column extraction for `Index to Spells`
 
 ## Companion

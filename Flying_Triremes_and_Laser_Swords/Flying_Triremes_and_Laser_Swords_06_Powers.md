@@ -12,6 +12,25 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
 
 Any character can use any power. Using a power may mean reading the fantascientific formulas from an electromagical book, performing an interpretative dance routine to summon a daemon, or perhaps just lighting dribbly candles made from the fat of a bona fide angel. However, a character who knows what they’re doing (i.e. has a trait with relevant skills) is less likely to blow themselves up into a giant blueberry or unleash a plague of ear-eating wigs.
 
+## Chapter 06 Design Decisions (Locked For Alpha Pass)
+
+The following doctrine is locked for this alpha drafting pass and is the rules contract for Chapter 06.
+
+1. Activation flow is fixed: declare power -> confirm carrier/storage access -> pay activation price -> resolve attack/save/effect -> apply danger/corruption triggers -> apply overcharge riders if used.
+2. Payment and substitution boundaries are fixed: base price is Life equal to Power Level; ability-point substitution remains legal at 1 point = 1 Life; unskilled use pays double unless a trait explicitly changes the cost. Life-Power may be stored as "mana" in gear/locations/ley-lines/high-weirdness.
+3. Storage semantics are fixed: Chapter 06 governs powers-as-powers; Chapter 05 governs object procedures that carry powers. Trait, item, and burden carriers are valid storage surfaces, with committed costs handled by tags. Rare Powers cost more than one "slot".
+4. Overcharge doctrine is fixed: Overcharge is the default scaling mechanism and may be gated by campaign unlock work (RSS discoveries, archive access, corruption cleaning, or equivalent referee-approved milestones).
+5. Numeric ontology is fixed: use Power Level for storage, eligibility, payload capacity, and activation pricing; use user Level for source force, dispel/counterforce strength, summon potency, and threshold filters.
+
+### Paying for Power
+
+Power price is paid at activation unless a tag or entry states the cost remains committed.
+
+- Base cost: Life equal to Power Level.
+- Ability substitution: 1 ability point = 1 Life.
+- Unskilled use: pay double unless a trait changes this.
+- Committed costs: if a power is [imbued], [item], or otherwise committed, recover the cost only when that condition ends.
+
 ### Storing Powers
 
 You can use a power carried in any inventory.
@@ -21,6 +40,10 @@ You can use a power carried in any inventory.
 * **Burden** – for example, the weight of a malign knowledge.
 
 Carried powers do not disappear after use—you can use them multiple times. Power albums, technocodices, and spell books are valuable since they let you carry a number of powers in a single inventory slot. You can also pack powers away, like other items, or store them in a library or other safe room. Of course, you can’t use packed or stored powers.
+
+### Power Tags and Storage
+
+Tags in this chapter are not flavor labels; they are procedure flags that tell the referee what to do at table speed. If a power uses a committed-cost storage tag, treat that commitment as part of the item's or trait's active state until released.
 
 ### Activating Powers
 
@@ -37,6 +60,17 @@ Life energy (used for *powers* and other magic) is often called **mana**. Mages 
  Duration (D): How long the effects of the power last, from instantaneous to temporary to permanent.  
  Overcharge (Ox): Overcharging a power doubles its power level (and price) and modifies its effect. Some powers can be overcharged multiple times: x2, x4, x8, x16 and so on.
 
+### Overcharge and Risk
+
+Overcharge is allowed by default unless an entry explicitly forbids it. Overcharge increases activation price and can escalate danger handling, collateral effects, and corruption exposure. When an overcharge rider is marked as locked, it remains unavailable until unlocked by campaign play.
+
+Typical unlock vectors include:
+
+- RSS salvage and archive recovery,
+- noosphere or shrine-side adjudicated permissions,
+- corruption treatment and stabilization,
+- factional sponsorship or oath-bound access.
+
 ### Power Tags
 
 * \[**anchored**\]: A physical anchor keeps the power active and controlled. Destroying or losing the anchor deactivates the power (or worse).  
@@ -50,9 +84,34 @@ Life energy (used for *powers* and other magic) is often called **mana**. Mages 
 * \[**guided**\]: the attack roll has Advantage as long as no targets have no Cover.  
 * \[**ward**\]: grants a bonus to Mental Defenses and Saves.
 
+## Powers by Tradition / Source
+
+This chapter preserves canonical recognizers for OSR-facing lookup while routing behavior through SDM-native rules.
+
+- OSR recognizers: use canonical spell names as lookup labels and conversion anchors.
+- Heritage powers: culture- and lineage-bound expressions, often with factional or standing requirements.
+- SDM variants: existing stylized descendants remain valid; use "see" callouts where one recognizer maps to multiple practical expressions.
+
+When recognizer names and local variants overlap, keep both discoverable and treat the recognizer as API surface, not a separate mechanical engine.
+
+## Powers by Gameplay Scale
+
+Power use must be legible at all FTLS scales.
+
+- Personal play: immediate conflict, traversal, utility, and social leverage.
+- Company play: logistics, scouting, route integrity, salvage efficiency, command support.
+- Faction play: force projection, node control, strategic signaling, and escalation pressure.
+- Mythic play: world-process interference, noosphere visibility, and high-consequence doctrine.
+
+Chapter 06 owns activation and power behavior. Chapter 07 owns instability, corruption, and severe fallout procedures. Chapter 05 owns object procedures that carry or bind powers.
+
 # OSR Powers
 
 Powers from Old School Roleplaying (and games inspired by the OSR aesthetic). As a general conversion guideline, SDM Power Level \= OSR “Spell Level” x2. Feel free to remix, modify, or play mad alchemist to your heart’s content. Powers, Traits, and Gear in FTLS are not static, but always mod-able.
+
+## Battle and Force
+
+Use these for direct conflict, pressure, and line-breaking effects in personal and company-scale scenes.
 
 ## Entropic Shield
 
@@ -135,7 +194,9 @@ Tags: \[evocation\] \[radiant\] \[guided\] \[attack\]
 
 You snap and open your palm, force-light needles spring into being and zip downrange in a tight spread. Make one ranged sorcery attack (d20 \+ Charisma \+ relevant skill) and compare that single roll against each chosen target’s Physical Defense. The guided missiles grant Advantage if all targets have no Cover. Each miss still causes 1 damage \[radiant\]. A hit by a missile causes 1d6+1 \[radiant\]. Damage to a target may be Focused (single source) or Spread (multiple).
 
-### Shield Ward
+See also: `Tragic Missile` in the SDM Powers Index for a stylized noospheric descendant.
+
+### Shield Ward (Shield)
 
  Power Level (P): 2  
  Range (R): Self  
@@ -158,6 +219,82 @@ A compact force shield flickers at arms length from you, covering you from incom
 Tags: \[abjuration\] \[armor\] \[imbued\]
 
 You conjure a flexible carapace of force-thread and sigil-weave. You count as wearing Light Armor (Armor \+2) without a gear slot required, but it doesn’t stack with physical armor—use the better source. While active you ignore a “sunder/ruin” (mark) result that would target your worn armor (the spell takes the hit instead and ends). The protection is \[imbued\]—its base Power Level stays committed until you drop it (free action) or the power ends.
+
+### Fire Ball
+
+ Power Level (P): 6  
+ Range (R): far (up to ~120 m line of sight)  
+ Target (T): point in space; creatures in a 20 ft / 6 m burst  
+ Duration (D): instant  
+ Overcharge (Ox): x2 — increase burst to 30 ft / 9 m; x4 — leave burning ground for 1d4 rounds (1d6 fire on enter/start turn, save halves).
+
+Tags: \[evocation\] \[fire\] \[attack\] \[dangerous\] \[magitech\] \[fantascience\]
+
+You hurl a compressed ember-knot that blooms into a roaring detonation. Make a Thought or Charisma attack roll and compare against each target's Physical Defense in the burst. On a hit, target takes 6d6 fire. On a miss, target takes half damage (rounded down). Flammable mundane gear in the burst may ignite at referee discretion.
+
+Very cramped, volatile, or fuel-rich environments may require an immediate Dangerous Magic roll.
+
+See also: `Pyreball` in the SDM Powers Index for a stylized infernal variant.
+
+### Lightning Bolt
+
+ Power Level (P): 6  
+ Range (R): 30 m line  
+ Target (T): all creatures in a straight line path  
+ Duration (D): instant  
+ Overcharge (Ox): x2 — line becomes 60 m; x4 — fork once at midpoint into a second 30 m line.
+
+Tags: \[evocation\] \[lightning\] \[attack\] \[dangerous\] \[magitech\] \[fantascience\]
+
+You release a lance of storm-force in a rigid vector. Make a Thought or Charisma attack roll attack roll and compare against each target's Physical Defense in the line. On a hit, target takes 6d6 lightning. On a miss, target takes 1d6 lightning and must make an Endurance save or become disoriented until end of next turn.
+
+Conductive terrain, water, and metal congestion can increase collateral spread by referee call.
+
+## Veils and Influence
+
+Use these for denial, concealment, and social/battlefield control rather than direct damage.
+
+### Invisibility
+
+ Power Level (P): 4  
+ Range (R): touch  
+ Target (T): self or one willing creature  
+ Duration (D): up to 1 watch (4 hours) while not making overt attacks  
+ Overcharge (Ox): x2 — include carried gear and one adjacent willing ally; x4 — movement no longer disturbs dust/rain traces unless sprinting.
+
+Tags: \[illusion\] \[focus\] \[imbued\]
+
+You bend attention and light around the target until perception slides past them. The effect ends immediately if the target makes an overt attack, loudly manipulates the environment, or drops focus under pressure. Detection powers and direct tactile contact can still reveal presence.
+
+### Hold Person
+
+ Power Level (P): 4  
+ Range (R): near (~20 m)  
+ Target (T): one humanoid-scale creature  
+ Duration (D): up to 1 minute (save each round to end)  
+ Overcharge (Ox): x2 — up to two targets in line of sight; x4 — affected targets also lose reactions while held.
+
+Tags: \[control\] \[mental\] \[focus\]
+
+You lock target motor intent under rigid noospheric command. Target makes an Aura save; on failure it is held and cannot move, attack, or cast. At end of each of its turns it may repeat the save to break free. On initial success, target is slowed for one round instead.
+
+See also: `Hlod Person` in the SDM Powers Index for a related degeneration-pattern variant.
+
+## Traversal and Mobility
+
+Use these for route bypass, repositioning, and rapid scene transitions.
+
+### Fly
+
+ Power Level (P): 6  
+ Range (R): touch  
+ Target (T): self or one willing creature  
+ Duration (D): 1 watch (4 hours)  
+ Overcharge (Ox): x2 — grant one additional willing target; x4 — grant precise hover and carry one extra burden slot without movement penalty.
+
+Tags: \[movement\] \[imbued\]
+
+You suspend the target in a controllable lift field. While active, the target can move in three dimensions at normal movement speed and ignore most ground hazards. Severe wind, anti-flight fields, or destabilizing interference may force an Aura or Endurance save to maintain stable control.
 
 # Heritage Powers
 

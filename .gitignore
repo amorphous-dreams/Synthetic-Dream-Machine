@@ -3,5 +3,6 @@
 vendor/
 _site/
 _becmi/
+_todo/_page_renders/.cache/
 
 **/hires_*

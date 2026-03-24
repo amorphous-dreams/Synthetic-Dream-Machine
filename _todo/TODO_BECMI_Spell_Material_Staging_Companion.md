@@ -15,12 +15,17 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22
-- Scope checked: treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, and miscellaneous-item tables.
+- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
+- Scope checked: treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the new 5th-9th level magic-user spell block.
 - Result: no blocking row/column defects remain, and the densest Companion table block has been rewritten into sequential readable tables for easier human scanning.
-### High-Level Cleric and Druid Spell Material
 
-- Extraction note: section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric and druid class pages, split so the cleric spell block starts at the real fifth-level cleric heading and the druid transition begins at the actual druid section instead of earlier class spill.
+- Capture confidence: **0.91** (UP from 0.78 after staging the Companion MU 5th-9th spell run)
+- Coverage note: Cleric 5th-7th level spells, Druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, and the spell-adjacent item section are now all staged from Companion source text. Remaining concerns are OCR texture and later comparison work against RC wording, not missing primary Companion spell content.
+- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, and `Magic-user Spells: Fifth to Ninth Level` are now represented in staging. The former MU spell gap is closed by the pages 22-28 TSV extraction block.
+- Gap priority: LOW — primary Companion spell coverage gap closed on 2026-03-23; remaining work is cleanup and version-difference review.
+### High-Level Cleric, Druid, and Magic-User Spell Material
+
+- Extraction note: section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric, druid, and magic-user class pages, split so each spell block starts at its real section heading instead of earlier class spill.
 
 ```text
 [Companion pages 13-14: high-level cleric spell material]
@@ -53,7 +58,7 @@ Range: Touch
 Duration: Permanent
 Effect: Any one living creature
 This spell is similar to a cure light wounds
-spell, but will cure one living creature of 6-2 1
+spell, but will cure one living creature of 6-21
 (3d6+3) points of damage.
 The reverse of this spell (cause critical
 wounds) causes 6-21 points of damage to any
@@ -66,7 +71,7 @@ Hit Dice than a vampire, this spell inflicts 3-
 30 (3d10) points of damage. The victim may
 make a Saving Throw vs. Spells to take 1/2
 damage.
-The reverse, finger o f death, will actually
+The reverse, finger of death, will actually
 cure 3-30 points of damage for any Undead
 with 10 or more Hit Dice (phantom, haunt,
 spirit, nightshade, or special).
@@ -457,6 +462,973 @@ handled normally for the remaining damage;
 in the example above, the druid would take 4-
 24 points of damage, or 2-12 points if the Saving Throw were made.
 
+[Companion pages 22-28: magic-user 5th-9th level spell material]
+FIFTH LEVEL MAGIC-USER SPELLS
+1. Animate Dead
+2. Cloudkill
+3. Conjure Elemental
+4. Contact Outer Plane
+5. Dissolve*
+6. Feeblemind
+7. Hold Monster*
+8. Magic Jar
+9. Pass-Wall
+10. Telekinesis
+11. Teleport
+12. Wall of Stone
+SIXTH LEVEL MAGIC-USER SPELLS
+1. Anti-Magic Shell
+2. Death Spell
+3. Disintegrate
+4. Geas*
+5. Invisible Stalker
+6. Lower Water
+7 . Move Earth
+8. Projected Image
+9. Reincarnation
+10. Stone to Flesh*
+11. Wall of Iron
+12. Weather Control
+SEVENTH LEVEL
+MAGIC-USER SPELLS
+1. Charm Plant
+2. Create Normal Monsters
+3. Delayed Blast Fire Ball
+4. Lore
+5. Magic Door*
+6. Mass Invisibility*
+7. Power Word Stun
+8. Reverse Gravity
+9. Statue
+10. Summon Object
+11. Sword
+12. Teleport any Object
+EIGHTH LEVEL
+MAGIC-USER SPELLS
+1. Dance
+2. Explosive Cloud
+3. Mass Charm*
+4. Mind Barrier*
+5. Permanence
+6. Polymorph any Object
+7. Power Word Blind
+8. Symbol
+NINTH LEVEL MAGIC-USER SPELLS
+1. Gate*
+2. Maze
+3. Meteor Swarm
+4. Power Word Kill
+Fifth Level Magic-user Spells
+Contact Outer Plane
+Range: 0 (magic-user only)
+Duration: See below
+Effect: 3-12 questions may be answered
+This spell allows the magic-user to contact
+one of the Outer Planes of Existence to seek
+knowledge from an Immortal creature
+(played by the DM). The wisest and most
+powerful Immortals live on the most distant
+Outer Planes. However, mental contact with
+an Immortal may cause a mortal to go
+insane. The more distant the plane, the
+greater the chance of a correct answer-but
+the greater the chance of Insanity as well.
+The number of questions the magic-user
+may ask is equal to the distance* to the Outer
+plane. The caster may choose the distance,
+up to the maximum allowed. The chance of
+insanity is checked once, when the Immortal
+is first contacted. If the caster is 21st level or
+greater, the chance of insanity is reduced by
+5 % per level of the caster above 20. If insan-
+ity does not result, the Immortal may still not
+know the answer, or may lie. The chances of
+knowing and lying are checked for each ques-
+tion.
+Distance and
+..
+Chance of.
+Number of
+Questions Insanity Knowing
+Lying
+25 %
+50 %
+5%
+This spell may be used once a month at most
+(or less often, at the DM's option). An insane
+character recovers with rest, after a number
+of weeks of game time equal to the number of
+the plane contacted.
+* The "distance" to any other plane of
+existence is the number of planes that would
+be crossed if that plane were visited. The
+"distance" between the Prime Plane and the
+closest outer plane is 3, as the ethereal, ele-
+mental, and astral planes lie "between"
+them. There are many Outer Planes, but
+most are too far removed to be affected by
+this spell.
+Dissolve*
+Range: 120'
+Duration: 3-18 days
+Effect: Liquifies 3000 square feet
+This spell changes a volume of rock to a
+morass of mud. An area 10' deep or thick is
+affected, and may be up to 3,000 square feet
+in surface area. The victim may get mired
+and become unable to move. The magic-user
+may choose the exact width and length (20'.
+150', 30'. loo', etc.), but the entire area of
+effect must be within 120' of the caster. Crea-
+tures entering the mud are slowed to 10% of
+their normal movement rate at best, and may
+become stuck.
+The reverse of this spell (harden) will
+change the same volume of mud to rock, but
+permanently. A victim in the mud may make
+a Saving Throw vs. Spells to avoid being
+trapped.
+Feeblemind
+Range: 240'
+Duration: Permanent until dispelled
+Effect: Lowers Intelligence score to 2
+This spell will only affect a magic-user, elf, or
+spell-casting monster. It will make the victim
+helpless, unable to cast spells or think clearly
+(as if having an Intelligence score of 2). The
+victim may make a Saving Throw vs. Spells
+to avoid the effect, but with a -4 penalty to the
+roll. The feeblemind lasts until removed by a
+dispel magic spell (at normal chances for suc-
+cess) or by a cleric's cureall spell.
+Telekinesis
+Range: 120'
+Duration: 6 rounds
+Effect: 200 cn of weight per level of caster
+This spell enables the magic-user to move a
+creature or object simply by concentrating.
+The item may weigh up to 200 cn per level of
+the caster (a 10th level elf could move an
+object weighing up to 2,000 cn). The caster
+may move the object in any direction, at a
+rate of up to 20' per round.
+An unwilling victim may make a Saving
+Throw vs. Spells to avoid the effect. If a tar-
+get is held by someone, the holder gets a Sav-
+ing Throw with a -2 penalty. If the object is
+carried but not held, the owner may grab for
+the departing object, making a Saving Throw
+with a -5 penalty. The caster must concen-
+trate while moving objects, and the objects
+will fall if disturbed.
+If a wall of stone topples, it causes 10-100
+points of damage and shatters.
+I
+Sixth Level Magic-user Spells
+Move Earth
+Range: 240'
+Duration: 6 turns
+Effect: Moves soil
+This spell causes soil (but not rock) to move.
+It may be used to move earth horizontally to
+make a hill, or vertically, to open a large hole.
+The hole may be up to 240 ' deep, unless solid
+rock is reached. The soil may be moved at up
+to 60' per turn, and at the end of the spell
+duration, the moved soil remains where it is
+put. The spell is helpful for constructing cas-
+tles.
+Reincarnation
+Range: 10'
+Duration: Permanent
+Effect: Creates a new body
+To cast this spell, the magic-user must have
+part of the dead body, however small that part
+may be. When the spell is cast, a new body
+magically appears, and the life force which
+was once in the dead body returns and
+inhabits the new one. The D M refers to the
+tables below to find the form of the new body.
+If the life force is reincarnated as a different
+race, all details of the new race apply, instead
+of the old. For example, a cleric reincarnated
+as an elf is no longer a cleric, but is able to
+cast magic-user spells and fight as an elf.
+The level of experience does not change
+unless restricted by the maximum for demi-
+humans. If a monster body appears, the type
+of monster is based on the alignment of the
+life force. A monster body may not gain levels
+of experience; the character must play as
+reincarnated or retire from play.
+1 Human
+(1d8)
+5 Elf
+6 Halfling
+2 Human
+7 Original race
+3 Human
+8 Monster
+4 Dwarf
+(use table below)
+MONSTERS
+1d6 Lawful
+Neutral
+Chaotic
+Ape, White Bugbear
+Blink Dog
+Bear*
+Gnoll
+Gnome
+Centaur
+Kobold
+Neanderthal
+Griffon
+Manticore
+Owl, giant
+Lizard Man Orc
+Pegasus
+Pixie
+Troglodyte
+Treant
+*Any normal bear
+(The DM may add more monsters to the lists. Such
+monsters should have 8 Hit Dice or less and should
+be at least semi-intelligent.)
+Wall of Iron
+Range: 120'
+Duration: Permanent
+Effect: Creates 500 square feet of iron
+This spell creates a vertical wall of iron
+exactly 2 " thick. The magic-user may choose
+any length and width, but the total area must
+be 500 square feet or less (10'~50', 20'~25',
+etc.), and the entire wall must be within 120'
+of the caster. The caster must create the wall
+so it rests on the ground or similar support. It
+cannot be cast in a space occupied by another
+object. It lasts until dispelled, disintegrated,
+or physically broken (though it will resist all
+but giant-sized physical attacks). Most other
+spell effects, including fire ball, lightning
+bolt, etc., have no effect on a wall of iron. If
+the wall is made to topple, it causes 10-100
+points of damage and shatters.
+If the wall is attacked, it has a number of
+"hit points" equal to the level of the caster.
+The wall can only be damaged by battering.
+Giants inflict 1 point of battering damage per
+blow, and certain other creatures might dam-
+age it in other ways; a rust monster can
+destroy a wall of iron with a single touch.)
+Weather Control
+Range: 0 (magic-user only)
+Duration: Concentration
+Effect: All weather within 240 yards
+This spell allows the magic-user to create one
+special weather condition in the surrounding
+area (within a 240 yard radius). The caster
+may select the weather condition. The spell
+only works outdoors, and the weather will
+affect all creatures in the area (including the
+caster). The effects last as long as the caster
+concentrates, without moving; if the caster is
+being moved (for example, aboard a ship),
+the effect moves also. The effects vary, but the
+following results are typical:
+Rain: -2 penalty to Hit rolls applies to all
+missile fire. After three turns, the ground
+becomes muddy, reducing movement to 1/2
+the normal rate.
+Snow: visibility (the distance a creature
+can see) is reduced to 20'; movement is
+reduced to 1/2 the normal rate. Rivers and
+streams may freeze over. Mud remains after
+the snow thaws, for the same movement pen-
+alty.
+Fog: 20' visibility, 1/2 normal movement.
+Those within the fog might become lost,
+moving in the wrong direction.
+Clear: This cancels bad weather (rain,
+snow, fog) but not secondary effects (such as
+mud).
+Intense Heat: Movement reduced to 1/2
+normal. Excess water (from rain, snow, mud
+transmuted from rock, etc.) dries up.
+High Winds: No missile fire or flying is
+possible. Movement reduced to 1/2 normal.
+At sea, ships sailing with the wind move 50%
+faster. In the desert, high winds create a sand-
+storm, for 1/2 normal movement and 20 ' vis-
+ibility.
+Tornado: This creates a whirlwind under
+the magic-user's control, attacking and mov-
+ing as if a 12 HD Air Elemental. At sea, treat
+the tornado as a "storm or gale".
+Seventh Level Magic-user Spells
+Charm Plant
+Range: 120'
+Duration: 3 months
+Effect: Charms 1 tree or more smaller plants
+Similar to a charm person spell, this effect
+causes 1 tree, 6 medium-sized bushes, 12
+small shrubs, or 24 small plants to become
+friends of the magic-user (no Saving Throw).
+However, a plant-like monster (treant,
+shrieker, etc.) may make a Saving Throw vs.
+Spells to resist the effect.
+The charmed plants will understand and
+obey all commands of the magic-user, as long
+as the tasks are within their ability (including
+the entangling of passers-by within range,
+but not including movement, sensing align-
+ment, etc.). The plants will remain charmed
+for 6 months, until the charm is dispelled, or
+until winter (when they sleep). (This spell is
+quite useful around a stronghold, both inside
+and out, especially when used after a 4th level
+growth ofplants spell, and possibly a perma-
+nent spell as well.)
+Create Normal Monsters
+Range: 30'
+Duration: 1 turn
+Effect: Creates 1 or more monsters
+This spell causes monsters to appear out of
+thin air. All monsters appearing will under-
+stand and obey the caster's commands-
+fighting, carrying or fetching things, etc.
+They will faithfully obey all commands to the
+best of their abilities. Each monster will
+appear carrying its normal weapons and
+wearing its normal armor (if any), but other-
+wise unequipped. At the end of 1 turn, all the
+monsters created vanish back into thin air,
+along with all their equipment.
+The total number of Hit Dice of monsters
+appearing is equal to the level of the magic-
+user casting the spell (with fractions
+dropped). The magic-user may choose the
+exact type of monsters created, selecting any
+monster with no special abilities (;.e., no
+asterisk next to the Hit Dice number in the
+monster explanation). Humans, demi-
+humans, and Undead cannot be created by
+this spell. Creatures of 1-1 Hit Dice are
+counted as 1 Hit Die; creatures of 1/2 Hit Die
+or less are counted as 1/2 Hit Die each.
+For example, with this spell, a 15th level
+caster could summon 30 giant bats, rats, or
+kobolds; or 15 goblins, orcs, or hobgoblins;
+or 7 rock baboons, gnolls, or lizard men; or 5
+boars, draco lizards, or bugbears; or 3 black
+bears, panthers, or giant weasels; and so
+forth.
+Delayed Blast Fire Ball
+Range: 240'
+Duration: 0 to 60 rounds
+Effect: Delayed blast fireball, sphere of 20'
+radius
+As the name implies, this is a fire ball spell
+whose blast can be delayed. The magic-user
+must state the exact number of rounds delay
+(from 0 to 60) when the spell is cast. A small
+rock, very similar in appearance to a valuable
+gem, then shoots out toward the desired loca-
+tion, and remains until the stated delay
+elapses. The "gem" may be picked up, car-
+ried, and so forth. When the stated duration
+ends, an effect identical to a normal fire ball is
+produced-a
+sudden instantaneous explo-
+sion inflicting 1-6 points of damage per level
+of the caster to all within the area of effect (a
+sphere of 20' radius). Each victim may make
+a Saving Throw vs. Spells to take 1/2 dam-
+age.
+Once the spell has been cast, the explosion
+cannot be hurried nor further delayed, except
+with a wish. The "gem" created is pure
+magic, not an actual object, and cannot be
+moved magically (by telekinesis, teleport,
+etc.), though it can be dispelled.
+Lore
+Range: 0 (magic-user only)
+Duration: Permanent
+Effect: Reveals details of 1 item, place, or
+person
+By means of this spell, the magic-user may
+gain knowledge of one item, place, or person.
+If an item is held by the caster, the spell takes
+1-4 turns to complete, and the magic-user
+learns the item's name, method of operation
+and command words (if any), and approxi-
+mate number of charges (if any, within 5 of
+the correct number). If the item has more
+than one mode of operation, or more than
+one command word, only one function will
+be revealed for each lore spell used, without a
+clue to others.
+If a place or person is being investigated or
+if the item is not held, the spell may take 1-
+100 days to complete, depending on the num-
+ber of details already known. (The D M may
+reveal only general details if the place is large,
+or if the person is of great power.) A purely
+legendary topic should require large amounts
+of time, and the information gained may be
+in the form of a riddle or poem.
+Magic Door'
+Range: 10'
+Duration: 7 uses
+Effect: Creates one passage
+This spell may be cast on any wall, floor, ceil-
+ing, or section of ground. It creates a magi-
+cal, invisible doorway that only the spell
+caster may use. It also creates a passage
+through up to 10' of non-living solid material
+beyond the doorway itself. It cannot be cre-
+ated in aliving object of any kind. The door is
+undetectable except by a detect magic spell,
+and cannot be destroyed except by a dispel
+magic spell (at normal chances for success).
+The magic door lasts until dispelled, or
+until it has been used 7 times. Note that each
+passage through the door is a separate use.
+The reverse of this spell (magic lock) is a
+powerful version of the 2nd level wizard lock
+spell, but cannot be affected by a knock spell,
+nor by the effects of any magic item. The
+magic lock causes any one portal to become
+totally impassable as long as the magic
+remains, usable only by the caster of the
+spell. The spell can affect an empty lO'x10'
+portal-like area (such as an empty doorway).
+The locked portal does not change in appear-
+ance. As with a magic door, the enchantment
+remains until the portal has been used 7 times
+or until removed by a dispel magic spell.
+Mass Invisibility*
+Range: 240'
+Duration: Permanent until broken
+Effect: Many creatures or objects
+This bestows invisibility (as the 2nd level
+spell) on several creatures. All the recipients
+must be within an area 60' square within
+240' of the magic-user. The spell will affect
+up to 6 dragon-sized creatures, or up to 300
+man-sized creatures (treating one horse as 2
+men). After the spell is cast, each creature
+becomes invisible, along with all equipment
+carried (as explained in the Basic Set Players
+Guide, page 41).
+The reverse of this spell (appear), will
+cause all invisible creatures and objects in a
+20'. 20'. 20' volume to become visible.
+Creatures on astral and ethereal Planes are
+not within the area of effect; the spell cannot
+reach across planar boundaries. All other
+forms of invisibility are affected, both magi-
+cal and natural, and all victims of this spell
+cannot become invisible again for 1 turn.
+Power Word Stun
+Range: 120'
+Duration: 2-12 or 1-6 turns
+Effect: Stuns 1 creature with 70 hit points or
+less
+This spell enables the caster to stun one vic-
+tim within 120' (no Saving Throw). A victim
+with 1-35 hit points is stunned for 2-12
+rounds; one with 36-70 hit points is stunned
+for 1-6 rounds. Any creature with 71 or more
+hit points cannot be affected. A stunned vic-
+tim is unable to attack or cast spells, and suf-
+fers a -4 penalty on all Saving Throws for the
+duration of the stun.
+Reverse Gravity
+Range: 90'
+Duration: 1/5 round (2 seconds)
+Effect: Causes victims in a 30' cubic volume
+to fall upward
+This spell affects all creatures and objects
+within acubicvolume 30'. 30'. 30', causing
+them to "fall" in a direction opposite normal
+gravity. In 115 round, creatures and objects
+can fall about 65 feet. No Saving Throw is
+allowed, and all victims hitting a ceiling or
+other obstruction take 1-6 points of damage
+per 10 feet fallen. Note that after the 1/5
+round duration ends, gravity returns to nor-
+mal, and all victims will fall back to their orig-
+inal places, suffering more falling damage. A
+Morale check must be made for each victim
+of this spell. For example, a magic-user casts
+this spell at a group of approaching giants in a
+40' tall room. The giants "fall" to the ceiling
+and then back to the floor, each taking a total
+of 8-48 points of damage in the process.
+Statue
+Range: 0 (magic-user only)
+Duration: 2 turns per level of the caster
+Effect: Allows the caster to turn to stone
+This spell allows the magic-user to change
+into a statue, along with all non-living equip-
+ment carried, up to once per round (to or
+from statue form) for the duration of the
+spell. The caster can concentrate on other
+spells while in statue form. Although this
+spell does not give immunity to Turn to Stone
+effects (from the attack of a gorgon, for exam-
+ple), the caster may simply turn back to nor-
+mal form one round after becoming petrified.
+While in statue form, the magic-user is
+Armor Class -4, but cannot move. The statue
+cannot be damaged by cold or fire (whether
+normal or magical), or by normal weapons.
+The statue need not breathe, and is thus
+immune to all gas attacks, drowning, etc.
+Magical weapons and other spells (such as
+lightning bolt) can inflict normal damage. If
+a fire or cold spell is cast at the magic-user
+while in normal form, the character need
+only win the initiative (through the standard
+roll) to turn into a statue before the attacking
+spell strikes. The caster receives +2 to initia-
+tive when changing form.
+Summon Object
+Range: Infinite
+Duration: Instantaneous
+Effect: Retrieves 1 object from caster's home
+By means of this spell, the magic-user can
+cause one non-living object to leave his or her
+home and appear in hand. The object must
+weigh no more than 500 cn, and may be no
+bigger than a staff or small chest. The caster
+must be very familiar with the item and its
+exact location, or the spell will not work.
+Each item must be prepared beforehand by
+sprinkling it with a special powder that costs
+1,000 gp per item prepared; the powder
+becomes invisible, and does not interfere
+with the item in any way. Unprepared items
+cannot be summoned by this spell.
+If another being possesses the item sum-
+moned, the item will not appear, but the
+caster will know approximately who and
+where the possessor is.
+The magic-user may use this spell from
+any location, even if the item summoned is
+on another Plane of Existence.
+Sword
+Range: 30'
+Duration: 1 round per level of the caster
+Effect: Creates a magical sword
+When this spell is cast, a glowing sword made
+of magic, rather than metal, appears next to
+the caster. The magic-user may cause it to
+attack any creature within 30', simply by
+concentrating. If concentration is broken, the
+sword merely stops attacking; it remains in
+existence for 1 round per level of the magic-
+user. The sword moves very quickly, attack-
+ing twice per round, and Hit Rolls are made
+at the caster's level. Damage is the same as a
+two-handed sword, but this magical creation
+is capable of hitting any target (even those hit
+only by powerful magic weapons). The sword
+cannot be destroyed before the duration
+ends, except by a dispel magic spell effect (at
+normal chances for success).
+Teleport a n y Object
+Range: Touch
+Duration: Instantaneous
+Effect: Causes 1 object to teleport
+This spell is similar to the 5th level teleport
+spell, but non-living objects can be affected.
+After casting this spell, the magic-user may
+touch one creature or object and cause it to
+teleport. The normal chances of error apply;
+an object appearing too high will fall (and
+probably break), and one appearing too low
+will disintegrate. The destination may not
+deliberately be one occupied by a solid object
+or above ground.
+The maximum weight affected is 500 cn
+per level of the caster. If an object is a solid
+part of a greater whole (such as a section of
+wall), one 10'. 10'. 10' cube of material (at
+most) will be teleported. If another creature
+possesses the item touched, (whether held or
+merely carried), the creature may make a
+Saving Throw vs. Spells (with a -2 penalty); if
+successful, the teleport fails.
+If the caster uses this spell to teleport him-
+self, there is no chance of error. If the caster
+touches another creature, it may make a Sav-
+ing Throw vs. Spells (if desired) to avoid
+being teleported, but with a -2 penalty to the
+roll.
+Eighth Level Magic-user Spells
+Dance
+Range: Touch
+Duration: 3 or more rounds
+Effect: Causes 1 victim to dance
+This spell causes one victim to prance madly
+about, performing a jig or other dance, for 3
+or more rounds. The victim gets no Saving
+Throw, and cannot attack, use spells (or
+spell-like abilities), or flee. While dancing, a
+-4 penalty applies to the victim's Saving
+Throws, and a +4 penalty to Armor Class as
+well.
+The magic-user must touch the victim for
+the spell to take effect (a normal Hit Roll).
+The duration is 3 rounds for a caster of 18th-
+20th level; 4 rounds for levels 21-24,5 rounds
+at levels 25-28,6 rounds at levels 29-32, and 7
+rounds at levels 33-36.
+Explosive Cloud
+Range: 1'
+Duration: 6 turns
+Effect: Creates a moving poisonous cloud
+This spell creates an effect which appears the
+same as the 5th level cloudkill spell (a 20' tall
+cloud of greenish gas 30' in diameter appear-
+ing next to the caster). The cloud is only
+mildly poisonous; all victims within it must
+make a Saving Throw vs. Spells or be para-
+lyzed that round. Each victim within the
+cloud makes a new Saving Throw each
+round.
+The cloud is filled with sparkling lights
+(visible only to those within it), which are
+small explosions. Each round, all those
+within the cloud take damage from the explo-
+sions, with no Saving Throw allowed. This
+damage is 1 point for each 2 levels of experi-
+ence of the magic-user, rounding down (9
+points at 18th or 19th level, 10 points at 20th
+or 21st level, etc.). This explosive damage
+will affect any creature, including those
+immune to fire, gas, electricity, and other
+special attacks.
+Mass Charm*
+Range: 120'
+Duration: Special (as charm person spell)
+Effect: 30 Levels of creatures
+This spell creates the same effect as a charm
+person or charm monster spell, except that 30
+levels (or Hit Dice) of victims can be affected
+at once. Each victim may make a Saving
+Throw vs. Spells to avoid the charm, but with
+a -2 penalty to the roll. The spell will not
+affect a creature of 31 or more levels or Hit
+Dice.
+The duration of each charm is determined
+by the victim's intelligence (see the D&D
+Basic D M Rulebook, page 14). If the magic-
+user attacks one of the charmedvictims, only
+that creature's charm is automatically bro-
+ken. Any other charmed creatures that see
+the attack may make another Saving Throw,
+but other creatures' charms are not affected.
+The reverse of this spell, remove charm,
+will unfailingly remove all charm effects
+within a 20'. 20'. 20' volume. It will also
+prevent any object in that area from creating
+charm effects for 1 turn.
+Mind Barrier*
+Range: 10'
+Duration: 1 hour per level of the caster
+Effect: Protects against mind-affecting spells
+and items
+This spell affects one creature; an unwilling
+recipient may make a Saving Throw vs.
+Spells to avoid the effect.
+The spell prevents any form of E S e Clair-
+voyance, Clairaudience, crystal ball gazing,
+or any other form of mental influence or
+information gathering (such as by a contact
+higher plane or summon object) from work-
+ing properly. The caster or recipient simply
+does not exist for the purposes of those and
+similar spell effects.
+In addition, the recipient gains a bonus of
++8 to Saving Throws against mind-influenc-
+ing attacks, such as all forms of charm, illu-
+sion and phantasms, feeblemind, and the
+like. (However, a roll of 1 always fails the
+Saving Throw, regardless of adjustments.)
+The reverse of this spell (open mind) will
+cause the victim touched to be vulnerable to
+the mind-influencing attacks given above. All
+the victim's Saving Throws against such
+effects are penalized by -8 for the duration of
+the spell. This reversed spell must be cast by
+touch, requiring a normal Hit Roll.
+Permanence
+Range: 10'
+Duration: Permanent until dispelled
+Effect: Causes 1 magical effect to become
+permanent
+By means of this spell, the magic-user can
+cause one other magic-user spell effect of 7th
+level or less to become permanent. No spell
+with an "Instantaneous" or "Permanent"
+duration (such as dispel magic, fire ball,
+lightning bolt, etc.) can be made permanent.
+Cleric spells cannot be made permanent, nor
+can an 8th or 9th level magic-user spell.
+The D M must carefully consider other
+spells, and may wish to restrict the use of the
+permanence spell for reasons of game bal-
+ance. A permanence spell lasts until dispelled
+by a dispel magic spell from the caster or from
+some higher level spell caster (at normal
+chances for success). When the permanence
+spell is dispelled, the other spell effect van-
+ishes immediately.
+Except for weapons, an item can only
+receive one permanence spell, and a creature
+can receive two at most. If a permanence
+spell is cast on an item or area which already
+has one (or a creature which already has two),
+both permanence spells are immediately
+negated, along with the spells previously
+made permanent. A weapon may have up to
+5 permanent effects, but a 25 % chance of fail-
+ure applies to each permanence after the first.
+Furthermore, if the permanence fails, it
+destroys the weapon completely.
+Some spells used on a creature that are
+commonly made permanent are: detect
+magic, protection from evil, read languages,
+read magic, detect invisible, and fly. Some
+spells commonly made permanent on areas
+are light, phantasmal force, confusion, and
+cloudkill.
+A magic-user needs a permanence spell to
+make any permanent magic item (such as a
+sword, shield, or non-charged miscellaneous
+item). It is not needed for magic wands,
+potions, and other temporary magic items.
+Polymorph a n y Object
+Range: 240'
+Duration: See below
+Effect: Changes form of 1 object or creature
+This spell is similar to the 4th level poly-
+morph other spell, except that an object can
+be affected. If the object is part of a greater
+whole (such as a section ofwall), up to a 10'.
+10'. 10' volume can be polymorphed. A
+creature may avoid the effects if a Saving
+Throw vs. Spells is made, but with a -4 pen-
+alty to the roll.
+The duration of the polymorph depends on
+the degree of the change. There are three
+basic "kingdoms" of all things-animal, veg-
+etable, and mineral. If an object is poly-
+morphed to one of a "nearby" kingdom
+(animal-vegetable, vegetable-mineral) the
+duration is 1 hour per level of the caster. If the
+change is from animal to mineral (or the
+reverse), it lasts for 1 turn per level of the
+caster. If no change in kingdom occurs (for
+example, if a creature is polymorphed into
+some other creature), the change is perma-
+nent until removed by a dispel magic spell (at
+normal chances for success).
+Note that creatures created by means of
+this spell are not automatically friendly. A
+polymorph cannot affect a creature's age or
+hit points. (See the 4th level polymorph self
+and polymorph other spells for other guide-
+lines.)
+Power Word Blind
+Range: 120'
+Duration: 1-4 days or 2-8 hours (see below)
+Effect: Blinds 1 creature with 80 hit points or
+less
+With this spell, the caster may blind one vic-
+tim within 120' (no Saving Throw). A victim
+with 1-40 hit points is blinded for 1-4 days;
+one with 41-80 hit points is blinded for 2-8
+hours. Any creature with 81 or more hit
+points cannot be affected. A blinded victim
+suffers penalties of -4 on all Saving Throws
+and +4 on Armor Class. A cleric's cure blind-
+ness or cureall spell will not remove this
+blindness unless the cleric is of a level equal to
+or higher than the caster of the power word
+blind.
+Symbol
+Range: Touch
+Duration: Permanent
+Effect: Creates 1 magical rune
+This spell creates a written magical drawing
+(a "rune") of great power. There are 6 kinds
+of symbols; the caster must select one when
+the spell is memorized. The rune may be
+placed on an object (such as a door or wall) or
+placed in mid-air. The rune cannot move; if
+placed on a creature or moving object, it will
+remain at that point when the surface moves
+(possibly floating in mid-air).
+When any living creature passes over or
+through the rune, or touches the object on
+which the rune is inscribed, or (foolishly)
+reads the rune, the rune's effect takes place
+immediately (no Saving Throw).
+There is one exception: a magic-user, and
+any other creature which can cast magic-user
+spells, may make a Saving Throw vs. Spells if
+the symbol is merely read or touched (rather
+than passed). If the Saving Throw is success-
+ful, the symbol has no effect on that creature.
+All symbols look similar to normal writ-
+ings. Six symbols and their effects are given
+below; the D M may create others (such as
+polymorph, teleport, charm, geas, etc.).
+Death: Slays any creature with 75 hit
+points or less; does not affect a creature with
+76 hit points or more.
+Discord: The victim attacks allies (if any)
+or is otherwise confused (as the 4th level con-
+fusion spell). The effect is permanent until
+removed by a dispel magic spell (at normal
+chances for success) or by a cleric's cureall
+spell.
+Fear: The victim immediately runs away
+from the symbol, at 3 times normal move-
+ment rate, for 30 rounds (as the wand).
+Insanity: The victim becomes insane,
+and cannot attack, cast spells, or use special
+abilities or items. The victim may walk, but
+must be carefully tended or may run away.
+This effect is permanent until removed (see
+Discord, above).
+Sleep: The victim falls asleep, and cannot
+be awakened. The victim will wake normally
+in 11-20 hours or if a dispel magic spell is
+used to negate it (at normal chances for suc-
+cess).
+Stunning: Affects any creature with 150
+hit points or less. The victim is stunned for 2-
+12 turns (as the power word stun spell).
+Ninth Level Magic-user Spells
+Gate*
+Range: 30'
+Duration: 1-100 turns or 1 turn
+Effect: Opens a portal to another plane
+When the magic-user casts this spell, he must
+name one target: the Ethereal Plane, the
+Astral Plane, one of the four Elemental
+Planes, or one Outer Plane (for which the
+name of a resident of the Plane must also be
+spoken, usually that of an Immortal, a ruler
+of the outer Planes). These Planes are
+explained in the Dungeon Master's book.
+The spell opens a direct connection to the
+other Plane of Existence.
+A gate to an Outer Plane remains open for
+only 1 turn. Any other gate remains open for
+1-100 random turns, and there is a 10%
+chance per turn that some other-planar crea-
+ture will wander through the gate. A gate to
+an Elemental Plane actually creates a vortex
+and a wormhole, and a wish may be used to
+make them permanent.
+Contact with an Outer Plane is dangerous,
+and the magic-user must know and speak the
+name of the Immortal he wishes to contact.
+The Immortal he calls will probably (95%
+chance) arrive in 1-6 rounds, but there is a
+5% chance that some other being from the
+Outer Planes will respond. When the being
+arrives, it immediately looks for the spell
+caster. If the caster does not have an excellent
+reason for opening the gate, the being will
+probably destroy the caster. Even if the caster
+gives an important reason, the being may
+merely leave immediately, showing no inter-
+est. Occasionally, if the reason is of supreme
+importance to the magic-user and of some
+interest to the being, it may actually help for a
+short time.
+The reverse of this spell, close gate, will
+destroy the effect of the normal form of the
+spell (but cannot affect an Immortal). It can
+also be used to close a permanent gate to a
+nearby Plane (such as an elemental vortex).
+Maze
+Range: 60'
+Duration: See below (1-6 turns, 2-40 rounds,
+2-8 rounds, or 1-4 rounds)
+Effect: Traps 1 creature
+This spell creates a maze in the Astral plane
+and places one victim into the maze (no Sav-
+ing Throw). The intelligence of the victim
+determines the time needed to escape the
+maze:
+Animal or Low (1-8) 1-6 turns
+Average (9-12)
+2-40 rounds
+High (13-17)
+2-8 rounds
+Genius (1 8+)
+1-4 rounds
+The victim returns to the point of disappear-
+ance when he escapes the maze.
+Meteor Swarm
+Range: 240'
+Duration: Instantaneous
+Effect: Creates 4 or 8 meteor-fireballs
+This spell creates either 4 or 8 meteors (at the
+caster's choice). Each meteor can be aimed at
+a different target within range, but one and
+only one meteor can be aimed at any one
+creature. Each meteor slams into its target
+&
+and then explodes as if a fire ball (affecting all
+creatures within a 20' radius).
+If 4 meteors are created, each strikes for 8-
+48 points of damage and then explodes for 8-
+48 points of fire damage (8d6). If 8 smaller
+meteors are used, each strikes for 4-24 points
+and explodes for the same amount (4d6).
+Note that if the meteors are thrown properly,
+one creature or area may be affected by mul-
+tiple blasts.
+The player rolls damage for each strike and
+blast separately, and makes a separate Saving
+Throw for each fire ballblast. A meteor never
+misses.
+Any victim struck by a meteor takes full
+"strike" damage (no Saving Throw). Each
+victim within a blast may make a Saving
+Throw vs. Spells to take only 1/2 of the given
+"fire" damage. Even fire-resistant and fire-
+using creatures are fully affected by meteor
+strikes, although they might be resistant to
+the fiery explosions.
+Power Word Kill
+Range: 120'
+Duration: Instantaneous
+Effect: Slays or stuns 1 or more creatures
+This spell enables the caster to affect one or
+more victims within 120' (no Saving
+Throw). Exception: a magic-user, and any
+creature which can cast magic-user spells,
+may make a Saving Throw vs. Spells to avoid
+this effect, but with a -4 penalty to the roll.
+A single victim with 1-60 hit points is auto-
+matically slain; one with 61-100 hit points is
+stunned (as power word stun) and unable to
+act for 1-4 turns. Any creature with 101 or
+more hit points cannot be affected.
+The spell can also be used to slay up to 5
+victims if each has 20 hit points or less (again,
+no Saving Throw).
+
 ```
 
 ### Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items
@@ -821,7 +1793,7 @@ spell when it occurs. If the scroll is not carried
 by the user, the spell effect appears around
 the scroll itself, affecting the nearest creature
 if a recipient is required. The spell cannot
-affect the scroll, even i f it is a fire-type spell.
+affect the scroll, even if it is a fire-type spell.
 For example, an elf reads a delay lightning
 bolt scroll, delaying it 8 rounds, and then
 puts the scroll away. Eight rounds later, when
@@ -903,7 +1875,7 @@ the scroll or affecting the nearest creature if a
 recipient is required. As with a normal spell
 scroll, any spell cast from it is then gone;
 however, another spell may be written on the
-scroll i f i t is o f the same level, and the repeti-
+scroll if it is of the same level, and the repeti-
 tion effect will again apply.
 Seeing: This scroll is blank. When held
 and commanded to write, it will draw pic-
@@ -1190,7 +2162,7 @@ enemy enters (a normal Hit roll is made). If
 the user falls, a command will stop the Rod
 suddenly, and the user may hold onto it.
 Rod of Parrying: This rod +5 can be used
-as a melee weapon, inflicting 6-13 (ld8+5)
+as a melee weapon, inflicting 6-13 (1d8+5)
 points of damage per hit (but no Strength
 bonus applies). It may also be used to parry
 attacks, if the user chooses this ability at the
@@ -1235,7 +2207,7 @@ Blue
 9-10 Chaotic
 Black
 2 Acid
-Each is a rod 4 , and inflicts 6-13 (ld8.5)
+Each is a rod +4, and inflicts 6-13 (1d8+5)
 points of damage per hit (but without
 Strength bonuses). Once per day, the rod
 may be turned into a small dragon of the
@@ -1308,7 +2280,7 @@ Draining Undead (or effect), charges are
 drained from the ring, and no levels are lost.
 If a single blow drains more Levels than there
 are charges remaining, the ring disintegrates;
-otherwise, it becomes a ring ofprotection +f
+otherwise, it becomes a ring of protection +1
 when all the charges are used.
 Memory: This ring can only be used by a
 spell caster. It allows the wearer to recall any
@@ -1317,13 +2289,13 @@ within 1 turn of casting a spell, to recall it; the
 memory then reappears, and the spell is
 instantly "relearned." The ring can restore
 the memory of one spell per day.
-Protection e l , '2, '3, or +4): These rings
+Protection (+1, +2, +3, or +4): These rings
 are identical to those described in the D&D
 Basic and Expert Sets. The bonus applies
 both to Armor Class and Saving Throws. A
-ring +f may have an area effect, as described
+ring +1 may have an area effect, as described
 in the D&D Expert Set; however, only 10%
-of all rings +f have this power, and no more
+of all rings +1 have this power, and no more
 powerful ring can affect an area.
 Quickness: Once each day, the wearer of
 this ring can move and attack at double nor-
@@ -1342,7 +2314,7 @@ Safety: The effect of this ring is similar to
 that of a potion ofluck. If any Saving Throw
 is failed, the player of the character wearing
 the ring may "change fate" by announcing
-that his Saving Throw was successfull! The
+that his Saving Throw was successful! The
 ring will negate 1-4 failed Saving Throws,
 and then disintegrate.
 Seeing: Once each day, the wearer of this
@@ -1379,7 +2351,7 @@ be true, a "True" result will be obtained. By
 telepathy, the ring tells the wearer of its
 powers as soon as it is worn.
 Truthfulness: This item claims to be a
-ring o f truth when worn, but actually func-
+ring of truth when worn, but actually func-
 tions differently. When the wearer first tries
 to determine the truth of a statement, the
 statement will appear to be true-but there-
@@ -1389,8 +2361,8 @@ be given as long as the ring is worn. It cannot
 be removed until a remove curse is applied by
 a 26th or higher level caster.
 Truthlessness: This item claims to be a
-ring o f truth when worn, but functions in a
-manner opposite that of a ring o f truthful-
+ring of truth when worn, but functions in a
+manner opposite that of a ring of truthful-
 ness-the wearer is unable to tell the truth,
 lying at all times. It cannot be removed until
 a remove curse spell, cast by a 26th or higher
@@ -1398,7 +2370,7 @@ level caster, is applied.
 Wishes: This item is identical to that
 described in the D&D Expert Set, except that
 to find the number of wishes contained, roll
-ld10: 1-4 '1; 5-7 = 2; 8-9 = 3; 10 = 4.
+1d10: 1-4 = 1; 5-7 = 2; 8-9 = 3; 10 = 4.
 9. Miscellaneous Items
 There is no limit to the many types of items
 possible; the devices and effects given here
@@ -1411,6 +2383,8 @@ ics to become less useful in the game. Keep
 such items rare, and limit them by the use of
 expendable charges, lest they adversely affect
 your game.
+Travel, Passage, and Conveyance Seeds
+
 Boat, Undersea: This item appears iden-
 tical to a standard riverboat (Expert Set, page
 43), and can be used as one. As it is magical,
@@ -1429,6 +2403,8 @@ away.
 (The DM may wish to create magical boats
 which travel only on ice, sand, in the air, and
 so forth.)
+Time, Light, and Sudden Event Seeds
+
 Chime of Time: This simple metal stick is
 3 inches long, made of a silvery metal. O n
 command, it will keep track of time, chiming
@@ -1454,7 +2430,7 @@ thrower of the egg to the best of its ability.
 the user's commands.) The creature will dis-
 appear after 1 hour of existence, or when
 slain. To determine the type of creature
-appearing, roll ld12; the Basic Set contains
+appearing, roll 1d12; the Basic Set contains
 all the needed descriptions. The creature
 appearing is never determined until the egg
 breaks. The DM may add other creatures.
@@ -1497,10 +2473,12 @@ tered within 60'. A successful Saving Throw
 indicates that the victim has fallen to the
 ground in time, tightly grasping all items car-
 ried. The hurricane lamp may thereafter be
-used as a lamp o f long burning for the
+used as a lamp of long burning for the
 remainder of the day. It resets its Hurricane
 every 24 hours, which must again be trig-
 gered before the lamp can be of other use.
+Control, Detection, and Trick Devices
+
 Muzzle of Training: This item is a device
 of leather straps with metal buckles, and may
 be fastened over the mouth of any animal or
@@ -1540,13 +2518,15 @@ the nail's detection, but it cannot detect living
 or Undead creatures of any type, nor any
 magical item or spell effect. The nail ofpoint-
 ing will function once per day.
+Consumables and Security Tools
+
 Ointment: This white creamy salve is
 found in a small wooden box with a cotton
 swab. If the entire contents of the box are
 rubbed on any part of the skin of the recipi-
 ent, a magical effect is produced. All oint-
 ments look, smell, and taste the same.
-To determine the type found, roll ld6:
+To determine the type found, roll 1d6:
 1. Blessing: This salve gives the recipient a
 -2 bonus to Armor Class and a +2 bonus to
 all Saving Throws for 1 turn.
@@ -1576,6 +2556,8 @@ repeatedly for one hour. Its cries can be heard
 to 120 I . If its owner holds it and commands it
 to be quiet, it will obey, but will repeat its
 cries if stolen again.
+Copying, Identification, and Elemental Passage
+
 Quill of Copying: A quill is a large
 feather which can be dipped in ink and used
 as a writing implement. This quill may be
@@ -1675,6 +2657,8 @@ wearer may also force an Elemental being to
 obey instructions. This uses one charge, and
 the talisman can expend up to 10 charges per
 trip into an Elemental Plane.
+Wheels, Motion, and Fortune Devices
+
 Wheel of Floating: This item appears
 identical to a normal wagon wheel, but
 enables any wagon upon which it is mounted
@@ -1722,7 +2706,7 @@ the wheel to vanish, whatever the wish. The
 wheel cannot be moved except by a creature
 of 26 or more levels (or hit dice). The wheel
 weighs 20,000 cn.
-White Wedge (roll ld6):
+White Wedge (roll 1d6):
 1. Gold pieces (1,000) appear.
 2. Gems (10 garnets) appear.
 3. Jewelry (1 brooch) appears.
@@ -1731,7 +2715,7 @@ White Wedge (roll ld6):
 mum score 18).
 6. Prime Requisite or Constitution rises by 1
 point (maximum score 18).
-Black Wedge (roll ld6):
+Black Wedge (roll 1d6):
 1. One ability score drops by 1 point (mini-
 mum score 3).
 2. Prime Requisite drops by 1 point.

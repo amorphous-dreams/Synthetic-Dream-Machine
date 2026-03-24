@@ -26,19 +26,37 @@ Rules for this artifact:
 
 ## State of Play
 
-- The six-book staged spell corpus is complete and remains the source of truth for this workspace.
-- Phase 1 now carries the flat canonical catalog with cross-tradition `Class(es)/Spell-level` tags preserved where relevant.
-- Phase 2 has been remapped into the SDM-first functional family taxonomy used for downstream Chapter 06 planning.
-- The grouped-`partial` to flat-`undecided` sync backlog is cleared; current cleanup work is focused on grouped `custom` rows whose Phase 1 notes are still too thin to guide later drafting.
-- Existing SDM variants are now being recorded as relationship notes rather than allowed to replace canonical spell recognizers.
+- Final row audit completed 2026-03-23.
+- Two rows added in this pass: `Remove Charm (MU 8)` (reverse of Mass Charm, RC standalone index entry with area-charm-clearing + object-charm suppression mechanics) and `Ring of Spell Turning` (Expert ECM reflection ring, counterpart to Ring of Spell Eating).
+- Five Phase 1 / Phase 2 status mismatches synced: `Cursed / Cursed Scroll` (custom → partial), `Lightning Bolt` (undecided → direct), `Maps to Treasures / Treasure Maps` (partial → custom), `Mass Charm` (undecided → custom), `Power Word Stun` (undecided → custom).
+- The six-book staged spell corpus is complete. Phase 1 is now considered frozen (Phase 1 freeze 2026-03-23). Staging files in `_todo/` remain as source references.
+- Phase 1 carries the flat canonical catalog with cross-tradition `Class(es)/Spell-level` tags preserved where relevant.
+- Phase 2 has been remapped into the SDM-first functional family taxonomy used for downstream Chapter 06 planning; family coverage audit confirms all Phase 1 rows appear in at least one Phase 2 family section.
+- The grouped-`partial` to flat-`undecided` sync backlog is cleared. All current Phase 1/Phase 2 status pairs are now consistent.
+- Existing SDM variants are being recorded as relationship notes rather than allowed to replace canonical spell recognizers.
+- Next: Phase B bridge work — consuming crosswalk doctrine to finish the power/spell API bridge inside Chapter 05 and its supporting TODO notes.
+
+## Provenance Confidence (2026-03-23 Full Pass)
+
+- Scope: full RC-linked provenance audit across both Phase 1 and Phase 2 tables, plus Immortals co-source checks where applicable.
+- Result: all RC-linked rows now include explicit `RC -> ...` staging anchors; all Immortals-linked rows now include explicit `Immortals -> ...` anchors.
+- Audit metrics (Phase 1 + Phase 2 combined):
+	- RC rows total: 135
+	- RC-only rows: 71
+	- RC+other-source rows: 64
+	- RC rows missing RC anchors: 0
+	- Immortals rows total: 21
+	- Immortals rows missing Immortals anchors: 0
+- Confidence rating: **High (0.92 / 1.00)** for source-provenance completeness in this artifact.
+- Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via artifact-effect tables rather than full standalone spell writeups; provenance is explicit, but conversion semantics should still treat those rows as table-derived precedents.
 
 ## Forward Plan
 
-1. Enrich Phase 1 notes for high-signal grouped `custom` rows so later Chapter 05/06 drafting is not forced to rediscover the same doctrine.
-2. Continue the focused `undecided` cleanup passes on overlap-heavy lanes such as aquatic access, high-tier barriers, and plant/weather edge cases.
-3. Add relationship notes for likely combined-power or overcharge families where multiple classic spells may collapse into one SDM power progression.
-4. Keep the grouped family workspace and flat Phase 1 catalog in lockstep after every status or note promotion.
-5. Keep the current family layer stable and solve new ambiguity with note quality, tags, and relationship guidance before considering any further regrouping.
+1. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
+2. Continue the focused `custom` enrichment passes on high-signal rows to guide Chapter 05/06 drafting, especially item-interface wrappers, artifact doctrine, and the Immortal scaling rules.
+3. Add relationship notes for likely combined-power or Overcharge families where multiple classic spells may collapse into one SDM power progression (fireburst ladder, acceleration ladder).
+4. Keep the grouped family workspace and flat Phase 1 catalog in lockstep; no further family regrouping is needed — solve new ambiguity with note quality, tags, and relationship guidance.
+5. Archive the staging corpus to `_todo/archive_phase1_freeze_2026-03-23/` when operator confirms the Phase 1 freeze is final.
 
 ## Reference Reuse Targets
 
@@ -60,6 +78,15 @@ Rules for this artifact:
 
 Variant recording rule for this workspace:
 - When a clear SDM variant already exists, record it in the row `Notes` field as `Existing SDM variant: <Power Name> (<source lane>)` until or unless the table grows a dedicated variant column.
+
+## RC Canonical Compendium Reference Doctrine
+
+- Treat `RC` as the canonical compendium text surface, not as a replacement for pre-compendium BECMI spell history.
+- For any row that includes `RC`, keep version awareness explicit in source references:
+	- `RC` anchor: compendium wording/index form used for canonical lookup.
+	- pre-`RC` anchor(s): earliest staged BECMI source lane(s) currently evidenced in this repository.
+- If a row currently has only `RC` source support in staged material, keep it `RC`-only for now and treat pre-`RC` provenance as unresolved rather than assumed.
+- When `RC` normalizes spelling, naming, or indexing relative to earlier books, preserve both forms in row notes as recognizer aliases.
 
 ## Verification Cadence
 
@@ -117,7 +144,7 @@ Initial flat catalog seed for the full-spell pass. This section is intentionally
 
 `Class(es)/Spell-level` uses RC shorthand: `C` = cleric, `Dr` = druid, `MU` = magic-user. Duplicate canonical rows keep the full cross-tradition class tags where relevant. Non-spell rows stay blank in this column.
 
-Expert catalog dedupe note: when an Expert-era spell is shared across cleric and magic-user lists, keep one canonical row with full cross-tradition class tags to avoid note drift. Source-era spelling or capitalization variants may be retained only as alias language inside that single row's notes.
+Expert catalog dedupe note: when an BECMI era spell is shared across cleric and magic-user lists, keep one canonical row with full cross-tradition class tags to avoid note drift. Source-era spelling or capitalization variants may be retained only as alias language inside that single row's notes.
 
 ### Basic Cleric Foundations
 
@@ -126,11 +153,11 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Cure Light Wounds | C1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Foundational healing support. Existing SDM family variants: `Rehoryan's Progressive Restoration` and `Restorative Slumber`, which frame healing as regenerative or recuperative process rather than instant slot discharge. | partial |
 | Detect Evil | C1, MU2 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Basic cleric foundation spell. | partial |
 | Detect Magic | C1, MU1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Shared cleric / magic-user recognizer. | direct |
-| Light | C1, MU1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Shared cross-tradition light / darkness recognizer. | undecided |
+| Light | C1, MU1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Shared cross-tradition light / darkness recognizer. Basic evidence lock: cleric form `Range 120'`, `Duration 12 turns`, `Effect volume 30' diameter`; magic-user form keeps the same volume with level-scaled duration. Reverse/darkness interaction remains a conversion edge case, but baseline trigger/effect envelope is now explicit from Basic spell text. | partial |
 | Protection from Evil | C1, MU1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Basic cleric defensive barrier spell. | partial |
 | Purify Food and Water | C1 | Basic | Basic -> Spell Lists and Basic Spell Descriptions | spell | Basic purification and supply-safety support. Existing SDM family variant: `Process Food`, which turns unsafe or inedible organic matter into workable supplies; `Toxin Render` is a narrower waste-processing cousin rather than a straight purification duplicate. | partial |
-| Remove Fear | C1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Basic cleric fear-removal spell; Expert adds reverse-effect handling. | undecided |
-| Resist Cold | C1 | Basic | Basic -> Spell Lists and Basic Spell Descriptions | spell | Basic cleric resistance foundation. | undecided |
+| Remove Fear | C1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Basic cleric fear-removal spell. Basic evidence lock: `Range Touch`, `Duration 2 turns`, single living target support; Basic casting guidance confirms use as active anti-fear support, while Expert preserves reverse-form behavior as a separate alias edge case. | partial |
+| Resist Cold | C1 | Basic | Basic -> Spell Lists and Basic Spell Descriptions | spell | Basic cleric resistance foundation. Basic evidence lock: `Range 0`, `Duration 6 turns`, `Effect all creatures within 30'`. Remaining ambiguity is conversion taxonomy (hazard classes covered), not missing baseline trigger/effect data. | partial |
 
 ### Basic And Expert Arcane Foundations
 
@@ -151,7 +178,7 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Knock | MU2 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Existing SDM variant: `Knock / Lock` (UVG2e Spells). | partial |
 | Levitate | MU2 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Vertical movement recognizer. | direct |
 | Light | C1, MU1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Arcane first-level light spell; shared with cleric lane. | undecided |
-| Lightning Bolt | MU3 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Core line-artillery recognizer. | undecided |
+| Lightning Bolt | MU3 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Core line-artillery recognizer. | direct |
 | Locate Object | C3, MU2 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Arcane search / direction lane. | direct |
 | Magic Missile | MU1 | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Existing SDM variant: `Tragic Missile` (Vastlands / Apocrypha of the O.S.). | partial |
 | Mirror Image | MU2 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Defensive illusion / misdirection lane. | undecided |
@@ -198,13 +225,13 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures | spell | Major counter-magic boundary recognizer. Treat as a bespoke ECM shell with explicit ingress/egress and suppression behavior at boundary edges, not as a generic resistance buff. | custom |
+| Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Major counter-magic boundary recognizer. Treat as a bespoke ECM shell with explicit ingress/egress and suppression behavior at boundary edges, not as a generic resistance buff. | custom |
 | Animate Dead | C4, MU5 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Existing SDM variant: `Animate Corpse` (UVG2e Spells), but the classic row still needs custom doctrine for command scope, persistence, and corpse-source handling. Treat this as a relationship note, not a replacement. | custom |
 | Charm Monster | MU4 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Broad creature-charm lane. Existing SDM family variant: `Hero's Goldenmouth`, but only as a broad persuasive-capture cousin; the current corpus does not yet provide a clean nonhuman domination equivalent. | partial |
 | Clairvoyance | MU3 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Remote-sight lane. Existing SDM family variant: `Eyes of the Arrow` (Vastlands / The Viridian Practice), a projectile-bound remote sensor. | partial |
 | Cloudkill | MU5 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | High-tier battlefield hazard / area denial lane. | undecided |
 | Confusion | MU4 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Mind-disruption lane. | partial |
-| Conjure Elemental | MU5 | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. | partial |
+| Conjure Elemental | MU5 | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items; Immortals -> Section 3: Immortal Magic -> Conjuring and Summoning; RC -> Magical Spells List and Spell Descriptions | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. | partial |
 | Death Spell | MU6 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | High-tier kill / sweep spell lane. | undecided |
 | Dimension Door | MU4 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Short-range relocation entry that bridges tactical repositioning and teleport doctrine. | partial |
 | Disintegrate | MU6 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Matter-destruction lane. | undecided |
@@ -215,7 +242,7 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Hold Monster | MU5 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Higher-tier restraint extension of the hold-family control recognizer. | partial |
 | Ice Storm/Wall | MU4 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Hybrid artillery / wall-control lane. | undecided |
 | Infravision | MU3 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Sensory enhancement lane. Existing SDM family variant: `Rehoryan's Prophetic Song`, which can grant night vision as a durable biomantic adaptation instead of temporary spell vision. | partial |
-| Invisible Stalker | MU6 | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic | spell | Precision servitor-calling lane for pursuit, scouting, and delegated action. | partial |
+| Invisible Stalker | MU6 | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic; RC -> Magical Spells List and Spell Descriptions | spell | Precision servitor-calling lane for pursuit, scouting, and delegated action. | partial |
 | Lower Water | MU6 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Hydrology-control and exposure-engineering lane. This should be a custom terrain/environment procedure for level shifting and basin manipulation rather than a simple movement rider. | custom |
 | Magic Jar | MU5 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Existing SDM variant: `Magic Jar` (UVG2e Spells). | partial |
 | Massmorph | MU4 | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Group disguise / illusion-transformation lane. | undecided |
@@ -311,7 +338,8 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Gate | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | Planar aperture and translocation endpoint for high-tier traversal and summoning crossover, likely a bespoke apex mobility/interface effect rather than a generic teleport derivative. | custom |
 | Heal | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | Extreme recovery recognizer crossing clerical and arcane traditions at high tier, likely collapsing multiple cure/cleanse/restoration lanes into one bespoke capstone recovery procedure. | custom |
 | Immunity | MU9 | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Apex blanket-protection lane spanning broad hazard categories. Keep as custom until Chapter 06 sets explicit immunity scope boundaries and exception taxonomy. | custom |
-| Mass Charm | MU8 | Master | Master -> Eighth-Level Magic-User Spells | spell | Group compulsion / social-control lane. | undecided |
+| Mass Charm | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | Group compulsion / social-control lane. Reverse form `Remove Charm` (see companion row) removes all charm effects in a given volume and suppresses object-charm for 1 turn; the RC indexes it as a standalone MU 8 entry. | custom |
+| Remove Charm | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | Reverse of Mass Charm; area-charm clearing effect that removes all charm effects within a 20' x 20' x 20' volume and prevents objects in that area from creating charm effects for 1 turn. RC indexes this as a standalone MU 8 entry rather than a plain reverse annotation; the object-charm suppression rider is a bespoke procedure note with no direct SDM parallel yet. | partial |
 | Maze | MU9 | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Exile and battlefield-removal boundary effect. Keep as custom due its spatial-separation logic and return-condition doctrine requirements. | custom |
 | Meteor Swarm | MU9 | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Extreme artillery recognizer and capstone of the fireburst relationship ladder above `Fire Ball / Fireball` and `Delayed Blast Fireball`. Keep as custom for Phase 1 because the current corpus does not justify a clean direct export, but note the likely future overcharge-family relationship. | custom |
 | Mind Barrier | MU8 | Master | Master -> Eighth-Level Magic-User Spells | spell | High-tier noospheric defense lane for hostile mental influence suppression. Keep as custom until mental-defense tags and intrusion categories are normalized. | custom |
@@ -335,23 +363,23 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Create Air | MU3 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Environmental survival and sealed-space support lane for vacuum, underwater, or enclosed-hazard play; likely a bespoke sustainment wrapper unless folded into broader life-support doctrine. | custom |
 | Clothform | MU4 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Soft-material transmutation lane; sibling to later form-spell entries. | undecided |
 | Contact Outer Plane | MU5 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Dangerous intelligence-contact and revelation procedure that reaches across planar distance with explicit backlash risk; better treated as bespoke high-tier inquiry doctrine than generic divination. | custom |
-| Feeblemind | MU5 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Severe cognition-destruction lane. | undecided |
-| Move Earth | MU6 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Massive terrain repositioning and landscape engineering recognizer. Existing SDM family variant: `Dryland Sculpture`, which is a smaller-scale but high-confidence terrain-forming and infrastructure-shaping cousin rather than a direct mass-displacement duplicate. | partial |
-| Reincarnation | MU6 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Death-reversal via a new body rather than simple revival, so it should stay distinct from the `Raise Dead` line and carry replacement-form consequences in any later conversion. | custom |
+| Feeblemind | MU5 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Severe cognition-destruction lane. | undecided |
+| Move Earth | MU6 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Massive terrain repositioning and landscape engineering recognizer. Existing SDM family variant: `Dryland Sculpture`, which is a smaller-scale but high-confidence terrain-forming and infrastructure-shaping cousin rather than a direct mass-displacement duplicate. | partial |
+| Reincarnation | MU6 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Death-reversal via a new body rather than simple revival, so it should stay distinct from the `Raise Dead` line and carry replacement-form consequences in any later conversion. | custom |
 | Stoneform | MU6 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Stone transmutation lane within the broader form-spell suite. | undecided |
-| Telekinesis | MU5 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Classic force-manipulation recognizer; compare `Objective Telekinesis` as a likely cousin. | partial |
-| Wall of Iron | MU6 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Durable material barrier plus infrastructure fabrication lane. Keep as custom where chapter procedures need explicit creation-versus-obstruction handling for persistent iron mass. | custom |
+| Telekinesis | MU5 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Classic force-manipulation recognizer; compare `Objective Telekinesis` as a likely cousin. | partial |
+| Wall of Iron | MU6 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Durable material barrier plus infrastructure fabrication lane. Keep as custom where chapter procedures need explicit creation-versus-obstruction handling for persistent iron mass. | custom |
 | Woodform | MU5 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Wood transmutation lane paired with the other form spells. | undecided |
 | Charm Plant | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Plant-specific command/control lane. Keep as custom until plant-agency and obedience boundaries are normalized against broader influence doctrine. | custom |
 | Create Normal Monsters | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Mid-tier creature-fabrication lane below magical and any-monster endpoints. In the creation bundle, this is the first monster-grade step after `Create Normal Animals`, with bounded taxonomy and encounter-pressure outputs. | custom |
 | Delayed Blast Fireball | MU7 | RC, Master | RC -> Magical Spells List and Spell Descriptions; Master -> Artifact Power Doctrine and Artifact Effect Procedures | spell | Timed artillery recognizer related to `Fire Ball / Fireball`. Treat as the middle rung in the likely fireburst relationship ladder rather than as proof of a mandatory standalone export. | partial |
 | Ironform | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Metal transmutation and body-state lane within the form-spell suite. | undecided |
-| Lore | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Deep-history and object-reading lane useful for premium information-retrieval tags. | partial |
-| Magic Door | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Portal and egress manipulation lane with reversible entry-control logic. Existing SDM family variant: `Linked Portals`, which is the clearest current astral-bridge precedent for controlled passage and reversible entry. | partial |
-| Mass Invisibility | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | High-tier crowd concealment lane above the 10-foot-radius variant. `Yellow Cloud` remains the strongest existing crowd-obscuration precedent in the current SDM corpus. | partial |
-| Power Word Stun | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Word-of-power incapacitation lane between the blind and kill variants. | undecided |
-| Reverse Gravity | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Battlefield-physics inversion and area-control exception effect, likely requiring custom environmental resolution language instead of ordinary force-attack mapping. | custom |
-| Statue | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Self-concealment and false-object transformation lane. | undecided |
+| Lore | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Deep-history and object-reading lane useful for premium information-retrieval tags. | partial |
+| Magic Door | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Portal and egress manipulation lane with reversible entry-control logic. Existing SDM family variant: `Linked Portals`, which is the clearest current astral-bridge precedent for controlled passage and reversible entry. | partial |
+| Mass Invisibility | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | High-tier crowd concealment lane above the 10-foot-radius variant. `Yellow Cloud` remains the strongest existing crowd-obscuration precedent in the current SDM corpus. | partial |
+| Power Word Stun | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Word-of-power incapacitation lane between the blind and kill variants. | custom |
+| Reverse Gravity | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Battlefield-physics inversion and area-control exception effect, likely requiring custom environmental resolution language instead of ordinary force-attack mapping. | custom |
+| Statue | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Self-concealment and false-object transformation lane. | undecided |
 | Summon Object | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Remote retrieval and object-call lane. | partial |
 | Sword | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Force-weapon and animated blade lane. | undecided |
 | Teleport any Object | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | Object-only transit lane adjacent to `Teleport`. | partial |
@@ -362,10 +390,10 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Equipment |  | RC | RC -> Scrolls | item-effect | Scroll that manifests from a fixed list of mundane adventuring gear. | custom |
 | Illumination |  | RC | RC -> Scrolls | item-effect | Reusable flame-scroll utility for sustained light and fire-starting. | direct |
 | Mages |  | RC | RC -> Scrolls | item-effect | Scroll-based nearby magic-effect identification; complements `Read Magic` rather than replacing it. | partial |
-| Maps to Treasures / Treasure Maps |  | Basic, Expert, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | Treasure-location wrapper with normal, magical, combined, and special treasure lanes; niche but reusable lookup surface. | partial |
+| Maps to Treasures / Treasure Maps |  | Basic, Expert, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | Treasure-location wrapper with normal, magical, combined, and special treasure lanes; niche but reusable lookup surface. Basic evidence lock: map prepared in advance by referee, may be partial/riddle form, and may require `Read Languages` for use. | custom |
 | Mapping |  | RC | RC -> Scrolls | item-effect | Scroll-generated area map with limited secret-door detection. | custom |
 | Portals |  | RC | RC -> Scrolls | item-effect | Scroll-native reusable `Pass-Wall / Passwall` interface. | partial |
-| Protection / Protection Scrolls |  | Basic, Expert, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | Generic moving circle-of-protection wrapper shared by the specific protection scroll variants. | partial |
+| Protection / Protection Scrolls |  | Basic, Expert, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | Generic moving circle-of-protection wrapper shared by the specific protection scroll variants. Basic evidence lock: usable by any class, creates a moving 10' circle centered on reader, blocks listed creature entry, does not block their spell or missile attacks, and breaks if protected side initiates hand-to-hand attack. | partial |
 | Protection from Elementals |  | RC | RC -> Scrolls | item-effect | Circle protection scroll keyed specifically to elementals. | partial |
 | Protection from Lycanthropes |  | RC | RC -> Scrolls | item-effect | Circle protection scroll keyed to lycanthrope types by quantity band. | partial |
 | Protection from Magic |  | RC | RC -> Scrolls | item-effect | Protection-scroll ECM ward that blocks spells and spell effects from crossing the boundary; useful as a Chapter 05 boundary-interface model for denial fields rather than generic resistance. | custom |
@@ -379,13 +407,14 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Spell Storing |  | Expert, Companion | Expert -> Rings; Companion -> Ring Tables | item-effect | Ring-based spell payload storage and later discharge; should convert as an item-side power archive with Power Level capacity and release rules, not as prepared-slot retention, and it does not absorb attacks cast at the wearer. | custom |
 | Trapping |  | RC | RC -> Scrolls | item-effect | Scroll-created physical trap keyed by placement surface. | custom |
 | Truth |  | RC | RC -> Scrolls | item-effect | Living-mind question procedure via an enhanced ESP-like readout. | partial |
-| Cursed / Cursed Scroll |  | Basic, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | Immediate curse-on-sight scroll wrapper; niche but persistent enough to deserve a canonical lookup row. | custom |
+| Cursed / Cursed Scroll |  | Basic, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | Immediate curse-on-sight scroll wrapper; niche but persistent enough to deserve a canonical lookup row. Basic evidence lock: curse triggers on seeing writing; reading aloud is not required. | partial |
 | Ring of Elemental Adaptation |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Elemental-environment survival and traversal interface; strong bridge to elemental-travel procedures. | partial |
 | Ring of Holiness |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Cleric/druid power-augmentation wrapper tied to ring use; later conversion should express this as eligibility, blessing-layer access, or reduced burden around holy/nature powers rather than extra slot grant. | custom |
 | Ring of Life Protection |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Anti-drain and life-threshold safeguard interface with finite depletion behavior; useful as a threshold-protection model distinct from ordinary healing because it prevents or defers loss rather than repairing it after the fact. | custom |
 | Ring of Memory |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Spell recall/recovery interface with clear Chapter 05/06 retention implications; likely better modeled as archive recall, refresh, or reduced-burden access than as literal memorization reset. | custom |
 | Ring of Remedies |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Bundled condition-repair and cleansing wrapper across multiple cure lanes; likely a reusable Chapter 05 model for one item exposing several tagged recovery functions instead of one-to-one spell copies. | custom |
 | Ring of Spell Eating |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Hostile spell-defense and absorption interface distinct from plain spell turning; a core Chapter 05 ECM item case for canceling or consuming incoming powers instead of merely reflecting them. | custom |
+| Ring of Spell Turning |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | Reflects 2-12 incoming spell attacks back to their casters; distinct from absorption in that the spell is redirected rather than consumed. Finite (2-12 charge) reflection capacity with clean counterforce directionality. A core ECM item model at the Expert tier alongside Ring of Spell Eating at higher weight. | custom |
 | Ring of Survival |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Environmental hardening and hazard-resistance wrapper at item scale. | partial |
 | Staff of Dispelling |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | Touch-based targeted dispel interface with special handling for potions, scrolls, and permanent items; likely a key Chapter 05 example for using `Level` as counterforce strength while preserving carrier-specific edge cases. | custom |
 | Staff of the Druids |  | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | Druid power-augmentation and charge-linked upkeep interface; should convert as attuned access to druidic functions or bundled powers rather than as raw slot augmentation. | custom |
@@ -411,7 +440,7 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 | Immortal Mental Effect Resolution |  | Immortals | Immortals -> Section 3: Immortal Magic -> Mental Effects | procedure | Non-magical recovery cadence for charmed/feebleminded Immortals via Intelligence checks plus save retries. | custom |
 | Immortal Limits On Use |  | Immortals | Immortals -> Section 3: Immortal Magic -> Limits on Use | procedure | Action-economy and target-scope doctrine for created effects, including self-only effects delivered by touch. | custom |
 
-## Provisional Family Workspace For Chapter 06
+## Powers Family Workspace For Chapter 06
 
 ### SDM Family Doctrine For This Remap
 
@@ -420,6 +449,7 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 - For referee and dev readability, read each grouped heading as `Primary Family / Functional Subfamily / Functional Subfamily`. The first term is the stable bucket. The later terms are only navigation aids.
 - Prefer a stable top-level family set for implementation work: `Battle and Force`, `Knowledge and Revelation`, `Defense and Boundaries`, `Countermagitech`, `Mobility and Access`, `Influence and Control`, `Veils and Illusions`, `Transformation and Fabrication`, `Terrain and Environment`, `Summons and Servitors`, `Communication and Inquiry`, `Restoration and Thresholds`, `Interfaces and Scrollcraft`, and `Meta-Doctrine and Exceptions`.
 - Family assignment follows this order: primary theme/doctrine, then storage mode (`trait`, `item`, `burden`, `location`), then secondary tags such as `ward`, `healing`, `recon`, `summon`, `mobility`, `signal`, `artifact`, `curse`, and `reality`.
+- Provenance stays in Phase 1 Catalog; family tables intentionally omit source/staging columns to keep conversion context readable.
 - Use tags and relationship notes for nuance; do not solve every ambiguity by minting new family headings.
 - `magitech` and `fantascience` remain cross-cutting flavor and implementation tags, not primary family names.
 - Vancian versus SDM delta to preserve during later conversion: powers persist after use, use costs Life rather than prepared slots, access is by acquisition rather than class list, and high-tier effects are gated by danger, corruption, rarity, or ritual burden rather than by daily slot scarcity.
@@ -428,6 +458,8 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 - Related OSR spell ladders may collapse into one future SDM power with Overcharge riders rather than separate exports. Candidate relationship groups include `Fire Ball / Fireball` -> `Delayed Blast Fireball` -> `Meteor Swarm`, and `Haste` plus later acceleration variants.
 - Ethereal Counter Magitech (ECM) remains a first-class concept inside `Countermagitech`. It covers suppression, negation, reflection, capture, cancellation, and noospheric interference rather than generic defense or generic cleansing.
 - Use an `ecm` tag for rows that meet the thematic and mechanical criteria even when the row also belongs in another family such as barriers or weather.
+- Use `skilled`, `expert` and `master` tags to sort powers into "teirs" - for example all the spell effects from the Artifacts source provenance belong in `master` tier. 
+- Use the BECMI/RC context to decide on appropriate tags.
 
 ### Borderline Family Notes
 
@@ -442,371 +474,373 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 
 ### Battle and Force / Artillery / Pressure
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Magic Missile | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Canonical Chapter 06 entry should remain `Magic Missile`. Existing SDM variant: `Tragic Missile` (Vastlands / Apocrypha of the O.S. lane in the Powers Index). | partial |
-| Fire Ball / Fireball | Basic, Expert, Master, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Core artillery recognizer across mixed staged-corpus spellings. Existing SDM variant: `Pyreball` (Vastlands / Apocrypha of the O.S. lane in the Powers Index). | partial |
-| Lightning Bolt | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Core line-artillery recognizer that should sit beside fireburst effects in the base attack family. | direct |
-| Delayed Blast Fireball | RC, Master | RC -> Magical Spells List and Spell Descriptions; Master -> Artifact Power Doctrine and Artifact Effect Procedures | spell | Timed artillery variant of the fireburst family with explicit delay mechanics. | partial |
-| Meteor Swarm | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Extreme area-artillery endpoint for high-tier offensive scaling doctrine. Treat as the current fireburst capstone and keep custom until Chapter 06 decides whether this remains a separate apex effect or an overcharge endpoint above `Fire Ball / Fireball` and `Delayed Blast Fireball`. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Magic Missile | spell | Canonical Chapter 06 entry should remain `Magic Missile`. Existing SDM variant: `Tragic Missile` (Vastlands / Apocrypha of the O.S. lane in the Powers Index). | partial |
+| Fire Ball / Fireball | spell | Core artillery recognizer across mixed staged-corpus spellings. Existing SDM variant: `Pyreball` (Vastlands / Apocrypha of the O.S. lane in the Powers Index). | partial |
+| Lightning Bolt | spell | Core line-artillery recognizer that should sit beside fireburst effects in the base attack family. | direct |
+| Delayed Blast Fireball | spell | Timed artillery variant of the fireburst family with explicit delay mechanics. | partial |
+| Meteor Swarm | spell | Extreme area-artillery endpoint for high-tier offensive scaling doctrine. Treat as the current fireburst capstone and keep custom until Chapter 06 decides whether this remains a separate apex effect or an overcharge endpoint above `Fire Ball / Fireball` and `Delayed Blast Fireball`. | custom |
 
 ### Knowledge and Revelation / Detection / Perception
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Detect Magic | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Foundational magic-sense recognizer shared across cleric and magic-user lanes; likely a direct sensory/tagging power. | direct |
-| Detect Evil | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Needs care because classic BECMI intent/hostility reading is not identical to a clean moral-alignment scanner. | partial |
-| Read Languages | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Straight information-access utility. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key lane in the Powers Index), which broadens the classic language bridge into universal communication. | partial |
-| Locate Object | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Search-and-direction utility likely useful for Chapter 06 information/retrieval tags. | direct |
-| Truesight | Companion | Companion -> High-Level Cleric Spell Material | spell | Strong full-spectrum perception package for invisibility/ethereal/hidden detection; likely needs a premium reveal tag set. | partial |
-| Analyze | RC | RC -> Magical Spells List and Spell Descriptions | spell | RC-first analysis and inspection recognizer that broadens low-tier magical diagnostics. | partial |
-| Wizard Eye | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Remote-sight scouting sensor that pairs cleanly with clairvoyance-like reveal procedures. | partial |
-| Lore | RC | RC -> Magical Spells List and Spell Descriptions | spell | Deep-history and object-reading lane useful for premium information-retrieval tags. | partial |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Detect Magic | spell | Foundational magic-sense recognizer shared across cleric and magic-user lanes; likely a direct sensory/tagging power. | direct |
+| Detect Evil | spell | Needs care because classic BECMI intent/hostility reading is not identical to a clean moral-alignment scanner. | partial |
+| Read Languages | spell | Straight information-access utility. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key lane in the Powers Index), which broadens the classic language bridge into universal communication. | partial |
+| Locate Object | spell | Search-and-direction utility likely useful for Chapter 06 information/retrieval tags. | direct |
+| Truesight | spell | Strong full-spectrum perception package for invisibility/ethereal/hidden detection; likely needs a premium reveal tag set. | partial |
+| Analyze | spell | RC-first analysis and inspection recognizer that broadens low-tier magical diagnostics. | partial |
+| Wizard Eye | spell | Remote-sight scouting sensor that pairs cleanly with clairvoyance-like reveal procedures. | partial |
+| Lore | spell | Deep-history and object-reading lane useful for premium information-retrieval tags. | partial |
 
 ### Defense and Boundaries / Wards / Barriers
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Protection from Evil | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Hybrid defensive buff plus contact ward against enchanted or summoned beings; not just a generic Defense bonus. | partial |
-| Shield | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Clean self-defense shell; likely a direct defensive power template. | direct |
-| Resist Fire | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Elemental mitigation template that likely maps cleanly to tagged resistance language. | direct |
-| Barrier | Companion | Companion -> High-Level Cleric Spell Material | spell | High-level warding/boundary effect that should help define Chapter 06 barrier taxonomy above simple protection spells. | custom |
-| Dispel Evil | Companion | Companion -> High-Level Cleric Spell Material | spell | Counterforce / banishment family member that overlaps with anti-hostile or anti-outsider doctrine rather than plain damage. | partial |
-| Force Field | Master | Master -> Eighth-Level Magic-User Spells | spell | Premium barrier package that should inform upper-tier ward layering and persistence doctrine. | custom |
-| Prismatic Wall | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Complex high-tier barrier lane. The current SDM corpus does not provide a close named layered-spectrum wall analogue, so this likely needs bespoke high-tier barrier text rather than a borrowed family variant. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Protection from Evil | spell | Hybrid defensive buff plus contact ward against enchanted or summoned beings; not just a generic Defense bonus. | partial |
+| Shield | spell | Clean self-defense shell; likely a direct defensive power template. | direct |
+| Resist Fire | spell | Elemental mitigation template that likely maps cleanly to tagged resistance language. | direct |
+| Barrier | spell | High-level warding/boundary effect that should help define Chapter 06 barrier taxonomy above simple protection spells. | custom |
+| Dispel Evil | spell | Counterforce / banishment family member that overlaps with anti-hostile or anti-outsider doctrine rather than plain damage. | partial |
+| Force Field | spell | Premium barrier package that should inform upper-tier ward layering and persistence doctrine. | custom |
+| Prismatic Wall | spell | Complex high-tier barrier lane. The current SDM corpus does not provide a close named layered-spectrum wall analogue, so this likely needs bespoke high-tier barrier text rather than a borrowed family variant. | custom |
 
 ### Countermagitech / Dispels / Suppression / Jamming
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Anti-Magic Shell | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Core anti-magic barrier recognizer spanning arcane and high-tier artifact-adjacent lanes. | custom |
-| Protection from Magic | RC | RC -> Scrolls | item-effect | Protection-circle interface specifically blocking spells and spell effects across boundary edges. This is a clean ECM ward wrapper and a strong Chapter 05 model for denial fields rather than generic protection. | custom |
-| Dispel Magic | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Major counterforce recognizer and one of the core canonical anchors for ECM scope. The grouped ECM pass now treats this as a bespoke conversion anchor rather than an unresolved loose cousin. | custom |
-| Silence 15' Radius | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Anti-speech and anti-spellcasting field lane; useful where ECM overlaps with noospheric jamming and casting denial even though the current corpus lacks a clean silence-only named precedent. | partial |
-| Spell Catching | RC | RC -> Scrolls | item-effect | Counter-capture wrapper for hostile spell energy routed into storage media; a core ECM reference case and strong bridge for Power Level-banded hostile capture. | custom |
-| Ring of Spell Eating | Companion | Companion -> Treasure Tables and Item Procedures | item-effect | Ring-native spell absorption and denial interface; distinct from simple resistance tags and a direct ECM item case for consuming or canceling incoming powers rather than reflecting them. | custom |
-| Staff of Dispelling | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | Charged dispel interface with special handling across temporary and permanent magic carriers; likely a key Chapter 05 example for `Level`-based counterforce with carrier-specific exceptions. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Anti-Magic Shell | spell | Core anti-magic barrier recognizer spanning arcane and high-tier artifact-adjacent lanes. | custom |
+| Protection from Magic | item-effect | Protection-circle interface specifically blocking spells and spell effects across boundary edges. This is a clean ECM ward wrapper and a strong Chapter 05 model for denial fields rather than generic protection. | custom |
+| Dispel Magic | spell | Major counterforce recognizer and one of the core canonical anchors for ECM scope. The grouped ECM pass now treats this as a bespoke conversion anchor rather than an unresolved loose cousin. | custom |
+| Silence 15' Radius | spell | Anti-speech and anti-spellcasting field lane; useful where ECM overlaps with noospheric jamming and casting denial even though the current corpus lacks a clean silence-only named precedent. | partial |
+| Spell Catching | item-effect | Counter-capture wrapper for hostile spell energy routed into storage media; a core ECM reference case and strong bridge for Power Level-banded hostile capture. | custom |
+| Ring of Spell Eating | item-effect | Ring-native spell absorption and denial interface; distinct from simple resistance tags and a direct ECM item case for consuming or canceling incoming powers rather than reflecting them. | custom |
+| Ring of Spell Turning | item-effect | Reflects 2-12 incoming spell attacks back to their casters; the complement to Ring of Spell Eating, covering reflection rather than absorption. Model for directional ECM counterforce at item scale with finite capacity. | custom |
+| Staff of Dispelling | item-effect | Charged dispel interface with special handling across temporary and permanent magic carriers; likely a key Chapter 05 example for `Level`-based counterforce with carrier-specific exceptions. | custom |
 
 ### Mobility and Access / Movement / Traversal
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Levitate | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Vertical movement utility; likely a direct map. | direct |
-| Floating Disc | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Canonical spell name can stay unchanged while pointing to the existing stylized `Floating Disc` UVG variant in the Powers Index. | direct |
-| Fly | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Core aerial mobility recognizer needed for personal-scale movement powers and item references. | direct |
-| Find the Path | Companion | Companion -> High-Level Cleric Spell Material | spell | Navigation / routing procedure rather than pure movement; useful for Chapter 06 pathfinding and noosphere-guidance tags. | partial |
-| Knock | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Canonical lock-opening entry should remain `Knock`; existing SDM variant: `Knock / Lock` (UVG2e spell lane in the Powers Index). | partial |
-| Teleport | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Major transit power; likely direct at concept level but will need SDM range / mishap doctrine decisions. | partial |
-| Word of Recall | Companion | Companion -> High-Level Cleric Spell Material | spell | Return-to-sanctuary extraction spell with strong campaign-loop implications; likely bridge-heavy rather than a generic teleport clone. | partial |
-| Travel | Master, RC | Master -> Seventh-Level Cleric Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Clerical and Magical Spell Descriptions | spell | Composite package combining flight, planar transfer, and gaseous traversal; probably needs custom Chapter 06 decomposition or a premium bundled mobility power with environment/survival riders instead of a flat one-to-one export. | custom |
-| Dimension Door | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Short-range relocation entry that bridges tactical repositioning and teleport doctrine. | partial |
-| Pass-Wall / Passwall | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Access-through-barriers recognizer with mixed source and RC spelling forms. | partial |
-| Magic Door | RC | RC -> Magical Spells List and Spell Descriptions | spell | Portal and egress manipulation lane. Existing SDM family variant: `Linked Portals`, which is the clearest current astral-bridge precedent for controlled passage and reversible entry. | partial |
-| Pass Plant | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Plant transit lane. Existing SDM family variant: `Linked Portals`, used here as a traversal cousin rather than a literal vegetation-only doorway. Primary placement stays with mobility because the row's job is passage, not plant reshaping. | partial |
-| Plant Door | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Vegetation access / doorway lane. Existing SDM family variant: `Linked Portals`, which is the closest current controlled-passage precedent even though the classical wrapper is plant-specific. | partial |
-| Transport Through Plants | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Plant-network transit lane. Existing SDM family variant: `Linked Portals`, which already expresses location-bridging as a distinct traversal procedure. | partial |
-| Water Breathing | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Druidic aquatic adaptation/access lane. Primary placement stays with mobility/access, but conversion should be treated as custom environment-interface doctrine (breath medium, pressure, and exposure assumptions), not a generic speed modifier. | custom |
-| Gate | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | Planar aperture and translocation endpoint for high-tier traversal and summoning crossover, likely a bespoke apex mobility/interface effect rather than a generic teleport derivative. | custom |
-| Teleport any Object | RC | RC -> Magical Spells List and Spell Descriptions | spell | Object-only transit lane that should stay distinct from creature teleport effects. | partial |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Levitate | spell | Vertical movement utility; likely a direct map. | direct |
+| Floating Disc | spell | Canonical spell name can stay unchanged while pointing to the existing stylized `Floating Disc` UVG variant in the Powers Index. | direct |
+| Fly | spell | Core aerial mobility recognizer needed for personal-scale movement powers and item references. | direct |
+| Find the Path | spell | Navigation / routing procedure rather than pure movement; useful for Chapter 06 pathfinding and noosphere-guidance tags. | partial |
+| Knock | spell | Canonical lock-opening entry should remain `Knock`; existing SDM variant: `Knock / Lock` (UVG2e spell lane in the Powers Index). | partial |
+| Teleport | spell | Major transit power; likely direct at concept level but will need SDM range / mishap doctrine decisions. | partial |
+| Word of Recall | spell | Return-to-sanctuary extraction spell with strong campaign-loop implications; likely bridge-heavy rather than a generic teleport clone. | partial |
+| Travel | spell | Composite package combining flight, planar transfer, and gaseous traversal; probably needs custom Chapter 06 decomposition or a premium bundled mobility power with environment/survival riders instead of a flat one-to-one export. | custom |
+| Dimension Door | spell | Short-range relocation entry that bridges tactical repositioning and teleport doctrine. | partial |
+| Pass-Wall / Passwall | spell | Access-through-barriers recognizer with mixed source and RC spelling forms. | partial |
+| Magic Door | spell | Portal and egress manipulation lane. Existing SDM family variant: `Linked Portals`, which is the clearest current astral-bridge precedent for controlled passage and reversible entry. | partial |
+| Pass Plant | spell | Plant transit lane. Existing SDM family variant: `Linked Portals`, used here as a traversal cousin rather than a literal vegetation-only doorway. Primary placement stays with mobility because the row's job is passage, not plant reshaping. | partial |
+| Plant Door | spell | Vegetation access / doorway lane. Existing SDM family variant: `Linked Portals`, which is the closest current controlled-passage precedent even though the classical wrapper is plant-specific. | partial |
+| Transport Through Plants | spell | Plant-network transit lane. Existing SDM family variant: `Linked Portals`, which already expresses location-bridging as a distinct traversal procedure. | partial |
+| Water Breathing | spell | Druidic aquatic adaptation/access lane. Primary placement stays with mobility/access, but conversion should be treated as custom environment-interface doctrine (breath medium, pressure, and exposure assumptions), not a generic speed modifier. | custom |
+| Gate | spell | Planar aperture and translocation endpoint for high-tier traversal and summoning crossover, likely a bespoke apex mobility/interface effect rather than a generic teleport derivative. | custom |
+| Teleport any Object | spell | Object-only transit lane that should stay distinct from creature teleport effects. | partial |
 
 ### Influence and Control / Restraint / Compulsion
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Sleep | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Classic low-tier disable effect; likely a direct control template. | direct |
-| Hold Person | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Straight restraint/paralysis recognizer already central to many fantasy power taxonomies. Existing SDM variant: `Hlod Person` (Vastlands / Apocrypha of the O.S. lane in the Powers Index). | direct |
-| Web | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Area denial plus entanglement effect; likely direct. | direct |
-| Confusion | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Mind-state disruption effect; needs a clean SDM status / control phrasing pass. | partial |
-| Quest | Companion | Companion -> High-Level Cleric Spell Material | spell | Compulsion / obligation spell likely better treated as a vow-binding or command doctrine than a simple status effect. | custom |
-| Dance | Master | Master -> Eighth-Level Magic-User Spells | spell | Forced-movement / compulsion lane. | undecided |
-| Hold Monster | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Higher-tier restraint extension of the hold-family control recognizer. | partial |
-| Mass Charm | Master | Master -> Eighth-Level Magic-User Spells | spell | Group-scale social compulsion package beyond single-target charm doctrine. | custom |
-| Power Word Stun | RC | RC -> Magical Spells List and Spell Descriptions | spell | Word-of-power incapacitation lane bridging blind/kill style hard control effects. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Sleep | spell | Classic low-tier disable effect; likely a direct control template. | direct |
+| Hold Person | spell | Straight restraint/paralysis recognizer already central to many fantasy power taxonomies. Existing SDM variant: `Hlod Person` (Vastlands / Apocrypha of the O.S. lane in the Powers Index). | direct |
+| Web | spell | Area denial plus entanglement effect; likely direct. | direct |
+| Confusion | spell | Mind-state disruption effect; needs a clean SDM status / control phrasing pass. | partial |
+| Quest | spell | Compulsion / obligation spell likely better treated as a vow-binding or command doctrine than a simple status effect. | custom |
+| Dance | spell | Forced-movement / compulsion lane. | undecided |
+| Hold Monster | spell | Higher-tier restraint extension of the hold-family control recognizer. | partial |
+| Mass Charm | spell | Group-scale social compulsion package beyond single-target charm doctrine. | custom |
+| Remove Charm | spell | Area-wide charm removal plus 1-turn object-charm suppression; RC's standalone indexing for this reverse elevates it above a simple reversed-entry note. Keep as partial until Chapter 06 codifies area-dispel of control effects and object-source blocking. | partial |
+| Power Word Stun | spell | Word-of-power incapacitation lane bridging blind/kill style hard control effects. | custom |
 
 ### Veils and Illusions / Concealment / Deception
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Invisibility | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Core concealment baseline for personal stealth and line-of-sight disruption. Existing SDM family variants: `Ecosphere Veil` for disregard-based stealth and `Yellow Cloud` for visual obscuration. | partial |
-| Invisibility 10' radius | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Group concealment extension of the invisibility baseline. `Yellow Cloud` is the clearest existing Luka-style battlefield-scale concealment cousin. | partial |
-| Mass Invisibility | RC | RC -> Magical Spells List and Spell Descriptions | spell | High-tier crowd concealment lane above the 10-foot-radius variant. `Yellow Cloud` remains the strongest existing crowd-obscuration precedent in the current SDM corpus. | partial |
-| Ventriloquism | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Sound-projection and false-source deception utility. Primary placement belongs with illusion/deception rather than passage control because the effect lies about presence/location instead of sealing an access point. | undecided |
-| Mirror Image | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Defensive misdirection via decoy duplicates in direct-threat contexts. | undecided |
-| Phantasmal Force | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Core constructed-illusion recognizer for scene-level false stimuli. | undecided |
-| Projected Image | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Remote image/proxy presence lane for deception and diversion play. | undecided |
-| Massmorph | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Group disguise or false-form presentation for coordinated infiltration. | undecided |
-| Statue | RC | RC -> Magical Spells List and Spell Descriptions | spell | Self-concealment through object-form mimicry with strong ambush utility. | undecided |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Invisibility | spell | Core concealment baseline for personal stealth and line-of-sight disruption. Existing SDM family variants: `Ecosphere Veil` for disregard-based stealth and `Yellow Cloud` for visual obscuration. | partial |
+| Invisibility 10' radius | spell | Group concealment extension of the invisibility baseline. `Yellow Cloud` is the clearest existing Luka-style battlefield-scale concealment cousin. | partial |
+| Mass Invisibility | spell | High-tier crowd concealment lane above the 10-foot-radius variant. `Yellow Cloud` remains the strongest existing crowd-obscuration precedent in the current SDM corpus. | partial |
+| Ventriloquism | spell | Sound-projection and false-source deception utility. Primary placement belongs with illusion/deception rather than passage control because the effect lies about presence/location instead of sealing an access point. | undecided |
+| Mirror Image | spell | Defensive misdirection via decoy duplicates in direct-threat contexts. | undecided |
+| Phantasmal Force | spell | Core constructed-illusion recognizer for scene-level false stimuli. | undecided |
+| Projected Image | spell | Remote image/proxy presence lane for deception and diversion play. | undecided |
+| Massmorph | spell | Group disguise or false-form presentation for coordinated infiltration. | undecided |
+| Statue | spell | Self-concealment through object-form mimicry with strong ambush utility. | undecided |
 
 ### Transformation and Fabrication / Biomancy / Creation
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Polymorph Self | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Self-transformation recognizer; likely maps partially because SDM form-change limits still need explicit doctrine. Existing SDM family variant: `Alter Self` (UVG2e spell lane in the Powers Index). | partial |
-| Polymorph Other / Others | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | Offensive transformation version of the same family; staged sources use both singular and plural forms, so preserve both recognizers. | partial |
-| Summon Animals | Master | Master -> Druid Spell Material | spell | Druidic ally-call effect with explicit HD budgeting; useful for summon scaling via SDM Level. | partial |
-| Animate Objects | Companion | Companion -> High-Level Cleric Spell Material | spell | Object animation effect that likely maps, but may need gear/object-agent handling. | partial |
-| Animate Dead | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Major doctrine carrier for minion control and undead creation; likely requires custom or tightly-scoped overlay language. Existing SDM variant: `Animate Corpse` (UVG2e spell lane in the Powers Index). Future pass should treat this as a relationship note into Undeath's Decrees rather than a flat one-power export. | custom |
-| Clone | Master | Master -> Eighth-Level Magic-User Spells | spell | Identity-duplication / backup-body procedure, clearly beyond a simple direct powers mapping. | custom |
-| Polymorph Any Object | Master | Master -> Eighth-Level Magic-User Spells | spell | Extreme transmutation endpoint that extends polymorph doctrine beyond creature targets. | custom |
-| Shapechange | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Supreme self-transformation package and ceiling case for form-shift taxonomy. | custom |
-| Reincarnation | RC | RC -> Magical Spells List and Spell Descriptions | spell | Death-reversal via body replacement that should stay distinct from raise-dead effects. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Polymorph Self | spell | Self-transformation recognizer; likely maps partially because SDM form-change limits still need explicit doctrine. Existing SDM family variant: `Alter Self` (UVG2e spell lane in the Powers Index). | partial |
+| Polymorph Other / Others | spell | Offensive transformation version of the same family; staged sources use both singular and plural forms, so preserve both recognizers. | partial |
+| Summon Animals | spell | Druidic ally-call effect with explicit HD budgeting; useful for summon scaling via SDM Level. | partial |
+| Animate Objects | spell | Object animation effect that likely maps, but may need gear/object-agent handling. | partial |
+| Animate Dead | spell | Major doctrine carrier for minion control and undead creation; likely requires custom or tightly-scoped overlay language. Existing SDM variant: `Animate Corpse` (UVG2e spell lane in the Powers Index). Future pass should treat this as a relationship note into Undeath's Decrees rather than a flat one-power export. | custom |
+| Clone | spell | Identity-duplication / backup-body procedure, clearly beyond a simple direct powers mapping. | custom |
+| Polymorph Any Object | spell | Extreme transmutation endpoint that extends polymorph doctrine beyond creature targets. | custom |
+| Shapechange | spell | Supreme self-transformation package and ceiling case for form-shift taxonomy. | custom |
+| Reincarnation | spell | Death-reversal via body replacement that should stay distinct from raise-dead effects. | custom |
 
 ### Terrain and Environment / Weather / Infrastructure
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Lower Water | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Hydrology-control and exposure-engineering lane. Primary placement belongs with terrain/environment and should be treated as custom doctrine for level shifting and basin manipulation. | custom |
-| Control Temperature 10' radius | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Environmental control lane. Primary placement belongs with terrain/environment rather than transformation, but the current SDM corpus still lacks a strong named microclimate-control cousin. | undecided |
-| Control Winds | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Directional weather-force control with movement, hazard, and projectile-pressure implications. Keep as custom environment-control doctrine pending full weather suite normalization. | custom |
-| Weather Control | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | High-tier weather command lane across druidic and arcane traditions. Keep as custom suite anchor for chapter-scale climate control, hazard shaping, and travel pressure. | custom |
-| Earthquake | Companion, Master | Companion -> High-Level Cleric Spell Material; Master -> Seventh-Level Cleric Spells | spell | Large-scale terrain and structure disruption effect for macro encounter shifts. | undecided |
-| Move Earth | RC | RC -> Magical Spells List and Spell Descriptions | spell | Massive terrain repositioning and landscape engineering recognizer. Existing SDM family variant: `Dryland Sculpture`, which is a smaller-scale but high-confidence terrain-forming and infrastructure-shaping cousin rather than a direct mass-displacement duplicate. | partial |
-| Hallucinatory Terrain | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Terrain-level illusion masking and environmental deception package. | undecided |
-| Obscure | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Concealment / weather-obscuration lane. Existing SDM family variant: `Yellow Cloud`, which creates an opaque dust veil and can overcharge into an immobile wall of obscuring material. Primary placement belongs with terrain/environment because the effect works by materially altering battlefield atmosphere rather than pure false imagery. | partial |
-| Predict Weather | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Forecast and horizon-reading lane. Primary placement belongs with terrain/environment and should be treated as custom environment-intelligence doctrine for routing and hazard prep. | custom |
-| Summon Weather | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Weather-calling and macro-environment override lane. Primary placement belongs with terrain/environment and should remain custom until intensity/duration/collateral doctrine is codified. | custom |
-| Wall of Stone | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Rapid structural barrier creation for chokepoints and fortification. Keep as custom until Chapter 06 codifies persistent obstacle geometry, breach rules, and noncombat construction handling. | custom |
-| Wall of Iron | RC | RC -> Magical Spells List and Spell Descriptions | spell | Durable metal wall creation for heavy-duty terrain shaping and denial. Keep as custom where procedures need explicit creation-versus-obstruction handling for persistent iron mass. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Lower Water | spell | Hydrology-control and exposure-engineering lane. Primary placement belongs with terrain/environment and should be treated as custom doctrine for level shifting and basin manipulation. | custom |
+| Control Temperature 10' radius | spell | Environmental control lane. Primary placement belongs with terrain/environment rather than transformation, but the current SDM corpus still lacks a strong named microclimate-control cousin. | undecided |
+| Control Winds | spell | Directional weather-force control with movement, hazard, and projectile-pressure implications. Keep as custom environment-control doctrine pending full weather suite normalization. | custom |
+| Weather Control | spell | High-tier weather command lane across druidic and arcane traditions. Keep as custom suite anchor for chapter-scale climate control, hazard shaping, and travel pressure. | custom |
+| Earthquake | spell | Large-scale terrain and structure disruption effect for macro encounter shifts. | undecided |
+| Move Earth | spell | Massive terrain repositioning and landscape engineering recognizer. Existing SDM family variant: `Dryland Sculpture`, which is a smaller-scale but high-confidence terrain-forming and infrastructure-shaping cousin rather than a direct mass-displacement duplicate. | partial |
+| Hallucinatory Terrain | spell | Terrain-level illusion masking and environmental deception package. | undecided |
+| Obscure | spell | Concealment / weather-obscuration lane. Existing SDM family variant: `Yellow Cloud`, which creates an opaque dust veil and can overcharge into an immobile wall of obscuring material. Primary placement belongs with terrain/environment because the effect works by materially altering battlefield atmosphere rather than pure false imagery. | partial |
+| Predict Weather | spell | Forecast and horizon-reading lane. Primary placement belongs with terrain/environment and should be treated as custom environment-intelligence doctrine for routing and hazard prep. | custom |
+| Summon Weather | spell | Weather-calling and macro-environment override lane. Primary placement belongs with terrain/environment and should remain custom until intensity/duration/collateral doctrine is codified. | custom |
+| Wall of Stone | spell | Rapid structural barrier creation for chokepoints and fortification. Keep as custom until Chapter 06 codifies persistent obstacle geometry, breach rules, and noncombat construction handling. | custom |
+| Wall of Iron | spell | Durable metal wall creation for heavy-duty terrain shaping and denial. Keep as custom where procedures need explicit creation-versus-obstruction handling for persistent iron mass. | custom |
 
 ### Summons and Servitors / Calling / Fabrication
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Conjure Elemental | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. | partial |
-| Invisible Stalker | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic | spell | Precision servitor-calling lane for pursuit, scouting, and delegated action. | partial |
-| Aerial Servant | Companion | Companion -> High-Level Cleric Spell Material | spell | Summoned retrieval-agent procedure with logistics and custody implications. | partial |
-| Summon Elemental | Master | Master -> Druid Spell Material | spell | Druidic elemental-calling lane complementary to Conjure Elemental. | partial |
-| Summon Object | RC | RC -> Magical Spells List and Spell Descriptions | spell | Object-call retrieval effect that bridges summoning and transport procedure language. | partial |
-| Create Normal Animals | Companion | Companion -> High-Level Cleric Spell Material | spell | Creature creation lane adjacent to summoning, useful for companion and ecology pressure. Bundle seed tier: `Vegetable of Birth` (There A Red Door) is the strongest current gestation precedent for controlled non-monstrous outputs. | custom |
-| Create Normal Monsters | RC | RC -> Magical Spells List and Spell Descriptions | spell | Mid-tier monster fabrication lane below magical and any-monster creation tiers. First monster-grade rung in the bundle, with bounded taxonomy and encounter-pressure outputs. | custom |
-| Create Magical Monsters | Master | Master -> Eighth-Level Magic-User Spells | spell | Magical creature fabrication lane with higher design complexity and power expectations. Mid bundle rung above normal monsters with explicit special-ability budgeting and higher control burden. | custom |
-| Create Any Monster | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Extreme top-tier creature creation endpoint with broadest scope. Bundle capstone requiring strict doctrine for command reliability, persistence failure modes, and campaign-scale impact. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Conjure Elemental | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. | partial |
+| Invisible Stalker | spell | Precision servitor-calling lane for pursuit, scouting, and delegated action. | partial |
+| Aerial Servant | spell | Summoned retrieval-agent procedure with logistics and custody implications. | partial |
+| Summon Elemental | spell | Druidic elemental-calling lane complementary to Conjure Elemental. | partial |
+| Summon Object | spell | Object-call retrieval effect that bridges summoning and transport procedure language. | partial |
+| Create Normal Animals | spell | Creature creation lane adjacent to summoning, useful for companion and ecology pressure. Bundle seed tier: `Vegetable of Birth` (There A Red Door) is the strongest current gestation precedent for controlled non-monstrous outputs. | custom |
+| Create Normal Monsters | spell | Mid-tier monster fabrication lane below magical and any-monster creation tiers. First monster-grade rung in the bundle, with bounded taxonomy and encounter-pressure outputs. | custom |
+| Create Magical Monsters | spell | Magical creature fabrication lane with higher design complexity and power expectations. Mid bundle rung above normal monsters with explicit special-ability budgeting and higher control burden. | custom |
+| Create Any Monster | spell | Extreme top-tier creature creation endpoint with broadest scope. Bundle capstone requiring strict doctrine for command reliability, persistence failure modes, and campaign-scale impact. | custom |
 
 ### Communication and Inquiry / Speech / Divination
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Speak with Animals | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Baseline non-human communication lane for ecology and scouting play. | partial |
-| Speak with the Dead | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Corpse-interrogation lane with strong overlap to existing SDM husk-speaking precedents. | partial |
-| Speak with Monsters | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | Broad creature-negotiation lane beyond animal and plant channels. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key), which generalizes communication across entities rather than preserving narrow species lanes. | partial |
-| Speak with Plants | RC | RC -> Clerical Spells List and Spell Descriptions | spell | Plant-sentience communication lane that completes the speak-with progression. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key), which already covers communication with plants, animals, minerals, and data stores. | partial |
-| Commune | Companion | Companion -> High-Level Cleric Spell Material | spell | Divine consultation and constrained-answer procedure for high-confidence guidance, likely better treated as bespoke oracle/contact doctrine than as ordinary divination throughput. | custom |
-| Know Alignment | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Alignment/intention interrogation lane used for truthfulness and affiliation reads. | partial |
-| Questioning | RC | RC -> Scrolls | item-effect | Nonliving-object interrogation procedure useful for forensic and archive scenes. | partial |
-| Truth | RC | RC -> Scrolls | item-effect | Living-mind questioning interface via enhanced mental-read procedure. | partial |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Speak with Animals | spell | Baseline non-human communication lane for ecology and scouting play. | partial |
+| Speak with the Dead | spell | Corpse-interrogation lane with strong overlap to existing SDM husk-speaking precedents. | partial |
+| Speak with Monsters | spell | Broad creature-negotiation lane beyond animal and plant channels. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key), which generalizes communication across entities rather than preserving narrow species lanes. | partial |
+| Speak with Plants | spell | Plant-sentience communication lane that completes the speak-with progression. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key), which already covers communication with plants, animals, minerals, and data stores. | partial |
+| Commune | spell | Divine consultation and constrained-answer procedure for high-confidence guidance, likely better treated as bespoke oracle/contact doctrine than as ordinary divination throughput. | custom |
+| Know Alignment | spell | Alignment/intention interrogation lane used for truthfulness and affiliation reads. | partial |
+| Questioning | item-effect | Nonliving-object interrogation procedure useful for forensic and archive scenes. | partial |
+| Truth | item-effect | Living-mind questioning interface via enhanced mental-read procedure. | partial |
 
 ### Restoration and Thresholds / Healing / Resurrection
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Cure Critical Wounds | Companion | Companion -> High-Level Cleric Spell Material | spell | Straight higher-tier healing upgrade; likely direct. | direct |
-| Cureall | Companion | Companion -> High-Level Cleric Spell Material | spell | Broad repair / cleanse package that may collapse several classic condition-removal channels into one SDM power pattern. | partial |
-| Restore | Master | Master -> Seventh-Level Cleric Spells | spell | Recovery of drained or diminished capability is important for Chapter 06 recovery taxonomy, but the exact SDM equivalent still needs policy. | partial |
-| Raise Dead Fully | Master | Master -> Seventh-Level Cleric Spells | spell | More than basic resurrection; likely needs custom life-restoration doctrine or a high-tier ritual framing with explicit threshold, body-integrity, and post-return handling rather than a simple stronger revival effect. | custom |
-| Heal | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | Extreme recovery recognizer crossing clerical and arcane traditions at high tier, likely collapsing multiple cure/cleanse/restoration lanes into one bespoke capstone recovery procedure. | custom |
-| Survival | Master, RC | Master -> Seventh-Level Cleric Spells; RC -> Clerical and Magical Spell Descriptions | spell | Hazard-environment life support package for void, plane, and extreme condition play. | partial |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Cure Critical Wounds | spell | Straight higher-tier healing upgrade; likely direct. | direct |
+| Cureall | spell | Broad repair / cleanse package that may collapse several classic condition-removal channels into one SDM power pattern. | partial |
+| Restore | spell | Recovery of drained or diminished capability is important for Chapter 06 recovery taxonomy, but the exact SDM equivalent still needs policy. | partial |
+| Raise Dead Fully | spell | More than basic resurrection; likely needs custom life-restoration doctrine or a high-tier ritual framing with explicit threshold, body-integrity, and post-return handling rather than a simple stronger revival effect. | custom |
+| Heal | spell | Extreme recovery recognizer crossing clerical and arcane traditions at high tier, likely collapsing multiple cure/cleanse/restoration lanes into one bespoke capstone recovery procedure. | custom |
+| Survival | spell | Hazard-environment life support package for void, plane, and extreme condition play. | partial |
 
 ### Interfaces and Scrollcraft / Spell Storage / Tooling
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Read Magic | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Scrolls | spell | Decoding gate for scrolls and arcane writing; this family should group deciphering, storage, and transfer interfaces. | partial |
-| Spell Storing | RC | RC -> Scrolls | item-effect | Source spell-retention wrapper. Keep the canonical key, but convert it as a trait/item power archive with Power Level capacity and later discharge rules rather than as prepared-slot retention. | custom |
-| Spell Scrolls / Spells | Basic, Expert, RC | Basic -> Treasure and Magic Items; Expert -> Treasure and Magic Item Procedures; RC -> Scrolls | item-effect | Generic casting-from-scroll wrapper that must stay visible for Chapter 05/06 bridges. | partial |
-| Protection / Protection Scrolls | Basic, Expert, RC | Basic -> Treasure and Magic Items; Expert -> Treasure and Magic Item Procedures; RC -> Scrolls | item-effect | Wrapper row for protection-scroll family where the payload references another spell recognizer. | partial |
-| Cursed / Cursed Scroll | Basic, Expert, RC | Basic -> Treasure and Magic Items; Expert -> Treasure and Magic Item Procedures; RC -> Scrolls | item-effect | Failure-state wrapper that applies negative spell-like outcomes; useful as a generalized cursed-interface pattern. | partial |
-| Maps to Treasures / Treasure Maps | Basic, Expert, RC | Basic -> Treasure and Magic Items; Expert -> Treasure and Magic Item Procedures; RC -> Scrolls | item-effect | Non-spell utility wrapper, but still an indexed magical information interface in treasure text. | custom |
-| Quill of Copying | Companion | Companion -> Treasure Tables and Item Procedures | item-effect | Procedure for spell/text duplication with strong archive tooling implications. | custom |
-| Slate of Identification | Companion | Companion -> Treasure Tables and Item Procedures | item-effect | Item-mediated identification interface that bridges detection and item-use doctrine. | partial |
-| Communication | RC | RC -> Scrolls | item-effect | Paired remote-writing interface that functions as a distance-safe text channel on the same plane. | partial |
-| Delay | RC | RC -> Scrolls | item-effect | Delayed-release wrapper for a stored spell payload, useful for trigger-based spell handling; Chapter 05 should treat this as deferred activation doctrine rather than slot hold-state. | custom |
-| Mages | RC | RC -> Scrolls | item-effect | Scroll-based magic-effect detection that complements Read Magic without replacing it. | partial |
-| Portals | RC | RC -> Scrolls | item-effect | Scroll-native pass-wall interface and compact access-control wrapper. | partial |
-| Ring of Memory | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Spell recall/recovery interface with clear Chapter 05/06 retention implications; likely better modeled as archive recall, refresh, or reduced-burden access than as literal memorization reset. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Read Magic | spell | Decoding gate for scrolls and arcane writing; this family should group deciphering, storage, and transfer interfaces. | partial |
+| Spell Storing | item-effect | Source spell-retention wrapper. Keep the canonical key, but convert it as a trait/item power archive with Power Level capacity and later discharge rules rather than as prepared-slot retention. | custom |
+| Spell Scrolls / Spells | item-effect | Generic casting-from-scroll wrapper that must stay visible for Chapter 05/06 bridges. | partial |
+| Protection / Protection Scrolls | item-effect | Wrapper row for protection-scroll family where the payload references another spell recognizer. | partial |
+| Cursed / Cursed Scroll | item-effect | Failure-state wrapper that applies negative spell-like outcomes; useful as a generalized cursed-interface pattern. | partial |
+| Maps to Treasures / Treasure Maps | item-effect | Non-spell utility wrapper, but still an indexed magical information interface in treasure text. | custom |
+| Quill of Copying | item-effect | Procedure for spell/text duplication with strong archive tooling implications. | custom |
+| Slate of Identification | item-effect | Item-mediated identification interface that bridges detection and item-use doctrine. | partial |
+| Communication | item-effect | Paired remote-writing interface that functions as a distance-safe text channel on the same plane. | partial |
+| Delay | item-effect | Delayed-release wrapper for a stored spell payload, useful for trigger-based spell handling; Chapter 05 should treat this as deferred activation doctrine rather than slot hold-state. | custom |
+| Mages | item-effect | Scroll-based magic-effect detection that complements Read Magic without replacing it. | partial |
+| Portals | item-effect | Scroll-native pass-wall interface and compact access-control wrapper. | partial |
+| Ring of Memory | item-effect | Spell recall/recovery interface with clear Chapter 05/06 retention implications; likely better modeled as archive recall, refresh, or reduced-burden access than as literal memorization reset. | custom |
 
 ### Meta-Doctrine and Exceptions / Artifact Rules / Systems
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Artifact Activation Procedure | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Trigger and operation doctrine for artifact-grade effects; reusable as high-tier activation framing. | custom |
-| Artifact Charges and Recharge | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Resource-economy scaffold for charge use, depletion, and recharge cycles. | custom |
-| Artifact Intelligence and Auto-Defense | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Governs autonomous artifact behavior, resistance, and retaliatory logic. | custom |
-| Artifact Handicaps and Penalties | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Drawback model for artifact use that should influence Chapter 06 risk/cost doctrine. | custom |
-| Artifact Destruction Procedure | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | High-tier termination pathway for otherwise persistent artifact effects. | custom |
-| Artifact Attack and Degradation | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Durability, threshold-loss, and recall behavior when artifacts are directly attacked. | custom |
-| Artifact Creation Procedure | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Design-time artifact workflow covering power budgeting, activation mode, and adverse-effect loadout. | custom |
-| Immortal Magical Effect Index (S1-S4) | Immortals | Immortals -> Section 3: Immortal Magic -> General Notes, Charts S1-S4 | procedure | Master index for mapping mortal and non-mortal effects to Immortal power-cost rules. | custom |
-| Immortal Caster Level Rule | Immortals | Immortals -> Section 3: Immortal Magic -> Index to Magical Effects | procedure | Effective caster-level baseline for Immortal effect scaling (2x HD). | custom |
-| Immortal Range / Duration Scaling | Immortals | Immortals -> Section 3: Immortal Magic -> Changing Range and Duration | procedure | Range and duration scaling doctrine for divine-tier spell-equivalent effects. | custom |
-| Immortal Conjuring and Summoning Limits | Immortals | Immortals -> Section 3: Immortal Magic -> Conjuring and Summoning | procedure | Constraint doctrine for conjured allies and summoned entities at Immortal tier. | custom |
-| Immortal Damage Scaling and Averaging | Immortals | Immortals -> Section 3: Immortal Magic -> Damage | procedure | HD-scaled damage expression plus average-damage fast-resolution option. | custom |
-| Immortal Mental Effect Resolution | Immortals | Immortals -> Section 3: Immortal Magic -> Mental Effects | procedure | Recovery and save-cadence handling for charmed/feebleminded Immortals. | custom |
-| Immortal Limits on Use | Immortals | Immortals -> Section 3: Immortal Magic -> Limits on Use | procedure | Action and scope constraints on active magical effects. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Artifact Activation Procedure | procedure | Trigger and operation doctrine for artifact-grade effects; reusable as high-tier activation framing. | custom |
+| Artifact Charges and Recharge | procedure | Resource-economy scaffold for charge use, depletion, and recharge cycles. | custom |
+| Artifact Intelligence and Auto-Defense | procedure | Governs autonomous artifact behavior, resistance, and retaliatory logic. | custom |
+| Artifact Handicaps and Penalties | procedure | Drawback model for artifact use that should influence Chapter 06 risk/cost doctrine. | custom |
+| Artifact Destruction Procedure | procedure | High-tier termination pathway for otherwise persistent artifact effects. | custom |
+| Artifact Attack and Degradation | procedure | Durability, threshold-loss, and recall behavior when artifacts are directly attacked. | custom |
+| Artifact Creation Procedure | procedure | Design-time artifact workflow covering power budgeting, activation mode, and adverse-effect loadout. | custom |
+| Immortal Magical Effect Index (S1-S4) | procedure | Master index for mapping mortal and non-mortal effects to Immortal power-cost rules. | custom |
+| Immortal Caster Level Rule | procedure | Effective caster-level baseline for Immortal effect scaling (2x HD). | custom |
+| Immortal Range / Duration Scaling | procedure | Range and duration scaling doctrine for divine-tier spell-equivalent effects. | custom |
+| Immortal Conjuring and Summoning Limits | procedure | Constraint doctrine for conjured allies and summoned entities at Immortal tier. | custom |
+| Immortal Damage Scaling and Averaging | procedure | HD-scaled damage expression plus average-damage fast-resolution option. | custom |
+| Immortal Mental Effect Resolution | procedure | Recovery and save-cadence handling for charmed/feebleminded Immortals. | custom |
+| Immortal Limits on Use | procedure | Action and scope constraints on active magical effects. | custom |
 
 ### Meta-Doctrine and Exceptions / Reality Rewrite / High-Tier
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Wish | Master, RC | Master -> Seventh-Level Cleric Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Clerical and Magical Spell Descriptions | spell | Canonical spell name should remain `Wish` even where the tone-forward SDM variant is `Big Wish` in the Powers Index. This is exactly the sort of high-recognizer / unique-variant pairing the crosswalk must preserve, with later conversion likely framed as a ritual-grade exception rather than a slot spell. | custom |
-| Timestop | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Temporal exception effect and high-tier action-economy breaker. | custom |
-| Reverse Gravity | RC | RC -> Magical Spells List and Spell Descriptions | spell | Battlefield-physics inversion that behaves as a rules exception rather than a standard force attack. | custom |
-| Contingency | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Conditional trigger/do-if framework for precommitted reality edits and defensive reactions. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Wish | spell | Canonical spell name should remain `Wish` even where the tone-forward SDM variant is `Big Wish` in the Powers Index. This is exactly the sort of high-recognizer / unique-variant pairing the crosswalk must preserve, with later conversion likely framed as a ritual-grade exception rather than a slot spell. | custom |
+| Timestop | spell | Temporal exception effect and high-tier action-economy breaker. | custom |
+| Reverse Gravity | spell | Battlefield-physics inversion that behaves as a rules exception rather than a standard force attack. | custom |
+| Contingency | spell | Conditional trigger/do-if framework for precommitted reality edits and defensive reactions. | custom |
 
 ### Support and Augmentation / Blessing / Sustainment
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Bless | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Morale and combat blessing lane. | undecided |
-| Continual Light | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Persistent light/darkness-management support effect. | undecided |
-| Create Air | RC | RC -> Magical Spells List and Spell Descriptions | spell | Environmental survival and sealed-space support lane for vacuum, underwater, or enclosed-hazard play; likely a bespoke sustainment wrapper unless folded into broader life-support doctrine. | custom |
-| Create Food | Companion | Companion -> High-Level Cleric Spell Material | spell | Supply-generation and survival support. Existing SDM family variant: `Process Food`, which converts raw matter into usable rations; `Green Haven` is a secondary expedition-sustainment cousin where the classic row is read as camp support rather than pure conjuration. | partial |
-| Create Water | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Expedition sustainment lane for liquid-resource generation. Existing SDM cousins in `Process Food` and broader survival wrappers support a supply-doctrine mapping without requiring a literal slot-era clone. | partial |
-| Cure Light Wounds | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Foundational healing support. Existing SDM family variants: `Rehoryan's Progressive Restoration` and `Restorative Slumber`, which frame healing as regenerative or recuperative process rather than instant slot discharge. | partial |
-| Cure Serious Wounds | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Mid-tier healing support. Existing SDM family variants: `Rehoryan's Progressive Restoration` and `Real-Time Rebuild`, which provide stronger repair and regrowth scaling. | partial |
-| Haste | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Acceleration and combat-tempo support. Existing SDM family variant: `Nunka's Biophysical Overdrive`, which expresses haste-like speed and output boosts as metabolic overdrive with exhaustion burdens. Likely future relationship-group candidate for a single SDM power with Overcharge riders instead of multiple near-duplicate exports. | partial |
-| Illumination | RC | RC -> Scrolls | item-effect | Reusable flame-scroll utility for sustained light and fire-starting. | direct |
-| Immunity | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Apex blanket-protection lane spanning broad hazard categories. Keep as custom until Chapter 06 sets explicit immunity scope boundaries and exception taxonomy. | custom |
-| Light | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Shared cross-tradition light/darkness utility. | undecided |
-| Purify Food and Water | Basic | Basic -> Spell Lists and Basic Spell Descriptions | spell | Basic purification and supply-safety support. Existing SDM family variant: `Process Food`, which turns unsafe or inedible organic matter into workable supplies; `Toxin Render` is a narrower waste-processing cousin rather than a straight purification duplicate. | partial |
-| Remove Fear | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Fear-cleansing and morale stabilization support. | undecided |
-| Resist Cold | Basic | Basic -> Spell Lists and Basic Spell Descriptions | spell | Foundational elemental protection support. | undecided |
-| Ring of Holiness | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Cleric/druid power-augmentation wrapper tied to ring use; later conversion should express this as eligibility, blessing-layer access, or reduced burden around holy/nature powers rather than extra slot grant. | custom |
-| Ring of Life Protection | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Anti-drain and life-threshold safeguard interface; useful as a threshold-protection model distinct from ordinary healing because it prevents or defers loss rather than repairing it after the fact. | custom |
-| Ring of Remedies | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Bundled condition-repair and cleansing wrapper; likely a reusable item model for one interface exposing several tagged recovery functions instead of one-to-one spell copies. | custom |
-| Ring of Survival | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Environmental hardening and hazard-resistance wrapper. | partial |
-| Rod of Health | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | Permanent healing and recovery interface at rod scale. | partial |
-| Striking | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Weapon augmentation and combat support lane. Existing SDM family variant: `Imbue Edge`, which buffs an edged weapon's damage and lets it harm intangibles for the duration. | partial |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Bless | spell | Morale and combat blessing lane. | undecided |
+| Continual Light | spell | Persistent light/darkness-management support effect. | undecided |
+| Create Air | spell | Environmental survival and sealed-space support lane for vacuum, underwater, or enclosed-hazard play; likely a bespoke sustainment wrapper unless folded into broader life-support doctrine. | custom |
+| Create Food | spell | Supply-generation and survival support. Existing SDM family variant: `Process Food`, which converts raw matter into usable rations; `Green Haven` is a secondary expedition-sustainment cousin where the classic row is read as camp support rather than pure conjuration. | partial |
+| Create Water | spell | Expedition sustainment lane for liquid-resource generation. Existing SDM cousins in `Process Food` and broader survival wrappers support a supply-doctrine mapping without requiring a literal slot-era clone. | partial |
+| Cure Light Wounds | spell | Foundational healing support. Existing SDM family variants: `Rehoryan's Progressive Restoration` and `Restorative Slumber`, which frame healing as regenerative or recuperative process rather than instant slot discharge. | partial |
+| Cure Serious Wounds | spell | Mid-tier healing support. Existing SDM family variants: `Rehoryan's Progressive Restoration` and `Real-Time Rebuild`, which provide stronger repair and regrowth scaling. | partial |
+| Haste | spell | Acceleration and combat-tempo support. Existing SDM family variant: `Nunka's Biophysical Overdrive`, which expresses haste-like speed and output boosts as metabolic overdrive with exhaustion burdens. Likely future relationship-group candidate for a single SDM power with Overcharge riders instead of multiple near-duplicate exports. | partial |
+| Illumination | item-effect | Reusable flame-scroll utility for sustained light and fire-starting. | direct |
+| Immunity | spell | Apex blanket-protection lane spanning broad hazard categories. Keep as custom until Chapter 06 sets explicit immunity scope boundaries and exception taxonomy. | custom |
+| Light | spell | Shared cross-tradition light/darkness utility. | undecided |
+| Purify Food and Water | spell | Basic purification and supply-safety support. Existing SDM family variant: `Process Food`, which turns unsafe or inedible organic matter into workable supplies; `Toxin Render` is a narrower waste-processing cousin rather than a straight purification duplicate. | partial |
+| Remove Fear | spell | Fear-cleansing and morale stabilization support. | undecided |
+| Resist Cold | spell | Foundational elemental protection support. | undecided |
+| Ring of Holiness | item-effect | Cleric/druid power-augmentation wrapper tied to ring use; later conversion should express this as eligibility, blessing-layer access, or reduced burden around holy/nature powers rather than extra slot grant. | custom |
+| Ring of Life Protection | item-effect | Anti-drain and life-threshold safeguard interface; useful as a threshold-protection model distinct from ordinary healing because it prevents or defers loss rather than repairing it after the fact. | custom |
+| Ring of Remedies | item-effect | Bundled condition-repair and cleansing wrapper; likely a reusable item model for one interface exposing several tagged recovery functions instead of one-to-one spell copies. | custom |
+| Ring of Survival | item-effect | Environmental hardening and hazard-resistance wrapper. | partial |
+| Rod of Health | item-effect | Permanent healing and recovery interface at rod scale. | partial |
+| Striking | spell | Weapon augmentation and combat support lane. Existing SDM family variant: `Imbue Edge`, which buffs an edged weapon's damage and lets it harm intangibles for the duration. | partial |
 
 ### Purge and Safeguards / Recovery / Cleansing
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Cure Blindness | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Condition-removal lane for sensory impairment. Existing SDM family variants: `Real-Time Rebuild` for bodily restoration and `Restorative Slumber` for longer-form burden/attribute recovery. | partial |
-| Cure Disease | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Disease-removal and anti-corruption-adjacent lane. Existing SDM family variant: `Real-Time Rebuild`, which explicitly flushes toxins or afflictions and restores damaged systems by power setting. | partial |
-| Neutralize Poison | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Poison-cleansing and poison-creation lane. Existing SDM family variant: `Real-Time Rebuild`, which explicitly flushes toxins at lower power settings. | partial |
-| Protection from Poison | Master | Master -> Druid Spell Material | spell | Poison immunity and anti-breath lane. Existing SDM family variant: `Real-Time Rebuild`, which is still a recovery-style toxin-handling cousin rather than true prophylactic immunity, so this remains only a partial match. | partial |
-| Raise Dead | Companion | Companion -> High-Level Cleric Spell Material | spell | Companion lane for the classic recognizer before Master expansions. Existing SDM variant: `Raise Dead` (UVG2e Spells), with `Recall Soul` as a strong soul-return ritual cousin where the conversion wants explicit soul-handling. | partial |
-| Remove Curse | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Major curse-removal recognizer. | undecided |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Cure Blindness | spell | Condition-removal lane for sensory impairment. Existing SDM family variants: `Real-Time Rebuild` for bodily restoration and `Restorative Slumber` for longer-form burden/attribute recovery. | partial |
+| Cure Disease | spell | Disease-removal and anti-corruption-adjacent lane. Existing SDM family variant: `Real-Time Rebuild`, which explicitly flushes toxins or afflictions and restores damaged systems by power setting. | partial |
+| Neutralize Poison | spell | Poison-cleansing and poison-creation lane. Existing SDM family variant: `Real-Time Rebuild`, which explicitly flushes toxins at lower power settings. | partial |
+| Protection from Poison | spell | Poison immunity and anti-breath lane. Existing SDM family variant: `Real-Time Rebuild`, which is still a recovery-style toxin-handling cousin rather than true prophylactic immunity, so this remains only a partial match. | partial |
+| Raise Dead | spell | Companion lane for the classic recognizer before Master expansions. Existing SDM variant: `Raise Dead` (UVG2e Spells), with `Recall Soul` as a strong soul-return ritual cousin where the conversion wants explicit soul-handling. | partial |
+| Remove Curse | spell | Major curse-removal recognizer. | undecided |
 
 ### Influence and Control / Charm / Binding
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Charm Monster | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Broad creature-charm lane. Existing SDM family variant: `Hero's Goldenmouth`, but only as a broad persuasive-capture cousin; the current corpus does not yet provide a clean nonhuman domination equivalent. | partial |
-| Charm Person | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Core low-tier social control spell. Existing SDM family variant: `Hero's Goldenmouth` (Our Golden Age), which reframes charm as persuasive social capture rather than hard domination. | partial |
-| Charm Plant | RC | RC -> Magical Spells List and Spell Descriptions | spell | Plant-specific command/control lane. Keep as custom until plant-agency and obedience boundaries are normalized against broader influence doctrine. | custom |
-| Geas | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Compulsion / binding lane. | undecided |
-| Holy Word | Companion, Master | Companion -> High-Level Cleric Spell Material; Master -> Seventh-Level Cleric Spells | spell | High-tier word of power / banishment lane. Existing SDM family variant: `Sense Allegiance`, which provides the clearest current ethical-targeting plus stun/interdiction cousin, though it is much narrower than the full clerical word-of-power package. | partial |
-| Snake Charm | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Creature-specific charm/control spell. | undecided |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Charm Monster | spell | Broad creature-charm lane. Existing SDM family variant: `Hero's Goldenmouth`, but only as a broad persuasive-capture cousin; the current corpus does not yet provide a clean nonhuman domination equivalent. | partial |
+| Charm Person | spell | Core low-tier social control spell. Existing SDM family variant: `Hero's Goldenmouth` (Our Golden Age), which reframes charm as persuasive social capture rather than hard domination. | partial |
+| Charm Plant | spell | Plant-specific command/control lane. Keep as custom until plant-agency and obedience boundaries are normalized against broader influence doctrine. | custom |
+| Geas | spell | Compulsion / binding lane. | undecided |
+| Holy Word | spell | High-tier word of power / banishment lane. Existing SDM family variant: `Sense Allegiance`, which provides the clearest current ethical-targeting plus stun/interdiction cousin, though it is much narrower than the full clerical word-of-power package. | partial |
+| Snake Charm | spell | Creature-specific charm/control spell. | undecided |
 
 ### Battle and Force / Hazards / Destruction
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Call Lightning | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Druidic artillery recognizer. | undecided |
-| Cloudkill | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | High-tier battlefield hazard / area denial lane. | undecided |
-| Death Spell | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | High-tier kill / sweep spell lane. | undecided |
-| Disintegrate | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Matter-destruction lane. | undecided |
-| Explosive Cloud | Master | Master -> Eighth-Level Magic-User Spells | spell | High-tier area hazard lane. | undecided |
-| Ice Storm/Wall | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Hybrid artillery / wall-control lane. | undecided |
-| Insect Plague | Companion | Companion -> High-Level Cleric Spell Material | spell | Battlefield swarm / area-denial lane. | undecided |
-| Power Word Blind | Master | Master -> Eighth-Level Magic-User Spells | spell | Word-of-power debilitation lane. | undecided |
-| Power Word Kill | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Word-of-power execution lane. | undecided |
-| Sword | RC | RC -> Magical Spells List and Spell Descriptions | spell | Force-weapon and animated blade lane. | undecided |
-| Wall of Fire | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Barrier-plus-damage lane. Keep relationship notes in mind with other escalating fireburst and fire-control effects for later Overcharge consolidation. Treat as partial pending fire-family consolidation with existing descendants such as `Pyreball`. | partial |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Call Lightning | spell | Druidic artillery recognizer. | undecided |
+| Cloudkill | spell | High-tier battlefield hazard / area denial lane. | undecided |
+| Death Spell | spell | High-tier kill / sweep spell lane. | undecided |
+| Disintegrate | spell | Matter-destruction lane. | undecided |
+| Explosive Cloud | spell | High-tier area hazard lane. | undecided |
+| Ice Storm/Wall | spell | Hybrid artillery / wall-control lane. | undecided |
+| Insect Plague | spell | Battlefield swarm / area-denial lane. | undecided |
+| Power Word Blind | spell | Word-of-power debilitation lane. | undecided |
+| Power Word Kill | spell | Word-of-power execution lane. | undecided |
+| Sword | spell | Force-weapon and animated blade lane. | undecided |
+| Wall of Fire | spell | Barrier-plus-damage lane. Keep relationship notes in mind with other escalating fireburst and fire-control effects for later Overcharge consolidation. Treat as partial pending fire-family consolidation with existing descendants such as `Pyreball`. | partial |
 
 ### Knowledge and Mind / Sensing / Counter-Sense
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Clairvoyance | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Remote-sight lane. Existing SDM family variant: `Eyes of the Arrow` (Vastlands / The Viridian Practice), a projectile-bound remote sensor. | partial |
-| Detect Danger | Master | Master -> Druid Spell Material | spell | Hazard-sense hybrid lane combining detection and danger reading. Existing SDM family variant: `Yellow Foresight`, which scans a wide area for sentients and general mood. | partial |
-| Detect Invisible | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Arcane perception / anti-concealment lane. Existing SDM family variant: `Eyes of Akaula`, which sees invisible, hidden, departed, and dead things. | partial |
-| ESP | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Thought-reading / awareness lane. Existing SDM family variant: `Yellow Foresight`, which reads sentient presence and general mood rather than exact thoughts. | partial |
-| Feeblemind | RC | RC -> Magical Spells List and Spell Descriptions | spell | Severe cognition-destruction lane. | undecided |
-| Find Traps | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Detection and hazard-reading spell. | undecided |
-| Infravision | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Sensory enhancement lane. Existing SDM family variant: `Rehoryan's Prophetic Song`, which can grant night vision as a durable biomantic adaptation instead of temporary spell vision. | partial |
-| Locate | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Druidic animal / plant location lane. | undecided |
-| Magic Jar | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Identity-transfer and mind-storage lane. | partial |
-| Mind Barrier | Master | Master -> Eighth-Level Magic-User Spells | spell | High-tier noospheric defense lane for hostile mental influence suppression. Keep as custom until mental-defense tags and intrusion categories are normalized. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Clairvoyance | spell | Remote-sight lane. Existing SDM family variant: `Eyes of the Arrow` (Vastlands / The Viridian Practice), a projectile-bound remote sensor. | partial |
+| Detect Danger | spell | Hazard-sense hybrid lane combining detection and danger reading. Existing SDM family variant: `Yellow Foresight`, which scans a wide area for sentients and general mood. | partial |
+| Detect Invisible | spell | Arcane perception / anti-concealment lane. Existing SDM family variant: `Eyes of Akaula`, which sees invisible, hidden, departed, and dead things. | partial |
+| ESP | spell | Thought-reading / awareness lane. Existing SDM family variant: `Yellow Foresight`, which reads sentient presence and general mood rather than exact thoughts. | partial |
+| Feeblemind | spell | Severe cognition-destruction lane. | undecided |
+| Find Traps | spell | Detection and hazard-reading spell. | undecided |
+| Infravision | spell | Sensory enhancement lane. Existing SDM family variant: `Rehoryan's Prophetic Song`, which can grant night vision as a durable biomantic adaptation instead of temporary spell vision. | partial |
+| Locate | spell | Druidic animal / plant location lane. | undecided |
+| Magic Jar | spell | Identity-transfer and mind-storage lane. | partial |
+| Mind Barrier | spell | High-tier noospheric defense lane for hostile mental influence suppression. Keep as custom until mental-defense tags and intrusion categories are normalized. | custom |
 
 ### Transformation and Fabrication / Nature / Material Shaping
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Anti-Animal Shell | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Creature-class exclusion boundary for fauna and beast-adjacent targets. Treat as custom boundary taxonomy doctrine (who is denied passage and what target classes qualify). | custom |
-| Anti-Plant Shell | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Vegetation-class exclusion boundary. This is a custom barrier-interface case for passage denial against plant entities/effects, not a generic resistance shell. | custom |
-| Clothform | RC | RC -> Magical Spells List and Spell Descriptions | spell | Soft-material transmutation lane. | undecided |
-| Contact Outer Plane | RC | RC -> Magical Spells List and Spell Descriptions | spell | Dangerous intelligence-contact and revelation lane. | custom |
-| Creeping Doom | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | High-tier swarm devastation lane. | undecided |
-| Dissolve | Master | Master -> Druid Spell Material | spell | Terrain-liquefaction lane. | undecided |
-| Entangle | RC | RC -> Magical Spells List and Spell Descriptions | spell | Arcane restraint and vegetation-control lane. | partial |
-| Faerie Fire | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Outlining / reveal lane. | undecided |
-| Growth of Animal | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Creature enhancement / scaling lane. | undecided |
-| Growth of Plants | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Terrain / vegetation alteration lane. Existing SDM family variant: `Green Haven`, which coerces vegetation into shelter and thorn barriers; it is a narrower plant-shaping cousin rather than a pure growth accelerator. | partial |
-| Heat Metal | Master | Master -> Druid Spell Material | spell | Sustained heat / anti-armor / concentration-break lane. | undecided |
-| Hold Animal | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Beast-specific restraint lane. | undecided |
-| Ironform | RC | RC -> Magical Spells List and Spell Descriptions | spell | Metal transmutation and body-state lane. | undecided |
-| Metal to Wood | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Material transformation lane. | undecided |
-| Produce Fire | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Portable flame / attack lane. | undecided |
-| Protection from Lightning | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Elemental defense lane. | undecided |
-| Steelform | RC | RC -> Magical Spells List and Spell Descriptions | spell | Advanced metal transmutation lane. | undecided |
-| Sticks to Snakes | RC | RC -> Clerical Spells List and Spell Descriptions | spell | Wood-to-serpent transformation and battlefield-weaponization lane. Keep as custom until material-to-creature conversion, obedience scope, and reversion/persistence rules are normalized. | custom |
-| Stone to Flesh | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Petrification-reversal lane. | undecided |
-| Stoneform | RC | RC -> Magical Spells List and Spell Descriptions | spell | Stone transmutation lane within the broader form-spell suite. | undecided |
-| Telekinesis | RC | RC -> Magical Spells List and Spell Descriptions | spell | Classic force-manipulation recognizer. | partial |
-| Turn Wood | Master | Master -> Druid Spell Material | spell | Wooden-object repulsion and vector-redirection lane. Treat as a custom material-interaction control effect with explicit category targeting and displacement behavior. | custom |
-| Warp Wood | Companion, Master | Companion -> Druid Spell Material; Master -> Druid Spell Material | spell | Wooden-structure deformation lane. | undecided |
-| Woodform | RC | RC -> Magical Spells List and Spell Descriptions | spell | Wood transmutation lane paired with the other form spells. | undecided |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Anti-Animal Shell | spell | Creature-class exclusion boundary for fauna and beast-adjacent targets. Treat as custom boundary taxonomy doctrine (who is denied passage and what target classes qualify). | custom |
+| Anti-Plant Shell | spell | Vegetation-class exclusion boundary. This is a custom barrier-interface case for passage denial against plant entities/effects, not a generic resistance shell. | custom |
+| Clothform | spell | Soft-material transmutation lane. | undecided |
+| Contact Outer Plane | spell | Dangerous intelligence-contact and revelation lane. | custom |
+| Creeping Doom | spell | High-tier swarm devastation lane. | undecided |
+| Dissolve | spell | Terrain-liquefaction lane. | undecided |
+| Entangle | spell | Arcane restraint and vegetation-control lane. | partial |
+| Faerie Fire | spell | Outlining / reveal lane. | undecided |
+| Growth of Animal | spell | Creature enhancement / scaling lane. | undecided |
+| Growth of Plants | spell | Terrain / vegetation alteration lane. Existing SDM family variant: `Green Haven`, which coerces vegetation into shelter and thorn barriers; it is a narrower plant-shaping cousin rather than a pure growth accelerator. | partial |
+| Heat Metal | spell | Sustained heat / anti-armor / concentration-break lane. | undecided |
+| Hold Animal | spell | Beast-specific restraint lane. | undecided |
+| Ironform | spell | Metal transmutation and body-state lane. | undecided |
+| Metal to Wood | spell | Material transformation lane. | undecided |
+| Produce Fire | spell | Portable flame / attack lane. | undecided |
+| Protection from Lightning | spell | Elemental defense lane. | undecided |
+| Steelform | spell | Advanced metal transmutation lane. | undecided |
+| Sticks to Snakes | spell | Wood-to-serpent transformation and battlefield-weaponization lane. Keep as custom until material-to-creature conversion, obedience scope, and reversion/persistence rules are normalized. | custom |
+| Stone to Flesh | spell | Petrification-reversal lane. | undecided |
+| Stoneform | spell | Stone transmutation lane within the broader form-spell suite. | undecided |
+| Telekinesis | spell | Classic force-manipulation recognizer. | partial |
+| Turn Wood | spell | Wooden-object repulsion and vector-redirection lane. Treat as a custom material-interaction control effect with explicit category targeting and displacement behavior. | custom |
+| Warp Wood | spell | Wooden-structure deformation lane. | undecided |
+| Woodform | spell | Wood transmutation lane paired with the other form spells. | undecided |
 
 ### Defense and Boundaries / Seals / Passage Control
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Hold Portal | Basic, Expert | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions | spell | Low-tier closure / access-control spell. Existing SDM family variant: `Knock / Lock`, whose overcharge explicitly flings a portal open or seals, welds, or fuses it shut. | partial |
-| Maze | Master | Master -> Eighth-Level and Ninth-Level Magic-User Spells | spell | Exile and battlefield-removal boundary effect. Keep as custom due its spatial-separation logic and return-condition doctrine requirements. | custom |
-| Permanence | Master | Master -> Eighth-Level Magic-User Spells | spell | Long-term enchantment anchoring and persistence-lock doctrine. Treat as custom because Chapter 06 must define bindability scope, upkeep risks, and safe unbinding conditions. | custom |
-| Wizard Lock | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Arcane closure / keyed barrier lane. Existing SDM family variant: `Knock / Lock`, which already handles opening, locking, and forcibly sealing portals, including resistance from magical locks. | partial |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Hold Portal | spell | Low-tier closure / access-control spell. Existing SDM family variant: `Knock / Lock`, whose overcharge explicitly flings a portal open or seals, welds, or fuses it shut. | partial |
+| Maze | spell | Exile and battlefield-removal boundary effect. Keep as custom due its spatial-separation logic and return-condition doctrine requirements. | custom |
+| Permanence | spell | Long-term enchantment anchoring and persistence-lock doctrine. Treat as custom because Chapter 06 must define bindability scope, upkeep risks, and safe unbinding conditions. | custom |
+| Wizard Lock | spell | Arcane closure / keyed barrier lane. Existing SDM family variant: `Knock / Lock`, which already handles opening, locking, and forcibly sealing portals, including resistance from magical locks. | partial |
 
 ### Interfaces and Scrollcraft / Treasure / Utility Devices
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Creation | RC | RC -> Scrolls | item-effect | Scroll-generated temporary mundane item fabrication procedure. | custom |
-| Equipment | RC | RC -> Scrolls | item-effect | Scroll that manifests from a fixed list of mundane adventuring gear. | custom |
-| Mapping | RC | RC -> Scrolls | item-effect | Scroll-generated area map with limited secret-door detection. | custom |
-| Protection from Elementals | RC | RC -> Scrolls | item-effect | Circle protection scroll keyed specifically to elementals. | partial |
-| Protection from Evil 10' Radius | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Canonical grouped display form for the group-radius protection lane (clerical framing). Treat lowercase `10' radius` as a retained alias recognizer, not a separate doctrine island. | partial |
-| Protection from Lycanthropes | RC | RC -> Scrolls | item-effect | Circle protection scroll keyed to lycanthrope types by quantity band. | partial |
-| Protection from Normal Missiles | Expert | Expert -> Clerical and Magic-User Spell Expansions | spell | Projectile-denial boundary lane for nonmagical missile vectors. Chapter 05 should treat this as an interface-grade filtering ward with explicit projectile-category exceptions rather than a generic defense bonus. | custom |
-| Protection from Undead | RC | RC -> Scrolls | item-effect | Circle protection scroll keyed to undead by type and quantity. | partial |
-| Repetition | RC | RC -> Scrolls | item-effect | Scroll wrapper that replays the same-level spell effect after one turn; note for future conversion that this should become an SDM trigger/interface note, not a slot-replay rule. | custom |
-| Ring of Elemental Adaptation | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings | item-effect | Elemental-environment survival and traversal interface. | partial |
-| Rod of the Wyrm | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | High-tier draconic transformation/summoning interface. | custom |
-| Seeing | RC | RC -> Scrolls | item-effect | Scroll-based remote creature imaging procedure. | partial |
-| Shelter | RC | RC -> Scrolls | item-effect | Pocket-room refuge scroll with supplies and extradimensional trapping edge cases. | custom |
-| Staff of Harming | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | Reversed-healing harm wrapper with charge-costed curse-side effects. | custom |
-| Staff of an Element | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | Element-tuned summoning, negation, and planar operation interface; a strong bundle case rather than a single-spell export, especially when Chapter 05 needs one item to expose several element-keyed functions. | custom |
-| Staff of the Druids | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Wands, Staves, and Rods | item-effect | Druid power-augmentation and charge-linked upkeep interface; should convert as attuned access to druidic functions or bundled powers rather than as raw slot augmentation. | custom |
-| Symbol | Master | Master -> Eighth-Level Magic-User Spells | spell | Sigil-triggered boundary hazard lane. Treat as a custom trigger-interface package (condition, payload, and reset doctrine) instead of a plain static trap export. | custom |
-| Talisman of Elemental Travel | Companion | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Miscellaneous Items | item-effect | Elemental-plane transit and safety wrapper; useful as a Chapter 05 model for travel interfaces that bundle adaptation, safe passage, and return logic. | custom |
-| Trapping | RC | RC -> Scrolls | item-effect | Scroll-created physical trap keyed by placement surface. | custom |
-| Wizardry | Master | Master -> Seventh-Level Cleric Spells | spell | Cross-tradition item / scroll use bridge lane. | undecided |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Creation | item-effect | Scroll-generated temporary mundane item fabrication procedure. | custom |
+| Equipment | item-effect | Scroll that manifests from a fixed list of mundane adventuring gear. | custom |
+| Mapping | item-effect | Scroll-generated area map with limited secret-door detection. | custom |
+| Protection from Elementals | item-effect | Circle protection scroll keyed specifically to elementals. | partial |
+| Protection from Evil 10' Radius | spell | Canonical grouped display form for the group-radius protection lane (clerical framing). Treat lowercase `10' radius` as a retained alias recognizer, not a separate doctrine island. | partial |
+| Protection from Lycanthropes | item-effect | Circle protection scroll keyed to lycanthrope types by quantity band. | partial |
+| Protection from Normal Missiles | spell | Projectile-denial boundary lane for nonmagical missile vectors. Chapter 05 should treat this as an interface-grade filtering ward with explicit projectile-category exceptions rather than a generic defense bonus. | custom |
+| Protection from Undead | item-effect | Circle protection scroll keyed to undead by type and quantity. | partial |
+| Repetition | item-effect | Scroll wrapper that replays the same-level spell effect after one turn; note for future conversion that this should become an SDM trigger/interface note, not a slot-replay rule. | custom |
+| Ring of Elemental Adaptation | item-effect | Elemental-environment survival and traversal interface. | partial |
+| Rod of the Wyrm | item-effect | High-tier draconic transformation/summoning interface. | custom |
+| Seeing | item-effect | Scroll-based remote creature imaging procedure. | partial |
+| Shelter | item-effect | Pocket-room refuge scroll with supplies and extradimensional trapping edge cases. | custom |
+| Staff of Harming | item-effect | Reversed-healing harm wrapper with charge-costed curse-side effects. | custom |
+| Staff of an Element | item-effect | Element-tuned summoning, negation, and planar operation interface; a strong bundle case rather than a single-spell export, especially when Chapter 05 needs one item to expose several element-keyed functions. | custom |
+| Staff of the Druids | item-effect | Druid power-augmentation and charge-linked upkeep interface; should convert as attuned access to druidic functions or bundled powers rather than as raw slot augmentation. | custom |
+| Symbol | spell | Sigil-triggered boundary hazard lane. Treat as a custom trigger-interface package (condition, payload, and reset doctrine) instead of a plain static trap export. | custom |
+| Talisman of Elemental Travel | item-effect | Elemental-plane transit and safety wrapper; useful as a Chapter 05 model for travel interfaces that bundle adaptation, safe passage, and return logic. | custom |
+| Trapping | item-effect | Scroll-created physical trap keyed by placement surface. | custom |
+| Wizardry | spell | Cross-tradition item / scroll use bridge lane. | undecided |
 
 ### Meta-Doctrine and Exceptions / Artifact / Immortal Rules
 
-| Classic Name | Source Book(s) | Staging Anchor / Section | Type | Notes | Mapping Status |
-| --- | --- | --- | --- | --- | --- |
-| Artifact Activation | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Activation/discovery interface for artifact powers. | custom |
-| Artifact Charges And Recharge | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Artifact power-budget, charge-drain, and recharge-cycle doctrine. | custom |
-| Artifact Handicaps And Penalties | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Core adverse-effect framework for mortal artifact users. | custom |
-| Artifact Intelligence And Auto-Defense | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Rudimentary artifact agency and self-defense behavior. | custom |
-| Attacking An Artifact | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Artifact durability, damage thresholds, power loss, and recall behavior under sustained attacks. | custom |
-| Creating Artifacts | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Artifact design workflow including magnitude, power limits, activation model, and adverse-effect selection. | custom |
-| Destruction Of An Artifact | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | Permanent-destruction quest procedure and Immortal-response consequences. | custom |
-| Immortal Conjuring And Summoning Limits | Immortals | Immortals -> Section 3: Immortal Magic -> Conjuring and Summoning | procedure | Defines transplanar response requirements and sphere/element bias constraints. | custom |
-| Immortal Damage Scaling And Averaging | Immortals | Immortals -> Section 3: Immortal Magic -> Damage | procedure | High-tier damage rule set using HD-based dice and optional average-damage method for faster resolution. | custom |
-| Immortal Limits On Use | Immortals | Immortals -> Section 3: Immortal Magic -> Limits on Use | procedure | Action-economy and target-scope doctrine for created effects. | custom |
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Artifact Activation | procedure | Activation/discovery interface for artifact powers. | custom |
+| Artifact Charges And Recharge | procedure | Artifact power-budget, charge-drain, and recharge-cycle doctrine. | custom |
+| Artifact Handicaps And Penalties | procedure | Core adverse-effect framework for mortal artifact users. | custom |
+| Artifact Intelligence And Auto-Defense | procedure | Rudimentary artifact agency and self-defense behavior. | custom |
+| Attacking An Artifact | procedure | Artifact durability, damage thresholds, power loss, and recall behavior under sustained attacks. | custom |
+| Creating Artifacts | procedure | Artifact design workflow including magnitude, power limits, activation model, and adverse-effect selection. | custom |
+| Destruction Of An Artifact | procedure | Permanent-destruction quest procedure and Immortal-response consequences. | custom |
+| Immortal Conjuring And Summoning Limits | procedure | Defines transplanar response requirements and sphere/element bias constraints. | custom |
+| Immortal Damage Scaling And Averaging | procedure | High-tier damage rule set using HD-based dice and optional average-damage method for faster resolution. | custom |
+| Immortal Limits On Use | procedure | Action-economy and target-scope doctrine for created effects. | custom |
 
 ## Family Coverage Audit
 
@@ -829,6 +863,7 @@ Expert catalog dedupe note: when an Expert-era spell is shared across cleric and
 	- `Conjure Elemental`
 	- whirlwind / cone of paralyzation riders
 - Staff of Elemental Power still needs a dedicated bridge note pass for effect naming and elemental counter-negation phrasing.
+- Expert ECM item coverage status (2026-03-23): `Ring of Spell Turning` and `Ring of Spell Eating` are both now in Phase 1. Expert wands (Wand of Cold, Wand of Fear, Wand of Fire Balls, Wand of Illusion, Wand of Lightning Bolts, Wand of Negation, Wand of Polymorphing, etc.) are treated as delivery interfaces for existing spell families and do not receive separate Phase 1 rows; `Wand of Negation` (cancels one other wand or staff effect for 1 round) is the only Expert wand with a distinct ECM-adjacent interface, and should be noted if the ECM family needs deeper item-interface coverage in Chapter 05.
 
 ## Implementation Notes
 
