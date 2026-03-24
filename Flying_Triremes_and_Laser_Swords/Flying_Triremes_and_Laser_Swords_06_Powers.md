@@ -38,44 +38,60 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Protection from Evil 10' Radius](#protection-from-evil-10-radius)
   - [Fire Ball](#fire-ball)
   - [Lightning Bolt](#lightning-bolt)
-  - [Healing and Restoration](#healing-and-restoration)
+  - [Haste](#haste)
+  - [Cloudkill](#cloudkill)
+  - [Wall of Fire](#wall-of-fire)
+- [Healing and Restoration](#healing-and-restoration)
   - [Cure Light Wounds](#cure-light-wounds)
-  - [Detection and Divination](#detection-and-divination)
+  - [Remove Curse](#remove-curse)
+  - [Remove Fear](#remove-fear)
+  - [Bless](#bless)
+  - [Cure Blindness](#cure-blindness)
+  - [Neutralize Poison](#neutralize-poison)
+- [Detection and Divination](#detection-and-divination)
   - [Detect Evil](#detect-evil)
   - [Detect Magic](#detect-magic)
+  - [Infravision](#infravision)
   - [Detect Invisible](#detect-invisible)
   - [ESP](#esp)
+  - [Clairvoyance](#clairvoyance)
+  - [Wizard Eye](#wizard-eye)
   - [Locate Object](#locate-object)
   - [Read Magic](#read-magic)
   - [Read Languages](#read-languages)
-  - [Transformation and Alteration](#transformation-and-alteration)
+- [Transformation and Alteration](#transformation-and-alteration)
   - [Polymorph Self](#polymorph-self)
-  - [Mind and Emotion](#mind-and-emotion)
+- [Mind and Emotion](#mind-and-emotion)
   - [Charm Person](#charm-person)
   - [Sleep](#sleep)
+  - [Confusion](#confusion)
+  - [Feeblemind](#feeblemind)
+  - [Charm Monster](#charm-monster)
 - [Veils and Influence](#veils-and-influence)
   - [Invisibility](#invisibility)
   - [Invisibility 10' Radius](#invisibility-10-radius)
   - [Mirror Image](#mirror-image)
   - [Phantasmal Force](#phantasmal-force)
   - [Ventriloquism](#ventriloquism)
+  - [Levitate](#levitate)
   - [Hold Person](#hold-person)
+  - [Hold Monster](#hold-monster)
   - [Web](#web)
 - [Traversal and Mobility](#traversal-and-mobility)
   - [Fly](#fly)
-  - [Levitate](#levitate)
   - [Swamp’s Gift (Water Breathing)](#swamps-gift-water-breathing)
-  - [Dimensional, Planar, and Exotic Access](#dimensional-planar-and-exotic-access)
+- [Dimensional, Planar, and Exotic Access](#dimensional-planar-and-exotic-access)
   - [Dimension Door](#dimension-door)
+  - [Teleport](#teleport)
   - [Veilwalk (Pass-Wall)](#veilwalk-pass-wall)
-  - [Duration and Binding Rituals](#duration-and-binding-rituals)
+- [Duration and Binding Rituals](#duration-and-binding-rituals)
   - [Dispel Magic](#dispel-magic)
   - [Hold Portal](#hold-portal)
   - [Knock](#knock)
   - [Wizard Lock](#wizard-lock)
-  - [Creation and Conjuration](#creation-and-conjuration)
+- [Creation and Conjuration](#creation-and-conjuration)
   - [Floating Disc](#floating-disc)
-  - [Undead and the Deathless](#undead-and-the-deathless)
+- [Undead and the Deathless](#undead-and-the-deathless)
   - [Animate Dead](#animate-dead)
 - [Heritage Powers](#heritage-powers)
   - [Adaptive Form](#adaptive-form)
@@ -887,7 +903,350 @@ osr:
 
 </div>
 
-## Healing and Restoration
+<div class="power-card" markdown="1">
+
+## Haste
+
+> **Haste**
+>
+> _FTLS power invocation_
+>
+> **P:** 6 **R:** near (~9 m / 30 ft)  
+> **T:** up to 24 allied creatures in a 40 ft / 12 m area **D:** 3 turns
+>
+> You flood a local formation with acceleration equations. Affected allies move and act at doubled practical tempo for the duration: movement rate increases, attack cadence rises, and route maneuvers tighten around command intent.
+>
+> The body pays for this borrowed speed. When the effect ends, each target must rest one full turn or suffer fatigue penalties until properly recovered.
+>
+> _Overcharge:_ x2 - sustain for 6 turns; x4 - affected allies gain advantage on initiative and first-round movement checks while the effect holds.
+>
+> See also: `Nunka's Biophysical Overdrive` in the SDM Powers Index for a metabolic-overdrive descendant.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [buff]
+>   [tempo]
+>   [movement]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Haste
+>   - becmi:Rules Cyclopedia; spell: Haste
+>   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Nunka's Biophysical Overdrive
+> - usage:
+>   - scope: power; id: Haste; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Haste
+> Range: 240'
+> Duration: 3 turns
+> Effect: Area containing up to 24 creatures
+>
+> This spell doubles movement and action
+> tempo for affected creatures. When the
+> duration ends, subjects must rest from
+> magical overexertion.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Cloudkill
+
+> **Cloudkill**
+>
+> _FTLS power invocation_
+>
+> **P:** 10 **R:** far (~15 m / 50 ft origin)  
+> **T:** one drifting toxic cloud volume up to 30 ft / 9 m across **D:** up to 6 turns
+>
+> You release a rolling poison cloud that drifts away from you at low speed, hugging terrain and spilling through openings. Creatures entering or starting their turn inside the cloud make an Aura save or take severe poison damage; very low-Level creatures may die outright at referee call, following classic thresholds.
+>
+> Strong wind can disperse or redirect the cloud. Sealed environments turn this power into extreme hazard for everyone present.
+>
+> _Overcharge:_ x2 - increase cloud diameter to 40 ft / 12 m; x4 - cloud can be steered each round as a controlled hazard.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [attack]
+>   [poison]
+>   [area-denial]
+>   [dangerous]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Cloudkill
+>   - becmi:Rules Cyclopedia; spell: Cloudkill
+> - usage:
+>   - scope: power; id: Cloudkill; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Cloudkill
+> Range: 50'
+> Duration: 6 turns
+> Effect: Poison cloud 30' across
+>
+> A drifting poisonous vapor cloud moves
+> away from the caster and can kill or
+> debilitate creatures caught inside it.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Wall of Fire
+
+> **Wall of Fire**
+>
+> _FTLS power invocation_
+>
+> **P:** 8 **R:** near (~18 m / 60 ft)  
+> **T:** a wall of fire up to 1200 sq ft (any shape) **D:** sustained (concentration, no movement)
+>
+> You raise a thin vertical curtain of fire. Shape and dimensions are your call, up to 1200 square feet total (e.g., 10' × 120' or 20' × 60'). The wall is opaque — sight through it is blocked.
+>
+> Creatures of fewer than 4 HD cannot pass through. Any creature with 4+ HD that forces through takes 1d6 damage. Undead and cold-using creatures take double damage when breaking through.
+>
+> The wall falls the moment you move or cease concentration.
+>
+> _Overcharge:_ x2 — extend coverage to 2400 sq ft, or thicken the wall so passage requires a failed Save to even attempt; x4 — wall burns independently for up to 1 turn per user Level without requiring concentration, and deals 2d6 damage to creatures forcing through.
+
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
+>   [fire]
+>   [barrier]
+>   [battlefield]
+>   [focus]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Wall of Fire
+>   - becmi:Rules Cyclopedia; spell: Wall of Fire
+> - usage:
+>   - scope: power; id: Wall of Fire; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Wall of Fire
+> Range: 60'
+> Duration: Concentration
+> Effect: Creates 1200 square feet of fire
+>
+> This spell creates a thin vertical wall of
+> fire of any dimensions and shape, deter-
+> mined by the magic-user, totalling 1,200
+> square feet. The wall is opaque and will
+> block sight. Creatures of less than 4 Hit
+> Dice cannot break through the wall.
+> Creatures of 4 HD or more can break
+> through, but take 1-6 points of damage.
+> Undead and cold-using creatures each
+> take double damage while breaking
+> through. It lasts as long as the caster
+> concentrates without moving.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Striking
+
+> **Striking**
+>
+> _FTLS power invocation_
+>
+> **P:** 6 **R:** near (~9 m / 30 ft)  
+> **T:** one weapon **D:** 1 turn (~10 minutes)
+>
+> You lace a single weapon with a resonant force charge that erupts on each successful strike. For the duration, the weapon deals an additional 1d6 kinetic damage on each hit and is treated as a magical weapon — allowing it to harm creatures that normally deflect ordinary blows.
+>
+> The effect does not stack with other enhancement effects on the same weapon.
+>
+> _Overcharge:_ x2 — extend the charge to a second eligible weapon within range; x4 — the force charge ignores natural armor damage reduction for the duration.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [combat]
+>   [buff]
+>   [weapon]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Striking
+>   - becmi:Rules Cyclopedia; spell: Striking
+> - usage:
+>   - scope: power; id: Striking; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Striking
+> Range: 30'
+> Duration: 1 turn
+> Effect: 1 weapon
+>
+> This spell enchants one weapon so that
+> it causes 1-6 more points of damage per
+> hit. The weapon is also considered
+> magical for the purposes of hitting
+> creatures that can only be damaged by
+> magical weapons. If the attack roll misses
+> but the striking damage alone would
+> cause damage, the creature takes 1-6
+> points of magical damage.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Silence 15' Radius
+
+> **Silence 15' Radius**
+>
+> _FTLS power invocation_
+>
+> **P:** 4 **R:** far (~55 m / 180 ft)  
+> **T:** a point or creature, affecting a 30 ft / 9 m radius sphere **D:** 12 turns (~2 hours)
+>
+> You impose a perfect field of acoustic null on a target point or creature. Within the sphere, conversation is impossible and all vocalization-dependent powers fail entirely. If cast on a fixed point, the zone remains stationary.
+>
+> If projected onto a creature, the target must Save vs. Spells: on failure, the silence moves with them for the duration — they are inaudible but cannot speak or cast vocalized powers; on a successful save, the silence zone remains fixed at the original target point instead.
+>
+> _Overcharge:_ x2 — the radius expands to 45 ft / 14 m; x4 — a creature that makes its save still suffers a 1-in-6 chance each round that vocalized powers fail while within the original cast point.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [area]
+>   [disable]
+>   [silence]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Silence 15' Radius
+>   - becmi:Rules Cyclopedia; spell: Silence 15' Radius
+> - usage:
+>   - scope: power; id: Silence 15' Radius; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Silence 15' Radius
+> Range: 180'
+> Duration: 12 turns
+> Effect: A sphere of silence 30' across (15' radius)
+>
+> A complete silence radiates in a 15-foot
+> radius around the target point or
+> creature. All sound is stopped, including
+> conversation and spellcasting. If cast on
+> a creature, the victim must make a
+> Saving Throw vs. Spells or the silence
+> moves with the creature. If the Save is
+> made, the silence remains at the original
+> location rather than following the
+> creature.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Death Spell
+
+> **Death Spell**
+>
+> _FTLS power invocation_
+>
+> **P:** 12 **R:** far (~70 m / 240 ft)  
+> **T:** all creatures in an 18 m / 60 ft cube **D:** instant
+>
+> You discharge a lethal annihilation field across a wide zone, severing the life-threads of multiple creatures simultaneously. The effect consumes up to 4d8 Hit Dice of targets, burning through the pool from the weakest creature upward. Creatures of 8 or more Hit Dice are entirely immune; undead are unaffected.
+>
+> Each creature in the area whose Hit Dice fall within the consumed pool must make a Save vs. Death Ray or be immediately and irrecoverably slain.
+>
+> _Overcharge:_ x2 — the consumed HD pool increases to 6d8; x4 — the immunity threshold rises to 10 HD, and creatures with exactly 8–9 HD must also save or perish.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [area]
+>   [death]
+>   [kill]
+>   [high-tier]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Death Spell
+>   - becmi:Rules Cyclopedia; spell: Death Spell
+> - usage:
+>   - scope: power; id: Death Spell; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Death Spell
+> Range: 240'
+> Duration: Instantaneous
+> Effect: A 60' x 60' x 60' area
+>
+> This spell will kill up to 4d8 Hit Dice
+> worth of living creatures in the area.
+> Creatures with the fewest Hit Dice are
+> affected first. Plants and insects are not
+> counted against this total. Undead are
+> immune. Creatures with 8 or more Hit
+> Dice are immune. Each affected creature
+> must make a Saving Throw vs. Death Ray
+> or be slain immediately.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+# Healing and Restoration
 
 Use these for recovery, wound closure, disease curing, and poison neutralization. Covers restoration magic and buffing effects.
 
@@ -951,7 +1310,510 @@ osr:
 
 </div>
 
-## Detection and Divination
+<div class="power-card" markdown="1">
+
+## Remove Curse
+
+> **Remove Curse**
+>
+> _FTLS power invocation_
+>
+> **P:** 6 **R:** touch  
+> **T:** one creature, item, or binding mark **D:** instant (with possible lingering aftermath)
+>
+> You unravel malignant bindings: hostile geasa, cursed item-locks, spiteful sigils, and inherited doom-hooks. On success, the curse effect ends or weakens enough to break with immediate follow-up action.
+>
+> Ancient, layered, or artifact-grade curses may require multiple castings, ritual support, or contested force resolution.
+>
+> _Overcharge:_ x2 - affect one additional linked cursed target in reach; x4 - suppress recurrence of the removed curse pattern for one full day.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [restoration]
+>   [abjuration]
+>   [utility]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Remove Curse
+>   - becmi:Rules Cyclopedia; spell: Remove Curse
+> - usage:
+>   - scope: power; id: Remove Curse; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Remove Curse
+> Range: Touch
+> Duration: Instantaneous
+> Effect: One curse-bearing creature or item
+>
+> This spell breaks curse effects on targets,
+> including cursed items and hostile magical
+> bindings, subject to referee adjudication for
+> stronger curse tiers.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Remove Fear
+
+> **Remove Fear**
+>
+> _FTLS power invocation_
+>
+> **P:** 2 **R:** touch  
+> **T:** one living creature **D:** 2 turns (~20 min)
+>
+> You dissolve irrational terror and ongoing magical fear effects in one willing creature. The target gains +2 on any Saves against further fear-causing effects for the duration.
+>
+> _Overcharge:_ x2 — extend to all creatures you can touch simultaneously (up to your Level in targets); x4 — suppress all fear-generating powers and effects within short range against the target for the duration.
+>
+> See also: the reverse form **Cause Fear** (R: 120', forces one creature to flee for 2 turns; Save vs. Spells negates).
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [restoration]
+>   [morale]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Basic Rules; spell: Remove Fear
+>   - becmi:Expert Set; spell: Remove Fear
+>   - becmi:Rules Cyclopedia; spell: Remove Fear
+> - usage:
+>   - scope: power; id: Remove Fear; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Remove Fear*
+> Range: Touch
+> Duration: 2 turns
+> Effect: Any one living creature
+>
+> This spell removes the effects of magical
+> fear from one creature. It also grants a
+> +2 bonus on Saving Throws against any
+> further fear effects for the duration.
+> When reversed (cause fear), it forces a
+> creature to flee for 2 turns; the victim
+> may Save vs. Spells to avoid the effect.
+> Reversed range: 120'.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Bless
+
+> **Bless**
+>
+> _FTLS power invocation_
+>
+> **P:** 4 **R:** near (~18 m / 60 ft)  
+> **T:** all friendly creatures in a 6 m × 6 m area not yet in direct melee **D:** 6 turns (~1 hour)
+>
+> You weave ennobling resonance through allies in your zone. Affected creatures gain +1 to morale, +1 to attack rolls, and +1 to damage rolls for the duration. Creatures already locked in melee at the moment of casting are not affected.
+>
+> _Overcharge:_ x2 — extend to all allies in visible range regardless of position, or add +1 to all Saves against mental effects; x4 — also grant +2 against fear, compulsion, and morale-breaking effects for the duration.
+>
+> See also: the reverse form **Blight** (targets enemies; -1 morale, -1 attack, -1 damage; Save vs. Spells negates per target).
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [morale]
+>   [combat-buff]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Basic Rules; spell: Bless
+>   - becmi:Expert Set; spell: Bless
+>   - becmi:Rules Cyclopedia; spell: Bless
+> - usage:
+>   - scope: power; id: Bless; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Bless*
+> Range: 60'
+> Duration: 6 turns
+> Effect: All within a 20' square area
+>
+> This spell improves the morale of friendly
+> creatures by +1 and gives the recipients
+> a +1 bonus on all Hit and damage rolls.
+> It will only affect creatures in a 20' × 20'
+> area, and only those not yet in melee.
+> When reversed (blight), it places a -1
+> penalty on enemies' morale, Hit rolls,
+> and damage rolls; each victim may Save
+> vs. Spells to avoid.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Cure Blindness
+
+> **Cure Blindness**
+>
+> _FTLS power invocation_
+>
+> **P:** 6 **R:** touch  
+> **T:** one living creature **D:** permanent
+>
+> You dissolve the sensory block. Blindness from light, darkness, magical flash, and most direct-cause impairments clears immediately. Blindness sourced from a curse requires Remove Curse first — this power alone cannot break that binding.
+>
+> _Overcharge:_ x2 — also clear other imposed sensory impairments (deafness, sensory scrambling, noospheric white-out) in the same target; x4 — restore full sensory function after any non-death source impairment, including partial or full sensory shutdown from combat injuries.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [restoration]
+>   [condition-removal]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Cure Blindness
+>   - becmi:Rules Cyclopedia; spell: Cure Blindness
+> - usage:
+>   - scope: power; id: Cure Blindness; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Cure Blindness
+> Range: Touch
+> Duration: Permanent
+> Effect: One living creature
+>
+> This spell will cure nearly any form
+> of blindness, including those caused by
+> light or darkness spells (whether normal
+> or continual). It will not, however, affect
+> blindness caused by a curse.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Neutralize Poison
+
+> **Neutralize Poison**
+>
+> _FTLS power invocation_
+>
+> **P:** 8 **R:** touch  
+> **T:** one creature, container, or object **D:** permanent
+>
+> You purge all active poison from the target. If a creature was slain by poison within the last 10 rounds, this power can revive them — though it does not heal other damage. An object or container treated this way becomes fully safe to handle.
+>
+> _Overcharge:_ x2 — affect all poisoned creatures you can touch simultaneously; x4 — also neutralize all toxins and venom-based burdens a creature carries (natural venom capability is suppressed for 1 day).
+>
+> See also: the reverse form **Create Poison** (R: touch; target must Save vs. Poison or die; containers become poisoned, no Save applies to magical contents).
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [restoration]
+>   [condition-removal]
+>   [poison]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Neutralize Poison
+>   - becmi:Rules Cyclopedia; spell: Neutralize Poison
+> - usage:
+>   - scope: power; id: Neutralize Poison; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Neutralize Poison*
+> Range: Touch
+> Duration: Permanent
+> Effect: A creature, container, or object
+>
+> This spell will make poison harmless either
+> in a creature, a container, or on one object.
+> It will even revive a victim slain by poison
+> if cast within 10 rounds of the poisoning.
+> The spell affects all poisons present but
+> does not cure other damage. When reversed
+> (create poison), the victim must Save vs.
+> Poison or be immediately slain; if cast on
+> a container, the contents become poisoned
+> with no Save.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Resist Cold
+
+> **Resist Cold**
+>
+> _FTLS power invocation_
+>
+> **P:** 2 **R:** self  
+> **T:** all creatures within 9 m / 30 ft **D:** 6 turns (~1 hour)
+>
+> You broadcast a thermal buffer through the immediate channel-field, wrapping yourself and all nearby creatures in sustained cold insulation. Protected creatures are immune to normal cold, gain +2 to saves against magical cold attacks, and suffer 1 less point of damage per die (minimum 1) from cold-based effects. The buffered radius moves with you.
+>
+> _Overcharge:_ x2 — extend the radius to 15 m / 50 ft; x4 — protected creatures are also immune to environmental cold hazards and extreme cold terrain for the duration.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [protection]
+>   [elemental]
+>   [area]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Basic Rules; spell: Resist Cold
+>   - becmi:Rules Cyclopedia; spell: Resist Cold
+> - usage:
+>   - scope: power; id: Resist Cold; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Resist Cold
+> Range: 0
+> Duration: 6 turns
+> Effect: All creatures within 30' of the caster
+>
+> This spell protects all creatures within
+> 30 feet of the cleric from cold. Protected
+> creatures are immune to normal cold,
+> receive +2 to Saving Throws vs. cold
+> attacks, and suffer -1 point of damage per
+> die (minimum 1 point per die). The 30'
+> area of effect moves with the cleric.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Resist Fire
+
+> **Resist Fire**
+>
+> _FTLS power invocation_
+>
+> **P:** 4 **R:** near (~9 m / 30 ft)  
+> **T:** one living creature **D:** 2 turns (~20 minutes)
+>
+> You wrap one creature in a thermal dampening field, neutralizing heat at the noospheric material level. The protected creature is wholly unharmed by normal fire and heat, gains +2 to saves against magical fire, and suffers 1 less point of damage per die (minimum 1) from all fire-based attacks — including dragon breath.
+>
+> The protection applies only to the targeted creature.
+>
+> _Overcharge:_ x2 — protect one additional creature within range; x4 — the target becomes fully immune to non-breath-based magical fire for the duration, suffering no damage on a successful save.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [protection]
+>   [elemental]
+>   [fire]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Resist Fire
+>   - becmi:Rules Cyclopedia; spell: Resist Fire
+> - usage:
+>   - scope: power; id: Resist Fire; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Resist Fire
+> Range: 30'
+> Duration: 2 turns
+> Effect: One living creature
+>
+> The protected creature cannot be harmed
+> by normal fires or heat. Against magical
+> fires (including fire balls and fiery
+> explosions), the creature receives +2 to
+> Saving Throws and suffers -1 point of
+> damage per die (minimum 1 point per
+> die). Against the breath of a red dragon,
+> the creature suffers -1 point of damage
+> per Hit Die of the dragon (minimum 1
+> point per Hit Die).
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Cure Disease
+
+> **Cure Disease**
+>
+> _FTLS power invocation_
+>
+> **P:** 6 **R:** near (~9 m / 30 ft)  
+> **T:** one living creature **D:** permanent
+>
+> You flush a single disease from one living creature, purging the biological corruption from their noospheric thread. The cure is permanent for that instance. At high practice levels the effect extends to more exotic infections — including lycanthropic binding — though this requires refined technique.
+>
+> _Reversible — Cause Disease:_ The caster implants a wasting sickness instead. The target suffers −2 to all Hit rolls, cannot benefit from magical healing, and heals at half the natural rate. Without treatment the victim dies within 2d12 days.
+>
+> _Overcharge:_ x2 — cure two distinct diseases in the same target simultaneously; x4 — also purge any lingering disease-related ability penalties or secondary conditions.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [healing]
+>   [restoration]
+>   [reversible]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Cure Disease
+>   - becmi:Rules Cyclopedia; spell: Cure Disease
+> - usage:
+>   - scope: power; id: Cure Disease; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Cure Disease*
+> Range: 30'
+> Duration: Permanent
+> Effect: One living creature
+>
+> This spell cures any disease afflicting the
+> target creature. Clerics of 11th level or
+> higher may also use this spell to cure
+> lycanthropy. The reverse (cause disease)
+> inflicts a wasting disease: the victim
+> suffers -2 to all Hit rolls, cannot be
+> magically healed, natural healing takes
+> twice as long, and the victim dies in
+> 2-24 days if not cured.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Cure Serious Wounds
+
+> **Cure Serious Wounds**
+>
+> _FTLS power invocation_
+>
+> **P:** 8 **R:** touch  
+> **T:** one living creature **D:** instant
+>
+> You pour a concentrated burst of restorative signal into one creature at touch range, closing wounds and rebuilding damaged tissue rapidly. The healing is substantial — more than Cure Light Wounds can achieve.
+>
+> _Reversible — Cause Serious Wounds:_ You inflict equivalent tissue damage on contact instead; you must succeed on a Hit roll to deliver the effect against an unwilling target.
+>
+> _Overcharge:_ x2 — restore an additional 1d6 hit points beyond the base; x4 — also stabilize the target against ongoing bleeding, poison progression, or shock until the end of the scene.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [healing]
+>   [restoration]
+>   [reversible]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Cure Serious Wounds
+>   - becmi:Rules Cyclopedia; spell: Cure Serious Wounds
+> - usage:
+>   - scope: power; id: Cure Serious Wounds; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Cure Serious Wounds*
+> Range: Touch
+> Duration: Permanent (Instant)
+> Effect: One living creature
+>
+> This spell cures 2d6+2 hit points of
+> damage in one living creature. The
+> reverse (cause serious wounds) inflicts
+> 2d6+2 points of damage. The caster
+> must make a successful Hit roll to
+> touch and affect an unwilling victim.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+# Detection and Divination
 
 Use these for sensing, knowledge gathering, revelation, and information access. Covers scrying, detection, and knowledge-access powers.
 
@@ -1070,6 +1932,60 @@ osr:
 
 <div class="power-card" markdown="1">
 
+## Infravision
+
+> **Infravision**
+>
+> _FTLS power invocation_
+>
+> **P:** 6 **R:** touch  
+> **T:** one living creature **D:** 1 day
+>
+> The target gains heat-sensing vision out to 18 m (60 ft) in complete darkness. Warm creatures and objects appear in red tones; cold items and terrain register as blue or dark. Fine detail sufficient for combat, navigation, and reading body positions is available — but not fine enough to read text. Bright light can dazzle infravision just as it can dazzle normal sight.
+>
+> _Overcharge:_ x2 — extend range to 36 m, or grant infravision to all touched targets simultaneously (up to your Level); x4 — grant full thermic-imaging sight to see temperature gradients through thin barriers (cloth, wood, light wall sections) as well as open space.
+
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
+>   [sensory]
+>   [enhancement]
+>   [darkness]
+>   [utility]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Infravision
+>   - becmi:Rules Cyclopedia; spell: Infravision
+> - usage:
+>   - scope: power; id: Infravision; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Infravision
+> Range: Touch
+> Duration: 1 day
+> Effect: One living creature
+>
+> This spell enables the recipient to see in
+> the dark, to a 60' range. Warm things
+> appear red, cold things appear blue or
+> black. Fine detail (sufficient for combat
+> and navigation) is possible but not fine
+> enough to read by. Bright light or a light
+> spell can temporarily dazzle infravision.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
 ## Detect Invisible
 
 > **Detect Invisible**
@@ -1167,6 +2083,111 @@ osr:
 > This spell allows the caster to detect or
 > read nearby thoughts, usually constrained
 > by shielding materials and distance.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Clairvoyance
+
+> **Clairvoyance**
+>
+> _FTLS power invocation_
+>
+> **P:** 6 **R:** far (~20 m / 60 ft from chosen anchor)  
+> **T:** one remote visual point **D:** 12 turns
+>
+> You establish a floating sight-sensor at a chosen location within range and perceive from that vantage as if your eye were physically present there. The sensor remains fixed unless the referee permits subtle drift.
+>
+> This provides sight only; sound and full multispectral readouts require additional powers.
+>
+> _Overcharge:_ x2 - also gain faint audio impressions near the sensor point; x4 - split attention between your body and sensor view without action penalty.
+>
+> See also: `Eyes of the Arrow` in the SDM Powers Index for a mobile projectile-bound remote sensor variant.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [divination]
+>   [scrying]
+>   [detection]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Clairvoyance
+>   - becmi:Rules Cyclopedia; spell: Clairvoyance
+>   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Eyes of the Arrow
+> - usage:
+>   - scope: power; id: Clairvoyance; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Clairvoyance
+> Range: 60'
+> Duration: 12 turns
+> Effect: One remote view point
+>
+> This spell lets the caster see through a
+> distant point in space, enabling remote
+> visual reconnaissance and scene awareness.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Wizard Eye
+
+> **Wizard Eye**
+>
+> _FTLS power invocation_
+>
+> **P:** 8 **R:** far (~72 m / 240 ft leash)  
+> **T:** one mobile arcane eye-sensor **D:** 6 turns
+>
+> You project a moving observation orb that you can steer through corridors, chambers, and exposed approaches. You see through the eye as it travels, making it ideal for scouting trapped routes and blind corners without exposing your body.
+>
+> The eye moves deliberately and can be blocked by solid barriers and anti-divination wards.
+>
+> _Overcharge:_ x2 - increase travel leash and movement speed; x4 - eye relays crude spectral highlights (heat, life-sign motion, active magic glow).
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [divination]
+>   [scrying]
+>   [scouting]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Wizard Eye
+>   - becmi:Rules Cyclopedia; spell: Wizard Eye
+> - usage:
+>   - scope: power; id: Wizard Eye; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Wizard Eye
+> Range: 240'
+> Duration: 6 turns
+> Effect: One moving magical eye
+>
+> This spell creates a mobile magical eye
+> that scouts ahead and feeds visual data
+> back to the caster.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1335,7 +2356,7 @@ osr:
 
 </div>
 
-## Transformation and Alteration
+# Transformation and Alteration
 
 Use these for shape-changing, transmutation, size modification, and material alteration. Covers polymorphic and transmutative effects.
 
@@ -1413,7 +2434,69 @@ osr:
 
 </div>
 
-## Mind and Emotion
+<div class="power-card" markdown="1">
+
+## Polymorph Other
+
+> **Polymorph Other**
+>
+> _FTLS power invocation_
+>
+> **P:** 8 **R:** near (~18 m / 60 ft)  
+> **T:** one living creature **D:** permanent until dispelled
+>
+> You rewrite the physical and behavioral template of a living target, reshaping it into another creature form. Unlike self-transformation, the subject gains the complete profile of the new form — all special abilities, immunities, and innate behavioral tendencies. The new form's Hit Dice cannot exceed twice the target's original. The new form cannot be a specific named individual.
+>
+> The target makes a Save vs. Spells; on failure, the transformation is permanent until dispelled. The behavioral shift is real: a target reshaped into a predator begins to think and act like one, with personality drift deepening over time.
+>
+> _Overcharge:_ x2 — the target takes a −2 penalty to its Save; x4 — the referee may rule that a long-held transformation resists Dispel Magic alone and requires additional effort to restore the original identity.
+>
+> See also: `Polymorph Self` for the caster-safe variant.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [transformation]
+>   [control]
+>   [high-tier]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Polymorph Others
+>   - becmi:Master Set; spell: Polymorph Others
+>   - becmi:Rules Cyclopedia; spell: Polymorph Others
+> - usage:
+>   - scope: power; id: Polymorph Other; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Polymorph Others
+> Range: 60'
+> Duration: Permanent until dispelled
+> Effect: One living creature
+>
+> This spell transforms one living creature
+> into another type of creature. The new
+> form may not have more Hit Dice than
+> twice the original creature's Hit Dice.
+> The target gains ALL of the new form's
+> special abilities and behavioral tendencies
+> (unlike Polymorph Self). A Save vs.
+> Spells is allowed; failure means the
+> transformation is permanent until
+> dispelled. The new form cannot be a
+> specific named individual.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+# Mind and Emotion
 
 Use these for mental influence, charm effects, fear, suggestion, and emotional manipulation. Covers enchantment, compulsion, and mental domination.
 
@@ -1536,6 +2619,165 @@ osr:
 > sleep. Low-level creatures are affected
 > first; higher-level creatures may be immune
 > if the total effect is exhausted.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Confusion
+
+> **Confusion**
+>
+> _FTLS power invocation_
+>
+> **P:** 8 **R:** far (~35 m / 120 ft)  
+> **T:** creatures in a 20 ft / 6 m radius area **D:** 12 rounds
+>
+> You shatter local coherence with contradictory impulse-noise. Affected creatures make an Aura save each round; on failure they lose tactical clarity and act erratically (hesitation, wandering, random target fixation, or self-sabotaging choices as referee adjudicates).
+>
+> Coordinated formations degrade quickly while this field holds.
+>
+> _Overcharge:_ x2 - increase area to 30 ft / 9 m radius; x4 - failed saves also strip reactions until start of the target's next turn.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [mental]
+>   [control]
+>   [debuff]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Confusion
+>   - becmi:Rules Cyclopedia; spell: Confusion
+> - usage:
+>   - scope: power; id: Confusion; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Confusion
+> Range: 120'
+> Duration: 12 rounds
+> Effect: Creatures in an area
+>
+> This spell scrambles intent and judgment,
+> causing affected targets to behave in
+> erratic and tactically unsound ways.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Feeblemind
+
+> **Feeblemind**
+>
+> _FTLS power invocation_
+>
+> **P:** 10 **R:** far (~35 m / 120 ft)  
+> **T:** one intelligent creature capable of spell use **D:** permanent until cured
+>
+> You collapse higher cognition into near-animal baseline. The target makes an Aura save with major penalty if currently casting or preparing powers. On failure, the target loses advanced reasoning, speech complexity, and practical power use until restored by high-tier recovery procedures.
+>
+> This is a severe campaign-level effect and should be treated as major consequence magic.
+>
+> _Overcharge:_ x2 - impose lingering psychic static even on successful save (temporary penalties for 1 turn); x4 - require two successful recovery checks during restoration to fully clear the effect.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [mental]
+>   [debuff]
+>   [dangerous]
+
+meta:
+> - source:
+>   - becmi:Master Set; spell: Feeblemind
+>   - becmi:Rules Cyclopedia; spell: Feeblemind
+> - usage:
+>   - scope: power; id: Feeblemind; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Feeblemind
+> Range: 120'
+> Duration: Permanent
+> Effect: One spellcasting-capable creature
+>
+> This spell destroys higher reasoning and
+> spell use capability until reversed by strong
+> restorative magic.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Charm Monster
+
+> **Charm Monster**
+>
+> _FTLS power invocation_
+>
+> **P:** 8 **R:** far (~35 m / 120 ft)  
+> **T:** one creature (or 3d6 creatures of 3 HD or less) **D:** special (see below)
+>
+> You extend dominion over nonhuman minds. Any living creature except undead may be targeted — not just humanoids. Creatures of 3 HD or fewer are affected in groups; a single creature of 4+ HD may be targeted alone. Each target may resist with a Save vs. Spells.
+>
+> A charmed creature treats you as a trusted ally. It won't obey obviously self-destructive commands but interprets orders generously. The charm persists until dispelled or until the creature's natural resistance erodes it (periodic Save; referee determines frequency based on creature type and improbable orders).
+>
+> _Overcharge:_ x2 — impose a -2 penalty on the target's Save; x4 — suspend further periodic Saves for the first 10 days while the deep-trust window holds.
+>
+> See also: `Charm Person` in this chapter and `Hero's Goldenmouth` (Our Golden Age) for social-capture descendants.
+
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
+>   [charm]
+>   [creature-control]
+>   [mind]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Charm Monster
+>   - becmi:Rules Cyclopedia; spell: Charm Monster
+> - usage:
+>   - scope: power; id: Charm Monster; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Charm Monster
+> Range: 120'
+> Duration: Special
+> Effect: One or more living creatures
+>
+> This spell effect is identical to that of
+> a charm person spell, but any creature
+> except an undead may be affected. If the
+> victims have 3 Hit Dice or less, 3-18 may
+> be charmed. Otherwise, only one monster
+> will be affected. Each victim may make a
+> Saving Throw vs. Spells to avoid the effects.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1945,6 +3187,67 @@ osr:
 
 <div class="power-card" markdown="1">
 
+## Hold Monster
+
+> **Hold Monster**
+>
+> _FTLS power invocation_
+>
+> **P:** 10 **R:** far (~35 m / 120 ft)  
+> **T:** 1–4 living creatures (not undead) **D:** 6 turns + 1 turn per user Level
+>
+> You clamp the motor-nerve field of any living creature — not just humanoids. Each target must pass a Save vs. Spells or stand paralyzed, unable to act or move. Targeting a single creature imposes a -2 penalty on their Save. Targeting a group affects 1–4 targets with no penalty applied.
+>
+> Paralysis ends when the duration expires, when dispelled, or when the reverse form Free Monster is invoked.
+>
+> _Overcharge:_ x2 — extend duration to 12 turns + 1 per Level, or affect up to 6 targets in a group; x4 — apply a -4 penalty to Saves when targeting a single monster, completely seizing the creature's autonomous processes.
+>
+> See also: `Hold Person` in this chapter for the humanoid-only baseline version.
+
+tags:
+>   [power]
+>   [type:fantascience]
+>   [storage:item]
+>   [hold]
+>   [restraint]
+>   [paralysis]
+>   [battlefield]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Hold Monster
+>   - becmi:Rules Cyclopedia; spell: Hold Monster
+> - usage:
+>   - scope: power; id: Hold Monster; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Hold Monster*
+> Range: 120'
+> Duration: 6 turns + 1 turn per level
+> Effect: Paralyzes 1-4 creatures
+>
+> This spell has an effect identical to that
+> of a hold person spell, but will affect any
+> living creature (not undead). Each victim
+> must make a Saving Throw vs. Spells or
+> be paralyzed. Cast at a single creature:
+> -2 penalty on the Save. Cast at a group:
+> affects 1-4 creatures (caster's choice), no
+> penalty. The reverse (free monster) removes
+> paralysis from up to 4 victims of any
+> hold spell.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
 ## Web
 
 > **Web**
@@ -2109,7 +3412,7 @@ osr:
 
 </div>
 
-## Dimensional, Planar, and Exotic Access
+# Dimensional, Planar, and Exotic Access
 
 Use these for planar travel, dimensional folding, portal creation, and access to the noosphere. Covers summoning, gating, and layer-shifting.
 
@@ -2175,6 +3478,60 @@ osr:
 
 <div class="power-card" markdown="1">
 
+## Teleport
+
+> **Teleport**
+>
+> _FTLS power invocation_
+>
+> **P:** 10 **R:** touch  
+> **T:** self plus carried gear and optional willing companions by mass limit **D:** instant
+>
+> You execute long-range spatial transfer to a destination you know by direct familiarity, strong noospheric coordinates, or reliable ritual map-lock. Accuracy depends on destination certainty; poor data can produce off-target arrival, hazardous drift, or failed jump at referee call.
+>
+> Unwilling creatures cannot normally be carried unless a separate binding effect secures them first.
+>
+> _Overcharge:_ x2 - include one additional willing companion of similar mass; x4 - improve arrival accuracy tier by one step when targeting uncertain destinations.
+>
+> See also: `Linked Portals` in the SDM Powers Index for stable route-anchored transit.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [movement]
+>   [teleport]
+>   [dangerous]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Teleport
+>   - becmi:Rules Cyclopedia; spell: Teleport
+>   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Linked Portals
+> - usage:
+>   - scope: power; id: Teleport; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+> Teleport
+> Range: 10'
+> Duration: Instantaneous
+> Effect: Caster and carried load
+>
+> This spell transports the caster (and possible
+> companions/load) to a distant destination,
+> with mishap risk if destination data is poor.
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
 ## Veilwalk (Pass-Wall)
 
 > **Veilwalk (Pass-Wall)**
@@ -2226,7 +3583,7 @@ osr:
 
 </div>
 
-## Duration and Binding Rituals
+# Duration and Binding Rituals
 
 Use these for long-duration effects, wards, geasa, and binding magic. Covers ritual magic, persistent enchantments, and field effects.
 
@@ -2442,7 +3799,7 @@ osr:
 
 </div>
 
-## Creation and Conjuration
+# Creation and Conjuration
 
 Use these for object creation, golem manufacture, simulacra, and bringing forth. Covers summons, constructs, and materialization.
 
@@ -2502,7 +3859,7 @@ osr:
 
 </div>
 
-## Undead and the Deathless
+# Undead and the Deathless
 
 Use these for death magic, necromancy, undead command, and life-force manipulation. Covers resurrection, undead animation, and death-adjacent powers.
 
