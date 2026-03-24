@@ -54,7 +54,7 @@ Cross-checked each source PDF's table of contents and section headings against t
 ### Findings by Lane
 
 - **B (0.91 → 0.93)**: No structural gaps found. Basic PDF ToC reviewed — player spell content (pages 25-42), DM higher-level spell guidance (pages 17-18), and treasure sections (pages 42-45) all accounted for. Remaining issue is OCR texture only.
-- **E (0.87 → 0.89)**: Expert PDF CONTENTS reviewed. All core spell sections (1-6 cleric + MU) and research/lost spell books are staged. Expert miscellaneous magic items (page 65) are only partially staged — items selected for spell-adjacency were kept, remainder omitted. RC canonical backstop covers the gap for item property reference.
+- **E (0.87 → 0.89)**: Expert PDF CONTENTS reviewed. All core spell sections (1-6 cleric + MU), research/lost spell books, and the full page-65 miscellaneous magic-item list are staged. Remaining Expert work is OCR texture and normalization.
 - **C (0.89 → 0.91)**: The former Companion **Magic-User Spells: 5th through 9th Level** gap is now closed. A new Companion TSV extraction block stages pages 22-28 under `FIFTH LEVEL MAGIC-USER SPELLS` through `NINTH LEVEL MAGIC-USER SPELLS`, restoring the full Companion MU spell run to this lane. Confidence now rises above the prior baseline because the lane has both the original cleric/druid material and the recovered Companion-specific MU wording in one staging file.
 - **M (0.90 → 0.95)**: Master PDF PROCEDURES section gap is now closed. `Anti-Magic Effects` and `Dispel Magic` are staged from the Master Procedures pages with readable extraction for A-M doctrine, duration rules, examples, touch-dispel handling, and item-interaction notes. Remaining Master work is cleanup-level OCR normalization, not missing source-evidence.
 - **I (0.94 → 0.95)**: Immortals Set ToC verified — 6 sections. Section 3 (Immortal Magic) remains staged, and Sections 1-2 PP conversion/rank/recovery framing context are now additionally staged for cost-interpretation and recovery-reference continuity.
@@ -203,7 +203,7 @@ Chapter 06 readiness:
       - treasure page 63 `e. SCROLLS`
       - treasure pages 63-64 `f. RINGS`
       - treasure page 64 `g. WANDS, STAVES, AND RODS`
-      - treasure page 65 selected `h. MISCELLANEOUS MAGIC ITEMS`
+      - treasure page 65 full `h. MISCELLANEOUS MAGIC ITEMS` list
     - result: the Expert treasure section now carries the missing ring and miscellaneous-item procedures alongside the scroll and wand/staff/rod material, which makes it more useful for later spell and magic-item curation
 - Remaining artifacts:
   - the spell-expansion section is structurally complete and the earlier high-signal OCR residue has been cleaned

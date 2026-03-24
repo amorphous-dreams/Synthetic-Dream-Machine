@@ -20,9 +20,9 @@ Source PDF:
 - Result: no blocking row/column defects found in the visible Expert table and list regions.
 
 - Capture confidence: **0.89**
-- Coverage note: Core Expert cleric and magic-user spell expansions, research, and lost-book procedures are staged cleanly. The miscellaneous magic-item run is intentionally selective rather than exhaustive, with RC acting as the canonical item-property backstop for omitted non-spell-adjacent entries.
-- ToC cross-check: Expert CONTENTS review found the spell sections and research/lost-book procedures accounted for. The remaining omission is partial coverage of the page 65 miscellaneous magic-item list.
-- Gap priority: MEDIUM-LOW — remaining gap is secondary item-catalog completeness, not core spell procedure coverage.
+- Coverage note: Core Expert cleric and magic-user spell expansions, research, and lost-book procedures are staged cleanly. The page-65 miscellaneous magic-item list is fully present in this staging block; remaining issues are OCR texture and minor normalization.
+- ToC cross-check: Expert CONTENTS review found spell sections, research/lost-book procedures, and the full page-65 `h. MISCELLANEOUS MAGIC ITEMS` list accounted for.
+- Gap priority: LOW — cleanup is now readability-focused, not structural coverage.
 ### Clerical and Magic-User Spell Expansions
 
 - Extraction note: stitched Expert spell extraction: clerical spell pages 7-11 and magic-user spell pages 13-18 use separate TSV coordinate reflow passes so the real spell sections stay in source order and the intervening fighter/thief class tables are excluded.
@@ -1524,7 +1524,7 @@ A magic-user or elf whose spell book is lost or destroyed cannot regain spells u
 
 ### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text
 
-- Extraction note: curated Expert reconstruction from treasure pages 60-65, combining cursed-item doctrine, general magic-item operation notes, scroll procedures, ring procedures, wand/staff/rod procedures, and selected miscellaneous magic items with strong spell-adjacent relevance.
+- Extraction note: curated Expert reconstruction from treasure pages 60-65, combining cursed-item doctrine, general magic-item operation notes, scroll procedures, ring procedures, wand/staff/rod procedures, and the full page-65 miscellaneous magic-item list.
 
 ```text
 [Expert pages 60-65: scrolls, rings, wands, staves, rods, and miscellaneous magic items]

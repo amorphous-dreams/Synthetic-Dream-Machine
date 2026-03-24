@@ -156,6 +156,11 @@ meta:
 > - usage:
 >   - scope: <power|album|path|other>; id: <Album Name|Path Reference|…>; index: <##>; note: <extra context>
 >   - scope: <power|album|path|other>; id: <Alternate list>; note: <optional note about reuse>
+
+osr:
+> <Optional. Preserve canonical OSR / staged source text verbatim here when the power is a recognizer-side conversion.>
+>
+> <Keep original spell name, range, duration, effect, save language, and any other classic procedure details intact.>
   
   <div class="power-return">
     &nbsp;&nbsp;
@@ -173,6 +178,7 @@ meta:
 - **Storage tags.** Use `[storage:trait]` when a power is held as a trait, `[storage:item]` for powers that can be stored in spellbooks or devices, `[storage:burden]` for curses/brands, etc. Many entries will have multiple valid storage forms.
 - **Tables for rolls.** If the source has roll/result lists (d6/d20, etc.), prefer a blockquote table.
 - **Overcharge ordering.** Put `_Overcharge:_` before `_Again (x#):_` and keep both italicized.
+- **OSR reference block.** Add `osr:` below `meta:` for BECMI/OSR recognizer conversions. This block is for canonical rules preservation, not FTLS rewrite; keep the staged source text verbatim except for minimal line-wrap cleanup.
 - **Multi-source conflicts.** If multiple sources differ, prefer VLG+OGA; otherwise preserve source text verbatim and add a meta note.
 
 <hr/>

@@ -54,6 +54,10 @@ Base model (locked):
 - Next execution step is now Chapter 06-first: lock powers design decisions, finalize Chapter 06 to alpha state, then resume Phase B Chapter 05 bridge batches (storage / trigger / counterforce / traversal / restoration) and chapter flow validations.
 - Chapter 06 alpha delta: locked chapter-facing design doctrine in manuscript (`activation flow`, `payment/substitution`, `storage semantics`, `overcharge unlocks`, `Level` vs `Power Level` boundary) and added explicit alpha scaffolding sections (`Paying for Power`, `Power Tags and Storage`, `Overcharge and Risk`, `Powers by Tradition / Source`, `Powers by Gameplay Scale`).
 - Chapter 06 alpha delta: started canonical recognizer coverage pass with new OSR family headers and first high-frequency entries (`Fire Ball`, `Lightning Bolt`, `Invisibility`, `Hold Person`, `Fly`) plus variant callouts to existing SDM powers (`Tragic Missile`, `Pyreball`, `Hlod Person`).
+- Chapter 06 golden-path refinement delta: iterated `Magic Missile`, `Shield`, `Mage Armor`, `Fire Ball`, `Lightning Bolt`, `Invisibility`, and `Hold Person`/`Fly` entries using staging text behavior anchors (auto-hit missile, anti-missile shield interaction, save-for-half artillery, permanence-until-broken invisibility, focused vs grouped hold targeting, fly speed/control duration) while retaining SDM chapter template fields.
+- Chapter 06 template normalization delta: completed a chapter-wide `Meta`/`Tags` cleanup pass for power cards, repaired misplaced metadata around subsection boundaries (`Lightning Bolt`, `Hold Person`, `Fly`), normalized malformed tag syntax in Heritage entries, and added explicit BECMI staging provenance pointers for the core OSR-conversion cluster.
+- Chapter 06 SDM card-structure delta: normalized all current Chapter 06 power entries to SDM power-card framing (`<div class="power-card" markdown="1">`, quoted stat/body block, lowercase `tags:` and `meta:`, and `js-back-link` return block) so FTLS chapter formatting now matches SDM index presentation conventions.
+- Chapter 06 navigation delta: added a chapter-top `Chapter 06 Power Card Index` with OSR/Heritage split links, redirected all card return links to the shared index anchor, and reordered the Heritage power card run alphabetically for faster table lookup.
 
 ## Lane Confidence Gate (B/E/C/M/I/RC)
 
@@ -70,7 +74,7 @@ Current baseline from the Phase 1 canonical catalog pass, updated 2026-03-23 aft
 
 Survey findings (2026-03-23):
 - **B +0.02**: DM higher-level spell guidance, lost spell books, and item operation procedures now fully staged. OCR texture is the only remaining issue.
-- **E +0.02**: Expert spells 1-6 and research/lost books fully staged. Expert misc items (page 65) only partially captured — selected spell-adjacent items staged, remainder omitted. RC backstop covers the gap for canonical item properties.
+- **E +0.02**: Expert spells 1-6 and research/lost books fully staged. Expert page-65 miscellaneous magic items are now fully captured in the staging block; remaining Expert issues are OCR texture and normalization.
 - **C +0.02**: Companion **Magic-User Spells: 5th through 9th Level** are now staged from Companion pages 22-28 via TSV reflow, alongside the existing cleric/druid and item sections. The primary structural gap is closed; remaining work is OCR cleanup and later comparison against RC wording for any version-specific differences.
 - **M +0.05**: Artifact content (doctrine, catalog, appendix), non-human spellcasters, spell lists, and Master Procedures (`Anti-Magic Effects` + `Dispel Magic`) are now staged. The prior procedure gap is closed; remaining Master cleanup is OCR texture and normalization only.
 - **I +0.01**: Immortals Sections 1-2 PP conversion/rank/recovery context is now staged alongside Section 3 (Immortal Magic), closing the prior low-priority framing gap.
