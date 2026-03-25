@@ -20,7 +20,7 @@ Ship **Culinary Secrets** as a native **SDM+/FTLS Company/RSS feature** that:
 
 ## Product Statement
 
-**Culinary Secrets is an RSS Secrets-layer that turns edible salvage into sustenance, comfort, insight, adaptation, and orientation under expedition pressure.**
+**Culinary Secrets is an RSS Secrets-layer procedure that turns edible salvage into expedition infrastructure outcomes: Comfort, Traits, and Intel under active pressure.**
 
 ## Design Mandate
 
@@ -31,6 +31,7 @@ This feature must satisfy both reference pillars:
 * Reuse **Tags, Bonus Dice, Attention, Areas, Nodes, Resources, Company state, Secrets stage**.
 * Stay cross-scale where possible.
 * Land as an **extension**, not a subsystem fork.
+* Treat Culinary Secrets as expedition infrastructure, not side-flavor.
 
 ### Thracia pillar
 
@@ -42,6 +43,37 @@ This feature must satisfy both reference pillars:
   * turn-pressure exploration,
   * partial knowledge / rumor play,
   * interrupted and dangerous “camp” situations.
+
+## Culinary Secrets as Expedition Procedure
+
+### Comfort, Traits, and Intel
+
+* **Comfort:** outcomes that steady the party, extend endurance, restore readiness, reduce pressure, support morale, and generate Comfort Dice at higher tiers.
+* **Traits:** temporary carried effects (adaptations, resistances, senses, buffs, mutations) that must sit in inventory and be tracked explicitly.
+* **Intel:** omen-reading, memory traces, environmental insight, faction tells, navigation clues, and other “eat the ruin to learn the ruin” outcomes.
+
+### Attention, Smoke, and Scent
+
+* Field cooking is pressure-sensitive and must account for time, fuel, tools, smoke, scent, and visible signatures.
+* The kitchen is a beacon/shrine/risk event in hostile sites, not a consequence-free rest action.
+* Culinary actions can trigger Attention, encounters, faction response, and route pressure.
+
+### Recipe Discovery and Hazardous Preparation
+
+* Recipes are discovered procedures and hypotheses, not guaranteed safe consumables.
+* Preparation quality, site pressure, and method fit determine reliability.
+* Failure should change the situation, not just waste ingredients.
+
+### Intel Meals / Eating the Ruin
+
+* Edible salvage should directly support recon, salvage decisions, route finding, and faction prediction.
+* Intel meals should expose provisioning chains, patrol rhythms, hidden access clues, and taboo zones.
+
+### Failure Modes and Misleading Blessings
+
+* Failure and partial success should include false confidence, unstable Traits, tainted Comfort, bad Intel, Attention spikes, faction-signaling aromas, and burdens mistaken for blessings.
+
+> If Culinary Secrets works equally well in a safe village kitchen and in a live hostile ruin, it is probably too bland.
 
 ---
 
@@ -136,27 +168,28 @@ Define exactly what Culinary Secrets is.
 
   * RSS Stage 4: Secrets extension
   * extension lens only; no new gameplay phase
+  * expedition infrastructure procedure integrated with Recon/Salvage/Secrets flow
 * State outputs:
 
-  * sustenance
-  * comfort
-  * insight
-  * adaptation
-  * orientation (Insight use-case in alpha)
-  * leverage
+  * Comfort
+  * Traits
+  * Intel
 * State non-goals:
 
   * not a separate crafting tree
   * not a nutrition sim
   * not a pure buff engine
+  * not a detached cooking minigame
 * Lock alpha constraints:
 
   * Quartermaster remains the week-scale logistics anchor
   * Culinary Secrets operates at turn/watch scale and updates Company state
   * weekly supply effects do not stack with Quartermaster Skilled reduction unless a playtest exception is explicitly stated
-  * Comfort is Bonus-Dice-only in alpha
-  * Orientation is folded into Insight in alpha
+  * Comfort tiers upward into Comfort Dice at higher result tiers
+  * Traits outcomes must be tracked as explicit carried temporary effects
+  * Intel outcomes must produce actionable route/faction/site clues
   * preservation state is Fresh/Stable/Spoiled only in alpha
+  * kitchen actions carry signature risk (smoke/scent/ritual heat/public prep)
 
 **Definition of Done**
 
@@ -180,6 +213,8 @@ Define exactly what Culinary Secrets is.
   * Food grants knowledge before raw power.
   * Culinary actions are pressure-sensitive.
   * Structure creates discovery.
+  * Kitchen scenes are risk events, not free downtime.
+  * Recipes are hypotheses discovered in play, not guaranteed consumables.
 
 **Definition of Done**
 
@@ -266,11 +301,10 @@ Make Culinary Secrets native to the FTLS API surface.
 
 * Define:
 
-  * Meal
-  * Preserve
-  * Field Medicine
-  * Feast
-  * Recipe-Secret
+  * Comfort
+  * Traits
+  * Intel
+* Keep implementation forms (meal, preserve, field medicine, feast, recipe-secret) as delivery vehicles for the three outcome classes.
 * For each, define:
 
   * inputs
@@ -279,6 +313,7 @@ Make Culinary Secrets native to the FTLS API surface.
   * result
   * complication
   * carry/storage expectations
+  * pressure/attention footprint
 
 **Definition of Done**
 
@@ -308,7 +343,7 @@ Make Culinary Secrets native to the FTLS API surface.
 
 ---
 
-### Story 2.5 — Derived Currencies
+### Story 2.5 — Outcome Handling Model
 
 **Owner:** Rules Architect
 **Deliverable:** reusable definitions
@@ -318,15 +353,13 @@ Make Culinary Secrets native to the FTLS API surface.
 * Define:
 
   * Comfort
-  * Insight
-  * Adaptation
-  * Orientation (as an Insight use-case in alpha)
+  * Traits
+  * Intel
 * Decide mechanical form:
 
-  * Comfort -> bonus die style currency only, max 1 Comfort die gained per watch per company
-  * Insight -> ask/hold, including route, timing, provisioning, and hidden-access questions
-  * Adaptation -> temporary tag/edge
-  * Orientation -> folded into Insight for alpha (candidate split in beta if telemetry supports it)
+  * Comfort -> readiness/stability outcomes; higher tiers mint Comfort Dice (max 1 Comfort die gained per watch per company)
+  * Traits -> explicit temporary carried effects that occupy inventory/track slots until expiry or purge
+  * Intel -> actionable clues/questions/holds tied to route, timing, provisioning chains, faction tells, hazards, and hidden access
 
 **Definition of Done**
 
@@ -348,6 +381,7 @@ Produce the runnable heart of the feature.
 **Tasks**
 
 * Define inputs: 1–3 ingredient tags + method
+* Define outcome selection so each successful preparation yields one primary class: Comfort, Traits, or Intel.
 * Define time brackets:
 
   * rough prep = 1 Turn (10 minutes)
@@ -378,11 +412,16 @@ Produce the runnable heart of the feature.
 * Write consequences:
 
   * lose a tag
-  * spoil a benefit
+  * false confidence
+  * unstable Traits
+  * tainted Comfort
+  * bad Intel
   * tick Attention
   * attract predators/patrols
   * trigger contamination
   * produce unstable effects
+  * faction-signaling aromas
+  * burdens mistaken for blessings
 * Add special failure riders for:
 
   * `[toxic] [ley] [memory] [ferment]`
@@ -462,6 +501,7 @@ Produce the runnable heart of the feature.
   * smokeless / concealed prep
   * abandon-the-pot consequences
   * consume-on-the-move option
+  * explicit fuel/tool requirements and substitutions
 * Clarify what can and cannot be done in active exploration time.
 
 **Definition of Done**
@@ -488,6 +528,7 @@ Make the feature feel fully native.
 * Clarify non-stacking with Quartermaster Skilled week-scale supply reduction unless a specific playtest packet says otherwise.
 * Clarify whether special dishes can mint other temporary dice flavors.
 * Keep culinary benefits narrower than generic power inflation.
+* Require table-facing Comfort tier language (steady -> recover -> reinforce -> comfort-die tier).
 
 **Definition of Done**
 
@@ -510,6 +551,7 @@ Make the feature feel fully native.
   * public slaughter
   * shrine offering disturbance
   * food theft
+  * faction-signaling aromas
 * Add low-signature option:
 
   * quiet kitchen / cold prep / hidden prep
@@ -680,7 +722,7 @@ Give the feature enough meat to actually run.
 
   * ingredients/tags
   * method
-  * result
+  * result (Comfort, Traits, or Intel)
   * complication hook
   * flavor note
 
@@ -839,6 +881,7 @@ Make the system easy to teach and fast to run.
   * interruption or pressure
   * aftermath
 * Include some banter and one hard choice.
+* Include one misleading-blessing failure outcome in the transcript.
 
 **Definition of Done**
 
@@ -899,12 +942,14 @@ Make the feature discoverable in the existing SDM+/FTLS content architecture.
 * Add terms:
 
   * culinary secrets
+  * comfort
+  * traits
+  * intel
   * meal
   * preserve
   * feast
   * ingredient tags
-  * orientation
-  * comfort
+  * attention smoke scent
 * Add recognizable dish and recipe names.
 
 **Definition of Done**
@@ -999,7 +1044,8 @@ Prove the feature works in motion.
   * too much tracking
   * too much healing
   * comfort spam
-  * adaptation abuse
+  * trait overload or slot confusion
+  * misleading intel collapse
   * pressure collapse
 
 **Definition of Done**
@@ -1034,6 +1080,10 @@ Prove the feature works in motion.
   * number of encounters influenced by culinary signatures
   * number of times Quiet Approach/quiet kitchen changed outcomes
   * whether players chose Culinary play while Attention was already high
+  * distribution of outcomes by Comfort/Traits/Intel
+  * percentage of Intel outcomes that changed route or faction decisions within one scene
+  * number of Trait outcomes that created tracking burden or caused slot pressure
+  * number of false-confidence / tainted-comfort / bad-intel incidents
 
 **Definition of Done**
 
@@ -1281,9 +1331,10 @@ A local Lares can run one session from draft materials without inventing the who
 
 These are intentionally deferred until telemetry is collected:
 
-1. Should Orientation split back out from Insight in beta?
-2. Should Comfort cap remain at 1 die per watch, or flex by company scale/quality tier?
-3. Does preservation need a fourth state after alpha, or are Fresh/Stable/Spoiled sufficient?
+1. Should Comfort cap remain at 1 die per watch, or flex by company scale/quality tier?
+2. Should Traits split into sub-lanes (adaptation, mutation, resistance), or stay one tracked family?
+3. What Intel reliability profile is healthiest for play: mostly true, mixed-signal, or tier-dependent confidence?
+4. Does preservation need a fourth state after alpha, or are Fresh/Stable/Spoiled sufficient?
 
 ---
 
