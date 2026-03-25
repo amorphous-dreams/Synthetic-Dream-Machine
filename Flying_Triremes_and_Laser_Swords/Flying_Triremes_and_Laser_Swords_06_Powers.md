@@ -27,7 +27,6 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
     - [Powers by Gameplay Scale](#powers-by-gameplay-scale)
 - [Battle and Force](#battle-and-force)
   - [Entropic Shield](#entropic-shield)
-  - [Reckless Dweomer](#reckless-dweomer)
   - [Magic Missile](#magic-missile)
   - [Shield Ward (Shield)](#shield-ward-shield)
   - [Mage Armor](#mage-armor)
@@ -69,7 +68,6 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
 - [Healing and Restoration](#healing-and-restoration)
   - [Cure Light Wounds](#cure-light-wounds)
   - [Remove Curse](#remove-curse)
-  - [Remove Fear](#remove-fear)
   - [Bless](#bless)
   - [Cure Blindness](#cure-blindness)
   - [Neutralize Poison](#neutralize-poison)
@@ -77,37 +75,36 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Resist Fire](#resist-fire)
   - [Cure Disease](#cure-disease)
   - [Cure Serious Wounds](#cure-serious-wounds)
-  - [Cure Critical Wounds](#cure-critical-wounds)
-  - [Cureall](#cureall)
-  - [Restore](#restore)
-  - [Heal](#heal)
   - [Protection from Poison](#protection-from-poison)
   - [Purify Food and Water](#purify-food-and-water)
   - [Create Food](#create-food)
   - [Reincarnation](#reincarnation)
+  - [Cure Critical Wounds](#cure-critical-wounds)
+  - [Cureall](#cureall)
+  - [Heal](#heal)
+  - [Restore](#restore)
 - [Detection and Divination](#detection-and-divination)
   - [Detect Evil](#detect-evil)
   - [Detect Magic](#detect-magic)
   - [Infravision](#infravision)
   - [Detect Invisible](#detect-invisible)
-  - [Faerie Fire](#faerie-fire)
   - [ESP](#esp)
   - [Clairvoyance](#clairvoyance)
   - [Wizard Eye](#wizard-eye)
-  - [Locate](#locate)
-  - [Predict Weather](#predict-weather)
-  - [Detect Danger](#detect-danger)
   - [Locate Object](#locate-object)
   - [Read Magic](#read-magic)
   - [Read Languages](#read-languages)
-  - [Find Traps](#find-traps)
   - [Know Alignment](#know-alignment)
   - [Speak with Animals](#speak-with-animals)
   - [Speak with the Dead](#speak-with-the-dead)
-  - [Speak with Monsters](#speak-with-monsters)
-  - [Commune](#commune)
   - [Find the Path](#find-the-path)
   - [Truesight](#truesight)
+  - [Speak with Monsters](#speak-with-monsters)
+  - [Commune](#commune)
+  - [Faerie Fire](#faerie-fire)
+  - [Locate](#locate)
+  - [Predict Weather](#predict-weather)
+  - [Detect Danger](#detect-danger)
   - [Analyze](#analyze)
   - [Speak with Plants](#speak-with-plants)
   - [Contact Outer Plane](#contact-outer-plane)
@@ -136,27 +133,27 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Dance](#dance)
   - [Mass Charm](#mass-charm)
   - [Remove Charm](#remove-charm)
+  - [Remove Fear](#remove-fear)
   - [Snake Charm](#snake-charm)
   - [Magic Jar](#magic-jar)
   - [Quest](#quest)
   - [Charm Plant](#charm-plant)
 - [Veils and Influence](#veils-and-influence)
   - [Invisibility](#invisibility)
+  - [Projected Image](#projected-image)
   - [Invisibility 10' Radius](#invisibility-10-radius)
   - [Mirror Image](#mirror-image)
-  - [Projected Image](#projected-image)
   - [Phantasmal Force](#phantasmal-force)
   - [Ventriloquism](#ventriloquism)
-  - [Levitate](#levitate)
   - [Hold Person](#hold-person)
-  - [Hold Animal](#hold-animal)
   - [Hold Monster](#hold-monster)
   - [Web](#web)
   - [Entangle](#entangle)
-  - [Obscure](#obscure)
+  - [Find Traps](#find-traps)
   - [Hallucinatory Terrain](#hallucinatory-terrain)
-  - [Geas](#geas)
   - [Massmorph](#massmorph)
+  - [Hold Animal](#hold-animal)
+  - [Obscure](#obscure)
   - [Mass Invisibility](#mass-invisibility)
 - [Traversal and Mobility](#traversal-and-mobility)
   - [Fly](#fly)
@@ -167,6 +164,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Survival](#survival)
   - [Transport Through Plants](#transport-through-plants)
   - [Create Air](#create-air)
+  - [Levitate](#levitate)
 - [Dimensional, Planar, and Exotic Access](#dimensional-planar-and-exotic-access)
   - [Dimension Door](#dimension-door)
   - [Teleport](#teleport)
@@ -174,13 +172,14 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Wish](#wish)
   - [Gate](#gate)
   - [Maze](#maze)
-  - [Word of Recall](#word-of-recall)
   - [Veilwalk (Pass-Wall)](#veilwalk-pass-wall)
   - [Timestop](#timestop)
   - [Magic Door](#magic-door)
   - [Teleport any Object](#teleport-any-object)
+  - [Word of Recall](#word-of-recall)
 - [Duration and Binding Rituals](#duration-and-binding-rituals)
   - [Dispel Magic](#dispel-magic)
+  - [Reckless Dweomer](#reckless-dweomer)
   - [Hold Portal](#hold-portal)
   - [Knock](#knock)
   - [Wizard Lock](#wizard-lock)
@@ -190,14 +189,15 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Force Field](#force-field)
   - [Contingency](#contingency)
   - [Protection from Lightning](#protection-from-lightning)
-  - [Anti-Plant Shell](#anti-plant-shell)
-  - [Anti-Animal Shell](#anti-animal-shell)
   - [Turn Wood](#turn-wood)
   - [Immunity](#immunity)
   - [Mind Barrier](#mind-barrier)
   - [Permanence](#permanence)
   - [Prismatic Wall](#prismatic-wall)
   - [Symbol](#symbol)
+  - [Geas](#geas)
+  - [Anti-Plant Shell](#anti-plant-shell)
+  - [Anti-Animal Shell](#anti-animal-shell)
 - [Creation and Conjuration](#creation-and-conjuration)
   - [Floating Disc](#floating-disc)
   - [Wall of Stone](#wall-of-stone)
@@ -385,6 +385,8 @@ Use these for direct conflict, pressure, and line-breaking effects in personal a
 > Whenever any creature within short range rolls a natural 1 on an attack, save, or power activation, the shield destabilizes. The caster makes a Dangerous Magic roll against the current area Level.
 >
 > _Overcharge:_ Emplace the shield at a point in space. The barrier forms in a 2-yard radius, grants the same protection to creatures inside, can be moved as a 1-stone item, and decays by -1 Defense per minute until collapse.
+>
+> See also: `Shield Ward (Shield)` for the direct OSR-facing `Shield` import.
 
 tags:
 >   [power]
@@ -396,7 +398,7 @@ meta:
 > - source:
 >   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
 > - usage:
->   - scope: power; id: Entropic Shield; note: Wild Mage, Wizard, or Noomagus most often know this power.
+>   - scope: power; id: Entropic Shield; note: FTLS variant expression of the Shield family, not a direct OSR import. Wild Mage, Wizard, or Noomagus most often know this power.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -407,265 +409,6 @@ meta:
 
 </div>
 
-<div class="power-card" markdown="1">
-
-## Cure Critical Wounds
-
-> **Cure Critical Wounds**
->
-> _FTLS power invocation_
->
-> **P:** 10 **R:** touch  
-> **T:** one living creature **D:** instant
->
-> You deliver heavy restorative throughput, closing severe trauma and restoring a major chunk of lost life. This is a high-tier combat-side recovery power intended for brink-state casualties.
->
-> _Reversible — Cause Critical Wounds:_ Inflict equivalent damage by touch on a living target. No save; make a successful attack roll against unwilling targets.
->
-> _Overcharge:_ x2 — immediately stabilize one additional life-threatening condition (bleed-out, shock, or similar); x4 — target also ignores wound penalties until the end of the next scene.
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [healing]
->   [restoration]
->   [reversible]
->   [cleric]
-
-meta:
-> - source:
->   - becmi:Companion Set; spell: Cure Critical Wounds
->   - becmi:Rules Cyclopedia; spell: Cure Critical Wounds
-> - usage:
->   - scope: power; id: Cure Critical Wounds; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Cure Critical Wounds*
-> Range: Touch
-> Duration: Permanent
-> Effect: Any one living creature
->
-> Similar to Cure Light Wounds, but heals
-> 3d6+3 (6-21) points. The reverse (Cause
-> Critical Wounds) inflicts the same damage
-> by touch; no saving throw applies.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="power-card" markdown="1">
-
-## Cureall
-
-> **Cureall**
->
-> _FTLS power invocation_
->
-> **P:** 12 **R:** touch  
-> **T:** one living creature **D:** instant/permanent (by chosen effect)
->
-> You invoke a top-tier restoration package and choose one mode at cast time: massive wound repair, curse removal, poison neutralization, paralysis cure, disease cure, blindness cure, or feeblemind removal.
->
-> If used for wound repair, restore the target to full starting Life then apply minor residual loss (1d6). The power only resolves one affliction mode per cast.
->
-> Special clause: when used on a recently raised target, Cureall removes the usual long recovery burden and returns normal function immediately.
->
-> _Overcharge:_ x2 — resolve one additional lesser condition tied to the chosen mode; x4 — grant a brief restoration buffer that suppresses recurrence of the cured condition for one watch.
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [healing]
->   [restoration]
->   [cleanse]
->   [high-tier]
-
-meta:
-> - source:
->   - becmi:Companion Set; spell: Cureall
->   - becmi:Rules Cyclopedia; spell: Cureall
-> - usage:
->   - scope: power; id: Cureall; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Cureall
-> Range: Touch
-> Duration: Permanent
-> Effect: Cures anything
->
-> This is the strongest healing spell. It can
-> nearly fully heal damage or remove one
-> major affliction (curse, poison, paralysis,
-> disease, blindness, feeblemind). It cures
-> only one selected condition per casting.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-
-## Heal
-
-> **Heal**
->
-> _FTLS power invocation_
->
-> **P:** 18 **R:** touch  
-> **T:** one living creature **D:** permanent
->
-> You deliver an apex restorative surge equivalent to Cureall-class intervention, but with far greater wound recovery. The target may instead have one major affliction cleared, or recover from catastrophic bodily harm down to only a small remainder.
->
-> In wound-repair mode, only 1d6 points of damage remain after the effect resolves. Alternate modes remove one curse, neutralize one poison, cure one disease, restore sight, or break one feeblemind state.
->
-> _Overcharge:_ x2 - also clear one linked secondary condition caused by the chosen affliction; x4 - leave the target in immediate stable fighting condition, suppressing shock and collapse for the rest of the scene.
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [healing]
->   [restoration]
->   [high-tier]
-
-meta:
-> - source:
->   - becmi:Master Set; spell: Heal
->   - becmi:Rules Cyclopedia; spell: Heal
-> - usage:
->   - scope: power; id: Heal; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Heal
-> Range: Touch
-> Duration: Permanent
-> Effect: Cures anything
->
-> Equivalent to Cureall, but when used for
-> wounds it removes nearly all damage, leaving
-> only 1d6 points. It can also cure one major
-> affliction such as curse, poison, disease,
-> blindness, or feeblemind.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="power-card" markdown="1">
-<div class="power-card" markdown="1">
-
-## Restore
-
-> **Restore**
->
-> _FTLS power invocation_
->
-> **P:** 14 **R:** touch  
-> **T:** one creature with drained level-state **D:** permanent
->
-> You restore one level lost to energy drain, undead siphoning, or equivalent noospheric depletion. This does not grant extra levels beyond original state.
->
-> Casting burden: the caster pays one temporary level-loss burden after casting and must rest 2d10 days to recover that cost.
->
-> _Reverse — Life Drain:_ Drain one level from a touched target as a chaotic inversion.
->
-> _Overcharge:_ x2 - stabilize target against immediate repeat drain for one scene; x4 - restore one additional secondary drain symptom (memory fuzz, skill suppression, vitality shock).
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [restoration]
->   [high-tier]
->   [reversible]
-
-meta:
-> - source:
->   - becmi:Companion Set; spell: Restore
->   - becmi:Master Set; spell: Restore
->   - becmi:Rules Cyclopedia; spell: Restore
-> - usage:
->   - scope: power; id: Restore; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Restore*
-> Range: Touch
-> Duration: Permanent
-> Effect: Restores 1 level lost to energy drain
->
-> Restores one drained level to a victim.
-> Caster loses one level temporarily and
-> regains it after extended rest. Reverse
-> form drains one level by touch.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="power-card" markdown="1">
-
-## Reckless Dweomer
-
-> **Reckless Dweomer**
->
-> _Mana Condensation, Very Dangerous_
->
-> **P:** 0 **R:** self  
-> **T:** local ley-lines or mana pools **D:** until spent or dispersed (sunset or sunrise)
->
-> You grab the ley-lines without quite knowing how, and an octarine glow spills free, hastily arranging itself into spendable mana.
->
-> Roll 1d6 + Aura and gain that much Mana (Life), torn loose from the local flow. If the Mana gained exceeds your effective level, immediately make a Dangerous Magic roll (effective level may be modified by traits, conditions, corruption, or similar effects).
->
-> The Mana must be stored immediately in a Gear or Trait inventory slot; if there is no room, it overflows into Burdens (referee’s call). You may spend this Mana in place of Life to cast powers, either incrementally or all at once. You cannot use the Reckless Dweomer power while carrying Mana in any inventory.
->
-> This power is Very Dangerous. While you are carrying Mana and you make a Defeat roll, or whenever you make any other Dangerous Magic roll, you must immediately make a another Dangerous Magic roll. Unused Mana disperses back into the ley-lines at sunset or sunrise.
->
-> _Overcharge:_ n/a
->
-> _Dangerous:_ Very Dangerous: make Dangerous Magic checks as noted in the body text.
-
-tags:
->   [power]
->   [type:oldtech]
->   [storage:burden]
-
-meta:
-> - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
-> - usage:
->   - scope: power; id: Reckless Dweomer; note: FTLS Chapter 06 alpha power entry.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
 
 <div class="power-card" markdown="1">
 
@@ -698,36 +441,14 @@ tags:
 meta:
 > - source:
 >   - becmi:Basic Rules; spell: Magic Missile
+>   - becmi:Expert Set; spell: Magic Missile
+>   - becmi:Rules Cyclopedia; spell: Magic Missile
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Tragic Missile
 > - usage:
 >   - scope: power; id: Magic Missile; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Magic Missile
-> Range: 150'
-> Duration: 1 round
-> Effect: Creates 1 or more arrows
->
-> A Magic Missile is a glowing arrow,
-> created and shot by magic, which inflicts
-> 2-7 (1d6 + 1) points of damage to any
-> creature it strikes. After the spell is cast,
-> the arrow appears next to the magic-
-> user and hovers there until the magic-
-> user causes it to shoot. When shot, it will
-> automatically hit any visible target. It will
-> move with the magic-user until shot or
-> until the duration ends. The Magic Mis-
-> sile actually has no solid form, and
-> cannot be touched. A Magic Missile
-> never misses its target and the target is
-> not allowed a Saving Throw.
->
-> For every 5 levels of experience of the
-> caster, two more missiles are created by
-> the same spell. Thus a 6th Level Magic-
-> user may create three missiles. The mis-
-> siles may be shot at different targets.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -773,24 +494,7 @@ meta:
 >   - scope: power; id: Shield Ward (Shield); note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Shield
-> Range: 0
-> Duration: 2 turns
-> Effect: The magic-user only
->
-> This spell creates a magical barrier all
-> around the magic-user (less than an inch
-> away). It moves with the magic-user.
-> While the duration lasts, the magic-user
-> becomes Armor Class 2 against missiles,
-> and AC 4 against all other attacks.
->
-> If a Magic Missile is shot at a magic-
-> user protected by this spell, the magic-
-> user may make a Saving Throw vs.
-> Spells (one Saving Throw per missile). If
-> successful, the Magic Missile will have
-> no effect.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -829,23 +533,11 @@ tags:
 
 meta:
 > - source:
->   - becmi:Basic Rules; spell: Protection from Normal Missiles (adjacent pattern)
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources; section: Shadowdark (modern OSR); note: future-generation analog reference only
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Mage Armor
 > - usage:
->   - scope: power; id: Mage Armor; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Protection from Normal Missiles
-> Range: 30'
-> Duration: 12 turns
-> Effect: One creature
->
-> This spell gives complete protection from
-> all small non-magical missiles, causing
-> them to miss. Thus, a catapult stone or a
-> magic arrow would not be affected. Any
-> one creature within range may be the re-
-> cipient.
+>   - scope: power; id: Mage Armor; note: Future-generation back-port for FTLS protection doctrine; skip osr import.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -890,15 +582,7 @@ meta:
 >   - scope: power; id: Light; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Light
-> Range: 120'
-> Duration: 6 turns + 1/level
-> Effect: Volume 30' diameter
->
-> This spell creates a globe of light,
-> illuminating a substantial area. It can be
-> cast on an object or target and is commonly
-> used for exploration and tactical visibility.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -910,6 +594,7 @@ osr:
 </div>
 
 <div class="power-card" markdown="1">
+
 
 ## Continual Light
 
@@ -942,14 +627,7 @@ meta:
 >   - scope: power; id: Continual Light; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Continual Light
-> Range: 120'
-> Duration: Permanent
-> Effect: Globe of light, 60' diameter
->
-> This spell creates lasting magical light that
-> remains until dispelled. It is frequently used
-> for fixed illumination and anti-darkness work.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -994,14 +672,7 @@ meta:
 >   - scope: power; id: Protection from Normal Missiles; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Protection from Normal Missiles
-> Range: 30'
-> Duration: 12 turns
-> Effect: One creature
->
-> This spell gives complete protection from
-> all small non-magical missiles, causing
-> them to miss.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1046,16 +717,7 @@ meta:
 >   - scope: power; id: Protection from Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Protection from Evil
-> Range: 0 or touch
-> Duration: 12 turns
-> Effect: One living creature
->
-> A magical aura protects the target from
-> attacks and control by evil or summoned
-> creatures. The effect improves survivability
-> against hostile magical influence rather than
-> granting total invulnerability.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1100,14 +762,7 @@ meta:
 >   - scope: power; id: Protection from Evil 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Protection from Evil 10' Radius
-> Range: 0
-> Duration: 12 turns
-> Effect: Sphere, 10' radius around caster
->
-> This spell extends the standard protection
-> boundary to all allies within ten feet of the
-> caster, creating a moving defensive field.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1152,33 +807,16 @@ tags:
 
 meta:
 > - source:
+>   - becmi:Basic Rules; spell: Fire Ball
 >   - becmi:Expert Set; spell: Fire Ball
+>   - becmi:Master Set; spell: Fire Ball
 >   - becmi:Rules Cyclopedia; spell: Fire Ball
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Pyreball
 > - usage:
 >   - scope: power; id: Fire Ball; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Fire Ball
-> Range: 240'
-> Duration: instantaneous
-> Effect: A spherical volume 40' across
->
-> This spell creates a missile of fire which
-> explodes into a ball of fire of 20' radius
-> when it reaches the desired range or
-> strikes a target. The Fire Ball inflicts 1-6
-> (1d6) points of fire damage for each level
-> of the spell caster. Each victim within the
-> area of effect takes full damage unless a
-> Saving Throw vs. Spells is made. Even if
-> the Saving Throw is successful, the vic-
-> tims take half the rolled damage. For ex-
-> ample, a Fire Ball cast by a 6th level
-> magic-user explodes for 6-36 (6d6)
-> points of damage. If the total roll is 24,
-> all within the area who make their Sav-
-> ing Throws take 12 points of fire damage.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1225,22 +863,7 @@ meta:
 >   - scope: power; id: Lightning Bolt; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Lightning Bolt
-> Range: 180'
-> Duration: Instantaneous
-> Effect: Bolt 60' long, 5' wide
->
-> This spell creates a bolt of lightning, start-
-> ing up to 180' away from the caster and
-> extending 60' further away. All creatures
-> within the area of effect take 1-6 points of
-> damage per level of the spell caster. Each
-> victim may make a Saving Throw vs.
-> Spells; if successful, only half damage is
-> taken. If the lightning bolt strikes a solid sur-
-> face (such as a wall), it will bounce back
-> toward the caster until the total length of
-> the bolt is 60'.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1287,15 +910,7 @@ meta:
 >   - scope: power; id: Haste; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Haste
-> Range: 240'
-> Duration: 3 turns
-> Effect: Area containing up to 24 creatures
->
-> This spell doubles movement and action
-> tempo for affected creatures. When the
-> duration ends, subjects must rest from
-> magical overexertion.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1340,14 +955,7 @@ meta:
 >   - scope: power; id: Cloudkill; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Cloudkill
-> Range: 50'
-> Duration: 6 turns
-> Effect: Poison cloud 30' across
->
-> A drifting poisonous vapor cloud moves
-> away from the caster and can kill or
-> debilitate creatures caught inside it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1392,15 +1000,7 @@ meta:
 >   - scope: power; id: Explosive Cloud; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Explosive Cloud
-> Range: 1'
-> Duration: 6 turns
-> Effect: Creates a moving poisonous cloud
->
-> A cloudkill-like cloud that forces a save each
-> round or paralyzes that round, and also deals
-> automatic explosive damage to all creatures
-> inside regardless of common resistances.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1449,14 +1049,7 @@ meta:
 >   - scope: power; id: Meteor Swarm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Meteor Swarm
-> Range: 240'
-> Duration: Instantaneous
-> Effect: Creates four or eight meteor-fireballs
->
-> 4-meteor variant: each strikes 8d6 then detonates 8d6 fire (20' radius).
-> 8-meteor variant: each strikes 4d6 then detonates 4d6 fire (20' radius).
-> One meteor per target; burst is area-of-effect.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1503,23 +1096,7 @@ meta:
 >   - scope: power; id: Wall of Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Wall of Fire
-> Range: 60'
-> Duration: Concentration
-> Effect: Creates 1200 square feet of fire
->
-> This spell creates a thin vertical wall of
-> fire of any dimensions and shape, deter-
-> mined by the magic-user, totalling 1,200
-> square feet. The wall is opaque and will
-> block sight. Creatures of less than 4 Hit
-> Dice cannot break through the wall.
-> Creatures of 4 HD or more can break
-> through, but take 1-6 points of damage.
-> Undead and cold-using creatures each
-> take double damage while breaking
-> through. It lasts as long as the caster
-> concentrates without moving.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1563,20 +1140,7 @@ meta:
 >   - scope: power; id: Striking; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Striking
-> Range: 30'
-> Duration: 1 turn
-> Effect: 1 weapon
->
-> This spell enchants one weapon so that
-> it causes 1-6 more points of damage per
-> hit. The weapon is also considered
-> magical for the purposes of hitting
-> creatures that can only be damaged by
-> magical weapons. If the attack roll misses
-> but the striking damage alone would
-> cause damage, the creature takes 1-6
-> points of magical damage.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1620,21 +1184,7 @@ meta:
 >   - scope: power; id: Silence 15' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Silence 15' Radius
-> Range: 180'
-> Duration: 12 turns
-> Effect: A sphere of silence 30' across (15' radius)
->
-> A complete silence radiates in a 15-foot
-> radius around the target point or
-> creature. All sound is stopped, including
-> conversation and spellcasting. If cast on
-> a creature, the victim must make a
-> Saving Throw vs. Spells or the silence
-> moves with the creature. If the Save is
-> made, the silence remains at the original
-> location rather than following the
-> creature.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1679,20 +1229,7 @@ meta:
 >   - scope: power; id: Death Spell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Death Spell
-> Range: 240'
-> Duration: Instantaneous
-> Effect: A 60' x 60' x 60' area
->
-> This spell will kill up to 4d8 Hit Dice
-> worth of living creatures in the area.
-> Creatures with the fewest Hit Dice are
-> affected first. Plants and insects are not
-> counted against this total. Undead are
-> immune. Creatures with 8 or more Hit
-> Dice are immune. Each affected creature
-> must make a Saving Throw vs. Death Ray
-> or be slain immediately.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1739,16 +1276,7 @@ meta:
 >   - scope: power; id: Insect Plague; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Insect Plague
-> Range: 480'
-> Duration: 1 day
-> Effect: Creates a swarm of 30' radius
->
-> Summons a vast insect swarm that obscures
-> vision and drives off creatures with less
-> than 3 HD. The caster may direct the swarm
-> while concentrating without moving. Works
-> only outdoors and above-ground.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1795,19 +1323,7 @@ meta:
 >   - scope: power; id: Ice Storm/Wall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Ice Storm/Wall
-> Range: 120'
-> Duration: Storm 1 round or Wall 12 turns
-> Effect: Storm in 20' x 20' x 20' or wall of 1200 sq ft
->
-> This spell may be cast as either an ice
-> storm or a wall of ice. The storm deals
-> 1d6 cold damage per caster level (save for
-> half), with fire-type creatures at -4 to save
-> and cold-type creatures unaffected. The
-> wall is opaque; creatures with less than 4
-> HD cannot pass, and stronger creatures
-> take 1d6 damage when forcing through.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1855,15 +1371,7 @@ meta:
 >   - scope: power; id: Earthquake; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Earthquake
-> Range: 120 yards
-> Duration: 1 turn
-> Effect: Causes earth tremors
->
-> Causes violent ground shaking in a large
-> area, reducing small dwellings to rubble,
-> cracking larger constructions, and opening
-> ground fissures that may engulf victims.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1911,15 +1419,7 @@ meta:
 >   - scope: power; id: Call Lightning; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Call Lightning
-> Range: 360'
-> Duration: 1 turn per level of the caster
-> Effect: Calls lightning bolts from a storm
->
-> Requires existing storm conditions.
-> The caster may call one 20'-area bolt per
-> turn; each bolt deals 8d6 electrical damage
-> with Save vs. Spells for half.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1966,14 +1466,7 @@ meta:
 >   - scope: power; id: Control Temperature 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Control Temperature 10' radius
-> Range: 0 (druid only)
-> Duration: 1 turn per level of the caster
-> Effect: Cools or warms air within 10'
->
-> Alters local temperature by up to 50F
-> hotter or cooler inside a 20' area that
-> moves with the caster.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2021,15 +1514,7 @@ meta:
 >   - scope: power; id: Control Winds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Control Winds
-> Range: 10' radius per level of the caster
-> Duration: 1 turn per level of the caster
-> Effect: Calms or increases winds
->
-> Causes air in range to settle to calm or
-> intensify to gale force. Full change requires
-> sustained concentration and the field moves
-> with the caster.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2077,15 +1562,7 @@ meta:
 >   - scope: power; id: Creeping Doom; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Creeping Doom
-> Range: 120'
-> Duration: 1 round per level of the caster
-> Effect: Creates a 20' x 20' insect horde
->
-> Creates a huge swarm that can expand up
-> to 60' x 60'. Targets in the swarm take
-> 100 damage per round with no saving
-> throw. Dispel Magic can destroy it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2131,15 +1608,7 @@ meta:
 >   - scope: power; id: Heat Metal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Heat Metal
-> Range: 30'
-> Duration: 7 rounds
-> Effect: Warms one metal object
->
-> One metal object heats and cools over
-> seven rounds, damaging the holder and
-> potentially igniting flammable materials.
-> Heat also disrupts spell concentration.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2185,15 +1654,7 @@ meta:
 >   - scope: power; id: Produce Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Produce Fire
-> Range: 0 (druid only)
-> Duration: 2 turns per level
-> Effect: Creates fire in hand
->
-> Creates a harmless flame in the caster's
-> hand that gives torch-light, can ignite
-> combustibles, and may be thrown up to
-> 30' before fading.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2239,14 +1700,7 @@ meta:
 >   - scope: power; id: Summon Weather; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Summon Weather
-> Range: 5 miles or more
-> Duration: 6 turns per level
-> Effect: Brings weather to druid's area
->
-> Pulls a known nearby weather condition
-> to the caster's area. The caster summons
-> but does not directly control the weather.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2294,15 +1748,7 @@ meta:
 >   - scope: power; id: Weather Control; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Weather Control
-> Range: 0 (druid only)
-> Duration: Concentration
-> Effect: All weather within 240 yards
->
-> Creates one chosen weather condition
-> across a large area while concentration is
-> maintained. Typical outcomes include rain,
-> snow, fog, heat, high winds, and tornado.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2347,16 +1793,7 @@ meta:
 >   - scope: power; id: Disintegrate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Disintegrate
-> Range: 60'
-> Duration: Instantaneous
-> Effect: Destroys one creature or object
->
-> This spell causes one creature or non-
-> magical object to crumble to dust. A
-> victim may Save vs. Death Ray to avoid
-> the effect. The spell does not affect magic
-> items or spell effects.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2400,15 +1837,7 @@ meta:
 >   - scope: power; id: Power Word Blind; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Power Word Blind
-> Range: 120'
-> Duration: 1d4 days (1–40 hp) or 2d4 hours (41–80 hp)
-> Effect: Blinds 1 creature with 80 hp or fewer (no save)
->
-> No saving throw. 1–40 hp target → blinded 1d4 days. 41–80 hp →
-> blinded 2d4 hours. No effect on targets with 81+ hp. Blinded: –4
-> to all saves, +4 AC penalty. Cure blindness/cureall won't work
-> unless the cleric's level equals or exceeds the caster's.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2454,14 +1883,7 @@ meta:
 >   - scope: power; id: Power Word Kill; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Power Word Kill
-> Range: 120'
-> Duration: Instant (kill) or 4 turns (stun)
-> Effect: Kills target ≤60 hp; stuns 61–100 hp for 4 turns; no effect >100 hp
->
-> No saving throw. Instantaneous kill for targets of 60 hp or less.
-> Stuns targets of 61–100 hp for 4 turns. No effect on targets with
-> 101+ hp. Source: Master Set artifact table C26; RC ninth level list.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2506,14 +1928,7 @@ meta:
 >   - scope: power; id: Move Earth; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Move Earth
-> Range: 240'
-> Duration: 6 turns
-> Effect: Moves soil
->
-> Moves earth but not rock. Soil may be repositioned to make hills, trenches, or deep holes.
-> Earth can move up to 60' per turn and remains in place after the spell ends.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -2552,14 +1967,7 @@ meta:
 >   - scope: power; id: Telekinesis; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Telekinesis
-> Range: 120'
-> Duration: 6 rounds
-> Effect: 200 cn of weight per level of caster
->
-> Moves creatures or objects by concentration at up to 20' per round.
-> Unwilling targets may save; objects fall if caster is disturbed.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -2600,14 +2008,7 @@ meta:
 >   - scope: power; id: Delayed Blast Fireball; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Delayed Blast Fireball
-> Range: 240'
-> Duration: 0 to 60 rounds
-> Effect: Delayed blast fireball of 20' radius
->
-> Caster sets exact delay, then gem-like node detonates as a standard fireball.
-> Node can be carried but not moved by telekinesis or teleport.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -2644,14 +2045,7 @@ meta:
 >   - scope: power; id: Power Word Stun; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Power Word Stun
-> Range: 120'
-> Duration: 2d6 or 1d6 turns
-> Effect: Stuns 1 creature of 70 hp or less
->
-> No save. 1-35 hp target is stunned 2d6 turns; 36-70 hp target is stunned 1d6 turns.
-> Targets with 71+ hp are unaffected.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -2688,14 +2082,7 @@ meta:
 >   - scope: power; id: Reverse Gravity; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Reverse Gravity
-> Range: 90'
-> Duration: 1/5 round (2 seconds)
-> Effect: Causes victims in a 30' cubic volume to fall upward
->
-> Victims can travel up to 65' upward, take impact damage, then fall back and take more damage.
-> No saving throw is allowed.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -2732,14 +2119,7 @@ meta:
 >   - scope: power; id: Sword; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Sword
-> Range: 30'
-> Duration: 1 round per level of the caster
-> Effect: Creates a magical sword
->
-> Summoned sword attacks twice per round using caster attack level and deals 1d10 damage.
-> Only dispel magic or wish can remove it before duration ends.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -2777,6 +2157,7 @@ tags:
 meta:
 > - source:
 >   - becmi:Basic Rules; spell: Cure Light Wounds
+>   - becmi:Expert Set; spell: Cure Light Wounds
 >   - becmi:Rules Cyclopedia; spell: Cure Light Wounds
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Rehoryan's Progressive Restoration
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Restorative Slumber
@@ -2784,20 +2165,7 @@ meta:
 >   - scope: power; id: Cure Light Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Cure Light Wounds*
-> Range: Touch
-> Duration: Permanent
-> Effect: Any one living creature
->
-> This spell will either heal damage or
-> remove paralysis. If used to heal, it will
-> cure 2-7 ( 1d6 + 1) points of damage. It
-> will not heal any damage if used to cure
-> paralysis. The cleric may cast it on him-
-> self (or herself if desired.
-> This spell will never increase a crea-
-> ture's total hit points above the original
-> amount.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2841,72 +2209,7 @@ meta:
 >   - scope: power; id: Remove Curse; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Remove Curse
-> Range: Touch
-> Duration: Instantaneous
-> Effect: One curse-bearing creature or item
->
-> This spell breaks curse effects on targets,
-> including cursed items and hostile magical
-> bindings, subject to referee adjudication for
-> stronger curse tiers.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="power-card" markdown="1">
-
-## Remove Fear
-
-> **Remove Fear**
->
-> _FTLS power invocation_
->
-> **P:** 2 **R:** touch  
-> **T:** one living creature **D:** 2 turns (~20 min)
->
-> You dissolve irrational terror and ongoing magical fear effects in one willing creature. The target gains +2 on any Saves against further fear-causing effects for the duration.
->
-> _Overcharge:_ x2 — extend to all creatures you can touch simultaneously (up to your Level in targets); x4 — suppress all fear-generating powers and effects within short range against the target for the duration.
->
-> See also: the reverse form **Cause Fear** (R: 120', forces one creature to flee for 2 turns; Save vs. Spells negates).
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [restoration]
->   [morale]
->   [cleric]
-
-meta:
-> - source:
->   - becmi:Basic Rules; spell: Remove Fear
->   - becmi:Expert Set; spell: Remove Fear
->   - becmi:Rules Cyclopedia; spell: Remove Fear
-> - usage:
->   - scope: power; id: Remove Fear; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Remove Fear*
-> Range: Touch
-> Duration: 2 turns
-> Effect: Any one living creature
->
-> This spell removes the effects of magical
-> fear from one creature. It also grants a
-> +2 bonus on Saving Throws against any
-> further fear effects for the duration.
-> When reversed (cause fear), it forces a
-> creature to flee for 2 turns; the victim
-> may Save vs. Spells to avoid the effect.
-> Reversed range: 120'.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2944,27 +2247,13 @@ tags:
 
 meta:
 > - source:
->   - becmi:Basic Rules; spell: Bless
 >   - becmi:Expert Set; spell: Bless
 >   - becmi:Rules Cyclopedia; spell: Bless
 > - usage:
 >   - scope: power; id: Bless; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Bless*
-> Range: 60'
-> Duration: 6 turns
-> Effect: All within a 20' square area
->
-> This spell improves the morale of friendly
-> creatures by +1 and gives the recipients
-> a +1 bonus on all Hit and damage rolls.
-> It will only affect creatures in a 20' × 20'
-> area, and only those not yet in melee.
-> When reversed (blight), it places a -1
-> penalty on enemies' morale, Hit rolls,
-> and damage rolls; each victim may Save
-> vs. Spells to avoid.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3006,16 +2295,7 @@ meta:
 >   - scope: power; id: Cure Blindness; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Cure Blindness
-> Range: Touch
-> Duration: Permanent
-> Effect: One living creature
->
-> This spell will cure nearly any form
-> of blindness, including those caused by
-> light or darkness spells (whether normal
-> or continual). It will not, however, affect
-> blindness caused by a curse.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3060,21 +2340,7 @@ meta:
 >   - scope: power; id: Neutralize Poison; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Neutralize Poison*
-> Range: Touch
-> Duration: Permanent
-> Effect: A creature, container, or object
->
-> This spell will make poison harmless either
-> in a creature, a container, or on one object.
-> It will even revive a victim slain by poison
-> if cast within 10 rounds of the poisoning.
-> The spell affects all poisons present but
-> does not cure other damage. When reversed
-> (create poison), the victim must Save vs.
-> Poison or be immediately slain; if cast on
-> a container, the contents become poisoned
-> with no Save.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3117,18 +2383,7 @@ meta:
 >   - scope: power; id: Resist Cold; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Resist Cold
-> Range: 0
-> Duration: 6 turns
-> Effect: All creatures within 30' of the caster
->
-> This spell protects all creatures within
-> 30 feet of the cleric from cold. Protected
-> creatures are immune to normal cold,
-> receive +2 to Saving Throws vs. cold
-> attacks, and suffer -1 point of damage per
-> die (minimum 1 point per die). The 30'
-> area of effect moves with the cleric.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3173,21 +2428,7 @@ meta:
 >   - scope: power; id: Resist Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Resist Fire
-> Range: 30'
-> Duration: 2 turns
-> Effect: One living creature
->
-> The protected creature cannot be harmed
-> by normal fires or heat. Against magical
-> fires (including fire balls and fiery
-> explosions), the creature receives +2 to
-> Saving Throws and suffers -1 point of
-> damage per die (minimum 1 point per
-> die). Against the breath of a red dragon,
-> the creature suffers -1 point of damage
-> per Hit Die of the dragon (minimum 1
-> point per Hit Die).
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3232,20 +2473,7 @@ meta:
 >   - scope: power; id: Cure Disease; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Cure Disease*
-> Range: 30'
-> Duration: Permanent
-> Effect: One living creature
->
-> This spell cures any disease afflicting the
-> target creature. Clerics of 11th level or
-> higher may also use this spell to cure
-> lycanthropy. The reverse (cause disease)
-> inflicts a wasting disease: the victim
-> suffers -2 to all Hit rolls, cannot be
-> magically healed, natural healing takes
-> twice as long, and the victim dies in
-> 2-24 days if not cured.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3290,17 +2518,7 @@ meta:
 >   - scope: power; id: Cure Serious Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Cure Serious Wounds*
-> Range: Touch
-> Duration: Permanent (Instant)
-> Effect: One living creature
->
-> This spell cures 2d6+2 hit points of
-> damage in one living creature. The
-> reverse (cause serious wounds) inflicts
-> 2d6+2 points of damage. The caster
-> must make a successful Hit roll to
-> touch and affect an unwilling victim.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3347,14 +2565,7 @@ meta:
 >   - scope: power; id: Protection from Poison; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Protection from Poison
-> Range: Touch
-> Duration: One turn per level of the caster
-> Effect: Gives one creature immunity to all poison
->
-> Grants poison immunity, including toxic gas,
-> and a +4 save bonus versus poisonous breath
-> weapons.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3401,17 +2612,7 @@ meta:
 >   - scope: power; id: Purify Food and Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Purify Food and Water
-> Range: 10'
-> Duration: Permanent
-> Effect: See below
->
-> This spell makes spoiled or poisoned
-> food and water safe and usable. It can
-> purify one ration of food, 6 waterskins of
-> water, enough ordinary food for 12
-> people, or settle mud into a pool of clear
-> water. It does not affect living creatures.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3458,15 +2659,7 @@ meta:
 >   - scope: power; id: Create Food; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Create Food
-> Range: 10'
-> Duration: Permanent
-> Effect: Creates food for 12 or more
->
-> Creates enough normal food for 12 people
-> and mounts for one day, plus 12 more per
-> caster level above 8th. Created food spoils
-> after 24 hours.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3511,15 +2704,191 @@ meta:
 >   - scope: power; id: Reincarnation; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Reincarnation
-> Range: 10'
-> Duration: Permanent
-> Effect: Creates a new body
->
-> Requires a piece of a dead body. Creates a new body and recalls the life-force into it.
-> Race/body may change by table result; class and capability follow the new form.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+
+</div>
+
+
+<div class="power-card" markdown="1">
+
+## Cure Critical Wounds
+
+> **Cure Critical Wounds**
+>
+> _FTLS power invocation_
+>
+> **P:** 10 **R:** touch  
+> **T:** one living creature **D:** instant
+>
+> You deliver heavy restorative throughput, closing severe trauma and restoring a major chunk of lost life. This is a high-tier combat-side recovery power intended for brink-state casualties.
+>
+> _Reversible — Cause Critical Wounds:_ Inflict equivalent damage by touch on a living target. No save; make a successful attack roll against unwilling targets.
+>
+> _Overcharge:_ x2 — immediately stabilize one additional life-threatening condition (bleed-out, shock, or similar); x4 — target also ignores wound penalties until the end of the next scene.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [healing]
+>   [restoration]
+>   [reversible]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Companion Set; spell: Cure Critical Wounds
+>   - becmi:Rules Cyclopedia; spell: Cure Critical Wounds
+> - usage:
+>   - scope: power; id: Cure Critical Wounds; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Cureall
+
+> **Cureall**
+>
+> _FTLS power invocation_
+>
+> **P:** 12 **R:** touch  
+> **T:** one living creature **D:** instant/permanent (by chosen effect)
+>
+> You invoke a top-tier restoration package and choose one mode at cast time: massive wound repair, curse removal, poison neutralization, paralysis cure, disease cure, blindness cure, or feeblemind removal.
+>
+> If used for wound repair, restore the target to full starting Life then apply minor residual loss (1d6). The power only resolves one affliction mode per cast.
+>
+> Special clause: when used on a recently raised target, Cureall removes the usual long recovery burden and returns normal function immediately.
+>
+> _Overcharge:_ x2 — resolve one additional lesser condition tied to the chosen mode; x4 — grant a brief restoration buffer that suppresses recurrence of the cured condition for one watch.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [healing]
+>   [restoration]
+>   [cleanse]
+>   [high-tier]
+
+meta:
+> - source:
+>   - becmi:Companion Set; spell: Cureall
+>   - becmi:Rules Cyclopedia; spell: Cureall
+> - usage:
+>   - scope: power; id: Cureall; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+## Heal
+
+> **Heal**
+>
+> _FTLS power invocation_
+>
+> **P:** 18 **R:** touch  
+> **T:** one living creature **D:** permanent
+>
+> You deliver an apex restorative surge equivalent to Cureall-class intervention, but with far greater wound recovery. The target may instead have one major affliction cleared, or recover from catastrophic bodily harm down to only a small remainder.
+>
+> In wound-repair mode, only 1d6 points of damage remain after the effect resolves. Alternate modes remove one curse, neutralize one poison, cure one disease, restore sight, or break one feeblemind state.
+>
+> _Overcharge:_ x2 - also clear one linked secondary condition caused by the chosen affliction; x4 - leave the target in immediate stable fighting condition, suppressing shock and collapse for the rest of the scene.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [healing]
+>   [restoration]
+>   [high-tier]
+
+meta:
+> - source:
+>   - becmi:Master Set; spell: Heal
+>   - becmi:Rules Cyclopedia; spell: Heal
+> - usage:
+>   - scope: power; id: Heal; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Restore
+
+> **Restore**
+>
+> _FTLS power invocation_
+>
+> **P:** 14 **R:** touch  
+> **T:** one creature with drained level-state **D:** permanent
+>
+> You restore one level lost to energy drain, undead siphoning, or equivalent noospheric depletion. This does not grant extra levels beyond original state.
+>
+> Casting burden: the caster pays one temporary level-loss burden after casting and must rest 2d10 days to recover that cost.
+>
+> _Reverse — Life Drain:_ Drain one level from a touched target as a chaotic inversion.
+>
+> _Overcharge:_ x2 - stabilize target against immediate repeat drain for one scene; x4 - restore one additional secondary drain symptom (memory fuzz, skill suppression, vitality shock).
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [restoration]
+>   [high-tier]
+>   [reversible]
+
+meta:
+> - source:
+>   - becmi:Companion Set; spell: Restore
+>   - becmi:Master Set; spell: Restore
+>   - becmi:Rules Cyclopedia; spell: Restore
+> - usage:
+>   - scope: power; id: Restore; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3560,14 +2929,7 @@ meta:
 >   - scope: power; id: Detect Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Detect Evil
-> Range: 120'
-> Duration: 2 turns
-> Effect: Reveals evil intent or influence
->
-> This spell detects evil or hostile influence
-> in nearby creatures, objects, or effects,
-> depending on context and edition wording.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3605,31 +2967,13 @@ tags:
 meta:
 > - source:
 >   - becmi:Basic Rules; spell: Detect Magic
+>   - becmi:Expert Set; spell: Detect Magic
 >   - becmi:Rules Cyclopedia; spell: Detect Magic
 > - usage:
 >   - scope: power; id: Detect Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Detect Magic
-> Range: 0
-> Duration: 2 turns
-> Effect: Everything within 60'
->
-> When this spell is cast, the magic-user
-> will see all magical objects, creatures,
-> and places within range glow. This effect
-> will not last very long, and should be
-> saved until the magic-user wants to see if
-> something found during an adventure
-> is, in fact, magical. Example: Shortly
-> after casting this spell, a magic-user
-> walks into a room containing a door
-> locked by magic, a magical potion laying
-> nearby, and a treasure chest containing a
-> magic wand. All the magic will glow, but
-> only the door and potion will be seen;
-> the light of the glowing wand is hidden
-> by the treasure chest.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3672,18 +3016,7 @@ meta:
 >   - scope: power; id: Infravision; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Infravision
-> Range: Touch
-> Duration: 1 day
-> Effect: One living creature
->
-> This spell enables the recipient to see in
-> the dark, to a 60' range. Warm things
-> appear red, cold things appear blue or
-> black. Fine detail (sufficient for combat
-> and navigation) is possible but not fine
-> enough to read by. Bright light or a light
-> spell can temporarily dazzle infravision.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3730,15 +3063,7 @@ meta:
 >   - scope: power; id: Detect Invisible; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Detect Invisible
-> Range: 0
-> Duration: 6 turns
-> Effect: Everything within 10'
->
-> This spell allows the caster to see all
-> invisible creatures and objects within range
-> for the duration. It reveals hidden presence,
-> but not full magical analysis.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3785,14 +3110,7 @@ meta:
 >   - scope: power; id: ESP; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> ESP
-> Range: 60'
-> Duration: 12 turns
-> Effect: Reads surface thoughts
->
-> This spell allows the caster to detect or
-> read nearby thoughts, usually constrained
-> by shielding materials and distance.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3839,14 +3157,7 @@ meta:
 >   - scope: power; id: Clairvoyance; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Clairvoyance
-> Range: 60'
-> Duration: 12 turns
-> Effect: One remote view point
->
-> This spell lets the caster see through a
-> distant point in space, enabling remote
-> visual reconnaissance and scene awareness.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3890,14 +3201,7 @@ meta:
 >   - scope: power; id: Wizard Eye; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Wizard Eye
-> Range: 240'
-> Duration: 6 turns
-> Effect: One moving magical eye
->
-> This spell creates a mobile magical eye
-> that scouts ahead and feeds visual data
-> back to the caster.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3941,14 +3245,7 @@ meta:
 >   - scope: power; id: Locate Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Locate Object
-> Range: 0
-> Duration: 2 turns
-> Effect: Locates one known object
->
-> The caster can sense the direction of a
-> known object, or the nearest instance of a
-> specified object type, if it is within range.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3993,14 +3290,7 @@ meta:
 >   - scope: power; id: Read Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Read Magic
-> Range: 0
-> Duration: 2 turns
-> Effect: Caster can read magical writing
->
-> This spell allows a magic-user to read
-> otherwise incomprehensible magical script,
-> including scroll formulae and spell notation.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4048,67 +3338,7 @@ meta:
 >   - scope: power; id: Read Languages; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Read Languages
-> Range: 0
-> Duration: 2 turns
-> Effect: Caster can read unknown languages
->
-> This spell allows the caster to understand
-> written languages unknown to them for the
-> spell duration.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
-
-<div class="power-card" markdown="1">
-
-## Find Traps
-
-> **Find Traps**
->
-> _FTLS power invocation_
->
-> **P:** 4 **R:** self  
-> **T:** all trap signatures within 9 m / 30 ft **D:** 2 turns (~20 minutes)
->
-> You tune your perception to hostile trigger geometry. Traps within 30 feet register as a dull blue noospheric glow, allowing rapid hazard mapping while moving through unknown interiors.
->
-> The power reveals presence, not mechanism: it does not identify exact trigger type, bypass method, or disarm sequence.
->
-> _Overcharge:_ x2 — extend scan radius to 18 m / 60 ft; x4 — each revealed trap also gives one brief clue about likely trigger medium (pressure, line, arcane ward, etc.).
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [divination]
->   [detection]
->   [utility]
->   [cleric]
-
-meta:
-> - source:
->   - becmi:Expert Set; spell: Find Traps
->   - becmi:Rules Cyclopedia; spell: Find Traps
-> - usage:
->   - scope: power; id: Find Traps; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Find Traps
-> Range: 0 (Cleric only)
-> Duration: 2 turns
-> Effect: Traps within 30' glow
->
-> This spell causes all traps to glow with a
-> dull blue light when the cleric comes
-> within 30' of them. It does not reveal the
-> trap type, nor methods of removing it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4153,17 +3383,7 @@ meta:
 >   - scope: power; id: Know Alignment; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Know Alignment*
-> Range: 0 (Cleric only)
-> Duration: 1 round
-> Effect: One creature within 10'
->
-> The caster discovers the alignment of one
-> nearby creature (or an enchanted item or
-> area). The reverse, confuse alignment,
-> lasts 1 turn per caster level, is cast by
-> touch with no Save, and causes future
-> alignment checks to return a false answer.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4208,16 +3428,7 @@ meta:
 >   - scope: power; id: Speak with Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Speak with Animals
-> Range: 0 (Cleric only)
-> Duration: 6 turns
-> Effect: Allows conversation within 30'
->
-> The cleric names one animal type and may
-> then speak with all animals of that type
-> within 30'. Reactions are usually favorable,
-> and a possible favor may be negotiated if
-> the animal can understand and perform it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4264,18 +3475,7 @@ meta:
 >   - scope: power; id: Speak with the Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Speak with the Dead
-> Range: 10'
-> Duration: 1 round per level of the cleric
-> Effect: Cleric may ask 3 questions
->
-> The cleric may ask 3 questions of a
-> deceased spirit if the body is within range.
-> The spirit replies in a tongue known to the
-> cleric, but only with knowledge up to the
-> moment of death. Friendly alignment gives
-> clearer answers; differing alignment may
-> produce riddling replies.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4322,15 +3522,7 @@ meta:
 >   - scope: power; id: Find the Path; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Find the Path
-> Range: 0 (Cleric only)
-> Duration: 6 turns + 1 turn per level
-> Effect: Shows path to an area
->
-> The caster names a specific place and
-> knows direction plus special routing
-> information (secret doors, passwords,
-> and similar) needed to reach it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4375,16 +3567,7 @@ meta:
 >   - scope: power; id: Truesight; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Truesight
-> Range: 0 (cleric only)
-> Duration: 1 turn + 1 round per level
-> Effect: Reveals all things
->
-> The caster can see hidden, invisible,
-> ethereal, disguised, or polymorphed things
-> in true form within 120'. Secret doors,
-> alignment, and power/experience are also
-> revealed.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4434,16 +3617,7 @@ meta:
 >   - scope: power; id: Speak with Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Speak with Monsters*
-> Range: 0 (Cleric only)
-> Duration: 1 round per level
-> Effect: Conversation with any monster
->
-> Allows the cleric to converse with living
-> and undead monsters within 30'. One
-> question may be asked per round. Reverse
-> form (Babble) disrupts one target's ability
-> to communicate.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4490,15 +3664,7 @@ meta:
 >   - scope: power; id: Commune; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Commune
-> Range: 0 (Cleric only)
-> Duration: 3 turns
-> Effect: 3 questions
->
-> The cleric may ask three yes/no questions
-> of greater powers. Use is normally limited
-> to once per week, with occasional special
-> observance exceptions allowing more.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4543,15 +3709,7 @@ meta:
 >   - scope: power; id: Faerie Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Faerie Fire
-> Range: 60'
-> Duration: 1 round per level of caster
-> Effect: Illuminates creatures or objects
->
-> Outlines targets in harmless green fire.
-> Attacks against outlined targets gain +2.
-> The caster can outline more total size at
-> higher levels.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4596,14 +3754,7 @@ meta:
 >   - scope: power; id: Locate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Locate
-> Range: 0 (druid only)
-> Duration: 6 turns
-> Effect: Detects 1 animal or plant within 120'
->
-> Lets the druid sense direction to one named
-> normal animal or plant in range. It does not
-> locate fantastic or intelligent creatures.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4648,14 +3799,7 @@ meta:
 >   - scope: power; id: Predict Weather; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Predict Weather
-> Range: 0 (druid only)
-> Duration: 12 hours
-> Effect: Gives knowledge of coming weather
->
-> Reveals accurate weather for the next
-> 12 hours across 1 mile diameter per level
-> of the caster. Provides information only.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4700,15 +3844,7 @@ meta:
 >   - scope: power; id: Detect Danger; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Detect Danger
-> Range: 5' per level of the caster
-> Duration: One hour
-> Effect: Reveals hazards
->
-> Combines hazard and threat sensing,
-> classifying examined targets as immediate,
-> potential, or benign dangers and detecting
-> poisons other scans might miss.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4752,14 +3888,7 @@ meta:
 >   - scope: power; id: Analyze; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Analyze
-> Range: Touch
-> Duration: 1 round
-> Effect: Analyzes magic on one item
->
-> 15% + 5%/level chance per property. Must physically hold/wear the
-> item (curse/trap consequences still apply). Results are vague.
-> Non-magical items identified as such. RC-only provenance.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4804,14 +3933,7 @@ meta:
 >   - scope: power; id: Speak with Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Speak with Plants
-> Range: 0 (cleric only)
-> Duration: 3 turns
-> Effect: All plants within 30'
->
-> Two-way communication with plant life within 30'. Plants grant simple
-> favors. Allows passage through impenetrable undergrowth. Includes
-> plantlike monsters (treants). Source: Expert Set + RC.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4858,14 +3980,7 @@ meta:
 >   - scope: power; id: Contact Outer Plane; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Contact Outer Plane
-> Range: 0 (spellcaster only)
-> Duration: see below
-> Effect: 3-12 questions may be answered
->
-> Contacting a distant outer plane gives more questions and better knowledge odds, but increases insanity risk.
-> Caster can use the spell once per month at most. Insanity recovery takes weeks equal to plane-distance.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -4904,17 +4019,11 @@ meta:
 >   - scope: power; id: Lore; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Lore
-> Range: 0 (magic-user only)
-> Duration: Permanent
-> Effect: Reveals details of 1 item, place, or person
->
-> Held items resolve in 1d4 turns; remote or legendary targets may take up to 1d100 days.
-> A single casting may reveal only one function of a multi-function item.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
+
 
 # Transformation and Alteration
 
@@ -4957,33 +4066,7 @@ meta:
 >   - scope: power; id: Polymorph Self; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Polymorph Self
-> Range: 0 (Caster only)
-> Duration: 6 turns + 1 turn per level of the
-> caster
-> Effect: Caster may change shapes
->
-> This spell allows the caster to change
-> shape, taking the physical form of another
-> living creature. The Hit Dice of the new
-> form must be equal to or less than the Hit
-> Dice of the caster. The caster's Armor
-> Class, hit points, Hit rolls, and Saving
-> Throws do not change. Special abilities
-> and special immunities of the new form
-> are not gained, but physical abilities are ac-
-> quired. For example, a magic-user poly-
-> morphed into a frost giant has the strength
-> of a frost giant and the ability to hurl boul-
-> ders, but not immunity from cold. A
-> magic-user polymorphed into a dragon
-> could fly but would not be able to use any
-> breath weapons or spells.
->
-> Spells cannot be cast while polymorphed
-> into a different form. The spell lasts for the
-> given duration, or until dispelled, or until
-> the caster is killed.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4994,58 +4077,6 @@ osr:
 
 </div>
 
-<div class="power-card" markdown="1">
-
-## Word of Recall
-
-> **Word of Recall**
->
-> _FTLS power invocation_
->
-> **P:** 12 **R:** self  
-> **T:** caster plus carried equipment **D:** instant
->
-> You trigger immediate return to your anchored sanctuary location (a prepared home meditation chamber). This is a one-caster extraction effect, not a group teleport.
->
-> On the casting round, you automatically seize initiative unless surprised.
->
-> _Overcharge:_ x2 — include one bonded willing companion in contact; x4 — leave a fleeting return-trace for one round that can be followed only by specifically attuned allies.
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [movement]
->   [teleport]
->   [sanctuary]
->   [high-tier]
-
-meta:
-> - source:
->   - becmi:Companion Set; spell: Word of Recall
->   - becmi:Rules Cyclopedia; spell: Word of Recall
-> - usage:
->   - scope: power; id: Word of Recall; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Word of Recall
-> Range: 0 (Cleric only)
-> Duration: Instantaneous
-> Effect: Teleports caster to sanctuary
->
-> Similar to Teleport, but always returns the
-> cleric and carried equipment to a prepared
-> sanctuary meditation room, regardless of
-> distance.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
 
 <div class="power-card" markdown="1">
 
@@ -5083,22 +4114,7 @@ meta:
 >   - scope: power; id: Polymorph Other; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Polymorph Others
-> Range: 60'
-> Duration: Permanent until dispelled
-> Effect: One living creature
->
-> This spell transforms one living creature
-> into another type of creature. The new
-> form may not have more Hit Dice than
-> twice the original creature's Hit Dice.
-> The target gains ALL of the new form's
-> special abilities and behavioral tendencies
-> (unlike Polymorph Self). A Save vs.
-> Spells is allowed; failure means the
-> transformation is permanent until
-> dispelled. The new form cannot be a
-> specific named individual.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5143,17 +4159,7 @@ meta:
 >   - scope: power; id: Growth of Animal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Growth of Animal
-> Range: 120'
-> Duration: 12 turns
-> Effect: Doubles the size of one animal
->
-> This spell doubles the size of one normal
-> or giant animal. The animal has twice its
-> normal strength, inflicts double normal
-> damage, and may carry twice its normal
-> encumbrance. Behavior, Armor Class, and
-> hit points do not change.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5198,17 +4204,7 @@ meta:
 >   - scope: power; id: Stone to Flesh; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Stone to Flesh*
-> Range: 120'
-> Duration: Permanent
-> Effect: One creature or object
->
-> This spell turns any one statue (or up to
-> 10' x 10' x 10' of stone) to flesh, often
-> used to restore a petrified victim. The
-> reverse, Flesh to Stone, turns one living
-> creature and carried equipment to stone;
-> the victim may Save vs. Turn to Stone.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5254,15 +4250,7 @@ meta:
 >   - scope: power; id: Metal to Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Metal to Wood
-> Range: 120'
-> Duration: Permanent
-> Effect: Changes metal into dead wood
->
-> Converts up to five pounds of metal per
-> caster level into wood. Magical metal has
-> strong resistance. Converted armor and
-> weapons lose their normal function.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5306,14 +4294,7 @@ meta:
 >   - scope: power; id: Dissolve; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Dissolve
-> Range: 240'
-> Duration: 3-18 days
-> Effect: Liquefies 3,000 square feet
->
-> Changes a large volume of soil or rock
-> into mud, severely slowing movement and
-> potentially trapping creatures.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5358,14 +4339,7 @@ meta:
 >   - scope: power; id: Warp Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Warp Wood
-> Range: 240'
-> Duration: Permanent
-> Effect: Causes wooden weapons to bend
->
-> Bends and ruins wooden weapons by size-
-> based capacity. Some magical wooden items
-> may resist or save.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5414,15 +4388,7 @@ meta:
 >   - scope: power; id: Polymorph Any Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Polymorph Any Object
-> Range: 240'
-> Duration: Permanent (same kingdom) / 1 hr per level (adjacent) / 1 turn per level (opposite)
-> Effect: Changes form of one creature or object
->
-> Targets objects and creatures; if structural, up to 10'×10'×10'. Save
-> vs. Spells at –4. Duration by kingdom change. Cannot affect creatures
-> with >2× caster HD. Polymorphed creatures are not automatically
-> friendly and retain hp and age.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5468,16 +4434,7 @@ meta:
 >   - scope: power; id: Shapechange; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Shapechange
-> Range: Self
-> Duration: 40 turns
-> Effect: Assume any creature or object form up to 40 ft / 4,000 cn
->
-> Caster may assume any observed form within size limits, shifting each
-> round if desired. Gain full capabilities of assumed form. Retain own
-> mind. Source: Master Set artifact table D2 (M9); RC ninth level list.
-> [Synthesis: capability inheritance and form-shift cadence extrapolated
-> from artifact entry and BECMI polymorph family doctrine.]
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5523,14 +4480,7 @@ meta:
 >   - scope: power; id: Stoneform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Stoneform
-> Range: Touch
-> Duration: Permanent
-> Effect: Creates 1,000 cubic feet of stone
->
-> Creates solid stone in chosen shape; casting time scales with complexity.
-> Stone is permanent, non-dispellable, and may be seamlessly joined to prior Stoneform structures.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5569,14 +4519,7 @@ meta:
 >   - scope: power; id: Woodform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Woodform
-> Range: Touch
-> Duration: Permanent
-> Effect: Creates 1,000 cubic feet of wood
->
-> Creates permanent non-dispellable wood in chosen shape.
-> Casting time scales with complexity and later castings may refine earlier woodform structures.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5615,14 +4558,7 @@ meta:
 >   - scope: power; id: Ironform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Ironform
-> Range: Touch
-> Duration: Permanent
-> Effect: Creates 500 square feet of iron
->
-> Creates permanent iron forms with complexity-based casting times.
-> Later casts can refine and seamlessly join earlier ironform work.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5661,14 +4597,7 @@ meta:
 >   - scope: power; id: Statue; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Statue
-> Range: 0 (magic-user only)
-> Duration: 2 turns per level of the caster
-> Effect: Allows caster to turn to stone
->
-> Caster may shift to or from statue form once per round.
-> Statue form is highly resistant to mundane harm but remains vulnerable to magical attacks.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5705,14 +4634,7 @@ meta:
 >   - scope: power; id: Steelform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Steelform
-> Range: Touch
-> Duration: Permanent
-> Effect: Creates up to 500 square feet of steel
->
-> Functions as ironform but creates weapon-quality steel.
-> Stronger material profile than ironform baseline.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5751,42 +4673,14 @@ tags:
 meta:
 > - source:
 >   - becmi:Basic Rules; spell: Charm Person
+>   - becmi:Expert Set; spell: Charm Person
 >   - becmi:Rules Cyclopedia; spell: Charm Person
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Hero's Goldenmouth
 > - usage:
 >   - scope: power; id: Charm Person; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Charm Person
-> Range: 120'
-> Duration: See below
-> Effect: One living "person" (see below)
->
-> This spell will only affect humans, demi-
-> humans, and certain other creatures.
-> The victim is allowed a Saving Throw vs.
-> Spells. If the Saving Throw is successful,
-> the spell has no effect. If it is failed, the
-> victim will believe that the magic-user is
-> its "best friend," and will try to defend
-> the magic-user against any threat,
-> whether real or imagined. The victim is
-> "Charmed."
->
-> If the magic-user can speak a lan-
-> guage that the Charmed victim under-
-> stands, the magic-user may give orders
-> to the victim. These orders should
-> sound like suggestions, as if ")ut be-
-> tween friends." These orders will usually
-> be obeyed, but orders that are contrary
-> to the victim's nature (alignment and
-> habits) may be resisted. A victim will
-> refuse to obey if ordered to kill itself.
->
-> The Charm is automatically broken if
-> t h e magic-user attacks t h e victim,
-> whether by spell or by weapon.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5831,15 +4725,7 @@ meta:
 >   - scope: power; id: Sleep; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Sleep
-> Range: 240'
-> Duration: 4d4 turns
-> Effect: 2-16 Hit Dice of creatures
->
-> This spell puts creatures into magical
-> sleep. Low-level creatures are affected
-> first; higher-level creatures may be immune
-> if the total effect is exhausted.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5883,14 +4769,7 @@ meta:
 >   - scope: power; id: Confusion; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Confusion
-> Range: 120'
-> Duration: 12 rounds
-> Effect: Creatures in an area
->
-> This spell scrambles intent and judgment,
-> causing affected targets to behave in
-> erratic and tactically unsound ways.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5934,14 +4813,7 @@ meta:
 >   - scope: power; id: Feeblemind; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Feeblemind
-> Range: 120'
-> Duration: Permanent
-> Effect: One spellcasting-capable creature
->
-> This spell destroys higher reasoning and
-> spell use capability until reversed by strong
-> restorative magic.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5987,18 +4859,7 @@ meta:
 >   - scope: power; id: Charm Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Charm Monster
-> Range: 120'
-> Duration: Special
-> Effect: One or more living creatures
->
-> This spell effect is identical to that of
-> a charm person spell, but any creature
-> except an undead may be affected. If the
-> victims have 3 Hit Dice or less, 3-18 may
-> be charmed. Otherwise, only one monster
-> will be affected. Each victim may make a
-> Saving Throw vs. Spells to avoid the effects.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6042,15 +4903,7 @@ meta:
 >   - scope: power; id: Dance; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Dance
-> Range: Touch
-> Duration: 3 or more rounds
-> Effect: Causes 1 victim to dance
->
-> A touched victim gets no saving throw, cannot
-> attack, cast, or flee, suffers -4 to saves and
-> +4 to Armor Class, and remains affected for
-> 3 to 7 rounds based on caster level.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6095,14 +4948,7 @@ meta:
 >   - scope: power; id: Mass Charm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Mass Charm*
-> Range: 120'
-> Duration: Special (as charm person spell)
-> Effect: 30 Levels of creatures
->
-> Affects up to 30 HD at once at –2 to Save. Cannot affect creatures
-> of 31+ HD. Duration by Intelligence as per charm person.
-> Reverse: Remove Charm (see companion entry).
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6142,19 +4988,57 @@ tags:
 meta:
 > - source:
 >   - becmi:Master Set; spell: Mass Charm (reverse: Remove Charm)
->   - becmi:Rules Cyclopedia; spell: Remove Charm
+>   - becmi:Rules Cyclopedia; spell: Mass Charm (reverse: Remove Charm)
 > - usage:
 >   - scope: power; id: Remove Charm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Remove Charm* (reverse of Mass Charm)
-> Range: 120'
-> Duration: Instant / 1 turn (object suppression)
-> Effect: 20' x 20' x 20' volume
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Remove Fear
+
+> **Remove Fear**
 >
-> Unfailingly removes all charm effects in the volume.
-> Prevents objects in the area from generating charm effects for 1 turn.
-> RC indexes as a standalone MU 8 entry.
+> _FTLS power invocation_
+>
+> **P:** 2 **R:** touch  
+> **T:** one living creature **D:** 2 turns (~20 min)
+>
+> You dissolve irrational terror and ongoing magical fear effects in one willing creature. The target gains +2 on any Saves against further fear-causing effects for the duration.
+>
+> _Overcharge:_ x2 — extend to all creatures you can touch simultaneously (up to your Level in targets); x4 — suppress all fear-generating powers and effects within short range against the target for the duration.
+>
+> See also: the reverse form **Cause Fear** (R: 120', forces one creature to flee for 2 turns; Save vs. Spells negates).
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [restoration]
+>   [morale]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Basic Rules; spell: Remove Fear
+>   - becmi:Expert Set; spell: Remove Fear
+>   - becmi:Rules Cyclopedia; spell: Remove Fear
+> - usage:
+>   - scope: power; id: Remove Fear; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6199,17 +5083,7 @@ meta:
 >   - scope: power; id: Snake Charm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Snake Charm
-> Range: 60'
-> Duration: 2-5 rounds or 2-5 turns
-> Effect: Charms 1 HD of snakes per caster level
->
-> The cleric may charm 1 Hit Die of snakes
-> per level, with no Saving Throw. The
-> snakes rise and sway but do not attack
-> unless attacked. The duration is shorter if
-> used on attacking snakes and longer
-> otherwise.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6228,18 +5102,16 @@ osr:
 >
 > _FTLS power invocation_
 >
-> **P:** 10 **R:** near (~9 m / 30 ft)  
-> **T:** one prepared vessel and one creature within 120 ft of that vessel **D:** special (until return, disruption, or destruction)
+> **P:** 10 **R:** far (~30 m / 100 ft)  
+> **T:** your soul, one prepared receptacle, and one target creature **D:** special (while the jar remains intact)
 >
-> You project your life-force into a prepared inanimate vessel, then attempt body possession through it. A target may Save vs. Spells to resist possession. On failure, you control that body while the target's life-force is displaced into the vessel.
+> You project your consciousness into a prepared vessel, then attempt to seize control of nearby living hosts from that anchor. On a failed Save vs. Spells, the host body is possessed while your original body becomes inert and vulnerable.
 >
-> While possessing a host, you can perform normal physical actions but cannot access host-exclusive special abilities unless the referee allows limited overlap. `Dispel Evil` forces your life-force out of the host and back into the vessel.
+> You may abandon a host and return to the jar, or reattempt transfer to another eligible target in range. If the jar is destroyed while your soul is outside your native body, resolve immediate soul-loss risk at referee call.
 >
-> Catastrophic states matter: if the vessel is destroyed while your essence is inside it, you die. If destroyed while you are in a host, you are stranded in that host body.
+> _Overcharge:_ x2 - harden the receptacle against casual disruption and improve transfer stability during host swaps; x4 - maintain one brief return-link to your original body that allows emergency snapback once per casting window.
 >
-> _Overcharge:_ x2 — gain a brief synchronization window that reduces host-action penalties for the first turn; x4 — once per possession, force the host to reroll a successful resistance check and keep the worse result.
->
-> See also: `Magic Jar` in the SDM Powers Index for an existing exact-name rendition.
+> See also: `Magic Jar` in the SDM Powers Index for an exact-name variant precedent.
 
 tags:
 >   [power]
@@ -6247,7 +5119,6 @@ tags:
 >   [storage:item]
 >   [mind]
 >   [possession]
->   [dangerous]
 >   [high-tier]
 
 meta:
@@ -6259,18 +5130,7 @@ meta:
 >   - scope: power; id: Magic Jar; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Magic Jar
-> Range: 30'
-> Duration: See below
-> Effect: Possess one body
->
-> The caster's life-force enters an inanimate
-> vessel, then may attempt to possess one
-> creature within 120' of the vessel. Targets
-> Save vs. Spells to resist. If possession
-> succeeds, the victim's life-force is placed in
-> the jar. Destroying the jar can kill or strand
-> the caster depending on current state.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6317,16 +5177,7 @@ meta:
 >   - scope: power; id: Quest; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Quest*
-> Range: 30'
-> Duration: Special
-> Effect: Compels one living creature
->
-> Forces one target to perform a specific
-> task unless it saves. Refusal to continue
-> the quest imposes a curse. Reverse form
-> removes quest effects with level-based
-> chance of success.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6373,14 +5224,7 @@ meta:
 >   - scope: power; id: Charm Plant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Charm Plant
-> Range: 120'
-> Duration: 6 months (see below)
-> Effect: Charms one tree or more smaller plants
->
-> Plants obey caster commands within plant capability. Plant-like monsters may save.
-> Effect ends on dispel or winter dormancy.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -6416,32 +5260,13 @@ tags:
 
 meta:
 > - source:
->   - becmi:Basic Rules; spell: Invisibility
+>   - becmi:Expert Set; spell: Invisibility
 >   - becmi:Rules Cyclopedia; spell: Invisibility
 > - usage:
 >   - scope: power; id: Invisibility; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Invisibility
-> Range: 240'
-> Duration: Permanent until broken
-> Effect: One creature or object
->
-> This spell will make any one creature or
-> object invisible. When a creature be-
-> comes invisible, all items carried and
-> worn also become invisible. Any invisible
-> item becomes visible again when it leaves
-> the creature's possession (dropped, set
-> down, etc.). If the magic-user makes an
-> object invisible that is not being carried
-> or worn, it will become visible again
-> when touched by any living creature. An
-> invisible creature will remain invisible
-> until he or she attacks or casts any spell.
-> A light source (such as a torch) may be
-> made invisible, but the light given off
-> will always remain visible.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6486,17 +5311,7 @@ meta:
 >   - scope: power; id: Projected Image; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Projected Image
-> Range: 240'
-> Duration: 6 turns
-> Effect: Creates one image
->
-> This spell creates an image of the caster
-> up to 240' away. The image cannot be
-> distinguished from the original except by
-> touch. Spells cast seem to come from the
-> image, though the caster must still see the
-> target. Touch or melee contact ends it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6538,21 +5353,13 @@ tags:
 meta:
 > - source:
 >   - becmi:Expert Set; spell: Invisibility 10' radius
->   - becmi:Rules Cyclopedia; spell: Invisibility 10' Radius
+>   - becmi:Rules Cyclopedia; spell: Invisibility 10' radius
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Yellow Cloud
 > - usage:
 >   - scope: power; id: Invisibility 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Invisibility 10' Radius
-> Range: 120'
-> Duration: Permanent until broken
-> Effect: All creatures in 10' radius
->
-> This spell extends invisibility to all creatures
-> within ten feet of the target point or anchor,
-> with the same break conditions as standard
-> invisibility when hostile action is taken.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6596,15 +5403,7 @@ meta:
 >   - scope: power; id: Mirror Image; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Mirror Image
-> Range: 0
-> Duration: 6 turns
-> Effect: Caster and 1d4+1 images
->
-> This spell creates duplicate images around
-> the caster that mimic movement and cause
-> attackers to strike false targets before the
-> real caster can be hit.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6648,14 +5447,7 @@ meta:
 >   - scope: power; id: Phantasmal Force; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Phantasmal Force
-> Range: 240'
-> Duration: Concentration
-> Effect: Visual/sensory illusion
->
-> This spell creates a believable illusion the
-> caster controls, limited by concentration and
-> by what observers can plausibly accept.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6700,14 +5492,7 @@ meta:
 >   - scope: power; id: Ventriloquism; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Ventriloquism
-> Range: 60'
-> Duration: 2 turns
-> Effect: One false sound source
->
-> This spell lets the caster make their voice
-> seem to come from another location within
-> range, misleading listeners about position.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6718,57 +5503,6 @@ osr:
 
 </div>
 
-<div class="power-card" markdown="1">
-
-## Levitate
-
-> **Levitate**
->
-> _FTLS power invocation_
->
-> **P:** 4 **R:** touch  
-> **T:** self or one willing creature/object **D:** 6 turns + 1 turn per user Level
->
-> You suspend the target in a stable vertical lift envelope. The target rises or descends at controlled speed and can hold a chosen elevation. Horizontal movement is limited to pushes, tethers, or environmental drift unless supported by another movement power.
->
-> Levitation can be used for obstacle bypass, vertical recon, and controlled descent under load.
->
-> _Overcharge:_ x2 — include one additional adjacent willing target; x4 — grant slow directional drift control without external push.
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [movement]
->   [utility]
->   [imbued]
-
-meta:
-> - source:
->   - becmi:Expert Set; spell: Levitate
->   - becmi:Rules Cyclopedia; spell: Levitate
-> - usage:
->   - scope: power; id: Levitate; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Levitate
-> Range: Touch
-> Duration: 6 turns + 1/level
-> Effect: One creature or object
->
-> This spell allows controlled vertical move-
-> ment up or down. The subject can be held
-> suspended at any chosen height for the
-> duration.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
 
 <div class="power-card" markdown="1">
 
@@ -6799,34 +5533,14 @@ tags:
 
 meta:
 > - source:
->   - becmi:Basic Rules; spell: Hold Person
+>   - becmi:Expert Set; spell: Hold Person
 >   - becmi:Rules Cyclopedia; spell: Hold Person
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Hlod Person
 > - usage:
 >   - scope: power; id: Hold Person; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Hold Person
-> Range: 180'
-> Duration: 9 turns
-> Effect: 1-4 persons (cleric's choice)
->
-> This spell will affect any human, demi-
-> human or human-like creature (such as
-> bugbears, gnolls, gnomes, hobgoblins,
-> kobolds, lizard men, ogres, orcs, pixies or
-> sprites). It will not affect undead nor crea-
-> tures of 5 Hit Dice or more. The victim(s)
-> must make a Saving Throw vs. Spells or
-> be paralyzed.
->
-> This spell may be cast either at a single
-> creature or at a group. If cast at a single
-> creature, that victim must make a Saving
-> Throw vs. Spells with a -2 penalty to the
-> die roll. If cast at a group, it may affect up
-> to 4 creatures, but no penalties apply to
-> the Saving Throws.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6873,21 +5587,7 @@ meta:
 >   - scope: power; id: Hold Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Hold Monster*
-> Range: 120'
-> Duration: 6 turns + 1 turn per level
-> Effect: Paralyzes 1-4 creatures
->
-> This spell has an effect identical to that
-> of a hold person spell, but will affect any
-> living creature (not undead). Each victim
-> must make a Saving Throw vs. Spells or
-> be paralyzed. Cast at a single creature:
-> -2 penalty on the Save. Cast at a group:
-> affects 1-4 creatures (caster's choice), no
-> penalty. The reverse (free monster) removes
-> paralysis from up to 4 victims of any
-> hold spell.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6931,15 +5631,7 @@ meta:
 >   - scope: power; id: Web; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Web
-> Range: 10'
-> Duration: 48 turns
-> Effect: A volume of sticky strands
->
-> This spell creates strong sticky webs that
-> fill an area and trap creatures. The web can
-> be anchored to surfaces and is vulnerable
-> to fire.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6982,14 +5674,52 @@ meta:
 >   - scope: power; id: Entangle; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Entangle
-> Range: 30'
-> Duration: 1 round per level
-> Effect: Controls ropes/vines
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Find Traps
+
+> **Find Traps**
 >
-> Animates ~50 ft of vine/rope + 5 ft/level. Commands: coil, loop,
-> knot, tie, and reverses. Material must be within 1 ft of target.
-> Save vs. Spells to resist binding. RC-only provenance.
+> _FTLS power invocation_
+>
+> **P:** 4 **R:** self  
+> **T:** all trap signatures within 9 m / 30 ft **D:** 2 turns (~20 minutes)
+>
+> You tune your perception to hostile trigger geometry. Traps within 30 feet register as a dull blue noospheric glow, allowing rapid hazard mapping while moving through unknown interiors.
+>
+> The power reveals presence, not mechanism: it does not identify exact trigger type, bypass method, or disarm sequence.
+>
+> _Overcharge:_ x2 — extend scan radius to 18 m / 60 ft; x4 — each revealed trap also gives one brief clue about likely trigger medium (pressure, line, arcane ward, etc.).
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [divination]
+>   [detection]
+>   [utility]
+>   [cleric]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Find Traps
+>   - becmi:Rules Cyclopedia; spell: Find Traps
+> - usage:
+>   - scope: power; id: Find Traps; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7033,16 +5763,7 @@ meta:
 >   - scope: power; id: Hallucinatory Terrain; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Hallucinatory Terrain
-> Range: 240'
-> Duration: Special
-> Effect: Changes or hides terrain
->
-> This spell creates the illusion of a terrain
-> feature (indoors or outdoors), and may
-> hide a real feature. The effect lasts until
-> touched by an intelligent creature or until
-> dispelled.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7053,64 +5774,6 @@ osr:
 
 </div>
 
-<div class="power-card" markdown="1">
-
-## Geas
-
-> **Geas**
->
-> _FTLS power invocation_
->
-> **P:** 12 **R:** near (~9 m / 30 ft)  
-> **T:** one creature **D:** until fulfilled, removed, or the subject dies
->
-> You bind a target to a specific command constraint: perform an action, complete a mission, or abstain from a defined act. The command must be possible and not directly suicidal. The target may Save vs. Spells to resist.
->
-> On failure, the compulsion persists until resolved. If the subject refuses compliance, escalating penalties apply at referee call (combat penalties, weakness, reduced capability, pain, or similar collapse effects).
->
-> _Reverse — Remove Geas:_ This clears an existing geas. If the remover is lower Level than the original binder, removal may fail.
->
-> _Overcharge:_ x2 — apply a -2 penalty on the target's initial save; x4 — encode one clear completion condition that triggers immediate release when met.
-
-tags:
->   [power]
->   [type:other]
->   [storage:item]
->   [compulsion]
->   [binding]
->   [high-tier]
-
-meta:
-> - source:
->   - becmi:Expert Set; spell: Geas
->   - becmi:Rules Cyclopedia; spell: Geas
-> - usage:
->   - scope: power; id: Geas; note: FTLS Chapter 06 alpha power entry.
-
-osr:
-> Geas*
-> Range: 30'
-> Duration: Until completed or removed
-> Effect: Compels one creature
->
-> This spell compels a victim to perform or
-> avoid a stated action. The target may Save
-> vs. Spells. If ignored, penalties apply until
-> the geas is obeyed or the victim dies.
-> Dispel Magic and Remove Curse do not
-> end geas. The reverse (Remove Geas) can
-> remove it, with failure chance if the
-> remover is lower level than the original
-> caster.
-
-  <div class="power-return">
-    &nbsp;&nbsp;
-    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
-      ↩ Back
-    </a>
-  </div>
-
-</div>
 
 <div class="power-card" markdown="1">
 
@@ -7145,19 +5808,7 @@ meta:
 >   - scope: power; id: Massmorph; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Massmorph
-> Range: 240'
-> Duration: See below
-> Effect: Causes illusion of trees
->
-> This spell affects up to 100 human- or
-> man-sized creatures in a 240' diameter,
-> making them appear to be orchard trees
-> or dense woods. Unwilling creatures are
-> not affected. The illusion lasts until
-> dispelled or ended by the caster, and a
-> disguised creature loses the illusion only
-> when it moves out of the affected area.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7202,14 +5853,7 @@ meta:
 >   - scope: power; id: Hold Animal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Hold Animal
-> Range: 180'
-> Duration: 1 turn per level of the caster
-> Effect: Paralyzes several animals
->
-> Affects normal or giant animals up to 1 HD
-> per caster level. Each target saves vs.
-> spells or is paralyzed for the duration.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7257,14 +5901,7 @@ meta:
 >   - scope: power; id: Obscure; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Obscure
-> Range: 0 (druid only)
-> Duration: 1 turn per level of the caster
-> Effect: Creates a huge misty cloud
->
-> Creates a large mobile fog cloud that
-> blocks vision for most creatures and leaves
-> them effectively blind within it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7310,14 +5947,7 @@ meta:
 >   - scope: power; id: Mass Invisibility; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Mass Invisibility
-> Range: 240'
-> Duration: Permanent until broken
-> Effect: Creatures or objects in 60' square area
->
-> Applies standard invisibility behavior to a large group.
-> Reverse form reveals invisible targets in area and blocks new invisibility for 1 turn.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -7358,19 +5988,7 @@ meta:
 >   - scope: power; id: Fly; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Fly
-> Range: Touch
-> Duration: 1-6 turns + 1 turn per level of
-> the caster
-> Effect: One creature may fly
->
-> This spell allows the recipient (possibly the
-> caster) to fly. The spell will permit move-
-> ment in any direction and at any speed up
-> to 360' per turn (120' per round) by mere
-> concentration. The recipient may also stop
-> and hover at any point (as a levitate spell),
-> which does not require concentration.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7408,6 +6026,8 @@ tags:
 meta:
 > - source:
 >   - becmi:Expert Set; spell: Water Breathing
+>   - becmi:Companion Set; spell: Water Breathing
+>   - becmi:Master Set; spell: Water Breathing
 >   - becmi:Rules Cyclopedia; spell: Water Breathing
 > - heritage:
 >   - associated: Swamp-lineage fae clans (provisional)
@@ -7416,16 +6036,7 @@ meta:
 >   - scope: power; id: Swamp’s Gift (Water Breathing); note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Water Breathing
-> Range: 30'
-> Duration: 1 day
-> Effect: One creature per level
->
-> The recipient of this spell is able to
-> breathe underwater (at any depth) for
-> the duration of the spell. The recipient
-> can freely move underwater in normal
-> combat or exploration rounds.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7470,16 +6081,7 @@ meta:
 >   - scope: power; id: Lower Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Lower Water
-> Range: 240'
-> Duration: 10 turns
-> Effect: Cuts depth to 1/2 normal
->
-> This spell affects up to 10,000 square feet
-> of water, lowering depth to half normal.
-> Ships may become stuck. At duration end,
-> the returning water can sweep decks and
-> cause severe hull damage.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7528,15 +6130,7 @@ meta:
 >   - scope: power; id: Pass Plant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Pass Plant
-> Range: 0 (druid only)
-> Duration: Instantaneous
-> Effect: Short-range teleportation
->
-> The druid enters one tree and exits another
-> tree of the same type within set range
-> limits. Both trees must be living and large
-> enough for transit.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7582,14 +6176,7 @@ meta:
 >   - scope: power; id: Plant Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Plant Door
-> Range: 0 (druid only)
-> Duration: 1 turn per level of the caster
-> Effect: Opens a path through growth
->
-> No plants can block the druid's passage.
-> Dense growth parts for movement and the
-> caster may carry gear through.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7633,16 +6220,7 @@ meta:
 >   - scope: power; id: Survival; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Survival
-> Range: Touch
-> Duration: One hour per level of the caster
-> Effect: Protects one creature against all non-
-> magical damage from the environment
->
-> Protects against hostile environmental
-> conditions, removes need for air, food,
-> water, and sleep, and works against natural
-> planar conditions as well.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7691,14 +6269,7 @@ meta:
 >   - scope: power; id: Transport Through Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Transport Through Plants
-> Range: Infinite
-> Duration: Instantaneous
-> Effect: Long-range teleportation
->
-> Caster enters one living plant and exits
-> another living plant on the same plane,
-> potentially with two willing companions.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7742,15 +6313,53 @@ meta:
 >   - scope: power; id: Create Air; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Create Air
-> Range: immediate area
-> Duration: 1 hour per level
-> Effect: creates breathable air in 8,000 cubic feet (20' x 20' x 20')
->
-> Air can be fixed to an area or made to travel with a creature, vehicle, or sealed helm.
-> Useful underwater or in space transit. Does not block poison gases unless those gases are normal atmospheric components.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+
+</div>
+
+
+<div class="power-card" markdown="1">
+
+## Levitate
+
+> **Levitate**
+>
+> _FTLS power invocation_
+>
+> **P:** 4 **R:** touch  
+> **T:** self or one willing creature/object **D:** 6 turns + 1 turn per user Level
+>
+> You suspend the target in a stable vertical lift envelope. The target rises or descends at controlled speed and can hold a chosen elevation. Horizontal movement is limited to pushes, tethers, or environmental drift unless supported by another movement power.
+>
+> Levitation can be used for obstacle bypass, vertical recon, and controlled descent under load.
+>
+> _Overcharge:_ x2 — include one additional adjacent willing target; x4 — grant slow directional drift control without external push.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [movement]
+>   [utility]
+>   [imbued]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Levitate
+>   - becmi:Rules Cyclopedia; spell: Levitate
+> - usage:
+>   - scope: power; id: Levitate; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -7793,21 +6402,7 @@ meta:
 >   - scope: power; id: Dimension Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Dimension Door
-> Range: 10'
-> Duration: 1 round
-> Effect: Safely transports one creature
->
-> This spell will transport one creature up to
-> 10' from the caster, to a place up to 360'
-> away. The caster picks the desired destina-
-> tion. If the location is not known, distances
-> not exceeding a total of 360' may be given.
-> If this would cause the recipient to arrive at
-> a location occupied by a solid object, the
-> spell has no effect. An unwilling recipient
-> may make a Saving Throw vs. Spells to
-> avoid the effect.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7854,14 +6449,7 @@ meta:
 >   - scope: power; id: Teleport; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Teleport
-> Range: 10'
-> Duration: Instantaneous
-> Effect: Caster and carried load
->
-> This spell transports the caster (and possible
-> companions/load) to a distant destination,
-> with mishap risk if destination data is poor.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7908,15 +6496,7 @@ meta:
 >   - scope: power; id: Travel; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Travel
-> Range: 0
-> Duration: One turn per level of the caster
-> Effect: Allows aerial or gaseous travel
->
-> Grants high-speed flight, adjacent-plane
-> transition, and self-only gaseous form.
-> Touched companions may be brought along
-> based on caster level.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7963,16 +6543,7 @@ meta:
 >   - scope: power; id: Wish; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Wish
-> Range: Special
-> Duration: Special
-> Effect: Special
->
-> The single most powerful spell. Exact wording
-> matters. It may duplicate many lower-level
-> spells, but broader uses are referee-limited,
-> cannot grant experience or levels, and may
-> distort if phrased greedily or badly.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8019,16 +6590,7 @@ meta:
 >   - scope: power; id: Gate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Gate
-> Range: 30'
-> Duration: 1d10 x 10 turns or 1 turn
-> Effect: Opens a portal to another plane
->
-> Opens a direct planar connection. Nearby
-> planes can stay open much longer; outer-plane
-> contact is brief and dangerous, and may draw
-> a powerful being in response. Reverse form
-> closes compatible gates.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8080,13 +6642,7 @@ meta:
 >   - scope: power; id: Maze; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Maze
-> Range: 60'
-> Duration: See table (1d4 rounds to 1d6 turns based on Intelligence)
-> Effect: Traps one creature in an indestructible astral maze
->
-> No saving throw. Victim must find an exit; escape time depends on Intelligence.
-> Returns to origin on escape. Cannot be dispelled from outside.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8123,6 +6679,7 @@ tags:
 meta:
 > - source:
 >   - becmi:Expert Set; spell: Pass-Wall
+>   - becmi:Master Set; spell: Pass-Wall
 >   - becmi:Rules Cyclopedia; spell: Pass-Wall
 > - heritage:
 >   - associated: Veil/Deathline fae clans (provisional)
@@ -8131,15 +6688,7 @@ meta:
 >   - scope: power; id: Veilwalk (Pass-Wall); note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Pass-Wall
-> Range: 30'
-> Duration: 3 turns
-> Effect: Hole 5' diameter through 10' wall
->
-> This spell creates a passage through solid
-> stone, wood, or similar inert material. The
-> opening is temporary and closes when the
-> spell duration expires.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8185,15 +6734,7 @@ meta:
 >   - scope: power; id: Timestop; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Timestop
-> Range: Self
-> Duration: 1+1d4 rounds
-> Effect: Caster acts freely while time is stopped for all others
->
-> All other creatures and objects frozen. Caster acts normally.
-> Cannot directly harm frozen creatures. Time resumes at duration end.
-> Source: Master Set artifact table C2 (M10); RC ninth level list.
-> [Synthesis: no-harm rule extrapolated from BECMI standard.]
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8239,14 +6780,7 @@ meta:
 >   - scope: power; id: Magic Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Magic Door
-> Range: 10'
-> Duration: 7 uses
-> Effect: Creates one passage
->
-> Creates an invisible caster-only passage through up to 10' of nonliving material.
-> Reverse form is a stronger lock that resists knock-class bypass and lasts for seven uses.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -8285,15 +6819,54 @@ meta:
 >   - scope: power; id: Teleport any Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Teleport Any Object
-> Range: Touch
-> Duration: Instantaneous
-> Effect: Causes 1 object to teleport
->
-> Uses teleport error tables for touched targets, including objects.
-> Caster self-teleport via this spell has no chance of error.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+
+</div>
+
+
+<div class="power-card" markdown="1">
+
+## Word of Recall
+
+> **Word of Recall**
+>
+> _FTLS power invocation_
+>
+> **P:** 12 **R:** self  
+> **T:** caster plus carried equipment **D:** instant
+>
+> You trigger immediate return to your anchored sanctuary location (a prepared home meditation chamber). This is a one-caster extraction effect, not a group teleport.
+>
+> On the casting round, you automatically seize initiative unless surprised.
+>
+> _Overcharge:_ x2 — include one bonded willing companion in contact; x4 — leave a fleeting return-trace for one round that can be followed only by specifically attuned allies.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [movement]
+>   [teleport]
+>   [sanctuary]
+>   [high-tier]
+
+meta:
+> - source:
+>   - becmi:Companion Set; spell: Word of Recall
+>   - becmi:Rules Cyclopedia; spell: Word of Recall
+> - usage:
+>   - scope: power; id: Word of Recall; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -8334,14 +6907,50 @@ meta:
 >   - scope: power; id: Dispel Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Dispel Magic
-> Range: 120'
-> Duration: Instantaneous
-> Effect: Cancels one magical effect
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Reckless Dweomer
+
+> **Reckless Dweomer**
 >
-> This spell cancels magical effects, if the
-> caster's level is sufficient compared to the
-> original effect source.
+> _Mana Condensation, Very Dangerous_
+>
+> **P:** 0 **R:** self  
+> **T:** local ley-lines or mana pools **D:** until spent or dispersed (sunset or sunrise)
+>
+> You grab the ley-lines without quite knowing how, and an octarine glow spills free, hastily arranging itself into spendable mana.
+>
+> Roll 1d6 + Aura and gain that much Mana (Life), torn loose from the local flow. If the Mana gained exceeds your effective level, immediately make a Dangerous Magic roll (effective level may be modified by traits, conditions, corruption, or similar effects).
+>
+> The Mana must be stored immediately in a Gear or Trait inventory slot; if there is no room, it overflows into Burdens (referee's call). You may spend this Mana in place of Life to cast powers, either incrementally or all at once. You cannot use the Reckless Dweomer power while carrying Mana in any inventory.
+>
+> This power is Very Dangerous. While you are carrying Mana and you make a Defeat roll, or whenever you make any other Dangerous Magic roll, you must immediately make a another Dangerous Magic roll. Unused Mana disperses back into the ley-lines at sunset or sunrise.
+>
+> _Overcharge:_ n/a
+>
+> _Dangerous:_ Very Dangerous: make Dangerous Magic checks as noted in the body text.
+
+tags:
+>   [power]
+>   [type:oldtech]
+>   [storage:burden]
+
+meta:
+> - source:
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+> - usage:
+>   - scope: power; id: Reckless Dweomer; note: Future-generation back-port for FTLS mana metaphysics; skip osr import.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8387,14 +6996,7 @@ meta:
 >   - scope: power; id: Hold Portal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Hold Portal
-> Range: 10'
-> Duration: 2d6 turns
-> Effect: Holds one door shut
->
-> This spell magically holds a normal door
-> closed against opening attempts for the
-> duration.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8441,13 +7043,7 @@ meta:
 >   - scope: power; id: Knock; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Knock
-> Range: 180'
-> Duration: Instantaneous
-> Effect: Opens one locked entry
->
-> This spell opens stuck, barred, locked, or
-> wizard-locked doors and similar closures.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8492,17 +7088,7 @@ meta:
 >   - scope: power; id: Wizard Lock; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Wizard Lock
-> Range: 10'
-> Duration: Permanent
-> Effect: One lock, or one door up to 30' x 20'
->
-> This spell magically locks a door, gate,
-> chest, or similar object. The target cannot
-> be opened by normal means while the
-> lock holds. A Knock effect or stronger
-> dispelling power can release it, and very
-> strong creatures may force it with effort.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8548,16 +7134,7 @@ meta:
 >   - scope: power; id: Wizardry; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Wizardry
-> Range: 0 (cleric only)
-> Duration: One turn
-> Effect: Allows the use of one magic-user device
-> or scroll spell
->
-> Lets the caster use one magic-user-only device
-> or a scroll containing a 1st or 2nd level
-> magic-user spell, treating the caster as the
-> minimum level needed for that effect.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8603,18 +7180,7 @@ meta:
 >   - scope: power; id: Anti-Magic Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Anti-Magic Shell
-> Range: 0 (Caster only)
-> Duration: 12 turns
-> Effect: Personal barrier which blocks magic
->
-> This spell creates an invisible barrier less
-> than an inch from the caster's body. The
-> barrier stops all spells and spell effects,
-> including the caster's. The caster may end
-> it at will; otherwise it lasts for duration.
-> Except for Wish, no magical power
-> (including Dispel Magic) cancels it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8661,16 +7227,7 @@ meta:
 >   - scope: power; id: Barrier; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Barrier*
-> Range: 60'
-> Duration: 12 turns
-> Effect: Creates whirling hammers
->
-> Creates a magical barrier up to 30' wide
-> and 30' high. Creatures passing through
-> take 7d10 damage with no saving throw.
-> Reverse form destroys one compatible
-> barrier spell effect.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8717,15 +7274,7 @@ meta:
 >   - scope: power; id: Force Field; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Force Field
-> Range: 120'
-> Duration: 6 turns
-> Effect: Creates an invisible barrier
->
-> Creates an immovable force shape that cannot
-> be harmed except by Disintegrate or Wish.
-> Nothing passes through it normally, though
-> teleportation and planar travel may bypass it.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8772,16 +7321,7 @@ meta:
 >   - scope: power; id: Contingency; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Contingency
-> Range: Touch
-> Duration: Indefinite
-> Effect: Prepares one other spell
->
-> Stores one non-damaging magic-user spell of
-> 4th level or less behind a stated trigger.
-> When that exact situation occurs, the spell
-> goes off immediately. Only one contingency
-> may affect any item or creature.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8826,14 +7366,7 @@ meta:
 >   - scope: power; id: Protection from Lightning; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Protection from Lightning
-> Range: Touch
-> Duration: 1 turn per level of the caster
-> Effect: Protects against lightning attack
->
-> Negates a number of lightning damage dice
-> equal to caster level. Protection applies
-> across multiple strikes until exhausted.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8881,16 +7414,7 @@ meta:
 >   - scope: power; id: Turn Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Turn Wood
-> Range: 30'
-> Duration: One turn per level of the druid
-> Effect: Pushes all wooden items away
->
-> Creates an invisible wave of force 120 ft long
-> and 60 ft tall that moves 10 ft per round,
-> carrying contacted wooden objects with it.
-> It can be stopped once, needs no concentration,
-> and cannot move permanent structures.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8939,14 +7463,7 @@ meta:
 >   - scope: power; id: Immunity; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Immunity
-> Range: Touch
-> Duration: 1 turn per level
-> Effect: Immunity to 1st–3rd level spells; half from 4th–5th; full immunity
-> to mundane/silver missiles and weapons; half from magical weapons.
->
-> Recipient can drop protection for 1 round via concentration.
-> A careful Wish can extend coverage.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8994,15 +7511,7 @@ meta:
 >   - scope: power; id: Mind Barrier; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Mind Barrier*
-> Range: 10'
-> Duration: 1 hour per level
-> Effect: Protects against mental influence and surveillance
->
-> Blocks ESP, clairvoyance, clairaudience, crystal ball, and other mental
-> detection/influence for the target. +8 to saves vs. charm, illusion,
-> feeblemind, and similar attacks. Reverse (Open Mind): touch, –8 to saves,
-> unwilling target requires attack roll.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9054,15 +7563,7 @@ meta:
 >   - scope: power; id: Permanence; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Permanence
-> Range: 10'
-> Duration: Permanent until dispelled
-> Effect: Makes one MU spell of 7th level or less permanent
->
-> Cannot affect instantaneous/permanent-duration spells, clerical spells,
-> or 8th–9th MU spells. Max 1 permanence per item/area, 2 per creature,
-> 5 per weapon (25% failure risk per weapon extra after first — failure
-> destroys weapon). Dispelled by dispel magic at normal chances.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9112,15 +7613,7 @@ meta:
 >   - scope: power; id: Prismatic Wall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Prismatic Wall
-> Range: 60'
-> Duration: 6 turns
-> Effect: 10' radius sphere or 500 sq ft wall; multi-layered spectrum barrier
->
-> Source: Master Set artifact table D3 (M9); RC ninth level list.
-> [Synthesis: layered effect details extrapolated from artifact table summary
-> and BECMI Prismatic Wall standard — referee determines specific layer
-> sequence and effects at table.]
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9172,16 +7665,53 @@ meta:
 >   - scope: power; id: Symbol; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Symbol
-> Range: Touch
-> Duration: Permanent (until triggered)
-> Effect: Creates one magical rune of one of six types
+(pending verbatim extraction)
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+## Geas
+
+> **Geas**
 >
-> Choose one type at casting. Triggers automatically (no save) when
-> any living creature passes/touches/reads it. MU-types who only
-> read/touch (not pass) may save vs. spells. Types: Death (≤75 hp),
-> Discord (confusion, perm), Fear (30r), Insanity (perm), Sleep
-> (1d10+10 hrs), Stunning (≤150 hp, 2d6T).
+> _FTLS power invocation_
+>
+> **P:** 12 **R:** near (~9 m / 30 ft)  
+> **T:** one creature **D:** until fulfilled, removed, or the subject dies
+>
+> You bind a target to a specific command constraint: perform an action, complete a mission, or abstain from a defined act. The command must be possible and not directly suicidal. The target may Save vs. Spells to resist.
+>
+> On failure, the compulsion persists until resolved. If the subject refuses compliance, escalating penalties apply at referee call (combat penalties, weakness, reduced capability, pain, or similar collapse effects).
+>
+> _Reverse — Remove Geas:_ This clears an existing geas. If the remover is lower Level than the original binder, removal may fail.
+>
+> _Overcharge:_ x2 — apply a -2 penalty on the target's initial save; x4 — encode one clear completion condition that triggers immediate release when met.
+
+tags:
+>   [power]
+>   [type:other]
+>   [storage:item]
+>   [compulsion]
+>   [binding]
+>   [high-tier]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Geas
+>   - becmi:Rules Cyclopedia; spell: Geas
+> - usage:
+>   - scope: power; id: Geas; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9226,15 +7756,7 @@ meta:
 >   - scope: power; id: Anti-Plant Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Anti-Plant Shell
-> Range: 0 (druid only)
-> Duration: 1 round per level of the druid
-> Effect: Personal barrier which blocks plants
->
-> Creates an invisible barrier that blocks
-> plant and plant-like attacks. The druid can
-> move through dense growth but cannot
-> physically attack plants while protected.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9280,16 +7802,7 @@ meta:
 >   - scope: power; id: Anti-Animal Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Anti-Animal Shell
-> Range: 0 (druid only)
-> Duration: 1 turn per level of the caster
-> Effect: Personal barrier that blocks animals
->
-> Creates an invisible barrier that blocks
-> attacks from animals, insects, and other
-> nonfantastic creatures of animal intelligence
-> or less. Physical attacks are blocked both
-> ways while active.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9299,6 +7812,7 @@ osr:
   </div>
 
 </div>
+
 
 # Creation and Conjuration
 
@@ -9334,22 +7848,14 @@ tags:
 meta:
 > - source:
 >   - becmi:Basic Rules; spell: Floating Disc
+>   - becmi:Expert Set; spell: Floating Disc
 >   - becmi:Rules Cyclopedia; spell: Floating Disc
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Floating Disc
 > - usage:
 >   - scope: power; id: Floating Disc; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Floating Disc
-> Range: 0
-> Duration: 6 turns
-> Effect: Disc remains near caster
->
-> This spell creates an invisible horizontal
-> disc that floats near the caster and carries
-> equipment and treasure. It follows the
-> caster's movement and remains within a
-> short trailing distance until duration ends.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9393,17 +7899,7 @@ meta:
 >   - scope: power; id: Wall of Stone; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Wall of Stone
-> Range: 60'
-> Duration: Special
-> Effect: Creates 1000 cubic feet of stone
->
-> This spell creates a vertical stone wall
-> exactly 2' thick. The caster chooses shape
-> and dimensions up to the listed volume.
-> The wall must rest on support, cannot be
-> cast into occupied space, and lasts until
-> dispelled or physically broken.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9448,16 +7944,7 @@ meta:
 >   - scope: power; id: Create Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Create Water
-> Range: 10'
-> Duration: 6 turns
-> Effect: Creates one magical spring
->
-> The cleric summons an enchanted spring
-> from the ground or wall. It flows long
-> enough to create water for 12 people and
-> their mounts for the day, with additional
-> water at higher levels.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9504,18 +7991,7 @@ meta:
 >   - scope: power; id: Growth of Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Growth of Plants*
-> Range: 120'
-> Duration: Special
-> Effect: Enlarges 3000 square feet of plants
->
-> This spell causes normal brush or woods
-> to become thickly overgrown with vines,
-> creepers, thorns, and briars. The affected
-> area is impassable to all but giant-sized
-> creatures. The reverse, Shrink Plants,
-> restores passability and does not affect
-> plant monsters.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9555,23 +8031,14 @@ tags:
 meta:
 > - source:
 >   - becmi:Expert Set; spell: Conjure Elemental
->   - becmi:Companion Set; spell-adjacent elemental interface references
+>   - becmi:Companion Set; spell: Conjure Elemental
+>   - becmi:Immortals Set; spell: Conjure Elemental
 >   - becmi:Rules Cyclopedia; spell: Conjure Elemental
 > - usage:
 >   - scope: power; id: Conjure Elemental; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Conjure Elemental
-> Range: 240'
-> Duration: Concentration
-> Effect: Summons one 16 HD elemental
->
-> This spell summons one elemental. The
-> caster must concentrate to maintain control;
-> if control is lost, it cannot be regained and
-> the elemental may attack the summoner.
-> Controlled elementals may be dismissed by
-> concentration.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9613,21 +8080,13 @@ tags:
 meta:
 > - source:
 >   - becmi:Expert Set; spell: Invisible Stalker
+>   - becmi:Immortals Set; spell: Invisible Stalker
 >   - becmi:Rules Cyclopedia; spell: Invisible Stalker
 > - usage:
 >   - scope: power; id: Invisible Stalker; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Invisible Stalker
-> Range: 0 (Caster only)
-> Duration: Until mission is accomplished
-> Effect: Summons one creature
->
-> This spell summons an invisible stalker
-> that performs one task for the caster,
-> regardless of time or distance, until the
-> task is complete or the creature is slain.
-> Dispel Evil can force it home.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9674,15 +8133,7 @@ meta:
 >   - scope: power; id: Aerial Servant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Aerial Servant
-> Range: 60'
-> Duration: 1 day per level
-> Effect: Servant fetches one item or creature
->
-> Summons an intelligent servitor that
-> retrieves one named target from an
-> approximate location. If it cannot finish in
-> duration, it returns insane and hostile.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9729,15 +8180,7 @@ meta:
 >   - scope: power; id: Animate Objects; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Animate Objects
-> Range: 60'
-> Duration: 6 turns
-> Effect: Causes objects to move
->
-> Animates nonliving nonmagical objects up
-> to one large object (4,000 cn) or several
-> smaller ones. DM adjudicates movement,
-> attacks, damage, and defenses by form.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9784,16 +8227,7 @@ meta:
 >   - scope: power; id: Clone; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Clone
-> Range: 10'
-> Duration: Permanent
-> Effect: Grows one duplicate creature from a
-> piece of the original creature
->
-> Human and demihuman clones are exact stored
-> duplicates with severe same-plane conflict if
-> original and clone coexist. Other living targets
-> become obedient simulacra with partial traits.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9840,15 +8274,7 @@ meta:
 >   - scope: power; id: Create Normal Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Create Normal Animals
-> Range: 30'
-> Duration: 10 turns
-> Effect: Creates 1-6 loyal animals
->
-> Creates loyal normal animals from thin
-> air: one large, three medium, or six small.
-> They obey commands, perform tasks, and
-> disappear at spell end or on death.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9895,15 +8321,7 @@ meta:
 >   - scope: power; id: Create Any Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Create Any Monster
-> Range: 90'
-> Duration: 3 turns
-> Effect: Creates one or more monsters
->
-> Creates any nonhuman, nondemihuman monsters
-> up to the caster's Level in total HD. One
-> properly supplied construct may be made
-> permanent, though it remains dispellable.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9950,15 +8368,7 @@ meta:
 >   - scope: power; id: Create Magical Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Create Magical Monsters
-> Range: 60'
-> Duration: 2 turns
-> Effect: Creates one or more monsters
->
-> Creates monsters with up to two special
-> abilities, up to the caster's Level in total HD.
-> One properly supplied two-asterisk construct
-> may instead be created permanently.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10002,14 +8412,7 @@ meta:
 >   - scope: power; id: Summon Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Summon Animals
-> Range: 360'
-> Duration: 3 turns
-> Effect: Calls and befriends normal animals
->
-> Calls nearby normal animals totaling the
-> caster's Level in HD. They understand the
-> druid's speech and assist while the spell lasts.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10056,14 +8459,7 @@ meta:
 >   - scope: power; id: Summon Elemental; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Summon Elemental
-> Range: 240'
-> Duration: 6 turns
-> Effect: Summons one 16 HD elemental
->
-> Summons one elemental that understands
-> spoken commands. This druid form does not
-> require concentration to control the creature.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10109,14 +8505,7 @@ meta:
 >   - scope: power; id: Sticks to Snakes; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Sticks to Snakes
-> Range: 120'
-> Duration: 6 turns
-> Effect: Up to 2d8 sticks become snakes
->
-> 2d8 sticks transform into obedient snakes (50% each venomous). Snakes
-> obey spoken commands and revert at duration end or when slain. Source:
-> Expert Set + RC. Stats: AC 6, HD 1, 1d4 bite; MV 90' (30').
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10159,14 +8548,7 @@ meta:
 >   - scope: power; id: Clothform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Clothform
-> Range: Touch
-> Duration: Permanent
-> Effect: Creates up to 30' x 30' cloth
->
-> Creates non-magical cloth that cannot be dispelled.
-> Skilled users can shape tents, sails, garments, rope, and similar forms at creation time.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -10204,14 +8586,7 @@ meta:
 >   - scope: power; id: Wall of Iron; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Wall of Iron
-> Range: 120'
-> Duration: Permanent
-> Effect: Creates 500 square feet of iron
->
-> Creates a 2' thick supported iron wall within range.
-> Most spell damage does not affect it; if toppled, it deals 10d10 impact damage before shattering.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -10248,14 +8623,7 @@ meta:
 >   - scope: power; id: Create Normal Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Create Normal Monsters
-> Range: 30'
-> Duration: 1 turn
-> Effect: Creates 1 or more monsters
->
-> Summons obedient normal monsters totaling caster level in Hit Dice.
-> Summoned creatures and equipment vanish at spell end.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -10294,14 +8662,7 @@ meta:
 >   - scope: power; id: Summon Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Summon Object
-> Range: Infinite
-> Duration: Instantaneous
-> Effect: Retrieves one object from caster's home
->
-> Recalls one prepared object of up to 500 cn, provided exact location is known.
-> Unprepared contents do not transfer with prepared containers.
-
+(pending verbatim extraction)
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -10346,16 +8707,7 @@ meta:
 >   - scope: power; id: Dispel Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Dispel Evil
-> Range: 30'
-> Duration: 1 turn
-> Effect: Enchanted/undead monsters or one
-> curse/charm
->
-> Affects undead and enchanted monsters;
-> failed saves destroy or banish by type.
-> Can also remove one curse or magical
-> charm influence.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10406,16 +8758,7 @@ meta:
 >   - scope: power; id: Holy Word; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Holy Word
-> Range: 0
-> Duration: Instantaneous
-> Effect: All creatures within 40'
->
-> Affects all non-aligned creatures in a 40'
-> radius with no save for most targets.
-> Severity depends on victim level/HD:
-> kill, stun, or deafen. High-tier targets may
-> save. Blocked by anti-magic shell or lead.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10466,16 +8809,7 @@ meta:
 >   - scope: power; id: Raise Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Raise Dead*
-> Range: 120'
-> Duration: Permanent
-> Effect: Body of one human or demihuman
->
-> Raises dead humans and demihumans
-> within time limits based on caster level.
-> Recipient returns at 1 hit point and needs
-> long rest recovery. Can also destroy or
-> repel undead on failed save at -2.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10523,15 +8857,7 @@ meta:
 >   - scope: power; id: Raise Dead Fully; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Raise Dead Fully*
-> Range: 60'
-> Duration: Permanent
-> Effect: Raises any living creature
->
-> Fully restores humans/demihumans with
-> immediate function and full hit points.
-> Also has strong anti-undead effects and a
-> reverse obliterate form.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -10579,16 +8905,7 @@ meta:
 >   - scope: power; id: Animate Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-> Animate Dead
-> Range: 60'
-> Duration: Permanent
-> Effect: Animated skeletons or zombies
->
-> This spell animates dead bodies, creating
-> undead servants under the caster's com-
-> mand. Skeletons and zombies raised this
-> way remain active until destroyed or until
-> magical control is broken.
+(pending verbatim extraction)
 
   <div class="power-return">
     &nbsp;&nbsp;
