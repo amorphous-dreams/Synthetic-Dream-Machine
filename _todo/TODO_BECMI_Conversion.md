@@ -58,6 +58,8 @@ Base model (locked):
 - Chapter 06 template normalization delta: completed a chapter-wide `Meta`/`Tags` cleanup pass for power cards, repaired misplaced metadata around subsection boundaries (`Lightning Bolt`, `Hold Person`, `Fly`), normalized malformed tag syntax in Heritage entries, and added explicit BECMI staging provenance pointers for the core OSR-conversion cluster.
 - Chapter 06 SDM card-structure delta: normalized all current Chapter 06 power entries to SDM power-card framing (`<div class="power-card" markdown="1">`, quoted stat/body block, lowercase `tags:` and `meta:`, and `js-back-link` return block) so FTLS chapter formatting now matches SDM index presentation conventions.
 - Chapter 06 navigation delta: added a chapter-top `Chapter 06 Power Card Index` with OSR/Heritage split links, redirected all card return links to the shared index anchor, and reordered the Heritage power card run alphabetically for faster table lookup.
+- Expert uplift delta (2026-03-25, batch 1): context-first crosswalk refinement started for E lane. Core ECM rows and high-tier Expert arcane procedures now carry explicit trigger/limit/exception behavior sourced from staging, and eight Expert `undecided` rows were resolved (`Cloudkill`, `Death Spell`, `Disintegrate`, `Geas` -> `custom`; `Hallucinatory Terrain`, `Massmorph`, `Projected Image`, `Stone to Flesh` -> `partial`).
+- Expert uplift delta (2026-03-25, batch 2): resolved remaining high-priority Expert `undecided` rows with explicit staged mechanics (`Bless`, both `Continual Light` rows, `Find Traps`, `Growth of Animal`, `Snake Charm`, `Mirror Image`, both `Remove Curse` rows, `Phantasmal Force`) and normalized the `Ice Storm/Wall` status-cell formatting back to canonical status syntax.
 
 ## Lane Confidence Gate (B/E/C/M/I/RC)
 
@@ -66,7 +68,7 @@ Current baseline from the Phase 1 canonical catalog pass, updated 2026-03-23 aft
 | Lane | Capture Confidence (spell/magic/metaphysics captured) | Provenance Complete | Target | Last Survey |
 | --- | --- | --- | --- | --- |
 | B | 0.93 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
-| E | 0.89 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
+| E | 0.93 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-25 |
 | C | 0.91 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
 | M | 0.95 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
 | I | 0.95 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |

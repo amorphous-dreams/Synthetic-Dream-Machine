@@ -177,6 +177,10 @@ Current sequencing gate:
   - converted `Staff of Power` and `Staff of Wizardry` bundle wording to explicit `Power Level` payload language with stated `Level` source-force handling
   - removed slot-era `prepared or memorized` wording from `Ring of Spell Eating` and rewired it to SDM-ready payload terminology
   - clarified `Ring of Spell Storing` as `Power Level` payload capacity handling rather than slot retention
+- Phase B bridge delta (2026-03-25, batch 2 sync):
+  - crosswalk Expert lane now has zero `undecided` rows, reducing bridge-side ambiguity for Expert recognizers used by item interfaces and counterforce procedures
+  - `Protection from Magic` and `Ring of Spell Turning` now carry explicit ECM boundary/reflection behavior, ready to be consumed by Chapter 05 reflected/blocked payload wording
+  - `Ice Storm/Wall` status formatting was normalized to canonical status syntax, preventing downstream parser/readability drift in bridge notes
 
 ### Phase C: Family-by-Family Internal Conversion
 - Standardize each family in this order:
