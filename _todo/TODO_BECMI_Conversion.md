@@ -31,35 +31,14 @@ Base model (locked):
 - Method correction (2026-03-23): staging docs should contain scraped/curated source text from `_becmi` extraction, not synthesized context overlays.
 - The remaining conversion burden is now: run an evidence-backed context harvest pass from `_becmi` and convert that curated material into chapter-ready bridge doctrine.
 
-## Uplift Execution Log (2026-03-23)
+## Uplift Execution Log (Consolidated)
 
-- Removed synthesized lane context-pack inserts from all six staging docs to keep those files source-evidence-only.
-- Kept context-first uplift plan and execution rules in this master TODO as process guidance.
-- Basic lane pass: source-backed spell and scroll wrapper context is staged and cleaned (including Light/Remove Fear/Resist Cold and scroll behavior anchors).
-- Expert lane pass: high-risk clusters (anti-magic shell, kill/destruction, cloudkill, polymorph/illusion-adjacent entries, pass-wall and teleport procedure context) are staged with source-backed extracts.
-- Companion lane pass (active): ring/staff/item spell-adjacent extracts are being cleaned for OCR scars and normalized readability before any doctrine mapping.
-- Companion lane delta: completed targeted OCR-token normalization sweep in ring/rod/ointment/wheel sections (notation, spacing, and symbol artifacts) to keep staging evidence mechanically legible.
-- Companion lane delta: grouped the sampled miscellaneous-item description run into scan-friendly context buckets so transport, event, utility, copying, elemental-passage, and wheel/fortune devices are easier to mine later.
-- Master lane pass (started): corrected die-notation OCR artifacts in spell-adjacent procedure text (`ldX` -> `1dX`) and normalized adjacent malformed wording for readability.
-- Master lane delta: normalized additional artifact-table OCR scars (`HD` splits, damaged effect abbreviations, and missile damage wording) while leaving ambiguous shorthand untouched.
-- Master lane delta: replaced the noisy opening-only named-artifact sample with a curated source-derived catalog block covering the full readable named-artifact run through Wife of Ilmarinen, so artifact packaging, activation framing, penalties, and bundled-power examples are staged end-to-end rather than as partial crop output.
-- Master lane delta: added the post-catalog `Other Magic Items` appendix as a curated source-derived block so legendary non-catalog item seeds and sword exemplars remain attached to the Master artifact context in readable form.
-- Master lane delta: reorganized the post-catalog `Other Magic Items` appendix into item-family buckets so the same source-backed legendary-item seeds are easier to scan for later gear and magic synthesis.
-- RC lane delta: added the Chapter 16 `Magical Constructs` evidence block that `Create Any Monster` points to, including construct prerequisites, costs, time, success chance, immunities, healing, damage limits, special attacks, and nondispellable-frame requirements.
-- RC lane delta: added the general magical-item creation and item-damage procedure layer from the Rules Cyclopedia, covering spell-effect requirements, specialist and rare-component requirements, success formula, enchantment time, multiple-enchantment handling, recharge costs, dispel relevance, and item damage/destruction handling.
-- Confidence survey delta (2026-03-23): cross-checked all six PDF tables of contents against current staging coverage; updated all lane confidence scores and gap notes. Net changes now stand at B +0.02 (0.91→0.93), E +0.02 (0.87→0.89), C +0.02 (0.89→0.91 after restoring the Companion MU 5th-9th spell run), M +0.05 (0.90→0.95 after staging Master `Anti-Magic Effects` and `Dispel Magic` procedures), I +0.01 (0.94→0.95 after staging Sections 1-2 PP framing context), RC +0.07 (0.88→0.95 after staging Chapter 16 item descriptions).
-- Immortals cleanup delta: repaired a malformed Section 3 touch-delivery sentence (`"self"` application text) and normalized the adjacent action-label wrap in generator post-processing so future rebuilds retain readable phrasing.
-- RC cleanup delta: normalized malformed dice/OCR tokens in generated RC text (`1dl2`, `2dl2`, `2dl0`, `2dlO`, `3dl0`, `6dl0`, `7dl0`, `dl00` -> canonical dice notation) using generator-side post-processing so rebuilds stay consistent.
-- Crosswalk-facing bridge work is now active (Phase B started) after lane harvest closure.
-- Next execution step is now Chapter 06-first: lock powers design decisions, finalize Chapter 06 to alpha state, then resume Phase B Chapter 05 bridge batches (storage / trigger / counterforce / traversal / restoration) and chapter flow validations.
-- Chapter 06 alpha delta: locked chapter-facing design doctrine in manuscript (`activation flow`, `payment/substitution`, `storage semantics`, `overcharge unlocks`, `Level` vs `Power Level` boundary) and added explicit alpha scaffolding sections (`Paying for Power`, `Power Tags and Storage`, `Overcharge and Risk`, `Powers by Tradition / Source`, `Powers by Gameplay Scale`).
-- Chapter 06 alpha delta: started canonical recognizer coverage pass with new OSR family headers and first high-frequency entries (`Fire Ball`, `Lightning Bolt`, `Invisibility`, `Hold Person`, `Fly`) plus variant callouts to existing SDM powers (`Tragic Missile`, `Pyreball`, `Hlod Person`).
-- Chapter 06 golden-path refinement delta: iterated `Magic Missile`, `Shield`, `Mage Armor`, `Fire Ball`, `Lightning Bolt`, `Invisibility`, and `Hold Person`/`Fly` entries using staging text behavior anchors (auto-hit missile, anti-missile shield interaction, save-for-half artillery, permanence-until-broken invisibility, focused vs grouped hold targeting, fly speed/control duration) while retaining SDM chapter template fields.
-- Chapter 06 template normalization delta: completed a chapter-wide `Meta`/`Tags` cleanup pass for power cards, repaired misplaced metadata around subsection boundaries (`Lightning Bolt`, `Hold Person`, `Fly`), normalized malformed tag syntax in Heritage entries, and added explicit BECMI staging provenance pointers for the core OSR-conversion cluster.
-- Chapter 06 SDM card-structure delta: normalized all current Chapter 06 power entries to SDM power-card framing (`<div class="power-card" markdown="1">`, quoted stat/body block, lowercase `tags:` and `meta:`, and `js-back-link` return block) so FTLS chapter formatting now matches SDM index presentation conventions.
-- Chapter 06 navigation delta: added a chapter-top `Chapter 06 Power Card Index` with OSR/Heritage split links, redirected all card return links to the shared index anchor, and reordered the Heritage power card run alphabetically for faster table lookup.
-- Expert uplift delta (2026-03-25, batch 1): context-first crosswalk refinement started for E lane. Core ECM rows and high-tier Expert arcane procedures now carry explicit trigger/limit/exception behavior sourced from staging, and eight Expert `undecided` rows were resolved (`Cloudkill`, `Death Spell`, `Disintegrate`, `Geas` -> `custom`; `Hallucinatory Terrain`, `Massmorph`, `Projected Image`, `Stone to Flesh` -> `partial`).
-- Expert uplift delta (2026-03-25, batch 2): resolved remaining high-priority Expert `undecided` rows with explicit staged mechanics (`Bless`, both `Continual Light` rows, `Find Traps`, `Growth of Animal`, `Snake Charm`, `Mirror Image`, both `Remove Curse` rows, `Phantasmal Force`) and normalized the `Ice Storm/Wall` status-cell formatting back to canonical status syntax.
+- 2026-03-23 lane-harvest cleanup locked in: removed synthesized context inserts from staging docs, preserved source-evidence-only policy, and completed broad OCR/readability normalization across Companion/Master/RC evidence blocks.
+- 2026-03-23 confidence survey completed against all staged lanes: B 0.93, E 0.89, C 0.91, M 0.95, I 0.95, RC 0.95 with provenance completeness sustained at 1.00.
+- Phase B bridge activation is in effect: Chapter 06 was prioritized first, then Chapter 05 bridge continuation.
+- Chapter 06 alpha scaffolding and normalization completed in manuscript form: doctrine locks, card-template normalization, navigation indexing, provenance pointers, and baseline recognizer coverage were landed.
+- 2026-03-25 Expert lane uplift completed: all Expert `undecided` rows were resolved via evidence-lock notes and status normalization.
+- 2026-03-25 Companion lane uplift batch C1 executed: six C-lane rows were evidence-locked and promoted (`Earthquake`, `Insect Plague`, `Sword`, `Call Lightning`, `Control Temperature 10' radius`, `Faerie Fire`), reducing C-lane undecided from 13 to 7.
 
 ## Lane Confidence Gate (B/E/C/M/I/RC)
 
@@ -81,6 +60,17 @@ Survey findings (2026-03-23):
 - **M +0.05**: Artifact content (doctrine, catalog, appendix), non-human spellcasters, spell lists, and Master Procedures (`Anti-Magic Effects` + `Dispel Magic`) are now staged. The prior procedure gap is closed; remaining Master cleanup is OCR texture and normalization only.
 - **I +0.01**: Immortals Sections 1-2 PP conversion/rank/recovery context is now staged alongside Section 3 (Immortal Magic), closing the prior low-priority framing gap.
 - **RC +0.07**: RC Chapter 16 item-description catalog is now staged from source text (potions, wands/staves/rods, rings, miscellaneous items, swords), alongside the existing construct and item-enchantment procedures. Remaining RC work is cleanup-level OCR normalization, not missing source-evidence.
+
+### Lane Batch Checkpoints
+
+| Date | Batch | B undecided | E undecided | C undecided | M undecided | RC undecided | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-03-25 | Expert completion | 2 | 0 | 13 | 9 | 5 | Expert lane stabilized; no unresolved Expert `undecided` rows. |
+| 2026-03-25 | Companion C1 | 2 | 0 | 7 | 9 | 5 | Promotions: `Earthquake`/`Insect Plague` -> `custom`; `Sword`/`Call Lightning`/`Control Temperature 10' radius`/`Faerie Fire` -> `partial`. |
+| 2026-03-25 | Companion C2 | 2 | 0 | 0 | 9 | 5 | Promotions: `Creeping Doom`/`Metal to Wood` -> `custom`; `Hold Animal`/`Locate`/`Produce Fire`/`Protection from Lightning`/`Warp Wood` -> `partial`. |
+| 2026-03-25 | Master M1 | 2 | 0 | 0 | 0 | 5 | Promotions: `Dissolve`/`Heat Metal`/`Wizardry`/`Explosive Cloud`/`Power Word Kill`/`Feeblemind`/`Statue` -> `custom`; `Dance`/`Power Word Blind` -> `partial`. |
+| 2026-03-25 | RC1 form suite | 2 | 0 | 0 | 0 | 0 | Promotions: `Clothform`/`Stoneform`/`Woodform`/`Ironform`/`Steelform` -> `partial` with RC-only exception notes preserved. |
+| 2026-03-25 | Basic B1 closure | 0 | 0 | 0 | 0 | 0 | Promotions: `Light`/`Ventriloquism` -> `partial` with Basic/RC trigger-scope evidence locks; all tracked lane backlogs at zero. |
 
 ### >0.95 Capture Uplift Plan (Context Harvest First)
 
