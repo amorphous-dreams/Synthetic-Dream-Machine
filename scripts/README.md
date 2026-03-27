@@ -1,5 +1,29 @@
 # Scripts
 
+## BECMI Spell Staging Build Scripts
+
+Run all lanes:
+
+```bash
+bash scripts/build_becmi_spell_staging.sh
+```
+
+Run a single lane via dedicated lane script:
+
+```bash
+bash scripts/build_becmi_spell_staging_basic.sh
+bash scripts/build_becmi_spell_staging_expert.sh
+bash scripts/build_becmi_spell_staging_companion.sh
+bash scripts/build_becmi_spell_staging_master.sh
+bash scripts/build_becmi_spell_staging_immortals.sh
+bash scripts/build_becmi_spell_staging_rc.sh
+```
+
+Notes:
+- `build_becmi_spell_staging.sh` is a full-run orchestrator.
+- Lane-only runs regenerate only that lane's staging file and skip index-manifest regeneration.
+- Full runs regenerate all six lane files and the index manifest.
+
 ## Validate Markdown Internal Links
 
 Run:

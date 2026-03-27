@@ -186,7 +186,7 @@ specially made wooden hammer, wooden
 staff, etc.).
 5. There are only nine* druids of 30th level,
 and lesser numbers of each higher level.
-When the character gains enough X P to
+When the character gains enough XP to
 reach 30th level, one of the Nine must be
 found and fought by unarmed combat. If
 the character loses, 30th level is not gained
@@ -647,7 +647,7 @@ part of the dead body, however small that part
 may be. When the spell is cast, a new body
 magically appears, and the life force which
 was once in the dead body returns and
-inhabits the new one. The D M refers to the
+inhabits the new one. The DM refers to the
 tables below to find the form of the new body.
 If the life force is reincarnated as a different
 race, all details of the new race apply, instead
@@ -871,7 +871,7 @@ clue to others.
 If a place or person is being investigated or
 if the item is not held, the spell may take 1-
 100 days to complete, depending on the num-
-ber of details already known. (The D M may
+ber of details already known. (The DM may
 reveal only general details if the place is large,
 or if the person is of great power.) A purely
 legendary topic should require large amounts
@@ -1125,7 +1125,7 @@ affect a creature of 31 or more levels or Hit
 Dice.
 The duration of each charm is determined
 by the victim's intelligence (see the D&D
-Basic D M Rulebook, page 14). If the magic-
+Basic DM Rulebook, page 14). If the magic-
 user attacks one of the charmedvictims, only
 that creature's charm is automatically bro-
 ken. Any other charmed creatures that see
@@ -1178,7 +1178,7 @@ duration (such as dispel magic, fire ball,
 lightning bolt, etc.) can be made permanent.
 Cleric spells cannot be made permanent, nor
 can an 8th or 9th level magic-user spell.
-The D M must carefully consider other
+The DM must carefully consider other
 spells, and may wish to restrict the use of the
 permanence spell for reasons of game bal-
 ance. A permanence spell lasts until dispelled
@@ -1286,7 +1286,7 @@ than passed). If the Saving Throw is success-
 ful, the symbol has no effect on that creature.
 All symbols look similar to normal writ-
 ings. Six symbols and their effects are given
-below; the D M may create others (such as
+below; the DM may create others (such as
 polymorph, teleport, charm, geas, etc.).
 Death: Slays any creature with 75 hit
 points or less; does not affect a creature with
@@ -1966,7 +1966,7 @@ limits of the victim's knowledge. The scroll
 will display 1 answer per day.
 7. Wands, Staves, and Rods
 All notes given in the D&D Expert Sets still
-apply. If desired, the D M may use a larger
+apply. If desired, the DM may use a larger
 number of charges: 3-30 (3d10) for a wand,
 2-40 (2d20) for a staff. Rods are permanent
 items, and do not have nor use any charges.
@@ -2725,7 +2725,7 @@ grates.
 5. All non-magical items, except for normal
 clothing, disintegrate.
 6. Die (no Saving Throw).
-The D M may select or randomly determine
+The DM may select or randomly determine
 the results of the spin. If desired, the wedges
 may be numbered from 1-20 or 1-100, and a
 chart may be made with more results.

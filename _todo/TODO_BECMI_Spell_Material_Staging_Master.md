@@ -43,8 +43,6 @@ D&D Companion Set Players Manual
 (page number for the 1984 edition).
 
 CLERIC EXPERIENCE TABLE
-Spells by Spell Level
-
 Level  XP         1  2  3  4  5  6  7
 26     1,900,000  8  7  7  6  6  5  5
 27     2,000,000  8  8  7  6  6  6  5
@@ -307,7 +305,7 @@ of all types, including gas traps and cloudkill
 spells. This protection extends to items car-
 ried (thus protecting against a spirit's poison-
 ous presence, for example). Furthermore, the
-recipient gains a + 4 bonus on Saving
+recipient gains a +4 bonus on Saving
 Throws vs. Poisonous Breath weapons (such
 as green dragon breath) but not petrification
 breath (such as a gorgon's).
@@ -415,7 +413,7 @@ It may be sent back to its own plane on com-
 mand of the caster, or by the use of a dispel
 magic or dispel evil spell.
 
-[Master pages 8-10: magic-user spell material]
+[Master pages 8-12: magic-user spell material]
 Magic-user
 All details on spell casting are given in the
 D&D Basic and Expert sets. Any spell
@@ -438,8 +436,6 @@ Rod, Staff, or Spell       5      4      3      2
 Special Note: Any damage-causing spell can produce a maximum of 20 dice (of whatever type is applicable) of damage.
 
 MAGIC-USER EXPERIENCE TABLE
-Spells by Spell Level
-
 Level  XP         1  2  3  4  5  6  7  8  9
 26     2,850,000  7  7  7  6  6  5  5  4  3
 27     3,000,000  7  7  7  6  6  5  5  5  4
@@ -518,7 +514,7 @@ might leave a pound of flesh with a scroll of this
 spell, so that he might be restored if lost; but if
 the character gains another ten levels of expe-
 rience and then dies, the clone will be the
-younger, less-experienced, 20th- level form.
+younger, less-experienced, 20th-level form.
 If a clone duplicates a living person, or if
 the dead original regains life, a very hazard-
 ous situation develops. Each form instantly
@@ -607,7 +603,6 @@ are double those of the lesser spell. All other
 details are the same: the creatures are chosen
 by the caster, appear out of thin air, and
 vanish at the end of the spell duration.
-Characters - Magic-User
 The total number of Hit Dice of monsters
 appearing is equal to the level of the magic-
 user casting the spell. Humans and demi-
@@ -624,7 +619,6 @@ however, may have only two asterisks (special
 abilities) or less. The cost of materials is a
 minimum of 5,000 gp per asterisk (or more,
 depending on your campaign).
-Characters - Magic-User
 Force Field
 Range: 120 feet
 Duration: 6 turns
@@ -788,6 +782,335 @@ is doubled (or more; ask your DM).
 Created monsters of all types can be
 blocked by a protection from evil or anti-
 magic shell spell effect.
+Heal*
+Range: Touch (one creature)
+Duration: Permanent
+Effect: Cures anything
+This spell's effect is identical to that of the
+6th-level cleric spell cureall. When used to
+cure wounds, it cures nearly all of the dam-
+age, leaving only 1-6 points of damage
+remaining. It will remove a curse, neutralize
+a poison, cure a disease, cure blindness, or
+even remove a feeblemind effect.
+Immunity
+Range: Touch (one creature)
+Duration: One turn per level of the caster
+Effect: Bestows immunity or resistance to
+some spells and weapons
+This spell gives the creature touched total
+immunity to all 1st-, 2nd-, and 3rd-level
+spells. Furthermore, 4th- and 5th-level spells
+have only half normal effect, or one-quarter
+normal if a saving throw applies and is suc-
+cessful. Any effect that is quantifiable can be
+reduced in this manner. These effects include
+duration, bonuses, penalties, damage, etc. If
+necessary, round numbers off in the recipi-
+ent's favor. For example, if the recipient were
+the victim of a cause critical wounds cleric
+spell, only 3-10 points of damage would
+result.
+The recipient is also completely immune to
+all missiles (normal or magical), normal and
+silver weapons, and takes half damage from
+magical hand-held weapons. This applies
+only to weapons; claws, bites, breath weap-
+ons, and other natural attack forms are not
+blocked.
+By concentrating, the recipient can drop
+the protection, allowing spells (such as cure
+wounds) to have normal effects for that
+round. If dropped, the immunity is totally
+absent for that round (including the protec-
+tion from weapons), but returns automati-
+cally at the end of the round.
+A carefully worded wish spell may extend
+this protection, giving immunity to 4th level
+spells and +1 weapons, and half normal
+effect from 5th- and 6th-level spells. No fur-
+ther improvement is possible.
+Prismatic Wall
+Range: 60 feet
+Duration: 6 turns
+Effect: Creates a multi-colored barrier
+This spell creates a barrier of many colors
+with a glittering appearance as if from light
+through a prism. This wall is 2 inches thick,
+with 1/8 inch between the colors. The effect
+must be either a sphere with a radius of 10
+feet, centered on the caster, or a flat surface
+(vertical or horizontal) of up to 500 square
+feet in area. Whatever its form, the prismatic
+wall cannot be moved (even by a wish). The
+caster may pass through it freely and
+unharmed, with any items desired. All other
+creatures and objects contacting or passing
+through the prismatic wall are affected by the
+magic, starting with the first color contacted.
+A wish or rod of cancellation can remove
+three colors, but no more. Any person with
+an anti-magic shell (including the caster of
+the prismatic wall) cannot pass through the
+wall, but the attempt will not damage either
+spell effect.
+To break through a prismatic wall, the
+magic remedies given (see below) must be
+applied in the correct order. When successful,
+each causes the appropriate color to disap-
+pear from the effect. If a creature merely
+charges into the prismatic wall, it takes 84
+points of damage from the first three colors
+(no saving throw), and then must make the
+four saving throws required for the next four
+colors. If it survives, the creature may have to
+exit by passing through the colors again, in
+reverse order.
+The prismatic wall extends into the nearest
+plane of existence (the Ether if cast on the
+Prime Plane), appearing there as an inde-
+structible solid wall. It thus cannot be
+bypassed by planar or dimensional travel.
+The colors and effects of a prismatic wall
+are always the same; when created, the violet
+side is always closest to the caster.
+Red: Blocks all magical missiles; inflicts 12
+points of damage. Negated by any magi-
+cal cold.
+Orange: Blocks all non-magical missiles;
+inflicts 24 points of damage. Negated by
+any magical lightning.
+Yellow: Blocks all breath weapons; inflicts 48
+points of damage. Negated by magic mis-
+sile spell.
+Green: Blocks all detection spell effects
+(including crystal balls, ESP, etc.). Any-
+one touching it must make a Saving
+Throw vs. Poison or die. Negated by pass-
+wall spell.
+Blue: Blocks all poisons, gases, and gaze
+attacks. Anyone touching it must make a
+Saving Throw vs. Turn to Stone or be pet-
+rified. Negated by disintegrate spell.
+Indigo: Blocks all matter, living or other-
+wise. Anyone touching it must make a
+Saving Throw vs. Spells or be gated to a
+random location in an Outer Plane, and
+possibly (50%) forever lost. Negated by
+dispel magic spell.
+Violet: Blocks magic of all types. Anyone
+touching it must make a Saving Throw vs.
+Wands or be struck unconscious and
+insane (curable only by a cureall spell or a
+wish). Negated by continual light spell.
+Shapechange
+Range: 0 (caster only)
+Duration: One turn per level of the caster
+Effect: Caster may change form
+This spell is similar to the 4th-level poly-
+morph self spell, but is far more powerful.
+The caster actually becomes another creature
+or object in all respects except the mind, hit
+points, and saving throws. Armor class, Hit
+rolls, special attack forms, immunities, and
+all other details are those of the form taken.
+A magic-user cannot cast spells in any form
+except that of a bipedal humanoid (demi-
+human, goblin, ogre, giant, etc.). The caster
+cannot take a unique form (such as that of a
+specific character, Elemental Ruler, or Immor-
+tal) and can gain the likeness but not the abilities of another character class. Any spells cast
+in other forms must come from the magic-
+user's own memory. Inanimate forms are lim-
+ited in size to a maximum of 1 foot tall per level
+of the caster, and 100 cn weight per level.
+Except for these limits, the caster can
+become any creature or object that he or she
+has ever seen. Imaginary or unfamiliar crea-
+tures cannot be used; a ten-armed troll, for
+example, is not allowed. Each change
+requires a full round of concentration, but the
+caster may change shape at will during the
+spell's duration.
+Examples: The caster may become a huge
+red dragon, a boulder, a chair, an elemental,
+a gnat, a vampire, and so forth. The caster,
+however, has the flaws of the new form as well
+as its strengths. If, for example, the caster is
+struck by a sword +2, +5 vs. dragons while
+in dragon form, the +5 bonus applies.
+This spell effect cannot be made perma-
+nent and is subject to dispel magic. During
+the spell duration, the caster cannot pass
+through any protection from evil or anti-
+magic shell spell effect.
+Timestop
+Range: 0 (caster only)
+Duration: 2-5 rounds
+Effect: Allows caster to act for 2-5 rounds
+while everything else "stops"
+To the caster, this spell seems to stop time.
+It speeds the caster so greatly that all other
+creatures seem frozen at normal speed, in
+"normal time." From the caster's point of
+view, the effect lasts for 2-5 rounds. The
+caster may perform one action during each of
+these magical rounds.
+Normal and magical fire, cold, gas, etc.
+can still harm the caster. While the timestop is
+in effect, however, other creatures are invul-
+nerable to the caster's attacks and spells.
+Spells with durations other than "instantane-
+ous" may be created and left to take effect
+when time resumes. Note that no time
+elapses while this spell is in effect; durations
+of other spells cast start after the timestop
+ends.
+Items held by those in normal time cannot
+be moved, but other items (including those
+worn or carried by others) are not "stuck."
+The caster is completely undetectable by
+those in "normal time." However, the magic-
+user cannot pass through a protection from
+evil or anti-magic shell while under this
+spell's effect.
+Wish
+Range: Special
+Duration: Special
+Effect: Special
+A wish spell is usable only by a magic-user
+of 33rd-36th level who has Intelligence of 18
+or greater.
+A wish is the single most powerful spell a
+magic-user can have. It is never found on a
+scroll, but may be placed elsewhere.
+Wording the Wish: The player must say
+or write the exact wish made by the character.
+Wording of the wish is very important. The
+literal meaning will usually occur, whatever
+the intentions of the player.
+The DM should try to maintain game bal-
+ance, being neither too generous nor too
+stingy in deciding the effects of a wish.
+Remember that wishes should be able to do
+quite a bit. Even a badly phrased wish, made
+with good intentions, may have good results.
+However, if the wish is greedy, or made with
+malicious intent, every effort should be made
+to find differing interpretations. If necessary,
+the wish can even be disallowed, having no
+effect. Whenever a wish fails or is misinter-
+preted, the DM should explain (after the
+game) the problem or flaw in the phrasing.
+Here are some examples of faulty wishes:
+"I wish that I knew everything about this
+dungeon" could result in the character know-
+ing all for only a second, and then forgetting
+it.
+"I wish for a million gold pieces" can be
+granted by having them land on the character
+and then vanish.
+"I wish to immediately and permanently
+possess the gaze power of a basilisk while
+retaining all of my own abilities and items" is
+a carefully worded wish that's out of balance.
+Characters are already quite powerful. This
+wish could result in the growth of a basilisk
+head in addition to the character's own, or
+the growth of extra eyes—without eyelids—
+leaving the character extremely vulnerable to
+other gaze attacks.
+A wish can never be used to gain either XP
+or levels of experience.
+Possible Effects: If a wish is used to harm
+another creature in any way, the victim may
+make a Saving Throw vs. Spells. If the save is
+successful, the victim takes half the ill effects
+and the other half rebounds on the caster
+(who may also save to avoid it, but with a -4
+penalty to the roll). A carefully worded wish
+can, however, move (i.e. teleport) another
+creature if no harm is done in the process,
+allowing no saving throw. The saving throw
+applies only to creatures, not their items car-
+ried or possessed.
+A wish may be used to gain treasure, up to
+a maximum of 50,000 gp per wish. However,
+the caster loses 1 XP per gp value of treasure
+gained, and this loss cannot be magically
+restored.
+A wish can be used, if the DM desires, to
+gain the use of a magic item for a short time.
+Generally, any magic item gained is bor-
+rowed from somewhere else, not created.
+Artifacts are beyond the power of wishes.
+The caster may usually produce any item up
+to +5 enchantment. The item will remain for
+only 1-6 turns.
+A wish can be used to temporarily change
+any one ability score to a minimum of 3 or
+maximum of 18. This effect lasts for only six
+turns.
+Wishes can also be used to permanently
+increase ability scores, but the cost is very
+high. You must use as many wishes as the
+number of the ability score desired. All the
+wishes must be cast within a one-week per-
+iod. You may raise an ability score only one
+point at a time. To raise your Strength from
+15 to 16 takes 16 wishes. To then raise it to 17
+will take an additional 17 wishes. Wishes can-
+not be used to permanently lower ability
+scores.
+A wish cannot raise the maximum level for
+humans; 36th is absolute, enforced by
+Immortals. However, one wish can allow a
+demi-human to gain one additional Hit Die
+(for a new maximum of 9 for halflings, 11 for
+elves, and 13 for dwarves). This affects only
+hit points, and does not change any other
+scores (such as Hit rolls, elves' number of
+spells, etc.).
+A wish can change a demi-human to a
+human, or the reverse. Such a change is per-
+manent, and the recipient does not become
+magical. Halflings and dwarves become
+fighters of the same level. Elves become
+magic-users or fighters (but not both), at the
+choice of the wisher. Levels of experience can
+then be gained normally as the human class.
+A human changes to the same level demi-
+human, but no higher than the normal racial
+maximum. If the wish is made by another,
+the victim may make a Saving Throw vs.
+Spells with a +5 bonus to avoid the change.
+Once a character's race is changed, two
+wishes are needed to reverse the effect, and
+further changes each require double the pre-
+vious number of wishes used (4, 8, 16, etc.).
+A wish can be used to duplicate any magic-
+user spell effect of 8th level or less, or any
+cleric spell effect of 6th level or less. This
+common use of a wish is not subject to the
+same close scrutiny by the DM, and is likely
+to succeed with less chance of error than other
+types.
+A wish can sometimes be used to change
+the results of a past occurrence. This is nor-
+mally limited to events of the previous day. A
+lost battle may be won, or the losses may be
+made far less severe, but impossible odds
+cannot be overcome completely. A death in
+melee could be changed to a near-death sur-
+vival; a permanent loss could be made tem-
+porary. The DM may advise players when
+wishes are near to exceeding the limit of the
+power.
+Important Note: Whenever an effect is
+described as being unchangeable "even with
+a wish," that statement supercedes all others
+here. However, multiple wishes may succeed
+(DM's choice) where one wish would not.
 
 ```
 
@@ -824,8 +1147,8 @@ may use other magical items. A shaman can
 use any clerical item; a wicca can use any
 item usable by a magic-user.
 A shaman or wicca normally has 3-8 hit
-points per Hit Die (1d6 + 2 instead of 1d8),
-and gains a + 1 hit point bonus per experi-
+points per Hit Die (1d6 +2 instead of 1d8),
+and gains a +1 hit point bonus per experi-
 ence level (even if the total exceeds the nor-
 mal maximum for the monster type).
 Abbreviations: S = Shaman (cleric spells
@@ -1036,7 +1359,7 @@ troller. Any total of 2 or less (possible if the roll is
 penalized) always indicates failure.
 If the undead attempting control was once
 a spell-using character and can now use spells
-as it did in life, a + 2 bonus applies to all die
+as it did in life, a +2 bonus applies to all die
 rolls for control.
 During melee, an attempt to gain control is
 considered a combat action.
@@ -1268,20 +1591,20 @@ forever lost. If not consumed, the liquid
 again becomes a standard potion of flying one
 turn after the Immortal departs.
 2. Personal spell effects
-   A fighter with plate mail + 3 and shield
- + 3 drinks a potion of polymorph self while
+   A fighter with plate mail +3 and shield
+ +3 drinks a potion of polymorph self while
 his allies cast bless and haste spells upon him.
 H e turns himself into a giant, picks up a
 nearby club, and attacks an Immortal. As he
-attacks, he steps within range and the D M
+attacks, he steps within range and the DM
 checks the A-M, rolling once for each of the
 fighter's magical effects. By random roll, the
 haste and the polymorph are cancelled, but
 the bless is not. The character instantly
 resumes normal form and slows to normal
-speed but still gains a + 1 bonus to the Hit
+speed but still gains a +1 bonus to the Hit
 and damage rolls. H e can no longer use the
-giant-sized club, but draws his sword + 3
+giant-sized club, but draws his sword +3
 
 instead. The weapon, shield, and armor are not checked, since they are permanent items. When the DM checks the anti-magic again at the start of the next round, the bless effect remains active, but the bonuses no longer apply from any cancelled effects.
 
@@ -1603,7 +1926,7 @@ used until the item is sufficiently recharged.
 fact, it is treated as if attacking as a 40 HD
 
 monster, Armor Class -20. Only enchanted
-weapons with + 5 bonus or greater and other
+weapons with +5 bonus or greater and other
 
 artifacts may damage an artifact. All attacks
 
@@ -2006,7 +2329,7 @@ whenever the ability is used.
   Adverse Effects
     Handicaps *       1       2    3     4
     Penalties * *     1       3     5    8
-   ' O r 1 handicap + 1       per 200 power
+   ' O r 1 handicap +1       per 200 power
      invested, round down.
  * * Or 1 penalty per 100     power invested,
      round up.
@@ -2017,7 +2340,7 @@ whenever the ability is used.
 
  cost
    10 Cause Wounds, Light* (EF 7 hp; X5)
-   15 Magic Missile (EF 5 missiles, 1d6 + 1 damage each; B40)
+   15 Magic Missile (EF 5 missiles, 1d6 +1 damage each; B40)
 
    35 Bearhug (DR 1T)
 
@@ -2073,7 +2396,7 @@ whenever the ability is used.
         12 HD S T at -4, 12 + HD 6d10; C13)
   100 Meteor Swarm (R 240', EF 4 for
 
-        8d6 + 8d6 or 8 for 4d6 + 4d6; C26)
+        8d6 +8d6 or 8 for 4d6 +4d6; C26)
 
 [Master artifact pages 48-54: power tables and artifact effect descriptions]
 
@@ -2168,38 +2491,38 @@ A3. Attacks that Stop or Slow
 A5. Bonuses to attacks
  cost
   10 Bless (R 60', DR 6T, EF 20' sq, +1 ML/Hit/Dmg; X5)
-   15 Weapon damage bonus + 2 (DR 1T)
-  20 Hit rolls bonus + 2 (DR 1T)
-  20 Turn undead bonus + 2 to roll, + 1d6
+   15 Weapon damage bonus +2 (DR 1T)
+  20 Hit rolls bonus +2 (DR 1T)
+  20 Turn undead bonus +2 to roll, +1d6
       HD (DR 1T)
-  25 Leap to 30', + 2 Hit roll bonus (DR 1T)
-  25 Weapon damage bonus + 3 (DR 1T)
-   25 Weapon strength bonus + 1 (DR 1T)
-   30 Hit rolls bonus + 3 (DR 1T)
-   30 Spell damage bonus, + 1/die (DR 1 spell)
-   30 Striking (R 30', DR 1T, EF + 1d6 D;
+  25 Leap to 30', +2 Hit roll bonus (DR 1T)
+  25 Weapon damage bonus +3 (DR 1T)
+   25 Weapon strength bonus +1 (DR 1T)
+   30 Hit rolls bonus +3 (DR 1T)
+   30 Spell damage bonus, +1/die (DR 1 spell)
+   30 Striking (R 30', DR 1T, EF +1d6 D;
       X7)
-   35 Weapon damage bonus + 4 (DR 1T)
-   40 Hit rolls bonus + 4 (DR 1T)
-   40 Turn undead bonus + 4 to roll, + 2d6
+   35 Weapon damage bonus +4 (DR 1T)
+   40 Hit rolls bonus +4 (DR 1T)
+   40 Turn undead bonus +4 to roll, +2d6
       HD (DR 1T)
-   40 Weapon strength bonus + 2 (DR 1T)
-   45 Weapon damage bonus + 5 (DR 1T)
-   50 Hit rolls bonus + 5 (DR 1T)
-   50 Leap to 60', + 4 Hit roll bonus (DR 1T)
-   55 Spell damage bonus, + 2/die (DR 1 spell)
-   55 Weapon strength bonus + 3 (DR 1T)
-   60 Hit rolls bonus + 6 (DR 1T)
+   40 Weapon strength bonus +2 (DR 1T)
+   45 Weapon damage bonus +5 (DR 1T)
+   50 Hit rolls bonus +5 (DR 1T)
+   50 Leap to 60', +4 Hit roll bonus (DR 1T)
+   55 Spell damage bonus, +2/die (DR 1 spell)
+   55 Weapon strength bonus +3 (DR 1T)
+   60 Hit rolls bonus +6 (DR 1T)
    60 Turn Undead bonus +6 to roll, +3d6 HD (DR 1T)
    70 Double weapon damage (DR 1T)
-   70 Weapon strength bonus + 4 (DR 1T)
-   75 Leap to 90', + 6 Hit roll bonus (DR 1T)
-   80 Spell damage bonus, + 3/die (DR 1 spell)
+   70 Weapon strength bonus +4 (DR 1T)
+   75 Leap to 90', +6 Hit roll bonus (DR 1T)
+   80 Spell damage bonus, +3/die (DR 1 spell)
    85 Smash attack (DR 1T)
 
-  85 Weapon strength bonus + 5 (DR 1T)
+  85 Weapon strength bonus +5 (DR 1T)
   90 Triple weapon damage (DR 1T)
- 100 Spell damage bonus, + 4/die (DR 1 spell)
+ 100 Spell damage bonus, +4/die (DR 1 spell)
 B. Information & Movement
 B1. Aids to Normal Senses
  cost
@@ -2266,7 +2589,7 @@ B3. Aids to Movement
   25 Climb Walls, 90% (DR 12T)
   25 Dimension Door (R 10', DR 1r, EF
       360'; X13)
-  25 Fly (DR 40 + 1d6T, MV 360'; X12)
+  25 Fly (DR 40 +1d6T, MV 360'; X12)
   30 Gaseous Form (DR 3T)
   30 Haste (R 240', DR 3T, EF 24 cr in 60';
       X12)
@@ -2276,7 +2599,7 @@ B3. Aids to Movement
    40 Climb Walls, 100% (DR 12T)
    40 Telekinesis (R 120', DR 6r, EF 8000 cn,
       MV 20'/r; C20)
-   45 Transport Through Plants (EF + 2 cr;
+   45 Transport Through Plants (EF +2 cr;
       C16)
    50 Teleport (R 10'; X15)
    55 Climb Walls, 110% (DR 12T)
@@ -2345,7 +2668,7 @@ Cost
      40' cube)
   40 Magic Door (R 10', DR 7 uses; C22)
   40 Repair temporary magical object (1 obj)
-  50 Rulership (EF + 10 to + 50 Confidence)
+  50 Rulership (EF +10 to +50 Confidence)
   60 Magic Lock*(R 10', DR 7 uses, EF 10'
      sq; C22)
   60 Remove Traps, 75% (DR 6T)
@@ -2359,7 +2682,7 @@ Cost
   90 Permanence (R 10'; C25)
   90 Remove Traps, 100% (DR 6T)
   95 Gate (R 30', DR 1T or d%T; C26)
- 100 Timestop (DR 1 + 1d4r; M10)
+ 100 Timestop (DR 1 +1d4r; M10)
 C3. Dynamic Changes
  cost
   10 Open Locks, 60% (DR 6T)
@@ -2432,50 +2755,50 @@ D1. Cures
 [Master artifact page 50]
 D2. Personal Bonuses
  cost
-   10 Memorize + 1 bonus spell level
+   10 Memorize +1 bonus spell level
    20 AC bonus -2 (DR 6T)
    20 Ability Score bonus (DR 6T, EF 1 ran-
         dom score)
-   20 Memorize + 2 bonus spell levels
+   20 Memorize +2 bonus spell levels
    25 Parry (DR 6T)
-   25 Saving Throws bonus + 2 (DR 6T)
-   30 Hit points bonus + 1 per Hit Die (DR 1T)
-   30 Memorize + 3 bonus spell levels
+   25 Saving Throws bonus +2 (DR 6T)
+   30 Hit points bonus +1 per Hit Die (DR 1T)
+   30 Memorize +3 bonus spell levels
    35 Dodge normal missiles (DR 1T, EF Save
         vs. wands)
    35 Size Control (DR 6T, 3" to 18')
    40 Ability Score bonus (DR 6T, EF 2 ran-
         dom scores)
    40 AC bonus -4 (DR 6T)
-   40 Memorize + 4 bonus spell levels
+   40 Memorize +4 bonus spell levels
    45 Elasticity (DR 12T, EF 1/2 Dmg blunt
         weapons)
    50 Dodge any missiles (DR 1T, EF Save vs.
         Wands)
-   50 Memorize + 5 bonus spell levels
-   50 Saving Throws bonus + 4 (DR 6T)
+   50 Memorize +5 bonus spell levels
+   50 Saving Throws bonus +4 (DR 6T)
    60 Ability Score bonus (DR 6T, EF 3 ran-
         dom scores)
    60 AC bonus -6 (DR 6T)
-   60 Hit points bonus + 2 per Hit Die (DR
+   60 Hit points bonus +2 per Hit Die (DR
         6T)
-   60 Memorize + 6 spell bonus levels
+   60 Memorize +6 spell bonus levels
    65 Dodge directional attacks (DR 1T, EF
         Save vs. Wands)
    65 Polymorph Self (DR 46T; X14)
-   70 Memorize + 7 bonus spell levels
-   75 Saving Throws bonus + 6 (DR 6T)
+   70 Memorize +7 bonus spell levels
+   75 Saving Throws bonus +6 (DR 6T)
    80 Ability Scores bonus (DR 6T, EF 4 ran-
         dom scores)
    80 AC bonus -8 (DR 6T)
-   80 Memorize + 8 bonus spell levels
+   80 Memorize +8 bonus spell levels
    85 Inertia control (DR 4 hours, 1 obj)
-   90 Hit points bonus + 3 per Hit Die (DR 1T)
-   90 Memorize + 9 bonus spell levels
+   90 Hit points bonus +3 per Hit Die (DR 1T)
+   90 Memorize +9 bonus spell levels
   100 Ability Scores bonus (DR 6T, EF all
         scores)
   100 AC bonus -10 (DR 6T)
-  100 Memorize + 10 bonus spell levels
+  100 Memorize +10 bonus spell levels
   100 Shapechange (DR 40T, EF any cr or obj
         40'/4,000 cn; M9)
 D3. Personal Protections
@@ -2498,12 +2821,12 @@ D3. Personal Protections
   60 Mass Invisibility (R 240', EF 60' sq, 300
      man-size; C22)
   65 Survival (DR 48 hours; M3)
-  70 Statue (DR 80T, EF + 2 Init; C23)
+  70 Statue (DR 80T, EF +2 Init; C23)
   75 Anti-Magic 40% (DR 6T)
   80 Immune to Energy Drain (R Touch, DR
      6T)
   80 Mind Barrier (R 10', DR 48 hours, EF
-      + 8 ST; C24)
+      +8 ST; C24)
   85 Protection from Magical Detection (DR
      6T, EF self + items)
   95 Anti-Magic 50% (DR 6T)
@@ -2545,8 +2868,8 @@ D5. Barriers
    20 Protection from some creatures (DR 6T,
         EF up to 5 HD)
    25 Protection from Evil 10' Radius (DR
-        12T, EF + 1 ST; X8)
-   25 Bug Repellant (DR 40T, + 4 ST)
+        12T, EF +1 ST; X8)
+   25 Bug Repellant (DR 40T, +4 ST)
    25 Ice, Wall (R 120', DR 12T, EF 1200
         sq.ft.; X13)
    25 Wall of Fire (R 60', DR Conc., EF 1200
@@ -2554,7 +2877,7 @@ D5. Barriers
 
  30 Anti-Plant Shell (DR 6T; C16)
  30 Protection from Poison (R Touch, DR
-    40T, EF + 4 vs. breath; M5)
+    40T, EF +4 vs. breath; M5)
  35 Wall of Stone (R 60', EF 1,000 cu.ft.;
     X15)
  35 Shelter
@@ -2656,7 +2979,7 @@ includes any form of arachnid, insect, or chi-
 lopod. The user cannot be touched by any
 normal bug, and a giant-sized bug will ignore
 the user unless it makes a Saving Throw vs.
-Spells. The effect also bestows a + 4 bonus to
+Spells. The effect also bestows a +4 bonus to
 all Saving Throws against magically sum-
 moned or controlled bugs.
    Buoyancy: This effect prevents the user
@@ -2682,7 +3005,7 @@ Hit Dice of creatures within 120 feet with this
 magical calm. No saving throw applies; the
 DM makes an immediate Monster Reaction
 roll for the creatures with the usual 2d6 but
-applying a + 4 bonus to the roll.
+applying a +4 bonus to the roll.
    Change Odors: The user may cause the
 odors in the volume of a 30 foot cube to
 change to whatever scents are desired. Poison
@@ -2926,7 +3249,7 @@ the same name. The player of the character
 using the artifact may choose the result of any
 one of his or her die rolls, instead of rolling a
 random result. Other players' rolls cannot be
-affected, nor can rolls made by the DM , and
+affected, nor can rolls made by the DM, and
 a roll already made cannot be changed.
    Mapmaking: The artifact controls the
 user's hands. The map drawn will cover all
@@ -3028,9 +3351,9 @@ a rod ofruling. If the user carries the artifact
 throughout his or her dominion, it adds a
 bonus to all Confidence checks, based on the
 percentage of residents seeing it:
-   1-50% + 1 0       91-99%             + 40
-   51-75% + 2 0 100%                    + 50
-   76-90% + 3 0
+   1-50% +1 0       91-99%             +40
+   51-75% +2 0 100%                    +50
+   76-90% +3 0
    The power cost applies for one dominion.
    Saving Throws bonus: The user gains the
 given bonus to all saving throw rolls. Despite
@@ -3076,8 +3399,8 @@ enlarge to any size from 3 inches to 18 feet
 tall, along with all equipment carried, as
 often as desired. Treat the same as Changing
 Monsters, but modification because of size
-can range from -6 to - 1 fro smaller, to + 1 to
- + 6 if larger.
+can range from -6 to -1 for smaller, to +1 to
+ +6 if larger.
    Smash attack: If the user decides to Smash
 with a weapon, he or she automatically loses
 initiative, and accepts a -3 penalty to the Hit
@@ -3164,7 +3487,7 @@ the following details to the War Machine
 mass combat system. The artifact power may
 be expended only once, at any time during
 the battle, to produce effect.
-1. + 25 bonus to the Combat Results roll.
+1. +25 bonus to the Combat Results roll.
 2. When using the Combat Results Table, if
     the difference in totals is 101 or more in
     favor of the user's opponents, use the
@@ -3341,7 +3664,7 @@ Power Limits: 2/A, 2/B, 2/C, 2/D
 Sphere: Time (Clerics, water)
 Suggested Powers (PP 100):
 A3 Calm others 30
-A5 Turn bonus, +2 + 1d6 HD 20
+A5 Turn bonus, +2 +1d6 HD 20
 B2 Predict weather 10
 D3 Immune to poison 40
 
@@ -3534,7 +3857,7 @@ Suggested Penalties (5):
 2. When first used: Wall of stone forms as a closed cylinder around the user. However, if the user closes his or her eyes, thinks of justice or Maat, and steps forward, the wall vanishes when touched. The wall is completely invulnerable to outside attacks, including a wish. If the wall is destroyed or damaged by the user, he or she thereafter takes double damage from all physical attacks, no saving throw, and unremovable, as a Handicap.
 3. If the user ever slays a Lawful creature, the user is immediately reduced to -10 hp and dies, no saving throw.
 4. At standard chances: Harden. A volume of up to 30,000 cubic feet of mud, mire, swamp, or other muck suddenly dries completely, if within 120 feet of the user.
-5. At standard chances: Opponents. 1-4 Chaotic enemies condense magically from the air, within 30 feet of the user. All the creatures are of one type; the type has a number of Hit Dice equal to 31-50% (1d20 + 10%) of the user's levels. The creatures are native to the user's plane of existence, considering undead native to any plane. Each opponent has maximum possible hit points. Neither side has surprise.
+5. At standard chances: Opponents. 1-4 Chaotic enemies condense magically from the air, within 30 feet of the user. All the creatures are of one type; the type has a number of Hit Dice equal to 31-50% (1d20 +10%) of the user's levels. The creatures are native to the user's plane of existence, considering undead native to any plane. Each opponent has maximum possible hit points. Neither side has surprise.
 Source: Egyptian mythology.
 Further Research: The Book of the Dead, translated by E. A. Wallis Budge, and other references on Egyptian mythology. Maat, goddess of absolute order, was wife of Thoth, god of knowledge, and daughter of Ra, the highest ruler and sun god of the mythos, and assisted in the work of creation.
 
@@ -3687,7 +4010,7 @@ Suggested Handicaps (2):
 Suggested Penalties (3; 10% chance of occurrence whenever either 100 point power is used; equal chances for each):
 1. Aging: The user ages 1-6 years; no saving throw applies.
 2. Disintegrate: The user must make a Saving Throw vs. Spells or suffer a variation of the normal spell effect, appearing to wither, age extremely rapidly, and crumble to dust. The body may be recovered by a wish, and the user then restored to normal form by applying a raise dead fully.
-3. Ability score penalty: The user loses 6-11 (1d6 + 5) points of Strength, to a minimum Strength of 3.
+3. Ability score penalty: The user loses 6-11 (1d6 +5) points of Strength, to a minimum Strength of 3.
 Source: Norse mythology.
 Further Research: See standard works, referring to the following names. Verthandi is one of the Norns of Norse legend, the immortal beings who rule the fates of men and gods alike. Verthandi rules the Present, Urdur (or Urdhr, or Urth) the Past, and Skuld, who wears a veil, the Future. Each of the Norns may provide ideas for other artifacts.
 
