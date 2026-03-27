@@ -347,6 +347,8 @@ append_table_qa_lines() {
   local tmp
 
   extra=$(cat)
+  EXTRA_BLOCK="$extra" perl -0ne 'exit((index($_, $ENV{EXTRA_BLOCK}) >= 0) ? 0 : 1)' "$file" \
+    && return 0
   tmp=$(mktemp)
   awk -v extra="$extra" '
     {
