@@ -15,68 +15,231 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
-- Scope checked: sphere-factor matrix, sample cost table, duration and mental-effect tables, and magical-effect index anchors.
-- Result: no blocking row/column defects found in the visible Immortals table regions.
+- Status: reviewed 2026-03-27 after flow-first rebuild
+- Scope checked: Section 1-2 doctrinal evidence blocks, the page-7 GT advancement cost table, the sphere-factor matrix, sample-cost table, common-dice and mental-effect tables, undead/Entropy doctrine, and the alphabetical effect-explanation run through Maze.
+- Result: Immortals now rebuild from extracted Section 1-2 evidence plus validated Section 3 slice fallbacks; no blocking continuation, table, or section-bleed defect remains in the audited Immortals lane.
 
-- Capture confidence: **0.95** (UP from 0.94 after staging Sections 1-2 PP framing context)
-- Coverage note: Immortals Sections 1-3 are now represented in staging for magic-context use: Sections 1-2 provide PP conversion/rank/recovery framing, and Section 3 provides the primary Immortal Magic corpus.
-- ToC cross-check: Immortals section structure now has explicit staged context across both the Section 1-2 framing layer and the Section 3 spell/effect layer.
-- Gap priority: LOW — no remaining structural source-evidence gap identified for current Immortals spell/material scope.
-### Sections 1-2: Power Point Conversion, Rank Progression, and Recovery Context
+- Capture confidence: **0.97** (UP from 0.95 after replacing the prior Sections 1-2 summary with extracted evidence and adding Immortals-specific validation gates)
+- Coverage note: Immortals Sections 1-3 now stage the doctrinal surfaces needed downstream: PP conversion and bookkeeping, rank/level and GT advancement costs, sphere/bias/recovery context, and the full audited Immortal Magic flow through `Maze`.
+- Extraction note: whole-section reads were attempted first; Section 3 still uses documented page-column slice fallback because the chart-heavy pages interleave columns under plain contiguous extraction.
+- Gap priority: LOW — no unresolved structural Immortals source-evidence gap remains for the current spell/material scope.
+### Sections 1-2: Power Point Conversion, Rank Progression, Sphere Choice, and Recovery Context
 
-- Extraction note: targeted Immortals context block from Sections 1-2 (pages 5-11), preserving the XP-to-PP conversion frame, permanent-vs-current PP bookkeeping, rank/level advancement gates, and the planar-bias regeneration context needed to interpret Section 3 power-cost and recovery references.
+- Extraction note: flow-first Immortals extraction built from heading-anchored page-column reads for the specific Section 1-2 doctrine needed downstream: XP-to-PP conversion, permanent-vs-current PP bookkeeping, rank/level frame, GT advancement costs, sphere selection frame, and planar-bias regeneration context.
 
 ```text
-[Immortals pages 5-6: Section 1 changes, XP->PP conversion, and rank/level frame]
 Section 1: Changes
 
-The most basic and far-reaching change in the existing game system involves the character's current Experience Points. The XP total is converted to Power Points, which affect other game mechanics.
+The most basic and far-reaching change in
+the existing game system involves the character's current Experience Points. The XP total
+is converted to Power Points, which affect
+other game mechanics.
+Get your character records sheet(s) and a
+fresh piece of paper. Don't discard the old
+character sheet when you're done; you'll
+need many of the details later.
+Experience Points
+In mortal life, experience is a measure of success and power. It continues to be a primary
+goal of the character, even in Immortality.
+Start by converting the total XP earned in
+mortal life to a new figure, Power Points
+(PP). Each 10,000 XP are worth 1 PP,
+rounded up.
+A typical starting Immortal (Initiate) has
+between 300 and 500 PP. Magic-users usually
+start with the most Power Points, and clerics
+usually start with the least. Demi-humans
+may have any amount, but usually start with
+less than 400 PP.
+A character's PP total determines his status
+in the hierarchy of the Immortals. Gains in
+status bring gains of Hit Dice, hit points,
+abilities, influence, and responsibility.
+An Immortal character gains PP (usually
+just called Power) for learning, working, and
+performing deeds, just as in mortal life.
+Power may also be gained as gifts from other
+Immortals, and as bonuses for advancement.
+Power awards may be small in comparison to
+XP. Ten or twenty PP are sizeable amounts,
+especially to a starting Temporal. Remember
+that each Power Point represents 10,000
+mortal experience points!
+But in addition to their typical function as
+a record of experience, Power Points are also
+actively used in play. They are expended by
+Immortals in creating various effects, magical and not. This is a basic change in game
+mechanics, and affects all games involving
+Immortals. A major goal of all characters is to
+gain more Power, and to translate that into
+more abilities and influence.
+Power is temporarily expended in producing magical effects, moving or changing elemental material, and attacking. Power is
+permanently expended in raising ability
+scores, creating permanent non-magical
+effects, and many special actions. Temporary
+Power expenditures return (regenerate) automatically at a rate determined by the character's rank; permanent expenditures do not.
+Record your PP total in two places on the
+character sheet. Write one figure in the usual
+place for XP, to keep track of the total earned
+to date—the permanent PP total. Write the
 
-Start by converting the total XP earned in mortal life to a new figure, Power Points (PP). Each 10,000 XP are worth 1 PP, rounded up.
+total in another place as well, someplace
+where it can be frequently changed, and use
+this one to keep track of the character's current (variable) Power. When PP are spent for
+temporary effects, or regenerated afterward,
+modify only the current total. Modify both
+Power totals only if PP are permanently
+expended or if new Power is received.
+If the Immortal's permanent Power total
+ever reaches zero, the Immortal's life force is
+extinguished. In mortal play hit points are
+the measure of life force. (See Names, page
+3.)
 
-A character's PP total determines his status and rank. Higher ranks of Immortals in ascending order of Power are Celestial, Empyreal, Eternal, and Hierarch.
+higher ranks of Immortals in ascending order
+of Power are Celestial, Empyreal, Eternal,
+and Hierarch.
+Level is still used to describe an amount of
+progress within each rank, again using experience (now counted in Power Points) as the
+yardstick. Table 1 gives the various level and
+rank titles and their corresponding Power
+Point values.
+                 Power        Maximum
+                  Cost         Ability
+   Rank         Per Point      Score
+   Temporal       10 PP           25
+   Celestial      20 PP           50
+   Empyreal       40 PP           75
+   Eternal        80 PP           100
+   Hierarch       160 PP
+      As one requirement for gaining each next
+   higher rank, all three scores of an Immortal's
+   Greater Talent must be raised to the maximum. If the character's total GT is not at its
+   maximum, he or she is not eligible to
+   advance. See Rank Advancement for more
+   details.
+      Any number of points may be "purchased" at any time if sufficient power is
+   available. A character cannot voluntarily
+   expend Power Points if that action would
+   reduce his or her total Power to less than the
+   minimum for the rank as given on Table 1.
+Example: A character recently achieved
+   the rank of Celestial in the Sphere of Time.
+   Her Wisdom, Strength, and Charisma scores
+   are now 25 each, and she has 1,080 PP. To
+   raise each ability score to 50 (needed for
+   Empyreal), she must spend 1,500 Power
+   Points to gain 75 ability score points in
+   exchange. However, at this time she can only
+   expend 20 PP, for one ability score point,
+   since the expense of the second point would
+   reduce her Power total to 1,040, ten less than
+   the minimum for Novice Celestial.
 
-Level is still used to describe an amount of progress within each rank, again using experience (now counted in Power Points) as the yardstick.
-
-Record your PP total in two places: one track for the permanent PP total and one for current (variable) PP. When PP are spent for temporary effects, or regenerated afterward, modify only the current total. Modify both totals only if PP are permanently expended or if new Power is received.
-
-If the Immortal's permanent Power total ever reaches zero, the Immortal's life force is extinguished.
-
-[Immortals page 7: ability-score advancement costs by rank]
-Power Cost Per Point / Maximum Ability Score
-
-Temporal: 10 PP per point, maximum 25
-Celestial: 20 PP per point, maximum 50
-Empyreal: 40 PP per point, maximum 75
-Eternal: 80 PP per point, maximum 100
-Hierarch: 160 PP per point
-
-As one requirement for gaining each next higher rank, all three scores of an Immortal's Greater Talent must be raised to the maximum. If the character's total GT is not at its maximum, he or she is not eligible to advance.
-
-[Immortals pages 10-11: Section 2 frame, Spheres, Bias, and PP recovery]
 Section 2: New Characters Information
 
-Some old and familiar details that have always been assumed, such as the five senses, are carefully scrutinized, and new character details are added.
+Spheres
+Some time ago, you chose one of four routes
+to Immortality, and your character followed
+that route to a successful result. Each route
+corresponds to one of the four Spheres, and
+each Sphere gives bonuses to certain mortal
+classes, as follows:
+Route
+Sphere
+Dynast
+Time
+Hero
+Thought
+Paragon
+Energy
+Matter
+Polymath
+Whatever route your character took, you
+may choose any one Sphere now. Before you
+do so, you may examine the powers, goals,
+and other details of all the Spheres as
+described in this book. Though your choice
+will probably be the Sphere corresponding to
+the route followed, you can change, and the
+only cost is that your character cannot qualify
+for certain future bonuses. Immortals are free
+to change Spheres at any time, but suffer
+such extreme penalties (in effect starting
+completely over) that they rarely do so after
+passing Initiate level.
 
-Spheres: Each route to Immortality corresponds to one of four Spheres (Matter, Energy, Time, Thought). Sphere relationship affects interaction doctrine and later magic costs.
+Bias
+The relation between any Immortal and any
+Plane of Existence can be described as the
+"bias" of the Plane—hostile, neutral, or
+friendly. Whatever an Immortal's location, the
+rate of regeneration of the Immortal's Power,
+hit point, and ability score losses are determined
+by the bias of the Plane or Dimension of that
+location. An Immortal who exists on several
+planes at once (commonly on the Home Plane
+and one or more others) must apply the least
+favorable bias that applies.
+   The rate of regeneration is 1 point per
+round on a friendly plane, 1 point per turn on
+a neutral plane, and 1 point per day on a hos-
+tile plane. Regeneration affects all losses
+simultaneously (including all six ability
+scores). Each score continues regenerating
+until it reaches its normal total.
 
-Bias: The relation between an Immortal and a Plane of Existence can be hostile, neutral, or friendly. Bias determines regeneration behavior for Power, hit points, and ability scores.
-
-Power Point Recovery: Immortal Power Points regenerate automatically at a rate determined by planar or local bias. Regeneration requires no concentration or expenditure.
-
-If an Immortal exists on several planes at once (commonly on the Home Plane and one or more others), apply the least favorable bias that applies.
-
-Physical Recovery: Natural or enhanced regeneration affects hit point losses and Power losses, with details modified by bias and by any active effects that increase regeneration rate.
+Power Point Recovery
+Immortal Power Points regenerate automatically, at a rate determined by the relationship between an Immortal and his environment, called the planar or local bias.
+(See Bias.) The regeneration requires no concentration or expenditure.
+When on a "friendly" plane of existence,
+Power regenerates at the rate of 1 point per
+round. When on a "neutral" plane of existence, the rate is 1 point per turn (10 minutes).
+When on a "hostile" plane, the rate is 1 point
+per day.
+Physical Recovery
+An Immortal's physical form automatically regenerates all losses of ability score
+points and hit points. The rate is the same as
+the Immortal's regeneration of Power Points,
+as determined by planar or local bias.
+The cost of faster regeneration is 100 PP.
+This expenditure doubles the base rate for 6
+hours (36 turns). A like increase in rate and
+duration (not an additional doubling) can be
+obtained for each expenditure. Example: A
+4th level Eternal on a plane with neutral bias
+wants to increase his regeneration rate to 4
+points per turn for 12 hours. This requires
+three increases, all applied twice (once for
+each 6-hour increase), for a total cost of 600
+PP.
+An Immortal may expend Power to repair
+any physical form used. Standard magical
+cure spells may be created and applied as
+desired. Remember that A-M should be vol-
+untarily dropped if a risk of magic failure is to
+be avoided. Power may also be used to hasten
+the natural regeneration process for hit points
+and ability scores. This does not affect the
+rate of Power regeneration.
+Natural or enhanced regeneration affects
+current totals at all times, and is cumulative
+with magical effects. Ability score losses are
+often most easily countered by applying mag-
+ical ability score increases. As the ability
+scores then regenerate, the augmented ability
+scores likewise increase. The same phenomenon occurs when hit points are magically
+augmented. However, regeneration can
+never cause a score to exceed normal maximum if no magical augmentation has been
+applied.
 
 ```
 
 ### Section 3: Immortal Magic
 
-- Extraction note: section-aware Immortals extraction from the actual Section 3 pages using labeled page-and-column slices across pages 18-21 so the chart-heavy opening, continuation prose, and alphabetical effect explanations remain readable without later Section 4 spill.
+- Extraction note: whole-section TSV and layout extraction were audited first, but chart-heavy page 18-21 reads still collide across columns and tables. This block therefore uses documented page-column slice fallback to preserve readable doctrine flow, with downstream validation for continuations, table structure, and Section 4 bleed.
 
 ```text
-[Immortals page 18: opening overview and power-cost prose]
 Section 3: Immortal Magic
 
 An Immortal can recreate cleric, druid, and
@@ -132,36 +295,33 @@ each step along this circular path. The resulting factors are given in the follo
 You may wish to draw the circular path on
 your character sheet, as it affects many
 aspects of play.
-
-[Immortals page 18: sphere-factor tables and sample costs]
-
      Sphere Factors for Magical Effects
-Sphere of       Sphere of Magical Effect
-Immortal       Matter Energy Time Thought
-Matter           1      8      4      2
-Energy           2      1      8      4
-Time             4      2      1      8
-Thought          8      4      2      1
+ Sphere of       Sphere of Magical Effect
+ Immortal       Matter Energy Time Thought
+ Matter           1      8      4      2
+ Energy           2      1      8      4
+ Time             4      2      1      8
+ Thought          8      4      2      1
 
 Example: An Immortal of Matter can expend
  16 PP to create any one of the following magical effects:
                                     Base
                        Sphere       Cost Factor
-Force Field          Matter        16     1
-Continual Light      Energy         8     2
-Hold Person          Time           4     4
-Remove Fear          Thought        2     8
+ Force Field          Matter        16     1
+ Continual Light      Energy         8     2
+ Hold Person          Time           4     4
+ Remove Fear          Thought        2     8
 
-Durations of Effects
-Whenever a fixed duration of any length is
-given for a magical effect, an Immortal may
-extend the effect for the same amount of time
-by expending half the base Power cost.
+ Durations of Effects
+ Whenever a fixed duration of any length is
+ given for a magical effect, an Immortal may
+ extend the effect for the same amount of time
+ by expending half the base Power cost.
 Example: An Immortal of Thought expends
  16 PP (base cost 2, factor 8) to create a web
-which lasts for 8 hours, but he may extend
-that to 24 hours by expending only 2 additional PP (each 8-hour extension costing half
-the base cost, or 1 Power Point apiece).
+ which lasts for 8 hours, but he may extend
+ that to 24 hours by expending only 2 additional PP (each 8-hour extension costing half
+ the base cost, or 1 Power Point apiece).
 
 Limits on Use
 Magic of any origin, mortal or Immortal, has
@@ -183,13 +343,12 @@ magical effect. Multiple physical attacks are
 possible if the Immortal form possesses several natural methods of attack (eg. a bear can
 claw twice, bite, and maybe hug in the same
 round).
-[Immortals page 18: caster level, charts, and range/duration notes]
 Caster Level
 The character's effective level for all purposes
 is twice the number of Hit Dice. This effective level is used in place of caster level in all
 applications, even though the spell effects are
 created, not cast.
-   Example: A Novice Celestial (HD 25) polymorphs an obnoxious human into a dinner
+Example: A Novice Celestial (HD 25) polymorphs an obnoxious human into a dinner
 plate. This radical change lasts for 1 turn per
 level of the caster, or 50 turns in this case. A
 36th level mortal magic-user who attempts to
@@ -202,7 +361,7 @@ Using the Charts
 An Index to Magical Effects that may be created by Immortal use of Power Charts S1-S4
 are located in the Reference Guide, located in
 the back of this booklet.
-   A page reference and base PP cost are
+A page reference and base PP cost are
 given for each spell and non-spell magical
 effect, along with ranges and durations for
 easy reference. The abbreviations used to
@@ -211,7 +370,7 @@ are: B = Basic, X = Expert, C = Companion, and M = Masters. The effects of most
 spells are obvious from their names. Review
 any that you are not familiar with; these are
 valuable tools in play.
-   Most non-spell magical effects are
+Most non-spell magical effects are
 described in the Artifact power descriptions
 of the D&D Master Set (DMR pages 51 -54).
 Some not contained therein are merely
@@ -233,8 +392,7 @@ description specifies otherwise. Such effects
 cannot be sent across a planar boundary
 except by an existing path (such as a wormhole or gate).
 
-[Immortals page 19: conjuring, damage, and mental-effects overview]
-  The volume of an effect may also be
+The volume of an effect may also be
 changed in this way, but the process may
 involve a calculation more complex than simple multiplication. To double the volume of a
 cone or sphere, for example, the formula for
@@ -248,12 +406,12 @@ Whenever a magical effect summons a creature, the victim must be able to respond
 its normal type of movement. Thus, transplanar summoning is only effective if the victim can cross planar boundaries, or if
 preceded by a gate or similar effect to enable
 such movement.
-   Conjuring refers to a magical effect that
+Conjuring refers to a magical effect that
 actually creates a creature. In such cases the
 life force involved might be summoned, but is
 automatically drawn into the form created
 (possibly across planar boundaries).
-   Conjuring and/or summoning will not
+Conjuring and/or summoning will not
 work if the creature involved is composed of a
 single elemental material or devoted to a single Sphere against which local or planar bias
 is hostile. Example: An Immortal of
@@ -275,7 +433,7 @@ ball, lightning bolt, etc.) is 1d6 per Hit Die
 the most powerful fire ball known, created by
 a Hierarch (HD 45), inflicts 45-270 points of
 damage.
-  For any effect involving large numbers of
+For any effect involving large numbers of
 dice, the DM may wish to use the average
 damage instead of random rolls. This speeds
 play greatly, requiring only one simple multiplication instead of much dice rolling. Any
@@ -286,16 +444,13 @@ random total, is also encouraged. In the
 example given above, the fire ball would be
 quickly found to inflict 158 points of damage
 by using the average of 3.5 points per die. It
-might be modified slightly by using 2d20-20,
-
-[Immortals page 19: average-damage continuation and table column]
-a range of -18 to +20.
-   A new rule is used when determining damage caused by a magical effect. If bonuses or
+might be modified slightly by using 2d20-20, a range of -18 to +20.
+A new rule is used when determining damage caused by a magical effect. If bonuses or
 penalties apply to damage rolls, these modifiers will not change the number beyond the
 maximum or minimum on the die used.
 Thus, a bonus of + 1 on 1d6 results in rolls of
 2, 3, 4, 5, 6, and 6.
-   If bonuses or penalties apply to damage
+If bonuses or penalties apply to damage
 rolls, do not simply apply the bonus to the
 average per die. That would ignore the fact
 that the modified result per die cannot exceed
@@ -303,13 +458,12 @@ the maximum possible result. With a fire
 ball, for example, a + 1 bonus per die cannot
 cause the result of any one of the dice used to
 exceed six.
-   The averages for most common types of
+The averages for most common types of
 dice and for bonuses or penalties of -3 to + 3
 are given below. To calculate the averages for
 other dice, or for modifications outside that
 range, apply the following guidelines.
-   The average roll for a given type of die is
-
+The average roll for a given type of die is
                             Average Results of Common Dice Rolls
        Type
       of Die          -3           -2           -1
@@ -340,22 +494,20 @@ effects are usually cured quickly by allies, at
 relatively minor Power Point expenditure.
 But this might not occur, and might be
 impossible because of 100% A-M.
-   If the Immortal victim's A-M does not
+If the Immortal victim's A-M does not
 negate the attack, and if the saving throw vs.
 Mental Attack is failed, even an Immortal
 mind can fall victim to charm, feeblemind,
 and other effects. The victim's Intelligence
-[Immortals page 19: mental-effects continuation and chart column]
 score determines the frequency of any
 attempts to non-magically conquer or defeat
 the effect. This frequency is identical to that
 given in the D&D Master Set (MDM page
- 16) in reference to charm effects. The chart
+16) in reference to charm effects. The chart
 below adds to that earlier one, and covers the
 span of Immortal ability scores.
 When a new check is allowed, the player
-makes a standard Intelligence check, com-
-paring an unmodified roll of 1d100 to the
+makes a standard Intelligence check, comparing an unmodified roll of 1d100 to the
 character's Intelligence score before being
 affected by the spell. If that check succeeds, a
 new saving throw may be attempted. The
@@ -377,9 +529,7 @@ Modifier
        4.5          5.375       6.125         6.75
        5.5             6.4        7.2          7.9
        6.5          7.416        8.25          9.0
-
          Durations of Mental Effects
-
       Intelligence           Check again after
           13-15                           3 days
          16-17                         24 hours
@@ -395,8 +545,6 @@ Modifier
             51-75                         1 round
             76-90                      2/1 round
            91-100            2/1 round, save only
-
-[Immortals page 20: undead curing and effect explanations A-B]
 Undead Curing
 Any magical effect that would cure damage
 when applied to an undead creature (such as
@@ -431,7 +579,7 @@ these effects are listed for all four Spheres.
 When a bonus refers to "GT," any of the ability score(s) of the Immortal's Greater Talent
 can be affected. "IT" refers to all the Lesser
 Talents.
-   Example: An Immortal of Time (whose
+Example: An Immortal of Time (whose
 Greater Talents are Wisdom, Strength, and
 Charisma) wants to temporarily increase her
 Charisma by 20 points, so that her Aura will
@@ -449,10 +597,7 @@ points (at a total cost of 100 PP), as that
 method raises all the Greater Talents instead
 of merely Charisma.
 Aerial Servant: See General Notes (Conjuring and Summoning).
-Anti-Magic: When this category of non-spell magic (of the Sphere of Time) is created
-
-[Immortals page 20: effect explanations A-C]
-and used on any creature which already has
+Anti-Magic: When this category of non-spell magic (of the Sphere of Time) is created and used on any creature which already has
 an A-M percentage, the figures are cumulative. For example, a Celestial of Thought (A-M 60%) who wants 100% A-M for an hour
 may acquire the 40% increase in A-M (base
 cost 15), which is ruled by Time (Sphere factor x 2), by expending 30 PP. The magically
@@ -496,11 +641,7 @@ Calm Others: If cast by an Immortal, this
 effect can remove fear or agitation from a
 number of Hit Dice of creatures equal to
 twice the Immortal's Hit Dice.
-Choose Best Option: This magic has no effect when used by a Hierarch. If used by any other Immortal, this effect telepathically links the character with the Hierarch of his or her Sphere. It is thus best used sparingly, if at all. The Hierarch
-acts in the same way as would an artifact with this
-power, considering only those parts of a problem
-which are specifically presented.
-[Immortals page 20: effect explanations C-Creeping Doom]
+Choose Best Option: This magic has no effect when used by a Hierarch. If used by any other Immortal, this effect telepathically links the character with the Hierarch of his or her Sphere. It is thus best used sparingly, if at all. The Hierarch acts in the same way as would an artifact with this power, considering only those parts of a problem which are specifically presented.
 Clairvoyance: When used to see an area
 through the eyes of an Immortal, the victim
 senses the presence of (but absolutely no
@@ -519,9 +660,9 @@ Immortal may refuse contact (but the PP cost
 must still be paid). Any Immortal contacted
 by commune automatically knows the caller's
 identity (by common name, never truename)
-and status, including the exact rank if
-Immortal.
-Confusion: See General Notes (Mental Effects).
+and status, including the exact rank if Immortal.
+Confusion: See General Notes (Mental
+Effects).
 Conjure Elemental: See General Notes (Conjuring and Summoning).
 Contact Outer Plane: This produces an
 effect identical to that described for commune
@@ -551,7 +692,6 @@ the plane of the caster, which might be
 instantly slain by certain environmental
 effects.
 
-[Immortals page 21: effect explanations Cureall-Explosive Cloud]
 Cureall: This effect can cure a maximum of
 6 hit points per level of the caster. It can thus
 cure a maximum of 216 points of damage if
@@ -572,13 +712,18 @@ dimensional perspective to any other possible
 for the location, viewing other dimensions.
 When used in this way, the effect does not
 cause physical movement.
-Disintegrate: In addition to the usual
-defenses (A-M and saving throw), this effect
-may be partially resisted by an Immortal victim. The victim must make a standard (unmodified) Constitution check. If successful, the effect causes damage equal to half the Immortal's normal (undamaged) hit point total, but does not produce full disintegration. The disintegration of a form has no
+Disintegrate: In addition to the usual defenses (A-M and saving throw), this effect
+may be partially resisted by an Immortal victim. The victim must make a standard
+(unmodified) Constitution check. If successful, the effect causes damage equal to half the
+Immortal's normal (undamaged) hit point
+total, but does not produce full disintegration. The disintegration of a form has no
 effect on the Immortal's life force, though it
 does cause incorporeality.
 Dispel Evil: If used against an Immortal,
-this has no effect unless the victim is the sole target, and even then allows the usual saving throw and A-M resistance. Even if successful, the effect merely causes the Immortal to
+this has no effect unless the victim is the sole
+target, and even then allows the usual saving
+throw and A-M resistance. Even if successful,
+the effect merely causes the Immortal to
 return to his or her Home Plane, and the
 Immortal may leave the next round after
 arriving here.
@@ -598,55 +743,52 @@ Explosive Cloud: Though no saving throw
 applies to mortals, Immortals may make the
 usual saving throw vs. Physical Attack to
 reduce the damage by half.
-
-[Immortals page 21: effect explanations Feeblemind-Levitate]
 Feeblemind: See General Notes (Mental Effects).
 Find the Path: This spell functions properly
-    only within a single plane of existence. It
-    might malfunction partially or totally if the
-    path leads across planar boundaries. The
+only within a single plane of existence. It
+might malfunction partially or totally if the
+path leads across planar boundaries. The
 DM may decide the specific result—whether
-    the spell seems to have no effect or the path
-    suddenly stops or proceeds in the wrong
-    direction. It is highly erratic and often misleading or useless when insufficient details of
-    the destination are known. For example,
-    when used to find the seventh dimension, or
-    the hiding place of the Old Ones, this effect
-    leads in a random direction.
+the spell seems to have no effect or the path
+suddenly stops or proceeds in the wrong
+direction. It is highly erratic and often misleading or useless when insufficient details of
+the destination are known. For example,
+when used to find the seventh dimension, or
+the hiding place of the Old Ones, this effect
+leads in a random direction.
 Fireball: See General Notes (Damage).
 Geas: See Quest.
 Haste: This affects the physical form only. It
-    does not affect the rate of Power use of any
-    type, nor of any type of regeneration.
+does not affect the rate of Power use of any
+type, nor of any type of regeneration.
 Heal: See Cureall.
 Hold Monster: This can affect any living
 mortal creature, but has no effect on Immortals of any sort.
 Hold Person: Immortals of any sort are not
-    affected by this magic, even if they were
-    "persons" (by the spell description) in mortal
-    life.
+affected by this magic, even if they were
+"persons" (by the spell description) in mortal
+life.
 Insanity: See General Notes (Mental Effects).
 Insect Swarm: The insects are summoned,
-    not conjured, and must thus be able to reach
-    the caster by using their normal form of
-    movement. If preceded by a gate spell or similar effect, the insects may indeed be summoned from another plane or dimension.
+not conjured, and must thus be able to reach
+the caster by using their normal form of
+movement. If preceded by a gate spell or similar effect, the insects may indeed be summoned from another plane or dimension.
 Invisible Stalker: See General Notes (Conjuring and Summoning).
 Levitate: In environments lacking gravitational orientation, the direction of movement
-    may be freely selected. The movement rate is
-    still very slow in comparison to fly and other
-    effects, but may be useful in some situations.
+may be freely selected. The movement rate is
+still very slow in comparison to fly and other
+effects, but may be useful in some situations.
 If an Immortal applies this effect to another
-    creature, the creator of the effect may retain
-    control of the movement, or may give control
-    to the recipient. Control passes with the
-    touch required to bestow the effect. If
-    retained, control cannot be given at a later
-    time. When this effect is used as a form of
-    attack, to restrict or force movement with the
-    creator retaining control, the victim may save
-    vs. Spell when touched to avoid the effect. If
-    the victim saves, the magic vanishes.
-[Immortals page 21: effect explanations Life Trapping-Maze]
+creature, the creator of the effect may retain
+control of the movement, or may give control
+to the recipient. Control passes with the
+touch required to bestow the effect. If
+retained, control cannot be given at a later
+time. When this effect is used as a form of
+attack, to restrict or force movement with the
+creator retaining control, the victim may save
+vs. Spell when touched to avoid the effect. If
+the victim saves, the magic vanishes.
 Life Trapping: This effect can only be
 placed on an inanimate non-living object of 1
 or more cubic feet in volume.
@@ -691,10 +833,8 @@ the victim in 1 round. The Immortal may
 pull the victim out of the maze, into the wide
 expanses of the Astral Plane, by scoring a
 normal Hit roll and pulling the victim along.
-If this occurs, the victim does not reappear at the point of disappearance, instead remaining on the Astral Plane.
-If the victim of this effect is Immortal, he or
-she may leave the maze in 1 round, and then
-free to move as desired. The Immortal need
-not then return to the point of disappearance.
+If this occurs, the victim does not reappear at
+the point of disappearance, instead remaining on the Astral Plane.
+If the victim of this effect is Immortal, he or she may leave the maze in 1 round, and then move freely as desired. The Immortal need not then return to the point of disappearance.
 The returning effect of the spell is automatic if the Immortal simply waits for the effect to end (a maximum of 4 rounds after it began).
 

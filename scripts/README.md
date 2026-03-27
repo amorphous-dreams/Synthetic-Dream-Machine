@@ -23,6 +23,12 @@ Notes:
 - `build_becmi_spell_staging.sh` is a full-run orchestrator.
 - Lane-only runs regenerate only that lane's staging file and skip index-manifest regeneration.
 - Full runs regenerate all six lane files and the index manifest.
+- The Companion lane now hard-fails on validation if heading-anchored flow capture bleeds into adjacent sections, drops required spell bodies, or collapses key probability tables.
+
+Companion flow-first notes:
+- `build_becmi_spell_staging_companion.sh` prefers contiguous heading-to-heading TSV flow capture for major sections.
+- Spot/manual text insertion should be treated as fallback only; deterministic OCR cleanup may still run after extraction.
+- Current Companion validation targets include the cleric/druid/magic-user runs, buying and selling magic items, damage to magic items, spell-scroll probability tables, and the scroll-to-miscellaneous-item description flow.
 
 ## Validate Markdown Internal Links
 

@@ -517,3 +517,13 @@ perl -0pi -e '
   s/\+ 5 %/\+5%/g;
   s/([0-9]) %/$1%/g;
 ' "$RC_OUT"
+assert_heading_count "$RC_OUT" 'Chapter 3: Spells and Spellcasting' 1 'RC staging duplicated the Chapter 3 spellcasting section heading'
+assert_heading_count "$RC_OUT" 'Prismatic Wall Recovery Pass \(RC page 60\)' 1 'RC staging duplicated the Prismatic Wall recovery section heading'
+assert_heading_count "$RC_OUT" 'Monster Spellcasters' 1 'RC staging duplicated the monster spellcasters section heading'
+assert_heading_count "$RC_OUT" 'Spell-Adjacent Procedures and DM Spell Doctrine' 1 'RC staging duplicated the spell-adjacent doctrine section heading'
+assert_heading_count "$RC_OUT" 'Scrolls' 1 'RC staging duplicated the scrolls section heading'
+assert_heading_count "$RC_OUT" 'Spell Research' 1 'RC staging duplicated the spell research section heading'
+assert_heading_count "$RC_OUT" 'Magic Item Enchantment, Recharging, and Item Damage Procedures' 1 'RC staging duplicated the item-enchantment section heading'
+assert_heading_count "$RC_OUT" 'Construct Enchantment and Magical Constructs' 1 'RC staging duplicated the constructs section heading'
+assert_heading_count "$RC_OUT" 'Chapter 16 Item Description Catalog \(Potions, Wands/Staves/Rods, Rings, Miscellaneous Items, and Swords\)' 1 'RC staging duplicated the Chapter 16 item catalog section heading'
+assert_heading_count "$RC_OUT" 'Index to Spells' 1 'RC staging duplicated the index-to-spells section heading'

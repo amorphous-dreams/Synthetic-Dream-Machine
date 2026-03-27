@@ -15,14 +15,14 @@ Source PDF:
 
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
-- Scope checked: treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the new 5th-9th level magic-user spell block.
-- Result: no blocking row/column defects remain, and the densest Companion table block has been rewritten into sequential readable tables for easier human scanning.
+- Status: reviewed 2026-03-27 after flow-first rebuild
+- Scope checked: high-level cleric and druid spell runs, the Companion MU 5th-9th spell run, buying/selling and item-damage procedures, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the contiguous scroll-to-miscellaneous-item description flow.
+- Result: major Companion sections now rebuild from heading-anchored contiguous TSV flows, lane validation covers bleed/truncation/table regressions, and no blocking Companion extraction defect remains in the audited sections.
 
-- Capture confidence: **0.91** (UP from 0.78 after staging the Companion MU 5th-9th spell run)
-- Coverage note: Cleric 5th-7th level spells, Druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, and the spell-adjacent item section are now all staged from Companion source text. Remaining concerns are OCR texture and later comparison work against RC wording, not missing primary Companion spell content.
-- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, and `Magic-user Spells: Fifth to Ninth Level` are now represented in staging. The former MU spell gap is closed by the pages 22-28 TSV extraction block.
-- Gap priority: LOW — primary Companion spell coverage gap closed on 2026-03-23; remaining work is cleanup and version-difference review.
+- Capture confidence: **0.95** (UP from 0.91 after the 2026-03-27 flow-first Companion rebuild)
+- Coverage note: Cleric 5th-7th level spells, the druid transition/philosophy block plus druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, buying/selling and item-damage procedures, the Demi-Human Crafts and Poison procedures, and the spell-adjacent item section now all rebuild from Companion source text rather than pasted witness text.
+- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, `Magic-user Spells: Fifth to Ninth Level`, the key treasure/item interface run, and the audited `Demi-Human Crafts` plus `Poison` procedures are represented in staging with heading-anchored contiguous flows.
+- Gap priority: LOW — residual work is limited to OCR texture cleanup and crosswalk/provenance follow-through, not missing major Companion source coverage.
 ### High-Level Cleric, Druid, and Magic-User Spell Material
 
 - Extraction note: section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric, druid, and magic-user class pages, split so each spell block starts at its real section heading instead of earlier class spill.
@@ -578,7 +578,7 @@ affected, and may be up to 3,000 square feet
 in surface area. The victim may get mired
 and become unable to move. The magic-user
 may choose the exact width and length (20'.
-150', 30'. loo', etc.), but the entire area of
+150', 30'. 100', etc.), but the entire area of
 effect must be within 120' of the caster. Crea-
 tures entering the mud are slowed to 10% of
 their normal movement rate at best, and may
@@ -623,7 +623,6 @@ trate while moving objects, and the objects
 will fall if disturbed.
 If a wall of stone topples, it causes 10-100
 points of damage and shatters.
-I
 Sixth Level Magic-user Spells
 Move Earth
 Range: 240'
@@ -1433,25 +1432,73 @@ no Saving Throw).
 
 ### Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items
 
-- Extraction note: section-aware Companion treasure extraction combining an anchored buying/selling procedure block, a curated damage-to-magic-items procedure block, readable layout tables for scrolls/wands-rings-miscellaneous items, and TSV-reflowed item descriptions for scrolls, spell-catching, staffs, rods, rings, quill copying, and elemental-travel items.
+- Extraction note: Companion treasure extraction split by content type: flow-first TSV reflow for buying/selling, item damage, and the scroll-through-miscellaneous-item prose descriptions; readable sequential formatting for the dense item tables; deterministic post-cleanup is limited to stable OCR and page-header repair after capture.
 
 ```text
 [Companion procedures: buying and selling magic items]
 B. Buying and Selling Magic Items
-At some point in your game, the characters will probably find a magic item that they cannot use or do not want. They may then try to sell the item for cash.
-
-This forces you, the Dungeon Master, to decide two things: whether magic items can be bought or sold, and where this would occur.
-
-In a world full of magic, this sort of business should exist in some form. But it can easily get out of control; many items are cursed or otherwise dangerous. Spells may be used to create "fakes" (such as a light spell cast on a normal sword or gem). Any business dealing with magic items should, logically, have magical means of detecting and identifying the worth of the items, and connections with authorities to be sure that an item is legally salable and not stolen. Protection is also extremely important; a powerful magic-user should not be able to loot the local magic shop.
-
-Thus, the recommended place for this sort of business is the Magic-user's Guild. The "shop" should be lined with lead (blocking most magical effects), and heavily safeguarded with magical traps. Apprentices might be constantly on watch for magical visitors (possibly polymorphed spell effects, invisible things, and so forth). An invisible stalker might automatically appear if any attempt at theft occurs.
-
-You must also decide on the prices to be offered for items brought in, the items being offered for sale, and their prices. Many items might have limited availability; a powerful wand would not be freely sold to Chaotics. You can assume that all powerful items would be sold to powerful persons. A church would certainly buy any staff of curing that appears; rulers are always interested in buying potions, scrolls, and other items usable by all classes. Miscellaneous magic items would be extremely rare, and much in demand.
-
-Of all the magic items, potions are the easiest to make, and thus the most commonly found; some might be for sale. Healing and super-healing potions are those most often sought by adventurers; other types might be available as well.
-
-If you wish to have magic items available for purchase, the following prices are recommended. They are designed for higher level characters, and for sales in a large city. Fewer items should be available, and for higher prices, in smaller places. Items not listed should not be sold. Note that these are the prices to be paid by PCs to buy items, not the prices offered if some are brought in for sale.
-
+At some point in your game, the characters
+will probably find a magic item that they can-
+not use or do not want. They may then try to
+sell the item for cash.
+This forces you, the Dungeon Master, to
+decide two things: whether magic items can
+be bought or sold, and where this would
+occur.
+In a world full of magic, this sort of busi-
+ness should exist in some form. But it can eas-
+ily get out of control; many items are cursed
+or otherwise dangerous. Spells may be used
+to create "fakes" (such as a light spell cast on
+a normal sword or gem). Any business deal-
+ing with magic items should, logically, have
+magical means of detecting, and identifying
+the worth of the items, and connections with
+authorities to be sure that an item is legally
+salable, and not stolen. Protection is also
+extremely important; a powerful Magic-user
+should not be able to loot the local magic
+shop.
+Thus, the recommended place for this sort
+of business is the Magic-user's Guild. The
+"shop" should be lined with lead (blocking
+most magical effects), and heavily safe-
+guarded with magical traps. Apprentices
+might be constantly on watch for magical vis-
+itors (possibly polymorphed spell effects,
+invisible things, and so forth). An invisible
+stalker might automatically appear if any
+attempt at theft occurs. You may design such
+a place to be as tightly secure as you wish. Try
+to foresee the possible attempts at deception
+and theft, and create means to counter them.
+You must also decide on the prices to be
+offered for items brought in, the items being
+offered for sale, and their prices. Many items
+might have limited availability; a powerful
+wand would not be freely sold to Chaotics.
+You can assume that all powerful items
+would be sold to powerful persons. A church
+would certainly buy any staff of curing that
+appears; rulers are always interested in buy-
+ing potions, scrolls, and other items usable by
+all classes. Miscellaneous Magic Items would
+be extremely rare, and much in demand.
+Of all the magic items, potions are the easi-
+est to make, and thus the most commonly
+found; some might be for sale. Healing and
+super-healing potions are those most often
+sought by adventurers; other types might be
+available as well.
+If you wish to have magic items available
+for purchase, the following prices are recom-
+mended. They are designed for higher level
+characters, and for sales in a large city. Fewer
+items should be available, and for higher
+prices, in smaller places. Items not listed
+should not be sold. Note that these are the
+prices to be paid by PCs to buy items, not the
+prices offered if some are brought in for sale.
 MAGIC ITEM PRICE SUGGESTIONS
 Armor           10,000 to 150,000 gp
 Misc. Item       5,000 to 750,000 gp
@@ -1466,29 +1513,97 @@ Shield           5,000 to 100,000 gp
 Staff           15,000 to 300,000 gp
 Sword            5,000 to 500,000 gp
 Wand             5,000 to 150,000 gp
-
-The most common problem you must face is what to offer adventurers to purchase items they bring in and wish to sell. Because of taxes, operating expenses, the lower value of "used goods," cost of identifying items, and so forth, you could offer 10-30% of the values given above. You may modify this by the Charisma of the seller, adding or subtracting 5% for each point of adjustment.
-
-Experience Points: You may choose to award XP for cash gained through the sale of magic items. Beware, however, for a rare item may bring vast amounts of unearned experience, and upset the balance of your game. You may choose instead to award a set XP value for each item, regardless of the cash acquired through its sale.
+The most common problem you must face is
+what to offer adventurers to purchase items
+they bring in and wish to sell. Because of
+taxes, operating expenses, the lower value of
+"used goods," cost of identifying items, and
+so forth, you could offer 10-30% of the values
+given above. You may modify this by the
+Charisma of the seller, adding or subtracting
+5 % for each point of adjustment.
+For example, a character with 18 Cha-
+risma gains a +2 bonus to reactions, and could
+thus "barter" the offered price upward by
+10%. The transaction can be assumed, or
+may be role-played. You may also wish to cre-
+ate local laws that strictly prohibit the sale of
+magic except by and to authorized dealers,
+enforced by both the Guild and the highest
+authorities.
+Remember that these are only guidelines.
+Whatever system you use, try to be consist-
+ent. You may wish to make a list of the vari-
+ous items, their selling prices (if available),
+and the prices offered for them. Notices
+might be posted, offering rewards for the dis-
+covery of certain items - giving the charac-
+ters goals for adventuring.
+Experience Points: You may choose to
+award XP for cash gained through the sale of
+magic items. Beware, however, for a rare
+item may bring vast amounts of unearned
+experience, and upset the balance of your
+game. You may choose instead to award a set
+XP value for each item, regardless of the cash
+acquired through its sale. This is recom-
+mended; regardless of the laws, items will
+occasionally be sold to characters (either PCs
+or NPCs), who may pay more than the Guild
+amounts. Whichever you choose, the details
+should be added to your price list.
+.
 
 [Companion procedures: damage to magic items]
 Damage To Magic Items
-Any item may be damaged by rough treatment. Armor and weapons, however, are made to withstand a considerable amount of punishment.
-
-The DM should decide whether an item might be damaged, based on the item and the type of attack, and then make an Item Damage roll.
-
-Some breath weapons (acid, fire, cold) should require such checks. If the user makes his Saving Throw against the breath, bonuses can be applied to the item's roll.
-
-Long falls (100' or more) should require checks. Pools of acid, rockslides, and other cases of extreme damage should require checks for items carried. A scroll normally need not be checked except against fire damage; you may also include water damage, if desired.
-
-To check for damage to items, roll 1d4 or 1d6 (using 1d6 if the chance of damage is high). If the result is greater than the item's Strength (number of "plusses"), the item is damaged. Items without plusses may be given ratings for this purpose. Consider:
+Any item may be damaged by rough treat-
+ment. Armor and weapons, however, are
+made to withstand a considerable amount of
+punishment.
+The DM should decide whether an item
+might be damaged, based on the item and the
+type of attack, and then make an Item
+Damage roll.
+Some breath weapons (acid, fire, cold)
+should require such checks. If the user makes
+his Saving Throw against the breath, bonuses
+can be applied to the item's roll.
+Long falls (100' or more) should require
+checks. Pools of acid, rockslides, and other
+cases of extreme damage should require
+checks for items carried. A scroll normally
+need not be checked except against fire dam-
+age; you may also include water damage, if
+desired.
+To check for damage to items, roll 1d4 or
+1d6 (using 1d6 if the chance of damage is
+high). If the result is greater than the item's
+Strength (number of "plusses"), the item is
+damaged. Items without plusses may be
+given ratings for this purpose. Consider:
 any potion or scroll as a +1 item;
-any wand or staff as a +2;
-and all permanent items (such as rods, rings, and miscellaneous items) as +3.
-
-This roll may be modified; for example, if a character is hit by a rockslide, Dexterity adjustments could be applied to the rolls. If a character tries to break something, Strength adjustments could be applied. No adjustment should be greater than +2. However, adjustments to the chance of survival can be any number of subtractions from the roll. A potion bottle dropped from a tabletop might require a check for breakage, but with a -2 adjustment (thus, only a roll of 4 indicating breakage).
-
-If an item is damaged, it may either be partially damaged or completely destroyed. For items with magical bonuses, one or more points may be lost, because of damage (DM's choice). Potions, scrolls, and rings should be completely destroyed by any severe damage.
+any wand or staff as a +2
+and all permanent items (such as rods,
+rings, and miscellaneous items) as +3.
+This roll may be modified; for example, if
+a character is hit by a rockslide, Dexterity
+adjustments could be applied to the rolls. If a
+character tries to break something, Strength
+adjustments could be applied. No adjustment
+should be greater than +2. However, adjust-
+ments to the chance of survival can be any
+number of subtractions from the roll. A
+potion bottle dropped from a tabletop might
+require a check for breakage, but with a -2
+adjustment (thus, only a roll of 4 indicating
+breakage).
+If an item is damaged, it may either be par-
+tially damaged or completely destroyed. For
+items with magical bonuses, one or more
+points may be lost, because of damage,
+(DM's choice). Potions, scrolls, and rings
+should be completely destroyed by any severe
+damage.
 
 [Companion treasure tables: magic-item tables]
 3b. Types of Jewelry
@@ -1754,7 +1869,7 @@ d%     Type of Miscellaneous Item
 98     Wheel of Fortune
 99-00  Wheel, Square
 
-[Companion treasure descriptions: scrolls, wands\/staves\/rods, rings, and miscellaneous items]
+[Companion treasure descriptions: scrolls, wands/staves/rods, rings, and miscellaneous items]
 6. Scrolls
 Communication: This is actually two
 scrolls, one stored inside the other. They are
@@ -2109,7 +2224,7 @@ cure serious wounds
 neutralize poison
 Snake Staff: In addition to the powers
 given in the D&D Basic Set, charges may also
-be used, in either of two ways. U p to 5
+be used, in either of two ways. Up to 5
 charges may be spent in any round to add
 bonuses to the snake's Hit roll (+1 bonus per
 charge spent). A charge may also be spent to
@@ -2196,7 +2311,7 @@ points of damage per hit, plus magic bonuses
 Rod of the Wyrm: There are three types
 of this Rod; roll 1d10 to determine the type,
 or select one:
-Id10 Alignment Dragon
+1d10 Alignment Dragon
 AC Breath(s)
 -2 Fire/Gas
 1-5 Lawful
@@ -2383,8 +2498,6 @@ ics to become less useful in the game. Keep
 such items rare, and limit them by the use of
 expendable charges, lest they adversely affect
 your game.
-Travel, Passage, and Conveyance Seeds
-
 Boat, Undersea: This item appears iden-
 tical to a standard riverboat (Expert Set, page
 43), and can be used as one. As it is magical,
@@ -2403,15 +2516,13 @@ away.
 (The DM may wish to create magical boats
 which travel only on ice, sand, in the air, and
 so forth.)
-Time, Light, and Sudden Event Seeds
-
 Chime of Time: This simple metal stick is
 3 inches long, made of a silvery metal. O n
 command, it will keep track of time, chiming
 every hour on the hour-but the chime can
 be heard by all within 60' (regardless of
 intervening walls, rock, etc.). If dampened
-by a silence 1.5' radius spell, the chime will
+by a silence 15' radius spell, the chime will
 dispel the silence but be damped to 30 ' range
 for that turn. A second command will cause it
 to turn color: the chime then turns gold at one
@@ -2455,7 +2566,7 @@ will burn and shed light without using any
 oil. If the flame is ever doused by water, the
 lamp becomes non-magical.
 Lamp, Hurricane: This item appears
-and functions as a lamp oflong burning in all
+and functions as a lamp of long burning in all
 respects, but only after its storm has passed,
 as described hereafter.
 It is always closed when found. When the
@@ -2477,8 +2588,6 @@ used as a lamp of long burning for the
 remainder of the day. It resets its Hurricane
 every 24 hours, which must again be trig-
 gered before the lamp can be of other use.
-Control, Detection, and Trick Devices
-
 Muzzle of Training: This item is a device
 of leather straps with metal buckles, and may
 be fastened over the mouth of any animal or
@@ -2518,8 +2627,6 @@ the nail's detection, but it cannot detect living
 or Undead creatures of any type, nor any
 magical item or spell effect. The nail ofpoint-
 ing will function once per day.
-Consumables and Security Tools
-
 Ointment: This white creamy salve is
 found in a small wooden box with a cotton
 swab. If the entire contents of the box are
@@ -2556,8 +2663,6 @@ repeatedly for one hour. Its cries can be heard
 to 120 I . If its owner holds it and commands it
 to be quiet, it will obey, but will repeat its
 cries if stolen again.
-Copying, Identification, and Elemental Passage
-
 Quill of Copying: A quill is a large
 feather which can be dipped in ink and used
 as a writing implement. This quill may be
@@ -2657,8 +2762,6 @@ wearer may also force an Elemental being to
 obey instructions. This uses one charge, and
 the talisman can expend up to 10 charges per
 trip into an Elemental Plane.
-Wheels, Motion, and Fortune Devices
-
 Wheel of Floating: This item appears
 identical to a normal wagon wheel, but
 enables any wagon upon which it is mounted
@@ -2740,6 +2843,91 @@ wheel can be pulled by 2 horses and moves at
 20'/turn; with two wheels, 30'1turn; with
 three, 40'/turn; and with four, the normal
 rate of 60'/turn is possible.
+
+```
+
+### Demi-Human Crafts and Poison
+
+- Extraction note: flow-first Companion procedures extraction using right-column TSV reflow for the Demi-Human Crafts and Poison sections, explicitly skipping the Hit Points Maximum section between them.
+
+```text
+[Companion procedures: demi-human crafts]
+Demi-Human Crafts
+The rules which follow are for DM and NPC
+use only; no player character can participate
+in the construction of these famous, but
+incredibly rare items. You may place one or
+more of these in a campaign, but very few
+should exist, if at all. Each requires centuries
+of work to create, and should be treated with
+appropriate awe and respect by the demi-
+human clan involved.
+Details on rewards for the recovery of lost
+or stolen clan devices are given in each char-
+acter class description.
+Dwarf: By using the Forge of Power, the
+Keeper, Clanmaster, and several dwarven
+blacksmiths (all of maximum level) can work
+together to construct a dwarven lens-a sheet
+of pure gold, gently hammered out to perfect
+paper-thin texture. This is a long task; it
+must be worked slowly and carefully, and
+requires centuries to complete (800-1,000
+years). The completed lens is a 10' diameter
+disk, mounted in a ring of pure gemstone,
+and is used only to create oil of darkness.
+The lens actually concentrates and distills
+darkness itself to form the oil, and can only
+create one ounce per year if left in complete
+darkness throughout the year; any light will
+spoil the entire hatch.
+Oil of darkness, in turn, is used to make
+rockships, famous but extremely rare magi-
+
+[Companion procedures: poison]
+Poison
+Poison is a dangerous tool. If characters are
+permitted to use poison, monsters should be
+able to do the same. And there are far more
+monsters than characters.. .
+A potion is the most common form of poi-
+son. Its effects when used on blowgun darts
+(see Players Book, page 3) are recommended
+as a maximum for use on any weapon.
+any weapon.
+You may wish to make poisons of lesser
+power available, lacking the strength to kill,
+but able to paralyze, intoxicate, sleep, andlor
+inflict slight damage.
+Many natural plants are mildly poisonous,
+and saps or boiled leaves could yield poisons
+usable on weapons. However, poison prepa-
+ration is not common knowledge, and the
+danger of error is high (including the acciden-
+tal poisoning of the maker).
+The poison used by poisonous monsters
+comes from poison sacs or glands within the
+creature's body. After defeating a poisonous
+monster, some of the characters in your game
+may try to get and use the poison.
+The following method of controlling this
+unsavory practice is recommended. Monster
+poison should only remain potent while in the
+creature, becoming useless 1-10 rounds after
+exposure to air. Only a specially prepared
+potion ofpoison can last for a longer period.
+An intact poison sac (a rare thing after a
+swordfight!) should remain useful for only 1-
+10 rounds per Hit Die of the monster. Unpre-
+pared (non-potion) poison placed on a
+weapon becomes non-poisonous after 1-10
+rounds of exposure to air.
+The poisonous touch of certain powerful
+Undead creatures (spirit in this set) cannot be
+collected or used.
+The use of poison is evil, and may cause
+alignment problems. Local and regional laws
+may punish poisoners.
 
 ```
 

@@ -40,61 +40,9 @@ companion_magic_items_block_named() {
   printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
   printf '```text\n' >> "$OUT"
   printf '[Companion procedures: buying and selling magic items]\n' >> "$OUT"
-  cat >> "$OUT" <<'TXT'
-B. Buying and Selling Magic Items
-At some point in your game, the characters will probably find a magic item that they cannot use or do not want. They may then try to sell the item for cash.
-
-This forces you, the Dungeon Master, to decide two things: whether magic items can be bought or sold, and where this would occur.
-
-In a world full of magic, this sort of business should exist in some form. But it can easily get out of control; many items are cursed or otherwise dangerous. Spells may be used to create "fakes" (such as a light spell cast on a normal sword or gem). Any business dealing with magic items should, logically, have magical means of detecting and identifying the worth of the items, and connections with authorities to be sure that an item is legally salable and not stolen. Protection is also extremely important; a powerful magic-user should not be able to loot the local magic shop.
-
-Thus, the recommended place for this sort of business is the Magic-user's Guild. The "shop" should be lined with lead (blocking most magical effects), and heavily safeguarded with magical traps. Apprentices might be constantly on watch for magical visitors (possibly polymorphed spell effects, invisible things, and so forth). An invisible stalker might automatically appear if any attempt at theft occurs.
-
-You must also decide on the prices to be offered for items brought in, the items being offered for sale, and their prices. Many items might have limited availability; a powerful wand would not be freely sold to Chaotics. You can assume that all powerful items would be sold to powerful persons. A church would certainly buy any staff of curing that appears; rulers are always interested in buying potions, scrolls, and other items usable by all classes. Miscellaneous magic items would be extremely rare, and much in demand.
-
-Of all the magic items, potions are the easiest to make, and thus the most commonly found; some might be for sale. Healing and super-healing potions are those most often sought by adventurers; other types might be available as well.
-
-If you wish to have magic items available for purchase, the following prices are recommended. They are designed for higher level characters, and for sales in a large city. Fewer items should be available, and for higher prices, in smaller places. Items not listed should not be sold. Note that these are the prices to be paid by PCs to buy items, not the prices offered if some are brought in for sale.
-
-MAGIC ITEM PRICE SUGGESTIONS
-Armor           10,000 to 150,000 gp
-Misc. Item       5,000 to 750,000 gp
-Misc. Weapon     5,000 to 250,000 gp
-Missile          1,000 to  50,000 gp
-Missile Device  10,000 to 250,000 gp
-Potion           1,000 to  10,000 gp
-Ring            10,000 to 250,000 gp
-Rod             25,000 to 500,000 gp
-Scroll           5,000 to  75,000 gp
-Shield           5,000 to 100,000 gp
-Staff           15,000 to 300,000 gp
-Sword            5,000 to 500,000 gp
-Wand             5,000 to 150,000 gp
-
-The most common problem you must face is what to offer adventurers to purchase items they bring in and wish to sell. Because of taxes, operating expenses, the lower value of "used goods," cost of identifying items, and so forth, you could offer 10-30% of the values given above. You may modify this by the Charisma of the seller, adding or subtracting 5% for each point of adjustment.
-
-Experience Points: You may choose to award XP for cash gained through the sale of magic items. Beware, however, for a rare item may bring vast amounts of unearned experience, and upset the balance of your game. You may choose instead to award a set XP value for each item, regardless of the cash acquired through its sale.
-TXT
+  render_tsv_cols_pages_anchored_until "$pdf" 64 65 '185,370' 'B. Buying and Selling Magic Items' 'Planning and Placing Treasure' >> "$OUT"
   printf '\n[Companion procedures: damage to magic items]\n' >> "$OUT"
-  cat >> "$OUT" <<'TXT'
-Damage To Magic Items
-Any item may be damaged by rough treatment. Armor and weapons, however, are made to withstand a considerable amount of punishment.
-
-The DM should decide whether an item might be damaged, based on the item and the type of attack, and then make an Item Damage roll.
-
-Some breath weapons (acid, fire, cold) should require such checks. If the user makes his Saving Throw against the breath, bonuses can be applied to the item's roll.
-
-Long falls (100' or more) should require checks. Pools of acid, rockslides, and other cases of extreme damage should require checks for items carried. A scroll normally need not be checked except against fire damage; you may also include water damage, if desired.
-
-To check for damage to items, roll 1d4 or 1d6 (using 1d6 if the chance of damage is high). If the result is greater than the item's Strength (number of "plusses"), the item is damaged. Items without plusses may be given ratings for this purpose. Consider:
-any potion or scroll as a +1 item;
-any wand or staff as a +2;
-and all permanent items (such as rods, rings, and miscellaneous items) as +3.
-
-This roll may be modified; for example, if a character is hit by a rockslide, Dexterity adjustments could be applied to the rolls. If a character tries to break something, Strength adjustments could be applied. No adjustment should be greater than +2. However, adjustments to the chance of survival can be any number of subtractions from the roll. A potion bottle dropped from a tabletop might require a check for breakage, but with a -2 adjustment (thus, only a roll of 4 indicating breakage).
-
-If an item is damaged, it may either be partially damaged or completely destroyed. For items with magical bonuses, one or more points may be lost, because of damage (DM's choice). Potions, scrolls, and rings should be completely destroyed by any severe damage.
-TXT
+  render_tsv_cols_pages_anchored_until "$pdf" 59 60 '185,370' 'Damage To Magic Items' 'Demi-Human Crafts' >> "$OUT"
   printf '\n[Companion treasure tables: magic-item tables]\n' >> "$OUT"
   cat >> "$OUT" <<'TXT'
 3b. Types of Jewelry
@@ -360,27 +308,136 @@ d%     Type of Miscellaneous Item
 98     Wheel of Fortune
 99-00  Wheel, Square
 TXT
-  printf '\n[Companion treasure descriptions: scrolls, wands\/staves\/rods, rings, and miscellaneous items]\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 81 93 '185,370' '6. Scrolls' '10. Armor and Shields' >> "$OUT"
+  printf '\n[Companion treasure descriptions: scrolls, wands/staves/rods, rings, and miscellaneous items]\n' >> "$OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 86 93 '185,370' '6. Scrolls' '10. Armor and Shields' \
+    | sed '/^Treasures$/d' >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
+}
+
+companion_procedures_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[Companion procedures: demi-human crafts]\n' >> "$OUT"
+  render_tsv_col_pages_anchored_until "$pdf" 59 60 '185,370' 3 'Demi-Human Crafts' 'Hit points for demi-humans are limited by' >> "$OUT"
+  printf '\n[Companion procedures: poison]\n' >> "$OUT"
+  render_tsv_col_pages_anchored_until "$pdf" 60 61 '185,370' 3 'Poison' 'Hit Roll Charts' >> "$OUT"
+  printf '\n```\n\n' >> "$OUT"
+}
+
+validate_companion_staging() {
+  assert_section_contains "$COMP_OUT" '[Companion pages 13-14: high-level cleric spell material]' '[Companion pages 15-17: druid transition, philosophy, and spell material]' 'Raise Dead Fully\*' 'cleric flow is missing Companion seventh-level spell evidence'
+  assert_section_contains "$COMP_OUT" '[Companion pages 15-17: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' 'Druid Philosophy' 'druid flow is missing the philosophy transition block'
+  assert_section_not_contains "$COMP_OUT" '[Companion pages 15-17: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' '^Fighter$' 'druid flow is bleeding into the adjacent Fighter class section'
+  assert_section_contains "$COMP_OUT" '[Companion pages 22-28: magic-user 5th-9th level spell material]' '```' 'Contact Outer Plane' 'magic-user flow is missing the Companion Contact Outer Plane body'
+  assert_section_contains "$COMP_OUT" '[Companion pages 22-28: magic-user 5th-9th level spell material]' '```' '^Gate\*$' 'magic-user flow is missing the Companion Gate heading'
+  assert_section_contains "$COMP_OUT" '[Companion procedures: buying and selling magic items]' '[Companion procedures: damage to magic items]' 'Armor[[:space:]]+10,000 to 150,000 gp' 'buying/selling procedure lost the Companion price table'
+  assert_section_not_contains "$COMP_OUT" '[Companion procedures: buying and selling magic items]' '[Companion procedures: damage to magic items]' 'Planning and Placing Treasure' 'buying/selling procedure is bleeding into the next treasure-planning section'
+  assert_section_contains "$COMP_OUT" '[Companion procedures: damage to magic items]' '[Companion treasure tables: magic-item tables]' 'any potion or scroll as a \+1 item;' 'damage-to-magic-items procedure lost the item-strength bands'
+  assert_section_not_contains "$COMP_OUT" '[Companion procedures: damage to magic items]' '[Companion treasure tables: magic-item tables]' 'Demi-Human Crafts' 'damage-to-magic-items procedure is bleeding into demi-human crafts'
+  assert_section_contains "$COMP_OUT" '[Companion procedures: demi-human crafts]' '[Companion procedures: poison]' 'Dwarf: By using the Forge of Power' 'demi-human crafts flow is missing the dwarf forging procedure'
+  assert_section_not_contains "$COMP_OUT" '[Companion procedures: demi-human crafts]' '[Companion procedures: poison]' 'Hit points for demi-humans are limited by|Hit Points \(Maximum\)' 'demi-human crafts flow is bleeding into the hit-points-maximum section'
+  assert_section_not_contains "$COMP_OUT" '[Companion procedures: demi-human crafts]' '[Companion procedures: poison]' 'Aging|Damage To Magic Items|Constructs' 'demi-human crafts flow is still carrying pre-section procedure bleed'
+  assert_section_contains "$COMP_OUT" '[Companion procedures: poison]' '```' '^Poison$' 'procedures flow is missing the Companion Poison section heading'
+  assert_section_contains "$COMP_OUT" '[Companion procedures: poison]' '```' 'The use of poison is evil, and may cause' 'poison flow is truncated before its alignment/legal guidance'
+  assert_section_not_contains "$COMP_OUT" '[Companion procedures: poison]' '```' 'Hit Roll Charts|HIT ROLLS: ALL DEMI-HUMANS' 'poison flow is bleeding into the hit-roll tables'
+  assert_section_contains "$COMP_OUT" '[Companion treasure tables: magic-item tables' '[Companion treasure descriptions: scrolls, wands/staves/rods, rings, and miscellaneous items]' '01-70[[:space:]]+Magic-User|71-95[[:space:]]+Cleric|96-00[[:space:]]+Druid' 'spell-scroll type table collapsed or lost its probability rows'
+  assert_section_contains "$COMP_OUT" '[Companion treasure descriptions: scrolls, wands/staves/rods, rings, and miscellaneous items]' '```' '1-4[[:space:]]+1st or 2nd level spells' 'spell-catching capacity table collapsed in the item-description flow'
+  assert_section_contains "$COMP_OUT" '[Companion treasure descriptions: scrolls, wands/staves/rods, rings, and miscellaneous items]' '```' 'Muzzle of Training: This item is a device' 'miscellaneous-item description flow is truncated before Muzzle of Training'
+  assert_section_contains "$COMP_OUT" '[Companion treasure descriptions: scrolls, wands/staves/rods, rings, and miscellaneous items]' '```' 'monster with a bite attack\. It will magically' 'miscellaneous-item description flow lost the Muzzle of Training continuation'
+  assert_file_not_contains "$COMP_OUT" "spdl|loo'|5'x?lO'x?l'|3dlO|Typeof" 'Companion staging still contains known OCR/truncation regressions after cleanup'
 }
 
 extract_pdf "$COMP_PDF" "$COMP_TXT"
 OUT="$COMP_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Companion' 'TSR 1013 - Set 3 Companion Set.pdf'
 companion_spell_block_named 'High-Level Cleric, Druid, and Magic-User Spell Material' 'section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric, druid, and magic-user class pages, split so each spell block starts at its real section heading instead of earlier class spill.' "$COMP_PDF"
-companion_magic_items_block_named 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 'section-aware Companion treasure extraction combining an anchored buying/selling procedure block, a curated damage-to-magic-items procedure block, readable layout tables for scrolls/wands-rings-miscellaneous items, and TSV-reflowed item descriptions for scrolls, spell-catching, staffs, rods, rings, quill copying, and elemental-travel items.' "$COMP_PDF"
+companion_magic_items_block_named 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 'Companion treasure extraction split by content type: flow-first TSV reflow for buying/selling, item damage, and the scroll-through-miscellaneous-item prose descriptions; readable sequential formatting for the dense item tables; deterministic post-cleanup is limited to stable OCR and page-header repair after capture.' "$COMP_PDF"
+companion_procedures_block_named 'Demi-Human Crafts and Poison' 'flow-first Companion procedures extraction using right-column TSV reflow for the Demi-Human Crafts and Poison sections, explicitly skipping the Hit Points Maximum section between them.' "$COMP_PDF"
 cleanup_output
-set_table_qa_note "$COMP_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'treasure tables, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the new 5th-9th level magic-user spell block.' 'no blocking row/column defects remain, and the densest Companion table block has been rewritten into sequential readable tables for easier human scanning.'
+set_table_qa_note "$COMP_OUT" 'reviewed 2026-03-27 after flow-first rebuild' 'high-level cleric and druid spell runs, the Companion MU 5th-9th spell run, buying/selling and item-damage procedures, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the contiguous scroll-to-miscellaneous-item description flow.' 'major Companion sections now rebuild from heading-anchored contiguous TSV flows, lane validation covers bleed/truncation/table regressions, and no blocking Companion extraction defect remains in the audited sections.'
 append_table_qa_lines "$COMP_OUT" <<'EOF'
-- Capture confidence: **0.91** (UP from 0.78 after staging the Companion MU 5th-9th spell run)
-- Coverage note: Cleric 5th-7th level spells, Druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, and the spell-adjacent item section are now all staged from Companion source text. Remaining concerns are OCR texture and later comparison work against RC wording, not missing primary Companion spell content.
-- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, and `Magic-user Spells: Fifth to Ninth Level` are now represented in staging. The former MU spell gap is closed by the pages 22-28 TSV extraction block.
-- Gap priority: LOW — primary Companion spell coverage gap closed on 2026-03-23; remaining work is cleanup and version-difference review.
+- Capture confidence: **0.95** (UP from 0.91 after the 2026-03-27 flow-first Companion rebuild)
+- Coverage note: Cleric 5th-7th level spells, the druid transition/philosophy block plus druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, buying/selling and item-damage procedures, the Demi-Human Crafts and Poison procedures, and the spell-adjacent item section now all rebuild from Companion source text rather than pasted witness text.
+- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, `Magic-user Spells: Fifth to Ninth Level`, the key treasure/item interface run, and the audited `Demi-Human Crafts` plus `Poison` procedures are represented in staging with heading-anchored contiguous flows.
+- Gap priority: LOW — residual work is limited to OCR texture cleanup and crosswalk/provenance follow-through, not missing major Companion source coverage.
 EOF
 perl -0pi -e 's/100t the local magic shop/loot the local magic shop/g;' "$COMP_OUT"
+perl -0pi -e 's/invisible things, and so forth\.\s+An/invisible things, and so forth\)\. An/g;' "$COMP_OUT"
+perl -0pi -e 's/loo\x27/100\x27/g;' "$COMP_OUT"
+perl -0pi -e 's/ONS\s*\nMAGIC ITEM PRICE SUGGES.\s*\n/MAGIC ITEM PRICE SUGGESTIONS\n/g;' "$COMP_OUT"
+perl -0pi -e 's/Armor\s*\n10,000 to 150,000\s*\nP/Armor           10,000 to 150,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/Misc\. Item\s*\n5,000 to 750,000\s*\nP/Misc. Item       5,000 to 750,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/5,000 to 250,000\s*\nMisc\. Weapon\s*\nP/Misc. Weapon     5,000 to 250,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/1,000 to 50,000\s*\nMissile\s*\nP/Missile          1,000 to  50,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/Missile Device 10,000 to 250,000\s*\nP/Missile Device  10,000 to 250,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/Potion\s*\n1,000 to 10,000\s*\nP/Potion           1,000 to  10,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/Ring\s*\n10,000 to 250,000\s*\nP/Ring            10,000 to 250,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/25,000 to 500,000\s*\nRod\s*\nP/Rod             25,000 to 500,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/Scroll\s*\n5,000 to 75,000\s*\nP/Scroll           5,000 to  75,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/Shield\s*\n5,000 to 100,000\s*\nP/Shield           5,000 to 100,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/15,000 to 300,000\s*\nStaff\s*\nP/Staff           15,000 to 300,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/5,000 to 500,000\s*\nSword\s*\nP/Sword            5,000 to 500,000 gp/g;' "$COMP_OUT"
+perl -0pi -e 's/5,000 to 150,000\s*\nWand\s*\nP/Wand             5,000 to 150,000 gp/g;' "$COMP_OUT"
 perl -0pi -e 's/pic-\ntures of creatures within loo\x27, in any area/pic-\ntures of creatures within 100\x27, in any area/g;' "$COMP_OUT"
 perl -0pi -e 's/5\x27xlO\x27xl\x27/5\x27x10\x27x1\x27/g;' "$COMP_OUT"
+perl -0pi -e 's/01-70\s+Magic-\n\s*User/01-70    Magic-User/g;' "$COMP_OUT"
+perl -0pi -e 's/\nTreasures\n/\n/g;' "$COMP_OUT"
+perl -0pi -e 's/\bifthe\b/if the/g;' "$COMP_OUT"
+perl -0pi -e 's/\boflong\b/of long/g;' "$COMP_OUT"
+perl -0pi -e 's/\bspdl\b/spell/g;' "$COMP_OUT"
+perl -0pi -e 's/\bscrolI\b/scroll/g;' "$COMP_OUT"
+perl -0pi -e 's/\bofthis\b/of this/g;' "$COMP_OUT"
+perl -0pi -e 's/\bofspell\b/of spell/g;' "$COMP_OUT"
+perl -0pi -e 's/\bstaffcan\b/staff can/g;' "$COMP_OUT"
+perl -0pi -e 's/\bstaffof\b/staff of/g;' "$COMP_OUT"
+perl -0pi -e 's/\bofair\b/of air/g;' "$COMP_OUT"
+perl -0pi -e 's/m t 1st/must/g;' "$COMP_OUT"
+perl -0pi -e 's/purch;\s*ISt\s*:/purchase/g;' "$COMP_OUT"
+perl -0pi -e 's/Be X i iuse of/Because of/g;' "$COMP_OUT"
+perl -0pi -e 's/itc \?IT is/items/g;' "$COMP_OUT"
+perl -0pi -e 's/thi S/this/g;' "$COMP_OUT"
+perl -0pi -e 's/SUI bt racting/subtracting/g;' "$COMP_OUT"
+perl -0pi -e 's/1t 3 Cha-/18 Cha-/g;' "$COMP_OUT"
+perl -0pi -e 's/E in\( 1 could/and could/g;' "$COMP_OUT"
+perl -0pi -e 's/UF IW ard/upward/g;' "$COMP_OUT"
+perl -0pi -e 's/asst 1IT led/assumed/g;' "$COMP_OUT"
+perl -0pi -e 's/wi sh to cre-/wish to cre-/g;' "$COMP_OUT"
+perl -0pi -e 's/tl he sale of/the sale of/g;' "$COMP_OUT"
+perl -0pi -e 's/I C lealers/dealers/g;' "$COMP_OUT"
+perl -0pi -e 's/th e i highest/the highest/g;' "$COMP_OUT"
+perl -0pi -e 's/g iic lelines/guidelines/g;' "$COMP_OUT"
+perl -0pi -e 's/bc : C consist-/be consist-/g;' "$COMP_OUT"
+perl -0pi -e 's/th Le vari-/the vari-/g;' "$COMP_OUT"
+perl -0pi -e 's/a\. fa ilable/available/g;' "$COMP_OUT"
+perl -0pi -e 's/I notices/notices/g;' "$COMP_OUT"
+perl -0pi -e 's/fa lr 1 the dis-/for the dis-/g;' "$COMP_OUT"
+perl -0pi -e 's/th ec :harac-/the charac-/g;' "$COMP_OUT"
+perl -0pi -e 's/c\.\.\.\.hr lose to/choose to/g;' "$COMP_OUT"
+perl -0pi -e 's/c\.\.\.\s*\.hr lose to/choose to/g;' "$COMP_OUT"
+perl -0pi -e 's/un earned/unearned/g;' "$COMP_OUT"
+perl -0pi -e 's/c \)f your/of your/g;' "$COMP_OUT"
+perl -0pi -e 's/awa rd/award/g;' "$COMP_OUT"
+perl -0pi -e 's/of t he cash/of the cash/g;' "$COMP_OUT"
+perl -0pi -e 's/iter ns/items/g;' "$COMP_OUT"
+perl -0pi -e 's/eith ier/either/g;' "$COMP_OUT"
+perl -0pi -e 's/thc : Guild/the Guild/g;' "$COMP_OUT"
+perl -0pi -e "s/the lower '\\s*V alue/the lower value/g;" "$COMP_OUT"
+perl -0pi -e 's/oft he/of the/g;' "$COMP_OUT"
+perl -0pi -e 's/\nand the prices offered for them\. notices/\nand the prices offered for them. Notices/g;' "$COMP_OUT"
+perl -0pi -e 's/\nI\nmagic items\./\nmagic items./g;' "$COMP_OUT"
+perl -0pi -e 's/\nI\n(Sixth Level Magic-user Spells)/\n$1/g;' "$COMP_OUT"
+perl -0pi -e "s/1 00 '/100'/g;" "$COMP_OUT"
+perl -0pi -e 's/type of attack and then would/type of attack, and then/g;' "$COMP_OUT"
+perl -0pi -e 's/make make/make/g;' "$COMP_OUT"
+perl -0pi -e 's/\bd %\b/d%/g;' "$COMP_OUT"
+perl -0pi -e 's/\bU p to\b/Up to/g;' "$COMP_OUT"
+perl -0pi -e 's/\bId10\b/1d10/g;' "$COMP_OUT"
+perl -0pi -e "s/1\\.5[’']/15'/g;" "$COMP_OUT"
  perl -0pi -e 's/0 1-03/01-03/g;' "$COMP_OUT"
  perl -0pi -e 's/06- 13/06-13/g;' "$COMP_OUT"
  perl -0pi -e 's/09- 10/09-10/g;' "$COMP_OUT"
@@ -394,14 +451,11 @@ perl -0pi -e 's/5\x27xlO\x27xl\x27/5\x27x10\x27x1\x27/g;' "$COMP_OUT"
  perl -0pi -e 's/6a\. Typeof/6a. Type of/g;' "$COMP_OUT"
  perl -0pi -e 's/41-42 Elven Boots \(B\) \\\s+I/41-42 Elven Boots \(B\)/g;' "$COMP_OUT"
  perl -0pi -e 's/98 Wheel of Fortune\s+-\s+\//98 Wheel of Fortune/g;' "$COMP_OUT"
- perl -0pi -e 's/Boat, Undersea:/Travel, Passage, and Conveyance Seeds\n\nBoat, Undersea:/g;' "$COMP_OUT"
- perl -0pi -e 's/Chime of Time:/Time, Light, and Sudden Event Seeds\n\nChime of Time:/g;' "$COMP_OUT"
- perl -0pi -e 's/Muzzle of Training:/Control, Detection, and Trick Devices\n\nMuzzle of Training:/g;' "$COMP_OUT"
- perl -0pi -e 's/Ointment:/Consumables and Security Tools\n\nOintment:/g;' "$COMP_OUT"
- perl -0pi -e 's/Quill of Copying:/Copying, Identification, and Elemental Passage\n\nQuill of Copying:/g;' "$COMP_OUT"
- perl -0pi -e 's/Wheel of Floating:/Wheels, Motion, and Fortune Devices\n\nWheel of Floating:/g;' "$COMP_OUT"
 perl -0pi -e '
   s/\bX P\b/XP/g;
   s/\bD M\b/DM/g;
 ' "$COMP_OUT"
-
+assert_heading_count "$COMP_OUT" 'High-Level Cleric, Druid, and Magic-User Spell Material' 1 'Companion staging duplicated the high-level spell section heading'
+assert_heading_count "$COMP_OUT" 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 1 'Companion staging duplicated the spell-adjacent item section heading'
+assert_heading_count "$COMP_OUT" 'Demi-Human Crafts and Poison' 1 'Companion staging duplicated the demi-human crafts/poison section heading'
+validate_companion_staging

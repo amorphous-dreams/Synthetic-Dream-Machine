@@ -13,6 +13,42 @@ MASTER_TXT="$TMPDIR/master.txt"
 MASTER_PDF="$ROOT/_becmi/TSR 1021 - Set 4 Master Rules.pdf"
 MASTER_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Master.md"
 
+master_cleanup_postbuild() {
+  perl -0pi -e '
+    s/\(\(215\)/(C15)/g;
+    s/\(\(216\)/(C16)/g;
+    s/^Characters - Cleric, Druid\s*\n//mg;
+    s/\n{3,}/\n\n/g;
+  ' "$MASTER_OUT"
+}
+
+master_dedupe_top_sections() {
+  local tmp
+  tmp=$(mktemp)
+  awk '
+    /^### / {
+      if (seen[$0]++) {
+        skip = 1
+        next
+      }
+      skip = 0
+    }
+    !skip { print }
+  ' "$MASTER_OUT" > "$tmp"
+  mv "$tmp" "$MASTER_OUT"
+}
+
+master_extract_existing_section_to_tmp() {
+  local label="$1"
+  local tmp="$2"
+
+  awk -v heading="### $label" '
+    $0 == heading { in_section = 1; next }
+    /^### / && in_section { exit }
+    in_section { print }
+  ' "$OUT" > "$tmp"
+}
+
 master_spell_block_named() {
   local label="$1"
   local note="$2"
@@ -96,11 +132,25 @@ SEVENTH-LEVEL CLERIC SPELLS
 7. Wish (page 4)
 8. Wizardry (page 4)
 TXT
-  render_tsv_cols_pages_anchored_until "$pdf" 5 6 '185,370' 'Cleric' 'Characters - Cleric, Druid' \
-    | awk 'started || /^Survival$/ { started = 1; print }' >> "$OUT"
+  render_tsv_cols_pages "$pdf" 5 6 '185,370' \
+    | awk '
+        started {
+          if (/^Druid$/) exit
+          print
+          next
+        }
+        /^Survival$/ { started = 1; print }
+      ' >> "$OUT"
   printf '\n[Master pages 6-7: druid spell material]\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 6 7 '185,370' 'Druid' 'Characters - Fighter, Magic-User' \
-    | awk 'started || /^Druid$/ { started = 1; print }' >> "$OUT"
+  render_tsv_cols_pages "$pdf" 6 7 '185,370' \
+    | awk '
+        started {
+          if (/^Magic-user$/) exit
+          print
+          next
+        }
+        /^Druid$/ { started = 1; print }
+      ' >> "$OUT"
   printf '\n[Master pages 8-12: magic-user spell material]\n' >> "$OUT"
   cat >> "$OUT" <<'TXT'
 Magic-user
@@ -170,8 +220,15 @@ NINTH-LEVEL MAGIC-USER SPELLS
 11. Timestop (page 10)
 12. Wish (page 10)
 TXT
-  render_tsv_cols_pages_anchored_until "$pdf" 8 12 '185,370' 'Magic-user' 'Weapon Mastery' \
-    | awk 'started || /^Clone$/ { started = 1; print }' >> "$OUT"
+  render_tsv_cols_pages "$pdf" 8 12 '185,370' \
+    | awk '
+        started {
+          if (/^Weapon Mastery$/) exit
+          print
+          next
+        }
+        /^Clone$/ { started = 1; print }
+      ' >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
 }
 
@@ -185,7 +242,15 @@ master_nonhuman_block_named() {
   printf '```text\n' >> "$OUT"
   printf 'Spell Casters (Non-Human)\n' >> "$OUT"
   printf '\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 59 61 '185,370' 'A non-human cleric or druid is known as a' 'UNDEAD ATTEMPTS To CONTROL O T H E R UNDEAD' >> "$OUT"
+  render_tsv_cols_pages "$pdf" 59 61 '185,370' \
+    | awk '
+        started {
+          if (index($0, "UNDEAD ATTEMPTS")) exit
+          print
+          next
+        }
+        /^A non-human cleric or druid is known as a$/ { started = 1; print }
+      ' >> "$OUT"
   printf '\nUNDEAD ATTEMPTS TO CONTROL OTHER UNDEAD\n' >> "$OUT"
   printf 'Pawn          4   5-6  7-8  9-10  11-13  14-16  17-19  20-23  24-27  28-32  33+\n' >> "$OUT"
   printf 'Skeleton      7   5    3    C     C      C      C      C      C      C      C\n' >> "$OUT"
@@ -318,71 +383,111 @@ TXT
   printf '\n```\n\n' >> "$OUT"
 }
 
-master_artifacts_block_named() {
+master_artifact_chapter_context_named() {
   local label="$1"
   local note="$2"
-  local pdf="$3"
   local page
-  local source_page
 
   printf '### %s\n\n' "$label" >> "$OUT"
   printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
   printf '```text\n' >> "$OUT"
-  printf '[Master artifact pages 45-47: doctrine overview and creation rules]\n' >> "$OUT"
-  {
-    pdftotext -nodiag -nopgbrk -f 83 -l 83 -x 0 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
-    printf '\n'
-    pdftotext -nodiag -nopgbrk -f 83 -l 83 -x 200 -y 40 -W 185 -H 700 "$pdf" - 2>/dev/null
-    printf '\n'
-    render_layout_page_chars "$pdf" 83 0.2 104 180 \
-      | sed \
-          -e '1{/^[[:space:]]*Art[[:space:]]*ifact[[:space:]]*s[[:space:]]*$/d;}' \
-          -e 's/^[[:space:]]*item should activate when picked up/The item should activate when picked up/' \
-          -e 's/^[[:space:]]*Fighter\./fighter./'
-    printf '\n'
-    render_layout_page_chars "$pdf" 84 0.2 1 52
-    printf '\n'
-    render_layout_page_chars "$pdf" 84 0.2 53 104 | sed '/^[[:space:]]*46[[:space:]]*$/d'
-    printf '\n'
-    render_layout_page_chars "$pdf" 84 0.2 104 180
-    printf '\n'
-    render_layout_page_chars "$pdf" 85 0.2 1 52
-    printf '\n'
-    render_layout_page_chars "$pdf" 85 0.2 53 104
-    printf '\n'
-    render_layout_page_chars "$pdf" 85 0.2 104 180 | sed '1{/^[[:space:]]*Artifacts[[:space:]]*$/d;}'
-    printf '\n'
-  } \
-    | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d' \
-    | awk 'started || /This section introduces the greatest and most/ { started = 1; print }' \
-    | sed \
-        -e '/^[[:space:]]*Artifacts[[:space:]]*$/d' \
-        -e 's/\ba n artifact\b/an artifact/g' \
-        -e 's/\bfunctionof\b/function of/g' \
-        -e 's/\beffectand\b/effect and/g' \
-        -e 's/area o f effect/area of effect/g' \
-        -e 's/\bpowcr\b/power/g' \
-        -e 's/\bseventy of the/severity of the/g' \
-        -e 's/Damage to a n artifact/Damage to an artifact/g' \
-        -e 's/might-such[[:space:]]\+as/might-such as/g' \
-    >> "$OUT"
-  printf '\n[Master artifact pages 48-54: power tables and artifact effect descriptions]\n' >> "$OUT"
-  for page in $(seq 86 92); do
-    source_page=$((page - 38))
-    printf '\n[Master artifact page %s]\n' "$source_page"
-    pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 10 -y 40 -W 185 -H 730 "$pdf" - 2>/dev/null
-    printf '\n'
-    pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 200 -y 40 -W 185 -H 730 "$pdf" - 2>/dev/null
-    printf '\n'
-    pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 390 -y 40 -W 180 -H 730 "$pdf" - 2>/dev/null
-    printf '\n'
-  done \
-    | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d' \
-    | sed '/^[[:space:]]*Artifacts[[:space:]]*$/d' \
-    | awk 'BEGIN{blank=0} /^[[:space:]]*$/ {blank++; if (blank <= 1) print ""; next} {blank=0; print}' \
-    >> "$OUT"
-
+  for page in $(seq 83 102); do
+    if [ "$page" -eq 102 ]; then
+      {
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 10 -y 40 -W 185 -H 720 "$MASTER_PDF" - 2>/dev/null
+        printf '\n'
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 210 -y 40 -W 175 -H 720 "$MASTER_PDF" - 2>/dev/null
+        printf '\n'
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 390 -y 40 -W 180 -H 720 "$MASTER_PDF" - 2>/dev/null
+        printf '\n\n'
+      } \
+    else
+      {
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 10 -y 40 -W 185 -H 720 "$MASTER_PDF" - 2>/dev/null
+        printf '\n'
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 200 -y 40 -W 185 -H 720 "$MASTER_PDF" - 2>/dev/null
+        printf '\n'
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 390 -y 40 -W 180 -H 720 "$MASTER_PDF" - 2>/dev/null
+        printf '\n\n'
+      } \
+    fi \
+      | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d' \
+      | sed '/^[[:space:]]*Artifacts[[:space:]]*$/d' \
+      | sed '/^[[:space:]]*Other Magic Items[[:space:]]*$/d' \
+      | awk '
+          BEGIN{blank=0}
+          /^[[:space:]]*$/ { blank++; if (blank <= 1) print ""; next }
+          { blank=0; print }
+        ' \
+      >> "$OUT"
+  done
   printf '\n```\n\n' >> "$OUT"
+}
+
+master_named_artifact_operation_witnesses_named() {
+  local label="$1"
+  local note="$2"
+  local tmp
+
+  tmp=$(mktemp)
+  master_extract_existing_section_to_tmp 'Named Artifact Catalog' "$tmp"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[Derived from the staged named-artifact catalog by extracting operational paragraphs]\n\n' >> "$OUT"
+  awk '
+    function flush_record() {
+      if (artifact != "" && body != "") {
+        print artifact
+        print body
+        print ""
+      }
+      body = ""
+    }
+    function is_artifact_heading(line) {
+      return (line ~ /^[A-Z0-9][A-Z0-9'\'' ,.-]+$/ \
+        && line !~ /^THE / \
+        && line !~ /^SOURCE:/ \
+        && line !~ /^FURTHER RESEARCH:/)
+    }
+    {
+      if (is_artifact_heading($0)) {
+        flush_record()
+        artifact = $0
+        capture = 0
+        next
+      }
+      if (artifact == "") next
+
+      if ($0 ~ /^(Activation:|Use of Powers:|Suggested Handicap|Suggested Handicaps|Suggested Penalty|Suggested Penalties|Other Details:)/) {
+        if (body != "") body = body "\n"
+        body = body $0
+        capture = 1
+        next
+      }
+
+      if (capture) {
+        if ($0 ~ /^(Description:|Magnitude:|Power Limits:|Sphere:|Suggested Powers|Source:|Further Research:)/ || is_artifact_heading($0)) {
+          capture = 0
+          if (is_artifact_heading($0)) {
+            flush_record()
+            artifact = $0
+          }
+          next
+        }
+        if ($0 ~ /^[[:space:]]*$/) {
+          body = body "\n"
+          capture = 0
+          next
+        }
+        body = body "\n" $0
+      }
+    }
+    END { flush_record() }
+  ' "$tmp" >> "$OUT"
+  printf '\n```\n\n' >> "$OUT"
+  rm -f "$tmp"
 }
 
 master_named_artifacts_block_named() {
@@ -879,20 +984,22 @@ write_header 'TODO: BECMI Spell Material Staging - Master' 'TSR 1021 - Set 4 Mas
 master_spell_block_named 'Master Cleric, Druid, and Magic-User Spell Material' 'section-aware Master spell extraction using anchored TSV reflow across the actual cleric, druid, and magic-user pages instead of one broad line-range block. The section is split into cleric, druid, and magic-user sub-blocks so high-level spell lists and descriptions remain attached to the right class pages.' "$MASTER_PDF"
 master_nonhuman_block_named 'Non-Human Spellcasters and Special Spellcaster Procedures' 'section-aware Master extraction using anchored TSV reflow across the actual Spell Casters (Non-Human), special monster spellcaster, undead spellcaster, and undead-control pages instead of the earlier broad procedures slice.' "$MASTER_PDF"
 master_procedures_block_named 'Anti-Magic Effects and Dispel Magic Procedures' 'targeted Master procedures extraction using column crops from the actual Procedures pages so the anti-magic doctrine, examples, touch-dispel rules, and item-interaction notes remain readable without the section index or dominion spill.' "$MASTER_PDF"
-master_artifacts_block_named 'Artifact Power Doctrine and Artifact Effect Procedures' 'final targeted Master addition from the actual artifact-doctrine pages, capturing artifact purpose, activation, power limits, recharging, intelligence, adverse effects, attack/destruction rules, and power-category guidance that Immortals explicitly relies on for non-spell magical effects. The named-artifact catalog is emitted separately below as its own staged section.' "$MASTER_PDF"
-master_named_artifacts_block_named 'Named Artifact Catalog' 'targeted Master expansion across the known-artifact catalog pages, now rebuilt as a curated source-derived block so the full artifact packaging, activation framing, power bundles, drawbacks, and reference notes remain readable and complete as source evidence.' "$MASTER_PDF"
-master_other_magic_items_block_named 'Other Legendary Magic Items Appendix' 'targeted Master appendix addition from pages 63-64, curating the post-catalog legendary-item list so mythic item seeds and reference examples remain attached to the artifact section as readable source evidence.' "$MASTER_PDF"
+master_artifact_chapter_context_named 'Artifact Chapter Context and Witnesses' 'Master-specific continuous artifact chapter extraction spanning pages 45-64 so doctrine, power tables, explanations, named artifacts, and the post-catalog appendix remain in one staged run for downstream witness use and manual review.' 
 cleanup_output
 set_table_qa_note "$MASTER_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables.' 'the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.'
 append_table_qa_lines "$MASTER_OUT" <<'EOF'
 - Capture confidence: **0.95** (UP from 0.91 after staging the Master procedure gap)
-- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, artifact doctrine, named artifacts, and the post-catalog appendix are now staged from Master source text. Remaining issues are ordinary OCR texture and later cleanup, not major source-evidence gaps.
+- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and one continuous artifact chapter context/witness section are now staged from Master source text. Remaining issues are ordinary OCR texture and later cleanup, not major source-evidence gaps.
 - ToC cross-check: Core spell, procedures, and artifact sections are now accounted for in the Master lane, including `Anti-Magic Effects` and `Dispel Magic` from the Procedures section.
 - Gap priority: LOW — the previously documented Master procedure gap is closed.
 EOF
 perl -0pi -e '
   s/^\x27[[:space:]]*\n//mg;
   s/\(B41, X11 \)/\(B41, X11\)/g;
+  s/\bpowcr\b/power/g;
+  s/effectand/effect and/g;
+  s/area o f/area of/g;
+  s/^ Save/Save/mg;
   s/Cure Light Wounds[^\n]*\(B26, X5\)/Cure Light Wounds* \(B26, X5\)/g;
   s/Teleport any Object \(EF 1 cr\/obj\/lO\x27/Teleport any Object \(EF 1 cr\/obj\/10\x27/g;
   s/Resist Fire \(DR 6T, EF \+ 2ST, -1ldie D;/Resist Fire \(DR 6T, EF \+ 2ST, -1\/die D;/g;
@@ -1081,6 +1188,7 @@ perl -0pi -e '
   s/Anti-Animal SheJJ/Anti-Animal Shell/g;
   s/\bCl6\b/C16/g;
   s/telepathicallly/telepathically/g;
+  s/M8\) M8\)/M8\)/g;
   s/coinsider/consider/g;
   s/revealr3/reveals/g;
   s/fu ture/future/g;
@@ -1163,3 +1271,5 @@ perl -0pi -e '
   s/\bfro\b/for/g;
   s/to - ([0-9])/to -$1/g;
 ' "$MASTER_OUT"
+master_cleanup_postbuild
+master_dedupe_top_sections

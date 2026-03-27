@@ -16,12 +16,12 @@ Source PDF:
 ## Table Check QA Pass
 
 - Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
-- Scope checked: leveled spell lists, spell-expansion sections, and structured spell-property blocks.
+- Scope checked: leveled spell lists, spell-expansion sections, structured spell-property blocks, magic support infrastructure, and high-value spell-adjacent item/procedure doctrine.
 - Result: no blocking row/column defects found in the visible Expert table and list regions.
 
 - Capture confidence: **0.89**
-- Coverage note: Core Expert cleric and magic-user spell expansions, research, and lost-book procedures are staged cleanly. The page-65 miscellaneous magic-item list is fully present in this staging block; remaining issues are OCR texture and minor normalization.
-- ToC cross-check: Expert CONTENTS review found spell sections, research/lost-book procedures, and the full page-65 `h. MISCELLANEOUS MAGIC ITEMS` list accounted for.
+- Coverage note: Core Expert cleric and magic-user spell expansions, magic support infrastructure, research/lost-book procedures, and high-value treasure-chapter item doctrine are staged cleanly. The page-65 miscellaneous magic-item list is fully present in this staging block; remaining issues are OCR texture and minor normalization.
+- ToC cross-check: Expert CONTENTS review found spell sections, support/research procedures, and the full page-65 `h. MISCELLANEOUS MAGIC ITEMS` list accounted for.
 - Gap priority: LOW — cleanup is now readability-focused, not structural coverage.
 ### Clerical and Magic-User Spell Expansions
 
@@ -1522,6 +1522,17 @@ A magic-user or elf whose spell book is lost or destroyed cannot regain spells u
 
 ```
 
+### Magic Support Infrastructure
+
+- Extraction note: page-26 layout slices target the Alchemist and Sage specialist support entries and then apply narrow OCR cleanup to preserve those two magic-relevant procedures without carrying the full specialist roster.
+
+```text
+[Expert page 26: magic support infrastructure]
+Alchemist (1000 gp/month): If given a formula or a sample, an alchemist may make a duplicate potion at half the normal time and cost. They may also conduct research into different types of potions at twice the cost and time required for a magic-user.
+Sage (2000 gp/month): A sage is an advisor, capable of answering questions involving obscure knowledge. There is always a chance of failure in researching obscure questions. The DM must decide on extra costs of finding ancient books and time required. Sages are usually rare, and there might be few in an entire campaign.
+
+```
+
 ### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text
 
 - Extraction note: curated Expert reconstruction from treasure pages 60-65, combining cursed-item doctrine, general magic-item operation notes, scroll procedures, ring procedures, wand/staff/rod procedures, and the full page-65 miscellaneous magic-item list.
@@ -1661,6 +1672,223 @@ Medallion of ESP (90'): This allows the user to listen to another's thoughts to 
 Mirror of Life Trapping: Any man-size or smaller creature looking into the mirror must make a Saving Throw vs. Spells or be sucked into it with all equipment. The mirror may store up to 20 creatures.
 
 Scarab of Protection: This automatically absorbs any curse and will also absorb a finger of death. It works 2-12 times before becoming worthless.
+
+```
+
+### Magic Item Doctrine and Intelligent Weapons
+
+- Extraction note: page-59 to page-61 column slices target generic magic-item doctrine, intelligent-weapon control rules, and the specific control-potion subset needed for downstream spell/effect coverage; cleanup normalizes OCR scars and dehyphenates wrapped words.
+
+```text
+[Expert pages 59-61: magic item doctrine, intelligent weapons, and potion interfaces]
+Magic Item Notes
+
+If the range or duration of a magic item is
+not given, treat it the same as a magic spell
+from a 6th level spell caster.
+The following notations may appear on
+the charts.
+
+(B) The item is described in the D&D
+Basic Set, and not described here.
+(c) The item may only be used by a cleric.
+(m) The item may only be used by a magic-
+user or elf.
+(s) The item may only be used by a spell
+caster (cleric, magic-user, or elf).
+
+To randomly find a magic item, roll d% and
+find the result on Magic Items Table #1.
+Then turn to the Subtable indicated and roll
+d% again to find the exact item. Item de-
+scriptions are included after the subtables.
+
+Explanation of Magic Items
+
+Several items can detect, control, or other-
+wise perform actions within a given range.
+Any of these actions can be blocked by a
+thin sheet of lead, 1' of any other metal, or
+10' of stone.
+Intelligent Swords
+Certain magic swords may be intelligent,
+and may have other special abilities as well.
+An intelligent sword should be played by
+the DM, just like an NPC character. Intel-
+ligent swords have no wisdom, and should be
+played accordingly, relying on the owner's
+wisdom for guidance and decision making.
+The DM's first step is to decide whether
+the sword is an "ordinary" intelligent sword
+or a Special Sword. Special Swords are ex-
+tremely rare; they should always be placed
+with care, and not randomly determined. If
+you choose to place a Special Sword, turn to
+page 60. Otherwise, use the procedure
+given below.
+
+1. Determine the sword's Intelligence (1d20)
+and languages known.
+2. Find the sword's Alignment (1d20).
+3. Find the sword's Powers (d%). (If extra
+powers are indicated, another d% roll will
+be needed.)
+4. Find the sword's Ego score (1d12).
+
+1. Intelligence: Remember that any sword
+is only intelligent if the result of a roll of
+1d20 is 15 or greater (or if you, as DM, wish
+
+Languages: A speaking sword talks aloud if
+drawn, held, and asked a question. It will usually cooperate, within its limits. Any sword
+that reads magic also reads the languages it can speak. A speaking sword can always speak its
+alignment tongue plus the number of lan-
+guages rolled (or chosen). The DM must se-
+lect the exact languages known.
+
+4. Ego: Roll 1d12 to determine the Ego
+score of the sword. Ego is a measure of
+
+strength of personality.
+
+Now add the sword's Intelligence and
+Ego scores to find its Will Power. Add 1 to
+Will Power for each Extraordinary Power (if
+any). Make a note of the total Will Power of
+
+the sword.
+When an intelligent sword is handled, it
+may try to control its user! The DM must
+compare the Will Power of the sword to that
+of the user, and find the results (see Control
+Check).
+A character's Will Power is the total of
+character's Intelligence and Wisdom scores.
+The DM may subtract 1-8 points of Will
+Power if the character is wounded. If the
+sword and the user are of different align-
+ments, the sword gains another 1-10 points
+of Will Power. (This must be determined for
+each change of users.)
+
+Control Check: An intelligent sword will try
+to control its user in each of five different
+situations:
+
+1. When the user first handles the sword.
+2. When the user is wounded, and has 1/2
+normal hit points remaining (or less).
+3. When the user acquires any other
+magic weapon.
+4. When anyone else uses the sword.
+5. When a Special Purpose could be used
+(if applicable).
+To make the control check, the DM simply
+compares the Will Power scores of the user
+and the sword. The higher score takes control! The DM must determine the actions of
+any sword in control. The control lasts either until the sword is satisfied or until the
+situation which caused the control check has
+passed. Typical results are:
+Leading the user past other magic weapons found, or to discard other weapons.
+Forcing the user to charge into combat to
+win glory for itself.
+Forcing the user to surrender to an opponent - either one more worthy of the
+sword, or one easier to control.
+Forcing the user to spend money on items
+for the sword, such as jeweled fittings, fancy
+scabbards, and so forth.
+
+Special Swords
+
+Special Swords are created by powerful
+beings for definite purposes. These swords
+are then carefully placed where they will be
+found and eventually put to their special
+
+use. The following Special Purposes are
+suggested; the DM may create others. NO
+Special Sword is ever created for more than
+one Special Purpose.
+1. Slay a character type (such as clerics)
+
+2. Slay a monster type (such as gargoyles)
+3. Slay a specific being
+
+4. Slay a race type (such as demi-humans)
+5. Defeat a specific Alignment
+Every Special Sword has a score of 12 for
+both Intelligence (see chart for languages
+
+and abilities) and Ego. Each Special Sword
+gains the following abilities, determined by
+the sword's alignment, when used for its
+Special Purpose:
+
+A Lawful sword will paralyze a Chaotic
+opponent struck unless the victim makes a
+Saving Throw vs. Spells.
+A Neutral sword adds + 1 to all of the
+user's Saving Throws.
+A Chaotic sword will cause a Lawful opponent struck to make a Saving Throw vs.
+Turn to Stone or be Turned to Stone.
+
+Control Potions
+
+Control Potions: When using these po-
+tions, the user must see the victims to direct
+their actions. The controlled creatures can-
+not be forced to kill themselves. The charac-
+ter cannot perform any other actions while
+controlling others, and may only move at up
+to 1/2 normal speed. Any victim may make a
+Saving Throw vs. Spells to avoid the Con-
+trol, but the user may repeat the attempt
+once per round, on any victim seen, until
+the potion's duration ends.
+Animal Control: The user may control
+up to 3-18 Hit Dice of animals (normal or
+giant, but not fantastic or magical). When
+the control ends, the animals will be afraid,
+and will leave the area if they can.
+
+Dragon Control: There are several dif-
+ferent types of this potion, one for each
+
+dragon type. The user may control up to 3
+dragons at once. The controlled dragons
+will do whatever is commanded of them ex-
+cept for casting spells. They will be hostile
+when the control ends.
+
+Heroism: This has no effect on a cleric,
+elf, magic-user, or thief. A fighter, dwarf,
+halfling, or normal man (or monster!) gains
+the Hit Dice, hit points, and all abilities of
+higher level character (or monster), as fol-
+lows:
+
+Level       Effect
+
+Normal Man Becomes a 4th level fighter
+1-3     Gain 3 levels or Hit Dice
+4-7     Gain 2 levels or Hit Dice
+8-10    Gain 1 level or Hit Die
+11  +   No Effect
+
+All wounds taken during the duration of
+the potion - including energy drains! -
+are subtracted from the magically gained hit
+points and levels first.
+
+Invulnerability: The user's Armor Class
+and Saving Throws gain a bonus of 2 for the
+duration of the potion. If used more than
+once per week, the only effect is sickness.
+
+Treasure Finding: By concentrating, the
+user can detect the direction and distance
+(but not the amount) of the largest treasure
+within 360'.
 
 ```
 

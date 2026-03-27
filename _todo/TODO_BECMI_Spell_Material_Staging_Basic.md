@@ -1192,7 +1192,7 @@ lock will relock when allowed to close
 
 ### Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books
 
-- Extraction note: curated Basic reconstruction from DM pages 17-18 for higher-level cleric and magic-user spell guidance, plus a short player-facing spell-book/lost-book carryover from the earlier magic-user section so this staging block keeps the spell-allocation and lost-book procedures attached to the higher-level guidance.
+- Extraction note: anchored TSV extraction from DM pages for higher-level cleric/magic-user procedures and spell-allocation doctrine, with curated fallback when anchor quality drops below required section coverage.
 
 ```text
 [Basic DM page 17: Higher Level Spells]
@@ -1301,164 +1301,581 @@ A spell on a scroll may be saved, to be put into a book at a future time. It may
 
 ```
 
-### Scrolls and Spell-Adjacent Treasure Text
+### Magic Item Identification, Use Model, and Charge Doctrine
 
-- Extraction note: curated Basic reconstruction from treasure pages 42-45, combining the scroll/ring material with the surrounding item-operation rules that matter for later spell and magic-item curation: identification, permanent vs. temporary behavior, concentration and charge rules, potion duration and interaction rules, wand/staff/rod use restrictions, and selected miscellaneous devices with strong spell-adjacent procedures.
+- Extraction note: anchored TSV extraction from Basic treasure explanatory text covering identification procedure, permanent-vs-temporary typing, concentration-based item use constraints, and non-recharge charge behavior.
 
 ```text
-[Basic treasure pages 43-44: Scrolls and Rings]
-e. Scrolls
-
-A scroll is a piece of old paper or parchment upon which a high level magic-user, elf or cleric has written a magical formula. To use a scroll, there must be enough light to read by, and the scroll must be read aloud. A scroll can only be used once, for the words will fade from the scroll when they are read aloud. A spell scroll can only be read by a magic-user, elf, or cleric (depending on the type of spell), but a Protection Scroll or a Treasure Map can be read by anyone.
-
-Spell Scroll: These scrolls may have 1, 2, or 3 spells written on them. If more than one spell is written on a scroll, only the spell cast will disappear when read. Spell scrolls may have either magic-user or cleric spells on them. To find the type, roll 1d4:
-
-TYPE OF SPELL ON SCROLL
-Die Roll   Type
-1          Cleric spell
-2-4        Magic-user spell
-
-Magic-user spells are written in a magical language and cannot be read until a Read Magic spell is used to read them. Cleric scrolls are written in the Common tongue but only a cleric will understand how to use the spells.
-
-Magic-users and elves cannot use cleric scrolls, nor can clerics read magic-user scrolls.
-
-You may either choose the spells on a scroll or determine them randomly. If you wish to choose them randomly, roll 1d6 for each spell and use the chart below to find the spell level. Then roll to determine the exact spell, using the spell lists in the PLAYERS MANUAL or the 3rd level spell list in this booklet.
-
-LEVEL OF SPELL ON SCROLL
-Die Roll   Level
-1-3        1st level
-4-5        2nd level
-6          3rd level
-
-Cursed Scroll: Unfortunately, when any writing on a cursed scroll is even seen, the victim is immediately cursed. No reading is necessary. The DM must make up each curse. Examples of a few common curses are:
-
-1. The reader turns into a frog (or some other harmless animal).
-2. A wandering monster of the same level as the reader appears and attacks the reader by surprise (a free attack with bonuses).
-3. One magic item owned by the reader disappears (the item is chosen or randomly determined by the DM).
-4. The reader loses one level of experience, as if struck by a wight. You should roll again for a first level character, to avoid unfair "instant death."
-5. The reader's Prime Requisite must be rerolled.
-6. Wounds will take twice as long to heal, and healing spells only restore half normal amounts.
-
-Only a Remove Curse spell can remove a curse of this nature. However, you may allow the cursed character to be cured by a high level NPC cleric or magic-user, who will demand that the character complete a special adventure or perform a worthy but difficult task.
-
-Protection Scroll: A protection scroll may be read and used by any class. When read, it creates a circle of protection 10' across which will move with the reader at its center. It will prevent any of the given creatures from entering this circle, but does not prevent spell or missile attacks from those creatures. The circle will be broken if anyone protected attacks one of the given creatures in hand-to-hand combat.
-
-Protection from Lycanthropes: When read, this scroll will protect all those within the circle from a variable number of lycanthropes for 6 turns. The number of lycanthropes affected varies according to their type, as follows:
-
-Wererats:              1-10 affected
-Werewolves, wereboars: 1-8 affected
-Weretigers, werebears: 1-4 affected
-
-Protection from Undead: When read, this scroll will protect all those within the circle from a variable number of undead for 6 turns. The number of undead affected varies according to their type, as follows:
-
-Skeletons, zombies, or ghouls:  2-24 affected
-Wights, wraiths, or mummies:    2-12 affected
-Spectres (or larger):           1-6 affected
-
-Treasure Map: A treasure map should be made by the DM in advance, and should show the location of some treasure hoard in a dungeon. The DM may choose any combination of treasures to equal the total value given. These treasures should be guarded by monsters. Sometimes maps are only partially complete, or are written in the form of riddles, and can only be read by using a Read Languages spell.
-
-f. Rings
-
-A magical ring must be worn on a finger or thumb to be used. A ring may also be carried and put on when desired. Only one magic ring can be worn on each hand. If more than that are worn, none of the rings will function, with the exception of a ring of weakness. Any ring may be used by any character class.
-
-Animal Control: The wearer of this ring may command 1-6 normal animals (or 1 giant-sized). The animals are not allowed a Saving Throw. The ring will not control intelligent animal races or fantastic or magical monsters. The wearer must be able to see the animals to control them. The control will last as long as the wearer concentrates and does not move or fight. When the wearer stops concentrating, the animals will be free to attack their controller or run away (roll reactions with a penalty of -1 on the roll). This ring can only be used once per turn.
-
-Fire Resistance: The wearer of this ring will not be harmed by normal fires, and gains a bonus of +2 on all Saving Throws vs. Fire Spells and vs. Red Dragon breath. In addition, the DM must subtract 1 point from each die of fire damage to the wearer (with a minimum damage of 1 point per die rolled to determine the damage).
-
-Invisibility: The wearer is invisible as long as the ring is worn. If the wearer attacks or casts spells, he or she will become visible. The wearer can only become invisible once per turn.
-
-Protection +1: This ring improves the wearer's Armor Class by 1. For example, a magic-user with no armor (AC 9) would be AC 8 when wearing the ring. This item also adds a bonus of +1 to all of the wearer's Saving Throw rolls.
-
-Water Walking: The wearer of this ring may walk on the surface of any body of water, and will not sink.
-
-Weakness: When this ring is put on, the wearer becomes weaker, and his or her Strength score becomes 3 within 1-6 rounds. The wearer cannot take off this ring unless a Remove Curse spell is used.
-
-[Basic treasure pages 42-45: item operation, potions, wands, staves, rods, and miscellaneous devices]
 Identifying Magic Items
-
-The only way to identify exactly what an item does is by testing it: trying on the ring, sipping the potion, and so forth. If a retainer does this testing, the retainer will expect to keep the item. A high level NPC magic-user may be asked to identify an item, but will want money or a service in advance and may take several weeks of game time to do it.
-
+The only way to identify exactly what an
+item does is by testing it (trying on the ring,
+sipping the potion, etc.). If a retainer does
+this testing, the retainer will expect to keep
+the item. A high level NPC magic-user may
+be asked to identify an item, but will want
+money or a service in advance and may
+take several weeks (game time, not real
+time) to do it.
 Types of Magic Items
-
 There are two basic types of magic items:
-- Permanent items, which are not used up, such as swords and armor
-- Temporary items, which are used either once, such as potions, or one charge at a time, such as wands
-
+Permanent items, which are not used up
+(such as swords and armor), and Tempo-
+rary items, which are used either once
+(such as potions) or one "charge" at a time
+(such as wands).
+.
 Using Magic Items
-
-Any magic item must be properly used to have any effect. A magic shield has no effect unless it is carried normally, and a ring must be worn on a finger to gain its magical effect.
-
-Some Permanent items are simply for protection. No concentration is required to use these items. Magic weapons also function automatically.
-
-All Temporary items are either consumed by drinking or eating, or used by concentrating. If not consumed, the item must be held while the user concentrates. While using the item, the user may not move, cast a spell, or take any other action during that round.
-
+Any magic item must be properly used to
+have any effect. A magic shield will have no
+effect unless it is carried normally; a ring
+must be worn on a finger to get the magical
+effect.
+Some Permanent items are simply for
+protection. No concentration is required to
+use these items. Magic weapons also func-
+tion automatically.
+All Temporary items are either con-
+sumed (by drinking or eating) or used by
+concentrating. If not consumed, the item
+must be held while the user concentrates.
+While using the item, the user may not
+move, cast a spell, or take any other action
+during that round.
 Charges in Magic Items
-
-Many Temporary items have a limited number of charges or uses. When the last charge is used, the item is no longer magical. It is not possible to find out how many charges an item has, and such items cannot be recharged.
+Many Temporary items have a limited
+number of charges (uses). When the last
+charge is used, the item is no longer magi-
+cal. It is not possible to find out how many
+charges an item has, and such items cannot
+be recharged.
+Magic Item Descriptions:
 
 Additional Consumables
 
 Holy Water: This is water specially prepared by a cleric for use against undead creatures. It can be used by any character. Holy Water must be kept in small, specially prepared glass bottles known as vials for it to remain Holy. The effect of one vial of Holy Water on an undead creature is 1-8 points of damage. To cause damage, it must successfully strike the target, thus breaking the vial. It may either be thrown using missile fire rules or used in hand-to-hand combat using normal combat rules.
 
+```
+
+### Magical Weapons, Armor, and Cursed Item Doctrine
+
+- Extraction note: anchored TSV extraction from treasure pages for cursed-weapon behavior, magical armor table interpretation, and cursed-armor handling prior to the scroll and ring catalog.
+
+```text
+A cursed sword will cause the player to
+subtract one from all Hit Rolls and Damage
+Rolls when using that weapon, instead of
+giving a bonus. Once a cursed sword is
+used in battle, it may not be thrown away.
+If it is stolen or sold, the character is cursed
+with the desire to get it back. The character
+will always use that weapon when in battle.
+(DM, tell the player that this is what the
+character wants - and no arguments!)
+Only a high level NPC magic-user or cleric
+can help a character be rid of the curse.
+After the curse is removed, the sword will
+become a "normal" magic sword, of what-
+ever type was rolled.
+b. Other Weapons
+As with magic swords, the "plus" number is
+added to both Hit Rolls and Damage Rolls.
+And as with swords, any item may be cursed,
+though there is less chance with other weap
+ons. Roll 1d20; if the result is 1-2, the item is
+cursed. The curse is handled in the same
+manner as a cursed sword.
+Normal weapon restrictions apply. Since
+a magic-user cannot use a sling, a magic-
+user cannot use a magical sling, either.
+c. Armor
+Armor comes in many shapes and sizes.
+The better the armor, the lower your AC
+number. Magical armor and shields can
+lower the AC number even further.
+MAGICAL ARMOR TABLE
+Type of
+Normal magical Encumbrance
+KC
+armor
+Adiustment
+AC
++ 100 cn
+Leather
++250 cn
+Chain mail
++300 cn
+Plate mail
+*
+*
+Shield
+none
+Explanation of Magical Armor Table:
+"Normal AC" is the AC of a character
+wearing normal armor of the type given.
+"Magical AC" is the AC of a character
+wearing magical armor of the type given.
+"Encumbrance Adjustment" is the
+added amount that a character can carry
+when wearing magical armor of the type
+given. In other words, magical chain mail
+weighs 250 cn less than non-magical chain
+mail armor.
+A shield + 1 would lower the AC num-
+ber one more. For example, a fighter in
+normal chain mail and shield would be AC
+4. If a set of magical chain mail and shield
++
+were found (both l), the AC would drop
+1 for the armor and 1 more for the shield,
+for a total of AC 2. If a + 2 shield were
+used, the AC number would drop 1 more,
+for a total of AC 1.
+Cursed Armor: Armor and shields may be
+cursed! You should roll 1d8 when either is
+placed as treasure; a result of 1 indicates
+that the item is cursed. Handle cursed
+armor in the same manner as cursed
+swords. Cursed armor makes a character
++
+easier to hit by 1.
+You may either select the size of the
+armor found (most is human-sized) or
+determine it randomly.
 d. Potions
+Potions are usually found in small glass
+vials, similar to Holy Water. Each potion
+has a different smell and taste - even two
+potions with the same effect! Unless stated
+otherwise, the effect of a potion lasts 7-12
+turns. Only you, the DM, should know the
+exact duration, and you should keep track
+of it when the potion is used. The entire
+potion must be drunk to have this effect. A
+potion may be sipped to discover its type
+and then used later. Drinking a potion
+takes one round. Sipping a potion does not
+decrease its effect or duration.
+If a character drinks a potion while
+another potion is still in effect, that charac-
+ter will become sick and will be unable to
+do anything (no saving throw) for 3 turns
+(1/2 hour) and neither potion will have any
+further effect. A potion of healing has no
+duration (for this calculation). Each type of
+potion is described below:
+Diminution: Anyone taking this potion
+will immediately shrink to 6 in height, and
+can do no damage when physically attack-
+ing a creature larger than 1'. The user can
+slip through small cracks and has a 90%
+chance of not being seen when standing
+still. This potion will negate a potion of
+growth.
+ESP This potion will have the same effect
+as the magic-user spell ESP. The user may
+"hear" the thoughts (if any) of one creature
+within 60' by concentrating for one full
+turn in one direction. The user may "hear"
+through 2 feet of rock, but a thin coating
+of lead will block the ESP. Refer to the
+magic-user spell (PLAYERS MANUAL,
+page 41) for more information.
+Gaseous Form: Upon drinking this potion,
+the user's body will take the form of a cloud
+of gas. Anything the user is carrying or
+wearing will fall through the gaseous body
+to land on the floor. The user will keep
+control over his or her body, and can move
+through small holes in walls, chests, and so
+forth. Any creature or character in gaseous
+form cannot attack, but has an AC of - 2
+and cannot be harmed by non-magical
+weapons.
+Treasure
+Growth: This potion causes the user to
+grow to twice normal size, temporarily
+increasing Strength and giving the ability
+to inflict double damage (twice the amount
+rolled) on any successful hit. The user's hit
+points, however, will not increase. This
+potion will negate a potion of diminution.
+Healing: Like the clerical cure light
+wounds s ell, drinking this potion will
+restore 2-y lost hit points or will cure
+paralysis for one creature.
+Invisibility: This potion will have the same
+effects as the magic-user spell invisibility.
+The potion will make the user invisible.
+When a character becomes invisible, all the
+items (but not other creatures) carried and
+worn by that character also become invisi-
+ble. Any invisible item will become visible
+once again when it leaves the character's
+possession (is set down, dropped, and so
+forth). See the magic-user spell (page 41) of
+the PLAYERS' MANUAL) for more infor-
+mation. The DM may allow players to
+drink small amounts of this potion 6 times,
+each drink being effective but only for 1
+turn.
+Levitation: Drinking this potion will have
+the same effects as the magic-user spell
+levitation. The user may move up or down
+in the air without any support. This potion
+does not enable the user to move side-to-
+side. The user could, however, levitate to a
+ceiling and move sideways by pushing or
+pulling. Motion up or down is at a rate of
+60' per round. See the magic-user spell
+(page 41 of the PLAYERS MANUAL) for
+more information.
+Poison: Poisons look like n ormal magic
+potions. If any amount of t his potion is
+swallowed, even a sip, the usc :r must make
+a Saving Throw vs. Poison or die! (If you
+wish, you may decide that th le poison will
+do a set amount of damage if the Saving
+Throw is failed.)
 
-Potions are usually found in small glass vials, similar to Holy Water. Each potion has a different smell and taste, even two potions with the same effect. Unless stated otherwise, the effect of a potion lasts 7-12 turns. Only the DM should know the exact duration and should keep track of it when the potion is used. The entire potion must be drunk to have this effect. A potion may be sipped to discover its type and then used later. Drinking a potion takes one round. Sipping a potion does not decrease its effect or duration.
+```
 
-If a character drinks a potion while another potion is still in effect, that character will become sick and will be unable to do anything, with no saving throw, for 3 turns, and neither potion will have any further effect. A potion of healing has no duration for this calculation.
+### Scrolls and Spell-Adjacent Treasure Text
 
-Diminution: The user immediately shrinks to 6 inches in height and can do no damage when physically attacking larger creatures. The user's normal movement rate is halved. The effect lasts 6 turns. This potion will negate a potion of growth.
+- Extraction note: anchored TSV extraction from treasure pages for scroll/ring/item-operation doctrine, with curated fallback to preserve section completeness if extraction anchors degrade.
 
-ESP: The user may read the thoughts of one creature in 30' by concentrating for one turn. It lasts 12 turns.
-
-Gaseous Form: The user becomes a cloud of gas for 6 turns. In this form the user cannot attack, cast spells, or use items, but may move through small openings.
-
-Growth: The user grows to twice normal size, temporarily increasing Strength and giving the ability to inflict double damage on any successful hit. The user's hit points do not increase. This potion will negate a potion of diminution.
-
-Healing: Like the clerical cure light wounds spell, this potion restores 2-7 lost hit points or cures paralysis for one creature.
-
-Invisibility: This potion has the same effects as the magic-user spell invisibility. It makes the user invisible. Items carried and worn by that character also become invisible. Any invisible item becomes visible again when it leaves the character's possession. The DM may allow this potion to be drunk in 6 small amounts, each one effective for 1 turn.
-
-Levitation: This potion has the same effects as the magic-user spell levitation. The user may move up or down without support, but not side-to-side except by pushing or pulling. Vertical movement is 60' per round.
-
-Poison: The user must make a Saving Throw vs. Poison or die. The result is known in 1-10 turns.
-
+```text
+e. Scrolls
+A scroll is a piece of old pay ier or parch-
+ment upon which a high levc :1 magic-user,
+elf or cleric has written a ma5 $tal formula.
+To use a scroll, there must be enough light
+to read by, and the scroll r nust be read
+aloud. A scroll can only be used once, for
+the words will fade from thc 3 scroll when
+they are read aloud. A spell SI croll can only
+be read by a magic-user, I Elf, or cleric
+(depending on the type of spell), but a
+Protection Scroll or a Treasur e Map can be
+read by anyone.
+Treasure
+Spell Scroll: These scrolls may have 1,2, or
+3 spells written on them. If more than one
+spell is written on a scroll, only the spell
+cast will disappear when read. Spell scrolls
+may have either magic-user or cleric spells
+on them. To find the type, roll 1d4:
+TYPE OF SPELL ON SCROLL
+Die
+roll
+type
+Cleric spell
+2-4
+Magic-user spell
+Magic-user spells are written in a magical
+language and cannot be read until a Read
+Magic spell (PLAYERS' MANUAL, page
+40) is used to read it. Cleric scrolls are
+written in the Common tongue but only a
+cleric will understand how to use the spells.
+Magic-users and elves cannot use cleric
+scrolls, nor can clerics read magic-user
+scrolls.
+You may either choose the spells on a
+Scroll or determine them randomly. If you
+wish to choose them randomly, roll Id6 for
+each spell and use the chart below to find
+the spell level. Then roll to determine the
+exact spell, using the spell lists (PLAYERS'
+MANUAL, page 35, or page 17 of this
+booklet for 3rd level spells).
+LEVEL OF SPELL ON SCROLL
+~
+Die
+Roll
+Level
+1-3
+1st level
+2nd level
+4-5
+3rd level
+Cursed Scroll: Unfortunately, when any
+writing on a cursed scroll is even seen, the
+victim is immediately cursed. No reading is
+necessary! You, the DM, must make up
+each curse. Examples of a few common
+curses are:
+The reader turns into a frog (or some
+other harmless animal).
+A wandering monster of the same level
+as the reader appears and attacks the
+reader by surprise (a free attack with
+bonuses).
+One magic item owned by the reader
+disappears (the item is chosen or ran-
+domly determined by the DM).
+The reader loses one level of experi-
+ence, as if struck by a wight. (You
+should roll again for a first level charac-
+ter, to avoid unfair "instant death.")
+5. The reader's Prime Requisite must be
+rerolled.
+6. Wounds will take twice as long to heal,
+and healing spells only restore half nor-
+mal amounts.
+Only a Remove Curse spell (see the D&D
+EXPERT SET) can remove a curse of this
+nature. However, you may allow the cursed
+character to be cured by a high level NPC
+cleric or magic-user, who will demand that
+the character complete a special adventure
+or perform a worthy but difficult task.
+Protection Scroll: A protection scroll may
+be read and used by any class. When read,
+it creates a circle of protection 10' across
+which will move with the reader at its
+center. It will prevent any of the given
+creatures from entering this circle, but
+does not prevent spell or missile attacks
+from those creatures. The circle will be
+broken if anyone protected attacks one of
+the given creatures in hand-to-hand com-
+bat.
+Protection from Lycanthropes: When read, this
+scroll will protect all those within the circle
+from a variable number of lycanthropes
+for 6 turns. The number of lycanthropes
+affected varies according to their type, as
+follows:
+1-10 affected
+Wererats:
+Werewolves, wereboars:
+1-8 affected
+Weretigers, werebears:
+1-4 affected
+Protection f r m Undead: When read, this
+scroll will protect all those within the circle
+from a variable number of undead for 6
+turns. The number of undead affected
+varies according to their type, as follows:
+Skeletons, zombies,
+or ghouls:
+2-24 affected
+Wights, wraiths,
+or mummies:
+2-12 affected
+Spectres (or larger):
+1-6 affected
+Treasure Map: A treasure map should be
+made by the DM in advance, and should
+show the location of some treasure hoard
+in a dungeon. The DM may choose any
+combination of treasures to equal the total
+value given. These treasures should be
+guarded by monsters. Sometimes maps are
+only partially complete, or are written in
+the form of riddles, and can only be read
+by using a Read Languages spell.
+f. Rings
+A magical ring must be worn on a finger or
+thumb to be used. A ring may also be
+carried and put on when desired. Only one
+magic ring can be worn on each hand. If
+more than that are worn, none of the rings
+will function, with the exception of a ring of
+weakness (see below). Any ring may be used
+by any character class.
+Animal Control: The wearer of this ring
+may command 1-6 normal animals (or 1
+giant-sized). The animals are not allowed a
+Saving Throw. The ring will not control
+intelligent animal races or fantastic or mag-
+ical monsters. The wearer must be able to
+see the animals to control them. The con-
+trol will last as long as the wearer concen-
+trates on the animals and does not move or
+fight. When the wearer stops concentrat-
+ing, the animals will be free to attack their
+controller or run away (roll reactions with a
+penalty of -1 on the roll). This ring can
+only be used once per turn.
+Fire Resistance: The wearer of this ring
+will not be harmed by normal fires, and
++
+gains a bonus of 2 on all Saving Throws
+vs. Fire Spells and vs. Red Dragon breath.
+In addition, the DM must subtract 1 point
+from each die of fire damage to the wearer
+(with a minimum damage of 1 point per
+die rolled to determine the damage).
+Invisibility: The wearer is invisible as long
+as the ring is worn. If the wearer attacks or
+casts spells, he or she will become visible.
+The wearer can only become invisible once
+per turn.
+Protection +1: This ring improves the
+wearer's Armor Class by 1. For example, a
+magic-user with no armor (AC 9) would be
+AC 8 when wearing the ring. This item
+also adds a bonus of $1 to all of the
+wearer's Saving Throw rolls.
+Water Walking: The wearer of this ring
+may walk on the surface of any body of
+water, and will not sink.
+Weakness: When this ring is put on, the
+wearer becomes weaker, and his or her
+Strength score becomes 3 within 1-6
+rounds. The wearer cannot take off this
+ring (unless a Remove Curse spell is used,
+as explained in the D&D EXPERT rules).
 g. Wands, Staves, and Rods
-
-A wand is a thin smooth stick about 18 inches long. A rod is similar, but 3 feet long, and a staff is 2 inches thick and about 6 feet long. In D&D BASIC rules, wands may only be used by magic-users and elves, and staves may only be used by clerics. A wand contains 1-10 charges when found.
-
-Wand of Enemy Detection: When a charge is used, all enemies within 60', even hidden or invisible ones, glow as if on fire.
-
-Wand of Magic Detection: When a charge is used, any magic item within 20' glows. If the item cannot normally be seen, such as inside a closed chest, the glow is not seen.
-
-Wand of Paralyzation: When a charge is used, this wand projects a cone-shaped ray 60' long and 30' wide at its end. Any creature struck must make a Saving Throw vs. Wands or be paralyzed for 6 turns.
-
-Staff of Healing: This item heals 2-7 points of damage per use. It may only be used once per day on each person, but can heal any number of persons once per day. It does not have or use charges.
-
-Snake Staff: This magical staff is a Staff +1 and inflicts 2-7 points of damage per hit. Upon command, it turns into a snake and coils around a creature it hits. The victim may make a Saving Throw vs. Spells to avoid the serpent's coil. Any man-sized or smaller victim is held helpless for 1-4 turns unless released sooner. Larger creatures cannot be coiled. When freed, the snake returns to its owner and becomes a staff again. The snake is completely healed when it returns to staff form. If killed in snake form, it does not return to staff form and loses all magical properties. It does not have or use charges.
-
-Rod of Cancellation: This rod is usable by any character. It works only once, but drains any magic item it hits, making that item forever non-magical. The target is treated as Armor Class 9. The DM may adjust this Armor Class if the item is being used in combat.
-
+A wand is a thin smooth stick about 18
+inches long. A rod is similar, but 3 feet
+long; and a staff is 2 inches thick and about
+6 feet long. In D&D BASIC rules, wands
+may only be used by magic-users and elves,
+and staves may only be used by clerics.
+(More of these items, with different
+charges and usable by different classes, are
+given in the EXPERT Set.) A wand con-
+tains 1-10 charges when found. Each item is
+described below:
+Wand of Enemy Detection: When a
+charge is used, this item will cause all
+enemies within 60' (even those hidden or
+invisible) to glow, as if on fire.
+Wand of Magic Detection: When a charge
+is used, this item will cause any magic item
+within 20' to glow. If the item cannot
+normally be seen (within a closed chest, for
+example), the glow will not be seen.
+Wand of Paralyzation: This wand projects
+a cone-shaped ray when a charge is used.
+The ray is 60' long and 30' wide at its end.
+Any creature struck by the ray must make
+a Saving Throw vs. Wands or be paralyzed
+for 6 turns.
+Staff of Healing: This item will heal 2-7
+points of damage per use. It may only be
+used once per day on each person, but will
+heal any number of persons once a day. It
+does not have nor use any charges.
+Snake Staff: This magical staff is a Staff
+$1, and will inflict 2-7 points of damage
+per hit.
+Upon command, it turns into a snake
+(AC 5 , Hit Dice 3, hit points 20, Movement
+60' per turn, 20' per round) and coils
+around the creature struck. The command
+may be spoken when the victim is hit. The
+victim is allowed to make a Saving Throw
+vs. Spells to avoid the serpent's coil. Any
+man-sized or smaller victim will be held
+helpless for 1-4 turns (unless the snake is
+ordered by the owner to release the victim
+before that time). Larger creatures cannot
+be "coiled."
+When freed, the snake crawls back to its
+owner and becomes a staff once again. The
+snake is completely healed when it turns
+into a staff. If killed in snake form, it will
+not return to staff form and loses all magi-
+cal properties. This item does not have nor
+use any charges.
+Rod of Cancellation: This rod is usable by
+any character. It will only work once, but
+will drain any magic item it hits, making
+that item forever non-magical. The target
+is treated as having an Armor Class of 9.
+The DM may adjust the Armor Class of an
+item if it is being used in combat (such as
+when trying to hit a sword).
 h. Miscellaneous Magic Items
-
-Bag of Devouring: This item looks like a normal small sack, but anything placed within it disappears. If not removed within 7-12 turns, the contents are forever lost.
-
-Bag of Holding: This item looks like a normal small sack, but will actually hold treasures up to 10,000 cn in weight while only weighing 600 cn when full. An item may be no larger than 10' x 5' x 3' to fit inside it.
-
-Crystal Ball: This item can only be used by an elf or magic-user. Its owner may look into it and see any place or object thought of. It works 3 times per day, and the image lasts 1 turn. Spells cannot be cast through the crystal ball. The more familiar the object or area, the clearer the picture.
-
-Elven Cloak: The wearer is nearly invisible; roll 1d6 and the wearer is seen only on a 1.
-
-Elven Boots: The wearer may move with nearly complete silence; roll 1d10 and the wearer is heard only on a 1.
-
-Gauntlets of Ogre Power: These gauntlets give the wearer Strength 18, gaining all normal bonuses. If a weapon is not used in combat, the wearer may strike with one fist each round for 1-4 points of damage with a +3 bonus on Hit Rolls.
-
-Helm of Alignment Changing: When put on, this helm immediately changes the wearer's alignment, randomly determined by the DM. It may only be removed with Remove Curse, and the wearer resists removal. Once removed, the original alignment returns.
-
-Helm of Telepathy: The wearer may send messages by thought to any creature within 90', and may also read the thoughts of a living creature within range. To use it, the wearer must concentrate on the creature and may not move or cast spells. If the creature fails a Saving Throw vs. Spells, or permits the thought reading, the wearer understands the creature's thoughts.
-
-Medallion of ESP: If the wearer concentrates for 1 round, the wearer may read the thoughts of one creature within 30'. The wearer may move normally but cannot fight or cast spells while concentrating. The DM must roll 1d6 each time this item is used; on a 1, it broadcasts the wearer's thoughts to everyone within 30' instead.
-
-Rope of Climbing: This rope climbs in any direction on command, fastens itself to protruding surfaces, and supports up to 10,000 cn of weight.
+Each of these items is special, and is fully
+described below.
+Bag of Devouring: This item looks like a
+normal small sack, but anything placed
+within it disappears. Anyone may reach in
+and find the contents by touch - if the
+contents are still there! If the contents are
+not removed witin 7-12 turns, they will be
+forever lost. The bag will not affect living
+creatures unless the entire creature is
+stuffed inside the bag. This is impossible to
+do except with very small creatures.
+Bag of Holding: This item looks like a
+normal small sack, but anything placed
+within it disappears. Anyone may reach in
+and find the contents by touch. The bag
+will actually hold treasures up to 10,000 cn
+in weight, but will only weigh 600 cn when
+full. An item to be placed inside the bag
+may be no larger than 10' x 5' x 3'. A
+larger item will not fit inside.
+Crystal Ball: This item can only be used by
+an elf or magic-user. Its owner may look
+into it and see any place or object thought
+of. It will work 3 times per day, and the
+image will only last for 1 turn. Spells cannot
+be cast "through" the crystal ball. The
+more familiar the object or area to be seen,
+the clearer the picture will be.
+Elven Cloak: The wearer of this cloak is
+nearly invisible (roll 1d6; seen only on a 1).
+Treasure
+The wearer becomes visible when attack-
+ing or casting a spell, and may not become
+invisible again for a full turn.
+Elven Boots: The wearer of these boots
+may move with nearly complete silence
+(roll 1d10; only heard on a 1).
+Gauntlets of Ogre Power: These gauntlets
+will give the wearer a Strength score of 18,
+gaining all normal bonuses. If a weapon is
+not used in combat, the wearer may strike
+with one fist each round, for 1-4 points of
+damage and gaining a + 3 on Hit Rolls
+(only).
+Helm of Alignment Changing: This item
+looks like a fancy helmet. When the helm is
+put on, it will immediately change the
+wearer's alignment (the DM should deter-
+mine the new alignment randomly). This
+device may only be taken off by using a
+Remove Curse spell, and the wearer will
+resist the removal. Once removed, the
+wearer's original alignment will return.
+The DM may allow the character to re-
+move it by performing a special task or
+adventure.
+Helm of Telepathy: This item looks like a
+fancy helmet. The wearer of this helm may
+send messages, by mere thought, to any
+creature within 90'. The creature receiving
+the thought messages will understand
+them. (The creature may refuse to re-
+spond.) The wearer may also read the
+thoughts of a living creature within range.
+To make the helm work, the wearer must
+concentrate on the creature, and may not
+move or cast spells. If the creature fails'a
+Saving Throw vs. spells (or permits the
+thought reading), the wearer will under-
+stand the creature's thoughts.
+Medallion of ESP: This magical medallion
+is strung on a chain to be worn around the
+neck. If the wearer concentrates for 1
+round, he or she may read the thoughts of
+any one creature within 30'. The wearer
+may move normally but cannot fight nor
+cast spells while concentrating. The DM
+must roll 1d6 each time this item is used; it
+will not work properly on a roll of 1. If this
+occurs, it hill broadcast the thoughts of the
+user to everyone within 30'! The DM may
+allow a Saving Throw vs. Spells to prevent
+the medallion from reading a creature's
+thoughts.
+Rope of Climbing: This 50' long, thin,
 
 ```
 

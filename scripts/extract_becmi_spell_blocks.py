@@ -20,6 +20,7 @@ from pathlib import Path
 
 TITLE_RANGE_RE = re.compile(r"^[A-Za-z0-9'.,()/*+\- ]+$")
 FIELD_RE = re.compile(r"^(Range|Duration|Effect):")
+PAGE_NUMBER_RE = re.compile(r"^\d{1,3}$")
 
 
 def parse_args() -> argparse.Namespace:
@@ -75,6 +76,20 @@ def looks_like_section_heading(line: str) -> bool:
     return bool(letters_only) and letters_only.isupper() and len(letters_only) >= 6
 
 
+def clean_block(block: list[str]) -> list[str]:
+    cleaned: list[str] = []
+    for line in block:
+        stripped = line.strip()
+        if PAGE_NUMBER_RE.match(stripped):
+            continue
+        if stripped.startswith("[") and stripped.endswith("]"):
+            continue
+        cleaned.append(line.rstrip())
+    while cleaned and not cleaned[-1].strip():
+        cleaned.pop()
+    return cleaned
+
+
 def find_block(lines: list[str], title: str) -> list[str] | None:
     candidates: list[list[str]] = []
     for index, raw_line in enumerate(lines):
@@ -94,8 +109,7 @@ def find_block(lines: list[str], title: str) -> list[str] | None:
                 break
             block.append(line)
             cursor += 1
-        while block and not block[-1].strip():
-            block.pop()
+        block = clean_block(block)
         if len(block) >= 4:
             candidates.append(block)
     if not candidates:

@@ -76,6 +76,33 @@ render_layout_pages() {
     | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d'
 }
 
+render_layout_pages_anchored() {
+  local pdf="$1"
+  local start_page="$2"
+  local end_page="$3"
+  local colspacing="$4"
+  local anchor="$5"
+
+  render_layout_pages "$pdf" "$start_page" "$end_page" "$colspacing" \
+    | awk -v anchor="$anchor" 'started || index($0, anchor) { started=1; print }'
+}
+
+render_layout_pages_anchored_until() {
+  local pdf="$1"
+  local start_page="$2"
+  local end_page="$3"
+  local colspacing="$4"
+  local anchor="$5"
+  local stop_anchor="$6"
+
+  render_layout_pages_anchored "$pdf" "$start_page" "$end_page" "$colspacing" "$anchor" \
+    | awk -v stop_anchor="$stop_anchor" '
+        stopped { next }
+        index($0, stop_anchor) { stopped=1; next }
+        { print }
+      '
+}
+
 render_layout_page_chars() {
   local pdf="$1"
   local page="$2"
@@ -125,6 +152,11 @@ render_tsv_cols_pages() {
   awk -F '\t' -v bounds="$bounds" '
 function flush() {
   if (have_line && text != "") {
+    if (text ~ /^[0-9]+$/ && (line_top + 0) >= 720) {
+      text = ""
+      have_line = 0
+      return
+    }
     col = 1
     n = split(bounds, b, ",")
     for (i = 1; i <= n; i++) if ((line_left + 0) >= (b[i] + 0)) col = i + 1
@@ -142,6 +174,73 @@ END { flush() }
     | sort -t $'\t' -k1,1n -k2,2n -k3,3n -k4,4n \
     | cut -f5-
   rm -f "$tmp"
+}
+
+render_tsv_col_pages() {
+  local pdf="$1"
+  local start_page="$2"
+  local end_page="$3"
+  local bounds="$4"
+  local target_col="$5"
+  local tmp
+  tmp=$(mktemp)
+  pdftotext -tsv -f "$start_page" -l "$end_page" "$pdf" "$tmp" 2>/dev/null
+  awk -F '\t' -v bounds="$bounds" -v target_col="$target_col" '
+function flush() {
+  if (have_line && text != "") {
+    if (text ~ /^[0-9]+$/ && (line_top + 0) >= 720) {
+      text = ""
+      have_line = 0
+      return
+    }
+    col = 1
+    n = split(bounds, b, ",")
+    for (i = 1; i <= n; i++) if ((line_left + 0) >= (b[i] + 0)) col = i + 1
+    if (col == target_col) {
+      printf "%d\t%f\t%d\t%s\n", page, line_top, seq++, text
+    }
+  }
+  text = ""
+  have_line = 0
+}
+NR == 1 { next }
+$1 == 1 { flush(); page = $2 + 0; next }
+$1 == 4 { flush(); have_line = 1; line_left = $7 + 0; line_top = $8 + 0; text = ""; next }
+$1 == 5 && have_line { text = (text == "" ? $12 : text " " $12); next }
+END { flush() }
+  ' "$tmp" \
+    | sort -t $'\t' -k1,1n -k2,2n -k3,3n \
+    | cut -f4-
+  rm -f "$tmp"
+}
+
+render_tsv_col_pages_anchored() {
+  local pdf="$1"
+  local start_page="$2"
+  local end_page="$3"
+  local bounds="$4"
+  local target_col="$5"
+  local anchor="$6"
+
+  render_tsv_col_pages "$pdf" "$start_page" "$end_page" "$bounds" "$target_col" \
+    | awk -v anchor="$anchor" 'started || index($0, anchor) { started=1; print }'
+}
+
+render_tsv_col_pages_anchored_until() {
+  local pdf="$1"
+  local start_page="$2"
+  local end_page="$3"
+  local bounds="$4"
+  local target_col="$5"
+  local anchor="$6"
+  local stop_anchor="$7"
+
+  render_tsv_col_pages_anchored "$pdf" "$start_page" "$end_page" "$bounds" "$target_col" "$anchor" \
+    | awk -v stop_anchor="$stop_anchor" '
+        stopped { next }
+        index($0, stop_anchor) { stopped=1; next }
+        { print }
+      '
 }
 
 render_tsv_cols_pages_anchored() {
@@ -236,6 +335,113 @@ text_anchored_until() {
     }
     index($0, start) { started = 1; print }
   ' "$file"
+}
+
+text_substring_anchored_until() {
+  local file="$1"
+  local start="$2"
+  local stop="$3"
+
+  awk -v start="$start" -v stop="$stop" '
+    started {
+      if (stop != "" && index($0, stop)) exit
+      print
+      next
+    }
+    index($0, start) {
+      started = 1
+      print substr($0, index($0, start))
+    }
+  ' "$file"
+}
+
+fail_staging_validation() {
+  local message="$1"
+  printf 'staging validation failed: %s\n' "$message" >&2
+  exit 1
+}
+
+assert_file_contains() {
+  local file="$1"
+  local pattern="$2"
+  local description="$3"
+
+  if ! rg -q --multiline "$pattern" "$file"; then
+    fail_staging_validation "$description"
+  fi
+}
+
+assert_file_not_contains() {
+  local file="$1"
+  local pattern="$2"
+  local description="$3"
+
+  if rg -q --multiline "$pattern" "$file"; then
+    fail_staging_validation "$description"
+  fi
+}
+
+assert_heading_count() {
+  local file="$1"
+  local heading="$2"
+  local expected_count="$3"
+  local description="$4"
+  local actual_count
+
+  actual_count=$(rg -c "^### ${heading}\$" "$file")
+  if [ "$actual_count" -ne "$expected_count" ]; then
+    fail_staging_validation "$description (expected $expected_count, found $actual_count)"
+  fi
+}
+
+section_between_markers_to_tmp() {
+  local file="$1"
+  local start_marker="$2"
+  local stop_marker="$3"
+  local tmp
+
+  tmp=$(mktemp)
+  awk -v start_marker="$start_marker" -v stop_marker="$stop_marker" '
+    started {
+      if (stop_marker != "" && index($0, stop_marker)) exit
+      print
+      next
+    }
+    index($0, start_marker) { started = 1; print }
+  ' "$file" > "$tmp"
+  printf '%s\n' "$tmp"
+}
+
+assert_section_contains() {
+  local file="$1"
+  local start_marker="$2"
+  local stop_marker="$3"
+  local pattern="$4"
+  local description="$5"
+  local tmp
+
+  tmp=$(section_between_markers_to_tmp "$file" "$start_marker" "$stop_marker")
+  if ! rg -q --multiline "$pattern" "$tmp"; then
+    rm -f "$tmp"
+    fail_staging_validation "$description"
+  fi
+  rm -f "$tmp"
+}
+
+assert_section_not_contains() {
+  local file="$1"
+  local start_marker="$2"
+  local stop_marker="$3"
+  local pattern="$4"
+  local description="$5"
+  local tmp
+
+  tmp=$(section_between_markers_to_tmp "$file" "$start_marker" "$stop_marker")
+  if rg -q --multiline "$pattern" "$tmp"; then
+    rm -f "$tmp"
+    fail_staging_validation "$description"
+  fi
+  rm -f "$tmp"
 }
 
 page_layout_anchor_block_named() {

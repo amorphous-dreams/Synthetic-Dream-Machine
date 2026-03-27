@@ -193,6 +193,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 - Apply `Level` for force-of-source, dispel/counterforce, summon strength, and curse-removal strength.
 - Record ambiguous classic spell names in TODO notes rather than leaving them implicit in chapter prose.
 - Phase B execution order is locked for this pass: Chapter 06 design decisions -> Chapter 06 alpha completion -> Chapter 05 bridge continuation.
+- Phase B operational queue source: `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md -> Phase B Backlog: Chapter 06 osr: Import`.
 
 ### Phase C: Family-by-Family Internal Conversion
 - Convert item families in a fixed order:

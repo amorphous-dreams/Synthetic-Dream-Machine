@@ -13,6 +13,154 @@ EXPERT_TXT="$TMPDIR/expert.txt"
 EXPERT_PDF="$ROOT/_becmi/TSR 1012B - Set 2 Expert Rules.pdf"
 EXPERT_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Expert.md"
 
+expert_cleanup_snippet() {
+  perl -0pe '
+    s/\f//g;
+    s/\x{2018}|\x{2019}/'\''/g;
+    s/\x{201C}|\x{201D}/"/g;
+    s/gpimonth/gp\/month/g;
+    s/T h e/The/g;
+    s/\.4ny/Any/g;
+    s/euil/evil/g;
+    s/mapc/magic/g;
+    s/samewav/same way/g;
+    s/\bYz\b/1\/2/g;
+    s/\bi s\b/is/g;
+    s/\#l/#1/g;
+    s/([[:alpha:]])-\n([[:alpha:]])/$1$2/g;
+    s/advi-\s*sor/advisor/g;
+    s/involv-\s*ing/involving/g;
+    s/time re-\s*quired/time required/g;
+    s/\n Sage/\nSage/g;
+    s/^\s*Intelligent Swords\s*\n\s*Intelligent Swords\s*$/Intelligent Swords/mg;
+    s/^\s*["”\x{201d}\x{201c}]+\s*$//mg;
+    s/^\s*(ll|ble|the)\s*$//mg;
+    s/^t,\s+or /or /mg;
+    s/^the\s+A Lawful/A Lawful/mg;
+    s/\bwel$/well/mg;
+    s/\bwheth$/whether/mg;
+    s/\bextr$/extra/mg;
+    s/\bld$/ld20/mg;
+    s/\bd7c\b/d%/g;
+    s/owner\x27/owner\x27s/g;
+    s/as well\nAn/as well.\nAn/g;
+    s/turn t/turn to/g;
+    s/Then turn too/Then turn to/g;
+    s/turn too/turn to/g;
+    s/\(1d20\nand languages known\./\(1d20\)\nand languages known./g;
+    s/result of a roll\n1d20/result of a roll of\n1d20/g;
+    s/result of a roll of\nld20/result of a roll of\n1d20/g;
+    s/\bld20\b/1d20/g;
+    s/\bld12\b/1d12/g;
+    s/it will us/it will usually/g;
+    s/languages it\nspeak/languages it can\nspeak/g;
+    s/five differ\nsituations/five different\nsituations/g;
+    s/first handles the swor/first handles the sword/g;
+    s/until t\nsituation/until the\nsituation/g;
+    s/fan\nscabbards/fancy\nscabbards/g;
+    s/\bYz\b/1\/2/g;
+    s/\bi s\b/is/g;
+    s/\bwill us\nally\b/will usually/g;
+    s/\bwill us\b/will usually/g;
+    s/will usually\s+ally cooperate/will usually cooperate/g;
+    s/languages it\s+speak/languages it can speak/g;
+    s/first handles the swordd\./first handles the sword./g;
+    s/\bcon-\n\s*trol\b/control/g;
+    s/\bei-\n\s*ther\b/either/g;
+    s/\bweap-\n\s*ons\b/weapons/g;
+    s/\boppo-\n\s*nent\b/opponent/g;
+    s/\bop-\n\s*ponent\b/opponent/g;
+    s/\bpo-\n\s*tions\b/potions/g;
+    s/\bCon-\n\s*trol\b/Control/g;
+    s/\bcharac-\n\s*ter\b/character/g;
+    s/\bfol-\n\s*lows\b/follows/g;
+    s/\bde-\n\s*scriptions\b/descriptions/g;
+    s/^\s*\.\s*$//mg;
+    s/[ \t]+\n/\n/g;
+    s/\n{3,}/\n\n/g;
+    s/^[ \t]+//mg;
+  '
+}
+
+expert_magic_support_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[Expert page 26: magic support infrastructure]\n' >> "$OUT"
+
+  {
+    pdftotext -layout -nodiag -nopgbrk -f 28 -l 28 "$pdf" - 2>/dev/null \
+      | cut -c1-55 \
+      | sed -n '30,36p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 28 -l 28 "$pdf" - 2>/dev/null \
+      | cut -c50-98 \
+      | sed -n '42,49p'
+  } | expert_cleanup_snippet | perl -0pe 's/\n(?=\S)/ /g; s/ {2,}/ /g; s/\n\n/\n\n/g; s/^ +//mg' >> "$OUT"
+
+  printf '\n```\n\n' >> "$OUT"
+}
+
+expert_magic_item_doctrine_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[Expert pages 59-61: magic item doctrine, intelligent weapons, and potion interfaces]\n' >> "$OUT"
+
+  {
+    printf 'Magic Item Notes\n\n'
+    pdftotext -layout -nodiag -nopgbrk -f 61 -l 61 "$pdf" - 2>/dev/null \
+      | cut -c1-48 \
+      | sed -n '13,39p'
+    printf '\nIntelligent Swords\n'
+    pdftotext -layout -nodiag -nopgbrk -f 61 -l 61 "$pdf" - 2>/dev/null \
+      | cut -c97-150 \
+      | sed -n '4,32p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 61 -l 61 "$pdf" - 2>/dev/null \
+      | cut -c49-96 \
+      | sed -n '52,59p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 62 -l 62 "$pdf" - 2>/dev/null \
+      | cut -c49-96 \
+      | sed -n '52,75p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 62 -l 62 "$pdf" - 2>/dev/null \
+      | cut -c97-150 \
+      | sed -n '11,75p'
+    printf '\nControl Potions\n\n'
+    pdftotext -layout -nodiag -nopgbrk -f 63 -l 63 "$pdf" - 2>/dev/null \
+      | cut -c1-47 \
+      | sed -n '34,49p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 63 -l 63 "$pdf" - 2>/dev/null \
+      | cut -c1-47 \
+      | sed -n '61,68p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 63 -l 63 "$pdf" - 2>/dev/null \
+      | cut -c48-95 \
+      | sed -n '23,43p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 63 -l 63 "$pdf" - 2>/dev/null \
+      | cut -c48-95 \
+      | sed -n '50,53p'
+    printf '\n'
+    pdftotext -layout -nodiag -nopgbrk -f 63 -l 63 "$pdf" - 2>/dev/null \
+      | cut -c48-95 \
+      | sed -n '72,75p'
+  } | expert_cleanup_snippet >> "$OUT"
+
+  printf '\n```\n\n' >> "$OUT"
+}
+
 expert_scrolls_block_named() {
   local label="$1"
   local note="$2"
@@ -358,14 +506,20 @@ OUT="$EXPERT_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Expert' 'TSR 1012B - Set 2 Expert Rules.pdf'
 expert_spell_expansions_block_named 'Clerical and Magic-User Spell Expansions' 'stitched Expert spell extraction: clerical spell pages 7-11 and magic-user spell pages 13-18 use separate TSV coordinate reflow passes so the real spell sections stay in source order and the intervening fighter/thief class tables are excluded.' "$EXPERT_PDF"
 expert_research_block_named 'Research and Lost Spell Books' 'curated Expert reconstruction from pages 27-28, replacing the contaminated line-range slice with the actual research procedures, item-creation examples, and lost spell-book recovery guidance.'
+expert_magic_support_block_named 'Magic Support Infrastructure' 'page-26 layout slices target the Alchemist and Sage specialist support entries and then apply narrow OCR cleanup to preserve those two magic-relevant procedures without carrying the full specialist roster.' "$EXPERT_PDF"
 expert_magic_items_block_named 'Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 'curated Expert reconstruction from treasure pages 60-65, combining cursed-item doctrine, general magic-item operation notes, scroll procedures, ring procedures, wand/staff/rod procedures, and the full page-65 miscellaneous magic-item list.'
+expert_magic_item_doctrine_block_named 'Magic Item Doctrine and Intelligent Weapons' 'page-59 to page-61 column slices target generic magic-item doctrine, intelligent-weapon control rules, and the specific control-potion subset needed for downstream spell/effect coverage; cleanup normalizes OCR scars and dehyphenates wrapped words.' "$EXPERT_PDF"
 cleanup_output
-set_table_qa_note "$EXPERT_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'leveled spell lists, spell-expansion sections, and structured spell-property blocks.' 'no blocking row/column defects found in the visible Expert table and list regions.'
+set_table_qa_note "$EXPERT_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'leveled spell lists, spell-expansion sections, structured spell-property blocks, magic support infrastructure, and high-value spell-adjacent item/procedure doctrine.' 'no blocking row/column defects found in the visible Expert table and list regions.'
 append_table_qa_lines "$EXPERT_OUT" <<'EOF'
 - Capture confidence: **0.89**
-- Coverage note: Core Expert cleric and magic-user spell expansions, research, and lost-book procedures are staged cleanly. The page-65 miscellaneous magic-item list is fully present in this staging block; remaining issues are OCR texture and minor normalization.
-- ToC cross-check: Expert CONTENTS review found spell sections, research/lost-book procedures, and the full page-65 `h. MISCELLANEOUS MAGIC ITEMS` list accounted for.
+- Coverage note: Core Expert cleric and magic-user spell expansions, magic support infrastructure, research/lost-book procedures, and high-value treasure-chapter item doctrine are staged cleanly. The page-65 miscellaneous magic-item list is fully present in this staging block; remaining issues are OCR texture and minor normalization.
+- ToC cross-check: Expert CONTENTS review found spell sections, support/research procedures, and the full page-65 `h. MISCELLANEOUS MAGIC ITEMS` list accounted for.
 - Gap priority: LOW — cleanup is now readability-focused, not structural coverage.
 EOF
 perl -0pi -e 's/any one creature within IO\x27\. The spell may/any one creature within 10\x27. The spell may/g;' "$EXPERT_OUT"
-
+assert_heading_count "$EXPERT_OUT" 'Clerical and Magic-User Spell Expansions' 1 'Expert staging duplicated the spell-expansions section heading'
+assert_heading_count "$EXPERT_OUT" 'Research and Lost Spell Books' 1 'Expert staging duplicated the research section heading'
+assert_heading_count "$EXPERT_OUT" 'Magic Support Infrastructure' 1 'Expert staging duplicated the magic-support section heading'
+assert_heading_count "$EXPERT_OUT" 'Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 1 'Expert staging duplicated the treasure/item section heading'
+assert_heading_count "$EXPERT_OUT" 'Magic Item Doctrine and Intelligent Weapons' 1 'Expert staging duplicated the doctrine section heading'

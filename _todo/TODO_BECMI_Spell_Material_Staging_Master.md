@@ -20,7 +20,7 @@ Source PDF:
 - Result: the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.
 
 - Capture confidence: **0.95** (UP from 0.91 after staging the Master procedure gap)
-- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, artifact doctrine, named artifacts, and the post-catalog appendix are now staged from Master source text. Remaining issues are ordinary OCR texture and later cleanup, not major source-evidence gaps.
+- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and one continuous artifact chapter context/witness section are now staged from Master source text. Remaining issues are ordinary OCR texture and later cleanup, not major source-evidence gaps.
 - ToC cross-check: Core spell, procedures, and artifact sections are now accounted for in the Master lane, including `Anti-Magic Effects` and `Dispel Magic` from the Procedures section.
 - Gap priority: LOW — the previously documented Master procedure gap is closed.
 ### Master Cleric, Druid, and Magic-User Spell Material
@@ -155,44 +155,77 @@ be damaged except by magic (weapons or cer-
 tain spells). Also, a gaseous being cannot pass
 through a protection from evil spell effect or an
 anti-magic shell.
+Wish
+Range: Special
+Duration: Special
+Effect: Special
+A wish spell is usable only by a cleric of
+36th- (maximum) level with 18 (or greater)
+Wisdom.
+A wish is the single most powerful spell a
+cleric can have. It is never found on a scroll,
+but may be placed elsewhere (in a ring, for
+example) in rare cases.
+Extensive guidelines for wishes are given
+on page 10, with the magic-user spell descrip-
+tion.
+Wizardry
+Range: 0 (cleric only)
+Duration: One turn
+Effect: Allows the use of one magic-user
+scroll spell or one device
+By using this spell, the cleric gains the
+power to use one item normally restricted to
+magic-users: either a device (such as a wand)
+or a scroll containing a 1st- or 2nd-level
+magic-user spell. (Spells of 3rd or higher level
+cannot be cast, though they may be present
+on the scroll.) This ability lasts for one turn,
+or until the scroll or device is used. The cleric
+magically gains knowledge of the proper use
+of the item, as if the character were a magic-
+user. For the duration and effect of the magic-
+user spell, the level of caster is treated as the
+minimum necessary for the casting of the
+spell.
 
 [Master pages 6-7: druid spell material]
 Druid
 FIRST-LEVEL DRUID SPELLS
 1. Detect Danger (described below)
 2. Faerie Fire (C14)
-3. Locate ((215)
+3. Locate (C15)
 4. Predict Weather (C15)
 SECOND-LEVEL DRUID SPELLS
 1. Heat Metal (described below)
 2. Obscure (C15)
-3. Produce Fire ((215)
+3. Produce Fire (C15)
 4. Warp Wood (C15)
 THIRD-LEVEL DRUID SPELLS
-1. Call Lightning ((215)
+1. Call Lightning (C15)
 2. Hold Animal (C15)
 3. Protection from Poison (page 5)
 4. Water Breathing (C15)
 FOURTH-LEVEL DRUID SPELLS
 1. Control Temperature 10' radius (C15)
-2. Plant Door ((215)
-3. Protection from Lightning ((215)
+2. Plant Door (C15)
+3. Protection from Lightning (C15)
 4. Summon Animals (page 5)
 FIFTH-LEVEL DRUID SPELLS
 1. Anti-Plant Shell (C16)
 2. Control Winds (C16)
 3. Dissolve (page 5)
-4. Pass Plant ((216)
+4. Pass Plant (C16)
 SIXTH-LEVEL DRUID SPELLS
 1 . Anti-Animal Shell (C16)
-2. Summon Weather ((216)
+2. Summon Weather (C16)
 3. Transport Through Plants (C16)
 4. Turn Wood (page 5)
 SEVENTH-LEVEL DRUID SPELLS
 1. Creeping Doom (C16)
 2. Metal to Wood (C16)
 3. Summon Elemental (page 5)
-4. Weather Control ((216)
+4. Weather Control (C16)
 First-Level Druid Spell
 Detect Danger
 Range: 5 feet per level of the caster
@@ -1734,33 +1767,35 @@ this duration.
 
 ```
 
-### Artifact Power Doctrine and Artifact Effect Procedures
+### Artifact Chapter Context and Witnesses
 
-- Extraction note: final targeted Master addition from the actual artifact-doctrine pages, capturing artifact purpose, activation, power limits, recharging, intelligence, adverse effects, attack/destruction rules, and power-category guidance that Immortals explicitly relies on for non-spell magical effects. The named-artifact catalog is emitted separately below as its own staged section.
+- Extraction note: Master-specific continuous artifact chapter extraction spanning pages 45-64 so doctrine, power tables, explanations, named artifacts, and the post-catalog appendix remain in one staged run for downstream witness use and manual review.
 
 ```text
-[Master artifact pages 45-47: doctrine overview and creation rules]
 This section introduces the greatest and most
 powerful of all magic items, the Artifact.
-An artifact is the creation of an Immortal
-and contains a concentration of that Immortal's personal power. The magical might of an
+   An artifact is the creation of an Immortal
+and contains a concentration of that Immor-
+tal's personal power. The magical might of an
 artifact is legendary. It is able to recreate
 magical effects of spells and other magic
 items, without exhausting its power. Indeed,
 artifacts are capable of regenerating any
 power they expend given sufficient time.
-Each artifact is unique or part of a unique
+   Each artifact is unique or part of a unique
 set, as no two artifacts can create the same
 combination of effects. Artifacts are only
 rarely encountered and are often the object of
-astounding quests for glory and honor. Nothing regarding an artifact happens by chance,
+astounding quests for glory and honor. Noth-
+ing regarding an artifact happens by chance,
 for the destiny of each device is carefully
 planned and controlled by the Immortals.
 
 Using Artifacts in the Game
-What purpose do artifacts serve in the
+   What purpose do artifacts serve in the
 game? A quest for an artifact can provide a
-long range goal for high level characters, providing months of adventuring. A powerful
+long range goal for high level characters, pro-
+viding months of adventuring. A powerful
 artifact can be both a real challenge to control
 and a highly prized reward for high level
 characters. Quests to find an ancient artifact
@@ -1769,188 +1804,154 @@ destroy a dark artifact can lead to the creation
 of epic sagas for your advanced players.
 
 The Purpose of Artifacts
-
-Artifacts are the creations of Immortals
+   Artifacts are the creations of Immortals
 who sacrifice a part of their personal Power,
-to create these tools which may be used to further their masters' goals. The Immortal
+to create these tools which may be used to fur-
+ther their masters' goals. The Immortal
 crafts an artifact to fulfill a specific purpose
 that will help gain more power for the
 Immortal and supports the goals of the
 Immortal's Sphere of Power. These may be
 as simple as battling enemies of the Sphere to
 subtly undermining an entire nation's might.
-An artifact, though created by an Immortal may be used by mortals either directly or
+   An artifact, though created by an Immor-
+tal may be used by mortals either directly or
 indirectly in service to the spheres of the
-Immortals. However, because of the unmanageable nature of Immortal Power, mortals
+Immortals. However, because of the unman-
+ageable nature of Immortal Power, mortals
 will suffer a chance of adverse effects when
 using an artifact.
-Artifacts may have different levels of
+   Artifacts may have different levels of
 power based on the amount an Immortal is
 willing to invest. This magnitude of power
 falls into four levels: Minor, Lesser, Greater,
 and Major. Minor artifacts are the ones most
 commonly created, for they cost the least.
-The number of magical effects and adversities of an artifact is directly linked to the magnitude of an artifact. Refer to Table 1 under
-Creating Artifacts for full details.
+The number of magical effects and adversi-
+ties of an artifact is directly linked to the mag-
+nitude of an artifact. Refer to Table 1 under
+ Creating Artifacts for full details.
 
 Artifacts in the Game
 Finding an Artifact
-The appearance of an artifact in a campaign should never be abrupt, nor random.
+   The appearance of an artifact in a cam-
+paign should never be abrupt, nor random.
 Artifacts are tools of the Immortals and their
-destiny and use is carefully planned. Foreshadow the introduction of an artifact
+destiny and use is carefully planned. Fore-
+shadow the introduction of a n artifact
 through legends and rumors the characters
 learn or overhear. An Immortal might use
 subtle manipulation to bring the existence of
 the artifact to the characters' attention. Only
 introduce an artifact if it serves a greater
 game goal.
-An artifact should only be found after a
+   An artifact should only be found after a
 long, trial-filled quest. A character should
 have to find and follow the winding trail of
 the artifact through history. Artifacts are
 never easily found or acquired, for they are
 often protected by a mighty guardian or by
 terrible trials and mystery.
-An artifact may be used by intelligent creatures of any level. However, the value of an
+   An artifact may be used by intelligent crea-
+tures of any level. However, the value of an
 artifact will vary because of the level of the
-mortal. Low-level creatures will find themselves not really in control of the artifact. Midlevel mortals will find an artifact desirable
+mortal. Low-level creatures will find themsel-
+ves not really in control of the artifact. Mid-
+level mortals will find an artifact desirable
 because of the power it promises, but hard
 pressed by the adverse effects. High level
 beings will often seek out an artifact in an
 effort to right a wrong, destroy an evil item,
 or to do honor to an Immortal.
+
 Activating an Artifact
-Artifacts may assume many guises and
+   Artifacts may assume many guises and
 even once found may not work until a specific
 action is performed. The action required to
 activate an artifact's innate powers may be
-the performance of a special ritual, the occurrence of a specific event, or some action that
+the performance of a special ritual, the occur-
+rence of a specific event, or some action that
 must be taken with the item itself.
-The specific means to activate an artifact
+   The specific means to activate an artifact
 may be learned through legend or magical
-research and may result in further adventures.
-Merely possessing an artifact is not enough
+research and may result in further adven-
+tures.
+   Merely possessing an artifact is not enough
 to gain its benefits. A character must also
-learn how to control each of its powers. Discovering what powers an artifact has and how
+learn how to control each of its powers. Dis-
+covering what powers an artifact has and how
 to control the effects should be a gradual
 process. Powers and their controls may be
 discovered using methods similar to those for
 activation.
-Try to maintain the mystery of the artifact
+   Try to maintain the mystery of the artifact
 by describing effects, rather than naming
 them and by keeping their methods of control
 uncertain. This will contribute much to the
 flavor of the game.
-If specific methods are not described for
+   If specific methods are not described for
 activation or discovery of the powers, the
 
-The item should activate when picked up, and
-once the possessor proves his worth, it should
+                              Art ifact s
 
+item should activate when picked up, and
+once the possessor proves his worth, it should
 communicate its powers telepathically.
 
-  Artifact Powers
-
+Artifact Powers
    Artifacts are beyond mortal powers and
-
 are treated as if 40th level for purposes of
-
 determining magical effects. Unlike standard
-
 magical items, artifacts may make saving
-
 throws versus various attacks as if a 36th level
-
-fighter.
-
+Fighter.
    An artifact may have several powers, but
-
 the total cost of the powers may not exceed
-
 the Power Level of the item as defined by its
-
 magnitude. Each effect may be used as often
-
 as desired. But each use drains a number of
-
 charges equal to the cost of the power used.
-
 The number of charges available at full
-
 capacity equals the Power Level. An artifact
-
 may recharge itself; the rate of recharging
-
 depends on the magnitude of the artifact. If
-
 charges drop below 10, no power may be
-
 used until the item is sufficiently recharged.
-
-   If an artifact is used to harm another arti-
-
-fact, it is treated as if attacking as a 40 HD
-
+   If an artifact is used to harm another artifact, it is treated as if attacking as a 40 HD
 monster, Armor Class -20. Only enchanted
 weapons with +5 bonus or greater and other
-
 artifacts may damage an artifact. All attacks
-
 against an artifact only cause the minimum
-
 amount of damage possible based on the
-
 attack. Artifacts possess a number of hit
-
 points equal to their Power Level.
-   Damage to an artifact may only be
-
+   Damage to a n artifact may only be
 repaired by its Immortal creator.
 
-  Intelligence of an Artifact
-
+Intelligence of an Artifact
    An artifact is made of the five components
-
 of power-matter, energy, time, entropy, and
-
 thought. All artifacts possess a rudimentary
 intelligence. This level of intelligence is very
-
 restricted, and an artifact can respond to only
-
-  a limited number of situations. An artifact
-
+a limited number of situations. An artifact
 does not have analytical intelligence, reason,
 nor the ability to learn. It can only respond to
-
 personal danger and present situations in
-
 regard to its purpose.
-
    If an artifact is personally attacked, it
-
 defends itself using its powers. An artifact
-
 does not use attacks that might cause it fur-
-
 ther damage, but it does not account for its
-
 wielder's frailties. If the attack is an area
-
 effect at close range, the user may suffer dam-
-
 age.
 
 Adverse Effects
-
   Because of the presence of "entropy" in
-
 the components of an artifact, all artifacts
-
 have bad side effects that may occur when-
-
 ever a mortal uses an artifact. Immortals are
-
 not affected by these adversities. Adverse
 
 effects appear spontaneously, and are not
@@ -2007,9 +2008,7 @@ of an artifact to recharge (charges and hit
 points are separate though they both equal
 the total Power Level number). Damage may
 only be repaired by the Immortal creator.
-
    Once an artifact is damaged 10% or more
-
 it always defends itself when it is attacked.
 
 This may become dangerous for the user.
@@ -2026,7 +2025,7 @@ may bring the attention of an Immortal to a
 character and the Immortal may attempt to
 exact a pennance through subtle manipula-
 tions of NPCs. But 80% of the time an
-  Immortal creator is not overly concerned
+Immortal creator is not overly concerned
 about the damage to the artifact unless his
 attention is already directed at the character.
 
@@ -2038,7 +2037,7 @@ Immortal of a conflicting Sphere of Power.
    To permanently destroy an artifact, a special method, unique to each artifact, must be
 employed. This method must be extremely
 difficult and require the use of legendary
-might-such as to crush it on the World
+might-such      as to crush it on the World
 Anvil, or to cause it to be devoured by an
 Immortal Dragon. This method may be discovered through a lengthy quest or very
 expensive research. Legends about the item
@@ -2048,8 +2047,8 @@ attacked, and thus can rarely prevent its
 destruction. An Immortal creator on the
 other hand would attempt through mortal
 agents to thwart its destruction once he discovered the intent, as the artifact is a piece of
-  the Immortal's power. If the artifact is
-  destroyed, the Immortal creator will become
+the Immortal's power. If the artifact is
+destroyed, the Immortal creator will become
 the destroyer's foe and may attempt to cause
 him ill through future manipulations. An
 Immortal from another sphere of power who
@@ -2061,73 +2060,61 @@ Immortal creator may not directly act against
 the destroyer.
 
 Creating Artifacts
-
 The following is a list of elements to consider
-
 when creating an artifact. Artifacts should be
 
- designed and used with great care, as too fre-
- quent an appearance, use or lack of control of
- artifacts, swiftly turns them into only power-
- ful toys.
+designed and used with great care, as too fre-
+quent an appearance, use or lack of control of
+artifacts, swiftly turns them into only power-
+ful toys.
 
-    Player Description: Create the legend of
- the artifact, complete with rumors and clues
- about the whereabouts, uses and ill effects of
- the artifact. (Books on lore, legend and
- myths, as well as fiction may be used for
-   inspiration.)
-    DM Notes: Define the exact physical form
- of the artifact. Also determine the Immortal
- creator and the purpose of the artifact.
-    Magnitude: Select the magnitude of the item
-   to be created. This will define the maximum
- Power Level possible and range of powers.
-    Limits of Power: Once the magnitude is
- known, review the maximum number of
- powers available in each power category on
- Table 1.
-    Sphere: Define the Immortal creator and
- his Sphere of Power. This will help strengthen
- the purpose and provide guidelines as to the
- types of powers that might be chosen.
-    Powers: Select powers based on the pur-
- pose and sphere of the artifact. Power cost
- should not exceed the total Power Level, nor
- should the maximum powers per category be
- exceeded. You may, however, choose fewer
- powers and a lower Power Level than the
- maximum.
-    Activation: Decide the methods of activa-
- tion and also other methods for discovering
- powers.
-    Use of Powers: Define how the user sum-
- mons forth the powers and whether the arti-
- fact produces the effect or if it is granted to
- the user to invoke.
-    Handicaps: Determine permanent ad-
- verse effects and the conditions for their
-     appearance.
-      Penalties: Determine temporary setbacks
-   and the conditions or chances for their
- appearance.
+   Player Description: Create the legend of
+the artifact, complete with rumors and clues
+about the whereabouts, uses and ill effects of
+the artifact. (Books on lore, legend and
+myths, as well as fiction may be used for
+inspiration.)
+   DM Notes: Define the exact physical form
+of the artifact. Also determine the Immortal
+creator and the purpose of the artifact.
+   Magnitude: Select the magnitude of the item
+to be created. This will define the maximum
+Power Level possible and range of powers.
+   Limits of Power: Once the magnitude is
+known, review the maximum number of
+powers available in each power category on
+Table 1.
+   Sphere: Define the Immortal creator and
+his Sphere of Power. This will help strengthen
+the purpose and provide guidelines as to the
+types of powers that might be chosen.
+   Powers: Select powers based on the purpose and sphere of the artifact. Power cost
+should not exceed the total Power Level, nor
+should the maximum powers per category be
+exceeded. You may, however, choose fewer
+powers and a lower Power Level than the
+maximum.
+   Activation: Decide the methods of activation and also other methods for discovering
+powers.
+   Use of Powers: Define how the user summons forth the powers and whether the artifact produces the effect or if it is granted to
+the user to invoke.
+   Handicaps: Determine permanent adverse effects and the conditions for their
+appearance.
+   Penalties: Determine temporary setbacks
+and the conditions or chances for their
+appearance.
 
- At the end of this section are several pregen-
- erated artifacts for use in D&D campaigns.
- These samples provide a model for generat-
-   ing your own new artifacts. At the end of each
- artifact, the reference source for the artifact is
- listed as well as suggestions of where you
- might look for other ideas.
-    When deciding on the Immortal creator
- and his Sphere of Power, refer to the Proce-
- dures section on Immortals to review the
- goals of each sphere. Then when selecting
- powers, the purpose provides a logic for the
-
- ones chosen. An artifact for the Sphere of
-
- Energy would use fire and energy attacks and
+At the end of this section are several pregenerated artifacts for use in D&D campaigns.
+These samples provide a model for generating your own new artifacts. At the end of each
+artifact, the reference source for the artifact is
+listed as well as suggestions of where you
+might look for other ideas.
+   When deciding on the Immortal creator
+and his Sphere of Power, refer to the Procedures section on Immortals to review the
+goals of each sphere. Then when selecting
+powers, the purpose provides a logic for the
+ones chosen. An artifact for the Sphere of
+Energy would use fire and energy attacks and
 
 defenses, teleportation, and possibly many
 transforming energy powers
@@ -2147,226 +2134,159 @@ against the Power Level total.
 
 Selecting Adverse Effects
    Select effects that will not interfere with the
-purpose or function of the artifact. Where possible, select effects that will actually further the
-
+purpose or functionof the artifact. Where possible, select effects that will actually further the
 goals of the sphere. Do not choose effects that
-
 negate one of the artifact's powers.
-
-   You may choose to modify the severity of the
-
+   You may choose to modify the seventy of the
 effects based on the magnitude of the artifact.
 
 Using the Power Tables
-   The following are tables for use when cre-
-
-ating new artifacts for your own campaign.
-These tables were also used to create the sam-
-
-ple artifacts listed hereafter. Their special
-
+   The following are tables for use when creating new artifacts for your own campaign.
+These tables were also used to create the sample artifacts listed hereafter. Their special
 powers are defined here.
-
    To create a new artifact, choose the magni-
 tude of the artifact to be created and consult
-
 Table 1. The DM may select Powers based on
 their power point cost up to the maximum
-
 power investment. The total power of the
 artifact cannot exceed the magnitude level,
-
 but may be less. If the total power is less than
-
 the maximum, the actual power invested is
 the total number of power points available
 when fully charged.
    Powers selected may not exceed the maxi-
-
 mum number of powers for each category,
-
 but an artifact need not have powers from
 each category.
-
    Table 2, Artifact Powers, is divided into
 four categories, each further subdivided into
-
 general types. The four categories are:
 Attacks against another, Information &
-
 Movement, Transformations, and Defenses.
 Preceding each ability is a number; this num-
 ber is used both as the power investment cost
  and the number of power points subtracted
-
 whenever the ability is used.
     Following each power's name are abbrevi-
-
  ations of the range, duration, effect and book
-
  reference, if a spell. In some cases, the effect
  of a power is too complex to abbreviate and
-
  the reference should be reviewed for details.
  Effect also may be used to list area of effect.
 
- Each power only functions for a limited dura-
- tion where noted.
-    Note that range, duration and area of
- effect may vary from the original spell; check
- the table first.
-    Abbreviations used include:
- atk     = attack
- B       = Basic Players Book
- C       = Companion Players Book
- cn      = coin; unit of encumbrance
- cr      = creature
- C R = Combat Result for War Machine
- C R T = Combat Result Table for War
-               Machine
- Conc = Effect is only maintained as long as
-               user concentrates on it and is not
-               disturbed or damaged
- dia        diameter
- D          damage
- DR         Duration
- EF         Effect; Area of Effect
+Each power only functions for a limited duration where noted.
+   Note that range, duration and area of
+effect may vary from the original spell; check
+the table first.
+   Abbreviations used include:
+atk     = attack
+B       = Basic Players Book
+C       = Companion Players Book
+cn      = coin; unit of encumbrance
+cr      = creature
+C R = Combat Result for War Machine
+C R T = Combat Result Table for War
+              Machine
+Conc = Effect is only maintained as long as
+              user concentrates on it and is not
+              disturbed or damaged
+dia        diameter
+D          damage
+DR         Duration
+EF         Effect; Area of Effect
+HD         Hit Dice
+L          Level; experience or spell
+MV         Movement rate
+M          Master Players Book
+obj        Object
+r          round
+R          Range
+rad        radius
+Save      Saving throw vs the effect
+ST         Saving throws of a specific category
+              as a result of the effect
+T          Turn
+Touch = Attacker must touch target
+X       = Expert Rule Book
+I       = per
+ *      = spell has reverse effect
 
- HD         Hit Dice
+            TABLE 1:
+    GENERAL CHARACTERISTICS
+                    Magnitude of Artifact
+                Minor Lesser GreaterMajor
 
- L          Level; experience or spell
+  Maximum
+     Power
+  Investment      100         250   500   750
 
- MV         Movement rate
+  Maximum
+   Number
+  of Powers          8         11    14    17
 
- M          Master Players Book
- obj        Object
+  Maximum
+     Types
+   of Powers
+A. Attacks           2         3     4      4
+B. Info+Move         1         2     3      4
+C . Transforms       2          2    3      4
+D. Defenses          3          4    4      5
 
- r          round
- R          Range
+Recharging
+   Rate
+PPperhour       30      60    120    180
+PPperturn        5      10     20     30
 
- rad        radius
-  Save      Saving throw vs the effect
+ Adverse Effects
+   Handicaps *       1    2   3      4
+   Penalties * *     1    3   5      8
+  ' O r 1 handicap +1 per 200 power
+    invested, round down.
+* * Or 1 penalty per 100 power invested,
+    round up.
 
- ST         Saving throws of a specific category
-
-               as a result of the effect
-
- T          Turn
- Touch = Attacker must touch target
-
- X       = Expert Rule Book
-
- I       = per
-
-  *      = spell has reverse effect
-
-             TABLE 1:
-     GENERAL CHARACTERISTICS
-
-                     Magnitude of Artifact
-
-                 Minor Lesser GreaterMajor
-
-   Maximum
-      Power
-
-   Investment      100         250   500   750
-
-   Maximum
-    Number
-   of Powers          8         11    14    17
-
-   Maximum
-      Types
-
-    of Powers
-
- A. Attacks           2         3     4      4
- B. Info+Move         1         2     3      4
-
- C . Transforms       2          2    3      4
- D. Defenses          3          4    4      5
-
-  Recharging
-     Rate
-  PPperhour      30      60      120    180
-  PPperturn       5      10       20     30
-
-  Adverse Effects
-    Handicaps *       1       2    3     4
-    Penalties * *     1       3     5    8
-   ' O r 1 handicap +1       per 200 power
-     invested, round down.
- * * Or 1 penalty per 100     power invested,
-     round up.
-
-      TABLE 2: ARTIFACT POWERS
-    A. Attack Forms
-    A1. Direct Physical Attacks
-
- cost
-   10 Cause Wounds, Light* (EF 7 hp; X5)
-   15 Magic Missile (EF 5 missiles, 1d6 +1 damage each; B40)
-
-   35 Bearhug (DR 1T)
-
-   25 Cause Disease*(R 30'; X6)
-
-   30 Cause Wounds, Serious* (EF 14 hp;
-
-       X7)
-   35 Cause Wounds, Critical* (EF 21 hp;
-
-       C12)
-   40 Create Poison * (R Touch; X8)
-
-   40 Dispel Evil (R 30', DR 1T; X8)
-   45 Cloudkill (R l ' , DR 6T, EF 1 pt,
-
-       5HD or less Save vs. Poison, 30' x
-
-       20'; X14)
-
-   45 Ice, Storm (R 120', EF 20d6 D, 20'
-       cube; X13)
-
-   50 Death Spell (R 240', EF 32 HD in 60'
-
-       cube, to HD 7+; X16)
-
-   50 Finger of D e a t h * ( R60';X9, C12)
-
-   50 Poison gas breath (DR 3r, EF 20'
-        cube)
-   55 Fire Ball (R 240', EF 20d6 D; X11)
-   55 Ice Breath (EF 30' x 10' D = hp)
-   60 Fire Breath (EF 30' x 10' D = hp)
-   60 Lightning Bolt (R 180', EF 20d6 D,
-
-        60' x 5'; X12)
-
-   65 Acid Breath (EF 30' X 5')
-   65 Delayed Blast Fire Ball (R 240' , DR
-
-        0-60r, EF 20d6 D; C22)
-   70 Life Drain* (R Touch; EF drains 1 level; C13)
-   75 Explosive Cloud (R 1', DR 6T, EF
-        20' x 30' x 30', 20 hp/r; C24)
-
-   80 Disintegrate (R 60', EF 1 cr; X16)
-   85 Power Word Kill (R 120', EF kill 60
-        hp, stun 61-100 hp, DR 4T; C26)
-
-   90 Obliterate* (R 60', EF kill 7 HD; to
-
-        12 HD S T at -4, 12 + HD 6d10; C13)
-  100 Meteor Swarm (R 240', EF 4 for
-
-        8d6 +8d6 or 8 for 4d6 +4d6; C26)
-
-[Master artifact pages 48-54: power tables and artifact effect descriptions]
-
-[Master artifact page 48]
+     TABLE 2: ARTIFACT POWERS
+   A. Attack Forms
+   A1. Direct Physical Attacks
+cost
+  10 Cause Wounds, Light* (EF 7 hp; X5)
+  15 Magic Missile (EF 5 missiles, 1d6 +1 damage each; B40)
+  35 Bearhug (DR 1T)
+  25 Cause Disease*(R 30'; X6)
+  30 Cause Wounds, Serious* (EF 14 hp;
+      X7)
+  35 Cause Wounds, Critical* (EF 21 hp;
+      C12)
+  40 Create Poison * (R Touch; X8)
+  40 Dispel Evil (R 30', DR 1T; X8)
+  45 Cloudkill (R l ' , DR 6T, EF 1 pt,
+      5HD or less Save vs. Poison, 30' x
+      20'; X14)
+  45 Ice, Storm (R 120', EF 20d6 D, 20'
+      cube; X13)
+  50 Death Spell (R 240', EF 32 HD in 60'
+      cube, to HD 7+; X16)
+  50 Finger of D e a t h * ( R60';X9, C12)
+  50 Poison gas breath (DR 3r, EF 20'
+       cube)
+  55 Fire Ball (R 240', EF 20d6 D; X11)
+  55 Ice Breath (EF 30' x 10' D = hp)
+  60 Fire Breath (EF 30' x 10' D = hp)
+  60 Lightning Bolt (R 180', EF 20d6 D,
+       60' x 5'; X12)
+  65 Acid Breath (EF 30' X 5')
+  65 Delayed Blast Fire Ball (R 240' , DR
+       0-60r, EF 20d6 D; C22)
+  70 Life Drain* (R Touch; EF drains 1 level; C13)
+  75 Explosive Cloud (R 1', DR 6T, EF
+       20' x 30' x 30', 20 hp/r; C24)
+  80 Disintegrate (R 60', EF 1 cr; X16)
+  85 Power Word Kill (R 120', EF kill 60
+       hp, stun 61-100 hp, DR 4T; C26)
+  90 Obliterate* (R 60', EF kill 7 HD; to
+       12 HD S T at -4, 12 + HD 6d10; C13)
+ 100 Meteor Swarm (R 240', EF 4 for
+       8d6 +8d6 or 8 for 4d6 +4d6; C26)
 
 A2. Direct Mental Attacks
  cost
@@ -2544,7 +2464,6 @@ B2. Additional Senses
    70 Lore (DR 1T or 1 day; C22)
    80 Find the Path (DR 46T; X9)
 
-[Master artifact page 49]
 B3. Aids to Movement
  cost
   10 Climb Walls, 70% (DR 12T)
@@ -2717,8 +2636,6 @@ D1. Cures
    95 Regeneration (EF 3 hp/r for 1T)
   100 Heal (R Touch; M9)
   100 Automatic Healing (Self only)
-
-[Master artifact page 50]
 D2. Personal Bonuses
  cost
    10 Memorize +1 bonus spell level
@@ -2863,7 +2780,6 @@ D5. Barriers
 100 Prismatic Wall (R 60', DR 6T, EF
     10' radius or 500 sq.ft.; M9)
 
-[Master artifact page 51]
 Explanations of Powers
 The following are definitions of the new special abilities, listed in alphabetical order.
    Spell effects: Any entry on the charts in
@@ -3043,8 +2959,6 @@ ends. Limits:
 Animals: Up to 40 Hit Dice of normal or
     giant-sized animals, but not fantastic or
     magical creatures; up to 20 individuals.
-
-[Master artifact page 52]
 
 Giants: One type only; up to 4 giants.
 Humans: Only affects those of 7 Hit Dice or
@@ -3228,7 +3142,6 @@ caster, the user may activate this power and
 then gain the additional number of spell
 levels given for one use. Any number of spells
 
-[Master artifact page 53]
        e acquired, if their total levels is within
        )nus limit, but the bonuses cannot be
        o increase the level of other spells mem-
@@ -3411,8 +3324,6 @@ duration of the effect.
   tracted for each level or Hit Die of the
   victim.
 
-[Master artifact page 54]
-
      Remove Traps: If failure is indicated,
   the trap is triggered.
    Timekeeping: The artifact may be told to
@@ -3593,481 +3504,1606 @@ doing something (such as eating ants or fly-
 ing) or with going somewhere or seeing some-
 thing and will pursue the activity maniacally.
 
-```
+The user will defend himself or perform any
+actions necessary to allow him to complete
+the activity. Once the activity has been com-
+pleted, the user returns to normal.
+   Operational Error: An artifact power fails
+wholly or partially or misfunctions, during a
+power's use.
+   Paranoia (not for Sphere of Thought): The
+user suddenly considers all those within 60
+feet to be enemies, and will take appropriate
+actions. If they might be destroyed immedi-
+ately, the user will attack, not stopping until
+all these enemies surrender, die, or flee. If the
+user considers them too dangerous to attack
+immediately, he or she may retreat or flee,
+relentlessly hunting the enemies at a later
+date. Only dispel or cureall can restore the
+user's proper mental state, though charm can
+obviously alleviate the condition for a time.
+   Service: The user suddenly imagines that
+he or she must immediately perform a given
+task for himself or herself, for some other per-
+son (who is typically far away), or for a n
+Immortal. The user might simply depart
+immediately, or might try to recruit allies for
+assistance. This effect can be ended if the task
+is completed, but not by denial from the per-
+ son imagined to be involved. Remove quest
+and remove seas will fail.
+    Spell effect: The artifact produces a spell
+ effect, directed at or near the user. This most
+ common of penalties can produce a random
+ effect or recurrent effects, but should be dan-
+ gerous in either case. The creation of the spell
+ effect does not use any of the artifact's power
+ points, however, being a mere side effect of its
+ (presumably) improper operation. The fol-
+ lowing categories and targets may be used:
+     Type A l , A3, A4, directed at user
+     Type C1, C2, C 3 near user, adverse
+     Type D4, D5 around user, adverse
+   Not all C or D effects can be adversely
+applied; select only those which can be haz-
+ardous to the user. Monsters created may
+attack immediately, or may check reactions
+(perhaps with a penalty), and are not under
+the user's control (but may be under enemy
+control).
+   If a saving throw normally applies to the
+spell effect, it should be allowed here as well,
+unless the artifact description specifies other-
+wise.
+   Withdrawal: The user immediately sits
+down and stops doing anything, refusing to
+recognize or react to any outside stimuli,
+even if life-threatening for 2-20 days.
+   Wounded: Every time a specific power is
+used, the wielder loses 1-20 hit points, either
+temporarily or permanently.
 
-### Named Artifact Catalog
+3C. SUITABLE FOR BOTH
+    HANDICAPS AND PENALTIES
+Remember that choices within a given range
+should be made on the basis of the magnitude
+of the artifact, and also affected by whether a
+Handicap or Penalty.
 
-- Extraction note: targeted Master expansion across the known-artifact catalog pages, now rebuilt as a curated source-derived block so the full artifact packaging, activation framing, power bundles, drawbacks, and reference notes remain readable and complete as source evidence.
+    Ability Score penalty: 1-6 of the user's abil-
+ity scores drop by 1-6 points each.
+    Aging: The user, and possibly others
+nearby, age or become younger a random
+number of years, or a number corresponding
+in some way to the Power Point cost of the last
+power used.
+    Alignment change: The user's alignment
+(and behavior) change, in a manner that will
+benefit the artifact's purpose or Sphere. Two
+alignments are usually specified, the first if
+user's alignment is different, and the second
+to be used otherwise.
+    Anti-Magic loo%, 10' radius: This will
+not deactivate the artifact, but will negate
+any and all of its powers that are called forth.
+The Anti-Magic cannot be modified or
+stopped, even to receive cures or other bene-
+ficial magic effects, except by a wish or some
+interesting designated means (which could be
+anything from a bath in 35 degree water to
+ incineration).
+    Armor Class penalty: A penalty of +1 to
+  +10 applies to the user's AC, cumulative
+with other modifications.
+    Attitude or Behavior change: The user
+ (and possibly one other nearby) becomes
+ aggressive, cowardly, evangelistic, exces-
+ sively honest or dishonest, intolerant, lazy,
+ noisy, nosy, overly tidy, peaceful, prankish,
+ quarrelsome, rude, sloppy, standoffish,
+ stingy, suspicious, talkative, or wasteful.
+    Body part change: One or more parts of
+ the user's body changes in some way, either
+ slowly or quickly. The body part selected
+ should be related to the artifact's powers or
+ goals in some way, and might occur from the
+ use of a specific power. For example, an arti-
+ fact with a hear noise power might cause the
+ user's ears to grow larger.
+     Damage: The user, and possibly others,
+ take a random or specified amount of dam-
+ age, either generally or because of a specific
+ attack form.
+     Damage penalty: The user inflicts -2 to -12
+ points less whenever he or she strikes another.
+ Any successful hit should inflict at least 1
+ point of damage.
+     Extra damage from blows: The user takes
+ extra damage whenever he or she is physi-
+ cally struck. Alternately, only a specific type
+  of attack might cause the extra damage.
 
-```text
-[Master named-artifact pages 56-63: curated source-derived catalog block]
+   Extra damage from magic: The user takes
+extra damage whenever he or she is damaged
+by a magical spell. Alternately, only a specific
+type of spell (fire, cold, electric, etc.) might
+inflict the extra damage.
+   Energy drain: The user loses 1-8 levels of
+experience, or a percentage of the current
+levels (10% to 60%).
+   Ethereality under Stress: The user may
+become ethereal whenever he or she faces
+danger. If without means of plane traveling,
+the user is trapped there until rescued. Ethe-
+real creatures might be attracted to the new
+arrival. The artifact normally does not
+accompany the user into the ether.
+   Fumbling: A given chance of error (10 % to
+50%) applies whenever the user attacks, by
+either weapon or spell. If the error occurs, the
+DM handles the attack normally but when
+the results of the attack are announced by the
+player, the DM reveals the fact that the
+attacker has struck himself. Normal saving
+throws still apply, if needed. Anyone who
+charms himself thereby becomes very snob-
+bish until the charm wears off or is dispelled.
+    Gas: A cloud of gas issues forth from the
+ artifact, filling a volume corresponding to the
+ magnitude of the artifact (a 10' cube, 20'
+ cube, etc.). Each victim within the cloud
+ must make a Saving Throw vs. Poison, possi-
+bly with a penalty (-1 to -12, by magnitude),
+ or suffer the effects of the gas. The gas may be
+ poisonous, damaging, paralyzing, energy
+ draining, transforming, etc.
+    Greed: Some NPC witnessing the artifact's
+ operation is suddenly overcome with desire to
+ possess it, and attacks the user either immedi-
+ ately or after making preparations to do so.
+    Hit points penalty: The user's hit points
+ drop by -1 to -3 per Hit Die.
+    Hit rolls penalty: The user suffers a pen-
+ alty to all Hit rolls, of -1 to -10.
+    Magic destruction: Except for the artifact,
+ all magic items touched by the user become
+ permanently non-magical. Treat as a touch
+ dispel to avoid the effect.
+    Memory penalty: The user loses the ability
+ to memorize certain spells, a given total of
+ spell levels, or all spells of a given level. Spells
+ already memorized are not affected.
+    Obsession: The user's mind becomes fixed
+ upon a given fear (of magic, a monster, char-
+ acter, racial type, etc.) or goal (reaching an
+ objective, exterminating a monster or align-
+ ment type, etc.).
+    Range Penalty: The user's spells or
+ weapon attacks have a less effective range, a
+ given number of feet or yards less than nor-
+ mal.
+
+   Repel others: The user slowly or quickly
+loses the friendship of all others, either
+because of some undetectable repulsion or
+because of a physical change.
+   Rot: One or more parts of the user's body
+slowly or quickly becomes diseased, and rots
+and falls off unless cured.
+   Saving Throws penalty: The user suffers a
+penalty of -1 to -12 to one saving throw, or -1
+to -6 to all saving throws.
+   Polymorph: The user changes into a type
+of monster, either slowly or quickly. General
+characteristics of the monster are acquired
+before physical changes begin. For example,
+before turning into a frog, a user might
+develop an enjoyment of swimming, flies,
+guttural noises, etc.
+   Size change: This effect is similar to the
+power of size control (D2), but not under the
+user's control. The user may, at any time or
+when a power is used, quickly or slowly grow
+or shrink to a minumum size of 3 inches or
+maximum size of 18 feet.
+   Weak magic: The user inflicts less damage
+(-1 to -3 per die rolled) whenever he or she
+casts a spell that damages another. Any such
+spell should inflict a minimum of 1 point per
+die rolled. Other attack spells might be weak
+enough to give the victims bonuses to their
+saving throws.
 
 The "Known" Artifacts
-The following section gives full details for several known artifacts. Each has been constructed using the following system; each is also based on material from myths, legends, and works of literature. You are free to modify any and all of the powers given, and this is recommended if your players have read this booklet of rules. Some space is left below each description for your notes on actual powers.
-
-The introduction of any artifact into a campaign should be preceded by rumors or myths of its existence. General information about each artifact is given in a separate introductory paragraph which may be read to the players. You may elaborate on the information given, or may discredit it entirely, developing your own backgrounds.
+The following section gives full details for
+several known artifacts. Each has been con-
+structed using the following system; each is
+also based on material from myths, legends,
+and works of literature. You are free to mod-
+ify any and all of the powers given, and this is
+recommended if your players have read this
+booklet of rules. Some space is left below each
+description for your notes on actual powers.
+   The introduction of any artifact into a
+campaign should be preceded by rumors or
+myths of its existence. General information
+about each artifact is given in a separate
+introductory paragraph which may be read to
+the players. You may elaborate on the infor-
+mation given, or may discredit it entirely,
+developing your own backgrounds.
+   For more information on the myths and
+legends to which the items refer, see the fol-
+lowing general books. They may inspire your
+development of more artifacts. Browse at
+your local library!
+Funk & Wagnall's Standard Dictionary of
+    Folklore, Mythology, and Legend, edited
+    by Maria Leach and Jerome Fried
+Gods and Heroes by Gustav Schwab
+The Golden Bough by Sir James G. Frazer
+The Meridian Handbook of Classical
+    Mythology by Edward Tripp
+Mythology by Edith Hamilton
+The New Larousse Encyclopedia of Mythol-
+    ogy, translated by Robert Aldington et
+    alia
 
 ARMET BY WAYLAND
-This is a tight-fitting helmet with bevor (chinpiece) and movable visor, crafted by the legendary Immortal armorer Wayland Smith. Some claim that it makes the wearer invulnerable to all attacks.
+ This is a tight-fitting helmet with bevor
+ (chinpiece) and movable visor, crafted by
+ the legendary Immortal armorer Wayland
+ Smith. Some claim that it makes the wearer
+ invulnerable to all attacks.
+   Magnitude: Lesser artifact.
+   Power Limits: 3/A, 3/B, 2/C, 3/D
+   Sphere: Matter (Fighters, earth)
+   Suggested Powers (PP 225):
+B3 Fly                        25 PP
+D1 Invisibility               20 PP
+D1 Immunity                   100 PP
+D2 - 8 A C bonus              80 PP
+   Activation: The Armet is not active when
+acquired. It is activated if the user wears it
+while slaying any large or huge dragon. The
+user may be aided in the battle, but must
+either inflict at least 1/2 the damage needed to
+kill the monster or personally deliver the blow
+that slays.
+   Use of Powers: The user may acquire the
+knowledge of powers from a previous user or
 
-Magnitude: Lesser artifact.
-Power Limits: 3/A, 3/B, 2/C, 3/D
-Sphere: Matter (Fighters, earth)
-Suggested Powers (PP 225):
-B3 Fly 25 PP
-D1 Invisibility 20 PP
-D1 Immunity 100 PP
-D2 -8 AC bonus 80 PP
-
-Activation: The Armet is not active when acquired. It is activated if the user wears it while slaying any large or huge dragon. The user may be aided in the battle, but must either inflict at least 1/2 the damage needed to kill the monster or personally deliver the blow that slays.
+by experimenting. Powers are activated by
+moving visor, bevor, and other pieces, while
+saying "Wayland aid me."
+  Suggested Handicaps (2):
+   1. When first used: Take double damage
+      from all fire attacks (fire having elemen-
+      tal dominance over earth) as long as
+      artifact is owned.
+  2. Third time Immunity power is used:
+      Alignment change to Lawful, or Neu-
+      tral.
+         Suggested Penalties (3, standard
+      chances of appearance, equal chances
+      for each):
+      A. Cast a Type A1 spell (50 PP or less)
+           at wearer.
+      B. Gain a -4 penalty to Intelligence.
+      C. All missiles used fall to half normal
+           range.
+  Source: England, 12th century and earlier.
+  Further Research: See Weland's Sword in
+Puck of Pook's Hill, by Rudyard Kipling
+(1906); Kenilworth by Sir Walter Scott
+(1821), scattered references to Wayland
+Smith's Cave (in England, near Lambourn,
+Berkshire); also refer to Volund or Volunder
+(king of the elves and supernatural black-
+smith) in Frithiofs Saga (Scandinavian, 13th
+century).
+  Your Notes:
 
 CLAW OF MIGHTY SIMURGH
-Long ago, a great roc-like bird appeared to a wandering cleric. The bird said it was Immortal, and had already seen three cycles of life on earth, each ending in destruction by water, ice, and fire. It gave one of its smallest claws (a mere 2 feet long) to the cleric. Explaining its powers, the Mighty Simurgh asked that it be used for the betterment of mankind. The cleric did what she could, but lives no more, and the claw has apparently fallen into the clutches of Chaos.
+ Long ago, a great roc-like bird appeared to
+ a wandering cleric. The bird said it was
+ Immortal, and had already seen three
+ cycles of life on earth-each ending in
+ destruction by water, ice, and fire. It gave
+ one of its smallest claws (a mere 2 feet long)
+ to the cleric. Explaining its powers, the
+ Mighty Simurgh asked that it be used for
+ the betterment of mankind. The cleric did
+ what she could, but lives no more, and the
+ claw has apparently fallen into the clutches
+ of Chaos.
 
-Description: Curved talon 25 inches long, made of an ivory-like substance.
-Magnitude: Minor artifact.
-Power Limits: 2/A, 2/B, 2/C, 2/D
-Sphere: Time (Clerics, water)
-Suggested Powers (PP 100):
-A3 Calm others 30
-A5 Turn bonus, +2 +1d6 HD 20
-B2 Predict weather 10
-D3 Immune to poison 40
+  Description: Curved talon 25 inches long,
+made of an ivory-like substance.
+  Magnitude: Minor artifact.
+  Power Limits: 2/A, 2/B, 2/C, 2/D
+  Sphere: Time (Clerics, water)
+  Suggested Powers (PP 100):
+A3   Calm others                    30
+A5   Turn bonus, +21 +1d6 HD     20
+B2   Predict weather                 10
+D3 Immune to poison                 40
 
-Activation: The artifact is active when acquired.
-Use of Powers: Once the claw is claimed, full knowledge is granted telepathically during the user's first sleep.
-Suggested Handicap (1), activated when first power is used: The user loathes violence, urges peace to all living things, and refuses to attack anyone unless attacked. This effect does not cover undead.
-Suggested Penalty (1), 25% chance whenever rainfall, flooding, tornado, falling snow, or similar weather is witnessed: Service. The user imagines that the Simurgh has demanded an interview. The user must gather a party to go to the far northern mountains, leaving within 3 days. The effect wears off when the mountains are reached.
-Source: Ancient Middle Eastern legend.
-Further Research: This is a recurrent but very general theme, a great being that has lived forever and possesses the knowledge of the ages. Look for similar recurrent themes among the myths of different cultures; related items can prove suitable for artifact design, and usable in nearly any setting.
+   Activation: The artifact is active when         D
+acquired.                                          D
+   Use of Powers: Once the claw is claimed,        D
+full knowledge is granted telepathically dur-
+ ng the user's first sleep.                        a
+   Suggested Handicap (l), activated when          1
+first power is used: The user loathes violence,    p
+urges peace to all living things, and refuses to   b
+attack anyone unless attacked. This effect         i
+does not cover undead.                             p
+   Suggested Penalty (1) may appear-25 %           o
+chance-whenever        rainfall, flooding, tor-
+nado, falling snow, etc. is witnessed: Service.    g
+The user imagines that the Simurgh has             p
+demanded an interview. The user must             c
+gather a party to go to the far northern moun-
+tains, leaving within 3 days. The effect will
+wear off when the mountains are reached.
+   Source: Ancient Middle Eastern legend
+   Further Research: This is a recurrent but
+very general theme-a great being that has
+lived forever and possesses the knowledge of
+the ages. Look for similar recurrent themes
+among the myths of different cultures;
+related items can prove suitable for artifact
+design, and usable in nearly any setting.
+   Your Notes:
 
 COMB OF THE KORRIGANS
-A group of nine powerful elves took a rare woodland creature (the Korrigan) as their symbol. Successful as a mortal group, they resumed their close friendship after all reached Immortality. Together they created this item to aid mortal elves to reach Immortality, but only if they strive toward representing the best of elvenkind. The Korrigans became nearly legendary in mortal life, commonly using shapechanging and haste in their travels and combats, and this device presumably bestows similar powers.
+ A group of nine powerful elves took a rare
+ woodland creature (the Korrigan) as their
+ symbol. Successful as a mortal group, they
+ resumed their close friendship after all
+ reached Immortality. Together they created
+ this item to aid mortal elves to reach
+ Immortality, but only if they strive toward
+ representing the best of elvenkind. The
+ Korrigans became nearly legendary in
+ mortal life, commonly using shapechang-
+ ing and haste in their travels and combats,
+ and this device presumably bestows similar
+ powers.
+  Description: Hair comb, 5 inches long,
+made of pink bone-like substance, fine teeth.
+  Magnitude: Lesser artifact.
+  Power Limits: 3/A, 3/B, 2/C, 3/D
+  Sphere: Energy (Magic-users, fire)
+  Suggested Powers (PP 215):
+A1 Poison breath                      50
+B3   Haste                            30
+C1 Produce fire                       15
 
-Description: Hair comb, 5 inches long, made of pink bone-like substance, fine teeth.
-Magnitude: Lesser artifact.
-Power Limits: 3/A, 3/B, 2/C, 3/D
-Sphere: Energy (Magic-users, fire)
-Suggested Powers (PP 215):
-A1 Poison breath 50
-B3 Haste 30
-C1 Produce fire 15
-Cure disease 20
-Cure wounds, critical 35
-D2 Polymorph self 65
+  1 Cure disease                           20       w
+  1 Cure wounds, critical                  35       p
+D2 Polymorph self                          65       c
+   Activation: The comb is not active when          p
+ cquired. If it is left within a burning fire for   s
+  full turn, it is activated, but will not reveal   t
+ owers. Thereafter, whenever the user
+ efriends an elf (loaning money, curing, aid-
+ng in battle, etc.), one power is revealed tele-
+ athically (maximum of 1 per day), in order
+ f power.                                           A
+   Use of Powers: A power is invoked when a         B
+ iven combination of the comb's teeth are
+                                                    B
+ lucked, producing a nearly inaudible musi-
+                                                    B
+ al tone.                                           C
+   Suggested Handicaps (2):
+                                                    D
+   1. When first power is used: User starts
+                                                    D
+       turning into an elf (1st level); the proc-
+       ess takes 3 months to complete. User
+                                                    fo
+       becomes aware of minor changes (ani-
+                                                    w
+       mosity toward dwarves, among other
+                                                    g
+       things) in 2 weeks. Change stops com-
+                                                    o
+       pletely as soon as artifact is no longer
+                                                    p
+       owned, but the change back to normal
+                                                    P
+       takes 3 months.
+   2. Energy drain: User loses 3 levels of
+                                                    c
+       experience when Poison Breath is first
+                                                    th
+       used.
+   Suggested Penalties (3; #1 appears 4 in 6,
+  thers each 1 in 6):
+   1. Slow spell effect centered on user.
+   2. Polymorph other spell effect upon user,
+       to turn into an eagle.
+   3. Memory penalty: User cannot memo-
+       rize any spells of the highest spell level
+       he or she can normally study. Effect is
+       cumulative if not removed.
+    Source: Breton folklore
+   Further Research: Various works on folk-
+ ore of the British isles (Irish, Scottish, and
+Gaelic), such as Celtic Myth and Legend, by
+Charles Squire. See fays (or fees or faeries);
+druids of ancient Gaul; the Lamignak elves;
+Fountain Women of French folklore; also see
+                                                    t
+A Field Guide to the Little People (Arrow-
+                                                    o
+smith and Moorse, 1977).
+                                                    C
+    Your Notes:
 
-Activation: The comb is not active when acquired. If it is left within a burning fire for 1 full turn, it is activated, but will not reveal powers. Thereafter, whenever the user befriends an elf (loaning money, curing, aiding in battle, and so forth), one power is revealed telepathically, to a maximum of 1 per day, in order of power.
-Use of Powers: A power is invoked when a given combination of the comb's teeth are plucked, producing a nearly inaudible musical tone.
-Suggested Handicaps (2):
-1. When first power is used: User starts turning into an elf (1st level); the process takes 3 months to complete. The user becomes aware of minor changes, including animosity toward dwarves, in 2 weeks. The change stops completely as soon as the artifact is no longer owned, but the change back to normal also takes 3 months.
-2. Energy drain: User loses 3 levels of experience when Poison Breath is first used.
-Suggested Penalties (3; #1 appears 4 in 6, others each 1 in 6):
-1. Slow spell effect centered on user.
-2. Polymorph other spell effect upon user, to turn into an eagle.
-3. Memory penalty: User cannot memorize any spells of the highest spell level he or she can normally study. Effect is cumulative if not removed.
-Source: Breton folklore.
-Further Research: Various works on folklore of the British Isles (Irish, Scottish, and Gaelic), such as Celtic Myth and Legend, by Charles Squire. See fays (or fees or faeries), druids of ancient Gaul, the Lamignak elves, Fountain Women of French folklore, and A Field Guide to the Little People (Arrowsmith and Moorse, 1977).
+                                                    m
+                                                    m
+                                                    C
 
-DIAMOND ORB OF TYCHE
-This item appears to be a crystal ball, but is somewhat larger (about 18 inches across) and glows softly with a white light filled with sparkling colors. It was crafted by the powerful Immortal Tyche, said to control chance and the fortunes of mankind. It is a powerful artifact of Chaos, but is not necessarily evil, and is said to bring good fortune to the user, for a time.
+DIAMOND 0RB OF TYCHE
+                                  .. ._.     -
+  This item appears to be a crystal ball, but is
+  somewhat larger (about 18 inches across)
+  and glows softly with a white light filled
 
-Magnitude: Greater artifact.
-Power Limits: 4/A, 3/B, 3/C, 4/D
-Sphere: Thought (Thieves, air)
-Suggested Powers (PP 405):
-Pick pockets 100% 80
-X-ray vision 80
-Gaseous form 30
-Container, 40,000 cn 80
-Remove traps 75% 60
-Confuse alignment 15
-Hide in shadow 70% 60
-
-Activation: The artifact is active when found. The user gets a feeling of inspiration when gazing into the orb. The artifact grants the knowledge of one power when one consecutive hour is spent gazing, to a maximum of 1 power per day, given in order of PP cost.
-Use of Powers: By gazing into the orb and concentrating on a power, the user acquires that power after 1-3 rounds.
-Suggested Handicaps (3):
-1. When first used: Magic error. The user has a 10% chance of failure whenever attempting to cast a spell or use any magic item requiring a command word.
-2. When pick pockets is first used: Alignment change to Chaotic, or to Neutral.
-3. If, as a container, the artifact is ever completely filled: Recharging begins to cost. The orb stops recharging by itself, and must be given treasure equal to 100 gp value per 1 PP recharged.
-Suggested Penalties: Standard chances, totally random adverse effects of 50 PP cost or less affecting the caster, from Tables A3, B3, D4, and D5.
-Source: Greek mythology.
-Further Research: See general works on mythology, with reference to the Greek myths and gods, especially the goddess of chance or Good Fortune.
+with sparkling colors. It was crafted by the
+ owerful Immortal, Tyche, said to control
+ hance and the fortunes of mankind. It is a
+ owerful artifact ofChaos, but is not neces-
+ arily evil, and is said to bring good fortune
+ o the user, for a time.
+  Magnitude: Greater artifact.
+  Power Limits: 4/A, 3/B, 3/C, 4/D
+  Sphere: Thought (Thieves, air)
+  Suggested Powers (PP 405):
+ 4     Pick pockets 100%                  80
+1      X-ray vision                       80
+ 3      Gaseous form                       30
+ 4      Container, 40,000 cn               80
+ 2      Remove traps 75%                   60
+ 4 Confuse alignment                       15
+ 4 Hide in shadow 70%                      60
+  Activation: The artifact is active when
+  und. The user gets a feeling of inspiration
+ hen gazing into the orb. The artifact
+  ants the knowledge of one power when
+ne consecutive hours are spent gazing (1
+ower per day maximum), given in order of
+ P cost.
+  Use of Powers: By gazing into the orb and
+oncentrating on a power, the user acquires
+ at power after 1-3 rounds.
+  Suggested Handicaps (3):
+      When first used: Magic error. The
+      user has a 10 7% chance of failure when-
+      ever attempting to cast a spell or use
+      any magic item requiring a command
+      word.
+      When pickpockets is first used: Align-
+      ment change to Chaotic,or to Neu-
+      tral.
+       If, as a container, the artifact is ever
+      completely filled: Recharging begins
+       to cost. The orb stops recharging by
+       itself, and must be given treasure
+       equal to 100 gp Value per 1 P P
+       recharged.
+   Suggested Penalties: Standard chances,
+  tally random adverse effects of 50 PP cost
+ r less affecting the caster, from Tables A3,
+  3, D4, and D5.
+   Source: Greek mythology.
+   Further Research: See general works on
+  ythology, with reference to the Greek
+myths and gods, especially the goddess of
+  hance or Good Fortune.
+   Your Notes:
 
 FIERY BRAND OF MASAUWU
-The legendary Guardian of Death, Masauwu (possibly another name for Orcus) is greatly feared. It is rumored that he walks across the entire earth every night, appearing as a dark-skinned giant clad in animal skins and carrying a flaming torch. This device is sometimes left for others to use, especially if they will further his causes. It has horrible and awesome powers, but if the user impresses Masauwu by employing it often and with diligence, he may grant even greater ones.
+ The legendary Guardian of Death,
+ Masauwu (possibly another name for
+ Orcus) is greatly feared. It is rumored that
+ he walks across the entire earth every
+ night, appearing as a dark-skinned giant
+ clad in animal skins and carrying a flaming
+ torch. This device is sometimes left for oth-
+ ers to use, especially if they will further his
+ causes. I t has horrible a n d awesome
+ powers, but if the user impresses Masauwu
+ by employing it often and with diligence,
+ he may grant even greater ones.
 
-Description: This is a club-like torch, 4 feet long. It is not normally burning when found. If lit, it can only be extinguished by water.
-Magnitude: Greater artifact.
-Power Limits: 4/A, 3/B, 3/C, 4/D
-Sphere: Entropy (Death)
-Suggested Powers (PP 450):
-A1 Meteor swarm 100
-A1 Obliterate 90
-A4 Turn as CL 36 95
-A5 Spell damage bonus, 1, 2, 3 = 4 80
-B2 Detect invisible 35
-B3 Teleport 50
+   Description: This is a club-like torch, 4 feet
+long. It is not normally burning when found.
+If lit, it can only be extinguished by water.
+   Magnitude: Greater artifact.
+   Power Limits: 4/A, 3/B, 3/C, 4/D
+   Sphere: Entropy (Death).
+   Suggested Powers (PP 450):
+A1       Meteor swarm                      100
+A1       Obliterate                         90
+A4       Turn as C L 36                     95
+A5        Spell damage bonus, 1,2,3 = 4 80
+B2       Detect invisible                   35
+B3        Teleport                         50
+   Activation: The artifact is active when
+found. Each time the user slays another crea-
+ture by using the item, knowledge of 1 power
+is granted (maximum 2 per day). The artifact
+may be wielded as a club. Powers are
+revealed in order of PP cost.
+   Use of Powers: The artifact must be lit for
+any powers to function, issuing forth from the
+flames, on command.
+    Suggested Handicaps (3):
+      ~~
 
-Activation: The artifact is active when found. Each time the user slays another creature by using the item, knowledge of 1 power is granted, to a maximum of 2 per day. The artifact may be wielded as a club. Powers are revealed in order of PP cost.
-Use of Powers: The artifact must be lit for any powers to function, issuing forth from the flames, on command.
-Suggested Handicaps (3):
-1. When the first power is used: Constitution score drops 5 points, minimum score 3.
-2. When turn undead is first used: Energy drain; user loses 3 levels.
-3. When spell damage bonus is first used to augment meteor swarm: Doom is sent. User and artifact will utterly vanish, but leave all equipment carried, either when user is next struck by any undead creature, or when spell damage bonus is applied to the meteor swarm a third time.
-Suggested Penalties (5, standard chances of appearance, equal chances for each):
-1. Cause critical wounds, cast at user; saving throw applies.
-2. Attract undead: If adventuring underground or outdoors after dark, 2-8 undead arrive in 1-6 rounds. All are of one type; roll 1d12 to find Hit Dice type.
-3. Operating Cost: User loses 20% of all treasure owned, not counting magic.
-4. Die: User drops dead instantly, no saving throw. Can be normally raised.
-5. Poison gas: Artifact releases 20,000 cubic feet of purple gas. Each victim within it must make a Saving Throw vs. Poison, with a -2 penalty, or die. User is not affected by the gas.
-Source: Hopi (American Indian) legends.
-Further Research: From the North American Indians; see various pamphlets from universities and museums of the United States, especially for Hopi Indian legends. Truth of a Hopi by Edmund Nequatewa (Museum of Northern Arizona, Flagstaff). Note also that the lord of the Overworld and Guardian of the dead appears in legends of many other tribes.
+        When the first power is used: Constitu-
+        tion score drops 5 points (minimum
+        score of 3).
+        When turn undeadis first used: Energy
+        Drain; user loses 3 levels.
+        When spell damage bonus is first used
+        to augment meteor swarm: Doom is
+        sent. User and artifact will utterly van-
+        ish, but leave all equipment carried,
+        either when user is next struck by any
+        undead creature, or when spell damage
+        bonus is applied to the meteor swarm a
+        third time.
+    Suggested Penalties (5, standard chances
+ of appearance, equal chances for each):
+    1. Cause critical wounds, cast at user; sav-
+        ing throw applies.
+    2. Attract undead: If adventuring under-
+        ground or outdoors after dark, 2-8
+        undead arrive in 1-6 rounds. All are of
+        one type; roll 1d12 to find Hit Dice
+         type.
+
+  3. Operating Cost: User loses 20% of all
+     treasure owned, not counting magic.
+  4. Die: User drops dead instantly, no sav-
+     ing throw. (Can be normally raised.)
+  5. Poison gas: Artifact releases 20,000
+     cubic feet of purple gas. Each victim
+     within it must make a Saving Throw vs.
+     Poison, with a -2 penalty, or die. User is
+     not affected by the gas!
+  Source: Hopi (American Indian) legends
+  Further Research: From the North Ameri-
+can Indians; See various pamphlets from
+Universities and Museums of the United
+States, especially (for Hopi Indian legends).
+Truth of a Hopi by Edmund Nequatewa
+(Museum of Northern Arizona, Flagstaff).
+Note also that the lord of the Overworld and
+Guardian of the dead, appears in legends of
+many other tribes.
+  Your No:
 
 GIRDLE OF ARMIDA
-Armida was once a famous sorceress in a far land. To help her achieve the greatest heights in her craft, her immortal uncle, Idraote, gave her this girdle. However, she used it to tempt and confuse paladins, generally bringing confusion and discord to others. Having fallen to petty abuse of her powers, Armida did not reach her Immortal goal; but the girdle remains, to tempt and possibly aid other magic-users to become Paragons. It is supposedly watched over by Idraote to this day.
+ Armida was once a famous sorceress in a
+ far land. To help her achieve the greatest
+ heights in her craft, her immortal uncle,
+ Idraote, gave her this Girdle. However, she
+ used it to tempt and confuse paladins, gen-
+ erally bringing confusion and discord to
+ others. Having fallen to petty abuse of her
+ powers, Armida did not reach her Immor-
+ tal goal; but the Girdle remains, to tempt
+ (and possibly aid) other magic-users to
+ become Paragons. It is supposedly watched
+ over by Idraote to this day.
 
-Description: This is a simple human-sized leather belt, though it will shrink or enlarge to fit any user. It is ornately tooled with arcane symbols which describe its powers and command words; however, this ancient language of magic can only be deciphered by a read magic spell from a 30th or higher level caster.
-Magnitude: Minor artifact.
-Power Limits: 2/A, 1/B, 2/C, 3/D
-Sphere: Energy (Magic-users, fire)
-Suggested Powers (PP 100):
-A2 Charm monster 30
-A2 Confusion 25
-C2 Change odors 15
-D2 Memorize +3 spell levels 30
-
-Activation: The girdle is active when found.
-Use of Powers: Powers are activated by command words given on the girdle.
-Suggested Handicap (1, when first used): Extra damage. Whenever the user is struck by any natural weapon (claw, bite, and so forth), he or she takes 1-10 points of extra damage. This becomes 1 less point of damage for each 10 days that pass after the artifact is no longer owned, vanishing in 100 days.
-Suggested Penalties (2):
-1. Whenever either attack, charm or confusion, is cast at a Lawful or Neutral creature, hold person is cast at the user; saving throw applies.
-2. At standard chances: size change; the user gains or loses, equal chances, 50% of current height.
-Source: Italian literary romance works dealing with the First Crusade (1096-1099).
-Further Research: See a translation of the romantic epic Gerusalemme Liberata (Jerusalem Delivered) by Torquato Tasso (1581).
+   Description: This is a simple human-sized
+leather belt (though it will shrink or enlarge
+to fit any user). It is ornately tooled with
+arcane symbols which describe its powers and
+command words; however, this ancient lan-
+guage of magic can only be deciphered by a
+read magic spell from a 30th or higher level
+caster.
+   Magnitude: Minor artifact.
+   Power Limits: 2/A, llB, 2/C, 3/D
+   Sphere: Energy (Magic-users, fire)
+   Suggested Powers (PP 100):
+A2      Charm monster                    30
+A2      Confusion                        25
+C 2 Change odors                         15
+D2      Memorize +3 spell levels        30
+   Activation: The girdle is active when
+found.
+   Use of Powers: Powers are activated by
+command words given on the girdle.
+   Suggested Handicap (1, when first used):
+Extra damage. Whenever the user is struck
+by any natural weapon (claw, bite, etc.), he
+or she takes 1-10 points ofextra damage. This
+becomes 1 less point of damage for each 10
+days that pass after the artifact is no longer
+ owned, vanishing in 100 days.
+   Suggested Penalties (2):
+    1. Whenever either attack (charm or con-
+       fusion) is cast at a Lawful or Neutral
+       creature, holdperson is cast at the user;
+       saving throw applies.
+   2. At standard chances: size change, the
+       use gains or loses (equal chances) 50%
+       of current height.
+   Source: Italian literary romance works
+ dealing with the First Crusade (1096-1099).
+    Further Research: See a translation of the
+ romantic epic Gerusalemme Liberata ('Jeru-
+ salem Delivered) by Torquato Tasso (1581).
+   Your Notes:
 
 HUMBABA'S GLARING EYE
-The huge one-eyed monster Humbaba was fought long ago by a great hero, named Gilgamesh. Its eye was taken after its defeat, and was made into an artifact by Ninsun, a powerful Immortal. It eventually caused Gilgamesh to seek immortality above all else, but he failed, and was eventually destroyed. The Eye remains, a famed symbol of death and destruction. The Eye is said to provide the powers of the original monster, including breath and gaze weapons.
+ The huge one-eyed monster Humbaba was
+ fought long ago by a great hero, named
+ Gilgamesh. Its eye was taken after its
+ defeat, and was made into an artifact by
+ Ninsun, a powerful Immortal. It eventu-
+ ally caused Gilgamesh to seek immortality
+ above all else, but he failed, and was even-
+ tually destroyed. The Eye remains, a
+ famed symbol of death and destruction.
+ The Eye is said to provide the powers of the
+ original monster, including breath and
+ gaze weapons.
 
-Description: This appears to be a mummified monstrous eyeball, 4 inches in diameter. It is reddish white in color, with a black iris and many bulging red arteries and blue veins.
-Magnitude: Lesser artifact.
-Power Limits: 3/A, 2/B, 2/C, 3/D
-Sphere: Energy (Magic-users, fire)
-Suggested Powers (PP 190):
-A1 Cause disease 25
-A1 Fire breath 60
-A3 Flesh to stone 50
-C3 Summon weather 55
-
-Activation: The eye is active when found, but it is difficult to gain knowledge of the powers. The user must employ ESP or clairvoyance, and look through the eye into a reflecting surface, such as a mirror or water. In the reflection of the center of the eye, the user may read the name of one effect and its command word, if the language can be understood, thus requiring a read language at the same time. The information changes each midnight, to that of a randomly determined power; thus, many readings may be required before all the powers are revealed.
-Use of Powers: The eye does not grant powers to its user, but produces the effects itself; it may be accurately aimed with very little practice.
-Suggested Handicap (1): The user becomes obsessed with seeking Immortality. Every 10 days, a Saving Throw vs. Spells is made, the first with a -1 penalty, the second with -2, the third with -3, and so forth. A failed saving throw forces the user to choose and begin to actively pursue one of the routes to Immortality, forsaking all other activities.
-Suggested Penalties (2, standard chances):
-1. Body part change: The user's head enlarges to 4 times normal size, large enough to accommodate Humbaba's Glaring Eye, if the user lacks one. This effect is not cumulative.
-2. Age: The user becomes 10-40 years older. No saving throw applies, but the effect may be dispelled.
-Source: Babylonian myths.
-Further Research: The Epic of Gilgamesh (circa 2000 B.C.) and general references on mythology, especially Sumerian and Babylonian.
+   Description: This appears to be a mummi-
+fied monstrous eyeball, 4 inches in diameter.
+It is reddish white in color, with a black iris
+and many bulging red arteries and blue
+veins.
+   Magnitude: Lesser artifact.
+   Power Limits: 3/A, 2/B, 2/C, 3/D
+   Sphere: Energy (Magic-users, fire)
+   Suggested Powers (PP 190):
+A1        Cause disease                  25
+A1        Fire breath                    60
+A3        Flesh to stone                 50
+C3        Summon weather                 55
+   Activation: The eye is active when found,
+but it is dificult to gain knowledge of the
+powers. The user must employ ESP or clair-
+voyance, and look through the eye into a
+reflecting surface (mirror, water, etc.). In the
+reflection of the center of the eye, the user
+may read the name of one effect and its com-
+mand word, if the language can be under-
+stood (thus requiring a read language at the
+same time). The information changes each
+midnight, to that of a randomly determined
+power; thus, many readings may be required
+before all the powers are revealed.
+    Use of Powers: The eye does not grant
+powers to its user, but produces the effects
+itself; it may be accurately aimed with very
+little practice.
+    Suggested Handicap (1): The user
+becomes obsessed with seeking Immortality.
+ Every 10 days, a Saving Throw vs. Spells is
+ made, the first with a -1 penalty, the second
+ with -2, the third with -3, etc. A failed saving
+ throw forces the user to choose and begin to
+ actively pursue one of the routes to Immortal-
+ ity forsaking all other activities.
+    Suggested Penalties (2, standard chances):
+    1. Body part change: The user's head
+        enlarges to 4 times normal size -large
+        enough to accomodate Humbaba's
+        Glaring Eye, if the user lacks one. This
+        effect is not cumulative.
+    2. Age: The user becomes 10-40 years
+        older. No saving throw applies, but the
+        effect may be dispelled.
+    Source: Babylonian myths
+    Further Research: The Epic of Gilgamesh
+ (circa 2000 B.C), and general references on
+ mythology (especially Sumerian and Babylo-
+ nian).
+    Your Notes:
 
 HYMIR'S STEAMING CALDRON
-The vain Immortal giant Hymir created this device to produce vast amounts of superb ale for his own enjoyment, and for his friends Thor and other Immortals. Its powers can, however, be used in other ways.
+ The vain Immortal giant Hymir created
+ this device to produce vast amounts of
+ superb ale for his own enjoyment, and for
+ his friends Thor and other Immortals. Its
+ powers can, however, be used in other
+ ways.
+   Description: This is a black iron kettle with
+a handle, of a type normally found in
+kitchens. It is about 18 inches across and 1
+foot tall.
+   Magnitude: Minor artifact.
+   Power Limits: 2/A, 1/B, 2/C, 3/D
+   Sphere: Time (Clerics, water)
+   Suggested Powers (PP 35):
+A1 Create poison*                  40
+B4 Container, 10,000 cn            20
+C 1 Create water                   20
+C2 Change tastes                   20
+*Note: The only poison this will create is
+alcohol.
+   Activation: The kettle is inactive when
+found. The user may activate it by filling it
+with water and heating it over a fire. The user
+may read the powers and command words in
+the rising bubbles by using a read magic
+spell. However, it is impossible to exactly
+duplicate Hymir's formula for the taste of his
+ale, unless a sample of his ale has been tasted.
+   Use of Powers: Each power is triggered by
+command words. The user may give the
+commands from up to 10 feet away. However,
+each power applies only to the contents of the
+kettle.
+   Suggested Handicap (1): Fumbling; when-
+ever the user attacks another with either a
+weapon or spell, he or she has 1 chance in 6 of
+ fumbling the attack.
+   Suggested Penalty (1): Memory penalty,
+with different effects as detailed below.
+   Spell caster: After memorizing spells, the
+ user immediately forgets 1 spell of each odd-
+ numbered spell level (up to 1 each of lst, 3rd,
+ 5th, 7th, and 9th level spells).
+   Non-spellcaster: The user immediately
+ forgets how to use 1 weapon.
+    Source: Scandinavian mythology
+    Further Research: See general reference
+ works on mythology, especially referring to
+ the giants of the Norse myths (which are dif-
+ ferent from D&D game giants); Hymir is a
+ minor character, usually appearing only in
+ references to Thor and the Midgard Serpent.
+    Your Notes:
 
-Description: This is a black iron kettle with a handle, of a type normally found in kitchens. It is about 18 inches across and 1 foot tall.
-Magnitude: Minor artifact.
-Power Limits: 2/A, 1/B, 2/C, 3/D
-Sphere: Time (Clerics, water)
-Suggested Powers (PP 35):
-A1 Create poison* 40
-B4 Container, 10,000 cn 20
-C1 Create water 20
-C2 Change tastes 20
-*Note: The only poison this will create is alcohol.
-
-Activation: The kettle is inactive when found. The user may activate it by filling it with water and heating it over a fire. The user may read the powers and command words in the rising bubbles by using a read magic spell. However, it is impossible to exactly duplicate Hymir's formula for the taste of his ale, unless a sample of his ale has been tasted.
-Use of Powers: Each power is triggered by command words. The user may give the commands from up to 10 feet away. However, each power applies only to the contents of the kettle.
-Suggested Handicap (1): Fumbling; whenever the user attacks another with either a weapon or spell, he or she has 1 chance in 6 of fumbling the attack.
-Suggested Penalty (1): Memory penalty, with different effects as detailed below.
-Spell caster: After memorizing spells, the user immediately forgets 1 spell of each odd-numbered spell level, up to 1 each of 1st, 3rd, 5th, 7th, and 9th level spells.
-Non-spellcaster: The user immediately forgets how to use 1 weapon.
-Source: Scandinavian mythology.
-Further Research: See general reference works on mythology, especially referring to the giants of the Norse myths, which are different from D&D game giants; Hymir is a minor character, usually appearing only in references to Thor and the Midgard Serpent.
+                                  Artifacts
 
 IVORY PLUME OF MAAT
-This small but exquisitely crafted feather-shaped brooch was created by a great Paladin, the beautiful fighter Maat. She was a many-talented mortal, and strove always to promote good over evil. Her device is said to enable the user to follow in her noble footsteps, doing good deeds and furthering the cause of Law and Justice.
+This small but exquisitely crafted feather-
+shaped brooch was created by a great Pala-
+din, the beautiful fighter Maat. She was a
+many-talented mortal, and strove always
+to promote good over evil. Her device is
+said to enable the user to follow in her noble
+footsteps, doing good deeds and furthering
+the cause of Law and Justice.
+   Description: The plume is 3 inches long,
+made of very fine ivory.
+   Magnitude: Greater artifact.
+   Power Limits: 4/A, 3/B, 3/C, 4/D
+   Sphere: Matter (Fighters, earth)
+   Suggested Powers (PP 490):
+A1      Dispel evil                      40
+A2      Geas                             50
+A4      Continual light                  35
+A4      Turn as C L 24                   70
+B1      Lie detection                    50
+B?      Know alignment                   20
+B2      Choose Option                    45
+C2      Purify food +water               10
+C2      Repair normal objects            10
+D1 Remove fear                           10
+D2       +4 Saving Throw bonus          50
+D3 Immune to Disease                     20
+D3      Immune to Energy Drain           80
+   Activation: The plume is active when
+acquired. Knowledge of the powers is imme-
+diately telepathically granted to any user who
+is a Paladin or Lawful Knight. Any other
+would-be user must gain the knowledge
+through a contact other plane or commune
+spell, by asking maat directly.
+   Use of Powers: Each power can be acti-
+vated by mental command alone.
+   Suggested Handicaps (3):
+       When first used- alignment changes to
+       Lawful; if already Lawful, become
+       more rigidly so, and work more actively
+       to defeat Chaos.
+       Magic error: An 80% chance of error
+       applies whenever the user casts a spell
+       (or uses a magical device requiring a
+       command word) to harm any Lawful or
+       Neutral creature that has no evil inten-
+       tions.
+       Recharging: The artifact will not
+       recharge itself. Whenever the user slays
+       a chaotic creature (or any creature with
+       evil intentions) while openly wearing
+       the plume, 1 PP is recharged for each
+        100 XPV of the creature slain (rounded
+       up). When the artifact is fully charged,
+       excess recharge power is ignored.
 
-Description: The plume is 3 inches long, made of very fine ivory.
-Magnitude: Greater artifact.
-Power Limits: 4/A, 3/B, 3/C, 4/D
-Sphere: Matter (Fighters, earth)
-Suggested Powers (PP 490):
-A1 Dispel evil 40
-A2 Geas 50
-A4 Continual light 35
-A4 Turn as CL 24 70
-B1 Lie detection 50
-B2 Know alignment 20
-B2 Choose Option 45
-C2 Purify food + water 10
-C2 Repair normal objects 10
-D1 Remove fear 10
-D2 +4 Saving Throw bonus 50
-D3 Immune to disease 20
-D3 Immune to energy drain 80
-
-Activation: The plume is active when acquired. Knowledge of the powers is immediately telepathically granted to any user who is a Paladin or Lawful Knight. Any other would-be user must gain the knowledge through a contact other plane or commune spell, by asking Maat directly.
-Use of Powers: Each power can be activated by mental command alone.
-Suggested Handicaps (3):
-1. When first used: alignment changes to Lawful; if already Lawful, become more rigidly so, and work more actively to defeat Chaos.
-2. Magic error: An 80% chance of error applies whenever the user casts a spell, or uses a magical device requiring a command word, to harm any Lawful or Neutral creature that has no evil intentions.
-3. Recharging: The artifact will not recharge itself. Whenever the user slays a chaotic creature, or any creature with evil intentions, while openly wearing the plume, 1 PP is recharged for each 100 XPV of the creature slain, rounded up. When the artifact is fully charged, excess recharge power is ignored.
 Suggested Penalties (5):
-1. Whenever the item is touched: If the creature touching the plume is Chaotic or has evil intentions, obliterate is cast at the creature, no saving throw, and uses 90 PP.
-2. When first used: Wall of stone forms as a closed cylinder around the user. However, if the user closes his or her eyes, thinks of justice or Maat, and steps forward, the wall vanishes when touched. The wall is completely invulnerable to outside attacks, including a wish. If the wall is destroyed or damaged by the user, he or she thereafter takes double damage from all physical attacks, no saving throw, and unremovable, as a Handicap.
-3. If the user ever slays a Lawful creature, the user is immediately reduced to -10 hp and dies, no saving throw.
-4. At standard chances: Harden. A volume of up to 30,000 cubic feet of mud, mire, swamp, or other muck suddenly dries completely, if within 120 feet of the user.
-5. At standard chances: Opponents. 1-4 Chaotic enemies condense magically from the air, within 30 feet of the user. All the creatures are of one type; the type has a number of Hit Dice equal to 31-50% (1d20 +10%) of the user's levels. The creatures are native to the user's plane of existence, considering undead native to any plane. Each opponent has maximum possible hit points. Neither side has surprise.
-Source: Egyptian mythology.
-Further Research: The Book of the Dead, translated by E. A. Wallis Budge, and other references on Egyptian mythology. Maat, goddess of absolute order, was wife of Thoth, god of knowledge, and daughter of Ra, the highest ruler and sun god of the mythos, and assisted in the work of creation.
+ 1. Whenever the item is touched: If the crea-
+     ture touching the plume is Chaotic or has
+     evil intentions, obliterate is cast at the
+    creature (no saving throw) and uses 90 PP.
+2. When first used: Wall of stone forms as a
+    closed cylinder around the user. However,
+    if the user closes his or her eyes, thinks of
+    justice (or Maat), and steps forward, the
+     wall vanishes when touched. The wall is
+    completely invulerable to outside attacks,
+    including a wish. If the wall is destroyed
+    or damaged by the user, he or she thereaf-
+    ter takes double damage from all physical
+    attacks (no saving throw, and unremov-
+    able, as a Handicap).
+3. If the user ever slays a Lawful creature,
+    the user is immediately reduced to -10 hp,
+    and dies (no saving throw).
+   The following at standard chances of either
+occurrence:
+4. Harden: A volume of up to 30,000 cubic
+    feet of mud, mire, swamp, or other muck
+    suddenly dries completely, if within 120
+    feet of the user.
+5. Opponents: 1-4 Chaotic enemies con-
+    dense magically from the air, within 30
+    feet of the user. All the creatures are of one
+    type; the type has a number of Hit Dice
+    equal to 31-50% ( 1d20 +10%) of the
+    user's levels. The creatures are native to
+    the user's plane of existence (consider
+    undead as native to any plane). Each
+    opponent has maximum possible hit
+    points. Neither side has surprise.
+   Source: Egyptian mythology
+   Further Research: The Book of the Dead,
+translated by E. A. Wallis Budge, and other
+references on Egyptian mythology. Maat,
+goddess of absolute order, was wife of Thoth
+(god of knowledge) and daughter of R a (the
+highest ruler, sun god of the mythos), and
+assisted in the work of creation.
+   Your Notes:
 
 ORTNIT'S LANCE OF DOOM
-It is not known how the hero Ortnit, or Hartnit, acquired this powerful weapon. The device's origin is also a mystery. Ortnit defeated many giants with it, so it may have great powers against this ilk; but he was later slain ignominiously by a small white dragon, which is odd considering his legendary power. The weapon remains, but is often shunned, rumored to bring death to any user.
+ It is not known how the hero Ortnit (or
+ Hartnit) acquired this powerful weapon.
+ The device's origin is also a mystery.
+ Ortnit defeated many giants with it, so it
+ may have great powers against this ilk;
 
-Description: This is an ornately scribed lance, entirely sheathed in light metal, which can only be used when riding a mount, base damage 2d6.
-Magnitude: Minor artifact.
-Power Limits: 2/A, 1/B, 2/C, 3/D
-Sphere: Entropy (Death)
-Suggested Powers (PP 95):
-Lance +5, +10 vs. Giants
-Weapon Talent: Translating 10
-A3 Hold monster 35
-A2 Dodge any missile 50
+ but he was later slain ignominously by a
+ small white dragon, which is odd consid-
+ ering his legendary power. The weapon
+ remains, but is often shunned, rumored to
+ bring death to any user.
+   Description: This is an ornately scribed
+lance, entirely sheathed in light metal, which
+can only be used when riding a mount (base
+damage 2d6).
+   Magnitude: Minor artifact.
+   Power Limits: 2/A, UB, 2/C, 3/D
+   Sphere: Entropy (Death)
+   Suggested Powers (PP 95):
+      Lance +5, +10 vs. Giants
+      Wpn Talent: Translating                10
+      A3              Hold monster           35
+      A2              Dodge any missile      50
+   Activation: The hold monster power is
+activated whenever the lance first strikes a
+creature. At that time, the user discovers that
+he or she feels capable of dodging missiles
+(the other power), and can discover the use
+(but not the cost) of that power through prac-
+tice.
+   Use of Powers: Knowledge of the existence
+of the hold power can be deduced by observ-
+ing results, but is never explained. The trans-
+lating talent appears automatically as well;
+the user simply understands, somehow, all
+languages heard as long as the lance is held.
+The dodge power is activated as soon as the
+user tries to dodge a missile.
+   Suggested Handicap (1): The user loses
+1/3 of all treasure carried each time he or she
+uses the lance to slay a creature.
+   Suggested Penalty (1): This takes effect
+when any creature is struck with the lance,
+but may not become apparent until much
+later. The user takes double normal damage
+from all blows or breaths of any dragon for
+one full day. The user may make the usual
+Saving Throw vs. a dragon's breath, taking
+only full normal damage if the attempt suc-
+ceeds.
+   Source: Germanic legends
+   Further Research: Refer to the medieval
+German epic poems composed in the 13th
+century and collected in Das Heldenbuch
+(The Book of Heroes). In this and other
+works, see references to Ortnit and his
+brother Wolfdietrich. Legends of another
+Germanic hero, Dietrich of Bern, were based
+on Theodoric the Great (King of the Ostro-
+goths, 454-526 A.D.). The famous epic poem
+The Nibelungenlied is another source, based
+loosely on the Scandinavian Volsunga Saga
+with added material unique to Germanic leg-
+end.
 
-Activation: The hold monster power is activated whenever the lance first strikes a creature. At that time, the user discovers that he or she feels capable of dodging missiles, the other power, and can discover the use, but not the cost, of that power through practice.
-Use of Powers: Knowledge of the existence of the hold power can be deduced by observing results, but is never explained. The translating talent appears automatically as well; the user simply understands, somehow, all languages heard as long as the lance is held. The dodge power is activated as soon as the user tries to dodge a missile.
-Suggested Handicap (1): The user loses 1/3 of all treasure carried each time he or she uses the lance to slay a creature.
-Suggested Penalty (1): This takes effect when any creature is struck with the lance, but may not become apparent until much later. The user takes double normal damage from all blows or breaths of any dragon for one full day. The user may make the usual Saving Throw vs. a dragon's breath, taking only full normal damage if the attempt succeeds.
-Source: Germanic legends.
-Further Research: Refer to the medieval German epic poems composed in the 13th century and collected in Das Heldenbuch (The Book of Heroes). In this and other works, see references to Ortnit and his brother Wolfdietrich. Legends of another Germanic hero, Dietrich of Bern, were based on Theodoric the Great, King of the Ostrogoths, 454-526 A.D. The famous epic poem The Nibelungenlied is another source, based loosely on the Scandinavian Volsunga Saga with added material unique to Germanic legend.
+   Your Notes:
 
 PILEUS
-The Pileus (pill-A-us) was made deliberately similar to the red Liberty Cap, a long-time symbol of freedom. An Immortal Paragon mage named Saturnius created it to bring freedom to enslaved mortals. It is rumored that the wearer of this device will remain free forever, and can free all those who suffer imprisonment of any sort.
+ The Pileus (pill-A-us) was made deliber-
+ ately similar to the red Liberty Cap, a
+ long-time symbol of freedom. An Immor-
+ tal Paragon mage named Saturnius cre-
+ ated it to bring freedom to enslaved
+ mortals. It is rumored that the wearer of
+ this device will remain free forever, and
+ can free all those who suffer imprisonment
+ of any sort.
+   Description: This item is a simple red felt
+cap, which will enlarge or shrink to fit any
+user. It must be worn for its powers to be
+used.
+   Magnitude: Minor artifact.
+   Power Limits: 2/A, 1/B, 2/C, 3/D
+   Sphere: Energy (Magic-users, fire)
+   Suggested Powers (PP 100):
+B3      Dimension door                      25
+C 3 Knock                                   20
+D1      Free person                         25
+D3 Immune to paralysis                      30
+   Activation: This cap is inactive when
+acquired, and will remain inactive until the
+would-be user wears it while freeing from
+imprisonment another of his or her race. The
+night after this act, the user receives knowl-
+edge of the cap's powers and command
+words, through dreams.
+   Use of Powers: The pileus produces its
+effects, either upon the user or at some object
+within range, whenever the user mentally
+commands it to do so.
+   Suggested Handicap (1): Repel others.
+The user slowly develops a repulsive invisible
+aura; the reaction rolls of all those coming
+within 30 feet are penalized -3 when the artifact is first used. However, treat any
+"Attack" result on the Reaction Table as
+"Flee in disgust" instead. Other characters
+may make saving throws to tolerate the repul-
+sion, but the given penalty applies to those
+rolls as well. A new saving throw must be
+made for each hour spent in the user's pres-
+ence.
+   Suggested Penalty ( 1 , standard chances):
+Rot. One body part becomes diseased and
+falls off in 1 hour. This affects toes first (one
+by one), then fingers, ears, nose, and then
+limbs. A cure disease applied before the part
+falls off will negate the effect, at least for that
+occurrence.
 
-Description: This item is a simple red felt cap, which will enlarge or shrink to fit any user. It must be worn for its powers to be used.
-Magnitude: Minor artifact.
-Power Limits: 2/A, 1/B, 2/C, 3/D
-Sphere: Energy (Magic-users, fire)
-Suggested Powers (PP 100):
-B3 Dimension door 25
-C3 Knock 20
-D1 Free person 25
-D3 Immune to paralysis 30
-
-Activation: This cap is inactive when acquired, and will remain inactive until the would-be user wears it while freeing from imprisonment another of his or her race. The night after this act, the user receives knowledge of the cap's powers and command words, through dreams.
-Use of Powers: The pileus produces its effects, either upon the user or at some object within range, whenever the user mentally commands it to do so.
-Suggested Handicap (1): Repel others. The user slowly develops a repulsive invisible aura; the reaction rolls of all those coming within 30 feet are penalized -3 when the artifact is first used. However, treat any Attack result on the Reaction Table as Flee in disgust instead. Other characters may make saving throws to tolerate the repulsion, but the given penalty applies to those rolls as well. A new saving throw must be made for each hour spent in the user's presence.
-Suggested Penalty (1, standard chances): Rot. One body part becomes diseased and falls off in 1 hour. This affects toes first, one by one, then fingers, ears, nose, and then limbs. A cure disease applied before the part falls off will negate the effect, at least for that occurrence.
-Source: Roman and French history.
-Further Research: The Liberty Cap is a common symbol of freedom in history. The red pileus, a Phrygian cap of red felt, was placed upon a slave's head during the ceremony of manumission. It was used regularly in the Roman Empire, and appeared in the French Revolution (1789-1799) as the Bonnet Rouge.
+  Source: Roman and French history
+  Further Research: The Liberty Cap is a
+common symbol of freedom in history. The
+red pileus, a Phrygian cap of red felt, was
+placed upon a slave's head during the cere-
+mony of manumission. It was used regularly
+in the Roman Empire, and appeared in the
+French Revolution (1789- 1799) as the Bon-
+net Rouge.
+  Your Notes:
 
 RAINBOW SCARF OF SINBAD
-The success of the famous adventurer Sinbad the Sailor, whose whereabouts and even existence are now dubious, is said to have been caused by this simple item of apparel. Especially made to aid the Epic Hero on his way to Immortality, this device must be worn at all times. It may bring luck and intelligence, but will bring hazardous adventure as well if even a tenth of the legends of Sinbad are true.
+ The success of the famous adventurer Sin-
+ bad the Sailor (whose whereabouts and
+ even existence are now dubious) is said to
+ have been caused by this simple item of
+ apparel. Especially made to aid the Epic
+ Hero on his way to Immortality, this
+ device must be worn at all times. It may
+ bring luck and intelligence, but will bring
+ hazardous adventure as well if even a
+ tenth of the legends of Sinbad are true.
+   Description: This is a silk scarf, 2 feet
+square, decorated in swirls of rainbow colors.
+   Magnitude: Minor artifact.
+   Power Limits: 2/A, 1/B, 2/C, 3/D
+   Sphere: Thought (Thieves, air)
+   Suggested Powers (PP 90):
+A2     CauseFear                         10
+A5     Bless                             10
+B4     Container, 10,000 cn              10
+C3 Open Locks 75%                        10
+D2     +2 Saving Throw bonus            25
+D2 Intelligence to 18                    20
+   Activation: The artifact is not active when
+acquired. If it is worn while the user travels
+by sea, the powers of the scarf may be read in
+passing sea mists, by using both read magic
+and detect invisible spells, at the maximum
+rate of 1 power per hour.
+   Use of Powers: Any power revealed can be
+produced by thought alone, without uttering
+any command words. However, the Intelli-
+gence 18 power is produced automatically
+whenever the open locks is called forth unless
+the user specifies otherwise.
+   Suggested Handicap (1): When the item is
+first used, the user's Wisdom drops by 4
+points.
+   Suggested Penalty (1, standard chances):
+ 1-4 hostile monsters of some type magically
+appear within 30 feet of the user. Select or
+randomly determine any monster from 1 to
+ 12 Hit Dice.
 
-Description: This is a silk scarf, 2 feet square, decorated in swirls of rainbow colors.
-Magnitude: Minor artifact.
-Power Limits: 2/A, 1/B, 2/C, 3/D
-Sphere: Thought (Thieves, air)
-Suggested Powers (PP 90):
-A2 Cause fear 10
-A5 Bless 10
-B4 Container, 10,000 cn 10
-C3 Open locks 75% 10
-D2 +2 Saving Throw bonus 25
-D2 Intelligence to 18 20
+   Source: Arabian folklore
+  Further Research: See The Arabian              A
+Nights' Entertainments (or 1001 Nights,          A
+ rom circa 1450) and related references,         A
+ ncluding Sinbad the Sailor, Aladdin, Sche-      B
+herazade, the Roc, etc.                          B
+  Your Notes:                                    B
+                                                 C
+                                                 D
+                                                 D
+                                                 D
 
-Activation: The artifact is not active when acquired. If it is worn while the user travels by sea, the powers of the scarf may be read in passing sea mists, by using both read magic and detect invisible spells, at the maximum rate of 1 power per hour.
-Use of Powers: Any power revealed can be produced by thought alone, without uttering any command words. However, the Intelligence 18 power is produced automatically whenever the open locks power is called forth unless the user specifies otherwise.
-Suggested Handicap (1): When the item is first used, the user's Wisdom drops by 4 points.
-Suggested Penalty (1, standard chances): 1-4 hostile monsters of some type magically appear within 30 feet of the user. Select or randomly determine any monster from 1 to 12 Hit Dice.
-Source: Arabian folklore.
-Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, and similar material.
+                                                 f
+                                                 a
+                                                 a
+                                                 H
+                                                 d
+
+                                                 u
+                                                 k
+                                                 s
+
+                                                 t
+                                                 s
+                                                 p
 
 SHARD OF SAKKRAD
-According to very old legends, the original home of mankind was in the middle of a vast mountain, so huge that the sun was said to rise from one of its peaks and set on the opposite. The entire base of this mountain is the fabled emerald Sakkrad; its reflection gives the azure hue to the sky. One small piece of that emerald, this very shard, was stolen by a djinni, who subsequently vanished from existence; the shard has never reappeared. It is said to hold unimaginable power; some say that mortal man was not meant to have it, and cannot possibly control it. Others dismiss it as pure legend. Yet despite the tales, many adventurers of great fame and power have gone in search of it; none are known to have returned.
+ According to very old legends, the original
+ home of mankind was in the middle of a
+ vast mountain, so huge that the sun was
+ said to rise from one of its peaks and set on
+ the opposite. The entire base of this moun-
+ tain is the fabled emerald Sakkrad; its
+ reflection gives the azure hue to the sky.
+ One small piece of that emerald-this very
+ Shard-was stolen by a djinni, who subse-
+ quently vanished from existence; the Shard
+ has never reappeared. It is said to hold uni-
+ maginable power; some say that mortal
+ man was not meant to have it, and cannot
+ possibly control it. Others dismiss it as
+ pure legend. Yet despite the tales, many
+ adventurers of great fame and power have
+ gone in search of it; none are known to
+ have returned.
+  Description: This is a 3-foot-long imper-
+fect hexagonal crystal of azure hue, with
+sharp edges and pointed ends.
+   Magnitude: Major artifact.
+  Power Limits: 4/A, 4/B, 4/C, 5/D
+   Sphere: Matter (Fighters, earth)
 
-Description: This is a 3-foot-long imperfect hexagonal crystal of azure hue, with sharp edges and pointed ends.
-Magnitude: Major artifact.
-Power Limits: 4/A, 4/B, 4/C, 5/D
-Sphere: Matter (Fighters, earth)
-Suggested Powers (PP 750):
-Disintegrate 80
-Mass charm 75
-Polymorph any object 75
-Detect magic 15
-Plane travel 65
-Telekinesis 40
-Create any monster 100
-Automatic healing 100
-Shapechange 100
-Luck 100
+   Suggested Powers (PP 750):
+ 1     Disintegrate                80
+ 2     Mass charm                  75
+  4    Polymorph any object 75
+ 2     Detect magic                15
+ 3     Plane travel                65
+ 3     Telekinesis                 40
+ 1 Create any monster              100
+  1 Automatic healing              100
+  2    Shapechange                 100
+  3 Luck                           100
+   Activation: The Shard is active when
+ound. Anyone who touches it immediately
+ nd magically knows all the names, details,
+ nd command words of all of its powers.
+However, all this knowledge vanishes imme-
+ iately when physical contact ends.
+   Use of Powers: A power is granted to the
+ ser when the proper command word is spo-
+ en. It remains until used or until the user
+  ops touching the item.
+   Suggested Handicaps (4; #1 appears when
+he item is first used; others appear in
+ equence whenever the user draws on a 100
+ oint power):
+   1. Magic error: A 25% chance of error
+      occurs whenever the user casts a spell or
+      utters any command words, except
+      those used on the shard.
+   2. OperatingCosts: Theuser loses 10% of
+      all treasure owned, and loses 10% each
+      time a 100 point power is employed
+      thereafter.
+   3. Greed: Anyone seeing the user produce
+      any visible effect of the shard's powers
+      must make a Saving Throw vs. Spells,
+      with a -4 penalty to the roll, or immedi-
+      ately attack the user with intention to
+      possess the shard.
+   4. Doom: The next time the user employs
+      a 100 point power, there is a 5 % chance
+      that an Immortal will arrive. This
+      chance increases by 2% each time a 100
+      point power is used again. If the
+      Immortal arrives, all within sight range
+      have the choice of watching or looking
+      away. Each of those watching must
+      make a Saving Throw vs. Death Ray,
+      with a -10 penalty to the roll, or die.
+      Each of those looking away may make a
+      Saving Throw vs. Spells; if successful,
+      no further effect occurs, but if failed,
+      each must make the previously men-
+      tioned Saving Throw vs. Death Ray.
+      The Immortal departs within 1 round,
+       taking the user and all of his or her non-
+       living valuables (wherever they may
+      be). The shard is not taken, but is tele-
+      ported to a random location within
+       10,000 miles.
 
-Activation: The shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
-Use of Powers: A power is granted to the user when the proper command word is spoken. It remains until used or until the user stops touching the item.
-Suggested Handicaps (4; #1 appears when the item is first used; others appear in sequence whenever the user draws on a 100 point power):
-1. Magic error: A 25% chance of error occurs whenever the user casts a spell or utters any command words, except those used on the shard.
-2. Operating Costs: The user loses 10% of all treasure owned, and loses 10% each time a 100 point power is employed thereafter.
-3. Greed: Anyone seeing the user produce any visible effect of the shard's powers must make a Saving Throw vs. Spells, with a -4 penalty to the roll, or immediately attack the user with intention to possess the shard.
-4. Doom: The next time the user employs a 100 point power, there is a 5% chance that an Immortal will arrive. This chance increases by 2% each time a 100 point power is used again. If the Immortal arrives, all within sight range have the choice of watching or looking away. Each of those watching must make a Saving Throw vs. Death Ray, with a -10 penalty to the roll, or die. Each of those looking away may make a Saving Throw vs. Spells; if successful, no further effect occurs, but if failed, each must make the previously mentioned Saving Throw vs. Death Ray. The Immortal departs within 1 round, taking the user and all of his or her non-living valuables, wherever they may be. The shard is not taken, but is teleported to a random location within 10,000 miles.
-Suggested Penalties (8; 20% chance of appearance when any power is used; equal chances for each):
-1. Delayed blast fire ball within 10' of user, set to detonate in 1-4 rounds; normal saving throw applies to all victims.
-2. User takes 40 points of damage.
-3. Healing error: When the automatic healing power is next triggered, it drains the usual 100 PP but cures only 10 points of damage, or fails utterly to cure any other effect, poison, disease, and so forth.
-4. The user is struck with Paranoia.
-5. Memory lapse: The user suddenly and completely forgets how to cast spells, if a spell user, or how to use weapons for 2-20 days; no saving throw.
-6. The user is struck by Withdrawal; Saving Throw vs. Spells applies, but with a -5 penalty.
-7. Anti-Magic 100%, 10' radius emanating from the artifact. The Anti-Magic will remain until wished away, or until the user washes it in the water at either the north pole or the south pole.
-8. Saving Throw penalty: A -8 penalty applies to the user's Saving Throws vs. fire-type attacks.
-Source: North African creation myth.
-Further Research: This item is loosely based on a creation myth common in Africa and Asia Minor.
+  Suggested Penalties (8; 20% chance of
+appearance when any power is used; equal
+chances for each):
+  1. delayed blast fire ball within 10' of user,
+      set to detonate in 1-4 rounds; normal
+      saving throw applies to all victims.
+  2. User takes 40 points of damage.
+  3. Healing error: When the automatic
+      healingpower is next triggered, it drains
+      the usual 100 PP but cures only 10 points
+      of damage, or fails utterly to cure any
+      other effect (poison, disease, etc.
+  4. The user is struck with Paranoia.
+  5. Memory lapse: The user suddenly and
+      completely forgets how to cast spells (if
+      a spell user) or how to use weapons for
+      2-20 days; no saving throw.
+  6 . The user is struck by Withdrawal; Sav-
+      ing Throw vs. Spells applies, but with a
+      -5 penalty.
+  7. Anti-Magic l o o % , 10' radius emanat-
+      ing from the artifact. The Anti-Magic
+      will remain until wished away, or until
+      the user washes it in the water at either
+      the north pole or the south pole.
+  8. Saving Throw penalty: A -8 penalty
+      applies to the user's Saving Throws vs.
+      fire-type attacks.
+  Source: North African creation myth
+   Further Research: This item is loosely
+based on a creation myth common in Africa
+and Asia Minor.
+  Your Notes:
 
 TOME OF SSU-MA
-The Immortal Hero Ssu-Ma is said to be the father of written knowledge, bringing mankind from barbaric chaos to civilization. His Great Tome is said to gather knowledge of all sorts from the very air itself, and is thus able to provide information on anything in existence.
+ The Immortal Hero Ssu-Ma is said to be
+ the father of written knowledge, bringing
+ mankind from barbaric chaos to civiliza-
+ tion. His Great Tome is said to gather
+ knowledge of all sorts from the very air
+ itself, and is thus able to provide informa-
+ tion on anything in existence.
+   Description: This large, bulky book is 5
+feet square and nearly a foot thick. Its covers
+are each half an inch thick, fastened securely
+by a built-in lock. The covers are not marked
+in any way.
 
-Description: This large, bulky book is 5 feet square and nearly a foot thick. Its covers are each half an inch thick, fastened securely by a built-in lock. The covers are not marked in any way.
-Magnitude: Lesser artifact.
-Power Limits: 3/A, 2/B, 2/C, 4/D
-Sphere: Thought (Thieves, air)
-Suggested Powers (PP 250):
-A2 Feeblemind 40
-B2 Lore 70
-B2 Mapmaking 55
-C2 Repair normal objects 10
-C3 Open locks 25
-D2 Memorize +5 spell levels 50
+   Magnitude: Lesser artifact.
+   Limits: 3/A, 2/B, 2/C, 4/D
+   Sphere: Thought (Thieves, air)
+   Suggested Powers (PP 250):
+A2      Feeblemind                         40
+B2      Lore                               70
+B2      Mapmaking                          55
+C2      Repair Normal Objects              10
+C 3 Open Locks                             25
+D2 Memorize +5 spell levels               50
+   Activation: The lock on the book cannot be
+opened magically, and open locks attempts '
+suffer a +50% penalty to the roll. Anyone
+who fails to pick the lock can never succeed in
+opening it. The contents of the book cannot
+be examined until the lock and book are
+opened. The first page of the book explains
+all of its powers, their PP costs, and the page
+references where the command words and
+instructions for each power can be found.
+The Tome can be read easily by anyone.
+   Use of Powers: The Tome's contents
+explain how the user, drawing on the power
+of the Tome, can produce the effects of the
+given powers. The pages of the book cannot
+be used as materials for the effects (such as
+mapping).
+   Suggested Handicaps (2):
+    1. When first used the user suffers a -6
+        penalty to Strength score.
+   2. Body part change: The user becomes
+        hunchbacked, and suffers a +4 penalty
+        to Armor Class and a -4 penalty to all
+        Hit rolls because of this deformity.
+   Suggested Penalties (3, standard chances):
+    1 . User involuntarily assumes gaseous
+        form.
+    2. Memory lapse: The user immediately
+        forgets any 1st level spells memorized.
+    3. Service: The user is suddenly com-
+        pelled to map an entire level of a nearby
+        dungeon, using the tome, and will
+        assemble an expedition to do so, leav-
+        ing within 3 days. This effect ends when
+        the map is completed.
+    Source: Ssu-ma Ch'ien, an historical fig-
+ ure
+    (Further Research: Shih chi (Records of
+ the Historian) by Ssu-ma Ch'ien (145-90
+ B.C.) is called the first major Chinese histori-
+ cal work. For more information on this
+ scholar, see Ssu-ma Ch'ien: Grand Historian
+ of China, by Burton Watson (1958). For
+ details of Chinese mythology, see Asiatic
+ Mythologyby James Hackin et alia, and Chi-
+ nese Mythology by Anthony Christie.
 
-Activation: The lock on the book cannot be opened magically, and open locks attempts suffer a +50% penalty to the roll. Anyone who fails to pick the lock can never succeed in opening it. The contents of the book cannot be examined until the lock and book are opened. The first page of the book explains all of its powers, their PP costs, and the page references where the command words and instructions for each power can be found. The tome can be read easily by anyone.
-Use of Powers: The tome's contents explain how the user, drawing on the power of the tome, can produce the effects of the given powers. The pages of the book cannot be used as materials for the effects, such as mapping.
-Suggested Handicaps (2):
-1. When first used the user suffers a -6 penalty to Strength score.
-2. Body part change: The user becomes hunchbacked, and suffers a +4 penalty to Armor Class and a -4 penalty to all Hit rolls because of this deformity.
-Suggested Penalties (3, standard chances):
-1. User involuntarily assumes gaseous form.
-2. Memory lapse: The user immediately forgets any 1st level spells memorized.
-3. Service: The user is suddenly compelled to map an entire level of a nearby dungeon, using the tome, and will assemble an expedition to do so, leaving within 3 days. This effect ends when the map is completed.
-Source: Ssu-ma Ch'ien, an historical figure.
-Further Research: Shih chi (Records of the Historian) by Ssu-ma Ch'ien (145-90 B.C.) is called the first major Chinese historical work. For more information on this scholar, see Ssu-ma Ch'ien: Grand Historian of China, by Burton Watson (1958). For details of Chinese mythology, see Asiatic Mythology by James Hackin et alia, and Chinese Mythology by Anthony Christie.
+  Your Notes:
 
-VERTHANDI'S INVINCIBLE HOURGLASS
-Verthandi, a very powerful Immortal of Time, gave mortals the ability to control Time itself, through this marvelous creation. Its powers are said to be unlimited, both in scope and danger.
+VERTHANDI'S INVINCIBLE
+HOURGLASS
+Verthandi, a very powerful Immortal of
+Time, gave mortals the ability to control
+Time itself, through this marvelous crea-
+tion. Its powers are said to be unlimited-
+both in scope and danger.
+    ~   ~~
 
-Description: This item is a 3-foot-tall construction of glass and wood, identical to a normal hourglass, wooden frame around a wasp-waist glass containing sand, except for its size.
-Magnitude: Lesser artifact.
-Power Limits: 3/A, 2/B, 2/C, 5/D
-Sphere: Time (Clerics, water)
-Suggested Powers (PP 250):
-A2 Sleep 15
-A3 Slow 25
-B1 Timekeeping 10
-C2 Timestop 100
-C3 Wish 100
+Description: This item is a 3-foot-tall con-
+struction of glass and wood, identical to a
+normal hourglass (wooden frame around a
+wasp-waist glass containing sand) except for
+its size.
+    Magnitude: Lesser artifact.
+    Power Limits: 3lA, 2/B, 2/C, 5/D
+    Sphere: Time (Clerics, water)
+    Suggested Powers (PP 250):
+A2      Sleep                            15
+A3      Slow                             25
+B1      Timekeeping                      10
+C2 Timestop                              100
+C 3 Wish                                 100
+    Activation: The hourglass is active when
+found. The powers are automatically and
+magically revealed to the user, in time, and
+never otherwise. Powers are revealed in
+order of their PP costs, timestop coming
+before wish. One power is revealed during
+ sleep at each full moon (every 28 days). One
+additional power may (25% chance) be
+ revealed if the user is affected by haste or a
+potion of speed.
+    Use of Powers: Any power is activated by
+ inverting the hourglass and concentrating on
+ the power desired while watching the flowing
+ sand. The power is granted to the user after
+ watching for a number of seconds equal to the
+ PP cost. If concentration is broken before the
+ power is acquired, the P P cost is still
+ deducted, although no power is gained.
+    Suggested Handicaps (2):
+    1. When first used: A 10' cubic white mist
+       issues from the hourglass, collecting
+       around the user only. The user is
+       immune to the mist's effects. Any vic-
+       tim within the gas must make a Saving
+       Throw vs. Spells, with a -4 penalty, or
+       age 10-40 years.
+    2. When either 100 point power is used,
+        forgetfulness occurs. After memorizing
+       spells, the user forgets 1-4 randomly
+       selected spells. These are immediately
+       revealed. If the user memorizes them
 
-Activation: The hourglass is active when found. The powers are automatically and magically revealed to the user, in time, and never otherwise. Powers are revealed in order of their PP costs, timestop coming before wish. One power is revealed during sleep at each full moon, every 28 days. One additional power may, 25% chance, be revealed if the user is affected by haste or a potion of speed.
-Use of Powers: Any power is activated by inverting the hourglass and concentrating on the power desired while watching the flowing sand. The power is granted to the user after watching for a number of seconds equal to the PP cost. If concentration is broken before the power is acquired, the PP cost is still deducted, although no power is gained.
-Suggested Handicaps (2):
-1. When first used: A 10' cubic white mist issues from the hourglass, collecting around the user only. The user is immune to the mist's effects. Any victim within the gas must make a Saving Throw vs. Spells, with a -4 penalty, or age 10-40 years.
-2. When either 100 point power is used, forgetfulness occurs. After memorizing spells, the user forgets 1-4 randomly selected spells. These are immediately revealed. If the user memorizes them again, to fill the loss, another 1-4 randomly selected spells vanish in the same way.
-Suggested Penalties (3; 10% chance of occurrence whenever either 100 point power is used; equal chances for each):
-1. Aging: The user ages 1-6 years; no saving throw applies.
-2. Disintegrate: The user must make a Saving Throw vs. Spells or suffer a variation of the normal spell effect, appearing to wither, age extremely rapidly, and crumble to dust. The body may be recovered by a wish, and the user then restored to normal form by applying a raise dead fully.
-3. Ability score penalty: The user loses 6-11 (1d6 +5) points of Strength, to a minimum Strength of 3.
-Source: Norse mythology.
-Further Research: See standard works, referring to the following names. Verthandi is one of the Norns of Norse legend, the immortal beings who rule the fates of men and gods alike. Verthandi rules the Present, Urdur (or Urdhr, or Urth) the Past, and Skuld, who wears a veil, the Future. Each of the Norns may provide ideas for other artifacts.
+again, to fill the loss, another 1-4 randomly
+selected spells vanish in the same way.
+   Suggested Penalties (3; 10% chance of
+occurrence whenever either 100 point power
+is used; equal chances for each):
+   1. Aging: The user ages 1-6 years; no sav-
+      ing throw applies.
+   2. Disintegrate: The user must make a
+      Saving Throw vs. Spells or suffer a var-
+      iation of the normal spell effect, appear-
+      ing to wither, age extremely rapidly,
+      and crumble to dust. The body may be
+      recovered by a wish, and the user then
+      restored to normal form by applying a
+      raise dead fully
+   3. Ability score penalty: The user loses 6-
+       11 (id6 +5) points of Strength, to a
+      minimum Strength of 3.
+   Source: Norse mythology
+   Further Research: See standard works,
+referring to the following names. Verthandi is
+one of the Norns of Norse legend, the immor-
+tal beings who rule the fates of men and gods
+alike. Verthandi rules the Present, Urdur (or
+Urdhr, or Urth) the Past, and Skuld (who
+wears a veil), the Future. Each of the Norns
+may provide ideas for other artifacts.
+   Your Notes:
 
 WIFE OF ILMARINEN
-The legendary Immortal craftsman Ilmarinen once used his great skills to create a companion entirely of gold and silver. However, the result was too cold to even be approached. Appearing as a metallic golem, it was given special powers when freed, and is said to reside in far northern reaches, either alone or with its current master.
+ The legendary Immortal craftsman
+ Ilmarinen once used his great skills to cre-
+ ate a companion entirely of gold and silver.
+ However, the result was too cold to even be
+ approached. Appearing as a metallic
+ golem, it was given special powers when
+ freed, and is said to reside in far northern
+ reaches, either alone or with its current
+ master.
 
-Description: The wife appears to be a metal statue of an extremely attractive human female clad in robes. The entire statue is made of a sparkling mixture of gold and silver.
-Magnitude: Minor artifact.
-Power Limits: 2/A, 1/B, 2/C, 3/D
-Sphere: Matter (Fighters, earth)
-Suggested Powers (PP 100):
-A1 Ice breath 55
-A1 Ice storm 45
+  Description: The wife appears to be a
+metal statue of an extremely attractive
+human female clad in robes. The entire
+statue is made of a sparkling mixture of gold
+and silver.
+   Magnitude: Minor artifact.
+   Power Limits: 2/A, 1/B, 2/C, 3/D
+   Sphere: Matter (Fighters, earth)
+   Suggested Powers (PP 100):
+A1     Ice breath                       55
+A1     Ice storm                        45
+   Activation: The wife is always active.
+   Use of Powers: The powers of the wife are
+used by the artifact alone, not granted to the
+user. The wife can speak any language it
+hears, and will explain its powers to any who
+ask (unless ordered not to). However, the
+artifact cannot be controlled until a special
+command word is uttered. Once this com-
+mand is spoken, the wife will obey either
+mental or verbal commands from the user.
+The command word can only be obtained
+from Ilmarinen himself (by using a com-
+mune or contact other plane), from a pre-
+vious user of the artifact, or by a wish.
+   Suggested Handicap (1): When control is
+gained, the user becomes aware that the wife
+cannot recharge itself. It can eat gold or sil-
+ver. For each 100 gp value of those metals
+eaten, the artifact recharges 1 PP.
+   Suggested Penalty (1; 1 in 6 chance of
+occurrence whenever a power is used): In-
+stead of attacking as directed, the wife aims
+her attack at the user; normal saving throws
+apply, but the user gains a +4 bonus for the
+second and subsequent appearances of this
+effect.
+   Other Details: AC -20; hp 100; AT 1
+power; D by power; M V 90' (30'); AL N.
+The wife will not attack by any means other
+than its powers.
+   Source: Finnish mythology
+   Further Research: See the Finnish
+national epic poem Kalevala, compiled by
+ Elias Lonnrott in the late 19th century.
+   Your Notes:
 
-Activation: The wife is always active.
-Use of Powers: The powers of the wife are used by the artifact alone, not granted to the user. The wife can speak any language it hears, and will explain its powers to any who ask, unless ordered not to. However, the artifact cannot be controlled until a special command word is uttered. Once this command is spoken, the wife will obey either mental or verbal commands from the user. The command word can only be obtained from Ilmarinen himself, by using a commune or contact other plane, from a previous user of the artifact, or by a wish.
-Suggested Handicap (1): When control is gained, the user becomes aware that the wife cannot recharge itself. It can eat gold or silver. For each 100 gp value of those metals eaten, the artifact recharges 1 PP.
-Suggested Penalty (1; 1 in 6 chance of occurrence whenever a power is used): Instead of attacking as directed, the wife aims her attack at the user; normal saving throws apply, but the user gains a +4 bonus for the second and subsequent appearances of this effect.
-Other Details: AC -20; hp 100; AT 1 power; D by power; MV 90' (30'); AL N. The wife will not attack by any means other than its powers.
-Source: Finnish mythology.
-Further Research: See the Finnish national epic poem Kalevala, compiled by Elias Lonnrott in the late 19th century.
+The following legendary magic items are
+mentioned in history, myths, legends, and lit-
+erature. You may easily develop them into
+either artifacts or powerful but standard
+magic items. Further research is recom-
+mended.
 
-```
+   Ambrosia: This is a potion of Immortality,
+but with a short duration. Repeated drinks
+are needed to maintain Immortal status.
+   Apples of Bragi: In Scandinavian legend,
+Bragi (son of Odin) had a magically inex-
+haustible supply of these items. Each can
+cure weariness, decay of power, ill temper, or
+failing health.
+   Arrow of Abaris: Abaris the Hyperbo-
+rean, a Greek sage in the 6th century BC,
+once received a magic arrow from the god
+Apollo (according to Greek legend). The
+arrow enabled him to become invisible, cure
+disease, fly (riding the arrow, as if a broom)
+and to divine the future.
+    Bag of Aeolus: In Homer's Odyssey, this
+bag (named for the god of winds) contains a
+divine essence. When opened, it blows Odys-
+seus' ship back to its starting point.
+    Books, Sibylline: These were written
+prophecies, carefully preserved in ancient
+Rome and occasionally consulted on matters
+of great import. There were nine scrolls at
+first, offered for sale to Rome by the seeress
+Almathaea; the Romans refused her price.
+She kept to the price and burned 3, but again
+was turned down. She sold the remaining 3 at
+the original price. They were preserved in a
+stone chest, with two custodians (later
+increased to 10 and then 15). Finally placed
+in gilt cases at the base of the statue of Apollo
+on Palatine Hill, they were burned in the
+great fire of Nero's fame.
+    Carpet, Solomon's Magic: This item,
+made of green silk, was legended to have car-
+ried not only Solomon and his great throne
+but also all of his army.
+    Draupnir: In Scandinavian legend, the
+ famed magic ring made by Odin (the
+ supreme deity) for the dwarves. Every 9
+ nights it produced 8 non-magical rings equal
+ in size and beauty to itself, and is thus a fertil-
+ ity symbol.
+    Elixir: In Arabic legend, this powder was
+ sprinkled on wounds of battle, curing them.
+ Treat as a potion of healing, but applied
+ instead of consumed.
+    Holy Grail: This vessel of literary fame
+ was the cup at the Last Supper, carried to
+ England by Joseph of Arimathea. It was said
+ to provide food, drink, and spiritual suste-
+ nance for the life of the custodian. This term
+ may have originally been used in reference to
+ the platter of the Paschal lamb (again, at the
+ Last Supper).
+    Horse, flying: Clavileno, an enchanted
+ wooden rocking horse described in Cer-
+ vantes' "Don Quixote," could fly and carry
+ an armed rider. It was guided by a pin in its
+ forehead.
 
-### Other Legendary Magic Items Appendix
+    Mill: A magic mill in the Finnis
+ "Kalevala," called the Sampo, could grin
+out meal, salt, or gold from straw on com
+mand.
+   Necklace of Harmonia: Harmonia
+daughter of the Greek gods Ares and Aphro
+dite, was given a magical necklace when sh
+married Cadmus. Though relatively unre
+markable at the time, the necklace brough
+disaster to all subsequent owners.
+   Odrovir: In Norse legend, a great wa
+took place between the Aesir (the 24 gods o
+heaven, Asgard) and the Vanir (the Natur
+gods of Noatun). At its peaceful conclusion
+both sides spat into a jar, providing thei
+mixed essences as hostage to peace. Kvasir
+the wisest of all men, was made of the spittle
+His blood, mixed with honey, was calle
+Odrovir (or Odhrevir); all who partook of
+became poets.
+   Ring of Amasis: Amasis, King of Egyp
+advised his incredibly lucky friend Polycra
+tes, King of Samos, to discard something o
+great value to balance the Fates. Polycrate
+threw a prized ring into the sea, but it wa
+later found in a fish on the King's dinne
+table. Amasis promptly recognized this sig
+from the gods and broke off relations with hi
+friend; shortly thereafter, Polycrates was bru
+tally slain.
+   Ring of the Nibelungen: Made famous b
+Richard Wagner's 1876 opera, this item
+comes from several Scandinavian legend
+(the Volsunga Saga, Nibelungenlied, Elde
+and Younger Eddas, and the Eckelied). Th
+ring was part of an entire hoard in the Rhin
+river, which was guarded by the Rhine Maid
+ens until Alberich gained it by foreswearin
+love. The greedy dwarf cursed the item, an
+when the Ring was later taken by gods an
+heroes for various uses, it brought doom t
+all, resulting even in the destruction o
+Asgard and the gods.
+   Swords: Many magical swords can b
+found in myth and literature. The following
+list is only a sampling; further research is rec
+ommended to ascertain appropriate powers
+   Angurvadal (Stream of Anguish) wa
+owned by the hero of "Frithiofs Saga,"
+13th century Scandinavian work.
+   Ar'ondight, sword of Launcelot of th
+Lake, was mentioned in several Arthurian
+legends.
+   Balisarda (a sword ofslicing) was made b
+the witch Falerina in the 1487 romance epi
+"Orlando Innamorato" (Roland in Love) b
+Matteo Maria Boiardo.
+   Balmung was the sword of Siegfried i
+Scandinavian legend. It was made b
+Wieland, a Germanic name for the immorta
 
-- Extraction note: targeted Master appendix addition from pages 63-64, curating the post-catalog legendary-item list so mythic item seeds and reference examples remain attached to the artifact section as readable source evidence.
+blacksmith Volund, known as "Wayland
+Smith" to the English. (See the artifact
+Armet by Wayland.) Wieland may be similar
+to earlier legends, such as the Greek
+Hephaestus and the Roman Vulcan.
+   Colada was the sword of the Spanish hero
+El Cid, first described in a poem of a
+unknown Castilian bard in 1140. "Cid"
+comes from the Arabic "Sidi," or "Lord."
+The hero was Ruy Diaz de Bivar (1043-
+ 1099), also called "ed Campeador" (the
+Champion).
+   Courtain ("the Short Sword") was used by
+Ogier the Dane, a Paladin of Charlemagne
+(who, known as Holger Danske, is the folk
+hero of Denmark). The smith Munifican
+took 3 years to make Courtain.
+   Durandan (or Durandal, Durandana, or
+"the Inflexible") was the Sword of Roland,
+given him by Charlemagne. It once belonged
+to Hector, the noble chieftain of Homer's
+"Iliad" prominent in the fall of Troy. Roland
+(also called Orlando) is the hero of several lit-
+erary works, including the "Chanson de
+Roland" (Song of Roland) of the 11th cen-
+tury; the "Chronicle of Charlemagne" of the
+12th century; and the later Italian works
+"Morgante Maggiore" by Luigi Pulci
+(1 483), Boiardo's "Orlando Innamorato"
+(Roland in Love, 1487), and "Orlando Furi-
+oso" (Roland Mad, 1516) by Lodovico
+Ariosto.
+   Excalibur(or Escalibor, in the Old French)
+was the fabled sword of King Arthur (accord-
+ing to most legends). It was also referred to as
+Caliburn (by Geoffrey of Monmouth) and
+Caledvwlch (in the Mabinogion), or Calad-
+bolg in Irish legend (meaning "hard belly").
+It gets its name from the Latin "ex calce
+liberare," or "to liberate from the stone."
+   Flarnberge (or Floberge, meaning Flame
+Cutter) was a sword of Charlemagne.
+   Glorius, sword of the hero Oliver, broke 9
+swords made by the famed smiths Ansias,
+Galas, and Munifican.
+   Gram (German for "grief') was another
+famous sword of Siegfried.
+  Joyeuse (French, "joyous"), a greatsword
+ofcharlemagne, took 3 years to make (by the
+smith Gallas).
+   Mimung, sword of the hero Wittich, was
+loaned to Siegfried for a time.
+   Morglay (Big Glaive) was the sword of Sir
+Bevis of English lore. "Morglay" was then a
+common generic term for "sword."
+   Nagelring (Nail-Ring) was the sword of
+Dietrich of Bern, a hero in the Germanic
+"Heldenbuch" and "Nibelungenlied."
+   Philippan was the sword of Mark Antony,
+a member of the Second Triumvirate of
 
-```text
-[Master pages 63-64: Other Magic Items appendix]
-Other Magic Items
-The following legendary magic items are mentioned in history, myths, legends, and literature. You may easily develop them into either artifacts or powerful but standard magic items. Further research is recommended.
-
-Consumables and Sustainers
-
-Ambrosia: This is a potion of Immortality, but with a short duration. Repeated drinks are needed to maintain Immortal status.
-
-Apples of Bragi: In Scandinavian legend, Bragi, son of Odin, had a magically inexhaustible supply of these items. Each can cure weariness, decay of power, ill temper, or failing health.
-
-Elixir: In Arabic legend, this powder was sprinkled on wounds of battle, curing them. Treat as a potion of healing, but applied instead of consumed.
-
-Holy Grail: This vessel of literary fame was the cup at the Last Supper, carried to England by Joseph of Arimathea. It was said to provide food, drink, and spiritual sustenance for the life of the custodian. This term may have originally been used in reference to the platter of the Paschal lamb, again at the Last Supper.
-
-Travel, Motion, and Conveyance
-
-Arrow of Abaris: Abaris the Hyperborean, a Greek sage in the 6th century BC, once received a magic arrow from the god Apollo. The arrow enabled him to become invisible, cure disease, fly by riding the arrow as if it were a broom, and divine the future.
-
-Bag of Aeolus: In Homer's Odyssey, this bag, named for the god of winds, contains a divine essence. When opened, it blows Odysseus' ship back to its starting point.
-
-Carpet, Solomon's Magic: This item, made of green silk, was legended to have carried not only Solomon and his great throne but also all of his army.
-
-Horse, flying: Clavileno, an enchanted wooden rocking horse described in Cervantes' Don Quixote, could fly and carry an armed rider. It was guided by a pin in its forehead.
-
-Prophecy, Memory, and Fortune Items
-
-Books, Sibylline: These were written prophecies, carefully preserved in ancient Rome and occasionally consulted on matters of great import. There were nine scrolls at first, offered for sale to Rome by the seeress Almathaea. The Romans refused her price, so she burned three and offered the rest again at the same price. After another refusal, she burned three more and sold the remaining three at the original price. They were preserved in a stone chest, with two custodians at first and later 10 and then 15. Finally placed in gilt cases at the base of the statue of Apollo on Palatine Hill, they were burned in the great fire of Nero's fame.
-
-Necklace of Harmonia: Harmonia, daughter of the Greek gods Ares and Aphrodite, was given a magical necklace when she married Cadmus. Though relatively unremarkable at the time, the necklace brought disaster to all subsequent owners.
-
-Odrovir: In Norse legend, a great war took place between the Aesir, the 24 gods of heaven, Asgard, and the Vanir, the nature gods of Noatun. At its peaceful conclusion both sides spat into a jar, providing their mixed essences as hostage to peace. Kvasir, the wisest of all men, was made of the spittle. His blood, mixed with honey, was called Odrovir, or Odhrevir; all who partook of it became poets.
-
-Ring of Amasis: Amasis, King of Egypt, advised his incredibly lucky friend Polycrates, King of Samos, to discard something of great value to balance the Fates. Polycrates threw a prized ring into the sea, but it was later found in a fish on the king's dinner table. Amasis promptly recognized this sign from the gods and broke off relations with his friend; shortly thereafter, Polycrates was brutally slain.
-
-Ring of the Nibelungen: Made famous by Richard Wagner's 1876 opera, this item comes from several Scandinavian legends, including the Volsunga Saga, Nibelungenlied, Elder and Younger Eddas, and the Eckelied. The ring was part of an entire hoard in the Rhine river, guarded by the Rhine Maidens until Alberich gained it by foreswearing love. The greedy dwarf cursed the item, and when the ring was later taken by gods and heroes for various uses, it brought doom to all, resulting even in the destruction of Asgard and the gods.
-
-Productive and Hoard Items
-
-Mill: A magic mill in the Finnish Kalevala, called the Sampo, could grind out meal, salt, or gold from straw on command.
-
-Draupnir: In Scandinavian legend, the famed magic ring made by Odin for the dwarves. Every nine nights it produced eight non-magical rings equal in size and beauty to itself, and is thus a fertility symbol.
-
-Named Sword Corpus
-
-Swords: Many magical swords can be found in myth and literature. The following list is only a sampling; further research is recommended to ascertain appropriate powers.
-Angurvadal, Stream of Anguish, was owned by the hero of Frithiofs Saga, a 13th century Scandinavian work.
-Arondight, sword of Launcelot of the Lake, was mentioned in several Arthurian legends.
-Balisarda, a sword of slicing, was made by the witch Falerina in the 1487 romance epic Orlando Innamorato, Roland in Love, by Matteo Maria Boiardo.
-Balmung was the sword of Siegfried in Scandinavian legend. It was made by Wieland, a Germanic name for the immortal blacksmith Volund, known as Wayland Smith to the English.
-Colada was the sword of the Spanish hero El Cid, first described in a poem of an unknown Castilian bard in 1140. The hero was Ruy Diaz de Bivar, 1043-1099, also called el Campeador, the Champion.
-Courtain, the Short Sword, was used by Ogier the Dane, a Paladin of Charlemagne and the folk hero of Denmark. The smith Munifican took three years to make Courtain.
-Durandan, also Durandal, Durandana, or the Inflexible, was the sword of Roland, given him by Charlemagne. It once belonged to Hector, the noble chieftain of Homer's Iliad, and Roland, also called Orlando, is the hero of several literary works including the Chanson de Roland and later Italian romances.
-Excalibur, or Escalibor in the Old French, was the fabled sword of King Arthur. It was also referred to as Caliburn by Geoffrey of Monmouth and Caledvwlch in the Mabinogion, or Caladbolg in Irish legend, meaning hard belly. The name is linked to the Latin ex calce liberare, to liberate from the stone.
-Flarnberge, or Floberge, meaning Flame Cutter, was a sword of Charlemagne.
-Glorius, sword of the hero Oliver, broke nine swords made by the famed smiths Ansias, Galas, and Munifican.
-Gram, German for grief, was another famous sword of Siegfried.
-Joyeuse, French for joyous, was a greatsword of Charlemagne and took three years to make, by the smith Gallas.
-Mimung, sword of the hero Wittich, was loaned to Siegfried for a time.
-Morglay, Big Glaive, was the sword of Sir Bevis of English lore. Morglay was then a common generic term for sword.
-Nagelring, Nail-Ring, was the sword of Dietrich of Bern, a hero in the Germanic Heldenbuch and Nibelungenlied.
-Philippan was the sword of Mark Antony, a member of the Second Triumvirate of Rome, 43 BC.
-Sauvagine was another of Ogier's swords, also made by Munifican.
+Rome (43 BC).
+   Sauvagine was another of Ogier's swords
+(see "Courtain"), also made by Munifican.
 
 ```
 

@@ -13,6 +13,35 @@ BASIC_TXT="$TMPDIR/basic.txt"
 BASIC_PDF="$ROOT/_becmi/TSR 1011B - Set 1 Basic Rules.pdf"
 BASIC_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Basic.md"
 
+require_command() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    printf 'Missing required command: %s\n' "$cmd" >&2
+    exit 1
+  fi
+}
+
+preflight_basic() {
+  require_command pdftotext
+  require_command awk
+  require_command sed
+  require_command perl
+  if [ ! -f "$BASIC_PDF" ]; then
+    printf 'Missing Basic source PDF: %s\n' "$BASIC_PDF" >&2
+    exit 1
+  fi
+}
+
+assert_in_file() {
+  local file="$1"
+  local needle="$2"
+  local label="$3"
+  if ! grep -Fq "$needle" "$file"; then
+    printf 'Validation failed: missing %s\n' "$label" >&2
+    exit 1
+  fi
+}
+
 basic_spell_lists_and_descriptions_block_named() {
   local label="$1"
   local note="$2"
@@ -195,7 +224,10 @@ TXT
   render_tsv_cols_pages "$pdf" 28 29 '190,370' >> "$OUT"
   printf '\n[Basic pages 38-42: TSV column-reflowed magic-user spell books and descriptions]\n' >> "$OUT"
   render_tsv_cols_pages "$pdf" 40 44 '190,370' \
-    | awk 'started || /Spell Books:/ { started = 1; print }' \
+    | awk '
+        /Spell Books:/ { started = 1 }
+        started { print }
+      ' \
     | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d' \
     | sed '/^DUNGEONS [^[:lower:]]*characters (character class - human)[[:space:]]*$/d' >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
@@ -301,9 +333,34 @@ started { print }
 basic_higher_level_spells_block_named() {
   local label="$1"
   local note="$2"
+  local pdf="${3:-}"
 
   printf '### %s\n\n' "$label" >> "$OUT"
   printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+
+  if [ -n "$pdf" ]; then
+    local extracted=''
+    extracted=$(render_tsv_cols_pages "$pdf" 19 20 '190,370' \
+      | awk '
+          /Higher Level Spells/ { started = 1 }
+          started { print }
+          /For magic-user characters, good/ { if (started) exit }
+        ' \
+      | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d')
+
+    if printf '%s\n' "$extracted" | grep -Fq 'Higher Level Spells' \
+      && printf '%s\n' "$extracted" | grep -Fq 'HIGH LEVEL CLERICS' \
+      && printf '%s\n' "$extracted" | grep -Fq 'Third Level Magic-user Spells' \
+      && printf '%s\n' "$extracted" | grep -Fq 'Giving Magic-Users Spells'; then
+      printf '```text\n' >> "$OUT"
+      printf '%s\n\n' "$extracted" >> "$OUT"
+      printf '```
+
+' >> "$OUT"
+      return 0
+    fi
+  fi
+
   printf '```text\n' >> "$OUT"
   cat >> "$OUT" <<'TXT'
 [Basic DM page 17: Higher Level Spells]
@@ -416,9 +473,34 @@ TXT
 basic_scrolls_block_named() {
   local label="$1"
   local note="$2"
+  local pdf="${3:-}"
 
   printf '### %s\n\n' "$label" >> "$OUT"
   printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+
+  if [ -n "$pdf" ]; then
+    local extracted=''
+    extracted=$(render_tsv_cols_pages "$pdf" 113 116 '190,370' \
+      | awk '
+          /e\. Scrolls/ { started = 1 }
+          started { print }
+          /Rope of Climbing/ { if (started) exit }
+        ' \
+      | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d')
+
+    if printf '%s\n' "$extracted" | grep -Fq 'e. Scrolls' \
+      && printf '%s\n' "$extracted" | grep -Fq 'f. Rings' \
+      && printf '%s\n' "$extracted" | grep -Fq 'g. Wands, Staves, and Rods' \
+      && printf '%s\n' "$extracted" | grep -Fq 'h. Miscellaneous Magic Items'; then
+      printf '```text\n' >> "$OUT"
+      printf '%s\n\n' "$extracted" >> "$OUT"
+      printf '```
+
+' >> "$OUT"
+      return 0
+    fi
+  fi
+
   printf '```text\n' >> "$OUT"
   cat >> "$OUT" <<'TXT'
 [Basic treasure pages 43-44: Scrolls and Rings]
@@ -488,33 +570,6 @@ Water Walking: The wearer of this ring may walk on the surface of any body of wa
 
 Weakness: When this ring is put on, the wearer becomes weaker, and his or her Strength score becomes 3 within 1-6 rounds. The wearer cannot take off this ring unless a Remove Curse spell is used.
 
-[Basic treasure pages 42-45: item operation, potions, wands, staves, rods, and miscellaneous devices]
-Identifying Magic Items
-
-The only way to identify exactly what an item does is by testing it: trying on the ring, sipping the potion, and so forth. If a retainer does this testing, the retainer will expect to keep the item. A high level NPC magic-user may be asked to identify an item, but will want money or a service in advance and may take several weeks of game time to do it.
-
-Types of Magic Items
-
-There are two basic types of magic items:
-- Permanent items, which are not used up, such as swords and armor
-- Temporary items, which are used either once, such as potions, or one charge at a time, such as wands
-
-Using Magic Items
-
-Any magic item must be properly used to have any effect. A magic shield has no effect unless it is carried normally, and a ring must be worn on a finger to gain its magical effect.
-
-Some Permanent items are simply for protection. No concentration is required to use these items. Magic weapons also function automatically.
-
-All Temporary items are either consumed by drinking or eating, or used by concentrating. If not consumed, the item must be held while the user concentrates. While using the item, the user may not move, cast a spell, or take any other action during that round.
-
-Charges in Magic Items
-
-Many Temporary items have a limited number of charges or uses. When the last charge is used, the item is no longer magical. It is not possible to find out how many charges an item has, and such items cannot be recharged.
-
-Additional Consumables
-
-Holy Water: This is water specially prepared by a cleric for use against undead creatures. It can be used by any character. Holy Water must be kept in small, specially prepared glass bottles known as vials for it to remain Holy. The effect of one vial of Holy Water on an undead creature is 1-8 points of damage. To cause damage, it must successfully strike the target, thus breaking the vial. It may either be thrown using missile fire rules or used in hand-to-hand combat using normal combat rules.
-
 d. Potions
 
 Potions are usually found in small glass vials, similar to Holy Water. Each potion has a different smell and taste, even two potions with the same effect. Unless stated otherwise, the effect of a potion lasts 7-12 turns. Only the DM should know the exact duration and should keep track of it when the potion is used. The entire potion must be drunk to have this effect. A potion may be sipped to discover its type and then used later. Drinking a potion takes one round. Sipping a potion does not decrease its effect or duration.
@@ -578,13 +633,81 @@ TXT
   printf '\n```\n\n' >> "$OUT"
 }
 
+basic_magic_arms_armor_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="${3:-}"
+
+  [ -z "$pdf" ] && return 0
+
+  local extracted=''
+  extracted=$(render_tsv_cols_pages "$pdf" 113 114 '190,370' \
+    | awk '
+        /A cursed sword will cause/ { started = 1 }
+        started { print }
+        /e\. Scrolls/ { if (started) exit }
+      ' \
+    | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d' \
+    | sed '/^e\. Scrolls$/d')
+
+  if printf '%s\n' "$extracted" | grep -Fq 'MAGICAL ARMOR TABLE' \
+    && printf '%s\n' "$extracted" | grep -Fq 'Cursed Armor:' \
+    && printf '%s\n' "$extracted" | grep -Fq 'b. Other Weapons'; then
+    printf '### %s\n\n' "$label" >> "$OUT"
+    printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+    printf '```text\n' >> "$OUT"
+    printf '%s\n\n' "$extracted" >> "$OUT"
+    printf '```\n\n' >> "$OUT"
+  fi
+}
+
+basic_magic_item_operation_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="${3:-}"
+
+  [ -z "$pdf" ] && return 0
+
+  local extracted=''
+  extracted=$(render_tsv_cols_pages "$pdf" 111 116 '190,370' \
+    | awk '
+        /Identifying Magic Items/ { started = 1 }
+        started { print }
+        /Magic Item Descriptions:/ { if (started) exit }
+      ' \
+    | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d')
+
+  if printf '%s\n' "$extracted" | grep -Fq 'Identifying Magic Items' \
+    && printf '%s\n' "$extracted" | grep -Fq 'Types of Magic Items' \
+    && printf '%s\n' "$extracted" | grep -Fq 'Using Magic Items' \
+    && printf '%s\n' "$extracted" | grep -Fq 'Charges in Magic Items'; then
+    printf '### %s\n\n' "$label" >> "$OUT"
+    printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+    printf '```text\n' >> "$OUT"
+    printf '%s\n\n' "$extracted" >> "$OUT"
+    if ! printf '%s\n' "$extracted" | grep -Fq 'Holy Water:'; then
+      cat >> "$OUT" <<'TXT'
+Additional Consumables
+
+Holy Water: This is water specially prepared by a cleric for use against undead creatures. It can be used by any character. Holy Water must be kept in small, specially prepared glass bottles known as vials for it to remain Holy. The effect of one vial of Holy Water on an undead creature is 1-8 points of damage. To cause damage, it must successfully strike the target, thus breaking the vial. It may either be thrown using missile fire rules or used in hand-to-hand combat using normal combat rules.
+
+TXT
+    fi
+    printf '```\n\n' >> "$OUT"
+  fi
+}
+
+preflight_basic
+
 extract_pdf "$BASIC_PDF" "$BASIC_TXT"
 OUT="$BASIC_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Basic' 'TSR 1011B - Set 1 Basic Rules.pdf'
 basic_cleric_rules_block_named 'Cleric Rules, Turning, and First-Level Spell Procedures' 'page-aware Basic extraction from the actual cleric special-abilities page, split by column so Turning Undead procedure, the undead table, and spellcasting guidance stay in readable source order.' "$BASIC_PDF"
 basic_spell_lists_and_descriptions_block_named 'Spell Lists and Basic Spell Descriptions' 'iterative Basic extraction: the page 35 spell-list page is rebuilt as a curated readable list from the source page, the clerical description pages use TSV column reflow, and the magic-user spell-book plus spell-description pages now use page-aware TSV reflow instead of the earlier anchored text slice.' "$BASIC_PDF"
-basic_higher_level_spells_block_named 'Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books' 'curated Basic reconstruction from DM pages 17-18 for higher-level cleric and magic-user spell guidance, plus a short player-facing spell-book/lost-book carryover from the earlier magic-user section so this staging block keeps the spell-allocation and lost-book procedures attached to the higher-level guidance.'
-basic_scrolls_block_named 'Scrolls and Spell-Adjacent Treasure Text' 'curated Basic reconstruction from treasure pages 42-45, combining the scroll/ring material with the surrounding item-operation rules that matter for later spell and magic-item curation: identification, permanent vs. temporary behavior, concentration and charge rules, potion duration and interaction rules, wand/staff/rod use restrictions, and selected miscellaneous devices with strong spell-adjacent procedures.'
+basic_higher_level_spells_block_named 'Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books' 'anchored TSV extraction from DM pages for higher-level cleric/magic-user procedures and spell-allocation doctrine, with curated fallback when anchor quality drops below required section coverage.' "$BASIC_PDF"
+basic_magic_item_operation_block_named 'Magic Item Identification, Use Model, and Charge Doctrine' 'anchored TSV extraction from Basic treasure explanatory text covering identification procedure, permanent-vs-temporary typing, concentration-based item use constraints, and non-recharge charge behavior.' "$BASIC_PDF"
+basic_magic_arms_armor_block_named 'Magical Weapons, Armor, and Cursed Item Doctrine' 'anchored TSV extraction from treasure pages for cursed-weapon behavior, magical armor table interpretation, and cursed-armor handling prior to the scroll and ring catalog.' "$BASIC_PDF"
+basic_scrolls_block_named 'Scrolls and Spell-Adjacent Treasure Text' 'anchored TSV extraction from treasure pages for scroll/ring/item-operation doctrine, with curated fallback to preserve section completeness if extraction anchors degrade.' "$BASIC_PDF"
 cleanup_output
 set_table_qa_note "$BASIC_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'Turning Undead table, spell lists, and adjacent structured spell-property blocks.' 'no blocking row/column defects found in the visible Basic table and list regions.'
 append_table_qa_lines "$BASIC_OUT" <<'EOF'
@@ -594,3 +717,23 @@ append_table_qa_lines "$BASIC_OUT" <<'EOF'
 - Gap priority: LOW — no material source-evidence gap found during the 2026-03-23 survey.
 EOF
 
+assert_in_file "$BASIC_OUT" '### Cleric Rules, Turning, and First-Level Spell Procedures' 'cleric procedures section heading'
+assert_heading_count "$BASIC_OUT" 'Cleric Rules, Turning, and First-Level Spell Procedures' 1 'Basic staging duplicated the cleric procedures section heading'
+assert_in_file "$BASIC_OUT" 'CLERIC TURNING UNDEAD TABLE' 'Turning Undead table marker'
+assert_in_file "$BASIC_OUT" '### Spell Lists and Basic Spell Descriptions' 'spell lists section heading'
+assert_heading_count "$BASIC_OUT" 'Spell Lists and Basic Spell Descriptions' 1 'Basic staging duplicated the spell-lists section heading'
+assert_in_file "$BASIC_OUT" 'FIRST LEVEL CLERIC SPELLS' 'cleric spell-description block'
+assert_in_file "$BASIC_OUT" 'SECOND LEVEL' 'second-level spell heading'
+assert_in_file "$BASIC_OUT" '### Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books' 'higher-level procedures section heading'
+assert_heading_count "$BASIC_OUT" 'Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books' 1 'Basic staging duplicated the higher-level procedures section heading'
+assert_in_file "$BASIC_OUT" 'Giving Magic-Users Spells' 'spell-allocation procedure text'
+assert_in_file "$BASIC_OUT" '### Magic Item Identification, Use Model, and Charge Doctrine' 'item-operation doctrine section heading'
+assert_heading_count "$BASIC_OUT" 'Magic Item Identification, Use Model, and Charge Doctrine' 1 'Basic staging duplicated the item-operation doctrine section heading'
+assert_in_file "$BASIC_OUT" 'Identifying Magic Items' 'item identification anchor'
+assert_in_file "$BASIC_OUT" 'Charges in Magic Items' 'item charge-doctrine anchor'
+assert_in_file "$BASIC_OUT" 'Holy Water:' 'holy water consumable doctrine anchor'
+assert_in_file "$BASIC_OUT" '### Scrolls and Spell-Adjacent Treasure Text' 'scroll section heading'
+assert_heading_count "$BASIC_OUT" 'Magical Weapons, Armor, and Cursed Item Doctrine' 1 'Basic staging duplicated the magic-arms-and-armor section heading'
+assert_heading_count "$BASIC_OUT" 'Scrolls and Spell-Adjacent Treasure Text' 1 'Basic staging duplicated the scroll/item section heading'
+assert_in_file "$BASIC_OUT" 'e. Scrolls' 'scroll subtype block'
+assert_in_file "$BASIC_OUT" 'g. Wands, Staves, and Rods' 'wand/staff/rod block'

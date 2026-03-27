@@ -42,6 +42,7 @@ Rules for this artifact:
 ## State of Play
 
 - Ready for `osr:` literal text imports into Chapter 06 Powers.
+- Operational import backlog for the post-confidence-lock `osr:` pass is now defined below under `## Phase B Backlog: Chapter 06 osr: Import`.
 
 ## Provenance Confidence (2026-03-23 Full Pass)
 
@@ -56,7 +57,7 @@ Rules for this artifact:
 	- Immortals rows total: 21
 	- Immortals rows missing Immortals anchors: 0
 - Confidence rating: **High (0.95 / 1.00)** for source-provenance completeness in this artifact. *(Updated 2026-03-26: Phase 1 ledger pass confirmed all 12 exception rows; 0 uplift candidates found; exception state is now formally verified rather than assumed, which removes the residual "unverified exception" risk that suppressed the prior 0.92 rating.)*
-- Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via artifact-effect tables rather than full standalone spell writeups; provenance is explicit, but conversion semantics should still treat those rows as table-derived precedents.
+- Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via the continuous artifact-chapter witness rather than full standalone spell writeups; provenance is explicit, but conversion semantics should still treat those rows as table-derived precedents.
 - Remaining provenance uplift target: reduce `RC-only` rows whenever an earlier staged BECMI witness can be evidenced without guesswork, because the preferred steady state for most spells is `pre-RC BECMI + RC`, not `RC` alone. No uplift candidates were found in the 2026-03-26 Phase 1 ledger pass; all 8 RC-only spell exceptions are now Confirmed RC-only.
 - Current flat-catalog `RC`-only spell exceptions after targeted uplift: `Analyze`, `Entangle`, `Create Air`, `Clothform`, `Stoneform`, `Woodform`, `Ironform`, and `Steelform`. Treat these as evidence-backed exception state unless new staged pre-`RC` witnesses are added.
 - Current flat-catalog non-`RC` artifact procedure exceptions after targeted uplift: `Artifact Activation`, `Artifact Charges And Recharge`, `Artifact Intelligence And Auto-Defense`, and `Creating Artifacts`. Treat these as evidence-backed `Master`-only exception state unless a structurally equivalent staged `RC` procedure witness is later added.
@@ -172,6 +173,60 @@ Threshold definitions for moving between confidence bands:
 2. Convert, Power by Power, `osr:` text into SDM system terms with the minimum changes required.
 3. Refine, Power by Power, the SDM "main content" rules blocks. These can be synthesized with `Synthetic_Dream_Machine_04_Powers_Index.md` and the other SDM chapters as additional context.
 4. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
+
+## Phase B Backlog: Chapter 06 `osr:` Import
+
+This is the execution backlog for the first downstream phase after the staging-confidence lock. It covers literal OSR text import only. It does **not** authorize early SDM rewrite, balance work, or doctrine invention inside the `osr:` block.
+
+### Gate And Freeze
+
+1. Record the import gate as open only when the staging corpus remains frozen, provenance stays at required confidence, and the exception ledger remains verified.
+2. Treat the six staging documents as the only legal source for `osr:` imports. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
+3. Keep the current exception doctrine in force:
+   - verified `RC`-only rows remain `RC`-only exceptions,
+   - verified `Master`-only procedures remain `Master`-only exceptions,
+   - no new provenance uplift work is bundled into the import pass unless a row is truly blocked.
+
+### `osr:` Block Contract
+
+4. Use `osr:` as a preservation field, not a rewrite field. Imported text should stay verbatim to the staged source except for minimal line-wrap cleanup required by Markdown/card readability.
+5. Preserve classic procedure details when they appear in the staged witness: original spell name, class/spell-level cues, range, duration, effect language, save language, reverse-form handling, and termination conditions.
+6. When multiple staged witnesses exist, use `RC` as the default compendium wording surface for the literal `osr:` block while preserving earlier BECMI witnesses in `meta.source` and the crosswalk provenance fields.
+7. If a row has a meaningful wording-delta or table-derived risk note, preserve that warning in row notes or import-review notes rather than silently harmonizing the text.
+
+### Crosswalk Control Board
+
+8. Treat `Ch06 Import` and `osr: imported` as the canonical import tracker for every Chapter 06 recognizer row.
+9. Normalize import-state usage:
+   - `Ch06 Import`: `✓` when a Chapter 06 card exists, `—` when no Chapter 06 card is planned.
+   - `osr: imported`: `-` not started, `in-progress` active work, `yes` imported, `[needs-review]` imported but blocked on audit or formatting check.
+10. Limit blocker notes to real execution blockers only: missing Chapter 06 card, malformed staged witness, or unresolved source-selection exception.
+11. Work in existing Chapter 06 family order so import and review follow manuscript structure rather than source-book order.
+
+### Manuscript Import Pass
+
+12. Replace every `(pending verbatim extraction)` placeholder in `Flying_Triremes_and_Laser_Swords_06_Powers.md` for OSR recognizer cards with staged source text.
+13. Keep the FTLS main rules body, tags, and existing `meta:` structure stable during this pass except where minimum provenance cleanup is required to match the imported witness.
+14. Do not import `osr:` blocks for non-OSR heritage powers or other entries that are not part of the recognizer bridge.
+15. Preserve existing `see` pointers to SDM variants; those pointers are not a reason to omit the canonical OSR block.
+
+### Audit And Acceptance
+
+16. After each family batch, verify that:
+   - the `osr:` block is no longer placeholder text,
+   - the imported text matches the staged anchor named in the row,
+   - the row tracker is updated in the crosswalk,
+   - the card still renders cleanly as Markdown.
+17. Run stricter spot checks on all exception-state rows and on any row already marked `[table-derived]`.
+18. Capture unresolved problems in an import-review queue instead of solving them by rewriting the preserved OSR text.
+19. The import phase is complete only when all Chapter 06 recognizer rows marked `✓` also show `osr: imported = yes` or an explicit review-state marker.
+
+### Downstream Handoff
+
+20. Once the literal import pass is complete, open the next queue separately:
+   - convert `osr:` references into SDM-native Chapter 06 rules text,
+   - refine main-body FTLS mechanics power by power,
+   - leave `osr:` preservation text frozen unless provenance correction is required.
 
 
 ## Reference Reuse Targets
@@ -295,7 +350,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
 | Charm Person | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Fire Ball / Fireball | MU3 | Basic, Expert, Master, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Fire Ball / Fireball | MU3 | Basic, Expert, Master, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
 | Floating Disc | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Hold Portal | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Light | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
@@ -313,10 +368,11 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | --- | --- | --- | --- | --- | --- | --- |
 | Maps to Treasures / Treasure Maps |  | Basic, Expert, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | — | - |
 | Protection / Protection Scrolls |  | Basic, Expert, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | — | - |
-| Protection from Lycanthropes |  | Basic, RC | Basic -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
-| Protection from Undead |  | Basic, RC | Basic -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
+| Protection from Lycanthropes |  | Basic, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | — | - |
+| Protection from Undead |  | Basic, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | — | - |
 | Spell Scrolls / Spells |  | Basic, Expert, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | — | - |
 | Cursed / Cursed Scroll |  | Basic, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | — | - |
+| Holy Water |  | Basic | Basic -> Magic Item Identification, Use Model, and Charge Doctrine | item-effect | — | - |
 
 ### E - Expert
 
@@ -371,13 +427,13 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Water Breathing | Dr3, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Web | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Wizard Lock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
 | Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Charm Monster | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Clairvoyance | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Cloudkill | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Confusion | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Conjure Elemental | MU5 | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items; Immortals -> Section 3: Immortal Magic -> Conjuring and Summoning; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Conjure Elemental | MU5 | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Conjure Elemental; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Death Spell | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Dimension Door | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Disintegrate | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -388,12 +444,12 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Hold Monster | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Ice Storm/Wall | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Infravision | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Invisible Stalker | MU6 | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Invisible Stalker | MU6 | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Invisible Stalker; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Lower Water | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Magic Jar | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Massmorph | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Pass-Wall / Passwall | MU5 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Polymorph Other / Others | MU4 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Pass-Wall / Passwall | MU5 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Polymorph Other / Others | MU4 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
 | Polymorph Self | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Projected Image | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Remove Curse | C3, MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
@@ -407,10 +463,35 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Protection from Elementals |  | Expert, RC | Expert -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
-| Protection from Magic |  | Expert, RC | Expert -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
-| Spell Storing |  | Expert, Companion, RC | Expert -> Rings; Companion -> Ring Tables; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
+| Animal Control |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | item-effect | — | - |
+| Dragon Control |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | item-effect | — | - |
+| Heroism |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | item-effect | — | - |
+| Intelligent Swords / Special Swords |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | item-effect | — | - |
+| Invulnerability |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | item-effect | — | - |
+| Djinni Summoning |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
+| Human Control |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
+| Plant Control |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
+| Protection from Elementals |  | Expert, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
+| Protection +1, 5' radius |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
+| Protection from Magic |  | Expert, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
+| Regeneration |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
+| Spell Storing |  | Expert, Companion, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
+| Treasure Finding |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | item-effect | — | - |
 | Ring of Spell Turning |  | Expert, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
+| Wand of Negation |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Wands, Staves, and Rods | item-effect | — | - |
+| Elemental Devices |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Miscellaneous Magic Items | item-effect | — | - |
+| Helm of Teleportation |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Miscellaneous Magic Items | item-effect | — | - |
+
+#### Procedures
+
+| Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
+| --- | --- | --- | --- | --- | --- | --- |
+| Alchemical Potion Duplication / Potion Research Support |  | Expert | Expert -> Magic Support Infrastructure | procedure | — | - |
+| Sage Magical Research Support |  | Expert | Expert -> Magic Support Infrastructure | procedure | — | - |
+| Spellbook Replacement |  | Expert | Expert -> Research and Lost Spell Books | procedure | — | - |
+| Magic Item Range/Duration Default |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | procedure | — | - |
+| Magic Detection/Control Blocking |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | procedure | — | - |
+| Intelligent Item Will Power / Control Check |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | procedure | — | - |
 
 ### C - Companion
 
@@ -418,57 +499,57 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Aerial Servant | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Animate Objects | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Barrier | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Commune | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Create Food | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Create Normal Animals | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Cure Critical Wounds | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Cureall | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Dispel Evil | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Earthquake | C7 | Companion, Master, RC | Companion -> High-Level Cleric Spell Material; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Find the Path | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Holy Word | C7 | Companion, Master, RC | Companion -> High-Level Cleric Spell Material; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Insect Plague | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Quest | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Raise Dead | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Raise Dead Fully | C7 | Companion, Master, RC | Companion -> High-Level Cleric Spell Material; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Restore | C7 | Companion, Master, RC | Companion -> High-Level Cleric Spell Material; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Speak with Monsters | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Truesight | C5 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Word of Recall | C6 | Companion, RC | Companion -> High-Level Cleric Spell Material; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Aerial Servant | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Animate Objects | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Barrier | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Commune | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Food | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Normal Animals | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Cure Critical Wounds | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Cureall | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Dispel Evil | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Earthquake | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Find the Path | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Holy Word | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Insect Plague | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Quest | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Raise Dead | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Raise Dead Fully | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Restore | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Speak with Monsters | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Truesight | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Word of Recall | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Arcane
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Contact Outer Plane | MU5 | Companion, Immortals, RC | Companion -> Fifth-Level Magic-User Spells; Immortals -> Section 3: Immortal Magic; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Charm Plant | MU7 | Companion, RC | Companion -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Create Normal Monsters | MU7 | Companion, RC | Companion -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Summon Object | MU7 | Companion, RC | Companion -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Sword | MU7 | Companion, RC | Companion -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Teleport any Object | MU7 | Companion, RC | Companion -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Contact Outer Plane | MU5 | Companion, Immortals, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Magic-User Spells; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Contact Outer Plane; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Charm Plant | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Normal Monsters | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Summon Object | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Sword | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Teleport any Object | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Item And Interface Effects
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Communication |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Creation |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Delay |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Equipment |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Illumination |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Mages |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Mapping |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Portals |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Questioning |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Repetition |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Seeing |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Shelter |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Spell Catching |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Trapping |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
-| Truth |  | Companion, RC | Companion -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Communication |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Creation |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Delay |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Equipment |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Illumination |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Mages |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Mapping |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Portals |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Questioning |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Repetition |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Seeing |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Shelter |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Spell Catching |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Trapping |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Truth |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
 | Ring of Elemental Adaptation |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
 | Ring of Holiness |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
 | Ring of Life Protection |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
@@ -541,7 +622,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Dance | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Explosive Cloud | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Force Field | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Gate | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Gate | MU9 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Ninth-Level Magic-User Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Heal | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Immunity | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Mass Charm | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -554,32 +635,57 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Power Word Blind | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Power Word Kill | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Prismatic Wall | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Feeblemind | MU5 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Move Earth | MU6 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Reincarnation | MU6 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Telekinesis | MU5 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Wall of Iron | MU6 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Lore | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Magic Door | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Mass Invisibility | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Power Word Stun | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Reverse Gravity | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
-| Statue | MU7 | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Feeblemind | MU5 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Move Earth | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Reincarnation | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Telekinesis | MU5 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Wall of Iron | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Lore | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Magic Door | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Mass Invisibility | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Power Word Stun | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Reverse Gravity | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
+| Statue | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [table-derived] |
 | Shapechange | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Symbol | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Timestop | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+
+#### Item And Interface Effects
+
+| Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
+| --- | --- | --- | --- | --- | --- | --- |
+| Control Animals |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Control Plants |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Control Lesser Undead |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Control Greater Undead |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Control Giants |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Control Dragons |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Control Humans |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Anti-Magic Ray |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Plane Travel |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Life Trapping |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Mapmaking |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Open Mind |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Turn Undead Bonus |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Spell Damage Bonus |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Choose Best Option / Choose Option |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
 
 #### Procedures
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Artifact Activation |  | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | — | - |
-| Artifact Charges And Recharge |  | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | — | - |
-| Artifact Intelligence And Auto-Defense |  | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | — | - |
-| Artifact Handicaps And Penalties |  | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Artifacts | procedure | — | - |
-| Attacking An Artifact |  | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Artifacts | procedure | — | - |
-| Destruction Of An Artifact |  | Master, RC | Master -> Artifact Power Doctrine and Artifact Effect Procedures; RC -> Artifacts | procedure | — | - |
-| Creating Artifacts |  | Master | Master -> Artifact Power Doctrine and Artifact Effect Procedures | procedure | — | - |
+| Artifact Activation |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Charges And Recharge |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Intelligence And Auto-Defense |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Handicaps And Penalties |  | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Artifacts | procedure | — | - |
+| Attacking An Artifact |  | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Artifacts | procedure | — | - |
+| Destruction Of An Artifact |  | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Artifacts | procedure | — | - |
+| Creating Artifacts |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Discovery And Power Reveal |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Command Word / Thought / Gesture Interfaces |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Recharge Exceptions And Paid Recharge |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Conditional Revelation Triggers |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
+| Artifact Autonomous Service / Refusal |  | Master | Master -> Artifact Chapter Context and Witnesses | procedure | — | - |
 
 ### I - Immortals
 
@@ -589,6 +695,11 @@ No unique Phase 1 spell rows are currently Immortals-primary; Immortals remains 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
+| Immortal Power Point Conversion And Bookkeeping |  | Immortals | Immortals -> Sections 1-2: Power Point Conversion, Rank Progression, Sphere Choice, and Recovery Context -> Section 1: Changes | procedure | — | - |
+| Immortal Rank And Level Frame |  | Immortals | Immortals -> Sections 1-2: Power Point Conversion, Rank Progression, Sphere Choice, and Recovery Context -> Section 1: Changes | procedure | — | - |
+| Immortal GT Advancement Costs And Gate |  | Immortals | Immortals -> Sections 1-2: Power Point Conversion, Rank Progression, Sphere Choice, and Recovery Context -> increasing ability scores, rank costs, and GT advancement gate | procedure | — | - |
+| Immortal Sphere Bias And Recovery |  | Immortals | Immortals -> Sections 1-2: Power Point Conversion, Rank Progression, Sphere Choice, and Recovery Context -> Section 2: New Characters Information | procedure | — | - |
+| Immortal Sphere-Factor Cost Model |  | Immortals | Immortals -> Section 3: Immortal Magic -> Power Cost | procedure | — | - |
 | Immortal Magical Effect Index (S1-S4) |  | Immortals | Immortals -> Section 3: Immortal Magic -> General Notes, Charts S1-S4 | procedure | — | - |
 | Immortal Caster Level Rule |  | Immortals | Immortals -> Section 3: Immortal Magic -> Caster Level | procedure | — | - |
 | Immortal Range / Duration Scaling |  | Immortals | Immortals -> Section 3: Immortal Magic -> Changing Range and Duration | procedure | — | - |
@@ -596,6 +707,8 @@ No unique Phase 1 spell rows are currently Immortals-primary; Immortals remains 
 | Immortal Damage Scaling And Averaging |  | Immortals | Immortals -> Section 3: Immortal Magic -> Damage | procedure | — | - |
 | Immortal Mental Effect Resolution |  | Immortals | Immortals -> Section 3: Immortal Magic -> Mental Effects | procedure | — | - |
 | Immortal Limits On Use |  | Immortals | Immortals -> Section 3: Immortal Magic -> Limits on Use | procedure | — | - |
+| Immortal Undead / Entropy Curing |  | Immortals | Immortals -> Section 3: Immortal Magic -> Undead Curing | procedure | — | - |
+| Immortal Effect Explanation Overrides |  | Immortals | Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 | procedure | — | - |
 
 ### RC - Rules Cyclopedia
 
@@ -609,7 +722,7 @@ No unique Phase 1 spell rows are currently Immortals-primary; Immortals remains 
 | Clothform | MU4 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Stoneform | MU6 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Woodform | MU5 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Delayed Blast Fireball | MU7 | RC, Master | RC -> Magical Spells List and Spell Descriptions; Master -> Artifact Power Doctrine and Artifact Effect Procedures | spell | ✓ | [table-derived] |
+| Delayed Blast Fireball | MU7 | RC, Master | RC -> Magical Spells List and Spell Descriptions; Master -> Artifact Chapter Context and Witnesses | spell | ✓ | [table-derived] |
 | Ironform | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Steelform | MU8 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 
@@ -622,7 +735,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
 | Charm Person Spell Resolution |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Charm Person Spells | procedure | — | - |
-| Damage to Magical Items |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Damage to Magical Items | procedure | — | - |
+| Damage to Magical Items |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Damage To Magic Items; RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Damage to Magical Items | procedure | — | - |
 | Haste Speed Stacking Rules |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Haste Spell | procedure | — | - |
 | Magic-User Starting Spell Choice |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Magic-User Spell Choice | procedure | — | - |
 | Experience from Spells and Enchanted Items |  | RC | RC -> Spell Research -> Experience from Spells and Enchanted Items | procedure | — | - |
@@ -667,6 +780,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Lightning Bolt | spell | Core line-artillery recognizer in the base attack family. | direct |
 | Delayed Blast Fireball | spell | Timed artillery variant of the fireburst family. Treat as the middle rung between `Fire Ball / Fireball` and `Meteor Swarm`, not proof of a mandatory standalone export. | partial |
 | Meteor Swarm | spell | Extreme artillery recognizer and current fireburst capstone above `Fire Ball / Fireball` and `Delayed Blast Fireball`. Keep as custom until Chapter 06 decides whether it remains a separate apex effect or becomes an overcharge endpoint. | custom |
+| Spell Damage Bonus | item-effect | Master artifact-table damage rider that augments one spell's damage on use rather than creating a new standalone payload. Strong Chapter 05 precedent for temporary artillery overcharge attached to an item-side interface instead of a separate castable effect. | custom |
 
 #### Battle and Force / Hazards / Destruction
 
@@ -761,6 +875,8 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Analyze | spell | RC-first analysis and inspection recognizer that broadens low-tier magical diagnostics. Verification pass (2026-03-24) checked staged Basic/Expert/Companion/Master/Immortals lanes and found no standalone pre-`RC` spell witness; keep as explicit `RC`-only provenance exception unless new staged evidence is added. | partial |
 | Wizard Eye | spell | Remote-sight scouting sensor that pairs cleanly with clairvoyance-like reveal procedures. | partial |
 | Lore | spell | Deep-history and object-reading lane useful for premium information-retrieval tags. | partial |
+| Choose Best Option / Choose Option | item-effect | Master artifact-table decision aid that collapses uncertain branches into a single recommended choice. Better treated as a premium guidance interface than as a literal divination spell clone. | custom |
+| Mapmaking | item-effect | Master artifact-table mapping interface that turns sensory reach into cartographic output. Strong Chapter 05 precedent for recon tools that create stable records rather than immediate combat information. | custom |
 
 #### Knowledge and Mind / Sensing / Counter-Sense
 
@@ -882,6 +998,12 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Mass Charm | spell | Group-scale social compulsion package beyond single-target charm doctrine. Group compulsion / social-control lane. Reverse form `Remove Charm` (see companion row) removes all charm effects in a given volume and suppresses object-charm for 1 turn; the RC indexes it as a standalone MU 8 entry. | custom |
 | Remove Charm | spell | Area charm-clearing effect that also suppresses object-born charm effects for 1 turn. RC indexes it as a standalone MU 8 entry rather than a mere reverse-form note, so keep it partial until Chapter 06 defines area control-dispel and object-source blocking. | partial |
 | Power Word Stun | spell | Word-of-power incapacitation lane bridging blind/kill style hard control effects. Word-of-power incapacitation lane between the blind and kill variants. | custom |
+| Open Mind | item-effect | Master artifact-table mental breach interface with an extreme save penalty at touch range. Better treated as an item-borne domination/bypass tool than a standalone spell row. | custom |
+| Control Animals | item-effect | Master artifact-table creature-command interface with HD budgeting and duration already encoded into the artifact power cost. Distinct from the potion wrapper because this is a reusable artifact payload. | custom |
+| Control Plants | item-effect | Master artifact-table plant-command interface that functions as a reusable artifact payload rather than a one-use wrapper. | custom |
+| Control Giants | item-effect | Giant-type command interface carried by artifact power tables; a clean Master-native control surface rather than a standard spell import. | custom |
+| Control Dragons | item-effect | Dragon-type command interface from the Master artifact table. Strong Chapter 05 case for command-by-category bundles that stay item-side rather than becoming generic spell exports. | custom |
+| Control Humans | item-effect | Human-command interface staged in the Master artifact tables, useful as a reusable domination surface distinct from the Expert ring and potion shells. | custom |
 
 #### Influence and Control / Charm / Binding
 
@@ -962,6 +1084,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Word of Recall | spell | Return-to-sanctuary extraction spell with strong campaign-loop implications. Chapter 06 now places this under `Dimensional, Planar, and Exotic Access`, so Phase 2 tracks it as dimensional/sanctuary transit instead of generic traversal. Return-to-sanctuary transit lane. | partial |
+| Plane Travel | item-effect | Master artifact-table planar-shift interface for self and gear. Strong Chapter 05 precedent for item-borne transplanar access that stays distinct from full gate-style aperture creation. | custom |
 
 ### family-9
 
@@ -989,12 +1112,13 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Anti-Magic Shell | spell | Major counter-magic boundary recognizer spanning arcane and artifact-adjacent ECM doctrine. Expert evidence lock: Range 0 (caster only), Duration 12 turns; near-body invisible barrier (within roughly 1 inch of caster) stops all spells and spell effects in both directions including the caster's own magic; only `Wish` bypasses it; `Dispel Magic` is explicitly ineffective; caster can dismiss the barrier at will at any time. | custom |
+| Anti-Magic Ray | item-effect | Master artifact-table focused suppression beam with full 100% anti-magic value for its duration. Strong ECM interface case for directional cancellation rather than passive warding. | custom |
 | Protection from Magic | item-effect | Protection-scroll ECM ward that creates a moving 10' circle around the reader and blocks spells or spell effects from crossing the boundary. Expert evidence lock: duration 1-4 turns, item-origin effects are also blocked, and only `Wish` breaks it early. Strong Chapter 05 boundary-interface model for denial fields rather than generic resistance. | custom |
 | Dispel Magic | spell | Major counterforce recognizer and a core canonical anchor for ECM scope. Expert evidence lock: affects spell effects in a 20' cube, auto-dispels equal-or-lower caster-level magic, and fails at 5% per higher caster level; it does not affect ordinary magic items. Keep as a bespoke ECM conversion anchor rather than a generic resistance buff. | custom |
 | Silence 15' Radius | spell | Anti-speech and anti-spellcasting field that functions as a partial noospheric-jamming and casting-denial cousin rather than a full anti-magic shell. Expert evidence lock: the 30' sphere suppresses speech and spellcasting inside the area, can be fixed in place or attached to a failed-save target, and still allows hearing sounds from outside it. | partial |
 | Spell Catching | item-effect | Counter-capture wrapper for hostile spell energy routed into storage media; a core ECM reference case and strong bridge for Power Level-banded hostile capture. Catches one incoming spell into scroll capacity bands; strong Chapter 05/06 bridge case for hostile-power capture into storage media using explicit Power Level capacity rather than slot logic. | custom |
 | Ring of Spell Eating | item-effect | Ring-native spell absorption and denial interface; distinct from simple resistance tags and a direct ECM item case for consuming or canceling incoming powers rather than reflecting them. Hostile spell-defense and absorption interface distinct from plain spell turning; a core Chapter 05 ECM item case for canceling or consuming incoming powers instead of merely reflecting them. | custom |
-| Ring of Spell Turning | item-effect | Reflects 2-12 incoming spell attacks back at their casters, redirecting rather than consuming the payload. Core ECM item model with finite reflection capacity alongside `Ring of Spell Eating`. | custom |
+| Ring of Spell Turning | item-effect | Reflects 2-12 incoming spell attacks back at their casters, redirecting rather than consuming the payload. Core ECM item model with finite reflection capacity alongside `Ring of Spell Eating`. Expert evidence lock: only true spells are reflected, not monster spell-like powers or item-borne spell-like effects. | custom |
 | Staff of Dispelling | item-effect | Charged dispel interface with special handling across temporary and permanent magic carriers; likely a key Chapter 05 example for `Level`-based counterforce with carrier-specific exceptions. Touch-based targeted dispel interface with special handling for potions, scrolls, and permanent items; likely a key Chapter 05 example for using `Level` as counterforce strength while preserving carrier-specific edge cases. | custom |
 
 #### Defense and Boundaries / Seals / Passage Control
@@ -1041,7 +1165,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | --- | --- | --- | --- |
 | Magic-User Starting Spell Choice | procedure | Spellbook seeding and restricted-availability doctrine for beginning arcane casters: `Read Magic` is mandatory as the first gift, second-spell choice should remain genuinely useful, and the referee may control campaign spell access by withholding spells from teachers, scrolls, and found books. Strong Chapter 05/06 provenance note for early spell archive and curriculum curation. | custom |
 | Read Magic | spell | Decoding gate for scrolls and arcane writing; this family should group deciphering, storage, and transfer interfaces. Core scroll / spellbook deciphering gate. | partial |
-| Spell Storing | item-effect | Source spell-retention wrapper. Keep the canonical key, but convert it as a trait/item power archive with Power Level capacity and later discharge rules rather than as prepared-slot retention. Ring-based spell payload storage and later discharge; should convert as an item-side power archive with Power Level capacity and release rules, not as prepared-slot retention, and it does not absorb attacks cast at the wearer. | custom |
+| Spell Storing | item-effect | Source spell-retention wrapper. Keep the canonical key, but convert it as a trait/item power archive with Power Level capacity and later discharge rules rather than as prepared-slot retention. Ring-based spell payload storage and later discharge; should convert it as an item-side power archive with Power Level capacity and release rules, not as prepared-slot retention. Expert evidence lock: found rings carry a fixed 1-6-spell payload, refilling requires direct casting into the ring, stored effects resolve at the minimum caster level needed, and the ring does not absorb attacks cast at the wearer. | custom |
 | Spell Scrolls / Spells | item-effect | Generic casting-from-scroll wrapper that must stay visible for Chapter 05/06 bridges. Generic spell-scroll wrapper covering class restrictions, multi-spell payloads, and copy-versus-cast handling. | partial |
 | Protection / Protection Scrolls | item-effect | Wrapper row for protection-scroll family where the payload references another spell recognizer. Generic moving circle-of-protection wrapper shared by the specific protection scroll variants. Basic evidence lock: usable by any class, creates a moving 10' circle centered on reader, blocks listed creature entry, does not block their spell or missile attacks, and breaks if protected side initiates hand-to-hand attack. | partial |
 | Cursed / Cursed Scroll | item-effect | Failure-state wrapper that applies negative spell-like outcomes; useful as a generalized cursed-interface pattern. Immediate curse-on-sight scroll wrapper; niche but persistent enough to deserve a canonical lookup row. Basic evidence lock: curse triggers on seeing writing; reading aloud is not required. | partial |
@@ -1061,12 +1185,13 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Creation | item-effect | Scroll-generated temporary mundane item fabrication: one non-living item up to 5' x 10' x 1' and 5,000 cn, never magical or alive, expiring on command or after 24 hours. Strong Chapter 05 model for temporary fabricated gear with hard material and duration limits. | custom |
 | Equipment | item-effect | Scroll that manifests from a fixed list of mundane adventuring gear: six entries inscribed, any three manifested per day within 10', each restored only after the created item vanishes. Good Chapter 05 precedent for menu-based utility fabrication instead of open-ended item creation. | custom |
 | Mapping | item-effect | Scroll-generated bounded survey interface: once per day it records a chosen fully contained area within 100', up to 10,000 square feet, with limited secret-door detection. Strong Chapter 05 precedent for reconnaissance tools that create records rather than immediate tactical effects. | custom |
-| Protection from Elementals | item-effect | Circle protection scroll keyed specifically to elementals. | partial |
+| Protection from Elementals | item-effect | Circle protection scroll keyed specifically to elementals. Expert evidence lock: creates a moving 10' radius circle around the reader, blocks elemental attacks unless the protected side strikes first in hand-to-hand combat, and lasts 2 turns. | partial |
 | Protection from Evil 10' Radius | spell | Canonical grouped display form for the group-radius protection lane, with lowercase `10' radius` retained only as a source alias. Keep as a partial family variant of `Protection from Evil`. | partial |
 | Protection from Lycanthropes | item-effect | Circle protection scroll keyed to lycanthrope types by quantity band. | partial |
 | Protection from Normal Missiles | spell | Projectile-denial ward for nonmagical missile vectors. Chapter 05 should treat this as an interface-grade filtering ward with explicit projectile-category exceptions rather than a generic defense bonus. | custom |
 | Protection from Undead | item-effect | Circle protection scroll keyed to undead by type and quantity. | partial |
 | Repetition | item-effect | Scroll wrapper that replays the same-level spell effect after one turn; note for future conversion that this should become an SDM trigger/interface note, not a slot-replay rule. Scroll wrapper that replays the same-level spell effect after one turn. | custom |
+| Holy Water | item-effect | Consumable anti-undead vial interface. Basic evidence lock: prepared by clerics, usable by any class, must remain in special vials to stay holy, inflicts 1-8 damage to undead on a successful hit, and is delivered by thrown-missile or hand-to-hand strike that breaks the vial. | partial |
 | Ring of Elemental Adaptation | item-effect | Plane-keyed elemental survival ring in seven variants that lets the wearer breathe and see normally within the matching Elemental Plane, making it a clean support interface for elemental travel without providing the travel itself. Plane-keyed elemental survival ring available in seven variants (single element, paired Air/Water or Earth/Fire, or all-elements) that lets the wearer breathe and see normally within the matching Elemental Plane. Strong supporting interface for talisman/staff travel bundles, but narrower than those because it does not itself provide transit or command. | partial |
 | Rod of the Wyrm | item-effect | Alignment-keyed draconic interface: once per day the rod becomes a 30 hp servant dragon, by rod type, for messenger, steed, guard, or combat service. Wrong-alignment use triggers betrayal, and destruction of the dragon form destroys the rod permanently. | custom |
 | Seeing | item-effect | Scroll-based remote creature imaging procedure. | partial |
@@ -1088,6 +1213,15 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 
 #### Regrouped Legacy Tables
 
+#### Undead Command, Trapping, and Artifact Interfaces
+
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Control Lesser Undead | item-effect | Master artifact-table undead-command interface for lesser undead tiers, with explicit HD ceilings and creature-count limits in the staged witness. Clean Chapter 05 precedent for undead-control bundles that remain item-side rather than spell-side. | custom |
+| Control Greater Undead | item-effect | Master artifact-table undead-command interface for higher undead tiers with larger HD budgets. Distinct from clerical turning and should not be collapsed into ordinary charm/control families. | custom |
+| Turn Undead Bonus | item-effect | Artifact-table rider that improves turning rolls and destroyed-HD budget for one turn. Strong interface precedent for temporary class-feature amplification instead of direct offensive output. | custom |
+| Life Trapping | item-effect | Artifact-table entrapment effect that removes a target into item-bound stasis rather than killing or banishing it conventionally. Best treated as a custom containment interface with release-trigger doctrine. | custom |
+
 #### Meta-Doctrine and Exceptions / Artifact Rules / Systems
 
 | Classic Name | Type | Notes | Mapping Status |
@@ -1099,6 +1233,11 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Destruction Of An Artifact | procedure | High-tier termination pathway for otherwise persistent artifact effects. Permanent-destruction quest procedure and Immortal-response consequences. RC confirms that each artifact has a unique legendary destruction method; Master carries the fuller destruction workflow and aftermath. | custom |
 | Attacking An Artifact | procedure | Artifact durability, attack-immunity boundaries, damage thresholds, power loss, and recall behavior under sustained attacks. RC confirms the immunity and destruction baseline; Master carries the fuller degradation procedure. | custom |
 | Creating Artifacts | procedure | Artifact design workflow for Sphere-aligned purpose, magnitude-based power and adversity budgets, and built-in activation or discovery methods rather than generic magic-item assembly. Strong design-side bridge for Chapter 05 artifact construction. Current staged-corpus state is `Master`-only; treat as a legitimate non-`RC` exception unless an `RC` witness appears. | custom |
+| Immortal Power Point Conversion And Bookkeeping | procedure | Core Immortals entry procedure for converting mortal XP into permanent and current PP tracks, with temporary-vs-permanent expenditure bookkeeping. Strong Chapter 05 bridge for reserve-style power economies that distinguish recoverable spend from permanent loss. | custom |
+| Immortal Rank And Level Frame | procedure | Rank-and-level progression doctrine for Immortals: PP total determines rank, level still tracks progress within rank, and downstream gains key off the new Immortal hierarchy rather than mortal class tiers. | custom |
+| Immortal GT Advancement Costs And Gate | procedure | Permanent-PP advancement doctrine tying ability-score purchase costs to Immortal rank and requiring Greater Talent maxima before rank advancement. Strong Chapter 05 bridge for high-tier stat investment gates and advancement thresholds. | custom |
+| Immortal Sphere Bias And Recovery | procedure | Sphere-selection and planar-bias doctrine linking Immortal alignment context, PP regeneration, hit-point recovery, and ability-score recovery to hostile/neutral/friendly bias. Strong Chapter 05 guide for location-sensitive regeneration and resource cadence. | custom |
+| Immortal Sphere-Factor Cost Model | procedure | Core Immortal magic economy: base PP cost multiplied by Sphere relationship factor, making dominance/opposition a formal cost model rather than flavor text. Strong Chapter 05 bridge for sphere-attuned cost scaling. | custom |
 | Immortal Magical Effect Index (S1-S4) | procedure | Indexed PP vocabulary that unifies mortal spells and many non-spell magical effects, making it a core bridge between classic recognizers and Chapter 05 power language. Reference-index procedure for mapping mortal and non-spell effects to Immortal power-cost handling. Operationally this is the bridge that treats classic spells and many artifact-style non-spell effects as one indexed PP vocabulary, making it especially useful for Chapter 05 unification work. | custom |
 | Immortal Caster Level Rule | procedure | Effective caster-level baseline for Immortal effect scaling is 2 x HD, which drives duration, scaling, and dispel resistance even though the effect is created rather than cast. Sets effective caster level at 2 x HD for all created effects and dispel interactions. Important downstream consequence: duration, scaling, and dispel resistance all key off this doubled effective level even though the effect is created rather than cast. | custom |
 | Immortal Range / Duration Scaling | procedure | Cost-doubling doctrine for extending range, duration, and even volume, with hard limits on range-0 or instant/permanent effects and no cross-planar reach without an existing path. Cost-doubling framework for extending range, duration, and effect volume, including planar-path limits. Instant/permanent effects and range-0 effects cannot be extended, volume increases may require geometry-aware recalculation, and cross-planar reach still requires an existing path such as a gate or wormhole. | custom |
@@ -1106,6 +1245,8 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Immortal Damage Scaling And Averaging | procedure | HD-scaled damage expression using 1d6 per HD, with explicit average-damage substitution and clamped per-die modifiers for fast high-tier resolution. High-tier damage rule set using HD-based dice and optional average-damage method for faster resolution. Immortal-created effects deal 1d6 per HD of the creator, average-damage substitution is explicitly encouraged for speed, and per-die modifiers are clamped by the die's natural min/max rather than added naively to the final total. | custom |
 | Immortal Mental Effect Resolution | procedure | Recurring resistance doctrine for charmed or feebleminded Immortals: A-M and saves matter first, self-cure is unavailable, and later escape depends on Intelligence-check cadence plus renewed saves. Non-magical recovery cadence for charmed/feebleminded Immortals via Intelligence checks plus save retries. Permanent mortal-style mental effects become recurring resistance procedures at Immortal tier: A-M and saves still matter up front, magical self-cure is unavailable, and later escape depends on Intelligence-based check cadence followed by a fresh save. | custom |
 | Immortal Limits On Use | procedure | Action-economy and target-scope doctrine for created effects: self-only effects may be delivered by touch, mortal magic cannot affect Immortals, and each round allows either one magical action or the form's available physical attacks, not both. | custom |
+| Immortal Undead / Entropy Curing | procedure | Conversion rule that re-reads undead-curative magic as Entropy-creature healing at Immortal tier. Strong Chapter 05 bridge for affinity-based target remapping and undead/entropy exception handling. | custom |
+| Immortal Effect Explanation Overrides | procedure | Alphabetical override layer that turns named spells and non-spell effects into Immortal-specific procedures, exceptions, and retuned limits. Operationally this is the evidence surface for spell-family-specific Immortal reinterpretations such as `Contact Outer Plane`, `Invisible Stalker`, and `Maze`. | custom |
 
 #### Meta-Doctrine and Exceptions / Artifact / Immortal Rules
 
@@ -1163,7 +1304,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Mapping | item-effect | Scroll-generated area map with limited secret-door detection. Companion makes this a once-per-day survey tool for a chosen fully-contained area within 100', up to 10,000 square feet. Useful Chapter 05 example for bounded reconnaissance interfaces that create records rather than immediate tactical effects. | custom |
 | Portals | item-effect | Scroll-native reusable `Pass-Wall / Passwall` interface. | partial |
 | Protection / Protection Scrolls | item-effect | Generic moving circle-of-protection wrapper shared by the specific protection scroll variants. Basic evidence lock: usable by any class, creates a moving 10' circle centered on reader, blocks listed creature entry, does not block their spell or missile attacks, and breaks if protected side initiates hand-to-hand attack. | partial |
-| Protection from Elementals | item-effect | Circle protection scroll keyed specifically to elementals. | partial |
+| Protection from Elementals | item-effect | Circle protection scroll keyed specifically to elementals. Expert evidence lock: creates a moving 10' radius circle around the reader, blocks elemental attacks unless the protected side strikes first in hand-to-hand combat, and lasts 2 turns. | partial |
 | Protection from Lycanthropes | item-effect | Circle protection scroll keyed to lycanthrope types by quantity band. | partial |
 | Protection from Magic | item-effect | Protection-scroll ECM ward that creates a moving 10' circle around the reader and blocks spells or spell effects from crossing the boundary. Expert evidence lock: duration is 1-4 turns, item-origin effects are also blocked, and only `Wish` breaks it early. Strong Chapter 05 denial-field model rather than generic resistance. | custom |
 | Protection from Undead | item-effect | Circle protection scroll keyed to undead by type and quantity. | partial |
@@ -1173,7 +1314,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Shelter | item-effect | Pocket-room refuge scroll with supplies and extradimensional trapping edge cases. Companion gives this a furnished extradimensional room with replenishing food, temporary weapons, 12-hour use windows, and a severe trap state if the scroll is removed while occupants remain inside. Strong Chapter 05 model for refuge interfaces that bundle shelter, logistics, and containment risk. | custom |
 | Spell Scrolls / Spells | item-effect | Generic spell-scroll wrapper covering class restrictions, multi-spell payloads, and copy-versus-cast handling. | partial |
 | Spell Catching | item-effect | Catches one incoming spell into scroll capacity bands; strong Chapter 05/06 bridge case for hostile-power capture into storage media using explicit Power Level capacity rather than slot logic. | custom |
-| Spell Storing | item-effect | Ring-based spell payload storage and later discharge; should convert as an item-side power archive with Power Level capacity and release rules, not as prepared-slot retention, and it does not absorb attacks cast at the wearer. | custom |
+| Spell Storing | item-effect | Ring-based spell payload storage and later discharge; should convert as an item-side power archive with Power Level capacity and release rules, not as prepared-slot retention. Expert evidence lock: found rings carry a fixed 1-6-spell payload, refilling requires direct casting into the ring, stored effects resolve at the minimum caster level needed, and the ring does not absorb attacks cast at the wearer. | custom |
 | Trapping | item-effect | Scroll-created physical trap keyed by placement surface. Companion ties payload to placement surface: floor for pit, ceiling for falling-block, otherwise poison-dart or gas logic, and the created trap is real rather than illusory. Good Chapter 05 precedent for trigger-bearing utility items that instantiate environmental hazards instead of casting direct attacks. | custom |
 | Truth | item-effect | Living-mind question procedure via an enhanced ESP-like readout. | partial |
 | Cursed / Cursed Scroll | item-effect | Immediate curse-on-sight scroll wrapper; niche but persistent enough to deserve a canonical lookup row. Basic evidence lock: curse triggers on seeing writing; reading aloud is not required. | partial |
@@ -1183,13 +1324,28 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Ring of Elemental Adaptation | item-effect | Plane-keyed elemental survival ring available in seven variants (single element, paired Air/Water or Earth/Fire, or all-elements) that lets the wearer breathe and see normally within the matching Elemental Plane. Strong supporting interface for talisman/staff travel bundles, but narrower than those because it does not itself provide transit or command. | partial |
+| Djinni Summoning | item-effect | Ring-call interface for a bound djinni servant. Expert evidence lock: summons one djinni to serve the wearer for up to one day, keyed to the current wearer rather than a generic owner, and the ring can only be used once per week. | custom |
+| Human Control | item-effect | Ring-borne domination wrapper that mirrors the human-control potion but persists until cancelled, removed, or dispelled. Expert evidence lock: this is not a short fixed-duration charm; it stays active until the wearer ends it, the ring is removed, or `Dispel Magic` breaks it. | custom |
+| Plant Control | item-effect | Ring-borne plant-command interface that mirrors the potion family but depends on sustained concentration. Expert evidence lock: this does not grant indefinite passive command; control lasts only while the wearer concentrates. | custom |
+| Protection +1, 5' radius | item-effect | Shared-aura defense ring that grants a modest ward to everyone nearby, including enemies. Expert evidence lock: improves the wearer's Armor Class and Saving Throws by 1 and gives the same bonus to all creatures within 5', friend and foe alike. | custom |
+| Regeneration | item-effect | Slow regenerative ring with bodily repair and hard failure boundaries. Expert evidence lock: restores 1 hp per turn, regrows lost limbs, stops functioning at 0 hp or below, and cannot regenerate fire or acid damage. | custom |
 | Ring of Holiness | item-effect | Cleric/druid power-augmentation wrapper tied to ring use; later conversion should express this as eligibility, blessing-layer access, or reduced burden around holy/nature powers rather than extra slot grant. | custom |
 | Ring of Life Protection | item-effect | Anti-drain and life-threshold safeguard interface with finite depletion behavior; useful as a threshold-protection model distinct from ordinary healing because it prevents or defers loss rather than repairing it after the fact. | custom |
 | Ring of Memory | item-effect | Immediate one-spell recall interface for spellcasters only: the wearer must choose within 1 turn of casting, then the spell is instantly relearned, with the ring restoring only one spell per day. Strong Chapter 05 model for short-horizon recovery/retention rather than passive memory bonuses or broad archive storage. | custom |
 | Ring of Remedies | item-effect | Bundled condition-repair and cleansing wrapper across multiple cure lanes; likely a reusable Chapter 05 model for one item exposing several tagged recovery functions instead of one-to-one spell copies. | custom |
 | Ring of Spell Eating | item-effect | Hostile spell-defense and absorption interface distinct from plain spell turning; a core Chapter 05 ECM item case for canceling or consuming incoming powers instead of merely reflecting them. | custom |
-| Ring of Spell Turning | item-effect | Finite ECM reflection item that redirects 2-12 incoming spell attacks back at their casters rather than consuming them. Expert evidence lock: each reflected attack spends part of the limited budget and returns the hostile payload at original force. | custom |
+| Ring of Spell Turning | item-effect | Finite ECM reflection item that redirects 2-12 incoming spell attacks back at their casters rather than consuming them. Expert evidence lock: each reflected attack spends part of the limited budget, returns the hostile payload at original force, and only true spells are reflected, not monster spell-like powers or item-borne spell-like effects. | custom |
 | Ring of Survival | item-effect | Environmental hardening and hazard-resistance wrapper at item scale. | partial |
+
+#### Non-Spell Rows - Potion Interfaces
+
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Animal Control | item-effect | Control-potion interface for commanding mundane or giant animals by total HD budget. Expert evidence lock: controls 3-18 HD of normal or giant animals only, excludes fantastic or magical beasts, and controlled animals become afraid and leave if able when control ends. | custom |
+| Dragon Control | item-effect | High-risk command potion keyed by dragon type. Expert evidence lock: controls up to 3 dragons of the matching type, cannot force spellcasting, and controlled dragons become hostile when the effect ends. | custom |
+| Heroism | item-effect | Temporary level-boost and survivability potion for martial or ordinary users rather than full casters. Expert evidence lock: no effect on cleric, elf, magic-user, or thief; fighters, dwarves, halflings, normal men, or monsters gain higher-level or higher-HD statistics for the duration. | custom |
+| Invulnerability | item-effect | Defensive enhancement potion that grants both AC and save bonuses with anti-spam backlash. Expert evidence lock: grants +2 AC and +2 Saving Throws, but repeated use more than once per week causes sickness instead of stacking protection. | custom |
+| Treasure Finding | item-effect | Treasure-sense potion for directional and distance-bearing acquisition, not appraisal. Expert evidence lock: detects direction and distance but not amount, and keys to the largest treasure within 360'. | custom |
 
 #### Non-Spell Rows - Staff, Rod, and Talisman Interfaces
 
@@ -1202,11 +1358,15 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Rod of Health | item-effect | Cleric-only healing rod that inherits the full staff-of-healing package without spending charges, but can affect any given creature only once per day regardless of which healing/remedy function is chosen. Useful Chapter 05 model for renewable recovery access with strict per-target cadence. | partial |
 | Rod of the Wyrm | item-effect | Alignment-keyed draconic interface: once per day the rod becomes a 30 hp servant dragon (gold, blue, or black by rod type) that can serve as messenger, steed, guard, or combatant, but a wrong-alignment user triggers immediate betrayal and a slain dragon form destroys the rod permanently. | custom |
 | Talisman of Elemental Travel | item-effect | Lesser talismans reverse a conjure elemental on the Prime Plane to send the wearer into one matching Elemental Plane while granting breathable element-matter and strong vision there; the greater talisman covers all planes and can spend up to 10 charges per trip to compel elemental obedience. Strong Chapter 05 bundle case for transit, adaptation, and command in one interface. | custom |
+| Wand of Negation | item-effect | Narrow ECM wand that cancels one other wand or staff effect instead of countering free-cast spells. Expert evidence lock: negates one wand or staff effect, and if the canceled effect has duration the negation persists for one round. | custom |
+| Elemental Devices | item-effect | Element-tuned miscellaneous interface that summons and controls a device elemental under the ordinary elemental-control rules. Expert evidence lock: bowl, brazier, censer, or stone variants each work once per day, take 1 turn to use, and summon the matching elemental type. | custom |
 
 #### Non-Spell Rows - Arcane Tools and Utility Interfaces
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
+| Helm of Teleportation | item-effect | Recharge-gated teleport interface tied to external recasting rather than daily charges. Expert evidence lock: the wearer may teleport normally or teleport another creature/item, but after one use the helm stays inert until a `Teleport` spell is cast upon it, after which self-teleport may be repeated until another outbound payload is attempted. | custom |
+| Intelligent Swords / Special Swords | item-effect | Willful weapon subsystem rather than a bundle of standalone spell rows. Expert evidence lock: intelligent swords may speak, know an alignment tongue, sometimes `read magic`, and carry built-in detection or spell-family powers; special swords are purpose-built by powerful beings and add alignment-keyed effects such as paralysis, save bonuses, or petrification when used for their special purpose. | custom |
 | Quill of Copying | item-effect | Spell transcription and copy-risk procedure; strong Chapter 05/06 spell-handling bridge. | custom |
 | Slate of Identification | item-effect | Item-identification procedure surface distinct from `Read Magic` and `Mages` scroll behavior. | partial |
 
@@ -1216,6 +1376,12 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | --- | --- | --- | --- |
 | Damage to Magical Items | procedure | Carrier durability and destruction doctrine for potions, scrolls, wands, staves, rods, rings, and other permanent items under harsh treatment. RC sets explicit toughness bands (+1 for potions/scrolls, +2 for wands/staves, +3 for permanent miscellaneous items) and preserves partial-damage loss on magical bonuses. Strong Chapter 05 bridge for item-wear and catastrophic-loss handling. | custom |
 | Experience from Spells and Enchanted Items | procedure | Enchantment-economics reward doctrine for spell research, magical items, and large enchanted builds. RC ties XP to successful first-of-kind magical work, downgrades vessel/home awards to one-third gp spent, and divides collaborative awards among participating spellcasters. Strong Chapter 05/06 support for research and fabrication reward policy. | custom |
+| Alchemical Potion Duplication / Potion Research Support | procedure | Specialist-support doctrine for potion copying and potion-only research outside direct caster labor. Expert evidence lock: an alchemist can duplicate a potion from a formula or sample at half normal time and cost, and can research new potion types at twice the cost and time required for a magic-user. | custom |
+| Sage Magical Research Support | procedure | Obscure-knowledge support workflow for magical investigation. Expert evidence lock: sages can research hidden or ancient knowledge but carry failure chance, book-acquisition cost, and time burdens set by the referee. | custom |
+| Spellbook Replacement | procedure | Arcane archive-recovery doctrine for lost spellbooks. Expert evidence lock: a magic-user or elf cannot regain spells until the book is replaced, with a guideline cost of 1,000 gp and 1 week of study per spell level restored, consuming all adventuring time. | custom |
+| Magic Item Range/Duration Default | procedure | Default-caster baseline for magic-item effects when an item omits its own numbers. Expert evidence lock: any missing range or duration should be treated as though produced by a 6th-level spell caster. | custom |
+| Magic Detection/Control Blocking | procedure | Material-occlusion doctrine for item-side detection and control effects. Expert evidence lock: a thin sheet of lead, 1' of other metal, or 10' of stone blocks these ranges and interactions. | custom |
+| Intelligent Item Will Power / Control Check | procedure | Willful-item control doctrine for intelligent weapons and similar autonomous magic. Expert evidence lock: item will power derives from Intelligence, Ego, and extraordinary powers; user will power comes from Intelligence plus Wisdom with wound penalties; control contests trigger on handling, injury, competing weapons, alternate users, and special-purpose opportunities. | custom |
 
 #### Non-Spell Rows - Artifact Procedures
 
@@ -1233,6 +1399,11 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
+| Immortal Power Point Conversion And Bookkeeping | procedure | Core Immortals reserve-economy procedure converting mortal XP into permanent and current PP tracks, with temporary-vs-permanent expenditure bookkeeping. | custom |
+| Immortal Rank And Level Frame | procedure | Rank-and-level progression doctrine for Immortals, with PP total determining rank while level still tracks progress within rank. | custom |
+| Immortal GT Advancement Costs And Gate | procedure | Permanent-PP stat-purchase and advancement-gate doctrine requiring Greater Talent maxima before rank promotion. | custom |
+| Immortal Sphere Bias And Recovery | procedure | Sphere-choice and planar-bias recovery doctrine linking location bias to PP, hit-point, and ability-score regeneration cadence. | custom |
+| Immortal Sphere-Factor Cost Model | procedure | Core Sphere-relationship multiplier doctrine for Immortal magic costs, turning dominance and opposition into explicit PP cost scaling. | custom |
 | Immortal Magical Effect Index (S1-S4) | procedure | Reference-index procedure for mapping mortal and non-spell effects to Immortal power-cost handling. Operationally this is the bridge that treats classic spells and many artifact-style non-spell effects as one indexed PP vocabulary, making it especially useful for Chapter 05 unification work. | custom |
 | Immortal Caster Level Rule | procedure | Sets effective caster level at 2 x HD for all created effects and dispel interactions. Important downstream consequence: duration, scaling, and dispel resistance all key off this doubled effective level even though the effect is created rather than cast. | custom |
 | Immortal Range / Duration Scaling | procedure | Cost-doubling framework for extending range, duration, and effect volume, including planar-path limits. Instant/permanent effects and range-0 effects cannot be extended, volume increases may require geometry-aware recalculation, and cross-planar reach still requires an existing path such as a gate or wormhole. | custom |
@@ -1240,6 +1411,8 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Immortal Damage Scaling And Averaging | procedure | High-tier damage rule set using HD-based dice and optional average-damage method for faster resolution. Immortal-created effects deal 1d6 per HD of the creator, average-damage substitution is explicitly encouraged for speed, and per-die modifiers are clamped by the die's natural min/max rather than added naively to the final total. | custom |
 | Immortal Mental Effect Resolution | procedure | Non-magical recovery cadence for charmed/feebleminded Immortals via Intelligence checks plus save retries. Permanent mortal-style mental effects become recurring resistance procedures at Immortal tier: A-M and saves still matter up front, magical self-cure is unavailable, and later escape depends on Intelligence-based check cadence followed by a fresh save. | custom |
 | Immortal Limits On Use | procedure | Action-economy and target-scope doctrine for created effects, including self-only effects delivered by touch. Immortal-created magic can affect Immortals while mortal-created magic cannot, incorporeal beings ignore magic entirely, self-only effects can be delivered outward by touch, and each round permits either one magical action or the form's available physical attacks, not both. | custom |
+| Immortal Undead / Entropy Curing | procedure | Re-reads undead-curative magic as Entropy-creature healing at Immortal tier, with Turn-style handling explicitly excluded. | custom |
+| Immortal Effect Explanation Overrides | procedure | Alphabetical override layer for named Immortal spell/effect exceptions, covering spell-family-specific reinterpretations such as `Contact Outer Plane`, `Invisible Stalker`, and `Maze`. | custom |
 
 #### Borderline Family Notes
 
