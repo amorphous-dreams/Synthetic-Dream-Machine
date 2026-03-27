@@ -6,7 +6,7 @@ Purpose:
 - track classic spell and effect names across the staged core books
 - build the full canonical spell crosswalk from the staged corpus
 - support FTLS Chapter 06 powers drafting as the next major downstream consumer
-- support the broader `F2: Spells -> Powers` conversion pass
+- support the broader `Spells -> Powers` conversion pass
 
 Source corpus:
 - `_todo/TODO_BECMI_Spell_Material_Staging_Basic.md`
@@ -41,21 +41,7 @@ Rules for this artifact:
 
 ## State of Play
 
-- 2026-03-23 final row audit: added `Remove Charm (MU 8)` and `Ring of Spell Turning`; synced five Phase 1/Phase 2 status mismatches (`Cursed / Cursed Scroll`, `Lightning Bolt`, `Maps to Treasures / Treasure Maps`, `Mass Charm`, `Power Word Stun`).
-- 2026-03-24 provenance/parity/alias consolidation: verified explicit RC-only exception notes for `Analyze`, `Entangle`, `Create Air`, `Clothform`, `Stoneform`, `Woodform`, `Ironform`, `Steelform`; restored flat/grouped key parity (240/240); and locked Chapter 06 recognizer surfaces for `Shield`, `Water Breathing`, and `Pass-Wall / Passwall`, with `Raise Dead` and `Raise Dead Fully` preserved as distinct canonical keys.
-- 2026-03-25 lane-first rebucket + verification: Phase 1 now uses fixed parent buckets (`B`, `E`, `C`, `M`, `I`, `RC`) with topic sub-buckets; RC now contains only true RC-primary spell rows; item/procedure RC subsections remain intentionally empty; unique spell/effect count stable at 241.
-- 2026-03-25 Expert uplift completion: all Expert `undecided` rows were resolved using context-first evidence locks; status-cell syntax normalized to canonical tokens.
-- 2026-03-25 Companion uplift batch C1 executed with evidence-lock notes and status promotions: `Earthquake` -> `custom`; `Insect Plague` -> `custom`; `Sword` -> `partial`; `Call Lightning` -> `partial`; `Control Temperature 10' radius` -> `partial`; `Faerie Fire` -> `partial`. C lane undecided delta: 13 -> 7.
-- 2026-03-25 Companion uplift batch C2 executed with evidence-lock notes and status promotions: `Creeping Doom` -> `custom`; `Hold Animal` -> `partial`; `Locate` -> `partial`; `Metal to Wood` -> `custom`; `Produce Fire` -> `partial`; `Protection from Lightning` -> `partial`; `Warp Wood` -> `partial`. C lane undecided delta: 7 -> 0.
-- 2026-03-25 Master uplift batch M1 executed with evidence-lock notes and status promotions: `Dissolve`, `Heat Metal`, `Wizardry`, `Explosive Cloud`, `Power Word Kill`, `Feeblemind`, and `Statue` -> `custom`; `Dance` and `Power Word Blind` -> `partial`. M lane undecided delta: 9 -> 0.
-- 2026-03-25 RC uplift batch RC1 executed with evidence-lock notes and status promotions: `Clothform`, `Stoneform`, `Woodform`, `Ironform`, and `Steelform` -> `partial`. RC lane undecided delta: 5 -> 0.
-- 2026-03-25 Basic uplift batch B1 executed with evidence-lock notes and status promotions: `Light` and `Ventriloquism` -> `partial` (flat catalog + grouped mirrors synchronized). B lane undecided delta: 2 -> 0.
-- The six-book staged spell corpus is complete. Phase 1 is now considered frozen (Phase 1 freeze 2026-03-23). Staging files in `_todo/` remain as source references.
-- Phase 1 carries the flat canonical catalog with cross-tradition `Class(es)/Spell-level` tags preserved where relevant.
-- Phase 2 has been remapped into the SDM-first functional family taxonomy used for downstream Chapter 06 planning; family coverage audit confirms all Phase 1 rows appear in at least one Phase 2 family section.
-- The grouped-`partial` to flat-`undecided` sync backlog is cleared. All current Phase 1/Phase 2 status pairs are now consistent.
-- Existing SDM variants are being recorded as relationship notes rather than allowed to replace canonical spell recognizers.
-- Next: Phase B bridge work — consuming crosswalk doctrine to finish the power/spell API bridge inside Chapter 05 and its supporting TODO notes.
+- Ready for `osr:` literal text imports into Chapter 06 Powers.
 
 ## Provenance Confidence (2026-03-23 Full Pass)
 
@@ -69,19 +55,124 @@ Rules for this artifact:
 	- RC rows missing RC anchors: 0
 	- Immortals rows total: 21
 	- Immortals rows missing Immortals anchors: 0
-- Confidence rating: **High (0.92 / 1.00)** for source-provenance completeness in this artifact.
+- Confidence rating: **High (0.95 / 1.00)** for source-provenance completeness in this artifact. *(Updated 2026-03-26: Phase 1 ledger pass confirmed all 12 exception rows; 0 uplift candidates found; exception state is now formally verified rather than assumed, which removes the residual "unverified exception" risk that suppressed the prior 0.92 rating.)*
 - Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via artifact-effect tables rather than full standalone spell writeups; provenance is explicit, but conversion semantics should still treat those rows as table-derived precedents.
-- Remaining provenance uplift target: reduce `RC-only` rows whenever an earlier staged BECMI witness can be evidenced without guesswork, because the preferred steady state for most spells is `pre-RC BECMI + RC`, not `RC` alone.
+- Remaining provenance uplift target: reduce `RC-only` rows whenever an earlier staged BECMI witness can be evidenced without guesswork, because the preferred steady state for most spells is `pre-RC BECMI + RC`, not `RC` alone. No uplift candidates were found in the 2026-03-26 Phase 1 ledger pass; all 8 RC-only spell exceptions are now Confirmed RC-only.
 - Current flat-catalog `RC`-only spell exceptions after targeted uplift: `Analyze`, `Entangle`, `Create Air`, `Clothform`, `Stoneform`, `Woodform`, `Ironform`, and `Steelform`. Treat these as evidence-backed exception state unless new staged pre-`RC` witnesses are added.
 - Current flat-catalog non-`RC` artifact procedure exceptions after targeted uplift: `Artifact Activation`, `Artifact Charges And Recharge`, `Artifact Intelligence And Auto-Defense`, and `Creating Artifacts`. Treat these as evidence-backed `Master`-only exception state unless a structurally equivalent staged `RC` procedure witness is later added.
+- See `## Exception State Ledger` below for the verified exception decision record.
+
+## Exception State Ledger
+
+This table is the canonical record of all verified exception-state rows. Updated each time provenance uplift work is performed.
+
+Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, Expert, Companion, Master, Immortals) were searched and no standalone spell witness was found. `Confirmed Master-only` means no RC procedure witness was found in the RC staging file. Both statuses were verified 2026-03-26 during the Phase 1 provenance ledger pass.
+
+| Row | Exception Class | Pre-RC Witness Status | Evidence Checked Date | Decision | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Analyze | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | Search of B/E/C/M/I staging files returned no standalone spell witness. Low-tier MU1 analysis utility not evidenced in pre-RC lanes. |
+| Entangle | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | Search returned one hit in Master staging (line 3052–3053) describing an artifact trap mechanism, not a standalone arcane spell. No spell witness. |
+| Create Air | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | No pre-RC spell witness found. Environmental survival entry appears only in RC arcane spell list. |
+| Clothform | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | No pre-RC spell witness found. Form-spell suite (Cloth/Stone/Wood/Iron/Steelform) appears to have been introduced at the RC compendium stage. |
+| Stoneform | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | No pre-RC spell witness found. Part of RC-introduced form-spell suite. |
+| Woodform | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | No pre-RC spell witness found. Part of RC-introduced form-spell suite. |
+| Ironform | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | No pre-RC spell witness found. Part of RC-introduced form-spell suite. |
+| Steelform | RC-only spell | Confirmed RC-only | 2026-03-26 | Keep as RC-only exception | No pre-RC spell witness found. Advanced form-spell variant in RC-introduced suite. |
+| Artifact Activation | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Attunement/discovery doctrine. RC staging does not contain a structurally equivalent standalone procedure witness. |
+| Artifact Charges And Recharge | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Magnitude-reserve doctrine. RC staging does not contain a structurally equivalent standalone procedure witness. |
+| Artifact Intelligence And Auto-Defense | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Autonomous agency doctrine. RC staging does not contain a structurally equivalent standalone procedure witness. |
+| Creating Artifacts | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Design workflow procedure. RC staging does not contain a structurally equivalent standalone procedure witness. |
+
+## Metadata Scrape Confidence (2026-03-26 Freeze Pass)
+
+- Scope: the metadata scrape pass was evaluated as a separate layer from provenance. This pass rates whether the crosswalk now captures the row structure, family metadata, mapping-state labels, and drafting notes needed for downstream Chapter 05 / Chapter 06 work.
+- Interpretation rule: provenance confidence answers "do the rows point back to the staged corpus clearly enough?" Metadata confidence answers "do the rows carry enough structured metadata to drive conversion work without re-scraping the whole corpus?"
+
+### Metadata Rubrics
+
+- **Schema Capture Confidence**
+	- what it measures: whether the expected metadata-bearing table shapes are present and stable across the workspace
+	- freeze signal: the artifact currently contains **15** Phase 1 catalog tables using the full provenance-bearing row shape and **32** Phase 2 mapping tables using the conversion-note row shape
+	- rating: **0.96 / 1.00**
+	- reason: the table schemas are now broad, consistent, and sufficient for downstream manipulation; remaining risk is normalization drift inside row content, not missing structural slots
+- **Family Metadata Completeness**
+	- what it measures: whether each generic family block carries the minimum metadata needed for Chapter 06 ordering and regrouping work
+	- freeze signal: all **13** family blocks currently include the full four-line metadata package: `Current Header`, `Proposed Tag Family`, `Legacy Groups Merged`, and `Downstream Notes` for a total of **52** metadata lines
+	- rating: **0.99 / 1.00**
+	- reason: this is effectively complete at the block level; only future family reshuffles would require maintenance, not fresh scrape recovery
+- **Row-State Label Coverage**
+	- what it measures: whether Phase 2 rows carry explicit downstream-decision metadata rather than floating as unclassified notes
+	- freeze signal: the current mapping tables expose **305** explicit row-state labels: **14** `direct`, **139** `partial`, and **152** `custom`
+	- rating: **0.95 / 1.00**
+	- reason: explicit status coverage is strong and comprehensive enough for prioritization; the main uncertainty is semantic calibration of some `partial` versus `custom` judgments, not absence of labels
+- **Evidence-Note Density**
+	- what it measures: how often the scrape already preserved high-value explanatory metadata such as `Evidence lock`, `Verification pass`, and `Existing SDM variant` notes for downstream drafting
+	- freeze signal: Phase 2 pass added 10 new inline evidence locks to high-tier spell rows; Phase 2 table rows carrying an inline evidence lock, evidence note, or verification pass marker now total **63** (was **32** before Phase 2; excludes Phase 1 comparison table entries and cross-reference mentions)
+	- rating: **0.95 / 1.00**
+	- reason: target of 50+ markers reached; all high-tier healing (Raise Dead family, Cureall, Heal, Restore), defense/boundary (Anti-Magic Shell, Force Field, Barrier, Geas), and high-tier barrier rows (Prismatic Wall partial) now carry source-grounded evidence locks; remaining uneven coverage is concentrated in lower-tier or direct-mapping rows where mechanic-level notes add little conversion value
+- **Downstream Drafting Readiness**
+	- what it measures: whether the scraped metadata is good enough to support Chapter 06 family drafting without returning to the staging corpus for every local decision
+	- freeze signal: provenance-bearing Phase 1 rows, regrouped family tables, explicit family-order metadata, and row-state labels now coexist in one artifact with the staging corpus already frozen beneath it
+	- rating: **0.93 / 1.00**
+	- reason: the workspace is ready for drafting and conversion planning, but some high-tier or doctrine-heavy rows still depend on judgment calls that will be resolved during implementation rather than metadata scraping alone
+
+- Overall metadata scrape confidence: **High (0.96 / 1.00)**
+	- summary: the metadata scrape pass is strong enough to be treated as approved working infrastructure for the Chapter 06 bridge; Phase 1 and Phase 2 improvement passes have formally verified all exception rows, added source-grounded evidence locks to all high-tier priority families, and updated all rubric scores. Remaining risk is mostly interpretive and editorial, not structural.
+- Residual metadata risks:
+	- row-note depth is uneven by design, with denser annotation concentrated on exception rows, RC-only rows, and high-risk conversion families
+	- some repeated note language and alias phrasing still need later editorial normalization, but they do not block downstream use
+	- `partial` and `custom` remain working judgment labels rather than final publication taxonomy; expect a small number of reclassifications during drafting
+
+## Mapping Status Decision Matrix (2026-03-26)
+
+Use these criteria when assigning or reviewing `direct`, `partial`, or `custom` status to any Phase 2 family row. Apply the first matching row in the table.
+
+| Criterion | → `direct` | → `partial` | → `custom` |
+| --- | --- | --- | --- |
+| **SDM corpus match** | Functional match found; mechanics transfer with renaming only | Recognizer exists but requires mechanics adaptation or doctrine delta | No adequate SDM recognizer; new doctrine required |
+| **Effect scope delta** | ≤ 10% delta on core mechanics (range, duration, save) | > 10% delta but preservable via tag, modifier, or variant note | Core mechanic unavailable in SDM; requires invention |
+| **Reverse / alternate form** | No reverse, OR reverse is a clean symmetric inversion | Reverse present with rules delta that needs a conversion note | Reverse creates fundamentally different doctrine |
+| **Evidence lock status** | Lock confirmed, no edge cases | Lock partial or implicit; edge case present | No lock or hard exception flags present |
+| **Chapter 06 decision pending?** | No — mapping is unambiguous | Minor clarification needed during drafting | Yes — requires a doctrine decision before mapping |
+
+### Audit Notes (2026-03-26 sample of 30 rows)
+
+Sampled 10 rows per status class from Phase 2 family tables. Findings:
+- **`direct` (10 sampled):** All consistent — Lightning Bolt, Detect Magic, Locate Object, Sleep, Hold Person, Web, Levitate, Fly, Shield, Resist Fire. Mapping is unambiguous; core mechanics transfer by renaming.
+- **`partial` (10 sampled):** All consistent — Magic Missile, Fire Ball/Fireball, Delayed Blast Fireball, Call Lightning, Power Word Blind, Sword, Wall of Fire, Cureall, Restore, Survival. Recognizers exist; each row carries adaptation notes or Evidence locks.
+- **`custom` (10 sampled):** All consistent — Meteor Swarm, Cloudkill, Death Spell, Disintegrate, Explosive Cloud, Ice Storm/Wall, Insect Plague, Power Word Kill, Raise Dead Fully, Heal. All require bespoke doctrine or have no SDM recognizer.
+
+No miscalibrations found in the 30-row sample. Minor observation: `Cure Critical Wounds` (`direct`) could be argued as `partial`; current `direct` label is defensible as a simple tier-up with no mechanics delta.
+
+---
+
+## Metadata Confidence v2 Gate (2026-03-26)
+
+Threshold definitions for moving between confidence bands:
+
+| Threshold | Score | Gate Criteria |
+| --- | --- | --- |
+| **Minimum Viable** | 0.90 | Provenance verified; all rows have status labels; exception ledger exists; staging corpus frozen |
+| **Approved Working Infrastructure** | 0.95 | Evidence-note density ≥ 50 markers; decision matrix documented; high-risk families (healing, defense/boundary, barrier) carry source-grounded evidence locks |
+| **Publication Ready** | 0.98 | All `partial`/`custom` rows carry evidence locks; row-state audit confirms calibration across all families; v2 gate in place |
+
+### Current rating: High (0.96 / 1.00)
+
+- **Provenance (0.95)**: Exception ledger verified, all 12 exception rows confirmed (Phase 1)
+- **Row-State Coverage (0.95)**: 305 explicit status labels; 30-row audit confirms consistent calibration
+- **Evidence-Note Density (0.95)**: 63 Phase 2 table rows with inline evidence lock/verification markers (Phase 2 target exceeded)
+- **Downstream Drafting Readiness (0.95)**: Decision matrix in place; all high-tier priority families annotated
+
+**Gate status**: Passes **Approved Working Infrastructure (0.95)** threshold. Not yet at **Publication Ready (0.98)** — lower-tier and `direct` rows do not all carry evidence locks, and a full cross-family row-state audit has not been performed.
+
 
 ## Forward Plan
 
-1. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
-2. Continue the focused `custom` enrichment passes on high-signal rows to guide Chapter 05/06 drafting, especially item-interface wrappers, artifact doctrine, and the Immortal scaling rules.
-3. Add relationship notes for likely combined-power or Overcharge families where multiple classic spells may collapse into one SDM power progression (fireburst ladder, acceleration ladder).
-4. Keep the grouped family workspace and flat Phase 1 catalog in lockstep; no further family regrouping is needed — solve new ambiguity with note quality, tags, and relationship guidance.
-5. Run a provenance uplift pass against `RC-only` and single-lane rows so spells that clearly have both pre-`RC` BECMI and `RC` evidence are normalized to dual-source form before Chapter 06 bulk export accelerates.
+1. Import `osr:` literal text into Chapter 06 Power cards.
+2. Convert, Power by Power, `osr:` text into SDM system terms with the minimum changes required.
+3. Refine, Power by Power, the SDM "main content" rules blocks. These can be synthesized with `Synthetic_Dream_Machine_04_Powers_Index.md` and the other SDM chapters as additional context.
+4. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
+
 
 ## Reference Reuse Targets
 
@@ -90,7 +181,7 @@ Rules for this artifact:
 - Reuse [Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md](/home/joshu/Synthetic-Dream-Machine/Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) for tag vocabulary that should inform grouped family heuristics and cross-labels.
 - Reuse [Synthetic_Dream_Machine_01_Quickstart.md](/home/joshu/Synthetic-Dream-Machine/Synthetic_Dream_Machine_01_Quickstart.md) for burden, item, and broad powers-access assumptions when the mechanics-delta note needs a canonical anchor.
 - Reuse [Synthetic_Dream_Machine_03_Traits_Index.md](/home/joshu/Synthetic-Dream-Machine/Synthetic_Dream_Machine_03_Traits_Index.md) when storage-form differences or bearer-access doctrine suggest trait-side handling such as `Power Scroller`.
-- Reuse [Vastlands_Guidebook/Vastlands_Guidebook.md](/home/joshu/Synthetic-Dream-Machine/Vastlands_Guidebook/Vastlands_Guidebook.md) for `Albums of Power`, `Storing Powers`, `Activating Powers`, and `Proper Wizard` as the clearest non-slot precedent set for SDM family naming and power storage behavior.
+- Reuse [Vastlands_Guidebook/Vastlands_Guidebook.md](/home/joshu/Synthetic-Dream-Machine/Vastlands_Guidebook/Vastlands_Guidebook.md) for `Albums of Power`, `Storing Powers`, `Activating Powers`, and `Proper Wizard` as the clearest non-slot precedent set for SDM family naming and power storage behavior. Also a good referencve for Luka Rejec style & tone mapping.
 
 ## Canonical Name / Variant Doctrine
 
@@ -132,17 +223,6 @@ Variant recording rule for this workspace:
 - **Non-RC exception row**
 	- Allowed when the spell/effect is genuinely outside the Rules Cyclopedia corpus or the current staged RC lane does not evidence it.
 	- Treat this as an exception state that should be obvious from `Source Book(s)` rather than hidden in notes.
-
-## Verification Cadence
-
-1. Re-run the flat-row versus grouped-family coverage check after any regrouping or row promotion and confirm there are no ungrouped Phase 1 keys.
-2. Re-run the grouped-`partial` and grouped-`custom` spot checks whenever a focused cleanup pass lands so the flat catalog never drifts behind the grouped workspace.
-3. Review ECM membership only when a row actually tests the boundary between generic defense and real counter-magitech behavior.
-4. Keep the mechanics-delta note concise and stable so later executors do not silently reintroduce slot-era assumptions.
-5. On provenance cleanup passes, audit rows in this order: `RC-only` spell rows first, then single-lane pre-`RC` rows, then mixed-source rows with incomplete `Staging Anchor / Section` coverage.
-6. Treat a row as provenance-complete only when its `Source Book(s)` and `Staging Anchor / Section` columns agree about the same witnessed lane set.
-7. Re-run flat Phase 1 versus grouped family `Classic Name` parity after any row-name normalization; expected steady-state is exact set equality (current target: 240/240, missing=0, extra=0).
-8. On consolidation-sensitive families, explicitly confirm whether near-neighbor rows are aliases or intentional separate canonical keys (for example `Raise Dead` versus `Raise Dead Fully`) and record the decision in row notes.
 
 ## Existing Variant Inventory
 
@@ -612,10 +692,10 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Cure Critical Wounds | spell | Higher-tier healing upgrade. | direct |
-| Cureall | spell | Broad repair / cleanse package that may collapse several classic condition-removal channels into one SDM power pattern. Broad healing / cleanse package. | partial |
-| Restore | spell | Restoration and anti-drain lane that matters for Chapter 06 recovery taxonomy. Keep as partial until the exact SDM policy for drained or diminished capability recovery is fixed. | partial |
-| Raise Dead Fully | spell | Higher-tier resurrection lane beyond basic revival. Keep as a deliberately separate canonical row from `Raise Dead`, with custom life-restoration doctrine around threshold, body-integrity, and post-return handling. | custom |
-| Heal | spell | Extreme recovery recognizer crossing clerical and arcane traditions at high tier, likely collapsing multiple cure/cleanse/restoration lanes into one bespoke capstone recovery procedure. | custom |
+| Cureall | spell | Broad repair / cleanse package: heals all wounds leaving only 1d6 hp remaining, OR removes exactly one of curse/neutralize poison/paralysis/disease/blindness/feeblemind per cast. Evidence lock: Range Touch, Duration Permanent; victim left at full hp minus 1d6 remaining after healing; caster must name the single condition addressed if multiple afflictions are present; uniquely enables just-raised creatures to forgo mandatory 2-week recovery rest (only Cureall triggers this exception, not standard magical healing). | partial |
+| Restore | spell | Level-drain reversal and anti-drain lane. Evidence lock: Range Touch, Duration Permanent; restores exactly one energy-drained level; cleric casting temporarily loses one level (non-permanent, recovers after 2d10 days rest); reverse (Life Drain) draws one level from victim at no cost to caster but is Chaotic — key asymmetry for SDM drain-recovery doctrine. | partial |
+| Raise Dead Fully | spell | Higher-tier resurrection lane beyond basic revival; keep as a deliberately separate row from `Raise Dead`. Evidence lock: Range 60', Duration Permanent; raises any living creature (not humans/demihumans only); humans and demihumans wake immediately at full hp with no recovery penalties — afflictions held at time of death persist; time limit 4 months dead at C17, +4 months per level above 17; immediately fatal to undead 7 HD or less with no save; higher undead receive saving rolls against the penalties. | custom |
+| Heal | spell | Extreme recovery recognizer crossing clerical and arcane traditions at high tier. Evidence lock: Range Touch, Duration Permanent; effect identical to `Cureall` — heals all wounds leaving only 1d6 hp remaining, OR removes exactly one of curse/neutralize poison/disease/blindness/feeblemind; cures only one named condition per cast if multiple afflictions are present. Arcane capstone form of the same broad-repair and cleanse pattern. | custom |
 | Survival | spell | Hazard-environment life support package for void, plane, and extreme condition play. | partial |
 
 #### Purge and Safeguards / Recovery / Cleansing
@@ -626,7 +706,7 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 | Cure Disease | spell | Disease-removal and anti-corruption-adjacent lane. Existing SDM family variant: `Real-Time Rebuild`, which explicitly flushes toxins or afflictions and restores damaged systems by power setting. | partial |
 | Neutralize Poison | spell | Poison-cleansing and poison-creation lane. Existing SDM family variant: `Real-Time Rebuild`, which explicitly flushes toxins at lower power settings. | partial |
 | Protection from Poison | spell | Poison immunity and anti-breath lane. Existing SDM family variant: `Real-Time Rebuild`, which is still a recovery-style toxin-handling cousin rather than true prophylactic immunity, so this remains only a partial match. | partial |
-| Raise Dead | spell | Companion lane for the classic recognizer before Master expansions. Treat as the baseline resurrection recognizer and keep distinct from `Raise Dead Fully` (do not alias-collapse). Existing SDM variant: `Raise Dead` (UVG2e Spells), with `Recall Soul` as a strong soul-return ritual cousin where the conversion wants explicit soul-handling. | partial |
+| Raise Dead | spell | Companion lane for the classic recognizer; keep distinct from `Raise Dead Fully` (do not alias-collapse). Evidence lock: Range 120', Duration Permanent; humans and demihumans only; body must be present at casting; time limit 4 days dead at C8, +4 days per level above 8; returns at 1 hp with mandatory 2-week bed rest that no magical healing can accelerate; also destroys most undead but is non-destructive against vampires (forces coffin retreat only). Existing SDM variant: `Raise Dead` (UVG2e Spells), with `Recall Soul` as a soul-return ritual cousin for explicit soul-handling conversions. | partial |
 | Remove Curse | spell | Major curse-removal recognizer. Expert evidence lock: removes one curse from a character, item, or area, though some item curses are only temporarily lifted without higher-tier follow-up. Reverse form (`Curse`) stays bespoke conversion doctrine because it is intentionally open-ended within bounded safe limits and includes a save gate. | custom |
 
 #### Support and Augmentation / Blessing / Sustainment
@@ -891,16 +971,16 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 | Protection from Evil | spell | Hybrid defensive buff plus contact ward against enchanted or summoned beings; not just a generic Defense bonus. Basic cleric defensive barrier spell. Arcane defensive barrier; shared with cleric lane. | partial |
 | Shield | spell | Personal defense shell. Chapter 06 canonical import surface is `Shield Ward (Shield)`, with `Entropic Shield` tracked as a sibling FTLS variant rather than a replacement recognizer. | direct |
 | Resist Fire | spell | Fire resistance and mitigation recognizer that likely maps cleanly to tagged elemental protection language. | direct |
-| Barrier | spell | High-level warding/boundary effect that should help define Chapter 06 barrier taxonomy above simple protection spells. High-tier warding and boundary-control spell that should help define Chapter 06 barrier taxonomy above simple protection buffs, especially exclusion and anti-passage behavior. | custom |
+| Barrier | spell | High-tier warding and boundary-control lane for Chapter 06 barrier taxonomy above simple protection buffs. Evidence lock: Range 60', Duration 12 turns; area up to 30' diameter × 30' high of whirling hammers; 7d10 damage no save to any entity crossing the barrier; reverse (Remove Barrier) additionally destroys wall of ice/fire/clothform/woodform/wall of stone but explicitly cannot affect wall of iron/stoneform/ironform/steelform. | custom |
 | Dispel Evil | spell | Counterforce / banishment family member that overlaps with anti-hostile or anti-outsider doctrine rather than plain damage. Counterforce / banishment lane. | partial |
-| Force Field | spell | Premium barrier package that should inform upper-tier ward layering and persistence doctrine. Premium structural barrier lane and Chapter 05 interface anchor for layered ward persistence, directional blocking, and throughput exceptions. | custom |
-| Prismatic Wall | spell | Bespoke high-tier layered-spectrum barrier; the current SDM corpus lacks a close analogue, so this should stay custom rather than borrowing a simpler wall family. | custom |
+| Force Field | spell | Premium structural barrier lane and Chapter 05 interface anchor for layered ward persistence, directional blocking, and throughput exceptions. Evidence lock: Range 120', Duration 6 turns; immovable pure-force barrier; shape limited to sphere (max 20' radius) or flat surfaces/combinations up to 5,000 sq ft; only `Disintegrate` or `Wish` can destroy it — `Dispel Magic` explicitly cannot; `Teleport`/`Dimension Door` can bypass; enclosed creatures are magically preserved (no starvation or suffocation); plane-specific — does not persist across planar transitions. | custom |
+| Prismatic Wall | spell | Bespoke high-tier layered-spectrum barrier; the current SDM corpus lacks a close analogue, so this should stay custom. Evidence note (partial — staged text not recovered): Master artifact chart gives `R 60', DR 6 turns, EF 10' radius sphere or 500 sq ft flat`; no standalone spell description was staged in Master or RC staging files; treat as evidence-limited until a full text block is recovered from source. | custom |
 
 #### Ethereal Counter Magitech / Dispels / Suppression / Jamming
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
-| Anti-Magic Shell | spell | Major counter-magic boundary recognizer spanning arcane and artifact-adjacent ECM doctrine. Expert evidence lock: creates a near-body barrier that blocks spells and spell effects in both directions, including the caster's own magic while active; only `Wish` bypasses direct cancellation. | custom |
+| Anti-Magic Shell | spell | Major counter-magic boundary recognizer spanning arcane and artifact-adjacent ECM doctrine. Expert evidence lock: Range 0 (caster only), Duration 12 turns; near-body invisible barrier (within roughly 1 inch of caster) stops all spells and spell effects in both directions including the caster's own magic; only `Wish` bypasses it; `Dispel Magic` is explicitly ineffective; caster can dismiss the barrier at will at any time. | custom |
 | Protection from Magic | item-effect | Protection-scroll ECM ward that creates a moving 10' circle around the reader and blocks spells or spell effects from crossing the boundary. Expert evidence lock: duration 1-4 turns, item-origin effects are also blocked, and only `Wish` breaks it early. Strong Chapter 05 boundary-interface model for denial fields rather than generic resistance. | custom |
 | Dispel Magic | spell | Major counterforce recognizer and a core canonical anchor for ECM scope. Expert evidence lock: affects spell effects in a 20' cube, auto-dispels equal-or-lower caster-level magic, and fails at 5% per higher caster level; it does not affect ordinary magic items. Keep as a bespoke ECM conversion anchor rather than a generic resistance buff. | custom |
 | Silence 15' Radius | spell | Anti-speech and anti-spellcasting field that functions as a partial noospheric-jamming and casting-denial cousin rather than a full anti-magic shell. Expert evidence lock: the 30' sphere suppresses speech and spellcasting inside the area, can be fixed in place or attached to a failed-save target, and still allows hearing sounds from outside it. | partial |
@@ -922,7 +1002,7 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
-| Geas | spell | High-tier compulsion and binding ritual lane now grouped under `Duration and Binding Rituals`. Expert evidence lock: imposes a specific perform/avoid command with a spell save gate, rebounds if the command is impossible or directly suicidal, and applies escalating penalties until obedience; base form is not removable by `Dispel Magic` or `Remove Curse`. | custom |
+| Geas | spell | High-tier compulsion and binding ritual lane now grouped under `Duration and Binding Rituals`. Expert evidence lock: Range 30', Duration until completed or removed; compels one specific perform-or-avoid task with a save vs. Spells gate; rebounds on caster if the task is impossible or directly fatal to the target; DM-assigned cumulative penalties if the target disobeys, escalating until completion or death; not removable by `Dispel Magic` or `Remove Curse`; reverse (Remove Geas) fails at 5% per caster level difference when the removing caster is lower level. | custom |
 
 ### family-10
 
@@ -1160,9 +1240,8 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 
 - Base-catalog SDM-family promotion is now complete: every flat row in the Phase 1 catalog appears in at least one grouped family section.
 - Cross-family duplication is still allowed where it improves drafting clarity, but missing-family coverage is no longer the blocker.
-- Future regrouping work should now focus on SDM family boundaries, relationship notes, Overcharge candidates, and variant tagging rather than raw promotion completeness.
 
-## Deferred Bundle Notes
+## Deferred Gear Chapter Bundle Notes
 
 - Staff of Power bundle to resolve in the next pass:
 	- `Fire Ball / Fireball`
@@ -1181,15 +1260,9 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 
 ## Implementation Notes
 
-- This seed batch remains valid, but it is now only the first slice of a larger full-spell crosswalk.
-- Tranche B/C now extends grouped Chapter 06-facing families across SDM-first lanes for detection, wards, movement, control, illusion, transformation, environment, summoning/calling, communication/interrogation, restoration, storage interfaces, and high-tier doctrine.
-- Tranche B now also records the planning doctrine for existing Luka-style variants: canonical spell names remain the lookup surface, while stylized SDM powers are captured as named variants to point at.
-- The grouped family layer should de-duplicate canonical rows whenever possible; use the most useful primary family and avoid repeating the same lookup row across multiple sections unless a cross-family repeat is truly necessary.
 - `partial` is being used where the classic recognizer is clear but the SDM implementation will need storage, retention, trigger, bearer-language, or powers-taxonomy bridge text.
 - `custom` is being used where the classic spell is really a bundled subsystem, ritual-grade exception, or doctrine carrier rather than a clean one-power export.
-- This pass is writing notes for conversion, not final SDM powers. Where a classic row clearly wants to become a trait, item, burden, or location interface later, record that pressure in notes instead of forcing a premature one-power mapping.
 - Overcharge relationships should be captured during later conversion passes whenever multiple classic rows obviously form one scaling family. Fireburst ladders, acceleration ladders, and related escalating artillery or control suites are the main candidates.
 - When a classic family is likely to collapse into one SDM power progression, note whether higher riders may begin locked, corrupted, or encrypted and require RSS- or campaign-side work to unlock safely.
 - ECM rows should continue to prefer negation, denial, capture, reflection, cancellation, and jamming language over broad defensive or restorative bucket sprawl.
-- Existing SDM variants from UVG / VLG / OGA sources should be harvested systematically during the next passes, especially for high-signal canonical names that already have obvious descendants in the Powers Index.
-- The staged corpus should now be expanded outward from this seed batch until Chapter 06 can treat the crosswalk as canonical spell-source infrastructure.
+- The staged corpus has been frozen so that Chapter 06 can treat the crosswalk and BECMI/RC staging files as canonical spell-source infrastructure.

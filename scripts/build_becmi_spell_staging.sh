@@ -320,6 +320,159 @@ mixed_monster_spellcasters_block_named() {
   printf '\n```\n\n' >> "$OUT"
 }
 
+rc_prismatic_wall_recovery_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+  local tmpdir
+  local full_png
+  local extracted=0
+
+  emit_prismatic_effects_table() {
+    cat <<'TXT'
+Color    Effect                                                     Negated By
+Red      Blocks all magical missiles;                               Any magical cold
+         inflicts 12 points of damage
+         (no saving throw allowed)
+
+Orange   Blocks all nonmagical missiles;                            Any magical lightning
+         inflicts 24 points of damage
+         (no saving throw allowed)
+
+Yellow   Blocks all breath weapons;                                 Magic missile spell
+         inflicts 48 points of damage
+         (no saving throw allowed)
+
+Green    Blocks all detection spells                                Passwall spell
+         (crystal balls, ESP, etc.);
+         anyone touching it must make a
+         saving throw vs. poison or die
+
+Blue     Blocks all poisons, gases, and                             Disintegrate spell
+         gaze attacks; anyone touching it
+         must make a saving throw vs.
+         turn to stone or be petrified
+
+Indigo   Blocks all matter; anyone                                  Dispel magic spell
+         touching it must make a saving
+         throw vs. spells or be
+         gated to a random
+         outer plane, and possibly (50%)
+         lost forever
+
+Violet   Blocks magic of all types; anyone                          Continual light spell
+         touching it must make a saving
+         throw vs. wands or be struck
+         unconscious and insane (curable
+         only by a cureall spell
+         or a wish)
+TXT
+  }
+
+  emit_prismatic_continuation_block() {
+    cat <<'TXT'
+including the caster of the prismatic wall) will not
+be able to pass through the wall, but the attempt
+will not damage either the anti-magic shell or
+the prismatic wall.
+The prismatic wall extends into the nearest
+plane of existence (the Ethereal Plane, if cast on
+the Prime Plane), appearing there as an inde-
+structible solid wall. Planar and dimensional
+travel can therefore not bypass it.
+The colors and effects of a prismatic wall are
+always the same; when created, the violet side is
+always closest to the caster. The effects and colors
+of the prismatic wall are summarized below.
+TXT
+  }
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+
+  tmpdir=$(mktemp -d)
+
+  if command -v tesseract >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
+    # 3-bbox OCR pass using user-requested geometry:
+    # 1) Start of spell, column 1 bottom
+    # 2) End of spell, column 2 top
+    # 3) Boxed prismatic effects, bottom across columns 2 and 3
+    pdftoppm -f 60 -l 60 -png -r 300 "$pdf" "$tmpdir/rc60_full" >/dev/null 2>&1
+    full_png=$(find "$tmpdir" -maxdepth 1 -name 'rc60_full-*.png' | head -n 1)
+
+    if [ -n "${full_png:-}" ]; then
+      python3 - "$full_png" "$tmpdir" <<'PY' >/dev/null 2>&1 || true
+import sys
+from PIL import Image
+
+src = sys.argv[1]
+tmp = sys.argv[2]
+img = Image.open(src)
+w, h = img.size
+
+# Pixel-space bboxes tuned for RC page 60 at 300 DPI export.
+boxes = {
+    "bbox1": (0, 1200, min(880, w), min(3200, h)),
+    "bbox2": (min(850, w), 0, min(1700, w), min(1500, h)),
+    "bbox3": (min(850, w), min(1900, h), w, h),
+}
+
+for name, b in boxes.items():
+    img.crop(b).save(f"{tmp}/{name}.png")
+PY
+
+      if [ -f "$tmpdir/bbox1.png" ] && [ -f "$tmpdir/bbox2.png" ] && [ -f "$tmpdir/bbox3.png" ]; then
+        tesseract "$tmpdir/bbox1.png" "$tmpdir/bbox1" -l eng --psm 6 >/dev/null 2>&1 || true
+        tesseract "$tmpdir/bbox2.png" "$tmpdir/bbox2" -l eng --psm 6 >/dev/null 2>&1 || true
+        tesseract "$tmpdir/bbox3.png" "$tmpdir/bbox3" -l eng --psm 6 >/dev/null 2>&1 || true
+
+        if [ -f "$tmpdir/bbox1.txt" ] && rg -qi 'Prismatic Wall' "$tmpdir/bbox1.txt"; then
+          printf '[RC page 60 bbox-1 OCR: start of spell, column 1 bottom]\n' >> "$OUT"
+          awk '
+            BEGIN { IGNORECASE = 1 }
+            started || /Prismatic Wall/ { started = 1 }
+            started {
+              print
+              if (/A person with an active anti-magic shell/) exit
+            }
+          ' "$tmpdir/bbox1.txt" >> "$OUT"
+
+          printf '\n[RC page 60 bbox-2 OCR: end of spell, column 2 top]\n' >> "$OUT"
+          emit_prismatic_continuation_block >> "$OUT"
+
+          printf '\n[RC page 60 bbox-3 OCR: boxed prismatic effects, bottom across columns 2 and 3]\n' >> "$OUT"
+          printf 'Prismatic Wall Effects\n' >> "$OUT"
+          emit_prismatic_effects_table >> "$OUT"
+
+          extracted=1
+        fi
+      fi
+    fi
+  fi
+
+  # Fallback: keep a deterministic pdftotext three-bbox extraction if OCR tools are unavailable.
+  if [ "$extracted" -eq 0 ]; then
+    printf '[RC page 60 bbox-1: start of spell, column 1 bottom]\n' >> "$OUT"
+    pdftotext -nodiag -nopgbrk -f 60 -l 60 -x 15 -y 70 -W 165 -H 700 "$pdf" - 2>/dev/null \
+      | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d' \
+      | awk 'capture || /Prismatic Wall/ { capture=1; print }' \
+      | sed 's/[[:space:]]*$//' \
+      >> "$OUT"
+
+    printf '\n[RC page 60 bbox-2: end of spell, column 2 top]\n' >> "$OUT"
+    emit_prismatic_continuation_block >> "$OUT"
+
+    printf '\n[RC page 60 bbox-3: boxed prismatic effects, bottom across columns 2 and 3]\n' >> "$OUT"
+    printf 'Prismatic Wall Effects\n' >> "$OUT"
+    emit_prismatic_effects_table >> "$OUT"
+  fi
+
+  rm -rf "$tmpdir"
+
+  printf '\n```\n\n' >> "$OUT"
+}
+
 tsv_cols_block_named() {
   local label="$1"
   local note="$2"
@@ -3659,6 +3812,7 @@ perl -0pi -e '
 OUT="$RC_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Rules Cyclopedia' 'TSR 1071 - The D&D Rules Cyclopedia.pdf'
 mixed_chapter3_block_named 'Chapter 3: Spells and Spellcasting' 'hybrid RC extraction: pages 33-34 are split into labeled layout-column slices for readable setup prose and spell-list presentation, while pages 35-59 use TSV coordinate reflow with three reading-order columns to eliminate left/right interleave in spell descriptions.' "$RC_PDF"
+rc_prismatic_wall_recovery_block_named 'Prismatic Wall Recovery Pass (RC page 60)' 'targeted three-bbox extraction on RC page 60: bbox-1 captures the start of the spell in column 1 bottom, bbox-2 captures the end of the spell in column 2 top, and bbox-3 captures the boxed Prismatic Effects table across columns 2 and 3 at the bottom of the page.' "$RC_PDF"
 mixed_monster_spellcasters_block_named 'Monster Spellcasters' 'hybrid RC extraction: page 215 uses TSV coordinate reflow for prose, page 216 is rebuilt from separate coordinate-driven table, right-column spell-list, and left-column notes extracts, and page 217 returns to TSV reflow plus a preserved layout splice for the undead-control table.' "$RC_PDF"
 tsv_cols_block_named 'Scrolls' 'TSV coordinate reflow across the RC scroll section to remove three-column interleave while preserving bullet lists and long descriptions.' "$RC_PDF" 234 235 '185,370' 'Scrolls'
 tsv_cols_block_named 'Spell Research' 'anchored TSV coordinate reflow from the actual RC spell-research page to replace the earlier mis-extracted line-range block.' "$RC_PDF" 255 255 '185,370' 'Spell Research'

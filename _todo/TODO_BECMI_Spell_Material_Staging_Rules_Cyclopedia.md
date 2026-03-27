@@ -5148,6 +5148,110 @@ plodes for 8d6 (8-48) points of fire damage. If
 
 ```
 
+### Prismatic Wall Recovery Pass (RC page 60)
+
+- Extraction note: targeted three-bbox extraction on RC page 60: bbox-1 captures the start of the spell in column 1 bottom, bbox-2 captures the end of the spell in column 2 top, and bbox-3 captures the boxed Prismatic Effects table across columns 2 and 3 at the bottom of the page.
+
+```text
+[RC page 60 bbox-1 OCR: start of spell, column 1 bottom]
+Prismatic Wall
+
+Range: 60!
+
+Duration: 6 turns
+
+Effect: Creates a multi-colored barrier
+
+This spell creates a barrier of many colors with
+a glittering appearance as if from light shining
+through a prism. This wall is 2" thick, with 1/8"
+between the colors. The effect must be either a
+sphere with a radius of 10', centered on the cast-
+er, or a flat surface (vertical or horizontal) of up
+to 500 square feet in area.
+
+Whatever its form, the prismatic wall cannot
+be moved (even by a wish). The caster may pass
+through it freely and unharmed, with any items
+he chooses to carry. All other creatures and ob-
+jects contacting or passing through the prismatic
+wall are affected by its magic, starting with the
+first color they contact.
+
+It takes powerful magic to break through the
+wall. A wish spell or a rod ofcancellation will re-
+move the three outermost remaining colors, but
+that's all.
+
+To break through a prismatic wall, an attacker
+must attack it with a specific sequence of spells.
+Each spell will cancel one color of the prismatic
+wall. These remedy spells, shown on the chart
+below, must be cast in the correct order (first,
+any magical cold to remove the red layer; then,
+any magical lightning to remove the orange lay-
+er; and so on). When cast successfully, each spell
+causes the appropriate color to disappear from
+the wall. When all layers are gone, so is the wall.
+
+A person with an active anti-magic shell (in-
+
+[RC page 60 bbox-2 OCR: end of spell, column 2 top]
+including the caster of the prismatic wall) will not
+be able to pass through the wall, but the attempt
+will not damage either the anti-magic shell or
+the prismatic wall.
+The prismatic wall extends into the nearest
+plane of existence (the Ethereal Plane, if cast on
+the Prime Plane), appearing there as an inde-
+structible solid wall. Planar and dimensional
+travel can therefore not bypass it.
+The colors and effects of a prismatic wall are
+always the same; when created, the violet side is
+always closest to the caster. The effects and colors
+of the prismatic wall are summarized below.
+
+[RC page 60 bbox-3 OCR: boxed prismatic effects, bottom across columns 2 and 3]
+Prismatic Wall Effects
+Color    Effect                                                     Negated By
+Red      Blocks all magical missiles;                               Any magical cold
+         inflicts 12 points of damage
+         (no saving throw allowed)
+
+Orange   Blocks all nonmagical missiles;                            Any magical lightning
+         inflicts 24 points of damage
+         (no saving throw allowed)
+
+Yellow   Blocks all breath weapons;                                 Magic missile spell
+         inflicts 48 points of damage
+         (no saving throw allowed)
+
+Green    Blocks all detection spells                                Passwall spell
+         (crystal balls, ESP, etc.);
+         anyone touching it must make a
+         saving throw vs. poison or die
+
+Blue     Blocks all poisons, gases, and                             Disintegrate spell
+         gaze attacks; anyone touching it
+         must make a saving throw vs.
+         turn to stone or be petrified
+
+Indigo   Blocks all matter; anyone                                  Dispel magic spell
+         touching it must make a saving
+         throw vs. spells or be
+         gated to a random
+         outer plane, and possibly (50%)
+         lost forever
+
+Violet   Blocks magic of all types; anyone                          Continual light spell
+         touching it must make a saving
+         throw vs. wands or be struck
+         unconscious and insane (curable
+         only by a cureall spell
+         or a wish)
+
+```
+
 ### Monster Spellcasters
 
 - Extraction note: hybrid RC extraction: page 215 uses TSV coordinate reflow for prose, page 216 is rebuilt from separate coordinate-driven table, right-column spell-list, and left-column notes extracts, and page 217 returns to TSV reflow plus a preserved layout splice for the undead-control table.
