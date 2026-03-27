@@ -20,8 +20,8 @@ Source PDF:
 - Result: no blocking row/column defects found in the visible Rules Cyclopedia table and list regions.
 
 - Capture confidence: **0.95** (UP from 0.90 after staging the RC Chapter 16 item-description catalog)
-- Coverage note: RC spell descriptions, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog (potions, wands/staves/rods, rings, miscellaneous items, swords) are now staged from RC source text. Remaining concerns are OCR texture and optional cleanup, not source-evidence coverage gaps.
-- ToC cross-check: RC Chapter 16 procedure and item-description sections are now represented in staging, including the item-property description run that was previously missing.
+- Coverage note: RC spell descriptions, spell-adjacent doctrine, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog (potions, wands/staves/rods, rings, miscellaneous items, swords) are now staged from RC source text. Remaining concerns are OCR texture and optional cleanup, not source-evidence coverage gaps.
+- ToC cross-check: RC Chapter 16 procedure and item-description sections remain represented in staging, and the RC DM spell-doctrine pass now adds the named spell-adjacent procedures block plus page-255 enchantment-economics text.
 - Gap priority: LOW — the previously documented RC item-description gap is closed.
 ### Chapter 3: Spells and Spellcasting
 
@@ -943,7 +943,7 @@ by the DM, but may be double normal strength.
 The reverse of this spell, remove quest, may
 be used to dispel an unwanted quest or a quest-
 related curse. The chance of success is 50%,
-modified by 5 % for every level of the caster dif-
+modified by 5% for every level of the caster dif-
 fers from the level of the caster of the first quest.
 Thus, an 11th level cleric attempting to remove a
 quest cast by a 13th level cleric has only a 40%
@@ -2090,8 +2090,7 @@ have three 2nd level spells. He can still only
 memorize two of each type in a day.
 Learning New Spells
 Every magic-user and elf was taught magic by
-someone else—normally, by a nonplayer charac-
-ter spellcaster of 7th experience level or higher.
+someone else—normally, by a nonplayer character spellcaster of 7th experience level or higher.
 Your campaign can assume that magic-user
 and elf characters have such a teacher, whom
 they visit and learn from whenever they're not
@@ -2259,7 +2258,7 @@ for this spell to work. Any consequences of this
 action (for example, from cursed or booby-
 trapped objects) fall upon the spellcaster,
 though he gets his usual saving throws.
-The spellcaster has a chance of 15 % plus 5 %
+The spellcaster has a chance of 15% plus 5%
 per experience level to determine one magical
 characteristic of the item; if the item is non-
 magical, his chance is to determine that fact.
@@ -2843,7 +2842,7 @@ level equal to or lower than the spellcaster of the
 dispel magic are automatically and immediately
 destroyed. Spell effects created by a higher-level
 spellcaster might not be affected. The chance of
-failure is 5 % per level of difference between the
+failure is 5% per level of difference between the
 spellcasters. For example, a 7th level magic-user
 trying to dispel a web spell cast by a 9th level
 cleric would have a 10% chance of failure.
@@ -3426,7 +3425,7 @@ The caster may choose the distance, up to the
 maximum allowed. The DM checks the caster's
 chance of insanity once, when the Immortal is
 first contacted. If the caster is 21st level or
-greater, the chance of insanity is reduced by 5 %
+greater, the chance of insanity is reduced by 5%
 per level of the caster above 20.
 Even if insanity does not result, the Immortal
 may still not know the answer to the character's
@@ -5044,7 +5043,7 @@ wormholes are described in Chapter 18.
 Contact with an outer plane is dangerous, and
 the magic-user must know and speak the name
 of the Immortal he wishes to contact. The Im-
-mortal he calls will probably (95 % chance) arrive
+mortal he calls will probably (95% chance) arrive
 in 1d6 rounds, but there is a 5% chance that
 some other being from the outer planes will re-
 spond. When the being arrives, it immediately
@@ -5296,8 +5295,7 @@ rience level (even if the total exceeds the normal
 maximum for the monster type).
 Important Note: The table below, for the
 most part, does not list monsters that can cast
-spells as full members of the appropriate charac-
-ter classes—for instance, men, liches, devilfish,
+spells as full members of the appropriate character classes—for instance, men, liches, devilfish,
 sphinxes, etc. Such creatures are not limited to
 the spell lists for shamans and wokani.
 
@@ -5493,6 +5491,217 @@ Roll 2d6; if the result is the number needed (or higher), the liege has successf
 C Control is automatic.
 (a) Nonspell-using vampire of 7 or 8 Hit Dice.
 (b) Vampire of 9 Hit Dice or any spell-using vampire
+
+```
+
+### Spell-Adjacent Procedures and DM Spell Doctrine
+
+- Extraction note: cropped RC extraction from pages 144-147, using bounded page windows plus cleanup to isolate named spell-adjacent doctrine blocks while excluding nearby generic DM advice and dungeon-operation procedures.
+
+```text
+[RC page 144: Charm Person Spells]
+Charm Person Spells
+   Whenever a magic-user or elf casts a charm
+person spell, the player will ask you for the ef-
+fect. This spell will only affect certain creatures.
+The beginning player will try it on many differ-
+ent monsters, and learn by trial and error.
+   Generally, the creatures affected by a charm
+person spell are classified as "humanoid" in
+Chapter 14—those that are "normal" human,
+demihuman, giant-size humans, or human-like
+creatures that have some sort of society.
+   Once a victim fails the saving throw against
+the charm, the creature will remain charmed for
+at least 24 hours, and often longer. The victim
+may make a new saving throw to break the
+charm each time the controlling character places
+the charmed character in a dangerous situation,
+without himself being in that danger, or after a
+given duration. This duration is determined by
+the victim's intelligence and is stated on the Du-
+ration of Charm Table.
+   Humans, dwarves and halflings may have any
+intelligence score from 3 to 18. Elves always have
+an Intelligence score of 9 or better, and magic-
+users normally have an Intelligence score of 13 or
+better. When randomly determining a human's
+intelligence, roll 3d6 for most humans, 2d6 + 6
+for elves (treating any result of 8 as a 9), and
+1d6 + 12 for magic-users.
+
+[RC page 145: Duration of Charm Table continuation]
+ Duration of Charm Table
+ (Frequency of New Saving Throws)
+    Intelligence       Save after
+    0                   120 days
+    1                  90 days
+    2                  60 days
+    3                  45 days
+    4-5                30 days
+    6-8                15 days
+    9-12               7 days
+    13-15              3 days
+    16-17              24 hours
+    18                 8 hours
+    19                 3 hours
+    20                 1 hour
+    21+               1 turn
+
+  Some lycanthropes can be charmed when in
+human form, but this is nearly useless: Only
+werewolves and wereboars are affected and the
+charm will automatically be broken when the
+creature assumes animal form!
+
+[RC page 145: Damage to Magical Items]
+Damage to Magical
+Items
+Any item may be damaged by rough treat-
+ment. Armor and weapons, however, are made
+to withstand a great amount of punishment.
+The DM should decide whether an item
+might be damaged, based on the item and the
+type of attack and then would make an item
+damage roll.
+Some breath weapons (acid, fire, cold) should
+require such checks. If the user makes his saving
+throw against the breath weapon, magical bo-
+nuses can be applied to the item's roll.
+Long falls (100' or more) should require
+checks. Pools of acid, rockslides, and other cases
+of extreme damage should require checks for
+items carried. A scroll normally need not be
+checked except against fire damage; you may al-
+so include water damage, if desired.
+To check for damage to items, roll 1d4 or 1d6
+(using 1d6 if the chance of damage is high). If
+the result is greater than the item's Strength
+(number of "plusses"), the item is damaged.
+Items without plusses may be given ratings for
+this purpose. Consider:
+any potion or scroll as a +1 item;
+any wand or staff as a +2;
+and all permanent items (such as rods, rings,
+and miscellaneous items) as +3.
+This roll may be modified; for example, if a
+character is hit by a rockslide, Dexterity adjust-
+ments could be applied to the rolls. If a character
+tries to break something, Strength adjustments
+could be applied. No adjustment should be
+greater than +2. However, adjustments to the
+chance of survival can be any number of subtrac-
+tions from the roll. A potion bottle dropped
+from a tabletop might require a check for break-
+age, but with a - 2 adjustment (thus, only a roll
+of 4 indicates breakage).
+
+[RC page 145: Damage to Magical Items continuation]
+If an item is damaged, it may either be parti-
+ally damaged or completely destroyed. For items
+with magical bonuses, one or more points may
+be lost due to damage (DM's choice). Potions
+and scrolls should be completely destroyed by
+any severe damage.
+
+[RC page 147: Haste Spell]
+Haste Spell
+  There are many magical ways for creatures to
+move and fight at greater than normal speed;
+the most common is the haste spell. The follow-
+ing rules apply in such situations.
+
+1. Saving throws are never affected by speed
+   differences.
+2. Hit rolls gain a + 2 bonus for each speed dif-
+   ference. A hasted character who drinks a po-
+    tion of speed thus gains a total bonus of + 4
+   to all attack rolls against opponents moving
+   at normal speed, but only a + 2 bonus
+   against singly hasted opponents. This bonus
+   only affects hit rolls, not damage rolls.
+3. The armor class of a hasted creature is not dif-
+   ferent from its AC at normal speed, but it re-
+   ceives a -2 AC bonus for the next speed
+   effect. Thus, a fighter wearing plate mail and
+   shield (AC 2) is treated as AC 0 if "double-
+   speeded" (such as from both the potion and
+   the spell).
+4. Wands, staves, rods, spells, and other magi-
+   cal effects are not affected by speed. Magic
+   always takes standard time to use, without
+   bonuses or penalties for speed effects.
+5. A maximum of two different types of speed
+   may be cumulative. For example, if a charac-
+   ter drinks a potion of speed and is hasted, the
+   character moves at four times normal rate—
+   twice normal from the potion, and twice nor-
+   mal from the spell. Four times normal is the
+   maximum possible rate increase; attempts at
+   "triple speeding" or faster rates always fail.
+   For every level of speed, double the number
+   of attacks the character can make that round.
+6. Identical types of speed are not cumulative.
+   If a haste spell is cast on a character who is
+   already under the influence of another haste
+   spell, the second spell has no effect.
+7. The DM may add other restrictions as de-
+   sired. For example, problems in communica-
+   tion can develop through speed differences,
+   especially when a character moving at four
+   times normal speed tries to talk with others
+   moving at normal speed.
+
+  Speed can be an extremely valuable tool for
+characters in combat. If the bonuses gained by
+speed give the PCs too much power, you should
+add any controls needed to keep the game bal-
+anced and entertaining.
+
+[RC page 147: Magic-User Spell Choice]
+Magic-User Spell Choice
+When a player starts a magic-user or elf char-
+acter, the player will ask you what spells the char-
+acter has in the spell book. The magic-user's
+teacher is a higher level NPC magic-user, and the
+spells come from the teacher. The "spell book"
+assumed in the game can simply be a list of spells
+kept on the character sheet. You may play the
+role of the teacher if you wish, but this may also
+be assumed.
+This system for spells allows you, the DM, to
+keep control of the spells used in the game. For
+example, you may wish to avoid charm person
+spells. You can avoid it simply by not giving it to
+the characters. (You'll have to make sure that the
+characters never find a scroll or another magic-
+user's spell book with the spell on it, too.)
+The first spell given should always be read
+magic. This allows the character to read scrolls
+found, and would be a basic part of the character's training.
+The second spell given to a beginning magic-
+user character should be fairly powerful. You
+should avoid giving detect magic, light, or pro-
+tection from evil as the second spell, as these are
+nearly the same as the clerical versions (easily ac-
+quired by a 2nd or higher level cleric).
+For magic-user characters, good "second
+spells" are charm person, magic missile, sleep
+(all useful attack-type spells), and shield (a valu-
+able protection).
+The floating disc, hold portal, read languages,
+and ventriloquism spells are useful; however, the
+player of a beginning magic-user may feel useless
+in an adventure if "miscellaneous" spells (which
+includes read magic) are the only ones he knows.
+These spells make good "third spells," when the
+character reaches second level.
+You may wish to give one spell to one begin-
+ning magic-user and a different spell to another
+beginner. This increases the number of different
+spells available to a party. However, be sure to
+give spells fairly. Try to give one powerful spell to
+each, to avoid complaints of unfairness.
 
 ```
 
@@ -5840,9 +6049,10 @@ The scroll will display one answer per day.
 
 ### Spell Research
 
-- Extraction note: anchored TSV coordinate reflow from the actual RC spell-research page to replace the earlier mis-extracted line-range block.
+- Extraction note: cropped RC page-255 extraction preserving both the research procedure and the adjacent enchantment-economics doctrine (`Experience from Spells and Enchanted Items`) from the source page rather than a hand-reconstructed summary.
 
 ```text
+[RC page 255: Spell Research and enchantment-economics doctrine]
 Spell Research
 A cleric, magic-user, elf, or druid—even a pal-
 adin or an avenger in rare instances—can try to
@@ -5886,8 +6096,7 @@ The DM will have to decide whether a player
 character's library is sufficient to the task—usually
 it isn't until the spellcaster is at least 18th level or
 is at least 9th level and has rigorously acquired
-every spell book and magical research volume pos-
-sible throughout his career. If the PC's library isn't
+every spell book and magical research volume possible throughout his career. If the PC's library isn't
 adequate, he'll have to get permission from a
 school of magic, clerical order, or powerful wizard
 or cleric in order to use a greater library.
@@ -5927,7 +6136,7 @@ ize himself with his work), but he doesn't lose
 the money he's already spent; those gp are still
 counted toward research cost.
 Chances of Success
-The chance of success to research a spell vary
+The chance of success to research a spell varies
 depending on the spell level researched and
 whether it is a new spell (not already appearing
 on the campaign world) or a common one (a
@@ -5950,13 +6159,13 @@ New spell: ([Int + Lvl] x 2)-(5 x spell level)
 = %
 For example, a 5th level cleric with a 15 Wis-
 dom researches a common 1st level spell. He has
-a ([ 15 + 5] x 2) - 3 = 37 % chance of success.
+a ([ 15 + 5] x 2) - 3 = 37% chance of success.
 If the initial attempt is a failure, the character
 must start over. However, if he tries again, his
-next attempt will be at a +5 % chance of success.
-That + 5 % is cumulative for each failure he has;
+next attempt will be at a +5% chance of success.
+That +5% is cumulative for each failure he has;
 for example, if he fails three times, on his fourth
-try he'll have + 1 5 % to his chance.
+try he'll have +15% to his chance.
 Dangers of Spell Research
 The DM should be very careful when letting
 players develop new spells. Those that have per-
@@ -6232,7 +6441,7 @@ Clairvoyance: The user may see an area up to
 60' away through the eyes of a creature in that
 area.
 Climbing: The user may climb sheer surfaces
-as if a spider, with only a 5 % chance of falling
+as if a spider, with only a 5% chance of falling
 (checked per 100' of climbing, at least once per
 climb).
 Defense: The user gains a bonus to armor
@@ -7697,8 +7906,7 @@ of its ability. (Note that the creature must be
 able to hear the user's commands.) The creature
 will disappear after one hour of existence or
 when slain. The creature appearing is never de-
-termined until the egg actually breaks; charac-
-ters can never know what creature will appear
+termined until the egg actually breaks; characters can never know what creature will appear
 beforehand. The DM may add other creatures, if
 desired. To determine the type of creature ap-
 pearing, roll 1d12.
@@ -8803,8 +9011,7 @@ Neutral
 Chaotic
 19-20
 A character cannot detect a sword's alignment
-until he picks it up and handles it. If the charac-
-ter handling the sword is of the same alignment,
+until he picks it up and handles it. If the character handling the sword is of the same alignment,
 there will be no bad reaction. However, if the
 alignment is different, the user will take damage
 each round while holding the sword. Gloves and

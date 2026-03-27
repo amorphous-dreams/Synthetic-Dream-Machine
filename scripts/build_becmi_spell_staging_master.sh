@@ -99,7 +99,8 @@ TXT
   render_tsv_cols_pages_anchored_until "$pdf" 5 6 '185,370' 'Cleric' 'Characters - Cleric, Druid' \
     | awk 'started || /^Survival$/ { started = 1; print }' >> "$OUT"
   printf '\n[Master pages 6-7: druid spell material]\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 6 7 '185,370' 'Druid' 'Characters - Fighter, Magic-User' >> "$OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 6 7 '185,370' 'Druid' 'Characters - Fighter, Magic-User' \
+    | awk 'started || /^Druid$/ { started = 1; print }' >> "$OUT"
   printf '\n[Master pages 8-12: magic-user spell material]\n' >> "$OUT"
   cat >> "$OUT" <<'TXT'
 Magic-user
@@ -1162,4 +1163,3 @@ perl -0pi -e '
   s/\bfro\b/for/g;
   s/to - ([0-9])/to -$1/g;
 ' "$MASTER_OUT"
-

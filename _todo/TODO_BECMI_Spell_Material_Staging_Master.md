@@ -157,40 +157,6 @@ through a protection from evil spell effect or an
 anti-magic shell.
 
 [Master pages 6-7: druid spell material]
-Characters - Cleric, Druid
-Wish
-Range: Special
-Duration: Special
-Effect: Special
-A wish spell is usable only by a cleric of
-36th- (maximum) level with 18 (or greater)
-Wisdom.
-A wish is the single most powerful spell a
-cleric can have. It is never found on a scroll,
-but may be placed elsewhere (in a ring, for
-example) in rare cases.
-Extensive guidelines for wishes are given
-on page 10, with the magic-user spell descrip-
-tion.
-Wizardry
-Range: 0 (cleric only)
-Duration: One turn
-Effect: Allows the use of one magic-user
-scroll spell or one device
-By using this spell, the cleric gains the
-power to use one item normally restricted to
-magic-users: either a device (such as a wand)
-or a scroll containing a 1st- or 2nd-level
-magic-user spell. (Spells of 3rd or higher level
-cannot be cast, though they may be present
-on the scroll.) This ability lasts for one turn,
-or until the scroll or device is used. The cleric
-magically gains knowledge of the proper use
-of the item, as if the character were a magic-
-user. For the duration and effect of the magic-
-user spell, the level of caster is treated as the
-minimum necessary for the casting of the
-spell.
 Druid
 FIRST-LEVEL DRUID SPELLS
 1. Detect Danger (described below)

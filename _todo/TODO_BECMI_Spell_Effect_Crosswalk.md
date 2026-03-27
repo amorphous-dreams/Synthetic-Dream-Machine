@@ -619,7 +619,13 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 
 #### Procedures
 
-No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` evidence is carried as co-source context on the Master bucket's artifact procedures.
+| Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
+| --- | --- | --- | --- | --- | --- | --- |
+| Charm Person Spell Resolution |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Charm Person Spells | procedure | — | - |
+| Damage to Magical Items |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Damage to Magical Items | procedure | — | - |
+| Haste Speed Stacking Rules |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Haste Spell | procedure | — | - |
+| Magic-User Starting Spell Choice |  | RC | RC -> Spell-Adjacent Procedures and DM Spell Doctrine -> Magic-User Spell Choice | procedure | — | - |
+| Experience from Spells and Enchanted Items |  | RC | RC -> Spell Research -> Experience from Spells and Enchanted Items | procedure | — | - |
 
 ## Powers Family Workspace For Chapter 06
 
@@ -731,6 +737,7 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 | Ring of Remedies | item-effect | Bundled condition-repair and cleansing wrapper across multiple cure lanes; a strong reusable Chapter 05 model for one item exposing several tagged recovery functions instead of one-to-one spell copies. | custom |
 | Ring of Survival | item-effect | Environmental hardening and hazard-resistance wrapper at item scale. | partial |
 | Rod of Health | item-effect | Cleric-only healing rod that inherits the full staff-of-healing package without spending charges, but can affect any given creature only once per day regardless of which healing/remedy function is chosen. Useful Chapter 05 model for renewable recovery access with strict per-target cadence. | partial |
+| Haste Speed Stacking Rules | procedure | Action-economy doctrine for haste and other speed layers: hit-roll bonuses scale by speed difference, AC improves by -2 per added speed layer, magic-use timings do not speed up, and only two different speed sources may stack. Strong Chapter 05/06 guide for acceleration handling without collapsing every speed effect into raw extra actions. | custom |
 | Striking | spell | Weapon augmentation and combat support lane. Existing SDM family variant: `Imbue Edge`, which buffs an edged weapon's damage and lets it harm intangibles for the duration. | partial |
 
 ### family-3
@@ -882,6 +889,7 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 | --- | --- | --- | --- |
 | Charm Monster | spell | Broad creature-charm lane. Existing SDM family variant: `Hero's Goldenmouth`, but only as a broad persuasive-capture cousin; the current corpus does not yet provide a clean nonhuman domination equivalent. | partial |
 | Charm Person | spell | Core low-tier social control spell. Existing SDM family variant: `Hero's Goldenmouth` (Our Golden Age), which reframes charm as persuasive social capture rather than hard domination. | partial |
+| Charm Person Spell Resolution | procedure | Target-classification and repeat-save cadence doctrine for `Charm Person`: constrains valid victims to humanoid societies, sets intelligence-based intervals for renewed saves, and clarifies that dangerous one-sided orders trigger new resistance checks. Strong Chapter 05/06 control-procedure support beyond the base spell text. | partial |
 | Charm Plant | spell | Plant-specific command and control effect; keep as custom until plant agency and obedience boundaries are normalized against broader influence doctrine. | custom |
 | Holy Word | spell | High-tier word of power / banishment lane. Existing SDM family variant: `Sense Allegiance`, which provides the clearest current ethical-targeting plus stun/interdiction cousin, though it is much narrower than the full clerical word-of-power package. | partial |
 | Remove Fear | spell | Fear-cleansing and morale-stabilization lane now grouped under `Mind and Emotion`. Basic evidence lock: `Range Touch`, `Duration 2 turns`, single living target support, with reverse-form behavior preserved as a separate alias edge case. | partial |
@@ -1031,6 +1039,7 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
+| Magic-User Starting Spell Choice | procedure | Spellbook seeding and restricted-availability doctrine for beginning arcane casters: `Read Magic` is mandatory as the first gift, second-spell choice should remain genuinely useful, and the referee may control campaign spell access by withholding spells from teachers, scrolls, and found books. Strong Chapter 05/06 provenance note for early spell archive and curriculum curation. | custom |
 | Read Magic | spell | Decoding gate for scrolls and arcane writing; this family should group deciphering, storage, and transfer interfaces. Core scroll / spellbook deciphering gate. | partial |
 | Spell Storing | item-effect | Source spell-retention wrapper. Keep the canonical key, but convert it as a trait/item power archive with Power Level capacity and later discharge rules rather than as prepared-slot retention. Ring-based spell payload storage and later discharge; should convert as an item-side power archive with Power Level capacity and release rules, not as prepared-slot retention, and it does not absorb attacks cast at the wearer. | custom |
 | Spell Scrolls / Spells | item-effect | Generic casting-from-scroll wrapper that must stay visible for Chapter 05/06 bridges. Generic spell-scroll wrapper covering class restrictions, multi-spell payloads, and copy-versus-cast handling. | partial |
@@ -1200,6 +1209,13 @@ No RC-primary Phase 1 procedure rows are currently parked here; procedural `RC` 
 | --- | --- | --- | --- |
 | Quill of Copying | item-effect | Spell transcription and copy-risk procedure; strong Chapter 05/06 spell-handling bridge. | custom |
 | Slate of Identification | item-effect | Item-identification procedure surface distinct from `Read Magic` and `Mages` scroll behavior. | partial |
+
+#### Non-Spell Rows - Enchantment Handling and Durability
+
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Damage to Magical Items | procedure | Carrier durability and destruction doctrine for potions, scrolls, wands, staves, rods, rings, and other permanent items under harsh treatment. RC sets explicit toughness bands (+1 for potions/scrolls, +2 for wands/staves, +3 for permanent miscellaneous items) and preserves partial-damage loss on magical bonuses. Strong Chapter 05 bridge for item-wear and catastrophic-loss handling. | custom |
+| Experience from Spells and Enchanted Items | procedure | Enchantment-economics reward doctrine for spell research, magical items, and large enchanted builds. RC ties XP to successful first-of-kind magical work, downgrades vessel/home awards to one-third gp spent, and divides collaborative awards among participating spellcasters. Strong Chapter 05/06 support for research and fabrication reward policy. | custom |
 
 #### Non-Spell Rows - Artifact Procedures
 

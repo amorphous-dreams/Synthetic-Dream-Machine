@@ -148,6 +148,50 @@ mixed_monster_spellcasters_block_named() {
   printf '\n```\n\n' >> "$OUT"
 }
 
+rc_spell_adjacent_doctrine_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[RC page 144: Charm Person Spells]\n' >> "$OUT"
+  pdftotext -layout -nodiag -nopgbrk -f 144 -l 144 -x 395 -y 0 -W 180 -H 760 "$pdf" - 2>/dev/null \
+    | awk 'started || /Charm Person Spells/ { started = 1; print }' >> "$OUT"
+  printf '\n[RC page 145: Duration of Charm Table continuation]\n' >> "$OUT"
+  pdftotext -layout -nodiag -nopgbrk -f 145 -l 145 -x 0 -y 0 -W 210 -H 320 "$pdf" - 2>/dev/null \
+    | awk 'started || /Duration of Charm Table/ { started = 1; print } /Climbing/ { exit }' \
+    | sed '$d' >> "$OUT"
+  printf '\n[RC page 145: Damage to Magical Items]\n' >> "$OUT"
+  render_tsv_cols_pages "$pdf" 145 145 '185,370' \
+    | awk 'started || /Damage to Magical/ { started = 1; print } /If an item is damaged/ { exit }' \
+    | sed '$d' >> "$OUT"
+  printf '\n[RC page 145: Damage to Magical Items continuation]\n' >> "$OUT"
+  render_tsv_cols_pages "$pdf" 145 145 '185,370' \
+    | awk 'started || /If an item is damaged/ { started = 1; print } /Demihuman Clan Relics/ { exit }' \
+    | sed '$d' >> "$OUT"
+  printf '\n[RC page 147: Haste Spell]\n' >> "$OUT"
+  printf 'Haste Spell\n' >> "$OUT"
+  pdftotext -layout -nodiag -nopgbrk -f 147 -l 147 -x 220 -y 210 -W 170 -H 520 "$pdf" - 2>/dev/null >> "$OUT"
+  printf '\n[RC page 147: Magic-User Spell Choice]\n' >> "$OUT"
+  render_tsv_cols_pages_anchored "$pdf" 147 147 '185,370' 'Magic-User Spell Choice' >> "$OUT"
+  printf '\n```\n\n' >> "$OUT"
+}
+
+rc_spell_research_block_named() {
+  local label="$1"
+  local note="$2"
+  local pdf="$3"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[RC page 255: Spell Research and enchantment-economics doctrine]\n' >> "$OUT"
+  render_tsv_cols_pages_anchored "$pdf" 255 255 '185,370' 'Spell Research' >> "$OUT"
+  printf '\n```\n\n' >> "$OUT"
+}
+
 rc_prismatic_wall_recovery_block_named() {
   local label="$1"
   local note="$2"
@@ -435,8 +479,9 @@ write_header 'TODO: BECMI Spell Material Staging - Rules Cyclopedia' 'TSR 1071 -
 mixed_chapter3_block_named 'Chapter 3: Spells and Spellcasting' 'hybrid RC extraction: pages 33-34 are split into labeled layout-column slices for readable setup prose and spell-list presentation, while pages 35-59 use TSV coordinate reflow with three reading-order columns to eliminate left/right interleave in spell descriptions.' "$RC_PDF"
 rc_prismatic_wall_recovery_block_named 'Prismatic Wall Recovery Pass (RC page 60)' 'targeted three-bbox extraction on RC page 60: bbox-1 captures the start of the spell in column 1 bottom, bbox-2 captures the end of the spell in column 2 top, and bbox-3 captures the boxed Prismatic Effects table across columns 2 and 3 at the bottom of the page.' "$RC_PDF"
 mixed_monster_spellcasters_block_named 'Monster Spellcasters' 'hybrid RC extraction: page 215 uses TSV coordinate reflow for prose, page 216 is rebuilt from separate coordinate-driven table, right-column spell-list, and left-column notes extracts, and page 217 returns to TSV reflow plus a preserved layout splice for the undead-control table.' "$RC_PDF"
+rc_spell_adjacent_doctrine_block_named 'Spell-Adjacent Procedures and DM Spell Doctrine' 'cropped RC extraction from pages 144-147, using bounded page windows plus cleanup to isolate named spell-adjacent doctrine blocks while excluding nearby generic DM advice and dungeon-operation procedures.' "$RC_PDF"
 tsv_cols_block_named 'Scrolls' 'TSV coordinate reflow across the RC scroll section to remove three-column interleave while preserving bullet lists and long descriptions.' "$RC_PDF" 234 235 '185,370' 'Scrolls'
-tsv_cols_block_named 'Spell Research' 'anchored TSV coordinate reflow from the actual RC spell-research page to replace the earlier mis-extracted line-range block.' "$RC_PDF" 255 255 '185,370' 'Spell Research'
+rc_spell_research_block_named 'Spell Research' 'cropped RC page-255 extraction preserving both the research procedure and the adjacent enchantment-economics doctrine (`Experience from Spells and Enchanted Items`) from the source page rather than a hand-reconstructed summary.' "$RC_PDF"
 rc_item_enchantment_block_named 'Magic Item Enchantment, Recharging, and Item Damage Procedures' 'targeted RC Chapter 16 and procedure-layer addition from the magical-item creation pages plus the dedicated item-damage page, capturing spell-effect requirements, specialist and component requirements, chance of success, enchantment time, multiple-enchantment handling, recharge costs, dispel relevance, and damage/destruction handling for magical items.' "$RC_PDF"
 rc_constructs_block_named 'Construct Enchantment and Magical Constructs' 'targeted RC Chapter 16 addition from the actual Magical Constructs pages, capturing construct creation prerequisites, spell gates, cost and time, success chance, HD and immunity guidance, healing rules, damage ceilings, reproduction limits, special attacks, and the nondispellable-frame requirement referenced by Create Any Monster.' "$RC_PDF"
 tsv_cols_block_named_until 'Chapter 16 Item Description Catalog (Potions, Wands/Staves/Rods, Rings, Miscellaneous Items, and Swords)' 'anchored TSV coordinate reflow across RC Chapter 16 item-description pages, starting at the Potions heading and stopping before the Chapter 16 wrap-up/cashout section to preserve the canonical item-property descriptions in reading order.' "$RC_PDF" 232 249 '185,370' 'Potions' 'Cashing Treasure'
@@ -445,8 +490,8 @@ cleanup_output
 set_table_qa_note "$RC_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'clerical, magical, and druidic spell lists plus the later reconstructed spellcaster and scroll tables.' 'no blocking row/column defects found in the visible Rules Cyclopedia table and list regions.'
 append_table_qa_lines "$RC_OUT" <<'EOF'
 - Capture confidence: **0.95** (UP from 0.90 after staging the RC Chapter 16 item-description catalog)
-- Coverage note: RC spell descriptions, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog (potions, wands/staves/rods, rings, miscellaneous items, swords) are now staged from RC source text. Remaining concerns are OCR texture and optional cleanup, not source-evidence coverage gaps.
-- ToC cross-check: RC Chapter 16 procedure and item-description sections are now represented in staging, including the item-property description run that was previously missing.
+- Coverage note: RC spell descriptions, spell-adjacent doctrine, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog (potions, wands/staves/rods, rings, miscellaneous items, swords) are now staged from RC source text. Remaining concerns are OCR texture and optional cleanup, not source-evidence coverage gaps.
+- ToC cross-check: RC Chapter 16 procedure and item-description sections remain represented in staging, and the RC DM spell-doctrine pass now adds the named spell-adjacent procedures block plus page-255 enchantment-economics text.
 - Gap priority: LOW — the previously documented RC item-description gap is closed.
 EOF
 perl -0pi -e '
@@ -458,4 +503,17 @@ perl -0pi -e '
   s/\b6dl0\b/6d10/g;
   s/\b7dl0\b/7d10/g;
   s/\bdl00\b/d100/g;
+  s/\bld6\b/1d6/g;
+  s/21 \+/21+/g;
+  s/chara-\nter/character/g;
+  s/charac-\nter/character/g;
+  s/magi-\nuser/magic-user/g;
+  s/spel-\nls/spells/g;
+  s/\(using 1d6 if the chance of damage is h i g h \) \. I f/(using 1d6 if the chance of damage is high). If/g;
+  s/any potion or scroll as a \+ 1 item;\nany wand or staff as a \+ 2\nand all permanent items/any potion or scroll as a +1 item;\nany wand or staff as a +2;\nand all permanent items/g;
+  s/research volume pos-\nsible/research volume possible/g;
+  s/The chance of success to research a spell vary/The chance of success to research a spell varies/g;
+  s/\+ 1 5 %/\+15%/g;
+  s/\+ 5 %/\+5%/g;
+  s/([0-9]) %/$1%/g;
 ' "$RC_OUT"
