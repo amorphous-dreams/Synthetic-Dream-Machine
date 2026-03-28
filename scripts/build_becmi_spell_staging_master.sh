@@ -28,6 +28,21 @@ master_replace_block_between_markers() {
   ' "$MASTER_OUT"
 }
 
+master_replace_block_between_regex_markers() {
+  local start_pattern="$1"
+  local end_pattern="$2"
+  local replacement="$3"
+
+  START_PATTERN="$start_pattern" END_PATTERN="$end_pattern" REPLACEMENT_BLOCK="$replacement" perl -0pi -e '
+    BEGIN {
+      $start = $ENV{START_PATTERN};
+      $end = $ENV{END_PATTERN};
+      $replacement = $ENV{REPLACEMENT_BLOCK};
+    }
+    s/$start.*?(?=$end)/$replacement/s;
+  ' "$MASTER_OUT"
+}
+
 master_cleanup_postbuild() {
   perl -0pi -e '
     s/\(\(215\)/(C15)/g;
@@ -50,11 +65,61 @@ master_cleanup_postbuild() {
     s/^   Tree Movement: Thr user may swing$/   Tree Movement: The user may swing/mg;
     s/DIAMOND 0RB OF TYCHE/DIAMOND ORB OF TYCHE/g;
     s/Anti-Magic loo % , 10\x27 radius emanat-/Anti-Magic 100%, 10\x27 radius emanat-/g;
+    s/healingpower/healing power/g;
+    s/Source: North African creation myth$/Source: North African creation myth./mg;
+    s/\bI t has\b/It has/g;
+    s/Turn as C L 36/Turn as CL 36/g;
+    s/Turn as C L 24/Turn as CL 24/g;
+    s/^C 3 Open Locks\s+25$/C3 Open Locks 25/mg;
+    s/open locks attempts \x27/open locks attempts /g;
+    s/Swords: Many magical swords can b$/Swords: Many magical swords can be/mg;
+    s/further research is rec\nommended/further research is recommended/g;
+    s/Angurvadal \(Stream of Anguish\) wa$/Angurvadal \(Stream of Anguish\) was/mg;
+    s/Ar\x27ondight, sword of Launcelot of th\nLake/Ar\x27ondight, sword of Launcelot of the\nLake/g;
+    s/sword ofslicing/sword of slicing/g;
+    s/was made b\nthe/was made by\nthe/g;
+    s/romance epi\n"Orlando Innamorato"/romance epic\n"Orlando Innamorato"/g;
+    s/\(Roland in Love\) b\nMatteo/\(Roland in Love\) by\nMatteo/g;
+    s/was the sword of Siegfried i\nScandinavian/was the sword of Siegfried in\nScandinavian/g;
+    s/ofcharlemagne/of Charlemagne/g;
+    s/Aphro\ndite/Aphrodite/g;
+    s/when sh\nmarried/when she\nmarried/g;
+    s/relatively unre\nmarkable/relatively unremarkable/g;
+    s/brough\ndisaster/brought\ndisaster/g;
+    s/Odrovir: In Norse legend, a great wa\n/Odrovir: In Norse legend, a great war\n/g;
+    s/\(the 24 gods\) o\nheaven/$1 of\nheaven/g;
+    s/the Natur\ngods/the Nature\ngods/g;
+    s/providing thei\nmixed/providing their\nmixed/g;
+    s/was calle\nOdrovir/was called\nOdrovir/g;
+    s/King of Egyp\nadvised/King of Egypt\nadvised/g;
+    s/friend Polycra\ntes/friend Polycrates/g;
+    s/something o\ngreat/something of\ngreat/g;
+    s/Polycrate\nthrew/Polycrates\nthrew/g;
+    s/it wa\nlater/it was\nlater/g;
+    s/King\x27s dinne\ntable/King\x27s dinner\ntable/g;
+    s/recognized this sig\nfrom/recognized this sign\nfrom/g;
+    s/relations with hi\nfriend/relations with his\nfriend/g;
+    s/was bru\ntally slain/was brutally slain/g;
+    s/Made famous b\nRichard/Made famous by\nRichard/g;
+    s/several Scandinavian legend\n/several Scandinavian legends\n/g;
+    s/, Elde\nand Younger/, Elder\nand Younger/g;
+    s/\)\. Th\nring/). The\nring/g;
+    s/Rhin\nriver/Rhine\nriver/g;
+    s/Rhine Maid\nens/Rhine Maidens/g;
+    s/foreswearin\nlove/foreswearing\nlove/g;
+    s/item, an\nwhen/item, and\nwhen/g;
+    s/gods an\nheroes/gods and\nheroes/g;
+    s/doom t\nall/doom to\nall/g;
+    s/It was made b\nWieland/It was made by\nWieland/g;
+    s/the immorta\n\nblacksmith/the immortal\nblacksmith/g;
   ' "$MASTER_OUT"
 
-  local comb_tail diamond_intro arabian_footer shard_powers shard_core
+  local comb_tail diamond_block shard_intro shard_core
 
   comb_tail=$(cat <<'EOF'
+A1 Poison breath 50
+B3 Haste 30
+C1 Produce fire 15
 Cure disease 20
 Cure wounds, critical 35
 D2 Polymorph self 65
@@ -72,10 +137,12 @@ Suggested Penalties (3; #1 appears 4 in 6, others each 1 in 6):
 Source: Breton folklore.
 Further Research: Various works on folklore of the British Isles (Irish, Scottish, and Gaelic), such as Celtic Myth and Legend, by Charles Squire. See fays (or fees or faeries), druids of ancient Gaul, the Lamignak elves, Fountain Women of French folklore, and A Field Guide to the Little People (Arrowsmith and Moorse, 1977).
 
+Your Notes:
+
 EOF
 )
 
-  diamond_intro=$(cat <<'EOF'
+  diamond_block=$(cat <<'EOF'
 DIAMOND ORB OF TYCHE
 This item appears to be a crystal ball, but is somewhat larger (about 18 inches across) and glows softly with a white light filled with sparkling colors. It was crafted by the powerful Immortal Tyche, said to control chance and the fortunes of mankind. It is a powerful artifact of Chaos, but is not necessarily evil, and is said to bring good fortune to the user, for a time.
 
@@ -93,11 +160,6 @@ Hide in shadow 70% 60
 
 Activation: The artifact is active when found. The user gets a feeling of inspiration when gazing into the orb. The artifact grants the knowledge of one power when one consecutive hour is spent gazing, to a maximum of 1 power per day, given in order of PP cost.
 Use of Powers: By gazing into the orb and concentrating on a power, the user acquires that power after 1-3 rounds.
-
-EOF
-)
-
-  diamond_tail=$(cat <<'EOF'
 Suggested Handicaps (3):
 1. When first used: Magic error. The user has a 10% chance of failure whenever attempting to cast a spell or use any magic item requiring a command word.
 2. When pick pockets is first used: Alignment change to Chaotic, or to Neutral.
@@ -109,25 +171,18 @@ Further Research: See general works on mythology, with reference to the Greek my
 EOF
 )
 
-  arabian_footer=$(cat <<'EOF'
+  shard_intro=$(cat <<'EOF'
 Source: Arabian folklore.
-Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, etc.
+Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, and similar material.
 
-EOF
-)
+Your Notes:
 
-  shard_powers=$(cat <<'EOF'
-Suggested Powers (PP 750):
-Disintegrate 80
-Mass charm 75
-Polymorph any object 75
-Detect magic 15
-Plane travel 65
-Telekinesis 40
-Create any monster 100
-Automatic healing 100
-Shapechange 100
-Luck 100
+SHARD OF SAKKRAD
+According to very old legends, the original home of mankind was in the middle of a vast mountain, so huge that the sun was said to rise from one of its peaks and set on the opposite. The entire base of this mountain is the fabled emerald Sakkrad; its reflection gives the azure hue to the sky. One small piece of that emerald, this very shard, was stolen by a djinni, who subsequently vanished from existence; the shard has never reappeared. It is said to hold unimaginable power; some say that mortal man was not meant to have it, and cannot possibly control it. Others dismiss it as pure legend. Yet despite the tales, many adventurers of great fame and power have gone in search of it; none are known to have returned.
+Description: This is a 3-foot-long imperfect hexagonal crystal of azure hue, with sharp edges and pointed ends.
+Magnitude: Major artifact.
+Power Limits: 4/A, 4/B, 4/C, 5/D
+Sphere: Matter (Fighters, earth)
 
 EOF
 )
@@ -145,7 +200,7 @@ Automatic healing 100
 Shapechange 100
 Luck 100
 
-Activation: The Shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
+Activation: The shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
 Use of Powers: A power is granted to the user when the proper command word is spoken. It remains until used or until the user stops touching the item.
 Suggested Handicaps (4; #1 appears when the item is first used; others appear in sequence whenever the user draws on a 100 point power):
 1. Magic error: A 25% chance of error occurs whenever the user casts a spell or utters any command words, except those used on the shard.
@@ -153,24 +208,32 @@ Suggested Handicaps (4; #1 appears when the item is first used; others appear in
 3. Greed: Anyone seeing the user produce any visible effect of the shard's powers must make a Saving Throw vs. Spells, with a -4 penalty to the roll, or immediately attack the user with intention to possess the shard.
 4. Doom: The next time the user employs a 100 point power, there is a 5% chance that an Immortal will arrive. This chance increases by 2% each time a 100 point power is used again. If the Immortal arrives, all within sight range have the choice of watching or looking away. Each of those watching must make a Saving Throw vs. Death Ray, with a -10 penalty to the roll, or die. Each of those looking away may make a Saving Throw vs. Spells; if successful, no further effect occurs, but if failed, each must make the previously mentioned Saving Throw vs. Death Ray. The Immortal departs within 1 round, taking the user and all of his or her non-living valuables, wherever they may be. The shard is not taken, but is teleported to a random location within 10,000 miles.
 
+Suggested Penalties (8; 20% chance of appearance when any power is used; equal chances for each):
+1. Delayed blast fire ball within 10' of user, set to detonate in 1-4 rounds; normal saving throw applies to all victims.
+2. User takes 40 points of damage.
+3. Healing error: When the automatic healing power is next triggered, it drains the usual 100 PP but cures only 10 points of damage, or fails utterly to cure any other effect, poison, disease, and so forth.
+4. The user is struck with Paranoia.
+5. Memory lapse: The user suddenly and completely forgets how to cast spells, if a spell user, or how to use weapons for 2-20 days; no saving throw.
+6. The user is struck by Withdrawal; Saving Throw vs. Spells applies, but with a -5 penalty.
+7. Anti-Magic 100%, 10' radius emanating from the artifact. The Anti-Magic will remain until wished away, or until the user washes it in the water at either the north pole or the south pole.
+8. Saving Throw penalty: A -8 penalty applies to the user's Saving Throws vs. fire-type attacks.
+
 EOF
 )
 
-  master_replace_block_between_markers 'Cure disease 20' 'DIAMOND ORB OF TYCHE' "$comb_tail"
-  master_replace_block_between_markers 'DIAMOND ORB OF TYCHE' 'Suggested Handicaps (3):' "$diamond_intro"
-  master_replace_block_between_markers 'Suggested Handicaps (3):' 'FIERY BRAND OF MASAUWU' "$diamond_tail"
-  master_replace_block_between_markers '   Source: Arabian folklore' 'SHARD OF SAKKRAD' "$arabian_footer"
-  master_replace_block_between_markers '   Suggested Powers (PP 750):' '   Activation: The Shard is active when' "$shard_powers"
-  master_replace_block_between_markers 'Suggested Powers (PP 750):' 'Suggested Penalties (8; 20% chance of' "$shard_core"
+  master_replace_block_between_regex_markers 'A1 Poison breath\s+50\s*\nB3\s+Haste\s+30\s*\nC1 Produce fire\s+15\s*\n.*?(?:\n\s*)?(?=DIAMOND ORB OF TYCHE)' 'DIAMOND ORB OF TYCHE' "$comb_tail"
+  master_replace_block_between_markers 'DIAMOND ORB OF TYCHE' 'FIERY BRAND OF MASAUWU' "$diamond_block"
+  master_replace_block_between_regex_markers '\s*Source: Arabian folklore\.?\s*\n.*?(?:\n\s*)?(?=Suggested Powers \(PP 750\):)' 'Suggested Powers \(PP 750\):' "$shard_intro"
+  master_replace_block_between_markers 'Suggested Powers (PP 750):' 'Source: North African creation myth.' "$shard_core"
   perl -0pi -e "
-    s/^  1 Cure disease\\s+20\\s+w\\n  1 Cure wounds, critical\\s+35\\s+p\\nD2 Polymorph self\\s+65\\s+c\\n   Activation: The comb is not active when\\s+p\\n cquired\\. If it is left within a burning fire for\\s+s\\n  full turn, it is activated, but will not reveal\\s+t\\n owers\\. Thereafter, whenever the user\\n efriends an elf \\(loaning money, curing, aid-\\nng in battle, etc\\.\\), one power is revealed tele-\\n athically \\(maximum of 1 per day\\), in order\\n f power\\.\\s+A\\n   Use of Powers: A power is invoked when a B\\n iven combination of the comb's teeth are\\n\\s+B\\n lucked, producing a nearly inaudible musi-\\n\\s+B\\n al tone\\.\\s+C\\n   Suggested Handicaps \\(2\\):\\n\\s+D\\n   1\\. When first power is used: User starts\\n\\s+D\\n       turning into an elf \\(1st level\\); the proc-\\n       ess takes 3 months to complete\\. User\\n\\s+fo\\n       becomes aware of minor changes \\(ani-\\n\\s+w\\n       mosity toward dwarves, among other\\n\\s+g\\n       things\\) in 2 weeks\\. Change stops com-\\n\\s+o\\n       pletely as soon as artifact is no longer\\n\\s+p\\n       owned, but the change back to normal\\n\\s+P\\n       takes 3 months\\.\\n   2\\. Energy drain: User loses 3 levels of\\n\\s+c\\n       experience when Poison Breath is first\\n\\s+th\\n       used\\./Cure disease 20\\nCure wounds, critical 35\\nD2 Polymorph self 65\\n\\nActivation: The comb is not active when acquired. If it is left within a burning fire for 1 full turn, it is activated, but will not reveal powers. Thereafter, whenever the user befriends an elf \\(loaning money, curing, aiding in battle, and so forth\\), one power is revealed telepathically, to a maximum of 1 per day, in order of power.\\nUse of Powers: A power is invoked when a given combination of the comb's teeth are plucked, producing a nearly inaudible musical tone.\\nSuggested Handicaps \\(2\\):\\n1. When first power is used: User starts turning into an elf \\(1st level\\); the process takes 3 months to complete. The user becomes aware of minor changes, including animosity toward dwarves, in 2 weeks. The change stops completely as soon as the artifact is no longer owned, but the change back to normal also takes 3 months.\\n2. Energy drain: User loses 3 levels of experience when Poison Breath is first used./msg;
-    s/\\)\\.DIAMOND ORB OF TYCHE/\\).\\n\\nDIAMOND ORB OF TYCHE/g;
-    s/etc\\.SHARD OF SAKKRAD/etc\\.\\n\\nSHARD OF SAKKRAD/g;
-    s/rounds\\.Suggested Handicaps \\(3\\):/rounds.\\n\\nSuggested Handicaps \\(3\\):/g;
-    s/Luck 100\\s+Activation: The Shard is active when/Luck 100\\n\\nActivation: The Shard is active when/g;
-    s/(teleported to a random location within 10,000 miles)\\.(Suggested Penalties \\(8; 20% chance of)/\$1.\\n\\n\$2/g;
+    s/\\)DIAMOND ORB OF TYCHE/\\)\\n\\nDIAMOND ORB OF TYCHE/g;
+    s/Your Notes:DIAMOND ORB OF TYCHE/Your Notes:\\n\\nDIAMOND ORB OF TYCHE/g;
+    s/(\\d+\\s+Hit Dice)\\.Source:/\$1.\\nSource:/g;
     s/Good Fortune\\.FIERY BRAND OF MASAUWU/Good Fortune\\.\\n\\nFIERY BRAND OF MASAUWU/g;
-    s/7\\. Anti-Magic 100%, 10' radius emanat-\\n\\s*ing from the artifact\\./7. Anti-Magic 100%, 10' radius emanating from the artifact./g
+    s/etc\\.SHARD OF SAKKRAD/etc\\.\\n\\nSHARD OF SAKKRAD/g;
+    s/Sphere: Matter \\(Fighters, earth\\)Suggested Powers \\(PP 750\\):/Sphere: Matter \\(Fighters, earth\\)\\n\\nSuggested Powers \\(PP 750\\):/g;
+    s/7\\. Anti-Magic 100%, 10' radius emanat-\\n\\s*ing from the artifact\\./7. Anti-Magic 100%, 10' radius emanating from the artifact./g;
+    s/fire-type attacks\\.Source:/fire-type attacks\\.\\nSource:/g
   " "$MASTER_OUT"
 }
 
@@ -546,11 +609,11 @@ master_artifact_chapter_context_named() {
   for page in $(seq 83 102); do
     if [ "$page" -eq 102 ]; then
       {
-        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 10 -y 40 -W 185 -H 720 "$MASTER_PDF" - 2>/dev/null
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 8 -y 40 -W 198 -H 720 "$MASTER_PDF" - 2>/dev/null
         printf '\n'
-        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 210 -y 40 -W 175 -H 720 "$MASTER_PDF" - 2>/dev/null
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 206 -y 40 -W 184 -H 720 "$MASTER_PDF" - 2>/dev/null
         printf '\n'
-        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 390 -y 40 -W 180 -H 720 "$MASTER_PDF" - 2>/dev/null
+        pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x 392 -y 40 -W 178 -H 720 "$MASTER_PDF" - 2>/dev/null
         printf '\n\n'
       } \
     else

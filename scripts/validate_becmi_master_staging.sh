@@ -72,4 +72,14 @@ require_patterns_in_order \
   'Creating Artifacts' \
   'Magnitude of Artifact'
 
+require_regex 'DIAMOND ORB OF TYCHE\nThis item appears to be a crystal ball' 'diamond orb heading/body separation'
+require_regex 'SHARD OF SAKKRAD[\s\S]*Suggested Powers \(PP 750\):[\s\S]*Luck 100[\s\S]*Activation: The shard is active when found\.[\s\S]*Use of Powers: A power is granted to the user[\s\S]*Suggested Handicaps \(4; #1 appears when the item is first used' 'shard power/activation/handicap continuity'
+require_regex "Anti-Magic 100%, 10' radius emanating from the artifact" 'shard anti-magic penalty text'
+if rg -q 'DIAMOND 0RB OF TYCHE|Luck 100   Activation|healingpower|Your Notes:DIAMOND ORB OF TYCHE|Hit Dice\.Source: Arabian folklore\.|Your Notes:[[:space:]]+B C|Your Notes:[[:space:]]+m m|Good Fortune\.FIERY BRAND OF MASAUWU' "$TARGET"; then
+  fail "master artifact OCR regression fragment still present"
+fi
+if rg -q '\bI t has\b|Turn as C L 36|Turn as C L 24|^C 3 Open Locks|open locks attempts '"'"'|sword ofslicing|ofcharlemagne|Angurvadal \(Stream of Anguish\) wa$' "$TARGET"; then
+  fail "master residual OCR texture regression still present"
+fi
+
 printf 'PASS: Master staging validation succeeded (%s)\n' "$TARGET"

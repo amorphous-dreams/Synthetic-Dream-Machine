@@ -3875,10 +3875,9 @@ made of pink bone-like substance, fine teeth.
   Power Limits: 3/A, 3/B, 2/C, 3/D
   Sphere: Energy (Magic-users, fire)
   Suggested Powers (PP 215):
-A1 Poison breath                      50
-B3   Haste                            30
-C1 Produce fire                       15
-
+A1 Poison breath 50
+B3 Haste 30
+C1 Produce fire 15
 Cure disease 20
 Cure wounds, critical 35
 D2 Polymorph self 65
@@ -3888,31 +3887,15 @@ Use of Powers: A power is invoked when a given combination of the comb's teeth a
 Suggested Handicaps (2):
 1. When first power is used: User starts turning into an elf (1st level); the process takes 3 months to complete. The user becomes aware of minor changes, including animosity toward dwarves, in 2 weeks. The change stops completely as soon as the artifact is no longer owned, but the change back to normal also takes 3 months.
 2. Energy drain: User loses 3 levels of experience when Poison Breath is first used.
-   Suggested Penalties (3; #1 appears 4 in 6,
-  thers each 1 in 6):
-   1. Slow spell effect centered on user.
-   2. Polymorph other spell effect upon user,
-       to turn into an eagle.
-   3. Memory penalty: User cannot memo-
-       rize any spells of the highest spell level
-       he or she can normally study. Effect is
-       cumulative if not removed.
-    Source: Breton folklore
-   Further Research: Various works on folk-
- ore of the British isles (Irish, Scottish, and
-Gaelic), such as Celtic Myth and Legend, by
-Charles Squire. See fays (or fees or faeries);
-druids of ancient Gaul; the Lamignak elves;
-Fountain Women of French folklore; also see
-                                                    t
-A Field Guide to the Little People (Arrow-
-                                                    o
-smith and Moorse, 1977).
-                                                    C
-    Your Notes:
 
-                                                    m m
-                                                    C
+Suggested Penalties (3; #1 appears 4 in 6, others each 1 in 6):
+1. Slow spell effect centered on user.
+2. Polymorph other spell effect upon user, to turn into an eagle.
+3. Memory penalty: User cannot memorize any spells of the highest spell level he or she can normally study. Effect is cumulative if not removed.
+Source: Breton folklore.
+Further Research: Various works on folklore of the British Isles (Irish, Scottish, and Gaelic), such as Celtic Myth and Legend, by Charles Squire. See fays (or fees or faeries), druids of ancient Gaul, the Lamignak elves, Fountain Women of French folklore, and A Field Guide to the Little People (Arrowsmith and Moorse, 1977).
+
+Your Notes:
 
 DIAMOND ORB OF TYCHE
 This item appears to be a crystal ball, but is somewhat larger (about 18 inches across) and glows softly with a white light filled with sparkling colors. It was crafted by the powerful Immortal Tyche, said to control chance and the fortunes of mankind. It is a powerful artifact of Chaos, but is not necessarily evil, and is said to bring good fortune to the user, for a time.
@@ -3931,7 +3914,6 @@ Hide in shadow 70% 60
 
 Activation: The artifact is active when found. The user gets a feeling of inspiration when gazing into the orb. The artifact grants the knowledge of one power when one consecutive hour is spent gazing, to a maximum of 1 power per day, given in order of PP cost.
 Use of Powers: By gazing into the orb and concentrating on a power, the user acquires that power after 1-3 rounds.
-
 Suggested Handicaps (3):
 1. When first used: Magic error. The user has a 10% chance of failure whenever attempting to cast a spell or use any magic item requiring a command word.
 2. When pick pockets is first used: Alignment change to Chaotic, or to Neutral.
@@ -3949,7 +3931,7 @@ FIERY BRAND OF MASAUWU
  clad in animal skins and carrying a flaming
  torch. This device is sometimes left for oth-
  ers to use, especially if they will further his
- causes. I t has horrible and awesome
+ causes. It has horrible and awesome
  powers, but if the user impresses Masauwu
  by employing it often and with diligence,
  he may grant even greater ones.
@@ -3963,7 +3945,7 @@ If lit, it can only be extinguished by water.
    Suggested Powers (PP 450):
 A1       Meteor swarm                      100
 A1       Obliterate                         90
-A4       Turn as C L 36                     95
+A4       Turn as CL 36                     95
 A5        Spell damage bonus, 1,2,3 = 4 80
 B2       Detect invisible                   35
 B3        Teleport                         50
@@ -4222,7 +4204,7 @@ made of very fine ivory.
 A1      Dispel evil                      40
 A2      Geas                             50
 A4      Continual light                  35
-A4      Turn as C L 24                   70
+A4      Turn as CL 24                   70
 B1      Lie detection                    50
 B?      Know alignment                   20
 B2      Choose Option                    45
@@ -4480,35 +4462,17 @@ points.
 appear within 30 feet of the user. Select or
 randomly determine any monster from 1 to
  12 Hit Dice.
-
 Source: Arabian folklore.
-Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, etc.
+Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, and similar material.
+
+Your Notes:
 
 SHARD OF SAKKRAD
- According to very old legends, the original
- home of mankind was in the middle of a
- vast mountain, so huge that the sun was
- said to rise from one of its peaks and set on
- the opposite. The entire base of this moun-
- tain is the fabled emerald Sakkrad; its
- reflection gives the azure hue to the sky.
- One small piece of that emerald-this very
- Shard-was stolen by a djinni, who subse-
- quently vanished from existence; the Shard
- has never reappeared. It is said to hold uni-
- maginable power; some say that mortal
- man was not meant to have it, and cannot
- possibly control it. Others dismiss it as
- pure legend. Yet despite the tales, many
- adventurers of great fame and power have
- gone in search of it; none are known to
- have returned.
-  Description: This is a 3-foot-long imper-
-fect hexagonal crystal of azure hue, with
-sharp edges and pointed ends.
-   Magnitude: Major artifact.
-  Power Limits: 4/A, 4/B, 4/C, 5/D
-   Sphere: Matter (Fighters, earth)
+According to very old legends, the original home of mankind was in the middle of a vast mountain, so huge that the sun was said to rise from one of its peaks and set on the opposite. The entire base of this mountain is the fabled emerald Sakkrad; its reflection gives the azure hue to the sky. One small piece of that emerald, this very shard, was stolen by a djinni, who subsequently vanished from existence; the shard has never reappeared. It is said to hold unimaginable power; some say that mortal man was not meant to have it, and cannot possibly control it. Others dismiss it as pure legend. Yet despite the tales, many adventurers of great fame and power have gone in search of it; none are known to have returned.
+Description: This is a 3-foot-long imperfect hexagonal crystal of azure hue, with sharp edges and pointed ends.
+Magnitude: Major artifact.
+Power Limits: 4/A, 4/B, 4/C, 5/D
+Sphere: Matter (Fighters, earth)
 
 Suggested Powers (PP 750):
 Disintegrate 80
@@ -4522,7 +4486,7 @@ Automatic healing 100
 Shapechange 100
 Luck 100
 
-Activation: The Shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
+Activation: The shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
 Use of Powers: A power is granted to the user when the proper command word is spoken. It remains until used or until the user stops touching the item.
 Suggested Handicaps (4; #1 appears when the item is first used; others appear in sequence whenever the user draws on a 100 point power):
 1. Magic error: A 25% chance of error occurs whenever the user casts a spell or utters any command words, except those used on the shard.
@@ -4530,34 +4494,16 @@ Suggested Handicaps (4; #1 appears when the item is first used; others appear in
 3. Greed: Anyone seeing the user produce any visible effect of the shard's powers must make a Saving Throw vs. Spells, with a -4 penalty to the roll, or immediately attack the user with intention to possess the shard.
 4. Doom: The next time the user employs a 100 point power, there is a 5% chance that an Immortal will arrive. This chance increases by 2% each time a 100 point power is used again. If the Immortal arrives, all within sight range have the choice of watching or looking away. Each of those watching must make a Saving Throw vs. Death Ray, with a -10 penalty to the roll, or die. Each of those looking away may make a Saving Throw vs. Spells; if successful, no further effect occurs, but if failed, each must make the previously mentioned Saving Throw vs. Death Ray. The Immortal departs within 1 round, taking the user and all of his or her non-living valuables, wherever they may be. The shard is not taken, but is teleported to a random location within 10,000 miles.
 
-Suggested Penalties (8; 20% chance of
-appearance when any power is used; equal
-chances for each):
-  1. delayed blast fire ball within 10' of user,
-      set to detonate in 1-4 rounds; normal
-      saving throw applies to all victims.
-  2. User takes 40 points of damage.
-  3. Healing error: When the automatic
-      healingpower is next triggered, it drains
-      the usual 100 PP but cures only 10 points
-      of damage, or fails utterly to cure any
-      other effect (poison, disease, etc.
-  4. The user is struck with Paranoia.
-  5. Memory lapse: The user suddenly and
-      completely forgets how to cast spells (if
-      a spell user) or how to use weapons for
-      2-20 days; no saving throw.
-  6 . The user is struck by Withdrawal; Sav-
-      ing Throw vs. Spells applies, but with a
-      -5 penalty.
-  7. Anti-Magic 100%, 10' radius emanating from the artifact. The Anti-Magic
-      will remain until wished away, or until
-      the user washes it in the water at either
-      the north pole or the south pole.
-  8. Saving Throw penalty: A -8 penalty
-      applies to the user's Saving Throws vs.
-      fire-type attacks.
-  Source: North African creation myth
+Suggested Penalties (8; 20% chance of appearance when any power is used; equal chances for each):
+1. Delayed blast fire ball within 10' of user, set to detonate in 1-4 rounds; normal saving throw applies to all victims.
+2. User takes 40 points of damage.
+3. Healing error: When the automatic healing power is next triggered, it drains the usual 100 PP but cures only 10 points of damage, or fails utterly to cure any other effect, poison, disease, and so forth.
+4. The user is struck with Paranoia.
+5. Memory lapse: The user suddenly and completely forgets how to cast spells, if a spell user, or how to use weapons for 2-20 days; no saving throw.
+6. The user is struck by Withdrawal; Saving Throw vs. Spells applies, but with a -5 penalty.
+7. Anti-Magic 100%, 10' radius emanating from the artifact. The Anti-Magic will remain until wished away, or until the user washes it in the water at either the north pole or the south pole.
+8. Saving Throw penalty: A -8 penalty applies to the user's Saving Throws vs. fire-type attacks.
+Source: North African creation myth.
    Further Research: This item is loosely
 based on a creation myth common in Africa
 and Asia Minor.
@@ -4585,10 +4531,10 @@ A2      Feeblemind                         40
 B2      Lore                               70
 B2      Mapmaking                          55
 C2      Repair Normal Objects              10
-C 3 Open Locks                             25
+C3 Open Locks 25
 D2 Memorize +5 spell levels               50
    Activation: The lock on the book cannot be
-opened magically, and open locks attempts '
+opened magically, and open locks attempts 
 suffer a +50% penalty to the roll. Anyone
 who fails to pick the lock can never succeed in
 opening it. The contents of the book cannot
@@ -4846,66 +4792,66 @@ but also all of his army.
  an armed rider. It was guided by a pin in its
  forehead.
 
-    Mill: A magic mill in the Finnis
- "Kalevala," called the Sampo, could grin
-out meal, salt, or gold from straw on com
+    Mill: A magic mill in the Finnish
+ "Kalevala," called the Sampo, could grind
+out meal, salt, or gold from straw on com-
 mand.
-   Necklace of Harmonia: Harmonia
-daughter of the Greek gods Ares and Aphro
-dite, was given a magical necklace when sh
-married Cadmus. Though relatively unre
-markable at the time, the necklace brough
+   Necklace of Harmonia: Harmonia,
+daughter of the Greek gods Ares and Aphro-
+dite, was given a magical necklace when she
+married Cadmus. Though relatively unre-
+markable at the time, the necklace brought
 disaster to all subsequent owners.
-   Odrovir: In Norse legend, a great wa
-took place between the Aesir (the 24 gods o
-heaven, Asgard) and the Vanir (the Natur
-gods of Noatun). At its peaceful conclusion
-both sides spat into a jar, providing thei
-mixed essences as hostage to peace. Kvasir
-the wisest of all men, was made of the spittle
-His blood, mixed with honey, was calle
-Odrovir (or Odhrevir); all who partook of
+   Odrovir: In Norse legend, a great war
+took place between the Aesir (the 24 gods of
+heaven, Asgard) and the Vanir (the Nature
+gods of Noatun). At its peaceful conclusion,
+both sides spat into a jar, providing their
+mixed essences as hostage to peace. Kvasir,
+the wisest of all men, was made of the spittle.
+His blood, mixed with honey, was called
+Odrovir (or Odhrevir); all who partook of it
 became poets.
-   Ring of Amasis: Amasis, King of Egyp
-advised his incredibly lucky friend Polycra
-tes, King of Samos, to discard something o
-great value to balance the Fates. Polycrate
-threw a prized ring into the sea, but it wa
-later found in a fish on the King's dinne
-table. Amasis promptly recognized this sig
-from the gods and broke off relations with hi
-friend; shortly thereafter, Polycrates was bru
+   Ring of Amasis: Amasis, King of Egypt,
+advised his incredibly lucky friend Polycra-
+tes, King of Samos, to discard something of
+great value to balance the Fates. Polycrates
+threw a prized ring into the sea, but it was
+later found in a fish on the King's dinner
+table. Amasis promptly recognized this sign
+from the gods and broke off relations with his
+friend; shortly thereafter, Polycrates was bru-
 tally slain.
-   Ring of the Nibelungen: Made famous b
+   Ring of the Nibelungen: Made famous by
 Richard Wagner's 1876 opera, this item
-comes from several Scandinavian legend
-(the Volsunga Saga, Nibelungenlied, Elde
-and Younger Eddas, and the Eckelied). Th
-ring was part of an entire hoard in the Rhin
-river, which was guarded by the Rhine Maid
-ens until Alberich gained it by foreswearin
-love. The greedy dwarf cursed the item, an
-when the Ring was later taken by gods an
-heroes for various uses, it brought doom t
-all, resulting even in the destruction o
+comes from several Scandinavian legends
+(the Volsunga Saga, Nibelungenlied, Elder
+and Younger Eddas, and the Eckelied). The
+ring was part of an entire hoard in the Rhine
+river, which was guarded by the Rhine Maid-
+ens until Alberich gained it by foreswearing
+love. The greedy dwarf cursed the item, and
+when the Ring was later taken by gods and
+heroes for various uses, it brought doom to
+all, resulting even in the destruction of
 Asgard and the gods.
-   Swords: Many magical swords can b
+   Swords: Many magical swords can be
 found in myth and literature. The following
-list is only a sampling; further research is rec
-ommended to ascertain appropriate powers
-   Angurvadal (Stream of Anguish) wa
-owned by the hero of "Frithiofs Saga,"
+list is only a sampling; further research is rec-
+ommended to ascertain appropriate powers.
+   Angurvadal (Stream of Anguish) was
+owned by the hero of "Frithiofs Saga," a
 13th century Scandinavian work.
-   Ar'ondight, sword of Launcelot of th
+   Ar'ondight, sword of Launcelot of the
 Lake, was mentioned in several Arthurian
 legends.
-   Balisarda (a sword ofslicing) was made b
-the witch Falerina in the 1487 romance epi
-"Orlando Innamorato" (Roland in Love) b
+   Balisarda (a sword of slicing) was made by
+the witch Falerina in the 1487 romance epic
+"Orlando Innamorato" (Roland in Love) by
 Matteo Maria Boiardo.
-   Balmung was the sword of Siegfried i
-Scandinavian legend. It was made b
-Wieland, a Germanic name for the immorta
+   Balmung was the sword of Siegfried in
+Scandinavian legend. It was made by
+Wieland, a Germanic name for the immortal
 
 blacksmith Volund, known as "Wayland
 Smith" to the English. (See the artifact
@@ -4955,7 +4901,7 @@ Galas, and Munifican.
    Gram (German for "grief') was another
 famous sword of Siegfried.
   Joyeuse (French, "joyous"), a greatsword
-ofcharlemagne, took 3 years to make (by the
+of Charlemagne, took 3 years to make (by the
 smith Gallas).
    Mimung, sword of the hero Wittich, was
 loaned to Siegfried for a time.

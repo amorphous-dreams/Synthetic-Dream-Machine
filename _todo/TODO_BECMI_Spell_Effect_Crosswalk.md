@@ -44,25 +44,6 @@ Rules for this artifact:
 - Ready for `osr:` literal text imports into Chapter 06 Powers.
 - Operational import backlog for the post-confidence-lock `osr:` pass is now defined below under `## Phase B Backlog: Chapter 06 osr: Import`.
 
-## Provenance Confidence (2026-03-27 Direct PDF Audit Pass)
-
-- Scope: prior RC-linked provenance audit across both Phase 1 and Phase 2 tables, plus Immortals co-source checks where applicable, re-rated against the 2026-03-27 direct PDF audit baseline for the six staging lanes.
-- Result: all RC-linked rows still include explicit `RC -> ...` staging anchors; all Immortals-linked rows still include explicit `Immortals -> ...` anchors. The rating below now also reflects the audited strength of the staging corpus beneath those anchors, not just row completeness inside this file.
-- Interpretation rule: anchor completeness is not the same thing as provenance sufficiency. A row can have a valid `RC -> ...` anchor and still be incomplete if an earlier evidenced BECMI co-source has not yet been carried forward into the row.
-- Audit metrics (Phase 1 + Phase 2 combined):
-	- RC rows total: 135
-	- RC-only rows: 71
-	- RC+other-source rows: 64
-	- RC rows missing RC anchors: 0
-	- Immortals rows total: 21
-	- Immortals rows missing Immortals anchors: 0
-- Confidence rating: **High (0.95 / 1.00)** for source-provenance completeness in this artifact. *(2026-03-27 post-audit pipeline inheritance: exception-state verification still holds, and the score now reflects the regenerated staging baseline beneath the anchors: B 0.93, E 0.94, C 0.90, M 0.95, I 0.95, RC 0.94. Anchor completeness remains strong; inherited risk now comes mainly from parser-hostile recovery lanes rather than missing anchor fields.)*
-- Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via the continuous artifact-chapter witness rather than full standalone spell writeups, and a modest inherited source-friction penalty still applies because RC remains recovery-heavy even after the Expert uplift.
-- Remaining provenance uplift target: reduce `RC-only` rows whenever an earlier staged BECMI witness can be evidenced without guesswork, because the preferred steady state for most spells is `pre-RC BECMI + RC`, not `RC` alone. No uplift candidates were found in the 2026-03-26 Phase 1 ledger pass; all 8 RC-only spell exceptions are now Confirmed RC-only.
-- Current flat-catalog `RC`-only spell exceptions after targeted uplift: `Analyze`, `Entangle`, `Create Air`, `Clothform`, `Stoneform`, `Woodform`, `Ironform`, and `Steelform`. Treat these as evidence-backed exception state unless new staged pre-`RC` witnesses are added.
-- Current flat-catalog non-`RC` artifact procedure exceptions after targeted uplift: `Artifact Activation`, `Artifact Charges And Recharge`, `Artifact Intelligence And Auto-Defense`, and `Creating Artifacts`. Treat these as evidence-backed `Master`-only exception state unless a structurally equivalent staged `RC` procedure witness is later added.
-- See `## Exception State Ledger` below for the verified exception decision record.
-
 ## Exception State Ledger
 
 This table is the canonical record of all verified exception-state rows. Updated each time provenance uplift work is performed.
@@ -94,37 +75,37 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 - **Schema Capture Confidence**
 	- what it measures: whether the expected metadata-bearing table shapes are present and stable across the workspace
 	- freeze signal: the artifact currently contains **15** Phase 1 catalog tables using the full provenance-bearing row shape and **32** Phase 2 mapping tables using the conversion-note row shape
-	- rating: **0.96 / 1.00**
-	- reason: the table schemas are now broad, consistent, and sufficient for downstream manipulation; remaining risk is normalization drift inside row content, not missing structural slots
+	- rating: **? / 1.00**
+	- reason: 
 - **Family Metadata Completeness**
 	- what it measures: whether each generic family block carries the minimum metadata needed for Chapter 06 ordering and regrouping work
 	- freeze signal: all **13** family blocks currently include the full four-line metadata package: `Current Header`, `Proposed Tag Family`, `Legacy Groups Merged`, and `Downstream Notes` for a total of **52** metadata lines
-	- rating: **0.99 / 1.00**
-	- reason: this is effectively complete at the block level; only future family reshuffles would require maintenance, not fresh scrape recovery
+	- rating: **? / 1.00**
+	- reason: 
 - **Row-State Label Coverage**
 	- what it measures: whether Phase 2 rows carry explicit downstream-decision metadata rather than floating as unclassified notes
-	- freeze signal: the current mapping tables expose **305** explicit row-state labels: **14** `direct`, **139** `partial`, and **152** `custom`
-	- rating: **0.95 / 1.00**
-	- reason: explicit status coverage is strong and comprehensive enough for prioritization; the main uncertainty is semantic calibration of some `partial` versus `custom` judgments, not absence of labels
+	- freeze signal: the current mapping tables expose **?** explicit row-state labels: **?** `direct`, **?** `partial`, and **?** `custom`
+	- rating: **? / 1.00**
+	- reason: 
 - **Evidence-Note Density**
 	- what it measures: how often the scrape already preserved high-value explanatory metadata such as `Evidence lock`, `Verification pass`, and `Existing SDM variant` notes for downstream drafting
-	- freeze signal: Phase 2 pass added 10 new inline evidence locks to high-tier spell rows; Phase 2 table rows carrying an inline evidence lock, evidence note, or verification pass marker now total **63** (was **32** before Phase 2; excludes Phase 1 comparison table entries and cross-reference mentions)
-	- rating: **0.95 / 1.00**
-	- reason: target of 50+ markers reached; all high-tier healing (Raise Dead family, Cureall, Heal, Restore), defense/boundary (Anti-Magic Shell, Force Field, Barrier, Geas), and high-tier barrier rows (Prismatic Wall partial) now carry source-grounded evidence locks; remaining uneven coverage is concentrated in lower-tier or direct-mapping rows where mechanic-level notes add little conversion value
+	- freeze signal: Phase 2 pass added 10 new inline evidence locks to high-tier spell rows; Phase 2 table rows carrying an inline evidence lock, evidence note, or verification pass marker now total **?**
+	- rating: **? / 1.00**
+	- reason: 
 - **Downstream Drafting Readiness**
 	- what it measures: whether the scraped metadata is good enough to support Chapter 06 family drafting without returning to the staging corpus for every local decision
 	- freeze signal: provenance-bearing Phase 1 rows, regrouped family tables, explicit family-order metadata, and row-state labels now coexist in one artifact with the staging corpus already frozen beneath it
-	- rating: **0.92 / 1.00**
-	- reason: the workspace is ready for drafting and conversion planning. The 2026-03-27 pipeline hardening pass retired the Basic wrapper defect, restored the Expert table tail row, recovered representative late-alphabet Immortals overrides, and materially improved Companion MU coverage. Residual risk remains in parser-hostile Companion sixth-level bodies and other OCR-heavy recovery lanes, not in the crosswalk schema itself.
+	- rating: **? / 1.00**
+	- reason: 
 
-- Overall metadata scrape confidence: **High (0.95 / 1.00)** — Updated 2026-03-27 with audit-discovered recovery priorities
-	- summary: the metadata scrape pass remains strong enough to be treated as approved working infrastructure for the Chapter 06 bridge; Phase 1 and Phase 2 improvement passes still verify the row structures and exception state, but the direct PDF audit adds a modest inherited penalty because the underlying staging corpus is not uniformly frictionless across all lanes.
+- Overall metadata scrape confidence: **? (? / 1.00)**
+	- summary: 
 - Residual metadata risks:
 	- row-note depth is uneven by design, with denser annotation concentrated on exception rows, RC-only rows, and high-risk conversion families
 	- some repeated note language and alias phrasing still need later editorial normalization, but they do not block downstream use
 	- `partial` and `custom` remain working judgment labels rather than final publication taxonomy; expect a small number of reclassifications during drafting
 
-## Mapping Status Decision Matrix (2026-03-26)
+## Mapping Status Decision Matrix
 
 Use these criteria when assigning or reviewing `direct`, `partial`, or `custom` status to any Phase 2 family row. Apply the first matching row in the table.
 
@@ -136,17 +117,6 @@ Use these criteria when assigning or reviewing `direct`, `partial`, or `custom` 
 | **Evidence lock status** | Lock confirmed, no edge cases | Lock partial or implicit; edge case present | No lock or hard exception flags present |
 | **Chapter 06 decision pending?** | No — mapping is unambiguous | Minor clarification needed during drafting | Yes — requires a doctrine decision before mapping |
 
-### Audit Notes (2026-03-26 sample of 30 rows)
-
-Sampled 10 rows per status class from Phase 2 family tables. Findings:
-- **`direct` (10 sampled):** All consistent — Lightning Bolt, Detect Magic, Locate Object, Sleep, Hold Person, Web, Levitate, Fly, Shield, Resist Fire. Mapping is unambiguous; core mechanics transfer by renaming.
-- **`partial` (10 sampled):** All consistent — Magic Missile, Fire Ball/Fireball, Delayed Blast Fireball, Call Lightning, Power Word Blind, Sword, Wall of Fire, Cureall, Restore, Survival. Recognizers exist; each row carries adaptation notes or Evidence locks.
-- **`custom` (10 sampled):** All consistent — Meteor Swarm, Cloudkill, Death Spell, Disintegrate, Explosive Cloud, Ice Storm/Wall, Insect Plague, Power Word Kill, Raise Dead Fully, Heal. All require bespoke doctrine or have no SDM recognizer.
-
-No miscalibrations found in the 30-row sample. Minor observation: `Cure Critical Wounds` (`direct`) could be argued as `partial`; current `direct` label is defensible as a simple tier-up with no mechanics delta.
-
----
-
 ## Metadata Confidence v2 Gate (2026-03-27)
 
 Threshold definitions for moving between confidence bands:
@@ -157,14 +127,14 @@ Threshold definitions for moving between confidence bands:
 | **Approved Working Infrastructure** | 0.95 | Evidence-note density ≥ 50 markers; decision matrix documented; high-risk families (healing, defense/boundary, barrier) carry source-grounded evidence locks |
 | **Publication Ready** | 0.98 | All `partial`/`custom` rows carry evidence locks; row-state audit confirms calibration across all families; v2 gate in place |
 
-### Current rating: High (0.95 / 1.00)
+### Current rating: High (? / 1.00)
 
-- **Provenance (0.95)**: Exception ledger verified, all 12 exception rows confirmed, with the inherited staging-baseline penalty reduced after the Expert validator uplift
-- **Row-State Coverage (0.95)**: 305 explicit status labels; 30-row audit confirms consistent calibration
-- **Evidence-Note Density (0.95)**: 63 Phase 2 table rows with inline evidence lock/verification markers (Phase 2 target exceeded)
-- **Downstream Drafting Readiness (0.94)**: Decision matrix remains in place, but post-audit drafting should expect more returns to the staging corpus in weaker recovery lanes
+- **Provenance (?)**: Exception ledger verified, all 12 exception rows confirmed, with the inherited staging-baseline penalty reduced after the Expert validator uplift
+- **Row-State Coverage (?)**: 305 explicit status labels; 30-row audit confirms consistent calibration
+- **Evidence-Note Density (?)**: 63 Phase 2 table rows with inline evidence lock/verification markers (Phase 2 target exceeded)
+- **Downstream Drafting Readiness (?)**: Decision matrix remains in place, but post-audit drafting should expect more returns to the staging corpus in weaker recovery lanes
 
-**Gate status**: Passes **Approved Working Infrastructure (0.95)** threshold, but now only narrowly after inherited staging-baseline penalties are applied. Not yet at **Publication Ready (0.98)** — lower-tier and `direct` rows do not all carry evidence locks, a full cross-family row-state audit has not been performed, and weaker recovery lanes still increase verification burden during drafting.
+**Gate status**: ?
 
 
 ## Forward Plan
@@ -374,6 +344,12 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Cursed / Cursed Scroll |  | Basic, RC | Basic -> Scrolls and Spell-Adjacent Treasure Text; RC -> Scrolls | item-effect | — | - |
 | Holy Water |  | Basic | Basic -> Magic Item Identification, Use Model, and Charge Doctrine | item-effect | — | - |
 
+#### Procedures
+
+| Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
+| --- | --- | --- | --- | --- | --- | --- |
+| Turning Undead |  | Basic | Basic -> Turning Undead | procedure | — | - |
+
 ### E - Expert
 
 #### Cleric
@@ -488,7 +464,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | --- | --- | --- | --- | --- | --- | --- |
 | Alchemical Potion Duplication / Potion Research Support |  | Expert | Expert -> Magic Support Infrastructure | procedure | — | - |
 | Sage Magical Research Support |  | Expert | Expert -> Magic Support Infrastructure | procedure | — | - |
-| Spellbook Replacement |  | Expert | Expert -> Research and Lost Spell Books | procedure | — | - |
+| Spellbook Replacement |  | Basic, Expert, RC | Basic -> Spellbooks and Lost Book Recovery; Expert -> Research and Lost Spell Books; RC -> Magic-User Spell Books and Lost Spell Books | procedure | — | - |
 | Magic Item Range/Duration Default |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | procedure | — | - |
 | Magic Detection/Control Blocking |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | procedure | — | - |
 | Intelligent Item Will Power / Control Check |  | Expert | Expert -> Magic Item Doctrine and Intelligent Weapons | procedure | — | - |
@@ -550,6 +526,8 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Spell Catching |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
 | Trapping |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
 | Truth |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Scrolls; RC -> Scrolls | item-effect | — | - |
+| Truthfulness |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
+| Truthlessness |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
 | Ring of Elemental Adaptation |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
 | Ring of Holiness |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
 | Ring of Life Protection |  | Companion, RC | Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
@@ -663,7 +641,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Control Humans |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
 | Anti-Magic Ray |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
 | Plane Travel |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Life Trapping |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Life Trapping |  | Expert, Master, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Miscellaneous Magic Items; Master -> Artifact Chapter Context and Witnesses; RC -> Chapter 16 Item Description Catalog -> Miscellaneous Magic Items | item-effect | — | [table-derived] |
 | Mapmaking |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
 | Open Mind |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
 | Turn Undead Bonus |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
@@ -905,6 +883,8 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Know Alignment | spell | Alignment/intention interrogation lane used for truthfulness and affiliation reads. | partial |
 | Questioning | item-effect | Nonliving-object interrogation procedure useful for forensic and archive scenes. Nonliving-object interrogation procedure. | partial |
 | Truth | item-effect | Living-mind questioning interface via enhanced mental-read procedure. Living-mind question procedure via an enhanced ESP-like readout. | partial |
+| Truthfulness | item-effect | Cursed ring compulsion that forces honest speech rather than revealing truth by insight. Companion/RC evidence lock: the wearer must tell the truth whenever speaking, making this a behavioral constraint interface rather than a divination readout. | custom |
+| Truthlessness | item-effect | Cursed ring compulsion that forces false speech rather than concealing thoughts. Companion/RC evidence lock: the wearer lies whenever speaking, making this a behavioral inversion interface rather than a detection or charm effect. | custom |
 
 ### family-4
 
@@ -1219,8 +1199,9 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | --- | --- | --- | --- |
 | Control Lesser Undead | item-effect | Master artifact-table undead-command interface for lesser undead tiers, with explicit HD ceilings and creature-count limits in the staged witness. Clean Chapter 05 precedent for undead-control bundles that remain item-side rather than spell-side. | custom |
 | Control Greater Undead | item-effect | Master artifact-table undead-command interface for higher undead tiers with larger HD budgets. Distinct from clerical turning and should not be collapsed into ordinary charm/control families. | custom |
+| Turning Undead | procedure | Core clerical anti-undead procedure with matrix lookup, retreat / destroy thresholds, and target-type-specific outcomes. Basic evidence lock: result bands determine whether undead are unaffected, turned, or destroyed, and turning power scales by cleric level against the target undead type. | custom |
 | Turn Undead Bonus | item-effect | Artifact-table rider that improves turning rolls and destroyed-HD budget for one turn. Strong interface precedent for temporary class-feature amplification instead of direct offensive output. | custom |
-| Life Trapping | item-effect | Artifact-table entrapment effect that removes a target into item-bound stasis rather than killing or banishing it conventionally. Best treated as a custom containment interface with release-trigger doctrine. | custom |
+| Life Trapping | item-effect | Item-bound entrapment effect that removes a target into contained stasis rather than killing or banishing it conventionally. Master artifact evidence gives the generic effect surface; Expert and RC add direct `Mirror of Life Trapping` witnesses, so this should stay one containment-interface row with broader item provenance rather than split into a separate named-item family row. | custom |
 
 #### Meta-Doctrine and Exceptions / Artifact Rules / Systems
 
@@ -1378,7 +1359,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Experience from Spells and Enchanted Items | procedure | Enchantment-economics reward doctrine for spell research, magical items, and large enchanted builds. RC ties XP to successful first-of-kind magical work, downgrades vessel/home awards to one-third gp spent, and divides collaborative awards among participating spellcasters. Strong Chapter 05/06 support for research and fabrication reward policy. | custom |
 | Alchemical Potion Duplication / Potion Research Support | procedure | Specialist-support doctrine for potion copying and potion-only research outside direct caster labor. Expert evidence lock: an alchemist can duplicate a potion from a formula or sample at half normal time and cost, and can research new potion types at twice the cost and time required for a magic-user. | custom |
 | Sage Magical Research Support | procedure | Obscure-knowledge support workflow for magical investigation. Expert evidence lock: sages can research hidden or ancient knowledge but carry failure chance, book-acquisition cost, and time burdens set by the referee. | custom |
-| Spellbook Replacement | procedure | Arcane archive-recovery doctrine for lost spellbooks. Expert evidence lock: a magic-user or elf cannot regain spells until the book is replaced, with a guideline cost of 1,000 gp and 1 week of study per spell level restored, consuming all adventuring time. | custom |
+| Spellbook Replacement | procedure | Arcane archive-recovery doctrine for lost spellbooks. Basic, Expert, and RC all preserve the same recovery burden: a magic-user or elf cannot regain spells until the book is replaced, and restoration requires substantial gold, study time, and the caster's full attention rather than ordinary adventuring activity. | custom |
 | Magic Item Range/Duration Default | procedure | Default-caster baseline for magic-item effects when an item omits its own numbers. Expert evidence lock: any missing range or duration should be treated as though produced by a 6th-level spell caster. | custom |
 | Magic Detection/Control Blocking | procedure | Material-occlusion doctrine for item-side detection and control effects. Expert evidence lock: a thin sheet of lead, 1' of other metal, or 10' of stone blocks these ranges and interactions. | custom |
 | Intelligent Item Will Power / Control Check | procedure | Willful-item control doctrine for intelligent weapons and similar autonomous magic. Expert evidence lock: item will power derives from Intelligence, Ego, and extraordinary powers; user will power comes from Intelligence plus Wisdom with wound penalties; control contests trigger on handling, injury, competing weapons, alternate users, and special-purpose opportunities. | custom |
