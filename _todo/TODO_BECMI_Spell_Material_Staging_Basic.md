@@ -21,16 +21,6 @@ Source PDF:
 - Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
 - Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
-## Table Check QA Pass
-
-- Status: reviewed 2026-03-27 during direct PDF audit and validator uplift
-- Scope checked: Turning Undead table, spell-list setup, clerical and magic-user spell-description runs, DM higher-level spell guidance, lost spell-book doctrine, and item-operation / scroll wrapper sections.
-- Result: direct PDF audit plus the expanded Basic validator found no blocking coverage, ordering, or wrapper-continuation defect in the staged Basic lane.
-
-- Capture confidence: **0.93**
-- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures remain source-grounded under direct audit. The lane is still held below 0.95 by recurring OCR texture and a few fallback-heavy wrapper sections, not by a current source-evidence gap.
-- ToC cross-check: Basic spell and treasure sections remain fully accounted for in staging, including player spell pages, DM higher-level spell guidance, and the treasure/magic-item wrapper pages.
-- Gap priority: LOW — validation now covers spell-list continuity, higher-level guidance ordering, and the treasure wrapper flow; remaining work is cleanup and extraction hardening, not missing section coverage.
 ### Cleric Rules, Turning, and First-Level Spell Procedures
 
 - Extraction note: page-aware Basic extraction from the actual cleric special-abilities page, split by column so Turning Undead procedure, the undead table, and spellcasting guidance stay in readable source order.
@@ -96,7 +86,7 @@ Cleric Level   Skeleton   Zombie   Ghoul   Wight
 Success: If the attempt at Turning Un-
 dead succeeds, the Dungeon Master will
 roll 2d6 to determine the number of Hit
-Dice of Undead monsters that t u r n
+Dice of Undead monsters that turn
 away. You might not Turn all the mon-
 sters encountered, but if you succeed in
 Turning, at least one will be affected. A
@@ -759,7 +749,7 @@ on its Intelligence. If you are Charmed,
 your DM will tell you when to make the
 new Saving Throw.
 The Charm is automatically broken if
-t h e magic-user attacks t h e victim,
+the magic-user attacks the victim,
 whether by spell or by weapon. The
 victim will fight normally if attacked by
 the magic-user's allies.
@@ -1660,7 +1650,7 @@ Werewolves, wereboars:
 1-8 affected
 Weretigers, werebears:
 1-4 affected
-Protection f r m Undead: When read, this
+Protection from Undead: When read, this
 scroll will protect all those within the circle
 from a variable number of undead for 6
 turns. The number of undead affected
@@ -1884,6 +1874,10 @@ allow a Saving Throw vs. Spells to prevent
 the medallion from reading a creature's
 thoughts.
 Rope of Climbing: This 50' long, thin,
+strong rope will climb in any direction
+upon the command of the owner. It may
+fasten itself to any protruding surface, and
+will support up to 10,000 cn of weight.
 
 ```
 

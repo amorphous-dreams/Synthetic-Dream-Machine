@@ -13,13 +13,165 @@ MASTER_TXT="$TMPDIR/master.txt"
 MASTER_PDF="$ROOT/_becmi/TSR 1021 - Set 4 Master Rules.pdf"
 MASTER_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Master.md"
 
+master_replace_block_between_markers() {
+  local start="$1"
+  local end="$2"
+  local replacement="$3"
+
+  START_BLOCK="$start" END_BLOCK="$end" REPLACEMENT_BLOCK="$replacement" perl -0pi -e '
+    BEGIN {
+      $start = $ENV{START_BLOCK};
+      $end = $ENV{END_BLOCK};
+      $replacement = $ENV{REPLACEMENT_BLOCK};
+    }
+    s/\Q$start\E.*?(?=\Q$end\E)/$replacement/s;
+  ' "$MASTER_OUT"
+}
+
 master_cleanup_postbuild() {
   perl -0pi -e '
     s/\(\(215\)/(C15)/g;
     s/\(\(216\)/(C16)/g;
     s/^Characters - Cleric, Druid\s*\n//mg;
     s/\n{3,}/\n\n/g;
+    s/^Spectre\s+D D\+\s+D\+$/Spectre     D      D+     D+/mg;
+    s/^Vampire\s+D D\s+D$/Vampire     D      D      D/mg;
+    s/^Phantom\s+D D\s+D$/Phantom     D      D      D/mg;
+    s/^Haunt\s+D D\s+D$/Haunt       D      D      D/mg;
+    s/^Spirit\s+D D\s+D$/Spirit      D      D      D/mg;
+    s/^Nightshade\s+D D\s+D$/Nightshade  D      D      D/mg;
+    s/^Lich\s+T T\s+T$/Lich        T      T      T/mg;
+    s/^Special\s+T T\s+T T\s+automatic Turn, 2d6 Hit Dice of undead$/Special     T      T      T/mg;
+    s/^D\s+automatic Destroy, 2d6 Hit Dice$/T   automatic Turn, 2d6 Hit Dice of undead\nD   automatic Destroy, 2d6 Hit Dice/mg;
+    s/Und e r certain conditions/Under certain conditions/g;
+    s/Finger of Dea\s*t h \*\s*\(\s*R60\x27;X9,\s*C12\)/Finger of Death* \(R 60\x27; X9, C12\)/g;
+    s/Finger o f D e a t h \* \( R60\x27;X9, C12\)/Finger of Death* \(R 60\x27; X9, C12\)/g;
+    s/\n\s*20 Lig h \(R 120\x27, DR 46T, EF 30\x27 dia;\n\s*B40\)/\n  20 Light* \(R 120\x27, DR 46T, EF 30\x27 dia; B40\)/g;
+    s/^   Tree Movement: Thr user may swing$/   Tree Movement: The user may swing/mg;
+    s/DIAMOND 0RB OF TYCHE/DIAMOND ORB OF TYCHE/g;
+    s/Anti-Magic loo % , 10\x27 radius emanat-/Anti-Magic 100%, 10\x27 radius emanat-/g;
   ' "$MASTER_OUT"
+
+  local comb_tail diamond_intro arabian_footer shard_powers shard_core
+
+  comb_tail=$(cat <<'EOF'
+Cure disease 20
+Cure wounds, critical 35
+D2 Polymorph self 65
+
+Activation: The comb is not active when acquired. If it is left within a burning fire for 1 full turn, it is activated, but will not reveal powers. Thereafter, whenever the user befriends an elf (loaning money, curing, aiding in battle, and so forth), one power is revealed telepathically, to a maximum of 1 per day, in order of power.
+Use of Powers: A power is invoked when a given combination of the comb's teeth are plucked, producing a nearly inaudible musical tone.
+Suggested Handicaps (2):
+1. When first power is used: User starts turning into an elf (1st level); the process takes 3 months to complete. The user becomes aware of minor changes, including animosity toward dwarves, in 2 weeks. The change stops completely as soon as the artifact is no longer owned, but the change back to normal also takes 3 months.
+2. Energy drain: User loses 3 levels of experience when Poison Breath is first used.
+
+Suggested Penalties (3; #1 appears 4 in 6, others each 1 in 6):
+1. Slow spell effect centered on user.
+2. Polymorph other spell effect upon user, to turn into an eagle.
+3. Memory penalty: User cannot memorize any spells of the highest spell level he or she can normally study. Effect is cumulative if not removed.
+Source: Breton folklore.
+Further Research: Various works on folklore of the British Isles (Irish, Scottish, and Gaelic), such as Celtic Myth and Legend, by Charles Squire. See fays (or fees or faeries), druids of ancient Gaul, the Lamignak elves, Fountain Women of French folklore, and A Field Guide to the Little People (Arrowsmith and Moorse, 1977).
+
+EOF
+)
+
+  diamond_intro=$(cat <<'EOF'
+DIAMOND ORB OF TYCHE
+This item appears to be a crystal ball, but is somewhat larger (about 18 inches across) and glows softly with a white light filled with sparkling colors. It was crafted by the powerful Immortal Tyche, said to control chance and the fortunes of mankind. It is a powerful artifact of Chaos, but is not necessarily evil, and is said to bring good fortune to the user, for a time.
+
+Magnitude: Greater artifact.
+Power Limits: 4/A, 3/B, 3/C, 4/D
+Sphere: Thought (Thieves, air)
+Suggested Powers (PP 405):
+Pick pockets 100% 80
+X-ray vision 80
+Gaseous form 30
+Container, 40,000 cn 80
+Remove traps 75% 60
+Confuse alignment 15
+Hide in shadow 70% 60
+
+Activation: The artifact is active when found. The user gets a feeling of inspiration when gazing into the orb. The artifact grants the knowledge of one power when one consecutive hour is spent gazing, to a maximum of 1 power per day, given in order of PP cost.
+Use of Powers: By gazing into the orb and concentrating on a power, the user acquires that power after 1-3 rounds.
+
+EOF
+)
+
+  diamond_tail=$(cat <<'EOF'
+Suggested Handicaps (3):
+1. When first used: Magic error. The user has a 10% chance of failure whenever attempting to cast a spell or use any magic item requiring a command word.
+2. When pick pockets is first used: Alignment change to Chaotic, or to Neutral.
+3. If, as a container, the artifact is ever completely filled: Recharging begins to cost. The orb stops recharging by itself, and must be given treasure equal to 100 gp value per 1 PP recharged.
+Suggested Penalties: Standard chances, totally random adverse effects of 50 PP cost or less affecting the caster, from Tables A3, B3, D4, and D5.
+Source: Greek mythology.
+Further Research: See general works on mythology, with reference to the Greek myths and gods, especially the goddess of chance or Good Fortune.
+
+EOF
+)
+
+  arabian_footer=$(cat <<'EOF'
+Source: Arabian folklore.
+Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, etc.
+
+EOF
+)
+
+  shard_powers=$(cat <<'EOF'
+Suggested Powers (PP 750):
+Disintegrate 80
+Mass charm 75
+Polymorph any object 75
+Detect magic 15
+Plane travel 65
+Telekinesis 40
+Create any monster 100
+Automatic healing 100
+Shapechange 100
+Luck 100
+
+EOF
+)
+
+  shard_core=$(cat <<'EOF'
+Suggested Powers (PP 750):
+Disintegrate 80
+Mass charm 75
+Polymorph any object 75
+Detect magic 15
+Plane travel 65
+Telekinesis 40
+Create any monster 100
+Automatic healing 100
+Shapechange 100
+Luck 100
+
+Activation: The Shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
+Use of Powers: A power is granted to the user when the proper command word is spoken. It remains until used or until the user stops touching the item.
+Suggested Handicaps (4; #1 appears when the item is first used; others appear in sequence whenever the user draws on a 100 point power):
+1. Magic error: A 25% chance of error occurs whenever the user casts a spell or utters any command words, except those used on the shard.
+2. Operating Costs: The user loses 10% of all treasure owned, and loses 10% each time a 100 point power is employed thereafter.
+3. Greed: Anyone seeing the user produce any visible effect of the shard's powers must make a Saving Throw vs. Spells, with a -4 penalty to the roll, or immediately attack the user with intention to possess the shard.
+4. Doom: The next time the user employs a 100 point power, there is a 5% chance that an Immortal will arrive. This chance increases by 2% each time a 100 point power is used again. If the Immortal arrives, all within sight range have the choice of watching or looking away. Each of those watching must make a Saving Throw vs. Death Ray, with a -10 penalty to the roll, or die. Each of those looking away may make a Saving Throw vs. Spells; if successful, no further effect occurs, but if failed, each must make the previously mentioned Saving Throw vs. Death Ray. The Immortal departs within 1 round, taking the user and all of his or her non-living valuables, wherever they may be. The shard is not taken, but is teleported to a random location within 10,000 miles.
+
+EOF
+)
+
+  master_replace_block_between_markers 'Cure disease 20' 'DIAMOND ORB OF TYCHE' "$comb_tail"
+  master_replace_block_between_markers 'DIAMOND ORB OF TYCHE' 'Suggested Handicaps (3):' "$diamond_intro"
+  master_replace_block_between_markers 'Suggested Handicaps (3):' 'FIERY BRAND OF MASAUWU' "$diamond_tail"
+  master_replace_block_between_markers '   Source: Arabian folklore' 'SHARD OF SAKKRAD' "$arabian_footer"
+  master_replace_block_between_markers '   Suggested Powers (PP 750):' '   Activation: The Shard is active when' "$shard_powers"
+  master_replace_block_between_markers 'Suggested Powers (PP 750):' 'Suggested Penalties (8; 20% chance of' "$shard_core"
+  perl -0pi -e "
+    s/^  1 Cure disease\\s+20\\s+w\\n  1 Cure wounds, critical\\s+35\\s+p\\nD2 Polymorph self\\s+65\\s+c\\n   Activation: The comb is not active when\\s+p\\n cquired\\. If it is left within a burning fire for\\s+s\\n  full turn, it is activated, but will not reveal\\s+t\\n owers\\. Thereafter, whenever the user\\n efriends an elf \\(loaning money, curing, aid-\\nng in battle, etc\\.\\), one power is revealed tele-\\n athically \\(maximum of 1 per day\\), in order\\n f power\\.\\s+A\\n   Use of Powers: A power is invoked when a B\\n iven combination of the comb's teeth are\\n\\s+B\\n lucked, producing a nearly inaudible musi-\\n\\s+B\\n al tone\\.\\s+C\\n   Suggested Handicaps \\(2\\):\\n\\s+D\\n   1\\. When first power is used: User starts\\n\\s+D\\n       turning into an elf \\(1st level\\); the proc-\\n       ess takes 3 months to complete\\. User\\n\\s+fo\\n       becomes aware of minor changes \\(ani-\\n\\s+w\\n       mosity toward dwarves, among other\\n\\s+g\\n       things\\) in 2 weeks\\. Change stops com-\\n\\s+o\\n       pletely as soon as artifact is no longer\\n\\s+p\\n       owned, but the change back to normal\\n\\s+P\\n       takes 3 months\\.\\n   2\\. Energy drain: User loses 3 levels of\\n\\s+c\\n       experience when Poison Breath is first\\n\\s+th\\n       used\\./Cure disease 20\\nCure wounds, critical 35\\nD2 Polymorph self 65\\n\\nActivation: The comb is not active when acquired. If it is left within a burning fire for 1 full turn, it is activated, but will not reveal powers. Thereafter, whenever the user befriends an elf \\(loaning money, curing, aiding in battle, and so forth\\), one power is revealed telepathically, to a maximum of 1 per day, in order of power.\\nUse of Powers: A power is invoked when a given combination of the comb's teeth are plucked, producing a nearly inaudible musical tone.\\nSuggested Handicaps \\(2\\):\\n1. When first power is used: User starts turning into an elf \\(1st level\\); the process takes 3 months to complete. The user becomes aware of minor changes, including animosity toward dwarves, in 2 weeks. The change stops completely as soon as the artifact is no longer owned, but the change back to normal also takes 3 months.\\n2. Energy drain: User loses 3 levels of experience when Poison Breath is first used./msg;
+    s/\\)\\.DIAMOND ORB OF TYCHE/\\).\\n\\nDIAMOND ORB OF TYCHE/g;
+    s/etc\\.SHARD OF SAKKRAD/etc\\.\\n\\nSHARD OF SAKKRAD/g;
+    s/rounds\\.Suggested Handicaps \\(3\\):/rounds.\\n\\nSuggested Handicaps \\(3\\):/g;
+    s/Luck 100\\s+Activation: The Shard is active when/Luck 100\\n\\nActivation: The Shard is active when/g;
+    s/(teleported to a random location within 10,000 miles)\\.(Suggested Penalties \\(8; 20% chance of)/\$1.\\n\\n\$2/g;
+    s/Good Fortune\\.FIERY BRAND OF MASAUWU/Good Fortune\\.\\n\\nFIERY BRAND OF MASAUWU/g;
+    s/7\\. Anti-Magic 100%, 10' radius emanat-\\n\\s*ing from the artifact\\./7. Anti-Magic 100%, 10' radius emanating from the artifact./g
+  " "$MASTER_OUT"
 }
 
 master_dedupe_top_sections() {
@@ -986,13 +1138,6 @@ master_nonhuman_block_named 'Non-Human Spellcasters and Special Spellcaster Proc
 master_procedures_block_named 'Anti-Magic Effects and Dispel Magic Procedures' 'targeted Master procedures extraction using column crops from the actual Procedures pages so the anti-magic doctrine, examples, touch-dispel rules, and item-interaction notes remain readable without the section index or dominion spill.' "$MASTER_PDF"
 master_artifact_chapter_context_named 'Artifact Chapter Context and Witnesses' 'Master-specific continuous artifact chapter extraction spanning pages 45-64 so doctrine, power tables, explanations, named artifacts, and the post-catalog appendix remain in one staged run for downstream witness use and manual review.' 
 cleanup_output
-set_table_qa_note "$MASTER_OUT" 'reviewed 2026-03-27 during direct PDF audit and validator uplift' 'top spell tables, magic-user spell run, non-human spellcaster procedures, the `Anti-Magic Effects` / `Dispel Magic` procedure pages, and artifact chapter witness sections.' 'direct PDF audit plus the Master validator confirmed that the procedure and artifact witnesses remain materially intact and auditable.'
-append_table_qa_lines "$MASTER_OUT" <<'EOF'
-- Capture confidence: **0.95** (UP from 0.91 after staging the Master procedure gap)
-- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and the continuous artifact witness section remain source-grounded under direct audit. Remaining issues are ordinary OCR texture and dense artifact prose, not major source-evidence gaps.
-- ToC cross-check: Core spell, procedures, and artifact sections are now accounted for in the Master lane, including `Anti-Magic Effects` and `Dispel Magic` from the Procedures section.
-- Gap priority: LOW — validation now covers the Master procedures and representative artifact witnesses; remaining work is reproducibility hardening, not gap repair.
-EOF
 perl -0pi -e '
   s/^\x27[[:space:]]*\n//mg;
   s/\(B41, X11 \)/\(B41, X11\)/g;

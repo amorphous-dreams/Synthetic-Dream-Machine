@@ -21,16 +21,6 @@ Source PDF:
 - Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
 - Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
-## Table Check QA Pass
-
-- Status: reviewed 2026-03-27 during direct PDF audit and validator uplift
-- Scope checked: top spell tables, magic-user spell run, non-human spellcaster procedures, the `Anti-Magic Effects` / `Dispel Magic` procedure pages, and artifact chapter witness sections.
-- Result: direct PDF audit plus the Master validator confirmed that the procedure and artifact witnesses remain materially intact and auditable.
-
-- Capture confidence: **0.95** (UP from 0.91 after staging the Master procedure gap)
-- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and the continuous artifact witness section remain source-grounded under direct audit. Remaining issues are ordinary OCR texture and dense artifact prose, not major source-evidence gaps.
-- ToC cross-check: Core spell, procedures, and artifact sections are now accounted for in the Master lane, including `Anti-Magic Effects` and `Dispel Magic` from the Procedures section.
-- Gap priority: LOW — validation now covers the Master procedures and representative artifact witnesses; remaining work is reproducibility hardening, not gap repair.
 ### Master Cleric, Druid, and Magic-User Spell Material
 
 - Extraction note: section-aware Master spell extraction using anchored TSV reflow across the actual cleric, druid, and magic-user pages instead of one broad line-range block. The section is split into cleric, druid, and magic-user sub-blocks so high-level spell lists and descriptions remain attached to the right class pages.
@@ -92,7 +82,6 @@ Spirit      D      D      D
 Nightshade  D      D      D
 Lich        T      T      T
 Special     T      T      T
-
 T   automatic Turn, 2d6 Hit Dice of undead
 D   automatic Destroy, 2d6 Hit Dice
 D+  automatic Destroy, 3d6 Hit Dice
@@ -358,7 +347,7 @@ this effect changes a volume of soil or rock
 An area up to 10 feet deep or thick is affected,
 and may have up to 3,000 square feet of sur-
 face area. The druid may choose the exact
-width and length (20' x 150', 30' x loo',
+width and length (20' x 150', 30' x 100',
 etc.), but the entire area of effect must be
 within 240 feet of the caster. Creatures mov-
 ing through the mud are slowed to 10% of
@@ -1325,7 +1314,7 @@ mummy magic-user is limited to 3rd-level
 ability, even if it had higher-level spell use in
 its previous life.
 Undead Lieges and Pawns
-U n d e r certain conditions, intelligent
+Under certain conditions, intelligent
 undead creatures can try to control other
 undead. The undead need not be a spell
 caster to control other undead creatures. An
@@ -1409,13 +1398,13 @@ round of attacks.
 
 UNDEAD ATTEMPTS TO CONTROL OTHER UNDEAD
 Pawn          4   5-6  7-8  9-10  11-13  14-16  17-19  20-23  24-27  28-32  33+
-Skeleton      7   5    3    C     C      C      C      C      C      C      C
-Zombie        9   7    5    3     C      C      C      C      C      C      C
-Ghoul         11  9    7    5     3      C      C      C      C      C      C
-Wight             11   9    7     5      3      C      C      C      C      C
-Wraith                  11   9     7      5      3      C      C      C      C
-Mummy                        11    9      7      5      3      C      C      C
-Spectre                             11     9      7      5      3      C      C
+Skeleton      7   5    3    C C      C C      C C      C C
+Zombie        9   7    5    3     C C      C C      C C      C
+Ghoul         11  9    7    5     3      C C      C C      C C
+Wight             11   9    7     5      3      C C      C C      C
+Wraith                  11   9     7      5      3      C C      C C
+Mummy                        11    9      7      5      3      C C      C
+Spectre                             11     9      7      5      3      C C
 Vampire (a)                               11     9      7      5      3      C
 Vampire (b)                                      11     9      7      5      3
 Phantom                                                11     9      7      5
@@ -2193,7 +2182,7 @@ C       = Companion Players Book
 cn      = coin; unit of encumbrance
 cr      = creature
 C R = Combat Result for War Machine
-C R T = Combat Result Table for War
+CRT = Combat Result Table for War
               Machine
 Conc = Effect is only maintained as long as
               user concentrates on it and is not
@@ -2274,7 +2263,7 @@ cost
       cube; X13)
   50 Death Spell (R 240', EF 32 HD in 60'
       cube, to HD 7+; X16)
-  50 Finger of D e a t h * ( R60';X9, C12)
+  50 Finger of Death* (R 60'; X9, C12)
   50 Poison gas breath (DR 3r, EF 20'
        cube)
   55 Fire Ball (R 240', EF 20d6 D; X11)
@@ -2358,7 +2347,7 @@ A3. Attacks that Stop or Slow
 
   15 Darkness*(R 120', DR 46T, EF 30' dia;
      X11)
- 20 Light* (R 120', DR 46T, EF 30' dia; B40)
+  20 Light* (R 120', DR 46T, EF 30' dia; B40)
  20 Set normal Trap, 50% (DR 6T)
  20 Turn Undead as Cleric L6 (DR 1T)
  25 Curse* (R Touch; EF limited, see X14)
@@ -2530,7 +2519,7 @@ B4. Aids to Offset Encumbrance
    20 Create Water (R DR 6T, EF 50 gallons;
        X7)
    30 Summon Animals (R 360', DR 3T; M5)
-   35 Create Food (R l o ' , EF 400 men
+   35 Create Food (Rlo ' , EF 400 men
 
       + mounts; X8)
   40 Create Normal Animals (R 30', DR
@@ -2567,7 +2556,7 @@ Cost
   60 Remove Traps, 75% (DR 6T)
   70 Remove Barrier*(R 60'; C12)
   70 Repair permanent magical object (1 obj)
-  75 Victory (EF +25 CR Roll, on C R T
+  75 Victory (EF +25 CR Roll, on CRT
      worst 91-100)
   80 Metal to Wood (R 120', EF 2,000 cn;
      C16)
@@ -3355,7 +3344,7 @@ or any deliberate obscurement of the traces.
 trate and sense the direction of the larqest
 treasure (but not necessarily the most valu-
 able) within 400 feet.
-   Tree Movement: T h r user may swing
+   Tree Movement: The user may swing
 through the trees, as if an agile monkey, at
 full normal rate (modified by encumbrance).
    Turn Undead: This is identical to the
@@ -3592,7 +3581,7 @@ benefit the artifact's purpose or Sphere. Two
 alignments are usually specified, the first if
 user's alignment is different, and the second
 to be used otherwise.
-    Anti-Magic loo%, 10' radius: This will
+    Anti-Magic 100%, 10' radius: This will
 not deactivate the artifact, but will negate
 any and all of its powers that are called forth.
 The Anti-Magic cannot be modified or
@@ -3890,46 +3879,15 @@ A1 Poison breath                      50
 B3   Haste                            30
 C1 Produce fire                       15
 
-  1 Cure disease                           20       w
-  1 Cure wounds, critical                  35       p
-D2 Polymorph self                          65       c
-   Activation: The comb is not active when          p
- cquired. If it is left within a burning fire for   s
-  full turn, it is activated, but will not reveal   t
- owers. Thereafter, whenever the user
- efriends an elf (loaning money, curing, aid-
-ng in battle, etc.), one power is revealed tele-
- athically (maximum of 1 per day), in order
- f power.                                           A
-   Use of Powers: A power is invoked when a         B
- iven combination of the comb's teeth are
-                                                    B
- lucked, producing a nearly inaudible musi-
-                                                    B
- al tone.                                           C
-   Suggested Handicaps (2):
-                                                    D
-   1. When first power is used: User starts
-                                                    D
-       turning into an elf (1st level); the proc-
-       ess takes 3 months to complete. User
-                                                    fo
-       becomes aware of minor changes (ani-
-                                                    w
-       mosity toward dwarves, among other
-                                                    g
-       things) in 2 weeks. Change stops com-
-                                                    o
-       pletely as soon as artifact is no longer
-                                                    p
-       owned, but the change back to normal
-                                                    P
-       takes 3 months.
-   2. Energy drain: User loses 3 levels of
-                                                    c
-       experience when Poison Breath is first
-                                                    th
-       used.
+Cure disease 20
+Cure wounds, critical 35
+D2 Polymorph self 65
+
+Activation: The comb is not active when acquired. If it is left within a burning fire for 1 full turn, it is activated, but will not reveal powers. Thereafter, whenever the user befriends an elf (loaning money, curing, aiding in battle, and so forth), one power is revealed telepathically, to a maximum of 1 per day, in order of power.
+Use of Powers: A power is invoked when a given combination of the comb's teeth are plucked, producing a nearly inaudible musical tone.
+Suggested Handicaps (2):
+1. When first power is used: User starts turning into an elf (1st level); the process takes 3 months to complete. The user becomes aware of minor changes, including animosity toward dwarves, in 2 weeks. The change stops completely as soon as the artifact is no longer owned, but the change back to normal also takes 3 months.
+2. Energy drain: User loses 3 levels of experience when Poison Breath is first used.
    Suggested Penalties (3; #1 appears 4 in 6,
   thers each 1 in 6):
    1. Slow spell effect centered on user.
@@ -3953,68 +3911,34 @@ smith and Moorse, 1977).
                                                     C
     Your Notes:
 
-                                                    m
-                                                    m
+                                                    m m
                                                     C
 
-DIAMOND 0RB OF TYCHE
-                                  .. ._.     -
-  This item appears to be a crystal ball, but is
-  somewhat larger (about 18 inches across)
-  and glows softly with a white light filled
+DIAMOND ORB OF TYCHE
+This item appears to be a crystal ball, but is somewhat larger (about 18 inches across) and glows softly with a white light filled with sparkling colors. It was crafted by the powerful Immortal Tyche, said to control chance and the fortunes of mankind. It is a powerful artifact of Chaos, but is not necessarily evil, and is said to bring good fortune to the user, for a time.
 
-with sparkling colors. It was crafted by the
- owerful Immortal, Tyche, said to control
- hance and the fortunes of mankind. It is a
- owerful artifact ofChaos, but is not neces-
- arily evil, and is said to bring good fortune
- o the user, for a time.
-  Magnitude: Greater artifact.
-  Power Limits: 4/A, 3/B, 3/C, 4/D
-  Sphere: Thought (Thieves, air)
-  Suggested Powers (PP 405):
- 4     Pick pockets 100%                  80
-1      X-ray vision                       80
- 3      Gaseous form                       30
- 4      Container, 40,000 cn               80
- 2      Remove traps 75%                   60
- 4 Confuse alignment                       15
- 4 Hide in shadow 70%                      60
-  Activation: The artifact is active when
-  und. The user gets a feeling of inspiration
- hen gazing into the orb. The artifact
-  ants the knowledge of one power when
-ne consecutive hours are spent gazing (1
-ower per day maximum), given in order of
- P cost.
-  Use of Powers: By gazing into the orb and
-oncentrating on a power, the user acquires
- at power after 1-3 rounds.
-  Suggested Handicaps (3):
-      When first used: Magic error. The
-      user has a 10 7% chance of failure when-
-      ever attempting to cast a spell or use
-      any magic item requiring a command
-      word.
-      When pickpockets is first used: Align-
-      ment change to Chaotic,or to Neu-
-      tral.
-       If, as a container, the artifact is ever
-      completely filled: Recharging begins
-       to cost. The orb stops recharging by
-       itself, and must be given treasure
-       equal to 100 gp Value per 1 P P
-       recharged.
-   Suggested Penalties: Standard chances,
-  tally random adverse effects of 50 PP cost
- r less affecting the caster, from Tables A3,
-  3, D4, and D5.
-   Source: Greek mythology.
-   Further Research: See general works on
-  ythology, with reference to the Greek
-myths and gods, especially the goddess of
-  hance or Good Fortune.
-   Your Notes:
+Magnitude: Greater artifact.
+Power Limits: 4/A, 3/B, 3/C, 4/D
+Sphere: Thought (Thieves, air)
+Suggested Powers (PP 405):
+Pick pockets 100% 80
+X-ray vision 80
+Gaseous form 30
+Container, 40,000 cn 80
+Remove traps 75% 60
+Confuse alignment 15
+Hide in shadow 70% 60
+
+Activation: The artifact is active when found. The user gets a feeling of inspiration when gazing into the orb. The artifact grants the knowledge of one power when one consecutive hour is spent gazing, to a maximum of 1 power per day, given in order of PP cost.
+Use of Powers: By gazing into the orb and concentrating on a power, the user acquires that power after 1-3 rounds.
+
+Suggested Handicaps (3):
+1. When first used: Magic error. The user has a 10% chance of failure whenever attempting to cast a spell or use any magic item requiring a command word.
+2. When pick pockets is first used: Alignment change to Chaotic, or to Neutral.
+3. If, as a container, the artifact is ever completely filled: Recharging begins to cost. The orb stops recharging by itself, and must be given treasure equal to 100 gp value per 1 PP recharged.
+Suggested Penalties: Standard chances, totally random adverse effects of 50 PP cost or less affecting the caster, from Tables A3, B3, D4, and D5.
+Source: Greek mythology.
+Further Research: See general works on mythology, with reference to the Greek myths and gods, especially the goddess of chance or Good Fortune.
 
 FIERY BRAND OF MASAUWU
  The legendary Guardian of Death,
@@ -4025,7 +3949,7 @@ FIERY BRAND OF MASAUWU
  clad in animal skins and carrying a flaming
  torch. This device is sometimes left for oth-
  ers to use, especially if they will further his
- causes. I t has horrible a n d awesome
+ causes. I t has horrible and awesome
  powers, but if the user impresses Masauwu
  by employing it often and with diligence,
  he may grant even greater ones.
@@ -4557,31 +4481,8 @@ appear within 30 feet of the user. Select or
 randomly determine any monster from 1 to
  12 Hit Dice.
 
-   Source: Arabian folklore
-  Further Research: See The Arabian              A
-Nights' Entertainments (or 1001 Nights,          A
- rom circa 1450) and related references,         A
- ncluding Sinbad the Sailor, Aladdin, Sche-      B
-herazade, the Roc, etc.                          B
-  Your Notes:                                    B
-                                                 C
-                                                 D
-                                                 D
-                                                 D
-
-                                                 f
-                                                 a
-                                                 a
-                                                 H
-                                                 d
-
-                                                 u
-                                                 k
-                                                 s
-
-                                                 t
-                                                 s
-                                                 p
+Source: Arabian folklore.
+Further Research: See The Arabian Nights' Entertainments (or 1001 Nights, from circa 1450) and related references, including Sinbad the Sailor, Aladdin, Scheherazade, the Roc, etc.
 
 SHARD OF SAKKRAD
  According to very old legends, the original
@@ -4609,68 +4510,27 @@ sharp edges and pointed ends.
   Power Limits: 4/A, 4/B, 4/C, 5/D
    Sphere: Matter (Fighters, earth)
 
-   Suggested Powers (PP 750):
- 1     Disintegrate                80
- 2     Mass charm                  75
-  4    Polymorph any object 75
- 2     Detect magic                15
- 3     Plane travel                65
- 3     Telekinesis                 40
- 1 Create any monster              100
-  1 Automatic healing              100
-  2    Shapechange                 100
-  3 Luck                           100
-   Activation: The Shard is active when
-ound. Anyone who touches it immediately
- nd magically knows all the names, details,
- nd command words of all of its powers.
-However, all this knowledge vanishes imme-
- iately when physical contact ends.
-   Use of Powers: A power is granted to the
- ser when the proper command word is spo-
- en. It remains until used or until the user
-  ops touching the item.
-   Suggested Handicaps (4; #1 appears when
-he item is first used; others appear in
- equence whenever the user draws on a 100
- oint power):
-   1. Magic error: A 25% chance of error
-      occurs whenever the user casts a spell or
-      utters any command words, except
-      those used on the shard.
-   2. OperatingCosts: Theuser loses 10% of
-      all treasure owned, and loses 10% each
-      time a 100 point power is employed
-      thereafter.
-   3. Greed: Anyone seeing the user produce
-      any visible effect of the shard's powers
-      must make a Saving Throw vs. Spells,
-      with a -4 penalty to the roll, or immedi-
-      ately attack the user with intention to
-      possess the shard.
-   4. Doom: The next time the user employs
-      a 100 point power, there is a 5 % chance
-      that an Immortal will arrive. This
-      chance increases by 2% each time a 100
-      point power is used again. If the
-      Immortal arrives, all within sight range
-      have the choice of watching or looking
-      away. Each of those watching must
-      make a Saving Throw vs. Death Ray,
-      with a -10 penalty to the roll, or die.
-      Each of those looking away may make a
-      Saving Throw vs. Spells; if successful,
-      no further effect occurs, but if failed,
-      each must make the previously men-
-      tioned Saving Throw vs. Death Ray.
-      The Immortal departs within 1 round,
-       taking the user and all of his or her non-
-       living valuables (wherever they may
-      be). The shard is not taken, but is tele-
-      ported to a random location within
-       10,000 miles.
+Suggested Powers (PP 750):
+Disintegrate 80
+Mass charm 75
+Polymorph any object 75
+Detect magic 15
+Plane travel 65
+Telekinesis 40
+Create any monster 100
+Automatic healing 100
+Shapechange 100
+Luck 100
 
-  Suggested Penalties (8; 20% chance of
+Activation: The Shard is active when found. Anyone who touches it immediately and magically knows all the names, details, and command words of all of its powers. However, all this knowledge vanishes immediately when physical contact ends.
+Use of Powers: A power is granted to the user when the proper command word is spoken. It remains until used or until the user stops touching the item.
+Suggested Handicaps (4; #1 appears when the item is first used; others appear in sequence whenever the user draws on a 100 point power):
+1. Magic error: A 25% chance of error occurs whenever the user casts a spell or utters any command words, except those used on the shard.
+2. Operating Costs: The user loses 10% of all treasure owned, and loses 10% each time a 100 point power is employed thereafter.
+3. Greed: Anyone seeing the user produce any visible effect of the shard's powers must make a Saving Throw vs. Spells, with a -4 penalty to the roll, or immediately attack the user with intention to possess the shard.
+4. Doom: The next time the user employs a 100 point power, there is a 5% chance that an Immortal will arrive. This chance increases by 2% each time a 100 point power is used again. If the Immortal arrives, all within sight range have the choice of watching or looking away. Each of those watching must make a Saving Throw vs. Death Ray, with a -10 penalty to the roll, or die. Each of those looking away may make a Saving Throw vs. Spells; if successful, no further effect occurs, but if failed, each must make the previously mentioned Saving Throw vs. Death Ray. The Immortal departs within 1 round, taking the user and all of his or her non-living valuables, wherever they may be. The shard is not taken, but is teleported to a random location within 10,000 miles.
+
+Suggested Penalties (8; 20% chance of
 appearance when any power is used; equal
 chances for each):
   1. delayed blast fire ball within 10' of user,
@@ -4690,8 +4550,7 @@ chances for each):
   6 . The user is struck by Withdrawal; Sav-
       ing Throw vs. Spells applies, but with a
       -5 penalty.
-  7. Anti-Magic l o o % , 10' radius emanat-
-      ing from the artifact. The Anti-Magic
+  7. Anti-Magic 100%, 10' radius emanating from the artifact. The Anti-Magic
       will remain until wished away, or until
       the user washes it in the water at either
       the north pole or the south pole.

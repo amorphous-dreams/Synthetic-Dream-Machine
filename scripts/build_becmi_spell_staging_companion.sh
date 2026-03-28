@@ -13,6 +13,15 @@ COMP_TXT="$TMPDIR/companion.txt"
 COMP_PDF="$ROOT/_becmi/TSR 1013 - Set 3 Companion Set.pdf"
 COMP_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Companion.md"
 
+companion_crop_layout() {
+  local page="$1"
+  local x="$2"
+  local y="$3"
+  local w="$4"
+  local h="$5"
+  pdftotext -layout -nodiag -nopgbrk -f "$page" -l "$page" -x "$x" -y "$y" -W "$w" -H "$h" "$COMP_PDF" - 2>/dev/null
+}
+
 companion_spell_block_named() {
   local label="$1"
   local note="$2"
@@ -26,6 +35,32 @@ companion_spell_block_named() {
   printf '\n[Companion pages 15-17: druid transition, philosophy, and spell material]\n' >> "$OUT"
   render_tsv_cols_pages_anchored_until "$pdf" 15 17 '185,370' 'Druid' 'Fighter' \
     | awk 'start || $0 == "Druid" { start = 1; print }' >> "$OUT"
+  printf '\n[Companion pages 22-24: layout-column recovery for fifth- through seventh-level magic-user spell bodies]\n' >> "$OUT"
+  {
+    companion_crop_layout 22 195 145 192 610 \
+      | awk 'started || /Fifth Level Magic-user Spells/ { started = 1; print }'
+    printf '\n'
+    companion_crop_layout 22 390 145 192 610 \
+      | awk 'started || /Contact Outer Plane/ { started = 1; print }'
+    printf '\n'
+    companion_crop_layout 23 0 70 192 690 \
+      | awk 'started || /Move Earth/ { started = 1; print }'
+    printf '\n'
+    companion_crop_layout 23 195 145 192 610 \
+      | awk 'started || /Wall of Iron/ { started = 1; print }'
+    printf '\n'
+    companion_crop_layout 23 390 145 192 610 \
+      | awk 'started || /Seventh Level Magic-user Spells/ { started = 1; print }'
+    printf '\n'
+    companion_crop_layout 24 0 70 192 700 \
+      | awk 'started || /Create Normal Monsters/ { started = 1; print }'
+    printf '\n'
+    companion_crop_layout 24 195 145 192 610 \
+      | awk 'started || /Lore/ { started = 1; print }'
+    printf '\n'
+    companion_crop_layout 24 390 145 192 610 \
+      | awk 'started || /Mass Invisibility\*/ { started = 1; print }'
+  } >> "$OUT"
   printf '\n[Companion pages 22-28: magic-user 5th-9th level spell material]\n' >> "$OUT"
   render_tsv_cols_pages_anchored "$pdf" 22 28 '185,370' 'FIFTH LEVEL MAGIC-USER SPELLS' >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
@@ -333,6 +368,17 @@ validate_companion_staging() {
   assert_section_contains "$COMP_OUT" '[Companion pages 13-14: high-level cleric spell material]' '[Companion pages 15-17: druid transition, philosophy, and spell material]' 'Raise Dead Fully\*' 'cleric flow is missing Companion seventh-level spell evidence'
   assert_section_contains "$COMP_OUT" '[Companion pages 15-17: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' 'Druid Philosophy' 'druid flow is missing the philosophy transition block'
   assert_section_not_contains "$COMP_OUT" '[Companion pages 15-17: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' '^Fighter$' 'druid flow is bleeding into the adjacent Fighter class section'
+  assert_file_contains "$COMP_OUT" 'Contact Outer Plane[\s\S]*Range: 0 \(magic-user only\)' 'Companion recovery pass lost Contact Outer Plane spell body'
+  assert_file_contains "$COMP_OUT" 'Dissolve\*[\s\S]*Range: 120' 'Companion recovery pass lost Dissolve spell body'
+  assert_file_contains "$COMP_OUT" 'Feeblemind[\s\S]*Range: 240' 'Companion recovery pass lost Feeblemind spell body'
+  assert_file_contains "$COMP_OUT" 'Telekinesis[\s\S]*Range: 120' 'Companion recovery pass lost Telekinesis spell body'
+  assert_file_contains "$COMP_OUT" 'Move Earth[\s\S]*Range: 240' 'Companion recovery pass lost Move Earth spell body'
+  assert_file_contains "$COMP_OUT" 'Reincarnation[\s\S]*Range: 10' 'Companion recovery pass lost Reincarnation spell body'
+  assert_file_contains "$COMP_OUT" 'Wall of Iron[\s\S]*Range: 120' 'Companion recovery pass lost Wall of Iron spell body'
+  assert_file_contains "$COMP_OUT" 'Weather Control[\s\S]*Range: 0 \(magic-user only\)' 'Companion recovery pass lost Weather Control spell body'
+  assert_file_contains "$COMP_OUT" 'Create Normal Monsters[\s\S]*Range: 30' 'Companion recovery pass lost Create Normal Monsters spell body'
+  assert_file_contains "$COMP_OUT" 'Lore[\s\S]*Range: 0 \(magic-user only\)' 'Companion recovery pass lost Lore spell body'
+  assert_file_contains "$COMP_OUT" 'Mass Invisibility\*[\s\S]*Range: 240' 'Companion recovery pass lost Mass Invisibility spell body'
   assert_section_contains "$COMP_OUT" '[Companion pages 22-28: magic-user 5th-9th level spell material]' '```' 'Contact Outer Plane' 'magic-user flow is missing the Companion Contact Outer Plane body'
   assert_section_contains "$COMP_OUT" '[Companion pages 22-28: magic-user 5th-9th level spell material]' '```' '^Gate\*$' 'magic-user flow is missing the Companion Gate heading'
   assert_section_contains "$COMP_OUT" '[Companion procedures: buying and selling magic items]' '[Companion procedures: damage to magic items]' 'Armor[[:space:]]+10,000 to 150,000 gp' 'buying/selling procedure lost the Companion price table'
@@ -359,16 +405,14 @@ companion_spell_block_named 'High-Level Cleric, Druid, and Magic-User Spell Mate
 companion_magic_items_block_named 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 'Companion treasure extraction split by content type: flow-first TSV reflow for buying/selling, item damage, and the scroll-through-miscellaneous-item prose descriptions; readable sequential formatting for the dense item tables; deterministic post-cleanup is limited to stable OCR and page-header repair after capture.' "$COMP_PDF"
 companion_procedures_block_named 'Demi-Human Crafts and Poison' 'flow-first Companion procedures extraction using right-column TSV reflow for the Demi-Human Crafts and Poison sections, explicitly skipping the Hit Points Maximum section between them.' "$COMP_PDF"
 cleanup_output
-set_table_qa_note "$COMP_OUT" 'reviewed 2026-03-27 after flow-first rebuild' 'high-level cleric and druid spell runs, the Companion MU 5th-9th spell run, buying/selling and item-damage procedures, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the contiguous scroll-to-miscellaneous-item description flow.' 'major Companion sections now rebuild from heading-anchored contiguous TSV flows, lane validation covers bleed/truncation/table regressions, and no blocking Companion extraction defect remains in the audited sections.'
-append_table_qa_lines "$COMP_OUT" <<'EOF'
-- Capture confidence: **0.95** (UP from 0.91 after the 2026-03-27 flow-first Companion rebuild)
-- Coverage note: Cleric 5th-7th level spells, the druid transition/philosophy block plus druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, buying/selling and item-damage procedures, the Demi-Human Crafts and Poison procedures, and the spell-adjacent item section now all rebuild from Companion source text rather than pasted witness text.
-- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, `Magic-user Spells: Fifth to Ninth Level`, the key treasure/item interface run, and the audited `Demi-Human Crafts` plus `Poison` procedures are represented in staging with heading-anchored contiguous flows.
-- Gap priority: LOW — residual work is limited to OCR texture cleanup and crosswalk/provenance follow-through, not missing major Companion source coverage.
-EOF
 perl -0pi -e 's/100t the local magic shop/loot the local magic shop/g;' "$COMP_OUT"
 perl -0pi -e 's/invisible things, and so forth\.\s+An/invisible things, and so forth\)\. An/g;' "$COMP_OUT"
 perl -0pi -e 's/loo\x27/100\x27/g;' "$COMP_OUT"
+perl -0pi -e '
+  s/    Distance and\n    Number of         Chance of\.         \.\.\n    Questions Insanity Knowing                Lying/    Distance and\n    Number of Questions   Chance of Insanity   Knowing   Lying/g;
+  s/Distance and\s*\n\s*Number of\s+Chance of\.?\s*\.?\s*\n\s*Questions\s+Insanity\s+Knowing\s+Lying/Distance and\nNumber of Questions   Chance of Insanity   Knowing   Lying/g;
+  s/         3\s+25 %\s+50 %\n\s*4\s+5%\s*\n\s*10\s+30\s+45\n\s*5\s+15\s+35\s+40/         3           5%           25 %          50 %\n         4           10            30            45\n         5           15           35            40/g;
+' "$COMP_OUT"
 perl -0pi -e 's/ONS\s*\nMAGIC ITEM PRICE SUGGES.\s*\n/MAGIC ITEM PRICE SUGGESTIONS\n/g;' "$COMP_OUT"
 perl -0pi -e 's/Armor\s*\n10,000 to 150,000\s*\nP/Armor           10,000 to 150,000 gp/g;' "$COMP_OUT"
 perl -0pi -e 's/Misc\. Item\s*\n5,000 to 750,000\s*\nP/Misc. Item       5,000 to 750,000 gp/g;' "$COMP_OUT"

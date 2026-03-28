@@ -21,16 +21,6 @@ Source PDF:
 - Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
 - Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
-## Table Check QA Pass
-
-- Status: reviewed 2026-03-27 during direct PDF audit and validator uplift
-- Scope checked: leveled spell lists, spell-expansion sections, the rebuilt research/lost-book block, magic support infrastructure, and the scroll/ring/wand/miscellaneous-item treasure run.
-- Result: bounded source-derived extraction now replaces the earlier broad reconstructed research and treasure blocks, and the Expert validator confirms the rebuilt lane still preserves the required witnesses.
-
-- Capture confidence: **0.94** (UP from 0.90 after replacing the broad Expert research and treasure reconstructions with bounded source-derived extraction plus lane validation)
-- Coverage note: Core Expert spell expansions, research/lost-book procedures, and the treasure-side scroll/ring/wand/miscellaneous-item run now come from deterministic page-column extraction or validated TSV flow rather than the earlier broad hand-reconstructed blocks. Residual issues are now mostly OCR texture and local crop cleanup, not reconstruction burden.
-- ToC cross-check: Expert CONTENTS review still supports the staged spell sections, support/research procedures, and the full page-65 `h. MISCELLANEOUS MAGIC ITEMS` witness.
-- Gap priority: LOW — the highest-confidence suppressors in Expert were the broad reconstructed research and treasure blocks, and both are now replaced by reproducible extraction plus validator coverage.
 ### Clerical and Magic-User Spell Expansions
 
 - Extraction note: stitched Expert spell extraction: clerical spell pages 7-11 and magic-user spell pages 13-18 use separate TSV coordinate reflow passes so the real spell sections stay in source order and the intervening fighter/thief class tables are excluded.
@@ -1387,7 +1377,7 @@ within a 60' x 60' x 60' area
 This spell will affect 4-32 Hit Dice of living
 creatures within the given area. Normal
 plants and insects are automatically slain,
-a n d those with no hit points are not
+and those with no hit points are not
 counted in the total affected. Undead are
 not affected, nor are creatures with 8 or
 more Hit Dice (or levels of experience).
@@ -1552,7 +1542,7 @@ The DM may limit or forbid the production of certain powerful items, by requirin
 They could be hard to find, very costly,
 time-consuming, or require a special adventure.
 
-Examples                cost        Time
+Examples                 cost       Time
 Scroll: magic
 missile (x2)*         1,000       2 weeks
 Portion of healing        500       1 week
@@ -1569,9 +1559,8 @@ Item                 cost          Time
 20 arrows 1+      10,000 gp       1 month
 Plate mail 1      10,000 gp       6 months
 Crystal ball      30,000 gp       6 months
-Ring x-ray
-vision         100,000 gp      12 months
-Ring spell                      1 month per
+Ring x-ray vision     100,000 gp     12 months
+Ring spell storing   10,000 gp     1 month per spell level
 
 [Expert page 28: Spell Books, Lost]
 Spell Books, Lost

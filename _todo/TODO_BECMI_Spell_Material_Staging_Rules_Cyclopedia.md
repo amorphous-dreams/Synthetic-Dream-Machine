@@ -21,16 +21,6 @@ Source PDF:
 - Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
 - Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
-## Table Check QA Pass
-
-- Status: reviewed 2026-03-27 during direct PDF audit and validator uplift
-- Scope checked: Chapter 3 setup and spell-list pages, the Prismatic Wall recovery pass, monster spellcaster pages, DM spell-doctrine pages, scrolls, spell research, construct / enchantment procedures, and the Chapter 16 item-description catalog.
-- Result: direct PDF audit plus the RC validator confirmed the targeted recoveries still hold, while documenting that the lane remains more recovery-heavy than the older confidence prose implied.
-
-- Capture confidence: **0.94**
-- Coverage note: RC spell descriptions, spell-adjacent doctrine, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog remain source-grounded under direct audit. The lane is held at 0.94 because Chapter 3 and Prismatic Wall still depend on targeted recovery machinery more heavily than the older prose admitted.
-- ToC cross-check: RC Chapter 16 procedure and item-description sections remain represented in staging, and the RC DM spell-doctrine pass now adds the named spell-adjacent procedures block plus page-255 enchantment-economics text.
-- Gap priority: LOW — the item-description gap is closed, but RC still needs recovery-hardening rather than score inflation while the PDF remains parser-hostile.
 ### Chapter 3: Spells and Spellcasting
 
 - Extraction note: hybrid RC extraction: pages 33-34 are split into labeled layout-column slices for readable setup prose and spell-list presentation, while pages 35-59 use TSV coordinate reflow with three reading-order columns to eliminate left/right interleave in spell descriptions.
@@ -5483,13 +5473,13 @@ liege to control other undead would cause the to-
 Undead Attempts to Control Other Undead Table
 Hit Dice of Liege
 Intended Pawn                  4            5-6        7-8        9-10         11-13        14-16        17-19     20-23        24-27       28-32        33 +
-Skeleton                        7             5          3          C            C             C           C         C            C           C            C
-Zombie                          9             7          5          3            C             C           C         C            C           C            C
-Ghoul                          11            9           7          5            3             C           C         C            C           C            C
-Wight                                       11           9          7             5            3           C          C           C           C            C
-Wraith                                                  11          9            7             5            3         C           C           C            C
-Mummy                                                              11            9             7            5         3           C           C            C
-Spectre                                                                         11             9            7         5           3            C           C
+Skeleton                        7             5          3          C C             C C         C C           C C
+Zombie                          9             7          5          3            C C           C C            C C            C
+Ghoul                          11            9           7          5            3             C C         C C           C C
+Wight                                       11           9          7             5            3           C C           C C            C
+Wraith                                                  11          9            7             5            3         C C           C C
+Mummy                                                              11            9             7            5         3           C C            C
+Spectre                                                                         11             9            7         5           3            C C
 Vampire (a)                                                                                   11           9          7            5           3           C
 Vampire (b)                                                                                               11          9            7           5           3
 Phantom                                                                                                              11            9           7           5
@@ -5583,7 +5573,7 @@ items carried. A scroll normally need not be
 checked except against fire damage; you may al-
 so include water damage, if desired.
 To check for damage to items, roll 1d4 or 1d6
-(using 1d6 if the chance of damage is high). If
+(using 1d6 if the chance of damage is hig h ) . I f
 the result is greater than the item's Strength
 (number of "plusses"), the item is damaged.
 Items without plusses may be given ratings for

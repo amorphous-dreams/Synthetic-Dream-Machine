@@ -379,6 +379,16 @@ normalize_expert_general_repairs() {
   perl -0pi -e 's/Staff of Striking@\):This/Staff of Striking \(s\): This/g; s/^\+\s*\n//mg; s/Wands for Yi damage/Wands for 1\/2 damage/g; s/\ng\. MISCELLANEOUS MAGIC ITEMS/\nh. MISCELLANEOUS MAGIC ITEMS/g; s/bonus of\nt 2 to the wearer/bonus of\n+2 to the wearer/g; s/afinger of/a finger of/g; s/points of damage \(2d6 2\)\./points of damage \(2d6+2\)\./g; s/greater\. A cleric may only make items usa-\n\n\[Expert page 27: Research \(Magic Spells and Items\), column 3\]\nble by clerics, and a magic-user \(or elf\) may\nonly make items usable by that class\./greater. A cleric may only make items usable by clerics, and a magic-user \(or elf\) may only make items usable by that class.\n\n[Expert page 27: Research \(Magic Spells and Items\), column 3]/g; s/(The user must state which effect is desired\.\nAn unwilling victim may make a Saving\nThrow vs\. Wands to avoid the effect\.)\n\n\1/$1/g; s/Helm of Teleportation \(m\): The wearer\nmay teleport \(as with the magic-user spell,\n\nteleport another creature or item\. An unwilling victim may make a Saving Throw vs\. Spells to avoid the effect\. After one use, the helm will no longer function\. If a teleport spell is then cast upon it, the user may then teleport as often as desired, up to once per round\./Helm of Teleportation \(m\): The wearer\nmay teleport \(as with the magic-user spell,\nincluding chances of error\), or may try to\nteleport another creature or item. An unwilling victim may make a Saving Throw vs.\nSpells to avoid the effect. After one use, the\nhelm will no longer function. If a teleport\nspell is then cast upon it, the user may then\nteleport as often as desired, up to once per\nround./g;' "$EXPERT_OUT"
 }
 
+normalize_expert_research_examples() {
+  perl -0pi -e '
+    s/Examples\s+cost\s+Time/Examples                 cost       Time/g;
+    s/Ring x-ray\s+vision\s+100,000 gp\s+12 months/Ring x-ray vision     100,000 gp     12 months/g;
+    s/Ring spell\s+storing\s+10,000 gp\s+1 month per\s+spell level/Ring spell storing   10,000 gp     1 month per spell level/g;
+    s/Ring spell\s+1 month per\s+\n\n\[Expert page 28: Spell Books, Lost\]/Ring spell storing   10,000 gp     1 month per spell level\n\n[Expert page 28: Spell Books, Lost]/g;
+    s/Ring spell\s+1 month per/Ring spell storing   10,000 gp     1 month per spell level/g;
+  ' "$EXPERT_OUT"
+}
+
 normalize_expert_treasure_tables() {
   perl -0pi -e 's/UNGUARDED TREASURE\n.*?\nMagic Items/UNGUARDED TREASURE\n\nDungeon    Silver         Gold             Gems      Jewelry    Magic Items\nLevel\n1          100 x 1d6      50% 10 x 1d6     5% 1d6    2% 1d6    2% any 1\n2-3        100 x 1d12     50% 100 x 1d6    10% 1d6   5% 1d6    8% any 1\n4-5        1,000 x 1d6    200 x 1d6        20% 1d8   10% 1d8   10% any 1\n6-7        2,000 x 1d6    500 x 1d6        30% 1d10  15% 1d10  15% any 1\n8-9        5,000 x 1d6    1,000 x 1d6      40% 1d12  20% 1d12  20% any 1\n\nMagic Items/s;' "$EXPERT_OUT"
 }
@@ -407,6 +417,7 @@ validate_expert_output() {
   assert_file_contains "$EXPERT_OUT" 'Spell Books, Lost' 'Expert lost spell-book heading is missing'
   assert_section_patterns_in_order "$EXPERT_OUT" '### Research and Lost Spell Books' '### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 'Expert research procedure ordering broke' 'Research \(Magic Spells and Item' 'Examples' 'Ring x-ray|Ring x-ray vision' 'Spell Books, Lost'
   assert_section_contains "$EXPERT_OUT" '### Research and Lost Spell Books' '### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 'Ring x-ray|x-ray[[:space:]]+vision[[:space:]]+100,000 gp' 'Expert research examples lost the long-tail item witness'
+  assert_section_contains "$EXPERT_OUT" '### Research and Lost Spell Books' '### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 'Ring spell storing[[:space:]]+10,000 gp[[:space:]]+1 month per spell level' 'Expert research examples still contain an orphaned final row'
 
   assert_section_patterns_in_order "$EXPERT_OUT" '### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' '### Magic Item Doctrine and Intelligent Weapons' 'Expert treasure doctrine ordering broke' 'e\. SCROLLS|e\. Scrolls' 'f\. RINGS|f\. Rings' 'g\. WANDS, STAVES, AND RODS|g\. Wands, Staves, and Rods' 'h\. MISCELLANEOUS MAGIC ITEMS|h\. Miscellaneous Magic Items'
   assert_section_contains "$EXPERT_OUT" '### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' '### Magic Item Doctrine and Intelligent Weapons' 'Wand of Negation' 'Expert treasure block lost Wand of Negation'
@@ -423,13 +434,7 @@ expert_research_block_named 'Research and Lost Spell Books' 'bounded page-column
 expert_magic_items_block_named 'Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' 'full readable treasure-chapter extraction from pages 58-65, reflowed in page/column order so cursed items, swords, armor/weapons, potions, scrolls, rings, wands/staves/rods, and miscellaneous items remain in chapter sequence rather than stitched out of order.'
 expert_magic_item_doctrine_block_named 'Magic Item Doctrine and Intelligent Weapons' 'page-59 to page-61 column slices target generic magic-item doctrine, intelligent-weapon control rules, and the specific control-potion subset needed for downstream spell/effect coverage; cleanup normalizes OCR scars and dehyphenates wrapped words.' "$EXPERT_PDF"
 cleanup_output
-set_table_qa_note "$EXPERT_OUT" 'reviewed 2026-03-27 during direct PDF audit and validator uplift' 'leveled spell lists, spell-expansion sections, the rebuilt research/lost-book block, magic support infrastructure, and the scroll/ring/wand/miscellaneous-item treasure run.' 'bounded source-derived extraction now replaces the earlier broad reconstructed research and treasure blocks, and the Expert validator confirms the rebuilt lane still preserves the required witnesses.'
-append_table_qa_lines "$EXPERT_OUT" <<'EOF'
-- Capture confidence: **0.94** (UP from 0.90 after replacing the broad Expert research and treasure reconstructions with bounded source-derived extraction plus lane validation)
-- Coverage note: Core Expert spell expansions, research/lost-book procedures, and the treasure-side scroll/ring/wand/miscellaneous-item run now come from deterministic page-column extraction or validated TSV flow rather than the earlier broad hand-reconstructed blocks. Residual issues are now mostly OCR texture and local crop cleanup, not reconstruction burden.
-- ToC cross-check: Expert CONTENTS review still supports the staged spell sections, support/research procedures, and the full page-65 `h. MISCELLANEOUS MAGIC ITEMS` witness.
-- Gap priority: LOW — the highest-confidence suppressors in Expert were the broad reconstructed research and treasure blocks, and both are now replaced by reproducible extraction plus validator coverage.
-EOF
+normalize_expert_research_examples
 normalize_expert_general_repairs
 normalize_expert_treasure_tables
 normalize_expert_intelligent_sword_tables

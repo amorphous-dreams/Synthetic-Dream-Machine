@@ -487,13 +487,6 @@ rc_constructs_block_named 'Construct Enchantment and Magical Constructs' 'target
 tsv_cols_block_named_until 'Chapter 16 Item Description Catalog (Potions, Wands/Staves/Rods, Rings, Miscellaneous Items, and Swords)' 'anchored TSV coordinate reflow across RC Chapter 16 item-description pages, starting at the Potions heading and stopping before the Chapter 16 wrap-up/cashout section to preserve the canonical item-property descriptions in reading order.' "$RC_PDF" 232 249 '185,370' 'Potions' 'Cashing Treasure'
 page_cols_block_named 'Index to Spells' 'three-column extraction from the RC appendix index page using cropped per-column text to preserve alphabetical reading order.' "$RC_PDF" 300 300 "15 15 175 770" "195 15 180 770" "380 15 175 770"
 cleanup_output
-set_table_qa_note "$RC_OUT" 'reviewed 2026-03-27 during direct PDF audit and validator uplift' 'Chapter 3 setup and spell-list pages, the Prismatic Wall recovery pass, monster spellcaster pages, DM spell-doctrine pages, scrolls, spell research, construct / enchantment procedures, and the Chapter 16 item-description catalog.' 'direct PDF audit plus the RC validator confirmed the targeted recoveries still hold, while documenting that the lane remains more recovery-heavy than the older confidence prose implied.'
-append_table_qa_lines "$RC_OUT" <<'EOF'
-- Capture confidence: **0.94**
-- Coverage note: RC spell descriptions, spell-adjacent doctrine, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog remain source-grounded under direct audit. The lane is held at 0.94 because Chapter 3 and Prismatic Wall still depend on targeted recovery machinery more heavily than the older prose admitted.
-- ToC cross-check: RC Chapter 16 procedure and item-description sections remain represented in staging, and the RC DM spell-doctrine pass now adds the named spell-adjacent procedures block plus page-255 enchantment-economics text.
-- Gap priority: LOW — the item-description gap is closed, but RC still needs recovery-hardening rather than score inflation while the PDF remains parser-hostile.
-EOF
 perl -0pi -e '
   s/\b1dl2\b/1d12/g;
   s/\b2dl2\b/2d12/g;

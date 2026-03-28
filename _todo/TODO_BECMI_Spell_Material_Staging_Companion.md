@@ -21,16 +21,6 @@ Source PDF:
 - Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
 - Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
-## Table Check QA Pass
-
-- Status: reviewed 2026-03-27 after flow-first rebuild
-- Scope checked: high-level cleric and druid spell runs, the Companion MU 5th-9th spell run, buying/selling and item-damage procedures, spell-scroll type and level tables, wand/staff/rod tables, ring tables, miscellaneous-item tables, and the contiguous scroll-to-miscellaneous-item description flow.
-- Result: major Companion sections now rebuild from heading-anchored contiguous TSV flows, lane validation covers bleed/truncation/table regressions, and no blocking Companion extraction defect remains in the audited sections.
-
-- Capture confidence: **0.95** (UP from 0.91 after the 2026-03-27 flow-first Companion rebuild)
-- Coverage note: Cleric 5th-7th level spells, the druid transition/philosophy block plus druid 1st-7th level spells, Companion Magic-User 5th-9th level spells, buying/selling and item-damage procedures, the Demi-Human Crafts and Poison procedures, and the spell-adjacent item section now all rebuild from Companion source text rather than pasted witness text.
-- ToC cross-check: Companion PDF ToC sections for high-level cleric, druid, `Magic-user Spells: Fifth to Ninth Level`, the key treasure/item interface run, and the audited `Demi-Human Crafts` plus `Poison` procedures are represented in staging with heading-anchored contiguous flows.
-- Gap priority: LOW — residual work is limited to OCR texture cleanup and crosswalk/provenance follow-through, not missing major Companion source coverage.
 ### High-Level Cleric, Druid, and Magic-User Spell Material
 
 - Extraction note: section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric, druid, and magic-user class pages, split so each spell block starts at its real section heading instead of earlier class spill.
@@ -470,6 +460,247 @@ handled normally for the remaining damage;
 in the example above, the druid would take 4-
 24 points of damage, or 2-12 points if the Saving Throw were made.
 
+[Companion pages 22-24: layout-column recovery for fifth- through seventh-level magic-user spell bodies]
+    Fifth Level Magic-user Spells
+    Contact Outer Plane
+    Range: 0 (magic-user only)
+    Duration: See below
+    Effect: 3-12 questions may be answered
+    This spell allows the magic-user to contact
+    one of the Outer Planes of Existence to seek
+    knowledge from an Immortal creature
+    (played by the DM). The wisest and most
+    powerful Immortals live on the most distant
+    Outer Planes. However, mental contact with
+    an Immortal may cause a mortal to go
+    insane. The more distant the plane, the
+    greater the chance of a correct answer-but
+    the greater the chance of Insanity as well.
+       The number of questions the magic-user
+    may ask is equal to the distance* to the Outer
+    plane. The caster may choose the distance,
+    up to the maximum allowed. The chance of
+    insanity is checked once, when the Immortal
+    is first contacted. If the caster is 21st level or
+    greater, the chance of insanity is reduced by
+    5 % per level of the caster above 20. If insan-
+    ity does not result, the Immortal may still not
+    know the answer, or may lie. The chances of
+    knowing and lying are checked for each ques-
+    tion.
+
+    Distance and
+    Number of Questions   Chance of Insanity   Knowing   Lying
+
+         3           5%           25 %          50 %
+         4           10            30            45
+         5           15           35            40
+         6           20           40            35
+         7           25           50            30
+         8           30           60            25
+         9           35            70           20
+         10          40            80           15
+         11          45            90           10
+         12          50            95            5
+Move Earth
+Range: 240'
+Duration: 6 turns
+Effect: Moves soil
+This spell causes soil (but not rock) to move.
+It may be used to move earth horizontally to
+make a hill, or vertically, to open a large hole.
+The hole may be up to 240 ' deep, unless solid
+rock is reached. The soil may be moved at up
+to 60' per turn, and at the end of the spell
+duration, the moved soil remains where it is
+put. The spell is helpful for constructing cas-
+tles.
+Reincarnation
+Range: 10'
+Duration: Permanent
+Effect: Creates a new body
+To cast this spell, the magic-user must have
+part of the dead body, however small that part
+may be. When the spell is cast, a new body
+magically appears, and the life force which
+was once in the dead body returns and
+inhabits the new one. The DM refers to the
+tables below to find the form of the new body.
+   If the life force is reincarnated as a different
+race, all details of the new race apply, instead
+of the old. For example, a cleric reincarnated
+as an elf is no longer a cleric, but is able to
+cast magic-user spells and fight as an elf.
+
+Wall of Iron
+Range: 120'
+Duration: Permanent
+Effect: Creates 500 square feet of iron
+This spell creates a vertical wall of iron
+exactly 2 " thick. The magic-user may choose
+any length and width, but the total area must
+be 500 square feet or less (10'~50',20'~25',
+etc.), and the entire wall must be within 120'
+of the caster. The caster must create the wall
+so it rests on the ground or similar support. It
+cannot be cast in a space occupied by another
+object. It lasts until dispelled, disintegrated,
+or physically broken (though it will resist all
+but giant-sized physical attacks). Most other
+spell effects, including fire ball, lightning
+bolt, etc., have no effect on a wall of iron. If
+the wall is made to topple, it causes 10-100
+points of damage and shatters.
+   If the wall is attacked, it has a number of
+"hit points" equal to the level of the caster.
+The wall can only be damaged by battering.
+Giants inflict 1 point of battering damage per
+blow, and certain other creatures might dam-
+age it in other ways; a rust monster can
+destroy a wall of iron with a single touch.)
+Weather Control
+Range: 0 (magic-user only)
+Duration: Concentration
+Effect: All weather within 240 yards
+This spell allows the magic-user to create one
+special weather condition in the surrounding
+area (within a 240 yard radius). The caster
+Seventh Level Magic-user Spells
+Charm Plant
+Range: 120'
+Duration: 3 months
+Effect: Charms 1 tree or more smaller plants
+Similar to a charm person spell, this effect
+causes 1 tree, 6 medium-sized bushes, 12
+small shrubs, or 24 small plants to become
+friends of the magic-user (no Saving Throw).
+However, a plant-like monster (treant,
+shrieker, etc.) may make a Saving Throw vs.
+Spells to resist the effect.
+   The charmed plants will understand and
+obey all commands of the magic-user, as long
+as the tasks are within their ability (including
+the entangling of passers-by within range,
+but not including movement, sensing align-
+ment, etc.). The plants will remain charmed
+for 6 months, until the charm is dispelled, or
+until winter (when they sleep). (This spell is
+quite useful around a stronghold, both inside
+
+Create Normal Monsters
+Range: 30'
+Duration: 1 turn
+Effect: Creates 1 or more monsters
+This spell causes monsters to appear out of
+thin air. All monsters appearing will under-
+stand and obey the caster's commands-
+fighting, carrying or fetching things, etc.
+They will faithfully obey all commands to the
+best of their abilities. Each monster will
+appear carrying its normal weapons and
+wearing its normal armor (if any), but other-
+wise unequipped. At the end of 1 turn, all the
+monsters created vanish back into thin air,
+along with all their equipment.
+   The total number of Hit Dice of monsters
+appearing is equal to the level of the magic-
+user casting the spell (with fractions
+dropped). The magic-user may choose the
+exact type of monsters created, selecting any
+monster with no special abilities (;.e., no
+asterisk next to the Hit Dice number in the
+monster explanation). Humans, demi-
+humans, and Undead cannot be created by
+this spell. Creatures of 1-1 Hit Dice are
+counted as 1 Hit Die; creatures of 1/2 Hit Die
+or less are counted as 1/2 Hit Die each.
+   For example, with this spell, a 15th level
+caster could summon 30 giant bats, rats, or
+kobolds; or 15 goblins, orcs, or hobgoblins;
+or 7 rock baboons, gnolls, or lizard men; or 5
+boars, draco lizards, or bugbears; or 3 black
+bears, panthers, or giant weasels; and so
+forth.
+Delayed Blast Fire Ball
+Range: 240'
+Duration: 0 to 60 rounds
+Effect: Delayed blast fireball, sphere of 20'
+         radius
+As the name implies, this is a fire ball spell
+whose blast can be delayed. The magic-user
+must state the exact number of rounds delay
+(from 0 to 60) when the spell is cast. A small
+rock, very similar in appearance to a valuable
+gem, then shoots out toward the desired loca-
+tion, and remains until the stated delay
+elapses. The "gem" may be picked up, car-
+ried, and so forth. When the stated duration
+ends, an effect identical to a normal fire ball is
+produced-a      sudden instantaneous explo-
+sion inflicting 1-6 points of damage per level
+of the caster to all within the area of effect (a
+sphere of 20' radius). Each victim may make
+a Saving Throw vs. Spells to take 1/2 dam-
+age.
+   Once the spell has been cast, the explosion
+cannot be hurried nor further delayed, except
+
+Lore
+Range: 0 (magic-user only)
+Duration: Permanent
+Effect: Reveals details of 1 item, place, or
+          person
+By means of this spell, the magic-user may
+gain knowledge of one item, place, or person.
+If an item is held by the caster, the spell takes
+1-4 turns to complete, and the magic-user
+learns the item's name, method of operation
+and command words (if any), and approxi-
+mate number of charges (if any, within 5 of
+the correct number). If the item has more
+than one mode of operation, or more than
+one command word, only one function will
+be revealed for each lore spell used, without a
+clue to others.
+   If a place or person is being investigated or
+if the item is not held, the spell may take 1-
+100 days to complete, depending on the num-
+ber of details already known. (The DM may
+reveal only general details if the place is large,
+or if the person is of great power.) A purely
+legendary topic should require large amounts
+of time, and the information gained may be
+in the form of a riddle or poem.
+Magic Door'
+Range: 10'
+Duration: 7 uses
+Effect: Creates one passage
+This spell may be cast on any wall, floor, ceil-
+ing, or section of ground. It creates a magi-
+cal, invisible doorway that only the spell
+caster may use. It also creates a passage
+through up to 10' of non-living solid material
+beyond the doorway itself. It cannot be cre-
+ated in aliving object of any kind. The door is
+undetectable except by a detect magic spell,
+and cannot be destroyed except by a dispel
+magic spell (at normal chances for success).
+   The magic door lasts until dispelled, or
+until it has been used 7 times. Note that each
+passage through the door is a separate use.
+   The reverse of this spell (magic lock) is a
+powerful version of the 2nd level wizard lock
+spell, but cannot be affected by a knock spell,
+nor by the effects of any magic item. The
+magic lock causes any one portal to become
+totally impassable as long as the magic
+remains, usable only by the caster of the
+spell. The spell can affect an empty lO'x10'
+portal-like area (such as an empty doorway).
+The locked portal does not change in appear-
+ance. As with a magic door, the enchantment
+remains until the portal has been used 7 times
+or until removed by a dispel magic spell.
 [Companion pages 22-28: magic-user 5th-9th level spell material]
 FIFTH LEVEL MAGIC-USER SPELLS
 1. Animate Dead
@@ -1045,7 +1276,7 @@ only by powerful magic weapons). The sword
 cannot be destroyed before the duration
 ends, except by a dispel magic spell effect (at
 normal chances for success).
-Teleport a n y Object
+Teleport any Object
 Range: Touch
 Duration: Instantaneous
 Effect: Causes 1 object to teleport
@@ -1151,7 +1382,7 @@ and items
 This spell affects one creature; an unwilling
 recipient may make a Saving Throw vs.
 Spells to avoid the effect.
-The spell prevents any form of E S e Clair-
+The spell prevents any form of ESe Clair-
 voyance, Clairaudience, crystal ball gazing,
 or any other form of mental influence or
 information gathering (such as by a contact
@@ -1218,7 +1449,7 @@ make any permanent magic item (such as a
 sword, shield, or non-charged miscellaneous
 item). It is not needed for magic wands,
 potions, and other temporary magic items.
-Polymorph a n y Object
+Polymorph any Object
 Range: 240'
 Duration: See below
 Effect: Changes form of 1 object or creature

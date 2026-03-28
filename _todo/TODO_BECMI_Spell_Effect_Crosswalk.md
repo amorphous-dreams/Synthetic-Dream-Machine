@@ -56,7 +56,7 @@ Rules for this artifact:
 	- RC rows missing RC anchors: 0
 	- Immortals rows total: 21
 	- Immortals rows missing Immortals anchors: 0
-- Confidence rating: **High (0.95 / 1.00)** for source-provenance completeness in this artifact. *(2026-03-27 direct PDF audit + validator uplift inheritance: exception-state verification still holds, and the score now reflects the validated staging baseline beneath the anchors: B 0.93, E 0.94, C 0.95, M 0.95, I 0.96, RC 0.94. Anchor completeness remains strong; inherited risk comes from lane reliability, not from missing anchor fields.)*
+- Confidence rating: **High (0.95 / 1.00)** for source-provenance completeness in this artifact. *(2026-03-27 post-audit pipeline inheritance: exception-state verification still holds, and the score now reflects the regenerated staging baseline beneath the anchors: B 0.93, E 0.94, C 0.90, M 0.95, I 0.95, RC 0.94. Anchor completeness remains strong; inherited risk now comes mainly from parser-hostile recovery lanes rather than missing anchor fields.)*
 - Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via the continuous artifact-chapter witness rather than full standalone spell writeups, and a modest inherited source-friction penalty still applies because RC remains recovery-heavy even after the Expert uplift.
 - Remaining provenance uplift target: reduce `RC-only` rows whenever an earlier staged BECMI witness can be evidenced without guesswork, because the preferred steady state for most spells is `pre-RC BECMI + RC`, not `RC` alone. No uplift candidates were found in the 2026-03-26 Phase 1 ledger pass; all 8 RC-only spell exceptions are now Confirmed RC-only.
 - Current flat-catalog `RC`-only spell exceptions after targeted uplift: `Analyze`, `Entangle`, `Create Air`, `Clothform`, `Stoneform`, `Woodform`, `Ironform`, and `Steelform`. Treat these as evidence-backed exception state unless new staged pre-`RC` witnesses are added.
@@ -115,9 +115,9 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 	- what it measures: whether the scraped metadata is good enough to support Chapter 06 family drafting without returning to the staging corpus for every local decision
 	- freeze signal: provenance-bearing Phase 1 rows, regrouped family tables, explicit family-order metadata, and row-state labels now coexist in one artifact with the staging corpus already frozen beneath it
 	- rating: **0.92 / 1.00**
-	- reason: the workspace is still ready for drafting and conversion planning, but the post-audit baseline makes it clearer that some families will require returns to the staging corpus, especially where Expert and RC witnesses sit on heavier recovery machinery than the older confidence prose implied
+	- reason: the workspace is ready for drafting and conversion planning. The 2026-03-27 pipeline hardening pass retired the Basic wrapper defect, restored the Expert table tail row, recovered representative late-alphabet Immortals overrides, and materially improved Companion MU coverage. Residual risk remains in parser-hostile Companion sixth-level bodies and other OCR-heavy recovery lanes, not in the crosswalk schema itself.
 
-- Overall metadata scrape confidence: **High (0.95 / 1.00)**
+- Overall metadata scrape confidence: **High (0.95 / 1.00)** — Updated 2026-03-27 with audit-discovered recovery priorities
 	- summary: the metadata scrape pass remains strong enough to be treated as approved working infrastructure for the Chapter 06 bridge; Phase 1 and Phase 2 improvement passes still verify the row structures and exception state, but the direct PDF audit adds a modest inherited penalty because the underlying staging corpus is not uniformly frictionless across all lanes.
 - Residual metadata risks:
 	- row-note depth is uneven by design, with denser annotation concentrated on exception rows, RC-only rows, and high-risk conversion families

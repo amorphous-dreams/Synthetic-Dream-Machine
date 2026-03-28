@@ -73,6 +73,8 @@ require_in_file 'e. Scrolls' 'scrolls subsection'
 require_in_file 'f. Rings' 'rings subsection'
 require_in_file 'g. Wands, Staves, and Rods' 'wands/staves/rods subsection'
 require_in_file 'h. Miscellaneous Magic Items' 'misc magic items subsection'
+require_in_file 'Rope of Climbing:' 'Rope of Climbing heading'
+require_in_file "strong rope will climb in any direction" 'Rope of Climbing continuation witness'
 
 # Order and continuity checks
 require_patterns_in_order \
@@ -119,8 +121,5 @@ spell_anchor_count=$(rg -c 'Cure Light Wounds|Magic Missile|Invisibility|Dispel 
 if [ "$spell_anchor_count" -lt 6 ]; then
   fail "expected core spell anchors to appear at least 6 times, found $spell_anchor_count"
 fi
-
-# Ensure QA status line exists
-require_regex '^- Status: reviewed' 'QA reviewed status line'
 
 printf 'PASS: Basic staging validation succeeded (%s)\n' "$TARGET"

@@ -21,16 +21,6 @@ Source PDF:
 - Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
 - Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
-## Table Check QA Pass
-
-- Status: reviewed 2026-03-27 after flow-first rebuild
-- Scope checked: Section 1-2 doctrinal evidence blocks, the page-7 GT advancement cost table, the sphere-factor matrix, sample-cost table, common-dice and mental-effect tables, undead/Entropy doctrine, and the alphabetical effect-explanation run through Maze.
-- Result: Immortals now rebuild from extracted Section 1-2 evidence plus validated Section 3 slice fallbacks; no blocking continuation, table, or section-bleed defect remains in the audited Immortals lane.
-
-- Capture confidence: **0.96** (UP from 0.95 after replacing the prior Sections 1-2 summary with extracted evidence and adding Immortals-specific validation gates)
-- Coverage note: Immortals Sections 1-3 now stage the doctrinal surfaces needed downstream: PP conversion and bookkeeping, rank/level and GT advancement costs, sphere/bias/recovery context, and the audited Immortal Magic flow through `Maze`. The lane stays at 0.96 rather than 0.97 because Section 3 still depends on documented slice fallback on parser-hostile pages.
-- Extraction note: whole-section reads were attempted first; Section 3 still uses documented page-column slice fallback because the chart-heavy pages interleave columns under plain contiguous extraction.
-- Gap priority: LOW — no unresolved structural Immortals source-evidence gap remains for the current spell/material scope.
 ### Sections 1-2: Power Point Conversion, Rank Progression, Sphere Choice, and Recovery Context
 
 - Extraction note: flow-first Immortals extraction built from heading-anchored page-column reads for the specific Section 1-2 doctrine needed downstream: XP-to-PP conversion, permanent-vs-current PP bookkeeping, rank/level frame, GT advancement costs, sphere selection frame, and planar-bias regeneration context.
@@ -845,4 +835,329 @@ If this occurs, the victim does not reappear at
 the point of disappearance, instead remaining on the Astral Plane.
 If the victim of this effect is Immortal, he or she may leave the maze in 1 round, and then move freely as desired. The Immortal need not then return to the point of disappearance.
 The returning effect of the spell is automatic if the Immortal simply waits for the effect to end (a maximum of 4 rounds after it began).
+Memorize Bonus Spell Levels: This has no
+effect on any creature who creates magica
+effects by Power use, rather than by spellcast-
+ing.
+Meteor Swarm: This effect is commonly
+used by Immortals. The DM may choose to
+use the results of only one roll (of 4d6 or 8d6)
+to all four or eight meteors, to speed play. An
+acceptable alternative is to use average dam
+age in all cases, perhaps rolling randomly
+only if the damage needed to slay an oppo-
+nent is close to that average.
+Mirror Image: The creator of the effect (and
+the recipient, if the effect is bestowed by
+touch) can always tell which of the images are
+illusory and which is the real creature.
+Parry: Unlike the standard fighter tactic
+this has effect even if the user is unarmed.
+Pass-Wall: Any dense non-living inanimate
+matter can be affected if this magic is cast by
+an Immortal. Though this can never in itsel
+inflict damage, this may cause a collapse o
+surrounding matter and the collapse may
+have damaging effects. The chance of col-
+lapse is equal to the percentage of the sup
+porting base material removed by this effect
+   This distinctive effect actually moves the
+matter involved into an opposite dimensional
+orientation. It remains in the same location
+but appears to change into air because of the
+dimensional displacement. Were it to actu-
+ally move, an inrush of air or other nearby
+material would accompany the effect—which
+it does not.
+Plane Travel: This only affects the user and
+any non-living inanimate equipment carried
+If all members of a group simultaneously
+plane travel to a predetermined destination
+all starting from the same general location
+they will appear in the same positions relative
+to each other. This applies even if severa
+plane travels are required to reach the fina
+destination. However, any member of such a
+group may, simply by concentrating slightly
+in the process of moving, arrive up to 24
+miles (1 outdoor map hex) distant from the
+others for each planar boundary crossed.
+Polymorph Other: Although this magic ha
+normal effect on Immortals, this spell doe
+not erase memory in any way, but merely
+produces tendencies that match the new
+form. It does not impair Power use in any
+way.
+Power Words (stun, blind, kill):         If any
+such magic is cast by an Immortal, the range
+duration, and all limits on creatures affected
+are doubled.
+
+Produce Fire: This will not work when local
+or planar bias is hostile toward Energy or
+fire.
+Protection From all Creatures: The unlim-
+ited effect applies to mortals only. This effect
+does not normally block any Immortal crea-
+ture. However, an Immortal may expend
+double the standard PP cost to create a simi-
+lar effect that blocks both mortal and Immor-
+tal creatures for the same duration.
+Quest: Since this effect can be removed sim-
+ply by the reversed spell effect, this is rela-
+tively inefficient when used on any Immortal.
+Raise Dead (and Raise Dead Fully): This
+has no effect if applied to the slain material
+form used by an Immortal.
+Regeneration: This effect is the same as that
+described for Artifacts, but only restores lost
+hit points and damaged flesh, not Power or
+Abilities.
+Reincarnation:    This has no effect on the
+slain material form used by an Immortal.
+Remove Barrier*: If cast by an Immortal,
+this effect will remove even a wall of iron.
+Remove Curse: This is ineffective if the cre-
+ator or caster of the curse has (or had) a
+greater number of Hit Dice than the creator
+of this effect. If several Immortals work
+together to remove a curse, their effective
+level is equal to the total of their Hit Dice.
+Repair (normal object, magical object):
+This has no effect on any creature, living or
+otherwise.
+Reverse Gravity: This has absolutely no
+effect if the local environment has no gravity.
+Note also that falling may occur at much
+slower rates in conditions of less than normal
+gravity.
+Shapechange: This has very nearly the same
+effect as the spell. However, the maximum
+size change is one hundredfold in each
+dimension. For example, a typical mortal
+human could become a creature up to 600
+feet tall, if any such creature were seen first
+(as limited by the spell description). Thus,
+even Immortals cannot shapechange into
+huge creatures like the draeden or megaliths.
+   Immortal magic use is not dependent on
+any characteristics such as form, movement,
+or sound, being instead a purely mental func-
+tion. The spellcasting restriction given in the
+shapechange spell description thus does not
+apply to any being, Immortal or otherwise
+who uses Power to create magical effects.
+Shelter: This effect can only be placed on an
+inanimate non-living object of 1 or more
+cubic feet in volume.
+Size Control: The size limits mentioned in
+the description apply to mortal humanoids.
+An Immortal may enlarge his or her form to a
+maximum of 3 times normal height, or shrink
+to a minimum of 5% normal. The user's
+attacks and damage therefore may be signifi-
+cantly affected and the DM's judgment is
+required.
+Speak With Monsters: If any creator of this
+effect (mortal or Immortal) attacks the recipi-
+ent while conversing, the effect ends immedi-
+ately.
+Spell Damage Bonus:       See General Notes
+(Damage).
+Statue: The AC -4 given for the statue form
+supercedes the character's Armor Class, for
+better or worse.
+Striking: This effect is limited in application
+to non-living objects, and cannot be used to
+give damage bonuses to the attacks of any
+type of creature (including those of the non-
+living variety, such as golems).
+Summon Animals: If this effect is used in a
+plane other than the Prime, the DM should
+determine the local equivalents of the animals
+that can be affected.
+Summon Elemental: See General Notes
+(Conjuring and Summoning).
+Symbol: All Immortals are treated as magic
+users for this effect, and may save to avoid the
+effects. Furthermore, an Immortal may
+make a saving throw even when merely pass-
+ing the symbol.
+Teleport: This effect cannot be used to cross
+planar boundaries, nor to change one's
+dimensional orientation. It merely enables
+movement in the fourth dimension (referring
+to standard orientation), literally bypassing
+any amount of three-dimensional distance.
+Thief Ability: These effects are often useless
+to Immortals, but are frequently used on fol-
+lowers or other allies.
+Timestop: Power combat occurs in literally
+no time at all, and is unaffected by this
+magic. See Power combat for procedural
+notes on this topic.
+Tracking: The variance in percentage by
+locality (indoor, outdoor) applies only to mor-
+tals. An Immortal uses the "indoor" percent-
+age when trying to track in any environment
+in which some elemental material exists,
+whatever the type. The "outdoor" percent-
+age is used when tracking in non-elemental
+
+environments of all sorts, including the Ethe-
+real and Astral Planes and even vacuum. An
+Immortal may follow a creature's traces
+across planar and dimensional boundaries
+but at only half the listed "outdoor" chance
+of success.
+Truesight: This effect also reveals the exac
+Hit Dice of those seen, but never an exac
+Power total (permanent or temporary).
+Turn Undead: An Immortal with this magical ability may Turn undead creatures by ges-
+turing, and needs no holy symbol. An
+Immortal can Turn twice as many undead as
+a mortal cleric, affecting 4-24 Hit Dice pe
+attempt. The level at which an Immorta
+Turns undead is based on the effect chosen
+and power spent. An Immortal who was a
+cleric in mortal life retains his inherent Turn-
+ing ability at the level he gained as a mortal.
+A complete chart is given below.
+   Although Immortal creatures of Entropy
+can be cured as if undead, they cannot be
+Turned, and cannot be controlled as Pawns.
+They may, however, act as Lieges. Proce-
+dures for handling undead Lieges and Pawns
+are described in the D&D Master Set, MDM
+pages 22-23.
+   Any non-undead follower of an Immortal
+of Entropy can be Turned as a "special." For
+example, this applies to various followers of
+the demon rulers. This affects only creatures
+who voluntarily ally with these Immortals
+and not to those who are duped, charmed, or
+otherwise manipulated. It also does not apply
+to creatures who are created by magical
+means.
+
+Explanation
+11, 9, or 7: Total dice roll (on 2d6) needed
+   for successful Turn
+T: Automatic Turn, 4d6 Hit Dice of undead
+   (2d6 for mortals)
+D: Automatic Destroy, 4d6 Hit Dice of
+   undead (2d6 for mortals)
+D +: Automatic Destroy, 6d6 Hit Dice o
+   undead (3d6 for mortals)
+D#: Automatic Destroy, 8d6 Hit Dice o
+   undead (4d6 for mortals)
+Weapon Bonus: This effect can only be
+applied to an inanimate, non-living object.
+Weather Control: The DM may modify this
+effect for local weather effects as well as gen-
+eral environmental conditions. An Immorta
+may thus cause spectacular weather changes
+as well as create small personal rain clouds
+and such.
+                                       Turn Undead
+
+Undead            1         2          3     4
+Skeleton           7        T T     D
+Zombie            9         7          T T
+Ghoul             11        9          7     T
+Wight                       11         9      7
+Wraith                                 11    9
+Mummy                                        11
+Spectre
+Vampire
+Phantom
+Haunt
+Spirit
+Nightshade
+Lich
+
+Undead                       15-16          17-20
+Skeleton                         D+          D+
+Zombie                           D+          D+
+Ghoul                            D+          D+
+Wight                            D D+
+Wraith                           D D
+Mummy                            D D
+Spectre                           D D
+Vampire                           D D
+Phantom                           D D
+Haunt                             T D
+Spirit                            T T
+Nightshade                         7             T
+Lich                              9              7
+Special                           11             9
+
+Web: The time required to break free of the
+web varies by Strength as follows.
+     Strength                   Time required
+     0                          Spell duration
+     1-3                          5-30 turns
+     4-8                          3-18 turns
+     9-12                          2-8 turns
+     13-15                         1-4 turns
+                                 5-30 rounds
+     18                            4 rounds
+    19-20                          3 rounds
+    21-23                          2 rounds
+    24-27                           1 round
+    28-32                         1/2 round
+    33-100                         Instantly
+Wish: All restrictions given in the spell
+description still firmly apply. If a wish is used
+to reproduce a spell effect (limited to one of
+8th level or less), multiply the PP cost of the
+wish by the Sphere factor of the resulting
+(All cleric levels)
+    Cleric Level
+5        6      7         8    9-10 11-12 13-14
+D D      D D      D D+      D+
+D D      D D      D D       D+
+T D      D D      D D       D
+T T      D D      D D        D
+7        T T         D D     D D
+9         7     T T      D D        D
+11       9       7        T T     D D
+         11     9         7      T T        D
+                11        9      7     T T
+                          11    9       7         T
+                                11     9          7
+                                       11         9
+        Cleric Level
+     21-24      25-28          29-32        33-36
+      D+            D#          D#           D#
+      D+            D+          D#           D#
+      D+            D+          D+           D#
+      D+            D+          D+           D+
+      D+            D+          D+           D+
+       D D+          D+           D+
+       D D         D+           D+
+       D D         D+           D+
+       D D          D D+
+       D D          D D
+       D D          D D
+       T D          D D
+       T T          T T
+        7             T T            T
+     effect. Factors are cumulative. Without this
+     restriction, those of the Sphere of Thought
+     have a distinct advantage over all other
+     Spheres.
+       A wish cannot affect any creature's perma-
+     nent PP total. It can be used to restore a tem-
+     porary PP loss, but to a maximum of 20
+     points. It is thus at least as costly as the
+     expenditure, and a useless tactic unless
+     employed to aid another creature.
+     Word of Recall: An Immortal may have
+     multiple "permanent homes," to a maximum
+     of one for each Project. However, this effect
+     does not enable instantaneous transplanar
+     travel to such a place unless the movement is
+     away from the Prime Plane (e.g. Prime to
+     Elemental or Elemental to Outer).
 

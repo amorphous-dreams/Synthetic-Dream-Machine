@@ -133,10 +133,25 @@ EOF
   crop_layout 21 200 40 185 730 >> "$OUT"
   printf '\n' >> "$OUT"
   crop_layout 21 390 40 190 730 >> "$OUT"
+  printf '\n' >> "$OUT"
+  crop_layout 22 10 40 185 730 >> "$OUT"
+  printf '\n' >> "$OUT"
+  crop_layout 22 200 40 185 730 >> "$OUT"
+  printf '\n' >> "$OUT"
+  crop_layout 22 390 40 190 730 >> "$OUT"
+  printf '\n' >> "$OUT"
+  crop_layout 23 10 40 185 730 >> "$OUT"
+  printf '\n' >> "$OUT"
+  crop_layout 23 200 40 185 730 >> "$OUT"
+  printf '\n' >> "$OUT"
+  crop_layout 23 390 40 190 730 | awk '
+    /Section 4: Character Advancement/ { exit }
+    { print }
+  ' >> "$OUT"
   end_block
 }
 
-cleanup_immortals_output() {
+cleanup_immortals_doctrine_output() {
   perl -0pi -e '
     s/^\s*Immortal Magic\s*\n//mg;
     s/^\s*(18|19)\s*\n//mg;
@@ -359,6 +374,18 @@ cleanup_immortals_output() {
     s/com-\n paring/comparing/g;
     s/^ the saving throw succeeds\. The effect/the saving throw succeeds. The effect/mg;
     s/^[ ]+If the victim of this effect is Immortal, he or she may leave the maze in 1 round, and then move freely as desired\. The Immortal need not then return to the point of disappearance\./If the victim of this effect is Immortal, he or she may leave the maze in 1 round, and then move freely as desired. The Immortal need not then return to the point of disappearance./mg;
+  ' "$IMM_OUT"
+}
+
+cleanup_immortals_effects_output() {
+  perl -0pi -e '
+    s/Scry: This spell may be used to examine gen-\n\s*eral environmental conditions\./Scry: This spell may be used to examine general environmental conditions./g;
+    s/Shapechange: This has very nearly the same\n\s*effect as polymorph self, except that the/\nShapechange: This has very nearly the same effect as polymorph self, except that the /g;
+    s/Symbol: All Immortals are treated as magic\n\s*resistant when subjected to this/\nSymbol: All Immortals are treated as magic resistant when subjected to this /g;
+    s/Teleport: This effect cannot be used to cross\n\s*planar boundaries unless a path already exists/Teleport: This effect cannot be used to cross planar boundaries unless a path already exists/g;
+    s/Web: The time required to break free of the\n\s*web is cut to 1 round for any Immortal/Web: The time required to break free of the web is cut to 1 round for any Immortal/g;
+    s/Wish: All restrictions given in the spell\n\s*description still apply/Wish: All restrictions given in the spell description still apply/g;
+    s/\(AM 60%\)/\(A-M 60%\)/g;
     s/\n```\n*\z/\n/;
   ' "$IMM_OUT"
 }
@@ -390,6 +417,12 @@ validate_immortals_output() {
   assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' '^Feeblemind: See General Notes \(Mental Effects\)\.$' 'Immortals Feeblemind override is missing'
   assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' '^Life Trapping: This effect can only be$' 'Immortals Life Trapping override is missing'
   assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Maze: This has no effect whatsoever if used' 'Immortals effect-explanation flow is truncated before Maze'
+  assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Pass-Wall:' 'Immortals effect-explanation flow is truncated before the late-alphabet continuation'
+  assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Shapechange:' 'Immortals N-Z override recovery is missing Shapechange'
+  assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Symbol:' 'Immortals N-Z override recovery is missing Symbol'
+  assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Teleport:' 'Immortals N-Z override recovery is missing Teleport'
+  assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Web:' 'Immortals N-Z override recovery is missing Web'
+  assert_section_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Wish:' 'Immortals N-Z override recovery is missing Wish'
 
   assert_section_not_contains "$IMM_OUT" '### Section 3: Immortal Magic' '' 'Section 4:' 'Immortals Section 3 extraction bled into Section 4'
   assert_file_not_contains "$IMM_OUT" '^\[Immortals page' 'Immortals output still contains inline page markers'
@@ -404,13 +437,6 @@ write_header 'TODO: BECMI Spell Material Staging - Immortals' 'TSR 1017 - Set 5 
 immortals_sections_1_2_block
 immortals_section_3_block
 cleanup_output
-cleanup_immortals_output
+cleanup_immortals_doctrine_output
+cleanup_immortals_effects_output
 validate_immortals_output
-
-set_table_qa_note "$IMM_OUT" 'reviewed 2026-03-27 after flow-first rebuild' 'Section 1-2 doctrinal evidence blocks, the page-7 GT advancement cost table, the sphere-factor matrix, sample-cost table, common-dice and mental-effect tables, undead/Entropy doctrine, and the alphabetical effect-explanation run through Maze.' 'Immortals now rebuild from extracted Section 1-2 evidence plus validated Section 3 slice fallbacks; no blocking continuation, table, or section-bleed defect remains in the audited Immortals lane.'
-append_table_qa_lines "$IMM_OUT" <<'EOF'
-- Capture confidence: **0.96** (UP from 0.95 after replacing the prior Sections 1-2 summary with extracted evidence and adding Immortals-specific validation gates)
-- Coverage note: Immortals Sections 1-3 now stage the doctrinal surfaces needed downstream: PP conversion and bookkeeping, rank/level and GT advancement costs, sphere/bias/recovery context, and the audited Immortal Magic flow through `Maze`. The lane stays at 0.96 rather than 0.97 because Section 3 still depends on documented slice fallback on parser-hostile pages.
-- Extraction note: whole-section reads were attempted first; Section 3 still uses documented page-column slice fallback because the chart-heavy pages interleave columns under plain contiguous extraction.
-- Gap priority: LOW — no unresolved structural Immortals source-evidence gap remains for the current spell/material scope.
-EOF

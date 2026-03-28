@@ -576,65 +576,10 @@ Source PDF:
 - Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
 - Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
-## Table Check QA Pass
-
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
 HDR
 }
 
-set_table_qa_note() {
-  local file="$1"
-  local status="$2"
-  local scope="$3"
-  local result="$4"
-  local old new
-
-  old=$(cat <<'EOF'
-## Table Check QA Pass
-
-- Status: pending iterative QA
-- Verify all visible tables, spell lists, saving throw matrices, capacity/result tables, and other row/column layouts against source pages.
-- Confirm rows are not interleaved across columns, headings stay attached to the correct table, and no row/value pairs are dropped or duplicated.
-EOF
-)
-
-  new=$(cat <<EOF
-## Table Check QA Pass
-
-- Status: $status
-- Scope checked: $scope
-- Result: $result
-EOF
-)
-
-  OLD_BLOCK="$old" NEW_BLOCK="$new" perl -0pi -e 'BEGIN { $old = $ENV{OLD_BLOCK}; $new = $ENV{NEW_BLOCK}; } s/\Q$old\E/$new/s' "$file"
-}
-
-append_table_qa_lines() {
-  local file="$1"
-  local extra
-  local tmp
-
-  extra=$(cat)
-  EXTRA_BLOCK="$extra" perl -0ne 'exit((index($_, $ENV{EXTRA_BLOCK}) >= 0) ? 0 : 1)' "$file" \
-    && return 0
-  tmp=$(mktemp)
-  awk -v extra="$extra" '
-    {
-      print
-      if (!done && $0 ~ /^- Result:/) {
-        print ""
-        print extra
-        done = 1
-      }
-    }
-  ' "$file" > "$tmp"
-  mv "$tmp" "$file"
-}
-
-cleanup_output() {
+apply_common_safe_cleanup() {
   perl -0pi -e '
   s/DUNGEONS 8c DRAGONS[@”’"]?characters/DUNGEONS & DRAGONS characters/g;
   s/DUNGEONS 8c DRAGONS[@”’"] characters/DUNGEONS & DRAGONS characters/g;
@@ -952,7 +897,26 @@ cleanup_output() {
   s/\b41D\b/4\/D/g;
   s/\bYour No:\b/Your Notes:/g;
   s/\n{3,}/\n\n/g;
-' "$OUT"
+  ' "$OUT"
+}
+
+apply_common_ocr_rescue() {
+  perl -0pi -e '
+  s/\x{2018}|\x{2019}/'\''/g;
+  s/\x{201C}|\x{201D}/"/g;
+  s/\bld([0-9]+)\b/1d$1/g;
+  s/\bloo\x27/100\x27/g;
+  s/\bloo\b/100/g;
+  s/\n\+\n([0-9])/\n+$1/g;
+  s/\b([[:alpha:]])-\n([[:alpha:]])\b/$1$2/g;
+  s/\b([[:alpha:]])\s{2,}([[:alpha:]])\b/$1 $2/g;
+  s/\b([[:alpha:]]) ([[:alpha:]]) ([[:alpha:]])\b/$1$2$3/g if /(?:^|\n)(?:[A-Z][a-z]+|[a-z]+) (?:[A-Z][a-z]+|[a-z]+) (?:[A-Z][a-z]+|[a-z]+)/;
+  ' "$OUT"
+}
+
+cleanup_output() {
+  apply_common_safe_cleanup
+  apply_common_ocr_rescue
 }
 
 

@@ -482,9 +482,9 @@ basic_scrolls_block_named() {
     local extracted=''
     extracted=$(render_tsv_cols_pages "$pdf" 113 116 '190,370' \
       | awk '
-          /e\. Scrolls/ { started = 1 }
-          started { print }
-          /Rope of Climbing/ { if (started) exit }
+        /e\. Scrolls/ { started = 1 }
+        /Creating dungeons|The World of D&D Gaming|Other Player Aids|Glossary/ { if (started) exit }
+        started { print }
         ' \
       | sed '/^[[:space:]]*[0-9][0-9]*[[:space:]]*$/d')
 
@@ -633,6 +633,15 @@ TXT
   printf '\n```\n\n' >> "$OUT"
 }
 
+basic_cleanup_misc_wrapper_tail() {
+  perl -0pi -e '
+    s/Rope of Climbing: This 50\x27 long, thin,\s*\n\s*strong rope/Rope of Climbing: This 50\x27 long, thin,\nstrong rope/g;
+    s/^3\s+T\s+T\s+7\s+9$/3              T          T        7       9/mg;
+    s/tur n/turn/g;
+    s/Protection frm Undead:/Protection from Undead:/g;
+  ' "$BASIC_OUT"
+}
+
 basic_magic_arms_armor_block_named() {
   local label="$1"
   local note="$2"
@@ -709,13 +718,7 @@ basic_magic_item_operation_block_named 'Magic Item Identification, Use Model, an
 basic_magic_arms_armor_block_named 'Magical Weapons, Armor, and Cursed Item Doctrine' 'anchored TSV extraction from treasure pages for cursed-weapon behavior, magical armor table interpretation, and cursed-armor handling prior to the scroll and ring catalog.' "$BASIC_PDF"
 basic_scrolls_block_named 'Scrolls and Spell-Adjacent Treasure Text' 'anchored TSV extraction from treasure pages for scroll/ring/item-operation doctrine, with curated fallback to preserve section completeness if extraction anchors degrade.' "$BASIC_PDF"
 cleanup_output
-set_table_qa_note "$BASIC_OUT" 'reviewed 2026-03-27 during direct PDF audit and validator uplift' 'Turning Undead table, spell-list setup, clerical and magic-user spell-description runs, DM higher-level spell guidance, lost spell-book doctrine, and item-operation / scroll wrapper sections.' 'direct PDF audit plus the expanded Basic validator found no blocking coverage, ordering, or wrapper-continuation defect in the staged Basic lane.'
-append_table_qa_lines "$BASIC_OUT" <<'EOF'
-- Capture confidence: **0.93**
-- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures remain source-grounded under direct audit. The lane is still held below 0.95 by recurring OCR texture and a few fallback-heavy wrapper sections, not by a current source-evidence gap.
-- ToC cross-check: Basic spell and treasure sections remain fully accounted for in staging, including player spell pages, DM higher-level spell guidance, and the treasure/magic-item wrapper pages.
-- Gap priority: LOW — validation now covers spell-list continuity, higher-level guidance ordering, and the treasure wrapper flow; remaining work is cleanup and extraction hardening, not missing section coverage.
-EOF
+basic_cleanup_misc_wrapper_tail
 
 assert_in_file "$BASIC_OUT" '### Cleric Rules, Turning, and First-Level Spell Procedures' 'cleric procedures section heading'
 assert_heading_count "$BASIC_OUT" 'Cleric Rules, Turning, and First-Level Spell Procedures' 1 'Basic staging duplicated the cleric procedures section heading'
@@ -737,3 +740,5 @@ assert_heading_count "$BASIC_OUT" 'Magical Weapons, Armor, and Cursed Item Doctr
 assert_heading_count "$BASIC_OUT" 'Scrolls and Spell-Adjacent Treasure Text' 1 'Basic staging duplicated the scroll/item section heading'
 assert_in_file "$BASIC_OUT" 'e. Scrolls' 'scroll subtype block'
 assert_in_file "$BASIC_OUT" 'g. Wands, Staves, and Rods' 'wand/staff/rod block'
+assert_in_file "$BASIC_OUT" 'Rope of Climbing:' 'Rope of Climbing heading'
+assert_file_contains "$BASIC_OUT" 'Rope of Climbing:[\s\S]*strong rope' 'Basic staging lost the Rope of Climbing continuation tail'

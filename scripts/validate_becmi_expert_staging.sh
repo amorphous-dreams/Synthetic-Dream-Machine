@@ -87,6 +87,8 @@ require_patterns_in_order \
   'Ring x-ray' \
   'Spell Books, Lost'
 
+require_regex 'Ring spell storing\s+10,000 gp\s+1 month per spell level' 'normalized research examples tail row'
+
 require_patterns_in_order \
   'expert treasure ordering' \
   'Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' \
@@ -104,6 +106,7 @@ require_not_regex '^Extraordinary Powers$' 'orphan Extraordinary Powers label'
 require_not_regex 'Level\s+Effect\n\nNormal Man Becomes a 4th level fighter' 'flattened heroism block'
 require_not_regex '^Normal Man Becomes a 4th level fighter$' 'flattened heroism row'
 require_not_regex '^11\s+\+\s+No Effect$' 'split 11+ heroism row'
+require_not_regex 'Ring spell\s+storing\s+10,000 gp\s+spell level' 'orphaned ring spell storing row'
 
 range_count=$(rg -c '^Range:' "$TARGET" || true)
 if [ "$range_count" -lt 35 ]; then
