@@ -409,8 +409,8 @@ validate_immortals_output
 
 set_table_qa_note "$IMM_OUT" 'reviewed 2026-03-27 after flow-first rebuild' 'Section 1-2 doctrinal evidence blocks, the page-7 GT advancement cost table, the sphere-factor matrix, sample-cost table, common-dice and mental-effect tables, undead/Entropy doctrine, and the alphabetical effect-explanation run through Maze.' 'Immortals now rebuild from extracted Section 1-2 evidence plus validated Section 3 slice fallbacks; no blocking continuation, table, or section-bleed defect remains in the audited Immortals lane.'
 append_table_qa_lines "$IMM_OUT" <<'EOF'
-- Capture confidence: **0.97** (UP from 0.95 after replacing the prior Sections 1-2 summary with extracted evidence and adding Immortals-specific validation gates)
-- Coverage note: Immortals Sections 1-3 now stage the doctrinal surfaces needed downstream: PP conversion and bookkeeping, rank/level and GT advancement costs, sphere/bias/recovery context, and the full audited Immortal Magic flow through `Maze`.
+- Capture confidence: **0.96** (UP from 0.95 after replacing the prior Sections 1-2 summary with extracted evidence and adding Immortals-specific validation gates)
+- Coverage note: Immortals Sections 1-3 now stage the doctrinal surfaces needed downstream: PP conversion and bookkeeping, rank/level and GT advancement costs, sphere/bias/recovery context, and the audited Immortal Magic flow through `Maze`. The lane stays at 0.96 rather than 0.97 because Section 3 still depends on documented slice fallback on parser-hostile pages.
 - Extraction note: whole-section reads were attempted first; Section 3 still uses documented page-column slice fallback because the chart-heavy pages interleave columns under plain contiguous extraction.
 - Gap priority: LOW — no unresolved structural Immortals source-evidence gap remains for the current spell/material scope.
 EOF

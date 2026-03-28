@@ -986,12 +986,12 @@ master_nonhuman_block_named 'Non-Human Spellcasters and Special Spellcaster Proc
 master_procedures_block_named 'Anti-Magic Effects and Dispel Magic Procedures' 'targeted Master procedures extraction using column crops from the actual Procedures pages so the anti-magic doctrine, examples, touch-dispel rules, and item-interaction notes remain readable without the section index or dominion spill.' "$MASTER_PDF"
 master_artifact_chapter_context_named 'Artifact Chapter Context and Witnesses' 'Master-specific continuous artifact chapter extraction spanning pages 45-64 so doctrine, power tables, explanations, named artifacts, and the post-catalog appendix remain in one staged run for downstream witness use and manual review.' 
 cleanup_output
-set_table_qa_note "$MASTER_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables.' 'the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.'
+set_table_qa_note "$MASTER_OUT" 'reviewed 2026-03-27 during direct PDF audit and validator uplift' 'top spell tables, magic-user spell run, non-human spellcaster procedures, the `Anti-Magic Effects` / `Dispel Magic` procedure pages, and artifact chapter witness sections.' 'direct PDF audit plus the Master validator confirmed that the procedure and artifact witnesses remain materially intact and auditable.'
 append_table_qa_lines "$MASTER_OUT" <<'EOF'
 - Capture confidence: **0.95** (UP from 0.91 after staging the Master procedure gap)
-- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and one continuous artifact chapter context/witness section are now staged from Master source text. Remaining issues are ordinary OCR texture and later cleanup, not major source-evidence gaps.
+- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and the continuous artifact witness section remain source-grounded under direct audit. Remaining issues are ordinary OCR texture and dense artifact prose, not major source-evidence gaps.
 - ToC cross-check: Core spell, procedures, and artifact sections are now accounted for in the Master lane, including `Anti-Magic Effects` and `Dispel Magic` from the Procedures section.
-- Gap priority: LOW — the previously documented Master procedure gap is closed.
+- Gap priority: LOW — validation now covers the Master procedures and representative artifact witnesses; remaining work is reproducibility hardening, not gap repair.
 EOF
 perl -0pi -e '
   s/^\x27[[:space:]]*\n//mg;

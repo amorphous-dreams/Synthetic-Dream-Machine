@@ -13,14 +13,22 @@ Rules for this artifact:
 Source PDF:
 - `TSR 1017 - Set 5 Immortals Rules.pdf`
 
+## Audit Rubric
+
+- Coverage: the staged block should account for the claimed source section without silently dropping major witnesses.
+- Reading order: columns, tables, and continuation text should preserve source order rather than left/right interleave.
+- Continuation: multi-page and multi-column blocks should retain start, middle, and end states without orphaned fragments.
+- Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
+- Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
+
 ## Table Check QA Pass
 
 - Status: reviewed 2026-03-27 after flow-first rebuild
 - Scope checked: Section 1-2 doctrinal evidence blocks, the page-7 GT advancement cost table, the sphere-factor matrix, sample-cost table, common-dice and mental-effect tables, undead/Entropy doctrine, and the alphabetical effect-explanation run through Maze.
 - Result: Immortals now rebuild from extracted Section 1-2 evidence plus validated Section 3 slice fallbacks; no blocking continuation, table, or section-bleed defect remains in the audited Immortals lane.
 
-- Capture confidence: **0.97** (UP from 0.95 after replacing the prior Sections 1-2 summary with extracted evidence and adding Immortals-specific validation gates)
-- Coverage note: Immortals Sections 1-3 now stage the doctrinal surfaces needed downstream: PP conversion and bookkeeping, rank/level and GT advancement costs, sphere/bias/recovery context, and the full audited Immortal Magic flow through `Maze`.
+- Capture confidence: **0.96** (UP from 0.95 after replacing the prior Sections 1-2 summary with extracted evidence and adding Immortals-specific validation gates)
+- Coverage note: Immortals Sections 1-3 now stage the doctrinal surfaces needed downstream: PP conversion and bookkeeping, rank/level and GT advancement costs, sphere/bias/recovery context, and the audited Immortal Magic flow through `Maze`. The lane stays at 0.96 rather than 0.97 because Section 3 still depends on documented slice fallback on parser-hostile pages.
 - Extraction note: whole-section reads were attempted first; Section 3 still uses documented page-column slice fallback because the chart-heavy pages interleave columns under plain contiguous extraction.
 - Gap priority: LOW — no unresolved structural Immortals source-evidence gap remains for the current spell/material scope.
 ### Sections 1-2: Power Point Conversion, Rank Progression, Sphere Choice, and Recovery Context

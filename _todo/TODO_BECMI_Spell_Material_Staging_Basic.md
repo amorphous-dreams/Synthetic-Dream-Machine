@@ -13,16 +13,24 @@ Rules for this artifact:
 Source PDF:
 - `TSR 1011B - Set 1 Basic Rules.pdf`
 
+## Audit Rubric
+
+- Coverage: the staged block should account for the claimed source section without silently dropping major witnesses.
+- Reading order: columns, tables, and continuation text should preserve source order rather than left/right interleave.
+- Continuation: multi-page and multi-column blocks should retain start, middle, and end states without orphaned fragments.
+- Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
+- Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
+
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
-- Scope checked: Turning Undead table, spell lists, and adjacent structured spell-property blocks.
-- Result: no blocking row/column defects found in the visible Basic table and list regions.
+- Status: reviewed 2026-03-27 during direct PDF audit and validator uplift
+- Scope checked: Turning Undead table, spell-list setup, clerical and magic-user spell-description runs, DM higher-level spell guidance, lost spell-book doctrine, and item-operation / scroll wrapper sections.
+- Result: direct PDF audit plus the expanded Basic validator found no blocking coverage, ordering, or wrapper-continuation defect in the staged Basic lane.
 
 - Capture confidence: **0.93**
-- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures are all staged from the Basic source. Remaining issues are OCR texture and ordinary line-wrap scars, not structural coverage gaps.
+- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures remain source-grounded under direct audit. The lane is still held below 0.95 by recurring OCR texture and a few fallback-heavy wrapper sections, not by a current source-evidence gap.
 - ToC cross-check: Basic spell and treasure sections remain fully accounted for in staging, including player spell pages, DM higher-level spell guidance, and the treasure/magic-item wrapper pages.
-- Gap priority: LOW — no material source-evidence gap found during the 2026-03-23 survey.
+- Gap priority: LOW — validation now covers spell-list continuity, higher-level guidance ordering, and the treasure wrapper flow; remaining work is cleanup and extraction hardening, not missing section coverage.
 ### Cleric Rules, Turning, and First-Level Spell Procedures
 
 - Extraction note: page-aware Basic extraction from the actual cleric special-abilities page, split by column so Turning Undead procedure, the undead table, and spellcasting guidance stay in readable source order.

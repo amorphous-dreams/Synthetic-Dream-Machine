@@ -44,10 +44,10 @@ Rules for this artifact:
 - Ready for `osr:` literal text imports into Chapter 06 Powers.
 - Operational import backlog for the post-confidence-lock `osr:` pass is now defined below under `## Phase B Backlog: Chapter 06 osr: Import`.
 
-## Provenance Confidence (2026-03-23 Full Pass)
+## Provenance Confidence (2026-03-27 Direct PDF Audit Pass)
 
-- Scope: full RC-linked provenance audit across both Phase 1 and Phase 2 tables, plus Immortals co-source checks where applicable.
-- Result: all RC-linked rows now include explicit `RC -> ...` staging anchors; all Immortals-linked rows now include explicit `Immortals -> ...` anchors.
+- Scope: prior RC-linked provenance audit across both Phase 1 and Phase 2 tables, plus Immortals co-source checks where applicable, re-rated against the 2026-03-27 direct PDF audit baseline for the six staging lanes.
+- Result: all RC-linked rows still include explicit `RC -> ...` staging anchors; all Immortals-linked rows still include explicit `Immortals -> ...` anchors. The rating below now also reflects the audited strength of the staging corpus beneath those anchors, not just row completeness inside this file.
 - Interpretation rule: anchor completeness is not the same thing as provenance sufficiency. A row can have a valid `RC -> ...` anchor and still be incomplete if an earlier evidenced BECMI co-source has not yet been carried forward into the row.
 - Audit metrics (Phase 1 + Phase 2 combined):
 	- RC rows total: 135
@@ -56,8 +56,8 @@ Rules for this artifact:
 	- RC rows missing RC anchors: 0
 	- Immortals rows total: 21
 	- Immortals rows missing Immortals anchors: 0
-- Confidence rating: **High (0.95 / 1.00)** for source-provenance completeness in this artifact. *(Updated 2026-03-26: Phase 1 ledger pass confirmed all 12 exception rows; 0 uplift candidates found; exception state is now formally verified rather than assumed, which removes the residual "unverified exception" risk that suppressed the prior 0.92 rating.)*
-- Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via the continuous artifact-chapter witness rather than full standalone spell writeups; provenance is explicit, but conversion semantics should still treat those rows as table-derived precedents.
+- Confidence rating: **High (0.95 / 1.00)** for source-provenance completeness in this artifact. *(2026-03-27 direct PDF audit + validator uplift inheritance: exception-state verification still holds, and the score now reflects the validated staging baseline beneath the anchors: B 0.93, E 0.94, C 0.95, M 0.95, I 0.96, RC 0.94. Anchor completeness remains strong; inherited risk comes from lane reliability, not from missing anchor fields.)*
+- Residual risk: medium-low semantic risk remains where some Master co-sources are evidenced via the continuous artifact-chapter witness rather than full standalone spell writeups, and a modest inherited source-friction penalty still applies because RC remains recovery-heavy even after the Expert uplift.
 - Remaining provenance uplift target: reduce `RC-only` rows whenever an earlier staged BECMI witness can be evidenced without guesswork, because the preferred steady state for most spells is `pre-RC BECMI + RC`, not `RC` alone. No uplift candidates were found in the 2026-03-26 Phase 1 ledger pass; all 8 RC-only spell exceptions are now Confirmed RC-only.
 - Current flat-catalog `RC`-only spell exceptions after targeted uplift: `Analyze`, `Entangle`, `Create Air`, `Clothform`, `Stoneform`, `Woodform`, `Ironform`, and `Steelform`. Treat these as evidence-backed exception state unless new staged pre-`RC` witnesses are added.
 - Current flat-catalog non-`RC` artifact procedure exceptions after targeted uplift: `Artifact Activation`, `Artifact Charges And Recharge`, `Artifact Intelligence And Auto-Defense`, and `Creating Artifacts`. Treat these as evidence-backed `Master`-only exception state unless a structurally equivalent staged `RC` procedure witness is later added.
@@ -84,9 +84,9 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 | Artifact Intelligence And Auto-Defense | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Autonomous agency doctrine. RC staging does not contain a structurally equivalent standalone procedure witness. |
 | Creating Artifacts | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Design workflow procedure. RC staging does not contain a structurally equivalent standalone procedure witness. |
 
-## Metadata Scrape Confidence (2026-03-26 Freeze Pass)
+## Metadata Scrape Confidence (2026-03-27)
 
-- Scope: the metadata scrape pass was evaluated as a separate layer from provenance. This pass rates whether the crosswalk now captures the row structure, family metadata, mapping-state labels, and drafting notes needed for downstream Chapter 05 / Chapter 06 work.
+- Scope: the metadata scrape pass is still evaluated as a separate layer from provenance, but the score now inherits the audited staging baseline where weaker source lanes increase downstream re-check burden.
 - Interpretation rule: provenance confidence answers "do the rows point back to the staged corpus clearly enough?" Metadata confidence answers "do the rows carry enough structured metadata to drive conversion work without re-scraping the whole corpus?"
 
 ### Metadata Rubrics
@@ -114,11 +114,11 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 - **Downstream Drafting Readiness**
 	- what it measures: whether the scraped metadata is good enough to support Chapter 06 family drafting without returning to the staging corpus for every local decision
 	- freeze signal: provenance-bearing Phase 1 rows, regrouped family tables, explicit family-order metadata, and row-state labels now coexist in one artifact with the staging corpus already frozen beneath it
-	- rating: **0.93 / 1.00**
-	- reason: the workspace is ready for drafting and conversion planning, but some high-tier or doctrine-heavy rows still depend on judgment calls that will be resolved during implementation rather than metadata scraping alone
+	- rating: **0.92 / 1.00**
+	- reason: the workspace is still ready for drafting and conversion planning, but the post-audit baseline makes it clearer that some families will require returns to the staging corpus, especially where Expert and RC witnesses sit on heavier recovery machinery than the older confidence prose implied
 
-- Overall metadata scrape confidence: **High (0.96 / 1.00)**
-	- summary: the metadata scrape pass is strong enough to be treated as approved working infrastructure for the Chapter 06 bridge; Phase 1 and Phase 2 improvement passes have formally verified all exception rows, added source-grounded evidence locks to all high-tier priority families, and updated all rubric scores. Remaining risk is mostly interpretive and editorial, not structural.
+- Overall metadata scrape confidence: **High (0.95 / 1.00)**
+	- summary: the metadata scrape pass remains strong enough to be treated as approved working infrastructure for the Chapter 06 bridge; Phase 1 and Phase 2 improvement passes still verify the row structures and exception state, but the direct PDF audit adds a modest inherited penalty because the underlying staging corpus is not uniformly frictionless across all lanes.
 - Residual metadata risks:
 	- row-note depth is uneven by design, with denser annotation concentrated on exception rows, RC-only rows, and high-risk conversion families
 	- some repeated note language and alias phrasing still need later editorial normalization, but they do not block downstream use
@@ -147,7 +147,7 @@ No miscalibrations found in the 30-row sample. Minor observation: `Cure Critical
 
 ---
 
-## Metadata Confidence v2 Gate (2026-03-26)
+## Metadata Confidence v2 Gate (2026-03-27)
 
 Threshold definitions for moving between confidence bands:
 
@@ -157,14 +157,14 @@ Threshold definitions for moving between confidence bands:
 | **Approved Working Infrastructure** | 0.95 | Evidence-note density ≥ 50 markers; decision matrix documented; high-risk families (healing, defense/boundary, barrier) carry source-grounded evidence locks |
 | **Publication Ready** | 0.98 | All `partial`/`custom` rows carry evidence locks; row-state audit confirms calibration across all families; v2 gate in place |
 
-### Current rating: High (0.96 / 1.00)
+### Current rating: High (0.95 / 1.00)
 
-- **Provenance (0.95)**: Exception ledger verified, all 12 exception rows confirmed (Phase 1)
+- **Provenance (0.95)**: Exception ledger verified, all 12 exception rows confirmed, with the inherited staging-baseline penalty reduced after the Expert validator uplift
 - **Row-State Coverage (0.95)**: 305 explicit status labels; 30-row audit confirms consistent calibration
 - **Evidence-Note Density (0.95)**: 63 Phase 2 table rows with inline evidence lock/verification markers (Phase 2 target exceeded)
-- **Downstream Drafting Readiness (0.95)**: Decision matrix in place; all high-tier priority families annotated
+- **Downstream Drafting Readiness (0.94)**: Decision matrix remains in place, but post-audit drafting should expect more returns to the staging corpus in weaker recovery lanes
 
-**Gate status**: Passes **Approved Working Infrastructure (0.95)** threshold. Not yet at **Publication Ready (0.98)** — lower-tier and `direct` rows do not all carry evidence locks, and a full cross-family row-state audit has not been performed.
+**Gate status**: Passes **Approved Working Infrastructure (0.95)** threshold, but now only narrowly after inherited staging-baseline penalties are applied. Not yet at **Publication Ready (0.98)** — lower-tier and `direct` rows do not all carry evidence locks, a full cross-family row-state audit has not been performed, and weaker recovery lanes still increase verification burden during drafting.
 
 
 ## Forward Plan

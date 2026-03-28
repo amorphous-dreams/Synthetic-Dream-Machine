@@ -25,6 +25,30 @@ require_regex() {
   fi
 }
 
+require_patterns_in_order() {
+  local label="$1"
+  shift
+  python3 - "$TARGET" "$label" "$@" <<'PY'
+import re
+import sys
+
+path = sys.argv[1]
+label = sys.argv[2]
+patterns = sys.argv[3:]
+
+with open(path, "r", encoding="utf-8") as fh:
+    text = fh.read()
+
+pos = 0
+for pattern in patterns:
+    match = re.search(pattern, text[pos:], re.MULTILINE)
+    if not match:
+        print(f"FAIL: {label} (missing or out of order: {pattern})", file=sys.stderr)
+        sys.exit(1)
+    pos += match.end()
+PY
+}
+
 if [ ! -f "$TARGET" ]; then
   fail "target file not found: $TARGET"
 fi
@@ -50,10 +74,45 @@ require_in_file 'f. Rings' 'rings subsection'
 require_in_file 'g. Wands, Staves, and Rods' 'wands/staves/rods subsection'
 require_in_file 'h. Miscellaneous Magic Items' 'misc magic items subsection'
 
+# Order and continuity checks
+require_patterns_in_order \
+  'basic spell list ordering' \
+  'Magic-User Spells: First Level' \
+  'Magic Missile' \
+  'Magic-User Spells: Second Level' \
+  'Wizard Lock'
+
+require_patterns_in_order \
+  'basic higher-level procedure ordering' \
+  'Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books' \
+  'Giving Magic-Users Spells' \
+  "If a magic-user's book is lost"
+
+require_patterns_in_order \
+  'basic item-operation ordering' \
+  'Magic Item Identification, Use Model, and Charge Doctrine' \
+  'Identifying Magic Items' \
+  'Using Magic Items' \
+  'Charges in Magic Items' \
+  'Holy Water:'
+
+require_patterns_in_order \
+  'basic scroll wrapper ordering' \
+  'Scrolls and Spell-Adjacent Treasure Text' \
+  'e. Scrolls' \
+  'f. Rings' \
+  'g. Wands, Staves, and Rods' \
+  'h. Miscellaneous Magic Items'
+
 # Coverage sanity checks
 range_count=$(rg -c '^Range:' "$TARGET" || true)
 if [ "$range_count" -lt 25 ]; then
   fail "expected at least 25 Range lines, found $range_count"
+fi
+
+effect_count=$(rg -c '^Effect:' "$TARGET" || true)
+if [ "$effect_count" -lt 25 ]; then
+  fail "expected at least 25 Effect lines, found $effect_count"
 fi
 
 spell_anchor_count=$(rg -c 'Cure Light Wounds|Magic Missile|Invisibility|Dispel Magic|Fire Ball|Fly' "$TARGET" || true)

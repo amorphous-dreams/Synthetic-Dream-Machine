@@ -13,6 +13,14 @@ Rules for this artifact:
 Source PDF:
 - `TSR 1013 - Set 3 Companion Set.pdf`
 
+## Audit Rubric
+
+- Coverage: the staged block should account for the claimed source section without silently dropping major witnesses.
+- Reading order: columns, tables, and continuation text should preserve source order rather than left/right interleave.
+- Continuation: multi-page and multi-column blocks should retain start, middle, and end states without orphaned fragments.
+- Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
+- Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
+
 ## Table Check QA Pass
 
 - Status: reviewed 2026-03-27 after flow-first rebuild

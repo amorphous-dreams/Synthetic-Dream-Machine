@@ -13,16 +13,24 @@ Rules for this artifact:
 Source PDF:
 - `TSR 1071 - The D&D Rules Cyclopedia.pdf`
 
+## Audit Rubric
+
+- Coverage: the staged block should account for the claimed source section without silently dropping major witnesses.
+- Reading order: columns, tables, and continuation text should preserve source order rather than left/right interleave.
+- Continuation: multi-page and multi-column blocks should retain start, middle, and end states without orphaned fragments.
+- Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
+- Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
+
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
-- Scope checked: clerical, magical, and druidic spell lists plus the later reconstructed spellcaster and scroll tables.
-- Result: no blocking row/column defects found in the visible Rules Cyclopedia table and list regions.
+- Status: reviewed 2026-03-27 during direct PDF audit and validator uplift
+- Scope checked: Chapter 3 setup and spell-list pages, the Prismatic Wall recovery pass, monster spellcaster pages, DM spell-doctrine pages, scrolls, spell research, construct / enchantment procedures, and the Chapter 16 item-description catalog.
+- Result: direct PDF audit plus the RC validator confirmed the targeted recoveries still hold, while documenting that the lane remains more recovery-heavy than the older confidence prose implied.
 
-- Capture confidence: **0.95** (UP from 0.90 after staging the RC Chapter 16 item-description catalog)
-- Coverage note: RC spell descriptions, spell-adjacent doctrine, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog (potions, wands/staves/rods, rings, miscellaneous items, swords) are now staged from RC source text. Remaining concerns are OCR texture and optional cleanup, not source-evidence coverage gaps.
+- Capture confidence: **0.94**
+- Coverage note: RC spell descriptions, spell-adjacent doctrine, research, scrolls, item enchantment, construct procedures, and the Chapter 16 item-description catalog remain source-grounded under direct audit. The lane is held at 0.94 because Chapter 3 and Prismatic Wall still depend on targeted recovery machinery more heavily than the older prose admitted.
 - ToC cross-check: RC Chapter 16 procedure and item-description sections remain represented in staging, and the RC DM spell-doctrine pass now adds the named spell-adjacent procedures block plus page-255 enchantment-economics text.
-- Gap priority: LOW — the previously documented RC item-description gap is closed.
+- Gap priority: LOW — the item-description gap is closed, but RC still needs recovery-hardening rather than score inflation while the PDF remains parser-hostile.
 ### Chapter 3: Spells and Spellcasting
 
 - Extraction note: hybrid RC extraction: pages 33-34 are split into labeled layout-column slices for readable setup prose and spell-list presentation, while pages 35-59 use TSV coordinate reflow with three reading-order columns to eliminate left/right interleave in spell descriptions.

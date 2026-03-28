@@ -13,16 +13,24 @@ Rules for this artifact:
 Source PDF:
 - `TSR 1021 - Set 4 Master Rules.pdf`
 
+## Audit Rubric
+
+- Coverage: the staged block should account for the claimed source section without silently dropping major witnesses.
+- Reading order: columns, tables, and continuation text should preserve source order rather than left/right interleave.
+- Continuation: multi-page and multi-column blocks should retain start, middle, and end states without orphaned fragments.
+- Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
+- Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
+
 ## Table Check QA Pass
 
-- Status: reviewed 2026-03-22; confidence survey updated 2026-03-23
-- Scope checked: cleric and magic-user experience tables, saving throw matrices, turning tables, and artifact power tables.
-- Result: the top cleric and magic-user matrices are now reconstructed into readable text tables, and no blocking row/column defects remain in the reviewed Master table regions.
+- Status: reviewed 2026-03-27 during direct PDF audit and validator uplift
+- Scope checked: top spell tables, magic-user spell run, non-human spellcaster procedures, the `Anti-Magic Effects` / `Dispel Magic` procedure pages, and artifact chapter witness sections.
+- Result: direct PDF audit plus the Master validator confirmed that the procedure and artifact witnesses remain materially intact and auditable.
 
 - Capture confidence: **0.95** (UP from 0.91 after staging the Master procedure gap)
-- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and one continuous artifact chapter context/witness section are now staged from Master source text. Remaining issues are ordinary OCR texture and later cleanup, not major source-evidence gaps.
+- Coverage note: Master spell lists, non-human spellcaster procedures, anti-magic doctrine, dispel/item-interaction procedures, and the continuous artifact witness section remain source-grounded under direct audit. Remaining issues are ordinary OCR texture and dense artifact prose, not major source-evidence gaps.
 - ToC cross-check: Core spell, procedures, and artifact sections are now accounted for in the Master lane, including `Anti-Magic Effects` and `Dispel Magic` from the Procedures section.
-- Gap priority: LOW — the previously documented Master procedure gap is closed.
+- Gap priority: LOW — validation now covers the Master procedures and representative artifact witnesses; remaining work is reproducibility hardening, not gap repair.
 ### Master Cleric, Druid, and Magic-User Spell Material
 
 - Extraction note: section-aware Master spell extraction using anchored TSV reflow across the actual cleric, druid, and magic-user pages instead of one broad line-range block. The section is split into cleric, druid, and magic-user sub-blocks so high-level spell lists and descriptions remain attached to the right class pages.

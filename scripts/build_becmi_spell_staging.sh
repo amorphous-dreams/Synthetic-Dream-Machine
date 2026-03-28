@@ -444,6 +444,63 @@ assert_section_not_contains() {
   rm -f "$tmp"
 }
 
+assert_patterns_in_order() {
+  local file="$1"
+  local description="$2"
+  shift 2
+
+  python3 - "$file" "$description" "$@" <<'PY'
+import re
+import sys
+
+path = sys.argv[1]
+description = sys.argv[2]
+patterns = sys.argv[3:]
+
+with open(path, "r", encoding="utf-8") as fh:
+    text = fh.read()
+
+pos = 0
+for pattern in patterns:
+    match = re.search(pattern, text[pos:], re.MULTILINE)
+    if not match:
+        print(f"staging validation failed: {description} (missing or out of order: {pattern})", file=sys.stderr)
+        sys.exit(1)
+    pos += match.end()
+PY
+}
+
+assert_section_patterns_in_order() {
+  local file="$1"
+  local start_marker="$2"
+  local stop_marker="$3"
+  local description="$4"
+  shift 4
+  local tmp
+
+  tmp=$(section_between_markers_to_tmp "$file" "$start_marker" "$stop_marker")
+  assert_patterns_in_order "$tmp" "$description" "$@"
+  rm -f "$tmp"
+}
+
+assert_section_count_at_least() {
+  local file="$1"
+  local start_marker="$2"
+  local stop_marker="$3"
+  local pattern="$4"
+  local minimum="$5"
+  local description="$6"
+  local tmp
+  local count
+
+  tmp=$(section_between_markers_to_tmp "$file" "$start_marker" "$stop_marker")
+  count=$(rg -c --multiline "$pattern" "$tmp" || true)
+  rm -f "$tmp"
+  if [ "$count" -lt "$minimum" ]; then
+    fail_staging_validation "$description (expected at least $minimum, found $count)"
+  fi
+}
+
 page_layout_anchor_block_named() {
   local label="$1"
   local note="$2"
@@ -510,6 +567,14 @@ Rules for this artifact:
 
 Source PDF:
 - \`$pdf\`
+
+## Audit Rubric
+
+- Coverage: the staged block should account for the claimed source section without silently dropping major witnesses.
+- Reading order: columns, tables, and continuation text should preserve source order rather than left/right interleave.
+- Continuation: multi-page and multi-column blocks should retain start, middle, and end states without orphaned fragments.
+- Table/list survivability: representative table rows and list entries should remain readable and attached to the correct headings.
+- Manual-reconstruction burden: curated or stitched text should be minimized, reproducible, and explicitly validated when unavoidable.
 
 ## Table Check QA Pass
 

@@ -709,12 +709,12 @@ basic_magic_item_operation_block_named 'Magic Item Identification, Use Model, an
 basic_magic_arms_armor_block_named 'Magical Weapons, Armor, and Cursed Item Doctrine' 'anchored TSV extraction from treasure pages for cursed-weapon behavior, magical armor table interpretation, and cursed-armor handling prior to the scroll and ring catalog.' "$BASIC_PDF"
 basic_scrolls_block_named 'Scrolls and Spell-Adjacent Treasure Text' 'anchored TSV extraction from treasure pages for scroll/ring/item-operation doctrine, with curated fallback to preserve section completeness if extraction anchors degrade.' "$BASIC_PDF"
 cleanup_output
-set_table_qa_note "$BASIC_OUT" 'reviewed 2026-03-22; confidence survey updated 2026-03-23' 'Turning Undead table, spell lists, and adjacent structured spell-property blocks.' 'no blocking row/column defects found in the visible Basic table and list regions.'
+set_table_qa_note "$BASIC_OUT" 'reviewed 2026-03-27 during direct PDF audit and validator uplift' 'Turning Undead table, spell-list setup, clerical and magic-user spell-description runs, DM higher-level spell guidance, lost spell-book doctrine, and item-operation / scroll wrapper sections.' 'direct PDF audit plus the expanded Basic validator found no blocking coverage, ordering, or wrapper-continuation defect in the staged Basic lane.'
 append_table_qa_lines "$BASIC_OUT" <<'EOF'
 - Capture confidence: **0.93**
-- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures are all staged from the Basic source. Remaining issues are OCR texture and ordinary line-wrap scars, not structural coverage gaps.
+- Coverage note: Player spell content, DM higher-level spell guidance, lost spell books, and scroll/ring/item-operation procedures remain source-grounded under direct audit. The lane is still held below 0.95 by recurring OCR texture and a few fallback-heavy wrapper sections, not by a current source-evidence gap.
 - ToC cross-check: Basic spell and treasure sections remain fully accounted for in staging, including player spell pages, DM higher-level spell guidance, and the treasure/magic-item wrapper pages.
-- Gap priority: LOW — no material source-evidence gap found during the 2026-03-23 survey.
+- Gap priority: LOW — validation now covers spell-list continuity, higher-level guidance ordering, and the treasure wrapper flow; remaining work is cleanup and extraction hardening, not missing section coverage.
 EOF
 
 assert_in_file "$BASIC_OUT" '### Cleric Rules, Turning, and First-Level Spell Procedures' 'cleric procedures section heading'

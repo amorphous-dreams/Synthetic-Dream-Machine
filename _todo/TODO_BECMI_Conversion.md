@@ -34,7 +34,8 @@ Base model (locked):
 ## Uplift Execution Log (Consolidated)
 
 - 2026-03-23 lane-harvest cleanup locked in: removed synthesized context inserts from staging docs, preserved source-evidence-only policy, and completed broad OCR/readability normalization across Companion/Master/RC evidence blocks.
-- 2026-03-23 confidence survey completed against all staged lanes: B 0.93, E 0.89, C 0.91, M 0.95, I 0.95, RC 0.95 with provenance completeness sustained at 1.00.
+- 2026-03-27 direct PDF audit re-rated all staged lanes against the paired `_becmi` sources: B 0.93, E 0.90, C 0.95, M 0.95, I 0.96, RC 0.94 with provenance completeness sustained at 1.00.
+- 2026-03-27 validator uplift landed for the weakest/recovery-heavy lanes: shared audit rubric added to staging headers, Basic validator expanded, new Expert/Master/RC validator scripts added, and Expert's research plus treasure blocks were rebuilt from bounded source-derived extraction. Current validated lane baseline: B 0.93, E 0.94, C 0.95, M 0.95, I 0.96, RC 0.94.
 - Phase B bridge activation is in effect: Chapter 06 was prioritized first, then Chapter 05 bridge continuation.
 - Chapter 06 alpha scaffolding and normalization completed in manuscript form: doctrine locks, card-template normalization, navigation indexing, provenance pointers, and baseline recognizer coverage were landed.
 - 2026-03-25 Expert lane uplift completed: all Expert `undecided` rows were resolved via evidence-lock notes and status normalization.
@@ -42,35 +43,36 @@ Base model (locked):
 
 ## Lane Confidence Gate (B/E/C/M/I/RC)
 
-Current baseline from the Phase 1 canonical catalog pass, updated 2026-03-23 after PDF ToC cross-check plus the Companion MU spell recovery:
+Current baseline from the 2026-03-27 direct PDF audit pass, using the staged markdown against the paired `_becmi` PDFs rather than the earlier survey prose alone:
 
 | Lane | Capture Confidence (spell/magic/metaphysics captured) | Provenance Complete | Target | Last Survey |
 | --- | --- | --- | --- | --- |
-| B | 0.93 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
-| E | 0.93 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-25 |
-| C | 0.91 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
-| M | 0.95 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
-| I | 0.95 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
-| RC | 0.95 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-23 |
+| B | 0.93 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-27 |
+| E | 0.94 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-27 |
+| C | 0.95 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-27 |
+| M | 0.95 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-27 |
+| I | 0.96 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-27 |
+| RC | 0.94 | 1.00 | > 0.95 capture, keep provenance at 1.00 | 2026-03-27 |
 
-Survey findings (2026-03-23):
-- **B +0.02**: DM higher-level spell guidance, lost spell books, and item operation procedures now fully staged. OCR texture is the only remaining issue.
-- **E +0.02**: Expert spells 1-6 and research/lost books fully staged. Expert page-65 miscellaneous magic items are now fully captured in the staging block; remaining Expert issues are OCR texture and normalization.
-- **C +0.02**: Companion **Magic-User Spells: 5th through 9th Level** are now staged from Companion pages 22-28 via TSV reflow, alongside the existing cleric/druid and item sections. The primary structural gap is closed; remaining work is OCR cleanup and later comparison against RC wording for any version-specific differences.
-- **M +0.05**: Artifact content (doctrine, catalog, appendix), non-human spellcasters, spell lists, and Master Procedures (`Anti-Magic Effects` + `Dispel Magic`) are now staged. The prior procedure gap is closed; remaining Master cleanup is OCR texture and normalization only.
-- **I +0.01**: Immortals Sections 1-2 PP conversion/rank/recovery context is now staged alongside Section 3 (Immortal Magic), closing the prior low-priority framing gap.
-- **RC +0.07**: RC Chapter 16 item-description catalog is now staged from source text (potions, wands/staves/rods, rings, miscellaneous items, swords), alongside the existing construct and item-enchantment procedures. Remaining RC work is cleanup-level OCR normalization, not missing source-evidence.
+Audit findings (2026-03-27):
+- **B confirmed at 0.93:** direct checks against the Basic PDF confirmed spell lists, higher-level guidance, lost spell books, and item-operation doctrine. No material gap was found, but recurring OCR and wrap noise keep the lane below the rebuild-driven top band.
+- **E lifted to 0.94:** the main Expert confidence suppressors were retired in this pass. The research/lost-book block and the page-63 to page-65 treasure run now rebuild from bounded source-derived extraction, and the Expert validator confirms the lane still carries the required witnesses. Residual drag is now OCR/crop texture rather than broad manual reconstruction.
+- **C confirmed at 0.95:** the flow-first rebuild holds under direct PDF inspection. The high-level cleric/druid material, MU 5th-9th run, and the scroll-to-miscellaneous-item treasure flow all preserved reading order and continuation in the sampled checks.
+- **M confirmed at 0.95:** the Master procedures lane remains strong after direct PDF review. `Anti-Magic Effects`, `Dispel Magic`, non-human spellcasters, and the artifact witness run all remained materially intact in the audited samples.
+- **I adjusted to 0.96:** the Immortals rebuild is materially strong and the Section 1-2 evidence is now genuinely source-derived, but the PDF's parser hostility and the continued need for documented slice fallback make 0.96 a more defensible score than the previous 0.97.
+- **RC adjusted to 0.94:** direct audit confirmed that the staged RC recoveries work, including Chapter 3, Prismatic Wall, spell doctrine, and the Chapter 16 item catalog. The score drops slightly because the source PDF is unusually hostile and the lane depends on targeted recovery more heavily than the old confidence prose acknowledged.
 
-### Lane Batch Checkpoints
+### Audit Ledger
 
-| Date | Batch | B undecided | E undecided | C undecided | M undecided | RC undecided | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-03-25 | Expert completion | 2 | 0 | 13 | 9 | 5 | Expert lane stabilized; no unresolved Expert `undecided` rows. |
-| 2026-03-25 | Companion C1 | 2 | 0 | 7 | 9 | 5 | Promotions: `Earthquake`/`Insect Plague` -> `custom`; `Sword`/`Call Lightning`/`Control Temperature 10' radius`/`Faerie Fire` -> `partial`. |
-| 2026-03-25 | Companion C2 | 2 | 0 | 0 | 9 | 5 | Promotions: `Creeping Doom`/`Metal to Wood` -> `custom`; `Hold Animal`/`Locate`/`Produce Fire`/`Protection from Lightning`/`Warp Wood` -> `partial`. |
-| 2026-03-25 | Master M1 | 2 | 0 | 0 | 0 | 5 | Promotions: `Dissolve`/`Heat Metal`/`Wizardry`/`Explosive Cloud`/`Power Word Kill`/`Feeblemind`/`Statue` -> `custom`; `Dance`/`Power Word Blind` -> `partial`. |
-| 2026-03-25 | RC1 form suite | 2 | 0 | 0 | 0 | 0 | Promotions: `Clothform`/`Stoneform`/`Woodform`/`Ironform`/`Steelform` -> `partial` with RC-only exception notes preserved. |
-| 2026-03-25 | Basic B1 closure | 0 | 0 | 0 | 0 | 0 | Promotions: `Light`/`Ventriloquism` -> `partial` with Basic/RC trigger-scope evidence locks; all tracked lane backlogs at zero. |
+| Lane | Audited section / gate | Extraction mode now in force | Known defect class | Fix status | Next rating gate |
+| --- | --- | --- | --- | --- | --- |
+| B | Higher-level guidance, lost spell books, scroll wrapper flow | existing extraction plus expanded validator checks | OCR texture and wrapper cleanup debt | validator landed | replace remaining fallback-heavy wrapper slices before any score increase |
+| E | Research/lost books; page 63-65 treasure run | bounded page-column extraction plus Expert validator | local crop noise and OCR scars | major reconstruction debt retired | tighten crop cleanup and remove residual page bleed to reach `0.95+` |
+| C | MU 5th-9th run; scroll-to-misc flow | flow-first rebuild plus existing validation | residual OCR and header noise | stable | add extra table witness asserts only if new defects surface |
+| M | Anti-Magic / Dispel procedures; artifact witnesses | procedure extraction plus Master validator | dense artifact witness prose | validator landed | split any remaining over-broad witnesses only if auditability regresses |
+| I | PP recovery / bias context; Section 3 through `Maze` | extracted Sections 1-2 plus validated slice fallback for Section 3 | chart-heavy parser hostility in Section 3 | stable with explicit fallback | reduce slice-fallback burden before considering `0.97` |
+| RC | Chapter 3, Prismatic Wall, monster spellcasters, Chapter 16 catalog | targeted recovery plus RC validator | bespoke recovery burden on hostile PDF pages | validator landed | replace the heaviest bespoke recoveries with reusable primitives before any score increase |
+
 
 ### >0.95 Capture Uplift Plan (Context Harvest First)
 
