@@ -28,14 +28,14 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
 - [Battle and Force](#battle-and-force)
   - [Entropic Shield](#entropic-shield)
   - [Magic Missile](#magic-missile)
-  - [Shield Ward (Shield)](#shield-ward-shield)
+  - [Shield Ward](#shield-ward)
   - [Mage Armor](#mage-armor)
   - [Light](#light)
   - [Continual Light](#continual-light)
   - [Protection from Normal Missiles](#protection-from-normal-missiles)
   - [Protection from Evil](#protection-from-evil)
   - [Protection from Evil 10' Radius](#protection-from-evil-10-radius)
-  - [Fire Ball](#fire-ball)
+  - [Fireball](#fireball)
   - [Lightning Bolt](#lightning-bolt)
   - [Haste](#haste)
   - [Cloudkill](#cloudkill)
@@ -157,7 +157,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Mass Invisibility](#mass-invisibility)
 - [Traversal and Mobility](#traversal-and-mobility)
   - [Fly](#fly)
-  - [Swamp’s Gift (Water Breathing)](#swamps-gift-water-breathing)
+  - [Water Breathing](#water-breathing)
   - [Lower Water](#lower-water)
   - [Pass Plant](#pass-plant)
   - [Plant Door](#plant-door)
@@ -172,7 +172,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Wish](#wish)
   - [Gate](#gate)
   - [Maze](#maze)
-  - [Veilwalk (Pass-Wall)](#veilwalk-pass-wall)
+  - [Pass-Wall](#pass-wall)
   - [Timestop](#timestop)
   - [Magic Door](#magic-door)
   - [Teleport any Object](#teleport-any-object)
@@ -386,7 +386,7 @@ Use these for direct conflict, pressure, and line-breaking effects in personal a
 >
 > _Overcharge:_ Emplace the shield at a point in space. The barrier forms in a 2-yard radius, grants the same protection to creatures inside, can be moved as a 1-stone item, and decays by -1 Defense per minute until collapse.
 >
-> See also: `Shield Ward (Shield)` for the direct OSR-facing `Shield` import.
+> See also: `Shield Ward` for the classic `Shield` spell.
 
 tags:
 >   [power]
@@ -461,16 +461,16 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Shield Ward (Shield)
+## Shield Ward
 
-> **Shield Ward (Shield)**
+> **Shield Ward**
 >
 > _FTLS power invocation_
 >
 > **P:** 2 **R:** Self  
 > **T:** Self **D:** 2 turns (~20 minutes)
 >
-> A force barrier hangs just off your body and shifts to intercept incoming harm. While active, you gain +2 Defense against melee and +4 Defense against missile attacks, plus +1 Ward and +1 to saves. Guided force-bolts and similar homing projectiles strike the barrier first; when that happens, make an Aura save to negate the hit.
+> Also known as `Shield`. A force barrier hangs just off your body and shifts to intercept incoming harm. While active, you gain +2 Defense against melee and +4 Defense against missile attacks, plus +1 Ward and +1 to saves. Guided force-bolts and similar homing projectiles strike the barrier first; when that happens, make an Aura save to negate the hit.
 >
 > The ward is [imbued]: its base Power Level remains committed until you drop it (free action) or it expires.
 >
@@ -491,7 +491,7 @@ meta:
 >   - becmi:Basic Rules; spell: Shield
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Shield Ward
 > - usage:
->   - scope: power; id: Shield Ward (Shield); note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Shield Ward; note: FTLS Chapter 06 canonical name, classic `Shield` spell.
 
 osr:
 (pending verbatim extraction)
@@ -775,9 +775,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Fire Ball
+## Fireball
 
-> **Fire Ball**
+> **Fireball**
 >
 > _FTLS power invocation_
 >
@@ -813,7 +813,7 @@ meta:
 >   - becmi:Rules Cyclopedia; spell: Fire Ball
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Pyreball
 > - usage:
->   - scope: power; id: Fire Ball; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Fire Ball (Fireball); note: FTLS Chapter 06 alpha power entry.
 
 osr:
 (pending verbatim extraction)
@@ -6001,11 +6001,11 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Swamp’s Gift (Water Breathing)
+## Water Breathing
 
-> **Swamp’s Gift (Water Breathing)**
+> **Water Breathing**
 >
-> _FTLS power invocation_
+> _Swamp's Gift_
 >
 > **P:** 6 **R:** touch  
 > **T:** self or one willing creature **D:** 1 day
@@ -6033,7 +6033,7 @@ meta:
 >   - associated: Swamp-lineage fae clans (provisional)
 >   - tracking: heritage-origin expression; finalize exact lineage during heritage normalization pass.
 > - usage:
->   - scope: power; id: Swamp’s Gift (Water Breathing); note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Water Breathing; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 (pending verbatim extraction)
@@ -6655,11 +6655,11 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Veilwalk (Pass-Wall)
+## Pass-Wall
 
-> **Veilwalk (Pass-Wall)**
+> **Pass-Wall**
 >
-> _FTLS power invocation_
+> _Veil-walk_
 >
 > **P:** 6 **R:** near (~9 m / 30 ft)  
 > **T:** one solid wall-like barrier **D:** 3 turns
@@ -6685,7 +6685,7 @@ meta:
 >   - associated: Veil/Deathline fae clans (provisional)
 >   - tracking: heritage-origin expression; finalize exact lineage during heritage normalization pass.
 > - usage:
->   - scope: power; id: Veilwalk (Pass-Wall); note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Pass-Wall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 (pending verbatim extraction)
@@ -10319,4 +10319,3 @@ meta:
   </div>
 
 </div>
-

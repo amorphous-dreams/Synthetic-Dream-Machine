@@ -29,7 +29,15 @@ Base model (locked):
 - The full staged spell corpus now exists across the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
 - That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped family layer, and completed grouped-`partial` to Phase 1 sync.
 - Method correction (2026-03-23): staging docs should contain scraped/curated source text from `_becmi` extraction, not synthesized context overlays.
-- The remaining conversion burden is now: run an evidence-backed context harvest pass from `_becmi` and convert that curated material into chapter-ready bridge doctrine.
+- The immediate conversion burden is now: keep the audited staging baseline locked, normalize stale TODO confidence notes, and execute the Chapter 06 spell-only `osr:` preservation import before resuming deeper bridge work.
+
+## Execution Lock Snapshot (2026-03-28)
+
+- **Staging corpus**: frozen and approved as the only legal Chapter 06 `osr:` import source.
+- **Confidence gate**: approved working infrastructure at `0.90 / 1.00` floor-based after the 2026-03-28 audit.
+- **Chapter 06 design decisions**: locked.
+- **Chapter 06 alpha**: not yet complete; literal `osr:` import is part of the remaining alpha queue.
+- **Chapter 05 bridge batches**: remain paused until Chapter 06 `alpha` is complete.
 
 ## Uplift Execution Log (Consolidated)
 
@@ -239,13 +247,13 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 
 
 ## Active Queue
-1. Keep the spell/effect crosswalk in lockstep: grouped status changes or note promotions must be mirrored back into Phase 1 immediately.
-2. Continue Chapter 06 alpha drafting pass: expand canonical recognizer coverage and complete section-level scale/source organization.
-3. Run Chapter 06 alpha verification pass (tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries).
-4. Mark Chapter 06 as `alpha` complete before resuming new Chapter 05 bridge edits.
-5. Resume Chapter 05 Phase B bridge batches with the now-locked Chapter 06 API doctrine.
-6. Re-validate overlay assumptions against current Quickstart/Gear canon as downstream manuscript edits resume.
-7. Treat API-surface preservation with internal SDM replacement as the default conversion mode for Chapter 05 and adjacent passes.
+1. Update stale confidence and audit notes in the active `_todo` governance docs and record the current sequencing locks explicitly.
+2. Keep the spell/effect crosswalk in lockstep: Chapter 06 `osr:` import-state changes must be mirrored back into the flat catalog immediately.
+3. Execute the Chapter 06 spell-only `osr:` preservation import pass in existing family order.
+4. Run Chapter 06 alpha verification after the preservation import pass (tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries).
+5. Mark Chapter 06 as `alpha` complete before resuming new Chapter 05 bridge edits.
+6. Resume Chapter 05 Phase B bridge batches with the now-locked Chapter 06 API doctrine.
+7. Re-validate overlay assumptions against current Quickstart/Gear canon as downstream manuscript edits resume.
 
 ## Activities Checklist
 - [ ] Build/refresh BECMI -> SDM crosswalk index by subsystem (`B/E/C/M/I` lanes).

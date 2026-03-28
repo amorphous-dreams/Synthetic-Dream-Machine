@@ -15,7 +15,44 @@ Complete end-to-end audit of confidence ratings across the BECMI-to-SDM conversi
 4. **Row-State Calibration**: 100% compliance with Mapping Status Decision Matrix across stratified sample.
 5. **SDM Powers Index**: 112 powers rated at **1.00 weighted average confidence** (105 perfect scores, 7 near-perfect).
 
-**Publication Gate Status**: Upgraded to **APPROVED WORKING INFRASTRUCTURE** (0.90/1.00 floor-based). Ready for downstream drafting use pending team feedback confirmation. Path to 0.95+ (High Confidence) gate defined in Phase 3 recommendations.
+**Publication Gate Status**: Upgraded to **APPROVED WORKING INFRASTRUCTURE** (0.90/1.00 floor-based). Ready for the Chapter 06 spell-only `osr:` import pass. Chapter 05 bridge continuation remains gated closed until Chapter 06 reaches `alpha`. Path to 0.95+ (High Confidence) gate defined in Phase 3 recommendations.
+
+## TODO Lock / Readiness Audit (2026-03-28)
+
+This pass reviewed all `19` markdown files currently under `_todo/` and assigned an operational state so downstream work stops depending on implied lock status.
+
+### Current Lock Snapshot
+
+- **Staging corpus**: locked/frozen as the legal witness base for Chapter 06 import.
+- **Confidence gate**: locked at **Approved Working Infrastructure (0.90 / 1.00 floor-based)**.
+- **Exception ledger**: locked; all 14 verified exception rows remain in force.
+- **Chapter 06 design doctrine**: locked.
+- **Chapter 06 alpha**: not yet complete; still the active manuscript gate.
+- **Chapter 06 spell-only import pass**: ready to execute now.
+- **Chapter 05 bridge continuation**: locked closed until Chapter 06 `alpha` is declared.
+
+| Document | Operational State | Lock / Readiness Decision |
+| --- | --- | --- |
+| `AUDIT_REPORT_2026-03-28_Confidence_Ratings.md` | audit artifact | Complete; treat as locked reference unless a new audit supersedes it. |
+| `TODO_BECMI_Conversion.md` | conversion governance | Active master; locked doctrine remains in force and Phase B queue stays open. |
+| `TODO_BECMI_Spell_Effect_Crosswalk.md` | execution board | Active and ready after stale confidence notes are synchronized to this audit. |
+| `TODO_BECMI_Spell_Extraction_Spot_Check.md` | extraction reference | Historical reference; freeze and do not use as an execution tracker. |
+| `TODO_BECMI_Spell_Material_Staging.md` | staging umbrella | Frozen umbrella/reference for the staged corpus; do not use as an alternate import witness over the lane files. |
+| `TODO_BECMI_Spell_Material_Staging_Basic.md` | source staging | Source-frozen; legal import source. |
+| `TODO_BECMI_Spell_Material_Staging_Expert.md` | source staging | Source-frozen; legal import source. |
+| `TODO_BECMI_Spell_Material_Staging_Companion.md` | source staging | Source-frozen; legal import source. |
+| `TODO_BECMI_Spell_Material_Staging_Master.md` | source staging | Source-frozen; legal import source. |
+| `TODO_BECMI_Spell_Material_Staging_Immortals.md` | source staging | Source-frozen; legal import source. |
+| `TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md` | source staging | Source-frozen; legal import source. |
+| `TODO_Magitech_Fantascience_Chapter05.md` | downstream consumer | Gated closed for new bridge batches until Chapter 06 reaches `alpha`. |
+| `TODO_FTLS_Chapter_Action_Plan.md` | manuscript tracker | Active; Chapter 06 design lock is in place, but Chapter 06 `alpha` remains open. |
+| `TODO_Lares_Chapter05_Agent_Prompt.md` | handoff prompt | Updated to inherit the current Chapter 06-first gate and crosswalk execution state. |
+| `TODO_Loot_Treasure_Conversion.md` | stable plan | Stabilized and effectively locked pending explicit enhancement work. |
+| `TODO_SDM_Gear_Index_Master.md` | canonical boundary tracker | Stable boundary lock; ready as reference. |
+| `TODO_SDM_Powers_Index.md` | QA/index work | Active but non-gating for Chapter 06 import. |
+| `TODO_SDM_Traits_Index.md` | QA/index work | Active but non-gating for Chapter 06 import. |
+| `TODO_Culinary_Secrets_Backlog.md` | backlog draft | Draft only; not part of the BECMI/FTLS execution gate. |
+**Audit outcome**: the BECMI/FTLS import stack is now ready and locked for the Chapter 06 spell-only `osr:` preservation pass. The staged corpus is frozen, the crosswalk confidence notes are synchronized, the Chapter 06-first sequencing lock is recorded in the active governance docs, and Chapter 05 remains paused until Chapter 06 `alpha` is declared.
 
 ---
 

@@ -28,6 +28,7 @@ Default to acting, editing, and verifying rather than only describing what shoul
 
 Preflight gate for this handoff:
 - If Chapter 06 Powers design decisions are not locked and Chapter 06 is not yet `alpha`, stop and redirect execution to Chapter 06 work first.
+- Current gate snapshot (2026-03-28): Chapter 06 design decisions are locked, Chapter 06 `alpha` is not yet complete, crosswalk confidence is approved for execution at `0.90 / 1.00`, and the active upstream queue is Chapter 06 spell-only `osr:` import plus TODO lock/readiness normalization.
 
 ## 2) Locked Conversion Doctrine
 
@@ -72,7 +73,7 @@ Primary manuscript target:
 - Class locks and most D&D ability-score language have already been removed or reduced.
 - Armor/shield Defense has already been corrected to SDM additive armor bonuses and should be treated as the model example for `retain API, replace internals`.
 - `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` now contains the full flat spell/effect catalog, preserved cross-tradition class/spell tags, and the SDM-first grouped family workspace.
-- Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on strengthening grouped `custom` notes and reducing the remaining `undecided` edge cases.
+- Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on Chapter 06 spell-only `osr:` import, tracker-state updates, and keeping stale confidence notes synchronized to the audit baseline.
 - `_todo/` docs already contain:
   - `State of Play`
   - `API Conversion Doctrine`

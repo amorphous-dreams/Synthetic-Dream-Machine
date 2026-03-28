@@ -41,8 +41,20 @@ Rules for this artifact:
 
 ## State of Play
 
-- Ready for `osr:` literal text imports into Chapter 06 Powers.
-- Operational import backlog for the post-confidence-lock `osr:` pass is now defined below under `## Phase B Backlog: Chapter 06 osr: Import`.
+- Confidence audit is complete and the metadata layer is now rated **0.90 / 1.00 floor-based** as approved working infrastructure.
+- The staged corpus remains source-frozen and is the only legal witness set for Chapter 06 `osr:` imports.
+- Chapter 06 design decisions are locked; Chapter 06 `alpha` is still open.
+- Chapter 05 bridge continuation remains paused until Chapter 06 reaches `alpha`.
+- Operational import backlog for the spell-only Chapter 06 `osr:` pass is defined below under `## Phase B Backlog: Chapter 06 osr: Import`.
+
+## Execution Lock Snapshot (2026-03-28)
+
+- **Source lock**: open and frozen on the six staged spell files only.
+- **Confidence lock**: open at **Approved Working Infrastructure (0.90 / 1.00 floor-based)**.
+- **Exception lock**: all 14 verified exception rows remain in force pending new evidence.
+- **Chapter 06 design lock**: open; activation/payment/storage/overcharge/scale doctrine is already locked.
+- **Chapter 06 alpha gate**: still closed; literal `osr:` import is part of the remaining alpha work.
+- **Chapter 05 bridge gate**: closed until Chapter 06 `alpha` is complete.
 
 ## Exception State Ledger
 
@@ -65,7 +77,7 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 | Artifact Intelligence And Auto-Defense | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Autonomous agency doctrine. RC staging does not contain a structurally equivalent standalone procedure witness. |
 | Creating Artifacts | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Design workflow procedure. RC staging does not contain a structurally equivalent standalone procedure witness. |
 
-## Metadata Scrape Confidence (2026-03-27)
+## Metadata Scrape Confidence (2026-03-28 sync)
 
 - Scope: the metadata scrape pass is still evaluated as a separate layer from provenance, but the score now inherits the audited staging baseline where weaker source lanes increase downstream re-check burden.
 - Interpretation rule: provenance confidence answers "do the rows point back to the staged corpus clearly enough?" Metadata confidence answers "do the rows carry enough structured metadata to drive conversion work without re-scraping the whole corpus?"
@@ -75,31 +87,31 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 - **Schema Capture Confidence**
 	- what it measures: whether the expected metadata-bearing table shapes are present and stable across the workspace
 	- freeze signal: the artifact currently contains **15** Phase 1 catalog tables using the full provenance-bearing row shape and **32** Phase 2 mapping tables using the conversion-note row shape
-	- rating: **? / 1.00**
-	- reason: 
+	- rating: **1.00 / 1.00**
+	- reason: table inventory matches the audited expected shape count.
 - **Family Metadata Completeness**
 	- what it measures: whether each generic family block carries the minimum metadata needed for Chapter 06 ordering and regrouping work
 	- freeze signal: all **13** family blocks currently include the full four-line metadata package: `Current Header`, `Proposed Tag Family`, `Legacy Groups Merged`, and `Downstream Notes` for a total of **52** metadata lines
-	- rating: **? / 1.00**
-	- reason: 
+	- rating: **1.00 / 1.00**
+	- reason: all 13 families carry the full metadata package.
 - **Row-State Label Coverage**
 	- what it measures: whether Phase 2 rows carry explicit downstream-decision metadata rather than floating as unclassified notes
-	- freeze signal: the current mapping tables expose **?** explicit row-state labels: **?** `direct`, **?** `partial`, and **?** `custom`
-	- rating: **? / 1.00**
-	- reason: 
+	- freeze signal: the current mapping tables expose **363** explicit row-state labels: **14** `direct`, **141** `partial`, and **208** `custom`
+	- rating: **1.00 / 1.00**
+	- reason: audited row-state coverage is 100%.
 - **Evidence-Note Density**
 	- what it measures: how often the scrape already preserved high-value explanatory metadata such as `Evidence lock`, `Verification pass`, and `Existing SDM variant` notes for downstream drafting
-	- freeze signal: Phase 2 pass added 10 new inline evidence locks to high-tier spell rows; Phase 2 table rows carrying an inline evidence lock, evidence note, or verification pass marker now total **?**
-	- rating: **? / 1.00**
-	- reason: 
+	- freeze signal: Phase 2 table rows carrying an inline evidence lock, evidence note, or verification pass marker now total **52**, exceeding the `>= 50` target
+	- rating: **1.00 / 1.00**
+	- reason: the audited marker count clears the current gate target.
 - **Downstream Drafting Readiness**
 	- what it measures: whether the scraped metadata is good enough to support Chapter 06 family drafting without returning to the staging corpus for every local decision
 	- freeze signal: provenance-bearing Phase 1 rows, regrouped family tables, explicit family-order metadata, and row-state labels now coexist in one artifact with the staging corpus already frozen beneath it
-	- rating: **? / 1.00**
-	- reason: 
+	- rating: **0.90 / 1.00**
+	- reason: drafting is approved to proceed, but weaker lanes still justify occasional returns to staged witnesses during import review.
 
-- Overall metadata scrape confidence: **? (? / 1.00)**
-	- summary: 
+- Overall metadata scrape confidence: **Approved Working Infrastructure (0.90 / 1.00 floor-based)**
+	- summary: all structural metadata gates are green; remaining drag is execution vigilance, not tracker incompleteness.
 - Residual metadata risks:
 	- row-note depth is uneven by design, with denser annotation concentrated on exception rows, RC-only rows, and high-risk conversion families
 	- some repeated note language and alias phrasing still need later editorial normalization, but they do not block downstream use
@@ -123,77 +135,94 @@ Threshold definitions for moving between confidence bands:
 
 | Threshold | Score | Gate Criteria |
 | --- | --- | --- |
-| **Minimum Viable** | 0.90 | Provenance verified; all rows have status labels; exception ledger exists; staging corpus frozen |
-| **Approved Working Infrastructure** | 0.95 | Evidence-note density ≥ 50 markers; decision matrix documented; high-risk families (healing, defense/boundary, barrier) carry source-grounded evidence locks |
+| **Minimum Viable** | 0.85 | Provenance verified; all rows have status labels; exception ledger exists; staging corpus frozen |
+| **Approved Working Infrastructure** | 0.90 | Evidence-note density ≥ 50 markers; decision matrix documented; high-risk families (healing, defense/boundary, barrier) carry source-grounded evidence locks |
+| **High Confidence** | 0.95 | Top custom rows and remaining fragile families carry denser evidence locks and a refresh audit confirms calibration |
 | **Publication Ready** | 0.98 | All `partial`/`custom` rows carry evidence locks; row-state audit confirms calibration across all families; v2 gate in place |
 
-### Current rating: High (? / 1.00)
+### Current rating: Approved Working Infrastructure (0.90 / 1.00)
 
-- **Provenance (?)**: Exception ledger verified, all 12 exception rows confirmed, with the inherited staging-baseline penalty reduced after the Expert validator uplift
-- **Row-State Coverage (?)**: 305 explicit status labels; 30-row audit confirms consistent calibration
-- **Evidence-Note Density (?)**: 63 Phase 2 table rows with inline evidence lock/verification markers (Phase 2 target exceeded)
-- **Downstream Drafting Readiness (?)**: Decision matrix remains in place, but post-audit drafting should expect more returns to the staging corpus in weaker recovery lanes
+- **Provenance (1.00)**: Exception ledger verified, all 14 exception rows confirmed, and the staged corpus remains frozen.
+- **Row-State Coverage (1.00)**: 363 explicit status labels; audit sample confirmed consistent calibration.
+- **Evidence-Note Density (1.00)**: 52 audited inline evidence/verification markers; current gate target exceeded.
+- **Downstream Drafting Readiness (0.90)**: import work is approved, but execution should keep spot-check discipline on weaker lanes and table-derived rows.
 
-**Gate status**: ?
+**Gate status**: Open for Chapter 06 spell-only `osr:` import.
 
 
 ## Forward Plan
 
-1. Import `osr:` literal text into Chapter 06 Power cards.
-2. Convert, Power by Power, `osr:` text into SDM system terms with the minimum changes required.
-3. Refine, Power by Power, the SDM "main content" rules blocks. These can be synthesized with `Synthetic_Dream_Machine_04_Powers_Index.md` and the other SDM chapters as additional context.
-4. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
+1. Pass 1: update all stale confidence or audit notes and decide and implement locks across the active `_todo` governance stack.
+2. Pass 2: import literal `osr:` text into Chapter 06 Power cards for every in-scope spell recognizer row.
+3. Pass 3: convert, power by power, `osr:` references into SDM system terms with the minimum changes required.
+4. Pass 4: refine the Chapter 06 main-content rules blocks after the preservation pass is frozen.
+5. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
 
 ## Phase B Backlog: Chapter 06 `osr:` Import
 
-This is the execution backlog for the first downstream phase after the staging-confidence lock. It covers literal OSR text import only. It does **not** authorize early SDM rewrite, balance work, or doctrine invention inside the `osr:` block.
+This is the execution backlog for the first downstream phase after the staging-confidence lock. Current in-scope workload is the **194-row spell-only pass**: **181** normal spell rows plus **13** rows already flagged `[table-derived]` in `osr: imported`. This backlog covers literal OSR text import only. It does **not** authorize early SDM rewrite, balance work, or doctrine invention inside the `osr:` block.
+
+### Pass 1: Lock, Readiness, And Tracker Normalization
+
+1. Update all stale confidence or audit notes and decide and implement locks across the active `_todo` governance docs before any family import batch begins.
+2. Synchronize this crosswalk's confidence section to the 2026-03-28 audit report and treat that report as the current measured baseline.
+3. Record the current sequencing locks explicitly:
+   - staged spell corpus frozen as source truth,
+   - Chapter 06 design decisions locked,
+   - Chapter 06 `alpha` still open,
+   - Chapter 05 bridge work paused until Chapter 06 `alpha`.
+4. Confirm the tracker contract is stable before import starts:
+   - `Type = spell`,
+   - `Ch06 Import = ✓`,
+   - `osr: imported` is the execution-state field.
+5. Treat the 13 existing `[table-derived]` rows as mandatory review-priority rows for the later exception sweep.
 
 ### Gate And Freeze
 
-1. Record the import gate as open only when the staging corpus remains frozen, provenance stays at required confidence, and the exception ledger remains verified.
-2. Treat the six staging documents as the only legal source for `osr:` imports. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
-3. Keep the current exception doctrine in force:
+6. Record the import gate as open only when the staging corpus remains frozen, provenance stays at required confidence, and the exception ledger remains verified.
+7. Treat the six staging documents as the only legal source for `osr:` imports. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
+8. Keep the current exception doctrine in force:
    - verified `RC`-only rows remain `RC`-only exceptions,
    - verified `Master`-only procedures remain `Master`-only exceptions,
    - no new provenance uplift work is bundled into the import pass unless a row is truly blocked.
 
 ### `osr:` Block Contract
 
-4. Use `osr:` as a preservation field, not a rewrite field. Imported text should stay verbatim to the staged source except for minimal line-wrap cleanup required by Markdown/card readability.
-5. Preserve classic procedure details when they appear in the staged witness: original spell name, class/spell-level cues, range, duration, effect language, save language, reverse-form handling, and termination conditions.
-6. When multiple staged witnesses exist, use `RC` as the default compendium wording surface for the literal `osr:` block while preserving earlier BECMI witnesses in `meta.source` and the crosswalk provenance fields.
-7. If a row has a meaningful wording-delta or table-derived risk note, preserve that warning in row notes or import-review notes rather than silently harmonizing the text.
+9. Use `osr:` as a preservation field, not a rewrite field. Imported text should stay verbatim to the staged source except for minimal line-wrap cleanup required by Markdown/card readability.
+10. Preserve classic procedure details when they appear in the staged witness: original spell name, class/spell-level cues, range, duration, effect language, save language, reverse-form handling, and termination conditions.
+11. When multiple staged witnesses exist, use `RC` as the default compendium wording surface for the literal `osr:` block while preserving earlier BECMI witnesses in `meta.source` and the crosswalk provenance fields.
+12. If a row has a meaningful wording-delta or table-derived risk note, preserve that warning in row notes or import-review notes rather than silently harmonizing the text.
 
 ### Crosswalk Control Board
 
-8. Treat `Ch06 Import` and `osr: imported` as the canonical import tracker for every Chapter 06 recognizer row.
-9. Normalize import-state usage:
+13. Treat `Ch06 Import` and `osr: imported` as the canonical import tracker for every Chapter 06 recognizer row.
+14. Normalize import-state usage:
    - `Ch06 Import`: `✓` when a Chapter 06 card exists, `—` when no Chapter 06 card is planned.
    - `osr: imported`: `-` not started, `in-progress` active work, `yes` imported, `[needs-review]` imported but blocked on audit or formatting check.
-10. Limit blocker notes to real execution blockers only: missing Chapter 06 card, malformed staged witness, or unresolved source-selection exception.
-11. Work in existing Chapter 06 family order so import and review follow manuscript structure rather than source-book order.
+15. Limit blocker notes to real execution blockers only: missing Chapter 06 card, malformed staged witness, or unresolved source-selection exception.
+16. Work in existing Chapter 06 family order so import and review follow manuscript structure rather than source-book order.
 
 ### Manuscript Import Pass
 
-12. Replace every `(pending verbatim extraction)` placeholder in `Flying_Triremes_and_Laser_Swords_06_Powers.md` for OSR recognizer cards with staged source text.
-13. Keep the FTLS main rules body, tags, and existing `meta:` structure stable during this pass except where minimum provenance cleanup is required to match the imported witness.
-14. Do not import `osr:` blocks for non-OSR heritage powers or other entries that are not part of the recognizer bridge.
-15. Preserve existing `see` pointers to SDM variants; those pointers are not a reason to omit the canonical OSR block.
+17. Replace every `(pending verbatim extraction)` placeholder in `Flying_Triremes_and_Laser_Swords_06_Powers.md` for OSR recognizer cards with staged source text.
+18. Keep the FTLS main rules body, tags, and existing `meta:` structure stable during this pass except where minimum provenance cleanup is required to match the imported witness.
+19. Do not import `osr:` blocks for non-OSR heritage powers, item-effects, procedures, or other entries that are not part of the spell recognizer bridge.
+20. Preserve existing `see` pointers to SDM variants; those pointers are not a reason to omit the canonical OSR block.
 
 ### Audit And Acceptance
 
-16. After each family batch, verify that:
+21. After each family batch, verify that:
    - the `osr:` block is no longer placeholder text,
    - the imported text matches the staged anchor named in the row,
    - the row tracker is updated in the crosswalk,
    - the card still renders cleanly as Markdown.
-17. Run stricter spot checks on all exception-state rows and on any row already marked `[table-derived]`.
-18. Capture unresolved problems in an import-review queue instead of solving them by rewriting the preserved OSR text.
-19. The import phase is complete only when all Chapter 06 recognizer rows marked `✓` also show `osr: imported = yes` or an explicit review-state marker.
+22. Run stricter spot checks on all exception-state rows, all `RC`-only exceptions, all `Master`-only exceptions, and every row already marked `[table-derived]`.
+23. Capture unresolved problems in an import-review queue instead of solving them by rewriting the preserved OSR text.
+24. The import phase is complete only when all 194 in-scope rows are no longer `-` and all Chapter 06 spell recognizer rows marked `✓` show `osr: imported = yes` or an explicit review-state marker.
 
 ### Downstream Handoff
 
-20. Once the literal import pass is complete, open the next queue separately:
+25. Once the literal import pass is complete, open the next queue separately:
    - convert `osr:` references into SDM-native Chapter 06 rules text,
    - refine main-body FTLS mechanics power by power,
    - leave `osr:` preservation text frozen unless provenance correction is required.
@@ -391,7 +420,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | ESP | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Fly | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Invisibility | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Invisibility 10' radius | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Invisibility 10' Radius | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Knock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Levitate | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Lightning Bolt | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -552,7 +581,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Anti-Animal Shell | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Anti-Plant Shell | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Call Lightning | Dr3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
-| Control Temperature 10' radius | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Control Temperature 10' Radius | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Control Winds | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Creeping Doom | Dr7 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Faerie Fire | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
@@ -754,7 +783,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Magic Missile | spell | Canonical Chapter 06 entry should remain `Magic Missile`. Existing SDM variant: `Tragic Missile` (Vastlands / Apocrypha of the O.S.). | partial |
-| Fire Ball / Fireball | spell | Preserve `Fire Ball` (pre-RC BECMI) and `Fireball` (RC) as equivalent recognizer aliases. Existing SDM variant: `Pyreball` (Vastlands / Apocrypha of the O.S.). Keep as the base fireburst family anchor beneath `Delayed Blast Fireball` and `Meteor Swarm`. | partial |
+| Fire Ball / Fireball | spell | Preserve `Fire Ball` (pre-RC BECMI) and `Fireball` (RC) as equivalent recognizer aliases. Chapter 06 now locks the mixed canonical key directly on the card heading rather than preferring an FTLS alt-name over it. Existing SDM variant: `Pyreball` (Vastlands / Apocrypha of the O.S.). Keep as the base fireburst family anchor beneath `Delayed Blast Fireball` and `Meteor Swarm`. | partial |
 | Lightning Bolt | spell | Core line-artillery recognizer in the base attack family. | direct |
 | Delayed Blast Fireball | spell | Timed artillery variant of the fireburst family. Treat as the middle rung between `Fire Ball / Fireball` and `Meteor Swarm`, not proof of a mandatory standalone export. | partial |
 | Meteor Swarm | spell | Extreme artillery recognizer and current fireburst capstone above `Fire Ball / Fireball` and `Delayed Blast Fireball`. Keep as custom until Chapter 06 decides whether it remains a separate apex effect or becomes an overcharge endpoint. Evidence lock: Range 240', creates 1-4 40' radius meteor impacts (choose locations), each impact deals 10d10 fire damage with save-for-half, impacts persist with hazard interactions (craters, rubble, fire spread). | custom |
@@ -900,7 +929,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Polymorph Self | spell | Self-transformation recognizer with existing SDM cousins `Alter Self` and `Skinshift`, but Chapter 06 still needs explicit form-change limits. Expert evidence lock: self-only timed form change with new form HD capped at caster HD, preserving AC, hit points, hit rolls, and saves while granting physical but not special abilities and blocking spellcasting. | partial |
-| Polymorph Other / Others | spell | Canonical mixed-name row: preserve `Polymorph Other` (heading form) and `Polymorph Others` (list/index form) as equivalent recognizer aliases. Expert evidence lock: target-facing permanent-until-dispelled transformation with spell save, HD-ratio limit (new form max 2x original HD), and behavior/tendency inheritance from the new form. | partial |
+| Polymorph Other / Others | spell | Canonical mixed-name row: preserve `Polymorph Other` (heading form) and `Polymorph Others` (list/index form) as equivalent recognizer aliases. Chapter 06 now locks the mixed canonical key on the card heading rather than collapsing it to a shortened single-name surface. Expert evidence lock: target-facing permanent-until-dispelled transformation with spell save, HD-ratio limit (new form max 2x original HD), and behavior/tendency inheritance from the new form. | partial |
 | Summon Animals | spell | Druidic ally-call effect with explicit HD budgeting; useful for summon scaling via SDM Level. Existing high-confidence family lane for druidic ally summoning. | partial |
 | Animate Objects | spell | Object animation lane that likely maps only with explicit gear and object-agent handling. | partial |
 | Animate Dead | spell | Corpse animation and minion-control doctrine carrier shared across cleric and arcane lanes. Existing SDM cousin `Animate Corpse` is relationship guidance, not a one-to-one replacement. Keep as custom because command scope, persistence, corpse-source handling, and Undeath-facing doctrine still need explicit conversion rules. | custom |
@@ -943,7 +972,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Lower Water | spell | Custom hydrology-control procedure that halves water depth across up to 10,000 square feet for 10 turns, can strand vessels, and ends with a hazardous refill surge. | custom |
-| Control Temperature 10' radius | spell | Canonical display form is `Control Temperature 10' radius`; retain `Control Temperature 10' Radius` as a source alias recognizer. Evidence lock: self-centered moving 20' diameter microclimate, immediate up/down shift up to 50 F, optional round-by-round retuning by concentration, and fixed end-state at duration expiry. | partial |
+| Control Temperature 10' Radius | spell | Canonical Chapter 06 display form is `Control Temperature 10' Radius`; retain lowercase `Control Temperature 10' radius` as a source-era alias recognizer. Evidence lock: self-centered moving 20' diameter microclimate, immediate up/down shift up to 50 F, optional round-by-round retuning by concentration, and fixed end-state at duration expiry. | partial |
 | Control Winds | spell | Directional weather-force control with movement, hazard, and projectile-pressure implications. Keep as custom environment-control doctrine pending full weather-suite normalization. | custom |
 | Weather Control | spell | High-tier weather command lane crossing druidic and arcane traditions. Keep as the custom suite anchor for chapter-scale climate control, hazard shaping, and travel pressure. | custom |
 | Earthquake | spell | Custom high-tier terrain rewrite affecting an outdoor area up to 60' square at C17 plus 5' per level above, with collapse, rockslide, and crack-engulf risks resolved across the zone for 1 turn. | custom |
@@ -1011,7 +1040,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Invisibility | spell | Core concealment baseline for personal stealth and line-of-sight disruption. Existing SDM family variants: `Ecosphere Veil` for disregard-based stealth and `Yellow Cloud` for visual obscuration. | partial |
-| Invisibility 10' radius | spell | Canonical display form is `Invisibility 10' radius`; retain `Invisibility 10' Radius` as a source alias recognizer. `Yellow Cloud` is the clearest existing Luka-style battlefield-scale concealment cousin. | partial |
+| Invisibility 10' Radius | spell | Canonical Chapter 06 display form is `Invisibility 10' Radius`; retain lowercase `Invisibility 10' radius` as a source alias recognizer. `Yellow Cloud` is the clearest existing Luka-style battlefield-scale concealment cousin. | partial |
 | Mass Invisibility | spell | High-tier crowd concealment lane above the 10-foot-radius variant. `Yellow Cloud` remains the strongest existing crowd-obscuration precedent in the current SDM corpus. | partial |
 | Ventriloquism | spell | Sound-projection and false-source deception utility. Evidence lock: `Range 60'`, `Duration 2 turns`, one item or location as the projected voice source, and no save gate; the effect's value is positional misattribution rather than control or damage. | partial |
 | Mirror Image | spell | Defensive misdirection via decoy duplicates in direct-threat contexts. Defensive illusion / misdirection lane. Expert evidence lock: creates 1-4 adjacent duplicates that track caster movement and speech; each successful single-target hit removes one image instead of striking the caster, while area effects clear all images and still affect the caster. | partial |
@@ -1041,12 +1070,12 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Teleport | spell | Major transit power; likely direct at concept level but will need SDM range / mishap doctrine decisions. Major transit spell; compare `Linked Portals` as a family cousin. | partial |
 | Travel | spell | Composite mobility package combining flight, gaseous movement, and adjacent-plane transfer. Likely needs Chapter 06 decomposition or a premium bundled mobility power with environment and survival riders rather than a flat one-to-one export. | custom |
 | Dimension Door | spell | Short-range relocation entry that bridges tactical repositioning and teleport doctrine. | partial |
-| Pass-Wall / Passwall | spell | Canonical mixed-name row: preserve `Pass-Wall` (pre-RC BECMI) and `Passwall` (RC) as equivalent recognizer aliases. Chapter 06 recognizer surface currently uses `Veilwalk (Pass-Wall)` while preserving the canonical key. Existing SDM family variant: `Linked Portals`, used here as a controlled passage-through-barriers cousin rather than a literal wall-phasing duplicate. | partial |
+| Pass-Wall / Passwall | spell | Canonical mixed-name row: preserve `Pass-Wall` (pre-RC BECMI) and `Passwall` (RC) as equivalent recognizer aliases. Chapter 06 now locks canonical `Pass-Wall` on the card heading and promotes `_Veil-walk_` to the invocation line as the FTLS heritage-flavored alias. Existing SDM family variant: `Linked Portals`, used here as a controlled passage-through-barriers cousin rather than a literal wall-phasing duplicate. | partial |
 | Magic Door | spell | Portal and egress manipulation lane. Existing SDM family variant: `Linked Portals`, which is the clearest current astral-bridge precedent for controlled passage and reversible entry. Portal and egress manipulation lane with reversible entry-control logic. | partial |
 | Pass Plant | spell | Plant transit lane. Existing SDM family variant: `Linked Portals`, used here as a traversal cousin rather than a literal vegetation-only doorway. Primary placement stays with mobility because the row's job is passage, not plant reshaping. | partial |
 | Plant Door | spell | Vegetation access / doorway lane. Existing SDM family variant: `Linked Portals`, which is the closest current controlled-passage precedent even though the classical wrapper is plant-specific. | partial |
 | Transport Through Plants | spell | Plant-network transit lane. Existing SDM family variant: `Linked Portals`, which already expresses location-bridging as a distinct traversal procedure. | partial |
-| Water Breathing | spell | Druidic aquatic adaptation and access lane. Chapter 06 recognizer surface currently uses `Swamp's Gift (Water Breathing)` while keeping canonical `Water Breathing` as the key. Treat as custom environment-interface doctrine around breath medium, pressure, and exposure assumptions rather than a simple movement-speed modifier. | custom |
+| Water Breathing | spell | Druidic aquatic adaptation and access lane. Chapter 06 now locks canonical `Water Breathing` on the card heading and promotes `_Swamp's Gift_` to the invocation line as the heritage-flavored alias. Treat as custom environment-interface doctrine around breath medium, pressure, and exposure assumptions rather than a simple movement-speed modifier. | custom |
 | Gate | spell | Planar aperture and translocation endpoint for high-tier traversal and summoning crossover, likely a bespoke apex mobility/interface effect rather than a generic teleport derivative. | custom |
 | Teleport any Object | spell | Object-only transit lane that should stay distinct from creature teleport effects. Object-only transit lane adjacent to `Teleport`. | partial |
 
@@ -1080,7 +1109,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Protection from Evil | spell | Hybrid defensive buff plus contact ward against enchanted or summoned beings; not just a generic Defense bonus. Basic cleric defensive barrier spell. Arcane defensive barrier; shared with cleric lane. | partial |
-| Shield | spell | Personal defense shell. Chapter 06 canonical import surface is `Shield Ward (Shield)`, with `Entropic Shield` tracked as a sibling FTLS variant rather than a replacement recognizer. | direct |
+| Shield | spell | Personal defense shell. Chapter 06 now prefers `Shield Ward` as the canonical adaptation name for this spell while preserving classic `Shield` as the source recognizer and lookup alias. `Entropic Shield` remains a sibling FTLS variant rather than the canonical import surface. | direct |
 | Resist Fire | spell | Fire resistance and mitigation recognizer that likely maps cleanly to tagged elemental protection language. | direct |
 | Barrier | spell | High-tier warding and boundary-control lane for Chapter 06 barrier taxonomy above simple protection buffs. Evidence lock: Range 60', Duration 12 turns; area up to 30' diameter × 30' high of whirling hammers; 7d10 damage no save to any entity crossing the barrier; reverse (Remove Barrier) additionally destroys wall of ice/fire/clothform/woodform/wall of stone but explicitly cannot affect wall of iron/stoneform/ironform/steelform. | custom |
 | Dispel Evil | spell | Counterforce / banishment family member that overlaps with anti-hostile or anti-outsider doctrine rather than plain damage. Counterforce / banishment lane. | partial |
