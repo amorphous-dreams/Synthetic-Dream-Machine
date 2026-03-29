@@ -47,3 +47,17 @@ Behavior:
 - Exit `0` when all in-file internal fragments resolve.
 - Exit non-zero and print `file + line + fragment` when unresolved links exist.
 - Validation uses heading auto-fragments and explicit `<a id="...">` targets.
+
+## Chapter 06 `osr:` Import
+
+Deterministic importer for the Chapter 06 spell-only preservation pass:
+
+```bash
+python3 scripts/import_ch06_osr.py check
+python3 scripts/import_ch06_osr.py write
+```
+
+Notes:
+- `check` exits non-zero when the Chapter 06 manuscript or crosswalk drift from the deterministic import result.
+- `write` rewrites the Chapter 06 manuscript and crosswalk to the deterministic RC-first import result.
+- The importer records fallback review items for rows where the current RC staging lane does not expose a standalone spell body.

@@ -221,7 +221,6 @@ ber of spells appropriate for his experience level,
 as shown on the cleric's experience table in
 Chapter 2.
    The cleric may know any clerical spell from the
-
 list of clerical spells so long as he is of a high
 enough experience level to know it and cast it,
 and so long as the DM has not banned the use of
@@ -333,7 +332,6 @@ points of damage. It cannot heal damage if used
 
      This spell creates an invisible magical barrier
   all around the cleric's body (less than an inch
-
 away). While the spell lasts, characters and mon-
 sters attacking the cleric are penalized by - 1 to
 their attack rolls, and the cleric gains a + 1 bonus
@@ -5142,6 +5140,204 @@ us).
 If the caster creates four meteors, each strikes
 for 8d6 (8-48) points of damage and then ex-
 plodes for 8d6 (8-48) points of fire damage. If
+the caster creates eight smaller meteors,
+strikes for 4d6 (4-24) points and then exp
+for 4d6 more points of fire damage. Note t
+the meteors are aimed accurately, a victim o
+might find itself within overlapping blasts
+thus take explosion damage multiple times
+   The player rolls damage for each strike
+blast separately. A meteor never misses its ta
+   Any victim struck by a meteor takes
+"strike" damage (no saving throw). Each v
+within a blast radius may make a saving t
+vs. spells to take only half of the given blast
+age. Even fire-resistant and fire-using crea
+are fully affected by strikes from a m
+swarm, although they might be resistant t
+fiery explosions. A separate saving throw
+be made for each blast the character contac
+
+Power Word Kill
+Range: 120'
+Duration: Instantaneous
+Effect: Slays or stuns one or more creatures
+This spell enables the caster to affect one or
+more victims within 120' (no saving throw). Ex-
+ception: A magic-user, and any creature which
+can cast magic-user spells, may make a saving
+throw vs. spells to avoid this effect, with a -4
+penalty to the roll.
+A single victim with 1-60 hit points is auto-
+matically slain; one with 61-100 hit points is
+stunned (as power word stun) and unable to act
+for 1d4 turns. No creature with 101 or more hit
+points is affected.
+The spell can also be used to slay up to five
+victims if each has 20 hit points or less (again, no
+saving throw).
+
+Prismatic Wall
+Range: 60'
+Duration: 6 turns
+Effect: Creates a multi-colored barrier
+
+   This spell creates a barrier of many colors
+a glittering appearance as if from light sh
+through a prism. This wall is 2" thick, with
+between the colors. The effect must be eit
+sphere with a radius of 10', centered on the
+er, or a flat surface (vertical or horizontal)
+to 500 square feet in area.
+   Whatever its form, the prismatic wall ca
+be moved (even by a wish). The caster may
+through it freely and unharmed, with any
+he chooses to carry. All other creatures an
+jects contacting or passing through the pris
+wall are affected by its magic, starting wit
+first color they contact.
+   It takes powerful magic to break throug
+wall. A wish spell or a rod of cancellation w
+move the three outermost remaining colors
+that's all.
+   To break through a prismatic wall, an att
+must attack it with a specific sequence of s
+Each spell will cancel one color of the pris
+wall. These remedy spells, shown on the
+below, must be cast in the correct order (
+any magical cold to remove the red layer;
+any magical lightning to remove the orange
+er; and so on). When cast successfully, each
+causes the appropriate color to disappear
+the wall. When all layers are gone, so is the
+   A person with an active anti-magic shel
+including the caster of the prismatic wall) will not
+be able to pass through the wall, but the attempt
+will not damage either the anti-magic shell or
+the prismatic wall.
+The prismatic wall extends into the nearest
+plane of existence (the Ethereal Plane, if cast on
+the Prime Plane), appearing there as an inde-
+structible solid wall. Planar and dimensional
+travel can therefore not bypass it.
+The colors and effects of a prismatic wall are
+always the same; when created, the violet side is
+always closest to the caster. The effects and colors
+of the prismatic wall are summarized below.
+
+Shapechange
+Range: 0 (caster only)
+Duration: One turn per level of the caster
+Effect: Caster may change form
+This spell is similar to the 4th level polymorph
+self spell, but is far more powerful. The caster
+actually becomes another creature or object in all
+respects except the mind, hit points, and saving
+throws. The caster takes his new armor class, at-
+tack rolls, special attack forms, immunities, and
+all other details from the form he has taken.
+A magic-user cannot cast spells in any form ex-
+cept that of a bipedal humanoid (demihuman,
+goblin, ogre, giant, etc.). The caster cannot take
+a completely unique form (such as that of a spe-
+cific character, Elemental Ruler, or Immortal).
+He can gain the likeness but not the abilities of
+another character class. When wearing another
+form, he can only cast spells from his own mem-
+ory; he cannot cast from scrolls or his spell book.
+He cannot assume huge inanimate forms; if he
+tries to, the form will be a maximum of one foot
+tall per experience level of the caster and 100 cn
+weight per level.
+Except for these limits, the caster can become
+any creature or object that he or she has ever
+seen. Imaginary or unfamiliar creatures cannot
+be used; unless there are ten-armed trolls in your
+campaign, for example, he cannot turn into one.
+The caster may change shape at will during the
+spell's duration; each change requires a full
+round of concentration.
+Note that the caster does assume the flaws of
+the new form as well as its strengths. If, for ex-
+ample, the caster is struck by a sword +2, +5 vs.
+dragons while in dragon form, the +5 bonus ap-
+plies against his new form.
+This spell effect cannot be made permanent and
+is subject to dispel magic. During the spell dura-
+tion, the caster cannot pass through any protec-
+tion from evil or anti-magic shell spell effect.
+
+Timestop
+Range: 0 (caster only)
+Duration: 2-5 rounds
+Effect: Allows caster to act for 1d4 + 1 (2-5)
+rounds while everything else "stops"
+To the caster, this spell seems to stop time. It
+speeds the caster so greatly that all other crea-
+tures seem frozen at their normal speeds, in
+"normal time." From the caster's point of view,
+the effect lasts for 1d4 + 1 (2-5) rounds. The cast-
+er may perform one action during each of these
+magical rounds.
+Normal and magical fire, cold, gas, etc. can
+still harm the caster. While the timestop is in ef-
+fect, however, other creatures are invulnerable to
+the caster's attacks and spells. Spells with dura-
+tions other than "instantaneous" may be cre-
+ated and left to take effect when time resumes.
+Note that no time elapses while this spell is in
+effect; durations of other spells cast start after
+the timestop ends.
+The spellcaster cannot move items held by
+those in "normal time," but can move other
+items that are not "stuck," including those worn
+or carried by others. The caster is completely un-
+detectable by those in "normal time." However,
+the magic-user cannot pass through a protection
+from evil or anti-magic shell while under this
+spell's effect.
+
+Wish
+Range: Special
+Duration: Special
+Effect: Special
+
+  A wish is the single most powerful sp
+magic-user can have. It is never found
+scroll, but may be placed elsewhere (in a
+for example) in rare cases. Only magic-use
+36th level and with an 18 (or greater) Wi
+score may cast the wish spell.
+   Wording the Wish: The player must sa
+write the exact wish his character makes.
+wording is very important. The wish will us
+follow the literal wording, and whatever th
+tentions of the magic-user.
+  The DM should try to maintain game bala
+being neither too generous nor too stingy i
+ciding the effects of a wish. Even a badly ph
+wish, made with good intentions, may
+good results. However, if the wish is greed
+made with malicious intent, the DM sh
+make every effort to distort the results o
+spell so that the caster does not profit from
+necessary, the DM can even disallow the wi
+would then have no effect. Whenever a wish
+or is misinterpreted, the DM should explain
+ter the game) the problem or flaw in the p
+ing.
+   Here are some examples of faulty wishes:
+   "I wish that I knew everything about
+dungeon" could result in the character kno
+all for only a second, and then forgetting it
+   "I wish for a million gold pieces" ca
+granted by having them land on the char
+(that's 100,000 pounds of gold!), and then
+ish.
+   "I wish to immediately and permanently
+sess the gaze power of a basilisk while reta
+all of my own abilities and items" is a care
+worded wish that's out of balance. Chara
 
 ```
 
@@ -5421,7 +5617,6 @@ the shaman/wokan spell lists below.
 
 For example, an ogre could learn magic as a
 shaman up to 4th level (acting as a 4th level cleric) or as a wokan up to 2nd level (acting as a 2nd
-
 level magic-user); or, he could learn both (acting
 as a 2nd level cleric and a 1st level magic-user).
 
@@ -9677,7 +9872,6 @@ cause disease: cure disease (reversed) (C 3)
 cause fear: remove fear (reversed) (C 1)
 cause light wounds: cure light wounds (reversed) (C 1)
 cause serious wounds: cure serious wounds (reversed) (C 4)
-
 charm monster (MU 4)
 charm person (MU 1)
 charm plant (MU 7)
