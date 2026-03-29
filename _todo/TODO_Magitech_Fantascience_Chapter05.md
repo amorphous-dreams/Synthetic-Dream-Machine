@@ -16,7 +16,7 @@ Sequencing lock status (2026-03-28):
 - Chapter 06 design decisions: locked.
 - Chapter 06 `alpha`: not yet complete.
 - Crosswalk confidence gate: approved working infrastructure at `0.90 / 1.00` floor-based.
-- Active upstream work: Chapter 06 spell-only `osr:` import plus TODO lock/readiness normalization.
+- Active upstream work: Chapter 06 multi-witness `osr:` import plus TODO lock/readiness normalization.
 - New Chapter 05 bridge edits remain paused until that Chapter 06 queue clears and `alpha` is declared.
 
 ## Canonical Context (Locked)
@@ -68,7 +68,7 @@ Sequencing lock status (2026-03-28):
 - Phase A mechanical cleanup is complete in the current manuscript pass and preserves BECMI-facing names while replacing the remaining internal D&D assumptions.
 - Armor/shield Defense has been corrected to SDM additive armor bonuses and is now the model example for `retain API, replace internals`.
 - The spell/effect crosswalk that feeds Chapter 05 and Chapter 06 now has a full flat catalog, preserved cross-tradition class/spell metadata, and an SDM-first grouped family layer.
-- Grouped `partial` rows have been synced back into the flat catalog; the current crosswalk execution focus is Chapter 06 spell-only `osr:` import and tracker-state normalization, not new Chapter 05 bridge drafting.
+- Grouped `partial` rows have been synced back into the flat catalog; the current crosswalk execution focus is Chapter 06 multi-witness `osr:` import and tracker-state normalization, not new Chapter 05 bridge drafting.
 - Remaining Chapter 05 work is now mostly downstream bridge and consistency work: consume the stronger crosswalk doctrine for item-interface rows, finish deferred classic-name mappings, and run cross-chapter validation.
 
 ## API Conversion Doctrine

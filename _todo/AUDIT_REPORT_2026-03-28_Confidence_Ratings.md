@@ -15,7 +15,7 @@ Complete end-to-end audit of confidence ratings across the BECMI-to-SDM conversi
 4. **Row-State Calibration**: 100% compliance with Mapping Status Decision Matrix across stratified sample.
 5. **SDM Powers Index**: 112 powers rated at **1.00 weighted average confidence** (105 perfect scores, 7 near-perfect).
 
-**Publication Gate Status**: Upgraded to **APPROVED WORKING INFRASTRUCTURE** (0.90/1.00 floor-based). Ready for the Chapter 06 spell-only `osr:` import pass. Chapter 05 bridge continuation remains gated closed until Chapter 06 reaches `alpha`. Path to 0.95+ (High Confidence) gate defined in Phase 3 recommendations.
+**Publication Gate Status**: Upgraded to **APPROVED WORKING INFRASTRUCTURE** (0.90/1.00 floor-based). Ready for the Chapter 06 multi-witness `osr:` import pass. Chapter 05 bridge continuation remains gated closed until Chapter 06 reaches `alpha`. Path to 0.95+ (High Confidence) gate defined in Phase 3 recommendations.
 
 ## TODO Lock / Readiness Audit (2026-03-28)
 
@@ -28,7 +28,7 @@ This pass reviewed all `19` markdown files currently under `_todo/` and assigned
 - **Exception ledger**: locked; all 14 verified exception rows remain in force.
 - **Chapter 06 design doctrine**: locked.
 - **Chapter 06 alpha**: not yet complete; still the active manuscript gate.
-- **Chapter 06 spell-only import pass**: ready to execute now.
+- **Chapter 06 multi-witness import pass**: ready to execute now.
 - **Chapter 05 bridge continuation**: locked closed until Chapter 06 `alpha` is declared.
 
 | Document | Operational State | Lock / Readiness Decision |

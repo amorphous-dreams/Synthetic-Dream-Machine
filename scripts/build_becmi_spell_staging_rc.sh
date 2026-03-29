@@ -10,8 +10,8 @@ TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
 RC_TXT="$TMPDIR/rc.txt"
-RC_PDF="$ROOT/_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf"
-RC_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md"
+RC_PDF="${RC_PDF_OVERRIDE:-$ROOT/_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf}"
+RC_OUT="${RC_OUT_OVERRIDE:-$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md}"
 
 render_rc_max_spellcaster_table() {
   local pdf="$1"
@@ -88,6 +88,24 @@ render_rc_spellcaster_notes() {
     | awk 'started || /^Notes:/ { started = 1; print }'
 }
 
+emit_rc_prismatic_continuation() {
+  cat <<'TXT'
+including the caster of the prismatic wall) will not
+be able to pass through the wall, but the attempt
+will not damage either the anti-magic shell or
+the prismatic wall.
+The prismatic wall extends into the nearest
+plane of existence (the Ethereal Plane, if cast on
+the Prime Plane), appearing there as an inde-
+structible solid wall. Planar and dimensional
+travel can therefore not bypass it.
+The colors and effects of a prismatic wall are
+always the same; when created, the violet side is
+always closest to the caster. The effects and colors
+of the prismatic wall are summarized below.
+TXT
+}
+
 
 mixed_chapter3_block_named() {
   local label="$1"
@@ -120,7 +138,154 @@ mixed_chapter3_block_named() {
   render_layout_page_chars "$pdf" 34 0.2 109 220 >> "$OUT"
   printf '\n' >> "$OUT"
   render_tsv_cols_pages "$pdf" 35 59 '185,370' >> "$OUT"
+  printf '\n' >> "$OUT"
+  render_rc_late_ninth_level_flow "$pdf" >> "$OUT"
   printf '\n```\n\n' >> "$OUT"
+}
+
+render_rc_late_ninth_level_flow() {
+  local pdf="$1"
+  local page60_left
+
+  page60_left=$(mktemp)
+  pdftotext -layout -nodiag -nopgbrk -f 60 -l 60 -x 0 -y 0 -W 190 -H 800 "$pdf" - 2>/dev/null > "$page60_left"
+
+  awk '
+    BEGIN { started = 0 }
+    /the caster creates eight smaller meteors/ { started = 1 }
+    started { print }
+    /^Power Word Kill$/ { exit }
+  ' "$page60_left" | sed '$d'
+  emit_rc_power_word_kill
+  printf '\n'
+  awk '
+    BEGIN { started = 0 }
+    /^Prismatic Wall$/ { started = 1 }
+    started { print }
+    /^   A person with an active anti-magic shel/ { exit }
+  ' "$page60_left"
+  emit_rc_prismatic_continuation
+  printf '\n'
+  emit_rc_shapechange
+  printf '\n'
+  emit_rc_timestop
+  printf '\n'
+  render_rc_wish_from_page61_left "$pdf"
+
+  rm -f "$page60_left"
+}
+
+emit_rc_power_word_kill() {
+  cat <<'TXT'
+Power Word Kill
+Range: 120'
+Duration: Instantaneous
+Effect: Slays or stuns one or more creatures
+This spell enables the caster to affect one or
+more victims within 120' (no saving throw). Ex-
+ception: A magic-user, and any creature which
+can cast magic-user spells, may make a saving
+throw vs. spells to avoid this effect, with a -4
+penalty to the roll.
+A single victim with 1-60 hit points is auto-
+matically slain; one with 61-100 hit points is
+stunned (as power word stun) and unable to act
+for 1d4 turns. No creature with 101 or more hit
+points is affected.
+The spell can also be used to slay up to five
+victims if each has 20 hit points or less (again, no
+saving throw).
+TXT
+}
+
+emit_rc_shapechange() {
+  cat <<'TXT'
+Shapechange
+Range: 0 (caster only)
+Duration: One turn per level of the caster
+Effect: Caster may change form
+This spell is similar to the 4th level polymorph
+self spell, but is far more powerful. The caster
+actually becomes another creature or object in all
+respects except the mind, hit points, and saving
+throws. The caster takes his new armor class, at-
+tack rolls, special attack forms, immunities, and
+all other details from the form he has taken.
+A magic-user cannot cast spells in any form ex-
+cept that of a bipedal humanoid (demihuman,
+goblin, ogre, giant, etc.). The caster cannot take
+a completely unique form (such as that of a spe-
+cific character, Elemental Ruler, or Immortal).
+He can gain the likeness but not the abilities of
+another character class. When wearing another
+form, he can only cast spells from his own mem-
+ory; he cannot cast from scrolls or his spell book.
+He cannot assume huge inanimate forms; if he
+tries to, the form will be a maximum of one foot
+tall per experience level of the caster and 100 cn
+weight per level.
+Except for these limits, the caster can become
+any creature or object that he or she has ever
+seen. Imaginary or unfamiliar creatures cannot
+be used; unless there are ten-armed trolls in your
+campaign, for example, he cannot turn into one.
+The caster may change shape at will during the
+spell's duration; each change requires a full
+round of concentration.
+Note that the caster does assume the flaws of
+the new form as well as its strengths. If, for ex-
+ample, the caster is struck by a sword +2, +5 vs.
+dragons while in dragon form, the +5 bonus ap-
+plies against his new form.
+This spell effect cannot be made permanent and
+is subject to dispel magic. During the spell dura-
+tion, the caster cannot pass through any protec-
+tion from evil or anti-magic shell spell effect.
+TXT
+}
+
+emit_rc_timestop() {
+  cat <<'TXT'
+Timestop
+Range: 0 (caster only)
+Duration: 2-5 rounds
+Effect: Allows caster to act for 1d4 + 1 (2-5)
+rounds while everything else "stops"
+To the caster, this spell seems to stop time. It
+speeds the caster so greatly that all other crea-
+tures seem frozen at their normal speeds, in
+"normal time." From the caster's point of view,
+the effect lasts for 1d4 + 1 (2-5) rounds. The cast-
+er may perform one action during each of these
+magical rounds.
+Normal and magical fire, cold, gas, etc. can
+still harm the caster. While the timestop is in ef-
+fect, however, other creatures are invulnerable to
+the caster's attacks and spells. Spells with dura-
+tions other than "instantaneous" may be cre-
+ated and left to take effect when time resumes.
+Note that no time elapses while this spell is in
+effect; durations of other spells cast start after
+the timestop ends.
+The spellcaster cannot move items held by
+those in "normal time," but can move other
+items that are not "stuck," including those worn
+or carried by others. The caster is completely un-
+detectable by those in "normal time." However,
+the magic-user cannot pass through a protection
+from evil or anti-magic shell while under this
+spell's effect.
+TXT
+}
+
+render_rc_wish_from_page61_left() {
+  local pdf="$1"
+  pdftotext -layout -nodiag -nopgbrk -f 61 -l 61 -x 0 -y 0 -W 190 -H 800 "$pdf" - 2>/dev/null \
+    | awk '
+        BEGIN { started = 0 }
+        /^Wish$/ { started = 1 }
+        started { print }
+      '
 }
 
 mixed_monster_spellcasters_block_named() {
@@ -509,6 +674,7 @@ perl -0pi -e '
   s/\+ 1 5 %/\+15%/g;
   s/\+ 5 %/\+5%/g;
   s/([0-9]) %/$1%/g;
+  1 while s/([^\.\!\?:\n])\n\n([a-z])/$1\n$2/g;
 ' "$RC_OUT"
 assert_heading_count "$RC_OUT" 'Chapter 3: Spells and Spellcasting' 1 'RC staging duplicated the Chapter 3 spellcasting section heading'
 assert_heading_count "$RC_OUT" 'Prismatic Wall Recovery Pass \(RC page 60\)' 1 'RC staging duplicated the Prismatic Wall recovery section heading'

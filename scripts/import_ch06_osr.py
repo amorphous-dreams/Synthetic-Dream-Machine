@@ -4,16 +4,8 @@
 Usage:
     python3 scripts/import_ch06_osr.py check
     python3 scripts/import_ch06_osr.py write
-
-The importer reads the Chapter 06 manuscript and the spell/effect crosswalk,
-extracts literal spell text from the staged BECMI corpus, and then either:
-
-- `check`: report whether the current files already match the deterministic import
-- `write`: rewrite the target files to the deterministic import result
-
-The import contract is RC-first. When the current RC staging lane does not expose
-the needed body text, the importer falls back to a staged Companion or Master
-witness and records that row as `[needs-review]` in the crosswalk review queue.
+    python3 scripts/import_ch06_osr.py check --card "Magic Missile"
+    python3 scripts/import_ch06_osr.py write --card "Magic Missile"
 """
 
 from __future__ import annotations
@@ -28,25 +20,34 @@ from pathlib import Path
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md"
 DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
-DEFAULT_RC = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md"
-DEFAULT_COMPANION = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Companion.md"
-DEFAULT_MASTER = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Master.md"
+DEFAULT_STAGING = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
 
 PENDING_TOKEN = "osr:\n(pending verbatim extraction)"
 REVIEW_QUEUE_HEADING = "## Chapter 06 `osr:` Import Review Queue\n\n"
 REFERENCE_REUSE_MARKER = "## Reference Reuse Targets\n"
-
-LEVEL_HEADING_RE = re.compile(
-    r"^\s*(First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth) Level .*Spells\s*$",
-    re.I,
-)
-RC_SECTION_RE = re.compile(r"^\[RC page ")
+REVIEW_LINE_RE = re.compile(r"^- `(.+?)`: (.+)$")
 
 
 @dataclass(frozen=True)
 class ReviewItem:
     classic_name: str
     note: str
+
+
+@dataclass(frozen=True)
+class Witness:
+    lane: str
+    anchor: str
+    text: str
+
+
+@dataclass(frozen=True)
+class Record:
+    classic_name: str
+    card_heading: str
+    expected_lanes: list[str]
+    missing_lanes: list[str]
+    witnesses: list[Witness]
 
 
 @dataclass(frozen=True)
@@ -64,18 +65,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("mode", choices=["check", "write"], help="Check for drift or rewrite files")
     parser.add_argument("--chapter", type=Path, default=DEFAULT_CHAPTER)
     parser.add_argument("--crosswalk", type=Path, default=DEFAULT_CROSSWALK)
-    parser.add_argument("--rc", type=Path, default=DEFAULT_RC)
-    parser.add_argument("--companion", type=Path, default=DEFAULT_COMPANION)
-    parser.add_argument("--master", type=Path, default=DEFAULT_MASTER)
+    parser.add_argument("--staging", type=Path, default=DEFAULT_STAGING)
+    parser.add_argument("--card", help="Exact Chapter 06 heading to update")
     return parser.parse_args()
-
-
-def norm(text: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "", text.lower())
-
-
-def load_lines(path: Path) -> list[str]:
-    return path.read_text(encoding="utf-8").splitlines()
 
 
 def parse_spell_rows(crosswalk_text: str) -> list[list[str]]:
@@ -99,164 +91,77 @@ def unique_classic_names(rows: list[list[str]]) -> list[str]:
     return ordered
 
 
-def parse_card_map(chapter_text: str) -> dict[str, str]:
-    card_map: dict[str, str] = {}
-    for match in re.finditer(r"^## (.+?)\n(.*?)(?=^## |\Z)", chapter_text, re.S | re.M):
-        title = match.group(1).strip()
+def parse_records(staging_text: str) -> dict[str, Record]:
+    records: dict[str, Record] = {}
+    for match in re.finditer(r"^## (.+?)\n(.*?)(?=^## |\Z)", staging_text, flags=re.S | re.M):
+        classic_name = match.group(1).strip()
         body = match.group(2)
-        for spell_name in set(re.findall(r"becmi:[^;\n]+; spell: ([^\n>]+)", body)):
-            card_map[spell_name.strip()] = title
-    card_map.update(
-        {
-            "Fire Ball / Fireball": "Fireball",
-            "Invisibility 10' Radius": "Invisibility 10' Radius",
-            "Pass-Wall / Passwall": "Pass-Wall",
-            "Polymorph Other / Others": "Polymorph Other",
-            "Control Temperature 10' Radius": "Control Temperature 10' Radius",
-        }
-    )
-    return card_map
+        card_heading = extract_metadata_value(body, "Chapter 06 card heading")
+        expected_lanes = extract_backtick_list(body, "expected witness lanes")
+        missing_lanes = extract_backtick_list(body, "missing expected witness lanes")
+        if missing_lanes == ["none"]:
+            missing_lanes = []
+
+        witnesses: list[Witness] = []
+        for witness_match in re.finditer(r"^### Witness: (.+?)\n(.*?)(?=^### |\Z)", body, flags=re.S | re.M):
+            witness_body = witness_match.group(2)
+            lane = extract_metadata_value(witness_body, "source lane")
+            anchor = extract_metadata_value(witness_body, "staging anchor / section")
+            text_match = re.search(r"```text\n(.*?)\n```", witness_body, flags=re.S)
+            if not text_match:
+                raise RuntimeError(f"missing fenced witness text for {classic_name} / {lane}")
+            witnesses.append(Witness(lane=lane, anchor=anchor, text=text_match.group(1)))
+
+        records[classic_name] = Record(
+            classic_name=classic_name,
+            card_heading=card_heading,
+            expected_lanes=expected_lanes,
+            missing_lanes=missing_lanes,
+            witnesses=witnesses,
+        )
+    return records
 
 
-def build_rc_heading_index(unique_names: list[str], rc_lines: list[str]) -> tuple[dict[str, int], list[int]]:
-    manual_rc_key = {
-        "Fire Ball / Fireball": "Fireball",
-        "Ice Storm/Wall": "Ice Storm/Wall of Ice",
-        "Invisibility 10' Radius": "Invisibility 10' radius",
-        "Pass-Wall / Passwall": "Passwall",
-        "Polymorph Other / Others": "Polymorph Other",
-        "Control Temperature 10' Radius": "Control Temperature 10' radius",
-    }
-
-    canonical_by_norm: dict[str, str] = {}
-    for classic_name in unique_names:
-        for alias in [part.strip() for part in classic_name.split("/")]:
-            canonical_by_norm[norm(alias)] = classic_name
-    for canonical, rc_key in manual_rc_key.items():
-        canonical_by_norm[norm(rc_key)] = canonical
-
-    exact_start_by_canonical: dict[str, int] = {}
-    all_heading_starts: list[int] = []
-    for index, raw_line in enumerate(rc_lines):
-        line = raw_line.strip().rstrip("*")
-        if index <= 200:
-            continue
-        canonical = canonical_by_norm.get(norm(line))
-        if not canonical:
-            continue
-        next_window = " ".join(part.strip() for part in rc_lines[index + 1 : index + 8])
-        if "Range:" not in next_window:
-            continue
-        all_heading_starts.append(index)
-        exact_start_by_canonical.setdefault(canonical, index)
-
-    all_heading_starts.sort()
-    return exact_start_by_canonical, all_heading_starts
+def extract_metadata_value(body: str, field: str) -> str:
+    match = re.search(rf"^- {re.escape(field)}: `(.+?)`$", body, flags=re.M)
+    if not match:
+        raise RuntimeError(f"missing metadata field: {field}")
+    return match.group(1)
 
 
-def extract_from_lines(lines: list[str], title: str, known_names: set[str]) -> str | None:
-    candidates: list[int] = []
-    for index, raw_line in enumerate(lines):
-        if raw_line.strip().rstrip("*").lower() != title.lower():
-            continue
-        next_window = " ".join(part.strip() for part in lines[index + 1 : index + 8])
-        if "Range:" in next_window:
-            candidates.append(index)
-
-    if not candidates:
-        return None
-
-    start = candidates[0]
-    end = len(lines)
-    for cursor in range(start + 1, len(lines)):
-        current = lines[cursor].strip()
-        current_cmp = current.rstrip("*")
-        next_window = " ".join(part.strip() for part in lines[cursor + 1 : cursor + 8])
-        if LEVEL_HEADING_RE.match(current) or current.startswith("```") or current.startswith("### ") or current.startswith("["):
-            end = cursor
-            break
-        if "Range:" in next_window and norm(current_cmp) in known_names:
-            end = cursor
-            break
-
-    return "\n".join(lines[start:end]).strip("\n")
+def extract_backtick_list(body: str, field: str) -> list[str]:
+    match = re.search(rf"^- {re.escape(field)}: (.+)$", body, flags=re.M)
+    if not match:
+        raise RuntimeError(f"missing list field: {field}")
+    return re.findall(r"`([^`]+)`", match.group(1))
 
 
-def rc_extract(canonical: str, rc_lines: list[str], start_by_canonical: dict[str, int], all_starts: list[int]) -> str | None:
-    start = start_by_canonical.get(canonical)
-    if start is None:
-        return None
-
-    end = len(rc_lines)
-    for candidate in all_starts:
-        if candidate > start:
-            end = candidate
-            break
-    for cursor in range(start + 1, len(rc_lines)):
-        current = rc_lines[cursor].strip()
-        if LEVEL_HEADING_RE.match(current) or RC_SECTION_RE.match(current) or current.startswith("```") or current.startswith("### "):
-            end = min(end, cursor)
-            break
-    return "\n".join(rc_lines[start:end]).strip("\n")
+def select_names(ordered_names: list[str], records: dict[str, Record], target_card: str | None) -> list[str]:
+    if not target_card:
+        return ordered_names
+    selected = [name for name in ordered_names if records[name].card_heading == target_card]
+    if not selected:
+        raise RuntimeError(f'no Chapter 06 spell card found for --card "{target_card}"')
+    return selected
 
 
-def compute_osr_blocks(
-    unique_names: list[str],
-    rc_lines: list[str],
-    companion_lines: list[str],
-    master_lines: list[str],
-) -> tuple[dict[str, str], dict[str, str], list[ReviewItem]]:
-    start_by_canonical, all_starts = build_rc_heading_index(unique_names, rc_lines)
-    manual_source = {
-        "Power Word Kill": ("Companion Set", companion_lines, "Power Word Kill"),
-        "Shapechange": ("Master Set", master_lines, "Shapechange"),
-        "Timestop": ("Master Set", master_lines, "Timestop"),
-    }
-    known_names = {norm(name) for name in unique_names} | {
-        norm("Ice Storm/Wall of Ice"),
-        norm("Passwall"),
-        norm("Fireball"),
-        norm("Polymorph Other"),
-        norm("Control Temperature 10' radius"),
-        norm("Invisibility 10' radius"),
-        norm("Power Word Kill"),
-        norm("Shapechange"),
-        norm("Timestop"),
-    }
+def render_osr_block(record: Record) -> str:
+    if not record.witnesses:
+        return "(pending verbatim extraction)"
 
-    blocks: dict[str, str] = {}
-    statuses: dict[str, str] = {}
-    review_items: list[ReviewItem] = []
-
-    for classic_name in unique_names:
-        block = rc_extract(classic_name, rc_lines, start_by_canonical, all_starts)
-        status = "yes"
-        note = None
-
-        if block is None:
-            source_label, source_lines, title = manual_source[classic_name]
-            block = extract_from_lines(source_lines, title, known_names)
-            if block is None:
-                raise RuntimeError(f"could not extract fallback witness for {classic_name}")
-            status = "[needs-review]"
-            note = (
-                f"Imported from {source_label} witness because the current RC staging lane "
-                f"surfaces only list/index evidence for this entry."
-            )
-        blocks[classic_name] = block
-        statuses[classic_name] = status
-        if note:
-            review_items.append(ReviewItem(classic_name=classic_name, note=note))
-
-    return blocks, statuses, review_items
+    rendered: list[str] = []
+    for witness in record.witnesses:
+        rendered.append(f"[{witness.lane} | {witness.anchor}]")
+        rendered.append(witness.text)
+        rendered.append("")
+    return "\n".join(rendered).rstrip()
 
 
-def apply_osr_blocks(chapter_text: str, card_map: dict[str, str], blocks: dict[str, str], ordered_names: list[str]) -> str:
+def apply_osr_blocks(chapter_text: str, records: dict[str, Record], selected_names: list[str]) -> str:
     updated = chapter_text
-    for classic_name in ordered_names:
-        heading = card_map.get(classic_name)
-        if not heading:
-            raise RuntimeError(f"no Chapter 06 card mapping for {classic_name}")
+    for classic_name in selected_names:
+        record = records[classic_name]
+        heading = record.card_heading
         anchor = f"## {heading}\n"
         start = updated.find(anchor)
         if start == -1:
@@ -275,7 +180,7 @@ def apply_osr_blocks(chapter_text: str, card_map: dict[str, str], blocks: dict[s
         new_card = (
             card_block[: osr_match.start()]
             + osr_match.group(1)
-            + blocks[classic_name]
+            + render_osr_block(record)
             + osr_match.group(3)
             + card_block[osr_match.end() :]
         )
@@ -283,19 +188,61 @@ def apply_osr_blocks(chapter_text: str, card_map: dict[str, str], blocks: dict[s
     return updated
 
 
-def update_crosswalk(crosswalk_text: str, statuses: dict[str, str], review_items: list[ReviewItem]) -> str:
+def record_status(record: Record) -> str:
+    return "yes" if record.witnesses and not record.missing_lanes else "[needs-review]"
+
+
+def record_review_item(record: Record) -> ReviewItem | None:
+    if not record.witnesses:
+        return ReviewItem(record.classic_name, "no witness text extracted from the clean staging file")
+    if record.missing_lanes:
+        missing = ", ".join(record.missing_lanes)
+        return ReviewItem(record.classic_name, f"missing expected witness lanes in clean staging: {missing}")
+    return None
+
+
+def parse_existing_review_items(crosswalk_text: str) -> dict[str, str]:
+    section_match = re.search(
+        r"## Chapter 06 `osr:` Import Review Queue\n\n(.*?)(?=\n## Reference Reuse Targets\n)",
+        crosswalk_text,
+        flags=re.S,
+    )
+    if not section_match:
+        return {}
+    items: dict[str, str] = {}
+    for line in section_match.group(1).splitlines():
+        match = REVIEW_LINE_RE.match(line.strip())
+        if match:
+            items[match.group(1)] = match.group(2)
+    return items
+
+
+def update_crosswalk(
+    crosswalk_text: str,
+    statuses: dict[str, str],
+    review_items: list[ReviewItem],
+    selected_names: list[str],
+    bulk_mode: bool,
+) -> str:
+    selected_set = set(selected_names)
     updated_lines: list[str] = []
     for line in crosswalk_text.splitlines():
         if line.startswith("| ") and not line.startswith("| ---"):
             parts = [part.strip() for part in line.strip("|").split("|")]
-            if len(parts) == 7 and parts[4] == "spell" and parts[5] == "✓":
+            if len(parts) == 7 and parts[4] == "spell" and parts[5] == "✓" and parts[0] in selected_set:
                 parts[6] = statuses[parts[0]]
                 line = "| " + " | ".join(parts) + " |"
         updated_lines.append(line)
 
-    review_queue = REVIEW_QUEUE_HEADING + "\n".join(
-        f"- `{item.classic_name}`: {item.note}" for item in review_items
-    ) + "\n\n"
+    review_map = {} if bulk_mode else parse_existing_review_items(crosswalk_text)
+    for classic_name in selected_names:
+        review_map.pop(classic_name, None)
+    for item in review_items:
+        review_map[item.classic_name] = item.note
+
+    review_lines = [f"- `{name}`: {review_map[name]}" for name in sorted(review_map)]
+    review_queue = REVIEW_QUEUE_HEADING + "\n".join(review_lines) + "\n\n"
+
     updated = "\n".join(updated_lines)
     if REVIEW_QUEUE_HEADING in updated:
         updated = re.sub(
@@ -312,21 +259,33 @@ def update_crosswalk(crosswalk_text: str, statuses: dict[str, str], review_items
 def build_artifact(
     chapter_text: str,
     crosswalk_text: str,
-    rc_lines: list[str],
-    companion_lines: list[str],
-    master_lines: list[str],
+    staging_text: str,
+    target_card: str | None,
 ) -> ImportArtifact:
     rows = parse_spell_rows(crosswalk_text)
     ordered_names = unique_classic_names(rows)
-    card_map = parse_card_map(chapter_text)
-    blocks, statuses, review_items = compute_osr_blocks(ordered_names, rc_lines, companion_lines, master_lines)
+    records = parse_records(staging_text)
+    missing_records = [name for name in ordered_names if name not in records]
+    if missing_records:
+        missing = ", ".join(missing_records[:10])
+        raise RuntimeError(f"missing clean staging records for: {missing}")
 
-    new_chapter = apply_osr_blocks(chapter_text, card_map, blocks, ordered_names)
-    new_crosswalk = update_crosswalk(crosswalk_text, statuses, review_items)
+    selected_names = select_names(ordered_names, records, target_card)
+    statuses = {name: record_status(records[name]) for name in selected_names}
+    review_items = [item for name in selected_names if (item := record_review_item(records[name]))]
+
+    new_chapter = apply_osr_blocks(chapter_text, records, selected_names)
+    new_crosswalk = update_crosswalk(
+        crosswalk_text=crosswalk_text,
+        statuses=statuses,
+        review_items=review_items,
+        selected_names=selected_names,
+        bulk_mode=target_card is None,
+    )
 
     row_status_counts: dict[str, int] = {}
-    for row in rows:
-        status = statuses[row[0]]
+    for name in selected_names:
+        status = statuses[name]
         row_status_counts[status] = row_status_counts.get(status, 0) + 1
 
     return ImportArtifact(
@@ -355,12 +314,12 @@ def main() -> int:
 
     chapter_text = args.chapter.read_text(encoding="utf-8")
     crosswalk_text = args.crosswalk.read_text(encoding="utf-8")
+    staging_text = args.staging.read_text(encoding="utf-8")
     artifact = build_artifact(
         chapter_text=chapter_text,
         crosswalk_text=crosswalk_text,
-        rc_lines=load_lines(args.rc),
-        companion_lines=load_lines(args.companion),
-        master_lines=load_lines(args.master),
+        staging_text=staging_text,
+        target_card=args.card,
     )
 
     chapter_drift = artifact.chapter_text != chapter_text

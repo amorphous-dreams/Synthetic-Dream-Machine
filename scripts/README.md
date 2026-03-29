@@ -50,14 +50,30 @@ Behavior:
 
 ## Chapter 06 `osr:` Import
 
+Clean staging builder for the downstream Chapter 06 witness bundle:
+
+```bash
+python3 scripts/build_becmi_spell_staging_multi.py check
+python3 scripts/build_becmi_spell_staging_multi.py write
+```
+
+Notes:
+- The builder reads the six frozen lane staging docs plus the Chapter 06/crosswalk mapping surface.
+- `write` rewrites `_todo/TODO_BECMI_Spell_Material_Staging.md` as the primary downstream import source for Chapter 06.
+- The output preserves all available witnesses per importable spell in deterministic lane order.
+
 Deterministic importer for the Chapter 06 spell-only preservation pass:
 
 ```bash
 python3 scripts/import_ch06_osr.py check
 python3 scripts/import_ch06_osr.py write
+python3 scripts/import_ch06_osr.py check --card "Magic Missile"
+python3 scripts/import_ch06_osr.py write --card "Magic Missile"
 ```
 
 Notes:
 - `check` exits non-zero when the Chapter 06 manuscript or crosswalk drift from the deterministic import result.
-- `write` rewrites the Chapter 06 manuscript and crosswalk to the deterministic RC-first import result.
-- The importer records fallback review items for rows where the current RC staging lane does not expose a standalone spell body.
+- `write` rewrites the Chapter 06 manuscript and crosswalk to the deterministic multi-witness import result.
+- The importer reads only `_todo/TODO_BECMI_Spell_Material_Staging.md`, not the six lane files directly.
+- `--card` scopes the rewrite to one exact Chapter 06 heading while leaving unrelated cards and crosswalk rows untouched.
+- Review items now track missing expected witnesses in the clean staging file or card-rendering/import problems rather than RC fallback.

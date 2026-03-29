@@ -147,20 +147,20 @@ Threshold definitions for moving between confidence bands:
 - **Evidence-Note Density (1.00)**: 52 audited inline evidence/verification markers; current gate target exceeded.
 - **Downstream Drafting Readiness (0.90)**: import work is approved, but execution should keep spot-check discipline on weaker lanes and table-derived rows.
 
-**Gate status**: Open for Chapter 06 spell-only `osr:` import.
+**Gate status**: Open for Chapter 06 multi-witness `osr:` preservation import.
 
 
 ## Forward Plan
 
 1. Pass 1: update all stale confidence or audit notes and decide and implement locks across the active `_todo` governance stack.
-2. Pass 2: import literal `osr:` text into Chapter 06 Power cards for every in-scope spell recognizer row.
+2. Pass 2: build the clean multi-witness staging layer, then import literal `osr:` text into Chapter 06 Power cards for every in-scope spell recognizer row.
 3. Pass 3: convert, power by power, `osr:` references into SDM system terms with the minimum changes required.
 4. Pass 4: refine the Chapter 06 main-content rules blocks after the preservation pass is frozen.
 5. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
 
 ## Phase B Backlog: Chapter 06 `osr:` Import
 
-This is the execution backlog for the first downstream phase after the staging-confidence lock. Current in-scope workload is the **194-row spell-only pass**: **181** normal spell rows plus **13** rows already flagged `[table-derived]` in `osr: imported`. This backlog covers literal OSR text import only. It does **not** authorize early SDM rewrite, balance work, or doctrine invention inside the `osr:` block.
+This is the execution backlog for the first downstream phase after the staging-confidence lock. Current in-scope workload is the **194-row spell-only pass**: **181** normal spell rows plus **13** rows already flagged `[table-derived]` in `osr: imported`. This backlog covers literal OSR text preservation only. It does **not** authorize early SDM rewrite, balance work, or doctrine invention inside the `osr:` block.
 
 ### Pass 1: Lock, Readiness, And Tracker Normalization
 
@@ -179,8 +179,8 @@ This is the execution backlog for the first downstream phase after the staging-c
 
 ### Gate And Freeze
 
-6. Record the import gate as open only when the staging corpus remains frozen, provenance stays at required confidence, and the exception ledger remains verified.
-7. Treat the six staging documents as the only legal source for `osr:` imports. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
+6. Record the import gate as open only when the staging corpus remains frozen, provenance stays at required confidence, the exception ledger remains verified, and the clean multi-witness staging file remains reproducible from the frozen lane docs.
+7. Treat the six staging documents as the only legal upstream witness base for `osr:` imports, and `_todo/TODO_BECMI_Spell_Material_Staging.md` as the primary downstream import source. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
 8. Keep the current exception doctrine in force:
    - verified `RC`-only rows remain `RC`-only exceptions,
    - verified `Master`-only procedures remain `Master`-only exceptions,
@@ -188,41 +188,45 @@ This is the execution backlog for the first downstream phase after the staging-c
 
 ### `osr:` Block Contract
 
-9. Use `osr:` as a preservation field, not a rewrite field. Imported text should stay verbatim to the staged source except for minimal line-wrap cleanup required by Markdown/card readability.
-10. Preserve classic procedure details when they appear in the staged witness: original spell name, class/spell-level cues, range, duration, effect language, save language, reverse-form handling, and termination conditions.
-11. When multiple staged witnesses exist, use `RC` as the default compendium wording surface for the literal `osr:` block while preserving earlier BECMI witnesses in `meta.source` and the crosswalk provenance fields.
-12. If a row has a meaningful wording-delta or table-derived risk note, preserve that warning in row notes or import-review notes rather than silently harmonizing the text.
+9. Use `osr:` as a multi-witness preservation field, not a rewrite field. Imported text should stay verbatim to the staged source except for minimal line-wrap cleanup required by Markdown/card readability.
+10. Preserve classic procedure details when they appear in any staged witness: original spell name, class/spell-level cues, range, duration, effect language, save language, reverse-form handling, and termination conditions.
+11. When multiple staged witnesses exist, include all available witnesses in deterministic lane order inside the literal `osr:` block: `Basic`, `Expert`, `Companion`, `Master`, `Immortals`, `Rules Cyclopedia`.
+12. Each witness inside `osr:` should carry a compact source label and its literal text. Do not synthesize a preferred merged body, silently reconcile wording deltas, or collapse the witness bundle back to one compendium surface.
+13. If a row has a meaningful wording-delta or table-derived risk note, preserve that warning in row notes or import-review notes rather than silently harmonizing the text.
 
 ### Crosswalk Control Board
 
-13. Treat `Ch06 Import` and `osr: imported` as the canonical import tracker for every Chapter 06 recognizer row.
-14. Normalize import-state usage:
+14. Treat `Ch06 Import` and `osr: imported` as the canonical import tracker for every Chapter 06 recognizer row.
+15. Normalize import-state usage:
    - `Ch06 Import`: `✓` when a Chapter 06 card exists, `—` when no Chapter 06 card is planned.
-   - `osr: imported`: `-` not started, `in-progress` active work, `yes` imported, `[needs-review]` imported but blocked on audit or formatting check.
-15. Limit blocker notes to real execution blockers only: missing Chapter 06 card, malformed staged witness, or unresolved source-selection exception.
-16. Work in existing Chapter 06 family order so import and review follow manuscript structure rather than source-book order.
+   - `osr: imported`: `-` not started, `in-progress` active work, `yes` imported, `[needs-review]` imported but blocked on witness-audit or formatting/rendering check.
+16. Limit blocker notes to real execution blockers only: missing Chapter 06 card, malformed staged witness extraction, missing expected witness lanes, or card-rendering/import failure.
+17. Bulk runs may resync all in-scope spell rows and the full review queue. Targeted runs should update only the selected card's row state and any review-queue entry tied to that one spell.
+18. Work in existing Chapter 06 family order so import and review follow manuscript structure rather than source-book order.
 
 ### Manuscript Import Pass
 
-17. Replace every `(pending verbatim extraction)` placeholder in `Flying_Triremes_and_Laser_Swords_06_Powers.md` for OSR recognizer cards with staged source text.
-18. Keep the FTLS main rules body, tags, and existing `meta:` structure stable during this pass except where minimum provenance cleanup is required to match the imported witness.
-19. Do not import `osr:` blocks for non-OSR heritage powers, item-effects, procedures, or other entries that are not part of the spell recognizer bridge.
-20. Preserve existing `see` pointers to SDM variants; those pointers are not a reason to omit the canonical OSR block.
+19. Build or refresh `_todo/TODO_BECMI_Spell_Material_Staging.md` before manuscript import work so Chapter 06 consumes one clean downstream witness bundle.
+20. Replace every Chapter 06 spell-card `osr:` block for OSR recognizer cards with the full staged witness bundle for that spell.
+21. Keep the FTLS main rules body, tags, and existing `meta:` structure stable during this pass except where minimum provenance cleanup is required to match the imported witness.
+22. Do not import `osr:` blocks for non-OSR heritage powers, item-effects, procedures, or other entries that are not part of the spell recognizer bridge.
+23. Preserve existing `see` pointers to SDM variants; those pointers are not a reason to omit the canonical OSR block.
 
 ### Audit And Acceptance
 
-21. After each family batch, verify that:
+24. After each family batch, verify that:
    - the `osr:` block is no longer placeholder text,
+   - all expected staged witnesses appear in deterministic lane order,
    - the imported text matches the staged anchor named in the row,
    - the row tracker is updated in the crosswalk,
    - the card still renders cleanly as Markdown.
-22. Run stricter spot checks on all exception-state rows, all `RC`-only exceptions, all `Master`-only exceptions, and every row already marked `[table-derived]`.
-23. Capture unresolved problems in an import-review queue instead of solving them by rewriting the preserved OSR text.
-24. The import phase is complete only when all 194 in-scope rows are no longer `-` and all Chapter 06 spell recognizer rows marked `✓` show `osr: imported = yes` or an explicit review-state marker.
+25. Run stricter spot checks on all exception-state rows, all `RC`-only exceptions, all `Master`-only exceptions, every row already marked `[table-derived]`, and every row where the clean staging file reports a missing expected witness lane.
+26. Capture unresolved problems in an import-review queue instead of solving them by rewriting the preserved OSR text.
+27. The import phase is complete only when all 194 in-scope rows are no longer `-` and all Chapter 06 spell recognizer rows marked `✓` show `osr: imported = yes` or an explicit review-state marker.
 
 ### Downstream Handoff
 
-25. Once the literal import pass is complete, open the next queue separately:
+28. Once the literal import pass is complete, open the next queue separately:
    - convert `osr:` references into SDM-native Chapter 06 rules text,
    - refine main-body FTLS mechanics power by power,
    - leave `osr:` preservation text frozen unless provenance correction is required.
@@ -230,9 +234,7 @@ This is the execution backlog for the first downstream phase after the staging-c
 
 ## Chapter 06 `osr:` Import Review Queue
 
-- `Power Word Kill`: Imported from Companion Set witness because the current RC staging lane surfaces only list/index evidence for this entry.
-- `Shapechange`: Imported from Master Set witness because the current RC staging lane surfaces only list/index evidence for this entry.
-- `Timestop`: Imported from Master Set witness because the current RC staging lane surfaces only list/index evidence for this entry.
+
 
 ## Reference Reuse Targets
 
@@ -645,7 +647,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Permanence | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Polymorph Any Object | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Power Word Blind | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Power Word Kill | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [needs-review] |
+| Power Word Kill | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Prismatic Wall | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Feeblemind | MU5 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Move Earth | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
@@ -658,9 +660,9 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Power Word Stun | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Reverse Gravity | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Statue | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Shapechange | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [needs-review] |
+| Shapechange | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Symbol | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Timestop | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | [needs-review] |
+| Timestop | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
 
 #### Item And Interface Effects
 

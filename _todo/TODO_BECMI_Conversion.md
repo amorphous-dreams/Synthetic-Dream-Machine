@@ -29,11 +29,11 @@ Base model (locked):
 - The full staged spell corpus now exists across the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
 - That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped family layer, and completed grouped-`partial` to Phase 1 sync.
 - Method correction (2026-03-23): staging docs should contain scraped/curated source text from `_becmi` extraction, not synthesized context overlays.
-- The immediate conversion burden is now: keep the audited staging baseline locked, normalize stale TODO confidence notes, and execute the Chapter 06 spell-only `osr:` preservation import before resuming deeper bridge work.
+- The immediate conversion burden is now: keep the audited staging baseline locked, normalize stale TODO confidence notes, build the clean multi-witness staging layer, and execute the Chapter 06 multi-witness `osr:` preservation import before resuming deeper bridge work.
 
 ## Execution Lock Snapshot (2026-03-28)
 
-- **Staging corpus**: frozen and approved as the only legal Chapter 06 `osr:` import source.
+- **Staging corpus**: the six lane staging docs are frozen as the legal upstream witness base, and the clean multi-witness staging file is the legal downstream Chapter 06 import source.
 - **Confidence gate**: approved working infrastructure at `0.90 / 1.00` floor-based after the 2026-03-28 audit.
 - **Chapter 06 design decisions**: locked.
 - **Chapter 06 alpha**: not yet complete; literal `osr:` import is part of the remaining alpha queue.
@@ -211,6 +211,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 - Record ambiguous classic spell names in TODO notes rather than leaving them implicit in chapter prose.
 - Phase B execution order is locked for this pass: Chapter 06 design decisions -> Chapter 06 alpha completion -> Chapter 05 bridge continuation.
 - Phase B operational queue source: `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md -> Phase B Backlog: Chapter 06 osr: Import`.
+- Phase B Chapter 06 import pipeline is now two-step: regenerate `_todo/TODO_BECMI_Spell_Material_Staging.md`, then import those witness bundles into `Flying_Triremes_and_Laser_Swords_06_Powers.md`.
 
 ### Phase C: Family-by-Family Internal Conversion
 - Convert item families in a fixed order:
