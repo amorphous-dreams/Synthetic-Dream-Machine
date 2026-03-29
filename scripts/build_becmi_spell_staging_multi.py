@@ -52,7 +52,7 @@ LEVEL_HEADING_RE = re.compile(
     re.I,
 )
 GENERIC_HEADING_RE = re.compile(r"^(## |### |\[)")
-MASTER_ENTRY_RE = re.compile(r"^\s+\d+\s+\S")
+MASTER_ENTRY_RE = re.compile(r"^\s*\d+\.?\s+\S")
 IMMORTALS_ENTRY_RE = re.compile(r"^[A-Z][A-Za-z0-9' /(),.*-]+:")
 
 
@@ -87,6 +87,14 @@ def norm(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", text.lower())
 
 
+def clean_numbered_entry_label(text: str) -> str:
+    cleaned = text.strip()
+    cleaned = re.sub(r"^\d+\.?\s+", "", cleaned)
+    cleaned = cleaned.split("(", 1)[0].strip()
+    cleaned = re.sub(r"\s*\([^)]*\)\s*$", "", cleaned)
+    return cleaned.rstrip("*").strip()
+
+
 def parse_card_map(chapter_text: str) -> dict[str, str]:
     card_map: dict[str, str] = {}
     for match in re.finditer(r"^## (.+?)\n(.*?)(?=^## |\Z)", chapter_text, re.S | re.M):
@@ -96,10 +104,12 @@ def parse_card_map(chapter_text: str) -> dict[str, str]:
             card_map[spell_name.strip()] = title
     card_map.update(
         {
-            "Fire Ball / Fireball": "Fireball",
+            "Fireball": "Fireball",
+            "Animal Growth": "Animal Growth",
             "Invisibility 10' Radius": "Invisibility 10' Radius",
-            "Pass-Wall / Passwall": "Pass-Wall",
-            "Polymorph Other / Others": "Polymorph Other",
+            "Passwall": "Passwall",
+            "Polymorph Others": "Polymorph Others",
+            "Speak with Animals": "Speak with Animals",
             "Control Temperature 10' Radius": "Control Temperature 10' Radius",
         }
     )
@@ -182,12 +192,14 @@ def spell_aliases(classic_name: str, card_heading: str) -> list[str]:
             aliases.append(candidate)
     manual = {
         "Control Temperature 10' Radius": ["Control Temperature 10' radius"],
-        "Delayed Blast Fireball": ["Delayed Blast Fire Ball"],
-        "Fire Ball / Fireball": ["Fire Ball", "Fireball"],
+        "Delayed Blast Fireball": ["Delayed Blast Fire Ball", "Delayed Blast Fireball"],
+        "Fireball": ["Fire Ball", "Fireball"],
+        "Animal Growth": ["Growth of Animal", "Growth of Animals", "Animal Growth"],
         "Ice Storm/Wall": ["Ice Storm/Wall of Ice"],
         "Invisibility 10' Radius": ["Invisibility 10' radius"],
-        "Pass-Wall / Passwall": ["Pass-Wall", "Passwall"],
-        "Polymorph Other / Others": ["Polymorph Other", "Polymorph Others"],
+        "Passwall": ["Pass-Wall", "Passwall"],
+        "Polymorph Others": ["Polymorph Other", "Polymorph Others"],
+        "Speak with Animals": ["Speak with Animals", "Speak with Animal"],
     }
     for candidate in manual.get(classic_name, []):
         if candidate not in aliases:
@@ -232,18 +244,19 @@ def collect_list_candidates(lines: list[str], aliases: list[str]) -> list[str]:
         match = re.match(r"^\d+\s*\.\s+(.+)$", stripped)
         if not match:
             continue
-        if norm(match.group(1).rstrip("*")) in alias_norms:
+        if norm(clean_numbered_entry_label(match.group(1))) in alias_norms:
             blocks.append(stripped)
     return blocks
 
 
 def collect_master_candidates(lines: list[str], aliases: list[str]) -> list[str]:
-    patterns = [re.compile(rf"\b{re.escape(alias)}\b", re.I) for alias in aliases]
+    alias_norms = {norm(alias.rstrip("*")) for alias in aliases}
     blocks: list[str] = []
     for index, raw_line in enumerate(lines):
-        if not any(pattern.search(raw_line) for pattern in patterns):
-            continue
         if "(" not in raw_line:
+            continue
+        label = clean_numbered_entry_label(raw_line)
+        if norm(label) not in alias_norms:
             continue
         start = index
         end = index + 1
@@ -285,10 +298,22 @@ def collect_immortals_candidates(lines: list[str], aliases: list[str]) -> list[s
     return blocks
 
 
-def choose_best_block(candidates: list[str]) -> str | None:
+def prefer_full_spell_blocks(candidates: list[str]) -> list[str]:
+    preferred = [candidate for candidate in candidates if "\n" in candidate or "Range:" in candidate]
+    return preferred if preferred else candidates
+
+
+def choose_best_block(candidates: list[str], *, prefer_compact_details: bool = False) -> str | None:
     if not candidates:
         return None
-    return max(candidates, key=lambda block: (block.count("\n"), len(block)))
+    return max(
+        candidates,
+        key=lambda block: (
+            1 if prefer_compact_details and re.search(r"\b(?:R|DR|EF)\b", block) else 0,
+            block.count("\n"),
+            len(block),
+        ),
+    )
 
 
 def extract_witness(
@@ -300,7 +325,12 @@ def extract_witness(
 ) -> str | None:
     aliases = spell_aliases(classic_name, card_heading)
     if lane == "Master":
-        return choose_best_block(collect_master_candidates(lines, aliases))
+        named_candidates = prefer_full_spell_blocks(collect_named_candidates(lines, aliases, known_norms))
+        if named_candidates:
+            return choose_best_block(named_candidates)
+        compact_candidates = collect_master_candidates(lines, aliases)
+        compact_candidates.extend(collect_list_candidates(lines, aliases))
+        return choose_best_block(compact_candidates, prefer_compact_details=True)
     if lane == "Immortals":
         return choose_best_block(collect_immortals_candidates(lines, aliases))
     candidates = collect_named_candidates(lines, aliases, known_norms)

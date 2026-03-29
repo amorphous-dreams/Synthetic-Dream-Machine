@@ -111,8 +111,8 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Lore](#lore)
 - [Transformation and Alteration](#transformation-and-alteration)
   - [Polymorph Self](#polymorph-self)
-  - [Polymorph Other](#polymorph-other)
-  - [Growth of Animal](#growth-of-animal)
+  - [Polymorph Others](#polymorph-others)
+  - [Animal Growth](#animal-growth)
   - [Stone to Flesh](#stone-to-flesh)
   - [Metal to Wood](#metal-to-wood)
   - [Dissolve](#dissolve)
@@ -171,7 +171,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Wish](#wish)
   - [Gate](#gate)
   - [Maze](#maze)
-  - [Pass-Wall](#pass-wall)
+  - [Passwall](#passwall)
   - [Timestop](#timestop)
   - [Magic Door](#magic-door)
   - [Teleport any Object](#teleport-any-object)
@@ -447,6 +447,35 @@ meta:
 >   - scope: power; id: Magic Missile; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Magic Missile
+Range: 150'
+Duration: 1 round
+Effect: Creates 1 or more arrows
+A Magic Missile is a glowing arrow,
+created and shot by magic, which inflicts
+2-7 ( 1d6 + 1) points of damage to any
+creature it strikes. After the spell is cast,
+the arrow appears next to the magic-
+user and hovers there until the magic-
+user causes it to shoot. When shot, it will
+automatically hit any visible target. It will
+move with the magic-user until shot or
+until the duration ends. The Magic Mis-
+sile actually has no solid form, and
+cannot be touched. A Magic Missile
+never misses its target and the target is
+not allowed a Saving Throw.
+For every 5 levels of experience of the
+caster, two more missiles are created by
+the same spell. Thus a 6th Level Magic-
+user may create three missiles. The mis-
+siles may be shot at different targets.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+6. Magic Missile
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Magic Missile
 Range: 150'
 Duration: 1 round
@@ -513,21 +542,1417 @@ meta:
 >   - scope: power; id: Shield Ward; note: FTLS Chapter 06 canonical name, classic `Shield` spell.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
 Shield
-Range: 0
-Duration: 2 turns
-Effect: The spellcaster only
-This spell creates a magical barrier all around
-the spellcaster (less than an inch away). It moves
-with the spellcaster. While the duration lasts,
-the spellcaster has an AC of 2 against missiles,
-and AC 4 against all other attacks.
-If someone shoots a magic missile at a spell-
-caster protected by this spell, the spellcaster may
-make a saving throw vs. spells (one saving throw
-per missile). If the saving throw is successful, the
-magic missile has no effect; it hits the barrier and
-evaporates.
+none
+Explanation of Magical Armor Table:
+"Normal AC" is the AC of a character
+wearing normal armor of the type given.
+"Magical AC" is the AC of a character
+wearing magical armor of the type given.
+"Encumbrance Adjustment" is the
+added amount that a character can carry
+when wearing magical armor of the type
+given. In other words, magical chain mail
+weighs 250 cn less than non-magical chain
+mail armor.
+A shield + 1 would lower the AC num-
+ber one more. For example, a fighter in
+normal chain mail and shield would be AC
+4. If a set of magical chain mail and shield
++
+were found (both l), the AC would drop
+1 for the armor and 1 more for the shield,
+for a total of AC 2. If a + 2 shield were
+used, the AC number would drop 1 more,
+for a total of AC 1.
+Cursed Armor: Armor and shields may be
+cursed! You should roll 1d8 when either is
+placed as treasure; a result of 1 indicates
+that the item is cursed. Handle cursed
+armor in the same manner as cursed
+swords. Cursed armor makes a character
++
+easier to hit by 1.
+You may either select the size of the
+armor found (most is human-sized) or
+determine it randomly.
+d. Potions
+Potions are usually found in small glass
+vials, similar to Holy Water. Each potion
+has a different smell and taste - even two
+potions with the same effect! Unless stated
+otherwise, the effect of a potion lasts 7-12
+turns. Only you, the DM, should know the
+exact duration, and you should keep track
+of it when the potion is used. The entire
+potion must be drunk to have this effect. A
+potion may be sipped to discover its type
+and then used later. Drinking a potion
+takes one round. Sipping a potion does not
+decrease its effect or duration.
+If a character drinks a potion while
+another potion is still in effect, that charac-
+ter will become sick and will be unable to
+do anything (no saving throw) for 3 turns
+(1/2 hour) and neither potion will have any
+further effect. A potion of healing has no
+duration (for this calculation). Each type of
+potion is described below:
+Diminution: Anyone taking this potion
+will immediately shrink to 6 in height, and
+can do no damage when physically attack-
+ing a creature larger than 1'. The user can
+slip through small cracks and has a 90%
+chance of not being seen when standing
+still. This potion will negate a potion of
+growth.
+ESP This potion will have the same effect
+as the magic-user spell ESP. The user may
+"hear" the thoughts (if any) of one creature
+within 60' by concentrating for one full
+turn in one direction. The user may "hear"
+through 2 feet of rock, but a thin coating
+of lead will block the ESP. Refer to the
+magic-user spell (PLAYERS MANUAL,
+page 41) for more information.
+Gaseous Form: Upon drinking this potion,
+the user's body will take the form of a cloud
+of gas. Anything the user is carrying or
+wearing will fall through the gaseous body
+to land on the floor. The user will keep
+control over his or her body, and can move
+through small holes in walls, chests, and so
+forth. Any creature or character in gaseous
+form cannot attack, but has an AC of - 2
+and cannot be harmed by non-magical
+weapons.
+Treasure
+Growth: This potion causes the user to
+grow to twice normal size, temporarily
+increasing Strength and giving the ability
+to inflict double damage (twice the amount
+rolled) on any successful hit. The user's hit
+points, however, will not increase. This
+potion will negate a potion of diminution.
+Healing: Like the clerical cure light
+wounds s ell, drinking this potion will
+restore 2-y lost hit points or will cure
+paralysis for one creature.
+Invisibility: This potion will have the same
+effects as the magic-user spell invisibility.
+The potion will make the user invisible.
+When a character becomes invisible, all the
+items (but not other creatures) carried and
+worn by that character also become invisi-
+ble. Any invisible item will become visible
+once again when it leaves the character's
+possession (is set down, dropped, and so
+forth). See the magic-user spell (page 41) of
+the PLAYERS' MANUAL) for more infor-
+mation. The DM may allow players to
+drink small amounts of this potion 6 times,
+each drink being effective but only for 1
+turn.
+Levitation: Drinking this potion will have
+the same effects as the magic-user spell
+levitation. The user may move up or down
+in the air without any support. This potion
+does not enable the user to move side-to-
+side. The user could, however, levitate to a
+ceiling and move sideways by pushing or
+pulling. Motion up or down is at a rate of
+60' per round. See the magic-user spell
+(page 41 of the PLAYERS MANUAL) for
+more information.
+Poison: Poisons look like n ormal magic
+potions. If any amount of t his potion is
+swallowed, even a sip, the usc :r must make
+a Saving Throw vs. Poison or die! (If you
+wish, you may decide that th le poison will
+do a set amount of damage if the Saving
+Throw is failed.)
+
+
+[Expert | Clerical and Magic-User Spell Expansions]
+10. Shield
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
+Shield
+For example, a fighter who came across chain
+mail +3 and exchanged her normal scale mail
+(AC 6) for the new armor would now be AC 2. If
+she also happened upon a magical shield +2
+and chose to use it, her armor class would be-
+come -1 (AC 2 + -3 = -1).
+The actual types of armor were described in
+Chapter 4. Magical versions are identical in class
+restrictions, and these restrictions must still be
+observed by characters.
+Note that armor and shields made for hu-
+mans, dwarves, and elves are considered
+"normal-sized," while halfling equipment is
+counted as much smaller and giant equipment
+much larger. For instance, a halfling shield offers
+no protection to a normal-sized character, but a
+normal-sized shield may be used by anyone—
+including a halfling. And a giant-sized shield is
+considered double normal size for a + 2 bonus to
+armor class.
+Cursed Armor and Shields
+Armor and shields may be cursed. The DM
+should roll 1d8 when either is placed as treasure;
+a result of 1 indicates that the item is cursed.
+Cursed armor, when first worn, appears to be ar-
+mor of the type originally rolled on the armor
+and shields subtable. When the character first
+goes into combat with monsters, however, the
+armor makes the character easier to hit by a pen-
+alty equal to the bonus rolled. Once it has re-
+vealed its true nature, the armor will not come
+off its wearer; someone will have to cast a remove
+curse to cancel the curse long enough for the
+character to remove the armor. Or a 36th level
+cleric can cast a remove curse to remove the curse
+permanently, and the wearer may then enjoy his
+magical armor with the proper benefits.
+Special Power Descriptions
+Armor and shields can have special powers
+that can be used once per day at most, unless
+noted otherwise. When both the armor and
+shield worn have special powers, only one effect
+can be produced per round at the user's choice
+unless noted otherwise in the description. Note
+that armor and shields that have special powers
+are usable by any class that can use armor and
+shields; there are no other restrictions.
+The powers listed in the Special Powers sub-
+table (in the Magical Item Subtable: 6. Armor
+and Shields, page 229) are described in the fol-
+lowing text.
+Absorption: If the user is hit by a blow that
+would cause an energy drain, the armor or shield
+absorbs the draining effect and only the normal
+damage affects the user. Each energy drain
+causes the loss of one AC bonus modifier from
+the armor or shield. When reduced to zero bo-
+nuses, the item crumbles to dust. (For instance,
+a shield +3 that has absorbed two energy drain
+attacks is now only a shield + 1. If it absorbs yet
+another energy drain, it is reduced to zero and
+disintegrates.) This special power is not under
+the control of the user; a character cannot choose
+to suffer the energy drain and leave the item in-
+tact. The normal limit of one use per day does
+not apply to this power.
+Charm: When the user is hit by an opponent,
+the opponent must make a saving throw vs.
+spells or become charmed by the user of the spe-
+cial armor or shield (as the magic-user spell
+charm person or charm monster). If a hand-held
+weapon is used in the attack, the opponent gains
+a +4 bonus to the saving throw. Only one victim
+can be charmed each day, but any number of
+saving throws may be made before the charm is
+successful.
+Cure Wounds: The armor or shield can cure
+half of the damage the user has incurred, what-
+ever that amount may be, once per day. It can
+only cure the user, not another creature, and it
+cannot affect poison, disease, or any other dam-
+age but wounds.
+Electricity: The armor or shield can, on com-
+mand of the user, become charged with magical
+electrical force. If the user is hit while "charged,"
+the attacker takes 6d6 points of electrical dam-
+age. The attacker may make a saving throw vs.
+spells to take half damage; if a weapon is used in
+the attack, a +4 bonus to the saving throw ap-
+plies. The armor or shield can be charged or neu-
+tralized as often as desired by using command
+words, but it can only cause damage ("dis-
+charge") once per day.
+Energy Drain: The armor or shield can be-
+come "charged" on command (as described un-
+der the electricity special power), but instead of
+inflicting damage, it causes the loss of one of the
+opponent's levels or Hit Dice (as if a wight). The
+same saving throw as the electricity power ap-
+plies (possibly with bonuses); if successful, the
+energy drain does not occur. The item can drain
+one level or Hit Die per day, but any number of
+saving throws may be made before this occurs.
+Ethereality: The user may become ethereal on
+command and may remain ethereal for as long as
+desired. The user may return to the Prime Plane
+when a second command word is spoken. Each
+command word may be used once per day.
+Fly: When commanded, the armor or shield
+creates a fly spell effect on the user, which lasts
+for 12 turns. The user may then travel in the air
+at up to 360' per turn by mere concentration (as
+per the 3rd level magical spell).
+Gaseous Form: This valuable armor or shield
+enables the user to turn into a cloud of gas (as
+the potion of gaseous form), including all equip-
+ment carried (unlike the potion). The user can
+remain gaseous for up to 6 turns and can return
+to normal form by mere concentration.
+Haste: When commanded, the armor or
+shield creates a haste spell effect on the user, al-
+lowing double normal movement and number
+of attacks (as the 3rd level magic-user spell). The
+haste lasts for only 1 turn and is usable only once
+per day.
+Invisibility: When commanded, the armor or
+shield makes the user invisible, as if the 2nd
+level magic-user spell were cast. In addition, the
+armor or shield can itself become invisible three
+times per day, on command of the user.
+Reflection: If a light or continual light spell is
+cast at the user, the armor or shield will automat-
+ically reflect it back at the caster, who must make
+a saving throw vs. spells or be blinded (as given
+in the respective spell descriptions). The item
+will reflect up to three spells per day. In addi-
+tion, when the user is in melee against a creature
+with a gaze attack, the chances of gaze reflection
+are the same as if a mirror were held but without
+the — 2 penalty to the user's attack rolls (which
+represents the awkwardness of holding the mir-
+ror and attempting to attack at the same time).
+Remove Curse: This armor or shield cannot it-
+self be cursed when found. When commanded,
+the item will create a remove curse spell effect on
+the user only as if a 36th level caster (automati-
+cally removing one curse). Note: This item will
+function a total of three times, at a maximum
+rate of once per day. After its three charges are
+used, no other special abilities remain and it can-
+not be recharged; the item does remain magical,
+however, regardless of spent charges.
+Missile Weapons and
+Missiles
+A missile weapon is a weapon (bow, sling,
+etc.) that launches ammunition through the air,
+and a missile is the ammunition (arrow, stone,
+etc.) a missile weapon launches. Normal weapon
+restrictions apply to magical items as well; for in-
+stance, a magic-user cannot use a sling, and he
+cannot use a magical sling either.
+All magical missile weapons have bonuses that
+give them additional pluses to both attack and
+damage rolls. Magical missiles (such as an arrow
++ 2) also have bonuses to both attack and dam-
+age rolls.
+As noted in the text on "Magical Weapon
+Subtables," page 228, there are two methods of
+randomly generating weapons. The first, recom-
+mended for character levels 1-10, is a single ta-
+ble. If the DM has decided to place a magical
+missile weapon or missile in a treasure hoard, he
+or she can simply roll 1d100 on the Magical
+Weapon Generation Table (page 230), find the
+result in the appropriate column, and place the
+item in the treasure.
+When stocking treasure troves with magical
+missile weapons and missiles for characters who
+are above level 10, the DM can use the same
+table—or he or she can use the more specific but
+more complex method of random treasure gen-
+eration, the Random Missile Weapon and Missile
+Generation Checklist.
+Note that if both a missile and the missile weap-
+on firing it have bonuses, the total of their bonuses
+and effects will apply in all cases. For example, a
+crossbow +2 shooting a quarrel +3 would have a
++ 5 chance of attack and would do + 5 of damage
+if the attack roll is successful. Likewise, normal ar-
+rows shot by a long bow +1 can harm gargoyles
+(which are damaged only by magic).
+A magical missile normally becomes non-
+magical after one use, regardless of whether the
+attempt hits a target (its bonus to the attack roll
+disappears). However, if the missile has a talent,
+a missed shot will nor destroy the magic unless
+noted otherwise in the following missile talent
+descriptions. Usually, if the missile is retrieved
+after a missed shot, it may be reused with its
+magical bonuses intact.
+Missile Talent Descriptions
+The talents listed in the Missile Talents sub-
+table (in the Magical Item Subtable: 7. Missile
+Weapons and Missiles, page 230) are described
+in the following text.
+Biting: When the missile hits, the talent turns
+it into a poisonous" snake. In addition to normal
+damage, the victim must make a saving throw
+vs. poison or die (or, at the DM's choice, take ex-
+tra damage; 2d6, 2d10, or 2d20 are recom-
+mended amounts).
+Random Missile Weapon and Missile Genera-
+tion Checklist
+1. Roll 1d100 on the Magical Item Sub-
+table: 7. Missile Weapons and Missiles
+(page 230) to determine the item. Note
+the weapon class. Missile weapons (such
+as bows and blowguns) are Class D,
+while missiles are Class A. (Weapon class
+is a measure of how difficult it is to con-
+struct weapons or ammunition; weapon
+classes are discussed in full under
+"Swords," below.)
+2. The Magical Item Subtable: 7. Missile
+Weapons and Missiles is further divided
+into two subtables: Missile Weapons and
+Missiles. Once the specific type of magical
+item has been determined (long bow or
+quarrels, for example), the DM should
+check the appropriate subtable and note
+the following:
+• For missile weapons, the DM rolls
+1d100 to find the magical bonus (to
+attack and damage rolls). He or she
+then rolls 1d4 and adds the die roll to
+the magical bonus—this result will in-
+dicate the range multiplier. (This is an
+additional bonus a missile weapon
+may have to extend its ranges; if a bo-
+nus is indicated, multiply the weap-
+on's short, medium, and long ranges
+by the range multiplier—the results
+will be the magical weapon's true
+ranges.) Finally, the DM should roll
+against the percentage listed for the
+chance of an additional weapon modi-
+fier. (The chance listed to be checked
+is the one that corresponds with the
+magical bonus first rolled on this sub-
+table.) If the roll is successful, he or
+she then goes to the Additional Weap-
+on Modifiers Table on page 231 and
+applies the results. (Additional modi-
+fiers include bonuses against a specific
+opponent and weapon talents.)
+• For missiles, the DM rolls 1d100 to find
+the magical bonus (to attack and dam-
+age rolls). He or she then rolls the die
+indicated for the number of missiles
+found. Lastly, the DM rolls against the
+percentage listed for the chance of a
+missile talent. If the roll is successful,
+the DM then rolls 1d100 on the Missile
+Talents subtable (part of the Magical
+Item Subtable: 7. Missile Weapons and
+Missiles) to find the missile's specific
+talent. (Talents are described below.)
+Blinking: The missile with this talent will not
+hit any friend of the user, "blinking" in and out
+of existence until it reaches an enemy. (If the
+sight of the enemy is blocked by friends, a penal-
+ty may apply to the attack roll).
+Charming: The victim hit must make a saving
+throw vs. spells or be charmed by the user (as the
+charm person or charm monster magic-user
+spell).
+Climbing: This talent only functions if the
+missile is shot at an object. The missile securely
+fastens itself to any object hit and then creates a
+magical 50' rope, issuing from the spot hit. The
+rope will support any weight of climbers and will
+disappear 1 turn later or upon command of the
+user. The missile cannot be moved after it hits,
+and it disappears when the rope does.
+Curing: A missile with this talent is obviously
+blunt, inscribed with a holy symbol. When it
+hits a living creature, it does not inflict damage.
+Instead, it cures 2d6 points of damage plus 2 ex-
+tra points for each magical bonus of the missile.
+For example, if a 5 is rolled for a curing arrow
++ 2, the total points of damage cured are 7.
+Disarming: This talent will only function if
+the victim hit is holding a weapon or other item.
+The victim must make a saving throw vs. spells
+or drop the item. A dropped item may normally
+be recovered in 1 round (unless it falls into a pit
+or chasm, if someone else grabs it, etc.).
+Dispelling: When a missile with this talent
+hits, it creates a dispel magic effect centered on
+the point of impact (a 20' cube) as if cast by a
+15th level caster.
+Flying: A missile with this talent can be shot
+at ranges five times greater than normal. If the
+missile weapon firing this missile is also magical
+and has an additional range multiplier, the ef-
+fect is cumulative; multiply each maximum
+range by five. If the missile weapon is not magi-
+cal, use the following maximum ranges.
+Arrow, short bow
+250/500/750
+Arrow, long bow
+350/700/1,050
+Quarrel, light crossbow
+300/600/900
+Quarrel, heavy crossbow
+400/800/1,200
+Sling stone
+200/400/800
+Lighting: The missile talent can create a light
+spell effect (30' diameter), either upon com-
+mand or when it hits a target. If a creature is hit,
+the victim must make a saving throw vs. spells or
+be blinded by the light (as if the spell had been
+cast at its eyes). The missile disintegrates when
+the light is created.
+Penetrating: A missile with this talent cannot
+be slowed by underbrush, webs (normal or mag-
+ical), or other forms of cover. The victim's armor
+class is not modified by cover of any sort.
+Refilling: This talent gives no special effects to
+a missile when shot. If left in a container with
+other missiles of the same type (that is, a refilling
+arrow with normal arrows or a refilling sling
+stone with normal sling stones), however, it will
+magically create 1d20 more missiles of the nor-
+mal type each day.
+Screaming: This talent's effect occurs when
+the missile is shot, even if it misses the target. As
+it travels through the air, the missile produces a
+loud cry, causing all within 30' of its path to
+check morale. If the morale check is failed, the
+victims will retreat in fear for 1d8 rounds.
+Seeking: This talent will only function when
+the missile is shot at an object; it is not usable
+against creatures. It will automatically hit any
+one target object within range as long as a path
+of travel is clear. It may be used as a missile of
+disarming, if desired, or it can be used to sever a
+normal rope, pierce a sack, push a button, trig-
+ger a trap, etc. It will automatically miss any
+creature at which it is aimed.
+Sinking: When shot at a water craft of any
+sort, a missile with this talent inflicts 1d10 + 10
+(11-20) hull points of damage when it hits. (The
+armor class of the vessel is used, as if the shot
+were a ramming or catapult attack.)
+Slaying: If the die rolls for a missile indicate
+this talent, go to the Opponents subtable in the
+Additional Weapon Modifiers Table (page 231)
+and roll 1d100. The result indicates the missile
+talent's opponent. When that opponent is hit by
+this missile, the victim must make a saving throw
+vs. death ray or die.
+Speaking: A missile with this talent will miss
+any creature at which it is shot. It is used for com-
+munication purposes only. The user may give the
+missile any message of 20 words or less and then
+shoot it, either naming a place within ten miles or
+aiming at a target. The missile will automatically
+land on the floor or ground in the target area and
+will repeat the message aloud twice.
+Stunning: The victim hit by a missile with this
+talent must make a saving throw vs. spells or be
+stunned for 1d6 rounds.
+Teleporting: A victim hit by a missile with this
+talent must make a saving throw vs. spells (at a
++ 2 bonus to the roll) or be teleported to a point
+1d100 miles away, with the direction and dis-
+tance determined randomly. Unlike the effect of
+the magic-user spell, the victim cannot arrive in
+the air or within a solid object.
+Transporting: A victim hit by a missile with
+this talent must make a saving throw vs. spells or
+be sent to a point up to 360' away, as determined
+by the user of the missile. The effect is identical
+to the magic-user spell dimension door, and it
+cannot cause the victim to appear within a solid
+object.
+Wounding: When a missile with the wound-
+ing talent strikes a target creature, it inflicts nor-
+mal damage. In addition, however, it causes the
+loss of 1 hit point per round thereafter until
+magical curing is applied (a potion, cure spell of
+any type, etc.). However, no undead creature or
+construct (golem, living statue, etc.) can be
+wounded with this talent, and such creatures
+suffer only the initial damage.
+Swords
+Normal weapon restrictions for character class-
+es also apply to magical swords. For example, a
+cleric cannot use a sword, so a cleric cannot use a
+magical sword either.
+A magical sword's bonus is added to both its
+Random Sword Generation Checklist
+1. Roll 1d100 on the Magical Item Subtable: 8. Swords (page 231) to determine the type of sword.
+Note the weapon class. Short and normal swords are Class C, while bastard and two-handed
+swords are Class D. (Weapon class is discussed in full below.)
+2. Roll 1d100 again and check the appropriate weapon class column for the magical attack and
+damage bonus. Roll 1d100 against the percentage listed for the chance of an additional modi-
+fier; if the roll is successful, see the Additional Weapon Modifiers Table on page 231 and
+apply the results. (Additional modifiers include bonuses against a specific opponent and
+weapon talents.)
+3. Since all magical swords have a chance of intelligence, check the Intelligence of Sword subtable
+(in the Magical Item Subtable: 8. Swords) by again rolling 1d100. The result will indicate the
+sword's intelligence (if any), method of communication (if any), languages known (if any), and
+number of powers (if any). (These abilities are explained below.)
+4. If the sword is intelligent, determine alignment and ego as indicated in the text below under
+"Sword Alignment, Ego, and Control Checks." Also do a control check to see if the intelligent
+sword will control its user.
+5. The powers available to a sword include primary powers, extraordinary powers, and the ability
+to read magic on command. If a primary or extraordinary power is indicated for a sword, go to
+the Primary and Extraordinary Powers subtable (in the Magical Item Subtable: 8. Swords) and
+roll 1d100 in the appropriate column. If more than one power was indicated, roll as necessary,
+ignoring any duplicate rolls except those that are allowed.
+attack rolls and damage rolls. Some swords also
+have an additional bonus that is used only when
+fighting a special type of opponent. Other
+swords may have bonuses or modifiers such as
+the ability to cast certain spell effects. The DM
+may wish to refer to such spells to find the exact
+effect. Note that each effect can only be used
+once per day and that no meditating is needed to
+gain the spellcasting ability.
+As noted in the text on "Magical Weapon
+Subtables," page 228, there are two methods of
+randomly generating swords. The first, recom-
+mended for character levels 1-10, is a single ta-
+ble. If the DM has decided to place a magical
+sword in a treasure hoard, he or she can simply
+roll 1d100 on the Magical Weapon Generation
+Table (page 230), find the result in the appropri-
+ate column, and place the item in the treasure.
+When stocking treasure troves with magical
+swords for characters who are above level 10, the
+DM can use the same table—or he or she can use
+the more specific but more complex method of
+random sword generation, the Random Sword
+Generation Checklist.
+Weapon Class
+Magical weapons typically must be made by a
+special procedure, usually performed by a
+magic-user or cleric working in conjunction with
+a blacksmith or armorer. Weapon class is a mea-
+sure of the difficulty of that item's construction.
+The weapon tables give the weapon class for each
+weapon. Generally, Class A weapons are small
+and temporary magical items, the most fre-
+quently found; Class D weapons are the largest
+and rarest as they require the most work.
+At the DM's option, other new weapons may
+be invented. Each new weapon should be cate-
+gorized as to one of the four weapon classes,
+which are as follows:
+• Class A weapons are temporary items; they
+normally become nonmagical once used,
+even if the attack roll indicated a miss. Mag-
+ical missiles fall into this category.
+• Class B weapons include all thrown weapons
+(javelin, spear, etc.) and small melee weap-
+ons.
+• Class C weapons are larger hand-held items,
+including short swords and normal swords.
+• Class D weapons are two-handed items (in-
+cluding bastard swords) and all missile
+weapons.
+Designing Special Swords
+Naturally, the DM may not want to leave the
+nature of special swords in a campaign entirely to
+chance. It's entirely appropriate to create special
+swords that accomplish certain feats in a cam-
+paign. If one campaign goal in a campaign is the
+destruction of a certain dragon, for instance, the
+DM may wish to introduce a dragon-slaying
+sword into a treasure trove acquired by the player
+characters.
+To create a magical sword from the ground up,
+follow the procedure described above for rolling
+up swords, but choose, don't roll, the sword's at-
+tributes. Keep in mind, however, that the weapon
+will remain long after the campaign has ended, so
+avoid creating swords that are too powerful and
+that may be a problem in future campaigns.
+Cursed Swords
+Any sword may be cursed. When the die rolls
+indicate a sword as treasure, roll 1d20. If the re-
+sult is a 1 or 2, place a cursed sword in the trea-
+sure instead.
+A cursed sword will seem to be a normal magi-
+cal sword (whatever type was first rolled) until
+used in combat. At that time, the curse is re-
+vealed. When using that weapon, the sword will
+cause the player to subtract the amount that was
+to have been a bonus from all attack and damage
+rolls. (For example, if a character believes he is
+carrying a sword + 3 when in fact he is carrying a
+cursed sword, he will subtract 3 from both his
+attack and damage rolls.)
+Once a character uses the cursed sword in battle,
+he may not throw it away: He is under a compul-
+sion to keep it and use it. If it is stolen or sold, the
+character is cursed with the desire to get it back.
+The character will always use that weapon when in
+battle. (The DM may have to tell the player that
+this is what the character wants—and no
+arguments!—until the character is rid of the curse.)
+Only a spellcaster with a dispel evil or remove
+curse spell can help a character be rid of the weap-
+on. If the spellcaster is less than 26th level, the
+spell simply cures the character of his compulsion;
+he may now get rid of the cursed sword. If the
+spellcaster is 26th level or above, however, the dis-
+pel evil or remove curse spell will permanently
+change the cursed sword into a normal magical
+sword of whatever type was originally rolled.
+Sword Abilities
+Although magical swords can be easily and
+quickly generated from the Magical Weapon
+Generation Table on page 230, the text in this
+section can help add color to a specific sword.
+This section can also define more specific swords
+for the DM who uses the Random Sword Gener-
+ation Checklist. Magical swords, as noted in the
+optional checklist, can be generated with a num-
+ber of additional abilities, including:
+• Magical bonuses to attack and damage rolls;
+• Additional modifiers such as attack and
+damage bonuses against specific opponents
+or special talents (as obtained from the Ad-
+ditional Weapon Modifiers Table on page
+231);
+• Sword intelligence, which allows communi-
+cation via empathy or speech and languages
+known (if the sword is intelligent and can
+speak);
+• If intelligent, alignment and ego and a
+need to control its user (as determined by a
+control check); and
+• Powers, including primary powers, extraor-
+dinary powers, and the ability to read
+magic.
+These special sword abilities are outlined in
+this section.
+Magical Bonuses
+All magical swords have a bonus from +1 to
++ 5 that is applied to all attack and damage rolls
+made by that weapon.
+Additional Modifiers
+As noted on the Magical Item Subtable: 8.
+Swords (page 231), there is a percentage chance
+for a magical weapon to have an additional mod-
+ifier; these modifiers are generated using the
+Additional Weapon Modifiers Table. Note that
+magical weapons can have only one additional
+modifier—either an extra bonus against an op-
+ponent or a talent.
+The typical weapon modifier is an extra magi-
+cal bonus against a specific opponent. This is an
+additional + 1 to + 5 on attack and damage rolls
+beyond the weapon's basic magical bonus
+against the sword's designated opponent. For ex-
+ample, a sword +1 that the die roll has indi-
+cated has a + 3 against spellcasters would be a
+sword +1, +4 vs. spellcasters.
+A more unusual modifier is a special ability
+called a talent, which may be a spell or some oth-
+er effect posed by the sword. Swords are more
+likely to have a talent than are other types of
+weapons; there is only a 10% chance that a mis-
+cellaneous weapon will have a talent, as noted on
+the Magical Item Subtable: 9. Miscellaneous
+Weapons (page 231).
+Descriptions of additional bonuses and talents
+can be found in the section on "Additional
+Weapon Modifiers," below.
+Sword Intelligence, Communication, and
+Speech
+If the 1d100 roll on the Intelligence of Sword
+subtable in the Magical Item Subtable: 8.
+Swords indicates that the sword has an Intelli-
+gence of 7 or better, the sword is a very remark-
+able one indeed. It is intelligent—it is sentient,
+with a personality and its own goals and manner-
+isms. Typically, it also has one or more primary
+or extraordinary powers (described below).
+The DM should role-play an intelligent sword
+just as he or she would any nonplayer character.
+Note that intelligent swords have no wisdom,
+and thus they should be played accordingly, rely-
+ing on the owner's wisdom for guidance and de-
+cision making.
+After finding the sword's Intelligence from
+the Intelligence of Sword subtable, note how it
+communicates with its owner, either through
+empathy (a limited telepathy that works only
+with the person holding the sword and is usable
+only for communicating thoughts, not for read-
+ing minds) or through speech.
+Next, if the sword's Intelligence is 10 or higher,
+determine how many languages the sword knows.
+(Roll the die indicated under the languages
+column of the Intelligence of Sword subtable.)
+A sword that speaks automatically knows the
+Common tongue and its alignment tongue. If it
+knows more than one language, the DM must
+determine which languages it speaks. Also note
+that if a sword has the ability to read magic, it
+can also speak the languages it can read. (The
+read magic ability is discussed below with the
+primary and extraordinary powers.)
+The DM will likely want to come up with a
+history for the sword—who made it, why it was
+made, and how it has been used over the years—
+and then use that history to determine what lan-
+guages it speaks. For instance, an intelligent
+sword that has a + 2 magical bonus and an addi-
+tional + 3 bonus vs. dragons could have been
+forged a hundred years ago by a famous dwarf
+craftsman and then used by a human hero who
+slew many dragons and drove others away. For
+these reasons, the sword may speak Common,
+dwarvish, and dragon, as these languages best
+correspond to its history.
+Sword Alignment, Ego, and Control Checks
+Intelligent swords have alignments just as
+characters do. To determine the alignment of an
+intelligent sword, roll 1d20.
+Lawful
+1-13
+14-18
+Neutral
+Chaotic
+19-20
+A character cannot detect a sword's alignment
+until he picks it up and handles it. If the character handling the sword is of the same alignment,
+there will be no bad reaction. However, if the
+alignment is different, the user will take damage
+each round while holding the sword. Gloves and
+other protective insulation do not protect the
+character from this damage, which is as follows.
+User's
+Sword's
+Damage
+Alignment
+Alignment
+per Round
+Lawful
+Neutral
+1d6
+2d6
+Chaotic
+Neutral
+1d6
+Lawful
+Chaotic
+1d6
+Chaotic
+Lawful
+2d6
+1d6
+Neutral
+In addition to alignment, intelligent swords
+also have egos. Roll 1d12 to determine the ego
+score of the sword. (Ego is a measure of the
+strength of a sword's personality.) Then add the
+sword's Intelligence and ego scores to find its will
+power. Add 1 to the will power score for each ex-
+traordinary power the sword has (if any). Make a
+note of the total will power of the sword.
+A character's will power is the total of the char-
+acter's Intelligence and Wisdom scores. The DM
+may subtract 1d8 points of will power if the char-
+acter is wounded, and if the sword and the user
+are of different alignments, the sword gains 1d10
+points to its will power. (This additional bonus
+must be determined for each change of users.)
+When an intelligent sword is handled, it may
+try to control its user. The DM must compare the
+will power of the sword to that of the user by do-
+ing a control check. An intelligent sword will try
+to control its user in each of five different situa-
+tions, including the following:
+• When the user first handles the sword.
+• When the user is wounded and has half or
+less of his normal hit points remaining.
+• When the user acquires any other magical
+weapon.
+• When anyone else uses the sword.
+• When a special purpose could be used (if
+applicable).
+To make a control check, the DM simply com-
+pares the will power scores of both user and
+sword, with the higher score taking control. Such
+control lasts until either the sword is satisfied or
+the situation that caused the control check has
+passed. The DM must determine the actions of
+any sword in control; typical actions include the
+following:
+• Leading the user past magical weapons that
+the user would have stopped for or causing
+the user to discard other weapons.
+• Forcing the user to charge into combat to
+win glory for itself.
+• Making the user surrender to an oppo-
+nent—either one more worthy of the sword
+or one easier for the sword to control.
+• Forcing the user to spend money on items
+for the sword, such as jeweled fittings, fancy
+scabbards, and so forth.
+Primary and Extraordinary Powers
+The sword's Intelligence determines how
+many primary and extraordinary powers it has,
+as noted in the Primary and Extraordinary
+Powers subtable of the Magical Item Subtable:
+8. Swords, page 231. The DM should roll 1d100
+once for each primary and extraordinary power
+of the sword and find the results on the sub-
+table. Duplicate results should be rerolled unless
+indicated otherwise.
+Primary Powers: The user must have the sword
+in hand and be concentrating on the power in
+order to use it. Any power may be used once per
+round. A primary power is usable as often as de-
+sired unless noted otherwise. These powers are
+defined as follows:
+• Detect evil (good). The sword is able to de-
+tect one of these intentions up to a 20'
+range. No sword can do both; the DM must
+determine which version the sword can do.
+• Detect gems. The sword can detect all types
+of gems and the amount of each within a
+60' range, pointing itself in that direction.
+• Detect magic. The sword can cause all magic
+within 20' to glow (as the spell effect) up to
+three times per day.
+• Detect metal. The sword can detect metal of
+any type requested up to a range of 60'. It
+will point in the direction of the material,
+but it cannot detect the amount.
+• Detect shifting walls and rooms. The sword
+can find these items if within 10'.
+• Detect slopes. The sword can locate all slop-
+ing passages within a 10' range.
+• Find secret doors. The sword can locate all
+secret doors within a 10' range up to three
+times per day.
+• Find traps. The sword can detect traps of all
+types within 10' up to three times per day.
+• See invisible. The sword can find all invisi-
+ble and hidden objects and creatures (but
+not secret doors) within a 20' range.
+Extraordinary Powers: An extraordinary power
+is only generated if the sword has a 12 or higher
+Intelligence or if a roll for a primary power gave a
+result of 96-99. If the sword has an extraordinary
+power, roll 1d100 and find the power on the Pri-
+mary and Extraordinary Powers subtable of the
+Magical Item Subtable: 8. Swords. Except for the
+extra damage and healing powers, duplicate re-
+sults should be rerolled. An extraordinary power
+may only be used three times per day unless
+noted otherwise. These powers are defined as
+follows:
+• Clairaudience. As with the potion, the user
+may hear all noises in one area within 60'
+through the ears of a creature in that area.
+• Clairvoyance. As with the potion, the user
+may see any area up to 60' away through the
+eyes of a creature in that area.
+• ESP. As with the potion, the user may listen
+to the thoughts of any one living creature
+within 60'.
+• Extra damage. This power lasts for 1d10
+rounds when commanded. The user may in-
+flict four times the normal damage on each
+successful hit. This power may be generated
+more than once; each duplicate roll in-
+creases the multiplier by 1 (to 5 times, 6
+times, etc.).
+• Flying. As with the potion, the user may fly in
+the air for a maximum of three turns per use.
+• Healing. The sword with this power can
+heal up to a total of 6 points of damage per
+day, at the rate of 1 hit point per round.
+This power may be generated more than
+once; duplicate rolls increase the amount of
+healing by 6 points each (to 12, 18, etc. per
+day), but the rate of healing remains the
+same.
+• Illusion. The user may create a phantasmal
+force, as with the magic-user spell.
+• Levitation. As with the potion, the user may
+float in the air for a maximum of three turns
+per use.
+• Telekinesis. The user may move up to 2,000
+cn of weight by mere concentration as with
+the ring.
+• Telepathy. This is the same as ESP (above),
+but with the ability to "send" thoughts to
+the creature contacted (as with a helm of te-
+lepathy).
+• Teleportation. The user may teleport once
+per day as with the magic-user spell.
+• X-ray vision. The user may see through
+things as if wearing a ring of X-ray vision.
+Miscellaneous Weapons
+Normal weapon restrictions apply to magical
+miscellaneous weapons as well. For example,
+since a magic-user cannot use a polearm, a
+magic-user cannot use a magical polearm, either.
+Note: This section is nor used for determining
+magical swords or magical missile weapons; see
+the appropriate sections above instead.
+As with magical swords, a weapon's magical
+bonus is added to both attack and damage rolls.
+And as with swords, any item may be cursed,
+though there is less chance than with swords.
+Roll 1d20; if the result is 1, the item is cursed.
+The item is handled in the same manner as a
+cursed sword.
+Some miscellaneous weapons have an addi-
+tional bonus that is used only when fighting a
+specific type of opponent. Other weapons may
+have a talent, the ability to cast certain spell ef-
+fects. (The DM may wish to refer to such spells to
+find the exact effect. Note that each effect can
+only be used once per day and that no meditat-
+ing is needed to gain the spellcasting ability.)
+As noted in the text on "Magical Weapon
+Subtables," page 228, there are two methods of
+randomly generating weapons. The first, recom-
+mended for character levels 1-10, is a single ta-
+ble. If the DM has decided to place a magical
+miscellaneous weapon in a treasure hoard, he or
+she can simply roll 1d100 on the Magical Weap-
+on Generation Table (page 230), find the result
+in the appropriate column, and place the item in
+the treasure.
+When stocking treasure troves with magical
+miscellaneous weapons for characters who are
+above level 10, the DM can use the same table—
+or he or she can use the more specific but more
+complex method of random weapon generation,
+the Random Miscellaneous Weapon Generation
+Checklist.
+Weapon classes are explained above under
+"Swords."
+Unlike swords, miscellaneous weapons are not
+normally intelligent. If desired, the Intelligence
+of Sword subtable (from the Magical Item Sub-
+table: 8. Swords, page 231) may be used, but a
+penalty of -6% should be applied to the roll.
+Note that only swords can attain 10 or greater In-
+telligence.
+Random Miscellaneous Weapon Generation
+Checklist
+1. Roll 1d100 on the Magical Item Subtable:
+9. Miscellaneous Weapons (page 231) and
+find the type of weapon. Note the weap-
+on class of the item.
+2. Checking the appropriate weapon class
+column, roll 1d100 on the Magical Bo-
+nuses and Modifiers subtable (from the
+Magical Item Subtable: 9- Miscellaneous
+Weapons). The result will indicate the ba-
+sic magical bonus to attack and damage
+rolls.
+3. For a weapon that has a +1 to + 4 magi-
+cal bonus, roll 1d100 against the percent-
+age listed in the subtable. If the roll is
+successful, go to the Additional Weapon
+Modifiers Table (page 231) and roll for
+the additional bonus against a specific
+opponent.
+4. For a weapon that has a +5 magical bo-
+nus, roll 1d100 against the percentage
+listed in the subtable. If the roll is success-
+ful, go to the Additional Weapon Modi-
+fiers Table and roll on the Talents
+subtable for a talent instead of a bonus
+against an opponent.
+Designing Special Weapons
+Instead of randomly determining results, the
+DM may wish to select these weapons with a
+theme or purpose in mind. For example, if the
+DM wants to place a special weapon for a cleric,
+he or she could select a mace or hammer from
+the Magical Item Subtable: 9. Miscellaneous
+Weapons, select a bonus against undead (from
+the Additional Weapon Modifiers Table), and
+give it a talent for deflecting energy drains (from
+the Talent subtable in the latter table). In this
+way, the DM can provide the tools the characters
+will need for completing special adventures in a
+campaign.
+Remember that the weapon will remain after
+the crisis is solved. Though the weapon can be
+later removed from the game (by using thieves,
+special damage, or various magical means), the
+DM should avoid placing items that are too pow-
+erful and that may cause problems later.
+Returning Weapons
+This type of hand-hurled missile weapon will
+return to the user if it misses the target; it is
+sometimes called a "boomerang" weapon. If it
+misses, it returns at the end of the same round
+and may automatically be safely caught by the
+character throwing it (unless the user has become
+paralyzed, confused, immobile, etc.). If it hits
+the target, the weapon does not return by itself.
+Miscellaneous Weapon
+Abilities
+Any miscellaneous weapon can have addition-
+al weapon modifiers, such as bonuses against op-
+ponents or talents. These abilities are generated
+using the Additional Weapon Modifiers Table.
+Such modifiers are described in the following
+section.
+Additional Weapon
+Modifiers
+Two types of weapon modifiers are generated
+on the Additional Weapon Modifiers Table on
+page 231. Unless stated otherwise, the weapon
+bonuses vs. opponents and the talents listed in
+this section are applicable to all weapons, in-
+cluding missile weapons, swords, and miscella-
+neous weapons. Of course, class restrictions
+apply to items with these modifiers, and a class
+that cannot use a normal version of a weapon
+cannot use a magical version that has an addi-
+tional modifier.
+Weapon Bonus vs. Opponent
+This weapon modifier is an additional attack
+and damage bonus when the weapon is used
+against a specific opponent (for example, a
+sword +1, +2 vs. enchanted monsters). The
+amount of the bonus may be from +1 to + 5
+greater than the normal magical bonus of the
+weapon, as determined by the Additional Weap-
+on Modifiers Table. (For instance, a sword +1
+that has a + 3 bonus against lycanthropes would
+be a. sword +1, +4 vs. lycanthropes.)
+The DM should feel free to add more catego-
+ries to the types of opponents as appropriate,
+taking care not to upset the balance of the game.
+The opponent categories listed on the Oppo-
+nents subtable (from the Additional Weapon
+Modifiers Table) are as follows:
+• Bugs includes all normal and giant-sized
+forms of arachnids (spider, tick, scorpion,
+etc.), insects (ant, beetle, fly, etc.), and chi-
+lopods (centipedes, etc.).
+• Constructs includes all created monsters
+such as living statues or golems. Gargoyles
+are also included in this category.
+• Dragonkind includes all dragons of all col-
+ors and sizes plus draconian monsters such
+as the chimera, hydra (all types), salaman-
+der, and wyvern.
+• Enchanted monsters includes those crea-
+tures that cannot be hit by normal or silver
+weapons.
+• Giantkind includes all giants and all giant-
+type creatures such as ogres, Cyclopes, and
+other humanoids that are larger than man-
+size (including characters who have con-
+sumed a potion of growth.).
+• Lycanthropes includes all types of were-
+creatures, whether in animal form or not.
+This includes all characters afflicted with ly-
+canthropy.
+• Planar monsters includes those creatures that
+come from the elemental, ethereal, astral, or
+outer planes. All types are included, but Im-
+mortals do not count as planar monsters.
+• Regenerating monsters includes all crea-
+tures that regain more than 1 hit point per
+day by rest or other means. This includes
+any creature wearing a ring of regeneration.
+• Reptiles and dinosaurs includes all normal
+and giant-sized forms of lizards, snakes,
+turtles, crocodiles, and dinosaurs.
+• Spell-immune monsters includes those crea-
+tures that are immune to 1 or more spell
+levels, as specified in the monster descrip-
+tions (such as drakes) in Chapter 14. This
+does not include creatures that are immune
+merely to certain specific spells (such as the un-
+dead immunity to sleep, charm, and hold).
+• Spellcasters includes all clerics, elves, magic-
+users, and other creatures able to use spells
+(such as paladins or spirits, for example).
+• Undead includes all types of undead crea-
+tures, both land and water, from skeleton to
+lich.
+• Water-breathing monsters includes those
+creatures able to breathe water, including
+characters under the influence of a potion or
+ring of water breathing. Note that aquatic
+mammals (whale, dolphin, etc.) breathe air
+and are not included in this category.
+• Weapon-using monsters includes those
+creatures that have weapons in hand (not
+claws) at the time of a melee. For example, a
+wererat wielding a sword would be affected
+by this additional bonus, but the wererat
+would not be affected if it were attacking
+only with its bite.
+Talents
+Talents are unusual magical powers that vari-
+ous weapons can have (though they are most of-
+ten applied to swords). They are not the same as
+a sword's primary or extraordinary powers, which
+are described later, and a sword can have both a
+talent and primary and extraordinary powers.
+Talents can be certain spell effects or some other
+useful ability.
+All talents may be used only once per day un-
+less noted otherwise. Talents that duplicate spell
+effects are not actual spells, and they require nei-
+ther verbal casting nor concentration. The use of
+a talent occurs in the magical spells and items
+phase of a combat round. The talents listed on
+the Talents subtable (from the Additional Weap-
+on Modifiers Table, page 231) are as follows:
+• Breathing. The weapon with this talent can
+create either one water breathing spell effect
+per day or one air breathing effect per day.
+Air breathing supplies only the user with
+pure air for 1 turn, and it can be used to
+counter the effects of airlessness, poisoned
+air (such as a gas trap), and so forth; how-
+ever, it cannot negate the effects of any
+breath weapon.
+• Charming. The talent can create one charm
+person spell effect per day to a 120' range
+(as the 1st level magic-user spell).
+• Deceiving. The weapon with this talent can
+be commanded to change the appearance of
+the user. The size cannot be changed, but
+facial features, equipment carried, etc. can
+all be modified. This is only an illusion; the
+user remains intact. The weapon must be
+held to create the disguise (unsheathed in
+the case of edged weapons), and it cannot
+disguise itself.
+• Defending. The bonus of the weapon may
+be used normally (applying to attack and
+damage rolls) with this talent or as a bonus
+to the armor class of the user. A missile
+weapon cannot have this talent (roll again).
+• Deflecting. If the user is hit by a blow that
+would cause an energy drain, the talent can
+automatically deflect the blow. After the op-
+ponent hits, the user may decide whether to
+deflect the blow. If used for deflecting, the
+weapon absorbs the effect of the energy drain
+but at the cost of one magical bonus, which is
+drained from the weapon for each energy
+drain negated. If an energy drain deflected
+reduces the bonuses to below zero (such as a
+sword +1 deflecting a specter's attack, which
+causes a double energy drain), the weapon
+disintegrates; the extra drain does not affect
+the user. If a missile weapon has this talent, it
+must be held in hand to deflect the blow
+(and cannot be used at melee range).
+• Draining. Upon command, the weapon with
+this talent can drain one level or Hit Die
+when it strikes an opponent (as if a wraith),
+in addition to normal damage. The com-
+mand may be spoken after the attack roll is
+made. The weapon can drain 1d4+4 levels
+or Hit Dice in all; it then loses this ability for-
+ever. Energy drain cannot affect any creature
+that has energy drain powers (wight, wraith,
+specter, etc.). If a missile weapon has this tal-
+ent, it may be applied to any missile shot,
+but each level drained also drains one magi-
+cal bonus from the weapon. If the weapon
+becomes nonmagical because of this loss, it
+loses the ability to energy drain as well.
+• Extinguishing. The weapon with this talent is
+cool to the touch. When used against a fire-
+using creature (such as a red dragon or fire
+elemental, for example) the magical bonus of
+the weapon is doubled. In addition, the
+weapon will douse a normal fire if thrust into
+it. It has no effect on magical fire. If a missile
+weapon has this talent, it applies to all mis-
+siles fired instead of to the weapon itself.
+• Finding. The talent can create one locate
+object spell effect per day to a 120' range (as
+the 2nd level magic-user spell).
+• Flaming. The point or edge of this weapon
+that has this talent will blaze with flames
+upon command. The flames will not harm
+the weapon or the user, but they will add a
++ 2 bonus to attack rolls against hippo-
+griffs, pegasi, rocs, and trolls and a +3 bo-
+nus against treants and undead monsters.
+The bonus applies to both attack and dam-
+age rolls. The flame may easily be used to
+light a torch, lantern, or other flammable
+item. If a missile weapon has this talent, it
+applies to all missiles fired instead of the
+weapon itself.
+• Flying. The weapon with this talent can fly
+in the air and attack by itself. In battle, it
+must first be used normally at least once. If
+then commanded to fly, it will continue to
+attack the same opponent for three more
+rounds, returning to its master after that
+time (or when commanded to return). Its
+attack rolls are made as if it were wielded
+normally, based on the class and level of the
+user. If a missile weapon has this talent, it
+creates normal missiles as it shoots; the own-
+er does not have to supply it with new mis-
+siles, and he cannot supply it with magical
+missiles to shoot.
+• Healing. This talent can create one cure se-
+rious wounds spell effect per day, curing the
+user only of 2d6 + 2 points of damage (as
+the 4th level cleric spell).
+• Hiding. The weapon with this talent can
+create one invisibility spell effect on only
+the user when commanded to do so. In ad-
+dition, the weapon can itself become invisi-
+ble three times per day.
+• Holding. This talent can create one hold
+person spell effect per day to a 180' range
+(as the 2nd level cleric spell).
+• Lighting. The weapon that has this talent
+can create one light spell effect per day to a
+120' range and lasting for 6 turns (similar to
+the 1st level magic-user spell).
+• Silencing. This talent can create one silence,
+15' radius spell effect per day to 180' range
+(as the 2nd level cleric spell).
+• Slicing. This talent applies only to edged
+weapons (swords daggers, etc.). If any other
+weapon type indicates this talent, roll
+again. If the edged weapon's attack roll is 19
+or 20 counting the weapon's magical bonus
+but no other bonuses, the opponent struck
+must make a saving throw vs. death ray or
+be struck dead with one blow. If the saving
+throw is successful, the victim still takes tri-
+ple normal damage from the blow. These
+special damage bonuses do not apply when
+the weapon is used against constructs or un-
+dead creatures of any sort.
+• Slowing. When a successful hit is made, the
+weapon with this talent can cause the oppo-
+nent struck to become slowed (as the reverse
+of the 3rd level magic-user spell haste) for 1
+turn (no saving throw). The user may decide
+whether or not to use this effect after the
+swing hits.
+• Speeding. The talent will, on command,
+create a haste spell effect on the user only.
+The user may then move at double normal
+speed and attack twice per round for 1 turn
+(similar to the 3rd level magic-user spell).
+• Translating. The weapon that has this talent
+will, on command, enable the user to un-
+derstand any and all languages heard. The
+ability lasts for 6 turns.
+• Watching. The weapon with this talent may
+be commanded to watch for any one mon-
+ster type or race. The weapon can then sense
+the presence of the creatures specified, and
+it will vibrate slightly if one or more of the
+named creatures come within 60' of it. The
+vibration will silently alert the user. A spe-
+cific creature cannot be named, only a race
+or monster type, and the weapon can only
+sense one race or type per day, even if none
+are sensed.
+• Wishing. This talent will grant 1d3 wishes
+to the user (identical to the 9th level magic-
+user spell).
+Artifacts
+An artifact is a powerful magical item created
+by an Immortal (see Chapter 15) and imbued
+with his personal power. Each artifact is unique
+and should be individually designed by the DM.
+Nothing regarding an artifact happens by
+chance, for the destiny of each is planned and
+controlled by the Immortals. Thus, they are only
+rarely encountered, most often by high-level
+characters on a path to Immortality. No mortal
+retains an artifact for long.
+Artifacts are treated as 40th level for purposes
+of determining their magical effects. They are
+immune to most attacks, except those by other
+artifacts or weapons of at least + 5 bonus; how-
+ever, each can be destroyed by a legendary meth-
+od that is unique to that artifact. Wishes, the
+most powerful mortal magic, have no effect on
+artifacts.
+Using an artifact inflicts handicaps and penal-
+ties on the character. A handicap is a permanent
+effect that cannot be negated as long as the char-
+acter has the artifact. It usually appears when a
+power of the artifact is first used. A penalty is a
+temporary disadvantage that can be offset by
+magic or time while the artifact is possessed.
+Artifacts have four power levels: minor, lesser,
+greater, and major. These levels affect the num-
+ber and strength of the artifact's powers, handi-
+caps, and penalties, as in the Artifacts Table.
+Sample artifact
+MASK OF BACHRAEUS
+(Minor artifact: Entropy, evil)
+History: This mask was made by Bachraeus,
+an Immortal who became the patron of the me-
+dusae. The mask was to be worn by the high cler-
+ic of a secret cult that grew within the Milennian
+Empire and formed a dangerous alliance with
+the medusae. With the fall of that empire and
+the destruction of the cult, the mask was lost.
+Description: A smooth, blue mask of a strange
+ceramic material; the features are stylized, possi-
+bly female or elvish. A wig of long, dark, leath-
+ery strips is attached at the top and back.
+Powers: The Mask of Bachraeus possesses the
+following powers:
+• Flesh to stone, 120' range, one creature
+(gaze attack).
+• Charm person, 120' range, one creature
+(gaze attack).
+• Detect magic, 60' range.
+• Pass-wall, 60' range, 6-turn duration, 5'
+opening up to 10' deep.
+• Wearer is immune to turn to stone and
+charm attacks, except his own reflected
+gaze.
+• Wearer is immune to poisons from living
+creatures.
+Handicap: When the mask is put on, the
+wearer's Charisma is reduced to 4 (see Notes).
+The mask cannot be removed or disguised while
+the wearer lives.
+Penalty: Successful use of detect magic or flesh
+to stone reduces the wearer's own Strength by 1
+for one hour. The successful use of any other
+power reduces the wearer's own Strength by 2. If
+the wearer's own Strength is reduced to 0, he dies.
+Notes: This artifact is evilly enchanted and can
+be detected as such. The wearer loses 1 point of
+Charisma immediately when the mask is put on,
+then more at the rate of 1 point per week until a
+Charisma of 4 is reached. The mask, meanwhile,
+will become progressively uglier and more evil-
+looking. The use of any power by the wearer is
+voluntary. If the wearer dies, he and his equip-
+ment turn to stone with the exception of this arti-
+fact. This artifact will shatter irrevocably if its gaze
+is ever reflected by the Golden Mirror of Ka. The
+wearer of the mask will be immediately stunned
+for a full turn and will remember nothing of what
+he did while wearing the mask, but he will be
+otherwise unharmed.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -615,6 +2040,38 @@ meta:
 >   - scope: power; id: Light; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Light
+Range: 120'
+Duration: 6 turns + 1 turn per Level of
+the magic-user
+Effect: Volume of 30' diameter
+This spell creates a large ball of light, as
+if a bright torch were lit. If the spell is
+cast on an object (such as a coin), the
+light will move with the object. If cast at
+a creature's eyes, the creature must
+make a Saving Throw. If the Saving
+Throw is failed, the victim will be
+blinded by the light until the duration
+ends. A blinded creature may not attack.
+If the Saving Throw is successful, the
+Light appears in the air behind the
+intended victim.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+Light*
+When reversed, this spell, darkness, creates a
+circle of darkness 30' in diameter. It will
+block all sight except infravision. Darkness will
+cancel a light spell if cast upon it, but may
+itself be cancelled by another light spell. If
+cast at an opponent's eyes, it will cause blind-
+ness until cancelled, or until the duration
+ends. The target is allowed a Saving Throw
+and if he succeeds, the spell misses.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
   Light*
   Range: 120'
   Duration: 12 turns
@@ -683,6 +2140,32 @@ meta:
 >   - scope: power; id: Continual Light; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Continual Light*
+Range: 120'
+Duration: Permanent
+Effect: Sphere of light 60' across
+This spell creates light as bright as daylight
+in a spherical volume of 30' radius. It lasts
+until a dispel magic or continual darkness spell
+is cast upon it. Creatures penalized in
+bright daylight (such as goblins) suffer the
+same penalties within this spell effect. If
+cast on an opponent's eyes, the victim must
+make a Saving Throw vs. Spells or be
+blinded until the effect is removed. This
+spell may be cast either in an area or upon
+an object.
+The reverse of this spell, continual dark-
+ness, creates a completely dark volume of
+the same size. Torches, lanterns, and even
+a light spell will not affect it, and infravision
+cannot penetrate it. If cast on a creature's
+eyes, the creature must make a Saving
+Throw vs. Spells or be blinded until the
+spell is removed.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
 Continual Light*
 Range: 120'
 Duration: Permanent
@@ -754,6 +2237,19 @@ meta:
 >   - scope: power; id: Protection from Normal Missiles; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Protection from Normal Missiles
+Range: 30'
+Duration: 12 turns
+Effect: One creature
+This spell gives complete protection from
+all small non-magical missiles, causing
+them to miss. Thus, a catapult stone or a
+magic arrow would not be affected. Any
+one creature within range may be the re-
+cipient.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Protection from Normal Missiles
 Range: 30'
 Duration: 12 turns
@@ -810,6 +2306,46 @@ meta:
 >   - scope: power; id: Protection from Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Protection from Evil
+Range: 0
+Duration: 12 turns
+Effect: The cleric only
+This spell creates an invisible magical
+barrier all around the cleric's body (less
+than an inch away). All attacks against
+the cleric are penalized by - 1 to their
++
+Hit rolls, and the cleric gains a 1 bonus
+to all Saving Throws, while the spell
+lasts.
+In addition, "enchanted" creatures
+cannot even touch the cleric! If a magic
+weapon is needed to hit a creature, that
+creature is called "enchanted." However,
+a creature that can be hit by a silver
+weapon - a lycanthrope (were-crea-
+ture), for example - is not an "en-
+chanted" creature. Any creature which is
+magically summoned or controlled (such
+as a Charmed character) is also consid-
+ered to be an "enchanted" creature. The
+barrier thus completely prevents all at-
+tacks from those creatures unless they
+use missile weapons.
+This spell will not affect a Magic
+Missile (magic-user's) spell. If the cleric
+attacks anything during the spell's dura-
+tion, the effect changes slightly. "En-
+chanted" creatures are then able to
+touch the magic-user, but the Hit roll
+and Saving Throw adjustments still ap-
+ply until the spell duration ends.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+7. Protection from Evil
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
   Protection from Evil
   Range: 0
   Duration: 12 turns
@@ -817,7 +2353,6 @@ osr:
 
      This spell creates an invisible magical barrier
   all around the cleric's body (less than an inch
-
 away). While the spell lasts, characters and mon-
 sters attacking the cleric are penalized by - 1 to
 their attack rolls, and the cleric gains a + 1 bonus
@@ -890,6 +2425,38 @@ meta:
 >   - scope: power; id: Protection from Evil 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Protection from Evil 10' Radius
+Range: 0
+Duration: 12 turns
+Effect: Barrier 20' diameter
+This spell creates an invisible magical bar-
+rier all around the caster, extending 10' in
+all directions. The spell serves as protec-
+tion from "evil" attacks (attacks by mon-
+sters of an alignment other than the
+caster's). Each creature within the barrier
+gains a +1 to all Saving Throws, and all
+attacks against those within are penalized
+by -1 to the attacker's Hit roll while the
+spell lasts.
+In addition, "enchanted" creatures can-
+not attack those within the barrier hand-to-
+hand. Enchanted creatures can attack with
+missile or magical attacks however. An "en-
+chanted" creature is any creature that is
+magically summoned, animated or controlled
+(as with a charm spell) or can only be hit by
+a magical weapon. Creatures that can be
+hit by silver weapons are not enchanted.
+If anyone within the barrier attacks an
+enchanted creature, the barrier will no
+longer prevent the creature from attacking
+hand-to-hand, but the bonus to Saving
+Throws and penalty to Hit rolls will still
+apply.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
 Protection from Evil 10' Radius
 Range: 0
 Duration: 12 turns
@@ -971,9 +2538,24 @@ meta:
 >   - becmi:Rules Cyclopedia; spell: Fire Ball
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Pyreball
 > - usage:
->   - scope: power; id: Fire Ball (Fireball); note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Fireball; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Fire Ball
+Range: 240'
+Duration: instantaneous
+Effect: A spherical volume 40' across
+
+This spell creates a missile of fire which explodes into a ball of fire of 20' radius when it reaches the desired range or strikes a target. The Fire Ball inflicts 1-6 (1d6) points of fire damage for each level of the spell caster. Each victim within the area of effect takes full damage unless a Saving Throw vs. Spells is made. Even if the Saving Throw is successful, the victims take half the rolled damage. For example, a Fire Ball cast by a 6th level magic-user explodes for 6-36 (6d6) points of damage. If the total roll is 24, all within the area who make their Saving Throws take 12 points of fire damage.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+3. Fire Ball
+
+[Master | Artifact Chapter Context and Witnesses]
+  55 Fire Ball (R 240', EF 20d6 D; X11)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Fireball
 Range: 240'
 Duration: Instantaneous
@@ -1036,6 +2618,24 @@ meta:
 >   - scope: power; id: Lightning Bolt; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Lightning Bolt
+Range: 180'
+Duration: Instantaneous
+Effect: Bolt 60' long, 5' wide
+This spell creates a bolt of lightning, start-
+ing up to 180' away from the caster and
+extending 60' further away. All creatures
+within the area of effect take 1-6 points of
+damage per level of the spell caster. Each
+victim may make a Saving Throw vs.
+Spells; if successful, only half damage is
+taken. If the lightning bolt strikes a solid sur-
+face (such as a wall), it will bounce back
+toward the caster until the total length of
+the bolt is 60'.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Lightning Bolt
 Range: 180'
 Duration: Instantaneous
@@ -1098,6 +2698,30 @@ meta:
 >   - scope: power; id: Haste; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Haste*
+Range: 240'
+Duration: 3 turns
+Effect: Up to 24 creatures move double
+speed
+This spell allows up to 24 creatures in a 60'
+diameter circle to perform actions at dou-
+ble speed for a half hour. Those affected
+may move at up to twice normal speed and
+make double the normal number of missile
+or hand-to-hand attacks. This spell does
+not affect the rate at which magic works, so
+the casting of spells and the use of devices
+(such as wands) cannot be speeded up.
+The reverse of this spell, slow, will re-
+move the effects of a haste spell, or will
+cause the victims to move and attack at half
+normal speed for the duration of the spell.
+As with haste, spell casting is not affected.
+The victims may make a Saving Throw vs.
+Spells to avoid the effect.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Haste*
 Range: 240'
 Duration: 3 turns
@@ -1164,6 +2788,32 @@ meta:
 >   - scope: power; id: Cloudkill; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Cloudkill
+Range: 1'
+Duration: 6 turns
+Effect: Creates a moving poison cloud
+This spell creates a circular cloud of poi-
+sonous vapor, 30' across and 20' tall, which
+appears next to the magic-user. It moves
+away at the rate of 60' per turn (20' per
+round) in any one direction (with the wind,
+if any; otherwise, in the direction chosen
+by the caster). This cloud is heavier than
+air and will sink when possible (going
+down holes, sliding downhill, etc.). The
+cloud will be destroyed if it hits trees or
+other thick vegetation'. If cast in a small
+area (such as in a 10' tall dungeon corri-
+dor), the cloud may be of smaller than nor-
+mal size.
+All living creatures within the cloud take
+1 point of damage per round. Any victim
+of less than 5 Hit Dice must make a Saving
+Throw vs. Poison or be killed by the va-
+pors.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Cloudkill
 Range: 1'
 Duration: 6 turns
@@ -1227,6 +2877,11 @@ meta:
 >   - scope: power; id: Explosive Cloud; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+  75 Explosive Cloud (R 1', DR 6T, EF
+       20' x 30' x 30', 20 hp/r; C24)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Explosive Cloud
 Range: 1'
 Duration: 6 turns
@@ -1298,6 +2953,11 @@ meta:
 >   - scope: power; id: Meteor Swarm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+ 100 Meteor Swarm (R 240', EF 4 for
+       8d6 +8d6 or 8 for 4d6 +4d6; C26)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Meteor Swarm
 Range: 240'
 Duration: Instantaneous
@@ -1312,6 +2972,23 @@ us).
 If the caster creates four meteors, each strikes
 for 8d6 (8-48) points of damage and then ex-
 plodes for 8d6 (8-48) points of fire damage. If
+the caster creates eight smaller meteors,
+strikes for 4d6 (4-24) points and then exp
+for 4d6 more points of fire damage. Note t
+the meteors are aimed accurately, a victim o
+might find itself within overlapping blasts
+thus take explosion damage multiple times
+   The player rolls damage for each strike
+blast separately. A meteor never misses its ta
+   Any victim struck by a meteor takes
+"strike" damage (no saving throw). Each v
+within a blast radius may make a saving t
+vs. spells to take only half of the given blast
+age. Even fire-resistant and fire-using crea
+are fully affected by strikes from a m
+swarm, although they might be resistant t
+fiery explosions. A separate saving throw
+be made for each blast the character contac
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1358,6 +3035,28 @@ meta:
 >   - scope: power; id: Wall of Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Wall of Fire
+Range: 60'
+Duration: Concentration
+Effect: Creates 1200 square feet of fire
+This spell creates a thin vertical wall of fire
+of any dimensions and shape, determined
+by the magic-user, totalling 1,200 square
+feet (for example, 10' x 120', 20' x 60', 30'
+x 40', etc.). The wall is opaque and will
+block sight. Creatures of less than 4 Hit
+Dice cannot break through the wall. Crea-
+tures of 4 HD or more can break through,
+but take 1-6 points of damage in the proc-
+ess. Undead and cold-using creatures
+(white dragons, frost giants, etc.) each take
+double damage while breaking through.
+The wall cannot be cast in a space occupied
+by another object. It lasts as long as the
+caster concentrates on it, without moving.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Wall of Fire
 Range: 60'
 Duration: Concentration
@@ -1419,6 +3118,24 @@ meta:
 >   - scope: power; id: Striking; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Striking
+Range: 30'
+Duration: 1 turn
+Effect: 1d6 bonus to damage on 1 weapon
+This spell allows any one weapon to inflict
+1-6 additional points of damage per attack
+(like a magical staff of striking). The
+weapon will inflict this extra damage for as
+long as the spell lasts. The bonus does not
+apply to Hit rolls. If cast on a normal
+weapon, creatures affected only by magic
+weapons may be hit, for 1-6 points of
+damage per strike (regardless of the
+weapon; only the magical damage applies
+in such cases).
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Striking
 Range: 30'
 Duration: 1 turn
@@ -1478,6 +3195,24 @@ meta:
 >   - scope: power; id: Silence 15' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Silence 15' Radius
+Range: 180'
+Duration: 12 turns
+Effect: Sphere of silence 30' across
+This spell makes the area of effect totally
+silent. Conversation and spells in this area
+are impossible for the duration of the spell.
+This spell does not prevent a person within
+the area from hearing noises made outside
+the area. If cast on a creature, the victim
+must make a Saving Throw vs. Spells or
+the spell effect will move with the creature.
+If the Saving Throw is successful, the spell
+remains in the area in which it was cast,
+and the victim may move out of the area.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Silence 15' Radius
 Range: 180'
 Duration: 12 turns
@@ -1536,6 +3271,24 @@ meta:
 >   - scope: power; id: Death Spell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Death Spell
+Range: 240'
+Duration: Instantaneous
+Effect: Slays 4-32 Hit Dice of creatures
+within a 60' x 60' x 60' area
+This spell will affect 4-32 Hit Dice of living
+creatures within the given area. Normal
+plants and insects are automatically slain,
+and those with no hit points are not
+counted in the total affected. Undead are
+not affected, nor are creatures with 8 or
+more Hit Dice (or levels of experience).
+The lowest Hit Dice creatures are affected
+first. Each victim must make a Saving
+Throw vs. Death Ray or be slain.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Death Spell
 Range: 240'
 Duration: Instantaneous
@@ -1598,6 +3351,10 @@ meta:
 >   - scope: power; id: Insect Plague; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+5. Insect Plague
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Insect Plague
 Range: 480'
 Duration: 1 day
@@ -1657,6 +3414,44 @@ meta:
 >   - scope: power; id: Ice Storm/Wall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Ice Storm/Wall
+Range: 120'
+Duration: Storm 1 round or Wall 12 turns
+Effect: Storm in 20' x 20' x 20' volume or
+wall of 1200 square feet
+This spell may be cast in either of two ways:
+either as an icy blast, ice storm, or a wall of
+ice.
+An ice storm fills a 20' x 20' x 20' cube. If
+cast in a smaller area, it will remain 20'
+long at most. The storm inflicts 1-6 points
+of cold damage per level of the caster to
+every creature in the area. Each victim may
+make a Saving Throw vs. Spells; if success-
+ful, the spell only does half damage. Fire-
+type creatures (red dragon, flame sala-
+mander, etc.) have a - 4 penalty on their
+Saving Throws, but cold-type creatures
+(frost giant, frost salamander, etc.) are not
+affected by the spell.
+A wall of ice is a thin vertical wall of any
+dimensions and shape determined by the
+magic-user totalling 1200 square feet (such
+as 10' x 120', 20' x 60', 30' x 40', etc.). The
+wall is opaque and will block sight. Crea-
+tures of less than 4 Hit Dice cannot break
+through the wall. Creatures of 4 HD or
+more can break through, but take 1-6
+points of damage in the process. Fire-type
+creatures each take twice the amount of damage
+ (2-12) while breaking
+through. The wall must be cast to rest on
+the ground or similar support, and cannot
+be cast in a space occupied by another ob-
+ject.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Ice Storm/Wall of Ice
 Range: 120'
 Duration: Storm, 1 round; Wall, 12 turns
@@ -1734,6 +3529,14 @@ meta:
 >   - scope: power; id: Earthquake; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
+1. Earthquake
+
+[Master | Seventh-Level Cleric Spells]
+  90 Earthquake (R 120 yards, DR 1T, EF
+      175' sq; C13)
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Earthquake
 Range: 120 yards
 Duration: 1 turn
@@ -1802,6 +3605,29 @@ meta:
 >   - scope: power; id: Call Lightning; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Call Lightning
+Range: 360'
+Duration: 1 turn per level of the caster
+Effect: Calls lightning bolts from a storm
+This spell cannot be used unless a storm of
+some (any) type is within range of the druid.
+If a storm is present, the druid may call 1
+lightning bolt per turn (10 minutes) to strike
+at any point within range. The lightning bolt
+descends from the sky, hitting an area 20'
+across. Each victim within that area takes 8-
+48 (8d6) points of electrical damage, but may
+make a Saving Throw vs. Spells to take 1/2
+damage. The druid need not call the light-
+ning every turn unless desired; it remains
+available until the spell duration (or the
+storm) ends.
+
+[Master | Druid Spell Material]
+1. Call Lightning (C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Call Lightning
 Range: 360'
 Duration: 1 turn per level of the caster
@@ -1868,6 +3694,28 @@ meta:
 >   - scope: power; id: Control Temperature 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Control Temperature 10 ' radius
+Range: 0 (druid only)
+Duration: 1 turn per level of the caster
+Effect: Cools or warms air within 10'
+This spell allows the druid to alter the tem-
+perature within an area 20' across. The max-
+imum change is 50 degrees (Fahrenheit),
+either warmer or cooler. The change occurs
+immediately, and the effect moves with the
+druid. The temperature may be changed by
+mere concentration for 1 round, as long as
+the spell lasts.
+The spell is useful for resisting cold or heat
+so the caster may survive any temperature
+extremes.
+
+[Master | Druid Spell Material]
+ 35 Control Temperature 10' radius (DR
+     40T, EF 50 degrees; C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Control Temperature 10' radius
 Range: 0 (druid only)
 Duration: 1 turn per level of the caster
@@ -1929,6 +3777,13 @@ meta:
 >   - scope: power; id: Control Winds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+2. Control Winds
+
+[Master | Druid Spell Material]
+  30 Control Winds (DR 40T, EF 400'; C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Control Winds
 Range: 10' radius per level of the caster
 Duration: 1 turn per level of the caster
@@ -1998,6 +3853,13 @@ meta:
 >   - scope: power; id: Creeping Doom; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+1 . Creeping Doom
+
+[Master | Druid Spell Material]
+1. Creeping Doom (C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Creeping Doom
 Range: 120'
 Duration: 1 round per level of the caster
@@ -2069,6 +3931,52 @@ meta:
 >   - scope: power; id: Heat Metal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Druid Spell Material]
+Heat Metal
+Range: 30 feet
+Duration: 7 rounds
+Effect: Warms one metal object
+This spell causes one object to slowly heat
+and then cool. It will affect one metal item
+weighing up to 5 cn per level of the caster. A
+12th-level druid, for example, can heat a nor-
+mal sword, but a 20th-level druid can heat a
+two-handed sword, and a 36th-level druid, a
+lance.
+The heat causes no damage to magical
+items. Normal weapons or other items may
+be severely damaged, especially if made of
+wood and metal (as a normal lance), as the
+wood will burn away.
+If the object is held, the heat causes dam-
+age to the holder: one point during the first
+round, 2 in the second, 4 in the third, 8 in the
+fourth, and then decreasing at the same rate
+(for a total of 22 points of heat damage over
+seven rounds.) No saving throw is allowed,
+but fire resistance negates all damage. The
+item may be dropped at any time, of course,
+and creatures of low intelligence are 80%
+likely to do so (check each round). In the
+fourth round, the searing heat will cause
+leather, wood, paper, and other flammable
+objects in contact with the metal to catch fire.
+Once the spell has been cast, no concentra-
+tion is needed; the heating and cooling pro-
+ceed automatically. A dispel magic can stop
+the effect, but normal means (immersion in
+water, etc.) will not.
+If used on an item imbedded in an oppo-
+nent (such as an arrow or dagger), the crea-
+ture may remove the item but loses initiative
+for that round (and takes the appropriate heat
+damage as well). Note that heat damage dis-
+rupts concentration; the victim cannot cast
+spells during any round in which damage is
+inflicted by this spell.
+Third-Level Druid Spell
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Heat Metal
 Range: 30'
 Duration: 7 rounds
@@ -2080,40 +3988,6 @@ er. A 12th level druid, for example, can heat up
 to 6 pounds (60 cn—a normal sword, for in-
 stance), while a 20th level druid can heat 10
 pounds (100 cn—for example, a two-handed
-sword).
-The heat causes no damage to magical items.
-Normal weapons or other items may be severely
-damaged, especially if made of both wood and
-metal (as a normal lance), as the wood will burn
-away at the point of contact with metal.
-If the object is being held when heated, the
-heat causes damage to the holder: 1 point of
-damage during the first round, 2 points in the
-second, 4 points in the third, 8 points in the
-fourth, and then decreasing at the same rate (for
-a total of 22 points of heat damage over seven
-rounds). In the fourth round, the searing heat
-will cause leather, wood, paper, and other flam-
-mable objects in contact with the metal to catch
-fire.
-The holder gets no saving throw, but fire re-
-sistance negates all damage. The character can
-drop the item at any time, of course, and crea-
-tures of low intelligence are 80% likely to do so
-(check each round).
-Once the spell has been cast, the druid no
-longer needs to concentrate; the heating and
-cooling proceed automatically. A dispel magic
-can stop the effect, but normal means (immer-
-sion in water, etc.) will not.
-If the spell is used on an item imbedded in an
-opponent (such as an arrow or dagger), the op-
-ponent may remove the item but loses initiative
-for that round (and takes the appropriate heat
-damage for that round as well).
-Heat damage disrupts concentration; the vic-
-tim cannot cast spells during any round in which
-he sustains damage from this spell.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2159,6 +4033,30 @@ meta:
 >   - scope: power; id: Produce Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Produce Fire
+Range: 0 (druid only)
+Duration: 2 turns per level
+Effect: Creates fire in hand
+This spell causes a small flame to appear in
+the druid's hand. It does not harm the caster
+in any way, and sheds light as if a normal
+torch. The flame can be used to ignite com-
+bustible materials touched (lantern, torch,
+oil, etc.) without harming the magical flame.
+While holding the flame, the caster can cause
+it to disappear and reappear by concentration
+once per round, until the duration ends.
+Other items may be held and used in the
+hand while the fire is out. If desired, the fire
+may be dropped or thrown to 30' range, but
+disappears 1 round after leaving the druid's
+hand.
+
+[Master | Druid Spell Material]
+   15 Produce Fire (DR 2T; C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Produce Fire
 Range: 0 (druid only)
 Duration: 2 turns per level
@@ -2222,6 +4120,14 @@ meta:
 >   - scope: power; id: Summon Weather; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+3. Summon Weather
+
+[Master | Druid Spell Material]
+  55 Summon Weather (DR 240T, EF 30
+     miles; C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Summon Weather
 Range: 5 miles or more
 Duration: 6 turns per level
@@ -2283,6 +4189,57 @@ meta:
 >   - scope: power; id: Weather Control; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Weather Control
+Range: 0 (magic-user only)
+Duration: Concentration
+Effect: All weather within 240 yards
+This spell allows the magic-user to create one
+special weather condition in the surrounding
+area (within a 240 yard radius). The caster
+may select the weather condition. The spell
+only works outdoors, and the weather will
+affect all creatures in the area (including the
+caster). The effects last as long as the caster
+concentrates, without moving; if the caster is
+being moved (for example, aboard a ship),
+the effect moves also. The effects vary, but the
+following results are typical:
+Rain: -2 penalty to Hit rolls applies to all
+missile fire. After three turns, the ground
+becomes muddy, reducing movement to 1/2
+the normal rate.
+Snow: visibility (the distance a creature
+can see) is reduced to 20'; movement is
+reduced to 1/2 the normal rate. Rivers and
+streams may freeze over. Mud remains after
+the snow thaws, for the same movement pen-
+alty.
+Fog: 20' visibility, 1/2 normal movement.
+Those within the fog might become lost,
+moving in the wrong direction.
+Clear: This cancels bad weather (rain,
+snow, fog) but not secondary effects (such as
+mud).
+Intense Heat: Movement reduced to 1/2
+normal. Excess water (from rain, snow, mud
+transmuted from rock, etc.) dries up.
+High Winds: No missile fire or flying is
+possible. Movement reduced to 1/2 normal.
+At sea, ships sailing with the wind move 50%
+faster. In the desert, high winds create a sand-
+storm, for 1/2 normal movement and 20 ' vis-
+ibility.
+Tornado: This creates a whirlwind under
+the magic-user's control, attacking and mov-
+ing as if a 12 HD Air Elemental. At sea, treat
+the tornado as a "storm or gale".
+
+[Master | Druid Spell Material]
+  80 Weather Control (DR Conc., EF 240
+     yards; C16)
+
+[Rules Cyclopedia | Druidic and Magical Spells Lists and Spell Descriptions]
 Weather Control
 Range: 0 (druid only)
 Duration: Concentration
@@ -2560,6 +4517,20 @@ meta:
 >   - scope: power; id: Disintegrate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Disintegrate
+Range: 60'
+Duration: Instantaneous
+Effect: Destroys one creature or object
+This spell causes one creature or non-mag-
+ical object to crumble to dust. A victim may
+make a Saving Throw vs. Death Ray to
+avoid the effect. (Examples: A dragon, a
+ship, or a 10' section of wall may be disinte-
+grated.) The spell does not affect magic
+items or spell effects.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Disintegrate
 Range: 60'
 Duration: Instantaneous
@@ -2614,6 +4585,12 @@ meta:
 >   - scope: power; id: Power Word Blind; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+   85 Power Word Blind (R 120', DR up to 40
+      hp = 4 days, up to 80 hp = 2d4 hrs;
+      C25)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Power Word Blind
 Range: 120'
 Duration: 1-4 days or 2-8 hours (see below)
@@ -2675,24 +4652,29 @@ meta:
 >   - scope: power; id: Power Word Kill; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+  85 Power Word Kill (R 120', EF kill 60
+       hp, stun 61-100 hp, DR 4T; C26)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Power Word Kill
 Range: 120'
 Duration: Instantaneous
-Effect: Slays or stuns 1 or more creatures
+Effect: Slays or stuns one or more creatures
 This spell enables the caster to affect one or
-more victims within 120' (no Saving
-Throw). Exception: a magic-user, and any
-creature which can cast magic-user spells,
-may make a Saving Throw vs. Spells to avoid
-this effect, but with a -4 penalty to the roll.
+more victims within 120' (no saving throw). Ex-
+ception: A magic-user, and any creature which
+can cast magic-user spells, may make a saving
+throw vs. spells to avoid this effect, with a -4
+penalty to the roll.
 A single victim with 1-60 hit points is auto-
 matically slain; one with 61-100 hit points is
-stunned (as power word stun) and unable to
-act for 1-4 turns. Any creature with 101 or
-more hit points cannot be affected.
-The spell can also be used to slay up to 5
-victims if each has 20 hit points or less (again,
-no Saving Throw).
+stunned (as power word stun) and unable to act
+for 1d4 turns. No creature with 101 or more hit
+points is affected.
+The spell can also be used to slay up to five
+victims if each has 20 hit points or less (again, no
+saving throw).
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2737,6 +4719,10 @@ meta:
 >   - scope: power; id: Move Earth; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Non-Human Spellcasters and Special Spellcaster Procedures]
+  50 Move Earth (R 240', DR 6T; C21)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Move Earth
 Range: 240'
 Duration: 6 turns
@@ -2787,6 +4773,11 @@ meta:
 >   - scope: power; id: Telekinesis; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+   40 Telekinesis (R 120', DR 6r, EF 8000 cn,
+      MV 20'/r; C20)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Telekinesis
 Range: 120'
 Duration: 6 rounds
@@ -2851,6 +4842,11 @@ meta:
 >   - scope: power; id: Delayed Blast Fireball; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+  65 Delayed Blast Fire Ball (R 240' , DR
+       0-60r, EF 20d6 D; C22)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Delayed Blast Fireball
 Range: 240'
 Duration: 0 to 60 rounds
@@ -2914,6 +4910,11 @@ meta:
 >   - scope: power; id: Power Word Stun; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+   60 Power Word Stun (R 120', DR up to
+      35hp = 12r, up to 70hp = 6r; C22)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Power Word Stun
 Range: 120'
 Duration: 2d6 or 1d6 turns
@@ -2959,6 +4960,11 @@ meta:
 >   - scope: power; id: Reverse Gravity; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+  60 Reverse Gravity (R 90', EF 30' cube;
+     C22)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Reverse Gravity
 Range: 90'
 Duration: 1/5 round (2 seconds)
@@ -3019,27 +5025,63 @@ meta:
 >   - scope: power; id: Sword; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells]
 Sword
 Range: 30'
 Duration: 1 round per level of the caster
 Effect: Creates a magical sword
 When this spell is cast, a glowing sword made
-of magic, rather than metal, appears next to the
-caster. The magic-user may cause it to attack any
-creature within 30', simply by concentrating; the
-sword flies to the target and attacks. If the cast-
-er's concentration is broken, the sword merely
-stops attacking. It remains in existence for one
-round per level of the spellcaster.
-The sword moves very quickly, attacking twice
-per round and making its attack rolls at the cast-
-er's level. Damage is the same as a two-handed
-sword (1d10), but this magical creation is capa-
-ble of hitting any target (even those hit only by
-powerful magical weapons).
-The sword cannot be destroyed before the du-
-ration ends, except by a dispel magic spell effect
-(at normal chances of success) or a wish.
+of magic, rather than metal, appears next to
+the caster. The magic-user may cause it to
+attack any creature within 30', simply by
+concentrating. If concentration is broken, the
+sword merely stops attacking; it remains in
+existence for 1 round per level of the magic-
+user. The sword moves very quickly, attack-
+ing twice per round, and Hit Rolls are made
+at the caster's level. Damage is the same as a
+two-handed sword, but this magical creation
+is capable of hitting any target (even those hit
+only by powerful magic weapons). The sword
+cannot be destroyed before the duration
+ends, except by a dispel magic spell effect (at
+normal chances for success).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
+sword).
+The heat causes no damage to magical items.
+Normal weapons or other items may be severely
+damaged, especially if made of both wood and
+metal (as a normal lance), as the wood will burn
+away at the point of contact with metal.
+If the object is being held when heated, the
+heat causes damage to the holder: 1 point of
+damage during the first round, 2 points in the
+second, 4 points in the third, 8 points in the
+fourth, and then decreasing at the same rate (for
+a total of 22 points of heat damage over seven
+rounds). In the fourth round, the searing heat
+will cause leather, wood, paper, and other flam-
+mable objects in contact with the metal to catch
+fire.
+The holder gets no saving throw, but fire re-
+sistance negates all damage. The character can
+drop the item at any time, of course, and crea-
+tures of low intelligence are 80% likely to do so
+(check each round).
+Once the spell has been cast, the druid no
+longer needs to concentrate; the heating and
+cooling proceed automatically. A dispel magic
+can stop the effect, but normal means (immer-
+sion in water, etc.) will not.
+If the spell is used on an item imbedded in an
+opponent (such as an arrow or dagger), the op-
+ponent may remove the item but loses initiative
+for that round (and takes the appropriate heat
+damage for that round as well).
+Heat damage disrupts concentration; the vic-
+tim cannot cast spells during any round in which
+he sustains damage from this spell.
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -3085,6 +5127,29 @@ meta:
 >   - scope: power; id: Cure Light Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Cure Light Wounds*
+Range: Touch
+Duration: Permanent
+Effect: Any one living creature
+This spell will either heal damage or
+remove paralysis. If used to heal, it will
+cure 2-7 ( 1d6 + 1) points of damage. It
+will not heal any damage if used to cure
+paralysis. The cleric may cast it on him-
+self (or herself if desired.
+This spell will never increase a creature's total hit points above the original
+amount.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+Cure Light Wounds*
+When reversed, this spell, cause light
+wounds, causes 2-7 points of damage to any
+creature or character touched (no Saving
+Throw). The cleric must make a normal
+Hit roll.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Cure Light Wounds*
 Range: Touch
 Duration: Permanent
@@ -3136,6 +5201,32 @@ meta:
 >   - scope: power; id: Remove Curse; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Remove Curse"
+Range: Touch
+Duration: Permanent
+Effect: Removes any one curse
+This spell removes one curse, whether on a
+character, item, or area. Some curses - es-
+pecially those on magic items - may only
+be temporarily removed for a short time,
+DM's discretion, requiring a dispel evil spell
+for permanent effect (or possibly a remove
+curse cast by a high level cleric or magic-
+user).
+The reverse of this spell, curse, causes a
+misfortune or penalty to affect the victim.
+Curses are limited only by the caster's
+imagination, but if an attempted curse is
+too powerful, it may return to the caster
+(DM's discretion)! Safe limits to curses may
+include: - 4 penalty on Hit rolls; - 2
+penalty on Saving Throws; prime requisite
+reduced to 1/2 normal. The victim may
+make a Saving Throw vs. Spells to avoid
+the curse.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
 Remove Curse*
 Range: Touch
 Duration: Permanent
@@ -3201,6 +5292,23 @@ meta:
 >   - scope: power; id: Bless; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Bless*
+Range: 60'
+Duration: 6 turns
+Effect: All within a 20' square area
+This spell improves the morale of friendly
+creatures by +1 and gives the recipients a
++1 bonus on all Hit and damage rolls. It will
+only affect creatures in a 20' x 20' area, and
+only those who are not yet in melee.
+When reversed, this spell, blight, places a
+- 1 penalty on enemies' morale, Hit rolls,
+and damage rolls. Each victim may make a
+Saving Throw vs. Spells to avoid the penal-
+ties.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Bless*
 Range: 60'
 Duration: 6 turns
@@ -3255,6 +5363,18 @@ meta:
 >   - scope: power; id: Cure Blindness; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Cure Blindness
+Range: Touch
+Duration: Permanent
+Effect: One living creature
+This spell will cure nearly any form of
+blindness, including those caused by light
+or darkness spells (whether normal or con-
+tinual). It will not, however, affect blind-
+ness caused by a curse.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Cure Blindness
 Range: Touch
 Duration: Permanent
@@ -3307,30 +5427,1105 @@ meta:
 >   - scope: power; id: Neutralize Poison; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
 Neutralize Poison*
 Range: Touch
 Duration: Permanent
 Effect: A creature, container, or object
-This spell will make poison harmless either in
-a creature, a container (such as a bottle), or on
-one object (such as a chest). It will even revive a
-victim slain by poison if cast within 10 rounds of
-the poisoning!
-The spell will affect any and all poisons
-present at the time it is cast, but does not cure
-any damage (and will thus not revive a poisoned
-victim who has died of wounds).
-The reverse of this spell, create poison, may be
-cast, by touch, on a creature or container. A cler-
-ic cannot cast it on any other object. A victim
-must make a saving throw vs. poison or be im-
-mediately slain by the poison. If cast on a con-
-tainer, the spell poisons its contents; no saving
-throw applies, even for magical containers or
-contents (such as potions). (Of course, when
-someone drinks those poisoned contents, he gets
-a saving throw.) Using create poison, or poison-
-ing in any case, is usually a Chaotic act.
+This spell will make poison harmless either
+in a creature, a container (such as a bottle),
+or on one object (such as a chest). It will
+even revive a victim slain by poison if cast
+within 10 rounds of the poisoning! The
+spell will affect any and all poisons present
+at the time it is cast, but does not cure any
+damage (and will thus not revive a poi-
+soned victim who has died of wounds).
+The reverse of this spell, create poison,
+may be cast, by touch, on a creature or
+container. It cannot be cast on any other
+object. A victim must make a Saving
+Throw vs. Poison or be immediately slain
+by the poison. If cast on a container, the
+contents become poisoned; no Saving
+Throw applies, even for magical containers
+or contents (such as potions). Poisoning is
+usually a Chaotic act.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
+Neutralize poison
+Staff of Power: This item can be used as a staff
+of striking and can also be used to create any of
+the following magic-user spell effects (each do-
+ing 8d6 points of damage): fireball, lightning
+bolt, and ice storm. It can also create a continual
+light effect or move 2,400 cn of weight by teleki-
+nesis, as the ring. This staff is usable only by
+magic-users.
+Snake Staff: Usable only by clerics, this magi-
+cal staff is a staff +1 and will inflict 1d6 +1
+points of damage per hit.
+Upon command, the staff turns into a snake
+and coils around the creature struck. The com-
+mand may be spoken when the victim is hit. The
+victim is allowed to make a saving throw vs.
+spells to avoid the serpent's coil. Any man-sized
+or smaller victim will be held helpless for 1d4
+turns (unless the snake is ordered by the owner
+to release the victim before that time). Larger
+creatures cannot be ensnared in the snake's coils.
+The snake's characteristics are as follows.
+Snake: AC 5; HD 3; hp 20; MV 60' (20'); #AT 1
+(special); Dmg Nil (special); Save C3; ML 12;
+XP6
+When freed, the snake crawls back to its own-
+er and becomes a staff once again. The snake is
+completely healed when it returns to staff form.
+If killed in snake form, it cannot return to staff
+form and it loses all magical properties. This
+item does not have or use charges.
+At the DM's option, the staff can be given
+charges. The user can spend charges to add bo-
+nuses to the snake's attack foil ( + 1 bonus per
+charge spent); up to five charges can be used in a
+single attack (for a + 5 bonus).
+A charge can also be used to cure the snake
+while it is in combat. The user casts a curing spell
+of any type and expends one charge to transfer
+the cure to the snake. The amount of curing is
+determined normally; no range limit applies.
+Staff of Striking: Usable by all spellcasters,
+this weapon inflicts 2d6 (2-12) points of damage
+per charge if the hit is successful. Only one
+charge may be used per strike.
+Staff of Withering: One hit from this staff
+ages the victim 10 years. One or two hits will be
+fatal to most animals and harmful to many hu-
+mans. Elves may ignore the first 200 years of ag-
+ing, dwarves may ignore the first 50 years, and
+halflings may ignore the first 20 years. Undead
+are not affected by this item. This staff is usable
+only by clerics.
+Staff of Wizardry: Usable only by magic-
+users, this staff +1 has all the powers of a. staff of
+power, plus the magic-user spell effects of invisi-
+bility, passwall, web, and conjure elemental. It
+may also be used to create a whirlwind (as if from
+a djinni) or shoot a cone of paralyzation (as the
+wand). In addition, the user may break the staff,
+which releases all of its power at once. This final
+strike is an explosion that inflicts 8 points of
+damage per charge remaining in the staff. All
+creatures within 30' (including the user!) take
+damage (but all may make a saving throw vs.
+staff for half damage).
+Rod Descriptions
+The rods listed in Magical Item Subtable: 3.
+Wands, Staves, and Rods, page 229, are de-
+scribed in the following text.
+Rod of Cancellation: This rod is usable by any
+character. It will work only once, but it will drain
+any magical item it hits, making that item for-
+ever nonmagical. The target is treated as having
+an armor class of 9. The DM may adjust the ar-
+mor class of an item if it is being used in combat
+(such as when trying to hit a sword).
+Intelligent magical swords and + 5 magical
+items may resist the effect of the rod if the user
+makes a saving throw vs. wands. This merely indi-
+cates successful resistance, and the rod still retains
+its power. A sword +5 with intelligence, for ex-
+ample, gains a +2 bonus to the saving throw.
+Rod of Dominion: Usable by any character,
+this rod aids in ruling. If a ruler carries it on a
+tour throughout his or her dominion, the rod
+adds a bonus to all Confidence Level rolls, based
+on the percentage of residents viewing it (roll
+1d100 for the result).
+01-50
++10
+51-75
++20
+76-90
++30
+91-99
++40
++50
+When not on display, the rod must be kept in
+the ruler's stronghold. The effects last for three
+months, but the rod may be shown again to the
+populace as desired.
+Rod of Health: Usable by clerics only, this rod
+has all the powers of a staff of healing, but with-
+out expending any charges. It can affect any one
+creature only once per day, regardless of the ef-
+fect chosen.
+Rod of Inertia: Only a dwarf, halfling, fighter,
+thief, or mystic may use this unusual item. It
+may be used as a spear +3 in all respects. On
+command of the user, it will stop wherever it is,
+and it cannot be moved by any means except a
+wish. A second command releases it. If the rod is
+in motion when stopped, it will continue its di-
+rection when released. For example, it may be
+thrown toward a door and commanded to stop,
+later released if an enemy enters so that the rod
+will continue toward the enemy (a normal attack
+roll is made). If the user falls, a command will
+stop the rod suddenly, and the user may hold on-
+to the rod.
+Rod of Parrying: This rod +5 can be used as a
+melee weapon, inflicting 1d8 + 5 (6-13) points of
+damage per hit (but no Strength bonus applies).
+It may also be used to parry attacks, if the user
+chooses this ability at the beginning of a round.
+When attacked in melee, the user's armor class
+gains a + 5 bonus while parrying; however, this
+does not apply to avoiding missile fire. While us-
+ing the rod of parrying, no other action is possible
+except a Fighting Withdrawal maneuver (see
+Chapter 8). This rod is usable by any character.
+Rod of Victory: Usable by any character, this
+rod makes the user lucky in war (when the War
+Machine mass combat system is used). The fol-
+lowing bonuses apply to that system:
+• A + 25 bonus applies to the Combat Results
+roll (to a maximum total of 100).
+• On the Combat Results Table, if the differ-
+ence in overall totals is 101 or more, the re-
+sult for "91-100" is used, limiting the
+number of casualties.
+Rod of Weaponry: This rod + 5 is only usable
+by a dwarf, halfling, fighter, thief, or mystic. On
+command of the user, it will elongate and may
+be divided into two weapons of the same size,
+each + 2. Each of those may be similarly divided
+into two + 1 weapons. The rod cannot be di-
+vided accidentally, and it can be reassembled
+simply by placing the parts together. Each weap-
+on, regardless of size, inflicts 1d6 points of dam-
+age per hit, plus magic bonuses (but not
+Strength bonuses).
+Rod of the Wyrm: Usable by any character,
+there are three types of this rod; determine the
+type randomly or select one.
+Dragon
+Breath (s)
+Alignment
+AC
+1d10
+Lawful
+Fire/Gas
+Gold
+-2
+1-5
+Neutral
+6-8
+Blue
+Lightning
+Chaotic-
+9-10
+Black
+Acid
+Each is a rod + 5 and each inflicts 1d8 + 5 (6-
+13) points of damage per hit (but without
+Strength bonuses). Once per day, the rod may be
+turned into a small dragon of the appropriate
+type. The created dragon has 30 hit points and
+can only be affected by magic (weapons, spells,
+etc.). It will understand and faithfully serve the
+user of the rod to the best of its ability; for exam-
+ple, it can act as messenger, steed, or guard. It
+will fight to the death unless commanded other-
+wise. The dragon knows no spells. It will return
+to rod form on command; if slain in dragon
+form, however, it cannot return to rod form and
+is forever destroyed. Spells and other magical
+forms of healing can be used to heal the crea-
+ture, if desired, but not after it is killed.
+If a dragon is created by a user of a different
+alignment, the dragon will attack the user imme-
+diately, fighting to the death. When this occurs, it
+cannot be commanded to return to rod form.
+Rings
+A magical ring must be worn on a finger or
+thumb to function. However, a ring may also be
+carried and then put on when needed. Only one
+magical ring can be worn per hand. If more than
+that are worn, the rings negate each other and
+none will function, with the exception of a ring
+of weakness.
+Any ring may be used by any character class,
+except where noted otherwise in the text.
+Ring Descriptions
+The rings listed in Magical Item Subtable: 4.
+Rings, page 229, are described in the following
+text.
+Animal Control: The wearer of this ring may
+command 1d6 normal animals (or one giant-
+sized). The animals are not allowed a saving
+throw to resist control. The ring will not control
+intelligent animal species or fantastic or magical
+monsters. The wearer must be able to see the an-
+imals to control them. The control will last as
+long as the wearer concentrates on the animals
+and does not move or fight. When the wearer
+stops concentrating, the animals will be free to
+attack their controller or run away (roll reactions
+with a penalty of — 1 to the roll). This ring can
+only be used once per turn.
+Delusion: The wearer will believe this to be
+any one other ring (roll again for the imaginary
+type). However, it has no real effect. The wearer
+will not be convinced otherwise until a remove
+curse is used to dispel the enchantment.
+Djinni Summoning: The wearer may summon
+one djinni to serve for up to one day. The djinni
+will only serve and obey the person wearing the
+ring at the time of its summoning. The ring may
+be used only once per week.
+Ear: This ring, worn on the ear as an earring,
+has no effect when worn. However, when re-
+moved and placed against any surface (a door,
+chest, etc.), the user may hear all noises occur-
+ring within 60' of the surface. Light breathing,
+heartbeats, and even faint breezes can be heard.
+The ring will function three times per day.
+Elemental Adaptation: There are seven differ-
+ent types of this ring; roll 1d100 to determine
+the exact type or select one as appropriate.
+Air
+01-21
+Earth
+22-42
+43-63
+Fire
+64-84
+Water
+Air and Water
+85-91
+Earth and Fire
+92-98
+99-00
+All elements
+The wearer of this ring can, when in the ap-
+propriate elemental plane, freely breathe and
+see through the gaseous element (the equivalent
+of air on the Prime Plane).
+Fire Resistance: The wearer of this ring will
+not be harmed by normal fires, and he gains a
+bonus of + 2 on all saving throws vs. fire spells
+and vs. red dragon breath. In addition, the DM
+subtracts 1 point from each die of fire damage to
+the wearer (with a minimum damage of 1 point
+per die rolled to determine the damage).
+Holiness: This ring is usable only by a cleric or
+druid. If the ring is worn while spells are gained
+(usually during morning meditation), the cleric
+gains one extra spell each of levels 1,2, and 3 as
+appropriate. (Extra spells apply only to spell
+levels obtainable. For example, a 5th level cleric
+would not gain any 3rd level spells.) If the ring is
+removed, the spells are forgotten (though this
+has no effect if the spells are already cast). In ad-
+dition, a cleric (but not a druid) gains a +1 bo-
+nus to any rolls to turn undead, including the
+roll determining the Hit Dice of undead turned.
+The ring does not affect turn attempts not re-
+quiring a roll.
+Human Control: This is the same effect as the
+potion of the same name. The effect lasts until
+canceled by the wearer of the ring, the ring is re-
+moved, or until a dispel magic spell removes the
+charm.
+Invisibility: The wearer is invisible as long as
+the ring is worn. If the wearer attacks or casts
+spells, he or she will become visible. The wearer
+can only become invisible once per turn, but
+there is no duration to the invisibility; the wearer
+will stay invisible as long as he does not take off
+the ring, attack someone, or cast spells.
+Life Protection: This valuable ring will negate
+the effects of 1d6 energy drain attacks. If the
+wearer is struck by an energy-draining undead
+(or effect), charges are drained from the ring and
+no levels are lost. If a single blow drains more
+experience levels than there are charges remain-
+ing in the ring, the ring disintegrates; otherwise,
+it becomes a ring of protection +1 when all the
+charges are used.
+Memory: This ring can only be used by a spell-
+caster. It allows the wearer to recall any one spell
+cast. The wearer must decide, within 1 turn of
+casting a spell, to recall it; the memory then reap-
+pears and the spell is instantly "relearned." The
+ring can restore the memory of one spell per day.
+Plant Control: This ring has the same effect as
+the potion of the same name, but only lasts as
+long as the wearer concentrates.
+Protection +1, + 2, +3, or +4: This ring im-
+proves the wearer's armor class by 1, 2, 3, or 4, as
+listed. For example, a ring of protection +3
+worn by a magic-user with no armor (AC 9)
+would give the magic-user an AC of 6 while he
+wears the ring. This item also adds its bonus to
+all of the wearer's saving throws; in the example
+here, the magic-user would get a +3 bonus to
+saving throws.
+A variation of this ring is the ring of protec-
+tion + 1, 5' radius. This ring improves the wear-
+er's armor class and saving throws by 1 (as a
+normal ring of protection +1), but the ring also
+gives the same bonus to all creatures within 5'—
+both friend and foe! No rings affecting an area
+are more powerful than + 1.
+Quickness: Once each day, the wearer of this
+ring can move and attack at double normal rates
+for 1 turn. The effect is identical to the magic-
+user spell haste, but this effect can be produced
+by command, not by spellcasting.
+Regeneration: The wearer regenerates lost hit
+points at the slow rate of 1 per turn. The ring
+also replaces lost limbs; a finger will regrow in 24
+hours, and a whole limb can be replaced in one
+week. The ring will not function if the wearer's
+hit points drop to 0 or less. Fire and acid damage
+cannot be regenerated.
+Remedies: Once each day, this ring will pro-
+duce one remedy—a cure blindness, cure
+disease, remove curse, or neutralize poison spell
+effect. Each effect is identical to the cleric spell
+of the same name and is treated as if cast by a
+25th level cleric. The ring produces the effect de-
+sired when the wearer concentrates and touches
+the recipient.
+Safety: The effect of this ring is similar to that
+of a potion of luck. If the ring's wearer fails a sav-
+ing throw, his player may "change fate" by an-
+nouncing that his saving throw was, in fact,
+successful. The ring will negate 1d4 failed saving
+throws and then disintegrate.
+Seeing: Once each day, the wearer of this ring
+can see all things plainly, as if the cleric spell
+truesight were cast. The wearer need not be a
+spellcaster. The effect lasts for 3 turns.
+Spell Eating: Although this ring appears and
+functions as a ring of spell turning, it has an extra,
+detrimental effect if the user is a spellcaster. After
+the spellcaster has cast a spell while the ring is
+worn, the ring "eats" all the remaining spells
+memorized by the spellcaster. The ring cannot be
+removed after it has eaten the wearer's spells
+(though spells can be restudied and safely cast)
+until a remove curse is applied by a 25th or higher
+level spellcaster. This remedy only permits the re-
+moval of the ring and does not affect its powers. A
+dispel evil cast by a 36th level caster will turn the
+ring into a normal ring of spell turning.
+Spell Storing: When found, this ring has 1d6
+spells stored within it. Those exact spells are the
+limit of the ring's powers and they cannot be
+changed. When the ring is put on, the wearer
+magically knows what spells are stored and how
+to use them. After a spell is used, it may be re-
+placed by a spellcaster who must cast the replace-
+ment spell directly at the ring. The ring will not
+absorb spells thrown at the wearer. The spells in
+the ring have the duration, range, and effect
+equal to the lowest level needed to cast them.
+The DM should select the type of spells in the
+ring; about 20% of these rings typically contain
+clerical spells.
+Spell Turning: This ring reflects 2d6 spells
+back to their casters (per day) so that the wearer
+is not affected by spell attacks. Only spells are
+reflected, not spell-like powers of monsters or
+spell-like effects from items. Once the ring's
+number of spells is reached, it becomes useless
+for the rest of the day.
+Survival: The wearer can survive without air,
+food, or drink while the ring is worn by using the
+charges contained within it. The ring contains
+1d100 + 100 (101-200) charges when found. By
+spending one charge, the user needs no food or
+drink for 24 hours. Survival without air requires
+one charge per hour. The ring turns black when
+five or fewer charges remain.
+Telekinesis: The wearer may slowly move inan-
+imate objects weighing up to 2,000 cn by con-
+centration alone, up to a distance of 50'.
+Truth: Three times per day, this ring allows the
+wearer to know whether a spoken statement is
+true or false. Note that if the person or creature
+uttering the statement believes it to be true, a
+"true" result will be obtained. By telepathy, the
+ring tells the wearer of its powers as soon as it is
+worn.
+Truthfulness: This item claims to be a ring of
+truth when worn (as above), but actually it func-
+tions differently. When the wearer first tries to
+determine the truth of a statement, the state-
+ment will appear to be true—but thereafter, the
+wearer will be unable to lie. The wearer must
+provide full and completely true answers to any
+question asked of him so long as he wears the
+ring. He cannot remove the ring until a remove
+curse is applied by a 26th or higher level caster.
+Truthlessness: This item also claims to be a
+ring of truth when worn, but it functions in a
+manner opposite that of a ring of truthfulness—
+that is, the wearer is unable to tell the truth and
+must lie at all times. The ring cannot be re-
+moved until a remove curse spell, cast by a 26th
+or higher level caster, is applied.
+Water Walking: The wearer of this ring may
+walk on the surface of any body of water and will
+not sink.
+Weakness: When this ring is put on, the wear-
+er becomes weaker and his Strength score be-
+comes 3 within 1d6 rounds. The wearer cannot
+take off this ring unless a remove curse spell is
+used. If more than one ring is worn per hand,
+this ring will still function despite the other
+rings' effects being canceled.
+Wishes: A ring of wishes is an extremely pow-
+erful item. Wishes must be handled very careful-
+ly by the DM and the players alike. To find the
+number of wishes contained, roll 1d10.
+1-4
+5-7
+8-9
+X-ray Vision: The wearer may see a distance of
+up to 30', even through a wall and into the space
+beyond, by standing still and concentrating. The
+effect may be blocked by gold or lead. The wear-
+er can inspect one 10' x 10' area per use (which
+requires a full turn), and he will be able to see
+any traps or secret doors in the area examined.
+The ring allows the wearer to see through items
+less dense than stone (such as cloth, wood, or wa-
+ter) more easily, to a range of 60'. The ring may
+be used up to 1 turn per hour.
+Miscellaneous Magical
+Items
+Each of the items listed in this section may be
+used by any character class and up to once per
+round, unless noted otherwise. Most of the given
+effects either work automatically or are activated
+by concentration alone.
+There is no limit to the many types of magical
+items possible; the devices and effects given here
+are a mere sampling. The DM may create others
+as desired, with nearly any powers as appropri-
+ate. However, when designing such items, keep
+the balance of the game in mind. If an item du-
+plicates clerical powers, for example, it may
+cause clerics themselves to become less useful in
+the game. Keep such items rare and limit them
+by giving them expendable charges, lest they ad-
+versely affect the game.
+Miscellaneous Item
+Descriptions
+The magical items listed in Magical Item Sub-
+table: 5. Miscellaneous Items, page 229, are de-
+scribed in the following text.
+Amulet of Protection from Crystal Balls and
+ESP: The wearer of this item is automatically
+protected from being spied on by anyone using a
+crystal ball or any type of ESP.
+Bag of Devouring: This item looks like a nor-
+mal small sack, but anything placed within it
+disappears. Anyone may reach in and find the
+contents by touch—if the contents are still there!
+If the contents are not removed within 1d6 + 1
+(7-12) turns, they will be forever lost. The bag
+will not affect living creatures unless the entire
+creature is stuffed inside the bag. This is impos-
+sible to do except with very small creatures.
+Bag of Holding: This bag looks like a normal
+small sack, but any items placed within it disap-
+pear. Anyone may reach in and find the contents
+by touch. The bag will actually hold treasures up
+to 10,000 cn in weight, but will only weigh 600
+cn when full. An item to be placed inside the
+bag may be no larger than 10' x 5' x 3'. A larger
+item will not fit inside.
+Boat, Undersea: This item appears identical to
+a standard riverboat (see Chapter 4) and can be
+used as one. As it is magical, however, its armor
+class is 4 and it has 40 hull points. It is operated
+by a magical command word that its maker
+knows; characters who find an undersea bout
+may have to go on an adventure to discover the
+boat's command word. If the command word is
+known, no rowers or sailors are required. The
+boat will obey commands to start, stop, turn to
+port (left), turn to starboard (right), stop turn-
+ing (while keeping the same speed), submerge,
+level off, and surface. When underwater, the
+boat radiates a water breathing effect, protecting
+all passengers and crew as long as they touch it.
+The undersea boat can be fitted with grips so
+that the passengers can avoid drifting away.
+Note: The DM may wish to create similar
+magical boats that travel only on ice, sand, in the
+air, and so forth.
+Boots of Levitation: The wearer may levitate
+(as if using the magic-user spell). There is no
+limit to the duration.
+Boots of Speed: The wearer may move as fast
+as a riding horse (240' [80']) for 12 hours, after
+which the wearer must rest for one full day.
+Boots of Traveling and Leaping: The wearer
+needs no rest during normal movement. The
+wearer may also make mighty jumps, to a maxi-
+mum height of 10' and a maximum length of 30'.
+Bowl of Commanding Water Elementals: This
+item may be used only once per day. The bowl is
+3' in diameter; it requires 1 turn to use. The
+bowl will summon a water elemental and will al-
+low the user to control it, subject to normal rules
+for elemental control.
+Brazier of Commanding Fire Elementals: This
+item may be used only once per day. It requires 1
+turn to use and will summon a fire elemental
+that will allow the user to control it, subject to
+normal rules for elemental control.
+Broom of Flying: When verbally commanded,
+the broom will carry its owner through the air at
+240' per turn. One other person (or up to 2,000
+cn of baggage) may also be carried, but the
+broom slows to 180' per turn.
+Censer of Controlling Air Elementals: This
+item may be used only once per day and requires
+1 turn to use. The censer will summon an air ele-
+mental and will allow the user to control it, sub-
+ject to normal rules for elemental control.
+Chime of Time: This simple metal stick is 3"
+long and made of a silvery metal. On command,
+it will keep track of time, chiming every hour on
+the hour—the chime can be heard by all within
+60' (regardless of intervening walls, rock, etc.). If
+dampened by a silence, 15' radius spell, the
+chime will dispel the silence but be dampened to
+a 30-foot range for that turn.
+A second command will cause the chime to
+turn color. It will turn gold at one end, the color
+slowly spreading to the other end in an hour's
+time. A third command word causes the chime
+to stop ringing or to stop changing color—but
+not until 1 turn elapses after the command.
+Crystal Ball: This item can only be used by an
+elf or a magic-user. Its owner may look into it
+and see any place or object thought about as it
+exists at that time. It will work three times per
+day, and the image will last for 1 turn. Spells
+cannot be cast "through" the crystal ball. The
+more familiar the object or area to be seen, the
+clearer the picture will be.
+Crystal Ball with Clairaudience: This works
+like a standard crystal ball, but with the added
+power to listen to noises through the ears of a
+creature in the area viewed. It is only usable by a
+magic-user.
+Crystal Ball with ESP: This also works like a
+standard crystal ball, but with the added power
+to listen to the thoughts of a creature viewed. It
+is only usable by a magic-user.
+Displacer Cloak: This item warps light rays; the
+wearer is actually 5' away from the perceived loca-
+tion. The cloak gives a bonus of +2 to the wear-
+er's saving throws vs. spell, wand/staff/rod, and
+turn to stone attacks. Hand-to-hand attacks on
+the wearer are penalized by — 2 on the attack
+rolls, and most missile fire will automatically miss.
+Drums of Panic: These large kettle drums
+have no effect on any creatures within 10' of
+them. When used, however, all creatures 10'-
+240' away must make a saving throw vs. spell or
+run away from the user for 3 full turns. If the
+morale system is used, no saving throw is need-
+ed, but each creature must make a morale check
+instead, with a penalty of + 2 to the roll.
+Efreeti Bottle: This item is a large, heavy
+sealed jug about 3' high. If the seal is broken and
+the stopper pulled, an efreeti will come forth to
+serve the opener once per day for 101 days (or
+until slain). The creature will return to its home
+(the fabled City of Brass) after its term of service
+is ended. It will serve no one but the person
+opening the bottle.
+Egg of Wonder: This strange item is the size of
+a chicken's egg, but it may be of any color. An
+egg breaks when dropped or thrown (to 60' max-
+imum range); in the following round, a creature
+emerges from it and grows to normal size, there-
+after obeying the thrower of the egg to the best
+of its ability. (Note that the creature must be
+able to hear the user's commands.) The creature
+will disappear after one hour of existence or
+when slain. The creature appearing is never de-
+termined until the egg actually breaks; characters can never know what creature will appear
+beforehand. The DM may add other creatures, if
+desired. To determine the type of creature ap-
+pearing, roll 1d12.
+Baboon, rock
+Bat, giant
+Bear, black
+Bear, grizzly
+Boar
+Cat, mountain lion
+Cat, panther
+Ferret, giant
+Lizard, gecko
+Lizard, draco
+Snake, racer
+Wolf, normal
+Elven Cloak: The wearer of this cloak is nearly
+invisible (roll 1d6; seen only on a 1). The wearer
+becomes visible when attacking or casting a
+spell, and he may not become invisible again for
+a full turn.
+Elven Boots: The wearer of these boots may
+move with nearly complete silence (roll 1d10;
+heard only on a 1).
+Flying Carpet: This item can carry one passen-
+ger at up to 300' per turn, two at 240' per turn,
+or three at 180' per turn. It will not carry more
+than three passengers and their equipment. As
+an option, the DM can say that the carpet will
+carry an encumbrance of 6,000 cn, but the
+weight of the passengers will have to be calcu-
+lated.
+Gauntlets of Ogre Power: These gauntlets will
+give the wearer a Strength score of 18, gaining all
+normal bonuses. If the wearer is not using a weap-
+on, he can strike with one fist each round, gaining
+a +3 on hit rolls, for 1d4 points of damage.
+Girdle of Giant Strength: This item gives the
+wearer the same chances to hit as a hill giant.
+The wearer does double damage with whatever
+weapon he is using.
+Helm of Alignment Changing: This item
+looks like a fancy helmet. When the helm is put
+on, it will immediately change the wearer's
+alignment (the DM should determine the new
+alignment randomly). This device can only be
+taken off by using a remove curse spell, but the
+wearer will resist seeking the removal. Once it is
+removed, however, the wearer's original align-
+ment will return. As an option, the DM may al-
+low the character to remove the helm by
+performing a special task or adventure.
+Helm of Reading: The wearer is able to read
+any writing, regardless of the language or magical
+properties of the script. This does not allow char-
+acters to use spell scrolls unless they can do so nor-
+mally. This helm is fragile, however, and will be
+destroyed if the wearer is killed. Any hit on the
+wearer might (10% chance) destroy the helm.
+Helm of Telepathy: This item looks like a fancy
+helmet. The wearer of this helm may send mes-
+sages, by mere thought, to any creature within
+90'. The creature receiving the thought messages
+will understand them. (The creature may refuse to
+respond.) The wearer may also read the thoughts
+of a living creature within range. To make the
+helm work, the wearer must concentrate on the
+creature, and he may not move or cast spells. If
+the creature fails a saving throw vs. spells (or per-
+mits the thought reading), the wearer will under-
+stand the creature's thoughts.
+Helm of Teleportation: Usable by magic-users
+only, this helm allows the wearer to teleport (as
+the magic-user spell, including chances of error)
+himself or to attempt to teleport another crea-
+ture or item. An unwilling victim can make a
+saving throw vs. spells to avoid the effect. After
+one use, the helm will no longer function. If a
+teleport spell is then cast upon it, the user can
+then teleport as often as desired, up to once per
+round, without using charges. However, when-
+ever the helm is used to teleport another item or
+creature, it again becomes useless, requiring an-
+other teleport spell to reactivate it.
+Horn of Blasting: This horn creates a cone of
+sound, 100' long and 20' wide at the far end,
+when blown. Victims within this area take 2d6
+points of damage and must make a saving throw
+vs. spells or be deafened for one turn; construc-
+tions and ships take 1d8 points of damage. The
+horn may be blown but once per turn.
+Lamp, Hurricane: This item appears and
+functions as a lamp of long burning in all re-
+spects, but only after its storm has passed, as de-
+scribed hereafter.
+This lamp is always closed when found. When
+the shutters are opened, violent gusts of wind
+and rain come from the lamp, dousing the hold-
+er (who gets no saving throw) and all others
+within 30'. This "hurricane" lasts for 3 rounds;
+each victim must make a saving throw vs. spells,
+and all those failing are knocked over from the
+winds. If this occurs, every item carried (exclud-
+ing body clothing and/or armor but including
+caps, gloves, treasure, etc.) is blown about, land-
+ing scattered within 60'. A successful saving
+throw indicates that the victim has fallen to the
+ground in time, tightly grasping all items car-
+ried. The hurricane lamp may thereafter be used
+as a lamp of long burning for the remainder of
+the day. It resets its "hurricane" effect every 24
+hours, which must again be triggered before the
+lamp can be of more beneficial use.
+Lamp of Long Burning: This item is identical to
+a normal adventurer's lantern. It is made of
+metal, with a lower compartment for oil, a han-
+dle, and shutters around the body to protect the
+flame from wind. When filled with oil and lit as a
+normal lantern, it will burn and shed light with-
+out using oil. If the flame is ever doused by water,
+the lamp of long burning becomes nonmagical.
+Medallion of ESP, 30' Range: This magical me-
+dallion is strung on a chain and worn around the
+neck. If the wearer concentrates for 1 round, he
+may read the thoughts of any one creature within
+30'. The wearer may move normally but cannot
+fight or cast spells while concentrating. The DM
+must roll 1d6 each time this item is used; it will
+not work properly on a roll of 1. If a 1 occurs, the
+medallion will broadcast the thoughts of the user
+to everyone within 30'! The DM may allow a sav-
+ing throw vs. spells to prevent the medallion from
+reading a creature's thoughts.
+Medallion of ESP, 90' Range: This item is
+identical to the medallion of ESP, 30' range, ex-
+cept that it has a greater range.
+Mirror of Life Trapping: This unique item
+stores man-size or smaller creatures for an indefi-
+nite period. Any such creature who looks into
+the mirror must make a saving throw vs. spells or
+be sucked into it (complete with all equipment
+and treasure!). The mirror can store up to 20
+creatures; when it is full, no more can be
+trapped. Creatures trapped in the mirror do not
+age or need food or air, but they are completely
+powerless. Anyone can talk with the creatures
+trapped in the mirror (if they speak the same
+language). If the mirror is broken, all the crea-
+tures trapped within are immediately released.
+However, trapped individuals can be recovered
+without harming the mirror by using a wish.
+Muzzle of Training: This item is a device of
+leather straps with metal buckles and may be fas-
+tened over the mouth of any animal or monster
+that has a bite attack. It will magically expand or
+contract to fit the creature, and the victim can
+breathe but cannot bite (or talk) while wearing
+the muzzle. The muzzle will lock in place with a
+command word (treat as a wizard lock by a 15th
+level caster) and will unlock and fall off with a
+second command. The muzzle can be com-
+manded as often as desired.
+Nail, Finger: This item appears identical to
+the common iron nail of medieval carpentry, 1"-
+4" long and very crudely made. It may easily be
+overlooked if found with other construction ma-
+terials unless a detect magic spell is used.
+If mistaken for a nail of pointing and com-
+manded to function, the nail disappears. When
+the user next tries to avoid the attention of an
+enemy (by hiding, invisibility, etc.), the nail re-
+appears as a large glowing finger, pointing at the
+character for 1d6 rounds. The finger nail may re-
+appear during each similar attempt thereafter
+(25% chance for each), but a remove curse will
+cause it to vanish forever.
+Nail of Pointing: This item appears identical
+to a common carpentry nail. If its command
+word is known, the user may cause it to point at
+any nonmagical item named (door, stairway,
+gold piece, etc.); the nail then turns into a finger
+of bone and points toward the closest item of
+that type. It will continue to point at that item
+for 1 turn and then return to nail form. There is
+no limit to the range of the nail's detection, but
+it cannot detect living or undead creatures of any
+type, nor can it detect any magical item or spell
+effect. The nail of pointing will function once
+per day.
+Ointment: This white creamy salve is found in
+a small wooden box with a cotton swab. If all the
+salve found is rubbed on any part of the skin of
+the recipient, a magical effect is produced. All
+ointments look, smell, and taste the same. To
+determine the type found, roll 1d6 and consult
+the following. The DM may add other ointments
+as desired.
+1 Blessing: This salve gives the recipient a - 2
+bonus to armor class and a + 2 bonus to all
+saving throws for 1 turn.
+2 Healing: This salve cures 2d6 + 2 points of
+damage.
+3 Poison: This salve seems to be an ointment
+of blessing, but it is a poison and the recipi-
+ent must make a saving throw vs. poison,
+with a — 2 penalty to the roll, or die.
+4 Scarring: This salve seems to be an ointment
+of healing, but instead it inflicts 2d6 points
+of severe burn damage, which can only be
+repaired by ointment of soothing, a cureall
+spell, or a wish.
+5 Soothing: This salve cures the recipient of all
+burn damage, whatever the amount and
+whether magical or normal.
+6 Tanning: This salve causes all the recipient's
+skin to turn a bright color (determined ran-
+domly from red, yellow, orange, blue,
+green, or brown). The effect cannot be re-
+moved but will gradually wear off in 1d4
+months.
+Pouch of Security: This item is the size of a
+large sack (capacity 600 cn). Any attempt at
+stealing the pouch causes it to scream, "I am
+being stolen!" (in the Common tongue) re-
+peatedly for one hour. Its cries can be heard to
+120'. If its owner holds it and commands it to
+be quiet, it will obey, but it will repeat its cries
+if stolen again.
+Quill of Copying: A quill is a large feather
+that can be dipped in ink and used as a writing
+implement. Usable only by spellcasters, this
+quill can be commanded to copy any spell on a
+scroll. It will copy only one spell per week at
+most. The original scroll must be burned, and
+the ashes mixed with rare ink (of 1,000 gp cost).
+The quill is then placed on a blank scroll along
+with an inkwell containing the prepared ink.
+Upon command, the quill starts to write, creat-
+ing two identical spells on the scroll instead of
+the single original. If the scroll burnt contains
+two or more spells, only one spell will be
+copied—either the lowest level spell or (if more
+than one are the lowest level) a randomly select-
+ed spell. The quill will not copy protection
+scrolls or any other writing except spell scrolls.
+Unfortunately, there is a 25% chance per use
+that the quill will suddenly drain of ink, spoiling
+the entire scroll upon which it is writing. The
+blot thus created cannot be removed from the
+parchment by any means but a wish.
+Rope of Climbing: This 50'-long, thin, strong
+rope will climb in any direction upon the com-
+mand of the owner. It can fasten itself to any
+protruding surface and will support up to 10,000
+cn of weight.
+Scarab of Protection: This item automatically
+absorbs any curse (whether by spell, scroll, or
+other effect). It will also absorb a finger of death
+(a cleric's raise dead spell, reversed). The scarab
+will work 2d6 times before becoming worthless.
+Slate of Identification: This valuable device,
+usable only by spellcasters, can identify magical
+items of most sorts. It is a piece of slate (stone)
+held firmly in an ornate wooden frame, usually
+about 3' square (though slates of many sizes are
+possible, both larger and smaller). The user
+holds the slate horizontally and places a magical
+item upon it. When the item is lifted off, the
+name of the item appears on the slate. If an item
+has command words, one will appear on the slate
+with each identification. The slate will only re-
+peat itself when all the command words have
+been revealed.
+The slate is easily fooled by cursed items,
+however. And it cannot detect an item's num-
+ber of charges or special ability. A potion of
+poison will be mistakenly identified as some
+other type. Any cursed item will be identified
+as a normal item. (These guidelines should be
+strictly followed, lest the mystery of such items
+found be ruined.)
+The slate may expend up to ten charges per
+day; items identified require the following num-
+bers of charges per use.
+Temporary Magical Items
+Potion
+Missile
+Wand
+Staff
+Permanent Magical Items
+Any permanent magical weapon
+Armor or shield
+Ring or rod
+Minor miscellaneous item*
+Major miscellaneous item*
+Special
+* The DM's judgment is required as to the value
+and frequency of such items in the campaign.
+A "major" item might be identifiable, but
+only by making the slate useless for 1d4 days.
+Stone of Controlling Earth Elementals: This
+item may be used only once per day. The stone is
+only 6" across, and it requires 1 turn to use. The
+stone will summon an earth elemental and will
+allow the user to control it, subject to normal
+rules for elemental control.
+Talisman of Elemental Travel: There are five
+types of talismans. Roll 1d10 to determine the
+exact item found.
+Lesser Talisman of Air
+1-2
+Lesser Talisman of Earth
+3-4
+Lesser Talisman of Fire
+5-6
+Lesser Talisman of Water
+7-8
+Greater Talisman (all elements)
+9-10
+Lesser Talisman: This item is a round amulet
+that may be found on a chain; there are corres-
+ponding types to each of the four elements. It is
+engraved with a triangle in the center and a sym-
+bol above it (one of the ten symbols of the ele-
+mental ranks). On the Prime Plane, the user may
+press the central symbol while casting a conjure
+elemental spell; the talisman will reverse the ef-
+fect, sending the wearer into the appropriate ele-
+mental plane. While wearing the talisman, the
+user can breathe elemental matter as if it were
+pure, clean air, and he gains in vision (normally
+120'-1,200' range, depending on conditions).
+Greater Talisman: This item is similar to a
+lesser talisman in powers, but applies to all the
+elemental planes. It is engraved with the four tri-
+angular symbols of the planes, meeting in the
+center. The ten symbols of all the elemental
+ranks are inscribed around the edge. If the
+proper command words are known, the wearer
+may also force an elemental being to obey in-
+structions. This uses one charge; the talisman
+can expend up to ten charges per trip into an ele-
+mental plane.
+Wheel of Floating: This item appears identi-
+cal to a normal wagon wheel, but it enables any
+wagon upon which it is mounted to float on wa-
+ter. One wheel of floating allows a wagon to be
+towed across a river or stream, carrying up to
+10,000 cn weight without sinking. Each addi-
+tional wheel of floating allows 5,000 cn more
+weight to be carried, to the normal maximum
+for the wagon of 25,000 cn. Swamp travel is also
+possible, but at a very slow movement rate unless
+some water-type draft animal is available.
+A cursed wheel of floating will, when reaching
+the center of any river or stream, become stuck at
+that point and cannot be moved until a remove
+curse is applied by a 15th or higher level caster.
+This allows progress to continue, but the curse
+will return again at next use until the wheel is
+destroyed.
+Wheel of Fortune: This strange device is 10' in
+diameter, mounted on a stand or wall fixture,
+and easily rotated. It is decorated with a black-
+and-white pattern of wedges, all intersecting at
+the center where a green arrow is mounted; the
+arrow does not turn with the wheel. Near the
+rim, each black wedge is adorned by a white
+skull and each white wedge by a red heart. If the
+wheel is spun (easily done by any creature of 3
+Strength or greater), it rotates for 3 rounds and
+then comes to rest, with the green arrow point-
+ing at one of the wedges (either black or white
+with equal chances for each). However, a
+charmed creature cannot move the wheel, and
+each user can spin the wheel only once per day.
+If the wheel has spun freely for the 3 rounds,
+not touched or interfered with in any way, a
+magical effect occurs, determined by the result
+of the spin. The wheel cannot be affected by
+magic of any kind, including telekinesis, and it
+cannot be damaged in any way. A wish used to
+affect the wheel will cause the wheel to vanish,
+regardless of the wish. The wheel cannot be
+moved except by a creature of 26 or more levels
+(or Hit Dice). The wheel weighs 20,000 cn. For
+each white or black wedge that appears, roll 1d6
+and consult the following.
+White Wedge
+1 1,000 gold pieces appear
+2 10 garnets appear
+3 1 brooch appears
+4 1 miscellaneous magical item appears
+5 1 ability score rises by 1 point (maximum
+score 18)
+6 Prime Requisite or Constitution rises by 1
+point (maximum score 18)
+Black Wedge
+1 1 ability score drops by 1 point (minimum
+score 3)
+2 Prime Requisite drops by 1 point
+3 Constitution drops by 1 point
+4 Least valuable magical item carried disinte-
+grates
+5 All nonmagical items, except for normal
+clothing, disintegrate
+6 Die (no saving throw)
+The DM may select or randomly determine
+the results of the spin. If desired, the wedges
+may be numbered from 1-20, 1-100, or some
+other conveniently determined number, and a
+chart may be made with more varied results.
+Wheel, Square: This odd "wheel," the size of
+a normal wagon wheel, is useless on roads and
+other flat terrain because it is perfectly square.
+However, when mounted properly on a wagon,
+it magically allows movement through mountain
+and desert terrain where there is no road. A wag-
+on with one square wheel can be pulled by two
+horses and can move at 20'/turn; with two
+wheels, 30'/turn; with three, 40'/turn; and with
+four, the normal rate of 60'/turn is possible.
+Armor and Shields
+To use the Magical Item Subtable: 6. Armor
+and Shields on page 230, roll 1d100 to deter-
+mine the size of armor and check the appropriate
+column. Then roll 1d100 to determine type of
+armor (leather, banded, plate, etc.). If a result
+indicates a type of armor not used in a DM's
+campaign (for instance, some DMs don't allow
+suit armor), reroll for a new result. Using the ap-
+propriate column for the type of armor (or
+shield) identified on the Armor Class Modifier
+subtable, check for the AC modifier and sub-
+tract the bonus from the base AC rating for that
+type of armor. Also check for the chance of spe-
+cial powers on the same subtable. If the percent-
+age listed or less is rolled for the special power,
+consult the Special Powers subtable. (Special
+powers are described below.)
+The base armor classes and the final AC rat-
+ings when modified by a magical bonus are out-
+lined below. Keep in mind that a shield, is used,
+has its AC added to that of the character's armor.
+Base Armor
+Armor Class Modifier
++ 1 + 2 + 3 + 4 + 5
+AC Type
+7 Leather
+3 2
+Scale mail
+1 0
+Chain mail
+0 -1
+Banded mail
+0 -1 -2
+Plate mail
+Suit armor
+-1 -2 -3 -4 -5
+-3 -4 -5 -6
+-1
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3373,6 +6568,23 @@ meta:
 >   - scope: power; id: Resist Cold; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Resist Cold
+Range: 0
+Duration: 6 turns
+Effect: All creatures within 30'
+When this spell is cast, all creatures
+within 30' of the cleric can withstand
+freezing temperatures without harm. In
+addition, those affected gain a bonus of
++ 2 to all Saving Throws against cold
+attacks. Furthermore, any damage from
+cold is reduced by - 1 per die of damage
+(but with a minimum of 1 point of
+damage per die). The effect will move
+with the cleric.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Resist Cold
 Range: 0
 Duration: 6 turns
@@ -3429,6 +6641,25 @@ meta:
 >   - scope: power; id: Resist Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Resist Fire
+Range: 30'
+Duration: 2 turns
+Effect: One living creature
+For the duration of this spell, the recipient
+cannot be harmed by normal fire and heat.
+The recipient also gains a +2 bonus on all
+Saving Throws against magical fire
+(dragon's breath, fire ball, etc.). Further-
+more, damage from such fire is reduced by
+1 point per die of damage (though each die
+will inflict at least 1 point of damage, re-
+gardless of adjustments). Red dragon
+breath damage is reduced by 1 point per
+hit die of the creature (again to a minimum
+of 1 point of damage per hit die).
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Resist Fire
 Range: 30'
 Duration: 2 turns
@@ -3488,6 +6719,27 @@ meta:
 >   - scope: power; id: Cure Disease; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Cure Disease*
+Range: 30'
+Duration: Permanent
+Effect: One living creature within range
+This spell will cure any living creature of
+one disease, such as those caused by a
+mummy or green slime. If cast by a cleric
+of 11th level or greater, this spell will cure
+lycanthropy.
+The reverse of this spell, cause disease, in-
+fects the victim with a hideous wasting dis-
+ease unless a Saving Throw vs. Spells is
+made. A diseased victim has a - 2 penalty
+on all Hit rolls. In addition, the victim's
+wounds cannot be magically cured; and
+natural healing takes twice as long as usual.
+The disease is fatal in 2-24 days unless re-
+moved by a cure disease spell.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Cure Disease*
 Range: 30'
 Duration: Permanent
@@ -3548,6 +6800,21 @@ meta:
 >   - scope: power; id: Cure Serious Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Cure Serious Wounds"
+Range: Touch
+Duration: Permanent
+Effect: Any one living creature
+This spell is similar to a cure light wounds
+spell, but will cure one creature of 4-14
+points of damage (2d6+2).
+The reverse of this spell, cause serious
+wounds, causes 4-14 points of damage to
+any creature or character touched (no Sav-
+ing Throw). The caster must make a nor-
+mal Hit roll to cause the serious wound.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Cure Serious Wounds*
 Range: Touch
 Duration: Permanent
@@ -3606,6 +6873,25 @@ meta:
 >   - scope: power; id: Protection from Poison; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Druid Spell Material]
+Protection from Poison
+Range: Touch
+Duration: One turn per level of the caster
+Effect: Gives one creature immunity to all
+poison
+For the duration of this spell, the recipient
+is completely immune to the effects of poisons
+of all types, including gas traps and cloudkill
+spells. This protection extends to items car-
+ried (thus protecting against a spirit's poison-
+ous presence, for example). Furthermore, the
+recipient gains a +4 bonus on Saving
+Throws vs. Poisonous Breath weapons (such
+as green dragon breath) but not petrification
+breath (such as a gorgon's).
+Fourth-Level Druid Spell
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Protection from Poison
 Range: Touch
 Duration: One turn per level of the caster
@@ -3665,6 +6951,22 @@ meta:
 >   - scope: power; id: Purify Food and Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Purify Food and Water
+Range: 10'
+Duration: Permanent
+Effect: See below
+This spell will make spoiled or poisoned
+food and water safe and usable. It will
+purify one ration of food (either Iron or
+Standard rations), or 6 waterskins of
+water, or enough normal food to feed a
+dozen people. I f cast at mud, the spell
+will cause the dirt to settle, leaving a pool
+of pure, clear water. The spell will not
+affect any living creature.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Purify Food and Water
 Range: 10'
 Duration: Permanent
@@ -3723,6 +7025,10 @@ meta:
 >   - scope: power; id: Create Food; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+2. Create Food
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Create Food
 Range: 10'
 Duration: Permanent
@@ -3780,6 +7086,122 @@ meta:
 >   - scope: power; id: Reincarnation; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Non-Human Spellcasters and Special Spellcaster Procedures]
+Reincarnation (C21)
+Stone to Flesh* (X16)
+Wall of Iron (C21)
+*reversible spell
+Special Monster Spellcasters
+Lycanthropes: Wererat, Werewolf, Were-
+boar, Weretiger, Werebear (B33-34); Devil
+Swine (X48)
+A lycanthrope may be a real magic-user,
+cleric, or druid in human form. However, it
+may not use any spells while in were-form and,
+when it assumes were-form, loses all memory of
+spells learned as if all the spells had been cast. A
+devil swine spell caster can cast three charm
+person spells per day in either were or human
+form, but can only cast other spells while in
+human form. Devil swine will not forget spells
+while in were-form.
+Undead Spellcasters
+A spell caster slain by an undead may
+retain the use of spells after returning as an
+undead. See below for more details.
+If a cleric becomes a mummy (through a
+process known only to the ancient high
+priests of certain religions), the undead
+mummy may use clerical spells to the full
+extent possessed in life and may control other
+undead as well (see Lieges and Pawns). A
+mummy magic-user is limited to 3rd-level
+ability, even if it had higher-level spell use in
+its previous life.
+Undead Lieges and Pawns
+Under certain conditions, intelligent
+undead creatures can try to control other
+undead. The undead need not be a spell
+caster to control other undead creatures. An
+undead creature being controlled by another
+is a Pawn. An undead controlling one or
+more lesser undead is a Liege. Skeletons and
+zombies can only be Pawns, but any other
+type of undead can be either a Liege or a
+Pawn. Random encounters with undead may
+occasionally (10% chance) be with Pawns
+controlled by a greater undead.
+A Liege may control a number of undead
+whose total Hit Dice are less than or equal to
+twice the Liege's Hit Dice. If an attempt by
+the Liege to control other undead would
+cause the total to exceed this amount, the
+attempt automatically fails.
+When a lich or other undead spell caster
+seeks to control other undead, its caster level
+is used instead of its Hit Dice. Like a magic-
+user, a lich is far more powerful than its Hit
+Dice indicate.
+If an undead tries to control a potential
+Pawn, the subject may have no more than 1/2
+the Hit Dice of the Liege (this does not apply
+in certain situations, see below). If the subject
+is already controlled by any means, the
+undead attempting control instantly recog-
+nizes this fact. It may still attempt control,
+but with a -4 penalty to the roll.
+If one undead tries to control another, find
+the Hit Dice of the would-be Liege and poten-
+tial Pawn on the chart on page 23 and roll 2d6.
+If the number is equal to or greater than the
+number given, the attempt succeeds and the
+undead subject becomes the Pawn of the con-
+troller. Any total of 2 or less (possible if the roll is
+penalized) always indicates failure.
+If the undead attempting control was once
+a spell-using character and can now use spells
+as it did in life, a +2 bonus applies to all die
+rolls for control.
+During melee, an attempt to gain control is
+considered a combat action.
+If an undead creates another of the same
+type by slaying a living creature, the new
+undead is automatically a Pawn of the slayer.
+Spectres, vampires, wights, and wraiths are
+the only undead with this ability. This may
+force the creator to release other existing
+Pawns; if so, the Pawns with the highest Hit
+Dice are released first.
+If an undead can call or summon others,
+those responding are automatically its Pawns
+unless the new Hit Dice total would exceed
+the limits given above, or unless the Liege
+allows them to retain free will.
+Duration of Control
+At moonrise on the night of the full moon,
+all Pawns are freed from control and cannot
+be controlled again until the following dawn.
+Thus, the maximum duration of undead con-
+trol is about 4 weeks. A Liege may release
+control of its Pawns at any time.
+Benefits to a Liege
+A Liege is telepathically linked to its Pawns
+and can see and hear through their eyes and
+ears whenever it chooses. This communica-
+tion is at will and need not be continuous.
+Control of a Pawn is total, even to the point
+that it will obey suicidal orders. Pawns obey
+without hesitation. The maximum range of
+control is 24 miles (one outdoor map hex) per
+Hit Die of the Liege.
+If a Pawn fails a Morale check and flees
+from combat, the Liege may stop the Pawn
+and force it back into melee. This can be the
+only action the Liege takes during that melee
+round. The Pawn will miss at least one full
+round of attacks.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Reincarnation
 Range: 10'
 Duration: Permanent
@@ -3880,6 +7302,21 @@ meta:
 >   - scope: power; id: Cure Critical Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+Cure Critical Wounds*
+Range: Touch
+Duration: Permanent
+Effect: Any one living creature
+This spell is similar to a cure light wounds
+spell, but will cure one living creature of 6-21
+(3d6+3) points of damage.
+The reverse of this spell (cause critical
+wounds) causes 6-21 points of damage to any
+living creature or character touched (no Sav-
+ing Throw). The caster must make a normal
+Hit roll to cause the critical wound.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Cure Critical Wounds*
 Range: Touch
 Duration: Permanent
@@ -3938,6 +7375,10 @@ meta:
 >   - scope: power; id: Cureall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+5. Cureall
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Cureall
 Range: Touch
 Duration: Permanent
@@ -4003,6 +7444,20 @@ meta:
 >   - scope: power; id: Heal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+Heal*
+Range: Touch (one creature)
+Duration: Permanent
+Effect: Cures anything
+This spell's effect is identical to that of the
+6th-level cleric spell cureall. When used to
+cure wounds, it cures nearly all of the dam-
+age, leaving only 1-6 points of damage
+remaining. It will remove a curse, neutralize
+a poison, cure a disease, cure blindness, or
+even remove a feeblemind effect.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Heal
 Range: Touch (one creature)
 Duration: Permanent
@@ -4060,6 +7515,13 @@ meta:
 >   - scope: power; id: Restore; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
+4. Restore*
+
+[Master | Seventh-Level Cleric Spells]
+4. Restore* (C13)
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Restore*
 Range: Touch
 Duration: Permanent
@@ -4128,21 +7590,43 @@ meta:
 >   - scope: power; id: Detect Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-  Detect Evil
-  Range: 120'
-  Duration: 6 turns
-  Effect: Everything within 120'
+[Basic | Spell Lists and Basic Spell Descriptions]
+Detect Evil
+Range: 60'
+Duration: 2 turns
+Effect: Everything within 60'
+When this spell is cast, the magic-user
+will see all evilly enchanted objects
+within 60' glow. It will also cause crea-
+tures that want to harm the magic-user
+to glow when they are within range. The
+actual thoughts of the creatures cannot
+be heard. Remember that "Chaotic"
+does not automatically mean Evil, al-
+though many Chaotic monsters have evil
+intentions. Traps and poison are neither
+good nor evil, merely dangerous.
 
-     When this spell is cast, the cleric will see evilly
-  enchanted objects within 120' glow. It will also
-  cause creatures that want to harm the cleric to
-  glow when they are within range. The actual
-  thoughts of the creatures cannot be heard. Re-
-  member that a Chaotic alignment does not auto-
-  matically mean Evil, although many Chaotic
-  monsters have evil intentions. Traps and poison
-  are neither good nor evil, merely dangerous; this
-  spell does not reveal them.
+[Expert | Clerical and Magic-User Spell Expansions]
+2. Detect Evil
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
+Detect Evil
+Range: 60'
+Duration: 2 turns
+Effect: Everything within 60'
+When this spell is cast, the spellcaster will see
+a glow surround all evilly-enchanted objects
+within 60'. It will also cause creatures that want
+to harm the spellcaster to glow when they are
+within range. The spell, however, does not allow
+the spellcaster to hear the actual thoughts of the
+creatures.
+Remember that Chaotic alignment is not au-
+tomatically the same as evil, although many
+Chaotic monsters have evil intentions. Traps and
+poison are neither good nor evil, but merely
+dangerous.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4186,20 +7670,46 @@ meta:
 >   - scope: power; id: Detect Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-  Detect Magic
-  Range: 0
-  Duration: 2 turns
-  Effect: Everything within 60'
+[Basic | Spell Lists and Basic Spell Descriptions]
+Detect Magic
+Range: 0
+Duration: 2 turns
+Effect: Everything within 60'
+When this spell is cast, the magic-user
+will see all magical objects, creatures,
+and places within range glow. This effect
+will not last very long, and should be
+saved until the magic-user wants to see if
+something found during an adventure
+is, in fact, magical. Example: Shortly
+after casting this spell, a magic-user
+walks into a room containing a door
+locked by magic, a magical potion laying
+nearby, and a treasure chest containing a
+magic wand. All the magic will glow, but
+only the door and potion will be seen;
+the light of the glowing wand is hidden
+by the treasure chest.
 
-     When this spell is cast, the cleric will see a
-  glow surround magical objects, creatures, and
-  places within the spell's effect. The glow will not
-  last very long; clerics should normally use the
-  spell only when they want to know if particular
-  objects already within sight are, in fact, magical.
-  For example, a door may be held shut magically,
-  a stranger might actually be an enchanted mon-
-  ster, or a treasure might be enchanted.
+[Expert | Clerical and Magic-User Spell Expansions]
+2. Detect Magic
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
+Detect Magic
+Range: 0
+Duration: 2 turns
+Effect: Everything within 60'
+When he casts this spell, the spellcaster will
+see a glow surround all magical objects, crea-
+tures, and places which are visible and within
+range of the spell. No saving throw is allowed.
+Example: Shortly after casting this spell, a
+magic-user walks into a room containing a door
+locked by magic, a magical potion lying nearby,
+and a treasure chest containing a magical wand.
+All the magic will glow, but the spellcaster can
+see only the door and potion; the light of the
+glowing wand is hidden by the treasure chest.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4242,6 +7752,16 @@ meta:
 >   - scope: power; id: Infravision; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Infravision
+Range: Touch
+Duration: 1 day
+Effect: One living creature
+This spell enables the recipient to see in the
+dark, to a 60' range. (See the D&D Basic
+Set DM Rulebook, page 22, for notes on
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Infravision
 Range: Touch
 Duration: 1 day
@@ -4321,6 +7841,10 @@ meta:
 >   - scope: power; id: Detect Invisible; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+3. Detect Invisible
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Detect Invisible
 Range: 10' per level of the spellcaster
 Duration: 6 turns
@@ -4376,6 +7900,10 @@ meta:
 >   - scope: power; id: ESP; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+4. ESP*
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 ESP*
 Range: 60'
 Duration: 12 turns
@@ -4449,6 +7977,10 @@ meta:
 >   - scope: power; id: Clairvoyance; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+1. Clairvoyance
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Clairvoyance
 Range: 60'
 Duration: 12 turns
@@ -4504,6 +8036,21 @@ meta:
 >   - scope: power; id: Wizard Eye; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Wizard Eye
+Range: 240'
+Duration: 6 turns
+Effect: Creates movable invisible eye
+This spell creates an invisible eye through
+which the caster can see. It is the size of a
+real eye and has infravision (60' range).
+The wizard eye floats through the air at up
+to 120' per turn, but will not go through
+solid objects nor move more than 240'
+away from the caster. The magic-user must
+concentrate to see through the eye.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Wizard Eye
 Range: 240'
 Duration: 6 turns
@@ -4559,19 +8106,37 @@ meta:
 >   - scope: power; id: Locate Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
 Locate Object
 Range: 0 (Cleric only)
 Duration: 6 turns
 Effect: Detects one object within 120'
-This spell allows the cleric to sense the direc-
-tion of one known object. It gives no informa-
-tion about distance. It can detect a common
-object with only a partial description (such as
-"stairs leading up") but it will only reveal the
-direction to the closest such object. To find a spe-
-cific object, the cleric must know exactly what
-the object looks like (size, shape, color, etc.).
-The spell will not locate a creature.
+This spell allows the cleric to sense the di-
+rection of one known object. It gives no
+information about distance. A common ob-
+ject (such as "stairs leading up") can be de-
+tected; otherwise, the cleric must know ex-
+actly what the object looks like (size, shape,
+color, etc.). The spell will not locate a crea-
+ture.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
+Locate Object
+Range: 60' + 10' per level of the spellcaster
+Duration: 2 turns
+Effect: One object within range
+The spellcaster casts this spell to find an object
+within the spell's range. For this spell to work,
+the spellcaster must know exactly what the ob-
+ject looks like. He can specify a common type of
+object, such as "any flight of stairs," instead.
+The spell will point to the nearest designated
+object within range, giving the direction but not
+the distance.
+The spell's range increases as the spellcaster
+gains levels of experience. For example, a 2nd
+level spellcaster can locate objects up to 80'
+away; a 3rd level spellcaster, up to 90'.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4616,6 +8181,28 @@ meta:
 >   - scope: power; id: Read Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Read Magic
+Range: 0
+Duration: 1 turn
+Effect: The magic-user only
+This spell will allow the magic-user to
+read, not speak, any magical words or
+runes, such as those found on magic
+scrolls and other items. Unfamiliar
+magic writings cannot be understood
+without using this spell. However, once a
+magic-user reads a scroll or runes with
+this spell, that magic can be read or
+spoken later (without) using a spell. All
+spell books are written in magical words,
+and only their owners may read them
+without using this spell.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+9. Read Magic
+
+[Rules Cyclopedia | Scrolls]
 Read Magic
 Range: 0
 Duration: 1 turn
@@ -4678,6 +8265,21 @@ meta:
 >   - scope: power; id: Read Languages; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Read Languages
+Range: 0
+Duration: 2 turns
+Effect: The magic-user only
+This spell will allow the magic-user to
+read, not speak, any unknown languages
+or codes, including treasure maps, secret
+symbols, and so forth, until the duration
+ends.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+8. Read Languages
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Read Languages
 Range: 0
 Duration: 2 turns
@@ -4730,6 +8332,28 @@ meta:
 >   - scope: power; id: Know Alignment; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Know Alignment*
+Range: 0 (Cleric only)
+Duration: 1 round
+Effect: One creature within 10'
+The caster of this spell may discover the
+alignment (Lawful, Neutral, or Chaotic) of
+any one creature within 10'. The spell may
+also be used to find the alignment of an
+enchanted item or area (if any; for exam-
+ple, of a magic sword or temple).
+The reverse of the spell, confuse alignment
+lasts for 1 turn per level of the caster, and
+may be cast on any one creature, by touch.
+No Saving Throw is allowed. For as long as
+the spell lasts, any cleric trying to find the
+alignment of the recipient by way of the
+normal form of the spell will get a false
+answer. That same false answer will be the
+result of any further attempts.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Know Alignment*
 Range: 0 (Cleric only)
 Duration: 1 round
@@ -4791,6 +8415,32 @@ meta:
 >   - scope: power; id: Speak with Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Speak with Animals
+Range: 0 (Cleric only)
+Duration: 6 turns
+Effect: Allows conversation within 30'
+When this spell is cast, the cleric must
+name one type of animal (such as "normal
+bats," "wolves," etc.). For the duration of
+the spell, the cleric may speak with all ani-
+mals of that type if they are within 30'; the
+effect moves with the caster. Any normal
+or giant forms of animals (including mam-
+mals, insects, birds, etc.) may be spoken to,
+but intelligent animals and fantastic crea-
+tures are not affected. When there exist
+both normal and giant forms, only one
+type (either normal or giant) may be
+named. The creatures' reactions are usu-
+usually favorable (+2 bonus to reaction roll),
+and they may be talked into doing a favor
+for the cleric if the reaction is high enough.
+The favor requested must be understood
+by the animal, and must be possible for the
+creature to perform.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Speak with Animals
 Range: 0 (Cleric only)
 Duration: 6 turns
@@ -4857,6 +8507,28 @@ meta:
 >   - scope: power; id: Speak with the Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Speak with the Dead
+Range: 10'
+Duration: 1 round per level of the cleric
+Effect: Cleric may ask 3 questions
+By means of this spell, a cleric may ask 3
+questions of a deceased spirit if the body is
+within range. A cleric of up to 7th level
+may only contact spirits recently dead (up
+to 4 days). Clerics of level 8-14 have slightly
+more power (up to 4 months dead), level
+15-20 even more (up to 4 years dead). No
+time limits apply to clerics of 21st level or
+greater. The spirit will always reply in a
+tongue known to the cleric, but can only
+offer knowledge of things up to the time of
+its death. If the spirit's alignment is the
+same as the cleric's, clear and brief answers
+will be given; however, if the alignments
+differ, the spirit may reply in riddles.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Speak with the Dead
 Range: 10'
 Duration: 1 round per level of the cleric
@@ -4923,6 +8595,10 @@ meta:
 >   - scope: power; id: Find the Path; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+6. Find the Path
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Find the Path
 Range: 0 (Cleric only)
 Duration: 6 turns + 1 turn per level of the caster
@@ -4986,6 +8662,25 @@ meta:
 >   - scope: power; id: Truesight; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+Truesight
+Range: 0 (cleric only)
+Duration: 1 turn + 1 round per level of caster
+Effect: Reveals all things
+When this spell is cast, the cleric is able to
+clearly see all things within 120'. The spell is
+quite powerful; the cleric can see all hidden,
+invisible, and ethereal objects and creatures,
+as with the magic-user detect invisible spell
+(including secret doors). In addition, any
+things or creatures not in their true form-
+whether polymorphed, disguised, or other-
+wise-are seen as they truly are, with no
+possibility of deception. Alignment is also
+"seen," as is experience and power (level or
+Hit Dice).
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Truesight
 Range: 0 (cleric only)
 Duration: 1 turn + 1 round per level of caster.
@@ -5050,6 +8745,10 @@ meta:
 >   - scope: power; id: Speak with Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+7. Speak with Monsters*
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Speak with Monsters*
 Range: 0 (Cleric only)
 Duration: 1 round per level of the cleric
@@ -5123,6 +8822,10 @@ meta:
 >   - scope: power; id: Commune; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+1. Commune
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Commune
 Range: 0 (Cleric only)
 Duration: 3 turns
@@ -5185,6 +8888,31 @@ meta:
 >   - scope: power; id: Faerie Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Faerie Fire
+Range: 60'
+Duration: 1 round per level of caster
+Effect: Illuminates creatures or objects
+With this spell, the druid can outline one or
+more creatures or objects with a pale, flicker-
+ing greenish fire. The fire does not inflict any
+damage. The objects or creatures need only
+be detected in some way (such as by detect
+magic) to be the object of this spell.
+All attacks against the outlined creature or
+object gain a +2 bonus to Hit rolls, as it is
+more easily seen.
+The druid can outline 1 man-sized crea-
+ture (about 12 feet of fire) for each 5 levels of
+experience. Thus, at 20th level, 48' of fire
+can be produced (outlining one dragon-sized
+creature, 2 horse-sized, or 4 man-sized crea-
+tures).
+
+[Master | Druid Spell Material]
+2. Faerie Fire (C14)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Faerie Fire
 Range: 60'
 Duration: 1 round per level of caster
@@ -5246,6 +8974,28 @@ meta:
 >   - scope: power; id: Locate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Locate
+Range: 0 (druid only)
+Duration: 6 turns
+Effect: Detects 1 animal or plant within 120
+feet
+This spell allows the druid to sense the direc-
+tion of one known normal animal or plant.
+The druid can locate (similar to the locate
+object spell) any normal or giant-sized ani-
+mal, but not fantastic creatures, plant mon-
+sters, nor any intelligent creature or plant.
+He must name the exact type of animal or
+plant, but does not need to see the specific
+one he wishes to locate. The animal or plant
+gets no Saving Throw. (This spell is most
+often used to find special plants.)
+
+[Master | Druid Spell Material]
+3. Locate (C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Locate
 Range: 0 (druid only)
 Duration: 6 turns
@@ -5305,6 +9055,25 @@ meta:
 >   - scope: power; id: Predict Weather; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Predict Weather
+Range: 0 (druid only)
+Duration: 12 hours
+Effect: Gives knowledge of coming weather
+This spell enables the druid to learn the accu-
+rate weather to come for the next 12 hours. It
+affects an area 1 mile in diameter per level of
+the druid; for example, a 20th level druid
+would learn the weather within a 10 mile
+radius. The spell does not give any control
+over the weather, merely predicting what is to
+come.
+
+[Master | Druid Spell Material]
+  10 Predict Weather (DR 12 hours, EF 40
+      miles; C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Predict Weather
 Range: 0 (druid only)
 Duration: 12 hours
@@ -5361,6 +9130,32 @@ meta:
 >   - scope: power; id: Detect Danger; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Druid Spell Material]
+Detect Danger
+Range: 5 feet per level of the caster
+Duration: One hour
+Effect: Reveals hazards
+This spell combines some effects of detect
+evil and find traps. While it is functioning,
+the druid can concentrate on places, objects,
+or creatures within range. A full round of
+concentration is needed to examine one
+square foot of area, one creature, or one small
+object (a chest, weapon, or smaller item).
+Larger objects require more time. After
+examining the thing, the druid will know
+whether it is immediately dangerous, poten-
+tially dangerous, or benign (all strictly from
+the druid's point of view). Note that most
+creatures are potentially dangerous. This
+spell will detect poisons, while other spells
+may not. The spell duration is a full hour
+when used in natural outdoor settings on the
+Prime Plane; elsewhere, the duration is half
+normal (three turns).
+Second-Level Druid Spell
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Detect Danger
 Range: 5' per level of the caster
 Duration: One hour
@@ -5424,6 +9219,7 @@ meta:
 >   - scope: power; id: Analyze; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Analyze
 Range: 0 (touch only)
 Duration: 1 round
@@ -5489,6 +9285,22 @@ meta:
 >   - scope: power; id: Speak with Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Speak with Plants
+Range: 0 (Cleric only)
+Duration: 3 turns
+Effect: All plants within 30'
+This spell enables the cleric to talk to plants
+as if they were intelligent. A simple favor
+may be requested, and will be granted if it
+is within the plants' power to understand
+and perform. This spell may be used to
+allow the cleric and party to pass through
+otherwise impenetrable undergrowth. It
+will also allow communication with plant-
+like monsters (such as treants).
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Speak with Plants
 Range: 0 (Cleric only)
 Duration: 3 turns
@@ -5548,44 +9360,64 @@ meta:
 >   - scope: power; id: Contact Outer Plane; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Magic-User Spells]
 Contact Outer Plane
-Range: 0 (spellcaster only)
+Range: 0 (magic-user only)
 Duration: See below
 Effect: 3-12 questions may be answered
-This spell allows the spellcaster to contact one
-of the outer planes of existence to seek knowl-
-edge from an Immortal creature—a powerful
-magical being played by the DM. The wisest and
-most powerful Immortals live on the most dis-
-tant outer planes. However, mental contact with
-an Immortal may cause a mortal to go insane.
-The more distant the plane, the greater the
-chance of a correct answer—but the greater the
-chance of insanity as well.
-The number of questions the spellcaster may
-ask is equal to the "distance" to the outer plane.
-"Distance" to any other plane of existence is
-measured in the number of planes the character
-would have to cross in order to visit that plane.
-See the chart on page 264 to see where the vari-
-ous planes of existence lie in relation to one an-
-other. The "distance" between the Prime Plane
-and the closest outer plane is 3—the Ethereal,
-elemental, and Astral Planes lie "between"
-them. There are many outer planes, many too
-far removed to be affected by this spell.
-The caster may choose the distance, up to the
-maximum allowed. The DM checks the caster's
-chance of insanity once, when the Immortal is
-first contacted. If the caster is 21st level or
-greater, the chance of insanity is reduced by 5%
-per level of the caster above 20.
-Even if insanity does not result, the Immortal
-may still not know the answer to the character's
-questions, or may lie, at the DM's discretion. If
-the DM does not wish just to decide whether the
-Immortal knows or is lying, he can roll on the
-chart below to determine this.
+This spell allows the magic-user to contact
+one of the Outer Planes of Existence to seek
+knowledge from an Immortal creature
+(played by the DM). The wisest and most
+powerful Immortals live on the most distant
+Outer Planes. However, mental contact with
+an Immortal may cause a mortal to go
+insane. The more distant the plane, the
+greater the chance of a correct answer-but
+the greater the chance of Insanity as well.
+The number of questions the magic-user
+may ask is equal to the distance* to the Outer
+plane. The caster may choose the distance,
+up to the maximum allowed. The chance of
+insanity is checked once, when the Immortal
+is first contacted. If the caster is 21st level or
+greater, the chance of insanity is reduced by
+5 % per level of the caster above 20. If insan-
+ity does not result, the Immortal may still not
+know the answer, or may lie. The chances of
+knowing and lying are checked for each ques-
+tion.
+Distance and
+..
+Chance of.
+Number of
+Questions Insanity Knowing
+Lying
+25 %
+50 %
+5%
+This spell may be used once a month at most
+(or less often, at the DM's option). An insane
+character recovers with rest, after a number
+of weeks of game time equal to the number of
+the plane contacted.
+* The "distance" to any other plane of
+existence is the number of planes that would
+be crossed if that plane were visited. The
+"distance" between the Prime Plane and the
+closest outer plane is 3, as the ethereal, ele-
+mental, and astral planes lie "between"
+them. There are many Outer Planes, but
+most are too far removed to be affected by
+this spell.
+
+[Immortals | Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Contact Outer Plane]
+Contact Outer Plane: This produces an
+effect identical to that described for commune
+in this section. No chance of insanity applies
+to an Immortal character.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Contact Outer Plane
 Distance &
 Number of
@@ -5667,6 +9499,10 @@ meta:
 >   - scope: power; id: Lore; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+   70 Lore (DR 1T or 1 day; C22)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Lore
 Range: 0 (magic-user only)
 Duration: Permanent
@@ -5739,6 +9575,36 @@ meta:
 >   - scope: power; id: Polymorph Self; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Polymorph Self
+Range: 0 (Caster only)
+Duration: 6 turns + 1 turn per level of the
+caster
+Effect: Caster may change shapes
+This spell allows the caster to change
+shape, taking the physical form of another
+living creature. The Hit Dice of the new
+form must be equal to or less than the Hit
+Dice of the caster. The caster's Armor
+Class, hit points, Hit rolls, and Saving
+Throws do not change. Special abilities
+and special immunities of the new form
+are not gained, but physical abilities are ac-
+quired. For example, a magic-user poly-
+morphed into a frost giant has the strength
+of a frost giant and the ability to hurl boul-
+ders, but not immunity from cold. A
+magic-user polymorphed into a dragon
+could fly but would not be able to use any
+breath weapons or spells.
+Spells cannot be cast while polymorphed
+into a different form. The spell lasts for the
+given duration, or until dispelled, or until
+the caster is killed. This spell will not en-
+able the caster to take the form of a specific
+individual (see polymorph other).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Polymorph Self
 Range: 0 (Caster only)
 Duration: 6 turns + 1 turn per level of the caster
@@ -5778,9 +9644,9 @@ ual (see polymorph other).
 
 <div class="power-card" markdown="1">
 
-## Polymorph Other
+## Polymorph Others
 
-> **Polymorph Other**
+> **Polymorph Others**
 >
 > _FTLS power invocation_
 >
@@ -5809,9 +9675,41 @@ meta:
 >   - becmi:Master Set; spell: Polymorph Others
 >   - becmi:Rules Cyclopedia; spell: Polymorph Others
 > - usage:
->   - scope: power; id: Polymorph Other; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Polymorph Others; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Polymorph Other
+Range: 60'
+Duration: Permanent until dispelled
+Effect: Changes one living creature
+This spell changes the victim into another
+living creature. The new form may have
+no more than twice as many Hit Dice as the
+original, or the spell will fail. The number
+of hit points remains the same. Unlike the
+polymorph self spell, the recipient actually
+becomes the new creature, gaining any and
+all special abilities of the new form, plus its
+tendencies and behavior. For example, a
+hobgoblin polymorphed into a mule will
+think and act like a mule.
+This spell cannot create a duplicate of a
+specific individual, only a race or monster
+type. For example, a creature polymorphed
+into a "9th level fighter" will indeed be-
+come a human, but not necessarily a
+fighter and no higher than 1st level.
+The victim of this spell may make a Sav-
+ing Throw vs. Spells to avoid the effect.
+The effect lasts until dispelled, or until the
+creature dies.
+
+[Master | Artifact Chapter Context and Witnesses]
+  45 Polymorph Other (R 60', up to 2x HD;
+     X13)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Polymorph Other
 Range: 60'
 Duration: Permanent until dispelled
@@ -5850,9 +9748,9 @@ lasts until dispelled, or until the creature dies.
 
 <div class="power-card" markdown="1">
 
-## Growth of Animal
+## Animal Growth
 
-> **Growth of Animal**
+> **Animal Growth**
 >
 > _FTLS power invocation_
 >
@@ -5879,9 +9777,24 @@ meta:
 >   - becmi:Expert Set; spell: Growth of Animal
 >   - becmi:Rules Cyclopedia; spell: Growth of Animal
 > - usage:
->   - scope: power; id: Growth of Animal; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Animal Growth; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Growth of Animal
+Range: 120'
+Duration: 12 turns
+Effect: Doubles the size of one animal
+This spell doubles the size of one normal
+or giant animal. The animal then has twice
+its normal strength and inflicts double nor-
+mal damage. It may also carry twice its nor-
+mal encumbrance. This spell does not
+change an animal's behavior. Armor Class,
+or hit points, and does not affect intelligent
+animal races or fantastic creatures.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Growth of Animal
 Range: 120'
 Duration: 12 turns
@@ -5938,6 +9851,23 @@ meta:
 >   - scope: power; id: Stone to Flesh; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Stone to Flesh*
+Range: 120'
+Duration: Permanent
+Effect: One creature or object
+This spell turns any one statue (or quantity
+of stone up to 10' x 10' x 10') to flesh. It is
+usually used to restore a character turned
+to stone (by gorgon breath, for example).
+The reverse of this spel1,flesh to stone, will
+turn one living creature, including all
+equipment carried, to stone. The victim
+may make a Saving Throw vs. Turn to
+Stone to avoid the effect.
+
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Stone to Flesh*
 Range: 120'
 Duration: Permanent
@@ -5995,6 +9925,14 @@ meta:
 >   - scope: power; id: Metal to Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+2. Metal to Wood
+
+[Master | Druid Spell Material]
+  80 Metal to Wood (R 120', EF 2,000 cn;
+     C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Metal to Wood
 Range: 120'
 Duration: Permanent
@@ -6051,23 +9989,50 @@ meta:
 >   - scope: power; id: Dissolve; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-Dissolve
-Range: 240'
+[Master | Druid Spell Material]
+Dissolve*
+Range: 240 feet
 Duration: 3-18 days
 Effect: Liquefies 3,000 square feet
-Nearly identical to the 5th level magic-user
-spell of the same name, this effect changes a vol-
-ume of soil or rock (but not a construction) to a
-morass of mud. An area up to 10' deep or thick is
-affected, and may have up to 3,000 square feet
-of surface area. The druid may choose the exact
-width and length (20' x 150', 30' x 100', etc.),
-but the entire area of effect must be within 240'
-of the caster. Creatures moving through the mud
-are slowed to 10% of their normal movement
-rate at best, and may become stuck (at the DM's
-discretion, a victim must make saving throw vs.
-spells to avoid becoming stuck).
+Nearly identical to the magic-user spell,
+this effect changes a volume of soil or rock
+(but not a construction) to a morass of mud.
+An area up to 10 feet deep or thick is affected,
+and may have up to 3,000 square feet of sur-
+face area. The druid may choose the exact
+width and length (20' x 150', 30' x 100',
+etc.), but the entire area of effect must be
+within 240 feet of the caster. Creatures mov-
+ing through the mud are slowed to 10% of
+their normal movement rate at best, and may
+become stuck.
+The reverse of this spell, harden, changes
+the same volume of mud to rock, but permanently. A victim in the mud may make a Sav-
+ing Throw vs. Spells to avoid being trapped.
+Sixth-Level Druid Spell
+
+[Rules Cyclopedia | Druidic and Magical Spells Lists and Spell Descriptions]
+Dissolve*
+Range: 120'
+Duration: 3-18 days
+Effect: Liquifies 3000 square feet
+This spell changes a volume of soil or rock (but
+not a construction) to a morass of mud. An area
+up to 10' deep or thick is affected, and may have
+up to 3,000 square feet of surface area. The
+magic-user may choose the exact width and
+length (20' x 150', 30' x 100', etc.), but the en-
+tire area of effect must be within 240' of the cast-
+er. Creatures moving through the mud are
+slowed to 10% of their normal movement rate at
+best, and may become stuck (at the DM's discre-
+tion, a victim must make saving throw vs. spells
+to avoid becoming stuck).
+The reverse of this spell (harden) will change
+the same volume of mud to rock, but perma-
+nently. A victim in the mud may make a saving
+throw vs. spells to avoid being trapped in the
+hardened mud.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6112,6 +10077,32 @@ meta:
 >   - scope: power; id: Warp Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Warp Wood
+Range: 240'
+Duration: Permanent
+Effect: Causes wooden weapons to bend
+This spell causes one or more wooden weap-
+ons to bend and (probably) become useless.
+The spell will affect one arrow for each level
+of the caster; a spear, javelin, or magic wand
+is treated as two arrows' worth, and any club
+or staff (magical or otherwise) as four. The
+spell will not affect any wooden items other
+than weapons. If a magical wooden item is
+the target (such as a staff, the wielder may
+make a Saving Throw vs. Spells to avoid the
+effect. Items carried but not held get no Sav-
+ing Throw; magical items with "plusses"
+might not be affected, at a 10% chance per
+"plus." (For example, an arrow +1 would
+have a 10% chance of being unaffected.)
+
+[Master | Druid Spell Material]
+4. Warp Wood (C15)
+THIRD-LEVEL DRUID SPELLS
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Warp Wood
 Range: 240'
 Duration: Permanent
@@ -6179,6 +10170,10 @@ meta:
 >   - scope: power; id: Polymorph Any Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+  75 Polymorph Any Object (R 240', DR 40-240T, EF 10' cube; C25)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Polymorph any Object
 Range: 240'
 Duration: See below
@@ -6259,6 +10254,7 @@ meta:
 >   - scope: power; id: Shapechange; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
 Shapechange
 Range: 0 (caster only)
 Duration: One turn per level of the caster
@@ -6300,6 +10296,49 @@ nent and is subject to dispel magic. During
 the spell duration, the caster cannot pass
 through any protection from evil or anti-
 magic shell spell effect.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
+Shapechange
+Range: 0 (caster only)
+Duration: One turn per level of the caster
+Effect: Caster may change form
+This spell is similar to the 4th level polymorph
+self spell, but is far more powerful. The caster
+actually becomes another creature or object in all
+respects except the mind, hit points, and saving
+throws. The caster takes his new armor class, at-
+tack rolls, special attack forms, immunities, and
+all other details from the form he has taken.
+A magic-user cannot cast spells in any form ex-
+cept that of a bipedal humanoid (demihuman,
+goblin, ogre, giant, etc.). The caster cannot take
+a completely unique form (such as that of a spe-
+cific character, Elemental Ruler, or Immortal).
+He can gain the likeness but not the abilities of
+another character class. When wearing another
+form, he can only cast spells from his own mem-
+ory; he cannot cast from scrolls or his spell book.
+He cannot assume huge inanimate forms; if he
+tries to, the form will be a maximum of one foot
+tall per experience level of the caster and 100 cn
+weight per level.
+Except for these limits, the caster can become
+any creature or object that he or she has ever
+seen. Imaginary or unfamiliar creatures cannot
+be used; unless there are ten-armed trolls in your
+campaign, for example, he cannot turn into one.
+The caster may change shape at will during the
+spell's duration; each change requires a full
+round of concentration.
+Note that the caster does assume the flaws of
+the new form as well as its strengths. If, for ex-
+ample, the caster is struck by a sword +2, +5 vs.
+dragons while in dragon form, the +5 bonus ap-
+plies against his new form.
+This spell effect cannot be made permanent and
+is subject to dispel magic. During the spell dura-
+tion, the caster cannot pass through any protec-
+tion from evil or anti-magic shell spell effect.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6345,6 +10384,7 @@ meta:
 >   - scope: power; id: Stoneform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Stoneform
 Range: Touch
 Duration: Permanent
@@ -6439,6 +10479,7 @@ meta:
 >   - scope: power; id: Woodform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Woodform
 Range: Touch
 Duration: Permanent
@@ -6530,6 +10571,7 @@ meta:
 >   - scope: power; id: Ironform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Ironform
 Range: Touch
 Duration: Permanent
@@ -6616,6 +10658,10 @@ meta:
 >   - scope: power; id: Statue; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+  70 Statue (DR 80T, EF +2 Init; C23)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Statue
 Range: 0 (Magic-user only)
 Duration: 2 turns per level of the caster
@@ -6676,7 +10722,20 @@ meta:
 >   - scope: power; id: Steelform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-steelform.
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
+Steelform
+Range: Touch
+Duration: Permanent
+Effect: Creates up to 500 square feet of steel
+This spell is effectively identical to the 7th
+level ironform spell. However, the material cre-
+ated is of weapon-quality; a swordmaker with
+this spell could cast the spell and create a finely-
+crafted, high-quality sword in 12 turns (two
+hours) or less.
+Following the same general guidelines as iron-
+form, a steel wall will have an AC of — 10(2) and
+about 20 hit points per 1" thickness.
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -6722,6 +10781,55 @@ meta:
 >   - scope: power; id: Charm Person; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Charm Person
+Range: 120'
+Duration: See below
+Effect: One living "person" (see below)
+This spell will only affect humans, demi-
+humans, and certain other creatures.
+The victim is allowed a Saving Throw vs.
+Spells. If the Saving Throw is successful,
+the spell has no effect. If it is failed, the
+victim will believe that the magic-user is
+its "best friend," and will try to defend
+the magic-user against any threat,
+whether real or imagined. The victim is
+"Charmed."
+As a general rule, the "persons" af-
+fected by this spell are all creatures
+which look similar to humans in various
+ways. It will not affect animals, magical
+creatures (such as living statues), o r
+human-like creatures larger than ogres.
+You will learn, through trial and error,
+which monsters can be charmed.
+If the magic-user can speak a lan-
+guage that the Charmed victim under-
+stands, the magic-user may give orders
+to the victim. These orders should
+sound like suggestions, as if ' ) u t be-
+tween friends." These orders will usually
+be obeyed, but orders that are contrary
+to the victim's nature (alignment and
+habits) may be resisted. A victim will
+refuse to obey if ordered to kill itself.
+A Charm may last for months. The
+victim may make another Saving Throw
+every day, week, or month, depending
+on its Intelligence. If you are Charmed,
+your DM will tell you when to make the
+new Saving Throw.
+The Charm is automatically broken if
+the magic-user attacks the victim,
+whether by spell or by weapon. The
+victim will fight normally if attacked by
+the magic-user's allies.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+1. Charm Person
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Charm Person
 Range: 120'
 Duration: See below
@@ -6819,6 +10927,32 @@ meta:
 >   - scope: power; id: Sleep; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Sleep
+Range: 240'
+Duration: 4-16 (4d4) turns
+Effect: 2-16 Hit Dice of living creatures
+within a 40' square area
+This spell will put creatures to sleep for
+up to 16 turns. It will only affect creatures with 4+1 Hit Dice or less - gener-
+ally, small or man-sized creatures. All the
+creatures to be affected must be within a
+40' x 40' area. The spell will not work
+against Undead or very large creatures,
+such as dragons. Any sleeping creature
+can be awakened by force (such as a slap
+or kick). A sleeping creature may be
+killed with a single blow of any edged
+weapon, regardless of its hit points.
+Your Dungeon Master will roll to find
+the total Hit Dice of monsters affected,
+using 2d8. The victims get no Saving
+Throw.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+11. Sleep
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Sleep
 Range: 240'
 Duration: 4d4 (4-16) turns
@@ -6889,6 +11023,27 @@ meta:
 >   - scope: power; id: Confusion; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Confusion
+Range: 120'
+Duration: 12 rounds
+Effect: 3-18 creatures in an area 60' across
+This spell will confuse several creatures, af-
+fecting all within a 30' radius. Victims with
+less than 2+1 Hit Dice are not allowed a
+Saving Throw. Those with 2+1 or more
+Hit Dice must make a Saving Throw vs.
+Spells every round of the spell's duration,
+if they remain in the area, or be confused.
+Each confused creature acts randomly.
+The DM should roll 2d6 each round to
+determine each creature's action, using the
+following chart:
+2-5 Attack the spell caster's party
+6-8 Do nothing
+9-12 Attack the creature's own party
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Confusion
 Range: 120'
 Duration: 12 rounds
@@ -6954,6 +11109,11 @@ meta:
 >   - scope: power; id: Feeblemind; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+   40 Feeblemind (R 240', EF -4S?, INT 2;
+      C20)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Feeblemind
 Range: 240'
 Duration: Permanent until dispelled
@@ -7015,6 +11175,20 @@ meta:
 >   - scope: power; id: Charm Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Charm Monster
+Range: 120'
+Duration: Special
+Effect: One or more living creatures
+This spell effect is identical to that of a
+charm person spell, but any creature except
+an undead may be affected. If the victims
+have 3 Hit Dice or less, 3-18 may be
+charmed. Otherwise, only one monster will
+be affected. Each victim may make a Sav-
+ing Throw vs. Spells to avoid the effects.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Charm Monster
 Range: 120'
 Duration: Special
@@ -7069,6 +11243,11 @@ meta:
 >   - scope: power; id: Dance; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+   75 Dance (R Touch, DR 8r, EF -4STIAC;
+      C24)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Dance
 Range: Touch
 Duration: 3 or more rounds
@@ -7132,6 +11311,11 @@ meta:
 >   - scope: power; id: Mass Charm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+   75 Mass Charm (R 120', EF 30HD, -2
+      Save; C24)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Mass Charm*
 Range: 120'
 Duration: Special (as charm person spell)
@@ -7200,6 +11384,35 @@ meta:
 >   - scope: power; id: Remove Fear; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Remove Fear*
+Range: Touch
+Duration: 2 turns
+Effect: Any one living creature
+When the cleric casts this spell and then
+touches any living creature, the spell will
+calm the creature and remove any fear.
+If the creature is running away due to
+magically created fear, the creature may
+make another Saving Throw vs. spells,
+adding a bonus to the roll equal to the
+cleric's Level of Experience, up to a
+maximum bonus of + 6 . If the Saving
+Throw is successful, the creature may
+stop running. A roll of 1 will always fail.
+This Saving Throw, with bonus, may be
+made even if the fear was so powerful as
+to allow no Saving Throw at first!
+
+[Expert | Clerical and Magic-User Spell Expansions]
+Remove Fear*
+When reversed, this spell, cause fear, will
+make any one creature flee for two turns.
+The victim may make a Saving Throw vs.
+Spells to avoid the effect. This reversed
+spell has a range of 120'.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Remove Fear*
 Range: Touch
 Duration: 2 turns
@@ -7267,6 +11480,27 @@ meta:
 >   - scope: power; id: Snake Charm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Snake Charm
+Range: 60'
+Duration: 2-5 rounds or 2-5 turns
+Effect: Charms 1 HD of snakes per level of
+the caster
+A cleric may charm 1 Hit Die of snakes for
+each level of experience with this spell, and
+no Saving Throw is allowed. A 5th level
+cleric could charm one 5 HD snake, five 1
+HD snakes, or any combination totalling 5
+Hit Dice or less. The snakes affected will
+rise up and sway, but will not attack unless
+attacked themselves. If used on attacking
+snakes, the spell's duration is 2-5 rounds;
+otherwise, it lasts 2-5 turns. When the spell
+wears off, the snakes return to normal (but
+with normal reactions, and will not be au-
+tomatically hostile).
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Snake Charm
 Range: 60'
 Duration: 2-5 rounds or 2-5 turns
@@ -7331,6 +11565,50 @@ meta:
 >   - scope: power; id: Magic Jar; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Magic Jar
+Range: 30'
+Duration: See below
+Effect: Possess one body
+This spell causes the caster's body to fall
+into a trance, while the caster's life force is
+placed in an inanimate object (magic jar)
+within range. From this object (a gem or
+vial, for example), the caster's life force
+may attempt to possess any one creature
+within 120' of the magic jar. If the victim
+makes a successful Saving Throw vs. Spells,
+the possession fails and the caster may not
+try to possess that victim again for one
+turn. If the victim fails the Saving Throw,
+the creature's body is possessed and is un-
+der the caster's control. The life force of
+the possessed victim is placed into the magic
+jar.
+The caster may cause the body to per-
+form any normal actions, but not special
+abilities (similar to a polymorph self effect). A
+dispel evil spell will force the magic-user's
+life force out of the possessed body and
+back into the magic jar. When the magic-
+user returns to his or her real body, the
+spell ends.
+If the possessed body is destroyed, the
+victim's life force dies, and the caster's life
+force returns to the magic jar . From there
+the caster may try to possess another body
+or return to the original body. If the magic
+jar is destroyed while the caster's life force
+is within it, the caster is killed. If the magic
+jar is destroyed while the caster's life force
+is in a possessed body, the life force is
+stranded in that body. If the caster's origi-
+nal body is destroyed, his life force is
+stranded in the magic jar until the caster
+can possess another body! The possession
+of another's body is a Chaotic act.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Magic Jar
 Range: 30'
 Duration: See below
@@ -7418,6 +11696,10 @@ meta:
 >   - scope: power; id: Quest; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+6. Quest*
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Quest*
 Range: 30'
 Duration: Special
@@ -7498,6 +11780,32 @@ meta:
 >   - scope: power; id: Charm Plant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells]
+Charm Plant
+Range: 120'
+Duration: 3 months
+Effect: Charms 1 tree or more smaller plants
+Similar to a charm person spell, this effect
+causes 1 tree, 6 medium-sized bushes, 12
+small shrubs, or 24 small plants to become
+friends of the magic-user (no Saving Throw).
+However, a plant-like monster (treant,
+shrieker, etc.) may make a Saving Throw vs.
+Spells to resist the effect.
+The charmed plants will understand and
+obey all commands of the magic-user, as long
+as the tasks are within their ability (including
+the entangling of passers-by within range,
+but not including movement, sensing align-
+ment, etc.). The plants will remain charmed
+for 6 months, until the charm is dispelled, or
+until winter (when they sleep). (This spell is
+quite useful around a stronghold, both inside
+and out, especially when used after a 4th level
+growth ofplants spell, and possibly a perma-
+nent spell as well.)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Charm Plant
 Range: 120'
 Duration: 6 months (see below)
@@ -7561,6 +11869,10 @@ meta:
 >   - scope: power; id: Invisibility; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+5. Invisibility
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Invisibility
 Range: 240'
 Duration: Permanent until broken
@@ -7622,6 +11934,23 @@ meta:
 >   - scope: power; id: Projected Image; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Projected Image
+Range: 240'
+Duration: 6 turns
+Effect: Creates one image
+This spell creates an image of the caster up
+to 240' away which will last without con-
+centration. The projected image cannot be
+distinguished from the original except by
+touch. Any spell cast will seem to come
+from the image, but the caster must still be
+able to see the target. Spells and missile
+attacks will seem to have no effect on the
+image. If touched or struck by a hand-to-
+hand weapon, the image disappears.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Projected Image
 Range: 240'
 Duration: 6 turns
@@ -7683,6 +12012,24 @@ meta:
 >   - scope: power; id: Invisibility 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Invisibility 10' radius
+Range: 120'
+Duration: Permanent until broken
+Effect: All creatures within 10'
+This spell makes the recipient and all oth-
+ers within 10' (at the time of the casting)
+invisible. This is an area effect, and those
+who move further than 10' from the recip-
+ient become visible. They may not regain
+invisibility by returning to the area. Other-
+wise, the invisibility is the same as that be-
+stowed by the spell invisibility (Basic Player's
+Guide, page 41). All items carried (whether
+by the recipient or others within 10') also
+become invisible.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Invisibility 10' radius
 Range: 120'
 Duration: Permanent until broken
@@ -7741,6 +12088,10 @@ meta:
 >   - scope: power; id: Mirror Image; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+9. Mirror Image
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Mirror Image
 Range: 0
 Duration: 6 turns
@@ -7805,6 +12156,10 @@ meta:
 >   - scope: power; id: Phantasmal Force; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+10. Phantasmal Force
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Phantasmal Force
 Range: 240'
 Duration: Concentration (see below)
@@ -7882,6 +12237,20 @@ meta:
 >   - scope: power; id: Ventriloquism; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Ventriloquism
+Range: 60'
+Duration: 2 turns
+Effect: One item or location
+This spell will allow the magic-user to
+make the sound of his or her voice to
+come from somewhere else, such as a
+statue, animal, dark corner, and so forth.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+12. Ventriloquism
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Ventriloquism
 Range: 60'
 Duration: 2 turns
@@ -7938,6 +12307,33 @@ meta:
 >   - scope: power; id: Hold Person; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Hold Person*
+Range: 180'
+Duration: 9 turns
+Effect: Paralyzes up to 4 creatures
+The hold person spell will affect any human,
+demi-human, or human-like creature
+(bugbear, dryad, gnoll, gnome, hobgoblin,
+kobold, lizard man, ogre, orc, nixie, pixie
+or sprite). It will not affect the undead or
+creatures larger than ogres. Each victim
+must make a Saving Throw vs. Spells or be
+paralyzed for 9 turns. The spell may be
+cast at a single person or at a group. If cast
+at a single person, a - 2 penalty applies to
+the Saving Throw. If cast at a group, it will
+affect up to 4 persons (at the cleric's
+choice), but with no penalty to their rolls.
+The paralysis may only be removed by the
+reverse spell, or by a dispel magic spell.
+The reverse of the spell, free person, re-
+moves the paralysis of up to 4 victims of
+the normal form of the spell (including
+one cast by a magic-user or elf). It has no
+other effect.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
 Hold Person*
 Range: 180'
 Duration: 9 turns
@@ -8008,6 +12404,28 @@ meta:
 >   - scope: power; id: Hold Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Hold Monster*
+Range: 120'
+Duration: 6 turns + 1 turn per level of the
+caster
+Effect: Paralyzes 1-4 creatures
+This spell has an effect identical to that of a
+hold person spell, but will affect any living
+creature (not undead). Each victim must
+make a Saving Throw vs. Spells or be pa-
+ralyzed. The spell may be cast at a single
+creature or a group. If cast at a single crea-
+ture, a - 2 penalty applies to the Saving
+Throw. If cast at a group, it will affect 1-4
+creatures (the magic-user's choice), but
+with no penalties.
+The reverse of this spell, free monster re-
+moves the paralysis of up to 4 victims of
+hold person or hold monster spells. It has no
+other effect.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Hold Monster*
 Range: 120'
 Duration: 6 turns + 1 turn per level of the caster
@@ -8069,6 +12487,10 @@ meta:
 >   - scope: power; id: Web; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+11. Web
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Web
 Range: 10'
 Duration: 48 turns
@@ -8127,6 +12549,7 @@ meta:
 >   - scope: power; id: Entangle; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Entangle
 Range: 30'
 Duration: 1 round per level
@@ -8196,6 +12619,17 @@ meta:
 >   - scope: power; id: Find Traps; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Find Traps
+Range: 0 (Cleric only)
+Duration: 2 turns
+Effect: Traps within 30' glow
+This spell causes all traps to glow with a
+dull blue light when the cleric comes within
+30' of them. It does not reveal the types of
+traps, nor any method of removing them.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Find Traps
 Range: 0 (Cleric only)
 Duration: 2 turns
@@ -8249,6 +12683,21 @@ meta:
 >   - scope: power; id: Hallucinatory Terrain; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Hallucinatory Terrain
+Range: 240'
+Duration: Special
+Effect: Changes or hides terrain
+This spell creates the illusion of a "terrain
+feature," either indoors (such as a pit,
+stairs, etc.) or outdoors (hill, swamp, grove
+of trees, etc.), possibly hiding a real fea-
+ture. The entire terrain feature must be
+within the range of the spell. The spell lasts
+until the illusion is touched by an intel-
+ligent creature, or until dispelled.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Hallucinatory Terrain
 Range: 240'
 Duration: Special
@@ -8315,6 +12764,29 @@ meta:
 >   - scope: power; id: Massmorph; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Massmorph
+Range: 240'
+Duration: See below
+Effect: Causes illusion of trees
+This spell will affect up to 100 human or
+man-sized creatures in a 240' diameter,
+making them appear to be the trees of an
+orchard or dense woods. Unwilling crea-
+tures are not affected. Creatures larger
+than man-size (such as horses) may be in-
+cluded, counting them as 2 or 3 men each.
+The illusion will even hide the recipients
+from creatures moving through the area
+affected. The spell lasts until a dispel magic
+is cast on it or until the caster decides to
+drop the illusion. The appearance of each
+disguised creature returns to normal if the
+creature moves out of the affected area.
+However, movement within the area does
+not destroy the illusion.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Massmorph
 Range: 240'
 Duration: See below
@@ -8380,6 +12852,28 @@ meta:
 >   - scope: power; id: Hold Animal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Hold Animal
+Range: 180'
+Duration: 1 turn per level of the caster
+Effect: Paralyzes several animals
+This spell will affect any normal or giant-
+sized animal, but will not affect any fantastic
+creature, nor one of greater than animal
+intelligence. Each victim must make a Saving
+Throw vs. Spells or be paralyzed for 6 turns.
+The druid can affect 1 Hit Die of animals for
+each level of experience, ignoring "plusses"
+to Hit Dice. For example, a 20th level druid
+could cast the spell at 10 giant toads (2.2 Hit
+Dice each). Note that the spell can affect sum-
+moned, conjured, or controlled animals.
+
+[Master | Druid Spell Material]
+   15 Hold Animal (R 180', DR 40T, EF one
+      type, 4 cr; C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Hold Animal
 Range: 180'
 Duration: 1 turn per level of the caster
@@ -8442,6 +12936,28 @@ meta:
 >   - scope: power; id: Obscure; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Obscure
+Range: 0 (druid only)
+Duration: 1 turn per level of the caster
+Effect: Creates a huge misty cloud
+This spell causes a misty vapor to arise from
+the ground around the druid, forming a huge
+cloud. The cloud is 1 ' high per level of the
+druid, and is 10' across for each level. For
+example, a 20th level druid would cast an
+obscure 20' tall and 100' radius. The cloud
+has no ill effects except to block vision. The
+caster, and all creatures able to see invisible
+things, will be able to dimly see through the
+cloud. All other creatures within the cloud
+will be delayed and confused by the effect.
+
+[Master | Druid Spell Material]
+  20 Obscure (DR 40T, EF 400 sq.ft./40' high;
+      C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Obscure
 Range: 0 (druid only)
 Duration: 1 turn per level of the caster
@@ -8504,6 +13020,11 @@ meta:
 >   - scope: power; id: Mass Invisibility; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+  60 Mass Invisibility (R 240', EF 60' sq, 300
+     man-size; C22)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Mass Invisibility*
 Range: 240'
 Duration: Permanent until broken
@@ -8567,6 +13088,21 @@ meta:
 >   - scope: power; id: Fly; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Fly
+Range: Touch
+Duration: 1-6 turns + 1 turn per level of
+the caster
+Effect: One creature may fly
+This spell allows the recipient (possibly the
+caster) to fly. The spell will permit move-
+ment in any direction and at any speed up
+to 360' per turn (120' per round) by mere
+concentration. The recipient may also stop
+and hover at any point (as a levitate spell),
+which does not require concentration.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Fly
 Range: Touch
 Duration: 1d6 (1-6) turns + 1 turn per level of
@@ -8625,14 +13161,26 @@ meta:
 >   - scope: power; id: Water Breathing; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
 Water Breathing
 Range: 30'
 Duration: 1 day
 Effect: One air-breathing creature
+This spell allows the recipient to breathe
+while under water (at any depth). It does
+not affect movement in any way, nor does
+it interfere with the breathing of air.
+
+[Rules Cyclopedia | Druidic and Magical Spells Lists and Spell Descriptions]
+Water Breathing
+Range: 30'
+Duration: 1 day (24 hours)
+Effect: One air-breathing creature
 This spell allows the recipient to breathe while
-under water (at any depth). It does not affect
+underwater (at any depth). It does not affect his
 movement in any way, nor does it interfere with
-the breathing of air.
+the breathing of air if the recipient emerges from
+the water.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -8677,6 +13225,21 @@ meta:
 >   - scope: power; id: Lower Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Lower Water
+Range: 240'
+Duration: 10 turns
+Effect: Cuts depth to 1/2 normal
+This spell will affect an area up to 10,000
+square feet, as noted above. If cast around
+a boat or ship, the vessel may become
+stuck. At the end of the duration, the sud-
+den rush of water filling the "hole" will
+sweep a ship's deck clear of most items and
+cause 21-32 ( l d 1 2 + 2 0 ) points of hull
+damage.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Lower Water
 Range: 240'
 Duration: 10 turns
@@ -8750,6 +13313,13 @@ meta:
 >   - scope: power; id: Pass Plant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+3. Pass Plant
+
+[Master | Druid Spell Material]
+   35 Pass Plant (EF 300-600 yards; C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Pass Plant
 Range: 0 (druid only)
 Duration: Instantaneous
@@ -8812,6 +13382,25 @@ meta:
 >   - scope: power; id: Plant Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Plant Door
+Range: 0 (druid only)
+Duration: 1 turn per level of the caster
+Effect: Opens a path through growth
+For the duration of this spell, no plants can
+prevent the druid's passage, no matter how
+dense. Even trees will bend or magically open
+to allow the druid to pass. All equipment car-
+ried can also be moved through such barriers,
+but no other creature can use the passage.
+Note that a druid can hide inside a large
+tree after casting this spell. The druid cannot
+see what is happening while he is in the tree.
+
+[Master | Druid Spell Material]
+  20 Plant Door (DR 40T; C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Plant Door
 Range: 0 (druid only)
 Duration: 1 turn per level of the caster
@@ -8868,6 +13457,30 @@ meta:
 >   - scope: power; id: Survival; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Seventh-Level Cleric Spells]
+Survival
+Range: Touch
+Duration: One hour per level of the caster
+Effect: Protects one creature against all non-
+magical damage from the environment
+Characters - Cleric
+This spell protects the recipient from
+adverse conditions of all types, including nor-
+mal heat or cold, lack of air, and so forth.
+While the spell is in effect, the caster needs no
+air, food, water, or sleep. The spell does not
+protect against magical damage of any type,
+breath weapons, or blows from creatures. It
+does protect against all damage caused by
+natural conditions on other planes of exist-
+ence. Examples: A cleric might use this spell
+in a desert or blizzard, preventing any dam-
+age from the natural conditions; under-
+ground or underwater, enabling survival
+without air; or in space, to magically survive
+in vacuum.
+
+[Rules Cyclopedia | Clerical and Magical Spell Descriptions]
 Survival
 Range: Touch
 Duration: One hour per level of the caster
@@ -8937,6 +13550,14 @@ meta:
 >   - scope: power; id: Transport Through Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+2. Transport Through Plants
+
+[Master | Druid Spell Material]
+   45 Transport Through Plants (EF +2 cr;
+      C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Transport Through Plants
 Range: Infinite
 Duration: Instantaneous
@@ -8999,6 +13620,7 @@ meta:
 >   - scope: power; id: Create Air; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Create Air
 Range: Immediate area, 8,000 cu. ft.
 Duration: 1 hour per level of caster
@@ -9078,6 +13700,10 @@ meta:
 >   - scope: power; id: Levitate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+7. Levitate
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Levitate
 Range: 0
 Duration: 6 turns + 1 turn/level of the caster
@@ -9147,6 +13773,24 @@ meta:
 >   - scope: power; id: Dimension Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Dimension Door
+Range: 10'
+Duration: 1 round
+Effect: Safely transports one creature
+This spell will transport one creature up to
+10' from the caster, to a place up to 360'
+away. The caster picks the desired destina-
+tion. If the location is not known, distances
+not exceeding a total of 360' may be given
+(for example, 200' west, 60' south, 100'
+down). If this would cause the recipient to
+arrive at a location occupied by a solid ob-
+ject, the spell has no effect. An unwilling
+recipient may make a Saving Throw vs.
+Spells to avoid the effect.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Dimension Door
 Range: 10'
 Duration: 1 round
@@ -9210,6 +13854,61 @@ meta:
 >   - scope: power; id: Teleport; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Teleport
+Range: 10'
+Duration: Instantaneous
+Effect: Transports one creature with all
+equipment
+This spell instantly transports the magic-
+user or other recipient to any unoccupied
+ground-level destination on the same
+plane of existence! An unwilling victim
+may make a Saving Throw vs. Spells to
+avoid the effect. The recipient arrives at
+the destination with all equipment carried.
+The destination may not deliberately be
+one known to be occupied by a solid object,
+or above ground level. The chance of ar-
+riving safely depends on how carefully the
+caster has studied the area. Any creature
+teleporting into a solid object is instantly
+killed.
+Knowledge of Destination
+Result
+Casual
+General
+Exact
+01-95
+Success
+01-80
+01-50
+96-99
+Too High
+51-75
+81-90
+TooLow
+91-00
+76-00
+"Casual Knowledge" means that the caster
+has been there once or twice, or is visualiz-
+ing the aiming point from descriptions or
+magical means. General knowledge means
+the caster has been to the area often, or has
+spent several weeks studying the area magically (via crystal ball, etc.). Exact knowledge
+means the caster has made a highly de-
+tailed personal study of the landing point.
+For each teleport, the DM rolls d%. If the
+result is other than "Success," the recipient
+arrives 10-100 (1d10x10) feet above or be-
+low the desired destination. If "Too High,"
+the recipient falls, taking damage on im-
+pact (1-6 points of damage per 10' fallen).
+If the result is "Too Low," death occurs
+unless a vacant area (such as a cave or dun-
+geon) lies conveniently at that point.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Teleport
 Range: 10'
 Duration: Instantaneous
@@ -9319,6 +14018,7 @@ meta:
 >   - scope: power; id: Travel; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
 Travel
 Range: 0
 Duration: One turn per level of the caster
@@ -9326,33 +14026,69 @@ Effect: Allows aerial or gaseous travel
 This spell allows the cleric to move quickly
 and freely, even between the planes of existence.
 The caster (only) may fly in the same manner as
-given by the magic-user's spell, at a rate of 360'
-(120'). The cleric can also enter a nearby plane of
+given by the magic-user spell, with a movement
+rate of 360 feet (120 feet).
+The cleric can also enter a nearby plane of
 existence, simply by concentrating for one
-round. He may enter a maximum of one plane
-per turn.
-The cleric may bring one other creature for
-every five levels of experience (rounded down;
-for example, a 29th level cleric could bring five
-other creatures on the journey). To bring others,
-he must touch them, or they must touch him,
-while the spell is cast and the shift is made. Any
-unwilling creature can make a saving throw vs.
-spells to avoid the effect. The cleric must take
-the others with him—he cannot send them
-while remaining behind.
+round. A maximum of one plane per turn may
+be entered. If desired, the cleric may bring one
+other creature for each five levels of experience
+(rounded down; for example, a 29th-level cleric
+could bring five other creatures on the journey).
+All others to be affected must be touching or
+touched by the cleric while the spell is cast and
+the shift is made. Any unwilling creature may
+make a Saving Throw vs. Spells to avoid the
+effect. The cleric must take the others, and can-
+not send them while remaining behind.
 While this spell is in effect, the caster (only)
 may assume gaseous form by concentrating for
-one full round. (If he is interrupted, no change
+one full round. (If interrupted, no change
 occurs.) Unlike the potion effect, all equipment
 carried also becomes part of the same gaseous
-cloud. In this form, the caster may travel at dou-
-ble the normal flying rate: 720' (240'). While
-gaseous, the cleric cannot use items or cast spells,
-but also cannot be damaged except by magic
-(weapons or certain spells). Also, a gaseous being
-cannot pass through a protection from evil spell
-effect or an anti-magic shell.
+cloud. In this form, the caster may travel at
+double the normal flying rate: 720 feet per turn
+(240 feet per round). While gaseous, the cleric
+cannot use items or cast spells, but also cannot
+be damaged except by magic (weapons or cer-
+tain spells). Also, a gaseous being cannot pass
+through a protection from evil spell effect or an
+
+[Rules Cyclopedia | Clerical and Magical Spell Descriptions]
+Travel
+Range: 0 (caster only)
+Duration: One turn per level of the caster
+Effect: Allows aerial or gaseous travel
+This spell allows the magic-user to move
+quickly and freely, even between the planes of
+existence. The caster (only) may fly in the same
+manner as given by the magic-user's spell, at a
+rate of 360' (120'). The caster can also enter a
+nearby plane of existence, simply by concentrat-
+ing for one round. He may enter a maximum of
+one plane per turn.
+The magic-user may bring one other creature
+for every five levels of experience (rounded
+down; for example, a 28th level magic-user
+could bring five other creatures on the journey).
+To bring others, he must touch them, or they
+must touch him, while the spell is cast and the
+shift is made. Any unwilling creature can make a
+saving throw vs. spells to avoid the effect. The
+caster must take the others with him—he cannot
+send them while remaining behind.
+While this spell is in effect, the magic-user
+(only) may assume gaseous form by concentrat-
+ing for one full round. (If he is interrupted, no
+change occurs.) Unlike the potion effect, all
+equipment carried also becomes part of the same
+gaseous cloud. In this form, the caster may travel
+at double the normal flying rate: 720' (240').
+While gaseous, the magic-user cannot use items
+or cast spells, but also cannot be damaged except
+by magic (weapons or certain spells). Also, a gas-
+eous being cannot pass through a protection
+from evil spell effect or an anti-magic shell.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -9399,6 +14135,147 @@ meta:
 >   - scope: power; id: Wish; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+Wish
+Range: Special
+Duration: Special
+Effect: Special
+A wish spell is usable only by a magic-user
+of 33rd-36th level who has Intelligence of 18
+or greater.
+A wish is the single most powerful spell a
+magic-user can have. It is never found on a
+scroll, but may be placed elsewhere.
+Wording the Wish: The player must say
+or write the exact wish made by the character.
+Wording of the wish is very important. The
+literal meaning will usually occur, whatever
+the intentions of the player.
+The DM should try to maintain game bal-
+ance, being neither too generous nor too
+stingy in deciding the effects of a wish.
+Remember that wishes should be able to do
+quite a bit. Even a badly phrased wish, made
+with good intentions, may have good results.
+However, if the wish is greedy, or made with
+malicious intent, every effort should be made
+to find differing interpretations. If necessary,
+the wish can even be disallowed, having no
+effect. Whenever a wish fails or is misinter-
+preted, the DM should explain (after the
+game) the problem or flaw in the phrasing.
+Here are some examples of faulty wishes:
+"I wish that I knew everything about this
+dungeon" could result in the character know-
+ing all for only a second, and then forgetting
+it.
+"I wish for a million gold pieces" can be
+granted by having them land on the character
+and then vanish.
+"I wish to immediately and permanently
+possess the gaze power of a basilisk while
+retaining all of my own abilities and items" is
+a carefully worded wish that's out of balance.
+Characters are already quite powerful. This
+wish could result in the growth of a basilisk
+head in addition to the character's own, or
+the growth of extra eyes—without eyelids—
+leaving the character extremely vulnerable to
+other gaze attacks.
+A wish can never be used to gain either XP
+or levels of experience.
+Possible Effects: If a wish is used to harm
+another creature in any way, the victim may
+make a Saving Throw vs. Spells. If the save is
+successful, the victim takes half the ill effects
+and the other half rebounds on the caster
+(who may also save to avoid it, but with a -4
+penalty to the roll). A carefully worded wish
+can, however, move (i.e. teleport) another
+creature if no harm is done in the process,
+allowing no saving throw. The saving throw
+applies only to creatures, not their items car-
+ried or possessed.
+A wish may be used to gain treasure, up to
+a maximum of 50,000 gp per wish. However,
+the caster loses 1 XP per gp value of treasure
+gained, and this loss cannot be magically
+restored.
+A wish can be used, if the DM desires, to
+gain the use of a magic item for a short time.
+Generally, any magic item gained is bor-
+rowed from somewhere else, not created.
+Artifacts are beyond the power of wishes.
+The caster may usually produce any item up
+to +5 enchantment. The item will remain for
+only 1-6 turns.
+A wish can be used to temporarily change
+any one ability score to a minimum of 3 or
+maximum of 18. This effect lasts for only six
+turns.
+Wishes can also be used to permanently
+increase ability scores, but the cost is very
+high. You must use as many wishes as the
+number of the ability score desired. All the
+wishes must be cast within a one-week per-
+iod. You may raise an ability score only one
+point at a time. To raise your Strength from
+15 to 16 takes 16 wishes. To then raise it to 17
+will take an additional 17 wishes. Wishes can-
+not be used to permanently lower ability
+scores.
+A wish cannot raise the maximum level for
+humans; 36th is absolute, enforced by
+Immortals. However, one wish can allow a
+demi-human to gain one additional Hit Die
+(for a new maximum of 9 for halflings, 11 for
+elves, and 13 for dwarves). This affects only
+hit points, and does not change any other
+scores (such as Hit rolls, elves' number of
+spells, etc.).
+A wish can change a demi-human to a
+human, or the reverse. Such a change is per-
+manent, and the recipient does not become
+magical. Halflings and dwarves become
+fighters of the same level. Elves become
+magic-users or fighters (but not both), at the
+choice of the wisher. Levels of experience can
+then be gained normally as the human class.
+A human changes to the same level demi-
+human, but no higher than the normal racial
+maximum. If the wish is made by another,
+the victim may make a Saving Throw vs.
+Spells with a +5 bonus to avoid the change.
+Once a character's race is changed, two
+wishes are needed to reverse the effect, and
+further changes each require double the pre-
+vious number of wishes used (4, 8, 16, etc.).
+A wish can be used to duplicate any magic-
+user spell effect of 8th level or less, or any
+cleric spell effect of 6th level or less. This
+common use of a wish is not subject to the
+same close scrutiny by the DM, and is likely
+to succeed with less chance of error than other
+types.
+A wish can sometimes be used to change
+the results of a past occurrence. This is nor-
+mally limited to events of the previous day. A
+lost battle may be won, or the losses may be
+made far less severe, but impossible odds
+cannot be overcome completely. A death in
+melee could be changed to a near-death sur-
+vival; a permanent loss could be made tem-
+porary. The DM may advise players when
+wishes are near to exceeding the limit of the
+power.
+Important Note: Whenever an effect is
+described as being unchangeable "even with
+a wish," that statement supercedes all others
+here. However, multiple wishes may succeed
+(DM's choice) where one wish would not.
+
+
+[Rules Cyclopedia | Clerical and Magical Spell Descriptions]
 Wish
 Range: Special
 Duration: Special
@@ -9567,6 +14444,56 @@ meta:
 >   - scope: power; id: Gate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Ninth-Level Magic-User Spells]
+Gate*
+Range: 30'
+Duration: 1-100 turns or 1 turn
+Effect: Opens a portal to another plane
+When the magic-user casts this spell, he must
+name one target: the Ethereal Plane, the
+Astral Plane, one of the four Elemental
+Planes, or one Outer Plane (for which the
+name of a resident of the Plane must also be
+spoken, usually that of an Immortal, a ruler
+of the outer Planes). These Planes are
+explained in the Dungeon Master's book.
+The spell opens a direct connection to the
+other Plane of Existence.
+A gate to an Outer Plane remains open for
+only 1 turn. Any other gate remains open for
+1-100 random turns, and there is a 10%
+chance per turn that some other-planar crea-
+ture will wander through the gate. A gate to
+an Elemental Plane actually creates a vortex
+and a wormhole, and a wish may be used to
+make them permanent.
+Contact with an Outer Plane is dangerous,
+and the magic-user must know and speak the
+name of the Immortal he wishes to contact.
+The Immortal he calls will probably (95%
+chance) arrive in 1-6 rounds, but there is a
+5% chance that some other being from the
+Outer Planes will respond. When the being
+arrives, it immediately looks for the spell
+caster. If the caster does not have an excellent
+reason for opening the gate, the being will
+probably destroy the caster. Even if the caster
+gives an important reason, the being may
+merely leave immediately, showing no inter-
+est. Occasionally, if the reason is of supreme
+importance to the magic-user and of some
+interest to the being, it may actually help for a
+short time.
+The reverse of this spell, close gate, will
+destroy the effect of the normal form of the
+spell (but cannot affect an Immortal). It can
+also be used to close a permanent gate to a
+nearby Plane (such as an elemental vortex).
+
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+  95 Gate (R 30', DR 1T or d%T; C26)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Gate*
 Range: 30'
 Duration: 1d10 x 10 (1-100) turns or 1 turn
@@ -9660,6 +14587,12 @@ meta:
 >   - scope: power; id: Maze; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+  100 Maze (R 60', DR 6T to 4r; C26)
+ A4. Miscellaneous Attack Forms
+  cost
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Maze
 Range: 60'
 Duration: See below (1d6 turns, 2d20 rounds,
@@ -9698,9 +14631,9 @@ peared.
 
 <div class="power-card" markdown="1">
 
-## Pass-Wall
+## Passwall
 
-> **Pass-Wall**
+> **Passwall**
 >
 > _Veil-walk_
 >
@@ -9728,9 +14661,25 @@ meta:
 >   - associated: Veil/Deathline fae clans (provisional)
 >   - tracking: heritage-origin expression; finalize exact lineage during heritage normalization pass.
 > - usage:
->   - scope: power; id: Pass-Wall; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Passwall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Pass-Wall
+Range: 30'
+Duration: 3 turns
+Effect: Creates a hole 10' deep
+This spell causes a hole 5' diameter, 10'
+deep to appear in solid rock or stone only.
+The stone reappears at the end of the du-
+ration. The hole may be horizontal or ver-
+tical.
+
+[Master | Artifact Chapter Context and Witnesses]
+  45 Pass-Wall (R 60', DR 6T, EF 5' X 10';
+     X15)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Passwall
 Range: 30'
 Duration: 3 turns
@@ -9789,6 +14738,7 @@ meta:
 >   - scope: power; id: Timestop; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
 Timestop
 Range: 0 (caster only)
 Duration: 2-5 rounds
@@ -9818,6 +14768,37 @@ The caster is completely undetectable by
 those in "normal time." However, the magic-
 user cannot pass through a protection from
 evil or anti-magic shell while under this
+spell's effect.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
+Timestop
+Range: 0 (caster only)
+Duration: 2-5 rounds
+Effect: Allows caster to act for 1d4 + 1 (2-5)
+rounds while everything else "stops"
+To the caster, this spell seems to stop time. It
+speeds the caster so greatly that all other crea-
+tures seem frozen at their normal speeds, in
+"normal time." From the caster's point of view,
+the effect lasts for 1d4 + 1 (2-5) rounds. The cast-
+er may perform one action during each of these
+magical rounds.
+Normal and magical fire, cold, gas, etc. can
+still harm the caster. While the timestop is in ef-
+fect, however, other creatures are invulnerable to
+the caster's attacks and spells. Spells with dura-
+tions other than "instantaneous" may be cre-
+ated and left to take effect when time resumes.
+Note that no time elapses while this spell is in
+effect; durations of other spells cast start after
+the timestop ends.
+The spellcaster cannot move items held by
+those in "normal time," but can move other
+items that are not "stuck," including those worn
+or carried by others. The caster is completely un-
+detectable by those in "normal time." However,
+the magic-user cannot pass through a protection
+from evil or anti-magic shell while under this
 spell's effect.
 
   <div class="power-return">
@@ -9864,6 +14845,10 @@ meta:
 >   - scope: power; id: Magic Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Artifact Chapter Context and Witnesses]
+  40 Magic Door (R 10', DR 7 uses; C22)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Magic Door*
 Range: 10'
 Duration: 7 uses
@@ -9933,6 +14918,38 @@ meta:
 >   - scope: power; id: Teleport any Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells]
+Teleport any Object
+Range: Touch
+Duration: Instantaneous
+Effect: Causes 1 object to teleport
+This spell is similar to the 5th level teleport
+spell, but non-living objects can be affected.
+After casting this spell, the magic-user may
+touch one creature or object and cause it to
+teleport. The normal chances of error apply;
+an object appearing too high will fall (and
+probably break), and one appearing too low
+will disintegrate. The destination may not
+deliberately be one occupied by a solid object
+or above ground.
+The maximum weight affected is 500 cn
+per level of the caster. If an object is a solid
+part of a greater whole (such as a section of
+wall), one 10'. 10'. 10' cube of material (at
+most) will be teleported. If another creature
+possesses the item touched, (whether held or
+merely carried), the creature may make a
+Saving Throw vs. Spells (with a -2 penalty); if
+successful, the teleport fails.
+If the caster uses this spell to teleport him-
+self, there is no chance of error. If the caster
+touches another creature, it may make a Sav-
+ing Throw vs. Spells (if desired) to avoid
+being teleported, but with a -2 penalty to the
+roll.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Teleport Any Object
 Range: Touch
 Duration: Instantaneous
@@ -10005,6 +15022,10 @@ meta:
 >   - scope: power; id: Word of Recall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+8. Word of Recall
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Word of Recall
 Range: 0 (Cleric only)
 Duration: Instantaneous
@@ -10065,6 +15086,26 @@ meta:
 >   - scope: power; id: Dispel Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Dispel Magic
+Range: 120'
+Duration: Permanent
+Effect: Destroys spells in a 20' cube
+This spell destroys other spell effects in a
+cubic volume of 20' x 20' x 20'. It does not
+affect magic items. Spell effects created by
+a caster (whether cleric, magic-user, or elf)
+of a level equal to or lower than the caster
+of the dispel magic are automatically and im-
+mediately destroyed. Spell effects created
+by a higher level caster might not be af-
+fected. The chance of failure is 5% per
+level of difference between the casters. For
+example, a 7th level cleric trying to dispel a
+web spell cast by a 9th level magic-user
+would have a 10% chance of failure.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
 Dispel Magic
 Range: 120'
 Duration: Permanent
@@ -10176,6 +15217,26 @@ meta:
 >   - scope: power; id: Hold Portal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Hold Portal
+Range: 10'
+Duration: 2-12 (2d6) turns
+Effect: One door, gate, or similar
+portal
+This spell will magically hold shut any
+"portal" - for example, a door or gate.
+A Knock spell will open the Hold Por-
+tal. Any creature 3 or more hit dice
+greater than the caster (including char-
+acters) may break open a held portal in
+one round's time, but the portal will
+relock if allowed to close within the
+duration of the spell.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+4. Hold Portal
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Hold Portal
 Range: 10'
 Duration: 2-12 (2d6) turns
@@ -10237,6 +15298,10 @@ meta:
 >   - scope: power; id: Knock; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+6. Knock
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Knock
 Range: 60'
 Duration: See below
@@ -10298,14 +15363,10 @@ meta:
 >   - scope: power; id: Wizard Lock; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-Wizard Lock
-Range: 10'
-Duration: Permanent
-Effect: One portal or lock
-This spell is a more powerful version of a hold
-portal spell. It will work on any lock, not merely
-doors, and will last forever (or until magically
-dispelled). However, a knock spell can open the
+[Expert | Clerical and Magic-User Spell Expansions]
+12. Wizard Lock
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 wizard lock.
 The wizard who cast the wizard lock can easily
 open the door he has enchanted, as can any
@@ -10359,6 +15420,28 @@ meta:
 >   - scope: power; id: Wizardry; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Seventh-Level Cleric Spells]
+Wizardry
+Range: 0 (cleric only)
+Duration: One turn
+Effect: Allows the use of one magic-user
+scroll spell or one device
+By using this spell, the cleric gains the
+power to use one item normally restricted to
+magic-users: either a device (such as a wand)
+or a scroll containing a 1st- or 2nd-level
+magic-user spell. (Spells of 3rd or higher level
+cannot be cast, though they may be present
+on the scroll.) This ability lasts for one turn,
+or until the scroll or device is used. The cleric
+magically gains knowledge of the proper use
+of the item, as if the character were a magic-
+user. For the duration and effect of the magic-
+user spell, the level of caster is treated as the
+minimum necessary for the casting of the
+spell.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Wizardry
 Range: 0 (cleric only)
 Duration: One turn
@@ -10436,6 +15519,25 @@ meta:
 >   - scope: power; id: Anti-Magic Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Anti-Magic Shell
+Range: 0 (Caster only)
+Duration: 12 turns
+Effect: Personal barrier which blocks
+magic
+This spell creates a n invisible barrier
+around the magic-user's body (less than an
+inch away). The barrier stops all spells or
+spell effects, including the caster's. The
+caster may destroy the shell at will; other-
+wise, it lasts until the duration ends. Except
+for a wish, no magical power (including a
+dispel magic spell) can cancel the barrier.
+
+[Master | Artifact Chapter Context and Witnesses]
+anti-magic shell.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Anti-Magic Shell
 Range: 0 (Caster only)
 Duration: 12 turns
@@ -10493,6 +15595,26 @@ meta:
 >   - scope: power; id: Barrier; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+Barrier*
+Range: 60'
+Duration: 12 turns
+Effect: Creates whirling hammers
+This spell creates a magical barrier in an area
+up to 30' in diameter and 30' high. The bar-
+rier is a wall of whirling and dancing ham-
+mers, obviously dangerous. Any creature
+passing through the barrier takes 7-70 points
+of damage from the whirling hammers (no
+Saving Throw). This spell is often used to
+block an entrance or passage.
+The reverse of this spell (remove barrier)
+will destroy any one barrier created by a
+cleric. It can also be used to destroy a magic-
+user's wall of ice, wall of fire, or wall of stone
+spell effect. It will not affect a wall of iron.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Barrier*
 Range: 60'
 Duration: 12 turns
@@ -10558,6 +15680,63 @@ meta:
 >   - scope: power; id: Force Field; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+Force Field
+Range: 120 feet
+Duration: 6 turns
+Effect: Creates an invisible barrier
+This spell creates an invisible, immovable
+barrier or object of pure force. It has almost
+no thickness, but cannot be broken or
+destroyed by any means except a disintegrate
+spell or a wish; even a dispel magic cannot
+affect it. A force field's shape is limited to a
+sphere, part of a sphere, a flat surface, a cyl-
+inder, a square or rectangular box with flat
+sides, or part of such a box. The sphere's
+radius can be a maximum of 20 feet. The flat
+surface or combinations thereof may be up to
+5,000 square feet in total area. The fbrce field
+cannot be irregular in shape, and its surface
+must be perfectly smooth. There is no mini-
+mum size.
+The force field will not appear within any
+solid or creature. Any part of it that would do
+so will not appear, leaving a hole in the force
+field. Furthermore, the edges of the field are
+blunt and cannot cause damage in any way.
+The force field will stay where it is put until it
+disappears, and cannot be moved by any
+means but a wish.
+Any creature(s) completely enclosed by a
+sealed force field will not starve, suffer from
+lack of air, or otherwise be harmed by the
+encasement. A sealed force field magically
+preserves any within it from natural death.
+This does not prevent damage or death from
+attacks by others within the force field.
+Nothing can pass through a force field.
+Spells, missiles, blows, breath weapons, and
+all other attack forms will merely bounce off
+when contacting it. However, a teleport or
+dimension door spell effect can bypass it;
+these spells ailow the caster to step out of nor-
+mal existence, re-entering elsewhere. The
+force field exists only on one plane of exist-
+ence. Thus, planar travel (via gate or other
+means) can also bypass it.
+Though most often used as a barrier or
+cage, a force field can easily be used to create
+an invisible floor, stairway, chair, or other
+object. A force fieldcan be made permanent,
+but the permanence spell effect is still subject
+to dispel magic, and if removed, the force
+field disappears immediately. Despite perma-
+nence, a force field will always vanish if
+struck by a disintegrate spell effect or wished
+away.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Force Field
 Range: 120'
 Duration: 6 turns
@@ -10656,6 +15835,52 @@ meta:
 >   - scope: power; id: Contingency; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+Contingency
+Range: Touch
+Duration: Indefinite (see below)
+Effect: Prepares one other spell
+This powerful spell acts as a trigger for one
+stated magic-user spell of 4th level or less that
+does not normally cause damage. While cast-
+ing a contingency spell, the magic-user must
+describe one situation. When that situation
+next occurs, the second spell effect stated
+appears automatically and immediately, as if
+cast at that time.
+Examples of proper use:
+"When I am touched or struck by any liv-
+ing creature that is not a Lawful or Neutral
+cleric, except for my friends Charlie
+McGonigle and Sally Silvernose (contin-
+gency), then charm monster on the creature
+touching or striking me (spell effect)."
+"When I have eight hit points or less and
+am in a dungeon about to be damaged (con-
+tingency), then dimension door on myself to
+a destination 1 inch above ground level
+directly upward or, if that is greater than 360
+feet away, to the farthest unoccupied area
+within range that I have seen within the 12
+hour period prior to the existence of this con-
+tingency (spell effect)."
+Any item or creature can have one contin-
+gency spell at most; not even a wish can allow
+multiple applications. The contingency
+described can be as detailed or as simple as
+desired, but is somewhat limited in effect: it
+must relate to something within 120 feet of
+the trigger occurrence. A contingency based
+on a far-off occurrence is beyond the spell's
+capacity. The target and effect of the second-
+ary spell must always be specified, and if any
+needed details are lacking, the secondary
+spell does not occur.
+A contingency spell effect has no maxi-
+mum duration. It may remain for centuries
+before the situation described comes to pass.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Contingency
 Range: Touch
 Duration: Indefinite (see below)
@@ -10743,6 +15968,28 @@ meta:
 >   - scope: power; id: Protection from Lightning; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+Protection from Lightning
+Range: Touch
+Duration: 1 turn per level of the caster
+Effect: Protects against electrical attack
+Any recipient of this spell is immune to a
+given amount of electrical damage. The exact
+amount is determined by the level of the
+druid: for each level of experience, one Die of
+damage is negated. Thus, a 20th level druid
+could be protected against 2 full call lightning
+attacks (of 8 dice each), plus half of a third.
+Any electrical attacks partially negated are
+handled normally for the remaining damage;
+in the example above, the druid would take 4-
+24 points of damage, or 2-12 points if the Saving Throw were made.
+
+[Master | Druid Spell Material]
+ 40 Protection from Lightning (R Touch,
+    DR 40T, EF 40 dice D; C15)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Protection from Lightning
 Range: Touch
 Duration: 1 turn per level of the caster
@@ -10810,6 +16057,43 @@ meta:
 >   - scope: power; id: Turn Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Druid Spell Material]
+Turn Wood
+Range: 30 feet
+Duration: One turn per level of the druid
+Effect: Pushes all wooden items away
+This spell creates an invisible wave of force,
+120 feet long and 60 feet tall. Its midpoint can
+be created anywhere within 30 feet of the caster.
+This wave of force then immediately moves in
+one horizontal direction, as specified by the
+caster, at the rate of 10 feet per round. If
+desired, the force wall can be stopped at any
+time, but cannot thereafter be moved.
+all wooden objects contacting or contacted
+by the wave of force become stuck to it and
+move with it. The wave of force continues mov-
+ing until the maximum range (360 feet) is
+reached, and stops there for the remainder of
+the spell duration. The items caught are not
+harmed by the effect, but wooden weapons
+(bows, crossbows, most spears and javelins,
+etc.) and magic items (wands, staves, etc.) can-
+not be used while trapped in the effect.
+Once created, the wave of force does not
+require concentration. However, the caster
+may cause it to vanish before the duration
+ends by concentrating for one round.
+This spell has many useful applications
+during mass combat (against a group of
+Characters - Druid
+archers) and waterborne adventures (to move
+a ship). However, it will not move permanent
+constructions (such as buildings) or other
+secured objects (such as trees).
+Seventh-Level Druid Spell
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Turn Wood
 Range: 30'
 Duration: One turn per level of the druid
@@ -10893,6 +16177,46 @@ meta:
 >   - scope: power; id: Immunity; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+Immunity
+Range: Touch (one creature)
+Duration: One turn per level of the caster
+Effect: Bestows immunity or resistance to
+some spells and weapons
+This spell gives the creature touched total
+immunity to all 1st-, 2nd-, and 3rd-level
+spells. Furthermore, 4th- and 5th-level spells
+have only half normal effect, or one-quarter
+normal if a saving throw applies and is suc-
+cessful. Any effect that is quantifiable can be
+reduced in this manner. These effects include
+duration, bonuses, penalties, damage, etc. If
+necessary, round numbers off in the recipi-
+ent's favor. For example, if the recipient were
+the victim of a cause critical wounds cleric
+spell, only 3-10 points of damage would
+result.
+The recipient is also completely immune to
+all missiles (normal or magical), normal and
+silver weapons, and takes half damage from
+magical hand-held weapons. This applies
+only to weapons; claws, bites, breath weap-
+ons, and other natural attack forms are not
+blocked.
+By concentrating, the recipient can drop
+the protection, allowing spells (such as cure
+wounds) to have normal effects for that
+round. If dropped, the immunity is totally
+absent for that round (including the protec-
+tion from weapons), but returns automati-
+cally at the end of the round.
+A carefully worded wish spell may extend
+this protection, giving immunity to 4th level
+spells and +1 weapons, and half normal
+effect from 5th- and 6th-level spells. No fur-
+ther improvement is possible.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Immunity
 Range: Touch (one creature)
 Duration: One turn per level of the caster
@@ -10971,6 +16295,11 @@ meta:
 >   - scope: power; id: Mind Barrier; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+  80 Mind Barrier (R 10', DR 48 hours, EF
+      +8 ST; C24)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Mind Barrier*
 Range: 10'
 Duration: 1 hour per level of the caster
@@ -11051,6 +16380,10 @@ meta:
 >   - scope: power; id: Permanence; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+  90 Permanence (R 10'; C25)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Permanence
 Range: 10'
 Duration: Permanent until dispelled
@@ -11151,47 +16484,129 @@ meta:
 >   - scope: power; id: Prismatic Wall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
 Prismatic Wall
-
-Range: 60!
-
+Range: 60 feet
 Duration: 6 turns
+Effect: Creates a multi-colored barrier
+This spell creates a barrier of many colors
+with a glittering appearance as if from light
+through a prism. This wall is 2 inches thick,
+with 1/8 inch between the colors. The effect
+must be either a sphere with a radius of 10
+feet, centered on the caster, or a flat surface
+(vertical or horizontal) of up to 500 square
+feet in area. Whatever its form, the prismatic
+wall cannot be moved (even by a wish). The
+caster may pass through it freely and
+unharmed, with any items desired. All other
+creatures and objects contacting or passing
+through the prismatic wall are affected by the
+magic, starting with the first color contacted.
+A wish or rod of cancellation can remove
+three colors, but no more. Any person with
+an anti-magic shell (including the caster of
+the prismatic wall) cannot pass through the
+wall, but the attempt will not damage either
+spell effect.
+To break through a prismatic wall, the
+magic remedies given (see below) must be
+applied in the correct order. When successful,
+each causes the appropriate color to disap-
+pear from the effect. If a creature merely
+charges into the prismatic wall, it takes 84
+points of damage from the first three colors
+(no saving throw), and then must make the
+four saving throws required for the next four
+colors. If it survives, the creature may have to
+exit by passing through the colors again, in
+reverse order.
+The prismatic wall extends into the nearest
+plane of existence (the Ether if cast on the
+Prime Plane), appearing there as an inde-
+structible solid wall. It thus cannot be
+bypassed by planar or dimensional travel.
+The colors and effects of a prismatic wall
+are always the same; when created, the violet
+side is always closest to the caster.
+Red: Blocks all magical missiles; inflicts 12
+points of damage. Negated by any magi-
+cal cold.
+Orange: Blocks all non-magical missiles;
+inflicts 24 points of damage. Negated by
+any magical lightning.
+Yellow: Blocks all breath weapons; inflicts 48
+points of damage. Negated by magic mis-
+sile spell.
+Green: Blocks all detection spell effects
+(including crystal balls, ESP, etc.). Any-
+one touching it must make a Saving
+Throw vs. Poison or die. Negated by pass-
+wall spell.
+Blue: Blocks all poisons, gases, and gaze
+attacks. Anyone touching it must make a
+Saving Throw vs. Turn to Stone or be pet-
+rified. Negated by disintegrate spell.
+Indigo: Blocks all matter, living or other-
+wise. Anyone touching it must make a
+Saving Throw vs. Spells or be gated to a
+random location in an Outer Plane, and
+possibly (50%) forever lost. Negated by
+dispel magic spell.
+Violet: Blocks magic of all types. Anyone
+touching it must make a Saving Throw vs.
+Wands or be struck unconscious and
+insane (curable only by a cureall spell or a
+wish). Negated by continual light spell.
 
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
+Prismatic Wall
+Range: 60'
+Duration: 6 turns
 Effect: Creates a multi-colored barrier
 
-This spell creates a barrier of many colors with
-a glittering appearance as if from light shining
-through a prism. This wall is 2" thick, with 1/8"
-between the colors. The effect must be either a
-sphere with a radius of 10', centered on the cast-
-er, or a flat surface (vertical or horizontal) of up
+   This spell creates a barrier of many colors
+a glittering appearance as if from light sh
+through a prism. This wall is 2" thick, with
+between the colors. The effect must be eit
+sphere with a radius of 10', centered on the
+er, or a flat surface (vertical or horizontal)
 to 500 square feet in area.
-
-Whatever its form, the prismatic wall cannot
-be moved (even by a wish). The caster may pass
-through it freely and unharmed, with any items
-he chooses to carry. All other creatures and ob-
-jects contacting or passing through the prismatic
-wall are affected by its magic, starting with the
+   Whatever its form, the prismatic wall ca
+be moved (even by a wish). The caster may
+through it freely and unharmed, with any
+he chooses to carry. All other creatures an
+jects contacting or passing through the pris
+wall are affected by its magic, starting wit
 first color they contact.
-
-It takes powerful magic to break through the
-wall. A wish spell or a rod ofcancellation will re-
-move the three outermost remaining colors, but
+   It takes powerful magic to break throug
+wall. A wish spell or a rod of cancellation w
+move the three outermost remaining colors
 that's all.
-
-To break through a prismatic wall, an attacker
-must attack it with a specific sequence of spells.
-Each spell will cancel one color of the prismatic
-wall. These remedy spells, shown on the chart
-below, must be cast in the correct order (first,
-any magical cold to remove the red layer; then,
-any magical lightning to remove the orange lay-
-er; and so on). When cast successfully, each spell
-causes the appropriate color to disappear from
-the wall. When all layers are gone, so is the wall.
-
-A person with an active anti-magic shell (in-
+   To break through a prismatic wall, an att
+must attack it with a specific sequence of s
+Each spell will cancel one color of the pris
+wall. These remedy spells, shown on the
+below, must be cast in the correct order (
+any magical cold to remove the red layer;
+any magical lightning to remove the orange
+er; and so on). When cast successfully, each
+causes the appropriate color to disappear
+the wall. When all layers are gone, so is the
+   A person with an active anti-magic shel
+including the caster of the prismatic wall) will not
+be able to pass through the wall, but the attempt
+will not damage either the anti-magic shell or
+the prismatic wall.
+The prismatic wall extends into the nearest
+plane of existence (the Ethereal Plane, if cast on
+the Prime Plane), appearing there as an inde-
+structible solid wall. Planar and dimensional
+travel can therefore not bypass it.
+The colors and effects of a prismatic wall are
+always the same; when created, the violet side is
+always closest to the caster. The effects and colors
+of the prismatic wall are summarized below.
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -11243,6 +16658,10 @@ meta:
 >   - scope: power; id: Symbol; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+11. Symbol (C25)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Symbol
 Range: Touch
 Duration: Permanent
@@ -11342,6 +16761,38 @@ meta:
 >   - scope: power; id: Geas; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+geas
+Range: 30'
+Duration: Until completed or removed
+Effect: Compels one creature
+This spell forces a victim either to perform
+or avoid a stated action. For example, a char-
+acter may be geased to bring back an object
+for the caster; to eat whenever the chance
+arises; or to never reveal certain informa-
+tion. The action must be possible and not
+directly fatal or else the gem will return and
+affect the caster instead! The victim may
+make a Saving Throw vs. Spells to avoid
+the effect. If the victim ignores the gem,
+penalties (decided by the DM) are applied
+until the character either obeys the geas or
+dies. Suitable penalties include minuses in
+combat, lowered ability scores, loss of
+spells, pain and weakness, and so forth.
+Dispel m
+ag c
+i and remove curse spells will not
+affect a geas.
+The reverse of this spell, remove gem, will
+rid a character of an unwanted geas and its
+effects. However, if the caster is a lower
+level than the caster of the original gem,
+there is a chance of failure (5% per level
+difference).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Geas*
 Range: 30'
 Duration: Until completed or removed
@@ -11416,6 +16867,13 @@ meta:
 >   - scope: power; id: Anti-Plant Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+1. Anti-Plant Shell
+
+[Master | Druid Spell Material]
+ 30 Anti-Plant Shell (DR 6T; C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Anti-Plant Shell
 Range: 0 (druid only)
 Duration: 1 round per level of the druid
@@ -11476,6 +16934,13 @@ meta:
 >   - scope: power; id: Anti-Animal Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | Druid Spell Material]
+1 . Anti-Animal Shell
+
+[Master | Druid Spell Material]
+ 45 Anti-Animal Shell (DR 40T; C16)
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Anti-Animal Shell
 Range: 0 (druid only)
 Duration: 1 turn per level of the caster
@@ -11541,6 +17006,31 @@ meta:
 >   - scope: power; id: Floating Disc; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Basic | Spell Lists and Basic Spell Descriptions]
+Floating Disc
+Range: 0
+Duration: 6 turns
+Effect: Disc remains within 6'
+This spell creates an invisible magical
+horizontal platform about the size and
+shape of a small round shield. It can
+carry up to 5000 cn (500 pounds). It
+cannot be created in a place occupied by
+a creature or object. The floating disc is
+created at the height of the magic-user's
+waist, and will always remain at that
+height. It will automatically follow the
+magic-user, remaining within 6' at all
+times. It can never be used as a weapon,
+because it has no solid existence and
+moves slowly. When the duration ends,
+the floating disc will disappear, suddenly
+dropping anything upon it.
+
+[Expert | Clerical and Magic-User Spell Expansions]
+3. Floating Disc
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Floating Disc
 Range: 0
 Duration: 6 turns
@@ -11603,6 +17093,23 @@ meta:
 >   - scope: power; id: Wall of Stone; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Wall of Stone
+Range: 60'
+Duration: Special
+Effect: Creates 1000 cubic feet of stone
+This spell creates a vertical stone wall ex-
+actly 2' thick. Any dimensions and shape
+may be chosen by the caster, but the total
+area must be 500 square feet or less (10' x
+50', 20' x 25', etc.), and the entire wall
+must be within 60' of the caster. The wall
+must be created so as to rest on the ground
+or similar support, and cannot be cast in a
+space occupied by another object. It lasts
+until dispelled or physically broken.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Wall of Stone
 Range: 60'
 Duration: Special
@@ -11664,6 +17171,21 @@ meta:
 >   - scope: power; id: Create Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Create Water
+Range: 10'
+Duration: 6 turns
+Effect: Creates one magical spring
+With this spell, the cleric summons forth
+an enchanted spring from the ground or a
+wall. The spring will flow for an hour,
+creating enough water for 12 men and
+their mounts (for that day, about 50 gal-
+lons). For each of the cleric's levels above 8,
+water for twelve additional men and
+mounts is created.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Create Water
 Range: 10'
 Duration: 6 turns
@@ -11728,6 +17250,29 @@ meta:
 >   - scope: power; id: Growth of Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Growth of Plants*
+Range: 120'
+Duration: Special
+Effect: Enlarges 3000 square feet of plants
+This spell causes normal brush or woods to
+become thickly overgrown with vines,
+creepers, thorns, briars. An area of up to
+3000 square feet may be affected (the di-
+mensions chosen by the caster). The plants
+to be affected must be entirely within the
+spell's range. The affected area is impassa-
+ble to all but giant-sized creatures. The
+effect lasts until removed by the reverse or
+by a dispel magic spell.
+The reverse of this spell, shrink plants,
+causes all normal plants within a similar
+area of effect to shrink and become pass-
+able. It may be used to negate the effects of
+the normal spell. Shrink plants will not af-
+fect plant-like monsters (such as treants).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Growth of Plants*
 Range: 120'
 Duration: Special
@@ -11796,6 +17341,38 @@ meta:
 >   - scope: power; id: Conjure Elemental; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Conjure Elemental
+Range: 240'
+Duration: Concentration
+Effect: Summons one 16 HD elemental
+This spell allows the caster to summon any
+one elemental (AC: - 2, HD: 16, Damage:
+3-24; see page 49). Only one of each type
+of elemental (earth, air, fire, water) may be
+summoned in one day. The elemental will
+perform any tasks within its power (carry-
+ing, attacking, etc.) as long as the caster
+maintains control by concentrating. The
+caster cannot fight, cast other spells, or
+move over half normal speed, or the con-
+trol is lost. If control is lost, it cannot be
+regained. An uncontrolled elemental will
+try to slay its summoner, and may attack
+anyone in its path while pursuing him. A
+controlled elemental may be returned to its
+home plane simply by concentration. An
+uncontrolled elemental may also be sent
+back by the use of a dispel magic or dispel evil
+spell.
+
+[Companion | Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items]
+3. Conjure Elemental
+
+[Immortals | Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Conjure Elemental]
+Conjure Elemental: See General Notes (Conjuring and Summoning).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Conjure Elemental
 Range: 240'
 Duration: Concentration
@@ -11865,6 +17442,23 @@ meta:
 >   - scope: power; id: Invisible Stalker; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Invisible Stalker
+Range: 0 (Caster only)
+Duration: Until mission is accomplished
+Effect: Summons one creature .
+This spell summons an invisible stalker
+(page 52), which will perform one task for
+the caster. The creature will serve whatever
+the time or distance involved, until the task
+is completed or until the creature is slain. A
+dispel evil spell will force the creature to re-
+turn to its home plane.
+
+[Immortals | Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Invisible Stalker]
+Invisible Stalker: See General Notes (Conjuring and Summoning).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Invisible Stalker
 Range: 0 (Caster only)
 Duration: Until mission is accomplished
@@ -11922,6 +17516,33 @@ meta:
 >   - scope: power; id: Aerial Servant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+Aerial Servant
+Range: 60'
+Duration: 1 day per level of caster
+Effect: Servant fetches one item or creature
+An aerial servant is a very intelligent human-
+oid being from the Ethereal Plane. With this
+spell, the cleric summons one of these beings,
+which appears immediately. The cleric must
+then describe one creature or item to the ser-
+vant, or else it will depart. The approximate
+location of the target must also be named.
+When it hears this description and location,
+the servant leaves, trying to find the item or
+creature and bring it to the cleric. The ser-
+vant will take as much time as needed, up to
+the limit of the duration.
+The aerial servant has 18 Strength, and
+can carry up to 5,000 cn. It can become ethe-
+real at will, and thus can travel to most places
+easily. However, it cannot pass a protection
+from evil spell effect. If it cannot perform its
+duty within the duration of the spell, the ser-
+vant becomes insane and returns to attack the
+caster.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Aerial Servant
 Range: 60'
 Duration: 1 day per level of caster
@@ -11996,6 +17617,10 @@ meta:
 >   - scope: power; id: Animate Objects; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+2. Animate Objects
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Animate Objects
 Range: 60'
 Duration: 6 turns
@@ -12063,6 +17688,122 @@ meta:
 >   - scope: power; id: Clone; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+Clone
+Range: 10 feet
+Duration: Permanent
+Effect: Grows one duplicate creature from a
+piece of the original creature
+A clone is an exact duplicate of another liv-
+ing creature, grown from a piece of the origi-
+nal by using this spell. The piece need not be
+alive at the time the spell is cast.
+A human or demi-human clone is rare and
+may be very dangerous. A clone of any other
+living creature is a more common thing called
+a simulacrum. A character can have only one
+clone at a time; attempts at making multiple
+clones of a single character automatically fail.
+Undead and constructs cannot be cloned,
+because they are not living creatures.
+Human and demi-human clones: To cre-
+ate a human or demi-human clone, this spell
+must be cast on one pound of the original's
+flesh. The cost of other materials used in
+making the clone is 5,000 gp per Hit Die of
+the original. The clone awakens only when
+fully grown; this takes one week per Hit Die
+of the original. When completed, the clone is
+not magical and cannot be dispelled.
+If the human or demi-human original is not
+alive when the clone awakens, the clone has all
+the features, statistics (abilities), and memo-
+ries possessed by the original at the time the
+flesh was taken. This is a very important
+point. For example, a 20th-level magic-user
+might leave a pound of flesh with a scroll of this
+spell, so that he might be restored if lost; but if
+the character gains another ten levels of expe-
+rience and then dies, the clone will be the
+younger, less-experienced, 20th-level form.
+If a clone duplicates a living person, or if
+the dead original regains life, a very hazard-
+ous situation develops. Each form instantly
+becomes aware of the other's existence. A
+partial mind-link exists between them; each
+can feel the other's emotions (but no other
+thoughts). If either form is damaged, the
+other takes the same damage (but may make
+a Saving Throw vs. Spells to take half dam-
+age). This effect does not apply to charm,
+sleep, cures, or other effects that do not cause
+damage. The clone is immediately obsessed
+with the need to destroy its original and will
+do anything to accomplish this. From the
+time a clone becomes aware of its original, it
+has one day per level of its creator (the caster
+of the clone spell) to succeed. If it succeeds, it
+lives in peace; but if it fails, it becomes
+insane.
+When a clone goes insane, the original
+creature permanently loses one point of Intel-
+ligence and one point of Wisdom. The origi-
+nal may also thereafter become insane (5%
+chance per day, not cumulative). If this
+occurs, the victim and the clone die one week
+later, both forever dead and unrecoverable
+even with a wish.
+Special Note: If the original and the clone
+are kept on different planes of existence, no
+mind-link occurs, and the two preceding par-
+agraphs do not apply. No ill effects occur, and
+the two remain completely unaware of their
+situation. If they ever occupy the same plane,
+the mind-link occurs and cannot be broken
+thereafter except by the destruction of the
+clone or its original.
+Other clones: A clone of any other living
+creature (not a human or demi-human) is
+called a simulacrum. One percent of the orig-
+inal's flesh is needed, and the cost of other
+materials is 500 gp per hit point of the origi-
+nal. As with a normal clone, the time
+required to grow a simulacrum is one week
+per Hit Die of the original.
+A simulacrum always obeys its creator (the
+spell caster). It understands all the languages
+spoken by the caster. Within a range of 10 feet
+per level of the caster, it can receive mental
+commands if the creator concentrates on
+sending them. A simulacrum is an enchanted
+monster. It can be blocked by a protection
+from evil spell and is magical; a dispel magic
+spell can (subject to chances of failure) cause
+it to vanish without a trace.
+The simulacrum's alignment is the same as
+that of the spell caster, regardless of the origi-
+nal's alignment. Its Armor Class, movement
+rate, morale, and number of attacks are the
+same as the original's.
+A simulacrum has only 50% of the origi-
+nal's Hit Dice, hit points, and damage per
+attack. The DM rolls dlOO for each special
+ability; it is present in the simulacrum if the
+result is 01-50. However, a freshly grown
+simulacrum never has any of the spells or
+spell-like abilities of the original.
+If the original creature is alive, the simula-
+crum does not grow beyond this point. If the
+original creature dies (or is already dead), the
+simulacrum continues to increase in abilities,
+gaining an additional 5 % per week to a maxi-
+mum of 90% of the original's statistics.
+When complete, the DM rolls again to see
+which special abilities previously missing are
+gained, including spells and spell-like abilities (using the 90% chance for each; all may
+be present).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Clone
 Range: 10'
 Duration: Permanent
@@ -12233,6 +17974,21 @@ meta:
 >   - scope: power; id: Create Normal Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
+Create Normal Animals
+Range: 30'
+Duration: 10 turns
+Effect: Creates 1-6 loyal animals
+The cleric is able to create normal animals
+from thin air with this spell. The animals will
+appear at a point chosen (within 30'), but
+may thereafter be sent (by command) up to
+240' away, if desired. The animals created
+will understand and obey the cleric at all
+times. They will fight if so commanded, and
+will perform other actions (carrying, watch-
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Create Normal Animals
 Range: 30'
 Duration: 10 turns
@@ -12304,6 +18060,44 @@ meta:
 >   - scope: power; id: Create Any Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level and Ninth-Level Magic-User Spells]
+Create Any Monster
+Range: 90 feet
+Duration: 3 turns
+Effect: Creates one or more monsters
+This spell is similar to the 7th-level spell
+create normal monsters and the 8th-level
+spell create magical monsters, but with fewer
+limitations on the types of creatures appear-
+ing. The range and duration are triple those
+of the 7th-level version. Humans and demi-
+humans cannot be created, but any other
+creature is possible, regardless of the number
+of special abilities (asterisks). However, if a
+creature with three or more asterisks is
+desired, the caster must have carefully stud-
+ied one (either alive or dead) for at least one
+hour to be able to create another with this
+spell. As with the lesser spells, the maximum
+number of Hit Dice of creatures is equal to
+the level of the caster.
+Special Note: To create a construct (as
+described in the Companion Set, DM's
+Book, page 21), the proper materials must be
+used with this spell. Only one construct will
+appear, regardless of the caster's Hit Dice;
+but it is permanent, and does not vanish at
+the end of the spell duration. As with the 8th-
+level spell, the cost of materials is a minimum
+of 5,000 gp per asterisk (or more, depending
+on your campaign). If the construct has four
+or more asterisks (such as a drolem), the cost
+is doubled (or more; ask your DM).
+Created monsters of all types can be
+blocked by a protection from evil or anti-
+magic shell spell effect.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Create Any Monster
 Range: 90'
 Duration: 3 turns
@@ -12389,6 +18183,37 @@ meta:
 >   - scope: power; id: Create Magical Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Eighth-Level Magic-User Spells]
+Create Magical Monsters
+Range: 60 feet
+Duration: 2 turns
+Effect: Creates one or more monsters
+This spell is similar to the 7th-level create
+normal monsters spell, except that monsters
+with some special abilities (up to two aster-
+isks) can be created. The range and duration
+are double those of the lesser spell. All other
+details are the same: the creatures are chosen
+by the caster, appear out of thin air, and
+vanish at the end of the spell duration.
+The total number of Hit Dice of monsters
+appearing is equal to the level of the magic-
+user casting the spell. Humans and demi-
+humans may not be created by this spell, but
+undead are permitted. Creatures of 1-1 Hit Die are counted as 1 Hit Die; creatures of 1/2 Hit Die or less are counted as 1/2 Hit Die each.
+Special Note: To create a construct (as
+defined in the Companion Set DM's Book,
+page 21), the proper materials must be used
+with this spell. Only one construct will
+appear, regardless of the caster's Hit Dice;
+but it is permanent, and does not vanish at
+the end of the spell duration. The construct,
+however, may have only two asterisks (special
+abilities) or less. The cost of materials is a
+minimum of 5,000 gp per asterisk (or more,
+depending on your campaign).
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Create Magical Monsters
 Range: 60'
 Duration: Two turns
@@ -12470,6 +18295,40 @@ meta:
 >   - scope: power; id: Summon Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Druid Spell Material]
+Summon Animals
+Range: 360 feet
+Duration: 3 turns
+Effect: Calls and befriends normal animals
+With this spell, the druid can summon any
+or all normal animals within range. Only
+normal, non-magical creatures of animal
+intelligence are affected, excluding insects,
+arthropods, humans, and demi-humans but
+including mammals, reptiles, amphibians,
+etc. The druid may choose one or more
+known animals, may call for specific types, or
+may summon everything within range. The
+total Hit Dice of the animals responding will
+equal the level of the druid. Treat normal
+small creatures (frogs, mice, squirrels, small
+birds, etc.) as l/io Hit Die each.
+Animals affected will come at their fastest
+movement rate, and will understand the
+druid's speech while the spell is in effect.
+They will be friends of and will help the
+druid, to the limit of their abilities. If harmed
+in any way, a summoned animal will nor-
+mally flee, the spell broken for that animal.
+However, if the druid is being attacked when
+a summoned animal arrives, the animal will
+immediately attack the opponent, fleeing
+only if a Morale Check is failed.
+This spell may be used to calm hostile ani-
+mals encountered while adventuring.
+Fifth-Level Druid Spell
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Summon Animals
 Range: 360'
 Duration: 3 turns
@@ -12544,6 +18403,26 @@ meta:
 >   - scope: power; id: Summon Elemental; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Druid Spell Material]
+Summon Elemental
+Range: 240 feet
+Duration: 6 turns
+Effect: Summons one 16 HD elemental
+This spell allows the caster to summon any
+one elemental per spell (see D&D Expert
+Rulebook, page 49). Only one of each type of
+elemental (air, earth, fire, water) may be
+summoned in one day. The elemental will
+understand the druid's spoken commands
+and will perform any tasks within its power
+(carrying, attacking, etc.) as directed by the
+caster. Unlike the magic-user spell, no con-
+centration is needed to control the creature.
+It may be sent back to its own plane on com-
+mand of the caster, or by the use of a dispel
+magic or dispel evil spell.
+
+[Rules Cyclopedia | Druidic Spells List and Spell Descriptions]
 Summon Elemental
 Range: 240'
 Duration: 6 turns
@@ -12606,6 +18485,22 @@ meta:
 >   - scope: power; id: Sticks to Snakes; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
+Sticks to Snakes
+Range: 120'
+Duration: 6 turns
+Effect: Up to 16 sticks
+This spell turns 2-16 sticks into snakes (de-
+tailed below). The snakes may be poi-
+sonous (50% chance per snake). They obey
+the cleric's commands, but will turn back
+into sticks when slain or when the duration
+ends.
+Snakes: Armor Class 6, Hit Dice 1, Move
+90' (30'), Attacks 1, Damage 1-4, Save As:
+Fighter 1, Alignment Neutral.
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Sticks to Snakes
 Range: 120'
 Duration: 6 turns
@@ -12664,6 +18559,7 @@ meta:
 >   - scope: power; id: Clothform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Clothform
 Range: Touch
 Duration: Permanent
@@ -12741,6 +18637,10 @@ meta:
 >   - scope: power; id: Wall of Iron; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Master | Non-Human Spellcasters and Special Spellcaster Procedures]
+ 50 Wall of Iron (R 120', EF 500 sq.ft.; C21)
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Wall of Iron
 Range: 120'
 Duration: Permanent
@@ -12802,6 +18702,43 @@ meta:
 >   - scope: power; id: Create Normal Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells]
+Create Normal Monsters
+Range: 30'
+Duration: 1 turn
+Effect: Creates 1 or more monsters
+This spell causes monsters to appear out of
+thin air. All monsters appearing will under-
+stand and obey the caster's commands-
+fighting, carrying or fetching things, etc.
+They will faithfully obey all commands to the
+best of their abilities. Each monster will
+appear carrying its normal weapons and
+wearing its normal armor (if any), but other-
+wise unequipped. At the end of 1 turn, all the
+monsters created vanish back into thin air,
+along with all their equipment.
+   The total number of Hit Dice of monsters
+appearing is equal to the level of the magic-
+user casting the spell (with fractions
+dropped). The magic-user may choose the
+exact type of monsters created, selecting any
+monster with no special abilities (;.e., no
+asterisk next to the Hit Dice number in the
+monster explanation). Humans, demi-
+humans, and Undead cannot be created by
+this spell. Creatures of 1-1 Hit Dice are
+counted as 1 Hit Die; creatures of 1/2 Hit Die
+or less are counted as 1/2 Hit Die each.
+   For example, with this spell, a 15th level
+caster could summon 30 giant bats, rats, or
+kobolds; or 15 goblins, orcs, or hobgoblins;
+or 7 rock baboons, gnolls, or lizard men; or 5
+boars, draco lizards, or bugbears; or 3 black
+bears, panthers, or giant weasels; and so
+forth.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Create Normal Monsters
 Range: 30'
 Duration: 1 turn
@@ -12877,6 +18814,33 @@ meta:
 >   - scope: power; id: Summon Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells]
+Summon Object
+Range: Infinite
+Duration: Instantaneous
+Effect: Retrieves 1 object from caster's home
+By means of this spell, the magic-user can
+cause one non-living object to leave his or her
+home and appear in hand. The object must
+weigh no more than 500 cn, and may be no
+bigger than a staff or small chest. The caster
+must be very familiar with the item and its
+exact location, or the spell will not work.
+Each item must be prepared beforehand by
+sprinkling it with a special powder that costs
+1,000 gp per item prepared; the powder
+becomes invisible, and does not interfere
+with the item in any way. Unprepared items
+cannot be summoned by this spell.
+If another being possesses the item sum-
+moned, the item will not appear, but the
+caster will know approximately who and
+where the possessor is.
+The magic-user may use this spell from
+any location, even if the item summoned is
+on another Plane of Existence.
+
+[Rules Cyclopedia | Magical Spells List and Spell Descriptions]
 Summon Object
 Range: Infinite
 Duration: Instantaneous
@@ -12953,6 +18917,10 @@ meta:
 >   - scope: power; id: Dispel Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+4. Dispel Evil
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Dispel Evil
 Range: 30'
 Duration: 1 turn
@@ -13023,6 +18991,13 @@ meta:
 >   - scope: power; id: Holy Word; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
+2. Holy Word
+
+[Master | Seventh-Level Cleric Spells]
+2. Holy Word (C13)
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Holy Word
 Range: 0
 Duration: Instantaneous
@@ -13099,6 +19074,19 @@ meta:
 >   - scope: power; id: Raise Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells]
+Raise Dead*
+When cast at an Undead creature of more
+Hit Dice than a vampire, this spell inflicts 3-
+30 (3d10) points of damage. The victim may
+make a Saving Throw vs. Spells to take 1/2
+damage.
+The reverse, finger of death, will actually
+cure 3-30 points of damage for any Undead
+with 10 or more Hit Dice (phantom, haunt,
+spirit, nightshade, or special).
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Raise Dead*
 Range: 120'
 Duration: Permanent
@@ -13185,6 +19173,279 @@ meta:
 >   - scope: power; id: Raise Dead Fully; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
+3. Raise Dead Fully*
+
+[Master | Seventh-Level Cleric Spells]
+      raise dead fully
+   3. Ability score penalty: The user loses 6-
+       11 (id6 +5) points of Strength, to a
+      minimum Strength of 3.
+   Source: Norse mythology
+   Further Research: See standard works,
+referring to the following names. Verthandi is
+one of the Norns of Norse legend, the immor-
+tal beings who rule the fates of men and gods
+alike. Verthandi rules the Present, Urdur (or
+Urdhr, or Urth) the Past, and Skuld (who
+wears a veil), the Future. Each of the Norns
+may provide ideas for other artifacts.
+   Your Notes:
+
+WIFE OF ILMARINEN
+ The legendary Immortal craftsman
+ Ilmarinen once used his great skills to cre-
+ ate a companion entirely of gold and silver.
+ However, the result was too cold to even be
+ approached. Appearing as a metallic
+ golem, it was given special powers when
+ freed, and is said to reside in far northern
+ reaches, either alone or with its current
+ master.
+
+  Description: The wife appears to be a
+metal statue of an extremely attractive
+human female clad in robes. The entire
+statue is made of a sparkling mixture of gold
+and silver.
+   Magnitude: Minor artifact.
+   Power Limits: 2/A, 1/B, 2/C, 3/D
+   Sphere: Matter (Fighters, earth)
+   Suggested Powers (PP 100):
+A1     Ice breath                       55
+A1     Ice storm                        45
+   Activation: The wife is always active.
+   Use of Powers: The powers of the wife are
+used by the artifact alone, not granted to the
+user. The wife can speak any language it
+hears, and will explain its powers to any who
+ask (unless ordered not to). However, the
+artifact cannot be controlled until a special
+command word is uttered. Once this com-
+mand is spoken, the wife will obey either
+mental or verbal commands from the user.
+The command word can only be obtained
+from Ilmarinen himself (by using a com-
+mune or contact other plane), from a pre-
+vious user of the artifact, or by a wish.
+   Suggested Handicap (1): When control is
+gained, the user becomes aware that the wife
+cannot recharge itself. It can eat gold or sil-
+ver. For each 100 gp value of those metals
+eaten, the artifact recharges 1 PP.
+   Suggested Penalty (1; 1 in 6 chance of
+occurrence whenever a power is used): In-
+stead of attacking as directed, the wife aims
+her attack at the user; normal saving throws
+apply, but the user gains a +4 bonus for the
+second and subsequent appearances of this
+effect.
+   Other Details: AC -20; hp 100; AT 1
+power; D by power; M V 90' (30'); AL N.
+The wife will not attack by any means other
+than its powers.
+   Source: Finnish mythology
+   Further Research: See the Finnish
+national epic poem Kalevala, compiled by
+ Elias Lonnrott in the late 19th century.
+   Your Notes:
+
+The following legendary magic items are
+mentioned in history, myths, legends, and lit-
+erature. You may easily develop them into
+either artifacts or powerful but standard
+magic items. Further research is recom-
+mended.
+
+   Ambrosia: This is a potion of Immortality,
+but with a short duration. Repeated drinks
+are needed to maintain Immortal status.
+   Apples of Bragi: In Scandinavian legend,
+Bragi (son of Odin) had a magically inex-
+haustible supply of these items. Each can
+cure weariness, decay of power, ill temper, or
+failing health.
+   Arrow of Abaris: Abaris the Hyperbo-
+rean, a Greek sage in the 6th century BC,
+once received a magic arrow from the god
+Apollo (according to Greek legend). The
+arrow enabled him to become invisible, cure
+disease, fly (riding the arrow, as if a broom)
+and to divine the future.
+    Bag of Aeolus: In Homer's Odyssey, this
+bag (named for the god of winds) contains a
+divine essence. When opened, it blows Odys-
+seus' ship back to its starting point.
+    Books, Sibylline: These were written
+prophecies, carefully preserved in ancient
+Rome and occasionally consulted on matters
+of great import. There were nine scrolls at
+first, offered for sale to Rome by the seeress
+Almathaea; the Romans refused her price.
+She kept to the price and burned 3, but again
+was turned down. She sold the remaining 3 at
+the original price. They were preserved in a
+stone chest, with two custodians (later
+increased to 10 and then 15). Finally placed
+in gilt cases at the base of the statue of Apollo
+on Palatine Hill, they were burned in the
+great fire of Nero's fame.
+    Carpet, Solomon's Magic: This item,
+made of green silk, was legended to have car-
+ried not only Solomon and his great throne
+but also all of his army.
+    Draupnir: In Scandinavian legend, the
+ famed magic ring made by Odin (the
+ supreme deity) for the dwarves. Every 9
+ nights it produced 8 non-magical rings equal
+ in size and beauty to itself, and is thus a fertil-
+ ity symbol.
+    Elixir: In Arabic legend, this powder was
+ sprinkled on wounds of battle, curing them.
+ Treat as a potion of healing, but applied
+ instead of consumed.
+    Holy Grail: This vessel of literary fame
+ was the cup at the Last Supper, carried to
+ England by Joseph of Arimathea. It was said
+ to provide food, drink, and spiritual suste-
+ nance for the life of the custodian. This term
+ may have originally been used in reference to
+ the platter of the Paschal lamb (again, at the
+ Last Supper).
+    Horse, flying: Clavileno, an enchanted
+ wooden rocking horse described in Cer-
+ vantes' "Don Quixote," could fly and carry
+ an armed rider. It was guided by a pin in its
+ forehead.
+
+    Mill: A magic mill in the Finnish
+ "Kalevala," called the Sampo, could grind
+out meal, salt, or gold from straw on com-
+mand.
+   Necklace of Harmonia: Harmonia,
+daughter of the Greek gods Ares and Aphro-
+dite, was given a magical necklace when she
+married Cadmus. Though relatively unre-
+markable at the time, the necklace brought
+disaster to all subsequent owners.
+   Odrovir: In Norse legend, a great war
+took place between the Aesir (the 24 gods of
+heaven, Asgard) and the Vanir (the Nature
+gods of Noatun). At its peaceful conclusion,
+both sides spat into a jar, providing their
+mixed essences as hostage to peace. Kvasir,
+the wisest of all men, was made of the spittle.
+His blood, mixed with honey, was called
+Odrovir (or Odhrevir); all who partook of it
+became poets.
+   Ring of Amasis: Amasis, King of Egypt,
+advised his incredibly lucky friend Polycra-
+tes, King of Samos, to discard something of
+great value to balance the Fates. Polycrates
+threw a prized ring into the sea, but it was
+later found in a fish on the King's dinner
+table. Amasis promptly recognized this sign
+from the gods and broke off relations with his
+friend; shortly thereafter, Polycrates was bru-
+tally slain.
+   Ring of the Nibelungen: Made famous by
+Richard Wagner's 1876 opera, this item
+comes from several Scandinavian legends
+(the Volsunga Saga, Nibelungenlied, Elder
+and Younger Eddas, and the Eckelied). The
+ring was part of an entire hoard in the Rhine
+river, which was guarded by the Rhine Maid-
+ens until Alberich gained it by foreswearing
+love. The greedy dwarf cursed the item, and
+when the Ring was later taken by gods and
+heroes for various uses, it brought doom to
+all, resulting even in the destruction of
+Asgard and the gods.
+   Swords: Many magical swords can be
+found in myth and literature. The following
+list is only a sampling; further research is rec-
+ommended to ascertain appropriate powers.
+   Angurvadal (Stream of Anguish) was
+owned by the hero of "Frithiofs Saga," a
+13th century Scandinavian work.
+   Ar'ondight, sword of Launcelot of the
+Lake, was mentioned in several Arthurian
+legends.
+   Balisarda (a sword of slicing) was made by
+the witch Falerina in the 1487 romance epic
+"Orlando Innamorato" (Roland in Love) by
+Matteo Maria Boiardo.
+   Balmung was the sword of Siegfried in
+Scandinavian legend. It was made by
+Wieland, a Germanic name for the immortal
+
+blacksmith Volund, known as "Wayland
+Smith" to the English. (See the artifact
+Armet by Wayland.) Wieland may be similar
+to earlier legends, such as the Greek
+Hephaestus and the Roman Vulcan.
+   Colada was the sword of the Spanish hero
+El Cid, first described in a poem of a
+unknown Castilian bard in 1140. "Cid"
+comes from the Arabic "Sidi," or "Lord."
+The hero was Ruy Diaz de Bivar (1043-
+ 1099), also called "ed Campeador" (the
+Champion).
+   Courtain ("the Short Sword") was used by
+Ogier the Dane, a Paladin of Charlemagne
+(who, known as Holger Danske, is the folk
+hero of Denmark). The smith Munifican
+took 3 years to make Courtain.
+   Durandan (or Durandal, Durandana, or
+"the Inflexible") was the Sword of Roland,
+given him by Charlemagne. It once belonged
+to Hector, the noble chieftain of Homer's
+"Iliad" prominent in the fall of Troy. Roland
+(also called Orlando) is the hero of several lit-
+erary works, including the "Chanson de
+Roland" (Song of Roland) of the 11th cen-
+tury; the "Chronicle of Charlemagne" of the
+12th century; and the later Italian works
+"Morgante Maggiore" by Luigi Pulci
+(1 483), Boiardo's "Orlando Innamorato"
+(Roland in Love, 1487), and "Orlando Furi-
+oso" (Roland Mad, 1516) by Lodovico
+Ariosto.
+   Excalibur(or Escalibor, in the Old French)
+was the fabled sword of King Arthur (accord-
+ing to most legends). It was also referred to as
+Caliburn (by Geoffrey of Monmouth) and
+Caledvwlch (in the Mabinogion), or Calad-
+bolg in Irish legend (meaning "hard belly").
+It gets its name from the Latin "ex calce
+liberare," or "to liberate from the stone."
+   Flarnberge (or Floberge, meaning Flame
+Cutter) was a sword of Charlemagne.
+   Glorius, sword of the hero Oliver, broke 9
+swords made by the famed smiths Ansias,
+Galas, and Munifican.
+   Gram (German for "grief') was another
+famous sword of Siegfried.
+  Joyeuse (French, "joyous"), a greatsword
+of Charlemagne, took 3 years to make (by the
+smith Gallas).
+   Mimung, sword of the hero Wittich, was
+loaned to Siegfried for a time.
+   Morglay (Big Glaive) was the sword of Sir
+Bevis of English lore. "Morglay" was then a
+common generic term for "sword."
+   Nagelring (Nail-Ring) was the sword of
+Dietrich of Bern, a hero in the Germanic
+"Heldenbuch" and "Nibelungenlied."
+   Philippan was the sword of Mark Antony,
+a member of the Second Triumvirate of
+
+Rome (43 BC).
+   Sauvagine was another of Ogier's swords
+(see "Courtain"), also made by Munifican.
+
+
+[Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Raise Dead Fully*
 Range: 60'
 Duration: Permanent
@@ -13274,16 +19535,42 @@ meta:
 >   - scope: power; id: Animate Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
+[Expert | Clerical and Magic-User Spell Expansions]
 Animate Dead
 Range: 60'
 Duration: Permanent
 Effect: Creates zombies or skeletons
-This spell allows the caster to make animated,
-enchanted skeletons or zombies from normal
-skeletons or dead bodies within range. These an-
-imated undead creatures will obey the cleric un-
-til they are destroyed by another cleric or a dispel
-magic spell.
+This spell allows the caster to make ani-
+mated, enchanted skeletons or zombies
+from normal skeletons or dead bodies
+within range. These animated undead
+creatures will obey the cleric until they are
+destroyed by another cleric or a dispel magic
+spell. For each level of the cleric, one Hit
+Die of undead may be animated. A skel-
+eton has the same Hit Dice as the original
+creature, but a zombie has one Hit Die
+more than the original. Character levels
+are not counted (the remains of a 9th level
+thief would be animated as a zombie with 2
+HD). Animated creatures do not have any
+spells, but are immune to sleep and charm
+effects and poison.
+lawful clerics must take care to use this
+spell only for good purpose. Animating
+the dead is usually a Chaotic act.
+
+[Rules Cyclopedia | Clerical and Magical Spells Lists and Spell Descriptions]
+Animate Dead
+Range: 60'
+Duration: Permanent
+Effect: Creates zombies or skeletons
+This spell allows the spellcaster to make ani-
+mated, enchanted skeletons or zombies from
+normal skeletons or dead bodies within range.
+These animated undead creatures will obey the
+cleric until they are destroyed by another cleric or
+a dispel magic spell.
 For each experience level of the cleric, he may
 animate one Hit Die of undead. A skeleton has
 the same Hit Dice as the original creature, but a
@@ -13293,7 +19580,7 @@ ence levels as Hit Dice: For purposes of this spell,
 all humans and demihumans are 1 HD crea-
 tures, so the remains of a 9th level thief would
 be animated as a zombie with 2 HD.
-Animated creatures do not have any spells,
+Animated creatures do not have any spells.
 but are immune to sleep and charm effects and
 poison. Lawful clerics must take care to use this
 spell only for good purpose. Animating the dead
@@ -13312,7 +19599,7 @@ is usually a Chaotic act.
 
 These magitech (oldtech) and sorcery (fantascience) Powers are practiced by the fae tribes and clans of Elyncia. If tagged with a Heritage, characters with good factional standing can purchase them at a 50% discount from friendly factions that practice these Powers.
 
-Heritage-origin recognizers now indexed under OSR sections: `Swamp’s Gift (Water Breathing)` in Traversal and Mobility, and `Veilwalk (Pass-Wall)` in Dimensional, Planar, and Exotic Access.
+Heritage-origin recognizers now indexed under OSR sections: `Swamp’s Gift (Water Breathing)` in Traversal and Mobility, and `Veilwalk (Passwall)` in Dimensional, Planar, and Exotic Access.
 
 Avatar of the Dream, Summon Guardian Spirit, Breath Weapon, Dream Pounce, Enchanting Melody, Elemental Gift, Psychedelic Veil, Shadowform, Laughing Curse, Echo Memory, Prey-Binder, and Flow-Arts — katas and jurus codified as balance, strike, and footwork forms taught from youth.
 

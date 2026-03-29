@@ -48,6 +48,23 @@ Behavior:
 - Exit non-zero and print `file + line + fragment` when unresolved links exist.
 - Validation uses heading auto-fragments and explicit `<a id="...">` targets.
 
+## Lane Validation Scripts
+
+Run individual staging validators:
+
+```bash
+bash scripts/validate_becmi_basic_staging.sh
+bash scripts/validate_becmi_expert_staging.sh
+bash scripts/validate_becmi_companion_staging.sh
+bash scripts/validate_becmi_master_staging.sh
+bash scripts/validate_becmi_immortals_staging.sh
+bash scripts/validate_becmi_rc_staging.sh
+```
+
+Notes:
+- Basic, Expert, Companion, Master, Immortals, and RC now each have a dedicated validator.
+- Companion and Immortals validators mirror the integrity assertions that were previously only enforced during their build scripts.
+
 ## Chapter 06 `osr:` Import
 
 Clean staging builder for the downstream Chapter 06 witness bundle:

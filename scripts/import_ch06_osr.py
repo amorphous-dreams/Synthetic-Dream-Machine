@@ -157,6 +157,12 @@ def render_osr_block(record: Record) -> str:
     return "\n".join(rendered).rstrip()
 
 
+def has_complete_witness_coverage(record: Record) -> bool:
+    expected = set(record.expected_lanes) - set(record.missing_lanes)
+    actual = {witness.lane for witness in record.witnesses}
+    return actual == expected
+
+
 def apply_osr_blocks(chapter_text: str, records: dict[str, Record], selected_names: list[str]) -> str:
     updated = chapter_text
     for classic_name in selected_names:
@@ -189,7 +195,7 @@ def apply_osr_blocks(chapter_text: str, records: dict[str, Record], selected_nam
 
 
 def record_status(record: Record) -> str:
-    return "yes" if record.witnesses and not record.missing_lanes else "[needs-review]"
+    return "yes" if record.witnesses and not record.missing_lanes and has_complete_witness_coverage(record) else "[needs-review]"
 
 
 def record_review_item(record: Record) -> ReviewItem | None:
@@ -198,6 +204,10 @@ def record_review_item(record: Record) -> ReviewItem | None:
     if record.missing_lanes:
         missing = ", ".join(record.missing_lanes)
         return ReviewItem(record.classic_name, f"missing expected witness lanes in clean staging: {missing}")
+    if not has_complete_witness_coverage(record):
+        actual = ", ".join(witness.lane for witness in record.witnesses) or "none"
+        expected = ", ".join(lane for lane in record.expected_lanes if lane not in record.missing_lanes) or "none"
+        return ReviewItem(record.classic_name, f"staging witness coverage mismatch: expected {expected}; found {actual}")
     return None
 
 

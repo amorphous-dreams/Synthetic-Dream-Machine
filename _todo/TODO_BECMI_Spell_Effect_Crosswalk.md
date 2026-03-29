@@ -51,7 +51,7 @@ Rules for this artifact:
 
 - **Source lock**: open and frozen on the six staged spell files only.
 - **Confidence lock**: open at **Approved Working Infrastructure (0.90 / 1.00 floor-based)**.
-- **Exception lock**: all 14 verified exception rows remain in force pending new evidence.
+- **Exception lock**: all 12 verified exception rows remain in force pending new evidence.
 - **Chapter 06 design lock**: open; activation/payment/storage/overcharge/scale doctrine is already locked.
 - **Chapter 06 alpha gate**: still closed; literal `osr:` import is part of the remaining alpha work.
 - **Chapter 05 bridge gate**: closed until Chapter 06 `alpha` is complete.
@@ -77,7 +77,7 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 | Artifact Intelligence And Auto-Defense | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Autonomous agency doctrine. RC staging does not contain a structurally equivalent standalone procedure witness. |
 | Creating Artifacts | Master-only procedure | Confirmed Master-only | 2026-03-26 | Keep as Master-only exception | Design workflow procedure. RC staging does not contain a structurally equivalent standalone procedure witness. |
 
-## Metadata Scrape Confidence (2026-03-28 sync)
+## Metadata Scrape Confidence (2026-03-29 sync)
 
 - Scope: the metadata scrape pass is still evaluated as a separate layer from provenance, but the score now inherits the audited staging baseline where weaker source lanes increase downstream re-check burden.
 - Interpretation rule: provenance confidence answers "do the rows point back to the staged corpus clearly enough?" Metadata confidence answers "do the rows carry enough structured metadata to drive conversion work without re-scraping the whole corpus?"
@@ -101,7 +101,7 @@ Interpretation: `Confirmed RC-only` means all five pre-RC staging files (Basic, 
 	- reason: audited row-state coverage is 100%.
 - **Evidence-Note Density**
 	- what it measures: how often the scrape already preserved high-value explanatory metadata such as `Evidence lock`, `Verification pass`, and `Existing SDM variant` notes for downstream drafting
-	- freeze signal: Phase 2 table rows carrying an inline evidence lock, evidence note, or verification pass marker now total **52**, exceeding the `>= 50` target
+	- freeze signal: Phase 2 table rows carrying an inline evidence lock, evidence note, or verification pass marker now total **56**, exceeding the `>= 50` target
 	- rating: **1.00 / 1.00**
 	- reason: the audited marker count clears the current gate target.
 - **Downstream Drafting Readiness**
@@ -142,10 +142,10 @@ Threshold definitions for moving between confidence bands:
 
 ### Current rating: Approved Working Infrastructure (0.90 / 1.00)
 
-- **Provenance (1.00)**: Exception ledger verified, all 14 exception rows confirmed, and the staged corpus remains frozen.
-- **Row-State Coverage (1.00)**: 363 explicit status labels; audit sample confirmed consistent calibration.
-- **Evidence-Note Density (1.00)**: 52 audited inline evidence/verification markers; current gate target exceeded.
-- **Downstream Drafting Readiness (0.90)**: import work is approved, but execution should keep spot-check discipline on weaker lanes and table-derived rows.
+- **Provenance (1.00)**: Exception ledger verified, all 12 exception rows confirmed, and the staged corpus remains frozen.
+- **Row-State Coverage (1.00)**: 362 explicit status labels; audit sample confirmed consistent calibration.
+- **Evidence-Note Density (1.00)**: 56 audited inline evidence/verification markers; current gate target exceeded.
+- **Downstream Drafting Readiness (0.90)**: import work is approved, but execution should keep spot-check discipline on weaker lanes and artifact-summary rows that still compress multiple rules into one witness block.
 
 **Gate status**: Open for Chapter 06 multi-witness `osr:` preservation import.
 
@@ -160,12 +160,12 @@ Threshold definitions for moving between confidence bands:
 
 ## Phase B Backlog: Chapter 06 `osr:` Import
 
-This is the execution backlog for the first downstream phase after the staging-confidence lock. Current in-scope workload is the **194-row spell-only pass**: **181** normal spell rows plus **13** rows already flagged `[table-derived]` in `osr: imported`. This backlog covers literal OSR text preservation only. It does **not** authorize early SDM rewrite, balance work, or doctrine invention inside the `osr:` block.
+This is the execution backlog for the first downstream phase after the staging-confidence lock. Current in-scope workload is the **184-name spell-only pass**, represented by **193** spell-import row entries in the catalog. This backlog covers literal OSR text preservation only. It does **not** authorize early SDM rewrite, balance work, or doctrine invention inside the `osr:` block.
 
 ### Pass 1: Lock, Readiness, And Tracker Normalization
 
 1. Update all stale confidence or audit notes and decide and implement locks across the active `_todo` governance docs before any family import batch begins.
-2. Synchronize this crosswalk's confidence section to the 2026-03-28 audit report and treat that report as the current measured baseline.
+2. Synchronize this crosswalk's confidence section to the 2026-03-29 audit report and treat that report as the current measured baseline.
 3. Record the current sequencing locks explicitly:
    - staged spell corpus frozen as source truth,
    - Chapter 06 design decisions locked,
@@ -175,7 +175,7 @@ This is the execution backlog for the first downstream phase after the staging-c
    - `Type = spell`,
    - `Ch06 Import = ✓`,
    - `osr: imported` is the execution-state field.
-5. Treat the 13 existing `[table-derived]` rows as mandatory review-priority rows for the later exception sweep.
+5. Treat any row that still depends on table-adjacent evidence or compressed artifact-power summaries as review-priority during the later exception sweep, even if the explicit `[table-derived]` marker has been retired.
 
 ### Gate And Freeze
 
@@ -188,11 +188,11 @@ This is the execution backlog for the first downstream phase after the staging-c
 
 ### `osr:` Block Contract
 
-9. Use `osr:` as a multi-witness preservation field, not a rewrite field. Imported text should stay verbatim to the staged source except for minimal line-wrap cleanup required by Markdown/card readability.
+9. Use `osr:` as a multi-witness preservation field, not a rewrite field. Imported text should stay verbatim to the staged source except for minimal line-wrap cleanup and source-grounded summaries of compact artifact-table shorthand when that shorthand is not useful as a standalone witness.
 10. Preserve classic procedure details when they appear in any staged witness: original spell name, class/spell-level cues, range, duration, effect language, save language, reverse-form handling, and termination conditions.
 11. When multiple staged witnesses exist, include all available witnesses in deterministic lane order inside the literal `osr:` block: `Basic`, `Expert`, `Companion`, `Master`, `Immortals`, `Rules Cyclopedia`.
-12. Each witness inside `osr:` should carry a compact source label and its literal text. Do not synthesize a preferred merged body, silently reconcile wording deltas, or collapse the witness bundle back to one compendium surface.
-13. If a row has a meaningful wording-delta or table-derived risk note, preserve that warning in row notes or import-review notes rather than silently harmonizing the text.
+12. Each witness inside `osr:` should carry a compact source label and its literal text, or a source-grounded summary when the staged witness is only compact artifact-table shorthand. Do not synthesize a preferred merged body, silently reconcile wording deltas, or collapse the witness bundle back to one compendium surface.
+13. If a row has a meaningful wording-delta or artifact-summary risk note, preserve that warning in row notes or import-review notes rather than silently harmonizing the text.
 
 ### Crosswalk Control Board
 
@@ -220,9 +220,9 @@ This is the execution backlog for the first downstream phase after the staging-c
    - the imported text matches the staged anchor named in the row,
    - the row tracker is updated in the crosswalk,
    - the card still renders cleanly as Markdown.
-25. Run stricter spot checks on all exception-state rows, all `RC`-only exceptions, all `Master`-only exceptions, every row already marked `[table-derived]`, and every row where the clean staging file reports a missing expected witness lane.
+25. Run stricter spot checks on all exception-state rows, all `RC`-only exceptions, all `Master`-only exceptions, any row still relying on compressed artifact-summary prose, and every row where the clean staging file reports a missing expected witness lane.
 26. Capture unresolved problems in an import-review queue instead of solving them by rewriting the preserved OSR text.
-27. The import phase is complete only when all 194 in-scope rows are no longer `-` and all Chapter 06 spell recognizer rows marked `✓` show `osr: imported = yes` or an explicit review-state marker.
+27. The import phase is complete only when all 184 in-scope Chapter 06 spell names are no longer blocked in the importer workflow, all Chapter 06 spell recognizer rows marked `✓` show `osr: imported = yes` or an explicit review-state marker, and the deterministic import check passes cleanly.
 
 ### Downstream Handoff
 
@@ -300,7 +300,7 @@ Starter batch of already-identified Luka-style descendants or family variants fr
 | Raise Dead | Raise Dead | dark exact-name rendition | UVG2e Spells | Same recognizer, but the UVG rendering is an undead/parody-of-life implementation rather than a clean restoration effect. |
 | Magic Jar | Magic Jar | exact-name rendition | UVG2e Spells | Strong direct precedent for identity-transfer / crystal mind-storage handling in Chapter 06. |
 | Read Languages / language-bridge family | Anti-Babylon | family variant | Eternal Return Key | Useful for language, communication, and universal-translation families without collapsing them into one exact spell name. |
-| Fire Ball / Fireball | Pyreball | close descendant | Vastlands / Apocrypha of the O.S. | Preserve both staged-corpus spellings while pointing to the existing Luka-style fireburst variant. |
+| Fireball | Pyreball | close descendant | Vastlands / Apocrypha of the O.S. | Preserve `Fire Ball` and `Fireball` as recognizer aliases while pointing to the existing Luka-style fireburst variant. |
 | Polymorph Self / Alter Self family | Alter Self | family variant | UVG2e Spells | Useful precedent for self-directed transformation even when the canonical BECMI keys remain separate. |
 | Wish | Big Wish | stylized high-tier descendant | Vastlands / Apocrypha of the O.S. | Preserve `Wish` as the canonical heading and treat `Big Wish` as a distinctive SDM presentation. |
 
@@ -325,7 +325,7 @@ Validated candidates from a broader compare pass. These are promising enough to 
 | Cure disease / poison purge / organ repair family | Real-Time Rebuild | high | Explicit power settings flush toxins or afflictions, restore organs, regrow limbs, or rebuild bodies. | One of the strongest SDM precedents for bodily repair, poison purge, and major restoration notes. |
 | Raise Dead / soul-return family | Recall Soul | medium-high | Calls back a soul as an ectoplasmic entity that can be captured or redirected into further procedures. | Useful ritual cousin when resurrection conversion needs explicit soul-handling rather than simple revival. |
 | Haste / acceleration family | Nunka's Biophysical Overdrive | medium-high | Drives the target into short-term overperformance followed by exhaustion burdens. | Strong speed-boost precedent with explicitly SDM costs and aftermath. |
-| Fire Ball / Fireball storage-delivery family | Gem Bomb | medium | Encodes an explosive forcefield into a gem, with overcharge exploding like a Fireball. | Good item-interface cousin for fireburst delivery and storage notes. |
+| Fireball storage-delivery family | Gem Bomb | medium | Encodes an explosive forcefield into a gem, with overcharge exploding like a Fireball. | Good item-interface cousin for fireburst delivery and storage notes. |
 
 ## Active Phase Scope
 
@@ -343,31 +343,31 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Cure Light Wounds | C1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Detect Evil | C1, MU2 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Detect Magic | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Light | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Protection from Evil | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Purify Food and Water | C1 | Basic, RC | Basic -> Spell Lists and Basic Spell Descriptions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Remove Fear | C1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Resist Cold | C1 | Basic, RC | Basic -> Spell Lists and Basic Spell Descriptions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Cure Light Wounds | C1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Detect Evil | C1, MU2 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Detect Magic | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Light | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Protection from Evil | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Purify Food and Water | C1 | Basic, RC | Basic -> Spell Lists and Basic Spell Descriptions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Remove Fear | C1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Resist Cold | C1 | Basic, RC | Basic -> Spell Lists and Basic Spell Descriptions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Arcane (Basic-Anchored And Shared Entries)
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Charm Person | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Fire Ball / Fireball | MU3 | Basic, Expert, Master, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Floating Disc | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Hold Portal | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Light | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Magic Missile | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Protection from Evil | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Read Languages | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Read Magic | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Scrolls | spell | ✓ | yes |
-| Shield | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Sleep | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Ventriloquism | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Charm Person | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Fireball | MU3 | Basic, Expert, Master, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Floating Disc | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Hold Portal | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Light | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Magic Missile | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Protection from Evil | C1, MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Read Languages | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Read Magic | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Scrolls | spell | ✓ | - |
+| Shield | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Sleep | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Ventriloquism | MU1 | Basic, Expert, RC | Basic -> Spell Lists and Basic Spell Descriptions; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Item And Interface Effects
 
@@ -393,84 +393,84 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Bless | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Continual Light | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Cure Blindness | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Cure Disease | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Find Traps | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Growth of Animal | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Hold Person | C2, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Know Alignment | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Locate Object | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Remove Curse | C3, MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Resist Fire | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Silence 15' Radius | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Snake Charm | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Speak with Animals | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Speak with the Dead | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Speak with Plants | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Sticks to Snakes | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Striking | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Create Water | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Cure Serious Wounds | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Dispel Magic | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Neutralize Poison | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Bless | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Continual Light | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Cure Blindness | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Cure Disease | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Find Traps | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Animal Growth | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Hold Person | C2, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Know Alignment | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Locate Object | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Remove Curse | C3, MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Resist Fire | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Silence 15' Radius | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Snake Charm | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Speak with Animals | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Speak with the Dead | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Speak with Plants | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Sticks to Snakes | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Striking | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Create Water | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Cure Serious Wounds | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Dispel Magic | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Neutralize Poison | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Arcane
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Continual Light | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Detect Evil | C1, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Detect Invisible | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Dispel Magic | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| ESP | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Fly | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Invisibility | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Invisibility 10' Radius | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Knock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Levitate | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Lightning Bolt | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Locate Object | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Mirror Image | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Phantasmal Force | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Protection from Evil 10' Radius | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Protection from Normal Missiles | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Water Breathing | Dr3, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Web | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Wizard Lock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Charm Monster | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Clairvoyance | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Cloudkill | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Confusion | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Conjure Elemental | MU5 | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Conjure Elemental; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Death Spell | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Dimension Door | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Disintegrate | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Geas | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Growth of Plants | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Hallucinatory Terrain | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Haste | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Hold Monster | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Ice Storm/Wall | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Infravision | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Invisible Stalker | MU6 | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Invisible Stalker; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Lower Water | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Magic Jar | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Massmorph | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Pass-Wall / Passwall | MU5 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Polymorph Other / Others | MU4 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Polymorph Self | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Projected Image | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Remove Curse | C3, MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Stone to Flesh | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Teleport | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Wall of Fire | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Wall of Stone | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Wizard Eye | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Continual Light | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Detect Evil | C1, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Detect Invisible | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Dispel Magic | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| ESP | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Fly | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Invisibility | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Invisibility 10' Radius | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Knock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Levitate | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Lightning Bolt | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Locate Object | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Mirror Image | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Phantasmal Force | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Protection from Evil 10' Radius | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Protection from Normal Missiles | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Water Breathing | Dr3, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Web | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Wizard Lock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Charm Monster | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Clairvoyance | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Cloudkill | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Confusion | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Conjure Elemental | MU5 | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Conjure Elemental; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Death Spell | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Dimension Door | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Disintegrate | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Geas | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Growth of Plants | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Hallucinatory Terrain | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Haste | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Hold Monster | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Ice Storm/Wall | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Infravision | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Invisible Stalker | MU6 | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Invisible Stalker; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Lower Water | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Magic Jar | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Massmorph | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Passwall | MU5 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Polymorph Others | MU4 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Polymorph Self | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Projected Image | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Remove Curse | C3, MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Stone to Flesh | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Teleport | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Wall of Fire | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Wall of Stone | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Wizard Eye | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Item And Interface Effects
 
@@ -512,37 +512,37 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Aerial Servant | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Animate Objects | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Barrier | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Commune | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Create Food | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Create Normal Animals | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Cure Critical Wounds | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Cureall | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Dispel Evil | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Earthquake | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Find the Path | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Holy Word | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Insect Plague | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Quest | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Raise Dead | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Raise Dead Fully | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Restore | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Speak with Monsters | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Truesight | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Word of Recall | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Aerial Servant | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Animate Objects | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Barrier | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Commune | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Food | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Normal Animals | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Cure Critical Wounds | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Cureall | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Dispel Evil | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Earthquake | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Find the Path | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Holy Word | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Insect Plague | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Quest | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Raise Dead | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Raise Dead Fully | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Restore | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Speak with Monsters | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Truesight | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Word of Recall | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Arcane
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Contact Outer Plane | MU5 | Companion, Immortals, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Magic-User Spells; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Contact Outer Plane; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Charm Plant | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Create Normal Monsters | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Summon Object | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Sword | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Teleport any Object | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Contact Outer Plane | MU5 | Companion, Immortals, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Magic-User Spells; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Contact Outer Plane; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Charm Plant | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Normal Monsters | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Summon Object | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Sword | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Teleport any Object | MU7 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Item And Interface Effects
 
@@ -586,27 +586,27 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Anti-Animal Shell | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Anti-Plant Shell | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Call Lightning | Dr3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Control Temperature 10' Radius | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Control Winds | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Creeping Doom | Dr7 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Faerie Fire | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Hold Animal | Dr3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Locate | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Metal to Wood | Dr7 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Obscure | Dr2 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Pass Plant | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Plant Door | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Predict Weather | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Produce Fire | Dr2 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Protection from Lightning | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Summon Weather | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Transport Through Plants | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Warp Wood | Dr2 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Water Breathing | Dr3, MU3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Weather Control | Dr7, MU6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
+| Anti-Animal Shell | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Anti-Plant Shell | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Call Lightning | Dr3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Control Temperature 10' Radius | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Control Winds | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Creeping Doom | Dr7 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Faerie Fire | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Hold Animal | Dr3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Locate | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Metal to Wood | Dr7 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Obscure | Dr2 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Pass Plant | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Plant Door | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Predict Weather | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Produce Fire | Dr2 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Protection from Lightning | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Summon Weather | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Transport Through Plants | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Warp Wood | Dr2 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Water Breathing | Dr3, MU3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Weather Control | Dr7, MU6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 
 ### M - Master
 
@@ -614,75 +614,75 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Detect Danger | Dr1 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Dissolve | Dr5, MU5 | Master, RC | Master -> Druid Spell Material; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
-| Heat Metal | Dr2 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Protection from Poison | Dr3 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Summon Animals | Dr4 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Summon Elemental | Dr7 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Survival | C7, MU9 | Master, RC | Master -> Seventh-Level Cleric Spells; RC -> Clerical and Magical Spell Descriptions | spell | ✓ | yes |
-| Travel | C7, MU8 | Master, RC | Master -> Seventh-Level Cleric Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Clerical and Magical Spell Descriptions | spell | ✓ | yes |
-| Turn Wood | Dr6 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | yes |
-| Wish | C7, MU9 | Master, RC | Master -> Seventh-Level Cleric Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Clerical and Magical Spell Descriptions | spell | ✓ | yes |
-| Wizardry | C7 | Master, RC | Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Detect Danger | Dr1 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Dissolve | Dr5, MU5 | Master, RC | Master -> Druid Spell Material; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Heat Metal | Dr2 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Protection from Poison | Dr3 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Summon Animals | Dr4 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Summon Elemental | Dr7 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Survival | C7, MU9 | Master, RC | Master -> Seventh-Level Cleric Spells; RC -> Clerical and Magical Spell Descriptions | spell | ✓ | - |
+| Travel | C7, MU8 | Master, RC | Master -> Seventh-Level Cleric Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Clerical and Magical Spell Descriptions | spell | ✓ | - |
+| Turn Wood | Dr6 | Master, RC | Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Wish | C7, MU9 | Master, RC | Master -> Seventh-Level Cleric Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Clerical and Magical Spell Descriptions | spell | ✓ | - |
+| Wizardry | C7 | Master, RC | Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Arcane
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Clone | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Contingency | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Create Any Monster | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Create Magical Monsters | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Dance | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Explosive Cloud | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Force Field | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Gate | MU9 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Ninth-Level Magic-User Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Heal | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Immunity | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Mass Charm | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Maze | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Meteor Swarm | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Mind Barrier | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Permanence | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Polymorph Any Object | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Power Word Blind | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Power Word Kill | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Prismatic Wall | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Feeblemind | MU5 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Move Earth | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Reincarnation | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Telekinesis | MU5 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Wall of Iron | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Lore | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Magic Door | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Mass Invisibility | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Power Word Stun | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Reverse Gravity | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Statue | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Shapechange | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Symbol | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Timestop | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Clone | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Contingency | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Any Monster | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Magical Monsters | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Dance | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Explosive Cloud | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Force Field | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Gate | MU9 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Ninth-Level Magic-User Spells; Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Heal | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Immunity | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Mass Charm | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Maze | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Meteor Swarm | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Mind Barrier | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Permanence | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Polymorph Any Object | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Power Word Blind | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Power Word Kill | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Prismatic Wall | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Feeblemind | MU5 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Move Earth | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Reincarnation | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Telekinesis | MU5 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Wall of Iron | MU6 | Master, RC | Master -> Non-Human Spellcasters and Special Spellcaster Procedures; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Lore | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Magic Door | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Mass Invisibility | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Power Word Stun | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Reverse Gravity | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Statue | MU7 | Master, RC | Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Shapechange | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Symbol | MU8 | Master, RC | Master -> Eighth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Timestop | MU9 | Master, RC | Master -> Eighth-Level and Ninth-Level Magic-User Spells; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Item And Interface Effects
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Control Animals |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Control Plants |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Control Lesser Undead |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Control Greater Undead |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Control Giants |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Control Dragons |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Control Humans |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Anti-Magic Ray |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Plane Travel |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Life Trapping |  | Expert, Master, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Miscellaneous Magic Items; Master -> Artifact Chapter Context and Witnesses; RC -> Chapter 16 Item Description Catalog -> Miscellaneous Magic Items | item-effect | — | [table-derived] |
-| Mapmaking |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Open Mind |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Turn Undead Bonus |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Spell Damage Bonus |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
-| Choose Best Option / Choose Option |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | [table-derived] |
+| Control Animals |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Control Plants |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Control Lesser Undead |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Control Greater Undead |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Control Giants |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Control Dragons |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Control Humans |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Anti-Magic Ray |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Plane Travel |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Life Trapping |  | Expert, Master, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Miscellaneous Magic Items; Master -> Artifact Chapter Context and Witnesses; RC -> Chapter 16 Item Description Catalog -> Miscellaneous Magic Items | item-effect | — | - |
+| Mapmaking |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Open Mind |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Turn Undead Bonus |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Spell Damage Bonus |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
+| Choose Best Option / Choose Option |  | Master | Master -> Artifact Chapter Context and Witnesses | item-effect | — | - |
 
 #### Procedures
 
@@ -730,15 +730,15 @@ No unique Phase 1 spell rows are currently Immortals-primary; Immortals remains 
 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
-| Analyze | MU1 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Entangle | MU2 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Create Air | MU3 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Clothform | MU4 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Stoneform | MU6 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Woodform | MU5 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Delayed Blast Fireball | MU7 | RC, Master | RC -> Magical Spells List and Spell Descriptions; Master -> Artifact Chapter Context and Witnesses | spell | ✓ | yes |
-| Ironform | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
-| Steelform | MU8 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | yes |
+| Analyze | MU1 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Entangle | MU2 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Create Air | MU3 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Clothform | MU4 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Stoneform | MU6 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Woodform | MU5 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Delayed Blast Fireball | MU7 | RC, Master | RC -> Magical Spells List and Spell Descriptions; Master -> Artifact Chapter Context and Witnesses | spell | ✓ | - |
+| Ironform | MU7 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Steelform | MU8 | RC | RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 
 #### Item And Interface Effects
 
@@ -770,7 +770,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 - Vancian versus SDM delta to preserve during later conversion: powers persist after use, use costs Life rather than prepared slots, access is by acquisition rather than class list, and high-tier effects are gated by danger, corruption, rarity, or ritual burden rather than by daily slot scarcity.
 - Source-era storage mechanics such as `Spell Storing` should be carried forward as conversion notes toward trait/item/burden interfaces, not reintroduced as prepared-slot subsystems.
 - If a section is mostly about scroll wrappers, archive behavior, spell storage, or treasure-device operations, prefer `Interfaces and Scrollcraft` over forcing it into Ethereal Counter Magitech.
-- Related OSR spell ladders may collapse into one future SDM power with Overcharge riders rather than separate exports. Candidate relationship groups include `Fire Ball / Fireball` -> `Delayed Blast Fireball` -> `Meteor Swarm`, and `Haste` plus later acceleration variants.
+- Related OSR spell ladders may collapse into one future SDM power with Overcharge riders rather than separate exports. Candidate relationship groups include `Fireball` -> `Delayed Blast Fireball` -> `Meteor Swarm`, and `Haste` plus later acceleration variants.
 - Ethereal Counter Magitech (ECM) remains a first-class concept inside `Ethereal Counter Magitech`. It covers suppression, negation, reflection, capture, cancellation, and noospheric interference rather than generic defense or generic cleansing.
 - Use an `ecm` tag for rows that meet the thematic and mechanical criteria even when the row also belongs in another family such as barriers or weather.
 - Use `skilled`, `expert` and `master` tags to sort powers into "teirs" - for example all the spell effects from the Artifacts source provenance belong in `master` tier. 
@@ -790,10 +790,10 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Magic Missile | spell | Canonical Chapter 06 entry should remain `Magic Missile`. Existing SDM variant: `Tragic Missile` (Vastlands / Apocrypha of the O.S.). | partial |
-| Fire Ball / Fireball | spell | Preserve `Fire Ball` (pre-RC BECMI) and `Fireball` (RC) as equivalent recognizer aliases. Chapter 06 now locks the mixed canonical key directly on the card heading rather than preferring an FTLS alt-name over it. Existing SDM variant: `Pyreball` (Vastlands / Apocrypha of the O.S.). Keep as the base fireburst family anchor beneath `Delayed Blast Fireball` and `Meteor Swarm`. | partial |
+| Fireball | spell | Canonical Chapter 06 name is `Fireball`; preserve `Fire Ball` as a recognizer alias for the pre-RC witnesses. Existing SDM variant: `Pyreball` (Vastlands / Apocrypha of the O.S.). Keep as the base fireburst family anchor beneath `Delayed Blast Fireball` and `Meteor Swarm`. | partial |
 | Lightning Bolt | spell | Core line-artillery recognizer in the base attack family. | direct |
-| Delayed Blast Fireball | spell | Timed artillery variant of the fireburst family. Treat as the middle rung between `Fire Ball / Fireball` and `Meteor Swarm`, not proof of a mandatory standalone export. | partial |
-| Meteor Swarm | spell | Extreme artillery recognizer and current fireburst capstone above `Fire Ball / Fireball` and `Delayed Blast Fireball`. Keep as custom until Chapter 06 decides whether it remains a separate apex effect or becomes an overcharge endpoint. Evidence lock: Range 240', creates 1-4 40' radius meteor impacts (choose locations), each impact deals 10d10 fire damage with save-for-half, impacts persist with hazard interactions (craters, rubble, fire spread). | custom |
+| Delayed Blast Fireball | spell | Timed artillery variant of the fireburst family. Treat as the middle rung between `Fireball` and `Meteor Swarm`, not proof of a mandatory standalone export. | partial |
+| Meteor Swarm | spell | Extreme artillery recognizer and current fireburst capstone above `Fireball` and `Delayed Blast Fireball`. Keep as custom until Chapter 06 decides whether it remains a separate apex effect or becomes an overcharge endpoint. Evidence lock: Range 240', creates 1-4 40' radius meteor impacts (choose locations), each impact deals 10d10 fire damage with save-for-half, impacts persist with hazard interactions (craters, rubble, fire spread). | custom |
 | Spell Damage Bonus | item-effect | Master artifact-table damage rider that augments one spell's damage on use rather than creating a new standalone payload. Strong Chapter 05 precedent for temporary artillery overcharge attached to an item-side interface instead of a separate castable effect. Evidence lock: augments one spell cast by the artifact user within 1 round, scaling bonus by spell level (1d6 bonus per spell level, max +6d6 damage), applies to damage rolls only (no save re-rolls), one-use-per-artifact-activation model. | custom |
 
 #### Battle and Force / Hazards / Destruction
@@ -889,8 +889,8 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Analyze | spell | RC-first analysis and inspection recognizer that broadens low-tier magical diagnostics. Verification pass (2026-03-24) checked staged Basic/Expert/Companion/Master/Immortals lanes and found no standalone pre-`RC` spell witness; keep as explicit `RC`-only provenance exception unless new staged evidence is added. | partial |
 | Wizard Eye | spell | Remote-sight scouting sensor that pairs cleanly with clairvoyance-like reveal procedures. | partial |
 | Lore | spell | Deep-history and object-reading lane useful for premium information-retrieval tags. | partial |
-| Choose Best Option / Choose Option | item-effect | Master artifact-table decision aid that collapses uncertain branches into a single recommended choice. Better treated as a premium guidance interface than as a literal divination spell clone. | custom |
-| Mapmaking | item-effect | Master artifact-table mapping interface that turns sensory reach into cartographic output. Strong Chapter 05 precedent for recon tools that create stable records rather than immediate combat information. | custom |
+| Choose Best Option / Choose Option | item-effect | Master artifact-table decision aid. Evidence lock: after the user explicitly thinks through a defined set of choices, the artifact returns one best option while looking only about 1 turn ahead, without revealing full future details or broader prophecy. Better treated as a premium guidance interface than as a literal divination spell clone. | custom |
+| Mapmaking | item-effect | Master artifact-table mapping interface. Evidence lock: the artifact controls the user's hands to draw a map of all designated areas within 60', recording physical features such as secret and trap doors but not magic, creatures, or treasure. | custom |
 
 #### Knowledge and Mind / Sensing / Counter-Sense
 
@@ -911,7 +911,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
-| Speak with Animals | spell | Baseline non-human communication lane for ecology and scouting play. | partial |
+| Speak with Animals | spell | Canonical Chapter 06 name is `Speak with Animals`; preserve `Speak with Animal` as a backward-compatible recognizer alias if needed. Baseline non-human communication lane for ecology and scouting play. | partial |
 | Speak with the Dead | spell | Corpse-interrogation lane with strong overlap to existing SDM husk-speaking precedents. Strong family comparison point for `Speak With Husk`. | partial |
 | Speak with Monsters | spell | Broad creature-negotiation lane beyond animal and plant channels. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key), which generalizes communication across entities rather than preserving narrow species lanes. | partial |
 | Speak with Plants | spell | Plant-sentience communication lane that completes the speak-with progression. Existing SDM family variant: `Anti-Babylon` (Eternal Return Key), which already covers communication with plants, animals, minerals, and data stores. | partial |
@@ -936,7 +936,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Polymorph Self | spell | Self-transformation recognizer with existing SDM cousins `Alter Self` and `Skinshift`, but Chapter 06 still needs explicit form-change limits. Expert evidence lock: self-only timed form change with new form HD capped at caster HD, preserving AC, hit points, hit rolls, and saves while granting physical but not special abilities and blocking spellcasting. | partial |
-| Polymorph Other / Others | spell | Canonical mixed-name row: preserve `Polymorph Other` (heading form) and `Polymorph Others` (list/index form) as equivalent recognizer aliases. Chapter 06 now locks the mixed canonical key on the card heading rather than collapsing it to a shortened single-name surface. Expert evidence lock: target-facing permanent-until-dispelled transformation with spell save, HD-ratio limit (new form max 2x original HD), and behavior/tendency inheritance from the new form. | partial |
+| Polymorph Others | spell | Canonical Chapter 06 name is `Polymorph Others`; preserve `Polymorph Other` as a recognizer alias from the heading-form witnesses. Expert evidence lock: target-facing permanent-until-dispelled transformation with spell save, HD-ratio limit (new form max 2x original HD), and behavior/tendency inheritance from the new form. | partial |
 | Summon Animals | spell | Druidic ally-call effect with explicit HD budgeting; useful for summon scaling via SDM Level. Existing high-confidence family lane for druidic ally summoning. | partial |
 | Animate Objects | spell | Object animation lane that likely maps only with explicit gear and object-agent handling. | partial |
 | Animate Dead | spell | Corpse animation and minion-control doctrine carrier shared across cleric and arcane lanes. Existing SDM cousin `Animate Corpse` is relationship guidance, not a one-to-one replacement. Keep as custom because command scope, persistence, corpse-source handling, and Undeath-facing doctrine still need explicit conversion rules. | custom |
@@ -957,7 +957,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Dissolve | spell | Terrain-liquefaction lane with reversible battlefield-state conversion. Evidence lock: up to 3,000 sq ft of non-construction soil or rock becomes deep mud that slows movement to 10% and can trap targets, while reverse `Harden` permanently locks the same volume into rock with a save-gated escape clause. Keep as custom because the terrain rewrite and reversal logic are bespoke. | custom |
 | Entangle | spell | RC-only arcane restraint and vegetation-control lane; current staged corpus has no standalone pre-RC spell witness. RC arcane restraint and vegetation-control lane; notable as a non-druid entanglement entry. Verification pass (2026-03-24) checked staged Basic/Expert/Companion/Master/Immortals lanes and found no standalone pre-`RC` spell witness; keep as explicit `RC`-only provenance exception unless new staged evidence is added. | partial |
 | Faerie Fire | spell | Outlining / reveal lane. Evidence lock: non-damaging visibility outline at 60' that can mark detected creatures/objects and grants +2 attack bonus against marked targets; footprint scales by caster level in man-sized equivalents and ends cleanly on duration expiry. | partial |
-| Growth of Animal | spell | Creature enhancement / scaling lane. Expert evidence lock: doubles one normal/giant animal's size, strength, damage, and carrying capacity for 12 turns while leaving behavior, AC, and hit points unchanged; excludes intelligent animal races and fantastic creatures. | partial |
+| Animal Growth | spell | Canonical Chapter 06 name is `Animal Growth`; preserve `Growth of Animal` and `Growth of Animals` as recognizer aliases from the Expert/RC witnesses. Expert evidence lock: doubles one normal/giant animal's size, strength, damage, and carrying capacity for 12 turns while leaving behavior, AC, and hit points unchanged; excludes intelligent animal races and fantastic creatures. | partial |
 | Growth of Plants | spell | Terrain / vegetation alteration lane. Existing SDM family variant: `Green Haven`, which coerces vegetation into shelter and thorn barriers; it is a narrower plant-shaping cousin rather than a pure growth accelerator. | partial |
 | Heat Metal | spell | Custom sustained anti-armor effect: level-scaled metal heating runs seven rounds with escalating then tapering no-save damage, optional forced dropping, ignition at peak heat, concentration disruption, and weaker side effects on magical targets. | custom |
 | Hold Animal | spell | Beast-specific restraint lane. Evidence lock: affects normal/giant animals only (excluding fantastic or higher-intelligence targets), applies HD-budget targeting by caster level, and requires spell saves to resist long-duration paralysis; summoned/conjured/controlled animals remain valid targets. | partial |
@@ -1015,7 +1015,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Power Word Stun | spell | Word-of-power incapacitation lane bridging blind/kill style hard control effects. Word-of-power incapacitation lane between the blind and kill variants. Evidence lock: Master artifact context, Range 120', Duration 1d4 rounds; no save; renders target paralyzed/stunned. HP threshold based on caster level (e.g., C17 affects up to 60 HD, +5 per level). Affected creatures are helpless, cannot act, but remain aware. Dispel Magic can end early. Target wakes if struck. | custom |
 | Open Mind | item-effect | Master artifact-table mental breach interface with an extreme save penalty at touch range. Better treated as an item-borne domination/bypass tool than a standalone spell row. Evidence lock: Master artifact power, Range touch, no save but target can resist with magic resistance; target loses will save against next spell/mental effect within 1 round, acts as if under charm effect for domination purposes, no protection spells block the effect. Severe mental intrusion tool; use once per day max. | custom |
 | Control Animals | item-effect | Master artifact-table creature-command interface with HD budgeting and duration already encoded into the artifact power cost. Distinct from the potion wrapper because this is a reusable artifact payload. Evidence lock: Master artifact power, Range 60', Duration 1d6 turns; controls up to caster-level-equivalent HD of normal/giant animals (exclude intelligent animals and fantastic creatures); animals obey bold commands and will fight; no save if delivered via artifact interface. Controlled animals gain saving throws vs spells/magical effects as normal. | custom |
-| Control Plants | item-effect | Master artifact-table plant-command interface that functions as a reusable artifact payload rather than a one-use wrapper. | custom |
+| Control Plants | item-effect | Master artifact-table plant-command interface that functions as a reusable artifact payload rather than a one-use wrapper. Evidence lock: controls all plants in a 30' x 30' area for 20 turns. | custom |
 | Control Giants | item-effect | Giant-type command interface carried by artifact power tables; a clean Master-native control surface rather than a standard spell import. Evidence lock: Master artifact power, Range 60', Duration 1 turn per use; compels one target giant type (exclude storm/cloud giants, artifact-grade giants) with a save; commanded giant obeys one sequence of orders for the duration, resists self-harmful commands (rolls save again), and regains independence on spell end. Artifact interface no-save variant treats as forced service for duration only. | custom |
 | Control Dragons | item-effect | Dragon-type command interface from the Master artifact table. Strong Chapter 05 case for command-by-category bundles that stay item-side rather than becoming generic spell exports. Evidence lock: Master artifact power, Range 90', Duration 1 turn; compels one dragon type (exclude platinum, artifact-grade, or ancient wyrms) with a save at -2; commanded dragon follows orders but plots escape, resists obviously lethal commands (new save), obeys major movement/attack orders. Artifact interface: no save on first use, target regards artifact bearer as ally but regains will on spell end. One-use-per-day model standard. | custom |
 | Control Humans | item-effect | Human-command interface staged in the Master artifact tables, useful as a reusable domination surface distinct from the Expert ring and potion shells. Evidence lock: Master artifact power, Range 60', Duration 1d6 turns per use; compels one humanoid (human, demihuman, humanoid monster) with a save; affected target follows orders, will not attack allies of artifact user, resists obviously fatal orders (new save). Artifact source versions may treat as no-save domination limited to 1 use per 24 hours. | custom |
@@ -1076,7 +1076,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Teleport | spell | Major transit power; likely direct at concept level but will need SDM range / mishap doctrine decisions. Major transit spell; compare `Linked Portals` as a family cousin. | partial |
 | Travel | spell | Composite mobility package combining flight, gaseous movement, and adjacent-plane transfer. Likely needs Chapter 06 decomposition or a premium bundled mobility power with environment and survival riders rather than a flat one-to-one export. | custom |
 | Dimension Door | spell | Short-range relocation entry that bridges tactical repositioning and teleport doctrine. | partial |
-| Pass-Wall / Passwall | spell | Canonical mixed-name row: preserve `Pass-Wall` (pre-RC BECMI) and `Passwall` (RC) as equivalent recognizer aliases. Chapter 06 now locks canonical `Pass-Wall` on the card heading and promotes `_Veil-walk_` to the invocation line as the FTLS heritage-flavored alias. Existing SDM family variant: `Linked Portals`, used here as a controlled passage-through-barriers cousin rather than a literal wall-phasing duplicate. | partial |
+| Passwall | spell | Canonical Chapter 06 name is `Passwall`; preserve `Pass-Wall` as a recognizer alias for the pre-RC witnesses. Chapter 06 keeps `_Veil-walk_` as the FTLS heritage-flavored invocation line. Existing SDM family variant: `Linked Portals`, used here as a controlled passage-through-barriers cousin rather than a literal wall-phasing duplicate. | partial |
 | Magic Door | spell | Portal and egress manipulation lane. Existing SDM family variant: `Linked Portals`, which is the clearest current astral-bridge precedent for controlled passage and reversible entry. Portal and egress manipulation lane with reversible entry-control logic. | partial |
 | Pass Plant | spell | Plant transit lane. Existing SDM family variant: `Linked Portals`, used here as a traversal cousin rather than a literal vegetation-only doorway. Primary placement stays with mobility because the row's job is passage, not plant reshaping. | partial |
 | Plant Door | spell | Vegetation access / doorway lane. Existing SDM family variant: `Linked Portals`, which is the closest current controlled-passage precedent even though the classical wrapper is plant-specific. | partial |
@@ -1099,7 +1099,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Word of Recall | spell | Return-to-sanctuary extraction spell with strong campaign-loop implications. Chapter 06 now places this under `Dimensional, Planar, and Exotic Access`, so Phase 2 tracks it as dimensional/sanctuary transit instead of generic traversal. Return-to-sanctuary transit lane. | partial |
-| Plane Travel | item-effect | Master artifact-table planar-shift interface for self and gear. Strong Chapter 05 precedent for item-borne transplanar access that stays distinct from full gate-style aperture creation. | custom |
+| Plane Travel | item-effect | Master artifact-table planar-shift interface for self and gear. Evidence lock: the user and all equipment carried move from one plane of existence to an adjacent plane, and no other creature is affected. Strong Chapter 05 precedent for item-borne transplanar access that stays distinct from full gate-style aperture creation. | custom |
 
 ### family-9
 
@@ -1190,7 +1190,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Communication | item-effect | Paired remote-writing interface that functions as a distance-safe text channel on the same plane. Paired remote-writing scroll interface across any distance on the same plane. | partial |
 | Delay | item-effect | Delayed-release wrapper for a stored spell payload, useful for trigger-based spell handling; Chapter 05 should treat this as deferred activation doctrine rather than slot hold-state. Scroll-carried delayed-release wrapper for one stored spell payload; Chapter 05 should model this as a trigger/interface note with deferred activation timing rather than as held slot-state. | custom |
 | Mages | item-effect | Scroll-based nearby magic-effect identification that complements `Read Magic` rather than replacing it. | partial |
-| Portals | item-effect | Scroll-native pass-wall interface and compact access-control wrapper. Scroll-native reusable `Pass-Wall / Passwall` interface. | partial |
+| Portals | item-effect | Scroll-native pass-wall interface and compact access-control wrapper. Scroll-native reusable `Passwall` interface. | partial |
 | Ring of Memory | item-effect | Immediate one-spell recall interface for spellcasters only: the wearer must choose within 1 turn of casting, then the spell is instantly relearned, with the ring restoring only one spell per day. Strong Chapter 05 model for short-horizon recovery/retention rather than passive memory bonuses or broad archive storage. | custom |
 
 #### Interfaces and Scrollcraft / Treasure / Utility Devices
@@ -1318,7 +1318,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Mages | item-effect | Scroll-based nearby magic-effect identification; complements `Read Magic` rather than replacing it. | partial |
 | Maps to Treasures / Treasure Maps | item-effect | Treasure-location wrapper with normal, magical, combined, and special treasure lanes; niche but reusable lookup surface. Basic evidence lock: map prepared in advance by referee, may be partial/riddle form, and may require `Read Languages` for use. | custom |
 | Mapping | item-effect | Scroll-generated area map with limited secret-door detection. Companion makes this a once-per-day survey tool for a chosen fully-contained area within 100', up to 10,000 square feet. Useful Chapter 05 example for bounded reconnaissance interfaces that create records rather than immediate tactical effects. | custom |
-| Portals | item-effect | Scroll-native reusable `Pass-Wall / Passwall` interface. | partial |
+| Portals | item-effect | Scroll-native reusable `Passwall` interface. | partial |
 | Protection / Protection Scrolls | item-effect | Generic moving circle-of-protection wrapper shared by the specific protection scroll variants. Basic evidence lock: usable by any class, creates a moving 10' circle centered on reader, blocks listed creature entry, does not block their spell or missile attacks, and breaks if protected side initiates hand-to-hand attack. | partial |
 | Protection from Elementals | item-effect | Circle protection scroll keyed specifically to elementals. Expert evidence lock: creates a moving 10' radius circle around the reader, blocks elemental attacks unless the protected side strikes first in hand-to-hand combat, and lasts 2 turns. | partial |
 | Protection from Lycanthropes | item-effect | Circle protection scroll keyed to lycanthrope types by quantity band. | partial |
@@ -1449,14 +1449,14 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 ## Deferred Gear Chapter Bundle Notes
 
 - Staff of Power bundle to resolve in the next pass:
-	- `Fire Ball / Fireball`
+	- `Fireball`
 	- `Lightning Bolt`
 	- `Ice Storm`
 	- `Continual Light`
 	- `Telekinesis`
 - Staff of Wizardry bundle to resolve in the next pass:
 	- `Invisibility`
-	- `Pass-Wall / Passwall`
+	- `Passwall`
 	- `Web`
 	- `Conjure Elemental`
 	- whirlwind / cone of paralyzation riders
