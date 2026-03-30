@@ -24,22 +24,22 @@ For each looted cache or major hoard, record:
   - `Bulk` and `Base Value`  
 - `Source` (site/node/encounter)  
 - `Channel` and `Realized Value` (when liquidated)  
-- `Attention/Heat changes` and any queued weekly event fallout
+- `Attention/Tick changes` and any queued weekly event fallout
 
 ## Terminology
 
 - **Base Value:** pre-sale value before channel/time/risk modifiers.  
 - **Realized Value:** final value after sale/contract/channel modifiers, losses, and constraints.  
-- **Heat (RSS):** area response rate (`+1` to `+4`), used when you **Tick Attention**.  
+- **Tick (RSS):** area response rate (`+1` to `+4`), used when you **Tick Attention**.  
 - **Attention (RSS):** current notice clock (`0-20`) with bands `Quiet`/`Loud`/`Alarm`/`Emergency`.  
-- **Tick Attention (RSS verb):** add Area Heat to Area Attention.  
+- **Tick Attention (RSS verb):** add Area Tick to Area Attention.  
 - **Encounter Die check (RSS):** d6 encounter check; trigger range follows Attention band.
 
 ## Quickstart Procedure (Referee)
 
 1. Normalize economy and coin values (`1 cash (€) = 1 silver`; if converting OSR material).  
 2. Generate a lot with the random loot table or full hoards with the hoard composition procedure.  
-3. Record each lot's treasure family (`coins`, `gems`, `trade goods`, `relics`, `intel`, etc.) and other tags.  
+3. Record each lot's treasure family (`coins`, `gems`, `trade goods`, `relics`, `intel`, etc.) and other tags. If the lot yields a concrete strange object, hand off to Chapter 05 for object classification, family resolution, and use handling.  
 4. Apply bulk and carry pressure with the transport procedure, then liquidate with the channel procedure and record `Realized Value`.
 
 ## Use This Chapter When
@@ -51,19 +51,21 @@ For each looted cache or major hoard, record:
 
 ## Treasure Family
 
+Use this table to sort lots by treasure family, not to resolve how a concrete relic, ward, strange item, or charged device works in play. Once a lot turns into a specific object, go to Chapter 05 and run the `Anomolous Object Procedure`, then return here for transport, storage, sale, and fallout.
+
 | Treasure Family | Recommended Tags | Usual Handling |
 |---|---|---|
 | Coins and bullion | `[cash] [portable] [fungible]` | Fast liquidation, low story friction |
 | Gems and jewelry | `[luxury] [portable] [appraisable]` | Specialist buyers pay better |
 | Art objects and curios | `[curio] [status] [collector]` | Collector market, slower sales |
 | Trade goods and stores | `[trade] [bulk] [market-sensitive]` | High bulk, market-sensitive value |
-| Potions, oils, and single-use elixirs | `[consumable] [arcane] [perishable]` | Fast-use or specialist sale; spoilage/theft risk |
-| Scrolls and spell formulae | `[intel] [arcane] [copyable]` | Scribe/wizard market; copying and access control matter |
-| Wands, staves, rods, and charged devices | `[relic] [tool] [charged]` | Requires testing/attunement; high-interest buyer pool |
-| Rings, amulets, and wearable wonders | `[relic] [status] [wearable]` | Personal-use temptation vs premium collector sale |
-| Magic weapons and armor | `[relic] [weapon] [armor]` | Party retention pressure is high; elite buyers pay |
-| Artifacts and named relics | `[artifact] [wanted] [unique]` | Faction attention spikes; provenance and claim wars |
-| Magic items and relics (mixed lots) | `[relic] [arcane]` or `[oldtech] [volatile]` | Identification, legal/faction risk |
+| Potions, oils, and single-use elixirs | `[consumable] [arcane] [perishable]` | Resolve in Chapter 05, then keep, use fast, or move through specialist sale |
+| Scrolls and spell formulae | `[intel] [arcane] [copyable]` | Resolve in Chapter 05, then decide between copy, access control, or sale |
+| Wands, staves, rods, and charged devices | `[relic] [tool] [charged]` | Resolve in Chapter 05, then track testing risk and buyer heat here |
+| Rings, amulets, and wearable wonders | `[relic] [status] [wearable]` | Resolve in Chapter 05, then choose retention, patron gift, or premium sale |
+| Magic weapons and armor | `[relic] [weapon] [armor]` | Resolve in Chapter 05, then record retention pressure, claims, or elite sale |
+| Artifacts and named relics | `[artifact] [wanted] [unique]` | Resolve in Chapter 05, then apply provenance, claim-war, and attention fallout here |
+| Magic items and relics (mixed lots) | `[relic] [arcane]` or `[oldtech] [volatile]` | Resolve in Chapter 05 before transport, fencing, or open sale |
 | Scrolls, maps, ledgers, keys | `[intel] [leverage] [navigation]` | Value depends on who wants it |
 | Religious offerings and temple valuables | `[holy] [status] [doctrinal]` | Sale may trigger doctrinal or legal response |
 | Captives, hostages, and ransomables | `[ransom] [human] [time-sensitive]` | Time-sensitive negotiation; moral/legal complications |
@@ -76,7 +78,8 @@ Default use:
 
 1. Identify family from source fiction/text.  
 2. Apply tags and starting liquidation channel.  
-3. Roll detailed output (random loot table / hoard composition) and keep family tags attached.
+3. Roll detailed output (random loot table / hoard composition) and keep family tags attached.  
+4. If the output becomes a specific strange object, resolve it in Chapter 05 before returning to this chapter.
 
 ## Random Loot Generation (d20)
 
@@ -146,7 +149,7 @@ SDM Economy Weirdness (optional `1d6`, once per major lot):
 Concept references:
 - Cash abstraction / liquid assets: [OGA `Cash Assets`](../Our_Golden_Age/Our_Golden_Age.md#cash-assets).
 - Multi-currency exchange volatility and fee spread: [OGA `Purr-Purr Exchange Rates`](../Our_Golden_Age/Our_Golden_Age.md#purr-purr-exchange-rates).
-- `Tick Attention` and heat escalation interface: [FTLS 04 `RSS Attention`](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [FTLS 09 `Step 5: Escalation Hooks`](#step-5-escalation-hooks).
+- `Tick Attention` and tick escalation interface: [FTLS 04 `RSS Attention`](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [FTLS 09 `Step 5: Escalation Hooks`](#step-5-escalation-hooks).
 
 Referee note: keep the local medium in fiction (coin, bells, cards, scrip, credits, oath-tokens), but settle outcomes in `cash`.
 
@@ -242,12 +245,15 @@ Roll `d12` when a lot is marked unusual, collector, or special.
 ### Treasure Table G: Relic/Magic Yield
 
 Use Chapter 05 for this table and full specific-item resolution:
-- [Magic Item Treasure Generation](Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md#magic-item-treasure-generation)
+- [Anomolous Object Procedure](Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md#anomolous-object-procedure)
+- [Anomolous Object Catalog](Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md#anomolous-object-catalog)
+- [Legacy Generation Support](Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md#legacy-generation-support)
 
 Quick handoff:
 1. Roll `d100` on `Magic Item Yield Table` in Chapter 05.  
-2. Resolve concrete item generation in Chapter 05.  
-3. Return to this chapter for hoard handling, transport, and liquidation.
+2. Use the `Anomolous Object Procedure` and `Anomolous Object Catalog` to resolve the concrete object.  
+3. Drop into `Legacy Generation Support` only if you need denser old-school yield support or named-effect coverage.  
+4. Return to this chapter for hoard handling, transport, and liquidation.
 
 ### Referee Advice
 
@@ -314,9 +320,9 @@ Hoards carry risk.
 | 5 | Claimed property. A faction or authority arrives soon. |
 | 6 | Bait cache. Tick Attention twice and run an immediate Encounter Die check. |
 
-RSS handoff: when a rider says **Tick Attention**, increase Attention by Area Heat and apply band crossings immediately (`Quiet 0-6`, `Loud 7-12`, `Alarm 13-19`, `Emergency 20`), including any immediate signs/escalations from RSS `Attention` rules.
+RSS handoff: when a rider says **Tick Attention**, increase Attention by Area Tick.
 
-RSS references: [Attention (0–20)](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Tick Attention cadence](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Cooling Down (Bleeding Heat)](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-cooling-down).
+RSS references: [Attention (0–20)](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Tick Attention cadence](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [Cooling Down](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-cooling-down).
 
 ### Step 5: Escalation Hooks
 
@@ -328,7 +334,7 @@ Apply in this order:
    - `>= 10 sk` or `>= 5,000 cash` -> pre-roll one **Surprising** Event for next week.  
    - `>= 20 sk` or `>= 10,000 cash` -> pre-roll one **Error** Event for next week (highest band only).  
    - If using OGA `I.N.T.R.`, use matching bands (`Surprising -> Nuisance/Trouble`, `Error -> Trouble/Rupture`).  
-   - Log the pre-rolled Event and current Attention/Heat mods in the `Treasure Profile`; carry Area Attention forward until reduced by RSS cooldown.  
+   - Log the pre-rolled Event and current Attention/Tick mods in the `Treasure Profile`; carry Area Attention forward until reduced by RSS cooldown.  
 
 ## Transport, Burden, and Throughput
 
@@ -387,7 +393,7 @@ Procedure:
 3. **Refusal conditions (any may apply):** no ready coin, suspicious provenance, suspected magical/illegal origin, or buyer risk intolerance.
 4. **Fallback private buyer (on refusal):** offer `20-80%` (`2d4 x 10%`) of stated value; usually 1 day and local appraisal scene.
 5. **Jewelry breakup option:** if broken into parts, lose up to `50%` value before further sale math.
-6. **Heat coupling:** attempts to cash out `[illegal]`, `[hot]`, or `[wanted]` lots should trigger [Step 5 `Illicit lots`](#step-5-escalation-hooks) handling.
+6. **Hot goods:** attempts to cash out `[illegal]`, `[hot]`, or `[wanted]` lots should trigger [Step 5 `Illicit lots`](#step-5-escalation-hooks) handling.
 
 Test prompts:
 - Gem conversion in small settlement: `12,000` cash gem at pop `3,000` should fail direct cash-out (split/travel/fallback required).  

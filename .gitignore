@@ -1,7 +1,22 @@
+# AI/Codex specific files
+.codex/
+*.codex
+
+
 .venv/
 .bundle/
 vendor/
 _site/
 _becmi/
+_todo/_page_renders/.cache/
 
 **/hires_*
+**.zip
+
+# Ignore Python bytecode files
+*.pyc
+# Ignore __pycache__ directories recursively
+__pycache__/
+# Ignore .pyo and .pyd files as well
+*.pyo
+*.pyd

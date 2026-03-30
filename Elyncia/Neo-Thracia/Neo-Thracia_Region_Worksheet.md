@@ -49,7 +49,7 @@ Source (diegetic): “Recovered DreamNet fragments, corrupted Neo‑Thracian Arc
 
 ### Map & Subdivisions
 
-DEM-based cartography, sea/astral level ~-15m, huge fluxlands/rift zones; Neo-Thracia has maze-rifts at Nexus connections.
+DEM-based cartography, sea/astral level ~-10m, huge fluxlands/rift zones; Neo-Thracia has maze-rifts at Nexus connections.
 
 **Subdivisions:**
 * Coastal Lands & Hebros Delta Marches (ravaged, resettling, flux-scraped)
@@ -69,7 +69,7 @@ DEM-based cartography, sea/astral level ~-15m, huge fluxlands/rift zones; Neo-Th
 
 * Base cartography: DEM-like terrain as the “truth layer,” with rift/flux overlays. Exploration markup as the “play layer.”
 * Ocean/astral-sea level offsets and Summerlands relationship:
-  * Apophis Datum: baseline at ~-15m, ~-30m Black Sea/Summerlands' Sea; we’ll bake these into travel times, delta shape, and what counts as “coast.”
+  * Apophis Datum: baseline at ~-10m for most Nexus, ~-30m Summerland Sea (Black Sea); treat this as an old Orichalcum Age shoreline reset already metabolized into travel times, delta shape, and what counts as “coast.”
 
 ### Ambient Tables
 

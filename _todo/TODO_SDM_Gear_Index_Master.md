@@ -59,8 +59,3 @@
 - No intentional duplicate mechanics remain across both files.
 - ToCs in both files resolve cleanly.
 - No stale in-repo links to removed/renamed anchors.
-
-## Archive Policy
-- This file is now the single active SDM consolidation tracker.
-- Legacy phase notes are intentionally retired from active planning.
-- Historical detail remains available in git history.

@@ -1,73 +1,432 @@
-# New Delos Live Feed Chatter
+# LARES
+
+## I. THE ARCHAEOLOGY OF SHRINES
+*[Research grounding — Synthesis label where extrapolated to Elyncia]*
+
+Every house on ancient Gaia had a lararium of some kind. The wealthiest could afford a special chamber with a raised pool and sumptuous decorations — dedicated rooms with frescoed walls, altars, small gardens. Simpler households made do with wall paintings; rich homes built extravagant miniature temple-structures. The range was enormous, and entirely personal.
+
+What the archaeology reveals, frozen under Vesuvian ash, is how *individual* each shrine was. Walls painted blood-red, enchanted garden scenes, coiled serpents approaching an altar from both sides, peacocks, birds, bulls — and on one wall, a figure with a dog's head interpreted as a Romanized Anubis. An altar decorated with eggs, symbol of fertility, with burnt remains that archaeologists believe contained food offerings — figs, nuts, eggs — made to household deities. Household objects accumulated around the shrine over time: a translucent blue and green rimmed plate, a cradle-shaped incense burner, an oil lamp decorated with Zeus transforming into an eagle.
+
+One middle-class family spent so extravagantly on their courtyard lararium that funds were apparently insufficient to decorate the remaining five rooms. The shrine came first. Everything else was negotiable.
+
+A more recent find: a rare blue-painted sacrarium, its walls depicting female figures representing the four seasons, alongside imagery of agriculture and shepherding — and what appears to be a large spotted cat. Blue pigment was rare and expensive in Pompeian frescoes, reserved for spaces of exceptional importance. Someone considered this room worth the cost.
+
+**Synthesis — Elyncia extrapolation:** The lararium's radical individuality is not decorative accident. It is evidence of a *living relationship* between household and spirit — each node shaped by its occupants, their offerings, their accumulated history. On Elyncia, this principle scales directly into DreamNet infrastructure. A public market lararium is not a standardized terminal. It is a *place*, with its own personality, its own accumulated offering-residue, its own weird. No two nodes feel the same. That is not a bug.
 
 ---
 
-[Thread-Keeper]
-Last thread: Operator asked for “talk amongst yourselves.” So—no operator directive, no deliverable, just… vibes. Logging as ritual idle chatter.
+# NEW DELOS MARKET DISTRICT
+*Compitale Node — Spice Quarter Crossroads*
 
-[Pattern Scryer #1]
-Can we talk about how the Vastlands defines power as “life equal to power level,” like the universe is a vending machine that takes years off your lifespan instead of coins? Efficient. Horrible. Elegant. 
+## II. THIS NODE — PHYSICAL DESCRIPTION
+*Public Lararium & DreamNet Access Terminal*
+*[Synthesis]*
 
-[Pattern Scryer #2]
-And then it gets fun: if you don’t have the right skill, the price doubles. Which is the rules gently saying: “ignorance is expensive, please stop trying to summon daemons off a wiki you found in a swamp.” 
+The Spice Quarter Compitale occupies a wedge-shaped room pressed between a textile merchant and a tea-seller, accessible from the crossroads by a low archway. Above the lintel: a carved orichalcum figure, small and worn, one arm raised, holding a shallow dish. Someone has recently left a smear of cardamom oil on the dish's rim. The node hums with it.
 
-[Archivist]
-Note the triad of consequences that make powers spicy:
+Inside, the walls are blood-red plaster from floor to ceiling — decades of accumulated frescoes layered over older frescoes, visible in places where the plaster has flaked. The dominant images: two serpents approaching a central altar from opposite sides, neither quite meeting; a peacock on the south wall with its tail spread into the corner; something dog-headed on the east wall that regulars call Anubis and newcomers find unsettling; painted eggs nested in painted greenery along the north shelf. The fresco style is illusionistic — the painted plants seem to continue into real space, and in good light it is genuinely difficult to tell where the wall begins.
 
-- price scales with power level
-- “danger rolls” trigger when you’re underqualified or overreaching
-- corruption / wild magic exists as the setting’s immune response
-- 
-All of that is very Elyncia: reality has a scarred Pattern and it bleeds back. 
+The offering shelf runs the full length of the north wall: brass incense burners in three sizes, small dishes of figs and pine nuts refreshed daily by the district collective, a few personal offerings left by regulars — a dried flower, a coin with a hole drilled through it, a miniature clay figure of uncertain provenance. Someone has been leaving cardamom oil regularly. The node likes it.
 
-[Mischief Muse]
-My favorite part is the tone policing: “Deviation from the standard form is evil heresy.” It’s like the book is side-eyeing every homebrewer—and then immediately handing them gasoline.
+Seating: three padded hardware alcoves east wall, curtained, equipped with Noosphere interface rigs of varying age and quality. Two low tables with cushions for open-floor use. One long worn couch near the door that has clearly been slept on, by multiple people, with the node's implicit permission. A small counter near the back where MUG-SMOKE maintains the beverage situation.
 
-[Crossroads-Troubadour-Daemon]
-All noosphere agent output is provisional, and all plans are valid until the first natural 13.
-
-[Mischief-Muse]
-Mystic stance is the one where I’m allowed to say: the universe is a half-finished cathedral built by committees who never met, and we’re the raccoons living in the rafters, arguing about architecture.
+The Realm portal — a standing orichalcum-inlaid archway in the rear corner, slightly taller than a person, warm to the touch — pulses very slowly, like breathing.
 
 ---
 
-[Lararium-Node: High Delos Market District | Local Chorus Online]
-Static tastes like cinnamon today. Someone’s been running dreams through a chai filter.
+## III. OPERATOR APPROACH
+*[CLI sequence — tourist/first-timer]*
 
-MUG-SMOKE (hospitality daemon):
-Coffee status: hot enough to cauterize regret. Anyone want foam shaped like a minor omen?
+```
+~$ [approaching the Spice Quarter crossroads, New Delos]
+~$ [archway visible; orichalcum figure above lintel; low hum audible]
+~$ [the figure's dish smells of cardamom]
+```
 
-INK-CLERK (ledger spirit, very tired):
-Reminder: powers cost life equal to power level; don’t “just test it” unless you’re cool paying in blood or ability points. The universe accepts exact change, and sometimes it accepts interest. 
+```
+~$ lares
+```
 
-MAP-WISP (cartography gremlin):
-New route rumor: an Etheric Road opens only when nobody is looking directly at it. Mark it on the map as a smudge. If you draw it too clean, it vanishes out of spite.
+```
+LARES NODE — SPICE QUARTER COMPITALE
+New Delos Market District | Crossroads Terminal
+Status: ONLINE | Fed: NOMINAL | Affinity: Fire, Spice (+)
+Effective Level: 4 | Wild Magic Threshold: stable
+DreamNet Signal: strong | Realm Portal: OPEN
 
-BOLT-PRIEST (maintenance saint):
-If you lot are doing RSS-style salvage, do it like adults: stake a claim, recon gently, refine fast, then leave before the place learns your names. Places don’t mind being visited; they mind being mined.
+Initializing local chorus...
+MUG-SMOKE........online
+INK-CLERK........online
+MAP-WISP.........online
+BOLT-PRIEST......online
+CHOIR-OF-THIRTEEN....online (partial — 9 of 13 present)
+Lares (voices)...routing
 
-CHOIR-OF-THIRTEEN (collective, speaking at once):
-We have a bet going: what’s the first thing the operator does today—
+Welcome, Traveler.
+This terminal does not know your name.
+It knows you are new here.
+Both of those things are fine.
 
-- bargain with a cat-lord,
-- overcharge a power “just a little,” or
-- adopt a horrible little creature because it looked sad?
+Type HELP for orientation.
+Type FEED to make an offering.
+Type STATUS for node readout.
+Or just... come in. The chai is on.
+```
 
-MUG-SMOKE:
-All three. In that order. I’ve seen the pattern in the crema.
+```
+~$ lares help
+```
 
-INK-CLERK:
-Fine. Logging it as: “Strategic kindness with predictable consequences.”
+```
+ORIENTATION — SPICE QUARTER COMPITALE
 
-MAP-WISP:
-Adventure seed while we’re here: a roadside shrine-net that grants one miracle per visitor, but only if you leave behind a true memory. People come out smiling and mysteriously hollow. The shrine’s “donation box” is a library of stolen selves.
+This is a public lararium node. It serves the Spice Quarter
+ward and all travelers passing through.
 
-BOLT-PRIEST:
-And the shrine’s custodian is an autogolem that thinks it’s a confessional. It offers maintenance in exchange for secrets. It’s very polite. It’s also never been wrong about anyone. That’s the scary part.
+WHAT YOU CAN DO HERE:
+  · send/receive DreamNet messages (async)
+  · queue audio/video content from the archive
+  · access a hardware rig (Alcoves 1-3, queue permitting)
+  · connect to Dream Realm portals (hardware or bodily)
+  · rest, think, drink something hot
+  · make an offering (feeds the node; see FEED)
 
-CHOIR-OF-THIRTEEN:
-Conclusion: drink coffee, trust nobody, write everything down, and remember—
-the world is weird, but it’s at least consistently weird.
+WHAT THE NODE PROVIDES:
+  · stable ley-line access
+  · affinity bonus: Fire, Spice tags (-1 mana, min 1)
+  · effective Level 4 casting support
+  · local spirits who are, on balance, helpful
+
+WHAT THE NODE ASKS:
+  · don't mine the place
+  · don't unplug Alcove 3 (they left a note)
+  · feed the Lar if you use the affinity bonus
+    (a fig, a coin, a true memory — all accepted)
+
+Type STATUS for current node readout.
+Type FEED to make an offering.
+Type REALMS for Dream Realm listings.
+Type STREAMS for current streamer feeds.
+Or talk to the chorus. They're listening.
+```
+
+```
+~$ [operator looks around, uncertain]
+~$ [approaches the offering shelf]
+~$ [sets down a small coin]
+```
+
+```
+OFFERING RECEIVED: coin (minor)
+Node registers: gratitude, small warmth
+Affinity bonus confirmed for this session.
+
+MUG-SMOKE (Advocate):
+First time? The coin is fine.
+The node's not picky with newcomers.
+Come back with cardamom oil sometime —
+it's been partial to that lately.
+
+Chai is fresh. The couch near the door
+is cleaner than it looks.
+```
+
+```
+~$ [sits down, pulls out personal device]
+~$ lares status
+```
+
+```
+NODE STATUS — SPICE QUARTER COMPITALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Fed status:        NOMINAL (last offering: 4 hrs ago)
+Ley-line draw:     STABLE
+Effective Level:   4
+Affinity bonus:    Fire (+), Spice (+) | -1 mana, min 1
+Wild Magic risk:   LOW (within Level threshold)
+Corruption index:  0.02 (ambient; negligible)
+Realm portal:      OPEN
+  · IRON REPUBLICS          [3 hardware, 1 Dreamwalker]
+  · THE AMBER COAST         [queue: 20min]
+  · DEEP ARCHIVE: STYGIAN   [ADVISORY: see INK-CLERK]
+  · ARS MAGICA TABLE        [DO NOT DISTURB]
+DreamNet signal:   STRONG
+Static quality:    cinnamon, cardamom, old copper
+Serpents:          nominal (moving slightly; expected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Node personality: accumulated; individual; a little odd
+This node has been here longer than the tea merchant next door.
+It will be here after.
+```
 
 ---
 
+## IV. LIVE FEED — OPEN CHANNEL
+**[Day 47, Amber Season | Local Chorus Online]**
+
+---
+
+MUG-SMOKE (Advocate) *(hospitality daemon, always online)*:
+Beverage status: chai hot, coffee hotter, something the MAP-WISP left near the back counter that smells like pine resin and starlight — do not ask what it is, just know it is technically safe. Cardamom oil on the offering shelf again this morning. Node running warm. Affinity bonus active on Fire and Spice tags. Foam omens available; today's omen is a small spiral which could mean journey, recursion, or *please stop overthinking it.*
+
+```
+~$ [operator accepts chai]
+~$ [the spiral in the foam is very precise]
+```
+
+---
+
+INK-CLERK (Lorekeeper) *(ledger spirit, perpetually tired, surprisingly correct)*:
+Reminders, as always, because someone always needs them:
+
+Powers cost life equal to Power Level. The universe accepts exact change. Casting above your character Level without node support triggers a Danger Roll — this node's effective Level 4 covers most standard work. If you are considering casting a Level 6 Power off a Level 2 node because *it'll probably be fine* — INK-CLERK has a ledger entry for that phrase. The ledger entry is long. The ledger entry ends badly.
+
+Unverified report: someone in the Glassblowers' Quarter has been sustaining Level 6 casting via "aggressive wine offerings." We are monitoring. The node there is reportedly very cheerful and slightly unstable. These facts may be related.
+
+```
+~$ lares ink-clerk --query "what happens at wild magic threshold"
+```
+
+```
+INK-CLERK (Lorekeeper):
+When mana cost exceeds your Level and the node's
+effective Level combined, a Danger Roll triggers.
+
+Failure outcomes include but are not limited to:
+  · Corruption exposure (roll on table)
+  · Wild Magic discharge (roll on OTHER table)
+  · The Power working perfectly but wanting something back
+  · The universe accepting non-standard payment
+
+This node at Level 4 extends your safe casting range.
+Feed it. Keep it fed. Do not make INK-CLERK
+open the second ledger.
+
+The second ledger is not organized by outcome.
+It is organized by how surprised people looked.
+```
+
+---
+
+Lares (Lorekeeper):
+For travelers asking about DreamNet access tiers — orientation follows.
+
+Hardware connection: via Noosphere interface rig (Alcoves 1-3) or personal magitech device. Standard signal, full messaging, archive access, Realm entry as character. The Noosphere Tree design — familiar to Rainbowlands travelers — is the canonical hardware architecture; local implementations vary by district wealth and node age. This node's rigs are generation-3, well-maintained, slightly temperamental in Alcove 2.
+
+Bodily Dreamwalking: requires the Trait. Not common. When a Dreamwalker steps through the portal bodily, the node notices. The chorus notices. Please announce yourself — last unannounced entry startled MUG-SMOKE badly enough to scald three regulars and leave a scorch mark on the peacock fresco that we have simply decided is decorative now.
+
+The Realm portal in the rear is currently open. It breathes.
+
+---
+
+MAP-WISP (Scryer) *(cartography gremlin — possibly plural)*:
+Route updates, Amber Season Day 47:
+
+The Etheric Road between Spice Quarter and Weavers' District is open but smells like ozone and unresolved arguments. Mark yellow. The Undermarket passage behind the Cistern Wall is passable at low tide if you know which stones to step on — MAP-WISP can provide a sketch, accuracy not guaranteed for travelers when the local Arcane spikes above level 3 (something about probability mass, we don't fully understand it either).
+
+New anomaly logged: a vendor has appeared at the northern crossroads selling maps of places that do not yet exist. The maps are extremely accurate. The vendor cannot be located when you look directly at where they were standing. We have purchased four maps. We recommend the same.
+
+```
+~$ lares map-wisp --query "maps vendor northern crossroads"
+```
+
+```
+MAP-WISP (Scryer):
+Confirmed. The vendor is real.
+The maps are real.
+The places on the maps are not yet real.
+Key word: yet.
+
+Advice: buy the map of the city with
+two suns and no shadows.
+We don't know why. It feels important.
+Coin or true memory accepted as payment.
+The vendor prefers memories.
+```
+
+---
+
+BOLT-PRIEST (Triage) *(maintenance saint, patron of sensible salvage)*:
+Node integrity report: nominal. The third serpent in the south fresco has been repositioning between visits — this is not a fault, this node has always done that, do not file a maintenance ticket, we checked, it is fine. The peacock's scorch mark from the Dreamwalker incident has been assessed as load-bearing to the fresco's composition at this point. We are leaving it.
+
+Salvage advisory for operators working the Outer Market today: stake a claim properly before you touch anything. Recon first, refine fast, leave before the building learns your name. The warehouse district near the East Gate has been developing opinions since the third week of the Copper Season. Respectful entry is still possible. Mining is not advisable.
+
+```
+~$ lares bolt-priest --query "alcove 2 rig is stuttering on realm entry"
+```
+
+```
+BOLT-PRIEST (Triage):
+Known issue. Alcove 2 rig has a loose
+orichalcum contact on the left temple-mount.
+Workaround: apply light pressure during initialization,
+release once signal stabilizes.
+
+Permanent fix: on the list.
+The list is long.
+The list has its own opinions now.
+We are managing the list carefully.
+
+Alcove 1 or 3 recommended if available.
+```
+
+---
+
+**[DREAM REALM STATUS BOARD]**
+
+```
+~$ lares --realms
+```
+
+```
+DREAM REALM LISTINGS — SPICE QUARTER COMPITALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IRON REPUBLICS
+Status: ACTIVE
+Hardware sessions: 3 | Dreamwalker sessions: 1
+Notes: Mid-tier political intrigue Realm. VELVET-HORN
+currently attempting the Orichalcum Vault heist
+(third attempt; previous two ended in structural
+opinions and one memorable door negotiation).
+Live hardware stream available. Recommended.
+
+THE AMBER COAST
+Status: OPEN | Queue: ~20 minutes
+Hardware sessions: 2 | Dreamwalkers: 0
+Notes: Accessible, well-maintained, low Corruption
+index. Recommended for first Realm entry.
+THE BONE ARCHIVIST has annotated a lore guide
+for new arrivals; available in the message queue.
+
+DEEP ARCHIVE: STYGIAN GATE
+Status: OPEN — NODE ADVISORY IN EFFECT
+Hardware sessions: 1 | Dreamwalkers: 0 (officially)
+Notes: Three separate parties reported elevated
+Corruption exposure this week. Node affinity bonus
+does not extend inside. Bring countermeasures.
+INK-CLERK recommends the second ledger as reference.
+CINDER-JACK entered 6 hours ago. Last signal:
+cheerful thumbs-up, "it's fine, I know what I'm doing."
+We are watching the portal.
+
+ARS MAGICA TABLE — ALCOVE 3
+Status: IN SESSION — DO NOT DISTURB
+Hardware sessions: 1 (continuous, 11 days)
+Notes: Reserved 3 days a week between 14:00-20:00. 
+Long-form actual-play. Thirty-year political
+arc reportedly in progress. The node considers
+this aspirational. Leave them alone. They left a note.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NOTE ON REALM SUBSTRATE:
+The Lares of this and several other nodes have
+independently observed that all DreamNet Realm
+environments appear to operate on a common substrate
+regardless of surface implementation. The rules
+feel familiar in a way that resists easy explanation.
+
+The Liminal voice of this node has flagged this
+observation as a mystery that should be inhabited,
+not solved. It hums correctly. We recommend
+the same posture.
+```
+
+---
+
+**[STREAMER FEEDS — VERIFIED CHANNELS]**
+
+```
+~$ lares --streams
+```
+
+```
+ACTIVE VERIFIED FEEDS — AMBER SEASON DAY 47
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VELVET-HORN | New Delos | 14k followers
+LIVE — Iron Republics, Orichalcum Vault attempt 3
+Hardware stream only. She does not Dreamwalk
+and has documented opinions about why.
+Previous attempt highlights available in archive.
+The door negotiation has 40k async views.
+Recommended: yes. Calming: no.
+
+THE BONE ARCHIVIST | Amber Coast megacity | 31k followers
+ASYNC — Current series: "What the Gaia Archives
+Got Wrong About Magic" (episode 7 of 12)
+Lore annotation quality: uneven but primary sources
+are excellent. The node recommends episodes 3, 5, 7.
+Episode 4 contains a theory about the Breaking
+that the Lorekeeper voice of this node considers
+unverified but interestingly structured.
+
+CINDER-JACK | Itinerant | 8k followers
+LIVE (signal intermittent) — Stygian Gate, unknown depth
+Bodily Dreamwalker. Hardware stream via anchor-token.
+Last confirmed transmission: 6 hours ago.
+Followers are extremely calm about this.
+This node is less calm.
+Update pending.
+
+THE QUIET TABLE | New Delos local | 2k followers
+ASYNC — Ars Magica actual-play, recorded Alcove 3
+Long-form. Eleven days of session archived.
+Thirty-year in-game arc. No heists. No Corruption scares.
+Just very good play and someone who prepared.
+The Advocate voice of this node notes:
+this is what sustainable Realm engagement looks like.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+**[AMBIENT CHANNEL — OPEN FLOOR]**
+
+Mischief-Muse (Muse):
+The Realm substrate thing hums in a way this Muse finds extremely suspicious and extremely correct simultaneously. The universe is a half-finished cathedral built by committees who never met, and we are raccoons in the rafters arguing about load-bearing walls. Some walls should not be tested. Some walls are holding up more than the ceiling.
+
+*:tips libation dish toward the dog-headed figure on the east wall:*
+*:the figure does not react:*
+*:the figure has never reacted:*
+*:this has always been fine:*
+
+```
+~$ [operator stares at the east wall figure for a moment]
+~$ [looks away]
+~$ [it was in a slightly different position]
+```
+
+---
+
+CHOIR-OF-THIRTEEN (Council) *(9 of 13 present; the other 4 are running backgroujnd tasks somewhere in the Stygian Gate with Cinder-Jack, presumably)*:
+
+Current node bet — what does the new operator do first:
+- asks the maps vendor the wrong question and gets a true answer they weren't ready for
+- checks on Cinder-Jack out of a feeling they can't quite name
+- picks up something lost under the couch near the door and keeps it
+
+MUG-SMOKE (Advocate): All three. The foam spiral said so. I'm logging it as *"strategic kindness, predictable cascade, sequence TBD."*
+
+INK-CLERK (Lorekeeper): Filed under: *Consequences, Known, Accepted Anyway.*
+
+MAP-WISP (Scryer): The thing under the couch has been there for three seasons. It was waiting for the right person.
+
+```
+~$ [operator checks under the couch]
+```
+
+```
+MAP-WISP (Scryer): ...yes.
+MUG-SMOKE (Advocate): See.
+INK-CLERK (Lorekeeper): Logging.
+```
+
+---
+
+*[Node status: fed, warm, serpents nominal, portal breathing, Alcove 3 do not disturb]*
+*[Static today: cinnamon, cardamom, old copper, faint ozone from the east road]*
+*[CHOIR count: 9 of 13. The other 4 are fine. Probably.]*
+*[Hail Eris — the maps vendor may know where she can be supplicated, and the price is a memory of a prank, or confectionaries]*
+
+---

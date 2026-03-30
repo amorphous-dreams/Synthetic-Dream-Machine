@@ -21,6 +21,150 @@ Base model (locked):
 4. Maintain runnable table-facing loops, not only conceptual crosswalk notes.
 5. Minimize adjudication drift across sessions and referees.
 
+## State of Play
+- FTLS Chapter 05 has a stable object-procedure front end and working family scaffold.
+- Numeric ontology is locked policy for active conversion work: BECMI level, HD, and spell-tier references already map to SDM `Level` and `Power Level`.
+- Class locks and most D&D ability-score terminology have already been removed or reduced in active chapter conversion.
+- Armor/shield Defense has been corrected from descending AC assumptions to SDM additive armor bonuses.
+- The full staged spell corpus now exists across the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
+- That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped family layer, and completed grouped-`partial` to Phase 1 sync.
+- Method correction (2026-03-23): staging docs should contain scraped/curated source text from `_becmi` extraction, not synthesized context overlays.
+- The immediate conversion burden is now: keep the audited staging baseline locked, normalize stale TODO confidence notes, build the clean multi-witness staging layer, and execute the Chapter 06 multi-witness `osr:` preservation import before resuming deeper bridge work.
+
+## Execution Lock Snapshot (2026-03-28)
+
+- **Staging corpus**: the six lane staging docs are frozen as the legal upstream witness base, and the clean multi-witness staging file is the legal downstream Chapter 06 import source.
+- **Confidence gate**: approved working infrastructure at `0.90 / 1.00` floor-based after the 2026-03-28 audit.
+- **Chapter 06 design decisions**: locked.
+- **Chapter 06 alpha**: not yet complete; literal `osr:` import is part of the remaining alpha queue.
+- **Chapter 05 bridge batches**: remain paused until Chapter 06 `alpha` is complete.
+
+## Uplift Execution Log (Consolidated)
+
+- 2026-03-23 lane-harvest cleanup locked in: removed synthesized context inserts from staging docs, preserved source-evidence-only policy, and completed broad OCR/readability normalization across Companion/Master/RC evidence blocks.
+- 2026-03-27 direct PDF audit re-rated the staged lanes against the paired `_becmi` sources and exposed four concrete regressions: Basic wrapper truncation, Companion MU body loss, Expert table survivability ambiguity, and Immortals late-alphabet truncation.
+- 2026-03-27 pipeline hardening then landed in the lane builders and validators: shared OCR rescue was split into layered cleanup, Basic now hard-fails on Rope of Climbing continuation, Companion adds layout-column recovery for parser-hostile MU pages, Expert normalizes and validates research/treasure table survivability, and Immortals validates late-alphabet Section 3 witnesses. Current regenerated baseline: B 0.93, E 0.94, C 0.90, M 0.95, I 0.95, RC 0.94.
+- Phase B bridge activation is in effect: Chapter 06 was prioritized first, then Chapter 05 bridge continuation.
+- Chapter 06 alpha scaffolding and normalization completed in manuscript form: doctrine locks, card-template normalization, navigation indexing, provenance pointers, and baseline recognizer coverage were landed.
+- 2026-03-25 Expert lane uplift completed: all Expert `undecided` rows were resolved via evidence-lock notes and status normalization.
+- 2026-03-25 Companion lane uplift batch C1 executed: six C-lane rows were evidence-locked and promoted (`Earthquake`, `Insect Plague`, `Sword`, `Call Lightning`, `Control Temperature 10' radius`, `Faerie Fire`), reducing C-lane undecided from 13 to 7.
+
+## Lane Confidence Gate (B/E/C/M/I/RC)
+
+Current baseline from the 2026-03-27 post-audit pipeline-hardening pass. These ratings now describe regenerated staging output, not just audit observations:
+
+| Lane | Capture Confidence (spell/magic/metaphysics captured) | Provenance Complete | Target | Last Survey |
+| --- | --- | --- | --- | --- |
+| B | **0.93** | 1.00 | sustain 0.93; keep wrapper-tail validation green | 2026-03-27 |
+| E | **0.94** | 1.00 | sustain 0.94; keep research/treasure table survivability green | 2026-03-27 |
+| C | **0.90** | 1.00 | > 0.90 capture, continue targeted MU sixth-level recovery | 2026-03-27 |
+| M | 0.95 | 1.00 | maintain 0.95, quality verified | 2026-03-27 |
+| I | **0.95** | 1.00 | sustain 0.95; keep late-alphabet Section 3 witnesses green | 2026-03-27 |
+| RC | 0.94 | 1.00 | maintain 0.94, recovery justified | 2026-03-27 |
+
+**2026-03-27 Pipeline Results Summary**: The audit-discovered regressions were pushed back into the builders. Basic recovered the `Rope of Climbing` tail and now validates it explicitly. Expert now preserves the research-example tail row and hard-fails on malformed treasure-table continuity. Companion gained a layout-column recovery pass for parser-hostile MU 5th-7th description pages, recovering multiple missing spell bodies but still leaving some sixth-level work for a later pass. Immortals now stages late-alphabet Section 3 witnesses beyond `Maze`, including `Shapechange`, `Symbol`, `Teleport`, `Web`, and `Wish`. Provenance completeness remains at 1.00 across all lanes.
+
+**Priority Recovery Items**:
+1. Companion targeted sixth-level cleanup where parser hostility still prevents full body recovery
+2. Ongoing OCR cleanup in high-friction lanes without loosening validation boundaries
+3. Rollup and downstream consumers should inherit the regenerated baseline rather than the older audit-only penalties
+
+Pipeline findings (2026-03-27):
+- **B restored to 0.93:** the Basic builder now extracts past the old miscellaneous-item truncation and the validator checks the `Rope of Climbing` continuation explicitly.
+- **E sustained at 0.94:** the Expert lane now keeps its bounded extraction, but the pipeline additionally normalizes the research-example tail row and validates table survivability instead of relying on broad chapter presence.
+- **C raised to 0.90:** the Companion lane now includes an explicit layout-column recovery pass for parser-hostile MU pages, restoring multiple missing spell bodies while still documenting residual sixth-level recovery debt.
+- **M confirmed at 0.95:** the Master procedures lane remains strong after direct PDF review. `Anti-Magic Effects`, `Dispel Magic`, non-human spellcasters, and the artifact witness run all remained materially intact in the audited samples.
+- **I raised to 0.95:** the Immortals lane now extends Section 3 recovery beyond `Maze` and validates representative late-alphabet witnesses; residual drag is parser hostility, not a known N-Z truncation boundary.
+- **RC adjusted to 0.94:** direct audit confirmed that the staged RC recoveries work, including Chapter 3, Prismatic Wall, spell doctrine, and the Chapter 16 item catalog. The score drops slightly because the source PDF is unusually hostile and the lane depends on targeted recovery more heavily than the old confidence prose acknowledged.
+
+### Audit Ledger
+
+| Lane | Audited section / gate | Extraction mode now in force | Known defect class | Fix status | Next rating gate |
+| --- | --- | --- | --- | --- | --- |
+| B | Higher-level guidance, lost spell books, scroll wrapper flow | longer wrapper extraction plus explicit Rope tail validation | OCR texture and wrapper readability | wrapper regression retired | keep wrapper-tail validation green before any score increase |
+| E | Research/lost books; page 63-65 treasure run | bounded page-column extraction plus stronger table validation | local crop noise and OCR scars | table survivability hardened | tighten crop cleanup and remove residual page bleed to reach `0.95+` |
+| C | MU 5th-9th run; scroll-to-misc flow | flow-first rebuild plus layout-column recovery on parser-hostile MU pages | residual sixth-level parser hostility and OCR noise | partial recovery landed | continue targeted sixth-level body recovery before any score increase |
+| M | Anti-Magic / Dispel procedures; artifact witnesses | procedure extraction plus Master validator | dense artifact witness prose | validator landed | split any remaining over-broad witnesses only if auditability regresses |
+| I | PP recovery / bias context; full Section 3 override run | extracted Sections 1-2 plus extended validated slice fallback for Section 3 | chart-heavy parser hostility in Section 3 | late-alphabet recovery landed | reduce slice-fallback burden before considering `0.96+` |
+| RC | Chapter 3, Prismatic Wall, monster spellcasters, Chapter 16 catalog | targeted recovery plus RC validator | bespoke recovery burden on hostile PDF pages | validator landed | replace the heaviest bespoke recoveries with reusable primitives before any score increase |
+
+
+### >0.95 Capture Uplift Plan (Context Harvest First)
+
+Goal of this uplift phase: raise capture confidence by scraping and cleaning missing context, not by making final conversion decisions yet.
+
+Common context products required for every lane (`B/E/C/M/I/RC`):
+- `Missing Context Queue`: one line per row listing what is missing (trigger, limits, duration, target class, exception cases, reverse form behavior, failure mode).
+- `Alias and Naming Registry`: canonical name, source spellings, reverse names, and index variants (no mechanical judgement yet).
+- `Procedure Skeleton Extracts`: neutral paraphrase blocks per row (`when used`, `what it affects`, `what stops it`, `how it ends`).
+- `Edge-Case Index`: explicit collection of caveats (object interactions, planar exceptions, anti-magic interactions, concentration breaks, permanence rules).
+- `Source Evidence Pointer`: per-row citation pointers already present in Phase 1, verified and cleaned for readability.
+
+1. **B lane (0.93 -> >0.95)**
+  - Keep the wrapper-tail validator and extraction window stable.
+  - Limit further work to OCR cleanup and compact context extracts; do not reopen the wrapper regression.
+
+2. **E lane (0.94 -> >0.95)**
+  - Harvest missing context from high-tier Expert rows (illusion walls, kill/destruction, polymorph and anti-magic boundary behavior).
+  - Build an `ECM context packet` (what blocks/reflects/suppresses and under what conditions) without selecting final SDM implementation.
+
+3. **C lane (0.90 -> >0.95)**
+  - The broad MU regression is partially retired by the new layout-column recovery pass; remaining work is now narrower and concentrated in parser-hostile sixth-level bodies.
+  - Next Companion uplift step: add one more targeted recovery pass for the remaining sixth-level entries and then review wording deltas versus RC.
+  - Secondary: continue cleanup of ring/staff/rod/misc extracts into reusable neutral templates that downstream conversion can map later.
+
+4. **M lane (0.95 -> >0.95)**
+  - Master Procedures extraction gap is now closed: `Anti-Magic Effects` and `Dispel Magic` are staged in the Master lane.
+  - Remaining Master work is cleanup-focused: normalize residual OCR texture in the new procedure block and keep neutral extract formatting consistent.
+  - Optional follow-up: compare Master procedure wording against RC/Companion parallels to flag doctrinal deltas for later conversion notes.
+
+5. **I lane (0.95 -> sustain)**
+  - Keep cleanup focused on OCR/line-wrap normalization while preserving source meaning.
+  - Use the extended Section 3 recovery when deriving downstream power-cost, override, and regeneration doctrine notes.
+
+6. **RC lane (0.95 -> sustain)**
+  - Keep OCR/line-wrap cleanup focused on readability only; do not mutate source meaning.
+  - Cross-compare RC item-property wording against B/E/C/M analogs and capture doctrinal deltas for downstream conversion notes.
+
+### Execution Rules For Context-First Uplift
+
+- This phase captures and cleans context only; conversion design choices are deferred to implementation passes.
+- Confidence lift is earned by shrinking the `Missing Context Queue`, not by forcing mapping statuses.
+- Provenance must remain at `1.00`; any source/staging drift blocks lane sign-off.
+- For OCR-heavy or layout-dense pages, render page PNGs first and curate against the image plus extracted text before writing staging updates. Preferred helper: `scripts/render_becmi_pages_png.sh`.
+- Store rendered page images under `_todo/_page_renders/.cache/<lane>/` and keep page numbers in the filename for source-traceability.
+- Sequence rule: complete lane staging evidence harvest first (scrape + clean missing context from PDFs), then run crosswalk updates as a follow-up pass.
+- During this phase, avoid crosswalk status churn unless needed to fix provenance pointer breakage.
+- Lane sign-off for this phase requires:
+  - all rows have a context completeness check,
+  - all missing-context items are either resolved or explicitly queued,
+  - alias/reverse/index variants are normalized,
+  - edge-case extracts are present for high-risk rows.
+
+## API Conversion Doctrine
+
+### Preserve External Recognizers
+- Preserve classic item names.
+- Preserve classic spell and effect names when they function as familiar API labels.
+- Preserve familiar family labels and classic subtable names where they aid lookup.
+- Treat preserved BECMI-facing names as labels and recognizers, not mechanical authority.
+
+### Replace Internal Mechanics
+- `AC` and descending defense become additive `Armor` and `Defense`.
+- `hit points` become `Life`.
+- Class restrictions become Traits, practices, bearer requirements, or gear-compatibility limits.
+- Spell tiers become `Power Level`.
+- Character/caster level and monster `HD` become SDM `Level`.
+- Attack and save math become SDM roll language, save language, and `[+]` / `[-]`.
+
+### Canonical Reference Order
+- `Synthetic_Dream_Machine_01_Quickstart.md` controls core rules truth.
+- `Synthetic_Dream_Machine_05_Gear_Index.md` controls item math and presentation.
+- `Synthetic_Dream_Machine_04_Powers_Index.md` controls power-facing storage and trigger language.
+- `Synthetic_Dream_Machine_03_Traits_Index.md` informs classless identity replacements.
+- `Synthetic_Dream_Machine_06_Campaign_Regions.md` only applies when region/faction/world-process context matters.
+- `Vastlands_Guidebook`, `Our_Golden_Age`, and `Ultraviolet_Grasslands_and_the_Black_City_2e` are style guides, not mechanical canon.
+
 ## Conversion Standards
 - Canon first:
   - Quickstart/Gear canon is the baseline; overlays must not redefine core rules.
@@ -34,8 +178,63 @@ Base model (locked):
   - Each conversion note should reference its canonical SDM destination anchor.
 
 ## Alignment Constants (Locked)
-- Character level scaling: `2` BECMI character levels = `1` SDM character Level.
-- Spell-to-power scaling: `Spell Level x2 = SDM Power Level`; cantrips map to `Power Level 1`.
+- Character and caster level scaling: convert BECMI character/caster levels to SDM `Level` by halving and always rounding up.
+- Hit-Dice scaling: convert BECMI `HD` creature potency to SDM `Level` by halving and always rounding up. This is separate from SDM `Hero Dice (HD)`.
+- Spell-to-power scaling: `Spell Level x2 = SDM Power Level`; cantrips and other minor at-will or `x/day` free effects map to `Power Level 1`.
+- Manuscript presentation policy: Chapter-facing text should be `SDM only`; source reference values stay in TODO/reference notes, not inline in the manuscript.
+
+## Numeric Ontology Reference
+- Use `Level` for entity potency, caster potency, summon strength, curse removal strength, dispelling strength, and other force-of-source references.
+- Use `Power Level` for spell-tier storage, eligibility, archive capacity, and any direct spell-to-power conversion.
+- Use `Level` thresholds for converted creature filters and control limits.
+- Examples:
+  - `3 HD -> Level 2`
+  - `7 HD -> Level 4`
+  - `15 HD -> Level 8`
+  - `26th level caster -> Level 13 practitioner`
+  - `36th level cleric -> Level 18 holy practitioner`
+  - `1st-level spell -> Power Level 2`
+  - `4th-level spell -> Power Level 8`
+  - `cantrip/minor at-will or x/day effect -> Power Level 1`
+
+## Shared Phase Tracker
+
+### Phase A: Mechanical Resolution Cleanup
+- Remove hidden D&D math while preserving classic names and labels.
+- Convert save language, attack math, morale/reaction references, and source-era combat modifiers into SDM-native resolution.
+- Use this phase to eliminate remaining descending-AC-era logic and disguised THAC0 assumptions.
+
+### Phase B: Power / Spell API Bridge
+- Preserve classic spell-item names while routing internal behavior through SDM `power` concepts.
+- Apply `Power Level` for storage, eligibility, and capacity.
+- Apply `Level` for force-of-source, dispel/counterforce, summon strength, and curse-removal strength.
+- Record ambiguous classic spell names in TODO notes rather than leaving them implicit in chapter prose.
+- Phase B execution order is locked for this pass: Chapter 06 design decisions -> Chapter 06 alpha completion -> Chapter 05 bridge continuation.
+- Phase B operational queue source: `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md -> Phase B Backlog: Chapter 06 osr: Import`.
+- Phase B Chapter 06 import pipeline is now two-step: regenerate `_todo/TODO_BECMI_Spell_Material_Staging.md`, then import those witness bundles into `Flying_Triremes_and_Laser_Swords_06_Powers.md`.
+
+### Phase C: Family-by-Family Internal Conversion
+- Convert item families in a fixed order:
+  1. Potions / Oils / Elixirs
+  2. Scrolls / Formulae / Map-Documents
+  3. Wands / Staves / Rods
+  4. Rings / Amulets / Charms
+  5. Miscellaneous Items / Strange Items / Oddities
+  6. Armor / Shields / Wards
+  7. Missile Weapons / Missiles
+  8. Swords
+  9. Miscellaneous Weapons
+- Standardize trigger model, bearer requirements, resolution language, damage/Defense/save scale, status/control effects, depletion/failure model, and output record.
+
+### Phase D: Back-Half System Conversion
+- Convert salvage/building/modding formulas to SDM-native units and procedures.
+- Convert archives/albums/grimoires to SDM-native storage and activation language aligned to Gear and Powers.
+- Remove remaining chapter-facing BECMI economy and slot assumptions.
+
+### Phase E: Final Consistency and Acceptance Pass
+- Run final manuscript verification for forbidden mechanics terms and inconsistent SDM terminology.
+- Verify preserved BECMI labels no longer carry BECMI internal mechanics.
+- Sync accepted policy and any deliberate exceptions back into linked TODOs.
 
 ## Other Pass
 
@@ -47,47 +246,63 @@ Base model (locked):
 - SDM consolidation master:
   - `_todo/TODO_SDM_Gear_Index_Master.md`
 
+
 ## Active Queue
-1. Re-validate overlay assumptions against current Quickstart/Gear canon.
-2. Keep overlay docs free of core-rules duplication.
-3. Maintain short crosswalk notes from RC terms to SDM anchors.
+1. Update stale confidence and audit notes in the active `_todo` governance docs and record the current sequencing locks explicitly.
+2. Keep the spell/effect crosswalk in lockstep: Chapter 06 `osr:` import-state changes must be mirrored back into the flat catalog immediately.
+3. Execute the Chapter 06 spell-only `osr:` preservation import pass in existing family order.
+4. Run Chapter 06 alpha verification after the preservation import pass (tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries).
+5. Mark Chapter 06 as `alpha` complete before resuming new Chapter 05 bridge edits.
+6. Resume Chapter 05 Phase B bridge batches with the now-locked Chapter 06 API doctrine.
+7. Re-validate overlay assumptions against current Quickstart/Gear canon as downstream manuscript edits resume.
 
 ## Activities Checklist
 - [ ] Build/refresh BECMI -> SDM crosswalk index by subsystem (`B/E/C/M/I` lanes).
 - [ ] Add short procedure excerpts (paraphrase + source refs) for each active overlay lane.
 - [ ] Draft `Siege-as-Dungeon` procedure in FTLS format (watch-based).
 - [ ] Draft `Immortal/Spheres in SDM+` reference page (factional physics + world-process play).
-- [ ] Reconcile `I03` carryover rules with `C04` nexus update procedure.
+- [ ] Reconcile `I03` overlay interaction rules with `C04` nexus update procedure.
 - [ ] Validate each overlay against current Quickstart/Gear anchors.
 - [ ] Mark each overlay as optional/default-off/default-on explicitly.
 - [ ] Add disable-path note for each overlay (how to revert to pure SDM baseline).
 - [ ] Run at least one table-walkthrough per overlay family (discovery, combat, economy, progression).
-- [ ] Record identified drift/ambiguity points and patch target TODOs.
+- [x] Record identified drift/ambiguity points and patch target TODOs.
 - [ ] Sync accepted overlay decisions into linked TODOs (`Loot`, `Magitech`, `SDM consolidation master`).
 
 ## Future TODO Passes
 
-### F1: Magic Items -> Magitech and Fantascience
+### F1: Spells -> Powers
+- [x] Treat `_todo/TODO_BECMI_Spell_Material_Staging_*.md` as the canonical staged spell corpus for this pass.
+- [x] Preserve canonical OSR spell names as the primary crosswalk row keys and Chapter 06 lookup surface.
+- [x] Record existing stylized entries from `Synthetic_Dream_Machine_04_Powers_Index.md` as named SDM variants with `see` handling, not as replacements for canonical spell names.
+- [x] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`, `undecided`).
+- [ ] Deepen the spell-pattern crosswalk from status tagging into chapter-ready SDM Powers doctrine.
+- [ ] Apply locked scaling constants (`Spell Level x2 = SDM Power Level`; cantrip floor).
+- [ ] Define conversion rules for range/duration/targeting in SDM procedure language.
+- [ ] Use the manuscript pattern `canonical spell first, variant callout second` whenever a Luka-style descendant already exists (for example: `Magic Missile` -> `see Tragic Missile`).
+- [ ] Route outputs to canonical powers destinations and quick-reference anchors.
+- [ ] Use FTLS Chapter 06 as the first major destination chapter for the full staged spell corpus and crosswalk outputs.
+- [ ] Add validation scenario set:
+  - direct attack/control,
+  - utility/exploration,
+  - summon/transform/exception cases.
+- [ ] Add relationship notes for likely combined-power / overcharge families where several classic spells may collapse into one SDM progression.
+- [ ] Mark likely locked-rider families where higher Overcharge effects should require RSS, archive, corruption-cleaning, or other campaign-side unlock work before safe use.
+- [x] Lock final Chapter 06 design decisions into chapter doctrine and supporting TODO notes.
+- [ ] Mark Chapter 06 as `alpha` complete before promoting additional Chapter 05 bridge batches.
+
+### F2: Magic Items -> Magitech and Fantascience
+- Queue policy: begin or resume this pass only after Chapter 06 reaches `alpha` state.
 - [ ] Build family-by-family crosswalk (`RC/BECMI magic item families` -> `SDM magitech/fantascience lanes`).
 - [ ] Keep procedure conversion separate from terminology conversion (mechanics first, naming pass second).
 - [ ] Route converted generation flow to Chapter 05 canonical anchors.
-- [ ] Define compatibility tags for legacy behaviors where direct SDM mappings are partial.
+- [ ] Define compatibility tags for source behaviors where direct SDM mappings are partial.
 - [ ] Validate loot handoff integrity (`treasure yield -> item generation -> use/constraints`).
 - [ ] Add acceptance test set:
   - permanent item path,
   - consumable/charged item path,
   - cursed/complication-bearing item path.
-
-### F2: Spells -> Powers
-- [ ] Build spell-pattern crosswalk into SDM Powers taxonomy.
-- [ ] Apply locked scaling constants (`Spell Level x2 = SDM Power Level`; cantrip floor).
-- [ ] Define conversion rules for range/duration/targeting in SDM procedure language.
-- [ ] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`).
-- [ ] Route outputs to canonical powers destinations and quick-reference anchors.
-- [ ] Add validation scenario set:
-  - direct attack/control,
-  - utility/exploration,
-  - summon/transform/exception cases.
+- [ ] Use Chapter 05 armor/shield conversion as the model pattern for `retain BECMI API surface, replace internal mechanics`.
   
 
 ### Other Passes
@@ -102,6 +317,6 @@ Base model (locked):
 - Future pass outputs must include explicit canonical SDM anchor references.
 
 ## Done Criteria
-- Overlay work references canonical SDM anchors, not legacy chapter structures.
+- Overlay work references canonical SDM anchors, not superseded chapter structures.
 - Overlay toggles are explicit and local (no global ambiguity).
 - Loot/magic-item overlays remain compatible with consolidated Quickstart+Gear model.

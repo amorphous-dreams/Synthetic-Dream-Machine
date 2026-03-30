@@ -65,6 +65,14 @@ Strange mana-lensing causes a void-web signal echo from 20th century Gaia to ech
 
 In this setting, the traditional is juxtaposed with the extraordinary. The pieces of a broken world circle its exposed core, caught in an energy storm known as the Astral Sea \- part nebula-like magnetosphere, part fractured noosphere and collection of dream realms. Adventurers from a myriad of human cultures and faerie tribes forge their own fates. These diverse groups have been brought together through wormhole-like portals from Gaia and other demi-planes that open during periods of high mana, weaving together a tapestry of cultures and histories.
 
+### Divine Immanence Before and After the War
+
+Before and during the War of the Immortals, many gods chose a far stronger immanence than they do in the current age. They acted directly in history: taking councils, making war, stabilizing the wounded world, building new systems, and leaving interventions that still shape geography, religion, and noospheric infrastructure. In those elder days it was less strange for a named god to appear in person, bargain face-to-face, or impress their will on a region without the mediation of shrine, saint, daemon, or relic.
+
+The Breakings changed this. The First Breaking shattered the old continuity of the world; the Second Breaking scarred the Pattern again, damaged existing divine interfaces, and pushed many gods into more fragmentary modes of presence. In the present age, most divine power is more often encountered through cults, masks, sacred routes, relics, saints, daemons, local manifestations, and infrastructural miracles than through a single stable embodiment.
+
+This is a change in mode, not a universal ban. Named gods can still act directly, and some do so more readily than others. But direct immanence is now rarer, riskier, and more consequential, while distributed divine presence has become the practical norm of post-Breaking Elyncia.
+
 However, Elyncia is cursed by a mysterious phenomenon known as the Curse of Iron, which causes un-Named worked iron objects to rust within weeks. Despite the curse, hope and innovation thrive in Elyncia. Clans of the Brimstone Court (mostly dwarves, gnomes, & trolls) are custodians of the secret of crucible steel and have created named firearms and other Named tools resistant to the Curse. These folk represent the resilience and ingenuity of Elyncia's inhabitants, facing the challenges of their world with determination and resourcefulness.
 
 Power-armor crafted from bronze and other resources displays the world's technological prowess and warriors brandish laser swords that shimmer with arcane energy. Elyncia's cultures have just prototyped “flying triremes” and other magitech vehicles, crafts & ships that defy gravity with mana-foils. The wave-jammers have existed since before the recent cataclysm, their mana-foils letting them skim above the waters. The rediscovery of “power cores”, ancient magitech from the War of the Immortals and the First Breaking, have allowed the factions to evolve these into sky-jammers and the very rare and dangerous void-jammers.
@@ -84,7 +92,7 @@ YA = Years Ago (years before the playtest campaign)
 
 ### YOLD 1 / 1166 BCE (5491 Years Ago):
 
-*The War of the Immortals*: Strife between the gods climaxes. The First Breaking of Elyncia causes the void to flood down upon the planet, splitting the planet into a constellation of continents and seas swirling in the nebula-like Astral Sea between them. The gods recover from their conflicts long enough to banish the mortal necromancer responsible into the deep void at the edges of the Sol system. The portals to Gaia fail spectacularly, but not before many mages on Gaia send their populations through. The Gods “borrow” whole pieces of terrain from the dreams of Gaia to repair Elyncia.
+*The War of the Immortals*: Strife between the gods climaxes. In this age, many gods still choose strong immanence, acting directly in councils, battles, repairs, and acts of creation. The First Breaking of Elyncia causes the void to flood down upon the planet, splitting the planet into a constellation of continents and seas swirling in the nebula-like Astral Sea between them. The gods recover from their conflicts long enough to banish the mortal necromancer responsible into the deep void at the edges of the Sol system. The portals to Gaia fail spectacularly, but not before many mages on Gaia send their populations through. The Gods “borrow” whole pieces of terrain from the dreams of Gaia to repair Elyncia.
 
 During the War of the Immortals (on Gaia, the Bronze age collapse) the faerie tribes of Elyncia were aligned into the "Summer Court” and the “Winter Court" - corrupt factions headed by the Elf Queen & the Dwarf King. During the next 5,500 years those factions dissolve and the modern populations are extremely multi-cultural. There are now more than two Faerie Courts - The Seelie Court (remnants of the War of the Immortals who aligned to defeat the Unseelie agents in both the old Summer & Winter Courts), the Unseelie Court (remnants of those who broke the world the first time, terrorists), the Ouroborous Court (led by a mortal that acquired Faerie Lord status, mobile & at war with hordes of intelligent undead from the 2nd Breaking), the Brimstone Court (magitech specialists of the unstable Brimstone Nexus), and others.
 
@@ -96,9 +104,9 @@ During the War of the Immortals (on Gaia, the Bronze age collapse) the faerie tr
 
 *The Capture of Apophis*: After the asteroid Apophis nearly strikes Gaia on a pass through her orbit, Elyncia intervenes—saving her sister Gaia from a near-certain future collision by “catching” the stone in the Astral Sea’s unseen currents. Apophis is bound into a roaming micro-Nexus: a wandering rock-realm with its own omen-tides, strange reefs, and void-lantern auroras.
 
-*The Apophis Datum*: In the wake of the capture, the Astral Sea’s coastal “reference” re-indexes. Across most Nexus realms, sea levels fall and then stabilize around **15 meters below** the 2026 mirrorline—less a draining ocean than a mythic reset of what “shoreline” means.
+*The Apophis Datum*: In the wake of the capture, the Astral Sea’s coastal “reference” re-indexes. Across most Nexus realms, sea levels fall and then stabilize around **10 meters below** the 2026 mirrorline. This is less a draining ocean than a mythic reset of what “shoreline” means: an Orichalcum Age re-basing of coasts, harbors, deltas, and reef-lines that later generations inherit as ordinary geography.
 
-*Summerlands Remembering*: In the Summerlands (Black Sea coastline), the drop overshoots: the coast “remembers” an older, deeper geography. Local sea level settles nearer **−30m** relative to the 2026 mirrorline. Unstable areas are common especially along voidscars, rift-zones, and other places where the DreamNet’s stitchwork is thin.
+*Summerlands Remembering*: In the Summerlands (Black Sea coastline), the drop overshoots: the coast “remembers” an older, deeper geography. Local sea level settles nearer **−30m** relative to the 2026 mirrorline. This remains an exceptional deep-memory coast, not the Elyncian norm. Unstable areas are common especially along voidscars, rift-zones, and other places where the DreamNet’s stitchwork is thin.
 
 ### YOLD 5000 / 3834 CE (492 YA):
 
@@ -110,7 +118,7 @@ During the War of the Immortals (on Gaia, the Bronze age collapse) the faerie tr
 
 ### YOLD 5002 / 3836 CE (490 YA): 
 
-*The Noosphere*: The Lares DreamNet (Web3) is released on Zaraday, Bureaucracy 5, YOLD 5002. The Lindwyrm powers up the New Delos Nexus and uses it to stabilize and reset the local Arcane interference for all zones. In the New Delos region, the “arguing seas” are forced back into alignment with the Apophis Datum (the familiar ~−15m baseline). Once the Nexus is mostly stable he levitates the holy sites of Delos and the most populated areas of the surrounding archipelago into a new “flying” city of High Delos. The craters below expose the new megadungeon mouth of Low Delos. Mana lifts near the major Lares landmarks allow travel between the ports of High Delos and Low Delos.
+*The Noosphere*: The Lares DreamNet (Web3) is released on Zaraday, Bureaucracy 5, YOLD 5002. This is one of the last great historical moments where named gods are known to have acted together in unusually direct fashion after the Breakings. The Lindwyrm powers up the New Delos Nexus and uses it to stabilize and reset the local Arcane interference for all zones. In the New Delos region, the “arguing seas” are forced back into alignment with the Apophis Datum (the familiar ~−10m baseline shared by most Nexus). Once the Nexus is mostly stable he levitates the holy sites of Delos and the most populated areas of the surrounding archipelago into a new “flying” city of High Delos. The craters below expose the new megadungeon mouth of Low Delos. Mana lifts near the major Lares landmarks allow travel between the ports of High Delos and Low Delos.
 
 The Lindwyrm transmits the Declaration of Confederation over the new DreamNet, forming the League of Free Cities. The Ouroborous and Brimstone Courts agree to join the League, along with the Ali’i of Hawaiki, the Nexus that drifts through the Astral Sea in an unstable orbit. The Dominion of Magic immediately responds by annexing the nearest city-states, sending their sky-castles to patrol the new lands of the Dominion. The gods of the Kemetic Nexus pull inwards, closing all open routes and focusing on repairing the void-web and portal connections to Gaia.
 
@@ -235,10 +243,10 @@ The Astral Sea is the roiling, half-real expanse that lies between Elyncia’s s
   * Recover a stolen astral compass.  
   * Negotiate peace between rival navigator clans
 
-### **Apophis Nexus**
+### **Apophis**
 
 * **Region / Net:** Astral Sea Drift (stable orbit, micro-Nexus)  
-* **Origin / Dream-Mirror Source:** Captured asteroid Apophis; mythic “caught stone” bound into a roaming sky-realm  
+* **Origin / Dream-Mirror Source:** Captured asteroid Apophis; mythic “caught wantering star" bound into a roaming sky-realm  
 * **Geography & Environment:** Iron-dark regolith ridges, hollowed impact caverns, void-lantern auroras, and slow-tide dust seas that flow like water in low gravity. Gravity and time feel “offset” near the omen-reefs, where starlight bends. Elyncian lichens, reef-vines, spore-moss, and void-mushrooms are actively colonizing the rock, stitching webs of life into the black stone.  
 * **Major Settlements & Sites:** There are less than a handful of surface settlements.  
   * **Omen Reef** – A band of floating crystal debris that rings the Nexus and predicts Astral storms by color-shift   
@@ -288,7 +296,7 @@ The Astral Sea is the roiling, half-real expanse that lies between Elyncia’s s
 
 ## Eastern Net
 
-The Eastern Net is the heartland of Elyncia’s surviving Nexus cluster, bound together by tenuous ley-lines and centuries-old rivalries. Here lie the remnants of the Neo-Thracian Empire, half-drowned archipelagos, holy islands torn from the dreams of ancient seas, and contested realms of fae and mortal power. The Eastern Net’s Nexus are geographically close but politically fractured, their coastlines gnawed by the Astral Sea and their interiors scarred by wars against undead legions, rogue fae courts, and magitech theocracies. Control of these Nexus means control of the richest trade routes, the deepest dungeon mouths, and the most stable portals in the known world.
+The Eastern Net is the heartland of Elyncia’s surviving Nexus cluster, bound together by tenuous ley-lines and centuries-old rivalries. Here lie the remnants of the Neo-Thracian Empire, half-drowned archipelagos, holy islands torn from the dreams of ancient seas, and the haunted borderlands of the Olympian Marches, where roads, shrines, and old powers still contend for passage. The Eastern Net’s Nexus are geographically close but politically fractured, their coastlines gnawed by the Astral Sea and their interiors scarred by wars against undead legions, rogue fae courts, magitech theocracies, and the lingering pressures of divine-age ruin. Control of these Nexus means control of the richest trade routes, the deepest dungeon mouths, the most stable portals in the known world, and the few surviving corridors between them.
 
 ### **New Delos**
 
@@ -332,6 +340,27 @@ The Eastern Net is the heartland of Elyncia’s surviving Nexus cluster, bound t
   * Retrieve magitech blueprints from the lost Thracian capital.  
   * Unmask a necro-script cult inside the local cult of Thanatos.
 
+### **Olympian Marches**
+
+* **Region / Net:** Eastern Net
+* **Origin / Dream-Mirror Source:** Mainland Greece, Thessaly, Epirus, Macedon, and the southern Balkans; Bronze Age Aegean sacred landscapes layered with Hellenic myth and older barrow-road strata.
+* **Geography & Environment:** Broken mountains, storm coasts, oak woods, fertile basins, cracked passes, and inland Astral currents. Since the War of the Immortals the region has never settled. Roads wander, valleys change allegiance, springs remember old bargains, and safety usually means placating, aligning with, or living in the shadow of ancient things. Between the few surviving lights stretches a great deal of howling wilderness.
+* **Major Settlements & Sites:**  
+  * **The Heights of Olympos** – A shattered mountain-citadel of hanging roads, weather shrines, and half-abandoned sanctuaries where the sky still behaves like a court.
+  * **The Rift of Tempes** – A sacred pass turned treacherous corridor, one of the few semi-usable ways between Neo-Thracia and Illyria when the land permits it.
+  * **The Ash Plains of Phlegra** – Volcanic lowlands strewn with giant bones, black glass, slag heaps, and the burnt remains of divine war-works.
+* **Factions & Powers:** Olympian Houses; Rift Wardens; Hermetic Couriers; Discordant Cells; the Gorgonne Diaspora; Free Shrines of the Old Roads.
+* **Cultural Influences & Notes:** Not a neat Greek myth zone, but a haunted sacred frontier. Olympian cults sit atop older local powers, chthonic rites, hero tombs, and mountain laws no city ever mastered. Divine names are often masks, inheritances, or territorial claims. Theology here is mostly etiquette, trespass law, and surviving the attention of the land.
+* **Strategic Importance:** Hazardous corridor between Neo-Thracia and Illyria. Whoever can read the passes, appease the shrines, and survive the roads controls one of the few semi-usable eastern seams. Rich in oracle ruins, divine salvage, and old route infrastructure.
+* **Lares Node Status:** Fragmented and temperamental. Ridge-Lares, road-Lares, shrine-Lares, storm-Lares, and tomb-Lares all operate by local logic and rarely agree. Guidance is excellent if properly courted, treacherous if treated as a public utility.
+* **Notable Hazards:** Riftlands, inland Astral currents, divine weather, petrifying shrines, lion-haunted ruins, oath traps, cult skirmishes, giant-blood raiders, sacred toll disputes, and long reaches of wilderness between the few remaining points of light.
+* **Adventure Hooks:**  
+  * Escort a courier or delegation through the Rift of Tempes before the road closes again.
+  * Recover a route engine or oracle device before a rival temple-house, Gorgonne clan, or Erisian cell does.
+  * Reopen a shrine-road by honoring the right tolls, rites, and forgotten obligations.
+  * Found or defend a new point of light in country that plainly preferred the dark.
+
+
 ### **Illyrian Archipelago**
 
 * **Region / Net:** Eastern Net  
@@ -343,7 +372,7 @@ The Eastern Net is the heartland of Elyncia’s surviving Nexus cluster, bound t
   * **Unseelie Raiders** – Swift strike forces using hidden sea-caves and winter-bound isles as staging grounds  
   * **Independent Sea Clans** – Loose confederations of mariners resisting both necromantic and fae control, often at odds with one another  
   * **Mobile Wain and Chariot Clans** – Nomadic islanders who transport goods and warbands across causeways, tidal flats, and temporary land-bridges  
-* **Cultural Influences & Notes:** Warrior mariners; mix of Balkan tribal motifs with drowned-city myths, Balkan connections to the Celtic/Gael peoples. Pre-Celtic/Proto-Celtic, Proto-Norse, Bell Beaker, Yamnyaya, Etruscan, Basaque.  
+* **Cultural Influences & Notes:** Warrior mariners; mix of Balkan tribal motifs with drowned-city myths, Balkan connections to the Celtic/Gael peoples. Pre-Celtic/Proto-Celtic, Proto-Norse, Bell Beaker, Yamnyaya, Etruscan, Basaque. Old barrow cults, dead-route shrines, and sea-gate sanctuaries preserve extremely deep divine strata beneath later Greek, Thracian, and fae overlays.  
 * **Strategic Importance:** Off the coast near the mouth of Hebros River; ancient ley-line hub connection to the Western Net.  
 * **Lares Node Status:** Severely damaged; Existing Lares have partial memory loss and ghost-code contamination.  
 * **Notable Hazards:** Unstable seafloor, undead armadas, boiling sea vents, fragile fae-clan alliances  
@@ -369,7 +398,7 @@ The Eastern Net is the heartland of Elyncia’s surviving Nexus cluster, bound t
   * **Ouroborous Court** – Led by Krull, a mortal warlord elevated to fae lordship, the Court’s mobile warbands roam the central grasslands and Ironspine foothills. The feared Order of Amaranth serves as both elite shock troops and seekers of ancient ruins, moving constantly between raiding, defending contested passes, and striking at Dominion supply lines.  
   * **Seelie Court** – Controls the fae woods and river networks along the Summerlands’ eastern coast, from the Winterlands connection in the north to the southern frontier bordering the broken Brimstone Nexus coast. Maintains vital trade routes linking the Ironspine clans to the central heartlands and the Ouroborous Court’s roaming territories.  
   * **Independent enclaves** – farmers, traders, rogue mages resisting both the Dominion and Ouroborous influences  
-* **Cultural Influences & Notes:** Blend of European rural traditions and frontier survivalism, interwoven with fae court intrigue; rural hospitality masks centuries-old feuds and sudden border conflicts  
+* **Cultural Influences & Notes:** Blend of European rural traditions and frontier survivalism, interwoven with fae court intrigue; rural hospitality masks centuries-old feuds and sudden border conflicts. Divine presence here is highly local: road-saints, orchard powers, river queens, hilltop patrons, and courtly fae masks often matter more than distant formal theology.  
 * **Strategic Importance:** Agricultural breadbasket; crossroads linking Neo-Thracia (to the northwest), the Winterlands, and the Brimstone Mountains; vital to both military and trade networks  
 * **Lares Node Status:** Contested; Dominion maintains a strong Archive-Lares presence in the south, while Path-Lares in the central and northern regions are aligned with the Ouroborous Court  
 * **Notable Hazards:**  
@@ -429,7 +458,7 @@ The Eastern Net is the heartland of Elyncia’s surviving Nexus cluster, bound t
   * **Bifrost Wardens** – Elite guardians tasked with defending the bridge and controlling travel between Nexus  
   * **Einherjar** – Chosen warriors brought from battlefields across Elyncia to serve the gods’ armies  
   * **Fae Clans of the High Realms** – Seelie and independent fae tribes bound by oath and bloodline to the Aesir, serving as messengers, spies, and dream-guides  
-* **Cultural Influences & Notes:** Ritual duels, mead-hall councils, and seasonal gatherings tied to celestial events; stories of ancient conflicts between sky and chthonic powers are woven into Asgard’s history and still shape its alliances. In the post-Breaking era, the gods engage more directly in mortal politics, offering Bifrost passage, divine artifacts, and military aid in exchange for influence across Elyncia.  
+* **Cultural Influences & Notes:** Ritual duels, mead-hall councils, and seasonal gatherings tied to celestial events; stories of ancient conflicts between sky and chthonic powers are woven into Asgard’s history and still shape its alliances. In the post-Breaking era, the gods engage more directly in mortal politics than many other Nexus, preserving a stronger tradition of divine immanence, oath-making, and face-to-face patronage.  
 * **Strategic Importance:** Control of the Bifrost makes Asgard a key transit hub between Eastern and Western Nets; the World-Root Gate offers rare stable ley-line access to realms otherwise cut off by the Astral Sea.  
 * **Lares Node Status:** Highly stable; Archive-Lares bound to the World-Root Gate keep meticulous records of cross-Nexus travel; Path-Lares oversee the Bifrost’s shifting schedules and conditions  
 * **Notable Hazards:**  
@@ -480,7 +509,6 @@ The Western Net is a wilder, more fragmented constellation of Nexus, scattered a
 * **Major Settlements & Sites:**  
   * **Mycohaven** – Northern isle port-city partially grown from fungal architecture; the political seat of the Fungal Druid Circles.  
   * **Mist Monastery** – A cliffside temple on the southeastern isle whose resonant bells guide ships and flyers through treacherous fog channels.
-
   * **Hivewind Heights** – Sky-island hive-complex of the dragonfly and beetle fae clans; center for aerial trade and pollen diplomacy.  
   * **Root-Gate Chasms** – Vast Underdark portals in the southwestern isle’s caves; can open to Nexus across both the Western and Eastern Nets when fed the correct spore key.  
   * **Kōra Caverns** – Bamboo-scaffolded cavern city, suspended markets, and Underdark trade hub for goods flowing to Mu and Hawaiki.  
@@ -503,6 +531,73 @@ The Western Net is a wilder, more fragmented constellation of Nexus, scattered a
   * Smuggle a spore engine prototype through the Root-Gate Chasms without alerting the mycelial hivemind.  
   * Lead a Hawaiki trade fleet through the mists under a rare triple-lantern moon when the ley-lines open.  
   * Retrieve an aerial pollen artifact stolen from Hivewind Heights before it seeds in an enemy fortress
+
+### **The Jaguar Constellation**
+
+* **Region / Net:** Western Net
+* **Origin / Dream-Mirror Source:** Mesoamerican sacred geographies, Pacific littorals, volcanic highlands, cenote-karst underworlds, and a vast seasonally flooded wetland world
+* **Geography & Environment:** A five-part Nexus of high basins, black-glass sierra mountains, reed-marshes, living land-coral coasts, and underworld waters, each “star” bound to the others by trade, pilgrimage, and sky-law. Here, as in most of Elyncia, the Apophis Datum reset the shoreline in the old Orichalcum Age by about ten meters and then became simply part of the land’s inheritance. Coral shelves, limestone benches, marshy littorals, drowned river mouths, and old lagoon flats remain, but they no longer read as a wound in the coast. Since then high mana, warm tides, and ley-rich floodplains have done their patient work. The new ground is old now. Reef roads hardened into causeways. Coral terraces grew moss, orchids, shrines, and watchtowers. Mangroves and marsh forests spread over old seabeds. Strange marine life followed the ley currents inland and stayed. Along the coast and through the lower wetlands, living land-corals, fungal reefs, shell-thickets, and slow luminous channels have long since become part of the country rather than intrusions upon it. In the damp hours of dusk and storm-change, pale jellies rise from the brackish reaches and drift above the reeds and coral flats, buoyed by warm ley currents like lanterns, spores, or saints who took the wrong road.
+
+  The five stars are:  
+  * **The Basin of Five Suns** – highland ritual core of terrace-cities, observatories, and rival calendars
+  * **The Amaranth Marsh** – flood-pulse wetland of raised fields, shrine mounds, canoe roads, and sacred kitchens
+  * **The Black-Glass Sierras** – volcanic uplands of obsidian workshops, cliff convents, and mountain shrines
+  * **The Feathered Harbors** – western littoral of convoy ports, coral quays, roadsteads, and harbor-convents
+  * **The Cenote Crown** – sinkholes, cave rivers, flooded chambers, and underworld wells where memory and water keep company
+
+* **Major Settlements & Sites:**  
+  * **City of Five Suns** – greatest highland city, terraced around a volcanic basin; each height keeps its own civic calendar and claims to know the lawful season
+  * **Tlalocan-of-Reeds** – largest city of the Marsh, built on mounds, anchored flotillas, and canal wards; seat of the Reed Throne Compact
+  * **Black Harbor of Nacar** – deep western anchorage hidden behind coral cuts and old reef walls; harbor-convents, convoy shrines, and amaranth kitchens line its quays
+  * **The Cenote Archive** – chain of guarded wells where lacquered records, shell tablets, cords, and sealed jars are lowered into the dark for keeping
+  * **The Feather Stair** – mountain road linking basin, marsh, and sea; opened and closed by season, omen, and old treaty
+  * **The Lantern Causeways** – raised roads across the Marsh, dry in one season, half-drowned in the next, more important than city walls
+  * **The Reef of Dry Bells** – emergent coral barrier turned shrine-road and naval hazard; its wind-bells speak before storms do
+  * **Mirror Caldera of Cozcatl** – volcanic observatory-lake where astronomers, mirror-workers, and ritual surgeons share one uneasy precinct
+  * **The Wells Below the Jaguar Throne** – old cenotes beneath a ruined court-city, used for oath descent, funerary petitions, and certain guarded rites of Amaranth
+
+* **Factions & Powers:**  
+  * **The Solar Houses** – highland dynasties of observatories, terrace-cities, and war traditions; each claims truer alignment with the age, the heavens, and the old obligations
+  * **The Reed Throne Compact** – wetland league of shrine custodians, fisher guilds, canoe lords, and hereditary offices; the Marsh does not think of itself as anyone’s hinterland
+  * **The Keepers of the Unfading Seed** – elder custodians of the Secret of Amaranth in its common, ritual, medicinal, funerary, and high mystery forms
+  * **Jaguar Vigil Societies** – ferrymen, shrine-guards, trackers, monster-hunters, and holy police of the floodways
+  * **Feathered Convoys** – merchant-mariner houses and licensed fleets binding basin, marsh, and harbor into one body
+  * **Obsidian Garden Orders** – mirror-workers, surgeons, ritual engineers, and crafters of Pattern-safe tools suited to a world wary of iron
+  * **The Order of Amaranth** – a small but stubborn presence in the ports, marsh hospices, and pilgrim roads; known for field medicine, sanctuary law, and an unnerving ease around the free-willed dead
+
+* **Cultural Influences & Notes:** The Jaguar Constellation is held together by reciprocity, timing, hospitality, and the keeping of names. Calendar is law. Flood control is priestcraft. Kitchens, gardens, convoy shrines, and observatories all sit close to religion because here they are religion. Human sacrifice belongs to the old arguments and the bad years. The dominant doctrine is older and stranger: the world is fed by continuance. Flowers, incense, lamps, fasting, pilgrimage, labor, oath-blood freely offered, food prepared in the right form, and the dead kept from hunger and disgrace.
+
+  The old datum reset gave the Nexus a wide amphibious edge. Not beach, but margin: coral shelves, shell ridges, brackish forests, old reefs gone to road, and marsh-country where sea-life and land-life had twenty-three centuries to breed strange treaties. Along those littorals the marine and the terrestrial no longer divide cleanly. Land-crabs haunt shrine steps. Coral groves creep by inches through wet fields. Flying jellies drift the luminous channels and rise over the reeds on ley-warm evenings. Weird marine currents still move inland under flood and moon, bringing fertility, rot, miracles, and the occasional thing that should have remained offshore. Broken Isles bleed-through exists, but as old local weirdness, not open rupture: fungal reef blooms, shell gardens with opinions, and pale sky-jellies in the lower country that peasants treat as weather, omen, or nuisance according to season.
+
+* **Strategic Importance:** One of the Western Net’s strongest non-Khemetic death infrastructures, built not on monumental tomb-law but on cenote roads, re-binding rites, ancestor maintenance, and anti-predation custom. Rich in iron-light materials: obsidian, coral-limestone, shell, ceramic, resin, hardwood, and sanctified composites. Holder of the Secret of Amaranth, whose food, medicine, and rite-ladders matter to both the living and the free-willed undead. Strong western harbors, difficult coastal approaches, and a fivefold geography that projects influence inland, littorally, ritually, and below.
+
+* **Lares Node Status:** Active, plural, and stubbornly local. No single node rules the whole Constellation.  
+  * **Calendar-Lares** – precise, litigious, and hard to flatter
+  * **Reed-Lares** – practical, territorial, and obsessed with channels, fisheries, and proper gifts
+  * **Harbor-Lares** – manifest-minded, quarantine-wise, and severe about sanctuary
+  * **Mirror-Lares** – sharp on craft, diplomacy, surgery, and truths best not handled casually
+  * **Cenote-Lares** – old, patient, and better at remembering debts than the living would prefer
+
+* **Notable Hazards:**  
+  * Seasonal flood-pulse remapping roads, borders, and safe country
+  * Cenote breaches, sink collapses, and black-water uprisings from the underways
+  * Coral knife-fields and hidden shelf-edges along the western coast
+  * Jaguar, caiman, serpent, and spirit-predator migrations through the Marsh
+  * Obsidian dust storms and volcanic unrest in the Sierras
+  * Anti-reform blood cults in eclipse years and famine seasons
+  * Harbor sanctuary disputes involving foreign fleets, smugglers, or convoy lawbreakers
+  * Broken Isles bleed-through: fungal reef blooms, drifting spores, and pale jellies that float where birds should be
+  * Calendar unrest when rival cities disagree on lawful timing, sacred debt, or the turning of the age
+
+* **Adventure Hooks:**  
+  * Escort an amaranth convoy from the Marsh to a western harbor before flood season cuts the causeways
+  * Recover a covenant ledger proving the oldest obligations between the Keepers of the Unfading Seed and the harbor-convents
+  * Stop a Solar House from reviving captive sacrifice under cover of an eclipse emergency
+  * Reopen a Lantern Causeway before refugees, pilgrims, and the hungry dead are trapped between wet and dry seasons
+  * Explore a coral precinct left high and dry by the old datum, now half shrine, half warehouse ruin, half fungal garden
+  * Escort free-willed undead pilgrims to the Cenote Crown for re-binding before their cravings break covenant
+  * Defend a floating hospice during flood season while pale jellies drift in from the lower channels and something worse follows beneath them
+  * Carry ritual medicines and field rations eastward to Summerlands agents of the Order of Amaranth while rival powers try to learn too much of the Secret
 
 ### Mu
 
@@ -567,32 +662,28 @@ The Western Net is a wilder, more fragmented constellation of Nexus, scattered a
 
 ### Khemet
 
-* **Region / Net:** Western Net (West Quadrant)  
-* **Origin / Dream-Mirror Source:** Ancient Egypt, Nubia, and Punt; mythic Kemet overlaid with astral cosmology and divine-kingship traditions  
-* **Geography & Environment:** A vast Nile-like river, the Iteru-Aaru, flows from southern cataracts through sun-scoured deserts, fertile floodplains, and into the Astral Sea delta. Monumental stone cities rise along its banks, crowned by pyramids, obelisks, and colossal statues of gods. The western deserts hide necropolis-plateaus, labyrinthine wadis, and sealed underworld gates; to the east lie volcanic highlands and myth-mirage ports on the Astral Sea.  
+* **Region / Net:** Western Net (West Quadrant)
+* **Origin / Dream-Mirror Source:** Ancient Egypt, Nubia, and Punt; mythic Kemet overlaid with astral cosmology, divine kingship, funerary law, and river doctrine.
+* **Geography & Environment:** The Iteru-Aaru runs black and steady from the southern cataracts through temple cities, floodplains, reed marshes, and stone deserts before breaking into a many-channeled Astral delta. Westward lie necropolis plateaus, sealed wadis, tomb-fields, and underworld gates. Eastward rise quarries, red highlands, and mirage ports staring into the Astral Sea. The land is held together by stone, calendar, rite, and old engineering.
 * **Major Settlements & Sites:**  
-  * **Waset-Aaru** – Capital and seat of the Living Pharaoh, a walled city of white stone and gold-capped pylons.  
-  * **Necropolis of Meru-Sekhem** – Tiered cliff-tombs with soul-crystal datavaults guarded by tomb-templars and sarcophagus-bound constructs.  
-  * **Gates of Duat** – Monumental pylons marking portals to the Land of Reeds; each guarded by god-aspect avatars and shifting riddle-wards.  
-  * **Heliopolis of the Horizon** – Solar temple-city whose great obelisk acts as a mana-lens and DreamNet relay.  
+  * **Waset-Aaru** – Seat of the Living Pharaoh, a river capital of pylons, palace-temples, archive courts, and ceremonial harbors.
+  * **Necropolis of Meru-Sekhem** – Cliff-tombs, mortuary workshops, soul-crystal vaults, and older sealed depths below them.
+  * **The Gates of Duat** – Great pylons and ritual thresholds guarding the surest western approaches to the underworld roads.
+  * **Heliopolis of the Horizon** – A solar city of obelisks, observatories, and sacred geometry where light is treated as law.
 * **Factions & Powers:**  
   * **The Living Pharaoh** – Divine ruler, embodiment of Ma’at, channeling cosmic law into mortal affairs.  
   * **High Synod of the Veil** – Regent-council of high priests and dream-oracles; controls foreign relations and access to sacred archives.  
   * **Order of the Tomb-Templars** – Warrior-monks who guard necropoli, Duat portals, and sarcophagus-batteries.  
-  * **Library of Thoth** – Hidden repository of myth-codes, accessible only through elaborate Dream-Lock rituals.  
-* **Cultural Influences & Notes:** Life revolves around the Iteru’s annual mana-flood, timed to the rising of the Star of Sopdet. Ma’at (order, truth, balance) permeates governance, law, and magic. Architecture is aligned with constellations and seasonal cycles, channeling mana through sacred geometry. Isolationist by policy, Khemet engages outsiders only through heavily ritualized diplomacy, demanding gifts of pattern-crystals or myth-bound relics before granting passage.  
-* **Strategic Importance:** Controls the only stable portal to the Duat in the Western Net; holds advanced soul-binding and necrotech knowledge; serves as a secure DreamNet archive hub immune to most Iron Curse effects due to its orichalcum infrastructure.  
-* **Lares Node Status:** Stable and extremely well-warded. Archive- and Library-Lares dominate, slow to answer but possessing deep, precise memory. Path-Lares exist only as dream-envoys, requiring oath-bindings to guide outsiders.  
-* **Notable Hazards:**  
-  * Psychic labyrinths within tombs, designed to trap intruders in recursive myth-loops  
-  * Astral star-storms during celestial misalignments, disrupting travel and Lares connections  
-  * Constructs powered by sarcophagus-batteries defending sacred sites  
-  * Desert mirages concealing void-spawn or cursed ruins  
+  * **Library of Thoth** – Hidden repository of myth-codes, accessible only through elaborate Dream-Lock rituals.
+* **Cultural Influences & Notes:** Life is ordered by flood, star, tomb, and correct speech. Ma’at is civic doctrine, not sermon: measure rightly, bury rightly, keep the names intact, keep the channels clear, keep the dead where they belong. Since the Second Breaking, Khemet has turned inward. Its gods and priesthood sealed the open ways and chose repair over hospitality. Outsiders are admitted rarely, questioned thoroughly, and remembered for a very long time.
+* **Strategic Importance:** Khemet controls the most stable western approaches to the Duat and preserves advanced soul-binding, funerary infrastructure, archive security, and ritual noospheric maintenance. It also holds old records of Gaia-facing void-web links, making it disproportionately valuable to anyone chasing legitimacy, death-lore, deep archives, or cross-world communications.
+* **Lares Node Status:** Stable, deep, and heavily warded. Archive-Lares, Library-Lares, and Mortuary-Lares dominate. They are exact, formal, and slow to trust. Path-Lares exist, but usually as licensed dream-envoys, funerary guides, or processional permissions rather than friendly local helpers.
+* **Notable Hazards:** Recursive tomb-labyrinths, star-storms, celestial misalignments, sarcophagus engines, obedient stone guardians, cursed wadis, mirage basins, failed names, and ritual law severe enough to function as a monster.
 * **Adventure Hooks:**  
-  * Escort a League of Free Cities delegation to petition the Pharaoh for access to the Gates of Duat.  
-  * Recover the Sun-Scroll from a collapsing pyramid before the star-glyph it binds fades.  
-  * Unravel a necro-script infection hidden in a stolen papyrus before it destabilizes the DreamNet archive.  
-  * Negotiate safe passage for a caravan carrying rare pollens from the Verdant Coil, proving their worth in the Trials of Ma’at.
+  * Escort an approved Free Cities delegation seeking access to the Gates of Duat before the court closes the season’s petitions.
+  * Recover a stolen funerary protocol before a burial cycle fails and something important refuses to stay dead.
+  * Trace a necro-script contamination hidden inside a copied archive roll.
+  * Win passage up the Iteru-Aaru by surviving tolls, legal tests, and Trials of Ma’at instead of trying to bluff the river-state.
 
 ### Ubar
 
