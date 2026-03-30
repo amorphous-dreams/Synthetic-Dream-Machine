@@ -395,7 +395,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Entropic Shield; note: FTLS variant expression of the Shield family, not a direct OSR import. Wild Mage, Wizard, or Noomagus most often know this power.
 
@@ -530,7 +530,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 >   - book: Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources; section: Shadowdark (modern OSR); note: future-generation analog reference only
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Mage Armor
 > - usage:
@@ -6775,7 +6775,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Reckless Dweomer; note: Future-generation back-port for FTLS mana metaphysics; skip osr import.
 
@@ -8752,7 +8752,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Adaptive Form; note: FTLS Chapter 06 alpha power entry.
 
@@ -8797,7 +8797,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Assimilation Protocol; note: FTLS Chapter 06 alpha power entry.
 
@@ -8839,7 +8839,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Avatar of the Dream; note: FTLS Chapter 06 alpha power entry.
 
@@ -8879,7 +8879,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Battle Shell; note: FTLS Chapter 06 alpha power entry.
 
@@ -8914,7 +8914,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Breaker of Waves; note: FTLS Chapter 06 alpha power entry.
 
@@ -8951,7 +8951,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Burrower’s Instinct; note: FTLS Chapter 06 alpha power entry.
 
@@ -8988,7 +8988,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Call of the Deep; note: FTLS Chapter 06 alpha power entry.
 
@@ -9027,7 +9027,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Crown of the Grave; note: FTLS Chapter 06 alpha power entry.
 
@@ -9064,7 +9064,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Dream Pounce; note: FTLS Chapter 06 alpha power entry.
 
@@ -9104,7 +9104,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Dream-Skim; note: FTLS Chapter 06 alpha power entry.
 
@@ -9145,7 +9145,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Earthshaker; note: FTLS Chapter 06 alpha power entry.
 
@@ -9182,7 +9182,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Echo Memory; note: FTLS Chapter 06 alpha power entry.
 
@@ -9224,7 +9224,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Echolocation Pulse; note: FTLS Chapter 06 alpha power entry.
 
@@ -9261,7 +9261,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Elemental Gift; note: FTLS Chapter 06 alpha power entry.
 
@@ -9301,7 +9301,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Giant Growth; note: FTLS Chapter 06 alpha power entry.
 
@@ -9336,7 +9336,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Grave-Wrought Gift; note: FTLS Chapter 06 alpha power entry.
 
@@ -9377,7 +9377,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Howl; note: FTLS Chapter 06 alpha power entry.
 
@@ -9420,7 +9420,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Laughing Curse; note: FTLS Chapter 06 alpha power entry.
 
@@ -9456,7 +9456,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Lizard Leap; note: FTLS Chapter 06 alpha power entry.
 
@@ -9493,7 +9493,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Mist-Woven Hide; note: FTLS Chapter 06 alpha power entry.
 
@@ -9541,7 +9541,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Myrmidon Surge; note: FTLS Chapter 06 alpha power entry.
 
@@ -9577,7 +9577,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Overmind Link; note: FTLS Chapter 06 alpha power entry.
 
@@ -9619,7 +9619,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Overwatch; note: FTLS Chapter 06 alpha power entry.
 
@@ -9659,7 +9659,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Pheromone Beacon; note: FTLS Chapter 06 alpha power entry.
 
@@ -9696,7 +9696,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Prey-Binder; note: FTLS Chapter 06 alpha power entry.
 
@@ -9734,7 +9734,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Psychedelic Veil; note: FTLS Chapter 06 alpha power entry.
 
@@ -9772,7 +9772,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Shadow Step; note: FTLS Chapter 06 alpha power entry.
 
@@ -9808,7 +9808,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Shadowform; note: FTLS Chapter 06 alpha power entry.
 
@@ -9848,7 +9848,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Shell Craft; note: FTLS Chapter 06 alpha power entry.
 
@@ -9887,7 +9887,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Soul Anchor; note: FTLS Chapter 06 alpha power entry.
 
@@ -9927,7 +9927,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Summon Guardian Spirit; note: FTLS Chapter 06 alpha power entry.
 
@@ -9964,7 +9964,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Surge; note: FTLS Chapter 06 alpha power entry.
 
@@ -10000,7 +10000,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Thunder Step; note: FTLS Chapter 06 alpha power entry.
 
@@ -10037,7 +10037,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Venom Bolt; note: FTLS Chapter 06 alpha power entry.
 
@@ -10075,7 +10075,7 @@ tags:
 
 meta:
 > - source:
->   - book: Flying_Triremes_and_Laser_Swords_06_Powers; page: working-draft
+>   - book: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM; page: working-draft
 > - usage:
 >   - scope: power; id: Warren-Soul; note: FTLS Chapter 06 alpha power entry.
 

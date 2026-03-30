@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md"
+DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
 DEFAULT_OUTPUT = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
 DEFAULT_PRE_ADD = ROOT / "_todo/TODO_PRE_ADD_Spell_Staging.md"

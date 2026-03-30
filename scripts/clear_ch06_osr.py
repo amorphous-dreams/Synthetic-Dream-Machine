@@ -20,7 +20,7 @@ from pathlib import Path
 
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md"
+DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 PENDING_BODY = "(pending verbatim extraction)"
 
 CARD_RE = re.compile(r"^## (.+?)\n(.*?)(?=^## |\Z)", flags=re.S | re.M)

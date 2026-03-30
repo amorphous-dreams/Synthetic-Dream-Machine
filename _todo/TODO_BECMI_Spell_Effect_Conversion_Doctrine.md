@@ -60,7 +60,7 @@
 - [Vastlands_Guidebook.md -> "Using Powers"](#page_0096) (approx line 3930)
 - [Vastlands_Guidebook.md -> "To Be A Proper Wizard"](#page_0105) (approx line 4398)
 - [Vastlands_Guidebook.md -> "Storing Powers"](#page_0096) (within Using Powers section)
-- [Flying_Triremes_and_Laser_Swords_06_Powers.md -> "Powers from Old School Roleplaying"](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md) → canonical `Spell Level × 2 = SDM Power Level` pin (Luka Rejec)
+- [Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md -> "Powers from Old School Roleplaying"](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md) → canonical `Spell Level × 2 = SDM Power Level` pin (Luka Rejec)
 
 ### Storage & Access
 - [Synthetic_Dream_Machine_04_Powers_Index.md#L173](Synthetic_Dream_Machine_04_Powers_Index.md#L173) → "Storage tags" usage note
@@ -91,7 +91,7 @@
 
    > *"As a general conversion guideline, SDM Power Level = OSR 'Spell Level' x2."*
 
-   [Canon: Flying_Triremes_and_Laser_Swords_06_Powers.md -> "Powers from Old School Roleplaying"]
+   [Canon: Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md -> "Powers from Old School Roleplaying"]
    Corroborated: `TODO_BECMI_Conversion.md`, `TODO_Magitech_Fantascience_Chapter05.md`, `TODO_Lares_Chapter05_Agent_Prompt.md`
 
    Full BECMI → SDM P: conversion table:
@@ -270,7 +270,7 @@ Write the SDM zone label first; append the parenthetical OSR value (metric + fee
   
   Related reversals that fit this pattern: Cure/Cause Critical Wounds, Restore/Cause Serious Wounds. Raise Dead / Finger of Death is a separate pair at escalating P: and gets separate cards rather than a `Reversable:` line, because the P: gap is too large to share a block. In actual play, reversed forms may start as encrypted/damaged/locked sections of the Power.
 - **Counter-push-pull exception: Light ↔ Darkness and analogous opposing loops.** Some reversible pairs are not merely thematic inverses — they are designed to contest each other as **active game states**. The canonical SDM instance is Light ↔ Darkness:
-  - FTLS directly rules the opposition: *"Darkness will cancel a light spell if cast upon it, but may itself be cancelled by another light spell."* Continual Light cancels Continual Darkness and vice versa. [Canon: Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md → Continual Light / Darkness entries]
+  - FTLS directly rules the opposition: *"Darkness will cancel a light spell if cast upon it, but may itself be cancelled by another light spell."* Continual Light cancels Continual Darkness and vice versa. [Canon: Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md → Continual Light / Darkness entries]
   - This makes Darkness a **tactical** counterplay tool with direct exploration and combat utility, not merely the narrative opposite of Light.
 
   **Editorial rule:** When the reversed form functions as a **direct mechanical counter** to the base spell (or to a named category of ongoing effects), it earns its own separate card — not `Reversalbe:` storage, and not `osr:` block only. The card body must name the opposition relationship explicitly.

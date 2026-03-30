@@ -45,7 +45,7 @@ daemon-lares@dreamdeck:
 - [03 OSR Heritage Traits](Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md)
 - [04 Recon, Salvage, Secrets](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md)
 - [05 Magitech and Fantascience](Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md)
-- [06 Powers](Flying_Triremes_and_Laser_Swords_06_Powers.md)
+- [06 Powers](Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md)
 - [07 Wild Magic Exposure](Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md)
 - [08 Formations and Mass Combat](Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md)
 - [09 Loot and Treasure](Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md)
