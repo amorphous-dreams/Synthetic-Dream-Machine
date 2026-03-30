@@ -9,6 +9,7 @@ Purpose:
 - support the broader `Spells -> Powers` conversion pass
 
 Source corpus:
+- `_todo/TODO_PRE_ADD_Spell_Staging.md`
 - `_todo/TODO_BECMI_Spell_Material_Staging_Basic.md`
 - `_todo/TODO_BECMI_Spell_Material_Staging_Expert.md`
 - `_todo/TODO_BECMI_Spell_Material_Staging_Companion.md`
@@ -42,14 +43,14 @@ Rules for this artifact:
 ## State of Play
 
 - Confidence audit is complete and the metadata layer is now rated **0.90 / 1.00 floor-based** as approved working infrastructure.
-- The staged corpus remains source-frozen and is the only legal witness set for Chapter 06 `osr:` imports.
+- The staged spell corpus remains source-frozen and is the only legal witness set for Chapter 06 `osr:` imports.
 - Chapter 06 design decisions are locked; Chapter 06 `alpha` is still open.
 - Chapter 05 bridge continuation remains paused until Chapter 06 reaches `alpha`.
 - Operational import backlog for the spell-only Chapter 06 `osr:` pass is defined below under `## Phase B Backlog: Chapter 06 osr: Import`.
 
 ## Execution Lock Snapshot (2026-03-28)
 
-- **Source lock**: open and frozen on the six staged spell files only.
+- **Source lock**: open and frozen on the staged spell source set: the consolidated pre-AD&D staging file plus the six BECMI lane files.
 - **Confidence lock**: open at **Approved Working Infrastructure (0.90 / 1.00 floor-based)**.
 - **Exception lock**: all 12 verified exception rows remain in force pending new evidence.
 - **Chapter 06 design lock**: open; activation/payment/storage/overcharge/scale doctrine is already locked.
@@ -180,7 +181,7 @@ This is the execution backlog for the first downstream phase after the staging-c
 ### Gate And Freeze
 
 6. Record the import gate as open only when the staging corpus remains frozen, provenance stays at required confidence, the exception ledger remains verified, and the clean multi-witness staging file remains reproducible from the frozen lane docs.
-7. Treat the six staging documents as the only legal upstream witness base for `osr:` imports, and `_todo/TODO_BECMI_Spell_Material_Staging.md` as the primary downstream import source. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
+7. Treat the staged spell source set (`_todo/TODO_PRE_ADD_Spell_Staging.md` and the six BECMI lane staging docs) as the only legal upstream witness base for `osr:` imports, and `_todo/TODO_BECMI_Spell_Material_Staging.md` as the primary downstream import source. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
 8. Keep the current exception doctrine in force:
    - verified `RC`-only rows remain `RC`-only exceptions,
    - verified `Master`-only procedures remain `Master`-only exceptions,
@@ -422,10 +423,13 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
 | Continual Light | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Dancing Lights | MU1 | Holmes | Holmes -> hb-dancing-lights | spell | ✓ | - |
+| Darkness | MU2 | Greyhawk, Holmes | Greyhawk -> gh-darkness; Holmes -> hb-darkness | spell | ✓ | - |
 | Detect Evil | C1, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Detect Invisible | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Dispel Magic | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| ESP | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| ESP | MU2 | OD&D Family, Expert, RC | OD&D Family -> odnd-esp; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Enlargement | MU1 | Holmes | Holmes -> hb-enlargement | spell | ✓ | - |
 | Fly | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Invisibility | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Invisibility 10' Radius | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -442,8 +446,10 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Wizard Lock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Audible Glamer | MU2 | Holmes | Holmes -> hb-audible-glamer | spell | ✓ | - |
 | Charm Monster | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Clairvoyance | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Clairaudience | MU3 | Men & Magic, Holmes, OD&D Family | Men & Magic -> mm-clairaudience; Holmes -> hb-clairaudience; OD&D Family -> odnd-clairaudience | spell | ✓ | - |
+| Clairvoyance | MU3 | OD&D Family, Expert, RC | OD&D Family -> odnd-clairvoyance; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Cloudkill | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Confusion | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Conjure Elemental | MU5 | Expert, Companion, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Conjure Elemental; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -459,14 +465,19 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Infravision | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Invisible Stalker | MU6 | Expert, Immortals, RC | Expert -> Clerical and Magic-User Spell Expansions; Immortals -> Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Invisible Stalker; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Lower Water | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Magic Mouth | MU2 | Greyhawk, Holmes | Greyhawk -> gh-magic-mouth; Holmes -> hb-magic-mouth | spell | ✓ | - |
 | Magic Jar | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Massmorph | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Passwall | MU5 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Polymorph Others | MU4 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Polymorph Self | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Projected Image | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Pyrotechnics | MU2 | Greyhawk, Holmes | Greyhawk -> gh-pyrotechnics; Holmes -> hb-pyrotechnics | spell | ✓ | - |
+| Ray of Enfeeblement | MU2 | Holmes | Holmes -> hb-ray-of-enfeeblement | spell | ✓ | - |
 | Remove Curse | C3, MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Slow | MU3 | Men & Magic | Men & Magic -> mm-slow | spell | ✓ | - |
 | Stone to Flesh | MU6 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Strength | MU2 | Greyhawk, Holmes | Greyhawk -> gh-strength; Holmes -> hb-strength | spell | ✓ | - |
 | Teleport | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Wall of Fire | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Wall of Stone | MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -794,6 +805,9 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Lightning Bolt | spell | Core line-artillery recognizer in the base attack family. | direct |
 | Delayed Blast Fireball | spell | Timed artillery variant of the fireburst family. Treat as the middle rung between `Fireball` and `Meteor Swarm`, not proof of a mandatory standalone export. | partial |
 | Meteor Swarm | spell | Extreme artillery recognizer and current fireburst capstone above `Fireball` and `Delayed Blast Fireball`. Keep as custom until Chapter 06 decides whether it remains a separate apex effect or becomes an overcharge endpoint. Evidence lock: Range 240', creates 1-4 40' radius meteor impacts (choose locations), each impact deals 10d10 fire damage with save-for-half, impacts persist with hazard interactions (craters, rubble, fire spread). | custom |
+| Pyrotechnics | spell | Fire-source manipulation lane that can pivot between spectacle and smoke-screen denial. Greyhawk/Holmes evidence lock: requires an existing fire source, extinguishes that source on use, and either creates a high-visibility flare display or a dense smoke cloud sized by the underlying flame. | partial |
+| Ray of Enfeeblement | spell | Focused combat-debuff beam that suppresses physical output rather than dealing direct damage. Holmes evidence lock: 30' gray ray, save negates, failed targets lose 4 Strength-equivalent points for caster-level rounds and deal 25% less physical damage per 4 points lost. | partial |
+| Slow | spell | Tempo-denial counterpart to `Haste`; keep the relationship explicit for later overcharge or reverse-form consolidation. Men & Magic evidence lock: broad-area slowing effect over up to 24 creatures in a large rectangle for 3 turns. | partial |
 | Spell Damage Bonus | item-effect | Master artifact-table damage rider that augments one spell's damage on use rather than creating a new standalone payload. Strong Chapter 05 precedent for temporary artillery overcharge attached to an item-side interface instead of a separate castable effect. Evidence lock: augments one spell cast by the artifact user within 1 round, scaling bonus by spell level (1d6 bonus per spell level, max +6d6 damage), applies to damage rolls only (no save re-rolls), one-use-per-artifact-activation model. | custom |
 
 #### Battle and Force / Hazards / Destruction
@@ -897,6 +911,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Clairvoyance | spell | Remote-sight lane. Existing SDM family variant: `Eyes of the Arrow` (Vastlands / The Viridian Practice), a projectile-bound remote sensor. | partial |
+| Clairaudience | spell | Remote-hearing sibling to `Clairvoyance`; preserve it as a distinct recognizer even if later Chapter 06 work bundles both under a shared sensor doctrine. | partial |
 | Detect Danger | spell | Hazard-sense hybrid lane combining detection and danger reading. Existing SDM family variant: `Yellow Foresight`, which scans a wide area for sentients and general mood. | partial |
 | Detect Invisible | spell | Arcane perception / anti-concealment lane. Existing SDM family variant: `Eyes of Akaula`, which sees invisible, hidden, departed, and dead things. | partial |
 | ESP | spell | Thought-reading / awareness lane. Existing SDM family variant: `Yellow Foresight`, which reads sentient presence and general mood rather than exact thoughts. | partial |
@@ -940,6 +955,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Summon Animals | spell | Druidic ally-call effect with explicit HD budgeting; useful for summon scaling via SDM Level. Existing high-confidence family lane for druidic ally summoning. | partial |
 | Animate Objects | spell | Object animation lane that likely maps only with explicit gear and object-agent handling. | partial |
 | Animate Dead | spell | Corpse animation and minion-control doctrine carrier shared across cleric and arcane lanes. Existing SDM cousin `Animate Corpse` is relationship guidance, not a one-to-one replacement. Keep as custom because command scope, persistence, corpse-source handling, and Undeath-facing doctrine still need explicit conversion rules. | custom |
+| Enlargement | spell | Size and mass amplification lane for objects and living targets; useful as the lower-tier growth/augmentation anchor beneath more dramatic polymorph effects. | partial |
 | Clone | spell | Identity-duplication / backup-body procedure, clearly beyond a simple direct powers mapping. Identity-duplication and backup-body procedure with delayed death-insurance implications, clearly beyond a simple one-power mapping and likely needing custom continuity/body-vault doctrine. | custom |
 | Polymorph Any Object | spell | Extreme transmutation endpoint that extends polymorph doctrine beyond creature targets. Extreme transmutation endpoint that extends polymorph doctrine beyond creature targets and should remain a custom ceiling case for later Chapter 06 handling. Treat this as a relationship note to the broader polymorph suite, not as evidence for a simple direct map. | custom |
 | Shapechange | spell | Supreme self-transformation package and ceiling case for form-shift taxonomy. Supreme self-transformation lane and ceiling case for self-directed form doctrine; compare `Skinshift` only as a distant family cousin. Keep as custom until Chapter 06 fixes duration, capability inheritance, and identity-stability policy. | custom |
@@ -965,6 +981,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Metal to Wood | spell | Custom permanent material transformation that converts metal to dead wood by level-scaled weight, with strong resistance for magic items and explicit gear fallout such as dropped armor and degraded weapons. | custom |
 | Produce Fire | spell | Portable flame / attack lane. Evidence lock: conjures non-self-harming torch-grade flame in hand with duration scaling, supports ignition utility and short-range throw/drop delivery, and allows on/off toggling by concentration while active. | partial |
 | Protection from Lightning | spell | Touch-applied lightning protection grants a level-scaled d6 cancellation pool that persists across electrical attacks until exhausted, then normal overflow handling resumes. | partial |
+| Strength | spell | Direct bodily augmentation lane that temporarily raises martial power without changing form, making it a cleaner combat-biomancy recognizer than the broader polymorph suite. | partial |
 | Steelform | spell | RC-only advanced form-spell lane that inherits ironform procedure while upgrading the output to weapon-grade steel with stronger structural durability. Verification pass (2026-03-24) confirmed the current RC-only provenance exception. | partial |
 | Sticks to Snakes | spell | Wood-to-serpent conversion and battlefield-weaponization effect; keep as custom until obedience scope, persistence, and material-to-creature rules are normalized. | custom |
 | Stone to Flesh | spell | Petrification-reversal lane. Expert evidence lock: restores petrified targets or converts large stone volume to flesh; reverse form (`Flesh to Stone`) is a save-gated petrification effect that includes carried gear. | partial |
@@ -1048,7 +1065,11 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Invisibility | spell | Core concealment baseline for personal stealth and line-of-sight disruption. Existing SDM family variants: `Ecosphere Veil` for disregard-based stealth and `Yellow Cloud` for visual obscuration. | partial |
 | Invisibility 10' Radius | spell | Canonical Chapter 06 display form is `Invisibility 10' Radius`; retain lowercase `Invisibility 10' radius` as a source alias recognizer. `Yellow Cloud` is the clearest existing Luka-style battlefield-scale concealment cousin. | partial |
 | Mass Invisibility | spell | High-tier crowd concealment lane above the 10-foot-radius variant. `Yellow Cloud` remains the strongest existing crowd-obscuration precedent in the current SDM corpus. | partial |
+| Audible Glamer | spell | Sound-only illusion lane for fabricated crowds, beasts, and battlefield confusion. Holmes evidence lock: volume scales with caster level, making it stronger as a staged misdirection or morale-pressure tool than as a pure stealth trick. | partial |
+| Dancing Lights | spell | Mobile light-decoy lane that simulates torches or an approaching party rather than merely illuminating space. Holmes evidence lock: creates 1-6 steerable lantern-like lights that can round corners within range. | partial |
+| Darkness | spell | Visibility-denial counterpart to `Light`; keep it under veils because its primary job is concealment and sensor denial, not direct damage. Greyhawk/Holmes evidence lock: total darkness, counters or is countered by `Light`, and defeats infravision inside the affected area. | partial |
 | Ventriloquism | spell | Sound-projection and false-source deception utility. Evidence lock: `Range 60'`, `Duration 2 turns`, one item or location as the projected voice source, and no save gate; the effect's value is positional misattribution rather than control or damage. | partial |
+| Magic Mouth | spell | Triggered message and warning-interface lane; distinct from `Ventriloquism` because it stores a conditional response in an object until triggered. Greyhawk/Holmes evidence lock: object-mouth manifestation, condition-based trigger, and 25-word cap. | partial |
 | Mirror Image | spell | Defensive misdirection via decoy duplicates in direct-threat contexts. Defensive illusion / misdirection lane. Expert evidence lock: creates 1-4 adjacent duplicates that track caster movement and speech; each successful single-target hit removes one image instead of striking the caster, while area effects clear all images and still affect the caster. | partial |
 | Phantasmal Force | spell | Core constructed-illusion recognizer for scene-level false stimuli. Core illusion-construction spell. Expert evidence lock: concentration-sustained illusion over a 20' cube that can simulate terrain, monsters, or attacks; disbelief/save behavior and non-real damage handling (unconscious/paralyzed stand-ins with short wear-off) make this a bespoke adjudication procedure rather than a direct effect clone. | custom |
 | Projected Image | spell | Remote image/proxy presence lane for deception and diversion. Expert evidence lock: creates a non-corporeal visual double at range that can origin-point apparent spellcasting while the real caster still needs target visibility; the image ignores spells and missiles and collapses on contact or melee strike. | partial |

@@ -152,11 +152,15 @@ def main() -> int:
     args = parse_args()
     select_all, name = ensure_selector(args)
 
-    chapter_text = args.chapter.read_text(encoding="utf-8")
-    cards = parse_cards(chapter_text)
-    selected_cards = select_cards(cards, select_all=select_all, name=name)
+    try:
+        chapter_text = args.chapter.read_text(encoding="utf-8")
+        cards = parse_cards(chapter_text)
+        selected_cards = select_cards(cards, select_all=select_all, name=name)
+        artifact = build_artifact(chapter_text, selected_cards=selected_cards, cards_found=len(cards))
+    except RuntimeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
 
-    artifact = build_artifact(chapter_text, selected_cards=selected_cards, cards_found=len(cards))
     drift = artifact.chapter_text != chapter_text
 
     if args.mode == "write":

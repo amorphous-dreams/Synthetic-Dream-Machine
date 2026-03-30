@@ -268,7 +268,7 @@ published: true
 
 tags:
 >   [trait]
->   [type:<background|path|corruption|power|mutation|prosthetic|skillpack|other>]
+>   [background] / [corruption] / [power] / [mutation] / [prosthetic] / [skillpack]  ← category tag, if applicable; path traits use [path:X] only; omit if none fits
 >   [path:<Wizard|Vampire Lord|Traveler|…>]   # if applicable; spaces are fine
 >   [corruption:<mild|moderate|severe>]       # if applicable
 >   [affects:<attack|defense|save|reaction|inventory|actions|powers|social|…>]
@@ -314,7 +314,6 @@ Traits represent the "radically ungated advancement" of the Sythetic Dream Machi
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Holy Fool]
 >   [affects:actions]
 >   [uses:life]
@@ -342,7 +341,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Humans of the Pananthropy]
 >   [affects:actions]
 
@@ -369,7 +367,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Barbarian]
 >   [affects:life]
 >   [affects:powers]
@@ -397,7 +394,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Purplelander]
 >   [affects:actions]
 
@@ -424,7 +420,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Fighter]
 >   [affects:inventory]
 >   [inventory:free]
@@ -453,7 +448,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Soldier]
 >   [affects:defense]
 >   [inventory:free]
@@ -487,7 +481,7 @@ meta:
 
 tags:
 >   [trait]
->   [type:background]
+>   [background]
 
 meta:
 > - source:
@@ -543,7 +537,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Trickster]
 >   [affects:attack]
 
@@ -571,7 +564,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Barbarian]
 >   [affects:attack]
 >   [affects:defense]
@@ -599,7 +591,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Soldier]
 >   [affects:attack]
 
@@ -626,7 +617,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Holy Fool]
 >   [affects:save]
 
@@ -653,7 +643,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Barbarian]
 >   [path:Vampire]
 >   [affects:attack]
@@ -685,7 +674,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bluelander]
 >   [affects:attack]
 >   [affects:defense]
@@ -713,7 +701,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bluelander]
 >   [affects:inventory]
 
@@ -740,7 +727,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Humans of the Pananthropy]
 >   [affects:actions]
 
@@ -767,7 +753,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bourgeois]
 >   [affects:attack]
 >   [affects:social]
@@ -811,7 +796,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Brick Bastions]
 >   [affects:npc]
 >   [affects:statblock]
@@ -839,7 +823,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bearer]
 >   [affects:actions]
 >   [uses:heroDie]
@@ -867,7 +850,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wild Mage]
 >   [path:Wizard]
 >   [affects:powers]
@@ -900,7 +882,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Trickster]
 >   [affects:defense]
 
@@ -927,7 +908,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Orangelander]
 >   [affects:inventory]
 
@@ -954,7 +934,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wild Mage]
 >   [affects:actions]
 >   [affects:defense]
@@ -983,7 +962,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Darting Dodgers]
 >   [affects:attack]
 
@@ -1010,7 +988,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bluelander]
 >   [affects:actions]
 >   [uses:life]
@@ -1038,7 +1015,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wild Mage]
 >   [path:Wizard]
 >   [affects:powers]
@@ -1070,7 +1046,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Crystal Cannons]
 >   [affects:attack]
 
@@ -1097,7 +1072,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Orangelander]
 >   [affects:life]
 >   [affects:social]
@@ -1125,7 +1099,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Orangelander]
 >   [path:Revenant]
 >   [affects:actions]
@@ -1156,7 +1129,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Weapon]
 >   [affects:powers]
 >   [uses:abilityPoint]
@@ -1186,7 +1158,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Tourist]
 >   [affects:social]
 >   [uses:heroDie]
@@ -1214,7 +1185,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Skeleton]
 >   [path:Vampire]
 >   [affects:defense]
@@ -1245,7 +1215,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Purplelander]
 >   [affects:life]
 >   [affects:social]
@@ -1273,7 +1242,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Commander]
 >   [affects:actions]
 >   [affects:attack]
@@ -1304,7 +1272,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Humans of the Pananthropy]
 >   [affects:social]
 >   [uses:life]
@@ -1332,7 +1299,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Manager]
 >   [affects:social]
 
@@ -1367,7 +1333,7 @@ meta:
 
 tags:
 >   [trait]
->   [type:corruption]
+>   [corruption]
 
 meta:
 > - source:
@@ -1399,7 +1365,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noömagus]
 >   [affects:powers]
 
@@ -1426,7 +1391,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Greenlander]
 >   [affects:actions]
 
@@ -1468,7 +1432,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Crystal Cannons]
 >   [affects:npc]
 >   [affects:statblock]
@@ -1496,7 +1459,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Barbarian]
 >   [affects:actions]
 
@@ -1523,7 +1485,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Weapon]
 >   [affects:social]
 
@@ -1565,7 +1526,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Darting Dodgers]
 >   [affects:npc]
 >   [affects:statblock]
@@ -1593,7 +1553,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Erratic Expendables]
 >   [affects:actions]
 
@@ -1620,7 +1579,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Vampire]
 >   [path:Weapon]
 >   [affects:attack]
@@ -1650,7 +1608,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Greenlander]
 >   [affects:powers]
 
@@ -1677,7 +1634,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Fighter]
 >   [affects:defense]
 
@@ -1705,7 +1661,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Weapon]
 >   [affects:attack]
 >   [uses:abilityPoint]
@@ -1733,7 +1688,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Brick Bastions]
 >   [affects:actions]
 
@@ -1760,7 +1714,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Crystal Cannons]
 >   [affects:attack]
 
@@ -1787,7 +1740,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Soldier]
 >   [affects:attack]
 
@@ -1814,7 +1766,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Yellowlander]
 >   [affects:actions]
 
@@ -1841,7 +1792,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noble]
 >   [affects:attack]
 
@@ -1868,7 +1818,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noble]
 >   [affects:powers]
 
@@ -1895,7 +1844,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bearer]
 >   [affects:attack]
 
@@ -1922,7 +1870,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Darting Dodgers]
 >   [affects:attack]
 
@@ -1949,7 +1896,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bourgeois]
 >   [affects:life]
 
@@ -1976,7 +1922,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Scion]
 >   [path:Spirit]
 >   [affects:actions]
@@ -2006,7 +1951,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Orangelander]
 >   [affects:actions]
 >   [uses:heroDie]
@@ -2035,7 +1979,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Yellowlander]
 >   [affects:actions]
 
@@ -2062,7 +2005,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bourgeois]
 >   [affects:actions]
 
@@ -2104,7 +2046,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Erratic Expendables]
 >   [affects:npc]
 >   [affects:statblock]
@@ -2132,7 +2073,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Traveler]
 >   [affects:save]
 
@@ -2160,7 +2100,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Darting Dodgers]
 >   [affects:defense]
 
@@ -2187,7 +2126,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bourgeois]
 >   [affects:actions]
 
@@ -2214,7 +2152,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Trickster]
 >   [affects:actions]
 
@@ -2241,7 +2178,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wizard]
 >   [affects:powers]
 
@@ -2269,7 +2205,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Scion]
 >   [affects:actions]
 
@@ -2296,7 +2231,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Trickster]
 >   [affects:life]
 >   [uses:heroDie]
@@ -2324,7 +2258,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Redlander]
 >   [affects:life]
 
@@ -2351,7 +2284,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Weapon]
 >   [affects:life]
 
@@ -2378,7 +2310,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Crystal Cannons]
 >   [affects:attack]
 
@@ -2405,7 +2336,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Barbarian]
 >   [affects:save]
 >   [affects:life]
@@ -2433,7 +2363,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Fighter]
 >   [affects:attack]
 >   [affects:defense]
@@ -2462,7 +2391,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bearer]
 >   [affects:attack]
 
@@ -2489,7 +2417,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Tourist]
 >   [affects:actions]
 >   [inventory:slot]
@@ -2517,7 +2444,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Erratic Expendables]
 >   [path:Vampire]
 >   [affects:attack]
@@ -2548,7 +2474,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Traveler]
 >   [affects:inventory]
 >   [inventory:free]
@@ -2577,7 +2502,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Revenant]
 >   [path:Skeleton]
 >   [affects:actions]
@@ -2632,7 +2556,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Generic Synthesized Creature]
 >   [affects:npc]
 >   [affects:statblock]
@@ -2660,7 +2583,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Skeleton]
 >   [affects:life]
 
@@ -2687,7 +2609,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Golem]
 >   [affects:actions]
 >   [inventory:slot]
@@ -2715,7 +2636,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Greenlander]
 >   [affects:attack]
 >   [affects:powers]
@@ -2743,7 +2663,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Fighter]
 >   [affects:life]
 
@@ -2771,7 +2690,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Servant]
 >   [affects:defense]
 
@@ -2798,7 +2716,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noömagus]
 >   [affects:powers]
 >   [uses:life]
@@ -2827,7 +2744,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Golem]
 >   [affects:defense]
 
@@ -2854,7 +2770,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Tourist]
 >   [affects:actions]
 
@@ -2885,7 +2800,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Redlander]
 >   [affects:social]
 >   [uses:abilityPoint]
@@ -2914,7 +2828,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noble]
 >   [affects:actions]
 
@@ -2941,7 +2854,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Revenant]
 >   [affects:powers]
 >   [affects:senses]
@@ -2969,7 +2881,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Holy Fool]
 >   [affects:actions]
 >   [uses:life]
@@ -2997,7 +2908,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Holy Fool]
 >   [affects:actions]
 >   [uses:life]
@@ -3026,7 +2936,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Servant]
 >   [affects:actions]
 >   [uses:heroDie]
@@ -3054,7 +2963,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Purplelander]
 >   [affects:actions]
 
@@ -3096,7 +3004,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Humans of the Pananthropy]
 >   [affects:npc]
 >   [affects:statblock]
@@ -3124,7 +3031,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Traveler]
 >   [affects:attack]
 
@@ -3151,7 +3057,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Weapon]
 >   [affects:attack]
 
@@ -3178,7 +3083,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Greenlander]
 >   [affects:social]
 >   [uses:heroDie]
@@ -3207,7 +3111,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Manager]
 >   [affects:actions]
 
@@ -3234,7 +3137,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Tourist]
 >   [affects:actions]
 >   [uses:heroDie]
@@ -3263,7 +3165,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Fighter]
 >   [affects:attack]
 >   [frequency:per-round]
@@ -3292,7 +3193,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Purplelander]
 >   [affects:life]
 >   [affects:defense]
@@ -3320,7 +3220,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Erratic Expendables]
 >   [affects:attack]
 
@@ -3347,7 +3246,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noble]
 >   [affects:actions]
 >   [uses:life]
@@ -3375,7 +3273,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Vampire]
 >   [affects:actions]
 >   [affects:attack]
@@ -3405,7 +3302,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bourgeois]
 >   [affects:social]
 >   [uses:heroDie]
@@ -3434,7 +3330,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Barbarian]
 >   [affects:actions]
 >   [uses:abilityPoint]
@@ -3464,7 +3359,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bearer]
 >   [affects:social]
 >   [uses:heroDie]
@@ -3493,7 +3387,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Manager]
 >   [affects:actions]
 >   [uses:life]
@@ -3521,7 +3414,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Erratic Expendables]
 >   [affects:actions]
 
@@ -3548,7 +3440,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Greenlander]
 >   [affects:actions]
 >   [affects:defense]
@@ -3576,7 +3467,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wizard]
 >   [affects:powers]
 >   [inventory:free]
@@ -3605,7 +3495,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Greenlander]
 >   [affects:actions]
 
@@ -3632,7 +3521,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Manager]
 >   [affects:social]
 >   [uses:heroDie]
@@ -3660,7 +3548,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Revenant]
 >   [path:Skeleton]
 >   [affects:inventory]
@@ -3691,7 +3578,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noble]
 >   [affects:attack]
 >   [affects:social]
@@ -3720,7 +3606,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noömagus]
 >   [affects:powers]
 >   [uses:heroDie]
@@ -3748,7 +3633,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noömagus]
 >   [affects:defense]
 
@@ -3775,7 +3659,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Manager]
 >   [affects:powers]
 
@@ -3802,7 +3685,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Manager]
 >   [affects:actions]
 >   [uses:life]
@@ -3834,7 +3716,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wizard]
 >   [affects:powers]
 >   [uses:life]
@@ -3864,7 +3745,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Scion]
 >   [path:Spirit]
 >   [affects:powers]
@@ -3895,7 +3775,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bourgeois]
 >   [affects:actions]
 
@@ -3922,7 +3801,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Erratic Expendables]
 >   [path:Vampire]
 >   [affects:life]
@@ -3952,7 +3830,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bluelander]
 >   [affects:powers]
 
@@ -3979,7 +3856,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Orangelander]
 >   [affects:life]
 
@@ -4006,7 +3882,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Orangelander]
 >   [affects:attack]
 >   [uses:heroDie]
@@ -4034,7 +3909,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Crystal Cannons]
 >   [affects:attack]
 >   [uses:life]
@@ -4062,7 +3936,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wild Mage]
 >   [affects:actions]
 >   [uses:life]
@@ -4090,7 +3963,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Scion]
 >   [affects:social]
 
@@ -4117,7 +3989,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noble]
 >   [affects:life]
 
@@ -4148,7 +4019,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Spirit]
 >   [path:Tourist]
 >   [affects:actions]
@@ -4179,7 +4049,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Purplelander]
 >   [affects:actions]
 
@@ -4206,7 +4075,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Crystal Cannons]
 >   [path:Spirit]
 >   [affects:actions]
@@ -4238,7 +4106,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Holy Fool]
 >   [affects:actions]
 
@@ -4265,7 +4132,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Trickster]
 >   [affects:actions]
 
@@ -4292,7 +4158,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Commander]
 >   [path:Traveler]
 >   [affects:social]
@@ -4323,7 +4188,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Traveler]
 >   [affects:inventory]
 >   [inventory:free]
@@ -4360,7 +4224,7 @@ meta:
 
 tags:
 >   [trait]
->   [type:power]
+>   [power]
 
 meta:
 > - source:
@@ -4391,7 +4255,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noömagus]
 >   [affects:powers]
 >   [uses:heroDie]
@@ -4419,7 +4282,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Golem]
 >   [affects:actions]
 
@@ -4446,7 +4308,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Purplelander]
 >   [affects:attack]
 >   [affects:defense]
@@ -4474,7 +4335,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Commander]
 >   [affects:inventory]
 >   [affects:social]
@@ -4503,7 +4363,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Yellowlander]
 >   [affects:actions]
 
@@ -4530,7 +4389,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Soldier]
 >   [affects:defense]
 
@@ -4557,7 +4415,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bluelander]
 >   [path:Revenant]
 >   [affects:powers]
@@ -4588,7 +4445,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wild Mage]
 >   [path:Wizard]
 >   [affects:powers]
@@ -4619,7 +4475,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Redlander]
 >   [affects:attack]
 >   [affects:defense]
@@ -4647,7 +4502,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Brick Bastions]
 >   [affects:defense]
 
@@ -4674,7 +4528,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Servant]
 >   [affects:inventory]
 >   [uses:life]
@@ -4702,7 +4555,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Revenant]
 >   [affects:life]
 >   [affects:powers]
@@ -4730,7 +4582,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bearer]
 >   [affects:life]
 
@@ -4757,7 +4608,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Darting Dodgers]
 >   [affects:attack]
 
@@ -4784,7 +4634,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Brick Bastions]
 >   [affects:defense]
 
@@ -4811,7 +4660,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Yellowlander]
 >   [affects:actions]
 
@@ -4838,7 +4686,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Redlander]
 >   [affects:actions]
 
@@ -4865,7 +4712,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Yellowlander]
 >   [affects:defense]
 
@@ -4892,7 +4738,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Scion]
 >   [affects:powers]
 >   [uses:life]
@@ -4921,7 +4766,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noble]
 >   [affects:social]
 
@@ -4948,7 +4792,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Fighter]
 >   [affects:life]
 >   [uses:heroDie]
@@ -4977,7 +4820,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Servant]
 >   [affects:life]
 >   [uses:heroDie]
@@ -5005,7 +4847,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bearer]
 >   [affects:defense]
 
@@ -5036,7 +4877,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Crystal Cannons]
 >   [affects:attack]
 
@@ -5063,7 +4903,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Brick Bastions]
 >   [path:Commander]
 >   [affects:defense]
@@ -5093,7 +4932,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Servant]
 >   [affects:social]
 >   [uses:abilityPoint]
@@ -5121,7 +4959,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Commander]
 >   [affects:actions]
 >   [affects:morale]
@@ -5151,7 +4988,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Trickster]
 >   [affects:social]
 >   [uses:heroDie]
@@ -5183,7 +5019,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Skeleton]
 >   [affects:defense]
 >   [affects:attack]
@@ -5211,7 +5046,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Brick Bastions]
 >   [affects:attack]
 >   [uses:life]
@@ -5239,7 +5073,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Soldier]
 >   [affects:attack]
 
@@ -5266,7 +5099,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Manager]
 >   [affects:social]
 >   [uses:life]
@@ -5294,7 +5126,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Greenlander]
 >   [affects:actions]
 
@@ -5325,7 +5156,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Soldier]
 >   [affects:attack]
 >   [affects:defense]
@@ -5353,7 +5183,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Holy Fool]
 >   [affects:actions]
 >   [uses:life]
@@ -5381,7 +5210,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noömagus]
 >   [affects:powers]
 >   [uses:life]
@@ -5411,7 +5239,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Skeleton]
 >   [affects:life]
 
@@ -5442,7 +5269,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bluelander]
 >   [affects:attack]
 
@@ -5469,7 +5295,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Spirit]
 >   [affects:actions]
 >   [affects:defense]
@@ -5499,7 +5324,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bluelander]
 >   [affects:life]
 
@@ -5530,7 +5354,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Darting Dodgers]
 >   [affects:defense]
 
@@ -5557,7 +5380,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Darting Dodgers]
 >   [affects:attack]
 
@@ -5584,7 +5406,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Brick Bastions]
 >   [affects:defense]
 
@@ -5611,7 +5432,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Servant]
 >   [affects:attack]
 
@@ -5638,7 +5458,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Scion]
 >   [path:Spirit]
 >   [affects:actions]
@@ -5668,7 +5487,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Scion]
 >   [affects:powers]
 
@@ -5699,7 +5517,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Traveler]
 >   [affects:actions]
 >   [uses:life]
@@ -5734,7 +5551,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Golem]
 >   [affects:life]
 
@@ -5761,7 +5577,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Humans of the Pananthropy]
 >   [affects:defense]
 
@@ -5788,7 +5603,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Commander]
 >   [affects:actions]
 >   [affects:attack]
@@ -5817,7 +5631,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Commander]
 >   [path:Humans of the Pananthropy]
 >   [affects:defense]
@@ -5847,7 +5660,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Purplelander]
 >   [affects:actions]
 >   [affects:defense]
@@ -5879,7 +5691,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Fighter]
 >   [affects:social]
 
@@ -5907,7 +5718,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Yellowlander]
 >   [affects:defense]
 >   [affects:attack]
@@ -5940,7 +5750,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Erratic Expendables]
 >   [affects:attack]
 
@@ -5967,7 +5776,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Humans of the Pananthropy]
 >   [affects:actions]
 
@@ -5994,7 +5802,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Servant]
 >   [affects:life]
 
@@ -6025,7 +5832,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Tourist]
 >   [affects:actions]
 >   [uses:heroDie]
@@ -6053,7 +5859,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Traveler]
 >   [affects:actions]
 
@@ -6080,7 +5885,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Trickster]
 >   [affects:actions]
 >   [uses:heroDie]
@@ -6109,7 +5913,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Tourist]
 >   [affects:defense]
 >   [affects:attack]
@@ -6137,7 +5940,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Golem]
 >   [affects:life]
 
@@ -6164,7 +5966,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Orangelander]
 >   [affects:actions]
 
@@ -6195,7 +5996,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Golem]
 >   [affects:attack]
 
@@ -6222,7 +6022,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Bourgeois]
 >   [affects:social]
 >   [uses:life]
@@ -6254,7 +6053,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Redlander]
 >   [path:Vampire]
 >   [affects:life]
@@ -6285,7 +6083,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Golem]
 >   [affects:attack]
 
@@ -6316,7 +6113,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Noömagus]
 >   [affects:save]
 
@@ -6347,7 +6143,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Redlander]
 >   [affects:life]
 
@@ -6374,7 +6169,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Revenant]
 >   [path:Skeleton]
 >   [affects:defense]
@@ -6404,7 +6198,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Holy Fool]
 >   [affects:actions]
 
@@ -6435,7 +6228,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Spirit]
 >   [affects:actions]
 >   [affects:defense]
@@ -6463,7 +6255,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Weapon]
 >   [affects:actions]
 
@@ -6490,7 +6281,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Redlander]
 >   [affects:powers]
 >   [uses:life]
@@ -6522,7 +6312,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wild Mage]
 >   [affects:actions]
 >   [affects:life]
@@ -6552,7 +6341,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Barbarian]
 >   [affects:attack]
 >   [affects:actions]
@@ -6584,7 +6372,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Soldier]
 >   [affects:actions]
 >   [uses:life]
@@ -6616,7 +6403,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wizard]
 >   [affects:powers]
 
@@ -6644,7 +6430,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Wild Mage]
 >   [affects:actions]
 >   [affects:powers]
@@ -6672,7 +6457,6 @@ meta:
 
 tags:
 >   [trait]
->   [type:path]
 >   [path:Yellowlander]
 >   [affects:actions]
 >   [uses:abilityPoint]

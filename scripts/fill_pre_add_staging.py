@@ -59,6 +59,9 @@ BLOCK_TO_TARGET = {
     'hb-audible-glamer': ('holmes', 'Audible Glamer'),
     'hb-ray-of-enfeeblement': ('holmes', 'Ray of Enfeeblement'),
     'hb-clairaudience': ('holmes', 'Clairaudience'),
+    'odnd-esp': ('synthetic', 'ESP'),
+    'odnd-clairvoyance': ('synthetic', 'Clairvoyance'),
+    'odnd-clairaudience': ('synthetic', 'Clairaudience'),
 }
 
 OVERRIDES = {
@@ -170,6 +173,23 @@ def extract_spell(book: str, target: str, corpus: str, block_id: str) -> str | N
 
 
 def metadata(book: str, target: str, block_id: str) -> str:
+    if book == 'synthetic':
+        override = OVERRIDES[block_id]
+        spell_levels = {
+            'odnd-esp': '2',
+            'odnd-clairvoyance': '3',
+            'odnd-clairaudience': '3',
+        }
+        lines = [
+            '[Source metadata]',
+            'Title: OD&D Family comparative witness note',
+            'Year: 1974',
+            f'Source URL: {override["source_url"]}',
+            f'Spell Level: {spell_levels[block_id]}',
+            f'Target: {target}',
+            f'Override note: {override["note"]}',
+        ]
+        return '\n'.join(lines)
     s = SOURCES[book]
     lines = [
         '[Source metadata]',
@@ -193,45 +213,16 @@ def main() -> None:
         if block_id not in BLOCK_TO_TARGET:
             return m.group(0)
         book, target = BLOCK_TO_TARGET[block_id]
-        block = extract_spell(book, target, corpora[book], block_id)
+        if book == 'synthetic':
+            block = OVERRIDES[block_id]['text']
+        else:
+            block = extract_spell(book, target, corpora[book], block_id)
         if not block:
             return m.group(0)
         return f'```text id="{block_id}"\n{metadata(book, target, block_id)}\n\n{block}\n```'
 
     out = FENCE_RE.sub(repl, template)
     OUTPUT.write_text(out, encoding='utf-8')
-
-    esp = OVERRIDES['odnd-esp']
-    cv = OVERRIDES['odnd-clairvoyance']
-    ca = OVERRIDES['hb-clairaudience']
-    Path('/mnt/data/odnd_esp_clairvoyance_clairaudience_source_note.md').write_text(
-        '\n'.join([
-            '# OD&D ESP / Clairvoyance / Clairaudience source note',
-            '',
-            f'ESP source URL: {esp["source_url"]}',
-            f'ESP note: {esp["note"]}',
-            '',
-            '```text',
-            esp['text'],
-            '```',
-            '',
-            f'Clairvoyance source URL: {cv["source_url"]}',
-            f'Clairvoyance note: {cv["note"]}',
-            '',
-            '```text',
-            cv['text'],
-            '```',
-            '',
-            f'Clairaudience source URL: {ca["source_url"]}',
-            f'Clairaudience note: {ca["note"]}',
-            '',
-            '```text',
-            ca['text'],
-            '```',
-            ''
-        ]),
-        encoding='utf-8'
-    )
     print(f'Wrote {OUTPUT}')
 
 

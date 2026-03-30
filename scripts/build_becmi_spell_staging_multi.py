@@ -19,8 +19,13 @@ ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md"
 DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
 DEFAULT_OUTPUT = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
+DEFAULT_PRE_ADD = ROOT / "_todo/TODO_PRE_ADD_Spell_Staging.md"
 
 LANE_ORDER = [
+    "Men & Magic",
+    "Greyhawk",
+    "Holmes",
+    "OD&D Family",
     "Basic",
     "Expert",
     "Companion",
@@ -29,7 +34,7 @@ LANE_ORDER = [
     "Rules Cyclopedia",
 ]
 
-LANE_PATHS = {
+PLAIN_LANE_PATHS = {
     "Basic": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Basic.md",
     "Expert": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Expert.md",
     "Companion": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Companion.md",
@@ -39,6 +44,10 @@ LANE_PATHS = {
 }
 
 LANE_SOURCE_LABEL = {
+    "Men & Magic": "Men & Magic",
+    "Greyhawk": "Greyhawk",
+    "Holmes": "Holmes Basic",
+    "OD&D Family": "OD&D Family",
     "Basic": "Basic Rules",
     "Expert": "Expert Set",
     "Companion": "Companion Set",
@@ -54,6 +63,7 @@ LEVEL_HEADING_RE = re.compile(
 GENERIC_HEADING_RE = re.compile(r"^(## |### |\[)")
 MASTER_ENTRY_RE = re.compile(r"^\s*\d+\.?\s+\S")
 IMMORTALS_ENTRY_RE = re.compile(r"^[A-Z][A-Za-z0-9' /(),.*-]+:")
+STRUCTURED_FENCE_RE = re.compile(r'```text id="(?P<id>[^"]+)"\n(?P<body>.*?)\n```', re.S)
 
 
 @dataclass(frozen=True)
@@ -74,12 +84,20 @@ class Witness:
     text: str
 
 
+@dataclass(frozen=True)
+class StructuredWitness:
+    anchor: str
+    target: str
+    text: str
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=["check", "write"], help="Check for drift or rewrite the staging file")
     parser.add_argument("--chapter", type=Path, default=DEFAULT_CHAPTER)
     parser.add_argument("--crosswalk", type=Path, default=DEFAULT_CROSSWALK)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--pre-add", type=Path, default=DEFAULT_PRE_ADD)
     return parser.parse_args()
 
 
@@ -100,7 +118,7 @@ def parse_card_map(chapter_text: str) -> dict[str, str]:
     for match in re.finditer(r"^## (.+?)\n(.*?)(?=^## |\Z)", chapter_text, re.S | re.M):
         title = match.group(1).strip()
         body = match.group(2)
-        for spell_name in set(re.findall(r"becmi:[^;\n]+; spell: ([^\n>]+)", body)):
+        for spell_name in set(re.findall(r"(?:becmi|odnd):[^;\n]+; spell: ([^\n>]+)", body)):
             card_map[spell_name.strip()] = title
     card_map.update(
         {
@@ -121,6 +139,14 @@ def normalize_lane_name(raw: str) -> str | None:
     if not text:
         return None
     mapping = {
+        "MM": "Men & Magic",
+        "Men & Magic": "Men & Magic",
+        "GH": "Greyhawk",
+        "Greyhawk": "Greyhawk",
+        "HB": "Holmes",
+        "Holmes": "Holmes",
+        "OD&D": "OD&D Family",
+        "OD&D Family": "OD&D Family",
         "B": "Basic",
         "Basic": "Basic",
         "E": "Expert",
@@ -185,6 +211,42 @@ def parse_spell_rows(crosswalk_text: str, chapter_text: str) -> list[SpellRow]:
     return rows
 
 
+def parse_structured_block(body: str) -> tuple[str | None, str | None]:
+    lines = body.strip().splitlines()
+    target: str | None = None
+    text_start = 0
+    for index, line in enumerate(lines):
+        if line.startswith("Target:"):
+            target = line.split(":", 1)[1].strip()
+        if target and not line.strip():
+            text_start = index + 1
+            break
+    if not target:
+        return None, None
+    text = "\n".join(lines[text_start:]).strip()
+    return target, text or None
+
+
+def parse_pre_add_witnesses(pre_add_text: str) -> dict[str, dict[str, StructuredWitness]]:
+    lane_prefixes = {
+        "mm-": "Men & Magic",
+        "gh-": "Greyhawk",
+        "hb-": "Holmes",
+        "odnd-": "OD&D Family",
+    }
+    witnesses: dict[str, dict[str, StructuredWitness]] = {lane: {} for lane in lane_prefixes.values()}
+    for match in STRUCTURED_FENCE_RE.finditer(pre_add_text):
+        block_id = match.group("id")
+        lane = next((mapped for prefix, mapped in lane_prefixes.items() if block_id.startswith(prefix)), None)
+        if not lane:
+            continue
+        target, text = parse_structured_block(match.group("body"))
+        if not target or not text or text.startswith("{placeholder:"):
+            continue
+        witnesses[lane][norm(target)] = StructuredWitness(anchor=block_id, target=target, text=text)
+    return witnesses
+
+
 def spell_aliases(classic_name: str, card_heading: str) -> list[str]:
     aliases: list[str] = []
     for candidate in [classic_name, card_heading, *[part.strip() for part in classic_name.split("/")]]:
@@ -199,6 +261,8 @@ def spell_aliases(classic_name: str, card_heading: str) -> list[str]:
         "Invisibility 10' Radius": ["Invisibility 10' radius"],
         "Passwall": ["Pass-Wall", "Passwall"],
         "Polymorph Others": ["Polymorph Other", "Polymorph Others"],
+        "Darkness": ["Darkness", "Darkness, 5' Radius"],
+        "Slow": ["Slow", "Slow Spell"],
         "Speak with Animals": ["Speak with Animals", "Speak with Animal"],
     }
     for candidate in manual.get(classic_name, []):
@@ -319,11 +383,19 @@ def choose_best_block(candidates: list[str], *, prefer_compact_details: bool = F
 def extract_witness(
     lane: str,
     lines: list[str],
+    structured_witnesses: dict[str, dict[str, StructuredWitness]],
     classic_name: str,
     card_heading: str,
     known_norms: set[str],
 ) -> str | None:
     aliases = spell_aliases(classic_name, card_heading)
+    if lane in structured_witnesses:
+        lane_witnesses = structured_witnesses[lane]
+        for alias in aliases:
+            witness = lane_witnesses.get(norm(alias))
+            if witness:
+                return witness.text
+        return None
     if lane == "Master":
         named_candidates = prefer_full_spell_blocks(collect_named_candidates(lines, aliases, known_norms))
         if named_candidates:
@@ -338,7 +410,12 @@ def extract_witness(
     return choose_best_block(candidates)
 
 
-def build_output(chapter_text: str, crosswalk_text: str, lane_lines: dict[str, list[str]]) -> str:
+def build_output(
+    chapter_text: str,
+    crosswalk_text: str,
+    lane_lines: dict[str, list[str]],
+    structured_witnesses: dict[str, dict[str, StructuredWitness]],
+) -> str:
     rows = parse_spell_rows(crosswalk_text, chapter_text)
     known_norms = {norm(alias) for row in rows for alias in spell_aliases(row.classic_name, row.card_heading)}
 
@@ -350,10 +427,11 @@ def build_output(chapter_text: str, crosswalk_text: str, lane_lines: dict[str, l
         "Rules for this artifact:",
         "- One canonical spell record per importable Chapter 06 spell.",
         "- Witness text stays literal to the frozen upstream staging docs; no cross-source synthesis or normalization is introduced here.",
-        "- Witness order is deterministic: Basic, Expert, Companion, Master, Immortals, Rules Cyclopedia.",
-        "- The six lane staging docs remain the frozen upstream truth; this file is the primary downstream import source for Chapter 06.",
+        "- Witness order is deterministic: Men & Magic, Greyhawk, Holmes, OD&D Family, Basic, Expert, Companion, Master, Immortals, Rules Cyclopedia.",
+        "- The staged spell source docs remain the frozen upstream truth; this file is the primary downstream import source for Chapter 06.",
         "",
         "Upstream source files:",
+        "- `_todo/TODO_PRE_ADD_Spell_Staging.md`",
         "- `_todo/TODO_BECMI_Spell_Material_Staging_Basic.md`",
         "- `_todo/TODO_BECMI_Spell_Material_Staging_Expert.md`",
         "- `_todo/TODO_BECMI_Spell_Material_Staging_Companion.md`",
@@ -368,7 +446,8 @@ def build_output(chapter_text: str, crosswalk_text: str, lane_lines: dict[str, l
         for lane in row.source_lanes:
             witness_text = extract_witness(
                 lane=lane,
-                lines=lane_lines[lane],
+                lines=lane_lines.get(lane, []),
+                structured_witnesses=structured_witnesses,
                 classic_name=row.classic_name,
                 card_heading=row.card_heading,
                 known_norms=known_norms,
@@ -425,9 +504,15 @@ def main() -> int:
     args = parse_args()
     chapter_text = args.chapter.read_text(encoding="utf-8")
     crosswalk_text = args.crosswalk.read_text(encoding="utf-8")
-    lane_lines = {lane: path.read_text(encoding="utf-8").splitlines() for lane, path in LANE_PATHS.items()}
+    lane_lines = {lane: path.read_text(encoding="utf-8").splitlines() for lane, path in PLAIN_LANE_PATHS.items()}
+    structured_witnesses = parse_pre_add_witnesses(args.pre_add.read_text(encoding="utf-8"))
 
-    rendered = build_output(chapter_text=chapter_text, crosswalk_text=crosswalk_text, lane_lines=lane_lines)
+    rendered = build_output(
+        chapter_text=chapter_text,
+        crosswalk_text=crosswalk_text,
+        lane_lines=lane_lines,
+        structured_witnesses=structured_witnesses,
+    )
     current = args.output.read_text(encoding="utf-8") if args.output.exists() else ""
     drift = rendered != current
 

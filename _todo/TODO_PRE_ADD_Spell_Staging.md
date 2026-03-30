@@ -11,6 +11,7 @@
 Title: Dungeons & Dragons, Volume 1: Men & Magic
 Year: 1974
 Source URL: https://ia601204.us.archive.org/1/items/tsr02002menmagic/tsr02002%20-%20Men_%26_Magic.pdf
+Spell Level: 3
 Target: Clairaudience
 
 Clairaudience: Same as Clairvoyance except it allows hearing rather than visualiza-
@@ -23,6 +24,7 @@ Volume II).
 Title: Dungeons & Dragons, Volume 1: Men & Magic
 Year: 1974
 Source URL: https://ia601204.us.archive.org/1/items/tsr02002menmagic/tsr02002%20-%20Men_%26_Magic.pdf
+Spell Level: 3
 Target: Slow Spell
 
 Slow Spell: A broad-area spell which effects up to 24 creatures in a maximum area
@@ -44,6 +46,7 @@ of 6" x 12". Duration: 3 turns. Range: 24".
 Title: Dungeons & Dragons Supplement I: Greyhawk
 Year: 1975
 Source URL: https://ia601407.us.archive.org/19/items/greyhawk_202202/Greyhawk/Rules/tsr02003%20-%20Supplement%201%20-%20Greyhawk_djvu.txt
+Spell Level: 2
 Target: Darkness, 5' Radius
 
 Darkness, 5' Radius: A spell which causes total darkness within the indicated area 
@@ -56,6 +59,7 @@ spell. Duration: 6 turns. Range 12".
 Title: Dungeons & Dragons Supplement I: Greyhawk
 Year: 1975
 Source URL: https://ia601407.us.archive.org/19/items/greyhawk_202202/Greyhawk/Rules/tsr02003%20-%20Supplement%201%20-%20Greyhawk_djvu.txt
+Spell Level: 2
 Target: Strength
 
 Strength: This spell increases a fighter's strength by from 2-8 points (roll dice after 
@@ -70,6 +74,7 @@ determination of strength is to be made as already specified for strength of 18.
 Title: Dungeons & Dragons Supplement I: Greyhawk
 Year: 1975
 Source URL: https://ia601407.us.archive.org/19/items/greyhawk_202202/Greyhawk/Rules/tsr02003%20-%20Supplement%201%20-%20Greyhawk_djvu.txt
+Spell Level: 2
 Target: Magic Mouth
 
 Magic Mouth: A spell which resembles ventriliquism in that the sound issues from 
@@ -85,6 +90,7 @@ message is given. The message cannot exceed twenty-five words.
 Title: Dungeons & Dragons Supplement I: Greyhawk
 Year: 1975
 Source URL: https://ia601407.us.archive.org/19/items/greyhawk_202202/Greyhawk/Rules/tsr02003%20-%20Supplement%201%20-%20Greyhawk_djvu.txt
+Spell Level: 2
 Target: Pyrotechnics
 
 Pyrotechnics: A multi-purpose spell which requires some form of fire (torch, 
@@ -112,6 +118,7 @@ Range 24".
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 2
 Target: Darkness
 
 Darkness — Level 2; Range: 1 20 feet; Duration: 6 turns
@@ -126,6 +133,7 @@ third level spell.)
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 2
 Target: Strength
 
 Strength — Level 2; Range: 0; Duration: 48 turns
@@ -138,6 +146,7 @@ points, a thief's by 1-6 points, or a cleric's by 1-4.
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 2
 Target: Magic Mouth
 
 Magic Mouth — Level 2; Range: 0 feet; Duration: in-
@@ -157,6 +166,7 @@ given. Message can not exceed 25 words.
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 2
 Target: Pyrotechnics
 
 Pyrotechnics — Level 2; Range: 240 feet; Duration: 6
@@ -176,6 +186,7 @@ fire-source is extinguished.
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 1
 Target: Dancing Lights
 
 Dancing Lights — Level: 1 ; Range: 1 20 feet; Duration, 2
@@ -195,6 +206,7 @@ tinued concentration.
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 1
 Target: Enlargement
 
 Enlargement — Level 1 ; Range: 30 feet; Duration: 1 +
@@ -221,6 +233,7 @@ volume.
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 2
 Target: Audible Glamer
 
 Audible Glamer — Level 2; Range: 240 feet; Duration:
@@ -246,6 +259,7 @@ easily be accomplished by a second level magic-user).
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 2
 Target: Ray of Enfeeblement
 
 Ray of Enfeeblement — Level 2; Range: 30 feet
@@ -266,6 +280,7 @@ striking, clawing, biting, squeezing, etc.
 Title: Dungeons & Dragons Basic Set
 Year: 1977
 Source URL: https://www.americanroads.us/DandD/DnD_Basic_Rules_Holmes.pdf
+Spell Level: 3
 Target: Clairaudience
 Override URL: https://deltasdnd.blogspot.com/2014/07/spells-through-ages-esp-and-clairvoyance.html
 Override note: Holmes-era wording sourced from Delta's comparative post because the Holmes scan witness used here was list-only for this block.
@@ -275,4 +290,42 @@ Clairaudience: Same as Clairvoyance except it allows hearing rather than visuali
 
 ```text id="hb-magical-context"
 {placeholder: Holmes adjacent magical-context rules block}
+```
+
+## OD&D Family
+
+```text id="odnd-esp"
+[Source metadata]
+Title: OD&D Family comparative witness note
+Year: 1974
+Source URL: https://deltasdnd.blogspot.com/2014/07/spells-through-ages-esp-and-clairvoyance.html
+Spell Level: 2
+Target: ESP
+Override note: OD&D-era ESP wording from Delta's comparative post, preserved here as the family-note witness for the pre-BECMI staging set.
+
+ESP: A spell which allows the user to detect the thoughts (if any) of whatever lurks behind doors or in the darkness. It can penetrate solid rock up to about 2' in thickness, but a thin coating of lead will prevent its penetration. Duration: 12 turns. Range: 6"
+```
+
+```text id="odnd-clairvoyance"
+[Source metadata]
+Title: OD&D Family comparative witness note
+Year: 1974
+Source URL: https://www.paulsgameblog.com/2011/12/17/spells-through-the-ages-clairvoyance/
+Spell Level: 3
+Target: Clairvoyance
+Override note: OD&D-era Clairvoyance wording preserved here as the paired family-note source for the ESP / Clairaudience trio.
+
+Clairvoyance: Same as ESP spell except the spell user can visualize rather than merely pick up thoughts.
+```
+
+```text id="odnd-clairaudience"
+[Source metadata]
+Title: OD&D Family comparative witness note
+Year: 1974
+Source URL: https://deltasdnd.blogspot.com/2014/07/spells-through-ages-esp-and-clairvoyance.html
+Spell Level: 3
+Target: Clairaudience
+Override note: Comparative-note Clairaudience wording preserved here as the family-note companion to the Holmes witness block above.
+
+Clairaudience: Same as Clairvoyance except it allows hearing rather than visualization. This is one of the few spells which can be cast through a Crystal Ball (see Volume II).
 ```

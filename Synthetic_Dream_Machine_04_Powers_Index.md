@@ -146,8 +146,9 @@ published: true
 
 tags:
 >   [power]
->   [type:<oldtech|fantascience|ritual|weapon|other>]
+>   [oldtech] / [fantascience] / [ritual] / [weapon]  ← tradition tag, if applicable; omit if none fits
 >   [storage:<trait|item|burden|structure|location>]
+> *other tags as appropriate; see Appendix Null*
 
 meta:
 > - source:
@@ -203,7 +204,7 @@ osr:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:trait]
 >   [storage:item]
 
@@ -244,7 +245,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -281,7 +282,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:trait]
 
 meta:
@@ -319,7 +319,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -356,7 +356,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -391,7 +391,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -427,7 +427,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -462,7 +461,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 >   [storage:trait]
 
@@ -500,7 +498,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -544,7 +542,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -582,7 +579,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -621,7 +617,7 @@ meta:
 
 tags:
 >   [power]
->   [type:fantascience]
+>   [fantascience]
 >   [storage:item]
 
 meta:
@@ -657,7 +653,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -690,7 +685,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -726,7 +721,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -764,7 +758,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:trait]
 
 meta:
@@ -799,7 +793,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -834,7 +828,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 >   [storage:trait]
 
@@ -870,7 +864,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -908,7 +902,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:trait]
 
 meta:
@@ -943,7 +937,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -982,7 +976,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -1018,7 +1012,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -1054,7 +1048,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1087,7 +1081,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1134,7 +1128,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -1171,7 +1164,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -1214,7 +1206,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -1249,7 +1240,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -1284,7 +1274,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -1319,7 +1308,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1354,7 +1343,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -1390,7 +1378,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1425,7 +1413,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -1461,7 +1449,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1498,7 +1486,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 >   [storage:trait]
 
@@ -1534,7 +1522,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1571,7 +1559,7 @@ meta:
 
 tags:
 >   [power]
->   [type:fantascience]
+>   [fantascience]
 >   [storage:item]
 
 meta:
@@ -1609,7 +1597,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:trait]
 
 meta:
@@ -1644,7 +1632,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:trait]
 
 meta:
@@ -1679,7 +1666,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1715,7 +1702,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -1751,7 +1737,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1794,7 +1780,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 >   [storage:trait]
 
@@ -1837,7 +1823,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1872,7 +1858,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1909,7 +1895,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:trait]
 
 meta:
@@ -1944,7 +1930,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -1979,7 +1965,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -2018,7 +2004,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2074,7 +2059,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2109,7 +2093,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -2145,7 +2129,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 >   [storage:trait]
 
@@ -2183,7 +2166,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 >   [attribute:dangerous]
 
@@ -2222,7 +2204,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2292,7 +2273,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2337,7 +2317,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2384,7 +2363,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2420,7 +2398,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -2457,7 +2435,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2493,7 +2470,7 @@ meta:
 
 tags:
 >   [power]
->   [type:fantascience]
+>   [fantascience]
 >   [storage:item]
 
 meta:
@@ -2529,7 +2506,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2564,7 +2540,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2599,7 +2574,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -2634,7 +2609,7 @@ meta:
 
 tags:
 >   [power]
->   [type:fantascience]
+>   [fantascience]
 >   [storage:item]
 
 meta:
@@ -2670,7 +2645,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2706,7 +2680,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -2743,7 +2717,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2778,7 +2751,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 >   [storage:trait]
 
@@ -2814,7 +2786,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -2850,7 +2822,7 @@ meta:
 
 tags:
 >   [power]
->   [type:fantascience]
+>   [fantascience]
 >   [storage:item]
 
 meta:
@@ -2902,7 +2874,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -2954,7 +2925,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3005,7 +2975,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3042,7 +3011,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3085,7 +3053,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3134,7 +3101,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:trait]
 
 meta:
@@ -3169,7 +3135,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3204,7 +3169,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -3240,7 +3205,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3276,7 +3241,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3314,7 +3279,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3364,7 +3328,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3405,7 +3368,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3444,7 +3406,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3481,7 +3442,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:trait]
 
 meta:
@@ -3525,7 +3486,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:trait]
 
 meta:
@@ -3568,7 +3528,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3617,7 +3576,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3663,7 +3621,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -3698,7 +3655,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3739,7 +3696,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 >   [attribute:dangerous]
 
@@ -3773,7 +3730,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3808,7 +3765,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:item]
 
 meta:
@@ -3845,7 +3802,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3882,7 +3839,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3918,7 +3875,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3953,7 +3910,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -3988,7 +3945,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4033,7 +3989,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4087,7 +4042,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4128,7 +4082,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4167,7 +4120,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4221,7 +4173,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4289,7 +4240,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4346,7 +4296,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:item]
 
 meta:
@@ -4383,7 +4332,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 >   [storage:trait]
 
@@ -4421,7 +4370,7 @@ meta:
 
 tags:
 >   [power]
->   [type:oldtech]
+>   [oldtech]
 >   [storage:trait]
 
 meta:
@@ -4467,7 +4416,6 @@ meta:
 
 tags:
 >   [power]
->   [type:other]
 >   [storage:trait]
 
 meta:
@@ -4502,7 +4450,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
@@ -4538,7 +4486,7 @@ meta:
 
 tags:
 >   [power]
->   [type:fantascience]
+>   [fantascience]
 >   [storage:item]
 
 meta:
@@ -4577,7 +4525,7 @@ meta:
 
 tags:
 >   [power]
->   [type:ritual]
+>   [ritual]
 >   [storage:item]
 
 meta:
