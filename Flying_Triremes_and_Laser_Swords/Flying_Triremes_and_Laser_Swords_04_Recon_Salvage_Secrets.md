@@ -193,7 +193,7 @@ This **penalizes arcane interactions** by members of the faction:
 
 #### Alignment Rituals
 
-It is often favorable to have a local or more knowledgeable person calling the shots for the initial scouting of an Area. This practice spread from Merchant and Scout guilds into the Adventurer’s Guild certified companies. It works because it is meta-social: the faction agrees who gets to speak for them to the Area. Other "Etheric Counter-Measures" (ECM) rituals exist as fiercley guarded secrets.
+It is often favorable to have a local or more knowledgeable person calling the shots for the initial scouting of an Area. This practice spread from Merchant and Scout guilds into the Adventurer’s Guild certified companies. It works because it is meta-social: the faction agrees who gets to speak for them to the Area. Other "Etheric Counter-Magitech" (ECM) rituals exist as fiercley guarded secrets.
 
 **Recipe: The Pilot's Handshake (common)**
 

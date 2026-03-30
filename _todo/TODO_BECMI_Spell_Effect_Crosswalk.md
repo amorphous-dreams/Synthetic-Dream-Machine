@@ -780,9 +780,9 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 - `magitech` and `fantascience` remain cross-cutting flavor and implementation tags, not primary family names.
 - Vancian versus SDM delta to preserve during later conversion: powers persist after use, use costs Life rather than prepared slots, access is by acquisition rather than class list, and high-tier effects are gated by danger, corruption, rarity, or ritual burden rather than by daily slot scarcity.
 - Source-era storage mechanics such as `Spell Storing` should be carried forward as conversion notes toward trait/item/burden interfaces, not reintroduced as prepared-slot subsystems.
-- If a section is mostly about scroll wrappers, archive behavior, spell storage, or treasure-device operations, prefer `Interfaces and Scrollcraft` over forcing it into Ethereal Counter Magitech.
+- If a section is mostly about scroll wrappers, archive behavior, spell storage, or treasure-device operations, prefer `Interfaces and Scrollcraft` over forcing it into Etheric Counter-Magitech.
 - Related OSR spell ladders may collapse into one future SDM power with Overcharge riders rather than separate exports. Candidate relationship groups include `Fireball` -> `Delayed Blast Fireball` -> `Meteor Swarm`, and `Haste` plus later acceleration variants.
-- Ethereal Counter Magitech (ECM) remains a first-class concept inside `Ethereal Counter Magitech`. It covers suppression, negation, reflection, capture, cancellation, and noospheric interference rather than generic defense or generic cleansing.
+- Etheric Counter-Magitech (ECM) remains a first-class concept inside `Etheric Counter-Magitech`. It covers suppression, negation, reflection, capture, cancellation, and noospheric interference rather than generic defense or generic cleansing.
 - Use an `ecm` tag for rows that meet the thematic and mechanical criteria even when the row also belongs in another family such as barriers or weather.
 - Use `skilled`, `expert` and `master` tags to sort powers into "teirs" - for example all the spell effects from the Artifacts source provenance belong in `master` tier. 
 - Use the BECMI/RC context to decide on appropriate tags.
@@ -1143,7 +1143,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 | Force Field | spell | Premium structural barrier lane and Chapter 05 interface anchor for layered ward persistence, directional blocking, and throughput exceptions. Evidence lock: Range 120', Duration 6 turns; immovable pure-force barrier; shape limited to sphere (max 20' radius) or flat surfaces/combinations up to 5,000 sq ft; only `Disintegrate` or `Wish` can destroy it — `Dispel Magic` explicitly cannot; `Teleport`/`Dimension Door` can bypass; enclosed creatures are magically preserved (no starvation or suffocation); plane-specific — does not persist across planar transitions. | custom |
 | Prismatic Wall | spell | Bespoke high-tier layered-spectrum barrier; the current SDM corpus lacks a close analogue, so this should stay custom. Evidence note (partial — staged text not recovered): Master artifact chart gives `R 60', DR 6 turns, EF 10' radius sphere or 500 sq ft flat`; no standalone spell description was staged in Master or RC staging files; treat as evidence-limited until a full text block is recovered from source. | custom |
 
-#### Ethereal Counter Magitech / Dispels / Suppression / Jamming
+#### Etheric Counter-Magitech / Dispels / Suppression / Jamming
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
@@ -1453,7 +1453,7 @@ No RC-primary Phase 1 item/interface rows are currently parked here; item-side `
 
 #### Borderline Family Notes
 
-- `Ethereal Counter Magitech` versus `Interfaces and Scrollcraft`: use `Ethereal Counter Magitech` when the effect suppresses, catches, dispels, blocks, reflects, or jams hostile magic; use `Interfaces and Scrollcraft` when the row is mainly about storage, activation, copying, delayed release, or treasure-device handling.
+- `Etheric Counter-Magitech` versus `Interfaces and Scrollcraft`: use `Etheric Counter-Magitech` when the effect suppresses, catches, dispels, blocks, reflects, or jams hostile magic; use `Interfaces and Scrollcraft` when the row is mainly about storage, activation, copying, delayed release, or treasure-device handling.
 - `Knowledge and Revelation` versus `Veils and Illusions`: anti-concealment lives under `Knowledge and Revelation`; concealment, disguise, proxy images, and false stimuli live under `Veils and Illusions`. Some pairs such as `Detect Invisible` and `Invisibility` are intentionally mirror cases across the boundary.
 - `Restoration and Thresholds` versus `Transformation and Fabrication`: healing, cure, resurrection, and recovery stay in `Restoration and Thresholds`; regrowth, mutation, body editing, and form rewriting stay in `Transformation and Fabrication`. Biomantic rebuild powers may be cited in both notes, but should still get one primary placement.
 - `Mobility and Access` versus `Defense and Boundaries`: passage, transit, relocation, and route certainty live under `Mobility and Access`; locks, wards, seals, exclusion zones, and persistent boundary control live under `Defense and Boundaries`.

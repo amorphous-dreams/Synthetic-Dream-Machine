@@ -13,18 +13,23 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
 
 - [Powers](#powers)
   - [Chapter 06 Power Index](#chapter-06-power-index)
-  - [Skills and Powers](#skills-and-powers)
-  - [OSR Powers](#osr-powers)
-    - [Chapter 06 Design Decisions (Locked For Alpha Pass)](#chapter-06-design-decisions-locked-for-alpha-pass)
-    - [Paying for Power](#paying-for-power)
-    - [Storing Powers](#storing-powers)
-    - [Power Tags and Storage](#power-tags-and-storage)
+  - [Using Powers](#using-powers)
     - [Activating Powers](#activating-powers)
+    - [Skills, Paths, and Powers](#skills-paths-and-powers)
     - [Power Attributes](#power-attributes)
-    - [Overcharge and Risk](#overcharge-and-risk)
+    - [Locked Powers](#locked-powers)
     - [Power Tags](#power-tags)
-    - [Powers by Tradition / Source](#powers-by-tradition--source)
     - [Powers by Gameplay Scale](#powers-by-gameplay-scale)
+  - [ECM: Etheric Counter‑Magitech](#ecm-etheric-countermagitech)
+    - [ECM Tags](#ecm-tags)
+    - [ECM at the Table](#ecm-at-the-table)
+    - [Charms (\[charm\] \[spoof\] \[hijack\])](#charms-charm-spoof-hijack)
+    - [Glamours (\[glamour\] \[spoof\] \[veil\])](#glamours-glamour-spoof-veil)
+    - [Illusions (\[illusion\]  \[figment\] \[spoof\] \[jam\] \[veil\])](#illusions-illusion--figment-spoof-jam-veil)
+    - [Scrying and Anti‑Scrying (\[scan\] \[veil\] \[jam\])](#scrying-and-antiscrying-scan-veil-jam)
+    - [Veiling and Revealing (\[veil\] \[reveal\])](#veiling-and-revealing-veil-reveal)
+    - [Jamming Fields (\[aversion\] \[jam\] \[field\])](#jamming-fields-aversion-jam-field)
+    - [Counterspells (\[negate\] \[supress\] \[redirect\] \[capture\] \[hijack\])](#counterspells-negate-supress-redirect-capture-hijack)
 - [Battle and Force](#battle-and-force)
   - [Entropic Shield](#entropic-shield)
   - [Magic Missile](#magic-missile)
@@ -223,7 +228,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Raise Dead](#raise-dead)
   - [Raise Dead Fully](#raise-dead-fully)
   - [Animate Dead](#animate-dead)
-- [Heritage Powers](#heritage-powers)
+- [FTLS Powers](#ftls-powers)
   - [Adaptive Form](#adaptive-form)
   - [Assimilation Protocol](#assimilation-protocol)
   - [Avatar of the Dream](#avatar-of-the-dream)
@@ -261,53 +266,25 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Warren-Soul](#warren-soul)
 
 
-## Skills and Powers
-
-Any character can use any power. Using a power may mean reading the fantascientific formulas from an electromagical book, performing an interpretative dance routine to summon a daemon, or perhaps just lighting dribbly candles made from the fat of a bona fide angel. However, a character who knows what they’re doing (i.e. has a trait with relevant skills) is less likely to blow themselves up into a giant blueberry or unleash a plague of ear-eating wigs.
-
-## OSR Powers
-
-Powers from Old School Roleplaying (and games inspired by the OSR aesthetic). As a general conversion guideline, SDM Power Level \= OSR “Spell Level” x2. Feel free to remix, modify, or play mad alchemist to your heart’s content. Powers, Traits, and Gear in FTLS are not static, but always mod-able.
-
-### Chapter 06 Design Decisions (Locked For Alpha Pass)
-
-The following doctrine is locked for this alpha drafting pass and is the rules contract for Chapter 06.
-
-1. Activation flow is fixed: declare power -> confirm carrier/storage access -> pay activation price -> resolve attack/save/effect -> apply danger/corruption triggers -> apply overcharge riders if used.
-2. Payment and substitution boundaries are fixed: base price is Life equal to Power Level; ability-point substitution remains legal at 1 point = 1 Life; unskilled use pays double unless a trait explicitly changes the cost. Life-Power may be stored as "mana" in gear/locations/ley-lines/high-weirdness.
-3. Storage semantics are fixed: Chapter 06 governs powers-as-powers; Chapter 05 governs object procedures that carry powers. Trait, item, and burden carriers are valid storage surfaces, with committed costs handled by tags. Rare Powers cost more than one "slot".
-4. Overcharge doctrine is fixed: Overcharge is the default scaling mechanism and may be gated by campaign unlock work (RSS discoveries, archive access, corruption cleaning, or equivalent referee-approved milestones).
-5. Numeric ontology is fixed: use Power Level for storage, eligibility, payload capacity, and activation pricing; use user Level for source force, dispel/counterforce strength, summon potency, and threshold filters.
-
-### Paying for Power
-
-Power price is paid at activation unless a tag or entry states the cost remains committed.
-
-- Base cost: Life equal to Power Level.
-- Ability substitution: 1 ability point = 1 Life.
-- Unskilled use: pay double unless a trait changes this.
-- Committed costs: if a power is [imbued], [item], or otherwise committed, recover the cost only when that condition ends.
-
-### Storing Powers
-
-You can use a power carried in any inventory.
-
-* **Trait** – perhaps strange equations locked in your mind, changing perspective and personality.  
-* **Item** – maybe a plastic skull jug of lambent newt juice.  
-* **Burden** – for example, the weight of a malign knowledge.
-
-Carried powers do not disappear after use—you can use them multiple times. Power albums, technocodices, and spell books are valuable since they let you carry a number of powers in a single inventory slot. You can also pack powers away, like other items, or store them in a library or other safe room. Of course, you can’t use packed or stored powers.
-
-### Power Tags and Storage
-
-Tags in this chapter are not flavor labels; they are procedure flags that tell the referee what to do at table speed. If a power uses a committed-cost storage tag, treat that commitment as part of the item's or trait's active state until released.
+## Using Powers
 
 ### Activating Powers
 
-Powers impose otherworldly wrongness on the mundane. There is a price to pay for such power and the alien fires of the incomprehensible may consume one’s body, spirit, and memories.  
-The price of a power is **life equal to its power level**.   
-You can also pay with ability score points (1 point \= 1 life). If you have no relevant skill or experience, pay *double* the normal price to use a power. Traits can change the price you pay for powers.  
-Life energy (used for *powers* and other magic) is often called **mana**. Mages may store life in a **mana pool** (up to 10 life, 1 temporary Trait slot), and often carry items that have life pooled into them like the classic **mana potion** (\[fragile\], 10 life, 1 st, 100 cash). In contrast, the healing of life lost due to damage or power costs without any side effects is often more expensive (**healing potion**, \[fragile\], 2d6 life or 1 physical ability point, 1 st, 400 cash).
+Powers impose otherworldly wrongness on the mundane. There is a price to pay for such power and the alien fires of the incomprehensible may consume one's body, spirit, and memories.
+ 
+The price of a power is **life equal to its power level**.  
+
+You can also pay with ability score points (1 point \= 1 life).  Traits or Affinities can change the price you pay for powers. If a power is \[imbued\], \[item\], or otherwise committed, you cannot recover that life or ability cost until the condition ends.  
+
+Life energy (used for *powers* and other magic) is often called **mana**. Mages may store life in a **mana pool** by using the **Reckless Dweomer** power (up to 10 life in 1 temporary filled Trait slot). Power albums, technocodices, and grimoires (spell books) let you carry a number of powers in a single inventory slot *(see Chapter 05 for fantascience and magitech, including mana potions and healing items)*.
+
+### Skills, Paths, and Powers
+
+Any character can use any power. If you have no relevant Trait (skill or experience), pay *double* the normal price to use a power.
+
+Using a power may mean reading the fantascientific formulas from an electromagical book, performing an interpretative dance routine to summon a daemon, or perhaps just lighting dribbly candles made from the fat of a bona fide angel.
+
+However, a character who knows what they’re doing is less likely to blow themselves up into a giant blueberry or unleash a plague of ear-eating wigs.
 
 ### Power Attributes
 
@@ -317,12 +294,17 @@ Life energy (used for *powers* and other magic) is often called **mana**. Mages 
  Duration (D): How long the effects of the power last, from instantaneous to temporary to permanent.  
  Overcharge (Ox): Overcharging a power doubles its power level (and price) and modifies its effect. Some powers can be overcharged multiple times: x2, x4, x8, x16 and so on.
 
-### Overcharge and Risk
+### Locked Powers
 
-Overcharge is allowed by default unless an entry explicitly forbids it. Overcharge increases activation price and can escalate danger handling, collateral effects, and corruption exposure. When an overcharge rider is marked as locked, it remains unavailable until unlocked by campaign play.
+Powers may be bought, salvaged, or found with one or more attributes **locked**, **encrypted**, or **damaged**. Any power marked as Locked must be unlocked or repaired through campaign play before it can be fully used.
 
-Typical unlock vectors include:
+**What can be locked:** Any attribute — P, R, T, D, Overcharge riders, Power text, or the Name/Subtitle pair. Mark each locked attribute. Locks are independent: each locked attribute must be unlocked or repaired on its own.
 
+**Locked Powers:**
+- If **any non-Overcharge attribute** is locked — including the power's text or Name/Subtitle — the power **cannot be activated** at all. Mark the Power as Locked.
+- Locked **Overcharge riders** only block that specific overcharge step. The base power remains usable.
+
+**Unlock vectors:**
 - RSS salvage and archive recovery,
 - noosphere or shrine-side adjudicated permissions,
 - corruption treatment and stabilization,
@@ -331,7 +313,7 @@ Typical unlock vectors include:
 ### Power Tags
 
 * \[**anchored**\]: A physical anchor keeps the power active and controlled. Destroying or losing the anchor deactivates the power (or worse).  
-* \[**attack**\]: Use this power as an attack against a target’s defense score. The defender does not save or make other rolls.  
+* \[**attack**\]: Use this power as an attack against a target's defense score. The defender does not save or make other rolls.  
 * \[**control**\]: this power requires an action each turn to actively control.  
 * \[**dangerous**\]: always make a Dangerous Magic roll when using this power.  
 * \[**focus**\]: You must focus your mind on shifting, un-earthly equations to keep the power active. You can move, speak slowly, or carry out simple tasks while staying focused. If you are distracted by another task or external events, the power deactivates (or worse).  
@@ -339,17 +321,8 @@ Typical unlock vectors include:
 * \[**imbued**\]: The power remains active as long as you keep it imbued with your vital essence (the life or other price paid). You cannot recover imbued life or other price until you deactivate the power. If Affinity reduces the cost below the Power level, that is the power that remains committed. Powers may have details on how to recover the imbued power into their active mana pool.  
 * \[**item**\]: The power locks your vital essence (life or other price paid) within an object. This is permanent, unless the item is destroyed or ritually powered down. Once an item is disabled, you can recover your locked life or ability scores.  
 * \[**guided**\]: the attack roll has Advantage as long as no targets have no Cover.  
-* \[**ward**\]: grants a bonus to Mental Defenses and Saves.
-
-### Powers by Tradition / Source
-
-This chapter preserves canonical recognizers for OSR-facing lookup while routing behavior through SDM-native rules.
-
-- OSR recognizers: use canonical spell names as lookup labels and conversion anchors.
-- Heritage powers: culture- and lineage-bound expressions, often with factional or standing requirements.
-- SDM variants: existing stylized descendants remain valid; use "see" callouts where one recognizer maps to multiple practical expressions.
-
-When recognizer names and local variants overlap, keep both discoverable and treat the recognizer as API surface, not a separate mechanical engine.
+* \[**ward**\]: grants a bonus to Mental Defenses and Saves.  
+* \[**ecm**\]: Marks a power as targeting the noospheric substrate — active powers, activations, and etheric sensing — rather than physical targets. Combine with mode tags: `[scan]` `[veil]` `[jam]` `[spoof]` `[negate]` `[suppress]` `[redirect]` `[capture]` `[absorb]` `[hijack]`. Counterforce strength uses the caster's **Level**, not Power Level.
 
 ### Powers by Gameplay Scale
 
@@ -360,7 +333,174 @@ Power use must be legible at all FTLS scales.
 - Faction play: force projection, node control, strategic signaling, and escalation pressure.
 - Mythic play: world-process interference, noosphere visibility, and high-consequence doctrine.
 
-Chapter 06 owns activation and power behavior. Chapter 07 owns instability, corruption, and severe fallout procedures. Chapter 05 owns object procedures that carry or bind powers.
+## ECM: Etheric Counter‑Magitech
+
+Every power user sends intent through the noosphere and expects reality to respond. ECM lives in that liminal space as the art of interception: glamours, illusions, charms, veils, and counter-signals that bend, blur, or divert intent before the world can finish listening.
+
+People often talk as if “countermeasures” means “protection from everything.” That talk produces confusion. A Ward stops intrusion. Armor stops injury. Fire resistance reduces consequences. ECM performs a stranger trick: it spoils the conversation between sender and target. It fouls active powers, activations, and noospheric sensing. It jams the prayer in the wire, the daemon in the channel, the packet in the dream. After the effect lands, the signal has already become weather, fire, fracture, or fate.
+
+### ECM Tags
+
+Tags are independent and combinable. `[ecm]` marks a power as targeting the noospheric substrate; pair it with one or more mode tags. Mode tags may also appear without `[ecm]` (e.g. `[scan]` on a mundane detection power, `[veil]` on a stealth power).
+
+**ECM mode tags** — what the effect *does*:
+
+- `[scan]` — detect or identify a noospheric signal: “who cast,” “what is active,” “what is being watched.”
+- `[veil]` — hide a signal: “don’t notice,” “can’t lock on,” “can’t trace,” “can’t scry.”
+- `[jam]` — degrade activation or sensing inside a zone: power use becomes unreliable or expensive.
+- `[spoof]` — feed false signals: false targets, fake identities, fake locations, fake “casting tells.”
+- `[negate]` — end an active power effect (it stops running).
+- `[suppress]` — temporarily disable an active effect without ending it (it comes back when suppression ends).
+- `[redirect]` — shove an incoming effect sideways: left/right/up/down, ally/enemy swap, mirror back.
+- `[capture]` — intercept a power payload and store it as charge for later.
+- `[absorb]` — eat power energy, converting it to Life, Ward, heat, or a burden (referee chooses fitting currency).
+- `[hijack]` — take control of an active effect (briefly rewrite its target, parameters, or allegiance).
+
+**Other tags that combine freely:**
+
+`[illusion] [glamour] [charm] [noosphere] [dreamnet] [ha] [ka] [ba] [ward] [daemon] [field] [ritual]`
+
+### ECM at the Table
+
+ECM is a contest. Name your channel and your mode before declaring.
+
+**Substrate**: Trouble begins when people say “plane” and picture reality stacked into tidy shelves, as if the cosmos kept a clerk and a labeling system. Ha/Ka/Ba do not require that model. They describe one world in more than one register. The Hylosphere names the coarse and stubborn side of things: matter, inertia, thresholds, locked doors, coin-weight, boot leather, damp stone, and the testimony of ordinary senses. The Noosphere names the parallel information-layer: names that stick, oaths that bite, intent that leaves a wake, ley-line traffic, daemon routes, hauntings, mana weather, ghost-code, and the unseen but consequential furniture of the world. The DreamNet and Dream Realms arise where noospheric traffic grows stable enough to map, travel, fortify, bargain through, and get lost inside—dream-country with routes, borders, and local habits. ECM works there on anything that answers to naming, binding, signaling, routing, watching, or carried intent.
+
+**Channels** (what you’re targeting):
+- **Ba** (Psyche, Perception): illusions, glamours, veils.
+- **Ka** (Soul, Desire): charms, compulsions, commands.
+- **Ha** (Body, Integrity): wards, names, anchor‑locks, bindings.
+
+**Resolution** — pick one:
+- **Automatic**: your Level ≥ source Level and the mode fits → it works, no roll.
+- **Save**: mental/spiritual contest → target rolls **Aura save** (Ward applies). Save = fail or partial; Sacrifice = works with cost; Doom = full effect.
+- **Skill roll**: active intrusion → d20 + Thought vs 13 + (Target Level − Your Level) + mods. Success: works. Failure: doesn’t, may generate noospheric noise, or increase local Area Attention.
+- **Danger roll**: triggered by `[dangerous]` powers, casting or overcharging above your level, overlapping fields, or jamming a shrine node / daemon route / DreamNet boundary. Price of the ECM power is the Danger target number.
+
+**Scale**:
+- *Personal*: counter a bolt, jam a room, veil your casting.
+- *Company*: route integrity, node access, alignment rites.
+- *Faction*: deny rival activation across an Area, spoof shrines, poison DreamNet routes.
+- *Mythic*: shrine disruptions, daemon contract edits, Dream Realm quarantine.
+
+Inside a Dream Realm, ECM is network security. Outside, it’s fieldcraft. Same noosphere, different density.
+
+### Charms ([charm] [spoof] [hijack])
+
+Charms are **desire/obedience ECM** operating on the Ka channel:
+they inject impulses, framed certainties, cravings, taboos, and short command‑patterns.
+
+Charms are not “remote puppetry” by default.
+They are *steering,* *binding,* and *permission edits* unless Overcharged.
+
+Common charm payloads:
+- “Trust me” / “Ignore that” / “You don’t want to fight”
+- “You can’t lie to me”
+- “Drop it” / “Freeze” / “Run”
+- “You already paid” (bureaucratic charm)
+
+Save model:
+- Charm targets roll **Aura saves** (Ward applies).
+- On Sacrifice: the charm works, but the target immediately gets a clue that something pushed them.
+- On Doom: full effect; may impose a burden (“Compelled,” “Infatuated,” “Shamed,” etc.).
+
+### Glamours ([glamour] [spoof] [veil])
+
+Glamours are **identity‑layer ECM**: they spoof recognition, authority, beauty, threat, and “who you are” signals.
+
+A glamour is not “mind control.”
+It is targeted misregistration of the noosphere’s identity‑lookup.
+
+Rules of thumb:
+- Glamours are strongest against crowds, bored guards, and low‑attention systems.
+- Glamours break when *proof matters*: close interview, ritual verification, warded gates, legal recitation.
+- Glamours often include a **tell** (a scent of copper, a halo edge, a mirrored blink) that skilled observers can detect.
+
+Common glamour payloads:
+- Face/voice/gesture mask
+- “I belong here” aura
+- “This item is mundane” cloak
+- “This target is higher rank than you” intimidation cast
+
+### Illusions ([illusion]  [figment] [spoof] [jam] [veil])
+
+Illusions are **perception‑layer ECM**. They alter what targets believe they are sensing, or how their senses are routed.
+
+Two classes (use these words at the table):
+
+**Figments**: sensory spoofs
+- They distract, stage‑dress, and misdirect.
+- They do not deal direct damage.
+- A meaningful interaction (touch, test, strike, close investigation) triggers a Sensing chance.
+  If the observer succeeds, the figment collapses *for that observer* (others may remain fooled). This includes "sensory overrides" that make a figment door "feel real" until it is sensed as a figment.
+
+**Illusions**: schema writes (dangerous)
+- They can cause real harm by forcing the target to live inside a false reality‑layer.
+- They require a conscious/mindlike process.
+- They are resisted by **Aura saves** (Ward applies), and often create burdens on failure (“Echo‑Fear,” “Doubt,” “False Memory”).
+
+**Paired Slot Doctrine (True/Illusion)**
+Many illusion powers should ship as a **paired mode in one slot**:
+- **True mode**: weaker but real; cannot be “disbelieved.”
+- **Illusion mode**: stronger; gains Overcharge hooks; but adds Sensing/Disbelief riders.
+
+This is the core Illusionist mindgame: if you always cast the “strong fake,” enemies learn to Disbelieve everything. If you mix modes, enemies risk opening themselves to the real hit.
+
+### Scrying and Anti‑Scrying ([scan] [veil] [jam])
+
+Scrying is etheric reconnaissance: scanning the noosphere for signals, names, routes, and dreams.
+
+Scrying is ECM because it targets *the substrate of information* rather than the physical world directly.
+
+Anti‑scrying is the corresponding defense:
+- veil your signal
+- jam the path
+- spoof the watcher
+- poison the probe
+
+Referee rule:
+If a scry crosses a meaningful boundary (warded room, shrine node, lair, DreamNet gate),
+it should trigger a contest: Aura/Ward vs the scry, or a Thought roll vs Area Level.
+
+### Veiling and Revealing ([veil] [reveal]) 
+
+Veiling hides targets from:
+- mundane perception (stealth‑adjacent)
+- noospheric sensing (anti‑scry)
+- casting detection (“you didn’t see me activate that”)
+
+Reveal/Burn‑Through is counter‑ECM:
+- active probing of a veiled/jammed region
+- forcing a target to “resolve” and become targetable
+
+Design rule:
+If veiling is cheap, revealing should be cheap too.
+If veiling is expensive or Overcharged, revealing should require Overcharge, sacrifice, or specialized wards.
+
+### Jamming Fields ([aversion] [jam] [field])
+
+Jamming blocks or degrades power activation and/or scrying inside a boundary.
+
+Common field behaviors:
+- **Bilateral**: blocks everyone (including the caster).
+- **Directional**: blocks crossing the boundary (inside→out, out→inside, or both).
+- **Selective**: blocks only certain activation modes (voice, gesture, anchor type, daemon channel).
+
+Stacking rule:
+Two overlapping jamming fields do not “add.” They create pressure. Higher Level field usually dominates; otherwise, treat the overlap as Dangerous Magic.
+
+### Counterspells ([negate] [supress] [redirect] [capture] [hijack])
+
+These are the “hard counter” ECM modes—high clarity, high stakes.
+
+- **Negation** ends an active effect.
+- **Suppression** turns it off temporarily.
+- **Redirect** changes target or vector (often as a Reaction window).
+- **Capture** stores a payload at its original Power Level for later release.
+- **Hijack** steals control for one round (or one scene at high tier).
+
+Referee rule for “permanent things”:
+ECM targets **active effects and power activations**. It does not erase an item’s lifelong weirdness unless the item’s weirdness is currently “running” as an effect.
 
 # Battle and Force
 
@@ -8704,9 +8844,9 @@ osr:
 
 </div>
 
-# Heritage Powers
+# FTLS Powers
 
-These magitech (oldtech) and sorcery (fantascience) Powers are practiced by the fae tribes and clans of Elyncia. If tagged with a Heritage, characters with good factional standing can purchase them at a 50% discount from friendly factions that practice these Powers.
+These magitech (oldtech) and sorcery (fantascience) Powers are practiced by the fae tribes and clans of Elyncia. If tagged with a Heritage, characters with good factional standing can purchase them at a 50% discount from friendly factions that know these Powers.
 
 Heritage-origin recognizers now indexed under OSR sections: `Swamp’s Gift (Water Breathing)` in Traversal and Mobility, and `Veilwalk (Passwall)` in Dimensional, Planar, and Exotic Access.
 
