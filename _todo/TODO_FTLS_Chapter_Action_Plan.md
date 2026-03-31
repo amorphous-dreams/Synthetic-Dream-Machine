@@ -96,7 +96,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 
 ### 01 Introduction
 **Purpose**
-- Define the book's play contract, five gameplay modes, and cross-mode abstractions.
+- Define the book’s play contract, five gameplay modes, and cross-mode abstractions.
 
 **Preserve**
 - Alpha Playtest framing.
@@ -263,7 +263,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
   - consumer / field-use weird tech,
   - relic and restricted devices,
   - creation / modification / fault / curse procedures.
-- [x] Make organizational regulation and seizure part of the chapter's consequences model.
+- [x] Make organizational regulation and seizure part of the chapter’s consequences model.
 
 **Dependencies**
 - Needs Chapter 04 for resource inputs.
@@ -494,7 +494,7 @@ Archived from `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`. These are
 - [ ] Chapter 09 routes relic and conversion cases cleanly into Chapters 04 and 05.
 - [ ] Chapter 10 stays modular and support-facing rather than becoming a core-rules prose chapter.
 - [ ] Cross-references between 01, 04, 08, and 10 reflect the mode architecture.
-- [ ] No chapter silently redefines another chapter's core ownership.
+- [ ] No chapter silently redefines another chapter’s core ownership.
 
 ## Grounding Note
 - This action plan is directly grounded in the current local FTLS files for Chapters 01, 02, 04, 05, 07, 08, 09, and 10.

@@ -131,8 +131,8 @@ Roll Hazards if triggered, apply consequences, and resolve cooldown (or escalati
 - **Tick:** The Area response rate used by **Tick Attention** (+1 to +4 unmodified).
 - **Hero/Bonus Dice:** Daemon Hero Dice and Comfort / Protection / Speed (etc.) Dice. Meta-currency you spend to push when the work matters.
 - **Level (Area):** How hard it pushes back; how much you can extract per week (0–20). Level 0 Areas can’t sustain extraction safely; treat them as volatile, or metaphysically unhinged (See the Salvage rules).
-- **Nodes:** An Area's exploitable handles (yield + risk), usually 0–3 per Area. A name/description, a type tag (*static, active, dynamic*), and one additional descriptive tag. What you can find, make, or trigger.
-- **Quiet Approach:** spend extra time or resources (referee's call) to reduce Area **Tick** for this action by 1 (min 1).
+- **Nodes:** An Area’s exploitable handles (yield + risk), usually 0–3 per Area. A name/description, a type tag (*static, active, dynamic*), and one additional descriptive tag. What you can find, make, or trigger.
+- **Quiet Approach:** spend extra time or resources (referee’s call) to reduce Area **Tick** for this action by 1 (min 1).
 - **Resources:** What salvage/refinement becomes (rations, fuel, parts, reagents, favors, relic inputs, etc.).
 - **Sack (sk)**: Bulk trade lot (bundled cargo); wholesale trades, caravan cargo, big contracts; **1 sk (sack) = 10 st (stone) = 100 sp (soap)**
 - **Tags:** Narrative hooks defined in rules terms (metal, fuel, signal, holy, legal, volatile, void, etc.). Tags are the referee’s switches. They tell you what the vibes feel like, what cools attention, what salvage may yield, and what shows up when the place notices.
@@ -185,7 +185,7 @@ Apply bonuses or penalties based on:
 
 #### Arcane Interference (Faction Tag)
 
-Arcane Interference has accumulated in your faction’s operating protocols. Your crew has fallen out of phase with the local noösphere. Arcane interaction gets expensive and dangerous. The Area doesn’t “hate” you. It just doesn’t recognize your crew's protocols. This faction tag may be cleared by leaving the Area that triggered it for one day or by performing an Alignment ritual. Write [Arcane Interference] next to the faction name. While tracked at the faction scope, the individuals suffer the consequences.
+Arcane Interference has accumulated in your faction’s operating protocols. Your crew has fallen out of phase with the local noösphere. Arcane interaction gets expensive and dangerous. The Area doesn’t “hate” you. It just doesn’t recognize your crew’s protocols. This faction tag may be cleared by leaving the Area that triggered it for one day or by performing an Alignment ritual. Write [Arcane Interference] next to the faction name. While tracked at the faction scope, the individuals suffer the consequences.
 
 This **penalizes arcane interactions** by members of the faction:
 - Increase Power and Ritual costs (life/mana/ability points) by the local Arcane score.
@@ -195,7 +195,7 @@ This **penalizes arcane interactions** by members of the faction:
 
 It is often favorable to have a local or more knowledgeable person calling the shots for the initial scouting of an Area. This practice spread from Merchant and Scout guilds into the Adventurer’s Guild certified companies. It works because it is meta-social: the faction agrees who gets to speak for them to the Area. Other "Etheric Counter-Magitech" (ECM) rituals exist as fiercley guarded secrets.
 
-**Recipe: The Pilot's Handshake (common)**
+**Recipe: The Pilot’s Handshake (common)**
 
 *Requires:* 1 specialist, 1 sk (sack) of [static] OR [dynamic] refined resource, 1 secret (optional), 1 Turn (10 minutes).  
 *Process:* The group agrees to let an individual take the lead role for a period of time (ingredients are consumed during negotiations). The specialist makes Arcane Alignment rolls whenever the group enters a new Area, or when rerolling for the group. If the pilot knows a local secret that currently applies to their actions or has traits or gear with tags compatible to the area, they gain [+] on these rolls.
@@ -230,7 +230,7 @@ Recon starts before the first pry bar hits the wreckage: this section shows how 
 
 **When you arrive at a Destination:**
 
-You may Look for Discoveries: One PC makes a moderate (12) relevant test by asking around, reading signs, bribing locals, scanning the noösphere, etc. Rotate who rolls. The first week's roll at a destination is free (€0); after that, crews may attempt this at most once per week while they remain at this location, and extra investigations cost €1d6×10.
+You may Look for Discoveries: One PC makes a moderate (12) relevant test by asking around, reading signs, bribing locals, scanning the noösphere, etc. Rotate who rolls. The first week’s roll at a destination is free (€0); after that, crews may attempt this at most once per week while they remain at this location, and extra investigations cost €1d6×10.
 
 **Discovery Table**
 
@@ -284,14 +284,14 @@ Players may note nodes on their maps, track them in their company journals, and 
 
 ### Encounter Roll
 
-This old school roleplaying Encounter Roll runs at operational tempo (turns and watches), not at UVG’s broad “one encounter per week” travel cadence: it checks pressure repeatedly while crews poke, salvage, or sneak, then ties outcomes to a rising Attention clock that shifts trigger ranges. SDM's weekly encounter procedure assumes one such encounter per week; where the Encounter/Event tables behave more like "random encounter table" generators that throw colorful complications, factions, and prompts into play.
+This old school roleplaying Encounter Roll runs at operational tempo (turns and watches), not at UVG’s broad “one encounter per week” travel cadence: it checks pressure repeatedly while crews poke, salvage, or sneak, then ties outcomes to a rising Attention clock that shifts trigger ranges. SDM’s weekly encounter procedure assumes one such encounter per week; where the Encounter/Event tables behave more like "random encounter table" generators that throw colorful complications, factions, and prompts into play.
 
 - **Dungeon turns:** roll every turn when the party is loud, slow, or leaving obvious traces; otherwise roll every 2 turns.
 - **Site infiltration:** roll once per watch, plus one extra roll whenever the crew causes a clear disturbance.
 - **City/town caper:** roll once per watch or at each major scene beat; pick one method at scene start and stick to it.
 - **Camp/destination week:** assume one encounter per week; if pressure is high, escalate to one check per day until the situation cools.
 
-#### Jaquays' Encounter Stack
+#### Jaquays’ Encounter Stack
 
 > _"Because the composition of some groups of wandering monsters would necessitate much flipping back and forth between pages to keep track of individual specifics, it is suggested by the designer that the referee **pre-roll several encounters on each level** and have them set up and ready to go before the game begins."_
 >
@@ -426,7 +426,7 @@ Attention rises fast. Cooling down takes longer because the world has memory. Pa
 
 ## Salvage (Collect & Refine)
 
-Once resources are found they must be collected and refined. A Salvage attempt requires 1 watch (4 hours), an accessible resource node or collected resources, one or more crew, and a suitable toolkit (e.g., Brimstone Fae Mining Kit, Adventurer's Guild Kitchen, Portable Forge Cart, Quantum Tinker’s Kit). An area can safely support a number of Salvage attempts per week equal to its Level, with most crew avoiding unstable Level 0 Areas. Large crews often run multiple attempts in parallel, or collect in one area, and refine their salvage in a nearby area.
+Once resources are found they must be collected and refined. A Salvage attempt requires 1 watch (4 hours), an accessible resource node or collected resources, one or more crew, and a suitable toolkit (e.g., Brimstone Fae Mining Kit, Adventurer’s Guild Kitchen, Portable Forge Cart, Quantum Tinker’s Kit). An area can safely support a number of Salvage attempts per week equal to its Level, with most crew avoiding unstable Level 0 Areas. Large crews often run multiple attempts in parallel, or collect in one area, and refine their salvage in a nearby area.
 
 Trained crews are paid well and receive 1 standard share, plus 10 € hazard pay in any week of dangerous conditions. Shares are counted as 1 per crew member, 2 per company officer. Monthly profits are split by share and disbursed. Beats working the campsite for 1 € a day.
 
@@ -503,15 +503,15 @@ Price **refined salvage** as cash first, then convert to barter or favors if des
 
     | d20 | Price Factor | Notes |
     |---:|---:|:---|
-    | 1 | 0 | It's taboo. Nobody talks about it. Like it doesn't exist. There certainly isn't a local morality cult that murders dealers. |
-    | 2 | 0 | No demand or brainwashing? They don't want it at all. |
+    | 1 | 0 | It’s taboo. Nobody talks about it. Like it doesn’t exist. There certainly isn’t a local morality cult that murders dealers. |
+    | 2 | 0 | No demand or brainwashing? They don’t want it at all. |
     | 3-6 | 0.5 | Low demand. |
     | 7-12 | 1 | Normal market. |
     | 13 | 1 | Depressed market. Haggling checks at a disadvantage. |
     | 14-15 | 2 | Popular but illegal. Stiff penalties for captured dealers. |
     | 16-17 | 2 | High demand. |
     | 18 | 3 | Market bubble! 1 in 6 chance per caravan visit that the market has collapsed (roll 1d10 on this table). |
-    | 19 | 4 | The motherload! You're really in business now. 1 in 6 chance per caravan visit that the market has readjusted (roll again on this table). |
+    | 19 | 4 | The motherload! You’re really in business now. 1 in 6 chance per caravan visit that the market has readjusted (roll again on this table). |
     | 20 | 1 | Source! They make the trade good here. Buyers make haggling checks at an advantage, sellers at a disadvantage. |
 
 3. **Deal Procedure (haggling/terms):**  
@@ -528,7 +528,7 @@ Price **refined salvage** as cash first, then convert to barter or favors if des
     | 6-13 | 1 | A fair and reasonable sale. |
     | 14-17 | 1.2 | A solid, profitable sale. |
     | 18-19 | 1.5 | A good trade. Anyone should be proud. |
-    | 20+ | 3 | This might be almost too good. Perhaps it wouldn't hurt to quickly skip town now... |
+    | 20+ | 3 | This might be almost too good. Perhaps it wouldn’t hurt to quickly skip town now... |
 
 4. **Tag / Rarity Adjustment:**  
    Common tags: no change.  
@@ -576,7 +576,7 @@ Cooking, crafting, enchanting, summoning, and other rituals require time, a reci
 
 **Referee Advice (designing recipes from SDM gear):**
 
-Start from a printed item in UVG, VLG, or OGA and copy two numbers: listed inventory bulk (`sp`/`st`/`sk`) and listed item market price (`€`). The recipe should consume twice (`x2`) the inventory bulk of the item in refined resources, and the resources `Base Cash Value` should be worth at least `50%` of the item's market price.
+Start from a printed item in UVG, VLG, or OGA and copy two numbers: listed inventory bulk (`sp`/`st`/`sk`) and listed item market price (`€`). The recipe should consume twice (`x2`) the inventory bulk of the item in refined resources, and the resources `Base Cash Value` should be worth at least `50%` of the item’s market price.
 
 Use refined salvage `Base Cash Value` for all recipe math. Actual transaction prices may differ due to market fluctuations (market research, deals, and tag/rarity adjustments), so players should track both values when buying or salvaging ingredients:
 - **Base Cash Value** (rules reference for recipe requirements).
@@ -586,7 +586,7 @@ The referee may list exact ingredients or special objects/secrets needed, or jus
 - **Specific ingredient requirement:** `1 sk stabilized [active] mana, min €500`.
 - **Typed + tagged requirement:** `2 st [static], 2 st [dynamic] with [signal] or [memory], min €600`.
 
-Raise requirements for dangerous, illegal, or relic-grade outputs: use `80%` of item value for the ingredients' `Base Cash Value` and/or `x4` inventory bulk multipliers.
+Raise requirements for dangerous, illegal, or relic-grade outputs: use `80%` of item value for the ingredients’ `Base Cash Value` and/or `x4` inventory bulk multipliers.
 
 For very small consumables (`sp`-scale outputs), use a minimum crafting input of `1 st` refined resources and batch the output as doses. Keep per-dose economics equivalent to the base recipe.
 - Practical default for `1 sp` consumables: recipe cost becomes `Inv: 1 st`, and output yields **5 doses** (or 5 packs, where each pack already contains multiple doses).
@@ -644,7 +644,7 @@ Normalized tag schema (recipes): `role` + `function` + optional `trait` tags fro
 | [Duster Vest (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0185) | `1 st`, `€10` | Inv: `2 st`; Value: `>= €5` | Constraint: lightweight aridwear stitching and dust-resistant fiber treatment. Output: travel vest that improves dry-route endurance while retaining light protection. | `[armor] [arid] [travel] [light]` |
 | [Cactuskeleton (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0185) | `1 st`, `€75` | Inv: `2 st`; Value: `>= €37.5` | Constraint: fed symbiotic shell must remain viable and thorn-responsive. Output: living thorn armor that punishes close attackers and accepts life-fed reinforcement. | `[symbiote] [thorns] [armor] [living]` |
 | [Bunkerbeetle Suit (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0131) | `2 st`, `€150` | Inv: `4 st`; Value: `>= €75` | Constraint: chitin-carapace plate bonding with anti-necrotic resin kept active. Output: heavy-duty plated suit for hostile-biological and necrotic exposure zones. | `[chitin] [armor] [anti-necrotic] [durable]` |
-| [Steppe 'breaker (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `1 st`, `€14` | Inv: `2 st`; Value: `>= €7` | Constraint: anti-radiation fiber weave maintained under abrasion. Output: practical windbreaker with light armor value and energy/radiation mitigation profile. | `[windproof] [radiant] [travel] [armor]` |
+| [Steppe ’breaker (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `1 st`, `€14` | Inv: `2 st`; Value: `>= €7` | Constraint: anti-radiation fiber weave maintained under abrasion. Output: practical windbreaker with light armor value and energy/radiation mitigation profile. | `[windproof] [radiant] [travel] [armor]` |
 | [Pet Receiver (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `5 sp`, `€15` | Inv: `10 sp`; Value: `>= €7.5` | Constraint: tele-empathic tuning with anti-intrusion shielding. Output: cat-oriented ward cap for command telemetry and improved mind-control resistance. | `[telepathy] [signal] [ward] [catlord]` |
 | [Anarchist Skull (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `1 st`, `€15` | Inv: `2 st`; Value: `>= €7.5` | Constraint: secure fordite mount with durable ward etching. Output: compact +1 ward relic with strong symbolic and morale-signaling weight. | `[skull] [ward] [morale] [symbolic]` |
 
@@ -689,7 +689,7 @@ Ontology: iconic recipes are grouped by strategic function (assault, defense/aug
 | [Black City Matter Disruptor (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `1 st`, `€13,000` | Inv: `4 st`; Value: `>= €10,400` (`x4 + 80%`) | Risk: strategic surveillance and immediate seizure response. Constraint: keyed Black City calibration lore and hardened disruption coils. Output: long-range relic projector that destabilizes armored targets and entrenched fortifications. | `[void] [disruption] [relic] [long-range]` |
 | [Violent Cat Rifle Mk II (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `2 st`, `€649.95` | Inv: `4 st`; Value: `>= €519.96` (`80% only`) | Risk: licensing disputes and catlord seizure pressure. Constraint: cat-linked parts channels and caseless growth-ammo servicing. Output: prestige battle rifle delivering heavy, repeatable long-range stopping power. | `[catlord] [rifle] [ammo] [restricted]` |
 | [Monkey Wingblade (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `1 st`, `€200` | Inv: `2 st`; Value: `>= €160` (`80% only`) | Risk: contraband penalties and anti-cat retaliation. Constraint: spirit-shipmetal edge tuned for brief lift effects. Output: covert melee relic blade with short anti-gravity mobility spikes. | `[illegal] [blade] [levitation] [catlord]` |
-| [Fairy's Death (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `5 sp`, `€350` | Inv: `10 sp`; Value: `>= €280` (`80% only`) | Risk: political backlash and rapid enforcement crackdowns. Constraint: protected brittle glass edge and covert handling. Output: concealable precision knife specialized for targeted anti-faerie strikes. | `[illegal] [glass] [anti-fae] [concealed]` |
+| [Fairy’s Death (OGA)](../Our_Golden_Age/Our_Golden_Age.md#page_0111) | `5 sp`, `€350` | Inv: `10 sp`; Value: `>= €280` (`80% only`) | Risk: political backlash and rapid enforcement crackdowns. Constraint: protected brittle glass edge and covert handling. Output: concealable precision knife specialized for targeted anti-faerie strikes. | `[illegal] [glass] [anti-fae] [concealed]` |
 | [Inquisition Squirtgun (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `5 sp`, `€300` | Inv: `10 sp`; Value: `>= €240` (`80% only`) | Risk: judicial escalation after bio-delivery misuse. Constraint: sterile pressure rig and controlled injector cartridges. Output: short-range injector weapon for toxins, serums, or ritual compounds. | `[injector] [toxin] [inquisition] [restricted]` |
 | [Vome Slagger (UVG)](../Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0192) | `2 st`, `€1,500` | Inv: `4 st`; Value: `>= €1,200` (`80% only`) | Risk: collateral frag kills in confined spaces. Constraint: volatile chamber tolerances and safe reload handling. Output: medium-range frag projector that converts kills into secondary explosive pressure. | `[frag] [volatile] [vome] [ranged]` |
 | [Gate Daemon Actuator (VLG)](../Vastlands_Guidebook/Vastlands_Guidebook.md#page_0073) | `3 st`, `€4,500` | Inv: `12 st`; Value: `>= €3,600` (`x4 + 80%`) | Risk: gravity-shear failure can bisect crews. Constraint: exact spin-up order and ritual containment checks. Output: heavy relic shear weapon with localized gravity reorientation capability. | `[gravity] [gate-tech] [void] [relic]` |
@@ -742,7 +742,7 @@ Unlike Misfortunes, the Area takes a -1 Level modifier every time you roll a Haz
 
 ### Area Defeat & Depatterning
 
-If the Area's effective Level would be reduced below 0, make a 2d6 Defeat roll instead. Modify the Defeat roll based on the current narrative or tags.
+If the Area’s effective Level would be reduced below 0, make a 2d6 Defeat roll instead. Modify the Defeat roll based on the current narrative or tags.
 
 **Area Defeat** (2d6 + Mods)
 
@@ -769,5 +769,5 @@ Each **week** the Area triggers a **Depatterning Hazard**. Roll on the Area **Ha
 - **If the Hazard result is 6 (astral beacon),** it always attracts a **Void-touched** entity; treat its Level as Area Level 3+2d6 (minimum 5).
 
 **Void Scar:** After the **third** Depatterning Hazard in the same Area (total, ever), the Area becomes a **Void Scar**.
-- The Area is now a **dead zone** - landscapes washed of color with ghostly time echos or blinding mist past arm's length. Travel through it costs **+1 Week** (detours, containment, slow routes) unless you have a local **Secret**, and forces a Wear and Tear save each week.
+- The Area is now a **dead zone** - landscapes washed of color with ghostly time echos or blinding mist past arm’s length. Travel through it costs **+1 Week** (detours, containment, slow routes) unless you have a local **Secret**, and forces a Wear and Tear save each week.
 - Salvage here is **void-cursed**: any Salvage attempt automatically causes [void]-tagged Burdens for all characters. Some still attempt to pull secrets from the Void.

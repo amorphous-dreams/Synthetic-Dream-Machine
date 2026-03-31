@@ -81,7 +81,7 @@ Magic Mouth: A spell which resembles ventriliquism in that the sound issues from
 a chosen object, but there are differences. A mouth appears, or the mouth of the object 
 moves in accordance with what is being said. The Magic Mouth can be ordered to speak 
 upon certain conditions, i.e. if anyone comes within 10 of it, if a neutral person comes 
-within 10’, if Flubbit the Wizard comes within 10', and so on. The spell lasts until the 
+within 10', if Flubbit the Wizard comes within 10', and so on. The spell lasts until the 
 message is given. The message cannot exceed twenty-five words.
 ```
 

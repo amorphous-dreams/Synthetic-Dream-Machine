@@ -39,7 +39,7 @@ For each looted cache or major hoard, record:
 
 1. Normalize economy and coin values (`1 cash (€) = 1 silver`; if converting OSR material).  
 2. Generate a lot with the random loot table or full hoards with the hoard composition procedure.  
-3. Record each lot's treasure family (`coins`, `gems`, `trade goods`, `relics`, `intel`, etc.) and other tags. If the lot yields a concrete strange object, hand off to Chapter 05 for object classification, family resolution, and use handling.  
+3. Record each lot’s treasure family (`coins`, `gems`, `trade goods`, `relics`, `intel`, etc.) and other tags. If the lot yields a concrete strange object, hand off to Chapter 05 for object classification, family resolution, and use handling.  
 4. Apply bulk and carry pressure with the transport procedure, then liquidate with the channel procedure and record `Realized Value`.
 
 ## Use This Chapter When
@@ -349,7 +349,7 @@ Apply in this order:
 Resolve overload by carrier type:
 
 1. **On-foot characters (`st` scale):** compare load to item slots (`7 + STR`). Overflow becomes burdens (`1 st` overflow = `1 burden`; each burden is `-1` to all rolls). If pushed while overloaded (forced haul, chase, hard travel), call an attrition save; on failure apply END/AUR loss or Wear and Tear. Overloaded carriers count as `slow` for weekly day tallies.  
-2. **Pack animals and vehicles (`sk` scale):** compare cargo to ride capacity. If overloaded, make a riding/driving overload roll when stressed (or once per week) and apply the VLG outcome (accident/spill, delay, fracture -> permanent slow, exhaustion, or breakdown). Use the ride's speed and supply profile for weekly travel.
+2. **Pack animals and vehicles (`sk` scale):** compare cargo to ride capacity. If overloaded, make a riding/driving overload roll when stressed (or once per week) and apply the VLG outcome (accident/spill, delay, fracture -> permanent slow, exhaustion, or breakdown). Use the ride’s speed and supply profile for weekly travel.
 
 Speed guidance:
 - Overloaded human baseline shifts `normal -> slow` (apply one `[-]` in chases/races, and treat as `slow` for weekly day tallies).

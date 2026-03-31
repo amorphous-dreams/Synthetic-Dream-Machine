@@ -166,7 +166,7 @@ This is the execution backlog for the first downstream phase after the staging-c
 ### Pass 1: Lock, Readiness, And Tracker Normalization
 
 1. Update all stale confidence or audit notes and decide and implement locks across the active `_todo` governance docs before any family import batch begins.
-2. Synchronize this crosswalk's confidence section to the 2026-03-29 audit report and treat that report as the current measured baseline.
+2. Synchronize this crosswalk’s confidence section to the 2026-03-29 audit report and treat that report as the current measured baseline.
 3. Record the current sequencing locks explicitly:
    - staged spell corpus frozen as source truth,
    - Chapter 06 design decisions locked,
@@ -202,7 +202,7 @@ This is the execution backlog for the first downstream phase after the staging-c
    - `Ch06 Import`: `✓` when a Chapter 06 card exists, `—` when no Chapter 06 card is planned.
    - `osr: imported`: `-` not started, `in-progress` active work, `yes` imported, `[needs-review]` imported but blocked on witness-audit or formatting/rendering check.
 16. Limit blocker notes to real execution blockers only: missing Chapter 06 card, malformed staged witness extraction, missing expected witness lanes, or card-rendering/import failure.
-17. Bulk runs may resync all in-scope spell rows and the full review queue. Targeted runs should update only the selected card's row state and any review-queue entry tied to that one spell.
+17. Bulk runs may resync all in-scope spell rows and the full review queue. Targeted runs should update only the selected card’s row state and any review-queue entry tied to that one spell.
 18. Work in existing Chapter 06 family order so import and review follow manuscript structure rather than source-book order.
 
 ### Manuscript Import Pass
@@ -316,16 +316,16 @@ Validated candidates from a broader compare pass. These are promising enough to 
 | Teleportation / portal family | Linked Portals | medium | Two linked astral hoops move creatures and objects through connected space rather than instant self-relocation. | Better treated as a portal/travel family cousin than a direct `Teleport` replacement. |
 | Telekinesis / mage-hand family | Objective Telekinesis | medium-high | Creates an ectoplasmic hand that manipulates and crushes nearby objects. | Good precedent for low-tier force-manipulation powers. |
 | Speak With Dead family | Speak With Husk | high | Corpse answers three questions; overcharge allows fuller conversation. | Strong candidate for eventual row-level variant handling. |
-| Detect Evil / Know Alignment family | Sense Allegiance | medium-high | Reads a creature's ethics directly and can stun evil targets on contact. | Strong precedent for allegiance-reading and anti-evil detection lanes. |
+| Detect Evil / Know Alignment family | Sense Allegiance | medium-high | Reads a creature’s ethics directly and can stun evil targets on contact. | Strong precedent for allegiance-reading and anti-evil detection lanes. |
 | Invisibility / concealment family | Ecosphere Veil | medium-high | Makes creatures disregard the target; overcharge reaches effective invisibility and trace suppression. | Strong SDM-native concealment precedent, though it is built on disregard rather than simple optical hiding. |
 | Polymorph Self / shapechange family | Skinshift | medium-high | Full body transformation into familiar beast forms with escalating size options. | Stronger and broader than `Alter Self`; likely useful when the transformation pass deepens. |
-| Charm Person / Mass Charm family | Hero's Goldenmouth | medium | Crowd-facing charm through rhetoric and trust rather than direct domination. | Better treated as a social-compulsion cousin than a clean exact spell rename. |
+| Charm Person / Mass Charm family | Hero’s Goldenmouth | medium | Crowd-facing charm through rhetoric and trust rather than direct domination. | Better treated as a social-compulsion cousin than a clean exact spell rename. |
 | Obscuring mist / fog / concealment family | Yellow Cloud | medium | A 9m cube of sight-blocking dust plus an overcharged dust wall. | Good concealment / battlefield-obscuration precedent. |
 | Detect sentience / aura-reading / ESP family | Yellow Foresight | medium | Scans a wide area for the number and general mood of sentients; overcharge nudges attitude. | Good precedent for mood-reading and population-sense divinations. |
-| Regeneration / restoration family | Rehoryan's Progressive Restoration | medium-high | Rapid life recovery plus staged bodily repair and regrowth. | Strong precedent for higher-tier restoration/regeneration effects distinct from ordinary cure spells. |
+| Regeneration / restoration family | Rehoryan’s Progressive Restoration | medium-high | Rapid life recovery plus staged bodily repair and regrowth. | Strong precedent for higher-tier restoration/regeneration effects distinct from ordinary cure spells. |
 | Cure disease / poison purge / organ repair family | Real-Time Rebuild | high | Explicit power settings flush toxins or afflictions, restore organs, regrow limbs, or rebuild bodies. | One of the strongest SDM precedents for bodily repair, poison purge, and major restoration notes. |
 | Raise Dead / soul-return family | Recall Soul | medium-high | Calls back a soul as an ectoplasmic entity that can be captured or redirected into further procedures. | Useful ritual cousin when resurrection conversion needs explicit soul-handling rather than simple revival. |
-| Haste / acceleration family | Nunka's Biophysical Overdrive | medium-high | Drives the target into short-term overperformance followed by exhaustion burdens. | Strong speed-boost precedent with explicitly SDM costs and aftermath. |
+| Haste / acceleration family | Nunka’s Biophysical Overdrive | medium-high | Drives the target into short-term overperformance followed by exhaustion burdens. | Strong speed-boost precedent with explicitly SDM costs and aftermath. |
 | Fireball storage-delivery family | Gem Bomb | medium | Encodes an explosive forcefield into a gem, with overcharge exploding like a Fireball. | Good item-interface cousin for fireburst delivery and storage notes. |
 
 ## Active Phase Scope
@@ -405,7 +405,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Locate Object | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Remove Curse | C3, MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Resist Fire | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Silence 15' Radius | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Silence 15’ Radius | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Snake Charm | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Speak with Animals | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Speak with the Dead | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -432,14 +432,14 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Enlargement | MU1 | Holmes | Holmes -> hb-enlargement | spell | ✓ | - |
 | Fly | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Invisibility | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Invisibility 10' Radius | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
+| Invisibility 10’ Radius | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Knock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Levitate | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Lightning Bolt | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Locate Object | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Mirror Image | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Phantasmal Force | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Protection from Evil 10' Radius | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Protection from Evil 10’ Radius | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Protection from Normal Missiles | MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Water Breathing | Dr3, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Druidic and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Web | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -496,7 +496,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Human Control |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
 | Plant Control |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
 | Protection from Elementals |  | Expert, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
-| Protection +1, 5' radius |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
+| Protection +1, 5’ radius |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
 | Protection from Magic |  | Expert, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Protection Scrolls; RC -> Scrolls | item-effect | — | - |
 | Regeneration |  | Expert | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings | item-effect | — | - |
 | Spell Storing |  | Expert, Companion, RC | Expert -> Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text -> Rings; Companion -> Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items -> Rings; RC -> Chapter 16 Item Description Catalog -> Rings | item-effect | — | - |
@@ -600,7 +600,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Anti-Animal Shell | Dr6 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Anti-Plant Shell | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Call Lightning | Dr3 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
-| Control Temperature 10' Radius | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
+| Control Temperature 10’ Radius | Dr4 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Control Winds | Dr5 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Creeping Doom | Dr7 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |
 | Faerie Fire | Dr1 | Companion, Master, RC | Companion -> Druid Spell Material; Master -> Druid Spell Material; RC -> Druidic Spells List and Spell Descriptions | spell | ✓ | - |

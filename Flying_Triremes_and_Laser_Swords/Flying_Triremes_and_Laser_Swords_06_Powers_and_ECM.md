@@ -39,7 +39,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Continual Light](#continual-light)
   - [Protection from Normal Missiles](#protection-from-normal-missiles)
   - [Protection from Evil](#protection-from-evil)
-  - [Protection from Evil 10' Radius](#protection-from-evil-10-radius)
+  - [Protection from Evil 10’ Radius](#protection-from-evil-10-radius)
   - [Fireball](#fireball)
   - [Lightning Bolt](#lightning-bolt)
   - [Haste](#haste)
@@ -48,13 +48,13 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Meteor Swarm](#meteor-swarm)
   - [Wall of Fire](#wall-of-fire)
   - [Striking](#striking)
-  - [Silence 15' Radius](#silence-15-radius)
+  - [Silence 15’ Radius](#silence-15-radius)
   - [Death Spell](#death-spell)
   - [Insect Plague](#insect-plague)
   - [Ice Storm/Wall](#ice-stormwall)
   - [Earthquake](#earthquake)
   - [Call Lightning](#call-lightning)
-  - [Control Temperature 10' Radius](#control-temperature-10-radius)
+  - [Control Temperature 10’ Radius](#control-temperature-10-radius)
   - [Control Winds](#control-winds)
   - [Creeping Doom](#creeping-doom)
   - [Heat Metal](#heat-metal)
@@ -145,7 +145,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
 - [Veils and Influence](#veils-and-influence)
   - [Invisibility](#invisibility)
   - [Projected Image](#projected-image)
-  - [Invisibility 10' Radius](#invisibility-10-radius)
+  - [Invisibility 10’ Radius](#invisibility-10-radius)
   - [Mirror Image](#mirror-image)
   - [Phantasmal Force](#phantasmal-force)
   - [Ventriloquism](#ventriloquism)
@@ -270,7 +270,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
 
 ### Activating Powers
 
-Powers impose otherworldly wrongness on the mundane. There is a price to pay for such power and the alien fires of the incomprehensible may consume one's body, spirit, and memories.
+Powers impose otherworldly wrongness on the mundane. There is a price to pay for such power and the alien fires of the incomprehensible may consume one’s body, spirit, and memories.
  
 The price of a power is **life equal to its power level**.  
 
@@ -288,7 +288,7 @@ However, a character who knows what they’re doing is less likely to blow thems
 
 ### Power Attributes
 
- Power Level (P): The magnitude of a power, from 0 to 99\. Determines both its activation price and how potentially dangerous it is to the user. If no power level is noted, the power's level is 1\.  
+ Power Level (P): The magnitude of a power, from 0 to 99\. Determines both its activation price and how potentially dangerous it is to the user. If no power level is noted, the power’s level is 1\.  
  Range (R): The distance at which the user can activate the power.  
  Target (T): The thing, area, concept, or other in-game object affected by the power.  
  Duration (D): How long the effects of the power last, from instantaneous to temporary to permanent.  
@@ -301,7 +301,7 @@ Powers may be bought, salvaged, or found with one or more attributes **locked**,
 **What can be locked:** Any attribute — P, R, T, D, Overcharge riders, Power text, or the Name/Subtitle pair. Mark each locked attribute. Locks are independent: each locked attribute must be unlocked or repaired on its own.
 
 **Locked Powers:**
-- If **any non-Overcharge attribute** is locked — including the power's text or Name/Subtitle — the power **cannot be activated** at all. Mark the Power as Locked.
+- If **any non-Overcharge attribute** is locked — including the power’s text or Name/Subtitle — the power **cannot be activated** at all. Mark the Power as Locked.
 - Locked **Overcharge riders** only block that specific overcharge step. The base power remains usable.
 
 **Unlock vectors:**
@@ -313,7 +313,7 @@ Powers may be bought, salvaged, or found with one or more attributes **locked**,
 ### Power Tags
 
 * \[**anchored**\]: A physical anchor keeps the power active and controlled. Destroying or losing the anchor deactivates the power (or worse).  
-* \[**attack**\]: Use this power as an attack against a target's defense score. The defender does not save or make other rolls.  
+* \[**attack**\]: Use this power as an attack against a target’s defense score. The defender does not save or make other rolls.  
 * \[**control**\]: this power requires an action each turn to actively control.  
 * \[**dangerous**\]: always make a Dangerous Magic roll when using this power.  
 * \[**focus**\]: You must focus your mind on shifting, un-earthly equations to keep the power active. You can move, speak slowly, or carry out simple tasks while staying focused. If you are distracted by another task or external events, the power deactivates (or worse).  
@@ -322,7 +322,7 @@ Powers may be bought, salvaged, or found with one or more attributes **locked**,
 * \[**item**\]: The power locks your vital essence (life or other price paid) within an object. This is permanent, unless the item is destroyed or ritually powered down. Once an item is disabled, you can recover your locked life or ability scores.  
 * \[**guided**\]: the attack roll has Advantage as long as no targets have no Cover.  
 * \[**ward**\]: grants a bonus to Mental Defenses and Saves.  
-* \[**ecm**\]: Marks a power as targeting the noospheric substrate — active powers, activations, and etheric sensing — rather than physical targets. Combine with mode tags: `[scan]` `[veil]` `[jam]` `[spoof]` `[negate]` `[suppress]` `[redirect]` `[capture]` `[absorb]` `[hijack]`. Counterforce strength uses the caster's **Level**, not Power Level.
+* \[**ecm**\]: Marks a power as targeting the noospheric substrate — active powers, activations, and etheric sensing — rather than physical targets. Combine with mode tags: `[scan]` `[veil]` `[jam]` `[spoof]` `[negate]` `[suppress]` `[redirect]` `[capture]` `[absorb]` `[hijack]`. Counterforce strength uses the caster’s **Level**, not Power Level.
 
 ### Powers by Gameplay Scale
 
@@ -863,9 +863,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Protection from Evil 10' Radius
+## Protection from Evil 10’ Radius
 
-> **Protection from Evil 10' Radius**
+> **Protection from Evil 10’ Radius**
 >
 > _FTLS power invocation_
 >
@@ -888,10 +888,10 @@ tags:
 
 meta:
 > - source:
->   - becmi:Expert Set; spell: Protection from Evil 10' Radius
->   - becmi:Rules Cyclopedia; spell: Protection from Evil 10' Radius
+>   - becmi:Expert Set; spell: Protection from Evil 10’ Radius
+>   - becmi:Rules Cyclopedia; spell: Protection from Evil 10’ Radius
 > - usage:
->   - scope: power; id: Protection from Evil 10' Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Protection from Evil 10’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 (pending verbatim extraction)
@@ -1035,7 +1035,7 @@ meta:
 > - source:
 >   - becmi:Expert Set; spell: Haste
 >   - becmi:Rules Cyclopedia; spell: Haste
->   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Nunka's Biophysical Overdrive
+>   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Nunka’s Biophysical Overdrive
 > - usage:
 >   - scope: power; id: Haste; note: FTLS Chapter 06 alpha power entry.
 
@@ -1152,11 +1152,11 @@ osr:
 >
 > You launch a blazing volley of meteors, each one a streaking mass of concentrated force that impacts and detonates like a fireball. Choose 4 or 8 meteors at activation; only one meteor may be directed at any single target.
 >
-> **4-meteor volley:** Each strikes for 8d6 impact damage, then detonates in a 20' radius burst for an additional 8d6 fire damage. Creatures in the burst zone may Save vs. Spells for half damage on the detonation.
+> **4-meteor volley:** Each strikes for 8d6 impact damage, then detonates in a 20’ radius burst for an additional 8d6 fire damage. Creatures in the burst zone may Save vs. Spells for half damage on the detonation.
 >
 > **8-meteor volley:** Each strikes for 4d6 impact damage, then detonates for 4d6 fire damage. Same save applies to the burst damage.
 >
-> Impact damage hits the primary target with no save. Burst damage affects all creatures within 20' of impact, including the primary target.
+> Impact damage hits the primary target with no save. Burst damage affects all creatures within 20’ of impact, including the primary target.
 >
 > _Overcharge:_ x2 — all meteor impact and burst damage dice gain +2 per die; x4 — select up to 4 targets to receive two meteors each, doubling both impact and burst for those targets.
 
@@ -1199,7 +1199,7 @@ osr:
 > **P:** 8 **R:** near (~18 m / 60 ft)  
 > **T:** a wall of fire up to 1200 sq ft (any shape) **D:** sustained (concentration, no movement)
 >
-> You raise a thin vertical curtain of fire. Shape and dimensions are your call, up to 1200 square feet total (e.g., 10' × 120' or 20' × 60'). The wall is opaque — sight through it is blocked.
+> You raise a thin vertical curtain of fire. Shape and dimensions are your call, up to 1200 square feet total (e.g., 10’ × 120’ or 20’ × 60’). The wall is opaque — sight through it is blocked.
 >
 > Creatures of fewer than 4 HD cannot pass through. Any creature with 4+ HD that forces through takes 1d6 damage. Undead and cold-using creatures take double damage when breaking through.
 >
@@ -1280,9 +1280,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Silence 15' Radius
+## Silence 15’ Radius
 
-> **Silence 15' Radius**
+> **Silence 15’ Radius**
 >
 > _FTLS power invocation_
 >
@@ -1304,10 +1304,10 @@ tags:
 
 meta:
 > - source:
->   - becmi:Expert Set; spell: Silence 15' Radius
->   - becmi:Rules Cyclopedia; spell: Silence 15' Radius
+>   - becmi:Expert Set; spell: Silence 15’ Radius
+>   - becmi:Rules Cyclopedia; spell: Silence 15’ Radius
 > - usage:
->   - scope: power; id: Silence 15' Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Silence 15’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 (pending verbatim extraction)
@@ -1553,9 +1553,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Control Temperature 10' Radius
+## Control Temperature 10’ Radius
 
-> **Control Temperature 10' Radius**
+> **Control Temperature 10’ Radius**
 >
 > _FTLS power invocation_
 >
@@ -1579,11 +1579,11 @@ tags:
 
 meta:
 > - source:
->   - becmi:Companion Set; spell: Control Temperature 10' radius
->   - becmi:Master Set; spell: Control Temperature 10' radius
->   - becmi:Rules Cyclopedia; spell: Control Temperature 10' radius
+>   - becmi:Companion Set; spell: Control Temperature 10’ radius
+>   - becmi:Master Set; spell: Control Temperature 10’ radius
+>   - becmi:Rules Cyclopedia; spell: Control Temperature 10’ radius
 > - usage:
->   - scope: power; id: Control Temperature 10' Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Control Temperature 10’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 (pending verbatim extraction)
@@ -1884,9 +1884,9 @@ osr:
 > **P:** 12 **R:** near (~18 m / 60 ft)  
 > **T:** one creature or one nonmagical object segment **D:** instant
 >
-> You collapse the target's structural coherence to dust. A living target may Save vs. Death Ray to resist. On failure, the target is destroyed immediately. Against nonmagical matter, the effect can erase substantial mass in one cast (for example, a ship section or a 10-foot wall segment).
+> You collapse the target’s structural coherence to dust. A living target may Save vs. Death Ray to resist. On failure, the target is destroyed immediately. Against nonmagical matter, the effect can erase substantial mass in one cast (for example, a ship section or a 10-foot wall segment).
 >
-> Magical items and active spell effects are immune to this power's direct erasure.
+> Magical items and active spell effects are immune to this power’s direct erasure.
 >
 > _Overcharge:_ x2 — affect one additional adjacent valid target; x4 — targets that survive their save still take severe structural trauma at referee call.
 
@@ -1930,7 +1930,7 @@ osr:
 >
 > You speak a single word of blinding power. The target is instantly and completely blinded — no saving throw. Targets with more than 80 hp are entirely unaffected.
 >
-> While blind, the target suffers –4 to all saving throws and a +4 penalty to its Armor Class (it is easier to hit by four). A cleric's cure blindness or cureall cannot remove this blindness unless the cleric's level equals or exceeds yours.
+> While blind, the target suffers –4 to all saving throws and a +4 penalty to its Armor Class (it is easier to hit by four). A cleric’s cure blindness or cureall cannot remove this blindness unless the cleric’s level equals or exceeds yours.
 >
 > _Overcharge:_ x2 — increase the hp threshold to targets with 120 hp or fewer; x4 — the blinded target also cannot speak or cast verbal-component spells for the first hour of the duration.
 
@@ -1976,7 +1976,7 @@ osr:
 >
 > A target with **60 hp or fewer** is killed instantly. A target with **61 to 100 hp** is stunned for 4 turns — it cannot act, attack, or speak. A target with **more than 100 hp** is entirely unaffected.
 >
-> There is no save, no resistance, and no partial effect for living targets. The word either reaches the target or it doesn't.
+> There is no save, no resistance, and no partial effect for living targets. The word either reaches the target or it doesn’t.
 >
 > _Overcharge:_ x2 — the kill threshold rises to 80 hp and the stun threshold rises to 120 hp; x4 — if the target is stunned, it also loses all spell effects and prepared invocations for the duration of the stun.
 
@@ -2019,11 +2019,11 @@ osr:
 > **P:** 12 **R:** far (~70 m / 240 ft)
 > **T:** soil volumes in area **D:** 6 turns (~1 hour)
 >
-> You shift soil (not solid rock) horizontally into embankments and ridges, or vertically to excavate deep pits. Earth flow rate is up to 60' per turn while the effect runs.
+> You shift soil (not solid rock) horizontally into embankments and ridges, or vertically to excavate deep pits. Earth flow rate is up to 60’ per turn while the effect runs.
 >
 > When duration ends, displaced soil remains where placed. This power is ideal for fast fortification, siege shaping, route denial, and emergency excavation.
 >
-> _Overcharge:_ x2 - increase shift speed to 90' per turn or include one additional adjacent soil mass. x4 - impose unstable-ground hazard in the altered area for one scene.
+> _Overcharge:_ x2 - increase shift speed to 90’ per turn or include one additional adjacent soil mass. x4 - impose unstable-ground hazard in the altered area for one scene.
 
 tags:
 >   [power]
@@ -2056,7 +2056,7 @@ osr:
 > **P:** 10 **R:** far (~36 m / 120 ft)
 > **T:** one creature or object up to mass limit **D:** sustained, up to 6 rounds
 >
-> You seize a target with force-vector control and move it by concentration. Mass limit is 200 cn per user Level, and controlled movement is up to 20' per round.
+> You seize a target with force-vector control and move it by concentration. Mass limit is 200 cn per user Level, and controlled movement is up to 20’ per round.
 >
 > Unwilling creatures may make an Aura save to resist. If the target is held by another creature, the holder may save at penalty to keep possession.
 >
@@ -2092,11 +2092,11 @@ osr:
 > _FTLS power invocation_
 >
 > **P:** 14 **R:** far (~70 m / 240 ft)
-> **T:** delayed blast node; 20' radius burst on detonation **D:** delay 0 to 60 rounds, then instant
+> **T:** delayed blast node; 20’ radius burst on detonation **D:** delay 0 to 60 rounds, then instant
 >
 > You create a volatile fire-seed that can be timed as a battlefield charge. The node appears as a gem-like object at target location and detonates after the declared delay.
 >
-> Detonation mirrors Fire Ball scaling: 1d6 fire per user Level in a 20' radius, Aura save for half.
+> Detonation mirrors Fire Ball scaling: 1d6 fire per user Level in a 20’ radius, Aura save for half.
 >
 > The node can be carried physically but cannot be moved by teleport or telekinesis effects. Once set, timer changes are impossible except by wish-grade intervention.
 >
@@ -2135,7 +2135,7 @@ osr:
 > **P:** 14 **R:** far (~36 m / 120 ft)
 > **T:** one creature by hit-point threshold **D:** 2d6 turns or 1d6 turns
 >
-> You speak a noospheric command-tone that hard-locks a target's action systems without a save.
+> You speak a noospheric command-tone that hard-locks a target’s action systems without a save.
 >
 > Targets at lower hit-point bands are stunned longer; high-resilience targets above threshold ignore the effect.
 >
@@ -2169,13 +2169,13 @@ osr:
 > _FTLS power invocation_
 >
 > **P:** 14 **R:** far (~27 m / 90 ft)
-> **T:** 30' x 30' x 30' volume **D:** 1/5 round (2 seconds), then normal gravity resumes
+> **T:** 30’ x 30’ x 30’ volume **D:** 1/5 round (2 seconds), then normal gravity resumes
 >
 > You invert local gravity in a defined cube. Creatures and objects violently fall upward, strike overhead surfaces, then fall back when gravity snaps to normal.
 >
 > No save applies. Victims take falling damage on upward and downward impacts.
 >
-> _Overcharge:_ x2 - increase affected cube edge to 40'. x4 - leave one-round balance disruption in survivors after impact cycle.
+> _Overcharge:_ x2 - increase affected cube edge to 40’. x4 - leave one-round balance disruption in survivors after impact cycle.
 
 tags:
 >   [power]
@@ -2266,7 +2266,7 @@ meta:
 >   - becmi:Basic Rules; spell: Cure Light Wounds
 >   - becmi:Expert Set; spell: Cure Light Wounds
 >   - becmi:Rules Cyclopedia; spell: Cure Light Wounds
->   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Rehoryan's Progressive Restoration
+>   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Rehoryan’s Progressive Restoration
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Restorative Slumber
 > - usage:
 >   - scope: power; id: Cure Light Wounds; note: FTLS Chapter 06 alpha power entry.
@@ -2685,7 +2685,7 @@ osr:
 > **P:** 2 **R:** near (~3 m / 10 ft)  
 > **T:** one ration, 6 waterskins, food for 12 people, or one muddy water source **D:** permanent
 >
-> You strip rot, poison, and spoilage from provisions, restoring them to safe use. One activation can purify a ration, several waterskins, a communal meal's worth of ordinary food, or settle mud and filth out of a small pool into clear drinkable water.
+> You strip rot, poison, and spoilage from provisions, restoring them to safe use. One activation can purify a ration, several waterskins, a communal meal’s worth of ordinary food, or settle mud and filth out of a small pool into clear drinkable water.
 >
 > The power does not affect living creatures directly.
 >
@@ -3444,9 +3444,9 @@ osr:
 >
 > You read ethical-vector resonance and reveal whether a target trends Lawful, Neutral, or Chaotic. This also works on enchanted objects or consecrated/profaned spaces where alignment imprinting is present.
 >
-> _Reversible — Confuse Alignment:_ By touch, you scramble one target's alignment signature for 1 turn per user Level. During this time, alignment-reading effects return a consistent but false result. No save.
+> _Reversible — Confuse Alignment:_ By touch, you scramble one target’s alignment signature for 1 turn per user Level. During this time, alignment-reading effects return a consistent but false result. No save.
 >
-> _Overcharge:_ x2 — also detect whether the reading is naturally anchored or externally imposed; x4 — reveal one recent shift in the target's alignment trend if the referee judges evidence exists.
+> _Overcharge:_ x2 — also detect whether the reading is naturally anchored or externally imposed; x4 — reveal one recent shift in the target’s alignment trend if the referee judges evidence exists.
 
 tags:
 >   [power]
@@ -3939,7 +3939,7 @@ osr:
 >
 > You handle a magical item — holding, wearing, or placing it as required — and attempt to read its enchantment. The identification chance is 15% plus 5% per user Level.
 >
-> Results are deliberately vague: a weapon's bonus registers as "many" or "few" rather than a precise number; charge counts read within ±25% of the true total; type and purpose give a rough impression rather than a name. Non-magical items are identified as such on a success.
+> Results are deliberately vague: a weapon’s bonus registers as "many" or "few" rather than a precise number; charge counts read within ±25% of the true total; type and purpose give a rough impression rather than a name. Non-magical items are identified as such on a success.
 >
 > **Caution:** Any consequences of handling the item (curses, booby-traps, activation conditions) fall on the user at the moment of contact. Normal saving throws apply.
 >
@@ -3980,7 +3980,7 @@ osr:
 > **P:** 8 **R:** self (plants within ~9 m / 30 ft)  
 > **T:** all plants and plant-like creatures within 30 ft **D:** 3 turns
 >
-> You open a channel of mutual intelligibility with plant life. For the duration you may speak with and understand any plant within range as if it were a willing conversationalist. Any reasonable favor within a plant's power — open a path through dense growth, describe who passed, lean aside — will be granted.
+> You open a channel of mutual intelligibility with plant life. For the duration you may speak with and understand any plant within range as if it were a willing conversationalist. Any reasonable favor within a plant’s power — open a path through dense growth, describe who passed, lean aside — will be granted.
 >
 > This power also reaches plant-like monsters such as treants, allowing dialogue where combat might otherwise be the only option.
 >
@@ -4107,7 +4107,7 @@ Use these for shape-changing, transmutation, size modification, and material alt
 > **P:** 8 **R:** self  
 > **T:** self **D:** 6 turns + 1 turn per user Level
 >
-> You reconfigure your body into the physical form of another living creature whose Level does not exceed your own. You keep your own Life, saves, attack competence, and core durability, but gain the new form's physical movement and bodily capabilities. You do not gain supernatural immunities, breath weapons, spellcasting, or other special monster-side powers.
+> You reconfigure your body into the physical form of another living creature whose Level does not exceed your own. You keep your own Life, saves, attack competence, and core durability, but gain the new form’s physical movement and bodily capabilities. You do not gain supernatural immunities, breath weapons, spellcasting, or other special monster-side powers.
 >
 > While transformed, you cannot cast powers that require speech, gestures, or stable humanlike handling unless the referee judges the new form can actually perform them.
 >
@@ -4155,7 +4155,7 @@ osr:
 > **P:** 8 **R:** near (~18 m / 60 ft)  
 > **T:** one living creature **D:** permanent until dispelled
 >
-> You rewrite the physical and behavioral template of a living target, reshaping it into another creature form. Unlike self-transformation, the subject gains the complete profile of the new form — all special abilities, immunities, and innate behavioral tendencies. The new form's Hit Dice cannot exceed twice the target's original. The new form cannot be a specific named individual.
+> You rewrite the physical and behavioral template of a living target, reshaping it into another creature form. Unlike self-transformation, the subject gains the complete profile of the new form — all special abilities, immunities, and innate behavioral tendencies. The new form’s Hit Dice cannot exceed twice the target’s original. The new form cannot be a specific named individual.
 >
 > The target makes a Save vs. Spells; on failure, the transformation is permanent until dispelled. The behavioral shift is real: a target reshaped into a predator begins to think and act like one, with personality drift deepening over time.
 >
@@ -4201,7 +4201,7 @@ osr:
 > **P:** 6 **R:** far (~36 m / 120 ft)  
 > **T:** one normal or giant animal **D:** 12 turns (~2 hours)
 >
-> You amplify one beast's physical scale and muscle output, doubling its size and drastically increasing carrying capacity and striking power. The target deals double normal damage, carries roughly double its usual load, and otherwise remains the same creature mentally and behaviorally.
+> You amplify one beast’s physical scale and muscle output, doubling its size and drastically increasing carrying capacity and striking power. The target deals double normal damage, carries roughly double its usual load, and otherwise remains the same creature mentally and behaviorally.
 >
 > The power does not improve Armor, hit points, or intelligent/fantastic creature profiles.
 >
@@ -4421,7 +4421,7 @@ osr:
 > **P:** 16 **R:** very far (~72 m / 240 ft)  
 > **T:** one creature or object **D:** see duration by kingdom (below)
 >
-> You reshape the fundamental form of a creature or object at range. If the target is structural (a section of wall, a ship panel), the effect reaches up to a 10' × 10' × 10' volume. Against unwilling living targets, allow a Save vs. Spells at –4; if the save succeeds, the form holds.
+> You reshape the fundamental form of a creature or object at range. If the target is structural (a section of wall, a ship panel), the effect reaches up to a 10’ × 10’ × 10’ volume. Against unwilling living targets, allow a Save vs. Spells at –4; if the save succeeds, the form holds.
 >
 > Duration depends on how far the change crosses the three kingdoms (animal, vegetable, mineral):
 >
@@ -4429,9 +4429,9 @@ osr:
 > - **Adjacent kingdoms** (animal ↔ vegetable, vegetable ↔ mineral): 1 hour per user Level
 > - **Opposite kingdoms** (animal ↔ mineral): 1 turn per user Level
 >
-> This power cannot affect a creature whose Hit Dice exceed twice the user's Level. Polymorphed creatures retain their hp and age; they do not automatically become friendly.
+> This power cannot affect a creature whose Hit Dice exceed twice the user’s Level. Polymorphed creatures retain their hp and age; they do not automatically become friendly.
 >
-> _Overcharge:_ x2 — extend the volume limit to a 20' cube for structural targets; x4 — the target's Save penalty increases to –8 and a permanent-category change also strips the target's innate magical abilities for the duration.
+> _Overcharge:_ x2 — extend the volume limit to a 20’ cube for structural targets; x4 — the target’s Save penalty increases to –8 and a permanent-category change also strips the target’s innate magical abilities for the duration.
 
 tags:
 >   [power]
@@ -4708,7 +4708,7 @@ Use these for mental influence, charm effects, fear, suggestion, and emotional m
 > **P:** 2 **R:** far (~35 m / 120 ft)  
 > **T:** one living humanoid-scale target **D:** until broken or resisted free
 >
-> You impose a persuasive best-friend bond on a humanoid-scale target. The target makes an Aura save; on failure, it treats you as a trusted ally and will usually follow spoken guidance framed as friendly suggestion. Commands that sharply violate the target's habits, loyalties, or nature may be resisted, and no target can be compelled to kill itself.
+> You impose a persuasive best-friend bond on a humanoid-scale target. The target makes an Aura save; on failure, it treats you as a trusted ally and will usually follow spoken guidance framed as friendly suggestion. Commands that sharply violate the target’s habits, loyalties, or nature may be resisted, and no target can be compelled to kill itself.
 >
 > The charm breaks immediately if you directly attack the target. Referees should allow repeat saves on an Intelligence-based cadence measured in days, weeks, or months rather than rounds.
 >
@@ -4728,7 +4728,7 @@ meta:
 >   - becmi:Basic Rules; spell: Charm Person
 >   - becmi:Expert Set; spell: Charm Person
 >   - becmi:Rules Cyclopedia; spell: Charm Person
->   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Hero's Goldenmouth
+>   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Hero’s Goldenmouth
 > - usage:
 >   - scope: power; id: Charm Person; note: FTLS Chapter 06 alpha power entry.
 
@@ -4803,7 +4803,7 @@ osr:
 >
 > Coordinated formations degrade quickly while this field holds.
 >
-> _Overcharge:_ x2 - increase area to 30 ft / 9 m radius; x4 - failed saves also strip reactions until start of the target's next turn.
+> _Overcharge:_ x2 - increase area to 30 ft / 9 m radius; x4 - failed saves also strip reactions until start of the target’s next turn.
 
 tags:
 >   [power]
@@ -4887,9 +4887,9 @@ osr:
 >
 > You extend dominion over nonhuman minds. Any living creature except undead may be targeted — not just humanoids. Creatures of 3 HD or fewer are affected in groups; a single creature of 4+ HD may be targeted alone. Each target may resist with a Save vs. Spells.
 >
-> A charmed creature treats you as a trusted ally. It won't obey obviously self-destructive commands but interprets orders generously. The charm persists until dispelled or until the creature's natural resistance erodes it (periodic Save; referee determines frequency based on creature type and improbable orders).
+> A charmed creature treats you as a trusted ally. It won’t obey obviously self-destructive commands but interprets orders generously. The charm persists until dispelled or until the creature’s natural resistance erodes it (periodic Save; referee determines frequency based on creature type and improbable orders).
 >
-> _Overcharge:_ x2 — impose a -2 penalty on the target's Save; x4 — suspend further periodic Saves for the first 10 days while the deep-trust window holds.
+> _Overcharge:_ x2 — impose a -2 penalty on the target’s Save; x4 — suspend further periodic Saves for the first 10 days while the deep-trust window holds.
 >
 > See also: `Charm Person` in this chapter and `Hero's Goldenmouth` (Our Golden Age) for social-capture descendants.
 
@@ -4976,9 +4976,9 @@ osr:
 >
 > You broadcast a wide-band compulsion signal, laying a charm effect on every creature in range up to 30 HD total. Each affected creature must Save vs. Spells at –2 or fall under your charm. The spell cannot affect any single creature of 31+ HD or Levels.
 >
-> Each charm endures according to the victim's Intelligence as per the standard charm-person table. If you attack one charmed creature, only that creature's charm breaks automatically. Others may make a fresh Save when they witness the attack, but their charms are otherwise unaffected.
+> Each charm endures according to the victim’s Intelligence as per the standard charm-person table. If you attack one charmed creature, only that creature’s charm breaks automatically. Others may make a fresh Save when they witness the attack, but their charms are otherwise unaffected.
 >
-> Reverse form package: `Remove Charm` clears all charm effects in a 20' × 20' × 20' volume and suppresses charm-producing objects in that volume for 1 turn.
+> Reverse form package: `Remove Charm` clears all charm effects in a 20’ × 20’ × 20’ volume and suppresses charm-producing objects in that volume for 1 turn.
 >
 > _Overcharge:_ x2 — extend the total target cap to 50 HD; x4 — the saving throw penalty becomes –4 and charmed creatures also take –2 to any check that would let them reinterpret your commands.
 
@@ -5025,7 +5025,7 @@ osr:
 >
 > _Overcharge:_ x2 — extend to all creatures you can touch simultaneously (up to your Level in targets); x4 — suppress all fear-generating powers and effects within short range against the target for the duration.
 >
-> See also: the reverse form **Cause Fear** (R: 120', forces one creature to flee for 2 turns; Save vs. Spells negates).
+> See also: the reverse form **Cause Fear** (R: 120’, forces one creature to flee for 2 turns; Save vs. Spells negates).
 
 tags:
 >   [power]
@@ -5069,7 +5069,7 @@ osr:
 >
 > Charmed snakes do not become loyal servants. If attacked, they defend themselves, and when the effect ends they return to ordinary reaction behavior.
 >
-> _Overcharge:_ x2 — include one additional small snake cluster beyond the normal HD cap; x4 — while the charm holds, you may guide the snakes' movement within the local area as a simple procession.
+> _Overcharge:_ x2 — include one additional small snake cluster beyond the normal HD cap; x4 — while the charm holds, you may guide the snakes’ movement within the local area as a simple procession.
 
 tags:
 >   [power]
@@ -5323,9 +5323,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Invisibility 10' Radius
+## Invisibility 10’ Radius
 
-> **Invisibility 10' Radius**
+> **Invisibility 10’ Radius**
 >
 > _FTLS power invocation_
 >
@@ -5334,7 +5334,7 @@ osr:
 >
 > You anchor a mobile concealment bubble to yourself. Allied creatures in the field become invisible together as long as they remain within radius. Carried gear is also concealed; dropped items become visible.
 >
-> If any affected creature makes an offensive attack or launches an overtly hostile power, that creature's concealment breaks immediately.
+> If any affected creature makes an offensive attack or launches an overtly hostile power, that creature’s concealment breaks immediately.
 >
 > _Overcharge:_ x2 - expand radius to 15 ft / 4.5 m; x4 - affected creatures retain concealment for 1 round after briefly stepping outside the bubble.
 >
@@ -5350,11 +5350,11 @@ tags:
 
 meta:
 > - source:
->   - becmi:Expert Set; spell: Invisibility 10' radius
->   - becmi:Rules Cyclopedia; spell: Invisibility 10' radius
+>   - becmi:Expert Set; spell: Invisibility 10’ radius
+>   - becmi:Rules Cyclopedia; spell: Invisibility 10’ radius
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Yellow Cloud
 > - usage:
->   - scope: power; id: Invisibility 10' Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Invisibility 10’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 (pending verbatim extraction)
@@ -5560,7 +5560,7 @@ osr:
 >
 > Paralysis ends when the duration expires, when dispelled, or when the reverse form Free Monster is invoked.
 >
-> _Overcharge:_ x2 — extend duration to 12 turns + 1 per Level, or affect up to 6 targets in a group; x4 — apply a -4 penalty to Saves when targeting a single monster, completely seizing the creature's autonomous processes.
+> _Overcharge:_ x2 — extend duration to 12 turns + 1 per Level, or affect up to 6 targets in a group; x4 — apply a -4 penalty to Saves when targeting a single monster, completely seizing the creature’s autonomous processes.
 >
 > See also: `Hold Person` in this chapter for the humanoid-only baseline version.
 
@@ -5909,7 +5909,7 @@ osr:
 > _FTLS power invocation_
 >
 > **P:** 14 **R:** far (~70 m / 240 ft)
-> **T:** creatures or objects within 60' square area **D:** sustained by standard invisibility break condition
+> **T:** creatures or objects within 60’ square area **D:** sustained by standard invisibility break condition
 >
 > You apply invisibility across a broad group footprint. Each affected target becomes invisible with carried gear until attacking or casting, as per baseline invisibility doctrine.
 >
@@ -5990,12 +5990,12 @@ osr:
 
 > **Water Breathing**
 >
-> _Swamp's Gift_
+> _Swamp’s Gift_
 >
 > **P:** 6 **R:** touch  
 > **T:** self or one willing creature **D:** 1 day
 >
-> You tune the target's lungs and blood to dual-medium respiration. Until the effect ends, the target can breathe both water and air. In wetlands, marshes, and submerged terrain, movement penalties from waterlogged footing are ignored.
+> You tune the target’s lungs and blood to dual-medium respiration. Until the effect ends, the target can breathe both water and air. In wetlands, marshes, and submerged terrain, movement penalties from waterlogged footing are ignored.
 >
 >
 > _Overcharge:_ x2 — affect one additional willing adjacent target; x4 — all affected targets gain +2 Defense while submerged or in heavy wet cover.
@@ -6492,7 +6492,7 @@ osr:
 > **P:** 18 **R:** special  
 > **T:** one explicitly worded reality exception **D:** special
 >
-> You articulate a single high-tier exception to ordinary causality. The effect follows the exact wording used, not the caster's private intent.
+> You articulate a single high-tier exception to ordinary causality. The effect follows the exact wording used, not the caster’s private intent.
 >
 > In routine use, Wish may safely duplicate any arcane spell of 8th level or lower or any clerical or druidic spell of 6th level or lower, subject to referee assent. Broader uses remain possible, but greedy, malicious, or structurally unstable wording invites distortion, partial success, rebound, or flat refusal.
 >
@@ -6728,13 +6728,13 @@ osr:
 > **P:** 14 **R:** near (~3 m / 10 ft)
 > **T:** one wall, floor, ceiling, or ground section **D:** 7 uses or until dispelled
 >
-> You create an invisible personal passage through up to 10' of nonliving solid material. Only you can use the passage. Each one-way traversal consumes one use.
+> You create an invisible personal passage through up to 10’ of nonliving solid material. Only you can use the passage. Each one-way traversal consumes one use.
 >
 > The portal is undetectable except by detect-magic methods and is removed by dispel magic.
 >
 > Reverse form, Magic Lock, seals one portal-like opening beyond knock-class bypasses; only the caster can pass until uses are exhausted or dispelled.
 >
-> _Overcharge:_ x2 - increase passage depth to 15'. x4 - grant one keyed ally access for the remaining uses.
+> _Overcharge:_ x2 - increase passage depth to 15’. x4 - grant one keyed ally access for the remaining uses.
 
 tags:
 >   [power]
@@ -6766,7 +6766,7 @@ osr:
 > **P:** 14 **R:** touch
 > **T:** one creature or nonliving object up to 500 cn per user Level **D:** instantaneous
 >
-> You teleport a touched target using teleport-style destination risk rules. Nonliving objects are valid targets, including detached material volumes up to one 10' cube from larger structures.
+> You teleport a touched target using teleport-style destination risk rules. Nonliving objects are valid targets, including detached material volumes up to one 10’ cube from larger structures.
 >
 > If another creature holds the target object, that creature may resist with a penalized save.
 >
@@ -6900,7 +6900,7 @@ osr:
 >
 > Roll 1d6 + Aura and gain that much Mana (Life), torn loose from the local flow. If the Mana gained exceeds your effective level, immediately make a Dangerous Magic roll (effective level may be modified by traits, conditions, corruption, or similar effects).
 >
-> The Mana must be stored immediately in a Gear or Trait inventory slot; if there is no room, it overflows into Burdens (referee's call). You may spend this Mana in place of Life to cast powers, either incrementally or all at once. You cannot use the Reckless Dweomer power while carrying Mana in any inventory.
+> The Mana must be stored immediately in a Gear or Trait inventory slot; if there is no room, it overflows into Burdens (referee’s call). You may spend this Mana in place of Life to cast powers, either incrementally or all at once. You cannot use the Reckless Dweomer power while carrying Mana in any inventory.
 >
 > This power is Very Dangerous. While you are carrying Mana and you make a Defeat roll, or whenever you make any other Dangerous Magic roll, you must immediately make a another Dangerous Magic roll. Unused Mana disperses back into the ley-lines at sunset or sunrise.
 >
@@ -7076,7 +7076,7 @@ osr:
 >
 > You borrow the operating grammar of a magic-user long enough to use one arcane device or one qualifying arcane scroll effect otherwise barred to you.
 >
-> While the invocation lasts, you understand the item's activation pattern and are treated as the minimum caster level required to produce the borrowed effect.
+> While the invocation lasts, you understand the item’s activation pattern and are treated as the minimum caster level required to produce the borrowed effect.
 >
 > This does not let you cast 3rd-level-or-higher magic-user scroll spells, even if they appear on the scroll.
 >
@@ -7258,7 +7258,7 @@ osr:
 >
 > You bind a predeclared spell response to one specific future condition. When that exact situation next occurs, the stored spell fires immediately as though cast at that instant.
 >
-> The trigger may be detailed, but it must concern something within 120 ft of the triggering event. The stored spell's target and effect must be fully specified in advance. If the trigger language is incomplete or impossible to resolve, nothing happens.
+> The trigger may be detailed, but it must concern something within 120 ft of the triggering event. The stored spell’s target and effect must be fully specified in advance. If the trigger language is incomplete or impossible to resolve, nothing happens.
 >
 > No creature or item can carry more than one Contingency at a time.
 >
@@ -7442,7 +7442,7 @@ osr:
 > **P:** 16 **R:** near (~3 m / 10 ft)  
 > **T:** one creature (unwilling targets may Save vs. Spells to avoid) **D:** 1 hour per user Level
 >
-> You raise an impenetrable lattice around the recipient's mental presence. While the barrier holds, no form of ESP, clairvoyance, clairaudience, crystal-ball contact, or other mental surveillance or remote-influence technique can reach the target — to any such probe, the creature simply does not exist.
+> You raise an impenetrable lattice around the recipient’s mental presence. While the barrier holds, no form of ESP, clairvoyance, clairaudience, crystal-ball contact, or other mental surveillance or remote-influence technique can reach the target — to any such probe, the creature simply does not exist.
 >
 > In addition, the recipient gains +8 to all Saves against mind-influencing effects: all forms of charm, illusions, phantasms, feeblemind, and similar attacks. A natural roll of 1 always fails regardless of bonuses.
 >
@@ -7648,7 +7648,7 @@ osr:
 >
 > _Reverse — Remove Geas:_ This clears an existing geas. If the remover is lower Level than the original binder, removal may fail.
 >
-> _Overcharge:_ x2 — apply a -2 penalty on the target's initial save; x4 — encode one clear completion condition that triggers immediate release when met.
+> _Overcharge:_ x2 — apply a -2 penalty on the target’s initial save; x4 — encode one clear completion condition that triggers immediate release when met.
 
 tags:
 >   [power]
@@ -7691,7 +7691,7 @@ osr:
 >
 > While active, you may physically pass through dense natural growth and leave a traversable path for others. You cannot make direct physical attacks against plant targets through the barrier; spell-based interactions still function.
 >
-> _Overcharge:_ x2 - brief extension to one adjacent ally inside arm's reach; x4 - barrier also suppresses one plant-entangle or vine-control effect in contact with you.
+> _Overcharge:_ x2 - brief extension to one adjacent ally inside arm’s reach; x4 - barrier also suppresses one plant-entangle or vine-control effect in contact with you.
 
 tags:
 >   [power]
@@ -8152,7 +8152,7 @@ osr:
 >
 > Non-humanoid results are simulacra instead: obedient enchanted duplicates with partial traits that can improve if the original is dead. Constructs and undead cannot be cloned.
 >
-> _Overcharge:_ x2 - harden the growth chamber against tampering and casual detection during maturation; x4 - reinforce cross-planar separation so a matured clone kept off-plane remains link-stable until brought onto the original's plane.
+> _Overcharge:_ x2 - harden the growth chamber against tampering and casual detection during maturation; x4 - reinforce cross-planar separation so a matured clone kept off-plane remains link-stable until brought onto the original’s plane.
 
 tags:
 >   [power]
@@ -8290,7 +8290,7 @@ osr:
 >
 > If you supply the proper materials, you may instead create one permanent construct with no more than two special abilities. Such constructs remain vulnerable to normal dispelling.
 >
-> _Overcharge:_ x2 - improve obedience and coordination across the created group's first exchange; x4 - reinforce one created construct so it ignores the first morale break, command wobble, or hostile disruption pressure it would suffer.
+> _Overcharge:_ x2 - improve obedience and coordination across the created group’s first exchange; x4 - reinforce one created construct so it ignores the first morale break, command wobble, or hostile disruption pressure it would suffer.
 
 tags:
 >   [power]
@@ -8423,7 +8423,7 @@ osr:
 >
 > When slain or when the duration expires, snakes revert to inert sticks.
 >
-> Snakes: AC 6, HD 1, 1 bite for 1d4 + possible venom; MV 90' (30'); ML 12.
+> Snakes: AC 6, HD 1, 1 bite for 1d4 + possible venom; MV 90’ (30’); ML 12.
 >
 > _Overcharge:_ x2 — increase the snake count to 3d8; x4 — all snakes produced are venomous and their venom requires a Save vs. Poison or the victim is paralyzed for 1d4 rounds in addition to damage.
 
@@ -8463,13 +8463,13 @@ osr:
 > _FTLS power invocation_
 >
 > **P:** 8 **R:** touch
-> **T:** nonliving space up to 30' x 30' cloth volume **D:** permanent
+> **T:** nonliving space up to 30’ x 30’ cloth volume **D:** permanent
 >
 > You extrude and shape non-magical cloth from noospheric patterning into mundane matter. The created material is ordinary cloth (often like undyed linen), but it is permanent and non-dispellable.
 >
 > With craft skill, you may shape the cloth while forming it: sail, tent, garment, drape, or rope-length equivalents. Multiple castings can be joined seamlessly edge-to-edge.
 >
-> _Overcharge:_ x2 - double area to two linked 30' x 30' sheets. x4 - create fitted functional geometry (rigging, layered weather shelter, or stitched compartments) without additional mundane assembly.
+> _Overcharge:_ x2 - double area to two linked 30’ x 30’ sheets. x4 - create fitted functional geometry (rigging, layered weather shelter, or stitched compartments) without additional mundane assembly.
 
 tags:
 >   [power]
@@ -8498,7 +8498,7 @@ osr:
 > _FTLS power invocation_
 >
 > **P:** 12 **R:** far (~36 m / 120 ft)
-> **T:** one supported iron wall up to 500 sq ft, 2' thick **D:** permanent
+> **T:** one supported iron wall up to 500 sq ft, 2’ thick **D:** permanent
 >
 > You create a vertical iron wall on valid support. The wall ignores most direct spell damage and endures until disintegrated, broken by massive force, or neutralized by special counters.
 >
@@ -8711,7 +8711,7 @@ osr:
 > **P:** 10 **R:** far (~36 m / 120 ft)  
 > **T:** one dead human or demihuman body **D:** permanent
 >
-> You restore life to a dead human, dwarf, elf, or halfling body within the spell's death-age limit. Missing body parts remain missing and impose lasting disability until separately resolved.
+> You restore life to a dead human, dwarf, elf, or halfling body within the spell’s death-age limit. Missing body parts remain missing and impose lasting disability until separately resolved.
 >
 > The restored subject returns with 1 Life, severe recovery restrictions, and reduced function until extended bed rest completes. This recovery cannot be accelerated by ordinary magic unless a stronger resurrection tier is used.
 >
@@ -8848,7 +8848,7 @@ osr:
 
 These magitech (oldtech) and sorcery (fantascience) Powers are practiced by the fae tribes and clans of Elyncia. If tagged with a Heritage, characters with good factional standing can purchase them at a 50% discount from friendly factions that know these Powers.
 
-Heritage-origin recognizers now indexed under OSR sections: `Swamp’s Gift (Water Breathing)` in Traversal and Mobility, and `Veilwalk (Passwall)` in Dimensional, Planar, and Exotic Access.
+Heritage-origin recognizers now indexed under OSR sections: `Swamp's Gift (Water Breathing)` in Traversal and Mobility, and `Veilwalk (Passwall)` in Dimensional, Planar, and Exotic Access.
 
 Avatar of the Dream, Summon Guardian Spirit, Breath Weapon, Dream Pounce, Enchanting Melody, Elemental Gift, Psychedelic Veil, Shadowform, Laughing Curse, Echo Memory, Prey-Binder, and Flow-Arts — katas and jurus codified as balance, strike, and footwork forms taught from youth.
 
@@ -10164,7 +10164,7 @@ meta:
 > **P:** 4 **R:** short  
 > **T:** self **D:** instant
 >
-> The mage summons the overflowing love for all things into their Heart Chakra (green, center of chest), then cruelly inverts it and casts it towards their community's enemy. On a successful Charisma attack deal 1d6 life Damage and 1 point of Endurance damage. If they take any damage the target must make an Endurance save. On a failed save they take 1 point of life damage (venom) at the end of their turn for the next 1d6 rounds.
+> The mage summons the overflowing love for all things into their Heart Chakra (green, center of chest), then cruelly inverts it and casts it towards their community’s enemy. On a successful Charisma attack deal 1d6 life Damage and 1 point of Endurance damage. If they take any damage the target must make an Endurance save. On a failed save they take 1 point of life damage (venom) at the end of their turn for the next 1d6 rounds.
 >
 > _Overcharge:_ x2 — standard escalation per referee call.
 

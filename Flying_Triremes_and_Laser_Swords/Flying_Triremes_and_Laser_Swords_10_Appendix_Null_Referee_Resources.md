@@ -256,7 +256,7 @@ Effect:
  *Scrying* — \[divination\] \[astral\] *\[focus\]*  
  *Heal / Regenerate* — \[healing\] \[life\]  
  *Zone of Truth* — \[order\] \[knowledge\] *\[zone\]*  
- (Spell list sourced from the Shadowdark tools index.) [Anjour's Arsenal](https://anjours-arsenal.net/tools/shadowdark-spells)
+ (Spell list sourced from the Shadowdark tools index.) [Anjour’s Arsenal](https://anjours-arsenal.net/tools/shadowdark-spells)
 
 ---
 
@@ -517,7 +517,7 @@ Lineages or sub-cultures offering an alternate expression of the core theme. Use
 1. The Laughing Maw – A gnoll pack has seized a ruined ley-temple and now feeds it bones… the temple has begun to laugh.  
 2. Drum-Rite Duel – Two rival clans plan to settle a territory dispute with a war-drum competition that may escalate to battle.  
 3. Echo of the Hunt – A gnoll youth bears a birthmark linked to an ancient predator spirit—cultists seek to awaken it.  
-4. The Painted Pact – A caravan's heraldic banner uses the blood-red sigil of a defunct gnoll warband. The surviving kin take this as a challenge or a call to parley.  
+4. The Painted Pact – A caravan’s heraldic banner uses the blood-red sigil of a defunct gnoll warband. The surviving kin take this as a challenge or a call to parley.  
 5. Bone-Map Bargain – A scavenged hyena-skull whispers half a dungeon map when questioned. The gnoll who buried it wants it back before others finish the story.  
 6. Shadow Feast – Shadow Gnolls whisper that the next blood moon will open a dream-path to an ancestral echo they dare not name.
 
@@ -740,7 +740,7 @@ d6 Referee Hooks
 3. Venom‑Debt – bamboo‑golem caravan owes a spirit‑venom tithe; PCs must escort fragile vials through vome territory.  
 4. Night‑Chorus Saboteur – a burrow clan’s swarm‑call disrupts local phylake sleep‑cycle; authorities post a bounty.  
 5. Moon‑Silk Map – jumping silkblades offer a sky‑thread chart leading to an upside‑down ruin on a cliff underside.  
-6. Dream‑Path Collapse – a Sun-Hunter's dream pathway frays, sucking memories into shadow; only an orichalcum dream-thread can mend it.
+6. Dream‑Path Collapse – a Sun-Hunter’s dream pathway frays, sucking memories into shadow; only an orichalcum dream-thread can mend it.
 
 ## Tauran Folk
 
@@ -751,7 +751,7 @@ d6 Referee Hooks
 3. The Shattered Horn Treaty – A wandering Uroch demands a lost alliance be honored—if the PCs can interpret the stone glyphs marking its terms.  
 4. Stampede Protocol – A voidjammer crash threatens a sacred grazing land; only Earthshakers can hold the terrain intact.  
 5. Minotaur vs Uroch – Two fae factions led by Tauran  families contest a rediscovered ruin by rite of challenge. PCs are asked to mediate—or participate.  
-6. The Horn Festival Heist – This year's blessing rite is threatened by saboteurs. Spirits of the land demand justice from the one who bears the Earthshaker’s mark.
+6. The Horn Festival Heist – This year’s blessing rite is threatened by saboteurs. Spirits of the land demand justice from the one who bears the Earthshaker’s mark.
 
 ## Troll
 

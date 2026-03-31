@@ -136,7 +136,7 @@ To all who stay.
     - [The Surface of the Near Moon](#page_0087)
     - [Enter the Moon: Cold Crust](#page_0089)
     - [Cross the Flesh: Warm Mantle](#page_0090)
-    - [Heart's Center: the Crystal Core](#page_0092)
+    - [Heart’s Center: the Crystal Core](#page_0092)
     - [Playing with the Crystal Ship](#page_0094)
   - [Glass Bridge](#page_0097)
     - [Lake Folk](#page_0099)
@@ -331,11 +331,11 @@ The UVG is designed to resist repetition and canon. Each gaming group is encoura
 - **Purple names:** Kalis Elfbayi, Yasa Furfurea, Yilis Olorka, Stebra Osta, Arha Skivayi, Hoc Uindea.
 - **Blue names:** Qarno Azur, Gorto per Cultur, Imssi bra Cupa, Qephi per Linter, Muria bra Salsur, Aleia Unomor.
 - **Green names:** Lun Diralup, Axil i’Eliseis, Eralda Fiusc, Issandir di Metropol, Fiet i’Muru, Iacum di Vila.
-- **Yellow names:** Horto ‘n Caravan, Dona de Cuiyot, Saldo an’Nanc, Cortez an’Opera, Pansa de Rancho, Ylva ‘n Vusta.
+- **Yellow names:** Horto ’n Caravan, Dona de Cuiyot, Saldo an’Nanc, Cortez an’Opera, Pansa de Rancho, Ylva ’n Vusta.
 - **Orange names:** Tifixa Boscaneve, Ranalo Fianviye, Xulio Ueronesi, Safauzi Vruje, Sofixa Vulja, Uale Xerive.
 - **Red names:** Cozarin s’Berberin, Dolon duc Marbec, Perin duc Piñor, Namur Rinfosc, Amfo s’Teran, Torron Valpin.
 - **Kriol & Cant names:** Pilk Bagato, Anater En-Ein, Sembet Kuat Lun, Ski Senk-Karti, Hors To-Burk, Munti Trul.
-- **D.W.A.R.F. names:** Ru ‘C, Pem ‘Cleaningspecialist, Yon ‘Engine, Tam ‘HR, Kur ‘Notcurrentlyineducationortraining, Vek ‘Driver.
+- **D.W.A.R.F. names:** Ru ’C, Pem ’Cleaningspecialist, Yon ’Engine, Tam ’HR, Kur ’Notcurrentlyineducationortraining, Vek ’Driver.
 - **Steppe names:** Forth Bone, Rise Ghost, Newt Incorporeal, Wayfarer Sanctum, Acid Spirit, Starfall Perimeter.
 - **Timelost names:** Cryocasket 523-Amber, Sidhe Reäl, Ohn Smit, Settler Unitschild, Oï Yu, Winterbird.
 
@@ -668,7 +668,7 @@ Vorgo is allergic to silver, oranges, and endurance sports. Is he possessed by a
 
 ### Highwaymen or Potential Henchmen (d12)
 
-The Warlock rolled her eyes. Another useless lout. At least they would be done soon. If their ‘hero’ didn’t accidentally stab another would-be guard while ‘testing’ their mettle.
+The Warlock rolled her eyes. Another useless lout. At least they would be done soon. If their ’hero’ didn’t accidentally stab another would-be guard while ’testing’ their mettle.
 
 Henchmen can become new heroes when existing heroes bite the dust. Let players roll the henchmen’s ability scores as required.
 
@@ -819,7 +819,7 @@ The sun clambers above the eye-watering purple haze around 09:30. Hard gusts of 
 - **West, Porcelain Citadel** (safe oasis, 1 week): the cryptic mega-sculpture is encrusted with the dryland coral homes of the Porcelain Princes. A ring of golems guards it. Two great serais stand testament to the uneasy peace between the Spectrum Satraps and the Princes.
 - **South-West, Potsherd Crater** (steppe, 2 weeks): the scrub is pallid, the topsoil covered in drifts of porcelain exoskeletons from a deeper time. Limey Clans of the Green Tangerine, the Yellow Lime, and the Verdigris Lemon graze and trade this way in spring and autumn.
 - **East, Violet City** (road, 1 week): back to the Rainbowlands. The city of the cat lords and their drugs.
-- **North, Steppe of the Lime Nomads** (steppe, 1 week): harsh lands, forbidding to travelers, dotted with odd remnants of the ‘Best-Forgotten’ Ages.
+- **North, Steppe of the Lime Nomads** (steppe, 1 week): harsh lands, forbidding to travelers, dotted with odd remnants of the ’Best-Forgotten’ Ages.
 
 ### Encounters on the Two Roads (d8)
 
@@ -881,7 +881,7 @@ A cratered arched gate in the Onion-and-Skull style of the Later Mahogany Reign 
 
 ## Steppe of the Lime Nomads (III)
 
-The Limey Nomads’ lands are harsh and dry, forbidding to travelers. Odd remnants from the misty period referred to as the ‘Best-Forgotten’ Ages by the Saffron City’s Opiate Priests dot the plain. In spring the Limeys graze west towards the Grass Colossus, returning east to the Circle Rim for winter.
+The Limey Nomads’ lands are harsh and dry, forbidding to travelers. Odd remnants from the misty period referred to as the ’Best-Forgotten’ Ages by the Saffron City’s Opiate Priests dot the plain. In spring the Limeys graze west towards the Grass Colossus, returning east to the Circle Rim for winter.
 
 ### Weather and Misfortune
 
@@ -1067,7 +1067,7 @@ Grim violet haze till 09:00. Light swirling dust storms, hint of cinnamon on the
 - **South-West, The Last Serai** (trail, 1 week): the Porcelain Princes’ hold, home to the most remote permanent Rainbowlander trading post. The prices as eye-watering as the indecipherable penal code.
 - **South, Potsherd Crater** (prospector trails, 1 week): the scrub around the Citadel is pallid, topsoil covered in drifts of porcelain exoskeletons from a deeper time. The three Limey Clans of the Green Tangerine, the Yellow Lime, and the Verdigris Lemon graze and trade in spring and autumn.
 - **East, The High Road and the Low** (road, 1 week): crumbling pylons of dying dryland coral towering above the half-passable modern road.
-- **North-East, Steppe of the Lime Nomads** (steppe, 1 week): harsh lands, foreboding to travelers, dotted with odd remnants of the ‘Best-Forgotten’ Ages.
+- **North-East, Steppe of the Lime Nomads** (steppe, 1 week): harsh lands, foreboding to travelers, dotted with odd remnants of the ’Best-Forgotten’ Ages.
 
 ### Encounters Near the Citadel (d8)
 
@@ -1078,7 +1078,7 @@ Grim violet haze till 09:00. Light swirling dust storms, hint of cinnamon on the
 5. **Prince shells** (L1, drooling), freed human slaves degenerating into pre-human apes. Failed polybodies, or bodies thrown away after extensive use. The Princes do not talk about it.
 6. **Dust rats** (L0, herbivores) grazing on the cinder flora, radically immune to toxins and radiation.
 7. **Nomads** (L2, nervous) shepherding their flocks of gomph sheep and glypto goats to better grazing.
-8. Merchants escorted by **Porcelain walkers** (L7, trigger-happy), bearing tablets of access and heavy cases full of requisite ‘paperwork’ prepared on solid cerametal chits. They are loaded with trade goods and beasts.
+8. Merchants escorted by **Porcelain walkers** (L7, trigger-happy), bearing tablets of access and heavy cases full of requisite ’paperwork’ prepared on solid cerametal chits. They are loaded with trade goods and beasts.
 
 <a id="page_0028"></a>
 
@@ -1376,7 +1376,7 @@ A dark mauve glow occludes the sun until 09:30. Dry and itchy, with scattered bi
 | d20 | Misfortune |
 |---:|:---|
 | 1 | Biomech razorfly swarm! Time to hunker down. Lose 1d4 days or suffer painful reprocessing (-2d6 Life). |
-| 2 | Mount steps into a puddle of liquid ‘source,’ mutating as it undergoes violent source code corruption. |
+| 2 | Mount steps into a puddle of liquid ’source,’ mutating as it undergoes violent source code corruption. |
 | 3 | Lost in the high grass (-1d4 days, roll an extra encounter). |
 | 4–6 | Hit in the eye by a speck of windblown biomech garbage. Blinded in one eye. This will require medical attention. |
 | 7 | Lost a shoe to a thirsty tangle shrub. While trying to fish it out, notice that the tangle shrub is mildly sentient. With a bit of pain and luck, it could make an interesting potted pet (-1 shoe, -1d4 days, and an easy test to acquire a tangle shrub pet). |
@@ -1446,7 +1446,7 @@ Most vomes encountered in the wild belong to a nest. While individual vomes may 
 
 ### Vomes in a Typical Nest (d10)
 
-1. 1d2 **nest cows** (L8+1d8, many-faced): massive hulks producing nutrient fluids for the nest. Protected by eye-rays and low-level ‘brown’ psionic fields that collapse autonomic neural systems.
+1. 1d2 **nest cows** (L8+1d8, many-faced): massive hulks producing nutrient fluids for the nest. Protected by eye-rays and low-level ’brown’ psionic fields that collapse autonomic neural systems.
 2. 1d3-1 **vome mothers** (L4+1d6, armored): large sessile biomechanical womb-factories generating new vomes, infection vectors, and prosthetics.
 3. 1d3-1 **vomish autofacs** (L5, fragile): rumbling assemblies of feeders, conveyors, and bio-processors producing goods from the raw materials harvested by the nest.
 4. 2d20 **humanoid vomes** (L2, creepy): modified necroambulants or captured humans with ranged combat implants (mass drivers, stump-rays, or poison glands). Commonly found operating the vomish autofac.
@@ -1637,7 +1637,7 @@ _Full-page illustration omitted._
 
 1. A warehouse full of boxes of trading goods (2d20 crates, €100/crate)—tentacles reaching out of one. Why are there tentacles? And are those eyes? What is that **squamous packaged thing** (L5, dream-eater)?
 2. A padded room with a small padded door that leads to a smaller padded room with a smaller padded door, and so on, through seven rooms. In the last room, entombed in a decayed strait-jacket, is a skeleton. Nobody remembers who it was, or why these rooms are here.
-3. A dusty cellar. Boxes to the ceiling marked ‘potatoes’ and ‘bulbs of light’. Oh, behind it? Nothing. Definitely not an ancient sarcophagus of some lost barbarian king. _Inside:_ the abmortal remains of **King Elré the Dreaming** (L6, amnesiac) who entered the cryo-dehydration sarcophagus to voyage into the future and warn his descendants of a great danger waiting for them at the edge of time. Unfortunately the dream-eater ate his memories when they were stored in the same warehouse. It takes 40 litres of pure water and eight hours to awaken the mummified Elré.
+3. A dusty cellar. Boxes to the ceiling marked ’potatoes’ and ’bulbs of light’. Oh, behind it? Nothing. Definitely not an ancient sarcophagus of some lost barbarian king. _Inside:_ the abmortal remains of **King Elré the Dreaming** (L6, amnesiac) who entered the cryo-dehydration sarcophagus to voyage into the future and warn his descendants of a great danger waiting for them at the edge of time. Unfortunately the dream-eater ate his memories when they were stored in the same warehouse. It takes 40 litres of pure water and eight hours to awaken the mummified Elré.
 4. A small pre-fab excavated dwelling. _Inside:_ a crate much larger than the door. There is a **deactivated space-time portal machine** (€10,000 and 3 rare parts to repair) inside. If repaired, it leads to a random location in the UVG, potentially making the Last Serai a vastly more important terminus.
 5. Spoiled supplies and a loose ventilation grate. _Beyond_, at the heart of a ventilation labyrinth, is a small room with a dead spy vidy (€500 if repaired), a dusty plush bear, an open cat-carrier, a powerful assault rifle, and a gently pinging life-sign detector (works at short range, €1,000). Whoever stashed these things is long gone.
 6. A glass vat with a sentient **gelatinous ooze** (L5, unfocused). It wants to talk poetry and decontaminate the Last Serai.
@@ -1705,7 +1705,7 @@ Larger by far than the Ignored Tower in the Last Serai, a crumbling verdigris ob
 
 Beware. With a machine it is hard to tell: are they dead or but long-sleeping? Do nightmares torment their rusting rest? What delusions have they calculated over the millennia since the noösphere turned to screaming static and the great fog of forgetting stole away their maintainer friends.
 
-And what of the monolith? Must one truly give up the physical body to enter its synthstone and crystal halls? If so, why then do the piles of zombie machines that choke the blister bunkers ‘round its mighty flanks still twitch and judder so when a mere tourist approaches those well-looted ruins?
+And what of the monolith? Must one truly give up the physical body to enter its synthstone and crystal halls? If so, why then do the piles of zombie machines that choke the blister bunkers ’round its mighty flanks still twitch and judder so when a mere tourist approaches those well-looted ruins?
 
 <a id="page_0053"></a>
 
@@ -1787,7 +1787,7 @@ Well off the beaten rock path rise six tusks carved from a single mountain. Wate
 
 _(d10 days, 300 xp)_
 
-Deep in a veritable maze of rust-and-fordite agglomerations, wanderers speak of a great cauldron of shifting metal sand and living colors. It is true, it is there. An **autofac** (L13, half-mad with age) crawls through its rainbow garden, trying to repair servitors and grander things. It has a 45% chance of repairing any machine, but a 5% chance of turning it into a **mad abomination** (L9, cold, calculating, and cruel) bred with a loathing of its ‘masters.’ The maze is stalked by odd metal gazelles and a hive of enhanced **ghoul centipedes** (L2, paralytic).
+Deep in a veritable maze of rust-and-fordite agglomerations, wanderers speak of a great cauldron of shifting metal sand and living colors. It is true, it is there. An **autofac** (L13, half-mad with age) crawls through its rainbow garden, trying to repair servitors and grander things. It has a 45% chance of repairing any machine, but a 5% chance of turning it into a **mad abomination** (L9, cold, calculating, and cruel) bred with a loathing of its ’masters.’ The maze is stalked by odd metal gazelles and a hive of enhanced **ghoul centipedes** (L2, paralytic).
 
 ### The Mausoleum of the Wire
 
@@ -1956,7 +1956,7 @@ A famous meadow, dotted with peach trees and riven by two brooks, immortalized i
 
 _(3 days, 100 xp)_
 
-Surrounded by the remains of an epic bone circle and shaded by sturdy dryland coral-bonded dwarf pines, Puce House is the site of an odd alliance between the Porcelain Prince polybody pine mancer **Pineas 3-drum** (L5, tree-hugger) and **Satrap 202-∆ “Ferdi”** (L4, alcomancer), the soma distiller (€300/barrel). Puce House is also a good place to stock up on fine woods (€150/sack) and black light lotus schnapps (€900/barrel). Pineas and Ferdi are enlightened renegades who’ve escaped the tradition-bound strictures of their society and set up here, in the near-wilderness, with a group of like-minded acolytes, servants, and slaves. They want to be left alone, but also desperately miss the luxuries of civilization—with a bit of judicious bribery and maybe the delivery of a modern hot tub, they would be happy to let ‘friends’ use Puce House as a peaceful haven deep in the steppe.
+Surrounded by the remains of an epic bone circle and shaded by sturdy dryland coral-bonded dwarf pines, Puce House is the site of an odd alliance between the Porcelain Prince polybody pine mancer **Pineas 3-drum** (L5, tree-hugger) and **Satrap 202-∆ “Ferdi”** (L4, alcomancer), the soma distiller (€300/barrel). Puce House is also a good place to stock up on fine woods (€150/sack) and black light lotus schnapps (€900/barrel). Pineas and Ferdi are enlightened renegades who’ve escaped the tradition-bound strictures of their society and set up here, in the near-wilderness, with a group of like-minded acolytes, servants, and slaves. They want to be left alone, but also desperately miss the luxuries of civilization—with a bit of judicious bribery and maybe the delivery of a modern hot tub, they would be happy to let ’friends’ use Puce House as a peaceful haven deep in the steppe.
 
 The Great Folk feel protective of the odd couple and maintain a small patrol, but the true guardian of Puce House is rumored to be a **bone-worked behemoth** (L15, repurposed behemoth vome).
 
@@ -2404,7 +2404,7 @@ _(4 days, 300 xp)_
 
 What at first seemed a great boulder is a living **lophotroche** (L15, tolling) the size of a citadel, coated in mosses, fungi and gnarled lumen pines, and inhabited by a symbiotic **polybody rebel cult** (L3, flowery swarm). What are they doing in the middle of nowhere?
 
-Where do they get the sweet, sweet ‘sugar’ they trade to the Pinegreen nomad clan? Is it true that they hide a mercer gate, a Long Ago wormhole portal for moving heavy goods, in the gut of that giant spineless beast?
+Where do they get the sweet, sweet ’sugar’ they trade to the Pinegreen nomad clan? Is it true that they hide a mercer gate, a Long Ago wormhole portal for moving heavy goods, in the gut of that giant spineless beast?
 
 #### The Eternal Snaking Marker
 
@@ -2557,7 +2557,7 @@ Skyscrapers and towers and stairs of a half-dozen fallen cultures slither out of
 
 Tour guides always remind visitors to the Near Moon surface to use tethers and anchors. Though the feeble gravity makes it possible to hop and crawl along ([-] to all Agility tests), jump too far and the normal gravity of the Ultraviolet Grasslands will reassert itself.
 
-Small impact craters mark where over-eager tourists have swiftly come down to earth. On the skyward side this danger is reduced, though high jumps still end up with visitors accelerating back into the Near Moon with some force. Sport spear hunters of the odd moon creatures call it the ‘skypiercer move’ when they use the natural gravity to leap and give their spear thrust an assist.
+Small impact craters mark where over-eager tourists have swiftly come down to earth. On the skyward side this danger is reduced, though high jumps still end up with visitors accelerating back into the Near Moon with some force. Sport spear hunters of the odd moon creatures call it the ’skypiercer move’ when they use the natural gravity to leap and give their spear thrust an assist.
 
 “By the black bosom of Vulkana! That thing is enormous!” exclaimed PT.
 
@@ -3092,7 +3092,7 @@ Red Bear is a village honey-combed through a great amalgamated skyscraper, built
 
 The clans of Red Bear devote great effort to keeping the Madame alive and her Iron Belly functioning. The most prestigious clans are those of Maintenance and Repair, Logistics Specialist, Supply Chain Manager, and True News Distribution. Elders transmit clan lore entirely through oral tradition as <redacted> proscribed written records during the Hair Woods War between Skybridge and Vicar’s Beach. It is unclear how long ago this was and both of those places are quite ruined today.
 
-The clan of Public Relations is responsible for trade and is (generally) the least insular, while the Physical Culture clan provides up-to-date weather information and a ferry service to Jade Baobab (€10/person or beast) and to ruined Skybridge near the Gall Grass (€25/person or beast). The Red Bear **‘ferry’** is the great **aquatic iron golem** (L12, ludic) _Shield of the Collective_, maintained and scrubbed to a sheen by the clan of Plumbing and Filtration.
+The clan of Public Relations is responsible for trade and is (generally) the least insular, while the Physical Culture clan provides up-to-date weather information and a ferry service to Jade Baobab (€10/person or beast) and to ruined Skybridge near the Gall Grass (€25/person or beast). The Red Bear **’ferry’** is the great **aquatic iron golem** (L12, ludic) _Shield of the Collective_, maintained and scrubbed to a sheen by the clan of Plumbing and Filtration.
 
 Red Bear is full of plaudits for all the villages of Three Sticks and suspicious of outsiders, who are corralled in special accommodations dug into the middens surrounding Red Bear skyscraper.
 
@@ -3337,7 +3337,7 @@ _(2 days, 150 xp)_
 
 They say the razor skyscrapers of the Obsidian Knives cut the very water till it bleeds, that is why the Red River runs so red down its grim black canyon. Perhaps it is also the iron oxides in the sharp glass of the knives leaching out. The river loops around the hard promontory of Knives, all blasted into a solid lump of glassy granite, interlaced with metallic sinews—like the very land here was some kind of great biomechanical intrusion. The Knives mostly rise no more than ten or fifteen meters, though the highest reach a hundred meters and more in the heart of the devastated township, visible above the rim of the Red River canyon.
 
-Whatever the case, the Obsidian Knives suffered an odd disaster, which compressed most of its above ground structures into very nearly pure planes of force. Some visitors suggest that, if you look closely, you can discern the remains of the inhabitants of the Knives still ‘alive’, though translated into a 2-dimensional matrix, within the Knives themselves. Slivers of stuckforce enmeshed in glassy matrices can be excavated by visitors willing to risk force tremors and the snapping mono-dimensional tendrils of whatever nightmare created the Obsidian Knives. These slivers are prized as blades, weapons, or curios (€500/sack).
+Whatever the case, the Obsidian Knives suffered an odd disaster, which compressed most of its above ground structures into very nearly pure planes of force. Some visitors suggest that, if you look closely, you can discern the remains of the inhabitants of the Knives still ’alive’, though translated into a 2-dimensional matrix, within the Knives themselves. Slivers of stuckforce enmeshed in glassy matrices can be excavated by visitors willing to risk force tremors and the snapping mono-dimensional tendrils of whatever nightmare created the Obsidian Knives. These slivers are prized as blades, weapons, or curios (€500/sack).
 
 Superstitious nomads claim that at sunrise the razor skyscrapers sing and that frictionless blackbirds fly into the starless void. This is nonsense, of course.
 
@@ -3492,7 +3492,7 @@ _(1d4+1 days, 150 xp)_
 
 North of the Gall Grass massive, stocky trees with needles sharp as daggers rule the Higher Spinewoods, keeping out large predators, unwary travelers, and generally blocking overland access to the headwaters of the Wine, Teal, and Sky rivers. There are rumours of small, **leather-faced humans** (L2, living mummies) living there, but if they are real, they hide very well. The occasional radiation tower flickers into existence, giving a hint of some lost monument, but who would wander there?
 
-The Higher Spinewoods are very difficult terrain to cross and any Misfortune likely includes wandering into a spiked pit ‘excavated’ by the lightly carnivorous trees.
+The Higher Spinewoods are very difficult terrain to cross and any Misfortune likely includes wandering into a spiked pit ’excavated’ by the lightly carnivorous trees.
 
 #### Razorwater
 
@@ -3637,7 +3637,7 @@ The Sticks make their own eerie weather systems within a few hours journey (roll
 5. **Waves of rainbows** bathe verdant the surroundings in healing light ([-] to all tests that require precise vision, restore 1 Life and 1 stat point per hour). Plants grow especially quickly after each variegatic pulse, which may be hazardous for sleeping heroes.
 6. **Bright perpetual thunder** shakes the surroundings, verbal communication is nearly impossible and hearing can be badly affected, but spirits are raised ([+] to all Aura tests).
 
-All locals agree that the Three Sticks are suffused with the power of superior beings from the Long Long Ago and deadly to unwary interlopers. On good weather days, pilgrims will come to deliver offerings to these beings which they simply call the ‘**Fantastic Masters**’. Nobody has ever seen one, but **their ghosts** (L7, quantum echoes), it is said, are often seen on nights with crescent moons.
+All locals agree that the Three Sticks are suffused with the power of superior beings from the Long Long Ago and deadly to unwary interlopers. On good weather days, pilgrims will come to deliver offerings to these beings which they simply call the ’**Fantastic Masters**’. Nobody has ever seen one, but **their ghosts** (L7, quantum echoes), it is said, are often seen on nights with crescent moons.
 
 A beautifully austere plaza between the three accumulators focuses their light and opens into _a different deeper realm_ of obscurely spiritual dungeons, depending on the local weather conditions. _Within_ **living machines of light and crystal** (L2d10, decaying into dementia) maintain the workings of the accumulators in preparation for some final destiny. The machines are horribly overpowered and ridiculously alien. One might find out that they align vaguely with factions that could translate as Suspension of Disbelief, Orange Orchard, and Perpetual Fog of Self-Annihilation.
 
@@ -3718,7 +3718,7 @@ Pitiless and clear, crackling with an electric pressure that causes migraines, t
 - **North, The Refracting Trees** (open scrub, 1 week): the forest of weird silicone-carbon hybrids is no place for decent travelers.
 - **North-West, Spectrum Palace** (glyph trail, 2 weeks): dun hills mark the home of the luminescent Satraps.
 - **West, Cage Run** (harsh hills, 3 weeks): a gory mess of broken terrain makes the direct route west very hard.
-- **South-West, Ribs of the Father** (hill trails, 2 weeks): the foothills rise into the mountain-sized bone formations of the Ribs. ‘ware the Marmotfolk.
+- **South-West, Ribs of the Father** (hill trails, 2 weeks): the foothills rise into the mountain-sized bone formations of the Ribs. ’ware the Marmotfolk.
 - **South-East, Near Moon** (glyph-trail, 1 week): the heavy roundness of the Near Moon makes the trail hard to miss.
 - **North-East, Glass Bridge** (rough trail, 2 weeks): the cold waters of that grand lake would be welcome respite, were it not for the cold vomes infesting it.
 
@@ -4085,7 +4085,7 @@ A mythic haze refuses to rise before 13:00. Winds howl and sing through the meta
 ### Encounters on the Run (d10)
 
 1. **Ultra-possessed youths** (L5, observers) in citrine silk wasteland suits on a mission to win hearts and minds.
-2. A cryptic **machine troll** (L4, recombining) harvesting marrow mushrooms and singing to itself ‘Rebel Ling Alliance’s Fall.’
+2. A cryptic **machine troll** (L4, recombining) harvesting marrow mushrooms and singing to itself ’Rebel Ling Alliance’s Fall.’
 3. **Nature spirit** (L8, ectoplasmic) seeding riotous life in its wake.
 4. A pack of **lithe hyenas** (L2, wary) on the prowl.
 5. A herd of **fork-antlered antelopes** (L1, primal).
@@ -4223,7 +4223,7 @@ Telepathically-bonded symbiotic creatures the Satraps keep within their syntheti
 
 ### Light Magic
 
-The Satraps retain some of the force-shaping magics of Long Ago, creating illusions and burning rays of coherent light, and even solid planes and lines of ‘hard’ light. The greatest of Satraps have even been seen creating high roads of light arcing across the sky.
+The Satraps retain some of the force-shaping magics of Long Ago, creating illusions and burning rays of coherent light, and even solid planes and lines of ’hard’ light. The greatest of Satraps have even been seen creating high roads of light arcing across the sky.
 
 ### The Memorium
 
@@ -4266,7 +4266,7 @@ Council-Symbionts neurally bond five Satraps into a single executive gestalt, a 
 1. **Satrap 350** (L4, fine): a six-limbed creature of disturbing protrusions in a hot pink suit. It is in charge of the Ecstatic Mysteries and loves to bring the Joy of the Satrapy spores to new ecstatics.
 2. **Satrap 333** (L6, hard-boiled) is a China-pink colossus over two meters tall. It oversees the Rainbow Wall and the Roof of Light and enjoys showing off tricks of light and shadow.
 3. **Satrap 226** (L3, clod) is a lumpy thing in a suit of Egyptian-blue. It passes the time playing forgotten board games with the servitors of the Blue Paper Abbey and sending nosy visitors after real treasures of the Long Ago, lost in deep death traps.
-4. **Satrap 160** (L5, dull): green, looks fully human. Its synthetic skin is decorated with the skulls of creatures small and large, which it calls its ‘Moris’. It doesn’t seem to do much, oscillating between godlike grandeur, abject self-pity, and psychobabble.
+4. **Satrap 160** (L5, dull): green, looks fully human. Its synthetic skin is decorated with the skulls of creatures small and large, which it calls its ’Moris’. It doesn’t seem to do much, oscillating between godlike grandeur, abject self-pity, and psychobabble.
 5. **Satrap 75** (L5, delicate) is a moss-green mess of spidery limbs and spindly hoses. It spends its time harvesting crystalline nodules from modified trees and turning them into bullets. It does not seem to comprehend the linear passage of time.
 
 ### ...and the Secret Empress (d8)
@@ -4343,7 +4343,7 @@ _(4 days, 400 xp)_
 
 An electromagic field lies over a six kilometer swathe of the calcareous plateau, melting and shifting it into a high plain of abrasive dust. Nothing grows, the air becomes thin and painful, and the sky grows dim. The area is marked by thornstone warnings reaching into the sky like the arms of crisp-burnt dragons. All lifeforms within the electromagic field lose 1 Life per hour.
 
-_In the heart:_ a slab of ‘stuff’ canted at an angle and leering out of the dust in a satire of gravity. The heavy and immobile thing is covered in a thick layer of rusty flakes that begins to re-emerge as soon as it is wiped off. It gives off a dull hum. When struck it rings like a clear bell. Bathed in light, it scintillates and fluoresces. Magical energies are absorbed and dispersed as sparkling nebulae of dust. It tastes of cardamom and cumin, but smells slightly of rotten eggs and roses. It is very heavy and seems rooted in its spot in space and time. If moved out of position it slowly slides back into its place. The farther it is moved, the more strongly it begins to move back. If it is moved more than halfway to the altered area’s border _the area itself begins_ _to move_, destroying lifeforms at its edge. The slab cannot be moved outside the original area, and both it and its area will eventually revert to their initial location.
+_In the heart:_ a slab of ’stuff’ canted at an angle and leering out of the dust in a satire of gravity. The heavy and immobile thing is covered in a thick layer of rusty flakes that begins to re-emerge as soon as it is wiped off. It gives off a dull hum. When struck it rings like a clear bell. Bathed in light, it scintillates and fluoresces. Magical energies are absorbed and dispersed as sparkling nebulae of dust. It tastes of cardamom and cumin, but smells slightly of rotten eggs and roses. It is very heavy and seems rooted in its spot in space and time. If moved out of position it slowly slides back into its place. The farther it is moved, the more strongly it begins to move back. If it is moved more than halfway to the altered area’s border _the area itself begins_ _to move_, destroying lifeforms at its edge. The slab cannot be moved outside the original area, and both it and its area will eventually revert to their initial location.
 
 To all intents and purposes it does nothing. It does not mutate living things, and though time passes 17% more quickly in the altered area, it has no particular effect.
 
@@ -4597,7 +4597,7 @@ _At the top_ the view is magnificent and offers travelers their first glimpses o
 
 _(6 days, 250 xp)_
 
-A great plaza carved into the rim of the chasm spreads out around seven great ironstone helices locked in tight formation. Rustmold grows heavy upon them and **decayed ghosts** (L1, memory-stripped) flicker in and out of reality around them. The last maintainer tribe has long since died out but, barely visible across the chasm, the receptor helices for the force bridge still stand. **Quarterlings** (L2, heroic) regularly visit to make ‘flying’ sacrifices to the Chasm.
+A great plaza carved into the rim of the chasm spreads out around seven great ironstone helices locked in tight formation. Rustmold grows heavy upon them and **decayed ghosts** (L1, memory-stripped) flicker in and out of reality around them. The last maintainer tribe has long since died out but, barely visible across the chasm, the receptor helices for the force bridge still stand. **Quarterlings** (L2, heroic) regularly visit to make ’flying’ sacrifices to the Chasm.
 
 _Reactivating the Last Projector_ requires a Radiant Stone, still warm as in the days of old. A hero who knows how to weave the strands of force could then reactivate the projector, recreating the Luminous Arc Bridge as described in the _Dream Saga of Old Sky Witch Four_. Crossing at the reactivated bridge takes a day but is safe, aside from the rare **flying war husks** (L3, screeching banshees).
 
@@ -5130,7 +5130,7 @@ Dust falls slowly and lingers, iridescent in the electromagnificent radiation of
 
 ### Fool’s Wall
 
-A radiation blasted berm of earth, sand, petrified wood, and dead dryland coral marks the edge of the Last Camp, where visitors and vagabonds congregate as close to the Black City as they dare approach, yet far enough to feel safe. Camel caravans bring stagnant water from inland cisterns and half-forgotten aqueducts. Reckless visitors who’ve wasted their last cash cross Fool’s Wall to ‘give’ themselves to the Black City’s promise of the Return of the Real. Smart groups arrive in large caravans, ready with the supplies they’ll need for their stay. Lonely travelers or poorly guarded animals often end up ‘processed’ into food for the desperate and destitute.
+A radiation blasted berm of earth, sand, petrified wood, and dead dryland coral marks the edge of the Last Camp, where visitors and vagabonds congregate as close to the Black City as they dare approach, yet far enough to feel safe. Camel caravans bring stagnant water from inland cisterns and half-forgotten aqueducts. Reckless visitors who’ve wasted their last cash cross Fool’s Wall to ’give’ themselves to the Black City’s promise of the Return of the Real. Smart groups arrive in large caravans, ready with the supplies they’ll need for their stay. Lonely travelers or poorly guarded animals often end up ’processed’ into food for the desperate and destitute.
 
 The **Quietly Observed Cabal** (Q.O.C.) of Traders and Hermits maintains a rough approximation of order in the Last Camp, collecting protection payments and ensuring important visitors are not accidentally processed.
 
@@ -5225,7 +5225,7 @@ Every day when the sun descends beneath the purple haze, the hermits gather in a
 
 The chosen ones, possessed by the spirit they call the **Last and Most** **Divine Secretary of the Black City** (L5, body-hopper) rush to the center of the plaza to pick over the offerings presented by traders, adventurers, and vagabonds for trade with the Black City. Most are passed over, but some are chosen.
 
-The chosen approach the Last Period and place their offering upon a heavily eroded circle of yellowing plastic, where it disappears in a flash of violet light—replaced by the Black City’s ‘payment’.
+The chosen approach the Last Period and place their offering upon a heavily eroded circle of yellowing plastic, where it disappears in a flash of violet light—replaced by the Black City’s ’payment’.
 
 #### d20 The Black City’s Payment (Fortune Favors the Odd)
 
@@ -5247,7 +5247,7 @@ The chosen approach the Last Period and place their offering upon a heavily erod
 
 The visitors, travellers, vagabonds, and adventurers who come to see the Grand Observer have worn a bowl into the bedrock around the Three Stones of Donation. Nobody can agree what the Grand Observer looks like, but all agree that they feel observed and known by the Observer when it manifests in the air over the Three Stones, forming a perfect tetrahedron of numinous energy.
 
-The Grand Observer manifests every 60th day, precisely 217 meters due north of the Third Portal. On the first hour it takes offerings, one from each Stone. On the second hour it gives ‘gifts’. On the third hour of each manifestation it hands down a Prophecy Out of Time, fading away until its next apparition.
+The Grand Observer manifests every 60th day, precisely 217 meters due north of the Third Portal. On the first hour it takes offerings, one from each Stone. On the second hour it gives ’gifts’. On the third hour of each manifestation it hands down a Prophecy Out of Time, fading away until its next apparition.
 
 **Quietly Observed Cabal (Q.O.C.) soldiers** (L4, elite) in polished olivine walker suits stake out the stones prior to each apparition, reserving access to the honored members and mothers of the Cabal, or for deserving supplicants parting with €10,000 for every offering undertaken. Unofficially, a bit of bribery brings prices down.
 
@@ -5343,7 +5343,7 @@ Whatever the case may be, groups of scholars have been recording the prophecies 
 
 ### The Five Portals
 
-Common lore holds that the Five Grand Portals are inert. Their mirror-sheen 53-meter diameter outer rings levitate a meter and a half off the black cube-smeared meltstone bedrock. The outer world is mutely reflected back at itself by the uneasy matter of the rings in a great ‘O’ of divine or infernal mockery.
+Common lore holds that the Five Grand Portals are inert. Their mirror-sheen 53-meter diameter outer rings levitate a meter and a half off the black cube-smeared meltstone bedrock. The outer world is mutely reflected back at itself by the uneasy matter of the rings in a great ’O’ of divine or infernal mockery.
 
 Equally common is the conviction that this is baloney. The portals are active, alive, listening, waiting—eyes and ears of whatever entities call the Black City home. This second conviction is correct.
 
@@ -5558,7 +5558,7 @@ And, if you like, give their next hero a little daemon adviser who resides in a 
 
 Ok, this time. This is really it. This is the end.
 
-Beyond the Infinite Recursions of the Real, beyond the hulking towers and yawning abysses of the Ideal Fractal City and its soulless ‘Citizen’ servitors, and beyond the fires of the Lacquered Chaos of Possibility, is a cliff-top field of green grass. Pale **mice-deer** (L7, friendly) wander around, genteelly nibbling at errant blades and depositing pellets over the poetry-inscribed rocks that mark the edges of this plain.
+Beyond the Infinite Recursions of the Real, beyond the hulking towers and yawning abysses of the Ideal Fractal City and its soulless ’Citizen’ servitors, and beyond the fires of the Lacquered Chaos of Possibility, is a cliff-top field of green grass. Pale **mice-deer** (L7, friendly) wander around, genteelly nibbling at errant blades and depositing pellets over the poetry-inscribed rocks that mark the edges of this plain.
 
 In the center of the field is a small black pyramid with an open door filled with an inviting salmon pink glow. The gentle sounds of pan pipes and babbling brooks vibrate up from the depths.
 
@@ -5612,19 +5612,19 @@ He’ll mix a drink for you and warn you that you might walk away, but you will 
 
 ## Running A Caravan
 
-The caravan is a group character for the players, a joint mobile base of operations. You don't need a caravan to travel the UVG, but it's a good idea. You can use the caravan sheet provided at the end of the book, or draw your own.
+The caravan is a group character for the players, a joint mobile base of operations. You don’t need a caravan to travel the UVG, but it’s a good idea. You can use the caravan sheet provided at the end of the book, or draw your own.
 
 **Money (Cash)**
 
-Cash (€) is the currency of the UVG. It's called cash as a nod to ancient Chinese cash (文) and the whole Marco Polo meta-theme.
+Cash (€) is the currency of the UVG. It’s called cash as a nod to ancient Chinese cash (文) and the whole Marco Polo meta-theme.
 
 An unskilled laborer earns €1/day. Lower denominations exist, but can generally be ignored at the scale of caravans. Letters of credit made out by private butcher banks are also available.
 
-Outfitting a caravan is expensive. The PCs should start with a loan of €1,000 per character. The financier is dubious and there's 100% annual interest, but it beats scrabbling for pennies. Caravans rack up weekly expenses from wages, food, and more. Don't worry about precision -- an approximate track of ready cash depleting suffices.
+Outfitting a caravan is expensive. The PCs should start with a loan of €1,000 per character. The financier is dubious and there’s 100% annual interest, but it beats scrabbling for pennies. Caravans rack up weekly expenses from wages, food, and more. Don’t worry about precision -- an approximate track of ready cash depleting suffices.
 
 **Financier (Patron)**
 
-Create this NPC together with the players (see p178). The zanier, the better. Ask the players in turn about the patron's goals, the organization, opponents, weaknesses, oddities, and so on.
+Create this NPC together with the players (see p178). The zanier, the better. Ask the players in turn about the patron’s goals, the organization, opponents, weaknesses, oddities, and so on.
 
 **Logo**
 
@@ -5632,7 +5632,7 @@ Every adventuring-trading company needs a cheesy logo. When the players decide t
 
 **Assets**
 
-This section helps track the heroes' investments in trade routes and other shenanigans. Use the table on p.177 to generate returns.
+This section helps track the heroes’ investments in trade routes and other shenanigans. Use the table on p.177 to generate returns.
 
 **Time**
 
@@ -5646,7 +5646,7 @@ Fast (fresh horses) and slow tags (heavy wagons) cancel each other out. The spee
 
 **Traveling the Back Roads**
 
-If a caravan travels slowly and cautiously, they tally an extra 7 days every week, but have bonuses on their travel tests (misfortune, encounter rolls, avoiding notice and ambushes). However, they do have to roll twice, so there's that.
+If a caravan travels slowly and cautiously, they tally an extra 7 days every week, but have bonuses on their travel tests (misfortune, encounter rolls, avoiding notice and ambushes). However, they do have to roll twice, so there’s that.
 
 **Consumption**
 
@@ -5654,11 +5654,11 @@ How many supplies the caravan consumes each week. For simplicity, humans consume
 
 **PCs**
 
-List the players' characters and their usual roles in the caravan. Common roles include expedition leader, navigator, captain of the guards, chief negotiator, mechanic or animal handler, and doctor.
+List the players’ characters and their usual roles in the caravan. Common roles include expedition leader, navigator, captain of the guards, chief negotiator, mechanic or animal handler, and doctor.
 
 **Helpers**
 
-Helpers are secondary characters with specialized skills: navigators, cooks, mechanics, guards, hunters, scouts, etc.. Unless otherwise specified, a helper's weekly wages equal €6 per level.
+Helpers are secondary characters with specialized skills: navigators, cooks, mechanics, guards, hunters, scouts, etc.. Unless otherwise specified, a helper’s weekly wages equal €6 per level.
 
 <a id="page_0167"></a>
 
@@ -5668,7 +5668,7 @@ UVG uses sacks as a unit of measurement of the unwieldiness and weight of things
 
 ### Inventory and Sacks
 
-- All of a hero's adventuring or professional gear. Magic skulls of memory for wizards, a year's supply of swordmaceaxes for fighters, golf clubs for the thief, whatever.
+- All of a hero’s adventuring or professional gear. Magic skulls of memory for wizards, a year’s supply of swordmaceaxes for fighters, golf clubs for the thief, whatever.
 - A **sack of supplies**. Enough food, water, camping gear, and toilet paper to survive for a week. Bad quality supplies cost €2/sack, good ones €10/sack -- or more the deeper they are in the wastes!
 - One **rider** or unconscious human.
 - A unit of trade goods.
@@ -5685,7 +5685,7 @@ For simplicity, a sack is roughly as many neatly bundled pounds, stones, or inve
 - **Soap**: a hundredth of a sack, also a generic small item, like a signal whistle or signet ring or spike. Or bar of soap.
 - **Cash (€)**: one standard unit of currency.
 
-A human's inventory limit is 7 + Strength stones' worth of items _or_ **one packed sack** (10 stones). For every stone over their limit, a human suffers -1 to all rolls.
+A human’s inventory limit is 7 + Strength stones’ worth of items _or_ **one packed sack** (10 stones). For every stone over their limit, a human suffers -1 to all rolls.
 
 A package is easier to carry than loose objects, hence the difference (and for simplicity at the caravan scale). Pouches and bags do the same for soap-sized items. Drawing a weapon from a package in the heat of battle is not feasible. Dropping a package with fragile goods (like sanguine porcelains or jay needles) may damage them.
 
@@ -5693,7 +5693,7 @@ Players will come up with weird ideas for rigging up rollers, ropes, and pulleys
 
 ### The Pleasure of Treasure
 
-Regardless of whether you award xp for treasure recovered or not, heroes will try to make away with rare treasures like the insidious crystal omphalos of Last Fish Heaven (€4,500, 3 sacks). How much are treasures worth? You can either decide based on your rough estimate, a hero's Charisma test, or a flat d00 roll.
+Regardless of whether you award xp for treasure recovered or not, heroes will try to make away with rare treasures like the insidious crystal omphalos of Last Fish Heaven (€4,500, 3 sacks). How much are treasures worth? You can either decide based on your rough estimate, a hero’s Charisma test, or a flat d00 roll.
 
 | d00 | Rough Idea | Charisma Test | Cash Per Sack |
 |---:|:---|---:|---:|
@@ -5713,7 +5713,7 @@ Example: the fabulous _gold_ and _marble statue_ of the _metaphysical_ _insinuat
 
 ### So Hack It Up
 
-A smart (philistine) hero can **hack out** 1d6 + Level percent of a treasure's value in one turn. This will reduce the value of the rest of the work by 10x that amount in percent.
+A smart (philistine) hero can **hack out** 1d6 + Level percent of a treasure’s value in one turn. This will reduce the value of the rest of the work by 10x that amount in percent.
 
 Example: Pikker the Pengling rolls 5%, gouges out the gold bits for €300, and pockets them. The remaining defaced sculpture is now worth 50% less: €3,000. Yeah, looters are not nice.
 
@@ -5723,7 +5723,7 @@ Example: Pikker the Pengling rolls 5%, gouges out the gold bits for €300, and 
 
 _What the hell have you gotten yourself into?_
 
-The UV Grasslands are big. They're weird, sure, but first and foremost they are mind-bogglingly big. Vast and empty -- it's that emptiness that kills heroes because it means there's no wishing well to drink from and no turnip farm to plunder.
+The UV Grasslands are big. They’re weird, sure, but first and foremost they are mind-bogglingly big. Vast and empty -- it’s that emptiness that kills heroes because it means there’s no wishing well to drink from and no turnip farm to plunder.
 
 Rounds, minutes, and turns work for the exploration of dungeons or ruins, while hours and days are fine for overland travel and the exploration of terrain hexes. When traveling in the UVG, a **week** is the basic unit of activity to drive home how far apart everything is.
 
@@ -5734,7 +5734,7 @@ Every week of travel:
 3. Check what **encounters** happen and resolve them.
 4. Any heroes that did not participate in a fight or flight can treat the week as a **long rest**.
 5. Check if the caravan has arrived at a **destination**. Most destinations are a week apart but some require two, or even three, weeks of voyaging in the wastes. If the caravan has not yet arrived at a safe location repeat steps 1 to 5 until it does.
-6. When the caravan arrives at a destination, one hero makes a moderate relevant test for **discoveries** and notes any on the map. These are points of interest a few days' journey from the destination. There are a limited number of discoveries available at each destination.
+6. When the caravan arrives at a destination, one hero makes a moderate relevant test for **discoveries** and notes any on the map. These are points of interest a few days’ journey from the destination. There are a limited number of discoveries available at each destination.
 
 Instead of traveling a caravan may **stop for a full week**.
 
@@ -5810,7 +5810,7 @@ Misfortune applies to the whole caravan, but characters test individually to avo
 | 9 | Pack animal wanders off (-1 day or -1 animal). |
 | 10-11 | A piece of equipment has worn out (useless until repaired in town). |
 | 12 | The road is dusty, long, and dull. Boredom grows. |
-| 13 | The road is exhausting but ... hey ... wait ... what's that? A risky gamble to acquire some unexpected resources? Spend 1d6 Life to attempt a moderate test to gain 1d4 supplies. |
+| 13 | The road is exhausting but ... hey ... wait ... what’s that? A risky gamble to acquire some unexpected resources? Spend 1d6 Life to attempt a moderate test to gain 1d4 supplies. |
 | 14-19 | The road is arduous, but due to good packing and a few travel games, it is manageable. |
 | 20+ | Your understanding of the steppes grows, advance one step towards acquiring a UVG wilderness skill, like Mule Whispering, Steppeland Protocols, or Storytelling. |
 
@@ -5827,7 +5827,7 @@ The referee can provide a bonus or penalty to the roll.
 
 **Charisma and Fortuna**
 
-A character can spend one point of Charisma to re-roll their misfortune. The concept of Charisma comes from Ancient Greek, where it referred to grace and bestowed by capricious deities. This wasn't some approximation of "sex appeal" or "leadership potential."
+A character can spend one point of Charisma to re-roll their misfortune. The concept of Charisma comes from Ancient Greek, where it referred to grace and bestowed by capricious deities. This wasn’t some approximation of "sex appeal" or "leadership potential."
 
 This was straight up divine favoritism. A hero could be a complete dirtbag but her divine mother had dipped her in god ju-ju and given her teflon skin. Others got the plague, she was untouched. Others got scarred, she glowed with beauty and grace. Classical Charisma is utterly unfair which is why it works so well as a proxy for luck.
 
@@ -5864,7 +5864,7 @@ Limit the number of possible discoveries per destination to five or less, unless
 | 1 | Nothing but blank stares, but 1d6 days after leaving, the heroes get to experience an honest-to-goodness bonus ambush encounter. |
 | 2-3 | Nothing interesting nearby, but [-] on the next encounter check. |
 | 4-10 | Dust and haze and broken dreams, that is all. |
-| 11 | Nothing here, but there's this amazing place near the _next_ destination. |
+| 11 | Nothing here, but there’s this amazing place near the _next_ destination. |
 | 12-15 | The locals mutter and nod, ah. A visitor. Another foreign "discoverer." Note down one discovery. |
 | 16-19 | In the silences. In the gaps in conversation. In the forgotten words there is a map. Two discoveries. |
 | 20+ | The locals no longer read the old manuals or the old stelae in the crypts of their founders, but here is a dark clue. Three discoveries. |
@@ -5908,10 +5908,10 @@ Strange radiations, polluted water, and hunger can all be lethal. That is why ca
 Running out of supplies is bad. Waiting until things are very bad can be terrible. Sometimes the weak must be sacrificed for the strong.
 
 1. **Cannibalise** the expedition. This is the fastest way to get supplies. A human provides one sack of supplies, an ordinary pack animal provides two sacks of supplies.
-2. **Forage** for supplies. Instead of traveling, the caravan spends a week securing water, food and shelter. Usually, a week's foraging will net enough supplies for that week and another week of travel. In very harsh environments this may not be so easy.
+2. **Forage** for supplies. Instead of traveling, the caravan spends a week securing water, food and shelter. Usually, a week’s foraging will net enough supplies for that week and another week of travel. In very harsh environments this may not be so easy.
 3. **Buy** more supplies in a settlement. Obviously. Prices vary, but between €2 and €10 per sack is reasonable.
 
-Some inhabitants of the Ultraviolet Grasslands frown on cannibalism. Foraging makes for slow travel, which isn't ideal when a caravan has places to be -- it is best to treat foraging as a stop-gap while a few fast travelers seek out help.
+Some inhabitants of the Ultraviolet Grasslands frown on cannibalism. Foraging makes for slow travel, which isn’t ideal when a caravan has places to be -- it is best to treat foraging as a stop-gap while a few fast travelers seek out help.
 
 ### Out of Supplies
 
@@ -5934,7 +5934,7 @@ Source is the creative essence of the world, sometimes called the _world soul_. 
 | 7-11 | Limbs ripple and rearrange, creature becomes (roll d4) (1) a quadruped, (2) winged, (3) tentacled, (4) a limbless annelid. |
 | 12-15 | Creature is modified with (roll d4) (1) calcite armor plates (+1 Defense), (2) chitin eruptions (spines), (3) bronze bones (+1d4 Life, [-] on tests to resist disease), (4) crystal nodules (€1d20 x 100, removal is fatal). |
 | 16-19 | Bunny error. Creature becomes (roll d4) (1) bunny-headed, (2) bunnytailed, (3) bunny-furred, (4) a large, bipedal, sentient bunny. It seems there are a lot of rabbits hidden deep in the general source code. Note: reputable sources indicate that different basal morphologies may manifest in different fallen regions. |
-| 20+ | Reassembly from source. All creature's stats are shuffled randomly. One random stat increases by 1d4. |
+| 20+ | Reassembly from source. All creature’s stats are shuffled randomly. One random stat increases by 1d4. |
 
 <a id="page_0172"></a>
 
@@ -5953,15 +5953,15 @@ For each destination, make a market roll:
 
 | d20 | Price Factor | Notes |
 |---:|---:|:---|
-| 1 | 0 | It's taboo. Nobody talks about it. Like it doesn't exist. There certainly isn't a local morality cult that murders dealers. |
-| 2 | 0 | No demand or brainwashing? They don't want it at all. |
+| 1 | 0 | It’s taboo. Nobody talks about it. Like it doesn’t exist. There certainly isn’t a local morality cult that murders dealers. |
+| 2 | 0 | No demand or brainwashing? They don’t want it at all. |
 | 3-6 | 0.5 | Low demand. |
 | 7-12 | 1 | Normal market. |
 | 13 | 1 | Depressed market. Haggling checks at a disadvantage. |
 | 14-15 | 2 | Popular but illegal. Stiff penalties for captured dealers. |
 | 16-17 | 2 | High demand. |
 | 18 | 3 | Market bubble! 1 in 6 chance per caravan visit that the market has collapsed (roll 1d10 on this table). |
-| 19 | 4 | The motherload! You're really in business now. 1 in 6 chance per caravan visit that the market has readjusted (roll again on this table). |
+| 19 | 4 | The motherload! You’re really in business now. 1 in 6 chance per caravan visit that the market has readjusted (roll again on this table). |
 | 20 | 1 | Source! They make the trade good here. Buyers make haggling checks at an advantage, sellers at a disadvantage. |
 
 ### Buying and Selling the Goods
@@ -5982,7 +5982,7 @@ When selling multiply the price by the factor, when buying divide.
 | 6-13 | 1 | A fair and reasonable sale. |
 | 14-17 | 1.2 | A solid, profitable sale. |
 | 18-19 | 1.5 | A good trade. Anyone should be proud. |
-| 20+ | 3 | This might be almost too good. Perhaps it wouldn't hurt to quickly skip town now... |
+| 20+ | 3 | This might be almost too good. Perhaps it wouldn’t hurt to quickly skip town now... |
 
 ### Local Special Needs
 
@@ -6007,14 +6007,14 @@ But there is always a catch, and usually quite a journey.
 
 | d10 | The catch is ... | ... and the Destination |
 |---:|:---|:---|
-| 1 | There's a bomb in the cargo. | An adjacent, well-known destination. |
+| 1 | There’s a bomb in the cargo. | An adjacent, well-known destination. |
 | 2 | The cargo is secretly faulty. | A nearby (2-3 stops) destination. |
 | 3 | Local patrols demand bribes. | A far away (4-6 stops) destination. |
 | 4 | Problem with the paperwork. | A small, hidden settlement (2-3 stops). |
 | 5 | Thieves are stalking the cargo. | An illegal camp on the road (2-3 stops). |
 | 6 | A competitor is racing to sell! | X marks the spot a week off the road at the same location. Hurry! (1-3 stops away). |
-| 7 | A third party wants to ensure the delivery fails. | A discovery, here, it's famous. I'll mark it on the map for you (1-3 stops away). |
-| 8 | The cargo is stolen. And someone scary wants it back. | Another caravan, it passed through here 2 weeks ago. It's slow. You can catch it. |
+| 7 | A third party wants to ensure the delivery fails. | A discovery, here, it’s famous. I’ll mark it on the map for you (1-3 stops away). |
+| 8 | The cargo is stolen. And someone scary wants it back. | Another caravan, it passed through here 2 weeks ago. It’s slow. You can catch it. |
 | 9 | The local character is in cahoots with armed bandits. | A lone traveler. Ask at this totally legal watering hole 2-3 stops away. |
 | 10 | The drop-off is under surveillance. Make the delivery ... discreetly. | A dangerous discovery, off in the wilds, a few days from here. Make yourself scarce after the delivery. |
 
@@ -6034,11 +6034,11 @@ In practice, thirty trade goods are too many to keep track of. Focus on the ones
 | 6 | Cosmic scales | In different shapes and colors, iridescent and rare, there must be mines near the Dark City. | Rich Rainbowlanders craft suits and capes with them, twinkling as they go. | Forest of Meat | €600 |
 | 7 | Dryland coral seeds | Incredibly vulnerable and have to be kept in sealed containers to protect them from the open air. | A valuable construction material, lets petromancers grow entire buildings. | Ivory Plain | €1,000 |
 | 8 | Gems and jewels | Rare stones of ancient manufacture, rubies and sapphires and emeralds. | Great for focusing light and making illusions. Used for wands, ray guns, and toys. | Spectrum Palace | €25,000 |
-| 9 | Gold | Red, white, or midnight blue. The demiurges gave this metal many hues. Consumed, it restores lost experiences. | It's gold. Also useful for electromancers. | Unknown | €15,000 |
+| 9 | Gold | Red, white, or midnight blue. The demiurges gave this metal many hues. Consumed, it restores lost experiences. | It’s gold. Also useful for electromancers. | Unknown | €15,000 |
 | 10 | Indigo ivories | From the teeth of the rare midnight beasts of the Deep West. | Beautiful and tough, often carved into jewelry and tools with crystal chisels. | Dark Light Passage | €500 |
 | 11 | Joy worms | Empathic, symbiont worm-like creatures that flood the consciousness with pleasure and joy even during odious and boring tasks. | Implanted in workers or servitor beasts, they release endorphins. Popular with many masters. | Unknown | €500 |
 | 12 | Karma dust | Purified extract of the demiurges, so they say. The Inquisition bans karma dust with a vengeance. | Removes sins, annihilates memories, purifies souls. Foils detection magics and machines. | Spectrum Crossing | €1,000 |
-| 13 | Last steel | Nodules of ever-warm, oily steel from the Long Ago. | Smiths swear it's almost alive. It flows to repair dead machines and metal objects. | Dead Bridge | €400 |
+| 13 | Last steel | Nodules of ever-warm, oily steel from the Long Ago. | Smiths swear it’s almost alive. It flows to repair dead machines and metal objects. | Dead Bridge | €400 |
 | 14 | Livingstone bricks | Packed in clay, the seeds slowly petrify their surroundings into living stone. | Petromancers use these to grow stone art, decorations, and furniture. | Ribs of the Father | €200 |
 | 15 | Marrow-beet | Gastropod lichen symbiote, tight in its shell. It can stay alive for months. | Protein that reproduces itself and survives through droughts and oxygen loss. | Behemoth Shell | €100 |
 | 16 | Medimagicals | Ointments, potions, and implants of all sorts. | Easier for doctors to fix people with supplies. | Near Moon | €400 |
@@ -6046,7 +6046,7 @@ In practice, thirty trade goods are too many to keep track of. Focus on the ones
 | 18 | Odd fruits | Luminescent vavilov velvets and Cherenkov cherries, prized and delicate. | Delicious. Fresh may be more valuable. Useful for activating mutagenic source codes. | Porcelain Citadel | €100 |
 | 19 | Radiothermal fuel | Poisonous rods to feed into radiothermal barrels. | Food for the archaic power making machines. Makes golems run faster, burn brighter. | Black City | €500 |
 | 20 | Rainbow silks | Shifting colors woven from the silky strands of crystal spiders by the Spectrum Satraps. | Great for color-shifting clothes and camouflage. Looks very expensive. | Spectrum Palace | €500 |
-| 21 | Rare drugs | Rare and illegal intoxicants like black light lotus, cat snip, dog's tail, and whiskers. | Powerful, but strongly addictive. Sources must be discovered outside of destinations. | Off-grid | €10,000 |
+| 21 | Rare drugs | Rare and illegal intoxicants like black light lotus, cat snip, dog’s tail, and whiskers. | Powerful, but strongly addictive. Sources must be discovered outside of destinations. | Off-grid | €10,000 |
 | 22 | Replacement bodies | Fine, compliant bodies -- perfect for biomancy. Grown in vats, these are a cruelty-free alternative to body theft for Ultras. | Vital for ultras who are ethical? | Three Sticks Lake | €2,000 |
 | 23 | Saffron | Mind-altering spice made from the Yellow Land saffron plants. | Improves cognition and boosts reflexes. Also gives everything an expensive golden hue. | Yellow Land | €1,000 |
 | 24 | Sanguine porcelains | Mined from the deposits of older times. Unknown if still manufactured anywhere. | Prized as a pigment or for carving. Properly treated, it can regrow lost flesh. | Potsherd Crater | €200 |
@@ -6073,7 +6073,7 @@ Well, it will be, once the loan is paid off. Setting up a caravan can be overwhe
 
 2. **Vehicle**
 
-   A classic two-wheel wicker-and-aluminum covered cart. It's light and tough, and the canvas canopy keeps out the rain. It has (roll d6): (1) corporate paint job, (2) leaky dust-seals, (3) flag pole and flag, (4) plush mascot, (5) strange stains, or (6) chrome rails.
+   A classic two-wheel wicker-and-aluminum covered cart. It’s light and tough, and the canvas canopy keeps out the rain. It has (roll d6): (1) corporate paint job, (2) leaky dust-seals, (3) flag pole and flag, (4) plush mascot, (5) strange stains, or (6) chrome rails.
 
    Capacity: 6 sacks. Value: €200. Speed: Slow.
 
@@ -6105,7 +6105,7 @@ Well, it will be, once the loan is paid off. Setting up a caravan can be overwhe
 
    Occupies: 3 sacks. Value: €300.
 
-That's it! There's 1 sack of capacity spare (or a fella named Spare Sack) and €290 left of the loan. The character can buy some things (p.173) in the Violet City, do market research to figure out where to sell their goods (p.172), then head out into the Utter West and make a fortune. Come the new year, they owe their financier €2,000.
+That’s it! There’s 1 sack of capacity spare (or a fella named Spare Sack) and €290 left of the loan. The character can buy some things (p.173) in the Violet City, do market research to figure out where to sell their goods (p.172), then head out into the Utter West and make a fortune. Come the new year, they owe their financier €2,000.
 
 Multiple PCs can each contribute their starting cart, goods, and animals to the caravan, or they can be specialists attached to the caravan (prospectors, artists, hunters, explorers, ambassadors, or what have you).
 
@@ -6123,7 +6123,7 @@ For convenience, a caravan has one patron (at least initially). The caravan is i
 - **Transport**: five mules
 - **Inventory**: 4 sacks (cheap rations), 5 sacks (fine tubers, €500 total trade value), 1 sack (UVG hiker kit).
 
-A small trader could reach a destination two weeks away. It's risky going without any guards, but the potential for profit is large.
+A small trader could reach a destination two weeks away. It’s risky going without any guards, but the potential for profit is large.
 
 _Presenting the all-new Waste Cruiser ∏ĦΩř model thunder rig._ _Now with upgraded semi-sentient comfort mode!_
 
@@ -6163,7 +6163,7 @@ Safely travel throughout most of the Ultraviolet Grasslands, with enough animals
 - **Speed**: slow
 - **Capacity**: 20 sacks
 - **Transport**: five mules, one wagon, one horse
-- **Inventory**: 15 sacks (good rations), 1 sack (fortified vampire wines, €100 trade value), 3 sacks (adventure kitchen, dungeoneer's kit, excavator's kit), 1 rider.
+- **Inventory**: 15 sacks (good rations), 1 sack (fortified vampire wines, €100 trade value), 3 sacks (adventure kitchen, dungeoneer’s kit, excavator’s kit), 1 rider.
 
 With lots of capacity and a wagon, this caravan can drag large statues, pieces of machinery, or a small mountain of coin out of a dungeon. Additional warriors recommended.
 
@@ -6183,7 +6183,7 @@ This fast party of warriors can strike deep into the steppe and escape quickly. 
 - **Speed**: slow (+ 3 fast autowagons)
 - **Capacity**: 33 sacks + 5 cabins
 - **Transport**: one L12 autogolem and three L4 autowagons
-- **Inventory**: 24 sacks (good rations), 6 sacks of kit (adventure kitchen, hiker kit, golem gear, mechanic's chest, navigator's suitcase, one archaic golem armor), 3 sacks of ammo (cat rifle ammo, 30 magazines), 5 available sacks for cargo, 8 rig riders with cat rifles (2d10, far, reload 4).
+- **Inventory**: 24 sacks (good rations), 6 sacks of kit (adventure kitchen, hiker kit, golem gear, mechanic’s chest, navigator’s suitcase, one archaic golem armor), 3 sacks of ammo (cat rifle ammo, 30 magazines), 5 available sacks for cargo, 8 rig riders with cat rifles (2d10, far, reload 4).
 
 One heavy golem rig as the heart of the group and three fast wicker autowagons to maneuver around and do a full-on road warrior adventure. Mounts for additional heavier weapons on the autogolem rig are optional. Dagger axes (1d8) and spiked leather armors (+2 defense) for the whole crew would add another €520.
 
@@ -6196,7 +6196,7 @@ Most would-be travelers in the vast grasslands, beyond the reach of civilization
 | d20 | Who Are They? | What Do They Want? | Their Organization | Their Opponents | Weaknesses and Oddities |
 |---:|:---|:---|:---|:---|:---|
 | 1 | Hexad RLD smuggler | Money and respect | Ruthless incorporation | Disgruntled nobles | Communicates through telepathy. |
-| 2 | Vintner lord's butler | Willing blood-donor serfs | Aristocratic moiety | Organized proles | Uses a synthetic body-replacement. |
+| 2 | Vintner lord’s butler | Willing blood-donor serfs | Aristocratic moiety | Organized proles | Uses a synthetic body-replacement. |
 | 3 | Metropolitan banker | Infinite cash | Butcher investment fund | Oppressed dogheads | Has many clones. Sends them as agents. |
 | 4 | D.W.A.R.F. industrialist | Rebuild oldtech factory | Synthetic machine guild | Anti-machine fanatics | Wears a modular face replacement. |
 | 5 | Safranj merchant baron | Destroy foe. Financially. | Family company. Mob? | Pro-machine cultists | Always levitates 10cm above the ground. |
@@ -6245,7 +6245,7 @@ Most would-be travelers in the vast grasslands, beyond the reach of civilization
 
 ### Trade Routes (Milk Runs)
 
-What if the PCs figure out a trade route they can keep rinse and repeat for profit -- a milk run? Let them. They'll get bored soon enough. Or they can set up a trade route with an NPC representative and -- probably -- additional financiers. The minimum investment for a trade route is €10,000 per week's journey. Figure out the investment and how safe the PCs choose to play it.
+What if the PCs figure out a trade route they can keep rinse and repeat for profit -- a milk run? Let them. They’ll get bored soon enough. Or they can set up a trade route with an NPC representative and -- probably -- additional financiers. The minimum investment for a trade route is €10,000 per week’s journey. Figure out the investment and how safe the PCs choose to play it.
 
 - **Safe**: a steady 5% return, almost no risk. Right?
 - **Profitable**: good profits, but some risks.
@@ -6253,15 +6253,15 @@ What if the PCs figure out a trade route they can keep rinse and repeat for prof
 
 Trade Route Events & Returns (per trip)
 
-Roll on the chosen column (safe, profitable, or aggressive) when the PCs create a trade route by completing an initial round trip with a full caravan. Roll again whenever they return to collect their profits -- PCs can't collect before a caravan has completed at least one trip (obviously). Hero dice can apply.
+Roll on the chosen column (safe, profitable, or aggressive) when the PCs create a trade route by completing an initial round trip with a full caravan. Roll again whenever they return to collect their profits -- PCs can’t collect before a caravan has completed at least one trip (obviously). Hero dice can apply.
 
-Trade route caravans are always slow and take at least double the number of weeks listed for each trip. With routes blocked by seasons of winter and mud for roughly 25 weeks each year, very long trade routes can become years' long affairs.
+Trade route caravans are always slow and take at least double the number of weeks listed for each trip. With routes blocked by seasons of winter and mud for roughly 25 weeks each year, very long trade routes can become years’ long affairs.
 
 | d20 | Safe Route | Profitable Route | Aggressive or Illegal Route |
 |---:|:---|:---|:---|
 | 1 | Drivers convert to millenarian cult. Gave all to the poor and joined a fraternity. | Slaver attack! Everyone sold for (roll d3): (1) biomatter, (2) labor, (3) reprogramming. 100% loss. | Extra-dimensional incursion swallows the caravan. Everything is gone. 100% loss. |
 | 2 | Savage flash flood. Much cargo ruined. Gold dust found in remaining sacks. Prospect? 50% loss. | Reaver attack. Half of defenders killed. Most of the cargo taken. 75% loss. | Rival mercer guild bribed the drivers to their side with all the goods. Potential 100% loss. |
-| 3 | Local faction locks up caravan for breaking obscure custom. Will be released in 1d4 months. | Nomads block route and take goods. Caravan returned with nomads' thank you letter. 50% loss. | Caravan Ghosts possess the caravan and use it as an infection vector to take over a settlement. Spooky. |
+| 3 | Local faction locks up caravan for breaking obscure custom. Will be released in 1d4 months. | Nomads block route and take goods. Caravan returned with nomads’ thank you letter. 50% loss. | Caravan Ghosts possess the caravan and use it as an infection vector to take over a settlement. Spooky. |
 | 4 | 1% profit and oil paintings (€1k to a collector, roll d6): (1) vomes playing cards, (2) trees, (3) mountains, (4) stars, (5) unicorns, (6) portraits. | Drivers strike out as independents. Dump cargo at a safe town. Make off with vehicles and skimmed profits. 33% loss. Hope it was insured. | Monster attack! Sole survivor tells of horror and woe. Steeds destroyed, goods scattered round the wreckage. 50-75% loss. Some recovery possible. |
 | 5 | 2% profits and iridescent beetles (€1k to a biomancer, roll d6): (1) toxic, (2) ornate, (3) large, (4) surprisingly heavy, (5) delicious, (6) great fun. | Special local taxes. 25% loss. Two sacks of paperwork and receipts received as "proof". | Bandit attack! Most of the steeds and goods taken. 75% loss. Tracks to bandit hideout. |
 | 6 | 3% profits and a two-headed (roll d6): (1) ox, (2) wolf, (3) hamster, (4) statue, (5) shrub, (6) golem. | Weather and vomes catch the caravan. Drivers hid the goods and escaped with the beasts and vehicles. Potential 50% loss. | Caravan upsets local faction, goods seized. Vehicles returned. 75% loss. |
@@ -6270,33 +6270,33 @@ Trade route caravans are always slow and take at least double the number of week
 | 9 | 6% profits and postcards from deeper in the UVG. The cards imply a ... buried ... fan of the PCs? | 11% profits. Also mineral samples from a potential mining region. Worth digging too deep? | Freak snowstorm. Drivers hide goods and corpses in a cave. 25% loss. Corpses reanimate later. Oops. |
 | 10 | 7% profits and a map with scribbled notes of more treasures further away. | 12% profits and some nicely patterned fabric samples. Could be a new trade good? | Autonom warriors killed several members of the caravan. 10% loss due to liabilities. |
 | 11 | 8% profits and a metal gastropod shell that plays Long Ago musics from an implanted vidy crystal. | 14% profits and a new dice game that could be marketed with a small initial investment. | Unusual discovery! Half the crew went mad. 25% loss. Loot odd statues from the site (€11,000+)? |
-| 12 | 9% profits and the bones of some odd creature. A necromancer might resurrect it (€1,500 steed)? | 16% profits and a small, cute pet. It's really very cute. So cute nobody could ever hurt it. | 20% profits and a creepy musical instrument that suggests a deal with a chthonic deity. |
-| 13 | 10% profits and a pet rock. The rock is cursed and will not leave. Still, it is a friendly (if very unlucky) rock. It likes to be held. It is labeled "Pickles." | 19% profits and a new, virulent disease that (roll d6): (1) kills, (2) cripples, (3) disfigures, (4) weakens, (5) exhausts, (6) embarrasses. | 100% profits. Drivers eat one another. Beasts starve. Trade route collapses. Locals say it's a curse. |
+| 12 | 9% profits and the bones of some odd creature. A necromancer might resurrect it (€1,500 steed)? | 16% profits and a small, cute pet. It’s really very cute. So cute nobody could ever hurt it. | 20% profits and a creepy musical instrument that suggests a deal with a chthonic deity. |
+| 13 | 10% profits and a pet rock. The rock is cursed and will not leave. Still, it is a friendly (if very unlucky) rock. It likes to be held. It is labeled "Pickles." | 19% profits and a new, virulent disease that (roll d6): (1) kills, (2) cripples, (3) disfigures, (4) weakens, (5) exhausts, (6) embarrasses. | 100% profits. Drivers eat one another. Beasts starve. Trade route collapses. Locals say it’s a curse. |
 | 14 | 11% profits and some pickled mushrooms. One of the mushrooms is actually a vome (L1, vegetable). | 20% profits and a charming potted plant of unique and baroque charm. It can talk. | 30% profits and an undying servant of gruesome design and odd proportion. They are kind. |
 | 15 | 12% profits and a dutiful little mechanical servant. It can learn any skill. It can remember one skill. | 30% profits and sculptures that cause profound nausea when watched or touched (€2,000, 1 sack). | 40% profits and an empty alien casket. The casket has navigation rituals for accessing a fast star. |
 | 16 | 13% profits and a sack (€250) of ugly shoes -- easy to clean and water resistant. Who made them? | 30% profits and some new fashions. Red suspenders and ruffled shorts here we come! | 40% profits, but all the drivers seem to have been ... replaced. They look the same but feel different. |
 | 17 | 14% profits and a kitschy replica of a monolith with spring-activated altar and prayer-action. | 30% profits and a trained hunting vome (L1d4+2, docile) with silver eyes and iron tusks. | 50% profits. All the animals now have eyes that have seen too much. Also, they are all red. |
-| 18 | 15% profits and a small troupe of hairless monkeys with shocking rainbow manes. | 30% profits and a scholar who is only half there. Promises to unlock a phase gate. Says it's safe. | 60% profits and all the crew have acquired an array of biomechanical parts. This is fine. Right? |
+| 18 | 15% profits and a small troupe of hairless monkeys with shocking rainbow manes. | 30% profits and a scholar who is only half there. Promises to unlock a phase gate. Says it’s safe. | 60% profits and all the crew have acquired an array of biomechanical parts. This is fine. Right? |
 | 19 | 18% profits and a traditional bone war club. It bears a map to a ... Lost World theme-realm? | 30% profits and a beautiful weapon. Probably not an artifact, but worth 10x normal. Also, it talks. | 70% profits and a scary sentient vehicle named Qit Quyo (L7, fast). It eats souls for fuel. |
 | 20-23 | 20% profits and an overlong epic tale of a voyage of self-discovery. Write it all down to gain +1 Aura. | 40% profits and a holy relic. It brings nightmares and prophecies of doom. They are true. | 80% profits and a strange machine that whispers in the dark. It has no name. It has no color. Zu. |
-| 24+ | 30% profits and a free 99-year lease on a nice retirement bungalow in a Metropolitan suburb. Don't ask what the agent had to do to get that. | 60% profits and a machine human servant named Tassilo od Sharamba (L2, butler). They can unlock an aerolithic palace by the Near Moon. | 120% profits and a machine human master named Shoya osi Clavo (L5, ancient abmortal). They say it is time to restart the second sun. |
+| 24+ | 30% profits and a free 99-year lease on a nice retirement bungalow in a Metropolitan suburb. Don’t ask what the agent had to do to get that. | 60% profits and a machine human servant named Tassilo od Sharamba (L2, butler). They can unlock an aerolithic palace by the Near Moon. | 120% profits and a machine human master named Shoya osi Clavo (L5, ancient abmortal). They say it is time to restart the second sun. |
 
 <a id="page_0178"></a>
 
 ### Caravan Quests
 
-If trading and exploring isn't enough, these secret quests may give additional incentives for travel into the half-forgotten land, between the sunset and the stars, where the veterans of the psychic wars still dwell, ruminating on their lost lives. Completing a quest may net a party enough xp to gain a level.
+If trading and exploring isn’t enough, these secret quests may give additional incentives for travel into the half-forgotten land, between the sunset and the stars, where the veterans of the psychic wars still dwell, ruminating on their lost lives. Completing a quest may net a party enough xp to gain a level.
 
 1. **Big Game Hunting**. A wealthy gentleperson on a mission to acquire seven exceptional (and bulky trophies) has commissioned the caravan.
-2. **Explore Forgotten Ruins**. A wizards' community college is building an archaeology collection. Here, on the map, are five promising locations.
+2. **Explore Forgotten Ruins**. A wizards’ community college is building an archaeology collection. Here, on the map, are five promising locations.
 3. **Glorious Naturalists**. A civilian scientific society seeks to flatter its oligarch founders with new discoveries. The party is tasked with recording nine new minerals, plants, animals, and hyper-natural phenomena.
 4. **Learn Ancient Secrets**. A forbidden book documents five secrets scattered around the UVG, each protected by a crotchety custodian. With the five secrets a wizard can spend figure out how to reactivate an ancient gate, or some other powerful magic.
 5. **Diplomatic Mission**. Ambassadors sent to spy on the barbarians of the wilderness and foment strife. A war breaking out will be best, but three military intelligence reports will also do.
 6. **Escort Duties**. Three loud, squabbling clients are headed to a remote destination. They are (d6): (1) bumbling aristocrats, (2) over-eager dilettantes, (3) cloistered cultists, (4) pampered merchants, (5) ivory-tower scholars, or (6) amateur archaeologists. Their survival is, of course, necessary.
-7. **Assassination**. A (d6): (1) master assassin, (2) rogue pretender, (3) scary wizard, (4) important researcher, (5) beautiful gladiator slave or (6) prophesied scion has escaped into the wilds. Bring their head to the Divine President. Three clues are scattered randomly in the first 10 destinations in the UVG. They provide the key to the target's true location.
+7. **Assassination**. A (d6): (1) master assassin, (2) rogue pretender, (3) scary wizard, (4) important researcher, (5) beautiful gladiator slave or (6) prophesied scion has escaped into the wilds. Bring their head to the Divine President. Three clues are scattered randomly in the first 10 destinations in the UVG. They provide the key to the target’s true location.
 8. **Witness the End of Time**. Must deliver a bulky Long Ago artifact to the Final Destination as defined by the Map to the End of Time. The map was torn into 3 parts, each hidden at a random destination. The End of Time is optional.
 9. **Saving the World**. The holiest of relics from the Final Place will avert the End of the World. A series of random destinations leading into the Deep Grasslands holds the 3 parts of the Key Compass to the Final Place. There is also a 1-in-6 chance that any one of these destinations is home to an **Avatar of the End** (L11, angel of death) bent on ensuring the world ends. Once the Key Compass is reassembled it unlocks access to a deadly dungeon at the Final Place. The End of Time is still optional.
-10. **Ascending into the Sky like the Shamans of Old**. The people's myths tell of the Long Long Ago, when the Ancestors walked in the stars. Following visions from the True Mother, a group of noble and ruthless warriors and seers has been chosen to return to the stars and tell the tale of their oppression and bring the Ancestors back to the earth. Three random destinations each hold a bulky Ladder to the Sky. Once the three Ladders are reunited, a **Demon of Lies** (L11, misunderstood) appears. Inside the Demon's head is a crystal astrolabe that points to the destination of ascendance. Reaching the space port is enough. Actual void-faring is optional.
+10. **Ascending into the Sky like the Shamans of Old**. The people’s myths tell of the Long Long Ago, when the Ancestors walked in the stars. Following visions from the True Mother, a group of noble and ruthless warriors and seers has been chosen to return to the stars and tell the tale of their oppression and bring the Ancestors back to the earth. Three random destinations each hold a bulky Ladder to the Sky. Once the three Ladders are reunited, a **Demon of Lies** (L11, misunderstood) appears. Inside the Demon’s head is a crystal astrolabe that points to the destination of ascendance. Reaching the space port is enough. Actual void-faring is optional.
 
 <!-- Begin: Ultraviolet_Grasslands_and_the_Black_City_2e_05_The_Stuff_179-200 -->
 
@@ -6912,11 +6912,11 @@ Vehicles & Mounts 187
 
 | d20 | What Broke? | How Do We Fix It? |
 |---:|:---|:---|
-| 1 | Sparkulators clogged. | Take ‘em out & file them. |
+| 1 | Sparkulators clogged. | Take ’em out & file them. |
 | 2 | Lightning whirler isn’t whirling. | Squint and twiddle some screws. |
 | 3 | Fuel tube burst. | Run a new one. |
 | 4 | Brakes gone. | It’ll probably be fine. |
-| 5 | Flat tire. | Get the tools, patch ‘n’ swap. |
+| 5 | Flat tire. | Get the tools, patch ’n’ swap. |
 | 6 | Radumilator blown. | Keep adding fluids on the go. |
 | 7 | Fuel pump seized. | Probably need a new one. |
 | 8 | Won’t hold pressure. | Time for bubblegum welding. |
@@ -7287,7 +7287,7 @@ On the road, many things can and do go wrong. Entrepreneurs sprout like mushroom
 | 5 | Aristotel | 1 day | Bonded servants provide a refined experience (rare). | Rich rumors. Clues to trade routes. | €20 |
 | 6 | Long Ago Museum | 1 day | An altar of lost knowledge and found heresies (rare). | Place to learn new old skills or spells. | €50 |
 | 7 | Roadside Attraction | 1 day | Unique yet boring experience (uncommon). | Learn tricks about the local culture. | €10 |
-| 8 | Guns 'R' Us | 3 hours | Weapon themed traveling autofac experience (rare). | Upgrade guns and ammo. | €100 |
+| 8 | Guns ’R’ Us | 3 hours | Weapon themed traveling autofac experience (rare). | Upgrade guns and ammo. | €100 |
 | 9 | Hedge Witchcraft | 3 hours | Road crone provides curses and potions (uncommon). | Curse an opponent with bad luck. | €25 |
 | 10 | Eden Dome | 3 days | Leftover from Long Ago, the pinnacle of synthetic bliss (v rare). | Recover all life & ability points. | €200 |
 | 11 | Memory Beach | 1 day | Sand that sparkles with the light of an older sun (rare). | A week’s worth of solar charging. | €20 |
@@ -7382,7 +7382,7 @@ Found on a defeated creature or a sleeping traveler. Give one or both, as you pr
 75. Decapolitan guide to intrigue and war for beginners _or_ fancy chicken (€250).
 76. Ur-obsidian bottle of ancient fire water _or_ crystal and gold hypodermics (€300).
 77. Fetish servant made of giant centipede limbs, luminescent wood, and quarterling bones _or_ supply of felix whizz (€350).
-78. Bio-necromantic preserver parasite, keeps freshly dead ‘alive’ _or_ last steel nodule (€400).
+78. Bio-necromantic preserver parasite, keeps freshly dead ’alive’ _or_ last steel nodule (€400).
 79. Lingish personality rewiring headphones _or_ vidy crystal with tales of a heroic age (€450).
 80. Sand dragon bone golem dog (L3, loyal, tough) _or_ rainbow joy worm (€550).
 81. Prohibited radiation gun from Long Long Ago (3d8) _or_ bi-mannerist porcelain vase set (€600).
@@ -8346,7 +8346,7 @@ There’s always somebody trying to cheat death. Long Ago, perhaps, one could be
 
 **Attack:** +1 bonus, 1d6 damage or by weapon.
 
-**Special:** Most post-mortals are immune to critical damage. There is a 1-in-6 chance any ‘slain’ post-mortal returns to the fray as a Broken Shell (Level 1, Life 4, 1d4 damage).
+**Special:** Most post-mortals are immune to critical damage. There is a 1-in-6 chance any ’slain’ post-mortal returns to the fray as a Broken Shell (Level 1, Life 4, 1d4 damage).
 
 **Treasure:** 1-in-6 have implants worth €50.
 
@@ -8560,7 +8560,7 @@ Restoring a Satrap body costs around €5,000. Satraps in good standing have acc
 
 - **Endosymbionts:** Small, telepathically bonded creatures (such as monkey-lizards or venomous rabbit-snakes) stored in their synthetic skin (one per level). Each performs one specialized task (pick locks, cook breakfast, clean equipment). They may occupy trait or item slots.
 
-- **Light Magic:** Satraps retain some of the force-shaping magics of Long Ago, creating _illusions_ and _scorching rays of coherent light_, as well as solid _planes and lines of ‘hard’ light_ .
+- **Light Magic:** Satraps retain some of the force-shaping magics of Long Ago, creating _illusions_ and _scorching rays of coherent light_, as well as solid _planes and lines of ’hard’ light_ .
 
 <a id="page_0212"></a>
 
@@ -8979,7 +8979,7 @@ Pets start at level 1 with 1d6+5 life, defense of 1d6+7 and a bonus of +3. Playe
 | 42 Scavenging | Raccoon | Beetle-crunching teeth (1d4+1). | Finds something halfway useful in trash. | Tearing clothes |
 | 43 Affected | Possum | Snuffling bite (1d3). | Keeps a small area clear of vermin. | Fishing |
 | 44 Golden | Amphibious Goldfish | Bubbles (1). | Grants one very small wish per day. | Snoring loudly |
-| 45 Regal | Cobra | Neurotoxic venomous bite (1d4). | Can live indefinitely in a wicker basket. | Bringing dead ‘gifts’ |
+| 45 Regal | Cobra | Neurotoxic venomous bite (1d4). | Can live indefinitely in a wicker basket. | Bringing dead ’gifts’ |
 | 46 Psychedelic | Frog | Slappy footsies (1). | Secretes powerful contact hallucinogen. | Riding on its master |
 | 47 Flowery | Crawling Shrubbery | Poking root (1d4). | Looks perfectly harmless standing still. | Learning new tricks |
 | 48 Seditious | Pet Rolling Rock | Self-flung rock (1d4). | Needs neither food nor drink nor air. | Staring. Hard |
@@ -9302,7 +9302,7 @@ Eras and times lost beyond the records in the Great Mist. Fragments, shells, and
 
 Wanderer, the Fast Stars, the Hole in Heaven, and the soul mills.
 
-Discovering any of these fragments has world-changing consequences for the game. Individual heroes who gain the powers of these fragments would become gods to their contemporary later mortals. Be prepared to refashion the campaign with new ‘gods’— and very likely new heroes.
+Discovering any of these fragments has world-changing consequences for the game. Individual heroes who gain the powers of these fragments would become gods to their contemporary later mortals. Be prepared to refashion the campaign with new ’gods’— and very likely new heroes.
 
 Dimly Remembered Strife (d12)
 
@@ -9378,7 +9378,7 @@ Many languages are and were spoken by the many humans of the Rainbow Lands. Here
 The Common Languages
 
 1. **High Common (rainbow):** The upper-class, literary common rainbow tongue taught by teachers to noble and rich students. Old fashioned, unnecessarily complex grammar and pronunciation. Words change depending on context, speaker, and intent. Numbers change depending on what is being counted. Elaborate written tradition.
-2. **Vulgar Common (rainbow):** The trade _lingua_ of the non-noble middle-classes and professionals of the Rainbow Lands, with distinct regional dialects. Only written for trade. Influenced by outer languages. Similar to ‘City Speak’ or ‘Gutter Talk.’
+2. **Vulgar Common (rainbow):** The trade _lingua_ of the non-noble middle-classes and professionals of the Rainbow Lands, with distinct regional dialects. Only written for trade. Influenced by outer languages. Similar to ’City Speak’ or ’Gutter Talk.’
 3. **Purple Speech (rainbow):** The dialects of the peasants and laborers of the Purple Land, with many borrowings from the steppe folk. Mostly oral, no written tradition. Very similar to Bluenttalk, but it’s an insult to say so.
 4. **Bluenttalk (rainbow):** The harsh and uncouth dialects of the exiles from the Blue Land and the wild folk still living there. Any writing has been suppressed long ago. Possesses a surprisingly detailed vocabulary of dairy products and aquatic vegetables. Borrowings from Blue Tongue.
 5. **Greenspeak (rainbow):** The peasant and forester dialects of the Greenland. No written tradition. Large vocabulary corpus. Speakers from different dialects can mostly understand each others’ words, even if just by context.
@@ -9389,7 +9389,7 @@ The Common Languages
 10. **Oranjetic (rainbow):** The vulgar dialects of the Orange Land, very similar to Saffranian. Paltry written tradition. A musical dialect, exquisite in song.
 11. **Free Circle Kriol (rainbow creole):** The wonderfully rhymed disyllabic speech of the Circle Sea free families (pirates) and river-travelers. No written tradition and vast variation among dialects prompting some scholars to say it is not so much a language as a mass outbreak of glossolalia.
 12. **Redland District Cant (rainbow creole):** The badly rhyming vulgar speech of the autonomous enclave that is the Red Land District. Vast written tradition, but mostly political tracts. Large influence of Decapolitical through trade. Lots of swearing.
-13. **Red Tongue (rainbow):** The vulgar dialects of the Red Land with many dwarven elements admixed. Poor written tradition. Heavily influenced by the slurred speech of the long-reigning Grand Red Duke Moshle IV, the Red Tongue replaces ‘s’ sounds with ‘sh’ and runs words together, as after too much wine.
+13. **Red Tongue (rainbow):** The vulgar dialects of the Red Land with many dwarven elements admixed. Poor written tradition. Heavily influenced by the slurred speech of the long-reigning Grand Red Duke Moshle IV, the Red Tongue replaces ’s’ sounds with ’sh’ and runs words together, as after too much wine.
 14. **Winerian (dwarven):** The hill dialects of the Vintner Dwarves of the Red Land and Orange Land. Little writing, and what there is, quite literalist. Heavily influenced by the Red Tongue, Winerian is the most linear of the dwarven dialect.
 15. **Volkan (dwarven):** The mountain dialects of the Mountains of Light and the Black Gold. Vast written corpus. When written, the space between the characters has as much meaning as the characters themselves. Much is lost by speaking it. Lots of silences and isolated consonants. It is best spoken indoors or in echoing caves. The echo is part of the language. It sounds very strange outdoors as parts of the words are missing.
 16. **Woodlander (elven):** The language found inscribed on trees and rocks in the Elvenwood, spoken by some of the tribes there. Isolated inscriptions. The language is structured to change meaning with the seasons and the phases of the moon as though it does not quite belong on the solid earth.
@@ -9439,7 +9439,7 @@ In a game, this trinity affects how the dead, the undead, and the resurrected be
 
 _All academic-priestly societies have their own traditions on the essential_
 
-_structure of the individual (or the dividual). Some claim their ‘truths’ hail_
+_structure of the individual (or the dividual). Some claim their ’truths’ hail_
 
 _from pre-cosmic times. This is usually dismissed as a bit much._
 
@@ -9555,9 +9555,9 @@ It does remain massive, however, so a long lever is often required.
 
 **Demon:** Confused term for various bodiless sentiences. Applied indiscriminately to multiple superficially similar phenomena. Avoided by scholars.
 
-**Dryland Coral:** The ‘living rock,’ one of the ancient biomantic and petromantic arts. Master growers can sculpt and shape it into evocative post-modernist forms emphasizing the interdependence of human and nature. Ill-grown dryland coral may leach nutrients and life from nearby areas, creating localized deserts. Cancerous dryland coral may even spread runners that grow into burgeoning house-clusters. There are rumours of a great living-ghost city in the heart of the Twilight Desert which has grown to occupy an area larger than the freehold of a corporate duke. A civil biomancer and crew can sculpt a dryland coral home in 2 years for €10,000/year.
+**Dryland Coral:** The ’living rock,’ one of the ancient biomantic and petromantic arts. Master growers can sculpt and shape it into evocative post-modernist forms emphasizing the interdependence of human and nature. Ill-grown dryland coral may leach nutrients and life from nearby areas, creating localized deserts. Cancerous dryland coral may even spread runners that grow into burgeoning house-clusters. There are rumours of a great living-ghost city in the heart of the Twilight Desert which has grown to occupy an area larger than the freehold of a corporate duke. A civil biomancer and crew can sculpt a dryland coral home in 2 years for €10,000/year.
 
-**Dwarf:** Backronym from ‘De Werker Aristocratiscee Revolutie Fraternitie,’ Dwarfs are a distinct culture-class of selectively biomanced people. They have effectively fought the traditional aristoi of the Red and Orange lands to a standstill and now form a major industrialist society of the Rainbowlands. A famously bureaucratic and collectivist faction, they are the only one staunchly opposing the bureaucratic and individualist Emerald City Cogflower Corporation (actually a coin church).
+**Dwarf:** Backronym from ’De Werker Aristocratiscee Revolutie Fraternitie,’ Dwarfs are a distinct culture-class of selectively biomanced people. They have effectively fought the traditional aristoi of the Red and Orange lands to a standstill and now form a major industrialist society of the Rainbowlands. A famously bureaucratic and collectivist faction, they are the only one staunchly opposing the bureaucratic and individualist Emerald City Cogflower Corporation (actually a coin church).
 
 **Elf, also Vila (or Vile?):** Scary, mythical, time-dilating, shapeshifting monsters rumored to live beyond the Mountains of the Moon, where the tangled sky trees snag clouds from the sky and a shadow lurks over every soul.
 
@@ -9609,7 +9609,7 @@ Creating a ka‐zombie has nothing to do with necromancy, and the subsequent cre
 
 **Ling:** Mysterious, missing sentient subtype, attested to in Long Long Ago records, epic poems such as _The Epic Journey of the Great_ _Wand E. Ling_, and the bloodlines of the halflings and quarterlings. According to the myths of the Half-Broken Age, the lings mastered dream travel and ended the Vile Age.
 
-**Livingstone:** Inorganic material, usually rock, animated with the spirit of life to reform into new structures. Core discipline of petromancy, only superficially similar to dryland coral biomancy. It uses a silicon‐based process to create its ‘living’ constructs.
+**Livingstone:** Inorganic material, usually rock, animated with the spirit of life to reform into new structures. Core discipline of petromancy, only superficially similar to dryland coral biomancy. It uses a silicon‐based process to create its ’living’ constructs.
 
 **Long Ago:** Half-remembered times before the Rainbow Order was founded around the Circle Sea. Studies of the Long Ago are half-heartedly forbidden by the Green Inquisition and avidly pursued by the Red Land District and other fringe groups.
 
@@ -9635,7 +9635,7 @@ Recorded examples include rabbits who behaved like pressure cookers, one tuberou
 
 **Oneiromancer:** Reader and traveler of dreams—ultras are known to be terrifying oneiromancers.
 
-**Orcs:** Obviously, the orcs were a Long Ago attempt to create a combat‐adapted para-human. They were successfully eradicated following the Decree of the Seven Lands, slightly before the Swamping of the Blues. In fact, many were ‘eradicated’ by the efforts of the Bureaucratic Legion which reclassified large numbers of orcs as half-orcs—a permitted soul-body-personality triad under the regulations of the then omnipotent Power Group 13.
+**Orcs:** Obviously, the orcs were a Long Ago attempt to create a combat‐adapted para-human. They were successfully eradicated following the Decree of the Seven Lands, slightly before the Swamping of the Blues. In fact, many were ’eradicated’ by the efforts of the Bureaucratic Legion which reclassified large numbers of orcs as half-orcs—a permitted soul-body-personality triad under the regulations of the then omnipotent Power Group 13.
 
 <a id="page_0236"></a>
 
@@ -9661,7 +9661,7 @@ That would be foolish—and potentially life-threatening under the Unity Promulg
 
 Still, the power harvested is immense. Scholars speculate that the Mist obscuring the Long Long Ago resulted from the overuse of industrial soul milling. In game terms, any hero or creature processed through a soul mill is gone forever, their very deeds and memories doomed to leach away into oblivion.
 
-**Source:** Generic term for the creative essence of the world—the world soul—that some creatures use to exceed the parameters of their physical existence. Also called the ‘blood of magic.’
+**Source:** Generic term for the creative essence of the world—the world soul—that some creatures use to exceed the parameters of their physical existence. Also called the ’blood of magic.’
 
 **Stuckforce:** Detritus of Long Long Ago magics or technologies or curses, these shears in space-time create odd planes, lines, points, and volumes of solidified force. Over time they become visible with accumulated dirt and dust, some very large ones even appearing as floating islands. Even today, a critically failed _Floating Disc_ spell might result in a small stuckforce plane, forever more disrupting the reality of the location where it was cast.
 
@@ -10356,7 +10356,7 @@ _SDM brought to you courtesy of WizardThiefFighter Studio,_ _the Stratometaship,
 | Unit | Equals |
 | --- | --- |
 | 1 sack | 10 stones = 100 soaps = €2,500 |
-| 1 cash | laborer's day pay |
+| 1 cash | laborer’s day pay |
 | 1 soap | potion, pen, parasite |
 | 1 stone | sword, shovel, shield |
 | 1 sack | packed human inventory |
@@ -10412,11 +10412,11 @@ Each week for the whole caravan. Days flow endless in the sun.
 | Fast tags negate one tally each | all mounted, a good guide, fine steeds, fast golems, etc. |
 | Slow tags add one tally each | encumbered, sick, heavy, slow, damaged, crippled, etc. |
 
-**This Week's Camp (P000)**
+**This Week’s Camp (P000)**
 
 This wilderness, this abandoned place, this flicker of light in the Vast, this moment of respite.
 
-| d8 | Nature's gift |
+| d8 | Nature’s gift |
 | --- | --- |
 | 1 | Biomech copse |
 | 2 | Livingstone corral |
@@ -10427,7 +10427,7 @@ This wilderness, this abandoned place, this flicker of light in the Vast, this m
 | 7 | Outlook rise |
 | 8 | Watering hole |
 
-| d8 | History's remnant |
+| d8 | History’s remnant |
 | --- | --- |
 | 1 | Ur-metal lattice |
 | 2 | Stuck aeroliths |
@@ -10438,7 +10438,7 @@ This wilderness, this abandoned place, this flicker of light in the Vast, this m
 | 7 | Tumbled houses |
 | 8 | Monument of shadow and light |
 
-| d8 | Road's worries |
+| d8 | Road’s worries |
 | --- | --- |
 | 1 | Ague |
 | 2 | Moldy food |
@@ -10544,7 +10544,7 @@ Any PC. Bulk sales take a week.
 
 **Carousing (P16)**
 
-Any PC. Spend a week & €1d6\*x100, then gain that many XP & roll. Can't pay = [-] on roll. \*exploding
+Any PC. Spend a week & €1d6\*x100, then gain that many XP & roll. Can’t pay = [-] on roll. \*exploding
 
 | roll ...and consequences | outcome |
 | --- | --- |
@@ -10552,7 +10552,7 @@ Any PC. Spend a week & €1d6\*x100, then gain that many XP & roll. Can't pay = 
 | 2-7 | Bad luck, silver linings |
 | 8-11 | Annoying consequences |
 | 12-15 | Silly results |
-| 16-19 | Color, but all's well |
+| 16-19 | Color, but all’s well |
 | 20-24 | Jolly, humorous boon |
 | 25+ | A magical or rare gift |
 
@@ -10821,7 +10821,7 @@ P225
 | 17 | 1d4 hours |
 | 18 | 2 hours |
 | 19 | 1 hour |
-| 20 | It's here |
+| 20 | It’s here |
 
 ## **Rumored Origin**
 

@@ -298,7 +298,7 @@ Trait Notes:
 - `text:` should capture the most recent/full version; `usage` explains how it extends earlier sources.
 - Duplicate `source` entries whenever multiple books or paths continue to reference this trait.
 
-Use the `meta` list to capture every structured placement of the trait (path slot, trope variant, corruption tier, etc.). Keep the `tags:` short and searchable—one `[path:slug]` (or analogous) tag per relevant list—and push 'index' order, die results, or other metadata into `meta`. Slugs can mirror the published names (whitespace included) as long as they stay consistent.
+Use the `meta` list to capture every structured placement of the trait (path slot, trope variant, corruption tier, etc.). Keep the `tags:` short and searchable—one `[path:slug]` (or analogous) tag per relevant list—and push ’index’ order, die results, or other metadata into `meta`. Slugs can mirror the published names (whitespace included) as long as they stay consistent.
 
 ## Traits in Play
 
@@ -337,7 +337,7 @@ meta:
 
 ## Adaptable
 
->   **Adaptable.** Copy an enemy's last used special ability.
+>   **Adaptable.** Copy an enemy’s last used special ability.
 
 tags:
 >   [trait]
@@ -363,7 +363,7 @@ meta:
 
 ## Antimagus
 
->   **Antimagus.** Your very blood rebels against the false gods' trickery. Gain 2 life per level, but the price you pay for oldtech and fantascience spells is doubled.
+>   **Antimagus.** Your very blood rebels against the false gods’ trickery. Gain 2 life per level, but the price you pay for oldtech and fantascience spells is doubled.
 
 tags:
 >   [trait]
@@ -560,7 +560,7 @@ meta:
 
 ## Barbarian
 
->   **Barbarian.** You're an outlander or outsider, skilled with dead weapons and armors, free of oldtech or fantascience. Bone or iron, hide or gun. Also, you can hide, survive, and thrive in ruinland or waste land, dusty steppe or rugged mountain.
+>   **Barbarian.** You’re an outlander or outsider, skilled with dead weapons and armors, free of oldtech or fantascience. Bone or iron, hide or gun. Also, you can hide, survive, and thrive in ruinland or waste land, dusty steppe or rugged mountain.
 
 tags:
 >   [trait]
@@ -613,7 +613,7 @@ meta:
 
 ## Blessed
 
->   **Blessed.** When only luck will do, you have an advantage. That's also a bonus to all saves.
+>   **Blessed.** When only luck will do, you have an advantage. That’s also a bonus to all saves.
 
 tags:
 >   [trait]
@@ -777,7 +777,7 @@ meta:
 
 ## Brick Bastions
 
->   **Brick Bastions.** Floating shields, animated armors, soil golems, lumberlings, horde zombies, crawling flesh centipedes, armor vomes, gelatinous skeletons, and other creatures that can't avoid getting hit. Often slow.
+>   **Brick Bastions.** Floating shields, animated armors, soil golems, lumberlings, horde zombies, crawling flesh centipedes, armor vomes, gelatinous skeletons, and other creatures that can’t avoid getting hit. Often slow.
 > 
 >   Note: Brick Bastions is an alternate “tank/brute” NPC statline. Package: `Def` is fixed at 7, `Life` is table-driven and accelerates hard (well above `4 + 4×Lvl`), and `Dmg` scales cleanly as `(Lvl+1)d6`. `Bon` grows slowly (+0 to +5) and `Mor` reaches 11 by Lv 5. Tiers: Lv 0–2 bulky fodder; Lv 3–4 brute bodies; Lv 5–6 siege-stoppers; Lv 7–9 boss tanks.
 > 
@@ -1011,7 +1011,7 @@ meta:
 
 ## Chronic
 
->   **Chronic.** Spend a hero die to use a second power this round. Expert: When you go Chronic, you may hold the second power and release it at any point later in the round, even during another creature's action or resolution. Both your powers still count as being used in the same round for duration, limits, counters, etc. Master: Once per watch, you may use Chronic without spending a Hero Die -- but the second power automatically triggers a Danger Roll.
+>   **Chronic.** Spend a hero die to use a second power this round. Expert: When you go Chronic, you may hold the second power and release it at any point later in the round, even during another creature’s action or resolution. Both your powers still count as being used in the same round for duration, limits, counters, etc. Master: Once per watch, you may use Chronic without spending a Hero Die -- but the second power automatically triggers a Danger Roll.
 
 tags:
 >   [trait]
@@ -1095,7 +1095,7 @@ meta:
 
 ## Citizen Maintainer
 
->   **Citizen Maintainer.** Skilled at maintaining the citizens dead. Repair and improve the undead, converse with them, know their ways and needs. Also, a bonus to saves vs all undead special attacks. Expert: You can stabilize a degrading or malfunctioning mindless undead in the field: spend a few minutes and a drop of blood (or equivalent) to prevent this week's Degrade roll for that undead or remove feral status. Master: Mindless undead recognize you as maintenance staff and will not attack you unless provoked. Once per day, you may influence an undead you can touch: for a scene it treats you as its rightful handler and obeys simple commands. If you are caught doing this "off the books," it may count as illegal activity.
+>   **Citizen Maintainer.** Skilled at maintaining the citizens dead. Repair and improve the undead, converse with them, know their ways and needs. Also, a bonus to saves vs all undead special attacks. Expert: You can stabilize a degrading or malfunctioning mindless undead in the field: spend a few minutes and a drop of blood (or equivalent) to prevent this week’s Degrade roll for that undead or remove feral status. Master: Mindless undead recognize you as maintenance staff and will not attack you unless provoked. Once per day, you may influence an undead you can touch: for a scene it treats you as its rightful handler and obeys simple commands. If you are caught doing this "off the books," it may count as illegal activity.
 
 tags:
 >   [trait]
@@ -1154,7 +1154,7 @@ meta:
 
 ## Clueless Outsider
 
->   **Clueless Outsider.** Caught red-handed? Trespassing? Spend a hero die, and you're let off with a warning and an indulgent grin.
+>   **Clueless Outsider.** Caught red-handed? Trespassing? Spend a hero die, and you’re let off with a warning and an indulgent grin.
 
 tags:
 >   [trait]
@@ -1238,7 +1238,7 @@ meta:
 
 ## Commander
 
->   **Commander.** Excel at battle lore, tactics, and rally tests. Draw a Formation Inventory box on the character sheet and list attached Units/Vehicles (and/or stations). Draw a small Command Dice (d6) box beside it. Skilled: attach up to 3 Units within 1 zone; start combat with 1 Command Die. Expert: attach up to 5 Units within 2 zones; start combat with 2 Command Dice. Master: attach up to 7 Units within 3 zones; start combat with 3 Command Dice. Each Commander also gains 1 Command die at the start of their side's turn. "Start of combat" Command Dice refresh only after one encounter fully ends; follow-on waves, running fights, and active pursuits count as the same battle.
+>   **Commander.** Excel at battle lore, tactics, and rally tests. Draw a Formation Inventory box on the character sheet and list attached Units/Vehicles (and/or stations). Draw a small Command Dice (d6) box beside it. Skilled: attach up to 3 Units within 1 zone; start combat with 1 Command Die. Expert: attach up to 5 Units within 2 zones; start combat with 2 Command Dice. Master: attach up to 7 Units within 3 zones; start combat with 3 Command Dice. Each Commander also gains 1 Command die at the start of their side’s turn. "Start of combat" Command Dice refresh only after one encounter fully ends; follow-on waves, running fights, and active pursuits count as the same battle.
 
 tags:
 >   [trait]
@@ -1413,7 +1413,7 @@ meta:
 
 ## Crystal Cannons
 
->   **Crystal Cannons.** Electric wizards, gas goblins, spore shooters, drop bears, doom discs, floating rayballs, porcelain liches, thanatic fanatics, and others that deal damage but can't take it.
+>   **Crystal Cannons.** Electric wizards, gas goblins, spore shooters, drop bears, doom discs, floating rayballs, porcelain liches, thanatic fanatics, and others that deal damage but can’t take it.
 > 
 >   Note: Crystal Cannons are an extreme glass-cannon NPC package. Pattern: `Def` is always `Bon + 7`, and the flat add in `Dmg` always matches `Bon` (so you can reuse the attack bonus as the damage add). Their `Life` stays intentionally tiny (1–46) while `Def`/`Bon` climb quickly and damage jumps in “weapon tiers” (`1d6` → `1d12` → multi-die). Tiers: Lv 0–2 brittle blasters; Lv 3–4 dangerous strikers; Lv 5–6 elite cannons; Lv 7–9 boss artillery.
 > 
@@ -1892,7 +1892,7 @@ meta:
 
 ## Double-Platinum Deathless Backup
 
->   **Double-Platinum Deathless Backup.** You've got two soul jewels. One is in an egg in a duck in a hare in a secret pleasure vault on a private island. Hah!
+>   **Double-Platinum Deathless Backup.** You’ve got two soul jewels. One is in an egg in a duck in a hare in a secret pleasure vault on a private island. Hah!
 
 tags:
 >   [trait]
@@ -1947,7 +1947,7 @@ meta:
 
 ## Ducky
 
->   **Ducky.** As an underclass minority you know how to fight with concealed weapons and maneuver with ossified bureaucracies. Also, once per day, spend a hero die to 'remember' a reliable local creche clan member who could help you, for a price.
+>   **Ducky.** As an underclass minority you know how to fight with concealed weapons and maneuver with ossified bureaucracies. Also, once per day, spend a hero die to ’remember’ a reliable local creche clan member who could help you, for a price.
 
 tags:
 >   [trait]
@@ -2001,7 +2001,7 @@ meta:
 
 ## Enterprising
 
->   **Enterprising.** Somehow, you always earn 20% more. It's uncanny. You also know how to set up and shuffle tax-deductible shell charity companies.
+>   **Enterprising.** Somehow, you always earn 20% more. It’s uncanny. You also know how to set up and shuffle tax-deductible shell charity companies.
 
 tags:
 >   [trait]
@@ -2122,7 +2122,7 @@ meta:
 
 ## Expensive Training
 
->   **Expensive Training.** You had the best trainer, and now you're an expert at one trait, like fencing or vigilante boxing. Once per year, you can spend €1,000 and roll thought. Success: immediately increase a trait's skill (e.g. from skilled to expert).
+>   **Expensive Training.** You had the best trainer, and now you’re an expert at one trait, like fencing or vigilante boxing. Once per year, you can spend €1,000 and roll thought. Success: immediately increase a trait’s skill (e.g. from skilled to expert).
 
 tags:
 >   [trait]
@@ -2332,7 +2332,7 @@ meta:
 
 ## Feral
 
->   **Feral.** You are not soft like civilization's worms. Your honed intuition protects you from harm. Add aura to your saves and your life total.
+>   **Feral.** You are not soft like civilization’s worms. Your honed intuition protects you from harm. Add aura to your saves and your life total.
 
 tags:
 >   [trait]
@@ -2498,7 +2498,7 @@ meta:
 
 ## From Dust, Returning
 
->   **From Dust, Returning.** Your link to the world is stronger than ever. Even if crushed to dust, when your remains taste a sprinkle of (roll d6): (1) holy water, (2) blood, (3) wine, (4) tomato soup, (5) milk, or (6) nectar, your body reforms itself in a week. Expert: You return in a day. Master: Your dust can crawl -- if any drop of your catalyst exists within a day's travel, you reform there.
+>   **From Dust, Returning.** Your link to the world is stronger than ever. Even if crushed to dust, when your remains taste a sprinkle of (roll d6): (1) holy water, (2) blood, (3) wine, (4) tomato soup, (5) milk, or (6) nectar, your body reforms itself in a week. Expert: You return in a day. Master: Your dust can crawl -- if any drop of your catalyst exists within a day’s travel, you reform there.
 
 tags:
 >   [trait]
@@ -2529,7 +2529,7 @@ meta:
 
 ## Generic Synthesized Creature
 
->   **Generic Synthesized Creature.** The gods in their post-mechanical kindness, the demiurges, the life generators, the mother machines, the matter makers, the beast spews, they give forth many things. Though many fail to live, some live to terrify. If it's alive and has character, this table will serve.
+>   **Generic Synthesized Creature.** The gods in their post-mechanical kindness, the demiurges, the life generators, the mother machines, the matter makers, the beast spews, they give forth many things. Though many fail to live, some live to terrify. If it’s alive and has character, this table will serve.
 > 
 >   Note: A quick-and-dirty creature chassis—*a single line that describes the thing, right now, in this dream.* Through Lv 3 its a small synth—no extra bulk; from Lv 4 onward the makers start overbuilding you with tiered bonuses. Read the other columns as *implied kit*: rising `Def` is hide, plating, strange angles; rising `Bon` is instinct, training, guidance, hunger; and the `Dmg` breakpoints mark the escalation from “a bite” to “a weapon” to “a system” to “a catastrophe”. Tiers: Small Synth (Lv 0–3); Reinforced Synth (Lv 4–7); Heavy Synth (Lv 8–9); Monster Synth (Lv 10–13); Catastrophe Synth (Lv 14–17).
 > 
@@ -2712,7 +2712,7 @@ meta:
 
 ## Hackmagic
 
->   **Hackmagic.** Hack and modify active powers and oldtech effects. If you recognize a power (a thought test suffices) and it is equal or lower than your level, you can spend its price (in life or hero dice) to wrest control of it for one round. The Cosmic Qanat's increased level applies to the Hackmagic trait.
+>   **Hackmagic.** Hack and modify active powers and oldtech effects. If you recognize a power (a thought test suffices) and it is equal or lower than your level, you can spend its price (in life or hero dice) to wrest control of it for one round. The Cosmic Qanat’s increased level applies to the Hackmagic trait.
 
 tags:
 >   [trait]
@@ -2740,7 +2740,7 @@ meta:
 
 ## Hardened
 
->   **Hardened.** You're good at avoiding effects that would stun, paralyze, or otherwise incapacitate you. Also, resistant to electromagnificent radiation.
+>   **Hardened.** You’re good at avoiding effects that would stun, paralyze, or otherwise incapacitate you. Also, resistant to electromagnificent radiation.
 
 tags:
 >   [trait]
@@ -2985,7 +2985,7 @@ meta:
 
 ## Humans of the Pananthropy
 
->   **Humans of the Pananthropy.** Common pan-humanity includes all close‐to-baseline sentient and soulful post-humans, retro-humans, dwarfs, half-elfs, halflings, quarterlings, half-orcs, golems, liches, iron humans, lings, and ghosts. If it lives in a town and does human things, it's probably a human of some sort.
+>   **Humans of the Pananthropy.** Common pan-humanity includes all close‐to-baseline sentient and soulful post-humans, retro-humans, dwarfs, half-elfs, halflings, quarterlings, half-orcs, golems, liches, iron humans, lings, and ghosts. If it lives in a town and does human things, it’s probably a human of some sort.
 > 
 >   Note: This is a referee-facing “baseline human NPC” statline by level. `Life` is the direct level value (`4 + 4×Lvl`). `Mor` is an NPC-only morale track. `Def`, `Bon`, and `Dmg` are condensed assumptions for a typical human of that level (ability + relevant skill + armor/gear), not guaranteed level-granted bonuses; adjust them to match the fiction (e.g., armor and shields → higher `Def`, professionals → higher `Bon`, better weapons/oldtech → higher `Dmg`). Customize further with the free Heritage trait and 1–2 additional traits. Tiers: Town Human (Lv 0–1); Capable Human (Lv 2–3); Dangerous Human (Lv 4–5); Elite Human (Lv 6–7); Legendary Human (Lv 8–9).
 > 
@@ -3269,7 +3269,7 @@ meta:
 
 ## Lair wards
 
->   **Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer - 2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair's threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee's call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
+>   **Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer - 2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair’s threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee’s call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
 
 tags:
 >   [trait]
@@ -3436,7 +3436,7 @@ meta:
 
 ## Metropolitan
 
->   **Metropolitan.** Your civic sense lets you unerringly travel a city's secret ways, and you know how to tap civil nutrient and energy flows for free. Your innate sense of superiority grants you ward +1.
+>   **Metropolitan.** Your civic sense lets you unerringly travel a city’s secret ways, and you know how to tap civil nutrient and energy flows for free. Your innate sense of superiority grants you ward +1.
 
 tags:
 >   [trait]
@@ -3491,7 +3491,7 @@ meta:
 
 ## Mossblood
 
->   **Mossblood.** Your slowfolk ancestors adapted to the city's hunger by learning to feed on light and rain, mineral and plant-stolen nutrient. You can speak to the plants through their local noöspheres.
+>   **Mossblood.** Your slowfolk ancestors adapted to the city’s hunger by learning to feed on light and rain, mineral and plant-stolen nutrient. You can speak to the plants through their local noöspheres.
 
 tags:
 >   [trait]
@@ -3544,7 +3544,7 @@ meta:
 
 ## My Bones Engraved
 
->   **My Bones Engraved.** You spoke to the keeper of thoughts, who gave you a magic chisel to engrave your bones. Gain five bone inventory slots for powers on your arms, legs, and skull. Engraving a power takes a day. Replacing an engraved power permanently reduces your endurance by 1 unless you also ritually replace your bones (ouch). Expert: Powers you engrave cost 1 less Life (minimum 1). Master: Replace or remove a power with no edurance loss or bone replacement. You may engrave one power on another's bones.
+>   **My Bones Engraved.** You spoke to the keeper of thoughts, who gave you a magic chisel to engrave your bones. Gain five bone inventory slots for powers on your arms, legs, and skull. Engraving a power takes a day. Replacing an engraved power permanently reduces your endurance by 1 unless you also ritually replace your bones (ouch). Expert: Powers you engrave cost 1 less Life (minimum 1). Master: Replace or remove a power with no edurance loss or bone replacement. You may engrave one power on another’s bones.
 
 tags:
 >   [trait]
@@ -3797,7 +3797,7 @@ meta:
 
 ## Once Again
 
->   **Once Again.** Revive **two rounds after death**, once. Mark this trait when it is used. While marked, it cannot trigger again. *Unmark at the referee's discretion* -- for example, if a daemon spends a Hero Die on your behalf or the character rests for a week. Expert: When you revive via *Once Again*, gain **+2 Defense** until the end of the current round. You may immediately make **one free move** (no attack). Master: You revive **after 1 round** instead of 2. Upon reviving, you may immediately make **one free move and attack** against a hostile creature within reach. Also, *Once Again* unmarks automatically after a full rest.
+>   **Once Again.** Revive **two rounds after death**, once. Mark this trait when it is used. While marked, it cannot trigger again. *Unmark at the referee’s discretion* -- for example, if a daemon spends a Hero Die on your behalf or the character rests for a week. Expert: When you revive via *Once Again*, gain **+2 Defense** until the end of the current round. You may immediately make **one free move** (no attack). Master: You revive **after 1 round** instead of 2. Upon reviving, you may immediately make **one free move and attack** against a hostile creature within reach. Also, *Once Again* unmarks automatically after a full rest.
 
 tags:
 >   [trait]
@@ -4071,7 +4071,7 @@ meta:
 
 ## Phase
 
->   **Phase.** Spend 1 life to become a ghost for one round. While a phase ghost, you may move freely through mundane matter (walls, creatures, objects). Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you. Named, sanctified, enchanted, or noospheric effects still affect you normally. Expert: While phased, your attacks ignore Armor modifiers to the target's physical Defense. Master: When a physical attack or hazard would affect you, you may spend 1 life to Phase immediately. The triggering effect passes through you (unless it is named, sanctified, enchanted, warded, or noospheric). You remain phased until the end of your next turn.
+>   **Phase.** Spend 1 life to become a ghost for one round. While a phase ghost, you may move freely through mundane matter (walls, creatures, objects). Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you. Named, sanctified, enchanted, or noospheric effects still affect you normally. Expert: While phased, your attacks ignore Armor modifiers to the target’s physical Defense. Master: When a physical attack or hazard would affect you, you may spend 1 life to Phase immediately. The triggering effect passes through you (unless it is named, sanctified, enchanted, warded, or noospheric). You remain phased until the end of your next turn.
 
 tags:
 >   [trait]
@@ -4154,7 +4154,7 @@ meta:
 
 ## Pleasant
 
->   **Pleasant.** Charming conversation and an easy demeanor. You get people to like you. That's +2 to reaction rolls. Expert: +4; Master: +6.
+>   **Pleasant.** Charming conversation and an easy demeanor. You get people to like you. That’s +2 to reaction rolls. Expert: +4; Master: +6.
 
 tags:
 >   [trait]
@@ -4251,7 +4251,7 @@ meta:
 
 ## Power Scroller
 
->   **Power Scroller.** You're great at scrolls. You can take a power, prime it, and bind it to a physical object like a business card or napkin with locking glyphs. The scroll is imbued with your life force until someone activates it with the trigger word of your choice. You can spend a hero die to reduce the cost of a power imbued in a scroll by that amount (minimum 1). You can recover imbued life after the scroll is discharged.
+>   **Power Scroller.** You’re great at scrolls. You can take a power, prime it, and bind it to a physical object like a business card or napkin with locking glyphs. The scroll is imbued with your life force until someone activates it with the trigger word of your choice. You can spend a hero die to reduce the cost of a power imbued in a scroll by that amount (minimum 1). You can recover imbued life after the scroll is discharged.
 
 tags:
 >   [trait]
@@ -4278,7 +4278,7 @@ meta:
 
 ## Powered
 
->   **Powered.** You don't need to eat. An omni-battery is all you need. Also, you can jump-start machinery with a spark from your finger.
+>   **Powered.** You don’t need to eat. An omni-battery is all you need. Also, you can jump-start machinery with a spark from your finger.
 
 tags:
 >   [trait]
@@ -4441,7 +4441,7 @@ meta:
 
 ## Recast
 
->   **Recast.** When your power fails or a target makes its save, you can use the power again for free. Once. Recharge your recast with a hero die. Expert: When you use Recast, gain +2 on the recast power's attack or activation roll or apply -2 to the target's Save roll. Master: When you use Recast, you may choose to recharge the trait immediately. You may only choose this *once each watch* and the recast power triggers a Danger Roll.
+>   **Recast.** When your power fails or a target makes its save, you can use the power again for free. Once. Recharge your recast with a hero die. Expert: When you use Recast, gain +2 on the recast power’s attack or activation roll or apply -2 to the target’s Save roll. Master: When you use Recast, you may choose to recharge the trait immediately. You may only choose this *once each watch* and the recast power triggers a Danger Roll.
 
 tags:
 >   [trait]
@@ -4551,7 +4551,7 @@ meta:
 
 ## Revenant
 
->   **Revenant.** Exposure to the Void has opened your mind to strange magics. You can recognize [void] workings -- tell if a creature, object, place, or Power is [void]-tainted after a moment of still attention. When an undead special attack, or a [void] Power targeting you fails, gain 1 temporary life. Expert: Gain 1 temporary life when any Power targeting you fails (not just undead/[void]). Master: Gain the Power's base cost in temporary Life (ignore any Overcharges). Also gain Affinity - Illusion, Light, Void (as a Heritage-style effect tied to this trait).
+>   **Revenant.** Exposure to the Void has opened your mind to strange magics. You can recognize [void] workings -- tell if a creature, object, place, or Power is [void]-tainted after a moment of still attention. When an undead special attack, or a [void] Power targeting you fails, gain 1 temporary life. Expert: Gain 1 temporary life when any Power targeting you fails (not just undead/[void]). Master: Gain the Power’s base cost in temporary Life (ignore any Overcharges). Also gain Affinity - Illusion, Light, Void (as a Heritage-style effect tied to this trait).
 
 tags:
 >   [trait]
@@ -4578,7 +4578,7 @@ meta:
 
 ## Revenant-in-Waiting
 
->   **Revenant-in-Waiting.** When you die, your weapon (your master) may choose to revive you by reducing one of your ability scores by 1. Each time you return, you are a little less human, a little more dead. When all your scores are reduced to 0, you are your weapon's shambling corpse slave.
+>   **Revenant-in-Waiting.** When you die, your weapon (your master) may choose to revive you by reducing one of your ability scores by 1. Each time you return, you are a little less human, a little more dead. When all your scores are reduced to 0, you are your weapon’s shambling corpse slave.
 
 tags:
 >   [trait]
@@ -4955,7 +4955,7 @@ meta:
 
 ## Signalmaster
 
->   **Signalmaster.** You keep the signal alive -- voice, banner, drum-code, lamps, clicks on the noösphere. Skilled: Allies who can see/hear your signal don't lose coordination to ordinary chaos (smoke, crowd noise, darkness, confusion) unless it's truly disruptive (hard separation, storm, ward-jamming, total blackout). If you have Commander, this also prevents your attached Units from being severed by ordinary chaos. Expert: Once per round, when a friendly creature/Unit in your zone or Near would break, scatter, or test morale, you may make a rally test; on a success they hold together long enough to act normally this round (they may still withdraw after). Master: You can run a relay: choose a willing ally/Unit in your zone or Near as your signal post; for this encounter, treat allies who can see/hear them as also receiving your orders/rally (until the relay is taken out or separated).
+>   **Signalmaster.** You keep the signal alive -- voice, banner, drum-code, lamps, clicks on the noösphere. Skilled: Allies who can see/hear your signal don’t lose coordination to ordinary chaos (smoke, crowd noise, darkness, confusion) unless it’s truly disruptive (hard separation, storm, ward-jamming, total blackout). If you have Commander, this also prevents your attached Units from being severed by ordinary chaos. Expert: Once per round, when a friendly creature/Unit in your zone or Near would break, scatter, or test morale, you may make a rally test; on a success they hold together long enough to act normally this round (they may still withdraw after). Master: You can run a relay: choose a willing ally/Unit in your zone or Near as your signal post; for this encounter, treat allies who can see/hear them as also receiving your orders/rally (until the relay is taken out or separated).
 
 tags:
 >   [trait]
@@ -5936,7 +5936,7 @@ meta:
 
 ## Undying Synthetic
 
->   **Undying Synthetic.** You will not die. But your body decays. Fortunately you know how to repair and replace yourself. Though you've forgotten much, you retain a profound, if eclectic, oral history.
+>   **Undying Synthetic.** You will not die. But your body decays. Fortunately you know how to repair and replace yourself. Though you’ve forgotten much, you retain a profound, if eclectic, oral history.
 
 tags:
 >   [trait]
@@ -6018,7 +6018,7 @@ meta:
 
 ## Urbane
 
->   **Urbane.** You can go anywhere and talk to anyone in a city. Spend 1 life and there's a secret through-alley, hidden cafe, or safe class-locked portal.
+>   **Urbane.** You can go anywhere and talk to anyone in a city. Spend 1 life and there’s a secret through-alley, hidden cafe, or safe class-locked portal.
 
 tags:
 >   [trait]
@@ -6139,7 +6139,7 @@ meta:
 
 ## Vintner
 
->   **Vintner.** Your ancestors modified themselves to survive off-grid, drawing sustenance from the gods' unholy neoflora. You are immune to plant toxins. Drinking a shot of pure ethanol grants you 1 temporary life (up to your level plus endurance). Alcohol is not a plant toxin.
+>   **Vintner.** Your ancestors modified themselves to survive off-grid, drawing sustenance from the gods’ unholy neoflora. You are immune to plant toxins. Drinking a shot of pure ethanol grants you 1 temporary life (up to your level plus endurance). Alcohol is not a plant toxin.
 
 tags:
 >   [trait]
@@ -6277,7 +6277,7 @@ meta:
 
 ## Werker
 
->   **Werker.** Your ancestors were bioengineered to maintain the builders' machinery. You have an intuitive understanding of oldtech devices and processes. Spend 1 life to interface with a device and ascertain if it can be fixed and, at least roughly, how.
+>   **Werker.** Your ancestors were bioengineered to maintain the builders’ machinery. You have an intuitive understanding of oldtech devices and processes. Spend 1 life to interface with a device and ascertain if it can be fixed and, at least roughly, how.
 
 tags:
 >   [trait]
@@ -6337,7 +6337,7 @@ meta:
 
 ## Wild Survivor
 
->   **Wild Survivor.** Forged in the harsh wilderness, you're skilled at guerrilla tactics and using the environment as a weapon. Given several minutes, you can always improvise a d10 weapon from sticks and stones and robot bones. With more time, you can make traps: deadfalls, pits, snares, and more.
+>   **Wild Survivor.** Forged in the harsh wilderness, you’re skilled at guerrilla tactics and using the environment as a weapon. Given several minutes, you can always improvise a d10 weapon from sticks and stones and robot bones. With more time, you can make traps: deadfalls, pits, snares, and more.
 
 tags:
 >   [trait]
@@ -6426,7 +6426,7 @@ meta:
 
 ## Wyldfire
 
->   **Wyldfire.** Free Action. When any power is successfully cast within 60 feet, make a Danger Roll against the power level to consume its energy. On success cancel the spell's effect and store the power in your inventory as Mana (max Mana equals your Level). On failure, the power has with a Corruption. Expert: Spend stored mana and an action to heal yourself or a nearby ally (1 Life per 2 mana). Master: Spend stored mana and an action to unleash a 30 feet cone of void-flame; the damage equals power spent - split among the targets (Aura Save to take 1/2 damage).
+>   **Wyldfire.** Free Action. When any power is successfully cast within 60 feet, make a Danger Roll against the power level to consume its energy. On success cancel the spell’s effect and store the power in your inventory as Mana (max Mana equals your Level). On failure, the power has with a Corruption. Expert: Spend stored mana and an action to heal yourself or a nearby ally (1 Life per 2 mana). Master: Spend stored mana and an action to unleash a 30 feet cone of void-flame; the damage equals power spent - split among the targets (Aura Save to take 1/2 damage).
 
 tags:
 >   [trait]

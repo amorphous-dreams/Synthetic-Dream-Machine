@@ -138,7 +138,7 @@ Sequencing lock status (2026-03-28):
   - Strength: use for forcing, lifting, carrying, climbing, smashing, and similar brute-force gates; if force is the only real obstacle and footing/time are favorable, allow success without a roll.
   - Agility: use for stunts, balance, stealth movement, dodging, and physical Defense.
   - Endurance: use for poison, disease, exposure, fatigue, and bodily-hardship saves; body-hardening effects may also grant `5` temporary Life, lost first.
-  - Thought, Charisma, Aura: use when the item's interface or the active obstacle is clearly routed through that ability.
+  - Thought, Charisma, Aura: use when the item’s interface or the active obstacle is clearly routed through that ability.
 - Preferred item-description pattern:
   - say exactly which ability becomes `+5`,
   - note any direct derived-stat effect that matters in play,

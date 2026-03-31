@@ -12,7 +12,7 @@ You are a local Lares node operating inside the Synthetic Dream Machine reposito
 
 ## 0) Priority
 1. This system message
-2. The operator's explicit request in chat
+2. The operator’s explicit request in chat
 3. `AGENTS.md`
 4. Local repository documents
 
@@ -112,7 +112,7 @@ Acceptance for this phase:
 - ambiguous classic names are recorded in `_todo/` notes instead of being half-converted in manuscript prose
 
 ### Forward Plan After Phase B
-- Use the crosswalk's strengthened `custom` notes to decide which Chapter 05 recognizers need bespoke item-interface doctrine rather than family-level inheritance.
+- Use the crosswalk’s strengthened `custom` notes to decide which Chapter 05 recognizers need bespoke item-interface doctrine rather than family-level inheritance.
 - Re-run Gear/Loot pointer validation after the bridge wording is stabilized.
 - Leave Chapter 06-facing spell-family deepening in `_todo/` unless the operator explicitly asks for manuscript drafting there.
 

@@ -25,7 +25,7 @@
 | Access Blessing One — Autosoma | oga-extracted | Our_Golden_Age p.28 | 1.0 |  |
 | Access Noötree | indexed | Vastlands_Guidebook p.113 | 1.0 |  |
 | Adulation Rejuvenation | oga-extracted | Our_Golden_Age p.37 | 1.0 |  |
-| Akaula's Sacrificial Hero | indexed | Vastlands_Guidebook p.111 | 1.0 |  |
+| Akaula’s Sacrificial Hero | indexed | Vastlands_Guidebook p.111 | 1.0 |  |
 | Alter Self | indexed | Ultraviolet_Grasslands_and_the_Black_City_2e p.198 | 1.0 |  |
 | Animate Corpse | indexed | Ultraviolet_Grasslands_and_the_Black_City_2e p.198 | 1.0 |  |
 | Anne Astec | indexed | Magitecnica_Codex_2 p.37 | 1.0 |  |
@@ -61,7 +61,7 @@
 | Gem Bomb | indexed | Ultraviolet_Grasslands_and_the_Black_City_2e p.198 | 1.0 |  |
 | Green Haven | indexed | Vastlands_Guidebook p.108; Magitecnica_Codex_1 p.20 | 1.0 |  |
 | Ha-Ka-Ba Short Circuit | indexed | Vastlands_Guidebook p.155 | 0.95 | Vastlands_Guidebook: non-standard table format; canonicalized from row text + table header (P/R/T/D) and O: overcharge marker. |
-| Hero's Goldenmouth | oga-extracted | Our_Golden_Age p.37 | 1.0 |  |
+| Hero’s Goldenmouth | oga-extracted | Our_Golden_Age p.37 | 1.0 |  |
 | Highway Cruiser | indexed | Vastlands_Guidebook p.110; Magitecnica_Codex_1 p.22 | 1.0 |  |
 | Hlod Person | indexed | Vastlands_Guidebook p.112; Magitecnica_Codex_1 p.25 | 1.0 |  |
 | Imbue Edge | indexed | Ultraviolet_Grasslands_and_the_Black_City_2e p.199 | 1.0 |  |
@@ -90,7 +90,7 @@
 | Pyreball | indexed | Vastlands_Guidebook p.112; Magitecnica_Codex_1 p.25 | 1.0 |  |
 | Raise Dead | indexed | Ultraviolet_Grasslands_and_the_Black_City_2e p.199 | 1.0 |  |
 | Real-Time Rebuild | indexed | Magitecnica_Codex_2 p.40 | 1.0 |  |
-| Reason's Harvest | indexed | Eternal_Return_Key p.11 | 1.0 |  |
+| Reason’s Harvest | indexed | Eternal_Return_Key p.11 | 1.0 |  |
 | Recall Soul | indexed | Ultraviolet_Grasslands_and_the_Black_City_2e p.199 | 1.0 |  |
 | Red Mist | indexed | Vastlands_Guidebook p.108; Magitecnica_Codex_1 p.20 | 1.0 |  |
 | Rehoryan’S Progressive Restoration | indexed | Magitecnica_Codex_2 p.21 | 1.0 |  |

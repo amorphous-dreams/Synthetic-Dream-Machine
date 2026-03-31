@@ -18,7 +18,7 @@ Slogan (brochure-voice): *“Where the empire fell, yet the grim horsemen ride s
 **Tilt-history (truth engine):**
 An ascendant magitech empire riding Hebros trade + Web2 arterie (“civilization” as conquest machine) hit its peak, then got kneecapped by interacting catastrophes ("The Second Breaking"): 
 
-**Death fell silent** and the **Iron Curse** made “normal iron” unreliable, cracking the empire’s logistics and sacred infrastructure. Spirit Engine daemons and the empires synthetic horses and automatons failed or went rouge. The Necrospire's impact in nearby Illyria shattered parts of Elyncia, with the Hebros delta artery collapsing into **shoals/whirlpools/shattered bridges**. The DreamNet then flooded with necro-scripts; rift mazes sealed the overland routes, a maelstrom sealed the Hebros mouth / Astral Sea routes to the Illyrian archipelago and other Nexus. **Neo-Thracia was cut off for 489 years**, reopening only recently (maelstrom breaks up in YOLD 5491; start of play YOLD 5492).
+**Death fell silent** and the **Iron Curse** made “normal iron” unreliable, cracking the empire’s logistics and sacred infrastructure. Spirit Engine daemons and the empires synthetic horses and automatons failed or went rouge. The Necrospire’s impact in nearby Illyria shattered parts of Elyncia, with the Hebros delta artery collapsing into **shoals/whirlpools/shattered bridges**. The DreamNet then flooded with necro-scripts; rift mazes sealed the overland routes, a maelstrom sealed the Hebros mouth / Astral Sea routes to the Illyrian archipelago and other Nexus. **Neo-Thracia was cut off for 489 years**, reopening only recently (maelstrom breaks up in YOLD 5491; start of play YOLD 5492).
 
 ## 2) Region Statline (campaign physics)
 
@@ -81,7 +81,7 @@ Use OGA-style “modes/columns + 1–3 / 4–5 / 6 escalation bands,” but tune
 
 **Ambient Generator 1: "Hebros Weather / Astral Tide"**
 
-**What it's for:** Make travel feel *alive*, and make the river a character.
+**What it’s for:** Make travel feel *alive*, and make the river a character.
 
 **How it runs at table**
 
@@ -146,9 +146,9 @@ Use these as **always-on** scene fuel.
 * **Unseelie agents** (clandestine): destabilize alliances; reclaim fae-haunted heartland territories.
 * **Dominion of Magic legionaries** (expeditionary): want ley hubs + relic tech; don’t care who they break. 
 * **Krull’s Order of Amaranth scouts** (patrol wardens): watch the mountain passes, restore the border forts, broker passage for sworn parties, and quietly collect relic-claims for the Order.
-* **Free Cities spies / Delian operatives** ("Adventerer's Guide" cover): seek leverage vs Dominion; collect knowledge and salvage; want “power core” rumor confirmation. 
+* **Free Cities spies / Delian operatives** ("Adventerer’s Guide" cover): seek leverage vs Dominion; collect knowledge and salvage; want “power core” rumor confirmation. 
 
-**Caverns-native polities (the Cavern's “real governments”):**
+**Caverns-native polities (the Cavern’s “real governments”):**
 
 Jennell’s history gives you the core move: **old royal playground becomes a beastman-held state after a revolt**—and now multiple cavern societies compete and raid upward. Inside the text you already have clear handles for “who owns what” (gnolls, lizard men, minotaurs, tribesmen bands, cultists, etc.).
 - The Minotaur-led beast-kin culture has a slight "Steppe-peoples/Indian-subcontinent/Mughal/Sikh" feel.

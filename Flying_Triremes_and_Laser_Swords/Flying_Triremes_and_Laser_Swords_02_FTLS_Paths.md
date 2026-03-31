@@ -22,7 +22,7 @@ Hook.
 
 ### Commander Path
 
-0. **Commander.** Excel at battle lore, tactics, and rally tests. Draw a Formation Inventory box on the character sheet and list attached Units/Vehicles (and/or stations). Draw a small Command Dice (d6) box beside it. Skilled: attach up to 3 Units within 1 zone; start combat with 1 Command Die. Expert: attach up to 5 Units within 2 zones; start combat with 2 Command Dice. Master: attach up to 7 Units within 3 zones; start combat with 3 Command Dice. Each Commander also gains 1 Command die at the start of their side's turn. "Start of combat" Command Dice refresh only after one encounter fully ends; follow-on waves, running fights, and active pursuits count as the same battle.
+0. **Commander.** Excel at battle lore, tactics, and rally tests. Draw a Formation Inventory box on the character sheet and list attached Units/Vehicles (and/or stations). Draw a small Command Dice (d6) box beside it. Skilled: attach up to 3 Units within 1 zone; start combat with 1 Command Die. Expert: attach up to 5 Units within 2 zones; start combat with 2 Command Dice. Master: attach up to 7 Units within 3 zones; start combat with 3 Command Dice. Each Commander also gains 1 Command die at the start of their side’s turn. "Start of combat" Command Dice refresh only after one encounter fully ends; follow-on waves, running fights, and active pursuits count as the same battle.
 
 ### Commander Traits
 
@@ -76,7 +76,7 @@ In the Vastlands, undeath is often infrastructure: citizen-dead, bone trains, ne
 
 1. **From Dust, Returning.** Your link to the world is stronger than ever. Even if crushed to dust, when your remains taste a sprinkle of (roll d6): (1) holy water, (2) blood, (3) wine, (4) tomato soup, (5) milk, or (6) nectar, your body reforms itself in a week. Expert: You return in a day. Master: Your dust can crawl—if any drop of your catalyst exists within a day’s travel, you reform there.
 
-2. **My Bones Engraved.** You spoke to the keeper of thoughts, who gave you a magic chisel to engrave your bones. Gain five bone inventory slots for powers on your arms, legs, and skull. Engraving a power takes a day. Replacing an engraved power permanently reduces your endurance by 1 unless you also ritually replace your bones (ouch). Expert: Powers you engrave cost 1 less Life (minimum 1). Master: Replace or remove a power with no edurance loss or bone replacement. You may engrave one power on another's bones.
+2. **My Bones Engraved.** You spoke to the keeper of thoughts, who gave you a magic chisel to engrave your bones. Gain five bone inventory slots for powers on your arms, legs, and skull. Engraving a power takes a day. Replacing an engraved power permanently reduces your endurance by 1 unless you also ritually replace your bones (ouch). Expert: Powers you engrave cost 1 less Life (minimum 1). Master: Replace or remove a power with no edurance loss or bone replacement. You may engrave one power on another’s bones.
 
 3. **Void Ward.** The emptiness of your soul protects you. Add aura to your defense. Expert: When you would take damage from an undead special attack or [void] source, reduce the damage by your level + Aura. Master: When you reduce the damage, you may reflect the prevented amount as harm back at the source (or its nearest minion if the source is untouchable). The reflection appears as a pale afterimage of the same effect.
 
@@ -92,7 +92,7 @@ In the Vastlands, undeath is often infrastructure: citizen-dead, bone trains, ne
 
 They exist partially out of phase, and are noticed as interference first: a crackle along ward-runes, frost blooming into glyphs, dust that won’t settle right. They don’t float ominously—Spirits flicker between transactions, slipping through burlesques and gossip-halls, trailing ozone and old incense. When they manifest *Ha*, reality reacts like a device snapping back online: hair lifts, lamps hum, cheap mirrors show the wrong angle for a heartbeat.
 
-They gather where ley lines are thickest—Lares nodes and crossroads shrines, wardwright-shops hung with jade and doppler charms, and the various noospheric ministries' doors and sanctified thresholds. Some are living folk: river-spirits, storm-debts, animate ideas that only borrow bodies sometimes. Others are returned echoes, Deathless remnants with unfinished paperwork: names, vows, messages that never arrived. Different needs, same condition: fully present, slightly out of phase with the hylosphere.
+They gather where ley lines are thickest—Lares nodes and crossroads shrines, wardwright-shops hung with jade and doppler charms, and the various noospheric ministries’ doors and sanctified thresholds. Some are living folk: river-spirits, storm-debts, animate ideas that only borrow bodies sometimes. Others are returned echoes, Deathless remnants with unfinished paperwork: names, vows, messages that never arrived. Different needs, same condition: fully present, slightly out of phase with the hylosphere.
 
 ### Named Spirits
 
@@ -105,7 +105,7 @@ They gather where ley lines are thickest—Lares nodes and crossroads shrines, w
 
 ### Spirit Traits
 
-1. **Phase.** Spend 1 life to become a ghost for one round. While a phase ghost, you may move freely through mundane matter (walls, creatures, objects). Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you. Named, sanctified, enchanted, or noospheric effects still affect you normally. Expert: While phased, your attacks ignore Armor modifiers to the target's physical Defense. Master: When a physical attack or hazard would affect you, you may spend 1 life to Phase immediately. The triggering effect passes through you (unless it is named, sanctified, enchanted, warded, or noospheric). You remain phased until the end of your next turn.
+1. **Phase.** Spend 1 life to become a ghost for one round. While a phase ghost, you may move freely through mundane matter (walls, creatures, objects). Passing through significant barriers (fortifications, sanctified ground, active machinery) requires a d20 + Thought test vs. Area Level + 10; failure repels or delays you. Named, sanctified, enchanted, or noospheric effects still affect you normally. Expert: While phased, your attacks ignore Armor modifiers to the target’s physical Defense. Master: When a physical attack or hazard would affect you, you may spend 1 life to Phase immediately. The triggering effect passes through you (unless it is named, sanctified, enchanted, warded, or noospheric). You remain phased until the end of your next turn.
 
 2. **Subconscious Decay.** When you are unconscious or asleep, your physical form rapidly decays. It reconstitutes when you wake. Gain +1 aura. Expert: +2 aura. Master: While you are unconsciousness, your mind slips loose and drifts the local noösphere. Once per watch you may attempt a d20 + Thought test vs Area Level + 10 to do one of the following: Learn one useful fact about nearby minds/signals/wards (a clue, a rumor, a location tag); Plant a short “dream-message” (a phrase, symbol, or sensation) that a spirit-sensitive/wardwright can pick up later; Snap awake if your resting place is disturbed, crossed, or ward-tested. Also, +3 aura.
 
@@ -152,7 +152,7 @@ Vampires drain the life force of others to fuel unnatural resilience, violence, 
 
 5. **Once Again.** Revive **two rounds after death**, once. Mark this trait when it is used. While marked, it cannot trigger again. *Unmark at the referee’s discretion*—for example, if a daemon spends a Hero Die on your behalf or the character rests for a week. Expert: When you revive via *Once Again*, gain **+2 Defense** until the end of the current round. You may immediately make **one free move** (no attack). Master: You revive **after 1 round** instead of 2. Upon reviving, you may immediately make **one free move and attack** against a hostile creature within reach. Also, *Once Again* unmarks automatically after a full rest.
 
-6.**Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer –2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair's threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee's call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
+6.**Lair wards.** Claim a zone: one room, cabin, campsite, shop, or small ruin you can clearly define. While you or allies are inside your lair, intruders (creatures you do not permit) suffer –2 to attack rolls, Saves, and intrusion attempts (entering, picking, scrying, ward-testing). While within your lair you may scry (send your senses) up to one zone away. You may move/remap your lair by spending 1 watch (4 hours) establishing it in a new place; the old lair goes inert. Expert: You always wake/notice when your lair’s threshold is crossed, picked, scryed, or ward-tested. Intruders must pass a d20 + Thought test vs Area Level + 10 to enter at all; failure repels or delays them (referee’s call). Master: Teleportation, possession, and noospheric entry/exit into the lair require the same test; failure rebounds the intruder to the nearest safe edge.
 
 ## Wild Mage
 
@@ -163,7 +163,7 @@ Wild Mages are born where ley‑lines knot and possibility frays: children who
 ### Named Wild Mages
 
 1.  Telarus, Keeper of the Sacred Chao, Floating Librarians of Mu
-Allegedly rewrote an entire monastery's history using only errata. Drinks entropy like tea—prefers it lightly stirred. Known to file formal complaints against fate. Tender to the edible zen garden.
+Allegedly rewrote an entire monastery’s history using only errata. Drinks entropy like tea—prefers it lightly stirred. Known to file formal complaints against fate. Tender to the edible zen garden.
 
 2.  Mara Morai, KSC, Battle Nun of the Edible Zen Garden  
 Survived the Holy Reversal by praying backward through time. Her voice can sanctify or shatter, depending on the pitch. Once baptized an elemental using live munitions. Keeps a list of noospheric entities, ordered by existential threat level.
@@ -172,7 +172,7 @@ Survived the Holy Reversal by praying backward through time. Her voice can sanct
 Operates a legal outpost moon-let in low orbit with Elyncia’s quantum-locked astral sea, antipodal to Gaia yet far beyond the Rainblowlands, the Circle Sea, and even the Ultraviolet Grasslands.  Possibly licensed to negotiate with the entropy spirits.
 
 4.  Doctor Δ (Delta) Kline, Flux Surgeon
-Once redirected a collapsing probability cascade through a patient's nervous system to avoid a timeline rupture. Now runs an ambulatory surgical cathedral that crawls the Iron-spine mountains. Rumored to have implanted a fractal into a client's decision tree.
+Once redirected a collapsing probability cascade through a patient’s nervous system to avoid a timeline rupture. Now runs an ambulatory surgical cathedral that crawls the Iron-spine mountains. Rumored to have implanted a fractal into a client’s decision tree.
 
 5.  Lady Zheraphine of the Hundred-Fold Cloak
 Her mirrored selves maintain embassies across Elyncia’s logic fractures. Once smuggled a stolen idea across a null-storm seam. Feared by pirate cartographers who cannot map the folds she slips through.
@@ -200,7 +200,7 @@ d6  **Trait** Effect
 
 5. **Chronic.** Spend a hero die to use a second power this round. Expert: When you go Chronic, you may hold the second power and release it at any point later in the round, even during another creature’s action or resolution. Both your powers still count as being used in the same round for duration, limits, counters, etc. Master: Once per watch, you may use Chronic without spending a Hero Die—but the second power automatically triggers a Danger Roll.
 
-6. **Recast.** When your power fails or a target makes its save, you can use the power again for free. Once. Recharge your recast with a hero die. Expert: When you use Recast, gain +2 on the recast power’s attack or activation roll or apply -2 to the target's Save roll. Master: When you use Recast, you may choose to recharge the trait immediately. You may only choose this *once each watch* and the recast power triggers a Danger Roll.
+6. **Recast.** When your power fails or a target makes its save, you can use the power again for free. Once. Recharge your recast with a hero die. Expert: When you use Recast, gain +2 on the recast power’s attack or activation roll or apply -2 to the target’s Save roll. Master: When you use Recast, you may choose to recharge the trait immediately. You may only choose this *once each watch* and the recast power triggers a Danger Roll.
 
 ### Wild Mage Items
 
