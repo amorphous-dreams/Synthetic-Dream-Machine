@@ -244,7 +244,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Holy Word](#holy-word)
   - [Raise Dead](#raise-dead)
   - [Raise Dead Fully](#raise-dead-fully)
-  - [Animate Dead](#animate-dead)
+  - [Animate Dead, aka Animate Corpse](#animate-dead-aka-animate-corpse)
   - [Finger of Death](#finger-of-death)
 - [FTLS Powers](#ftls-powers)
   - [Adaptive Form](#adaptive-form)
@@ -636,7 +636,7 @@ meta:
 >   - scope: power; id: Magic Missile; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -672,7 +672,7 @@ meta:
 >   - scope: power; id: Shield Ward; note: FTLS Chapter 06 canonical name, classic `Shield` spell.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -750,7 +750,7 @@ meta:
 >   - scope: power; id: Light; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -785,7 +785,7 @@ meta:
 >   - scope: power; id: Continual Light; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -820,7 +820,7 @@ meta:
 >   - scope: power; id: Protection from Normal Missiles; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -855,7 +855,7 @@ meta:
 >   - scope: power; id: Protection from Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -890,7 +890,7 @@ meta:
 >   - scope: power; id: Protection from Evil 10’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -931,7 +931,7 @@ meta:
 >   - scope: power; id: Fireball; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -968,7 +968,7 @@ meta:
 >   - scope: power; id: Lightning Bolt; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1003,7 +1003,7 @@ meta:
 >   - scope: power; id: Haste; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1038,7 +1038,7 @@ meta:
 >   - scope: power; id: Cloudkill; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1073,7 +1073,7 @@ meta:
 >   - scope: power; id: Explosive Cloud; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1109,7 +1109,7 @@ meta:
 >   - scope: power; id: Meteor Swarm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1145,7 +1145,7 @@ meta:
 >   - scope: power; id: Wall of Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1179,7 +1179,7 @@ meta:
 >   - scope: power; id: Striking; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1213,7 +1213,7 @@ meta:
 >   - scope: power; id: Silence 15’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1248,7 +1248,7 @@ meta:
 >   - scope: power; id: Death Spell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1283,7 +1283,7 @@ meta:
 >   - scope: power; id: Insect Plague; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1318,7 +1318,7 @@ meta:
 >   - scope: power; id: Ice Storm/Wall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1354,7 +1354,7 @@ meta:
 >   - scope: power; id: Earthquake; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1390,7 +1390,7 @@ meta:
 >   - scope: power; id: Call Lightning; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1425,7 +1425,7 @@ meta:
 >   - scope: power; id: Control Temperature 10’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1461,7 +1461,7 @@ meta:
 >   - scope: power; id: Control Winds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1497,7 +1497,7 @@ meta:
 >   - scope: power; id: Creeping Doom; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1531,7 +1531,7 @@ meta:
 >   - scope: power; id: Heat Metal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1567,7 +1567,7 @@ meta:
 >   - scope: power; id: Produce Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1603,7 +1603,7 @@ meta:
 >   - scope: power; id: Summon Weather; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1639,7 +1639,7 @@ meta:
 >   - scope: power; id: Weather Control; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1674,7 +1674,7 @@ meta:
 >   - scope: power; id: Disintegrate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1709,7 +1709,7 @@ meta:
 >   - scope: power; id: Power Word Blind; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1744,7 +1744,7 @@ meta:
 >   - scope: power; id: Power Word Kill; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1779,7 +1779,7 @@ meta:
 >   - scope: power; id: Move Earth; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -1806,7 +1806,7 @@ meta:
 >   - scope: power; id: Telekinesis; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -1836,7 +1836,7 @@ meta:
 >   - scope: power; id: Delayed Blast Fireball; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -1863,7 +1863,7 @@ meta:
 >   - scope: power; id: Power Word Stun; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -1890,7 +1890,7 @@ meta:
 >   - scope: power; id: Reverse Gravity; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -1917,7 +1917,7 @@ meta:
 >   - scope: power; id: Sword; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -1941,7 +1941,7 @@ meta:
 >   - scope: power; id: Dancing Lights; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -1972,7 +1972,7 @@ meta:
 >   - scope: power; id: Darkness; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2003,7 +2003,7 @@ meta:
 >   - scope: power; id: Pyrotechnics; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2033,7 +2033,7 @@ meta:
 >   - scope: power; id: Ray of Enfeeblement; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2073,7 +2073,7 @@ meta:
 >   - scope: power; id: Cure Light Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2107,7 +2107,7 @@ meta:
 >   - scope: power; id: Remove Curse; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2141,7 +2141,7 @@ meta:
 >   - scope: power; id: Bless; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2175,7 +2175,7 @@ meta:
 >   - scope: power; id: Cure Blindness; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2210,7 +2210,7 @@ meta:
 >   - scope: power; id: Neutralize Poison; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2245,7 +2245,7 @@ meta:
 >   - scope: power; id: Resist Cold; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2280,7 +2280,7 @@ meta:
 >   - scope: power; id: Resist Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2315,7 +2315,7 @@ meta:
 >   - scope: power; id: Cure Disease; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2350,7 +2350,7 @@ meta:
 >   - scope: power; id: Cure Serious Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2385,7 +2385,7 @@ meta:
 >   - scope: power; id: Protection from Poison; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2420,7 +2420,7 @@ meta:
 >   - scope: power; id: Purify Food and Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2455,7 +2455,7 @@ meta:
 >   - scope: power; id: Create Food; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2490,7 +2490,7 @@ meta:
 >   - scope: power; id: Reincarnation; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -2520,7 +2520,7 @@ meta:
 >   - scope: power; id: Cure Critical Wounds; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2555,7 +2555,7 @@ meta:
 >   - scope: power; id: Cureall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2588,7 +2588,7 @@ meta:
 >   - scope: power; id: Heal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2623,7 +2623,7 @@ meta:
 >   - scope: power; id: Restore; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2661,7 +2661,7 @@ meta:
 >   - scope: power; id: Detect Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2695,7 +2695,7 @@ meta:
 >   - scope: power; id: Detect Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2731,7 +2731,7 @@ meta:
 >   - scope: power; id: Infravision; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2766,7 +2766,7 @@ meta:
 >   - scope: power; id: Detect Invisible; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2801,7 +2801,7 @@ meta:
 >   - scope: power; id: ESP; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2836,7 +2836,7 @@ meta:
 >   - scope: power; id: Clairvoyance; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2870,7 +2870,7 @@ meta:
 >   - scope: power; id: Wizard Eye; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2904,7 +2904,7 @@ meta:
 >   - scope: power; id: Locate Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2939,7 +2939,7 @@ meta:
 >   - scope: power; id: Read Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -2975,7 +2975,7 @@ meta:
 >   - scope: power; id: Read Languages; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3010,7 +3010,7 @@ meta:
 >   - scope: power; id: Know Alignment; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3045,7 +3045,7 @@ meta:
 >   - scope: power; id: Speak with Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3080,7 +3080,7 @@ meta:
 >   - scope: power; id: Speak with the Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3115,7 +3115,7 @@ meta:
 >   - scope: power; id: Find the Path; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3150,7 +3150,7 @@ meta:
 >   - scope: power; id: Truesight; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3186,7 +3186,7 @@ meta:
 >   - scope: power; id: Speak with Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3221,7 +3221,7 @@ meta:
 >   - scope: power; id: Commune; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3256,7 +3256,7 @@ meta:
 >   - scope: power; id: Faerie Fire; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3291,7 +3291,7 @@ meta:
 >   - scope: power; id: Locate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3326,7 +3326,7 @@ meta:
 >   - scope: power; id: Predict Weather; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3361,7 +3361,7 @@ meta:
 >   - scope: power; id: Detect Danger; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3393,7 +3393,7 @@ meta:
 >   - scope: power; id: Analyze; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3428,7 +3428,7 @@ meta:
 >   - scope: power; id: Speak with Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3463,7 +3463,7 @@ meta:
 >   - scope: power; id: Contact Outer Plane; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -3490,7 +3490,7 @@ meta:
 >   - scope: power; id: Lore; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -3515,7 +3515,7 @@ meta:
 >   - scope: power; id: Clairaudience; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3556,7 +3556,7 @@ meta:
 >   - scope: power; id: Polymorph Self; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3592,7 +3592,7 @@ meta:
 >   - scope: power; id: Polymorph Others; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3627,7 +3627,7 @@ meta:
 >   - scope: power; id: Animal Growth; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3662,7 +3662,7 @@ meta:
 >   - scope: power; id: Stone to Flesh; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3698,7 +3698,7 @@ meta:
 >   - scope: power; id: Metal to Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3732,7 +3732,7 @@ meta:
 >   - scope: power; id: Dissolve; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3767,7 +3767,7 @@ meta:
 >   - scope: power; id: Warp Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3800,7 +3800,7 @@ meta:
 >   - scope: power; id: Polymorph Any Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3835,7 +3835,7 @@ meta:
 >   - scope: power; id: Shapechange; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -3869,7 +3869,7 @@ meta:
 >   - scope: power; id: Stoneform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -3896,7 +3896,7 @@ meta:
 >   - scope: power; id: Woodform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -3923,7 +3923,7 @@ meta:
 >   - scope: power; id: Ironform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -3950,7 +3950,7 @@ meta:
 >   - scope: power; id: Statue; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -3977,7 +3977,7 @@ meta:
 >   - scope: power; id: Steelform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -4001,7 +4001,7 @@ meta:
 >   - scope: power; id: Enlargement; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4031,7 +4031,7 @@ meta:
 >   - scope: power; id: Slow; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4062,7 +4062,7 @@ meta:
 >   - scope: power; id: Strength; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4102,7 +4102,7 @@ meta:
 >   - scope: power; id: Charm Person; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4137,7 +4137,7 @@ meta:
 >   - scope: power; id: Sleep; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4171,7 +4171,7 @@ meta:
 >   - scope: power; id: Confusion; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4205,7 +4205,7 @@ meta:
 >   - scope: power; id: Feeblemind; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4240,7 +4240,7 @@ meta:
 >   - scope: power; id: Charm Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4274,7 +4274,7 @@ meta:
 >   - scope: power; id: Dance; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4310,7 +4310,7 @@ meta:
 >   - scope: power; id: Mass Charm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4345,7 +4345,7 @@ meta:
 >   - scope: power; id: Remove Fear; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4380,7 +4380,7 @@ meta:
 >   - scope: power; id: Snake Charm; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4415,7 +4415,7 @@ meta:
 >   - scope: power; id: Magic Jar; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4450,7 +4450,7 @@ meta:
 >   - scope: power; id: Quest; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4485,7 +4485,7 @@ meta:
 >   - scope: power; id: Charm Plant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -4517,7 +4517,7 @@ meta:
 >   - scope: power; id: Invisibility; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4552,7 +4552,7 @@ meta:
 >   - scope: power; id: Projected Image; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4588,7 +4588,7 @@ meta:
 >   - scope: power; id: Invisibility 10’ Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4622,7 +4622,7 @@ meta:
 >   - scope: power; id: Mirror Image; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4656,7 +4656,7 @@ meta:
 >   - scope: power; id: Phantasmal Force; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4691,7 +4691,7 @@ meta:
 >   - scope: power; id: Ventriloquism; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4727,7 +4727,7 @@ meta:
 >   - scope: power; id: Hold Person; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4763,7 +4763,7 @@ meta:
 >   - scope: power; id: Hold Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4797,7 +4797,7 @@ meta:
 >   - scope: power; id: Web; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4830,7 +4830,7 @@ meta:
 >   - scope: power; id: Entangle; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4865,7 +4865,7 @@ meta:
 >   - scope: power; id: Find Traps; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4899,7 +4899,7 @@ meta:
 >   - scope: power; id: Hallucinatory Terrain; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4934,7 +4934,7 @@ meta:
 >   - scope: power; id: Massmorph; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -4969,7 +4969,7 @@ meta:
 >   - scope: power; id: Hold Animal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5005,7 +5005,7 @@ meta:
 >   - scope: power; id: Obscure; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5039,7 +5039,7 @@ meta:
 >   - scope: power; id: Mass Invisibility; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5063,7 +5063,7 @@ meta:
 >   - scope: power; id: Audible Glamer; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5100,7 +5100,7 @@ meta:
 >   - scope: power; id: Fly; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5139,7 +5139,7 @@ meta:
 >   - scope: power; id: Water Breathing; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5174,7 +5174,7 @@ meta:
 >   - scope: power; id: Lower Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5211,7 +5211,7 @@ meta:
 >   - scope: power; id: Pass Plant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5247,7 +5247,7 @@ meta:
 >   - scope: power; id: Plant Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5281,7 +5281,7 @@ meta:
 >   - scope: power; id: Survival; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5318,7 +5318,7 @@ meta:
 >   - scope: power; id: Transport Through Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5352,7 +5352,7 @@ meta:
 >   - scope: power; id: Create Air; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5381,7 +5381,7 @@ meta:
 >   - scope: power; id: Levitate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5419,7 +5419,7 @@ meta:
 >   - scope: power; id: Dimension Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5454,7 +5454,7 @@ meta:
 >   - scope: power; id: Teleport; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5489,7 +5489,7 @@ meta:
 >   - scope: power; id: Travel; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5524,7 +5524,7 @@ meta:
 >   - scope: power; id: Wish; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5559,7 +5559,7 @@ meta:
 >   - scope: power; id: Gate; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5595,7 +5595,7 @@ meta:
 >   - scope: power; id: Maze; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5633,7 +5633,7 @@ meta:
 >   - scope: power; id: Passwall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5668,7 +5668,7 @@ meta:
 >   - scope: power; id: Timestop; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5702,7 +5702,7 @@ meta:
 >   - scope: power; id: Magic Door; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5729,7 +5729,7 @@ meta:
 >   - scope: power; id: Teleport any Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -5759,7 +5759,7 @@ meta:
 >   - scope: power; id: Word of Recall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5797,7 +5797,7 @@ meta:
 >   - scope: power; id: Dispel Magic; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5876,7 +5876,7 @@ meta:
 >   - scope: power; id: Hold Portal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5911,7 +5911,7 @@ meta:
 >   - scope: power; id: Knock; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5946,7 +5946,7 @@ meta:
 >   - scope: power; id: Wizard Lock; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -5980,7 +5980,7 @@ meta:
 >   - scope: power; id: Wizardry; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6016,7 +6016,7 @@ meta:
 >   - scope: power; id: Anti-Magic Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6051,7 +6051,7 @@ meta:
 >   - scope: power; id: Barrier; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6086,7 +6086,7 @@ meta:
 >   - scope: power; id: Force Field; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6121,7 +6121,7 @@ meta:
 >   - scope: power; id: Contingency; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6156,7 +6156,7 @@ meta:
 >   - scope: power; id: Protection from Lightning; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6192,7 +6192,7 @@ meta:
 >   - scope: power; id: Turn Wood; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6228,7 +6228,7 @@ meta:
 >   - scope: power; id: Immunity; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6265,7 +6265,7 @@ meta:
 >   - scope: power; id: Mind Barrier; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6300,7 +6300,7 @@ meta:
 >   - scope: power; id: Permanence; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6336,7 +6336,7 @@ meta:
 >   - scope: power; id: Prismatic Wall; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6370,7 +6370,7 @@ meta:
 >   - scope: power; id: Symbol; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6404,7 +6404,7 @@ meta:
 >   - scope: power; id: Geas; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6439,7 +6439,7 @@ meta:
 >   - scope: power; id: Anti-Plant Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6475,7 +6475,7 @@ meta:
 >   - scope: power; id: Anti-Animal Shell; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6516,7 +6516,7 @@ meta:
 >   - scope: power; id: Floating Disc; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6550,7 +6550,7 @@ meta:
 >   - scope: power; id: Wall of Stone; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6585,7 +6585,7 @@ meta:
 >   - scope: power; id: Create Water; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6620,7 +6620,7 @@ meta:
 >   - scope: power; id: Growth of Plants; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6657,7 +6657,7 @@ meta:
 >   - scope: power; id: Conjure Elemental; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6693,7 +6693,7 @@ meta:
 >   - scope: power; id: Invisible Stalker; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6728,7 +6728,7 @@ meta:
 >   - scope: power; id: Aerial Servant; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6763,7 +6763,7 @@ meta:
 >   - scope: power; id: Animate Objects; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6798,7 +6798,7 @@ meta:
 >   - scope: power; id: Clone; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6833,7 +6833,7 @@ meta:
 >   - scope: power; id: Create Normal Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6868,7 +6868,7 @@ meta:
 >   - scope: power; id: Create Any Monster; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6903,7 +6903,7 @@ meta:
 >   - scope: power; id: Create Magical Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6937,7 +6937,7 @@ meta:
 >   - scope: power; id: Summon Animals; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -6972,7 +6972,7 @@ meta:
 >   - scope: power; id: Summon Elemental; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7006,7 +7006,7 @@ meta:
 >   - scope: power; id: Sticks to Snakes; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7039,7 +7039,7 @@ meta:
 >   - scope: power; id: Clothform; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -7067,7 +7067,7 @@ meta:
 >   - scope: power; id: Wall of Iron; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -7094,7 +7094,7 @@ meta:
 >   - scope: power; id: Create Normal Monsters; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -7121,7 +7121,7 @@ meta:
 >   - scope: power; id: Summon Object; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 <div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
 
 </div>
@@ -7146,7 +7146,7 @@ meta:
 >   - scope: power; id: Magic Mouth; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7185,7 +7185,7 @@ meta:
 >   - scope: power; id: Dispel Evil; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7222,7 +7222,7 @@ meta:
 >   - scope: power; id: Holy Word; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7243,12 +7243,14 @@ osr:
 
 tags:
 >   [power]
->   [storage:item]
->   [restoration]
->   [resurrection]
+>   [storage:trait]
+>   [ritual]
+>   [necromancy]
+>   [conjuration]
+>   [fueled]
+>   [dangerous]
+>   [necrotic]
 >   [undead]
->   [high-tier]
-
 meta:
 > - source:
 >   - becmi:Companion Set; spell: Raise Dead
@@ -7259,7 +7261,7 @@ meta:
 >   - scope: power; id: Raise Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7295,7 +7297,7 @@ meta:
 >   - scope: power; id: Raise Dead Fully; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7308,30 +7310,33 @@ osr:
 
 <div class="power-card" markdown="1">
 
-## Animate Dead
+## Animate Dead, aka Animate Corpse
 
-> **Animate Dead**
+> **Animate Dead, aka Animate Corpse**
 >
 > {pending conversion}
 
 tags:
 >   [power]
->   [storage:item]
+>   [storage:trait]
 >   [necromancy]
->   [summon]
+>   [ritual]
 >   [control]
 >   [dangerous]
+>   [necrotic]
+>   [undead]
 
 meta:
 > - source:
 >   - becmi:Expert Set; spell: Animate Dead
 >   - becmi:Rules Cyclopedia; spell: Animate Dead
->   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Animate Corpse
+>   - sdm: Synthetic_Dream_Machine_04_Powers_Index.md; canonical: Animate Dead, aka Animate Corpse
 > - usage:
+>   - aliases: Animate Corpse;
 >   - scope: power; id: Animate Dead; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;
@@ -7361,7 +7366,7 @@ meta:
 >   - scope: power; id: Finger of Death; note: FTLS Chapter 06 alpha power entry.
 
 osr:
-(pending verbatim extraction)
+{pending verbatim extraction}
 
   <div class="power-return">
     &nbsp;&nbsp;

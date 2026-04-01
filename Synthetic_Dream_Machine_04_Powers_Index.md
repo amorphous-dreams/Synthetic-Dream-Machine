@@ -376,9 +376,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-## Animate Corpse
+## Animate Dead, aka Animate Corpse
 
-> **Animate Corpse**
+> **Animate Dead, aka Animate Corpse**
 >
 > _Artificial Post-Mortality, Wake the Shell_
 >
@@ -391,14 +391,19 @@ meta:
 
 tags:
 >   [power]
->   [ritual]
 >   [storage:item]
+>   [ritual]
+>   [necromancy]
+>   [dangerous]
+>   [necrotic]
+>   [vital]
 
 meta:
 > - source:
 >   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; page: 198
 > - usage:
->   - scope: power; id: UVG2e Spells; note: Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
+>   - aliases: Animate Corpse;
+>   - scope: power; id: UVG2e Spells; note: Listed under alias "Animate Corpse". Power cost set to P: 2 per Luka Rejec confirmation (2026-02-03).
 >   - scope: power; id: UVG2e Bestiary; note: Post-mortal zombie creature stats referenced inline (@UVG, p. 209).
   
   <div class="power-return">
@@ -2680,8 +2685,14 @@ meta:
 
 tags:
 >   [power]
+>   [storage:trait]
 >   [ritual]
->   [storage:item]
+>   [necromancy]
+>   [conjuration]
+>   [fueled]
+>   [dangerous]
+>   [necrotic]
+>   [undead]
 
 meta:
 > - source:

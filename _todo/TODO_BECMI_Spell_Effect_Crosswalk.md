@@ -412,7 +412,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Speak with Plants | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Sticks to Snakes | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Striking | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
 | Create Water | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Cure Serious Wounds | C4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Dispel Magic | C4, MU3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
@@ -445,7 +445,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Web | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Wizard Lock | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Anti-Magic Shell | MU6 | Expert, Master, RC | Expert -> Clerical and Magic-User Spell Expansions; Master -> Artifact Chapter Context and Witnesses; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
-| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Animate Dead | C4, MU5 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | yes |
 | Audible Glamer | MU2 | Holmes | Holmes -> hb-audible-glamer | spell | ✓ | - |
 | Charm Monster | MU4 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Clairaudience | MU3 | Men & Magic, Holmes, OD&D Family | Men & Magic -> mm-clairaudience; Holmes -> hb-clairaudience; OD&D Family -> odnd-clairaudience | spell | ✓ | - |
@@ -537,7 +537,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Holy Word | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Insect Plague | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Quest | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
-| Raise Dead | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Raise Dead | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | yes |
 | Raise Dead Fully | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Restore | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Speak with Monsters | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |

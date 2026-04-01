@@ -281,7 +281,7 @@ Write the SDM zone label first; append the parenthetical OSR value (metric + fee
   |---|---|---|---|
   | Light / Darkness | Light, Continual Light | Darkness, Continual Darkness | FTLS_06 → Light, Continual Light |
   | Scry / Obfuscate | Clairvoyance, Wizard Eye, Detect spells | ECM rituals, anti-scrying wards, Lair Magic ward-testing resistance | FTLS_04 → ECM; FTLS_05 → Amulet of Proof; FTLS_02 → Lair Magic |
-  | Illusion / Disbelief | Phantasmal Force, Mirror Image, illusion family | Aura test to disbelieve; area effects that ignore sight-driven targeting | FTLS_06 → Phantasmal Force; FTLS_03 → [illusion][light][void] affinity |
+  | Illusion / Disbelief | Phantasmal Force, Mirror Image, illusion family | Aura test to disbelieve; area effects that ignore sight-driven targeting | FTLS_06 → Phantasmal Force; FTLS_03 → [illusion][light] affinity |
 
   For Light/Darkness specifically, the four-card structure is established by FTLS and should be preserved in the Chapter 06 import:
   - **Light** — P: 2, separate card; body states it is cancelled by Darkness cast upon it.
@@ -625,18 +625,18 @@ BECMI source material does not map directly to a Mana sub-module — there is no
 
 ##### Jamming / Counterspells
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Anti-Magic Shell | spell | Major counter-magic boundary. Range 0 (caster only), 12 turns; stops all spells both directions; only Wish bypasses; dismissible at will. | custom |
-| Anti-Magic Ray | item-effect | Directional cancellation beam. Range 120’, 1d6 rounds; suppresses all magic in area/target; area moves with beam; no save. | custom |
-| Protection from Magic | item-effect | Moving 10’ circle blocks spells crossing boundary; only Wish ends early; lasts 1-4 turns. | custom |
-| Dispel Magic | spell | Core ECM counterforce anchor. 20’ cube; auto-dispels equal/lower caster-level magic; fails 5% per higher level; does not affect ordinary magic items. | custom |
-| Silence 15’ Radius | spell | Anti-speech and anti-casting field; partial noospheric jam. 30’ sphere suppresses speech and casting inside; hearing from outside still works. | partial |
-| Spell Catching | item-effect | Counter-capture of hostile spell into storage media. Save vs. Spells on success; captured spell usable once within 24 hours. | custom |
-| Ring of Spell Eating | item-effect | Spell absorption ring; damage spells heal wearer; non-damage spells canceled; 10th use in a day triggers 24h dormancy. | custom |
-| Ring of Spell Turning | item-effect | Reflects 2-12 incoming spells back at casters; true spells only (not monster spell-like powers or item-borne effects). | custom |
-| Staff of Dispelling | item-effect | Touch-based targeted dispel; special handling for potions, scrolls, and permanent items. | custom |
-| Wand of Negation | item-effect | Narrow ECM wand that cancels one other wand or staff effect instead of countering free-cast spells; if the canceled effect has duration the negation persists for one round. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Anti-Magic Shell | spell | Major counter-magic boundary. Range 0 (caster only), 12 turns; stops all spells both directions; only Wish bypasses; dismissible at will. | custom | no |
+| Anti-Magic Ray | item-effect | Directional cancellation beam. Range 120’, 1d6 rounds; suppresses all magic in area/target; area moves with beam; no save. | custom | — |
+| Protection from Magic | item-effect | Moving 10’ circle blocks spells crossing boundary; only Wish ends early; lasts 1-4 turns. | custom | — |
+| Dispel Magic | spell | Core ECM counterforce anchor. 20’ cube; auto-dispels equal/lower caster-level magic; fails 5% per higher level; does not affect ordinary magic items. | custom | no |
+| Silence 15’ Radius | spell | Anti-speech and anti-casting field; partial noospheric jam. 30’ sphere suppresses speech and casting inside; hearing from outside still works. | partial | no |
+| Spell Catching | item-effect | Counter-capture of hostile spell into storage media. Save vs. Spells on success; captured spell usable once within 24 hours. | custom | — |
+| Ring of Spell Eating | item-effect | Spell absorption ring; damage spells heal wearer; non-damage spells canceled; 10th use in a day triggers 24h dormancy. | custom | — |
+| Ring of Spell Turning | item-effect | Reflects 2-12 incoming spells back at casters; true spells only (not monster spell-like powers or item-borne effects). | custom | — |
+| Staff of Dispelling | item-effect | Touch-based targeted dispel; special handling for potions, scrolls, and permanent items. | custom | — |
+| Wand of Negation | item-effect | Narrow ECM wand that cancels one other wand or staff effect instead of countering free-cast spells; if the canceled effect has duration the negation persists for one round. | custom | — |
 
 ---
 
@@ -675,114 +675,114 @@ Rows copied from `## Powers Family Workspace For Chapter 06` in `TODO_BECMI_Spel
 
 ##### Force
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Magic Missile | spell | Canonical Chapter 06 entry. Existing SDM variant: `Tragic Missile` (Vastlands). | partial |
-| Lightning Bolt | spell | Core line-discharge. Shaped, aimed electrical force rather than elemental projection — tags `[attack][line][lightning][force]`. | direct |
-| Ray of Enfeeblement | spell | Combat-debuff beam suppressing physical output. 30’ ray, save negates; -4 Str-equiv for duration; 25% damage reduction per 4 points lost. | partial |
-| Slow | spell | Tempo-denial counterpart to `Haste`; broad-area slowing up to 24 creatures for 3 turns. | partial |
-| Spell Damage Bonus | item-effect | Artifact-table damage rider; +1d6 per spell level (max +6d6); one-use-per-artifact-activation. Applies to any blast regardless of sub-module; cross-listed with Elemental Fire (fireburst lane). | custom |
-| Call Lightning | spell | Sustained directional electrical strike via storm-channel; one 20’ bolt per turn for duration, 8d6 save-for-half. Tags `[attack][lightning][force][focus]`. Requires active storm; more sustain-tool than pure artillery. | partial |
-| Sword | spell | Concentration-directed force blade at 30’; attacks twice/round at caster attack level; two-handed sword damage; concentration break pauses but does not end duration. | partial |
-| Protection from Lightning | spell | Defensive mirror of the lightning discharge sub-module. Level-scaled d6 cancellation pool against electrical attacks; persists across multiple hits until exhausted. Tags `[ward][imbued][lightning][force]`. | partial |
-| Barrier | spell | 30’ dia × 30’ h whirling-hammer zone; 7d10 no-save on crossing; Reverse removes barrier + specific wall forms; cannot affect iron/stone forms. | custom |
-| Force Field | spell | Immovable pure-force barrier; sphere (max 20’ r) or flat surfaces up to 5,000 sq ft; only Disintegrate/Wish destroys; Teleport/Dimension Door can bypass; enclosed creatures preserved. | custom |
-| Levitate | spell | Vertical force-lift; personal scale; self or one target rises or descends at will; horizontal movement requires a hand-hold or surface push. Tags `[force][imbued]`. | direct |
-| Floating Disc | spell | Conjured force platform for cargo transit; follows caster; cannot carry living targets; height fixed. Existing SDM variant: `Floating Disc` (UVG2e Spells). Tags `[force][imbued]`. | direct |
-| Fly | spell | Full personal aerial mobility via conjured force field; no entity invoked; speed and duration scale by caster level. Tags `[force][imbued]`. | direct |
-| Immunity | spell | Personal force-barrier shell keyed to one hazard type specified at casting (acid/electricity/fire/cold/gas-poison/petrification); 24 hours; no stacking. The shell fits skin- and clothing-tight — affects worn items but not held items. Tags `[ward][imbued][force]`. | custom |
-| Shield | spell | Personal defense shell. Canonical SDM name: `Shield Ward`; `Shield` stays as source alias. `Entropic Shield` is the sibling FTLS variant. Tags `[ward][imbued][force]`. | direct |
-| Reverse Gravity | spell | Battlefield-physics inversion and area-control exception effect; custom environmental resolution rather than ordinary force-attack mapping. | custom |
-| Telekinesis | spell | Classic force-manipulation; compare `Objective Telekinesis` as likely SDM cousin. Tags `[force][focus]`. | partial |
-| Wall of Iron | spell | Durable material barrier and infrastructure-fabrication lane for persistent iron mass; custom until construction doctrine and breach rules defined. | custom |
-| Maze | spell | Custom exile and battlefield-removal boundary effect with spatial-separation logic and explicit return-condition doctrine. | custom |
-| Power Word Stun | spell | HP-threshold stun with tiered duration; no save below threshold, resisted at higher HP. | partial |
-| Striking | spell | Weapon augmentation and combat support. Existing SDM variant: `Imbue Edge`. Tags `[attack][imbued]`. | partial |
-| Anti-Animal Shell | spell | Creature-class exclusion boundary for fauna and beast-adjacent targets; custom barrier-interface doctrine for who is denied passage. | custom |
-| Anti-Plant Shell | spell | Vegetation-class exclusion boundary; custom barrier-interface for passage denial against plant entities and effects. | custom |
-| Protection from Normal Missiles | spell | Projectile-denial ward for non-magical missile vectors; interface-grade filtering with explicit projectile-category exceptions. | custom |
-| Protection from Evil | spell | Hybrid defensive buff plus contact ward against enchanted, conjured, or summoned beings; +1 saves, −1 to evil attacker rolls; not a generic alignment scanner. Shared cleric/arcane lane. | partial |
-| Protection from Evil 10’ Radius | spell | Group-radius expansion of the `Protection from Evil` lane; lowercase `10' radius` retained as source alias only; partial family variant. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Magic Missile | spell | Canonical Chapter 06 entry. Existing SDM variant: `Tragic Missile` (Vastlands). | partial | no |
+| Lightning Bolt | spell | Core line-discharge. Shaped, aimed electrical force rather than elemental projection — tags `[attack][line][lightning][force]`. | direct | no |
+| Ray of Enfeeblement | spell | Combat-debuff beam suppressing physical output. 30’ ray, save negates; -4 Str-equiv for duration; 25% damage reduction per 4 points lost. | partial | no |
+| Slow | spell | Tempo-denial counterpart to `Haste`; broad-area slowing up to 24 creatures for 3 turns. | partial | no |
+| Spell Damage Bonus | item-effect | Artifact-table damage rider; +1d6 per spell level (max +6d6); one-use-per-artifact-activation. Applies to any blast regardless of sub-module; cross-listed with Elemental Fire (fireburst lane). | custom | — |
+| Call Lightning | spell | Sustained directional electrical strike via storm-channel; one 20’ bolt per turn for duration, 8d6 save-for-half. Tags `[attack][lightning][force][focus]`. Requires active storm; more sustain-tool than pure artillery. | partial | no |
+| Sword | spell | Concentration-directed force blade at 30’; attacks twice/round at caster attack level; two-handed sword damage; concentration break pauses but does not end duration. | partial | no |
+| Protection from Lightning | spell | Defensive mirror of the lightning discharge sub-module. Level-scaled d6 cancellation pool against electrical attacks; persists across multiple hits until exhausted. Tags `[ward][imbued][lightning][force]`. | partial | no |
+| Barrier | spell | 30’ dia × 30’ h whirling-hammer zone; 7d10 no-save on crossing; Reverse removes barrier + specific wall forms; cannot affect iron/stone forms. | custom | no |
+| Force Field | spell | Immovable pure-force barrier; sphere (max 20’ r) or flat surfaces up to 5,000 sq ft; only Disintegrate/Wish destroys; Teleport/Dimension Door can bypass; enclosed creatures preserved. | custom | no |
+| Levitate | spell | Vertical force-lift; personal scale; self or one target rises or descends at will; horizontal movement requires a hand-hold or surface push. Tags `[force][imbued]`. | direct | no |
+| Floating Disc | spell | Conjured force platform for cargo transit; follows caster; cannot carry living targets; height fixed. Existing SDM variant: `Floating Disc` (UVG2e Spells). Tags `[force][imbued]`. | direct | no |
+| Fly | spell | Full personal aerial mobility via conjured force field; no entity invoked; speed and duration scale by caster level. Tags `[force][imbued]`. | direct | no |
+| Immunity | spell | Personal force-barrier shell keyed to one hazard type specified at casting (acid/electricity/fire/cold/gas-poison/petrification); 24 hours; no stacking. The shell fits skin- and clothing-tight — affects worn items but not held items. Tags `[ward][imbued][force]`. | custom | no |
+| Shield | spell | Personal defense shell. Canonical SDM name: `Shield Ward`; `Shield` stays as source alias. `Entropic Shield` is the sibling FTLS variant. Tags `[ward][imbued][force]`. | direct | — |
+| Reverse Gravity | spell | Battlefield-physics inversion and area-control exception effect; custom environmental resolution rather than ordinary force-attack mapping. | custom | no |
+| Telekinesis | spell | Classic force-manipulation; compare `Objective Telekinesis` as likely SDM cousin. Tags `[force][focus]`. | partial | no |
+| Wall of Iron | spell | Durable material barrier and infrastructure-fabrication lane for persistent iron mass; custom until construction doctrine and breach rules defined. | custom | no |
+| Maze | spell | Custom exile and battlefield-removal boundary effect with spatial-separation logic and explicit return-condition doctrine. | custom | no |
+| Power Word Stun | spell | HP-threshold stun with tiered duration; no save below threshold, resisted at higher HP. | partial | no |
+| Striking | spell | Weapon augmentation and combat support. Existing SDM variant: `Imbue Edge`. Tags `[attack][imbued]`. | partial | no |
+| Anti-Animal Shell | spell | Creature-class exclusion boundary for fauna and beast-adjacent targets; custom barrier-interface doctrine for who is denied passage. | custom | no |
+| Anti-Plant Shell | spell | Vegetation-class exclusion boundary; custom barrier-interface for passage denial against plant entities and effects. | custom | no |
+| Protection from Normal Missiles | spell | Projectile-denial ward for non-magical missile vectors; interface-grade filtering with explicit projectile-category exceptions. | custom | no |
+| Protection from Evil | spell | Hybrid defensive buff plus contact ward against enchanted, conjured, or summoned beings; +1 saves, −1 to evil attacker rolls; not a generic alignment scanner. Shared cleric/arcane lane. | partial | no |
+| Protection from Evil 10’ Radius | spell | Group-radius expansion of the `Protection from Evil` lane; lowercase `10' radius` retained as source alias only; partial family variant. | partial | no |
 
 ##### Elemental Fire
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Fireball | spell | Area fireburst, `[artillery]` tag. Canonical name; preserve `Fire Ball` as recognizer alias. SDM variant: `Pyreball`. Base fireburst anchor beneath Delayed Blast Fireball and Meteor Swarm. | partial |
-| Delayed Blast Fireball | spell | Timed artillery fireburst, `[artillery]` tag. Middle rung between `Fireball` and `Meteor Swarm`. | partial |
-| Meteor Swarm | spell | Apex fireburst, `[artillery]` tag. Range 240’, 1-4 × 40’ radius impacts, 10d10 fire, save-for-half, terrain hazard persistence. | custom |
-| Pyrotechnics | spell | Pivot between spectacle and smoke denial. Requires existing fire source; extinguishes on use. | partial |
-| Wall of Fire | spell | Barrier-plus-damage; fire-family partial recognizer alongside `Pyreball`. | partial |
-| Produce Fire | spell | Conjures non-self-harming torch-grade flame; duration scaling; ignition utility; short-range throw/drop; on/off toggle by concentration. | partial |
-| Heat Metal | spell | Sustained anti-armor fire effect. 7 rounds escalating→tapering no-save damage; forced drop; ignition at peak; weaker on magical targets. | custom |
-| Resist Fire | spell | Fire resistance and mitigation. Direct map. | direct |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Fireball | spell | Area fireburst, `[artillery]` tag. Canonical name; preserve `Fire Ball` as recognizer alias. SDM variant: `Pyreball`. Base fireburst anchor beneath Delayed Blast Fireball and Meteor Swarm. | partial | no |
+| Delayed Blast Fireball | spell | Timed artillery fireburst, `[artillery]` tag. Middle rung between `Fireball` and `Meteor Swarm`. | partial | no |
+| Meteor Swarm | spell | Apex fireburst, `[artillery]` tag. Range 240’, 1-4 × 40’ radius impacts, 10d10 fire, save-for-half, terrain hazard persistence. | custom | no |
+| Pyrotechnics | spell | Pivot between spectacle and smoke denial. Requires existing fire source; extinguishes on use. | partial | no |
+| Wall of Fire | spell | Barrier-plus-damage; fire-family partial recognizer alongside `Pyreball`. | partial | no |
+| Produce Fire | spell | Conjures non-self-harming torch-grade flame; duration scaling; ignition utility; short-range throw/drop; on/off toggle by concentration. | partial | no |
+| Heat Metal | spell | Sustained anti-armor fire effect. 7 rounds escalating→tapering no-save damage; forced drop; ignition at peak; weaker on magical targets. | custom | no |
+| Resist Fire | spell | Fire resistance and mitigation. Direct map. | direct | no |
 
 ##### Elemental Ice / Cold
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Ice Storm/Wall | spell | Dual-mode: burst (damage, save-for-half) or wall (breach damage, creature-type exceptions). Single card, cast-time choice. | custom |
-| Resist Cold | spell | Range 0, Duration 6 turns, effect all creatures within 30’. Cold-hazard taxonomy still open. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Ice Storm/Wall | spell | Dual-mode: burst (damage, save-for-half) or wall (breach damage, creature-type exceptions). Single card, cast-time choice. | custom | no |
+| Resist Cold | spell | Range 0, Duration 6 turns, effect all creatures within 30’. Cold-hazard taxonomy still open. | partial | no |
 
 ##### Elemental Earth
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Earthquake | spell | Outdoor area up to 60’ sq + 5’/level above C17; 1 turn of collapse, rockslide, and crack-engulf risks. | custom |
-| Move Earth | spell | Massive terrain repositioning. SDM cousin: `Dryland Sculpture` (smaller-scale terraforming). | partial |
-| Wall of Stone | spell | Rapid-structure and barrier creation; geometry, breach, and noncombat construction doctrine still needed. | custom |
-| Entangle | spell | RC-only vegetation restraint lane; no standalone pre-RC spell witness. Restrains targets in vegetation with escape mechanics. | partial |
-| Growth of Plants | spell | Terrain and vegetation alteration lane. SDM cousin: `Green Haven` (narrower plant-shaping). | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Earthquake | spell | Outdoor area up to 60’ sq + 5’/level above C17; 1 turn of collapse, rockslide, and crack-engulf risks. | custom | no |
+| Move Earth | spell | Massive terrain repositioning. SDM cousin: `Dryland Sculpture` (smaller-scale terraforming). | partial | no |
+| Wall of Stone | spell | Rapid-structure and barrier creation; geometry, breach, and noncombat construction doctrine still needed. | custom | no |
+| Entangle | spell | RC-only vegetation restraint lane; no standalone pre-RC spell witness. Restrains targets in vegetation with escape mechanics. | partial | no |
+| Growth of Plants | spell | Terrain and vegetation alteration lane. SDM cousin: `Green Haven` (narrower plant-shaping). | partial | no |
 
 ##### Elemental Air / Weather
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Control Temperature 10’ Radius | spell | Self-centered 20’ dia microclimate; immediate ±50°F shift; round-by-round retuning while active; fixed end-state at duration expiry. | partial |
-| Control Winds | spell | Directional weather-force control; movement, hazard, projectile-pressure implications. Await full weather-suite doctrine. | custom |
-| Weather Control | spell | Chapter-scale climate control and hazard shaping across druidic and arcane traditions. | custom |
-| Obscure | spell | Atmospheric concealment lane. SDM variant: `Yellow Cloud` (opaque dust veil). Works by altering atmosphere, not false imagery. | partial |
-| Summon Weather | spell | Macro-environment override; doctrine pending for intensity, duration, and collateral effects. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Control Temperature 10’ Radius | spell | Self-centered 20’ dia microclimate; immediate ±50°F shift; round-by-round retuning while active; fixed end-state at duration expiry. | partial | no |
+| Control Winds | spell | Directional weather-force control; movement, hazard, projectile-pressure implications. Await full weather-suite doctrine. | custom | no |
+| Weather Control | spell | Chapter-scale climate control and hazard shaping across druidic and arcane traditions. | custom | no |
+| Obscure | spell | Atmospheric concealment lane. SDM variant: `Yellow Cloud` (opaque dust veil). Works by altering atmosphere, not false imagery. | partial | no |
+| Summon Weather | spell | Macro-environment override; doctrine pending for intensity, duration, and collateral effects. | custom | no |
 
 ##### Elemental Water
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Lower Water | spell | Halves water depth up to 10,000 sq ft for 10 turns; can strand vessels; hazardous refill surge on end. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Lower Water | spell | Halves water depth up to 10,000 sq ft for 10 turns; can strand vessels; hazardous refill surge on end. | custom | no |
 
 ##### Demolition / Entropy
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Death Spell | spell | 4-32 HD kill budget in 60’ cube; lowest-HD targets first; excludes undead and 8+ HD. | custom |
-| Disintegrate | spell | Single-target annihilation. Death Ray save allowed; no effect on magic items. | custom |
-| Power Word Blind | spell | No-save blindness at 120’; HP threshold determines duration; AC/save penalties; restricted cure access. | partial |
-| Power Word Kill | spell | HP threshold execution (kill / stun / narrow save). Auto-`[dangerous]` regardless of P: formula. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Death Spell | spell | 4-32 HD kill budget in 60’ cube; lowest-HD targets first; excludes undead and 8+ HD. | custom | no |
+| Disintegrate | spell | Single-target annihilation. Death Ray save allowed; no effect on magic items. | custom | no |
+| Power Word Blind | spell | No-save blindness at 120’; HP threshold determines duration; AC/save penalties; restricted cure access. | partial | no |
+| Power Word Kill | spell | HP threshold execution (kill / stun / narrow save). Auto-`[dangerous]` regardless of P: formula. | custom | no |
 
 ##### Atmospheric Hazards
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Cloudkill | spell | Drifting poison cloud 30’×20’; ongoing damage; sub-5 HD targets risk death save. | custom |
-| Explosive Cloud | spell | Cloudkill-profile cloud + repeat paralysis saves + unavoidable explosion damage bypassing elemental immunities. | custom |
-| Insect Plague | spell | Outdoor 30’ radius swarm for 1 day; drives off sub-3 HD creatures; obscures vision; concentration to steer. | custom |
-| Creeping Doom | spell | High-tier swarm devastation: expandable 20’×20’ to 60’×60’ column of 1,000 insects; automatic scaling damage while caster is within 120’; ends on expiry, range break, or dispel. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Cloudkill | spell | Drifting poison cloud 30’×20’; ongoing damage; sub-5 HD targets risk death save. | custom | no |
+| Explosive Cloud | spell | Cloudkill-profile cloud + repeat paralysis saves + unavoidable explosion damage bypassing elemental immunities. | custom | no |
+| Insect Plague | spell | Outdoor 30’ radius swarm for 1 day; drives off sub-3 HD creatures; obscures vision; concentration to steer. | custom | no |
+| Creeping Doom | spell | High-tier swarm devastation: expandable 20’×20’ to 60’×60’ column of 1,000 insects; automatic scaling damage while caster is within 120’; ends on expiry, range break, or dispel. | custom | no |
 
 ##### Traversal and Passage
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Dimension Door | spell | Short-range relocation bridging tactical repositioning and teleport doctrine. | partial |
-| Knock | spell | Canonical lock-opening entry. Existing SDM variant: `Knock / Lock` (UVG2e). | partial |
-| Magic Door | spell | Portal and egress manipulation lane with reversible entry-control logic. SDM variant: `Linked Portals`. | partial |
-| Pass Plant | spell | Plant transit lane; primary placement is mobility, not plant reshaping. SDM variant: `Linked Portals`. | partial |
-| Passwall | spell | Canonical Chapter 06 name: `Passwall`; `Pass-Wall` as source alias. Chapter 06 invocation line: `Veilwalk`. SDM variant: `Linked Portals`. | partial |
-| Plant Door | spell | Vegetation access and doorway lane. SDM variant: `Linked Portals`. | partial |
-| Teleport | spell | Major transit; needs SDM range and mishap doctrine. SDM cousin: `Linked Portals`. | partial |
-| Teleport any Object | spell | Object-only transit lane adjacent to `Teleport`. | partial |
-| Transport Through Plants | spell | Plant-network transit lane. SDM variant: `Linked Portals`. | partial |
-| Travel | spell | Composite mobility package combining flight, gaseous movement, and adjacent-plane transfer; likely needs Ch06 decomposition or bundled mobility power. | custom |
-| Word of Recall | spell | Return-to-sanctuary extraction lane; dimensional and sanctuary transit doctrine. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Dimension Door | spell | Short-range relocation bridging tactical repositioning and teleport doctrine. | partial | no |
+| Knock | spell | Canonical lock-opening entry. Existing SDM variant: `Knock / Lock` (UVG2e). | partial | no |
+| Magic Door | spell | Portal and egress manipulation lane with reversible entry-control logic. SDM variant: `Linked Portals`. | partial | no |
+| Pass Plant | spell | Plant transit lane; primary placement is mobility, not plant reshaping. SDM variant: `Linked Portals`. | partial | no |
+| Passwall | spell | Canonical Chapter 06 name: `Passwall`; `Pass-Wall` as source alias. Chapter 06 invocation line: `Veilwalk`. SDM variant: `Linked Portals`. | partial | no |
+| Plant Door | spell | Vegetation access and doorway lane. SDM variant: `Linked Portals`. | partial | no |
+| Teleport | spell | Major transit; needs SDM range and mishap doctrine. SDM cousin: `Linked Portals`. | partial | no |
+| Teleport any Object | spell | Object-only transit lane adjacent to `Teleport`. | partial | no |
+| Transport Through Plants | spell | Plant-network transit lane. SDM variant: `Linked Portals`. | partial | no |
+| Travel | spell | Composite mobility package combining flight, gaseous movement, and adjacent-plane transfer; likely needs Ch06 decomposition or bundled mobility power. | custom | no |
+| Word of Recall | spell | Return-to-sanctuary extraction lane; dimensional and sanctuary transit doctrine. | partial | no |
 
 ---
 
@@ -821,67 +821,67 @@ Covers all powers that operate on biological systems — tissue repair, metaboli
 
 ##### Acute Medical Care
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Cure Critical Wounds | spell | Higher-tier healing upgrade. | direct |
-| Cureall | spell | Heals all wounds to 1d6 remaining OR removes one named condition; enables just-raised creatures to skip mandatory 2-week recovery rest. | partial |
-| Heal | spell | Arcane capstone of broad-repair pattern; effect identical to Cureall; crosses clerical and arcane traditions. | custom |
-| Cure Light Wounds | spell | Foundational healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Restorative Slumber`. Reversable: `Cause Light Wounds` — reversed form inflicts damage equal to the healing amount; Chaotic channel; same P: cost. | partial |
-| Cure Serious Wounds | spell | Mid-tier healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Real-Time Rebuild`. Reversable: `Cause Serious Wounds` — reversed form inflicts damage at same tier; Chaotic channel; same P: cost. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Cure Critical Wounds | spell | Higher-tier healing upgrade. | direct | no |
+| Cureall | spell | Heals all wounds to 1d6 remaining OR removes one named condition; enables just-raised creatures to skip mandatory 2-week recovery rest. | partial | no |
+| Heal | spell | Arcane capstone of broad-repair pattern; effect identical to Cureall; crosses clerical and arcane traditions. | custom | no |
+| Cure Light Wounds | spell | Foundational healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Restorative Slumber`. Reversable: `Cause Light Wounds` — reversed form inflicts damage equal to the healing amount; Chaotic channel; same P: cost. | partial | no |
+| Cure Serious Wounds | spell | Mid-tier healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Real-Time Rebuild`. Reversable: `Cause Serious Wounds` — reversed form inflicts damage at same tier; Chaotic channel; same P: cost. | partial | no |
 
 ##### Systemic Treatment
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Cure Blindness | spell | Sensory impairment removal. SDM cousins: `Real-Time Rebuild`, `Restorative Slumber`. | partial |
-| Cure Disease | spell | Disease and affliction removal. SDM cousin: `Real-Time Rebuild` (flushes toxins/afflictions by power setting). | partial |
-| Neutralize Poison | spell | Poison-cleansing and creation lane. SDM cousin: `Real-Time Rebuild` (toxin flush at lower settings). Reversable: `Cause Poison` — reversed form injects lethal toxin; save-gated death rider; RC (*) mark confirmed. | partial |
-| Protection from Poison | spell | Poison immunity and anti-breath protection. Only partial: `Real-Time Rebuild` is recovery-style rather than prophylactic. | partial |
-| Ring of Remedies | item-effect | Bundled cure functions (Cure Light Wounds/Blindness/Disease/Poison 1/day each); combine two uses in one touch allowed. | custom |
-| Rod of Health | item-effect | Renewable healing access; one function per creature per day. | partial |
-| Stone to Flesh | spell | Petrification-reversal lane and biological restoration. Expert evidence: restores petrified targets or converts stone to flesh; reverse `Flesh to Stone` is save-gated petrification. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Cure Blindness | spell | Sensory impairment removal. SDM cousins: `Real-Time Rebuild`, `Restorative Slumber`. | partial | no |
+| Cure Disease | spell | Disease and affliction removal. SDM cousin: `Real-Time Rebuild` (flushes toxins/afflictions by power setting). | partial | no |
+| Neutralize Poison | spell | Poison-cleansing and creation lane. SDM cousin: `Real-Time Rebuild` (toxin flush at lower settings). Reversable: `Cause Poison` — reversed form injects lethal toxin; save-gated death rider; RC (*) mark confirmed. | partial | no |
+| Protection from Poison | spell | Poison immunity and anti-breath protection. Only partial: `Real-Time Rebuild` is recovery-style rather than prophylactic. | partial | no |
+| Ring of Remedies | item-effect | Bundled cure functions (Cure Light Wounds/Blindness/Disease/Poison 1/day each); combine two uses in one touch allowed. | custom | — |
+| Rod of Health | item-effect | Renewable healing access; one function per creature per day. | partial | — |
+| Stone to Flesh | spell | Petrification-reversal lane and biological restoration. Expert evidence: restores petrified targets or converts stone to flesh; reverse `Flesh to Stone` is save-gated petrification. | partial | no |
 
 ##### Life Support / Metabolic Sustenance
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Create Air | spell | Sealed-space and vacuum life support. RC-only provenance exception (no pre-RC spell witness found). | custom |
-| Create Food | spell | Supply-generation. SDM cousin: `Process Food`; `Green Haven` as camp-support variant. | partial |
-| Create Water | spell | Liquid-resource generation. SDM cousins: `Process Food`, survival wrappers. | partial |
-| Purify Food and Water | spell | Basic purification. SDM cousin: `Process Food`; `Toxin Render` as narrower waste-processing cousin. | partial |
-| Survival | spell | Life support for void, plane, and extreme-condition play. | partial |
-| Ring of Survival | item-effect | Environmental hardening and hazard-resistance at item scale. | partial |
-| Water Breathing | spell | Custom biological aquatic adaptation; environment-interface doctrine around breath medium, pressure, and exposure rather than speed modifier. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Create Air | spell | Sealed-space and vacuum life support. RC-only provenance exception (no pre-RC spell witness found). | custom | no |
+| Create Food | spell | Supply-generation. SDM cousin: `Process Food`; `Green Haven` as camp-support variant. | partial | no |
+| Create Water | spell | Liquid-resource generation. SDM cousins: `Process Food`, survival wrappers. | partial | no |
+| Purify Food and Water | spell | Basic purification. SDM cousin: `Process Food`; `Toxin Render` as narrower waste-processing cousin. | partial | no |
+| Survival | spell | Life support for void, plane, and extreme-condition play. | partial | no |
+| Ring of Survival | item-effect | Environmental hardening and hazard-resistance at item scale. | partial | — |
+| Water Breathing | spell | Custom biological aquatic adaptation; environment-interface doctrine around breath medium, pressure, and exposure rather than speed modifier. | custom | no |
 
 ##### Biotic Augmentation
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Haste | spell | Metabolic overdrive. SDM cousin: `Nunka's Biophysical Overdrive` (metabolic overdrive with exhaustion burden). | partial |
-| Haste Speed Stacking Rules | procedure | Stacking doctrine: max 2 speed sources; +1 hit/10% faster; -2 AC per layer; magic-use timing unimproved by haste. | custom |
-| Ring of Life Protection | item-effect | Anti-drain life-threshold safeguard; 5 charges prevent energy drain/Con/level loss; 1 charge recovered per day of rest. | custom |
-| Strength | spell | Temporary martial augmentation without form change. Cleaner biomancy anchor than polymorph suite. | partial |
-| Animal Growth | spell | Doubles one normal or giant animal’s size, strength, damage, and carrying capacity for 12 turns; excludes intelligent and fantastic creatures. Reversable: `Shrink Animal` — reversed form halves size, strength, and damage of one animal; save allowed for hostile targets (RC). | partial |
-| Enlargement | spell | Size and mass amplification for objects and living targets; lower-tier anchor beneath polymorph effects. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Haste | spell | Metabolic overdrive. SDM cousin: `Nunka's Biophysical Overdrive` (metabolic overdrive with exhaustion burden). | partial | no |
+| Haste Speed Stacking Rules | procedure | Stacking doctrine: max 2 speed sources; +1 hit/10% faster; -2 AC per layer; magic-use timing unimproved by haste. | custom | — |
+| Ring of Life Protection | item-effect | Anti-drain life-threshold safeguard; 5 charges prevent energy drain/Con/level loss; 1 charge recovered per day of rest. | custom | — |
+| Strength | spell | Temporary martial augmentation without form change. Cleaner biomancy anchor than polymorph suite. | partial | no |
+| Animal Growth | spell | Doubles one normal or giant animal’s size, strength, damage, and carrying capacity for 12 turns; excludes intelligent and fantastic creatures. Reversable: `Shrink Animal` — reversed form halves size, strength, and damage of one animal; save allowed for hostile targets (RC). | partial | no |
+| Enlargement | spell | Size and mass amplification for objects and living targets; lower-tier anchor beneath polymorph effects. | partial | no |
 
 ##### Sensory Augmentation
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Infravision | spell | Biological night-vision adaptation. Crosswalk Note confirmed: SDM variant Rehoryan’s Prophetic Song grants night vision as durable biomantic adaptation (not temporary spell vision). Routes to Biomancy, not Detection. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Infravision | spell | Biological night-vision adaptation. Crosswalk Note confirmed: SDM variant Rehoryan’s Prophetic Song grants night vision as durable biomantic adaptation (not temporary spell vision). Routes to Biomancy, not Detection. | partial | no |
 
 ##### Faerie Bodycrafts
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Web | spell | Area restraint via extruded biological filament. Dual-use: at low P, Spider Folk tradition uses Web as resource generation (silk, thread, and material production); at high P, area denial and restraint. Endurance save to resist. Tags `[vital][area]`; add `[dangerous]` at P: 12+. | direct |
-| Clone | spell | Identity-duplication and backup-body procedure; beyond direct mapping; needs custom continuity and body-vault doctrine. | custom |
-| Polymorph Others | spell | Target-facing permanent-until-dispelled transformation; HD-ratio limit; behavior and tendency inheritance from new form. | partial |
-| Polymorph Self | spell | Self-only timed form change; new form HD capped at caster HD; preserves AC, hp, saves; blocks spellcasting. | partial |
-| Polymorph Any Object | spell | Extreme transmutation endpoint; extends polymorph doctrine beyond creature targets; custom ceiling case. | custom |
-| Shapechange | spell | Supreme self-transformation and ceiling case for form doctrine; custom until duration, capability inheritance, and identity-stability policy defined. | custom |
-| Statue | spell | Self-concealment and false-object transformation with modal defense-state toggle; AC improvement, broad hazard immunities, breathing suspension, initiative benefit vs. elemental attacks; magical attacks still apply. | custom |
-| Sticks to Snakes | spell | Material-to-living-creature conversion; wood-to-serpent transformation; keep custom until obedience scope, persistence, and material-to-creature rules normalized. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Web | spell | Area restraint via extruded biological filament. Dual-use: at low P, Spider Folk tradition uses Web as resource generation (silk, thread, and material production); at high P, area denial and restraint. Endurance save to resist. Tags `[vital][area]`; add `[dangerous]` at P: 12+. | direct | no |
+| Clone | spell | Identity-duplication and backup-body procedure; beyond direct mapping; needs custom continuity and body-vault doctrine. | custom | no |
+| Polymorph Others | spell | Target-facing permanent-until-dispelled transformation; HD-ratio limit; behavior and tendency inheritance from new form. | partial | no |
+| Polymorph Self | spell | Self-only timed form change; new form HD capped at caster HD; preserves AC, hp, saves; blocks spellcasting. | partial | no |
+| Polymorph Any Object | spell | Extreme transmutation endpoint; extends polymorph doctrine beyond creature targets; custom ceiling case. | custom | no |
+| Shapechange | spell | Supreme self-transformation and ceiling case for form doctrine; custom until duration, capability inheritance, and identity-stability policy defined. | custom | no |
+| Statue | spell | Self-concealment and false-object transformation with modal defense-state toggle; AC improvement, broad hazard immunities, breathing suspension, initiative benefit vs. elemental attacks; magical attacks still apply. | custom | no |
+| Sticks to Snakes | spell | Material-to-living-creature conversion; wood-to-serpent transformation; keep custom until obedience scope, persistence, and material-to-creature rules normalized. | custom | no |
 
 ---
 
@@ -913,44 +913,44 @@ Covers the broadcast of constructed false stimuli into the local sensorium — f
 
 ##### Counter-Veil
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Truesight | spell | Premium anti-concealment: covers invisibility, ethereal presence, and hidden forms. High-tier reveal tag package. | partial |
-| Detect Invisible | spell | Arcane anti-concealment lane. SDM variant: `Eyes of Akaula` (sees invisible, hidden, departed, dead). | partial |
-| Find Traps | spell | Reveals mechanical and magical traps within 30’ via glow cue; does not reveal type, disarm method, ambushes, or natural hazards. | partial |
-| Faerie Fire | spell | Non-damaging visibility outline; marks creatures/objects; +2 attack against marked targets; footprint scales by caster level. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Truesight | spell | Premium anti-concealment: covers invisibility, ethereal presence, and hidden forms. High-tier reveal tag package. | partial | no |
+| Detect Invisible | spell | Arcane anti-concealment lane. SDM variant: `Eyes of Akaula` (sees invisible, hidden, departed, dead). | partial | no |
+| Find Traps | spell | Reveals mechanical and magical traps within 30’ via glow cue; does not reveal type, disarm method, ambushes, or natural hazards. | partial | no |
+| Faerie Fire | spell | Non-damaging visibility outline; marks creatures/objects; +2 attack against marked targets; footprint scales by caster level. | partial | no |
 
 ##### Personal Veil
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Invisibility | spell | Core concealment baseline for personal stealth and line-of-sight disruption. SDM family variants: `Ecosphere Veil` and `Yellow Cloud`. Tags `[veil][imbued][ecm]`. | partial |
-| Invisibility 10’ Radius | spell | Group-scale concealment variant. `Yellow Cloud` as strongest crowd-scale precedent. Tags `[veil][imbued][area S][ecm]`. | partial |
-| Mass Invisibility | spell | High-tier crowd concealment above the 10’ radius variant. Tags `[veil][imbued][area L][ecm][dangerous]`. | partial |
-| Mirror Image | spell | Defensive misdirection via decoy duplicates; each hit removes one decoy; area effects clear all. Tags `[veil][imbued][ecm]`. | partial |
-| Massmorph | spell | Group disguise as trees for coordinated infiltration; up to 100 willing targets; each subject releases on spell end, dispel, or departure. Tags `[veil][imbued][area L][ecm]`. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Invisibility | spell | Core concealment baseline for personal stealth and line-of-sight disruption. SDM family variants: `Ecosphere Veil` and `Yellow Cloud`. Tags `[veil][imbued][ecm]`. | partial | no |
+| Invisibility 10’ Radius | spell | Group-scale concealment variant. `Yellow Cloud` as strongest crowd-scale precedent. Tags `[veil][imbued][area S][ecm]`. | partial | no |
+| Mass Invisibility | spell | High-tier crowd concealment above the 10’ radius variant. Tags `[veil][imbued][area L][ecm][dangerous]`. | partial | no |
+| Mirror Image | spell | Defensive misdirection via decoy duplicates; each hit removes one decoy; area effects clear all. Tags `[veil][imbued][ecm]`. | partial | no |
+| Massmorph | spell | Group disguise as trees for coordinated infiltration; up to 100 willing targets; each subject releases on spell end, dispel, or departure. Tags `[veil][imbued][area L][ecm]`. | partial | no |
 
 ##### Constructed Illusion
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Hallucinatory Terrain | spell | Large-scale terrain-falsification illusion masking real features without physical change; persists until dispelled or tested by touch or intelligent scrutiny. Tags `[veil][focus][ecm][area L]`. | partial |
-| Phantasmal Force | spell | Core constructed-illusion spell; concentration-sustained 20’ cube scene simulation; disbelief/save and non-real damage handling require bespoke adjudication. Tags `[veil][focus][ecm]`. | custom |
-| Projected Image | spell | Remote non-corporeal proxy; apparent spellcasting origin point with line-of-sight requirement; collapses on contact. Tags `[veil][focus][ecm]`. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Hallucinatory Terrain | spell | Large-scale terrain-falsification illusion masking real features without physical change; persists until dispelled or tested by touch or intelligent scrutiny. Tags `[veil][focus][ecm][area L]`. | partial | no |
+| Phantasmal Force | spell | Core constructed-illusion spell; concentration-sustained 20’ cube scene simulation; disbelief/save and non-real damage handling require bespoke adjudication. Tags `[veil][focus][ecm]`. | custom | no |
+| Projected Image | spell | Remote non-corporeal proxy; apparent spellcasting origin point with line-of-sight requirement; collapses on contact. Tags `[veil][focus][ecm]`. | partial | no |
 
 ##### Sound Crafting
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Audible Glamer | spell | Sound-only illusion for fabricated crowds, beasts, and battlefield confusion; volume scales with caster level. Tags `[veil][imbued][ecm]`. | partial |
-| Ventriloquism | spell | Sound-projection and false-source deception utility; 60’ range, 2 turns, one source, no save. Tags `[veil][imbued][ecm]`. | partial |
-| Magic Mouth | spell | Triggered-message storage in an object; condition-based release, 25-word cap. Tags `[veil][imbued][anchored][ecm]`. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Audible Glamer | spell | Sound-only illusion for fabricated crowds, beasts, and battlefield confusion; volume scales with caster level. Tags `[veil][imbued][ecm]`. | partial | no |
+| Ventriloquism | spell | Sound-projection and false-source deception utility; 60’ range, 2 turns, one source, no save. Tags `[veil][imbued][ecm]`. | partial | no |
+| Magic Mouth | spell | Triggered-message storage in an object; condition-based release, 25-word cap. Tags `[veil][imbued][anchored][ecm]`. | partial | no |
 
 ##### Self-State
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Statue | spell | → See Biomancy: Faerie Bodycrafts (modal defense-state form shift with biological transformation characteristics routed there). | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Statue | spell | → See Biomancy: Faerie Bodycrafts (modal defense-state form shift with biological transformation characteristics routed there). | custom | no |
 
 ---
 
@@ -978,29 +978,29 @@ Covers all powers that call entities from outside the scene, fabricate new biolo
 
 ##### Summoning
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Conjure Elemental | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. MU5 → P: 10. Calls one 16 HD elemental; full concentration required for control; broken concentration frees the elemental to attack. Tags `[summon][fueled]`. | partial |
-| Invisible Stalker | spell | Precision servitor-calling for pursuit, scouting, and delegated action. MU6 → P: 12; `[dangerous]` mandatory. Unending-task doctrine: pursues assigned task until completion or dismissal; ambiguous orders resolve literally; inherently hostile once task is complete. Tags `[summon][focus][dangerous]`. | partial |
-| Aerial Servant | spell | Summoned retrieval-agent with logistics and custody implications. C6 → P: 12; `[dangerous]` mandatory. Strength ceiling 36 (lifts anything up to that weight); held target may attempt Strength contest escape; if prevented from completing task, attacks caster. Tags `[summon][focus][dangerous]`. | partial |
-| Summon Elemental | spell | Druidic elemental-calling lane complementary to Conjure Elemental. Dr7 → P: 14. Calls one elemental of type matching terrain; same concentration and control doctrine as Conjure Elemental; druid-lane provenance only. Tags `[summon][fueled]`. | partial |
-| Summon Object | spell | Object-call retrieval bridging summoning and transport procedure language. MU7 → P: 14. Calls one inanimate object the caster previously touched; unlimited range on same plane; object must be unattended (or attended target succeeds a save to resist vanishing). Tags `[summon]`. | partial |
-| Create Normal Animals | spell | Low-tier conjured creature. SDM cousin: `Vegetable of Birth` (gestation cousin). Explicit ecology, load, and encounter-pressure constraints. | custom |
-| Create Normal Monsters | spell | Mid-tier conjured creature; first monster-grade rung after normal animals. MU7 → P: 14. Creates monsters with non-special attack forms only (no breath, poison, or petrification); up to caster-level HD total; control doctrine required at Ch06. Tags `[summon][conjuration][fueled]`. | custom |
-| Create Magical Monsters | spell | High-tier magical-creature conjuration; special-ability budgeting and control-burden escalation. MU8 → P: 16; `[dangerous]` for apex special-ability packages. Creates monsters with special attacks allowed; up to half caster-level HD total. Tags `[summon][conjuration][fueled][dangerous]`. | custom |
-| Create Any Monster | spell | Apex creature conjuration; command reliability, persistence failure modes, and campaign-scale impact doctrine required. MU9 → P: 18; `[dangerous]` mandatory. Creates any monster up to one-quarter caster-level HD; command reliability uncertain above P: 14 equivalent. Tags `[summon][conjuration][fueled][dangerous]`. | custom |
-| Summon Animals | spell | Druidic ally-call with explicit HD budgeting by caster level. Tags `[summon][fueled]`. | partial |
-| Gate | spell | Planar aperture and translocation endpoint; high-tier traversal and summoning crossover; bespoke apex effect. MU9 → P: 18; `[dangerous]` mandatory. Opens a two-way planar aperture to any plane; named entity may or may not come through and is not automatically controlled; controlled-entity risk is the primary campaign-scale failure mode. Tags `[summon][transit][dangerous]`. | custom |
-| Djinni Summoning | item-effect | Expert ring; summons one djinni to serve for up to one day, once per week, keyed to current wearer. | custom |
-| Immortal Conjuring And Summoning Limits | procedure | → See Immortal Metaphysics module: Immortal Effect Doctrine. Transplanar response requirements and sphere/element bias constraints for Immortal-tier summoners. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Conjure Elemental | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. MU5 → P: 10. Calls one 16 HD elemental; full concentration required for control; broken concentration frees the elemental to attack. Tags `[summon][fueled]`. | partial | no |
+| Invisible Stalker | spell | Precision servitor-calling for pursuit, scouting, and delegated action. MU6 → P: 12; `[dangerous]` mandatory. Unending-task doctrine: pursues assigned task until completion or dismissal; ambiguous orders resolve literally; inherently hostile once task is complete. Tags `[summon][focus][dangerous]`. | partial | no |
+| Aerial Servant | spell | Summoned retrieval-agent with logistics and custody implications. C6 → P: 12; `[dangerous]` mandatory. Strength ceiling 36 (lifts anything up to that weight); held target may attempt Strength contest escape; if prevented from completing task, attacks caster. Tags `[summon][focus][dangerous]`. | partial | no |
+| Summon Elemental | spell | Druidic elemental-calling lane complementary to Conjure Elemental. Dr7 → P: 14. Calls one elemental of type matching terrain; same concentration and control doctrine as Conjure Elemental; druid-lane provenance only. Tags `[summon][fueled]`. | partial | no |
+| Summon Object | spell | Object-call retrieval bridging summoning and transport procedure language. MU7 → P: 14. Calls one inanimate object the caster previously touched; unlimited range on same plane; object must be unattended (or attended target succeeds a save to resist vanishing). Tags `[summon]`. | partial | no |
+| Create Normal Animals | spell | Low-tier conjured creature. SDM cousin: `Vegetable of Birth` (gestation cousin). Explicit ecology, load, and encounter-pressure constraints. | custom | no |
+| Create Normal Monsters | spell | Mid-tier conjured creature; first monster-grade rung after normal animals. MU7 → P: 14. Creates monsters with non-special attack forms only (no breath, poison, or petrification); up to caster-level HD total; control doctrine required at Ch06. Tags `[summon][conjuration][fueled]`. | custom | no |
+| Create Magical Monsters | spell | High-tier magical-creature conjuration; special-ability budgeting and control-burden escalation. MU8 → P: 16; `[dangerous]` for apex special-ability packages. Creates monsters with special attacks allowed; up to half caster-level HD total. Tags `[summon][conjuration][fueled][dangerous]`. | custom | no |
+| Create Any Monster | spell | Apex creature conjuration; command reliability, persistence failure modes, and campaign-scale impact doctrine required. MU9 → P: 18; `[dangerous]` mandatory. Creates any monster up to one-quarter caster-level HD; command reliability uncertain above P: 14 equivalent. Tags `[summon][conjuration][fueled][dangerous]`. | custom | no |
+| Summon Animals | spell | Druidic ally-call with explicit HD budgeting by caster level. Tags `[summon][fueled]`. | partial | no |
+| Gate | spell | Planar aperture and translocation endpoint; high-tier traversal and summoning crossover; bespoke apex effect. MU9 → P: 18; `[dangerous]` mandatory. Opens a two-way planar aperture to any plane; named entity may or may not come through and is not automatically controlled; controlled-entity risk is the primary campaign-scale failure mode. Tags `[summon][transit][dangerous]`. | custom | no |
+| Djinni Summoning | item-effect | Expert ring; summons one djinni to serve for up to one day, once per week, keyed to current wearer. | custom | — |
+| Immortal Conjuring And Summoning Limits | procedure | → See Immortal Metaphysics module: Immortal Effect Doctrine. Transplanar response requirements and sphere/element bias constraints for Immortal-tier summoners. | custom | — |
 
 ##### Covenant and Binding
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Geas | spell | Compelled perform-or-avoid task (save allowed); rebounds on caster if task impossible or directly fatal; not removable by Dispel Magic or Remove Curse; reverse (Remove Geas) fails 5% per caster-level disadvantage. | custom |
-| Hold Portal | spell | Low-tier closure / access-control seal. SDM cousin: `Knock / Lock` (overcharge seals/fuses portal shut). | partial |
-| Wizard Lock | spell | Arcane keyed-barrier seal. SDM cousin: `Knock / Lock`. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Geas | spell | Compelled perform-or-avoid task (save allowed); rebounds on caster if task impossible or directly fatal; not removable by Dispel Magic or Remove Curse; reverse (Remove Geas) fails 5% per caster-level disadvantage. | custom | no |
+| Hold Portal | spell | Low-tier closure / access-control seal. SDM cousin: `Knock / Lock` (overcharge seals/fuses portal shut). | partial | no |
+| Wizard Lock | spell | Arcane keyed-barrier seal. SDM cousin: `Knock / Lock`. | partial | no |
 
 ---
 
@@ -1032,33 +1032,33 @@ Functional question: **is the Ka still in range?** Resurrection is Ka retrieval 
 
 ##### Resurrection
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Raise Dead | spell | Humans/demihumans only; body present; 1 hp + mandatory 2-week rest that no magic can shortcut; destroys most undead; non-destructive against vampires (forces coffin retreat only). SDM variants: `Raise Dead` (UVG2e), `Recall Soul` as soul-return ritual cousin. | partial |
-| Raise Dead Fully | spell | Any living creature; humans/demihumans wake at full hp with no recovery penalties; afflictions at time of death persist; 4-month time limit at C17 + 4 months per level above 17. Distinct row from `Raise Dead`. | custom |
-| Reincarnation | spell | Lifecycle resurrection with new body and form-change implications; custom until identity-continuity doctrine defined. | custom |
-| Finger of Death | spell | Reversed annihilation form of Raise Dead; earns its own card per doctrine (P: gap too large for a Reversable: rider on Raise Dead). C5 → P: 10 or custom calibration per final card; no save; instant kill of one target within range. `[dangerous]` mandatory. Reverse: `Raise Dead`. Tags `[necrotic][dangerous]`. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Raise Dead | spell | Humans/demihumans only; body present; 1 hp + mandatory 2-week rest that no magic can shortcut; destroys most undead; non-destructive against vampires (forces coffin retreat only). SDM variants: `Raise Dead` (UVG2e), `Recall Soul` as soul-return ritual cousin. | partial | no |
+| Raise Dead Fully | spell | Any living creature; humans/demihumans wake at full hp with no recovery penalties; afflictions at time of death persist; 4-month time limit at C17 + 4 months per level above 17. Distinct row from `Raise Dead`. | custom | no |
+| Reincarnation | spell | Lifecycle resurrection with new body and form-change implications; custom until identity-continuity doctrine defined. | custom | no |
+| Finger of Death | spell | Reversed annihilation form of Raise Dead; earns its own card per doctrine (P: gap too large for a Reversable: rider on Raise Dead). C5 → P: 10 or custom calibration per final card; no save; instant kill of one target within range. `[dangerous]` mandatory. Reverse: `Raise Dead`. Tags `[necrotic][dangerous]`. | custom | no |
 
 ##### Ka Restoration
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Restore | spell | Level-drain reversal; Touch, Permanent; restores exactly one drained level; caster temporarily loses one level (recovers in 2d10 days rest). Reverse (Life Drain) draws one level from victim at no cost, Chaotic. | partial |
-| Dispel Evil | spell | Ka-channel entity-expulsion and hostile spiritual program removal. Overlaps anti-hostile/banishment doctrine. | partial |
-| Remove Curse | spell | Major curse removal from character, item, or area. Reverse (`Curse`) remains bespoke. Some item curses only temporarily lifted. | custom |
-| Bless | spell | Ka-channel morale and combat blessing; +1 morale and attack/damage in 20’ sq for allies not yet in melee. Reverse (`Blight`) mirrors penalties with save gate. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Restore | spell | Level-drain reversal; Touch, Permanent; restores exactly one drained level; caster temporarily loses one level (recovers in 2d10 days rest). Reverse (Life Drain) draws one level from victim at no cost, Chaotic. | partial | no |
+| Dispel Evil | spell | Ka-channel entity-expulsion and hostile spiritual program removal. Overlaps anti-hostile/banishment doctrine. | partial | no |
+| Remove Curse | spell | Major curse removal from character, item, or area. Reverse (`Curse`) remains bespoke. Some item curses only temporarily lifted. | custom | no |
+| Bless | spell | Ka-channel morale and combat blessing; +1 morale and attack/damage in 20’ sq for allies not yet in melee. Reverse (`Blight`) mirrors penalties with save gate. | partial | no |
 
 ##### Deathless Communication
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Speak with the Dead | spell | Corpse-interrogation lane. SDM cousin: `Speak With Husk`. Routes here (Ka of the dead), not to Signal/Attunement (live channels). | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Speak with the Dead | spell | Corpse-interrogation lane. SDM cousin: `Speak With Husk`. Routes here (Ka of the dead), not to Signal/Attunement (live channels). | partial | no |
 
 ##### Corpse Fabrication
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Animate Dead | spell | Corpse-to-undead-agent animation; command scope, persistence, corpse-source, and Undeath doctrine still need conversion rules. Tags `[necrotic][conjuration][fueled][dangerous]`. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Animate Dead | spell | Corpse-to-undead-agent animation; command scope, persistence, corpse-source, and Undeath doctrine still need conversion rules. Tags `[necrotic][conjuration][dangerous]`. | custom | no |
 
 ##### Undead Command
 
@@ -1098,51 +1098,51 @@ Covers powers that operate on the Ka-mind — from low-bandwidth behavioral capt
 
 ##### Fear and Morale
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Remove Fear | spell | Fear-cleansing and morale-stabilization lane. Tags `[fear][ecm]`. | partial |
-| Holy Word | spell | High-tier word of power / banishment lane; alignment-keyed banishment with stun/paralysis rider at high P. Tags `[fear][ecm][dangerous]`. Reversable: `Unholy Word` — mirrors banishment and stun/paralysis effects with Chaotic/evil alignment keying; P: 14; earns a separate card or Reversable: line per editorial judgment. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Remove Fear | spell | Fear-cleansing and morale-stabilization lane. Tags `[fear][ecm]`. | partial | no |
+| Holy Word | spell | High-tier word of power / banishment lane; alignment-keyed banishment with stun/paralysis rider at high P. Tags `[fear][ecm][dangerous]`. Reversable: `Unholy Word` — mirrors banishment and stun/paralysis effects with Chaotic/evil alignment keying; P: 14; earns a separate card or Reversable: line per editorial judgment. | partial | no |
 
 ##### Mental Destruction
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Feeblemind | spell | Apex cognitive-collapse; Int-crash to functional 2; class-filtered save penalty (worse for arcane casters); dispel or cureall remediation only. Tags `[mind][dangerous]`. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Feeblemind | spell | Apex cognitive-collapse; Int-crash to functional 2; class-filtered save penalty (worse for arcane casters); dispel or cureall remediation only. Tags `[mind][dangerous]`. | custom | no |
 
 ##### Mind Transfer and Storage
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Magic Jar | spell | Identity-transfer and mind-storage via crystal vessel; body-vault doctrine and identity-continuity rules needed before card write. Tags `[mind][channel]`. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Magic Jar | spell | Identity-transfer and mind-storage via crystal vessel; body-vault doctrine and identity-continuity rules needed before card write. Tags `[mind][channel]`. | partial | no |
 
 ##### Noospheric Defense
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Mind Barrier | spell | High-tier noospheric defense against hostile mental influence. Tags `[mind][ward][ecm]`. | custom |
-| Immortal Mental Effect Resolution | procedure | → See Immortal Metaphysics module: Immortal Effect Doctrine. Non-magical recovery cadence for charmed/feebleminded Immortals. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Mind Barrier | spell | High-tier noospheric defense against hostile mental influence. Tags `[mind][ward][ecm]`. | custom | no |
+| Immortal Mental Effect Resolution | procedure | → See Immortal Metaphysics module: Immortal Effect Doctrine. Non-magical recovery cadence for charmed/feebleminded Immortals. | custom | — |
 
 ##### Compulsion and Oath
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Quest | spell | Compulsion-obligation lane; escalating magical penalties for non-fulfillment; rebound on impossible or directly fatal tasks; removable only by Cureall/Wish or Remove Geas. Cross-note: Geas handled in Summoning / Covenant and Binding. Tags `[bind][burden][storage:burden]`. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Quest | spell | Compulsion-obligation lane; escalating magical penalties for non-fulfillment; rebound on impossible or directly fatal tasks; removable only by Cureall/Wish or Remove Geas. Cross-note: Geas handled in Summoning / Covenant and Binding. Tags `[bind][burden][storage:burden]`. | custom | no |
 
 ##### Charm
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Sleep | spell | Broadcast sleep-induction; no save for creatures below HD threshold; area effect. Behavioral-capture pattern: low-Ka targets lack sufficient signal resistance. Tags `[charm][area][ecm]`. | direct |
-| Hold Person | spell | Targeted motor-lock restraint on 1–4 humans/demihumans; Save vs. Paralysis → Aura save. ECM framing: targeted noospheric restraint protocol. SDM variant: `Hlod Person` (Vastlands / Apocrypha of the O.S.). Tags `[charm][ecm]`. | direct |
-| Charm Person | spell | Core low-tier social control. SDM cousin: `Hero's Goldenmouth` (persuasive social capture vs. hard domination). Targets humanoid societies; intelligence-based renewal cadence for saves; dangerous orders trigger new resistance check. RC Spell Resolution: charmed target treats caster as trusted friend but retains personality and self-preservation; renewed save triggered by dangerous or self-destructive orders. Tags `[charm][ecm]`. | partial |
-| Charm Monster | spell | Extends Charm Person to non-humanoid targets; HD-budget limits. SDM cousin: `Hero's Goldenmouth` as broad distant cousin only. Tags `[charm][ecm]`. | partial |
-| Hold Monster | spell | Hold Person extended to all creature types; HD-budget targeting by caster level; Aura save. Broadband noospheric restraint above humanoid threshold. Tags `[charm][ecm]`. | partial |
-| Dance | spell | Touch-delivered forced-movement compulsion; no save; target unable to attack/cast/flee; tiered duration by caster level band; AC/save penalties while dancing. Tags `[charm][ecm][dangerous]`. | partial |
-| Confusion | spell | Broadcast mind-state disruption; random behavior table each round; partial until Ch06 settles exact phrasing. Tags `[charm][area][ecm]`. | partial |
-| Snake Charm | spell | Creature-specific HD-budget charm; up to 1 HD per caster level; no save; shorter duration against already-attacking snakes vs. passive snakes. Tags `[charm][ecm]`. | partial |
-| Hold Animal | spell | Beast-specific restraint; normal and giant animals only, no fantastic; HD-budget targeting, long-duration paralysis save. | partial |
-| Charm Plant | spell | Plant-specific command; one plant or plant creature save allowed; charmed plant as friend and ally; duration 1 day per level. | custom |
-| Mass Charm | spell | Group-scale social compulsion; multiple humanoids in view; caster-level determines max HD; reverse `Remove Charm` folds into this row. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Sleep | spell | Broadcast sleep-induction; no save for creatures below HD threshold; area effect. Behavioral-capture pattern: low-Ka targets lack sufficient signal resistance. Tags `[charm][area][ecm]`. | direct | no |
+| Hold Person | spell | Targeted motor-lock restraint on 1–4 humans/demihumans; Save vs. Paralysis → Aura save. ECM framing: targeted noospheric restraint protocol. SDM variant: `Hlod Person` (Vastlands / Apocrypha of the O.S.). Tags `[charm][ecm]`. | direct | no |
+| Charm Person | spell | Core low-tier social control. SDM cousin: `Hero's Goldenmouth` (persuasive social capture vs. hard domination). Targets humanoid societies; intelligence-based renewal cadence for saves; dangerous orders trigger new resistance check. RC Spell Resolution: charmed target treats caster as trusted friend but retains personality and self-preservation; renewed save triggered by dangerous or self-destructive orders. Tags `[charm][ecm]`. | partial | no |
+| Charm Monster | spell | Extends Charm Person to non-humanoid targets; HD-budget limits. SDM cousin: `Hero's Goldenmouth` as broad distant cousin only. Tags `[charm][ecm]`. | partial | no |
+| Hold Monster | spell | Hold Person extended to all creature types; HD-budget targeting by caster level; Aura save. Broadband noospheric restraint above humanoid threshold. Tags `[charm][ecm]`. | partial | no |
+| Dance | spell | Touch-delivered forced-movement compulsion; no save; target unable to attack/cast/flee; tiered duration by caster level band; AC/save penalties while dancing. Tags `[charm][ecm][dangerous]`. | partial | no |
+| Confusion | spell | Broadcast mind-state disruption; random behavior table each round; partial until Ch06 settles exact phrasing. Tags `[charm][area][ecm]`. | partial | no |
+| Snake Charm | spell | Creature-specific HD-budget charm; up to 1 HD per caster level; no save; shorter duration against already-attacking snakes vs. passive snakes. Tags `[charm][ecm]`. | partial | no |
+| Hold Animal | spell | Beast-specific restraint; normal and giant animals only, no fantastic; HD-budget targeting, long-duration paralysis save. | partial | no |
+| Charm Plant | spell | Plant-specific command; one plant or plant creature save allowed; charmed plant as friend and ally; duration 1 day per level. | custom | no |
+| Mass Charm | spell | Group-scale social compulsion; multiple humanoids in view; caster-level determines max HD; reverse `Remove Charm` folds into this row. | custom | no |
 
 ---
 
@@ -1172,10 +1172,10 @@ Covers powers that retrieve, sense, and consult: live-channel contact into the n
 
 ##### Archive Access
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Lore | spell | Deep-history and object-reading lane for premium information retrieval. Tags `[scan][channel]`. | partial |
-| Read Languages | spell | Translation interface and language-bridge lane. SDM cousin: `Anti-Babylon` (Eternal Return Key). Tags `[scan][channel]`. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Lore | spell | Deep-history and object-reading lane for premium information retrieval. Tags `[scan][channel]`. | partial | no |
+| Read Languages | spell | Translation interface and language-bridge lane. SDM cousin: `Anti-Babylon` (Eternal Return Key). Tags `[scan][channel]`. | partial | no |
 
 ##### Object and Mind Interrogation
 
@@ -1188,39 +1188,39 @@ Covers powers that retrieve, sense, and consult: live-channel contact into the n
 
 ##### Oracle and Divination
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Commune | spell | Divine consultation with constrained yes/no answers; bespoke oracle doctrine required. Custom ceiling case. Tags `[channel][dangerous]`. | custom |
-| Choose Best Option | item-effect | Constrained-guidance interface; 1-turn lookahead; returns one best option after operator deliberation; not full prophecy. Tags `[channel]`. | custom |
-| Contact Outer Plane | spell | Dangerous intelligence-contact across planar distance; explicit backlash risk; Immortals variant removes insanity risk for Immortal users. Custom ceiling case. Tags `[channel][dangerous]`. | custom |
-| Find the Path | spell | Navigation and route-certainty lane; pathfinding and noosphere-guidance tags. Tags `[scan][channel]`. | partial |
-| Predict Weather | spell | Environment-intelligence procedure for routing and hazard preparation via forecast and horizon reading. Tags `[scan][channel]`. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Commune | spell | Divine consultation with constrained yes/no answers; bespoke oracle doctrine required. Custom ceiling case. Tags `[channel][dangerous]`. | custom | no |
+| Choose Best Option | item-effect | Constrained-guidance interface; 1-turn lookahead; returns one best option after operator deliberation; not full prophecy. Tags `[channel]`. | custom | — |
+| Contact Outer Plane | spell | Dangerous intelligence-contact across planar distance; explicit backlash risk; Immortals variant removes insanity risk for Immortal users. Custom ceiling case. Tags `[channel][dangerous]`. | custom | no |
+| Find the Path | spell | Navigation and route-certainty lane; pathfinding and noosphere-guidance tags. Tags `[scan][channel]`. | partial | no |
+| Predict Weather | spell | Environment-intelligence procedure for routing and hazard preparation via forecast and horizon reading. Tags `[scan][channel]`. | custom | no |
 
 ##### Signal and Attunement
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| ESP | spell | Thought-reading / awareness lane. SDM cousin: `Yellow Foresight` (reads sentient presence and general mood). | partial |
-| Clairvoyance | spell | Remote-sight channel. SDM cousin: `Eyes of the Arrow` (Vastlands, projectile-bound remote sensor). | partial |
-| Clairaudience | spell | Remote-hearing channel; sibling to Clairvoyance; preserve as distinct recognizer. | partial |
-| Wizard Eye | spell | Remote-sight scouting sensor; pairs cleanly with clairvoyance-like reveal procedures. | partial |
-| Speak with Animals | spell | Baseline non-human communication lane; ecology and scouting play. | partial |
-| Speak with Plants | spell | Plant-sentience communication channel. SDM cousin: `Anti-Babylon` (universal communication). | partial |
-| Speak with Monsters | spell | Broad creature-negotiation lane. SDM cousin: `Anti-Babylon` (Eternal Return Key). | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| ESP | spell | Thought-reading / awareness lane. SDM cousin: `Yellow Foresight` (reads sentient presence and general mood). | partial | no |
+| Clairvoyance | spell | Remote-sight channel. SDM cousin: `Eyes of the Arrow` (Vastlands, projectile-bound remote sensor). | partial | no |
+| Clairaudience | spell | Remote-hearing channel; sibling to Clairvoyance; preserve as distinct recognizer. | partial | no |
+| Wizard Eye | spell | Remote-sight scouting sensor; pairs cleanly with clairvoyance-like reveal procedures. | partial | no |
+| Speak with Animals | spell | Baseline non-human communication lane; ecology and scouting play. | partial | no |
+| Speak with Plants | spell | Plant-sentience communication channel. SDM cousin: `Anti-Babylon` (universal communication). | partial | no |
+| Speak with Monsters | spell | Broad creature-negotiation lane. SDM cousin: `Anti-Babylon` (Eternal Return Key). | partial | no |
 
 ##### Detection and Analysis
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Detect Magic | spell | Passive read of ambient magical aura signatures within area; shared cleric (C1) and arcane (MU1) tradition. Tags `[scan][ecm]`. | direct |
-| Locate Object | spell | Directional beacon sense for a described known object; shared cleric (C3) and arcane (MU2) tradition. Tags `[scan][ecm]`. | direct |
-| Detect Evil | spell | Ka-signature intent scan; reads hostility and affiliation rather than a moral-alignment scanner. Tags `[scan][ecm]`. | partial |
-| Know Alignment | spell | Ka-chromography read; alignment/intention interrogation for truthfulness and affiliation. Tags `[scan][ecm]`. | partial |
-| Analyze | spell | Deep magical diagnostic and low-tier archive query; RC-only provenance exception. Tags `[scan][ecm]`. | partial |
-| Detect Danger | spell | Threat-presence scan and hazard-sense hybrid. SDM cousin: `Yellow Foresight`. Tags `[scan][ecm]`. | partial |
-| Locate | spell | Druidic directional sense for one named normal/giant animal or plant within 120’; excludes fantastic creatures and intelligent targets; no save; 6-turn duration. Distinct from `Locate Object`. Tags `[scan][ecm]`. | partial |
-| Read Magic | spell | Decoding gate for scrolls and arcane writing; detection of magical inscription. Tags `[scan][ecm]`. | partial |
-| Magic Detection/Control Blocking | procedure | Material-occlusion doctrine: a thin sheet of lead, 1’ of other metal, or 10’ of stone blocks detection and control ranges. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Detect Magic | spell | Passive read of ambient magical aura signatures within area; shared cleric (C1) and arcane (MU1) tradition. Tags `[scan][ecm]`. | direct | no |
+| Locate Object | spell | Directional beacon sense for a described known object; shared cleric (C3) and arcane (MU2) tradition. Tags `[scan][ecm]`. | direct | no |
+| Detect Evil | spell | Ka-signature intent scan; reads hostility and affiliation rather than a moral-alignment scanner. Tags `[scan][ecm]`. | partial | no |
+| Know Alignment | spell | Ka-chromography read; alignment/intention interrogation for truthfulness and affiliation. Tags `[scan][ecm]`. | partial | no |
+| Analyze | spell | Deep magical diagnostic and low-tier archive query; RC-only provenance exception. Tags `[scan][ecm]`. | partial | no |
+| Detect Danger | spell | Threat-presence scan and hazard-sense hybrid. SDM cousin: `Yellow Foresight`. Tags `[scan][ecm]`. | partial | no |
+| Locate | spell | Druidic directional sense for one named normal/giant animal or plant within 120’; excludes fantastic creatures and intelligent targets; no save; 6-turn duration. Distinct from `Locate Object`. Tags `[scan][ecm]`. | partial | no |
+| Read Magic | spell | Decoding gate for scrolls and arcane writing; detection of magical inscription. Tags `[scan][ecm]`. | partial | no |
+| Magic Detection/Control Blocking | procedure | Material-occlusion doctrine: a thin sheet of lead, 1’ of other metal, or 10’ of stone blocks detection and control ranges. | custom | — |
 
 ---
 
@@ -1311,45 +1311,45 @@ Distinct from Faerie Bodycrafts (biological) and Summoning (calling from outside
 
 ##### Fabrication and Artifact Craft
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Clothform | spell | RC-only: creates one-piece permanent non-dispellable cloth up to 30’×30’; seamless joining on later castings; no forced overlap. | partial |
-| Ironform | spell | RC-only: permanent non-dispellable iron up to 500 sq ft at 2" thickness; recast refinement and fortification durability. | partial |
-| Steelform | spell | RC-only: inherits Ironform procedure; upgrades output to weapon-grade steel with stronger structural durability. | partial |
-| Stoneform | spell | RC-only: 1,000 cubic feet permanent non-dispellable single-piece stone; casting-time scales by complexity; recast refinement and expansion. | partial |
-| Woodform | spell | RC-only: up to 1,000 cubic feet permanent non-dispellable wood; single-piece constraints; seam-free joining. | partial |
-| Dissolve | spell | Terrain-liquefaction: up to 3,000 sq ft soil/rock becomes deep mud (10% movement, trap risk); reverse `Harden` permanently locks same volume into rock with save-gated escape. | custom |
-| Metal to Wood | spell | Custom permanent transmutation: converts metal to dead wood by level-scaled weight; strong resist for magic items; explicit gear fallout (dropped armor, degraded weapons). | custom |
-| Turn Wood | spell | Custom material-interaction control: repels and redirects wooden objects with explicit category targeting and displacement behavior. | custom |
-| Warp Wood | spell | Permanently warps wooden weapons by arrow-equivalent capacity budget; save for wielded magical targets; plus-based resist chances; excludes non-weapon wooden objects. | partial |
-| Animate Objects | spell | Object animation lane; maps only with explicit gear and object-agent handling. | partial |
-| Intelligent Swords / Special Swords | item-effect | Willful items combining NPC-like agency with item-power access; treat as NPC-style entries with limited power access, autonomous refusal, and alignment requirements. | custom |
-| Intelligent Item Will Power / Control Check | procedure | Control doctrine: item will power = Intelligence + Ego + extraordinary powers; user will power = Intelligence + Wisdom + wound penalties; contest triggers on handling, injury, competing weapons, alternate users, special-purpose opportunities. | custom |
-| Control Animals | item-effect | Master artifact: controls up to caster-level-equivalent HD of normal/giant animals (excludes intelligent/fantastic); obey bold commands; no save via artifact interface; 1d6 turns. | custom |
-| Control Dragons | item-effect | Master artifact: compels one dragon type (excludes platinum/artifact-grade/ancient) with save at −2; follows orders but plots escape; artifact version no-save on first use; 1 use/day. | custom |
-| Control Giants | item-effect | Master artifact: compels one target giant type (excludes storm/cloud/artifact-grade) with a save; obeys one sequence of orders; resists self-harmful commands. | custom |
-| Control Humans | item-effect | Master artifact: controls one humanoid (human/demihuman/humanoid monster) with a save; will not attack artifact user’s allies; resists obviously fatal orders. | custom |
-| Control Plants | item-effect | Master artifact: controls all plants in a 30’×30’ area for 20 turns. | custom |
-| Mapmaking | item-effect | Master artifact: controls user’s hands to map all designated areas within 60’; records physical features including secret and trap doors but not magic, creatures, or treasure. | custom |
-| Open Mind | item-effect | Master artifact: touch-range mental breach; no initial save (magic resistance may block); target loses will-save resistance to next effect within 1 round; acts as charmed for domination; 1 use/day. | custom |
-| Plane Travel | item-effect | Master artifact: planar transit for self and all gear to an adjacent plane; no other creatures affected. | custom |
-| Turn Undead Bonus | item-effect | Master artifact rider: improves turning rolls and destroyed-HD budget for one turn. | custom |
-| Choose Best Option / Choose Option | item-effect | Master artifact meta-resolution rider: choose the most favorable available option or outcome within DM-defined constraints; applies to artifact power use where multiple valid outcomes exist. | custom |
-| Artifact Activation | procedure | Attunement-plus-discovery doctrine: possession alone insufficient; full use may require ritual, event, legend, or research. | custom |
-| Artifact Charges And Recharge | procedure | Renewable reserve doctrine: magnitude sets power budget; uses drain cost-matched charges; capacity regenerates over time. | custom |
-| Artifact Handicaps And Penalties | procedure | Adverse-effect framework for mortal artifact users: permanent handicaps vs. temporary penalties. | custom |
-| Artifact Intelligence And Auto-Defense | procedure | Semi-autonomous agency doctrine: telepathic guidance, refusal, item-side defensive behavior outside bearer’s action economy. | custom |
-| Attacking An Artifact | procedure | Durability and immunity doctrine: attack-immunity, damage thresholds, power loss, recall behavior under sustained attacks. | custom |
-| Creating Artifacts | procedure | Design workflow: sphere-aligned purpose, magnitude-based power/adversity budgets, built-in activation/discovery methods. | custom |
-| Artifact Discovery And Power Reveal | procedure | Discovery doctrine: artifact powers revealed through investigation, triggered events, legend research, or direct experimentation; full power list not given to user at acquisition. | custom |
-| Artifact Command Word / Thought / Gesture Interfaces | procedure | Interface activation doctrine: artifact powers keyed by command word, mental trigger, or gesture; interface type established at creation and cannot be changed by the user. | custom |
-| Artifact Recharge Exceptions And Paid Recharge | procedure | Recharge exceptions: some artifacts have non-standard recharge triggers (specific conditions, time intervals, or expenditure costs) that override the default charge-recovery cadence. | custom |
-| Artifact Conditional Revelation Triggers | procedure | Conditional discovery: specific artifact powers only reveal themselves under defined in-world conditions; revelation may require quest fulfillment, alignment match, or triggered event. | custom |
-| Artifact Autonomous Service / Refusal | procedure | Autonomous behavior doctrine: artifact may act independently in service of its purpose; may refuse commands contrary to its alignment or purpose even from an attuned user. | custom |
-| Damage to Magical Items | procedure | Item durability and destruction doctrine: explicit toughness bands (+1 potions/scrolls, +2 wands/staves, +3 permanent misc items); partial-damage loss affects magical bonuses. | custom |
-| Destruction Of An Artifact | procedure | Permanent-destruction quest procedure and Immortal-response consequences; each artifact has a unique legendary destruction method. | custom |
-| Experience from Spells and Enchanted Items | procedure | Enchantment-economics reward doctrine: XP for first-of-kind magical work, vessel/home awards at 1/3 gp spent, collaborative award division. | custom |
-| Sage Magical Research Support | procedure | Specialist-support for magical research: sage consultation and research assistance cost framework. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Clothform | spell | RC-only: creates one-piece permanent non-dispellable cloth up to 30’×30’; seamless joining on later castings; no forced overlap. | partial | no |
+| Ironform | spell | RC-only: permanent non-dispellable iron up to 500 sq ft at 2" thickness; recast refinement and fortification durability. | partial | no |
+| Steelform | spell | RC-only: inherits Ironform procedure; upgrades output to weapon-grade steel with stronger structural durability. | partial | no |
+| Stoneform | spell | RC-only: 1,000 cubic feet permanent non-dispellable single-piece stone; casting-time scales by complexity; recast refinement and expansion. | partial | no |
+| Woodform | spell | RC-only: up to 1,000 cubic feet permanent non-dispellable wood; single-piece constraints; seam-free joining. | partial | no |
+| Dissolve | spell | Terrain-liquefaction: up to 3,000 sq ft soil/rock becomes deep mud (10% movement, trap risk); reverse `Harden` permanently locks same volume into rock with save-gated escape. | custom | no |
+| Metal to Wood | spell | Custom permanent transmutation: converts metal to dead wood by level-scaled weight; strong resist for magic items; explicit gear fallout (dropped armor, degraded weapons). | custom | no |
+| Turn Wood | spell | Custom material-interaction control: repels and redirects wooden objects with explicit category targeting and displacement behavior. | custom | no |
+| Warp Wood | spell | Permanently warps wooden weapons by arrow-equivalent capacity budget; save for wielded magical targets; plus-based resist chances; excludes non-weapon wooden objects. | partial | no |
+| Animate Objects | spell | Object animation lane; maps only with explicit gear and object-agent handling. | partial | no |
+| Intelligent Swords / Special Swords | item-effect | Willful items combining NPC-like agency with item-power access; treat as NPC-style entries with limited power access, autonomous refusal, and alignment requirements. | custom | — |
+| Intelligent Item Will Power / Control Check | procedure | Control doctrine: item will power = Intelligence + Ego + extraordinary powers; user will power = Intelligence + Wisdom + wound penalties; contest triggers on handling, injury, competing weapons, alternate users, special-purpose opportunities. | custom | — |
+| Control Animals | item-effect | Master artifact: controls up to caster-level-equivalent HD of normal/giant animals (excludes intelligent/fantastic); obey bold commands; no save via artifact interface; 1d6 turns. | custom | — |
+| Control Dragons | item-effect | Master artifact: compels one dragon type (excludes platinum/artifact-grade/ancient) with save at −2; follows orders but plots escape; artifact version no-save on first use; 1 use/day. | custom | — |
+| Control Giants | item-effect | Master artifact: compels one target giant type (excludes storm/cloud/artifact-grade) with a save; obeys one sequence of orders; resists self-harmful commands. | custom | — |
+| Control Humans | item-effect | Master artifact: controls one humanoid (human/demihuman/humanoid monster) with a save; will not attack artifact user’s allies; resists obviously fatal orders. | custom | — |
+| Control Plants | item-effect | Master artifact: controls all plants in a 30’×30’ area for 20 turns. | custom | — |
+| Mapmaking | item-effect | Master artifact: controls user’s hands to map all designated areas within 60’; records physical features including secret and trap doors but not magic, creatures, or treasure. | custom | — |
+| Open Mind | item-effect | Master artifact: touch-range mental breach; no initial save (magic resistance may block); target loses will-save resistance to next effect within 1 round; acts as charmed for domination; 1 use/day. | custom | — |
+| Plane Travel | item-effect | Master artifact: planar transit for self and all gear to an adjacent plane; no other creatures affected. | custom | — |
+| Turn Undead Bonus | item-effect | Master artifact rider: improves turning rolls and destroyed-HD budget for one turn. | custom | — |
+| Choose Best Option / Choose Option | item-effect | Master artifact meta-resolution rider: choose the most favorable available option or outcome within DM-defined constraints; applies to artifact power use where multiple valid outcomes exist. | custom | — |
+| Artifact Activation | procedure | Attunement-plus-discovery doctrine: possession alone insufficient; full use may require ritual, event, legend, or research. | custom | — |
+| Artifact Charges And Recharge | procedure | Renewable reserve doctrine: magnitude sets power budget; uses drain cost-matched charges; capacity regenerates over time. | custom | — |
+| Artifact Handicaps And Penalties | procedure | Adverse-effect framework for mortal artifact users: permanent handicaps vs. temporary penalties. | custom | — |
+| Artifact Intelligence And Auto-Defense | procedure | Semi-autonomous agency doctrine: telepathic guidance, refusal, item-side defensive behavior outside bearer’s action economy. | custom | — |
+| Attacking An Artifact | procedure | Durability and immunity doctrine: attack-immunity, damage thresholds, power loss, recall behavior under sustained attacks. | custom | — |
+| Creating Artifacts | procedure | Design workflow: sphere-aligned purpose, magnitude-based power/adversity budgets, built-in activation/discovery methods. | custom | — |
+| Artifact Discovery And Power Reveal | procedure | Discovery doctrine: artifact powers revealed through investigation, triggered events, legend research, or direct experimentation; full power list not given to user at acquisition. | custom | — |
+| Artifact Command Word / Thought / Gesture Interfaces | procedure | Interface activation doctrine: artifact powers keyed by command word, mental trigger, or gesture; interface type established at creation and cannot be changed by the user. | custom | — |
+| Artifact Recharge Exceptions And Paid Recharge | procedure | Recharge exceptions: some artifacts have non-standard recharge triggers (specific conditions, time intervals, or expenditure costs) that override the default charge-recovery cadence. | custom | — |
+| Artifact Conditional Revelation Triggers | procedure | Conditional discovery: specific artifact powers only reveal themselves under defined in-world conditions; revelation may require quest fulfillment, alignment match, or triggered event. | custom | — |
+| Artifact Autonomous Service / Refusal | procedure | Autonomous behavior doctrine: artifact may act independently in service of its purpose; may refuse commands contrary to its alignment or purpose even from an attuned user. | custom | — |
+| Damage to Magical Items | procedure | Item durability and destruction doctrine: explicit toughness bands (+1 potions/scrolls, +2 wands/staves, +3 permanent misc items); partial-damage loss affects magical bonuses. | custom | — |
+| Destruction Of An Artifact | procedure | Permanent-destruction quest procedure and Immortal-response consequences; each artifact has a unique legendary destruction method. | custom | — |
+| Experience from Spells and Enchanted Items | procedure | Enchantment-economics reward doctrine: XP for first-of-kind magical work, vessel/home awards at 1/3 gp spent, collaborative award division. | custom | — |
+| Sage Magical Research Support | procedure | Specialist-support for magical research: sage consultation and research assistance cost framework. | custom | — |
 
 ---
 
@@ -1379,24 +1379,24 @@ Covers powers whose primary effect is light emission, darkness manipulation, pri
 
 ##### Radiance
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Light | spell | Shared cross-tradition light/darkness recognizer; Range 120’, Effect volume 30’ diameter; object-attachment movement; save-gated blindness when targeted at eyes. Tags `[light][imbued]`. Cancelled by `Darkness` cast upon it; countered by subsequent casting of any Light form upon the same area. | partial |
-| Continual Light | spell | Permanent-form light source; object-bound or air-anchored; reverse `Continual Darkness` counters it. Tags `[light][anchored]`. | partial |
-| Dancing Lights | spell | Mobile light-decoy; 1–6 steerable lantern-like lights that can round corners within range. Tags `[light][focus][area S]`. | partial |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Light | spell | Shared cross-tradition light/darkness recognizer; Range 120’, Effect volume 30’ diameter; object-attachment movement; save-gated blindness when targeted at eyes. Tags `[light][imbued]`. Cancelled by `Darkness` cast upon it; countered by subsequent casting of any Light form upon the same area. | partial | no |
+| Continual Light | spell | Permanent-form light source; object-bound or air-anchored; reverse `Continual Darkness` counters it. Tags `[light][anchored]`. | partial | no |
+| Dancing Lights | spell | Mobile light-decoy; 1–6 steerable lantern-like lights that can round corners within range. Tags `[light][focus][area S]`. | partial | no |
 
 ##### Shadow
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Darkness | spell | Visibility-denial counterpart to `Light`; total darkness, counters/is countered by Light; defeats infravision inside affected area. Tags `[shadow][imbued]`. | partial |
-| Continual Darkness | spell | Permanent-form darkness; object-bound or air-anchored; cancelled only by `Continual Light` cast upon it; counters any Continual Light within affected area. MU2/C3 → P: 4. Tags `[shadow][anchored]`. [Canon: FTLS_06 → Light/Dark counter-push-pull doctrine] | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Darkness | spell | Visibility-denial counterpart to `Light`; total darkness, counters/is countered by Light; defeats infravision inside affected area. Tags `[shadow][imbued]`. | partial | no |
+| Continual Darkness | spell | Permanent-form darkness; object-bound or air-anchored; cancelled only by `Continual Light` cast upon it; counters any Continual Light within affected area. MU2/C3 → P: 4. Tags `[shadow][anchored]`. [Canon: FTLS_06 → Light/Dark counter-push-pull doctrine] | custom | — |
 
 ##### Prismatic
 
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Prismatic Wall | spell | Bespoke high-tier layered-spectrum barrier; apex/custom; RC: Range 60’, Duration 6 turns, Effect 10’ radius sphere or 500 sq ft flat; each color band carries a distinct hazard and removal condition. Evidence-limited pending full staged text. Tags `[light][prismatic][anchored][dangerous]`. | custom |
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Prismatic Wall | spell | Bespoke high-tier layered-spectrum barrier; apex/custom; RC: Range 60’, Duration 6 turns, Effect 10’ radius sphere or 500 sq ft flat; each color band carries a distinct hazard and removal condition. Evidence-limited pending full staged text. Tags `[light][prismatic][anchored][dangerous]`. | custom | no |
 
 ---
 
@@ -1428,7 +1428,7 @@ Rename and reorder family/module headings in the temp file to match approved arc
 ### Step 3 — Move power cards into module sections
 
 For each row in the doctrine migration tables above:
-- Find the matching `osr: (pending verbatim extraction)` card in the temp file (match by name)
+- Find the matching `osr: {pending verbatim extraction}` card in the temp file (match by name)
 - Move the card block under the correct module/sub-module `###` heading
 - Do not alter card content; only change placement
 

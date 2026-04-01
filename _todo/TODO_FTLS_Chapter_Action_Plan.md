@@ -299,7 +299,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - [x] Normalize Phase B backlog in the crosswalk: 195 unique spell names, 204 spell-import rows (expanded from 184/193 by +11 Pre-AD&D/Holmes spells 2026-03-31), Phase B backlog procedure defined.
 - [x] Lock crosswalk confidence gate at 0.90 / 1.00 (B 0.93, E 0.94, C 0.90, M 0.95, I 0.95, RC 0.94).
 - [x] Complete notes migration: Phase 1 notes migrated to Powers Family workspace; triage returns 0 flagged rows.
-- [x] Reset all 184 Chapter 06 spell cards to `osr: (pending verbatim extraction)` placeholder, ready for the import pass.
+- [x] Reset all 184 Chapter 06 spell cards to `osr: {pending verbatim extraction}` placeholder, ready for the import pass.
 - [ ] **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** (Dancing Lights, Darkness, Magic Mouth, Clairaudience, Slow, Audible Glamer, Pyrotechnics, Ray of Enfeeblement, Strength, ESP + 1 more); `import_ch06_osr.py` currently fails on the first missing heading. This is the unblocking step.
 - [ ] **Execute the 195-card `osr:` import pass**: run `import_ch06_osr.py write` on the live Chapter 06; verify `check` returns `drift: no` and `{'yes': 195}`. This is the primary alpha blocker.
 - [ ] Add doctrine for conversion-family powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.

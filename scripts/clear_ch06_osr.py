@@ -27,7 +27,7 @@ from pathlib import Path
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
-PENDING_OSR_BODY = "(pending verbatim extraction)"
+PENDING_OSR_BODY = "{pending verbatim extraction}"
 PENDING_POWER_BODY = "> {pending conversion}"
 
 CARD_RE = re.compile(r"^## (.+?)\n(.*?)(?=^## |\Z)", flags=re.S | re.M)

@@ -22,10 +22,11 @@ DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_L
 DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
 DEFAULT_STAGING = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
 
-PENDING_TOKEN = "osr:\n(pending verbatim extraction)"
+PENDING_TOKEN = "osr:\n{pending verbatim extraction}"
 REVIEW_QUEUE_HEADING = "## Chapter 06 `osr:` Import Review Queue\n\n"
 REFERENCE_REUSE_MARKER = "## Reference Reuse Targets\n"
 REVIEW_LINE_RE = re.compile(r"^- `(.+?)`: (.+)$")
+CHAPTER_HEADING_RE = re.compile(r"^## (.+)$", flags=re.M)
 
 
 @dataclass(frozen=True)
@@ -136,18 +137,63 @@ def extract_backtick_list(body: str, field: str) -> list[str]:
     return re.findall(r"`([^`]+)`", match.group(1))
 
 
+def normalize_label(label: str) -> str:
+    return " ".join(label.strip().lower().split())
+
+
+def alias_forms(label: str) -> set[str]:
+    parts = [part.strip() for part in re.split(r"\s*,\s*aka\s+", label, flags=re.I) if part.strip()]
+    forms = {normalize_label(label)}
+    for part in parts:
+        forms.add(normalize_label(part))
+    return forms
+
+
+def labels_match(left: str, right: str) -> bool:
+    left_forms = alias_forms(left)
+    right_forms = alias_forms(right)
+    return bool(left_forms & right_forms)
+
+
 def select_names(ordered_names: list[str], records: dict[str, Record], target_card: str | None) -> list[str]:
     if not target_card:
         return ordered_names
-    selected = [name for name in ordered_names if records[name].card_heading == target_card]
+    selected = [
+        name
+        for name in ordered_names
+        if labels_match(records[name].card_heading, target_card)
+        or labels_match(records[name].classic_name, target_card)
+    ]
     if not selected:
         raise RuntimeError(f'no Chapter 06 spell card found for --card "{target_card}"')
     return selected
 
 
+def resolve_chapter_heading(chapter_text: str, record: Record) -> str:
+    preferred = f"## {record.card_heading}\n"
+    if preferred in chapter_text:
+        return record.card_heading
+
+    matches = [
+        heading
+        for heading in CHAPTER_HEADING_RE.findall(chapter_text)
+        if labels_match(heading, record.card_heading) or labels_match(heading, record.classic_name)
+    ]
+    if not matches:
+        raise RuntimeError(
+            f"missing Chapter 06 heading for {record.card_heading} (or alias of {record.classic_name})"
+        )
+    if len(matches) > 1:
+        joined = ", ".join(matches)
+        raise RuntimeError(
+            f"ambiguous Chapter 06 alias match for {record.card_heading} (classic {record.classic_name}): {joined}"
+        )
+    return matches[0]
+
+
 def render_osr_block(record: Record) -> str:
     if not record.witnesses:
-        return "(pending verbatim extraction)"
+        return "{pending verbatim extraction}"
 
     rendered: list[str] = []
     for witness in record.witnesses:
@@ -167,7 +213,7 @@ def apply_osr_blocks(chapter_text: str, records: dict[str, Record], selected_nam
     updated = chapter_text
     for classic_name in selected_names:
         record = records[classic_name]
-        heading = record.card_heading
+        heading = resolve_chapter_heading(updated, record)
         anchor = f"## {heading}\n"
         start = updated.find(anchor)
         if start == -1:
@@ -301,8 +347,8 @@ def build_artifact(
     return ImportArtifact(
         chapter_text=new_chapter,
         crosswalk_text=new_crosswalk,
-        placeholder_count_before=chapter_text.count("(pending verbatim extraction)"),
-        placeholder_count_after=new_chapter.count("(pending verbatim extraction)"),
+        placeholder_count_before=chapter_text.count("{pending verbatim extraction}"),
+        placeholder_count_after=new_chapter.count("{pending verbatim extraction}"),
         row_status_counts=row_status_counts,
         review_items=review_items,
     )
