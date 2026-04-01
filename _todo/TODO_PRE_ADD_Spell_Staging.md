@@ -329,3 +329,18 @@ Override note: Comparative-note Clairaudience wording preserved here as the fami
 
 Clairaudience: Same as Clairvoyance except it allows hearing rather than visualization. This is one of the few spells which can be cast through a Crystal Ball (see Volume II).
 ```
+
+## Placeholder Status
+
+The following blocks are present in this file but contain no source text yet. Each is marked with its backlog disposition.
+
+| Block ID | Section | Disposition |
+| --- | --- | --- |
+| `mm-spell-list-witness` | Men & Magic | Pending — spell-list witness block (index/ToC extract) not yet scraped |
+| `mm-magical-context` | Men & Magic | Pending — adjacent magical-context and rules-framing block not yet scraped |
+| `gh-spell-list-witness` | Greyhawk | Pending — spell-list witness block not yet scraped |
+| `gh-magical-context` | Greyhawk | Pending — adjacent magical-context and rules-framing block not yet scraped |
+| `hb-spell-list-witness` | Holmes | Pending — spell-list witness block not yet scraped |
+| `hb-magical-context` | Holmes | Pending — adjacent magical-context and rules-framing block not yet scraped |
+
+These blocks are low-priority backlog. They are not required for the current Chapter 06 `osr:` import pass; the individual spell witness blocks above are the active import surface. Fill these when the broader pre-AD&D context-harvest pass is scoped.

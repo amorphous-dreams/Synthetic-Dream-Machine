@@ -1,5 +1,5 @@
 # Confidence Ratings Audit
-**Date**: 2026-03-29
+**Date**: 2026-03-31 (Revision 2: post-pipeline-hardening, pre-AD&D stub cards added)
 **Scope**: direct re-audit of live `_todo/` governance and BECMI staging/import infrastructure
 **Method**: source-derived only; no confidence claims inherited from prior audit notes
 
@@ -7,21 +7,21 @@
 
 ## Executive Summary
 
-This pass re-ran the audit from the current workspace state instead of treating earlier audit prose as authoritative.
+This pass re-ran the audit from the current workspace state after Pre-AD&D/Holmes pipeline fix and Chapter 06 stub card additions.
 
 Current measured state:
 
-1. The staged BECMI corpus is reproducible from source. All available lane validators pass, and the full six-lane staging orchestrator plus clean multi-witness builder both report `drift: no`.
-2. The downstream Chapter 06 import layer is now synchronized with the deterministic importer. After applying `python3 scripts/import_ch06_osr.py write`, a fresh `python3 scripts/import_ch06_osr.py check` returns `drift: no`.
-3. The crosswalk metadata layer is materially strong, and the active governance counts now match the live file surface. The live crosswalk now contains **12** exception-ledger rows, **362** mapping-decision rows, **304** execution rows, **193** spell-import rows, **184** unique spell names, and **0** active `[table-derived]` rows.
-4. The evidence-marker target is currently satisfied by direct count: **56** inline `Evidence lock` / `Verification pass` / `Evidence Checked Date` markers are present.
+1. The staged BECMI corpus remains reproducible from source. All six lane validators PASS; staging orchestrators report `drift: no`; staging now includes 195 H2 entries (184 BECMI + 11 Pre-AD&D/Holmes).
+2. The downstream Chapter 06 import layer is now synchronized with the deterministic importer. After adding 11 stub cards to Ch06 (Dancing Lights, Darkness, Enlargement, Audible Glamer, Clairaudience, Magic Mouth, Pyrotechnics, Ray of Enfeeblement, Slow, Strength, Finger of Death) and running `python3 scripts/import_ch06_osr.py write`, a fresh `python3 scripts/import_ch06_osr.py check` returns `drift: no`. All 11 cards received `osr:` block fills from staging witnesses.
+3. The crosswalk metadata layer is materially strong, and the active governance counts now match the live file surface. The live crosswalk now contains **12** exception-ledger rows, **204** spell-import rows (**195** unique spell names), **111** spell-— rows, **73** item-effect rows, **38** procedure rows, and **203** rows with `osr: imported = yes`.
+4. The evidence-marker density remains above the audit threshold.
 5. The SDM powers audit remains strong by direct measurement: `TODO_SDM_Powers_Index.md` contains **112** rated entries with an exact arithmetic mean of **0.996875** (`105` at `1.00`, `7` at `0.95`).
 
 Operational judgment:
 
-- **Source staging confidence**: verified by current validator/orchestrator runs.
-- **Crosswalk metadata confidence**: strong enough for continued work, but stale counts in the docs need to stop being treated as ground truth.
-- **Chapter 06 import synchronization**: green on the final rerun.
+- **Source staging confidence**: **verified** by current validator/orchestrator runs with 195 H2 entries confirmed.
+- **Crosswalk metadata confidence**: strong; pending S1/S2 reconciliation is noted but does not affect execution readiness.
+- **Chapter 06 import synchronization**: **green** on the final rerun after stub card additions; import blocker cleared; all 11 new cards received `osr:` block fills; 1 item (Finger of Death) remains [needs-review] for witness coverage audit.
 
 ---
 
@@ -163,28 +163,30 @@ Correction versus stale audit prose:
 
 Source: `/_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` -> Phase 1 catalog tables
 
-Measured execution rows:
+Measured execution rows (current state, post-stub-card write pass):
 
-- Total execution rows: **304**
-- `spell`: **193**
-- `item-effect`: **73**
-- `procedure`: **38**
+- Total execution rows: **315** (spell ✓: 204 + item-effect —: 73 + procedure —: 38)
+- `spell` (Ch06 Import ✓): **204** (raised from 193)
+- `spell` (Ch06 Import —): **0** (unchanged)
+- `item-effect` (Ch06 Import —): **73** (unchanged)
+- `procedure` (Ch06 Import —): **38** (unchanged)
 
 Import tracker state:
 
-- `Ch06 Import = ✓`: **193**
+- `Ch06 Import = ✓`: **204**
 - `Ch06 Import = —`: **111**
-- `osr: imported = yes`: **193** row entries
-- `osr: imported = -`: **96**
+- `osr: imported = yes`: **203** row entries
+- `osr: imported = [needs-review]`: **1** (Finger of Death)
 
 Unique import-key count:
 
-- Unique spell names marked for import: **184**
+- Unique spell names marked for import: **195** (raised from 184; +11 Pre-AD&D/Holmes)
 
-Corrections versus stale governance prose:
+Corrections versus prior audit:
 
-- The importer works against **184 unique spell names**, not a 194-row spell-only pass.
-- The prior explicit `[table-derived]` markers were re-examined against the current staging corpus and retired where staged prose now exists.
+- The spell ✓ count is now **204**, up from 193 (11 Pre-AD&D/Holmes spells added to staging and Ch06).
+- The unique spell names are now **195**, up from 184.
+- The total Execution rows is now **315**, up from 304.
 
 ### Row-State Calibration Spot Check
 
@@ -235,48 +237,53 @@ Correction versus stale audit prose:
 
 ### Confirmed Strengths
 
-1. The BECMI staging corpus is currently reproducible from the scripted pipeline.
-2. All six staging lanes now have dedicated validator scripts, and all six passed on the final rerun.
-3. Crosswalk family metadata is complete across all 13 family sections.
+1. The BECMI staging corpus remains reproducible from the scripted pipeline; now includes 195 H2 entries (184 BECMI + 11 Pre-AD&D/Holmes).
+2. All six staging lanes have dedicated validator scripts; all six PASS on current rerun.
+3. Crosswalk family metadata is complete across all 13 family sections (52 metadata lines confirmed).
 4. Evidence-marker density remains above the documented gate threshold.
-5. The powers index remains in very strong shape by direct measurement.
+5. The powers index remains in very strong shape by direct measurement (112 rated, mean 0.997).
+6. **NEW**: Chapter 06 import pipeline blocker cleared; 11 missing power card stubs created and populated with `osr:` blocks from staging witnesses; `import_ch06_osr.py check` returns `drift: no`.
 
 ### Drift And Overclaims Found
 
-1. The prior audit totals for exceptions, mapping rows, and table-derived rows did not match the live crosswalk; this rerun corrected the stale counts in the active crosswalk.
-2. The deterministic importer exposed manuscript drift during the first pass; this rerun reconciled it and the final import check is now clean.
+1. Prior spell import and unique-name counts (193/184) were accurate for pre-fix state; now updated to 204/195 after Pre-AD&D pipeline hardening and stub card additions.
+2. The deterministic importer was previously blocked on "missing Chapter 06 heading for Dancing Lights"; this has been resolved by adding stub cards for all 11 missing Pre-AD&D/Holmes spells to the Ch06 document.
 3. Exact lane confidence decimals are still quoted in governance materials, but this repo does not currently provide a source-derived scoring routine that re-measures those decimals.
 
 ---
 
 ## Current Audit Judgment
 
-Use this state instead of the superseded “all clear” framing:
+Use this state instead of the prior revision:
 
-- **Staging corpus**: verified
-- **Crosswalk metadata layer**: verified and synchronized to the current measured counts
-- **Exception ledger**: present and internally structured, but currently 12 rows
-- **Evidence-note threshold**: met
-- **Chapter 06 import layer**: synchronized
+- **Staging corpus**: **verified** — 195 H2 entries confirmed (184 BECMI + 11 Pre-AD&D/Holmes); all 6 lane validators PASS  
+- **Crosswalk metadata layer**: **verified** — synchronized to current measured counts; 12 exception rows, 204 spell ✓ rows, 195 unique names  
+- **Exception ledger**: present and internally structured, 12 rows confirmed  
+- **Evidence-note threshold**: met  
+- **Chapter 06 import layer**: **green** — stub cards added (11 missing power cards); import write pass complete; `drift: no`; 203 of 204 spell rows marked `osr: imported = yes`; 1 pending review (Finger of Death)  
 - **Exact lane score decimals**: not re-measured in this pass; do not treat inherited numbers as freshly audited facts
 
 Practical gate read:
 
 - Safe to keep using the staged corpus and crosswalk as working infrastructure.
-- Safe to describe the Chapter 06 import stack as aligned for the current workspace snapshot.
+- Chapter 06 import stack is aligned for current workspace snapshot; blocker cleared.
+- One spell (Finger of Death) requires witness coverage review before final review queue closure.
 
 ---
 
 ## Recommended Next Steps
 
-1. If exact lane confidence decimals are still desired, add an explicit reproducible scoring rubric or script instead of carrying forward narrative scores from earlier notes.
-2. Spot-check high-risk imported Chapter 06 cards after the deterministic rewrite, especially cards whose staged witnesses include table-adjacent or mixed-context source text.
-3. Keep the new Companion and Immortals validators in the standard rerun path so future audits do not fall back to indirect lane coverage.
+1. Review Finger of Death witness coverage audit (currently [needs-review]) to confirm lane coverage completeness and move to `osr: imported = yes`.
+2. If exact lane confidence decimals are still desired, add an explicit reproducible scoring rubric or script instead of carrying forward narrative scores from earlier notes.
+3. Spot-check high-risk imported Chapter 06 cards after the deterministic rewrite, especially the 11 newly added Pre-AD&D/Holmes power cards and any cards whose staged witnesses include table-adjacent or mixed-context source text.
+4. Keep the six lane validators in the standard rerun path so future audits maintain consistent validator coverage.
 
 ---
 
 ## Audit Sign-off
 
 This report supersedes inherited audit prose only where the numbers above were directly re-measured from the current workspace.
+
+This Revision 2 specifically addresses: staging count verification post-Pre-AD&D pipeline fix (184→195), Chapter 06 import blocker resolution, and deterministic import synchronization (drift: no).
 
 It does **not** claim any precision that the current repo cannot reproduce from source.

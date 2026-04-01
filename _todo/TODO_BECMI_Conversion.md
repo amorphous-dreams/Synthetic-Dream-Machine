@@ -26,14 +26,14 @@ Base model (locked):
 - Numeric ontology is locked policy for active conversion work: BECMI level, HD, and spell-tier references already map to SDM `Level` and `Power Level`.
 - Class locks and most D&D ability-score terminology have already been removed or reduced in active chapter conversion.
 - Armor/shield Defense has been corrected from descending AC assumptions to SDM additive armor bonuses.
-- The full staged spell corpus now exists across the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
+- The full staged spell corpus now exists across `_todo/TODO_PRE_ADD_Spell_Staging.md` and the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
 - That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped family layer, and completed grouped-`partial` to Phase 1 sync.
 - Method correction (2026-03-23): staging docs should contain scraped/curated source text from `_becmi` extraction, not synthesized context overlays.
-- The immediate conversion burden is now: keep the audited staging baseline locked, normalize stale TODO confidence notes, build the clean multi-witness staging layer, and execute the Chapter 06 multi-witness `osr:` preservation import before resuming deeper bridge work.
+- The current conversion burden is: build the clean multi-witness staging layer and execute the Chapter 06 multi-witness `osr:` preservation import before resuming deeper bridge work.
 
 ## Execution Lock Snapshot (2026-03-28)
 
-- **Staging corpus**: the six lane staging docs are frozen as the legal upstream witness base, and the clean multi-witness staging file is the legal downstream Chapter 06 import source.
+- **Staging corpus**: the staged lane docs (`_todo/TODO_PRE_ADD_Spell_Staging.md` and the six BECMI lane files) are frozen as the legal upstream witness base, and the clean multi-witness staging file is the legal downstream Chapter 06 import source.
 - **Confidence gate**: approved working infrastructure at `0.90 / 1.00` floor-based after the 2026-03-28 audit.
 - **Chapter 06 design decisions**: locked.
 - **Chapter 06 alpha**: not yet complete; literal `osr:` import is part of the remaining alpha queue.
@@ -47,8 +47,7 @@ Base model (locked):
 - Phase B bridge activation is in effect: Chapter 06 was prioritized first, then Chapter 05 bridge continuation.
 - Chapter 06 alpha scaffolding and normalization completed in manuscript form: doctrine locks, card-template normalization, navigation indexing, provenance pointers, and baseline recognizer coverage were landed.
 - 2026-03-25 Expert lane uplift completed: all Expert `undecided` rows were resolved via evidence-lock notes and status normalization.
-- 2026-03-25 Companion lane uplift batch C1 executed: six C-lane rows were evidence-locked and promoted (`Earthquake`, `Insect Plague`, `Sword`, `Call Lightning`, `Control Temperature 10' radius`, `Faerie Fire`), reducing C-lane undecided from 13 to 7.
-
+- 2026-03-25 Companion lane uplift batch C1 executed: six C-lane rows were evidence-locked and promoted (`Earthquake`, `Insect Plague`, `Sword`, `Call Lightning`, `Control Temperature 10' radius`, `Faerie Fire`), reducing C-lane undecided from 13 to 7.- 2026-03-31 Pre-AD&D/Holmes pipeline hardening: `build_becmi_spell_staging_multi.py` was updated to include 11 Pre-AD&D/Holmes spells that were previously missing from the staging output. Staging file raised from 184 → 195 H2 entries; crosswalk Ch06 Import ✓ count raised from 193 → 204. `import_ch06_osr.py` is currently blocked on missing Chapter 06 headings for these spells; that unblocking step is the current Phase B gating item.
 ## Lane Confidence Gate (B/E/C/M/I/RC)
 
 Current baseline from the 2026-03-27 post-audit pipeline-hardening pass. These ratings now describe regenerated staging output, not just audit observations:
@@ -248,10 +247,10 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 
 
 ## Active Queue
-1. Update stale confidence and audit notes in the active `_todo` governance docs and record the current sequencing locks explicitly.
+1. **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** — `import_ch06_osr.py` is currently blocked on missing Chapter 06 headings (first: `Dancing Lights`); creating these cards unblocks the import pass.
 2. Keep the spell/effect crosswalk in lockstep: Chapter 06 `osr:` import-state changes must be mirrored back into the flat catalog immediately.
-3. Execute the Chapter 06 spell-only `osr:` preservation import pass in existing family order.
-4. Run Chapter 06 alpha verification after the preservation import pass (tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries).
+3. Execute the Chapter 06 spell-only `osr:` preservation import pass in existing family order (195 spells, 204 import rows).
+4. Run Chapter 06 alpha verification after the preservation import pass (tag consistency, overcharge consistency, recognizer discoverability, Level/Power Level boundaries).
 5. Mark Chapter 06 as `alpha` complete before resuming new Chapter 05 bridge edits.
 6. Resume Chapter 05 Phase B bridge batches with the now-locked Chapter 06 API doctrine.
 7. Re-validate overlay assumptions against current Quickstart/Gear canon as downstream manuscript edits resume.
@@ -272,7 +271,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 ## Future TODO Passes
 
 ### F1: Spells -> Powers
-- [x] Treat `_todo/TODO_BECMI_Spell_Material_Staging_*.md` as the canonical staged spell corpus for this pass.
+- [x] Treat `_todo/TODO_BECMI_Spell_Material_Staging.md` as the canonical staged spell corpus for this pass.
 - [x] Preserve canonical OSR spell names as the primary crosswalk row keys and Chapter 06 lookup surface.
 - [x] Record existing stylized entries from `Synthetic_Dream_Machine_04_Powers_Index.md` as named SDM variants with `see` handling, not as replacements for canonical spell names.
 - [x] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`, `undecided`).

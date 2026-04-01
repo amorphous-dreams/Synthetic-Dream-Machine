@@ -279,7 +279,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 **Purpose**
 - Carry the shared power system API.
 - Consume the canonical staged spell corpus and crosswalk as the primary source for OSR recognizer cards.
-- 184-card `osr:` import pass is the current primary alpha blocker.
+- 195-card `osr:` import pass is the current primary alpha blocker (expanded from 184 to include 11 Pre-AD&D/Holmes spells; Chapter 06 cards for the new spells must be added before `import_ch06_osr.py` will run).
 
 **Preserve**
 - Any character can use any power.
@@ -296,11 +296,12 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - [x] Freeze the staged spell corpus: all six BECMI lane validators pass; full orchestrator and multi-witness build both return `drift: no`.
 - [x] Build and verify the clean multi-witness staging file (`TODO_BECMI_Spell_Material_Staging.md`) as the primary downstream import source.
 - [x] Build and verify the Chapter 06 import pipeline (`import_ch06_osr.py`, `clear_ch06_osr.py`); 2026-03-29 audit confirmed `drift: no` and `{'yes': 184}` on final rerun.
-- [x] Normalize Phase B backlog in the crosswalk: 184 unique spell names, 193 spell-import rows, Phase B backlog procedure defined.
+- [x] Normalize Phase B backlog in the crosswalk: 195 unique spell names, 204 spell-import rows (expanded from 184/193 by +11 Pre-AD&D/Holmes spells 2026-03-31), Phase B backlog procedure defined.
 - [x] Lock crosswalk confidence gate at 0.90 / 1.00 (B 0.93, E 0.94, C 0.90, M 0.95, I 0.95, RC 0.94).
 - [x] Complete notes migration: Phase 1 notes migrated to Powers Family workspace; triage returns 0 flagged rows.
 - [x] Reset all 184 Chapter 06 spell cards to `osr: (pending verbatim extraction)` placeholder, ready for the import pass.
-- [ ] **Execute the 184-card `osr:` import pass**: run `import_ch06_osr.py write` on the live Chapter 06; verify `check` returns `drift: no` and `{'yes': 184}`. This is the primary alpha blocker.
+- [ ] **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** (Dancing Lights, Darkness, Magic Mouth, Clairaudience, Slow, Audible Glamer, Pyrotechnics, Ray of Enfeeblement, Strength, ESP + 1 more); `import_ch06_osr.py` currently fails on the first missing heading. This is the unblocking step.
+- [ ] **Execute the 195-card `osr:` import pass**: run `import_ch06_osr.py write` on the live Chapter 06; verify `check` returns `drift: no` and `{'yes': 195}`. This is the primary alpha blocker.
 - [ ] Add doctrine for conversion-family powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.
 - [ ] Add scope notes for:
   - personal,
@@ -322,7 +323,8 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 
 Archived from `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`. These are the rules contract bullets that governed the alpha drafting pass. Chapter-facing prose now lives in the `## Using Powers` section of Chapter 06; editorial scaffolding dropped.
 
-**2026-03-29 audit note**: Import machinery verified. All six staging lane validators pass. `import_ch06_osr.py` confirmed clean on final rerun (`drift: no`, `{'yes': 184}`). Remaining work is executing the literal `osr:` pass on the live chapter file.
+**2026-03-29 audit note**: Import machinery verified. All six staging lane validators pass. `import_ch06_osr.py` confirmed clean on final rerun (`drift: no`, `{'yes': 184}`).
+**2026-03-31 pipeline note**: Staging file expanded to 195 H2s (+11 Pre-AD&D/Holmes spells included). Import count raised to 204 Ch06 Import ✓ rows. `import_ch06_osr.py` is currently blocked on missing Chapter 06 headings for the new spells (first error: `Dancing Lights`). Unblocking step must precede the import pass.
 
 1. Activation flow is fixed: declare power → confirm carrier/storage access → pay activation price → resolve attack/save/effect → apply danger/corruption triggers → apply overcharge riders if used.
 2. Payment and substitution boundaries are fixed: base price is Life equal to Power Level; ability-point substitution remains legal at 1 point = 1 Life; unskilled use pays double unless a trait explicitly changes the cost. Life-Power may be stored as "mana" in gear/locations/ley-lines/high-weirdness.

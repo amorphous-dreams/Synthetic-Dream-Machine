@@ -357,7 +357,7 @@ Representative examples for BECMI conversions: `[fire]` · `[lightning]` · `[co
 
 ##### F.6 — Default Tag Sets for Common BECMI Families
 
-**Storage default — `[storage:trait]`:** All BECMI-derived power cards use `[storage:trait]` as the default. This is intentional: the SDM conversion replaces Vancian spell slots with trait slots, so learned spells are abilities you carry in yourself, not texts you hold. Note that FTLS_06 defaults to `[storage:item]` for OSR spells (grimoire-pattern); that is the correct precedent for item-side variants, not for this work. When Chapter 05 (Magitech & Fantascience — magic items and artifacts) work commences, `[storage:item]` and `[storage:burden]` variants of many of these powers will emerge. The storage tag is the knob to change when that happens — do not retroactively alter the base trait card, create additional item/burden-mode cards instead. One `[storage:burden]` precedent worth noting now: FTLS_06 assigns it to powers whose primary effect IS an ongoing burden condition (Reckless Dweomer, Giant Growth, Crown of the Grave). If a converted spell primarily imposes Wear-and-Tear, `[storage:burden]` may be the right choice alingside `[storage:trait]`, etc.
+**Storage default — `[storage:trait]`:** All BECMI-derived power cards use `[storage:trait]` as the default. This is intentional: the SDM conversion replaces Vancian spell slots with trait slots, so learned spells are abilities you carry in yourself, not texts you hold. Note that FTLS_06 defaults to `[storage:item]` for OSR spells (grimoire-pattern); that is the correct precedent for item-side variants, not for this work. When Chapter 05 (Magitech & Fantascience — magic items and artifacts) work commences, `[storage:item]` and `[storage:burden]` variants of many of these powers will emerge. The storage tag is the knob to change when that happens — do not retroactively alter the base trait card, create additional item/burden-mode cards instead. One `[storage:burden]` precedent worth noting now: FTLS_06 assigns it to powers whose primary effect IS an ongoing burden condition (Giant Growth, Crown of the Grave are examples). If a converted spell primarily imposes Wear-and-Tear, `[storage:burden]` may be the right choice alongside `[storage:trait]`, etc. Note: *Reckless Dweomer* was previously listed here but its canonical tags are `[storage:trait]` — Mana is stored in a Trait slot and only *overflows* into Burdens when no Trait slot is available; the burden state is a consequence of overflow, not the primary storage mode.
 
 If none of the tradition tags (F.3) apply to a given family’s cards, omit the tradition tag — the table’s Layer 3 behavior tags carry the meaning.
 
@@ -523,7 +523,7 @@ A short procedural module covering mechanics that apply across families when a p
 3. **Interruption and Corruption** — consequences when a ritual breaks mid-cast; corruption trajectory for P: 12+ rituals
 4. **Cross-Reference Index** — spells that support or require ritual activation: Permanence, Contingency, Symbol; Immortal-grade operations are covered in the Immortal Metaphysics module
 
-This module has **no migrated rows** in this pass. Permanence, Contingency, and Symbol are routed to the Cross-Family Procedures sub-module; their ritual governance doctrine is deferred to Phase 2. Use the trends and patterns in the SDM Powers Index to ground this section before looking at the OSR Powers.
+Permanence, Contingency, and Symbol are routed to the Cross-Family Procedures sub-module; their ritual governance doctrine is deferred to Phase 2. Use the trends and patterns in the SDM Powers Index to ground this section before looking at the OSR Powers. **Current pass: 7 migration rows, all `custom`.**
 
 #### Migration Tables
 
@@ -554,11 +554,11 @@ This module has **no migrated rows** in this pass. Permanence, Contingency, and 
 Covers all powers that suppress, cancel, absorb, reflect, or jam magical effects — the active power expressions of ECM-tradition interference. Distinct from Binding (behavioral obligation) and Psychic Warfare (Ka-mind attack). These powers operate on magic itself as a substrate: they treat spells and magical fields as signals to be cut, caught, turned, or silenced.
 
 **Sub-modules:**
-- **Mana** — wild mana handling and reckless discharge; `[storage:burden]`; *Reckless Dweomer* is the anchor power
+- **Mana** — wild mana handling and reckless discharge; `[storage:trait]` (overflow to Burdens); *Reckless Dweomer* is the anchor power
 - **Jamming / Counterspells** — anti-magic fields, dispel mechanics, spell-absorption items, silence fields; `[negate][suppress][ecm]`
 
 **SDM Conversion Notes:**
-- Mana / reckless casting powers → `[storage:burden]`; the primary effect IS the burden condition; see Mana sub-module doctrine below
+- Reckless Dweomer → `[storage:trait]` with Burden overflow; `[mana][oldtech][dangerous]` tags; Very Dangerous (cascading Dangerous Magic rolls while carrying Mana and on any Defeat roll); no overcharge; cannot cast while Mana is held in a Trait slot; see Mana sub-module doctrine below
 - Anti-magic and dispel effects → `[negate][suppress]`; `[area]` for field forms; `[dangerous]` at P: 12+
 - Silence → `[suppress][ecm]`; partial jam (speech/casting only)
 - Spell-catching / spell-turning items → `[store:spell][ecm]`; trigger notes on capacity and dormancy
@@ -567,7 +567,7 @@ Covers all powers that suppress, cancel, absorb, reflect, or jam magical effects
 
 ##### Mana
 
-The Mana sub-module covers wild mana handling, reckless activation, and the mechanical cost infrastructure for pushing power use beyond safe limits. *Reckless Dweomer* (FTLS_06) is the canonical anchor: a power whose primary effect is an ongoing burden condition imposed on the caster in exchange for raw activation force. Storage doctrine: `[storage:burden]` per F.6 — assign this when the power’s effect IS a burden, not when it merely triggers a Danger Roll.
+The Mana sub-module covers wild mana handling, reckless activation, and the mechanical cost infrastructure for pushing power use beyond safe limits. *Reckless Dweomer* (FTLS_06) is the canonical anchor: roll 1d6 + Aura, gain that much Mana stored in a Trait inventory slot; overflow goes to Burdens if no Trait slot is free; Mana may be spent in place of Life to cast powers. Storage doctrine: `[storage:trait]` — Mana lives in a Trait slot by default and overflows to Burdens only when no slot exists. The burden state is a consequence of overflow, not the primary storage mode. Danger escalation: if Mana gained exceeds effective level, immediately make a Dangerous Magic roll; while carrying Mana, any Defeat roll or other Dangerous Magic roll triggers an additional Dangerous Magic roll (Very Dangerous). Mana disperses at the next sunset or sunrise.
 
 BECMI source material does not map directly to a Mana sub-module — there is no BECMI spell that cleanly corresponds to "accept a burden to overcharge a casting." This sub-module is a **synthesis lane**: Reckless Dweomer and kin are SDM inventions grounded in the overcharge and Danger Roll infrastructure, and BECMI conversion only contributes to it indirectly (e.g. reckless-casting rulings that emerge during Danger Roll adjudication). Populate migration rows here when Chapter 05 (Magitech & Fantascience) or Phase 2 specifically generates Mana-class cards.
 
@@ -776,8 +776,8 @@ Covers all powers that operate on biological systems — tissue repair, metaboli
 | Cure Critical Wounds | spell | Higher-tier healing upgrade. | direct |
 | Cureall | spell | Heals all wounds to 1d6 remaining OR removes one named condition; enables just-raised creatures to skip mandatory 2-week recovery rest. | partial |
 | Heal | spell | Arcane capstone of broad-repair pattern; effect identical to Cureall; crosses clerical and arcane traditions. | custom |
-| Cure Light Wounds | spell | Foundational healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Restorative Slumber`. | partial |
-| Cure Serious Wounds | spell | Mid-tier healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Real-Time Rebuild`. | partial |
+| Cure Light Wounds | spell | Foundational healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Restorative Slumber`. Reversable: `Cause Light Wounds` — reversed form inflicts damage equal to the healing amount; Chaotic channel; same P: cost. | partial |
+| Cure Serious Wounds | spell | Mid-tier healing. SDM cousins: `Rehoryan's Progressive Restoration`, `Real-Time Rebuild`. Reversable: `Cause Serious Wounds` — reversed form inflicts damage at same tier; Chaotic channel; same P: cost. | partial |
 
 ##### Systemic Treatment
 
@@ -785,7 +785,7 @@ Covers all powers that operate on biological systems — tissue repair, metaboli
 | --- | --- | --- | --- |
 | Cure Blindness | spell | Sensory impairment removal. SDM cousins: `Real-Time Rebuild`, `Restorative Slumber`. | partial |
 | Cure Disease | spell | Disease and affliction removal. SDM cousin: `Real-Time Rebuild` (flushes toxins/afflictions by power setting). | partial |
-| Neutralize Poison | spell | Poison-cleansing and creation lane. SDM cousin: `Real-Time Rebuild` (toxin flush at lower settings). | partial |
+| Neutralize Poison | spell | Poison-cleansing and creation lane. SDM cousin: `Real-Time Rebuild` (toxin flush at lower settings). Reversable: `Cause Poison` — reversed form injects lethal toxin; save-gated death rider; RC (*) mark confirmed. | partial |
 | Protection from Poison | spell | Poison immunity and anti-breath protection. Only partial: `Real-Time Rebuild` is recovery-style rather than prophylactic. | partial |
 | Ring of Remedies | item-effect | Bundled cure functions (Cure Light Wounds/Blindness/Disease/Poison 1/day each); combine two uses in one touch allowed. | custom |
 | Rod of Health | item-effect | Renewable healing access; one function per creature per day. | partial |
@@ -811,7 +811,7 @@ Covers all powers that operate on biological systems — tissue repair, metaboli
 | Haste Speed Stacking Rules | procedure | Stacking doctrine: max 2 speed sources; +1 hit/10% faster; -2 AC per layer; magic-use timing unimproved by haste. | custom |
 | Ring of Life Protection | item-effect | Anti-drain life-threshold safeguard; 5 charges prevent energy drain/Con/level loss; 1 charge recovered per day of rest. | custom |
 | Strength | spell | Temporary martial augmentation without form change. Cleaner biomancy anchor than polymorph suite. | partial |
-| Animal Growth | spell | Doubles one normal or giant animal’s size, strength, damage, and carrying capacity for 12 turns; excludes intelligent and fantastic creatures. | partial |
+| Animal Growth | spell | Doubles one normal or giant animal’s size, strength, damage, and carrying capacity for 12 turns; excludes intelligent and fantastic creatures. Reversable: `Shrink Animal` — reversed form halves size, strength, and damage of one animal; save allowed for hostile targets (RC). | partial |
 | Enlargement | spell | Size and mass amplification for objects and living targets; lower-tier anchor beneath polymorph effects. | partial |
 
 ##### Sensory Augmentation
@@ -930,17 +930,17 @@ Covers all powers that call entities from outside the scene, fabricate new biolo
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
-| Conjure Elemental | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. | partial |
-| Invisible Stalker | spell | Precision servitor-calling for pursuit, scouting, and delegated action. | partial |
-| Aerial Servant | spell | Summoned retrieval-agent with logistics and custody implications. | partial |
-| Summon Elemental | spell | Druidic elemental-calling lane complementary to Conjure Elemental. | partial |
-| Summon Object | spell | Object-call retrieval bridging summoning and transport procedure language. | partial |
+| Conjure Elemental | spell | Foundational elemental-calling recognizer with cross-book spell and item relevance. MU5 → P: 10. Calls one 16 HD elemental; full concentration required for control; broken concentration frees the elemental to attack. Tags `[summon][fueled]`. | partial |
+| Invisible Stalker | spell | Precision servitor-calling for pursuit, scouting, and delegated action. MU6 → P: 12; `[dangerous]` mandatory. Unending-task doctrine: pursues assigned task until completion or dismissal; ambiguous orders resolve literally; inherently hostile once task is complete. Tags `[summon][focus][dangerous]`. | partial |
+| Aerial Servant | spell | Summoned retrieval-agent with logistics and custody implications. C6 → P: 12; `[dangerous]` mandatory. Strength ceiling 36 (lifts anything up to that weight); held target may attempt Strength contest escape; if prevented from completing task, attacks caster. Tags `[summon][focus][dangerous]`. | partial |
+| Summon Elemental | spell | Druidic elemental-calling lane complementary to Conjure Elemental. Dr7 → P: 14. Calls one elemental of type matching terrain; same concentration and control doctrine as Conjure Elemental; druid-lane provenance only. Tags `[summon][fueled]`. | partial |
+| Summon Object | spell | Object-call retrieval bridging summoning and transport procedure language. MU7 → P: 14. Calls one inanimate object the caster previously touched; unlimited range on same plane; object must be unattended (or attended target succeeds a save to resist vanishing). Tags `[summon]`. | partial |
 | Create Normal Animals | spell | Low-tier conjured creature. SDM cousin: `Vegetable of Birth` (gestation cousin). Explicit ecology, load, and encounter-pressure constraints. | custom |
-| Create Normal Monsters | spell | Mid-tier conjured creature; first monster-grade rung after normal animals. | custom |
-| Create Magical Monsters | spell | High-tier magical-creature conjuration; special-ability budgeting and control-burden escalation. | custom |
-| Create Any Monster | spell | Apex creature conjuration; command reliability, persistence failure modes, and campaign-scale impact doctrine required. | custom |
+| Create Normal Monsters | spell | Mid-tier conjured creature; first monster-grade rung after normal animals. MU7 → P: 14. Creates monsters with non-special attack forms only (no breath, poison, or petrification); up to caster-level HD total; control doctrine required at Ch06. Tags `[summon][conjuration][fueled]`. | custom |
+| Create Magical Monsters | spell | High-tier magical-creature conjuration; special-ability budgeting and control-burden escalation. MU8 → P: 16; `[dangerous]` for apex special-ability packages. Creates monsters with special attacks allowed; up to half caster-level HD total. Tags `[summon][conjuration][fueled][dangerous]`. | custom |
+| Create Any Monster | spell | Apex creature conjuration; command reliability, persistence failure modes, and campaign-scale impact doctrine required. MU9 → P: 18; `[dangerous]` mandatory. Creates any monster up to one-quarter caster-level HD; command reliability uncertain above P: 14 equivalent. Tags `[summon][conjuration][fueled][dangerous]`. | custom |
 | Summon Animals | spell | Druidic ally-call with explicit HD budgeting by caster level. Tags `[summon][fueled]`. | partial |
-| Gate | spell | Planar aperture and translocation endpoint; high-tier traversal and summoning crossover; bespoke apex effect. | custom |
+| Gate | spell | Planar aperture and translocation endpoint; high-tier traversal and summoning crossover; bespoke apex effect. MU9 → P: 18; `[dangerous]` mandatory. Opens a two-way planar aperture to any plane; named entity may or may not come through and is not automatically controlled; controlled-entity risk is the primary campaign-scale failure mode. Tags `[summon][transit][dangerous]`. | custom |
 | Djinni Summoning | item-effect | Expert ring; summons one djinni to serve for up to one day, once per week, keyed to current wearer. | custom |
 | Immortal Conjuring And Summoning Limits | procedure | → See Immortal Metaphysics module: Immortal Effect Doctrine. Transplanar response requirements and sphere/element bias constraints for Immortal-tier summoners. | custom |
 
@@ -987,6 +987,7 @@ Functional question: **is the Ka still in range?** Resurrection is Ka retrieval 
 | Raise Dead | spell | Humans/demihumans only; body present; 1 hp + mandatory 2-week rest that no magic can shortcut; destroys most undead; non-destructive against vampires (forces coffin retreat only). SDM variants: `Raise Dead` (UVG2e), `Recall Soul` as soul-return ritual cousin. | partial |
 | Raise Dead Fully | spell | Any living creature; humans/demihumans wake at full hp with no recovery penalties; afflictions at time of death persist; 4-month time limit at C17 + 4 months per level above 17. Distinct row from `Raise Dead`. | custom |
 | Reincarnation | spell | Lifecycle resurrection with new body and form-change implications; custom until identity-continuity doctrine defined. | custom |
+| Finger of Death | spell | Reversed annihilation form of Raise Dead; earns its own card per doctrine (P: gap too large for a Reversable: rider on Raise Dead). C5 → P: 10 or custom calibration per final card; no save; instant kill of one target within range. `[dangerous]` mandatory. Reverse: `Raise Dead`. Tags `[necrotic][dangerous]`. | custom |
 
 ##### Ka Restoration
 
@@ -1050,7 +1051,7 @@ Covers powers that operate on the Ka-mind — from low-bandwidth behavioral capt
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Remove Fear | spell | Fear-cleansing and morale-stabilization lane. Tags `[fear][ecm]`. | partial |
-| Holy Word | spell | High-tier word of power / banishment lane; alignment-keyed banishment with stun/paralysis rider at high P. Tags `[fear][ecm][dangerous]`. | partial |
+| Holy Word | spell | High-tier word of power / banishment lane; alignment-keyed banishment with stun/paralysis rider at high P. Tags `[fear][ecm][dangerous]`. Reversable: `Unholy Word` — mirrors banishment and stun/paralysis effects with Chaotic/evil alignment keying; P: 14; earns a separate card or Reversable: line per editorial judgment. | partial |
 
 ##### Mental Destruction
 
@@ -1197,7 +1198,7 @@ Distinct from Faerie Bodycrafts (biological) and Summoning (calling from outside
 - Artifact procedures (Creating, Charges, Destruction) → custom procedure blocks, not standard power cards; they define *process* not *effect*
 - Form-spells (Ironform etc.) are RC-only; each form gets its own card as `[fabricate][imbued]` transformation bundle
 
-*No migration rows this pass — populate in next routing pass.*
+**Current pass: migration tables populated.** Alchemy and Artifice is the largest module (84 rows across 3 sub-modules). See sub-module tables below.
 
 #### Migration Tables
 
@@ -1322,7 +1323,7 @@ Covers powers whose primary effect is light emission, darkness manipulation, pri
 - Prismatic Wall → apex P: 16+; `[dangerous]` mandatory; `[anchored][area M]`; multiple color bands convert to a layered effect description rather than separate mechanical sub-entries per color
 - Void sub-module is a reserved stub; it covers void *conditions* (null-space reservations, anti-light zones), not void *transit*
 
-*No migration rows this pass.*
+**Current pass: migration tables populated. See sub-module tables below.**
 
 #### Migration Tables
 
@@ -1330,7 +1331,7 @@ Covers powers whose primary effect is light emission, darkness manipulation, pri
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
-| Light | spell | Shared cross-tradition light/darkness recognizer; Range 120’, Effect volume 30’ diameter; object-attachment movement; save-gated blindness when targeted at eyes. Tags `[light][imbued]`. | partial |
+| Light | spell | Shared cross-tradition light/darkness recognizer; Range 120’, Effect volume 30’ diameter; object-attachment movement; save-gated blindness when targeted at eyes. Tags `[light][imbued]`. Cancelled by `Darkness` cast upon it; countered by subsequent casting of any Light form upon the same area. | partial |
 | Continual Light | spell | Permanent-form light source; object-bound or air-anchored; reverse `Continual Darkness` counters it. Tags `[light][anchored]`. | partial |
 | Dancing Lights | spell | Mobile light-decoy; 1–6 steerable lantern-like lights that can round corners within range. Tags `[light][focus][area S]`. | partial |
 
@@ -1339,6 +1340,7 @@ Covers powers whose primary effect is light emission, darkness manipulation, pri
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Darkness | spell | Visibility-denial counterpart to `Light`; total darkness, counters/is countered by Light; defeats infravision inside affected area. Tags `[shadow][imbued]`. | partial |
+| Continual Darkness | spell | Permanent-form darkness; object-bound or air-anchored; cancelled only by `Continual Light` cast upon it; counters any Continual Light within affected area. MU2/C3 → P: 4. Tags `[shadow][anchored]`. [Canon: FTLS_06 → Light/Dark counter-push-pull doctrine] | custom |
 
 ##### Prismatic
 

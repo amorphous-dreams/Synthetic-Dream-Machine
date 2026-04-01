@@ -14,6 +14,10 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+# Pull in sibling script without making `scripts/` a package.
+sys.path.insert(0, str(Path(__file__).parent))
+from fix_staging_fence_apostrophes import fix_fences  # noqa: E402
+
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
@@ -124,11 +128,22 @@ def parse_card_map(chapter_text: str) -> dict[str, str]:
         {
             "Fireball": "Fireball",
             "Animal Growth": "Animal Growth",
-            "Invisibility 10' Radius": "Invisibility 10' Radius",
+            "Audible Glamer": "Audible Glamer",
+            "Clairaudience": "Clairaudience",
+            "Control Temperature 10\u2019 Radius": "Control Temperature 10\u2019 Radius",
+            "Dancing Lights": "Dancing Lights",
+            "Darkness": "Darkness",
+            "Enlargement": "Enlargement",
+            "Finger of Death": "Finger of Death",
+            "Invisibility 10\u2019 Radius": "Invisibility 10\u2019 Radius",
+            "Magic Mouth": "Magic Mouth",
             "Passwall": "Passwall",
             "Polymorph Others": "Polymorph Others",
+            "Pyrotechnics": "Pyrotechnics",
+            "Ray of Enfeeblement": "Ray of Enfeeblement",
+            "Slow": "Slow",
             "Speak with Animals": "Speak with Animals",
-            "Control Temperature 10' Radius": "Control Temperature 10' Radius",
+            "Strength": "Strength",
         }
     )
     return card_map
@@ -513,6 +528,7 @@ def main() -> int:
         lane_lines=lane_lines,
         structured_witnesses=structured_witnesses,
     )
+    rendered, _ = fix_fences(rendered)
     current = args.output.read_text(encoding="utf-8") if args.output.exists() else ""
     drift = rendered != current
 

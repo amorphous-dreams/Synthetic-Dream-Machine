@@ -50,10 +50,10 @@ The typographic apostrophe / right single quotation mark is U+2019 (').
 
   Measurement marks (feet/prime notation)
     • Spell range notation like  60'  uses U+0027 conventionally in raw game
-      text.  The strict typographic prime is U+2032 (′).  This script converts
-      them to U+2019 for publishing consistency; if you need true prime marks,
-      run a second pass replacing  [0-9]+'  patterns with  [0-9]+′  (U+2032) or use
-      the ′ in the final rendered output via a post-processor.
+      text.  This script preserves digit-adjacent apostrophes (10', 60', 150')
+      as U+0027 — only letter-preceded apostrophes (contractions and
+      possessives) are converted to U+2019.  If you need true prime marks
+      (U+2032 ′), run a separate pass replacing  [0-9]+'  with  [0-9]+′.
 
 ────────────────────────────────────────────────────────────────────────────────
 
@@ -88,25 +88,48 @@ CURLY_R  = "\u2019"   # '  RIGHT SINGLE QUOTATION MARK (typographic apostrophe)
 
 def fix_fences(text: str) -> tuple[str, int]:
     """
-    Replace U+0027 with U+2019 *only* inside ```...``` code fences.
-    Lines that open or close a fence are left untouched.
+    Replace U+0027 with U+2019 *only* inside ```...``` code fences,
+    and only for apostrophes that follow a letter (prose/possessive use),
+    e.g. "user's", "weapon's", "it's".
+
+    Apostrophes following a digit (measurement marks like 10', 60', 30')
+    are left as U+0027.
+
+    Fence detection uses separate open/close patterns so that a stray bare
+    ``` line inside extracted content does not accidentally reopen or close
+    the current fence context.
+      - Opening:  line matches ```<non-whitespace> (has a language/id tag)
+      - Closing:  line is bare ``` (optional trailing whitespace only)
+
     Returns (modified_text, change_count).
     """
+    OPENING_FENCE = re.compile(r"^\s*```\S")    # ```text, ```python, etc.
+    CLOSING_FENCE = re.compile(r"^\s*```\s*$")  # bare ```
+    PROSE_APOS = re.compile(r"(?<=[a-zA-Z])'")  # apostrophe after a letter only
+
     lines = text.splitlines(keepends=True)
     result: list[str] = []
     in_fence = False
     total_changes = 0
 
     for line in lines:
-        if re.match(r"^\s*```", line):
-            in_fence = not in_fence
+        if OPENING_FENCE.match(line):
+            in_fence = True
+            result.append(line)
+            continue
+        if CLOSING_FENCE.match(line):
+            in_fence = False
             result.append(line)
             continue
 
         if in_fence and STRAIGHT in line:
-            fixed = line.replace(STRAIGHT, CURLY_R)
-            total_changes += line.count(STRAIGHT)
-            result.append(fixed)
+            matches = PROSE_APOS.findall(line)
+            if matches:
+                fixed = PROSE_APOS.sub(CURLY_R, line)
+                total_changes += len(matches)
+                result.append(fixed)
+            else:
+                result.append(line)
         else:
             result.append(line)
 

@@ -73,7 +73,7 @@ Primary manuscript target:
 - Class locks and most D&D ability-score language have already been removed or reduced.
 - Armor/shield Defense has already been corrected to SDM additive armor bonuses and should be treated as the model example for `retain API, replace internals`.
 - `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` now contains the full flat spell/effect catalog, preserved cross-tradition class/spell tags, and the SDM-first grouped family workspace.
-- Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on Chapter 06 multi-witness `osr:` import, tracker-state updates, and keeping stale confidence notes synchronized to the audit baseline.
+- Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on Chapter 06 multi-witness `osr:` import, tracker-state updates, and keeping the crosswalk tracker state current as `osr:` import progresses.
 - `_todo/` docs already contain:
   - `State of Play`
   - `API Conversion Doctrine`
