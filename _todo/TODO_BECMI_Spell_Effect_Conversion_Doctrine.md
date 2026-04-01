@@ -523,7 +523,7 @@ A short procedural module covering mechanics that apply across families when a p
 3. **Interruption and Corruption** — consequences when a ritual breaks mid-cast; corruption trajectory for P: 12+ rituals
 4. **Cross-Reference Index** — spells that support or require ritual activation: Permanence, Contingency, Symbol; Immortal-grade operations are covered in the Immortal Metaphysics module
 
-Permanence, Contingency, and Symbol are routed to the Cross-Family Procedures sub-module; their ritual governance doctrine is deferred to Phase 2. Use the trends and patterns in the SDM Powers Index to ground this section before looking at the OSR Powers. **Current pass: 7 migration rows, all `custom`.**
+Ritual Mechanics is **procedure-only**. Spell cards that use ritual governance (including `Permanence`, `Contingency`, `Symbol`, `Wish`, `Timestop`, and `Wizardry`) are routed to their owning spell modules; this module retains only cross-family procedure rows. Use the trends and patterns in the SDM Powers Index to ground this section before looking at the OSR Powers.
 
 #### Migration Tables
 
@@ -531,12 +531,6 @@ Permanence, Contingency, and Symbol are routed to the Cross-Family Procedures su
 
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
-| Contingency | spell | Conditional trigger and do-if framework for precommitted defensive or utility responses; needs trigger grammar, stored payload scope, and precommit limits. | custom |
-| Permanence | spell | Persistence-lock doctrine for long-term enchantment anchoring; needs explicit rules for bindable scope, maintenance risks, and safe removal. | custom |
-| Symbol | spell | Sigil-triggered hazard package; condition, payload, and reset doctrine rather than a static trap. | custom |
-| Timestop | spell | Temporal exception effect and high-tier action-economy breaker; rewrites scene sequencing rather than merely granting speed. | custom |
-| Wish | spell | Apex reality-rewrite; canonical heading stays `Wish`; `Big Wish` as tone-forward SDM variant. | custom |
-| Wizardry | spell | Cross-tradition eligibility bridge for temporary legal use of one magic-user device or 1st–2nd level scroll spell. | custom |
 | Magic-User Starting Spell Choice | procedure | Spellbook seeding: Read Magic mandatory as first gift; referee may control spell access. | custom |
 
 ---
@@ -1001,6 +995,9 @@ Covers all powers that call entities from outside the scene, fabricate new biolo
 | Geas | spell | Compelled perform-or-avoid task (save allowed); rebounds on caster if task impossible or directly fatal; not removable by Dispel Magic or Remove Curse; reverse (Remove Geas) fails 5% per caster-level disadvantage. | custom | no |
 | Hold Portal | spell | Low-tier closure / access-control seal. SDM cousin: `Knock / Lock` (overcharge seals/fuses portal shut). | partial | no |
 | Wizard Lock | spell | Arcane keyed-barrier seal. SDM cousin: `Knock / Lock`. | partial | no |
+| Contingency | spell | Conditional trigger and do-if framework for precommitted defensive or utility responses; needs trigger grammar, stored payload scope, and precommit limits. | custom | no |
+| Permanence | spell | Persistence-lock doctrine for long-term enchantment anchoring; needs explicit rules for bindable scope, maintenance risks, and safe removal. | custom | no |
+| Symbol | spell | Sigil-triggered hazard package; condition, payload, and reset doctrine rather than a static trap. | custom | no |
 
 ---
 
@@ -1308,6 +1305,7 @@ Distinct from Faerie Bodycrafts (biological) and Summoning (calling from outside
 | Quill of Copying | item-effect | Spell transcription and copy-risk procedure; strong Chapter 05/06 spell-handling bridge. | custom |
 | Spellbook Replacement | procedure | Arcane archive-recovery doctrine: magic-user or elf cannot regain spells until book is replaced; requires substantial gold, study time, and full attention. | custom |
 | Magic Item Range/Duration Default | procedure | Default-caster baseline for item effects without explicit range/duration: treat as 6th-level caster output. | custom |
+| Wizardry | spell | Cross-tradition eligibility bridge for temporary legal use of one magic-user device or 1st–2nd level scroll spell. | custom |
 
 ##### Fabrication and Artifact Craft
 
@@ -1397,6 +1395,13 @@ Covers powers whose primary effect is light emission, darkness manipulation, pri
 | Classic Name | Type | Notes | Mapping Status | Converted |
 | --- | --- | --- | --- |  ---  |
 | Prismatic Wall | spell | Bespoke high-tier layered-spectrum barrier; apex/custom; RC: Range 60’, Duration 6 turns, Effect 10’ radius sphere or 500 sq ft flat; each color band carries a distinct hazard and removal condition. Evidence-limited pending full staged text. Tags `[light][prismatic][anchored][dangerous]`. | custom | no |
+
+##### Void
+
+| Classic Name | Type | Notes | Mapping Status | Converted |
+| --- | --- | --- | --- |  ---  |
+| Wish | spell | Apex reality-rewrite; canonical heading stays `Wish`; `Big Wish` as tone-forward SDM variant. Routes to Void as a boundary-condition rewrite effect. | custom | no |
+| Timestop | spell | Temporal exception effect and high-tier action-economy breaker; rewrites scene sequencing rather than merely granting speed. Routes to Void as a reality-edge temporal condition. | custom | no |
 
 ---
 

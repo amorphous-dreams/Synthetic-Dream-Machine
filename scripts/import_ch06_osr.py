@@ -26,7 +26,6 @@ PENDING_TOKEN = "osr:\n{pending verbatim extraction}"
 REVIEW_QUEUE_HEADING = "## Chapter 06 `osr:` Import Review Queue\n\n"
 REFERENCE_REUSE_MARKER = "## Reference Reuse Targets\n"
 REVIEW_LINE_RE = re.compile(r"^- `(.+?)`: (.+)$")
-CHAPTER_HEADING_RE = re.compile(r"^## (.+)$", flags=re.M)
 
 
 @dataclass(frozen=True)
@@ -169,14 +168,22 @@ def select_names(ordered_names: list[str], records: dict[str, Record], target_ca
     return selected
 
 
-def resolve_chapter_heading(chapter_text: str, record: Record) -> str:
-    preferred = f"## {record.card_heading}\n"
-    if preferred in chapter_text:
-        return record.card_heading
+def iter_card_blocks(chapter_text: str) -> list[tuple[str, int, int, str]]:
+    blocks: list[tuple[str, int, int, str]] = []
+    for match in re.finditer(
+        r'<div class="power-card" markdown="1">\n\n(#{2,6}) (.+?)\n(.*?)\n</div>',
+        chapter_text,
+        flags=re.S,
+    ):
+        heading = match.group(2).strip()
+        blocks.append((heading, match.start(), match.end(), match.group(0)))
+    return blocks
 
+
+def resolve_card_block(chapter_text: str, record: Record) -> tuple[str, int, int, str]:
     matches = [
-        heading
-        for heading in CHAPTER_HEADING_RE.findall(chapter_text)
+        (heading, start, end, block)
+        for heading, start, end, block in iter_card_blocks(chapter_text)
         if labels_match(heading, record.card_heading) or labels_match(heading, record.classic_name)
     ]
     if not matches:
@@ -184,7 +191,7 @@ def resolve_chapter_heading(chapter_text: str, record: Record) -> str:
             f"missing Chapter 06 heading for {record.card_heading} (or alias of {record.classic_name})"
         )
     if len(matches) > 1:
-        joined = ", ".join(matches)
+        joined = ", ".join(heading for heading, _, _, _ in matches)
         raise RuntimeError(
             f"ambiguous Chapter 06 alias match for {record.card_heading} (classic {record.classic_name}): {joined}"
         )
@@ -213,15 +220,7 @@ def apply_osr_blocks(chapter_text: str, records: dict[str, Record], selected_nam
     updated = chapter_text
     for classic_name in selected_names:
         record = records[classic_name]
-        heading = resolve_chapter_heading(updated, record)
-        anchor = f"## {heading}\n"
-        start = updated.find(anchor)
-        if start == -1:
-            raise RuntimeError(f"missing Chapter 06 heading for {heading}")
-        end = updated.find("\n## ", start + len(anchor))
-        if end == -1:
-            end = len(updated)
-        card_block = updated[start:end]
+        heading, start, end, card_block = resolve_card_block(updated, record)
         osr_match = re.search(
             r"(osr:\n)(.*?)(\n(?:\n  <div class=\"power-return\">|<div style=\"text-align: right\">))",
             card_block,
