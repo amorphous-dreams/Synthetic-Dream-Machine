@@ -541,6 +541,56 @@ Permanence, Contingency, and Symbol are routed to the Cross-Family Procedures su
 
 ---
 
+### Module: Immortal Metaphysics
+
+**STATUS: DRAFT**
+
+#### Doctrine
+
+Covers the system-level procedures that govern how Immortal-tier beings interact with and produce magical effects. This is not a playable power collection — it is the rules infrastructure that sits above all other modules. An Immortal’s expressions of power draw from every other module; these rows specify how that expression is structured, costed, scaled, and adjudicated at the Immortal tier.
+
+Source: `Immortals -> Sections 1–2` (rank economics and sphere context) and `Immortals -> Section 3: Immortal Magic` (effect doctrine). The Catalog notes that "no unique Phase 1 spell rows are currently Immortals-primary; Immortals remains represented as a co-source lane within relevant rows." All rows here are therefore `procedure` type and contain no power-card expressions.
+
+Distinct from Ritual Mechanics (mortal-level ritual activation doctrine) and from any of the twelve power-family modules — each of which may still apply when an Immortal activates that class of effect. These rows govern the frame and the override layer, not the effect type.
+
+**Sub-modules:**
+- **Rank and Power Economy** — PP conversion from mortal XP, rank/level frame, GT advancement gate, sphere selection and recovery cadence; the structural accounting layer (`Immortals -> Sections 1–2`)
+- **Immortal Effect Doctrine** — sphere-factor cost model, magical effect index (S1-S4), caster level rule, range/duration scaling, damage scaling and averaging, limits on use, effect explanation overrides, plus transplanar exception rows for conjuring/summoning limits, mental effect resolution, and undead/entropy curing (`Immortals -> Section 3: Immortal Magic`)
+
+**SDM Conversion Notes:**
+- All rows `procedure` type; none generate power cards directly
+- Rank and Economy rows inform SDM Chapter 05 PP cost infrastructure; cross-reference before building high-tier PP tables
+- Effect Doctrine rows constrain how other module conversion notes apply when the caster is an Immortal
+- Transplanar exception rows (conjuring limits, mental resolution, undead curing) forward-reference their host modules: each host module notes the Immortal-tier override lives here
+
+#### Migration Tables
+
+##### Rank and Power Economy
+
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Immortal Power Point Conversion And Bookkeeping | procedure | Converts mortal XP to permanent and current PP tracks; temporary versus permanent expenditure. | custom |
+| Immortal Rank And Level Frame | procedure | PP total determines rank; level tracks progress within rank; gains key off Immortal hierarchy. | custom |
+| Immortal GT Advancement Costs And Gate | procedure | Permanent-PP advancement: ability-score costs by rank; Greater Talent maxima before rank advancement. | custom |
+| Immortal Sphere Bias And Recovery | procedure | Sphere-selection and planar-bias doctrine linking alignment context, PP regeneration, hp/ability recovery to hostile/neutral/friendly bias. | custom |
+
+##### Immortal Effect Doctrine
+
+| Classic Name | Type | Notes | Mapping Status |
+| --- | --- | --- | --- |
+| Immortal Sphere-Factor Cost Model | procedure | Base PP cost × Sphere relationship factor; dominance/opposition as formal cost model. | custom |
+| Immortal Magical Effect Index (S1-S4) | procedure | Indexed PP vocabulary unifying mortal spells and non-spell effects; core bridge for Chapter 05 power-cost unification. | custom |
+| Immortal Caster Level Rule | procedure | Effective caster level equals 2×HD for all created effects and dispel interactions. | custom |
+| Immortal Range / Duration Scaling | procedure | Cost-doubling to extend range, duration, volume; no cross-planar reach without path; instant/permanent effects cannot be extended. | custom |
+| Immortal Damage Scaling And Averaging | procedure | HD-scaled damage expression: 1d6 per HD of creator; average-damage substitution explicitly encouraged for speed; per-die modifiers clamped by die’s natural min/max. | custom |
+| Immortal Limits On Use | procedure | Action-economy: one magical action OR physical attacks per round; self-only effects by touch; mortal magic cannot affect Immortals. | custom |
+| Immortal Effect Explanation Overrides | procedure | Rules-precedence doctrine for Immortal-tier effects. | custom |
+| Immortal Conjuring And Summoning Limits | procedure | Transplanar response requirements and sphere/element bias constraints; hostile bias blocks nominally valid summoning. Cross-note: Summoning and Binding module. | custom |
+| Immortal Mental Effect Resolution | procedure | Non-magical recovery cadence for charmed/feebleminded Immortals; Intelligence-check cadence plus renewed saves; magical self-cure unavailable. Cross-note: Psychic Warfare module. | custom |
+| Immortal Undead / Entropy Curing | procedure | At Immortal tier, undead-curative magic re-reads as Entropy-creature healing; affinity-based target remapping. Cross-note: Rites of the Deathless module. | custom |
+
+---
+
 ## Power Modules
 
 ---
@@ -1347,56 +1397,6 @@ Covers powers whose primary effect is light emission, darkness manipulation, pri
 | Classic Name | Type | Notes | Mapping Status |
 | --- | --- | --- | --- |
 | Prismatic Wall | spell | Bespoke high-tier layered-spectrum barrier; apex/custom; RC: Range 60’, Duration 6 turns, Effect 10’ radius sphere or 500 sq ft flat; each color band carries a distinct hazard and removal condition. Evidence-limited pending full staged text. Tags `[light][prismatic][anchored][dangerous]`. | custom |
-
----
-
-### Module: Immortal Metaphysics
-
-**STATUS: DRAFT**
-
-#### Doctrine
-
-Covers the system-level procedures that govern how Immortal-tier beings interact with and produce magical effects. This is not a playable power collection — it is the rules infrastructure that sits above all other modules. An Immortal’s expressions of power draw from every other module; these rows specify how that expression is structured, costed, scaled, and adjudicated at the Immortal tier.
-
-Source: `Immortals -> Sections 1–2` (rank economics and sphere context) and `Immortals -> Section 3: Immortal Magic` (effect doctrine). The Catalog notes that "no unique Phase 1 spell rows are currently Immortals-primary; Immortals remains represented as a co-source lane within relevant rows." All rows here are therefore `procedure` type and contain no power-card expressions.
-
-Distinct from Ritual Mechanics (mortal-level ritual activation doctrine) and from any of the twelve power-family modules — each of which may still apply when an Immortal activates that class of effect. These rows govern the frame and the override layer, not the effect type.
-
-**Sub-modules:**
-- **Rank and Power Economy** — PP conversion from mortal XP, rank/level frame, GT advancement gate, sphere selection and recovery cadence; the structural accounting layer (`Immortals -> Sections 1–2`)
-- **Immortal Effect Doctrine** — sphere-factor cost model, magical effect index (S1-S4), caster level rule, range/duration scaling, damage scaling and averaging, limits on use, effect explanation overrides, plus transplanar exception rows for conjuring/summoning limits, mental effect resolution, and undead/entropy curing (`Immortals -> Section 3: Immortal Magic`)
-
-**SDM Conversion Notes:**
-- All rows `procedure` type; none generate power cards directly
-- Rank and Economy rows inform SDM Chapter 05 PP cost infrastructure; cross-reference before building high-tier PP tables
-- Effect Doctrine rows constrain how other module conversion notes apply when the caster is an Immortal
-- Transplanar exception rows (conjuring limits, mental resolution, undead curing) forward-reference their host modules: each host module notes the Immortal-tier override lives here
-
-#### Migration Tables
-
-##### Rank and Power Economy
-
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Immortal Power Point Conversion And Bookkeeping | procedure | Converts mortal XP to permanent and current PP tracks; temporary versus permanent expenditure. | custom |
-| Immortal Rank And Level Frame | procedure | PP total determines rank; level tracks progress within rank; gains key off Immortal hierarchy. | custom |
-| Immortal GT Advancement Costs And Gate | procedure | Permanent-PP advancement: ability-score costs by rank; Greater Talent maxima before rank advancement. | custom |
-| Immortal Sphere Bias And Recovery | procedure | Sphere-selection and planar-bias doctrine linking alignment context, PP regeneration, hp/ability recovery to hostile/neutral/friendly bias. | custom |
-
-##### Immortal Effect Doctrine
-
-| Classic Name | Type | Notes | Mapping Status |
-| --- | --- | --- | --- |
-| Immortal Sphere-Factor Cost Model | procedure | Base PP cost × Sphere relationship factor; dominance/opposition as formal cost model. | custom |
-| Immortal Magical Effect Index (S1-S4) | procedure | Indexed PP vocabulary unifying mortal spells and non-spell effects; core bridge for Chapter 05 power-cost unification. | custom |
-| Immortal Caster Level Rule | procedure | Effective caster level equals 2×HD for all created effects and dispel interactions. | custom |
-| Immortal Range / Duration Scaling | procedure | Cost-doubling to extend range, duration, volume; no cross-planar reach without path; instant/permanent effects cannot be extended. | custom |
-| Immortal Damage Scaling And Averaging | procedure | HD-scaled damage expression: 1d6 per HD of creator; average-damage substitution explicitly encouraged for speed; per-die modifiers clamped by die’s natural min/max. | custom |
-| Immortal Limits On Use | procedure | Action-economy: one magical action OR physical attacks per round; self-only effects by touch; mortal magic cannot affect Immortals. | custom |
-| Immortal Effect Explanation Overrides | procedure | Rules-precedence doctrine for Immortal-tier effects. | custom |
-| Immortal Conjuring And Summoning Limits | procedure | Transplanar response requirements and sphere/element bias constraints; hostile bias blocks nominally valid summoning. Cross-note: Summoning and Binding module. | custom |
-| Immortal Mental Effect Resolution | procedure | Non-magical recovery cadence for charmed/feebleminded Immortals; Intelligence-check cadence plus renewed saves; magical self-cure unavailable. Cross-note: Psychic Warfare module. | custom |
-| Immortal Undead / Entropy Curing | procedure | At Immortal tier, undead-curative magic re-reads as Entropy-creature healing; affinity-based target remapping. Cross-note: Rites of the Deathless module. | custom |
 
 ---
 

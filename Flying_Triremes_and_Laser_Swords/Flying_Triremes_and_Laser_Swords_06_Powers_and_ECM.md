@@ -20,7 +20,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
     - [Locked Powers](#locked-powers)
     - [Power Tags](#power-tags)
     - [Powers by Gameplay Scale](#powers-by-gameplay-scale)
-  - [ECM: Etheric Counter‑Magitech](#ecm-etheric-countermagitech)
+- [ECM: Etheric Counter‑Magitech](#ecm-etheric-countermagitech)
     - [ECM Tags](#ecm-tags)
     - [ECM at the Table](#ecm-at-the-table)
     - [Charms (\[charm\] \[spoof\] \[hijack\])](#charms-charm-spoof-hijack)
@@ -30,6 +30,13 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
     - [Veiling and Revealing (\[veil\] \[reveal\])](#veiling-and-revealing-veil-reveal)
     - [Jamming Fields (\[aversion\] \[jam\] \[field\])](#jamming-fields-aversion-jam-field)
     - [Counterspells (\[negate\] \[supress\] \[redirect\] \[capture\] \[hijack\])](#counterspells-negate-supress-redirect-capture-hijack)
+- [Ritual Mechanics](#ritual-mechanics)
+  - [Cross-Family Procedures](#cross-family-procedures)
+    - [Doctrine](#doctrine)
+    - [Placeholder Procedure Rows](#placeholder-procedure-rows)
+- [Immortal Metaphysics](#immortal-metaphysics)
+  - [Rank and Power Economy](#rank-and-power-economy)
+  - [Immortal Effect Doctrine](#immortal-effect-doctrine)
 - [Battle and Force](#battle-and-force)
   - [Entropic Shield](#entropic-shield)
   - [Magic Missile](#magic-missile)
@@ -344,7 +351,7 @@ Power use must be legible at all FTLS scales.
 - Faction play: force projection, node control, strategic signaling, and escalation pressure.
 - Mythic play: world-process interference, noosphere visibility, and high-consequence doctrine.
 
-## ECM: Etheric Counter‑Magitech
+# ECM: Etheric Counter‑Magitech
 
 Every power user sends intent through the noosphere and expects reality to respond. ECM lives in that liminal space as the art of interception: glamours, illusions, charms, veils, and counter-signals that bend, blur, or divert intent before the world can finish listening.
 
@@ -512,6 +519,49 @@ These are the “hard counter” ECM modes—high clarity, high stakes.
 
 Referee rule for “permanent things”:
 ECM targets **active effects and power activations**. It does not erase an item’s lifelong weirdness unless the item’s weirdness is currently “running” as an effect.
+
+# Ritual Mechanics
+
+Cross-family procedural scaffolding for ritual activation, cost conversion, and interruption handling.
+
+## Cross-Family Procedures
+
+These rows are procedure structures, not direct power cards.
+
+### Doctrine
+
+- Ritual activation defines time/place/participant constraints for powers that can be cast as rites.
+- Component and time costs can substitute for direct life-cost pressure where doctrine allows.
+- Interrupted rituals create corruption and fallout tracks, especially at higher power tiers.
+
+### Placeholder Procedure Rows
+
+| Classic Name | Type | Mapping Status | Notes |
+| --- | --- | --- | --- |
+| Contingency | procedure | custom | Conditional trigger framework placeholder. |
+| Permanence | procedure | custom | Persistence lock and removal safety placeholder. |
+| Symbol | procedure | custom | Sigil trigger and reset governance placeholder. |
+| Timestop | procedure | custom | Temporal exception/action-economy placeholder. |
+| Wish | procedure | custom | Apex rewrite guardrails placeholder. |
+| Wizardry | procedure | custom | Cross-tradition legal-use bridge placeholder. |
+| Magic-User Starting Spell Choice | procedure | custom | Spellbook seeding and first-gift rule placeholder. |
+
+# Immortal Metaphysics
+
+System-level Immortal-tier procedure scaffolding that constrains how all module effects behave at Immortal scale.
+
+## Rank and Power Economy
+
+- Placeholder for PP economy, rank progression gates, and sphere-linked advancement constraints.
+- Placeholder for mortal-to-Immortal conversion boundaries and recovery cadence.
+
+## Immortal Effect Doctrine
+
+- Placeholder for effect scaling (cost, range, duration, and damage) at Immortal tier.
+- Placeholder for transplanar exceptions (conjuring limits, mental resolution, undead/entropy curing).
+- Placeholder for module override rules that supersede mortal-level ritual mechanics.
+
+DEV NOTE: Purely placeholder to complete Chapter 06 conversion. This really belongs in a another chapter.
 
 # Battle and Force
 
@@ -7203,7 +7253,7 @@ meta:
 > - source:
 >   - becmi:Companion Set; spell: Raise Dead
 >   - becmi:Rules Cyclopedia; spell: Raise Dead
->   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Raise Dead
+>   - file: Synthetic_Dream_Machine_04_Powers_Index.md; canonical: Raise Dead
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Recall Soul
 > - usage:
 >   - scope: power; id: Raise Dead; note: FTLS Chapter 06 alpha power entry.
