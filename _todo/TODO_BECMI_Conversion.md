@@ -22,21 +22,21 @@ Base model (locked):
 5. Minimize adjudication drift across sessions and referees.
 
 ## State of Play
-- FTLS Chapter 05 has a stable object-procedure front end and working family scaffold.
+- FTLS Chapter 05 has a stable object-procedure front end and working module scaffold.
 - Numeric ontology is locked policy for active conversion work: BECMI level, HD, and spell-tier references already map to SDM `Level` and `Power Level`.
 - Class locks and most D&D ability-score terminology have already been removed or reduced in active chapter conversion.
 - Armor/shield Defense has been corrected from descending AC assumptions to SDM additive armor bonuses.
 - The full staged spell corpus now exists across `_todo/TODO_PRE_ADD_Spell_Staging.md` and the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
-- That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped family layer, and completed grouped-`partial` to Phase 1 sync.
+- That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped module layer, and completed grouped-`partial` to Phase 1 sync.
 - Method correction (2026-03-23): staging docs should contain scraped/curated source text from `_becmi` extraction, not synthesized context overlays.
-- The current conversion burden is: build the clean multi-witness staging layer and execute the Chapter 06 multi-witness `osr:` preservation import before resuming deeper bridge work.
+- The Chapter 06 multi-witness `osr:` preservation import pass is complete (2026-04-01; 203/204 rows `osr: imported = yes`, 1 `[needs-review]`). Next gate: Ch06 alpha verification before Chapter 05 bridge work resumes.
 
 ## Execution Lock Snapshot (2026-03-28)
 
 - **Staging corpus**: the staged lane docs (`_todo/TODO_PRE_ADD_Spell_Staging.md` and the six BECMI lane files) are frozen as the legal upstream witness base, and the clean multi-witness staging file is the legal downstream Chapter 06 import source.
 - **Confidence gate**: approved working infrastructure at `0.90 / 1.00` floor-based after the 2026-03-28 audit.
 - **Chapter 06 design decisions**: locked.
-- **Chapter 06 alpha**: not yet complete; literal `osr:` import is part of the remaining alpha queue.
+- **Chapter 06 alpha**: `osr:` import pass complete (2026-04-01); alpha verification pending (tag consistency, overcharge consistency, recognizer discoverability, Level/Power Level boundaries).
 - **Chapter 05 bridge batches**: remain paused until Chapter 06 `alpha` is complete.
 
 ## Uplift Execution Log (Consolidated)
@@ -47,7 +47,8 @@ Base model (locked):
 - Phase B bridge activation is in effect: Chapter 06 was prioritized first, then Chapter 05 bridge continuation.
 - Chapter 06 alpha scaffolding and normalization completed in manuscript form: doctrine locks, card-template normalization, navigation indexing, provenance pointers, and baseline recognizer coverage were landed.
 - 2026-03-25 Expert lane uplift completed: all Expert `undecided` rows were resolved via evidence-lock notes and status normalization.
-- 2026-03-25 Companion lane uplift batch C1 executed: six C-lane rows were evidence-locked and promoted (`Earthquake`, `Insect Plague`, `Sword`, `Call Lightning`, `Control Temperature 10' radius`, `Faerie Fire`), reducing C-lane undecided from 13 to 7.- 2026-03-31 Pre-AD&D/Holmes pipeline hardening: `build_becmi_spell_staging_multi.py` was updated to include 11 Pre-AD&D/Holmes spells that were previously missing from the staging output. Staging file raised from 184 → 195 H2 entries; crosswalk Ch06 Import ✓ count raised from 193 → 204. `import_ch06_osr.py` is currently blocked on missing Chapter 06 headings for these spells; that unblocking step is the current Phase B gating item.
+- 2026-03-25 Companion lane uplift batch C1 executed: six C-lane rows were evidence-locked and promoted (`Earthquake`, `Insect Plague`, `Sword`, `Call Lightning`, `Control Temperature 10' radius`, `Faerie Fire`), reducing C-lane undecided from 13 to 7.- 2026-03-31 Pre-AD&D/Holmes pipeline hardening: `build_becmi_spell_staging_multi.py` was updated to include 11 Pre-AD&D/Holmes spells that were previously missing from the staging output. Staging file raised from 184 → 195 H2 entries; crosswalk Ch06 Import ✓ count raised from 193 → 204. Stub cards for all 11 new spells were added to Chapter 06; `import_ch06_osr.py` unblocked.
+- 2026-04-01 Chapter 06 `osr:` import pass complete: 203/204 rows `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`). Phase B gating item resolved. Ch06 alpha verification is now the active gate.
 ## Lane Confidence Gate (B/E/C/M/I/RC)
 
 Current baseline from the 2026-03-27 post-audit pipeline-hardening pass. These ratings now describe regenerated staging output, not just audit observations:
@@ -145,7 +146,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 ### Preserve External Recognizers
 - Preserve classic item names.
 - Preserve classic spell and effect names when they function as familiar API labels.
-- Preserve familiar family labels and classic subtable names where they aid lookup.
+- Preserve familiar module labels and classic subtable names where they aid lookup.
 - Treat preserved BECMI-facing names as labels and recognizers, not mechanical authority.
 
 ### Replace Internal Mechanics
@@ -212,7 +213,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 - Phase B operational queue source: `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md -> Phase B Backlog: Chapter 06 osr: Import`.
 - Phase B Chapter 06 import pipeline is now two-step: regenerate `_todo/TODO_BECMI_Spell_Material_Staging.md`, then import those witness bundles into `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`.
 
-### Phase C: Family-by-Family Internal Conversion
+### Phase C: module-by-module Internal Conversion
 - Convert item families in a fixed order:
   1. Potions / Oils / Elixirs
   2. Scrolls / Formulae / Map-Documents
@@ -246,10 +247,31 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
   - `_todo/TODO_SDM_Gear_Index_Master.md`
 
 
+## Active Focus
+
+> **ON FIRE — start here.** This section identifies the single next action for this pipeline. Read before touching any other queue item.
+
+### Void Module: Doctrine Sub-module Reorganization
+
+**Task:** Move all portal / teleport / outer-planes power rows out of `Module: Battle, Elements, and Force → Traversal and Passage` and into `Module: Light and Void → Void` sub-module in `_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`. Gate: Ch06 alpha verification is still pending; this reorganization is a prerequisite for the Ch06 alpha structural pass.
+
+**What moves:**
+- From `Battle, Elements, and Force → Traversal and Passage` → Void: Dimension Door, Magic Door, Pass Plant, Passwall, Plant Door, Teleport, Teleport any Object, Transport Through Plants, Travel, Word of Recall. (Keep `Knock` in Force — it is a lock opener, not void transit.)
+- From `Summoning and Binding → Summoning` → Void: Gate (planar aperture / outer-planes crossover).
+- Add missing row: `Plane Shift` → Void (planar transit; currently absent from all migration tables; MU5/C5 → P: 10; tags `[transit][void][dangerous]`).
+
+**Doctrine work required:**
+- Expand Void sub-module doctrine in `Light and Void` to own void transit as its primary scope. Remove the current "reserved stub / covers void conditions not void transit" language.
+- Update `Battle, Elements, and Force` sub-module list to remove the `Traversal and Passage` entry.
+
+**Ch05 structural work note:** Ch05 also needs structural reorganization (power-card and section layout) before the full SDM+OSR source import and conversion/synthesis pass. This is a distinct gate from the OSR power-text import pass; do not conflate.
+
+---
+
 ## Active Queue
-1. **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** — `import_ch06_osr.py` is currently blocked on missing Chapter 06 headings (first: `Dancing Lights`); creating these cards unblocks the import pass.
+1. [DONE 2026-04-01] **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** — all 11 cards added; `import_ch06_osr.py` unblocked.
 2. Keep the spell/effect crosswalk in lockstep: Chapter 06 `osr:` import-state changes must be mirrored back into the flat catalog immediately.
-3. Execute the Chapter 06 spell-only `osr:` preservation import pass in existing family order (195 spells, 204 import rows).
+3. [DONE 2026-04-01] **Execute the Chapter 06 spell-only `osr:` preservation import pass** — 203/204 rows `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`).
 4. Run Chapter 06 alpha verification after the preservation import pass (tag consistency, overcharge consistency, recognizer discoverability, Level/Power Level boundaries).
 5. Mark Chapter 06 as `alpha` complete before resuming new Chapter 05 bridge edits.
 6. Resume Chapter 05 Phase B bridge batches with the now-locked Chapter 06 API doctrine.
@@ -264,7 +286,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 - [ ] Validate each overlay against current Quickstart/Gear anchors.
 - [ ] Mark each overlay as optional/default-off/default-on explicitly.
 - [ ] Add disable-path note for each overlay (how to revert to pure SDM baseline).
-- [ ] Run at least one table-walkthrough per overlay family (discovery, combat, economy, progression).
+- [ ] Run at least one table-walkthrough per overlay module (discovery, combat, economy, progression).
 - [x] Record identified drift/ambiguity points and patch target TODOs.
 - [ ] Sync accepted overlay decisions into linked TODOs (`Loot`, `Magitech`, `SDM consolidation master`).
 
@@ -292,7 +314,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 
 ### F2: Magic Items -> Magitech and Fantascience
 - Queue policy: begin or resume this pass only after Chapter 06 reaches `alpha` state.
-- [ ] Build family-by-family crosswalk (`RC/BECMI magic item families` -> `SDM magitech/fantascience lanes`).
+- [ ] Build module-by-module crosswalk (`RC/BECMI magic item families` -> `SDM magitech/fantascience lanes`).
 - [ ] Keep procedure conversion separate from terminology conversion (mechanics first, naming pass second).
 - [ ] Route converted generation flow to Chapter 05 canonical anchors.
 - [ ] Define compatibility tags for source behaviors where direct SDM mappings are partial.

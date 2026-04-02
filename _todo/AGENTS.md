@@ -12,10 +12,13 @@ All mutable state belongs in TODO and audit files, not here.
 
 Use these as the live control surfaces:
 
-- `_todo/TODO_BECMI_Conversion.md` for active queue and execution log.
+- `_todo/TODO_BECMI_Conversion.md` for active queue, active focus, and execution log.
 - `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` for import tracker state (`Ch06 Import`, `osr: imported`) and review queue.
 - `_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md` for doctrine decisions and mapping policy.
-- `_todo/AUDIT_REPORT_*.md` for audit authority snapshots.
+
+Audit reports have been archived to commit history and are no longer present as live files.
+
+**When starting a new session, read `_todo/TODO_BECMI_Conversion.md → ## Active Focus` first. That section identifies the on-fire item — the exact next action — before the general queue.**
 
 If a line in this file requires a date, counter, status color, or "current blocker" wording, it belongs in a TODO or audit file instead.
 

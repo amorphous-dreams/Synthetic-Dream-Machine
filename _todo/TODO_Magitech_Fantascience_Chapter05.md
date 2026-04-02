@@ -12,12 +12,14 @@ This TODO is the execution tracker for magic-item conversion specifically.
 Current sequencing gate:
 - New Chapter 05 bridge batches are paused until Chapter 06 Powers has design decisions locked and reaches `alpha` state.
 
-Sequencing lock status (2026-03-28):
+Sequencing lock status (2026-04-01):
 - Chapter 06 design decisions: locked.
-- Chapter 06 `alpha`: not yet complete.
+- Chapter 06 `osr:` import pass: complete (203/204 rows `osr: imported = yes`, 1 `[needs-review]`).
+- Chapter 06 `alpha`: not yet declared; alpha verification pending (tag consistency, overcharge consistency, recognizer discoverability, Level/Power Level boundaries).
 - Crosswalk confidence gate: approved working infrastructure at `0.90 / 1.00` floor-based.
-- Active upstream work: Chapter 06 multi-witness `osr:` import plus TODO lock/readiness normalization.
-- New Chapter 05 bridge edits remain paused until that Chapter 06 queue clears and `alpha` is declared.
+- Ch05 rebuild script: archived. Ch05 structure generation artifact: removed.
+- New Chapter 05 bridge edits remain paused until Chapter 06 alpha verification completes and `alpha` is declared.
+- Chapter 05 structural reorganization (power-card and section layout work) is required before the full SDM+OSR source import and conversion/synthesis pass. This is a distinct gate from the OSR power-text import gate — do not conflate.
 
 ## Canonical Context (Locked)
 
@@ -63,11 +65,11 @@ Sequencing lock status (2026-03-28):
 
 ## State of Play
 - Chapter 05 front-end procedure is usable: the FTLS object loop, identification flow, charge/failure handling, curse handling, and consequence recording are in place.
-- Family catalogs exist for potions, scrolls, wands/staves/rods, rings, miscellaneous items, armor/shields/wards, missile weapons, swords, and miscellaneous weapons.
+- module catalogs exist for potions, scrolls, wands/staves/rods, rings, miscellaneous items, armor/shields/wards, missile weapons, swords, and miscellaneous weapons.
 - Numeric ontology pass is locked doctrine: BECMI character/caster levels, creature HD, and spell tiers convert to SDM `Level` and `Power Level` by the rules below.
 - Phase A mechanical cleanup is complete in the current manuscript pass and preserves BECMI-facing names while replacing the remaining internal D&D assumptions.
 - Armor/shield Defense has been corrected to SDM additive armor bonuses and is now the model example for `retain API, replace internals`.
-- The spell/effect crosswalk that feeds Chapter 05 and Chapter 06 now has a full flat catalog, preserved cross-tradition class/spell metadata, and an SDM-first grouped family layer.
+- The spell/effect crosswalk that feeds Chapter 05 and Chapter 06 now has a full flat catalog, preserved cross-tradition class/spell metadata, and an SDM-first grouped module layer.
 - Grouped `partial` rows have been synced back into the flat catalog; the current crosswalk execution focus is Chapter 06 multi-witness `osr:` import and tracker-state normalization, not new Chapter 05 bridge drafting.
 - Remaining Chapter 05 work is now mostly downstream bridge and consistency work: consume the stronger crosswalk doctrine for item-interface rows, finish deferred classic-name mappings, and run cross-chapter validation.
 
@@ -76,7 +78,7 @@ Sequencing lock status (2026-03-28):
 ### Public API Surface to Preserve
 - Preserve classic item names.
 - Preserve classic spell and effect names when they serve as recognizers.
-- Preserve familiar family labels and subtable names where they improve lookup and nostalgia.
+- Preserve familiar module labels and subtable names where they improve lookup and nostalgia.
 - Preserve BECMI-facing labels as the user-facing API surface, not as rules authority.
 
 ### Internal Implementation to Replace
@@ -105,7 +107,7 @@ Sequencing lock status (2026-03-28):
 - Overlay discipline:
   - each RC/BECMI compatibility behavior must be optional and disableable.
 - Traceability:
-  - each converted subsection should map to source family and canonical SDM destination anchor.
+  - each converted subsection should map to source module and canonical SDM destination anchor.
 
 ## Conversion Reference Notes
 
@@ -148,7 +150,7 @@ Sequencing lock status (2026-03-28):
 ## Shared Phase Tracker
 
 ### Phase A: Mechanical Resolution Cleanup
-- Remove remaining hidden D&D math while keeping item names and family labels intact.
+- Remove remaining hidden D&D math while keeping item names and module labels intact.
 - Convert `saving throw` variants into SDM save language.
 - Convert `attack roll` / `to hit` / `easier to hit` text into Defense modifiers, attack bonuses, or `[+]` / `[-]`.
 - Convert `morale` / `reaction` imports into Quickstart procedures or neutral referee calls.
@@ -167,13 +169,13 @@ Sequencing lock status (2026-03-28):
 - Use `Level` for source force, dispel/counterforce, summon strength, and curse removal strength.
 - Add TODO-side bridge notes for ambiguous or unmapped classic spell names.
 - Minimum viable bridge inputs now live in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`, but that document is now being expanded into the full canonical spell crosswalk for Chapter 06 rather than remaining a Chapter 05-only bridge sheet.
-- Phase B should explicitly clear these bridge tasks before any Phase C family conversion resumes:
+- Phase B should explicitly clear these bridge tasks before any Phase C module conversion resumes:
   - confirm seeded crosswalk coverage for the Chapter 05 recognizer set,
   - confirm the seeded entries keep current `direct`, `partial`, `custom`, or `undecided` status after each focused cleanup,
   - resolve deferred bundle notes for `Staff of Elemental Power`, `Staff of Power`, and `Staff of Wizardry`,
   - record the SDM-facing storage / trigger / counterforce rule for each `partial` item-effect.
 - Phase B acceptance gate:
-  - do not treat Phase B as complete until the Chapter 05 recognizer set has source anchors, mapping status, and enough bridge text to let family conversion proceed without ad hoc spell interpretation.
+  - do not treat Phase B as complete until the Chapter 05 recognizer set has source anchors, mapping status, and enough bridge text to let module conversion proceed without ad hoc spell interpretation.
 - Chapter 05 is now a downstream consumer of the broader full-spell pass rather than the phase-defining driver for spell staging scope.
 - Deferred bridge examples from the Phase A completion pass:
   - `Staff of Elemental Power` effect names and elemental counter-negation phrasing
@@ -189,8 +191,8 @@ Sequencing lock status (2026-03-28):
   - `Protection from Magic` and `Ring of Spell Turning` now carry explicit ECM boundary/reflection behavior, ready to be consumed by Chapter 05 reflected/blocked payload wording
   - `Ice Storm/Wall` status formatting was normalized to canonical status syntax, preventing downstream parser/readability drift in bridge notes
 
-### Phase C: Family-by-Family Internal Conversion
-- Standardize each family in this order:
+### Phase C: module-by-module Internal Conversion
+- Standardize each module in this order:
   1. Potions / Oils / Elixirs
   2. Scrolls / Formulae / Map-Documents
   3. Wands / Staves / Rods
@@ -200,7 +202,7 @@ Sequencing lock status (2026-03-28):
   7. Missile Weapons / Missiles
   8. Swords
   9. Miscellaneous Weapons
-- For each family, standardize trigger/activation model, bearer requirements, resolution language, damage/Defense/save scale, control/charm/fear/drain behavior, charge/depletion/failure model, and the SDM-facing output record.
+- For each module, standardize trigger/activation model, bearer requirements, resolution language, damage/Defense/save scale, control/charm/fear/drain behavior, charge/depletion/failure model, and the SDM-facing output record.
 
 ### Phase D: Back-Half System Conversion
 - Convert `Building, Modding, and Salvage Conversion` into SDM-native formulas and thresholds.
@@ -211,7 +213,7 @@ Sequencing lock status (2026-03-28):
 ### Phase E: Final Consistency and Acceptance Pass
 - Verify Chapter 05 no longer depends on forbidden mechanics terms in chapter-facing prose.
 - Verify consistent use of `Level`, `Power Level`, `Armor`, `Ward`, `Life`, and `Defense`.
-- Verify each family preserves BECMI-facing labels while using SDM-facing internals only.
+- Verify each module preserves BECMI-facing labels while using SDM-facing internals only.
 - Sync accepted doctrine and remaining exceptions back into this TODO and the master conversion TODO.
 
 ## Source Inputs
@@ -239,18 +241,18 @@ Sequencing lock status (2026-03-28):
 - [ ] Resume Phase B Chapter 05 bridge work only after both gate checks are complete.
 
 ### Phase 1: Procedure Inventory and Crosswalk
-- [x] Build family-level crosswalk for magic-item procedures:
+- [x] Build module-level crosswalk for magic-item procedures:
   - generation,
   - identification,
   - charges/consumption,
   - curse/complication handling,
   - creation/fabrication,
   - market buy/sell handling.
-- [x] Mark each family as:
+- [x] Mark each module as:
   - `direct map`,
   - `partial map`,
   - `custom SDM procedure needed`.
-- [x] Assign each item family to a primary FTLS lane:
+- [x] Assign each item module to a primary FTLS lane:
   - field gear and practical weird objects,
   - relics, buildertech, and restricted apparatus,
   - conversion, modding, faults, and curses.
@@ -264,17 +266,17 @@ Sequencing lock status (2026-03-28):
 - [x] Keep strong old-school recognizers in the intermediate chapter state:
   - named effects,
   - iconic item behaviors,
-  - familiar family subtables and weapon riders.
-- [x] Convert first family slices into stronger FTLS catalog entries while keeping dense import support:
+  - familiar module subtables and weapon riders.
+- [x] Convert first module slices into stronger FTLS catalog entries while keeping dense import support:
   - potions / oils / elixirs,
   - scrolls / formulae / map-documents.
-- [x] Convert next family slices into stronger FTLS catalog entries while keeping dense import support:
+- [x] Convert next module slices into stronger FTLS catalog entries while keeping dense import support:
   - wands / staves / rods,
   - rings / amulets / charms.
-- [x] Convert next family slices into stronger FTLS catalog entries while keeping dense import support:
+- [x] Convert next module slices into stronger FTLS catalog entries while keeping dense import support:
   - miscellaneous items / strange items / oddities,
   - armor / shields / wards.
-- [x] Convert weapon family slices into stronger FTLS catalog entries while keeping dense import support:
+- [x] Convert weapon module slices into stronger FTLS catalog entries while keeping dense import support:
   - missile weapons / missiles,
   - swords,
   - miscellaneous weapons.
@@ -283,13 +285,13 @@ Sequencing lock status (2026-03-28):
   - identification and use support,
   - risk and fallout support,
   - retention and conversion support,
-  - source-family effect coverage.
+  - source-module effect coverage.
 - [x] Ensure chapter internal structure follows runnable loop order:
   - generate -> identify -> activate/use -> deplete/fail/curse -> repair/create -> market interface.
 - [x] Add explicit boundary pointers to Chapters 04, 06, 07, and 09.
 - [x] Remove/replace any duplicate procedure text in other chapters with pointers.
-- [x] Promote shared family-resolution and item-use defaults from compatibility support into the core `Anomolous Object Procedure`.
-- [x] Upgrade family catalog blocks into runnable mini-procedures for common imported items.
+- [x] Promote shared module-resolution and item-use defaults from compatibility support into the core `Anomolous Object Procedure`.
+- [x] Upgrade module catalog blocks into runnable mini-procedures for common imported items.
 - [x] Add compact FTLS resolver inserts for armor, ranged weapons, swords, and weapon secondary riders.
 - [x] Demote compatibility support bands to secondary expansion status instead of primary ownership.
 
@@ -297,7 +299,7 @@ Sequencing lock status (2026-03-28):
 - [ ] Verify no converted magic-item procedure conflicts with Quickstart core mechanics.
 - [x] Re-anchor Chapter 05 outputs to Gear Index-facing fields:
   - object name,
-  - class/family,
+  - class/module,
   - tags,
   - bulk/slot pressure,
   - trigger mode,
@@ -321,7 +323,7 @@ Sequencing lock status (2026-03-28):
 ## Acceptance Notes for API Conversion
 - A referee should be able to run Chapter 05 without knowing D&D attack, save, or descending-AC math.
 - A classic item or spell name may remain as a label, but its surrounding procedure must be SDM-native.
-- Each converted family should resolve directly into SDM-facing object records and chapter-runnable item behavior.
+- Each converted module should resolve directly into SDM-facing object records and chapter-runnable item behavior.
 
 ## Acceptance Criteria
 

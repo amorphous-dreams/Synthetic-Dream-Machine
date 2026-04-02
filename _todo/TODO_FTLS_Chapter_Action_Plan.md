@@ -298,11 +298,11 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - [x] Build and verify the Chapter 06 import pipeline (`import_ch06_osr.py`, `clear_ch06_osr.py`); 2026-03-29 audit confirmed `drift: no` and `{'yes': 184}` on final rerun.
 - [x] Normalize Phase B backlog in the crosswalk: 195 unique spell names, 204 spell-import rows (expanded from 184/193 by +11 Pre-AD&D/Holmes spells 2026-03-31), Phase B backlog procedure defined.
 - [x] Lock crosswalk confidence gate at 0.90 / 1.00 (B 0.93, E 0.94, C 0.90, M 0.95, I 0.95, RC 0.94).
-- [x] Complete notes migration: Phase 1 notes migrated to Powers Family workspace; triage returns 0 flagged rows.
+- [x] Complete notes migration: Phase 1 notes migrated to Powers module workspace; triage returns 0 flagged rows.
 - [x] Reset all 184 Chapter 06 spell cards to `osr: {pending verbatim extraction}` placeholder, ready for the import pass.
-- [ ] **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** (Dancing Lights, Darkness, Magic Mouth, Clairaudience, Slow, Audible Glamer, Pyrotechnics, Ray of Enfeeblement, Strength, ESP + 1 more); `import_ch06_osr.py` currently fails on the first missing heading. This is the unblocking step.
-- [ ] **Execute the 195-card `osr:` import pass**: run `import_ch06_osr.py write` on the live Chapter 06; verify `check` returns `drift: no` and `{'yes': 195}`. This is the primary alpha blocker.
-- [ ] Add doctrine for conversion-family powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.
+- [x] **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** (Dancing Lights, Darkness, Magic Mouth, Clairaudience, Slow, Audible Glamer, Pyrotechnics, Ray of Enfeeblement, Strength, ESP + 1 more); all 11 cards added; `import_ch06_osr.py` unblocked.
+- [x] **Execute the 195-card `osr:` import pass**: complete (2026-04-01); `check` returns `drift: no`, 203/204 `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`).
+- [ ] Add doctrine for conversion-module powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.
 - [ ] Add scope notes for:
   - personal,
   - company,
@@ -324,7 +324,8 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 Archived from `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`. These are the rules contract bullets that governed the alpha drafting pass. Chapter-facing prose now lives in the `## Using Powers` section of Chapter 06; editorial scaffolding dropped.
 
 **2026-03-29 audit note**: Import machinery verified. All six staging lane validators pass. `import_ch06_osr.py` confirmed clean on final rerun (`drift: no`, `{'yes': 184}`).
-**2026-03-31 pipeline note**: Staging file expanded to 195 H2s (+11 Pre-AD&D/Holmes spells included). Import count raised to 204 Ch06 Import ✓ rows. `import_ch06_osr.py` is currently blocked on missing Chapter 06 headings for the new spells (first error: `Dancing Lights`). Unblocking step must precede the import pass.
+**2026-03-31 pipeline note**: Staging file expanded to 195 H2s (+11 Pre-AD&D/Holmes spells included). Import count raised to 204 Ch06 Import ✓ rows. Stub cards added for all 11 new spells; `import_ch06_osr.py` unblocked.
+**2026-04-01 import complete**: `import_ch06_osr.py write` run; `check` returns `drift: no`, 203/204 `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`). Alpha verification gate now active.
 
 1. Activation flow is fixed: declare power → confirm carrier/storage access → pay activation price → resolve attack/save/effect → apply danger/corruption triggers → apply overcharge riders if used.
 2. Payment and substitution boundaries are fixed: base price is Life equal to Power Level; ability-point substitution remains legal at 1 point = 1 Life; unskilled use pays double unless a trait explicitly changes the cost. Life-Power may be stored as "mana" in gear/locations/ley-lines/high-weirdness.
@@ -408,7 +409,7 @@ Archived from `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`. These are
 **Preserve**
 - Referee-facing identity.
 - Lot generation.
-- Family tags.
+- module tags.
 - Bulk/value logic.
 - Liquidation channels.
 - Economic weirdness tied to Attention.
@@ -422,7 +423,7 @@ Archived from `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`. These are
 - [ ] Add `Heat, Claims, and Seizure`.
 - [ ] Add `Treasure as Company Growth`.
 - [ ] Add `Treasure as Faction Trigger`.
-- [ ] Replace scrape-era treasure-family handling with FTLS-native lot, transport, claim, and liquidation procedure while keeping OSR-import legibility.
+- [ ] Replace scrape-era treasure-module handling with FTLS-native lot, transport, claim, and liquidation procedure while keeping OSR-import legibility.
 - [ ] Keep Chapter 05 as the single source of truth for concrete strange-object resolution; Chapter 09 should hand off and return cleanly.
 - [ ] Reorganize by what loot does in play:
   - personal-use treasure,
