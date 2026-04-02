@@ -374,11 +374,11 @@ Blending: The user may change color at will to any color, pattern, or combinatio
 
 Bug Repellent: "Bug" includes any form of arachnid (spider, tick, scorpion, etc.), insect (ant, beetle, fly, etc.), or chilopod (centipede, millipede, etc.). After using this potion, the user cannot be touched by any normal bug, and a giant-sized bug will ignore the user unless the bug makes an Aura save. If the save succeeds, the potion does not affect the giant bug. The potion grants `[+]` on any saves allowed against magically summoned or controlled bugs.
 
-Clairaudience: The user may listen to noises (including speech) in an area up to 60’ away through the ears of a creature in that area.
+Clairaudience: The user may listen to noises (including speech) in an area up to 60' away through the ears of a creature in that area.
 
-Clairvoyance: The user may see an area up to 60’ away through the eyes of a creature in that area.
+Clairvoyance: The user may see an area up to 60' away through the eyes of a creature in that area.
 
-Climbing: The user may climb sheer surfaces as if a spider, with only a 5 % chance of falling (checked per 100’ of climbing, at least once per climb).
+Climbing: The user may climb sheer surfaces as if a spider, with only a 5 % chance of falling (checked per 100' of climbing, at least once per climb).
 
 Defense: The user gains a bonus to physical Defense, which lasts for 1 turn only. Roll 1d10 to find the power of the potion.
 
@@ -392,7 +392,7 @@ Defense: The user gains a bonus to physical Defense, which lasts for 1 turn only
 
 Delusion: The user will believe this potion to have the effect of any one other potion (roll again for the fake potion). However, it has no real effect.
 
-Diminution: Anyone taking this potion will immediately shrink to 6" in height. He can only attack creatures smaller than 1’ for normal damage. The user can slip through small cracks and has a 90% chance of not being seen when standing still. This potion will cancel a potion of growth without ill effects.
+Diminution: Anyone taking this potion will immediately shrink to 6" in height. He can only attack creatures smaller than 1' for normal damage. The user can slip through small cracks and has a 90% chance of not being seen when standing still. This potion will cancel a potion of growth without ill effects.
 
 Dragon Control: There are several different types of this potion, one corresponding to each dragon type. The user may control up to three small dragons at once, but the dragons do get Aura saves. Large and huge dragons are not affected by these potions. The controlled dragons do whatever is commanded of them except use powers. They will be hostile when the control ends. Roll 1d20 to find the type of dragons affected.
 
@@ -407,19 +407,19 @@ Dragon Control: There are several different types of this potion, one correspond
 
 The referee can roll 1d100 and on 01-30 the potion actually affects the gemstone dragon equivalent (crystal instead of white, onyx instead of black, etc.).
 
-Dreamspeech: If the user speaks to one sleeping or paralyzed creature within 30’, the creature will hear and silently answer as if awake. The user will hear the responses by ESP and will be able to understand the language used. The creature is not compelled to be truthful. Dead and undead creatures cannot be affected, but cursed sleeping victims are within the power of the potion. The effect lasts for 1 turn only, and it applies to only one sleeping or paralyzed creature.
+Dreamspeech: If the user speaks to one sleeping or paralyzed creature within 30', the creature will hear and silently answer as if awake. The user will hear the responses by ESP and will be able to understand the language used. The creature is not compelled to be truthful. Dead and undead creatures cannot be affected, but cursed sleeping victims are within the power of the potion. The effect lasts for 1 turn only, and it applies to only one sleeping or paralyzed creature.
 
-Elasticity: The user may stretch their body, plus all equipment carried, to nearly any form, flat, long, and so on, to a maximum of 30’ long or a minimum of 1" thick. Items carried cannot be used or dropped unless they are first returned to normal form. While in "stretched" form, the user cannot attack or use powers, but takes half damage from blunt weapons (mace, hammer, giant-thrown boulder, etc.). The effect lasts for 1 turn only.
+Elasticity: The user may stretch their body, plus all equipment carried, to nearly any form, flat, long, and so on, to a maximum of 30' long or a minimum of 1" thick. Items carried cannot be used or dropped unless they are first returned to normal form. While in "stretched" form, the user cannot attack or use powers, but takes half damage from blunt weapons (mace, hammer, giant-thrown boulder, etc.). The effect lasts for 1 turn only.
 
 Elemental Form: There are four types of this potion: Air, Earth, Fire, and Water (equal chances for each). The user may change into the form of an elemental of the appropriate type and back to normal form as often as desired while the potion lasts. Each change of form takes 1 round. While in elemental form, no special immunities are gained, but the special attacks of each elemental are usable. Note that a hostile-banishing or warding effect will not automatically block a character using this potion. The user’s Defense and Life do not change. The duration is 1 turn only (10 minutes).
 
-ESP: This potion grants thought-sense. The user can "hear" the thoughts, if any, of one creature within 60’ by concentrating for one full round in one direction. The user can "hear" through 2’ of rock, but a thin coating of lead will block the effect.
+ESP: This potion grants thought-sense. The user can "hear" the thoughts, if any, of one creature within 60' by concentrating for one full round in one direction. The user can "hear" through 2' of rock, but a thin coating of lead will block the effect.
 
 Ethereality: The user can become ethereal once, at any time during the potion’s duration, and may thereafter remain ethereal for up to 24 hours, returning to the material world at will. Once they have returned, the potion will not enable them to become ethereal again.
 
 Fire Resistance: The user cannot be harmed by normal fire and gains `[+]` on saves against fire attacks. In addition, the user takes less damage from magical and dragon fire: -1 point per die of damage, minimum 1 point per die.
 
-Flying: The user may fly at up to 120’ per round without tiring.
+Flying: The user may fly at up to 120' per round without tiring.
 
 Fortitude: For the duration, the user’s Endurance becomes `+5`. If the user already has `+5` Endurance, grant `[+]` on the first Endurance-based roll each round or scene instead. This effect also grants `5` temporary Life.
 
@@ -458,7 +458,7 @@ Heroism: This potion heightens straightforward martial or physical prowess. It h
 
 All wounds taken during the duration of the potion, including energy drains, are subtracted from the temporary Life and temporary Level gain first.
 
-Human Control: The user may control up to `3` total Levels of humans at once; two Level `0` humans count together as Level `1`. The effect has a 60’ range, and the charm lasts only as long as the potion’s duration.
+Human Control: The user may control up to `3` total Levels of humans at once; two Level `0` humans count together as Level `1`. The effect has a 60' range, and the charm lasts only as long as the potion’s duration.
 
 Invisibility: This potion makes the user invisible. When a character becomes invisible, all the items, but not other creatures, carried and worn by the user also become invisible. Any invisible item becomes visible again when it leaves the character’s possession. The referee may allow players to divide a single potion into as many as six sips, each of which works normally but lasts only one turn (10 minutes).
 
@@ -466,7 +466,7 @@ Invulnerability: The user’s Defense and saves gain a bonus of 2 for the durati
 
 Levitation: Drinking this potion allows the user to move up or down in the air without support. This potion does not enable side-to-side movement. The user could, however, levitate to a ceiling and move sideways by pushing or pulling.
 
-Motion up or down is at a rate of 60’ per round.
+Motion up or down is at a rate of 60' per round.
 
 Longevity: The user immediately becomes 10 years younger. The effect is permanent, does not wear off, and cannot be dispelled. This potion will have no effect on any creature forced to drink it. In addition, age cannot be reduced below 15 (or below midadolescence for creatures other than humans), and the change cannot adversely affect any ability scores or other abilities.
 
@@ -476,7 +476,7 @@ The effect lasts for 1 hour or until the luck is used.
 
 Merging: The effect of this potion is quite unusual. The user can permit others to actually merge their forms with the user’s, including all equipment carried, as if all were gaseous. A maximum of seven other creatures can merge with the user of the potion. The merging cannot be forced; the user can, at will, prevent anyone from merging. A creature merged with the user can leave the merger by merely stepping out. No creature merged with another (including the user) can attack or use a power, but it may speak. Damage to the user of the potion does not affect those merged.
 
-Plant Control: The user may control all plants and plantlike creatures (including monsters) in a 30’ x 30’ area up to 60’ away. Normal plants controlled may entangle victims in their area, but they cannot cause damage.
+Plant Control: The user may control all plants and plantlike creatures (including monsters) in a 30' x 30' area up to 60' away. Normal plants controlled may entangle victims in their area, but they cannot cause damage.
 
 Poison: Poisons look like normal magical potions. A character who swallows any amount of this potion, even a sip, must make a poison save or die. The referee can choose to have the poison do a specific amount of damage instead.
 
@@ -484,7 +484,7 @@ Polymorph Self: The user may change shape up to once per round until the potion 
 
 Sight: The user can detect invisible things for 1 turn. This negates blindness for that time.
 
-Speech: The user can understand any and all languages heard within 60’ and can respond in the same tongues. A language must be heard to be used unless already known.
+Speech: The user can understand any and all languages heard within 60' and can respond in the same tongues. A language must be heard to be used unless already known.
 
 Speed: The user moves twice as fast, can attack twice per round, and performs other actions except spellcasting at twice normal speed.
 
@@ -492,11 +492,11 @@ Strength: For the duration, the user’s Strength becomes `+5`. If the user alre
 
 Super-Healing: Drinking this potion restores `3d6 + 3` lost Life to one living creature. It is the potion equivalent of a cure critical wounds effect.
 
-Swimming: The user may swim in any liquid at the rate of 180’ per turn, even if encumbered. The user cannot sink (or even be pushed below the surface) unless the encumbrance is over 3,000 en. The ability to breathe water is not granted by this potion.
+Swimming: The user may swim in any liquid at the rate of 180' per turn, even if encumbered. The user cannot sink (or even be pushed below the surface) unless the encumbrance is over 3,000 en. The ability to breathe water is not granted by this potion.
 
 The effects last for 8 hours.
 
-Treasure Finding: By concentrating, the user can detect the direction and distance (but not the amount) of the largest treasure within 360’.
+Treasure Finding: By concentrating, the user can detect the direction and distance (but not the amount) of the largest treasure within 360'.
 
 Undead Control: The user may control up to `9` total Levels of mindless undead. The undead will be hostile when the control ends.
 
@@ -560,7 +560,7 @@ Treasure Maps: Anyone who can read may understand treasure maps; a character who
 
 Communication: This is actually two scrolls, one stored inside the other. They are easily separated. If a message is written on one scroll, it immediately appears on the other. There is no limit to the range, as long as both scrolls are on the same plane of existence. The message may be up to 100 words in length. If one message is erased, the other disappears as well. Each message must be erased before another can be written, and there is a 5% chance (not cumulative) that any erasing will destroy the magic of both scrolls.
 
-Creation: The user of this valuable scroll may draw a picture of any normal item up to 5’ x 10’ x 1’ in size (though drawn much smaller) and up to 5,000 cn weight. The item may then be taken off the scroll and used! Magical items cannot be created nor can any living things, but all types of armor and weapons, for example, are quite easily created. The item will vanish either on command of the creator or after 24 hours. The scroll can create one item per day only.
+Creation: The user of this valuable scroll may draw a picture of any normal item up to 5' x 10' x 1' in size (though drawn much smaller) and up to 5,000 cn weight. The item may then be taken off the scroll and used! Magical items cannot be created nor can any living things, but all types of armor and weapons, for example, are quite easily created. The item will vanish either on command of the creator or after 24 hours. The scroll can create one item per day only.
 
 Cursed: Unfortunately, when any writing on a cursed scroll is even seen, the victim is immediately cursed. No reading is necessary. The referee must make up each scroll’s curse.
 
@@ -568,21 +568,21 @@ Examples of a few common curses include the following: • The reader turns into
 
 Delay: This is a scroll of one power slot. When releasing the power from the scroll, the user states an amount of delay from 0 to 12 rounds. Thereafter, if the user carries the scroll, the user has complete control of the effect when it occurs. If the scroll is not carried by the user, the power effect appears around the scroll itself, affecting the nearest creature if a recipient is part of the process. The power does not affect the scroll, even if it is a fire-type effect. For example, a character reads a delayed lightning bolt scroll, delaying it 8 rounds, and then puts the scroll away. Eight rounds later, when the lightning bolt actually appears, the character may choose the range and direction by mere concentration, as if using the power at that time.
 
-Equipment: This parchment is inscribed with the names of six normal items, chosen or rolled by the referee using the Adventuring Gear Table from Chapter 4. When any item’s name is read aloud, the item appears within 10’ of the scroll; the name disappears. The item will remain for 24 hours or until the user commands it to vanish. The name reappears on the scroll when the item vanishes. Any three of the six items listed on the scroll can be created each day.
+Equipment: This parchment is inscribed with the names of six normal items, chosen or rolled by the referee using the Adventuring Gear Table from Chapter 4. When any item’s name is read aloud, the item appears within 10' of the scroll; the name disappears. The item will remain for 24 hours or until the user commands it to vanish. The name reappears on the scroll when the item vanishes. Any three of the six items listed on the scroll can be created each day.
 
-Illumination: This scroll bears the drawing of a flame. If the scroll is set afire, it will burn with a clear light in a 60’ radius, lasting for up to 6 hours per day. The burning does not harm the scroll, but it is nevertheless "normal" fire (and can be used to light torches, for example). The flame cannot be extinguished except by water or on command of the user; no wind, normal or magical, can cause it to even flicker. This item may already be lit when found.
+Illumination: This scroll bears the drawing of a flame. If the scroll is set afire, it will burn with a clear light in a 60' radius, lasting for up to 6 hours per day. The burning does not harm the scroll, but it is nevertheless "normal" fire (and can be used to light torches, for example). The flame cannot be extinguished except by water or on command of the user; no wind, normal or magical, can cause it to even flicker. This item may already be lit when found.
 
-Mage’s Identification Scroll: This scroll is blank; it is used to identify magical effects. Any user who can operate the item may hold the scroll and command it to identify one chosen magical effect within 30’. The name of the effect appears on the scroll, along with an approximate power tier or source strength. The scroll identifies one magical effect per day.
+Mage’s Identification Scroll: This scroll is blank; it is used to identify magical effects. Any user who can operate the item may hold the scroll and command it to identify one chosen magical effect within 30'. The name of the effect appears on the scroll, along with an approximate power tier or source strength. The scroll identifies one magical effect per day.
 
 Maps to Treasures (Normal, Magical, Combined, or Special): Each map should be made in advance by the referee. Such maps show a route to the location of a treasure in a dungeon or a wilderness area. The treasure is usually hidden or protected by monsters, traps, and/or magic. Based on the type of treasure given, the referee should select a challenging monster, one with a similar treasure type, and design the map and lair accordingly. Note that the map may be partially incorrect, omitting an important detail such as the type of monsters or dangerous traps, or giving some false information; however, the treasure mentioned should actually be there. Sometimes maps are only partially complete or are written in the form of a riddle. Some may require a language-reading power or a successful Thought-based decoding attempt. Normal treasure contains coins and gems but no magical items, while a magical treasure may include some coins and a few gems of low value in addition to magical items. A combined treasure has coins, magical items, and valuable gems or jewelry in roughly equal proportions. Special treasure should contain at least one permanent magical item, such as a staff or sword; these items should be mentioned on the map.
 
-Mapping: This scroll is blank. When held and commanded to write, this scroll will draw a map of an area chosen; the referee then draws the map for the players. The area must be completely within 100’ of the scroll, and it may be up to 10,000 square feet in size. The scroll has a 1-in-6 chance to detect secret doors, but it will not draw what lies beyond them. The scroll functions once per day.
+Mapping: This scroll is blank. When held and commanded to write, this scroll will draw a map of an area chosen; the referee then draws the map for the players. The area must be completely within 100' of the scroll, and it may be up to 10,000 square feet in size. The scroll has a 1-in-6 chance to detect secret doors, but it will not draw what lies beyond them. The scroll functions once per day.
 
-Portals: This scroll creates a pass-wall effect. When placed on a surface and commanded to function, the scroll disappears and a 5’-diameter hole appears that is up to 10’ deep. The scroll does not affect living or magical things. The hole disappears after 3 turns or when commanded by the reader of the scroll. When the hole disappears, the scroll reappears. The scroll may be used twice each day.
+Portals: This scroll creates a pass-wall effect. When placed on a surface and commanded to function, the scroll disappears and a 5'-diameter hole appears that is up to 10' deep. The scroll does not affect living or magical things. The hole disappears after 3 turns or when commanded by the reader of the scroll. When the hole disappears, the scroll reappears. The scroll may be used twice each day.
 
-Protection: A protection scroll may be read and used by any character who can read the Common language. When read, it creates a circle of protection 10’ across that will move with the reader at its center. It will prevent any of the given creatures from entering this circle, but it does not prevent power or missile attacks from those creatures. The circle will be broken if anyone protected attacks one of the given creatures in hand-to-hand combat. Four types of protection scrolls are described in the following text.
+Protection: A protection scroll may be read and used by any character who can read the Common language. When read, it creates a circle of protection 10' across that will move with the reader at its center. It will prevent any of the given creatures from entering this circle, but it does not prevent power or missile attacks from those creatures. The circle will be broken if anyone protected attacks one of the given creatures in hand-to-hand combat. Four types of protection scrolls are described in the following text.
 
-Protection from Elementals: This scroll creates a circle of protection (10’ radius) around the reader. No elemental can attack those within the circle unless attacked first in hand-to-hand combat. Once attacked, an elemental may attack in return. The effect lasts for 2 turns and moves with the reader.
+Protection from Elementals: This scroll creates a circle of protection (10' radius) around the reader. No elemental can attack those within the circle unless attacked first in hand-to-hand combat. Once attacked, an elemental may attack in return. The effect lasts for 2 turns and moves with the reader.
 
 Protection from Lycanthropes: When read, this scroll will protect all those within the circle for 6 turns against a variable number of lycanthropes. The number of lycanthropes affected varies according to their type, as follows. Werebats, wererats, werefoxes Wereboars, werewolves Wereseals, weresharks Werebears, weretigers Devil swine
 
@@ -594,7 +594,7 @@ Protection from Lycanthropes: When read, this scroll will protect all those with
 | Werebears, weretigers | `1d4` affected |
 | Devil swine | `1d2` affected |
 
-Protection from Magic: This scroll creates a circle of protection (10’ radius) around the reader. No powers effects, including those from items, may enter or leave the circle. The effect lasts for 1d4 turns, moves with the reader, and may not be broken except by a wish.
+Protection from Magic: This scroll creates a circle of protection (10' radius) around the reader. No powers effects, including those from items, may enter or leave the circle. The effect lasts for 1d4 turns, moves with the reader, and may not be broken except by a wish.
 
 Protection from Undead: When read, this scroll will protect all those within the circle from a variable number of undead for 6 turns. The number of undead affected varies according to their type, as follows. Skeletons, zombies, ghouls Wights, wraiths, mummies Specters (or larger monsters)
 
@@ -608,9 +608,9 @@ Questioning: The user of this scroll may ask questions of any nonliving nonmagic
 
 Repetition: This scroll appears to be a normal scroll of one power, and the standard restrictions apply to its use. However, one round after the power is used, the scroll creates the same effect a second time, centered on the scroll or affecting the nearest creature if a recipient is part of the process. As with a normal Spell Scroll, any power released from it is then gone; however, another power may be written on the scroll if it is of the same Power Level, and the repetition effect will again apply.
 
-Seeing: This scroll is blank. When held and commanded to write, it will draw pictures of creatures within 100’ in any area chosen by the user. Up to four different types of creatures can be pictured. The scroll will function once per day, regardless of the number of creatures pictured.
+Seeing: This scroll is blank. When held and commanded to write, it will draw pictures of creatures within 100' in any area chosen by the user. Up to four different types of creatures can be pictured. The scroll will function once per day, regardless of the number of creatures pictured.
 
-Shelter: This scroll is inscribed with an elaborate drawing of a 10’-square room, lit, with two beds, a table and two chairs, food and drink for two on the table, and a pair of normal swords on the far wall, each hung over a shield. If the scroll is hung on any vertical surface, the room pictured may be entered and the items used. The food and drink are pure and will nourish any living thing. The swords and shields may be taken down and used. However, none of the items can be removed from the room. If the scroll is taken down, the room cannot be entered or left, but remains in existence on another dimension. If any creatures are in the room when the scroll is taken down, the air inside permits survival for up to 24 hours. No creatures so caught can escape by any means other than a wish. The food and drink are replenished each time the scroll is taken down. The room can be created once per day and will remain for up to 12 hours per use; if not removed in that time, the scroll will fall down by itself.
+Shelter: This scroll is inscribed with an elaborate drawing of a 10'-square room, lit, with two beds, a table and two chairs, food and drink for two on the table, and a pair of normal swords on the far wall, each hung over a shield. If the scroll is hung on any vertical surface, the room pictured may be entered and the items used. The food and drink are pure and will nourish any living thing. The swords and shields may be taken down and used. However, none of the items can be removed from the room. If the scroll is taken down, the room cannot be entered or left, but remains in existence on another dimension. If any creatures are in the room when the scroll is taken down, the air inside permits survival for up to 24 hours. No creatures so caught can escape by any means other than a wish. The food and drink are replenished each time the scroll is taken down. The room can be created once per day and will remain for up to 12 hours per use; if not removed in that time, the scroll will fall down by itself.
 
 Spell Catching: This scroll is blank when found. It may be used to "catch" a power cast at the user. It cannot catch monster-style innate power effects, nor can it catch device-produced effects (such as from a wand), but a power cast from a scroll can be caught. There are four types of this scroll; roll 1d10 to determine the capacity.
 
@@ -627,7 +627,7 @@ Powers: Use Spell Scrolls in the magical item subtable for scrolls to find the e
 
 Trapping: This scroll can create one trap. The type of trap differs by the placement of the scroll. The scroll is destroyed when the trap is created. If placed on a floor, a hidden pit trap is created; if on a ceiling, a falling block trap appears. On walls, a poison dart or gas trap will be created. The exact trap is left to the referee’s design. The trap created is quite real and is not illusory or magical.
 
-Truth: This scroll is blank when found. The user may ask a question of any living being within 30’; the complete and true answer appears on the scroll, read from the victim’s mind by a powerful version of ESP. Note that the answer is true only within the limits of the victim’s knowledge. The scroll will display one answer per day.
+Truth: This scroll is blank when found. The user may ask a question of any living being within 30'; the complete and true answer appears on the scroll, read from the victim’s mind by a powerful version of ESP. Note that the answer is true only within the limits of the victim’s knowledge. The scroll will display one answer per day.
 
 
 ### Wands / Staves / Rods
@@ -690,29 +690,29 @@ A wand normally has 2d10 charges when found, and a staff 3d10; the referee rolls
 
 Rods are permanent items that do not require charges. Each use of a power costs one charge unless noted otherwise. Each item may be used once per round at most.
 
-Wand of Cold: This wand creates a cone of cold, 60’ long and 30’ wide at the far end. All within the cone take 6d6 cold damage, but they may make an Aura save for half damage.
+Wand of Cold: This wand creates a cone of cold, 60' long and 30' wide at the far end. All within the cone take 6d6 cold damage, but they may make an Aura save for half damage.
 
-Wand of Enemy Detection: When a charge is used, this item will cause all enemies within 60’ (even those hidden or invisible) to glow, as if on fire.
+Wand of Enemy Detection: When a charge is used, this item will cause all enemies within 60' (even those hidden or invisible) to glow, as if on fire.
 
-Wand of Fear: This wand creates a cone of fear, 60’ long and 30’ wide at the far end. All within the cone must make an Aura save or run away from the user at three times their normal rate for 30 rounds.
+Wand of Fear: This wand creates a cone of fear, 60' long and 30' wide at the far end. All within the cone must make an Aura save or run away from the user at three times their normal rate for 30 rounds.
 
-Wand of Fireballs: This creates a fireball effect up to 240’ away. All victims take 6d6 fire damage, but they may make an Aura save for half damage.
+Wand of Fireballs: This creates a fireball effect up to 240' away. All victims take 6d6 fire damage, but they may make an Aura save for half damage.
 
 Wand of Illusion: This creates a phantasmal-force-style illusion. The user must concentrate on the illusion to maintain it, but may walk at half normal movement rate while doing so.
 
-Wand of Lightning Bolts: This creates a lightning bolt, starting up to 240’ away and 60’ long from that point. The victims take 6d6 electrical damage, but they may make an Aura save for half damage.
+Wand of Lightning Bolts: This creates a lightning bolt, starting up to 240' away and 60' long from that point. The victims take 6d6 electrical damage, but they may make an Aura save for half damage.
 
-Wand of Magic Detection: When a charge is used, this item will cause any magical item within 20’ to glow. If the item cannot normally be seen (within a closed chest, for example), the glow will not be seen.
+Wand of Magic Detection: When a charge is used, this item will cause any magical item within 20' to glow. If the item cannot normally be seen (within a closed chest, for example), the glow will not be seen.
 
-Wand of Metal Detection: This wand will point toward any type of metal named if within 20’ and if 1,000 cn or more in weight. The user cannot detect the amount of metal.
+Wand of Metal Detection: This wand will point toward any type of metal named if within 20' and if 1,000 cn or more in weight. The user cannot detect the amount of metal.
 
 Wand of Negation: This wand can be used to cancel the effects of one other wand or staff. If the other effect has a duration, the negation lasts for one round.
 
-Wand of Paralyzation: This wand projects a cone-shaped ray when a charge is used. The ray is 60’ long and 30’ wide at its end. Any creature struck may be paralyzed. The user must state which effect is desired. An unwilling victim may make an Aura save to avoid the effect.
+Wand of Paralyzation: This wand projects a cone-shaped ray when a charge is used. The ray is 60' long and 30' wide at its end. Any creature struck may be paralyzed. The user must state which effect is desired. An unwilling victim may make an Aura save to avoid the effect.
 
-Wand of Secret Door Detection: The user may find any secret door within 20’, using one charge per secret door found.
+Wand of Secret Door Detection: The user may find any secret door within 20', using one charge per secret door found.
 
-Wand of Trap Detection: This wand will point at all traps within 20’, one at a time, at a cost of one charge per trap found.
+Wand of Trap Detection: This wand will point at all traps within 20', one at a time, at a cost of one charge per trap found.
 
 #### Legacy Staff Descriptions
 
@@ -757,7 +757,7 @@ The effects are dependent on type of element as follows:
 
 When used on the elemental plane of the corresponding type, the powers are quite different. As long as one or more charges remain in the staff, the powers granted to the holder are not the powers given above, but are rather the following powers:
 
-• Immunity to damage from the plane itself, with vision to 60’ range. • Movement within the plane at the rate of 120 feet per turn (40’/round). • Communication ability with any resident of that plane. • `[+]` to physical Defense if attacked by a resident of that plane. Note that these staves do not provide the ability to breathe on the plane; some other device or effect must also be used. However, when a staff is used along with a matching ring of elemental adaptation or talisman of elemental travel, all effects given above are extended to a 10’ radius around the user. Except for the staff of elemental power, each staff can be used to negate effects relating to the element to which it is opposed, at the cost of one charge if the effect was produced by the opposite staff or two charges if a normal power was used. For example, a staff of air could be used to negate a wall of fire effect at the cost of two charges. A summoned elemental may be sent back to its home plane with the same cost of charges, but the elemental must be touched by the staff. If a staff is ever taken to the plane it is opposed to, it immediately explodes, inflicting 20 points of electrical damage plus 1d8 points of damage per charge remaining in the staff. The explosion fills a sphere of 60’ radius; all creatures within the effect must make an Aura save at `[-]` to take half damage. The wielder, however, gets no save.
+• Immunity to damage from the plane itself, with vision to 60' range. • Movement within the plane at the rate of 120 feet per turn (40'/round). • Communication ability with any resident of that plane. • `[+]` to physical Defense if attacked by a resident of that plane. Note that these staves do not provide the ability to breathe on the plane; some other device or effect must also be used. However, when a staff is used along with a matching ring of elemental adaptation or talisman of elemental travel, all effects given above are extended to a 10' radius around the user. Except for the staff of elemental power, each staff can be used to negate effects relating to the element to which it is opposed, at the cost of one charge if the effect was produced by the opposite staff or two charges if a normal power was used. For example, a staff of air could be used to negate a wall of fire effect at the cost of two charges. A summoned elemental may be sent back to its home plane with the same cost of charges, but the elemental must be touched by the staff. If a staff is ever taken to the plane it is opposed to, it immediately explodes, inflicting 20 points of electrical damage plus 1d8 points of damage per charge remaining in the staff. The explosion fills a sphere of 60' radius; all creatures within the effect must make an Aura save at `[-]` to take half damage. The wielder, however, gets no save.
 
 Staff of Harming: It inflicts 1d6 + 1 (2-7) points of damage to any creature touched by the staff (no save); against an unwilling target, land the touch with a normal melee attack against physical Defense. This is in addition to normal weapon damage (1d6 points), if applicable. The staff of harming can also create the following effects, with the costs noted. Each effect mirrors a harmful holy power inversion. Note that the use of this staff is a hostile doctrinal act.
 
@@ -793,7 +793,7 @@ Undead are not affected by this item.
 
 Staff of Wizardry: This contains the full `Staff of Power` suite plus `invisibility`, `passwall`, `web`, elemental-summoning style effects, whirlwind shaping, and cone-style paralyzation. Treat all listed names as recognizers for SDM power payloads. Unless a stricter limit is obvious from the effect text, resolve this bundle at `Power Level 8`, with `Power Level 9` allowed for the most extreme effects (major summoning or wide control events) at referee discretion. For source-force contests, treat the staff as `Level 9`.
 
-If broken intentionally, the staff releases all remaining charges at once. This final strike inflicts 8 points of damage per remaining charge to all creatures within 30’, including the user; affected creatures may make an Aura save for half.
+If broken intentionally, the staff releases all remaining charges at once. This final strike inflicts 8 points of damage per remaining charge to all creatures within 30', including the user; affected creatures may make an Aura save for half.
 
 #### Legacy Rod Descriptions
 
@@ -903,7 +903,7 @@ Djinni Summoning: The wearer may summon one djinni to serve for up to one day. T
 
 The ring may be used only once per week.
 
-Ear: This ring, worn on the ear as an earring, has no effect when worn. However, when removed and placed against any surface (a door, chest, etc.), the user may hear all noises occurring within 60’ of the surface. Light breathing, heartbeats, and even faint breezes can be heard. The ring will function three times per day.
+Ear: This ring, worn on the ear as an earring, has no effect when worn. However, when removed and placed against any surface (a door, chest, etc.), the user may hear all noises occurring within 60' of the surface. Light breathing, heartbeats, and even faint breezes can be heard. The ring will function three times per day.
 
 Elemental Adaptation: There are seven different types of this ring; roll 1d100 to determine the exact type or select one as appropriate.
 
@@ -933,7 +933,7 @@ Memory: It allows the wearer to recall any one power used. The wearer must decid
 
 Plant Control: This ring has the same effect as the potion of the same name, but only lasts as long as the wearer concentrates.
 
-Protection +1, +2, +3, or +4: This ring improves the wearer’s Defense by 1, 2, 3, or 4, as listed. It also adds its bonus to all of the wearer’s saves. A variation of this ring is the ring of protection +1, 5’ radius. This ring improves the wearer’s Defense and saves by 1, but the ring also gives the same bonus to all creatures within 5’, both friend and foe. No area ring is more powerful than +1.
+Protection +1, +2, +3, or +4: This ring improves the wearer’s Defense by 1, 2, 3, or 4, as listed. It also adds its bonus to all of the wearer’s saves. A variation of this ring is the ring of protection +1, 5' radius. This ring improves the wearer’s Defense and saves by 1, but the ring also gives the same bonus to all creatures within 5', both friend and foe. No area ring is more powerful than +1.
 
 Quickness: Once each day, the wearer of this ring can move and attack at double normal rates for 1 turn. The effect is equivalent to a haste effect, but it is produced by command rather than spellcasting.
 
@@ -957,7 +957,7 @@ Spell Turning: This ring reflects `2d6` hostile powers back to their source per 
 
 Survival: The wearer can survive without air, food, or drink while the ring is worn by using the charges contained within it. The ring contains 1d100 + 100 (101-200) charges when found. By spending one charge, the user needs no food or drink for 24 hours. Survival without air requires one charge per hour. The ring turns black when five or fewer charges remain.
 
-Telekinesis: The wearer may slowly move inanimate objects weighing up to 2,000 cn by concentration alone, up to a distance of 50’.
+Telekinesis: The wearer may slowly move inanimate objects weighing up to 2,000 cn by concentration alone, up to a distance of 50'.
 
 Truth: Three times per day, this ring allows the wearer to know whether a spoken statement is true or false. Note that if the person or creature uttering the statement believes it to be true, a "true" result will be obtained. By telepathy, the ring tells the wearer of its powers as soon as it is worn.
 
@@ -978,7 +978,7 @@ Wishes: A ring of wishes is an extremely powerful item. Wishes must be handled v
 | 8-9 | 3 |
 | 10 | 4 |
 
-X-ray Vision: The wearer may see a distance of up to 30’, even through a wall and into the space beyond, by standing still and concentrating. The effect may be blocked by gold or lead. The wearer can inspect one 10’ x 10’ area per use (which requires a full turn), and he will be able to see any traps or secret doors in the area examined. The ring allows the wearer to see through items less dense than stone (such as cloth, wood, or water) more easily, to a range of 60’. The ring may be used up to 1 turn per hour.
+X-ray Vision: The wearer may see a distance of up to 30', even through a wall and into the space beyond, by standing still and concentrating. The effect may be blocked by gold or lead. The wearer can inspect one 10' x 10' area per use (which requires a full turn), and he will be able to see any traps or secret doors in the area examined. The ring allows the wearer to see through items less dense than stone (such as cloth, wood, or water) more easily, to a range of 60'. The ring may be used up to 1 turn per hour.
 
 
 ### Miscellaneous Items / Strange Items / Oddities
@@ -1041,7 +1041,7 @@ Amulet of Protection from Crystal Balls and ESP: The wearer of this item is auto
 
 Bag of Devouring: This item looks like a normal small sack, but anything placed within it disappears. Anyone may reach in and find the contents by touch—if the contents are still there! If the contents are not removed within 1d6 + 1 (7-12) turns, they will be forever lost. The bag will not affect living creatures unless the entire creature is stuffed inside the bag. This is impossible to do except with very small creatures.
 
-Bag of Holding: This bag looks like a normal small sack, but any items placed within it disappear. Anyone may reach in and find the contents by touch. The bag will actually hold treasures up to 10,000 cn in weight, but will only weigh 600 cn when full. An item to be placed inside the bag may be no larger than 10’ x 5’ x 3’. A larger item will not fit inside.
+Bag of Holding: This bag looks like a normal small sack, but any items placed within it disappear. Anyone may reach in and find the contents by touch. The bag will actually hold treasures up to 10,000 cn in weight, but will only weigh 600 cn when full. An item to be placed inside the bag may be no larger than 10' x 5' x 3'. A larger item will not fit inside.
 
 Boat, Undersea: This item appears identical to a standard riverboat and can be used as one. As it is magical, however, its physical Defense is 4 and it has 40 hull Life. It is operated by a magical command word that its maker knows; characters who find an undersea boat may have to go on an adventure to discover the boat’s command word. If the command word is known, no rowers or sailors are required. The boat obeys commands to start, stop, turn to port, turn to starboard, stop turning while keeping the same speed, submerge, level off, and surface. When underwater, the boat radiates a water-breathing effect, protecting all passengers and crew as long as they touch it. The undersea boat can be fitted with grips so that the passengers can avoid drifting away.
 
@@ -1049,19 +1049,19 @@ Note: The referee may wish to create similar magical boats that travel only on i
 
 Boots of Levitation: The wearer may levitate. There is no limit to the duration.
 
-Boots of Speed: The wearer may move as fast as a riding horse (240’ [80’]) for 12 hours, after which the wearer must rest for one full day.
+Boots of Speed: The wearer may move as fast as a riding horse (240' [80']) for 12 hours, after which the wearer must rest for one full day.
 
-Boots of Traveling and Leaping: The wearer needs no rest during normal movement. The wearer may also make mighty jumps, to a maximum height of 10’ and a maximum length of 30’.
+Boots of Traveling and Leaping: The wearer needs no rest during normal movement. The wearer may also make mighty jumps, to a maximum height of 10' and a maximum length of 30'.
 
-Bowl of Commanding Water Elementals: This item may be used only once per day. The bowl is 3’ in diameter; it requires 1 turn to use. The bowl will summon a water elemental and will allow the user to control it, subject to normal rules for elemental control.
+Bowl of Commanding Water Elementals: This item may be used only once per day. The bowl is 3' in diameter; it requires 1 turn to use. The bowl will summon a water elemental and will allow the user to control it, subject to normal rules for elemental control.
 
 Brazier of Commanding Fire Elementals: This item may be used only once per day. It requires 1 turn to use and will summon a fire elemental that will allow the user to control it, subject to normal rules for elemental control.
 
-Broom of Flying: When verbally commanded, the broom will carry its owner through the air at 240’ per turn. One other person (or up to 2,000 cn of baggage) may also be carried, but the broom slows to 180’ per turn.
+Broom of Flying: When verbally commanded, the broom will carry its owner through the air at 240' per turn. One other person (or up to 2,000 cn of baggage) may also be carried, but the broom slows to 180' per turn.
 
 Censer of Controlling Air Elementals: This item may be used only once per day and requires 1 turn to use. The censer will summon an air elemental and will allow the user to control it, subject to normal rules for elemental control.
 
-Chime of Time: This simple metal stick is 3" long and made of a silvery metal. On command, it will keep track of time, chiming every hour on the hour—the chime can be heard by all within 60’ (regardless of intervening walls, rock, etc.). If dampened by a silence, 15’ radius spell, the chime will dispel the silence but be dampened to a 30-foot range for that turn. A second command will cause the chime to turn color. It will turn gold at one end, the color slowly spreading to the other end in an hour’s time. A third command word causes the chime to stop ringing or to stop changing color—but not until 1 turn elapses after the command.
+Chime of Time: This simple metal stick is 3" long and made of a silvery metal. On command, it will keep track of time, chiming every hour on the hour—the chime can be heard by all within 60' (regardless of intervening walls, rock, etc.). If dampened by a silence, 15' radius spell, the chime will dispel the silence but be dampened to a 30-foot range for that turn. A second command will cause the chime to turn color. It will turn gold at one end, the color slowly spreading to the other end in an hour’s time. A third command word causes the chime to stop ringing or to stop changing color—but not until 1 turn elapses after the command.
 
 Crystal Ball: Its owner may look into it and see any place or object thought about as it exists at that time. It will work three times per day, and the image will last for 1 turn. Spells cannot be cast "through" the crystal ball. The more familiar the object or area to be seen, the clearer the picture will be.
 
@@ -1069,13 +1069,13 @@ Crystal Ball with Clairaudience: This works like a standard crystal ball, but wi
 
 Crystal Ball with ESP: This also works like a standard crystal ball, but with the added power to listen to the thoughts of a creature viewed.
 
-Displacer Cloak: This item warps light rays; the wearer is actually 5’ away from the perceived location. The cloak grants `[+]` on the wearer’s saves against hostile magic, devices, and petrification effects. Melee attacks against the wearer take `[-]`, and most missile fire automatically misses unless the referee rules the attacker has an angle, sense mode, or area effect that bypasses the displacement.
+Displacer Cloak: This item warps light rays; the wearer is actually 5' away from the perceived location. The cloak grants `[+]` on the wearer’s saves against hostile magic, devices, and petrification effects. Melee attacks against the wearer take `[-]`, and most missile fire automatically misses unless the referee rules the attacker has an angle, sense mode, or area effect that bypasses the displacement.
 
-Drums of Panic: These large kettle drums have no effect on any creatures within 10’ of them. When used, however, all creatures 10’-240’ away must make an Aura save or run away from the user for 3 full turns. If the table is using Quickstart morale for those targets, no save is needed; each creature instead tests morale at `[-]`.
+Drums of Panic: These large kettle drums have no effect on any creatures within 10' of them. When used, however, all creatures 10'-240' away must make an Aura save or run away from the user for 3 full turns. If the table is using Quickstart morale for those targets, no save is needed; each creature instead tests morale at `[-]`.
 
-Efreeti Bottle: This item is a large, heavy sealed jug about 3’ high. If the seal is broken and the stopper pulled, an efreeti will come forth to serve the opener once per day for 101 days (or until slain). The creature will return to its home (the fabled City of Brass) after its term of service is ended. It will serve no one but the person opening the bottle.
+Efreeti Bottle: This item is a large, heavy sealed jug about 3' high. If the seal is broken and the stopper pulled, an efreeti will come forth to serve the opener once per day for 101 days (or until slain). The creature will return to its home (the fabled City of Brass) after its term of service is ended. It will serve no one but the person opening the bottle.
 
-Egg of Wonder: This strange item is the size of a chicken’s egg, but it may be of any color. An egg breaks when dropped or thrown, to 60’ maximum range; in the following round, a creature emerges from it and grows to normal size, thereafter obeying the thrower of the egg to the best of its ability. The creature must be able to hear the user’s commands. The creature will disappear after one hour of existence or when slain. The creature appearing is never determined until the egg actually breaks; characters can never know what creature will appear beforehand. The referee may add other creatures, if desired. To determine the type of creature appearing, roll 1d12.
+Egg of Wonder: This strange item is the size of a chicken’s egg, but it may be of any color. An egg breaks when dropped or thrown, to 60' maximum range; in the following round, a creature emerges from it and grows to normal size, thereafter obeying the thrower of the egg to the best of its ability. The creature must be able to hear the user’s commands. The creature will disappear after one hour of existence or when slain. The creature appearing is never determined until the egg actually breaks; characters can never know what creature will appear beforehand. The referee may add other creatures, if desired. To determine the type of creature appearing, roll 1d12.
 
 | `1d12` | Creature |
 |---:|---|
@@ -1096,7 +1096,7 @@ Elven Cloak: The wearer of this cloak is nearly invisible (roll 1d6; seen only o
 
 Elven Boots: The wearer of these boots may move with nearly complete silence (roll 1d10; heard only on a 1).
 
-Flying Carpet: This item can carry one passenger at up to 300’ per turn, two at 240’ per turn, or three at 180’ per turn. It will not carry more than three passengers and their equipment. As an option, the referee can say that the carpet will carry an encumbrance of 6,000 cn, but the weight of the passengers will have to be calculated.
+Flying Carpet: This item can carry one passenger at up to 300' per turn, two at 240' per turn, or three at 180' per turn. It will not carry more than three passengers and their equipment. As an option, the referee can say that the carpet will carry an encumbrance of 6,000 cn, but the weight of the passengers will have to be calculated.
 
 Gauntlets of Ogre Power: While worn, the wearer’s Strength becomes `+5`. If the wearer already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. If the wearer is not using a weapon, their punches count as a small personal weapon and deal `1d6` unarmed damage.
 
@@ -1106,21 +1106,21 @@ Helm of Alignment Changing: This item looks like a fancy helmet. When the helm i
 
 Helm of Reading: The wearer is able to read any writing, regardless of the language or magical properties of the script. This does not allow characters to use Spell Scrolls unless they can do so normally. This helm is fragile, however, and will be destroyed if the wearer is killed. Any hit on the wearer might, 10% chance, destroy the helm.
 
-Helm of Telepathy: This item looks like a fancy helmet. The wearer of this helm may send messages, by mere thought, to any creature within 90’. The creature receiving the thought messages will understand them, though it may refuse to respond. The wearer may also read the thoughts of a living creature within range. To make the helm work, the wearer must concentrate on the creature, and may not move or cast powers. If the creature fails an Aura save, or permits the thought reading, the wearer will understand the creature’s thoughts.
+Helm of Telepathy: This item looks like a fancy helmet. The wearer of this helm may send messages, by mere thought, to any creature within 90'. The creature receiving the thought messages will understand them, though it may refuse to respond. The wearer may also read the thoughts of a living creature within range. To make the helm work, the wearer must concentrate on the creature, and may not move or cast powers. If the creature fails an Aura save, or permits the thought reading, the wearer will understand the creature’s thoughts.
 
 Helm of Teleportation: This helm allows the wearer to teleport, including the usual risks of bad arrival, or to attempt to teleport another creature or item. An unwilling victim can make an Aura save to avoid the effect. After one use, the helm will no longer function. If a teleport effect is later cast into it, the user can then teleport as often as desired, up to once per round, without using charges. However, whenever the helm is used to teleport another item or creature, it again becomes useless, requiring another teleport effect to reactivate it.
 
-Horn of Blasting: This horn creates a cone of sound, 100’ long and 20’ wide at the far end, when blown. Victims within this area take 2d6 damage and must make an Aura save or be deafened for one turn; constructions and ships take 1d8 damage.
+Horn of Blasting: This horn creates a cone of sound, 100' long and 20' wide at the far end, when blown. Victims within this area take 2d6 damage and must make an Aura save or be deafened for one turn; constructions and ships take 1d8 damage.
 
 The horn may be blown but once per turn.
 
-Lamp, Hurricane: This item appears and functions as a lamp of long burning in all respects, but only after its storm has passed, as described hereafter. This lamp is always closed when found. When the shutters are opened, violent gusts of wind and rain come from the lamp, dousing the holder, who gets no save, and all others within 30’. This hurricane lasts for 3 rounds; each victim must make an Aura save, and all those failing are knocked over by the winds. If this occurs, every item carried, excluding body clothing and armor but including caps, gloves, and treasure, is blown about, landing scattered within 60’. A successful save indicates that the victim has fallen to the ground in time, tightly grasping all items carried. The hurricane lamp may thereafter be used as a lamp of long burning for the remainder of the day. It resets its hurricane effect every 24 hours, which must again be triggered before the lamp can be of more beneficial use.
+Lamp, Hurricane: This item appears and functions as a lamp of long burning in all respects, but only after its storm has passed, as described hereafter. This lamp is always closed when found. When the shutters are opened, violent gusts of wind and rain come from the lamp, dousing the holder, who gets no save, and all others within 30'. This hurricane lasts for 3 rounds; each victim must make an Aura save, and all those failing are knocked over by the winds. If this occurs, every item carried, excluding body clothing and armor but including caps, gloves, and treasure, is blown about, landing scattered within 60'. A successful save indicates that the victim has fallen to the ground in time, tightly grasping all items carried. The hurricane lamp may thereafter be used as a lamp of long burning for the remainder of the day. It resets its hurricane effect every 24 hours, which must again be triggered before the lamp can be of more beneficial use.
 
 Lamp of Long Burning: This item is identical to a normal adventurer’s lantern. It is made of metal, with a lower compartment for oil, a handle, and shutters around the body to protect the flame from wind. When filled with oil and lit as a normal lantern, it will burn and shed light without using oil. If the flame is ever doused by water, the lamp of long burning becomes nonmagical.
 
-Medallion of ESP, 30’ Range: This magical medallion is strung on a chain and worn around the neck. If the wearer concentrates for 1 round, they may read the thoughts of any one creature within 30’. The wearer may move normally but cannot fight or cast powers while concentrating. The referee must roll 1d6 each time this item is used; it will not work properly on a roll of 1. If a 1 occurs, the medallion will broadcast the thoughts of the user to everyone within 30’. The referee may allow an Aura save to prevent the medallion from reading a creature’s thoughts.
+Medallion of ESP, 30' Range: This magical medallion is strung on a chain and worn around the neck. If the wearer concentrates for 1 round, they may read the thoughts of any one creature within 30'. The wearer may move normally but cannot fight or cast powers while concentrating. The referee must roll 1d6 each time this item is used; it will not work properly on a roll of 1. If a 1 occurs, the medallion will broadcast the thoughts of the user to everyone within 30'. The referee may allow an Aura save to prevent the medallion from reading a creature’s thoughts.
 
-Medallion of ESP, 90’ Range: This item is identical to the medallion of ESP, 30’ range, except that it has a greater range.
+Medallion of ESP, 90' Range: This item is identical to the medallion of ESP, 30' range, except that it has a greater range.
 
 Mirror of Life Trapping: This unique item stores man-size or smaller creatures for an indefinite period. Any such creature who looks into the mirror must make an Aura save or be sucked into it, complete with all equipment and treasure. The mirror can store up to 20 creatures; when it is full, no more can be trapped. Creatures trapped in the mirror do not age or need food or air, but they are completely powerless. Anyone can talk with the creatures trapped in the mirror if they speak the same language. If the mirror is broken, all the creatures trapped within are immediately released. However, trapped individuals can be recovered without harming the mirror by using a wish.
 
@@ -1143,17 +1143,17 @@ Ointment: This white creamy salve is found in a small wooden box with a cotton s
 | 5 | Soothing | Cures all burn damage, magical or normal. |
 | 6 | Tanning | Skin turns bright color (red/yellow/orange/blue/green/brown), fading in `1d4` months. |
 
-Pouch of Security: This item is the size of a large sack (capacity 600 cn). Any attempt at stealing the pouch causes it to scream, "I am being stolen!" (in the Common tongue) repeatedly for one hour. Its cries can be heard to 120’. If its owner holds it and commands it to be quiet, it will obey, but it will repeat its cries if stolen again.
+Pouch of Security: This item is the size of a large sack (capacity 600 cn). Any attempt at stealing the pouch causes it to scream, "I am being stolen!" (in the Common tongue) repeatedly for one hour. Its cries can be heard to 120'. If its owner holds it and commands it to be quiet, it will obey, but it will repeat its cries if stolen again.
 
 Quill of Copying: A quill is a large feather with a nib of rare material (often orichalcum) that can be dipped in ink and used as a writing implement. It will copy only one power per week at most. The original scroll must be burned, and the ashes mixed with rare ink (of `1,000 gp` cost). The quill is then placed on a blank scroll along with an inkwell containing the prepared ink. Upon command, the quill starts to write, creating two identical powers on the scroll instead of the single original. If the burnt scroll contains two or more powers, only one power will be copied—either the lowest-Power-Level effect or, if more than one share that tier, a randomly selected one. The quill will not copy protection scrolls or any other writing except spell scrolls.
 
 Unfortunately, there is a 25% chance per use that the quill will suddenly drain of ink, spoiling the entire scroll upon which it is writing. The blot thus created cannot be removed from the parchment by any means but a wish.
 
-Rope of Climbing: This 50’-long, thin, strong rope will climb in any direction upon the command of the owner. It can fasten itself to any protruding surface and will support up to 10,000 cn of weight.
+Rope of Climbing: This 50'-long, thin, strong rope will climb in any direction upon the command of the owner. It can fasten itself to any protruding surface and will support up to 10,000 cn of weight.
 
 Scarab of Protection: This item automatically absorbs any curse, whether by power, scroll, or other effect. It will also absorb a finger of death effect (reversed `raise dead`). The scarab will work 2d6 times before becoming worthless.
 
-Slate of Identification: This valuable device can identify magical items of most sorts. It is a piece of slate (stone) held firmly in an ornate wooden frame, usually about 3’ square (though slates of many sizes are possible, both larger and smaller). The user holds the slate horizontally and places a magical item upon it. When the item is lifted off, the name of the item appears on the slate. If an item has command words, one will appear on the slate with each identification. The slate will only repeat itself when all the command words have been revealed. The slate is easily fooled by cursed items, however. And it cannot detect an item’s number of charges or special ability. A potion of poison will be mistakenly identified as some other type. Any cursed item will be identified as a normal item. (These guidelines should be strictly followed, lest the mystery of such items found be ruined.) The slate may expend up to ten charges per day; items identified require the following numbers of charges per use.
+Slate of Identification: This valuable device can identify magical items of most sorts. It is a piece of slate (stone) held firmly in an ornate wooden frame, usually about 3' square (though slates of many sizes are possible, both larger and smaller). The user holds the slate horizontally and places a magical item upon it. When the item is lifted off, the name of the item appears on the slate. If an item has command words, one will appear on the slate with each identification. The slate will only repeat itself when all the command words have been revealed. The slate is easily fooled by cursed items, however. And it cannot detect an item’s number of charges or special ability. A potion of poison will be mistakenly identified as some other type. Any cursed item will be identified as a normal item. (These guidelines should be strictly followed, lest the mystery of such items found be ruined.) The slate may expend up to ten charges per day; items identified require the following numbers of charges per use.
 
 | Item Class | Charges per Use |
 |---|---:|
@@ -1181,7 +1181,7 @@ Talisman of Elemental Travel: There are five types of talismans. Roll 1d10 to de
 | 7-8 | Lesser Talisman of Water |
 | 9-10 | Greater Talisman (all elements) |
 
-Lesser Talisman: This item is a round amulet that may be found on a chain; there are corresponding types to each of the four elements. It is engraved with a triangle in the center and a symbol above it, one of the ten symbols of the elemental ranks. On the material plane, the user may press the central symbol while using an elemental-summoning power; the talisman will reverse the effect, sending the wearer into the appropriate elemental plane. While wearing the talisman, the user can breathe elemental matter as if it were pure, clean air, and gains improved vision, normally 120’-1,200’ range depending on conditions.
+Lesser Talisman: This item is a round amulet that may be found on a chain; there are corresponding types to each of the four elements. It is engraved with a triangle in the center and a symbol above it, one of the ten symbols of the elemental ranks. On the material plane, the user may press the central symbol while using an elemental-summoning power; the talisman will reverse the effect, sending the wearer into the appropriate elemental plane. While wearing the talisman, the user can breathe elemental matter as if it were pure, clean air, and gains improved vision, normally 120'-1,200' range depending on conditions.
 
 Greater Talisman: This item is similar to a lesser talisman in powers, but applies to all the elemental planes. It is engraved with the four triangular symbols of the planes, meeting in the center. The ten symbols of all the elemental ranks are inscribed around the edge. If the proper command words are known, the wearer may also force an elemental being to obey instructions. This uses one charge; the talisman can expend up to ten charges per trip into an elemental plane.
 
@@ -1189,7 +1189,7 @@ Wheel of Floating: This item appears identical to a normal wagon wheel, but it e
 
 A cursed wheel of floating will, when reaching the center of any river or stream, become stuck at that point and cannot be moved until a remove curse effect is applied by a Level `8` or higher practitioner. This allows progress to continue, but the curse will return again at next use until the wheel is destroyed.
 
-Wheel of Fortune: This strange device is 10’ in diameter, mounted on a stand or wall fixture, and easily rotated. It is decorated with a blackand-white pattern of wedges, all intersecting at the center where a green arrow is mounted; the arrow does not turn with the wheel. Near the rim, each black wedge is adorned by a white skull and each white wedge by a red heart. If the wheel is spun (easily done by any creature of `+1` Strength or greater), it rotates for `3` rounds and then comes to rest, with the green arrow pointing at one of the wedges (either black or white with equal chances for each). However, a charmed creature cannot move the wheel, and each user can spin the wheel only once per day. If the wheel has spun freely for the `3` rounds, not touched or interfered with in any way, a magical effect occurs, determined by the result of the spin. The wheel cannot be affected by magic of any kind, including telekinesis, and it cannot be damaged in any way. A wish used to affect the wheel will cause the wheel to vanish, regardless of the wish. The wheel cannot be moved except by a creature of Level `13` or more. The wheel weighs `20,000 cn`. For each white or black wedge that appears, roll `1d6` and consult the following.
+Wheel of Fortune: This strange device is 10' in diameter, mounted on a stand or wall fixture, and easily rotated. It is decorated with a blackand-white pattern of wedges, all intersecting at the center where a green arrow is mounted; the arrow does not turn with the wheel. Near the rim, each black wedge is adorned by a white skull and each white wedge by a red heart. If the wheel is spun (easily done by any creature of `+1` Strength or greater), it rotates for `3` rounds and then comes to rest, with the green arrow pointing at one of the wedges (either black or white with equal chances for each). However, a charmed creature cannot move the wheel, and each user can spin the wheel only once per day. If the wheel has spun freely for the `3` rounds, not touched or interfered with in any way, a magical effect occurs, determined by the result of the spin. The wheel cannot be affected by magic of any kind, including telekinesis, and it cannot be damaged in any way. A wish used to affect the wheel will cause the wheel to vanish, regardless of the wish. The wheel cannot be moved except by a creature of Level `13` or more. The wheel weighs `20,000 cn`. For each white or black wedge that appears, roll `1d6` and consult the following.
 
 White Wedge:
 
@@ -1215,7 +1215,7 @@ Black Wedge:
 
 The referee may select or randomly determine the results of the spin. If desired, the wedges may be numbered from 1-20, 1-100, or some other conveniently determined number, and a chart may be made with more varied results.
 
-Wheel, Square: This odd "wheel," the size of a normal wagon wheel, is useless on roads and other flat terrain because it is perfectly square. However, when mounted properly on a wagon, it magically allows movement through mountain and desert terrain where there is no road. A wagon with one square wheel can be pulled by two horses and can move at 20’/turn; with two wheels, 30’/turn; with three, 40’/turn; and with four, the normal rate of 60’/turn is possible.
+Wheel, Square: This odd "wheel," the size of a normal wagon wheel, is useless on roads and other flat terrain because it is perfectly square. However, when mounted properly on a wagon, it magically allows movement through mountain and desert terrain where there is no road. A wagon with one square wheel can be pulled by two horses and can move at 20'/turn; with two wheels, 30'/turn; with three, 40'/turn; and with four, the normal rate of 60'/turn is possible.
 
 
 ### Armor / Shields / Wards
@@ -1333,7 +1333,7 @@ Energy Drain: The armor or shield can become charged on command, as described un
 
 Ethereality: The user may become ethereal on command and may remain ethereal for as long as desired. The user may return to the material world when a second command word is spoken. Each command word may be used once per day.
 
-Fly: When commanded, the armor or shield creates a flight effect on the user, which lasts for 12 turns. The user may then travel in the air at up to 360’ per turn by mere concentration.
+Fly: When commanded, the armor or shield creates a flight effect on the user, which lasts for 12 turns. The user may then travel in the air at up to 360' per turn by mere concentration.
 
 Gaseous Form: This valuable armor or shield enables the user to turn into a cloud of gas (as the potion of gaseous form), including all equipment carried (unlike the potion). The user can remain gaseous for up to 6 turns and can return to normal form by mere concentration.
 
@@ -1421,7 +1421,7 @@ Blinking: The missile with this talent will not hit any friend of the user, "bli
 
 Charming: The victim hit must make an Aura save or be charmed by the user.
 
-Climbing: This talent only functions if the missile is shot at an object. The missile securely fastens itself to any object hit and then creates a magical 50’ rope, issuing from the spot hit. The rope will support any weight of climbers and will disappear 1 turn later or upon command of the user. The missile cannot be moved after it hits, and it disappears when the rope does.
+Climbing: This talent only functions if the missile is shot at an object. The missile securely fastens itself to any object hit and then creates a magical 50' rope, issuing from the spot hit. The rope will support any weight of climbers and will disappear 1 turn later or upon command of the user. The missile cannot be moved after it hits, and it disappears when the rope does.
 
 Curing: A missile with this talent is obviously blunt, inscribed with a holy symbol. When it hits a living creature, it does not inflict damage. Instead, it cures 2d6 points of damage plus 2 extra points for each magical bonus of the missile. For example, if a 5 is rolled for a curing arrow + 2, the total points of damage cured are 7.
 
@@ -1439,13 +1439,13 @@ Flying: A missile with this talent can be shot at ranges five times greater than
 | Quarrel, heavy crossbow | 400 | 800 | 1,200 |
 | Sling stone | 200 | 400 | 800 |
 
-Lighting: The missile talent can create a light effect in a 30’ diameter, either upon command or when it hits a target. If a creature is hit, the victim must make an Aura save or be blinded by the light. The missile disintegrates when the light is created.
+Lighting: The missile talent can create a light effect in a 30' diameter, either upon command or when it hits a target. If a creature is hit, the victim must make an Aura save or be blinded by the light. The missile disintegrates when the light is created.
 
 Penetrating: A missile with this talent cannot be slowed by underbrush, webs, or other forms of cover. The victim’s Defense is not modified by cover of any sort.
 
 Refilling: This talent gives no special effects to a missile when shot. If left in a container with other missiles of the same type (that is, a refilling arrow with normal arrows or a refilling sling stone with normal sling stones), however, it will magically create 1d20 more missiles of the normal type each day.
 
-Screaming: This talent’s effect occurs when the missile is shot, even if it misses the target. As it travels through the air, the missile produces a loud cry, causing all within 30’ of its path to test morale. Creatures that do not use morale but can still panic must make an Aura save instead. On a failed test or save, the victims retreat in fear for 1d8 rounds.
+Screaming: This talent’s effect occurs when the missile is shot, even if it misses the target. As it travels through the air, the missile produces a loud cry, causing all within 30' of its path to test morale. Creatures that do not use morale but can still panic must make an Aura save instead. On a failed test or save, the victims retreat in fear for 1d8 rounds.
 
 Seeking: This talent will only function when the missile is shot at an object; it is not usable against creatures. It will automatically hit any one target object within range as long as a path of travel is clear. It may be used as a missile of disarming, if desired, or it can be used to sever a normal rope, pierce a sack, push a button, trigger a trap, etc. It will automatically miss any creature at which it is aimed.
 
@@ -1459,7 +1459,7 @@ Stunning: The victim hit by a missile with this talent must make an Aura save or
 
 Teleporting: A victim hit by a missile with this talent must make an Aura save, at a +2 bonus to the roll, or be teleported to a point 1d100 miles away, with the direction and distance determined randomly. The victim cannot arrive in the air or within a solid object.
 
-Transporting: A victim hit by a missile with this talent must make an Aura save or be sent to a point up to 360’ away, as determined by the user of the missile. This is a short-range translation effect and cannot cause the victim to appear within a solid object.
+Transporting: A victim hit by a missile with this talent must make an Aura save or be sent to a point up to 360' away, as determined by the user of the missile. This is a short-range translation effect and cannot cause the victim to appear within a solid object.
 
 Wounding: When a missile with the wounding talent strikes a target creature, it inflicts normal damage. In addition, however, it causes the loss of 1 Life per round thereafter until magical healing is applied. No undead creature or construct can be wounded with this talent, and such creatures suffer only the initial damage.
 

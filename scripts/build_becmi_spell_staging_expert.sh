@@ -425,6 +425,47 @@ validate_expert_output() {
   assert_section_contains "$EXPERT_OUT" '### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' '### Magic Item Doctrine and Intelligent Weapons' 'Mirror of Life Trapping|Scarab of Protection' 'Expert treasure block is truncated before the page-65 misc witness'
 }
 
+expert_spell_lists_appendix() {
+  local pdf="$1"
+
+  printf '\n## Spell Lists Appendix\n\n' >> "$EXPERT_OUT"
+  printf -- '- Note: these are raw numbered spell lists from the Expert Set. They are appendix-only \x2014 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.\n\n' >> "$EXPERT_OUT"
+
+  printf '### Expert: Cleric Spell Lists (page 6, book page 4)\n\n' >> "$EXPERT_OUT"
+  printf -- '- Extraction note: TSV column reflow of Expert cleric spell lists from the character class table on book page 4 (PDF page 6). Middle and right columns contain 1st-6th level spell index; stops at the Cleric Saving Throws table.\n\n' >> "$EXPERT_OUT"
+  printf '```text\n' >> "$EXPERT_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 6 6 '185,370' 'FIRST LEVEL CLERIC SPELLS' 'CLERIC SAVING THROWS' \
+    | sed 's/^F I l T H /FIFTH /' \
+    | spell_list_smart_filter >> "$EXPERT_OUT"
+  printf '\n```\n\n' >> "$EXPERT_OUT"
+
+  printf '### Expert: Magic-User Spell Lists (pages 13-14)\n\n' >> "$EXPERT_OUT"
+  printf -- '- Extraction note: TSV column reflow of Expert magic-user spell list pages.\n\n' >> "$EXPERT_OUT"
+  printf '```text\n' >> "$EXPERT_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'MAGIC-USER SPELLS' 'THIEF' \
+    | spell_list_smart_filter >> "$EXPERT_OUT"
+  printf '\n```\n\n' >> "$EXPERT_OUT"
+
+  printf '### Expert: Magic-User Reversible Spell Notes (pages 13-14)\n\n' >> "$EXPERT_OUT"
+  printf -- '- Extraction note: post-list prose from Expert pages 13-14. Anchored on the intro paragraph about reversible spells. Title-case sub-headers ("First Level Magic-user Spells" etc.) stripped as noise; reverse effect descriptions and footnotes kept.\n\n' >> "$EXPERT_OUT"
+  printf '```text\n' >> "$EXPERT_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'MAGIC-USER SPELLS' 'THIEF' \
+    | awk '
+        started {
+          # strip Title Case level sub-headers: "First/Second/Third Level Magic-user Spells"
+          if (/^(First|Second|Third|Fourth|Fifth|Sixth) Level Magic-user Spells$/) next
+          # strip ALL-CAPS level headings (numbered list section starts)
+          if (/^[^a-z]+$/ && /[A-Z]/ && (/SPELL/ || /LEVEL/)) next
+          # strip numbered list entries (including OCR space-in-number artifacts)
+          if (/^[[:space:]]*[[:digit:]][[:digit:] ]*\.[[:space:]]/) next
+          print
+          next
+        }
+        /^The following first and second level spells/ { started = 1; print }
+      ' >> "$EXPERT_OUT"
+  printf '\n```\n\n' >> "$EXPERT_OUT"
+}
+
 extract_pdf "$EXPERT_PDF" "$EXPERT_TXT"
 OUT="$EXPERT_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Expert' 'TSR 1012B - Set 2 Expert Rules.pdf'
@@ -441,3 +482,4 @@ normalize_expert_intelligent_sword_tables
 normalize_expert_potion_tables
 normalize_expert_residual_labels
 validate_expert_output
+expert_spell_lists_appendix "$EXPERT_PDF"

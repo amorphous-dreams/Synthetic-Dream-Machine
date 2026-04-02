@@ -1881,3 +1881,75 @@ will support up to 10,000 cn of weight.
 
 ```
 
+## Spell Lists Appendix
+
+### Basic: Cleric Spell Lists (pages 26-27)
+
+```text
+FIRST LEVEL CLERIC SPELLS
+1. Cure Light Wounds*
+2. Detect Evil*
+3. Detect Magic
+4. Light*
+5. Protection From Evil
+6. Purify Food and Water
+7. Remove Fear*
+8. Resist Cold
+*These spells may be "reversed" (that is,
+learned and cast with an effect exactly
+opposite from the original) in the D&D
+EXPERT Set. A cleric must reach the
+Fourth Level of Experience before
+learning how to reverse spell effects.
+```
+
+### Basic: Magic-User Spell Lists (pages 40-44)
+
+```text
+FIRST LEVEL MAGIC-USER SPELLS
+1. Charm Person
+2. Detect Magic
+3. Floating Disc
+4. Hold Portal
+5 . Light
+6. Magic Missile
+7. Protection from Evil
+8. Read Languages
+9. Read Magic
+10. Shield
+11. Sleep
+12. Ventriloquism
+SECOND LEVEL
+MAGIC-USER SPELLS
+1. Continual Light
+2. Detect Evil
+3 . Detect Invisible
+4. ESP
+5. Invisibility
+6. Knock
+7. Levitate
+8. Locate Object
+9. Mirror Image
+10. Phantasmal Force
+11. Web
+12. Wizard Lock
+```
+
+### Basic: Higher-Level Cleric Spell Lists (DM pages 17-18)
+
+```text
+Second Level Cleric Spells
+1. Bless*
+2. Hold Person
+3. Silence 15' radius
+```
+
+### Basic: Higher-Level Magic-User Spell Lists (DM pages 17-18)
+
+```text
+Third Level Magic-user Spells
+1. Dispel Magic
+2. Fire Ball
+3. Fly
+```
+

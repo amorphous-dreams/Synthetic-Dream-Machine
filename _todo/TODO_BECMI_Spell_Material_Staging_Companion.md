@@ -3170,3 +3170,102 @@ may punish poisoners.
 
 ```
 
+
+## Spell Lists Appendix
+
+- Note: these are raw numbered spell lists from the Companion Set. They are appendix-only  14 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.
+
+### Companion: Cleric Spell Lists (pages 13-14)
+
+- Extraction note: TSV column reflow of Companion cleric 5th-7th level spell list pages.
+
+```text
+FIFTH LEVEL CLERIC SPELLS
+1. Commune
+2. Create Food
+3. Cure Critical Wounds*
+4. Dispel Evil
+5. Insect Plague
+6. Quest*
+7. Raise Dead*
+8. Truesight
+SIXTH LEVEL CLERIC SPELLS
+1. Aerial Servant
+2. Animate Objects
+3. Barrier*
+4. Create Normal Animals
+5. Cureall
+6. Find the Path
+7. Speak with Monsters*
+8. Word of Recall
+SEVENTH LEVEL CLERIC SPELLS
+1. Earthquake
+2. Holy Word
+3. Raise Dead Fully*
+4. Restore*
+
+```
+
+### Companion: Magic-User Spell Lists (pages 22-24)
+
+- Extraction note: TSV column reflow of Companion magic-user 5th-9th level spell lists (pages 22-24). Column reflow orders left columns (numbered index lists) before middle/right columns (descriptions); smart filter strips descriptions.
+
+```text
+FIFTH LEVEL MAGIC-USER SPELLS
+1. Animate Dead
+2. Cloudkill
+3. Conjure Elemental
+4. Contact Outer Plane
+5. Dissolve*
+6. Feeblemind
+7. Hold Monster*
+8. Magic Jar
+9. Pass-Wall
+10. Telekinesis
+11. Teleport
+12. Wall of Stone
+SIXTH LEVEL MAGIC-USER SPELLS
+1. Anti-Magic Shell
+2. Death Spell
+3. Disintegrate
+4. Geas*
+5. Invisible Stalker
+6. Lower Water
+7 . Move Earth
+8. Projected Image
+9. Reincarnation
+10. Stone to Flesh*
+11. Wall of Iron
+12. Weather Control
+SEVENTH LEVEL
+MAGIC-USER SPELLS
+1. Charm Plant
+2. Create Normal Monsters
+3. Delayed Blast Fire Ball
+4. Lore
+5. Magic Door*
+6. Mass Invisibility*
+7. Power Word Stun
+8. Reverse Gravity
+9. Statue
+10. Summon Object
+11. Sword
+12. Teleport any Object
+EIGHTH LEVEL
+MAGIC-USER SPELLS
+1. Dance
+2. Explosive Cloud
+3. Mass Charm*
+4. Mind Barrier*
+5. Permanence
+6. Polymorph any Object
+7. Power Word Blind
+8. Symbol
+NINTH LEVEL MAGIC-USER SPELLS
+1. Gate*
+2. Maze
+3. Meteor Swarm
+4. Power Word Kill
+
+```
+

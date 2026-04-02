@@ -23,6 +23,13 @@ DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
 DEFAULT_STAGING = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
 
 PENDING_TOKEN = "osr:\n{pending verbatim extraction}"
+PENDING_BODY = "{pending verbatim extraction}"
+# Tolerates optional blank line before body and before footer div
+# (older cards use <div style="text-align: right"> with a blank line before it)
+OSR_BLOCK_RE = re.compile(
+    r"(osr:\n\n?)(.*?)(\n\n?(?:  <div class=\"power-return\">|<div style=\"text-align: right\">))",
+    re.DOTALL,
+)
 REVIEW_QUEUE_HEADING = "## Chapter 06 `osr:` Import Review Queue\n\n"
 REFERENCE_REUSE_MARKER = "## Reference Reuse Targets\n"
 REVIEW_LINE_RE = re.compile(r"^- `(.+?)`: (.+)$")
@@ -171,7 +178,7 @@ def select_names(ordered_names: list[str], records: dict[str, Record], target_ca
 def iter_card_blocks(chapter_text: str) -> list[tuple[str, int, int, str]]:
     blocks: list[tuple[str, int, int, str]] = []
     for match in re.finditer(
-        r'<div class="power-card" markdown="1">\n\n(#{2,6}) (.+?)\n(.*?)\n</div>',
+        r'<div class="power-card" markdown="1">\n\n+(#{2,6}) (.+?)\n(.*?)\n</div>',
         chapter_text,
         flags=re.S,
     ):
@@ -200,7 +207,7 @@ def resolve_card_block(chapter_text: str, record: Record) -> tuple[str, int, int
 
 def render_osr_block(record: Record) -> str:
     if not record.witnesses:
-        return "{pending verbatim extraction}"
+        return PENDING_BODY
 
     rendered: list[str] = []
     for witness in record.witnesses:
@@ -221,16 +228,12 @@ def apply_osr_blocks(chapter_text: str, records: dict[str, Record], selected_nam
     for classic_name in selected_names:
         record = records[classic_name]
         heading, start, end, card_block = resolve_card_block(updated, record)
-        osr_match = re.search(
-            r"(osr:\n)(.*?)(\n(?:\n  <div class=\"power-return\">|<div style=\"text-align: right\">))",
-            card_block,
-            flags=re.S,
-        )
+        osr_match = OSR_BLOCK_RE.search(card_block)
         if not osr_match:
             raise RuntimeError(f"osr block not found in card {heading}")
         new_card = (
             card_block[: osr_match.start()]
-            + osr_match.group(1)
+            + "osr:\n"  # always write canonical no-blank-line form
             + render_osr_block(record)
             + osr_match.group(3)
             + card_block[osr_match.end() :]
@@ -346,8 +349,8 @@ def build_artifact(
     return ImportArtifact(
         chapter_text=new_chapter,
         crosswalk_text=new_crosswalk,
-        placeholder_count_before=chapter_text.count("{pending verbatim extraction}"),
-        placeholder_count_after=new_chapter.count("{pending verbatim extraction}"),
+        placeholder_count_before=chapter_text.count(PENDING_BODY),
+        placeholder_count_after=new_chapter.count(PENDING_BODY),
         row_status_counts=row_status_counts,
         review_items=review_items,
     )

@@ -4920,3 +4920,77 @@ Rome (43 BC).
 
 ```
 
+
+## Spell Lists Appendix
+
+- Note: these are raw numbered spell lists from the Master Set (with cross-references to the Companion Set). They are appendix-only  14 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.
+
+### Master: Cleric Spell Lists (pages 5-6)
+
+- Extraction note: TSV column reflow of Master cleric spell list pages (7th-level cleric spells with Companion cross-references).
+
+```text
+SEVENTH-LEVEL CLERIC SPELLS
+1. Earthquake (C 13)
+2. Holy Word (C13)
+3. Raise Dead Fully* ((213)
+4. Restore* (C13)
+5. Survival (described below)
+6. Travel (described below)
+7. Wish (page 4)
+8. Wizardry (page 4)
+
+```
+
+### Master: Druid Spell Lists (pages 6-7)
+
+- Extraction note: TSV column reflow of Master druid spell list pages (with Companion cross-references).
+
+```text
+Druid
+FIRST-LEVEL DRUID SPELLS
+1. Detect Danger (described below)
+2. Faerie Fire (C14)
+3. Locate ((215)
+4. Predict Weather (C15)
+SECOND-LEVEL DRUID SPELLS
+1. Heat Metal (described below)
+2. Obscure (C15)
+3. Produce Fire ((215)
+4. Warp Wood (C15)
+THIRD-LEVEL DRUID SPELLS
+1. Call Lightning ((215)
+2. Hold Animal (C15)
+3. Protection from Poison (page 5)
+4. Water Breathing (C15)
+FOURTH-LEVEL DRUID SPELLS
+1. Control Temperature 10’ radius (C15)
+2. Plant Door ((215)
+3. Protection from Lightning ((215)
+4. Summon Animals (page 5)
+FIFTH-LEVEL DRUID SPELLS
+1. Anti-Plant Shell (C16)
+2. Control Winds (C16)
+3. Dissolve (page 5)
+4. Pass Plant ((216)
+SIXTH-LEVEL DRUID SPELLS
+1 . Anti-Animal Shell (C16)
+2. Summon Weather ((216)
+3. Transport Through Plants (C16)
+4. Turn Wood (page 5)
+SEVENTH-LEVEL DRUID SPELLS
+1. Creeping Doom (C16)
+2. Metal to Wood (C16)
+3. Summon Elemental (page 5)
+4. Weather Control ((216)
+
+```
+
+### Master: Magic-User Spell Lists (pages 8-12)
+
+- Extraction note: TSV column reflow of Master magic-user 8th-9th level spell lists (with Companion cross-references).
+
+```text
+
+```
+

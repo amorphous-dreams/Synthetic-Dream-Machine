@@ -633,6 +633,45 @@ TXT
   printf '\n```\n\n' >> "$OUT"
 }
 
+basic_spell_lists_appendix() {
+  local pdf="$1"
+  printf '\n## Spell Lists Appendix\n\n' >> "$BASIC_OUT"
+
+  printf '### Basic: Cleric Spell Lists (pages 26-27)\n\n' >> "$BASIC_OUT"
+  printf '```text\n' >> "$BASIC_OUT"
+  render_tsv_cols_pages "$pdf" 28 29 '190,370' \
+    | awk '/FIRST LEVEL CLERIC SPELLS/ { started = 1 } started { print }' \
+    | spell_list_smart_filter >> "$BASIC_OUT"
+  printf '```\n\n' >> "$BASIC_OUT"
+
+  printf '### Basic: Magic-User Spell Lists (pages 40-44)\n\n' >> "$BASIC_OUT"
+  printf '```text\n' >> "$BASIC_OUT"
+  render_tsv_cols_pages "$pdf" 40 44 '190,370' \
+    | awk '/FIRST LEVEL MAGIC-USER SPELLS/ { started = 1 } started { print }' \
+    | spell_list_smart_filter >> "$BASIC_OUT"
+  printf '```\n\n' >> "$BASIC_OUT"
+
+  printf '### Basic: Higher-Level Cleric Spell Lists (DM pages 17-18)\n\n' >> "$BASIC_OUT"
+  printf '```text\n' >> "$BASIC_OUT"
+  cat >> "$BASIC_OUT" <<'TXT'
+Second Level Cleric Spells
+1. Bless*
+2. Hold Person
+3. Silence 15' radius
+TXT
+  printf '```\n\n' >> "$BASIC_OUT"
+
+  printf '### Basic: Higher-Level Magic-User Spell Lists (DM pages 17-18)\n\n' >> "$BASIC_OUT"
+  printf '```text\n' >> "$BASIC_OUT"
+  cat >> "$BASIC_OUT" <<'TXT'
+Third Level Magic-user Spells
+1. Dispel Magic
+2. Fire Ball
+3. Fly
+TXT
+  printf '```\n\n' >> "$BASIC_OUT"
+}
+
 basic_cleanup_misc_wrapper_tail() {
   perl -0pi -e '
     s/Rope of Climbing: This 50\x27 long, thin,\s*\n\s*strong rope/Rope of Climbing: This 50\x27 long, thin,\nstrong rope/g;
@@ -717,6 +756,7 @@ basic_higher_level_spells_block_named 'Higher Level Spells, Magic-User Spell All
 basic_magic_item_operation_block_named 'Magic Item Identification, Use Model, and Charge Doctrine' 'anchored TSV extraction from Basic treasure explanatory text covering identification procedure, permanent-vs-temporary typing, concentration-based item use constraints, and non-recharge charge behavior.' "$BASIC_PDF"
 basic_magic_arms_armor_block_named 'Magical Weapons, Armor, and Cursed Item Doctrine' 'anchored TSV extraction from treasure pages for cursed-weapon behavior, magical armor table interpretation, and cursed-armor handling prior to the scroll and ring catalog.' "$BASIC_PDF"
 basic_scrolls_block_named 'Scrolls and Spell-Adjacent Treasure Text' 'anchored TSV extraction from treasure pages for scroll/ring/item-operation doctrine, with curated fallback to preserve section completeness if extraction anchors degrade.' "$BASIC_PDF"
+basic_spell_lists_appendix "$BASIC_PDF"
 cleanup_output
 basic_cleanup_misc_wrapper_tail
 

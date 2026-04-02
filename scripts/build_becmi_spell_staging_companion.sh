@@ -503,3 +503,27 @@ assert_heading_count "$COMP_OUT" 'High-Level Cleric, Druid, and Magic-User Spell
 assert_heading_count "$COMP_OUT" 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 1 'Companion staging duplicated the spell-adjacent item section heading'
 assert_heading_count "$COMP_OUT" 'Demi-Human Crafts and Poison' 1 'Companion staging duplicated the demi-human crafts/poison section heading'
 validate_companion_staging
+
+companion_spell_lists_appendix() {
+  local pdf="$1"
+
+  printf '\n## Spell Lists Appendix\n\n' >> "$COMP_OUT"
+  printf -- '- Note: these are raw numbered spell lists from the Companion Set. They are appendix-only \x2014 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.\n\n' >> "$COMP_OUT"
+
+  printf '### Companion: Cleric Spell Lists (pages 13-14)\n\n' >> "$COMP_OUT"
+  printf -- '- Extraction note: TSV column reflow of Companion cleric 5th-7th level spell list pages.\n\n' >> "$COMP_OUT"
+  printf '```text\n' >> "$COMP_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'FIFTH LEVEL CLERIC SPELLS' 'Druid' \
+    | spell_list_smart_filter >> "$COMP_OUT"
+  printf '\n```\n\n' >> "$COMP_OUT"
+
+  printf '### Companion: Magic-User Spell Lists (pages 22-24)\n\n' >> "$COMP_OUT"
+  printf -- '- Extraction note: TSV column reflow of Companion magic-user 5th-9th level spell lists (pages 22-24). Column reflow orders left columns (numbered index lists) before middle/right columns (descriptions); smart filter strips descriptions.\n\n' >> "$COMP_OUT"
+  printf '```text\n' >> "$COMP_OUT"
+  render_tsv_cols_pages "$COMP_PDF" 22 24 '185,370' \
+    | awk 'started || /FIFTH LEVEL MAGIC-USER SPELLS/ { started = 1; print }' \
+    | spell_list_smart_filter >> "$COMP_OUT"
+  printf '\n```\n\n' >> "$COMP_OUT"
+}
+
+companion_spell_lists_appendix "$COMP_PDF"

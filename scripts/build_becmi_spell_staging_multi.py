@@ -64,7 +64,9 @@ LEVEL_HEADING_RE = re.compile(
     r"^\s*(First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth) Level .*Spells\s*$",
     re.I,
 )
-GENERIC_HEADING_RE = re.compile(r"^(## |### |\[)")
+# Note: do NOT include \[ here. Source staging files use [Page N: ...] annotation
+# markers inside code fence bodies; matching those would cut spell blocks prematurely.
+GENERIC_HEADING_RE = re.compile(r"^(## |### )")
 MASTER_ENTRY_RE = re.compile(r"^\s*\d+\.?\s+\S")
 IMMORTALS_ENTRY_RE = re.compile(r"^[A-Z][A-Za-z0-9' /(),.*-]+:")
 STRUCTURED_FENCE_RE = re.compile(r'```text id="(?P<id>[^"]+)"\n(?P<body>.*?)\n```', re.S)
@@ -119,7 +121,7 @@ def clean_numbered_entry_label(text: str) -> str:
 
 def parse_card_map(chapter_text: str) -> dict[str, str]:
     card_map: dict[str, str] = {}
-    for match in re.finditer(r"^## (.+?)\n(.*?)(?=^## |\Z)", chapter_text, re.S | re.M):
+    for match in re.finditer(r"^### (.+?)\n(.*?)(?=^#{1,3} |\Z)", chapter_text, re.S | re.M):
         title = match.group(1).strip()
         body = match.group(2)
         for spell_name in set(re.findall(r"(?:becmi|odnd):[^;\n]+; spell: ([^\n>]+)", body)):
@@ -130,12 +132,12 @@ def parse_card_map(chapter_text: str) -> dict[str, str]:
             "Animal Growth": "Animal Growth",
             "Audible Glamer": "Audible Glamer",
             "Clairaudience": "Clairaudience",
-            "Control Temperature 10\u2019 Radius": "Control Temperature 10\u2019 Radius",
+            "Control Temperature 10' Radius": "Control Temperature 10' Radius",
             "Dancing Lights": "Dancing Lights",
             "Darkness": "Darkness",
             "Enlargement": "Enlargement",
             "Finger of Death": "Finger of Death",
-            "Invisibility 10\u2019 Radius": "Invisibility 10\u2019 Radius",
+            "Invisibility 10' Radius": "Invisibility 10' Radius",
             "Magic Mouth": "Magic Mouth",
             "Passwall": "Passwall",
             "Polymorph Others": "Polymorph Others",
@@ -292,6 +294,11 @@ def collect_named_candidates(lines: list[str], aliases: list[str], known_norms: 
     for alias in aliases:
         for index, raw_line in enumerate(lines):
             line_text = raw_line.strip()
+            # Spell titles always start with an uppercase letter or a digit (numbered list
+            # entry). Skip lowercase-starting lines to avoid matching spell name references
+            # that appear mid-sentence inside prose or artifact descriptions.
+            if not line_text or not (line_text[0].isupper() or line_text[0].isdigit()):
+                continue
             if norm(line_text.rstrip("*")) not in alias_norms:
                 continue
             next_window = " ".join(part.strip() for part in lines[index + 1 : index + 8])
@@ -300,6 +307,11 @@ def collect_named_candidates(lines: list[str], aliases: list[str], known_norms: 
                 current = lines[cursor].strip()
                 current_cmp = current.rstrip("*")
                 if LEVEL_HEADING_RE.match(current) or GENERIC_HEADING_RE.match(current):
+                    end = cursor
+                    break
+                # Stop at code fence boundaries to avoid capturing fence markers from the
+                # upstream staging documents into the extracted spell block.
+                if current.startswith("```"):
                     end = cursor
                     break
                 if norm(current_cmp) in known_norms:
@@ -382,6 +394,22 @@ def prefer_full_spell_blocks(candidates: list[str]) -> list[str]:
     return preferred if preferred else candidates
 
 
+DESCRIPTION_FIELDS_RE = re.compile(r"^(Range|Duration|Effect):", re.M)
+
+
+def is_description_content(text: str) -> bool:
+    """Return True if text looks like a real spell description rather than a bare
+    numbered list entry.  A bare entry like '3. Raise Dead Fully*' is noise —
+    it comes from a spell-list table, not the spell's description block.
+    We accept the text if it is multi-line OR contains at least one of the
+    canonical spell-description field headers."""
+    if not text or not text.strip():
+        return False
+    if "\n" in text.strip():
+        return True
+    return bool(DESCRIPTION_FIELDS_RE.search(text))
+
+
 def choose_best_block(candidates: list[str], *, prefer_compact_details: bool = False) -> str | None:
     if not candidates:
         return None
@@ -414,15 +442,23 @@ def extract_witness(
     if lane == "Master":
         named_candidates = prefer_full_spell_blocks(collect_named_candidates(lines, aliases, known_norms))
         if named_candidates:
-            return choose_best_block(named_candidates)
+            result = choose_best_block(named_candidates)
+            if result and is_description_content(result):
+                return result
         compact_candidates = collect_master_candidates(lines, aliases)
-        compact_candidates.extend(collect_list_candidates(lines, aliases))
-        return choose_best_block(compact_candidates, prefer_compact_details=True)
+        # Do NOT fall back to bare list entries via collect_list_candidates —
+        # those single-line numbered entries are noise; they belong in the
+        # lane file's Spell Lists Appendix, not in per-spell witness blocks.
+        result = choose_best_block(compact_candidates, prefer_compact_details=True)
+        return result if result and is_description_content(result) else None
     if lane == "Immortals":
-        return choose_best_block(collect_immortals_candidates(lines, aliases))
+        result = choose_best_block(collect_immortals_candidates(lines, aliases))
+        return result if result and is_description_content(result) else None
     candidates = collect_named_candidates(lines, aliases, known_norms)
-    candidates.extend(collect_list_candidates(lines, aliases))
-    return choose_best_block(candidates)
+    # Do NOT include collect_list_candidates results — bare numbered list entries
+    # (e.g. "1. Charm Person") are spell-list noise, not description content.
+    result = choose_best_block(candidates)
+    return result if result and is_description_content(result) else None
 
 
 def build_output(
@@ -515,11 +551,27 @@ def build_output(
     return "\n".join(parts) + "\n"
 
 
+APPENDIX_SENTINEL = "## Spell Lists Appendix"
+
+
+def strip_appendix(lines: list[str]) -> list[str]:
+    """Return lines with everything from the Spell Lists Appendix sentinel onward
+    removed.  This prevents appendix content from being scanned as spell
+    description material."""
+    for i, line in enumerate(lines):
+        if line.strip() == APPENDIX_SENTINEL:
+            return lines[:i]
+    return lines
+
+
 def main() -> int:
     args = parse_args()
     chapter_text = args.chapter.read_text(encoding="utf-8")
     crosswalk_text = args.crosswalk.read_text(encoding="utf-8")
-    lane_lines = {lane: path.read_text(encoding="utf-8").splitlines() for lane, path in PLAIN_LANE_PATHS.items()}
+    lane_lines = {
+        lane: strip_appendix(path.read_text(encoding="utf-8").splitlines())
+        for lane, path in PLAIN_LANE_PATHS.items()
+    }
     structured_witnesses = parse_pre_add_witnesses(args.pre_add.read_text(encoding="utf-8"))
 
     rendered = build_output(

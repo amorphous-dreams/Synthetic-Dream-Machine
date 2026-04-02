@@ -82,6 +82,17 @@ Effect: Any one living creature
    This spell either heals damage or removes pa-
 ralysis. If used to heal, it can cure 2-7 (1d6 + 1)
 points of damage. It cannot heal damage if used
+
+[RC page 34: first clerical spell entries]
+  to cure paralysis. The cleric may cast it on him-
+  self if desired.
+     This spell cannot increase a creature’s total hit
+  points above the original amount.
+     When reversed, this spell, cause light wounds,
+  causes 1d6 + 1 (2-7) points of damage to any
+  creature or character touched (no saving throw is
+  allowed). The cleric must make a normal attack
+  roll to inflict this damage.
 ```
 
 ## Detect Evil
@@ -89,8 +100,8 @@ points of damage. It cannot heal damage if used
 - canonical spell key: `Detect Evil`
 - Chapter 06 card heading: `Detect Evil`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -116,18 +127,6 @@ does not automatically mean Evil, al-
 though many Chaotic monsters have evil
 intentions. Traps and poison are neither
 good nor evil, merely dangerous.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Detect Evil`
-- Chapter 06 card heading: `Detect Evil`
-
-```text
-2. Detect Evil
 ```
 
 ### Witness: Rules Cyclopedia
@@ -162,8 +161,8 @@ dangerous.
 - canonical spell key: `Detect Magic`
 - Chapter 06 card heading: `Detect Magic`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -193,18 +192,6 @@ magic wand. All the magic will glow, but
 only the door and potion will be seen;
 the light of the glowing wand is hidden
 by the treasure chest.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Detect Magic`
-- Chapter 06 card heading: `Detect Magic`
-
-```text
-2. Detect Magic
 ```
 
 ### Witness: Rules Cyclopedia
@@ -330,8 +317,8 @@ and if he succeeds, the spell misses.
 - canonical spell key: `Protection from Evil`
 - Chapter 06 card heading: `Protection from Evil`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -376,18 +363,6 @@ chanted" creatures are then able to
 touch the magic-user, but the Hit roll
 and Saving Throw adjustments still ap-
 ply until the spell duration ends.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Protection from Evil`
-- Chapter 06 card heading: `Protection from Evil`
-
-```text
-7. Protection from Evil
 ```
 
 ### Witness: Rules Cyclopedia
@@ -610,6 +585,171 @@ cold is reduced by - 1 per die of damage
 (but with a minimum of 1 point of
 damage per die). The effect will move
 with the cleric.
+
+[Basic pages 38-42: TSV column-reflowed magic-user spell books and descriptions]
+Spell Books:
+Your Medium (1st Level magic-user)
+starts with a spell book, containing two
+First Level spells. Your Dungeon Master
+will tell you what spells your character
+starts with. The spell book is a large
+bulky thing, and cannot be easily car-
+ried. A spell book is about 2 feet square,
+2-6 inches thick, and weighs at least 20
+pounds. It will not fit inside a normal
+sack of any size, but may be carried in a
+backpack or saddlebag.
+When your character becomes a Seer,
+you will add another First Level spell to
+the book; again, your DM will tell you
+which spell. Upon reaching 3rd Level of
+Experience, a Second Level spell will be
+gained. When the 4th Level of Experi-
+ence is reached, another Second Level
+spell is added to the book. (Magic-users
+of levels 4-14 are explained in the D&D
+EXPERT Set.)
+Assume that your character is given
+these additional spells by a teacher, a
+powerful magic-user of 7th Level or
+greater. All magic-users of less than that
+level must have teachers. These teachers
+never go on adventures with characters.
+They will not affect most games.
+Different magic-users often have dif-
+ferent spells in their books. For example,
+you might start with the Read Magic
+and Sleep spells, and find another
+magic-user who knows Read Magic and
+Magic Missile. But magic-users never
+trade spells, nor d o they ever allow
+anyone (except their teachers) to read
+their spell books. The risk of losing the
+book or having it damaged, is too great.
+If a magic-user’s book is lost, the charac-
+ter cannot memorize any spells to cast!
+One magical treasure which may be
+found during an adventure is a magic
+scroll. Some scrolls contain magic-user
+spells. If a new spell is found on a scroll, it
+may be added to the magic-user’s book -
+but this can only be done once for each
+scroll spell, and uses up the scroll in the
+process. If the spell is of too high a level to
+be cast, it cannot be put into the book.
+A spell on a scroll may be saved, to be
+put into a book at a future time. It may
+also be carried during adventures, to be
+cast as needed. Any magic-user can cast
+a spell found on a scroll as if it were
+memorized, regardless of the level of the
+spell. If the spell is cast, it disappears
+from the scroll.
+You, the player, need only keep a list
+of which of the many spells are in your
+character’s book. Keep the list on your
+character sheet, under "Special Abili-
+ties." Scrolls are magic items, listed on
+the back of the character sheet.
+Learning Spells:
+To learn a spell, the magic-user must be
+completely rested. A good night’s sleep
+is enough. The character then gets out
+the spell book and studies the spells to be
+used, which takes an hour or less. The
+character is then ready for adventure,
+and is able to cast the spell or spells
+studied.
+A Medium can cast one spell per ad-
+venture. A Seer can cast two First Level
+spells per adventure. A Conjurer can
+cast 3 spells per adventure, two of the
+First Level of Power and one of the
+Second Level.
+In more advanced games, adventures
+may last more than a day. In such cases,
+a magic-user can study spells each morn-
+ing, if completely rested. A mule should
+be brought along on long adventures, to
+carry the spell book along with normal
+equipment. But beware! If the book is
+lost, the character is in big trouble. If
+that happens, ask your Dungeon Master
+what you should do.
+Don’t confuse the spells memorized
+with spells in a book! Your magic-user
+character will eventually have many
+spells in a spell book, but can still only
+memorize a few each day.
+Casting Spells:
+In the game, when you want your char-
+acter to cast a spell, just tell your Dun-
+geon Master.
+When the magic-user casts a spell, the
+memory of that spell is forgotten. Imag-
+ine that the magic-user’s memory is like
+a blackboard. When studying, the char-
+acter "writes spells on the blackboard,"
+but each spell is "erased" as it is cast. If
+your character has studied a spell twice
+and casts one, the other still remains to
+be used.
+The character must be able to gesture
+and speak without interruption to cast a
+spell. While casting a spell, the magic-
+user must concentrate, and may not
+move. A spell cannot be cast while the
+character is walking or running. If the
+magic-user is disturbed while casting a
+spell, the spell will be ruined, and will
+still be "erased," just as if it had been
+cast.
+Types of Spells:
+Most spells have an effect that lasts for a
+given time. For example, a Magic Missile
+spell creates a glowing arrow that follows
+the magic-user around, either until it is
+shot or until a turn passes (10 minutes).
+However, some higher level spells may
+have "instant" duration. A Fire Ball spell
+creates a n explosion which causes
+damage. The damage remains until
+cured, but the spell itself only lasts part
+of a second, much less than a round.
+Saving throws vs. Spells:
+Many spells only have full effect if the
+victim fails a Saving Throw (vs. spells). If
+a Saving Throw is allowed, it is men-
+tioned in the spell description.
+Magic-user Spells:
+Each spell has a given Range, Duration,
+and Effect.
+Range: The character should be sure,
+before casting the spell, that the target is
+within range. If the description says
+"Range: 0," the spell may only be used
+by the magic-user, and cannot be cast on
+others. If "Range: Touch" is given, the
+spell can be placed on any creature the
+magic-user touches - including the
+magic-user himself (or herself, as the
+case may be).
+Duration is given either in rounds (of 10
+seconds each) or turns (of 10 minutes
+each). If the description says "Duration:
+Permanent," then the spell has an in-
+stant and permanent effect that does not
+go away after a given duration.
+Effect of the spell gives either the num-
+ber of creatures or objects affected, o r
+an area or volume of space. If an area is
+given, it is measured in square feet (a flat
+area). If a 3-dimensional volume is af-
+fected, it is either a round "ball" with a
+given diameter, or a square or rectangu-
+lar "box" of a given size; both are mea-
+sured in feet.
+Magical Spell Descriptions
 ```
 
 ### Witness: Rules Cyclopedia
@@ -640,8 +780,8 @@ fect will move with the cleric.
 - canonical spell key: `Charm Person`
 - Chapter 06 card heading: `Charm Person`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -695,18 +835,6 @@ the magic-user attacks the victim,
 whether by spell or by weapon. The
 victim will fight normally if attacked by
 the magic-user’s allies.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Charm Person`
-- Chapter 06 card heading: `Charm Person`
-
-```text
-1. Charm Person
 ```
 
 ### Witness: Rules Cyclopedia
@@ -778,14 +906,14 @@ tacked by the spellcaster’s allies.
 - canonical spell key: `Fireball`
 - Chapter 06 card heading: `Fireball`
 - expected witness lanes: `Basic`, `Expert`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `4`
+- missing expected witness lanes: `Expert`, `Master`
+- witness count: `2`
 
 ### Witness: Basic
 
 - source lane: `Basic`
 - source label: `Basic Rules`
-- staging anchor / section: `Spell Lists and Basic Spell Descriptions`
+- staging anchor / section: `Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books`
 - canonical spell key: `Fireball`
 - Chapter 06 card heading: `Fireball`
 
@@ -796,30 +924,6 @@ Duration: instantaneous
 Effect: A spherical volume 40' across
 
 This spell creates a missile of fire which explodes into a ball of fire of 20' radius when it reaches the desired range or strikes a target. The Fire Ball inflicts 1-6 (1d6) points of fire damage for each level of the spell caster. Each victim within the area of effect takes full damage unless a Saving Throw vs. Spells is made. Even if the Saving Throw is successful, the victims take half the rolled damage. For example, a Fire Ball cast by a 6th level magic-user explodes for 6-36 (6d6) points of damage. If the total roll is 24, all within the area who make their Saving Throws take 12 points of fire damage.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Fireball`
-- Chapter 06 card heading: `Fireball`
-
-```text
-3. Fire Ball
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Artifact Chapter Context and Witnesses`
-- canonical spell key: `Fireball`
-- Chapter 06 card heading: `Fireball`
-
-```text
-  55 Fire Ball (R 240', EF 20d6 D; X11)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -854,8 +958,8 @@ rolled on the dice.
 - canonical spell key: `Floating Disc`
 - Chapter 06 card heading: `Floating Disc`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -885,18 +989,6 @@ because it has no solid existence and
 moves slowly. When the duration ends,
 the floating disc will disappear, suddenly
 dropping anything upon it.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Floating Disc`
-- Chapter 06 card heading: `Floating Disc`
-
-```text
-3. Floating Disc
 ```
 
 ### Witness: Rules Cyclopedia
@@ -934,8 +1026,8 @@ throw is allowed.
 - canonical spell key: `Hold Portal`
 - Chapter 06 card heading: `Hold Portal`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -960,18 +1052,6 @@ acters) may break open a held portal in
 one round’s time, but the portal will
 relock if allowed to close within the
 duration of the spell.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Hold Portal`
-- Chapter 06 card heading: `Hold Portal`
-
-```text
-4. Hold Portal
 ```
 
 ### Witness: Rules Cyclopedia
@@ -1005,8 +1085,8 @@ spellcaster.
 - canonical spell key: `Magic Missile`
 - Chapter 06 card heading: `Magic Missile`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -1040,18 +1120,6 @@ caster, two more missiles are created by
 the same spell. Thus a 6th Level Magic-
 user may create three missiles. The mis-
 siles may be shot at different targets.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Magic Missile`
-- Chapter 06 card heading: `Magic Missile`
-
-```text
-6. Magic Missile
 ```
 
 ### Witness: Rules Cyclopedia
@@ -1091,8 +1159,8 @@ one target or at different targets.
 - canonical spell key: `Read Languages`
 - Chapter 06 card heading: `Read Languages`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -1112,18 +1180,6 @@ read, not speak, any unknown languages
 or codes, including treasure maps, secret
 symbols, and so forth, until the duration
 ends.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Read Languages`
-- Chapter 06 card heading: `Read Languages`
-
-```text
-8. Read Languages
 ```
 
 ### Witness: Rules Cyclopedia
@@ -1150,8 +1206,8 @@ until the duration ends.
 - canonical spell key: `Read Magic`
 - Chapter 06 card heading: `Read Magic`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -1178,18 +1234,6 @@ spoken later (without) using a spell. All
 spell books are written in magical words,
 and only their owners may read them
 without using this spell.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Read Magic`
-- Chapter 06 card heading: `Read Magic`
-
-```text
-9. Read Magic
 ```
 
 ### Witness: Rules Cyclopedia
@@ -1223,8 +1267,8 @@ using this spell.
 - canonical spell key: `Shield`
 - Chapter 06 card heading: `Shield Ward`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -1364,20 +1408,6 @@ a Saving Throw vs. Poison or die! (If you
 wish, you may decide that th le poison will
 do a set amount of damage if the Saving
 Throw is failed.)
-
-```
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Shield`
-- Chapter 06 card heading: `Shield Ward`
-
-```text
-10. Shield
 ```
 
 ### Witness: Rules Cyclopedia
@@ -2664,8 +2694,6 @@ wearer of the mask will be immediately stunned
 for a full turn and will remember nothing of what
 he did while wearing the mask, but he will be
 otherwise unharmed.
-
-```
 ```
 
 ## Sleep
@@ -2673,8 +2701,8 @@ otherwise unharmed.
 - canonical spell key: `Sleep`
 - Chapter 06 card heading: `Sleep`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -2705,18 +2733,6 @@ Your Dungeon Master will roll to find
 the total Hit Dice of monsters affected,
 using 2d8. The victims get no Saving
 Throw.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Sleep`
-- Chapter 06 card heading: `Sleep`
-
-```text
-11. Sleep
 ```
 
 ### Witness: Rules Cyclopedia
@@ -2762,8 +2778,8 @@ spell.
 - canonical spell key: `Ventriloquism`
 - Chapter 06 card heading: `Ventriloquism`
 - expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: Basic
 
@@ -2782,18 +2798,6 @@ This spell will allow the magic-user to
 make the sound of his or her voice to
 come from somewhere else, such as a
 statue, animal, dark corner, and so forth.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Ventriloquism`
-- Chapter 06 card heading: `Ventriloquism`
-
-```text
-12. Ventriloquism
 ```
 
 ### Witness: Rules Cyclopedia
@@ -2820,9 +2824,26 @@ be within range of the spell.
 
 - canonical spell key: `Bless`
 - Chapter 06 card heading: `Bless`
-- expected witness lanes: `Expert`, `Rules Cyclopedia`
+- expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
-- witness count: `2`
+- witness count: `3`
+
+### Witness: Basic
+
+- source lane: `Basic`
+- source label: `Basic Rules`
+- staging anchor / section: `Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books`
+- canonical spell key: `Bless`
+- Chapter 06 card heading: `Bless`
+
+```text
+Bless*
+Range: Touch
+Duration: 6 turns
+Effect: All friends within 60'
+
+This spell raises the morale of all friendly creatures in range by +1, and gives a bonus of +1 to all their Hit and Damage rolls. It only affects those not yet in battle.
+```
 
 ### Witness: Expert
 
@@ -3170,9 +3191,28 @@ fantastic creatures.
 
 - canonical spell key: `Hold Person`
 - Chapter 06 card heading: `Hold Person`
-- expected witness lanes: `Expert`, `Rules Cyclopedia`
+- expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
-- witness count: `2`
+- witness count: `3`
+
+### Witness: Basic
+
+- source lane: `Basic`
+- source label: `Basic Rules`
+- staging anchor / section: `Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books`
+- canonical spell key: `Hold Person`
+- Chapter 06 card heading: `Hold Person`
+
+```text
+Hold Person
+Range: 180'
+Duration: 9 turns
+Effect: 1-4 persons (cleric’s choice)
+
+This spell will affect any human, demi-human or human-like creature (such as bugbears, gnolls, gnomes, hobgoblins, kobolds, lizard men, ogres, orcs, pixies or sprites). It will not affect undead nor creatures of 5 Hit Dice or more. The victim(s) must make a Saving Throw vs. Spells or be paralyzed.
+
+This spell may be cast either at a single creature or at a group. If cast at a single creature, that victim must make a Saving Throw vs. Spells with a -2 penalty to the die roll. If cast at a group, it may affect up to 4 creatures, but no penalties apply to the Saving Throws.
+```
 
 ### Witness: Expert
 
@@ -3504,21 +3544,45 @@ of the creature (again, to no less than 1 point of
 damage per Hit Die).
 ```
 
-## Silence 15’ Radius
+## Silence 15' Radius
 
-- canonical spell key: `Silence 15’ Radius`
-- Chapter 06 card heading: `Silence 15’ Radius`
-- expected witness lanes: `Expert`, `Rules Cyclopedia`
+- canonical spell key: `Silence 15' Radius`
+- Chapter 06 card heading: `Silence 15' Radius`
+- expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
-- witness count: `2`
+- witness count: `3`
+
+### Witness: Basic
+
+- source lane: `Basic`
+- source label: `Basic Rules`
+- staging anchor / section: `Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books`
+- canonical spell key: `Silence 15' Radius`
+- Chapter 06 card heading: `Silence 15' Radius`
+
+```text
+Silence 15' Radius
+Range: 180'
+Duration: 12 turns
+Effect: A spherical volume 30' across
+
+This spell will make the given area totally quiet. Conversation and spells in this area will be prevented for the duration of the spell. This spell does not prevent a person within the area from hearing noises made outside the area. If cast at a creature, the victim must make a Saving Throw vs. Spells, or the silence will move along with the victim. If the Saving Throw is successful, the spell will remain in the area to which it was cast, and the intended victim may move away from it.
+
+HIGH LEVEL MAGIC-USERS AND ELVES
+
+Level   Spells
+4       2 First Level, 2 Second Level
+5       2 First Level, 2 Second Level, 1 Third Level
+6       2 First Level, 2 Second Level, 2 Third Level
+```
 
 ### Witness: Expert
 
 - source lane: `Expert`
 - source label: `Expert Set`
 - staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Silence 15’ Radius`
-- Chapter 06 card heading: `Silence 15’ Radius`
+- canonical spell key: `Silence 15' Radius`
+- Chapter 06 card heading: `Silence 15' Radius`
 
 ```text
 Silence 15' Radius
@@ -3543,8 +3607,8 @@ and the victim may move out of the area.
 - source lane: `Rules Cyclopedia`
 - source label: `Rules Cyclopedia`
 - staging anchor / section: `Clerical Spells List and Spell Descriptions`
-- canonical spell key: `Silence 15’ Radius`
-- Chapter 06 card heading: `Silence 15’ Radius`
+- canonical spell key: `Silence 15' Radius`
+- Chapter 06 card heading: `Silence 15' Radius`
 
 ```text
 Silence 15' Radius
@@ -3950,7 +4014,7 @@ the weapon).
 ## Animate Dead
 
 - canonical spell key: `Animate Dead`
-- Chapter 06 card heading: `Animate Dead`
+- Chapter 06 card heading: `Animate Dead, aka Animate Corpse`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
 - witness count: `2`
@@ -3961,7 +4025,7 @@ the weapon).
 - source label: `Expert Set`
 - staging anchor / section: `Clerical and Magic-User Spell Expansions`
 - canonical spell key: `Animate Dead`
-- Chapter 06 card heading: `Animate Dead`
+- Chapter 06 card heading: `Animate Dead, aka Animate Corpse`
 
 ```text
 Animate Dead
@@ -3995,7 +4059,7 @@ the dead is usually a Chaotic act.
 - source label: `Rules Cyclopedia`
 - staging anchor / section: `Clerical and Magical Spells Lists and Spell Descriptions`
 - canonical spell key: `Animate Dead`
-- Chapter 06 card heading: `Animate Dead`
+- Chapter 06 card heading: `Animate Dead, aka Animate Corpse`
 
 ```text
 Animate Dead
@@ -5406,20 +5470,8 @@ third level spell.)
 - canonical spell key: `Detect Invisible`
 - Chapter 06 card heading: `Detect Invisible`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Detect Invisible`
-- Chapter 06 card heading: `Detect Invisible`
-
-```text
-3. Detect Invisible
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -5446,8 +5498,8 @@ spell to see invisible things within 30'.
 - canonical spell key: `ESP`
 - Chapter 06 card heading: `ESP`
 - expected witness lanes: `OD&D Family`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: OD&D Family
 
@@ -5459,18 +5511,6 @@ spell to see invisible things within 30'.
 
 ```text
 ESP: A spell which allows the user to detect the thoughts (if any) of whatever lurks behind doors or in the darkness. It can penetrate solid rock up to about 2' in thickness, but a thin coating of lead will prevent its penetration. Duration: 12 turns. Range: 6"
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `ESP`
-- Chapter 06 card heading: `ESP`
-
-```text
-4. ESP*
 ```
 
 ### Witness: Rules Cyclopedia
@@ -5551,9 +5591,51 @@ volume.
 
 - canonical spell key: `Fly`
 - Chapter 06 card heading: `Fly`
-- expected witness lanes: `Expert`, `Rules Cyclopedia`
+- expected witness lanes: `Basic`, `Expert`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
-- witness count: `2`
+- witness count: `3`
+
+### Witness: Basic
+
+- source lane: `Basic`
+- source label: `Basic Rules`
+- staging anchor / section: `Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books`
+- canonical spell key: `Fly`
+- Chapter 06 card heading: `Fly`
+
+```text
+Fly
+Range: Touch
+Duration: 1d6 turns + 1 turn per level of the spell caster
+Effect: Any one living creature
+
+This spell allows the caster (or a person touched) to fly. The spell will permit movement in any direction and at any speed up to 120' per round. It will also allow the person to stop at any point (as a Levitate spell). The person the spell is cast on has control over the flying. The exact duration is not known to anyone but the Dungeon Master. For example, a 5th level elf may fly, using this spell, for 6-11 (1d6 + 5) turns.
+
+Giving Magic-Users Spells
+
+When a player starts a magic-user or elf character, the player will ask you what spells the character has in the spell book. The magic-user’s teacher is a higher level NPC magic-user, and the spells come from the teacher. The "spell book" assumed in the game can simply be a list of spells kept on the character sheet. You may play the role of the teacher if you wish, but this may also be assumed.
+
+This system for spells allows you, the DM, to keep control of the spells used in the game. For example, you may wish to avoid Charm Person spells. You can avoid it simply by not giving it to the characters.
+
+The first spell given should always be Read Magic. This allows the character to read scrolls found, and would be a basic part of the character’s training.
+
+The second spell given to a beginning magic-user character should be fairly powerful. You should avoid giving Detect Magic, Light, or Protection From Evil as the second spell, as these are nearly the same as the cleric versions (easily acquired by a 2nd or higher level cleric).
+
+You may give any "second spell" to a beginning elf character. The elf’s many talents keep that character class balanced with the others, whatever spells are known. The player of an elf can feel useful in many ways; the spell is an additional bonus, not the character’s only specialty. A magic-user character is different. The magic-user has only one specialty - spells - and suffers from low hit points, poor Armor Class, and severe weapon restrictions.
+
+For magic-user characters, good "second spells" are Charm Person, Magic Missile, Sleep (all useful attack-type spells), and Shield (a valuable protection).
+
+[Basic player page 38: spell books and lost spell books]
+Spell Books
+
+Different magic-users often have different spells in their books. For example, you might start with the Read Magic and Sleep spells, and find another magic-user who knows Read Magic and Magic Missile. But magic-users never trade spells, nor do they ever allow anyone (except their teachers) to read their spell books. The risk of losing the book or having it damaged is too great.
+
+If a magic-user’s book is lost, the character cannot memorize any spells to cast.
+
+One magical treasure which may be found during an adventure is a magic scroll. Some scrolls contain magic-user spells. If a new spell is found on a scroll, it may be added to the magic-user’s book, but this can only be done once for each scroll spell, and uses up the scroll in the process. If the spell is of too high a level to be cast, it cannot be put into the book.
+
+A spell on a scroll may be saved, to be put into a book at a future time. It may also be carried during adventures, to be cast as needed. Any magic-user can cast a spell found on a scroll as if it were memorized, regardless of the level of the spell. If the spell is cast, it disappears from the scroll.
+```
 
 ### Witness: Expert
 
@@ -5605,20 +5687,8 @@ tate spell); this does not require concentration.
 - canonical spell key: `Invisibility`
 - Chapter 06 card heading: `Invisibility`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Invisibility`
-- Chapter 06 card heading: `Invisibility`
-
-```text
-5. Invisibility
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -5648,10 +5718,10 @@ An invisible creature will remain invisible until
 he or she attacks or casts any spell.
 ```
 
-## Invisibility 10’ Radius
+## Invisibility 10' Radius
 
-- canonical spell key: `Invisibility 10’ Radius`
-- Chapter 06 card heading: `Invisibility 10’ Radius`
+- canonical spell key: `Invisibility 10' Radius`
+- Chapter 06 card heading: `Invisibility 10' Radius`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
 - witness count: `2`
@@ -5661,8 +5731,8 @@ he or she attacks or casts any spell.
 - source lane: `Expert`
 - source label: `Expert Set`
 - staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Invisibility 10’ Radius`
-- Chapter 06 card heading: `Invisibility 10’ Radius`
+- canonical spell key: `Invisibility 10' Radius`
+- Chapter 06 card heading: `Invisibility 10' Radius`
 
 ```text
 Invisibility 10' radius
@@ -5687,8 +5757,8 @@ become invisible.
 - source lane: `Rules Cyclopedia`
 - source label: `Rules Cyclopedia`
 - staging anchor / section: `Magical Spells List and Spell Descriptions`
-- canonical spell key: `Invisibility 10’ Radius`
-- Chapter 06 card heading: `Invisibility 10’ Radius`
+- canonical spell key: `Invisibility 10' Radius`
+- Chapter 06 card heading: `Invisibility 10' Radius`
 
 ```text
 Invisibility 10' radius
@@ -5713,20 +5783,8 @@ others within 10') also become invisible.
 - canonical spell key: `Knock`
 - Chapter 06 card heading: `Knock`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Knock`
-- Chapter 06 card heading: `Knock`
-
-```text
-6. Knock
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -5761,20 +5819,8 @@ type of lock will be opened.
 - canonical spell key: `Levitate`
 - Chapter 06 card heading: `Levitate`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Levitate`
-- Chapter 06 card heading: `Levitate`
-
-```text
-7. Levitate
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -5873,20 +5919,8 @@ caster until the total length of the bolt is 60'.
 - canonical spell key: `Mirror Image`
 - Chapter 06 card heading: `Mirror Image`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Mirror Image`
-- Chapter 06 card heading: `Mirror Image`
-
-```text
-9. Mirror Image
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -5925,20 +5959,8 @@ the spellcaster will be affected by the spell.)
 - canonical spell key: `Phantasmal Force`
 - Chapter 06 card heading: `Phantasmal Force`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Phantasmal Force`
-- Chapter 06 card heading: `Phantasmal Force`
-
-```text
-10. Phantasmal Force
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -5984,10 +6006,10 @@ throw to realize that the attack is an illusion, the
 damage sustained disappears immediately.
 ```
 
-## Protection from Evil 10’ Radius
+## Protection from Evil 10' Radius
 
-- canonical spell key: `Protection from Evil 10’ Radius`
-- Chapter 06 card heading: `Protection from Evil 10’ Radius`
+- canonical spell key: `Protection from Evil 10' Radius`
+- Chapter 06 card heading: `Protection from Evil 10' Radius`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
 - witness count: `2`
@@ -5997,8 +6019,8 @@ damage sustained disappears immediately.
 - source lane: `Expert`
 - source label: `Expert Set`
 - staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Protection from Evil 10’ Radius`
-- Chapter 06 card heading: `Protection from Evil 10’ Radius`
+- canonical spell key: `Protection from Evil 10' Radius`
+- Chapter 06 card heading: `Protection from Evil 10' Radius`
 
 ```text
 Protection from Evil 10' Radius
@@ -6037,8 +6059,8 @@ apply.
 - source lane: `Rules Cyclopedia`
 - source label: `Rules Cyclopedia`
 - staging anchor / section: `Clerical and Magical Spells Lists and Spell Descriptions`
-- canonical spell key: `Protection from Evil 10’ Radius`
-- Chapter 06 card heading: `Protection from Evil 10’ Radius`
+- canonical spell key: `Protection from Evil 10' Radius`
+- Chapter 06 card heading: `Protection from Evil 10' Radius`
 
 ```text
 Protection from Evil 10' Radius
@@ -6178,20 +6200,8 @@ the water.
 - canonical spell key: `Web`
 - Chapter 06 card heading: `Web`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Web`
-- Chapter 06 card heading: `Web`
-
-```text
-11. Web
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -6225,20 +6235,8 @@ sure) can break free of a web in 4 rounds.
 - canonical spell key: `Wizard Lock`
 - Chapter 06 card heading: `Wizard Lock`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Wizard Lock`
-- Chapter 06 card heading: `Wizard Lock`
-
-```text
-12. Wizard Lock
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -6249,14 +6247,14 @@ sure) can break free of a web in 4 rounds.
 - Chapter 06 card heading: `Wizard Lock`
 
 ```text
-wizard lock.
-The wizard who cast the wizard lock can easily
-open the door he has enchanted, as can any
-magic-using character or creature of three or
-more levels (or Hit Dice) greater than the caster.
-This sort of door-opening does not remove the
-magic, and the magical lock will relock when al-
-lowed to close (just as with the hold portal spell).
+Wizard Lock
+Range: 10'
+Duration: Permanent
+Effect: One portal or lock
+This spell is a more powerful version of a hold
+portal spell. It will work on any lock, not merely
+doors, and will last forever (or until magically
+dispelled). However, a knock spell can open the
 ```
 
 ## Anti-Magic Shell
@@ -6264,8 +6262,8 @@ lowed to close (just as with the hold portal spell).
 - canonical spell key: `Anti-Magic Shell`
 - Chapter 06 card heading: `Anti-Magic Shell`
 - expected witness lanes: `Expert`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Master`
+- witness count: `2`
 
 ### Witness: Expert
 
@@ -6289,18 +6287,6 @@ caster may destroy the shell at will; other-
 wise, it lasts until the duration ends. Except
 for a wish, no magical power (including a
 dispel magic spell) can cancel the barrier.
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Artifact Chapter Context and Witnesses`
-- canonical spell key: `Anti-Magic Shell`
-- Chapter 06 card heading: `Anti-Magic Shell`
-
-```text
-anti-magic shell.
 ```
 
 ### Witness: Rules Cyclopedia
@@ -6463,8 +6449,8 @@ Clairaudience: Same as Clairvoyance except it allows hearing rather than visuali
 - canonical spell key: `Clairvoyance`
 - Chapter 06 card heading: `Clairvoyance`
 - expected witness lanes: `OD&D Family`, `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Expert`
+- witness count: `2`
 
 ### Witness: OD&D Family
 
@@ -6476,18 +6462,6 @@ Clairaudience: Same as Clairvoyance except it allows hearing rather than visuali
 
 ```text
 Clairvoyance: Same as ESP spell except the spell user can visualize rather than merely pick up thoughts.
-```
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Clairvoyance`
-- Chapter 06 card heading: `Clairvoyance`
-
-```text
-1. Clairvoyance
 ```
 
 ### Witness: Rules Cyclopedia
@@ -6660,8 +6634,8 @@ Attack the creature’s own party
 - canonical spell key: `Conjure Elemental`
 - Chapter 06 card heading: `Conjure Elemental`
 - expected witness lanes: `Expert`, `Companion`, `Immortals`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `4`
+- missing expected witness lanes: `Companion`, `Immortals`
+- witness count: `2`
 
 ### Witness: Expert
 
@@ -6695,30 +6669,6 @@ home plane simply by concentration. An
 uncontrolled elemental may also be sent
 back by the use of a dispel magic or dispel evil
 spell.
-```
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items`
-- canonical spell key: `Conjure Elemental`
-- Chapter 06 card heading: `Conjure Elemental`
-
-```text
-3. Conjure Elemental
-```
-
-### Witness: Immortals
-
-- source lane: `Immortals`
-- source label: `Immortals Set`
-- staging anchor / section: `Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Conjure Elemental`
-- canonical spell key: `Conjure Elemental`
-- Chapter 06 card heading: `Conjure Elemental`
-
-```text
-Conjure Elemental: See General Notes (Conjuring and Summoning).
 ```
 
 ### Witness: Rules Cyclopedia
@@ -6934,48 +6884,8 @@ effects.
 - canonical spell key: `Geas`
 - Chapter 06 card heading: `Geas`
 - expected witness lanes: `Expert`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Expert
-
-- source lane: `Expert`
-- source label: `Expert Set`
-- staging anchor / section: `Clerical and Magic-User Spell Expansions`
-- canonical spell key: `Geas`
-- Chapter 06 card heading: `Geas`
-
-```text
-geas
-Range: 30'
-Duration: Until completed or removed
-Effect: Compels one creature
-This spell forces a victim either to perform
-or avoid a stated action. For example, a char-
-acter may be geased to bring back an object
-for the caster; to eat whenever the chance
-arises; or to never reveal certain informa-
-tion. The action must be possible and not
-directly fatal or else the gem will return and
-affect the caster instead! The victim may
-make a Saving Throw vs. Spells to avoid
-the effect. If the victim ignores the gem,
-penalties (decided by the DM) are applied
-until the character either obeys the geas or
-dies. Suitable penalties include minuses in
-combat, lowered ability scores, loss of
-spells, pain and weakness, and so forth.
-Dispel m
-ag c
-i and remove curse spells will not
-affect a geas.
-The reverse of this spell, remove gem, will
-rid a character of an unwanted geas and its
-effects. However, if the caster is a lower
-level than the caster of the original gem,
-there is a chance of failure (5% per level
-difference).
-```
+- missing expected witness lanes: `Expert`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -7464,8 +7374,8 @@ example, 8' tall or walking with a crutch).
 - canonical spell key: `Invisible Stalker`
 - Chapter 06 card heading: `Invisible Stalker`
 - expected witness lanes: `Expert`, `Immortals`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Immortals`
+- witness count: `2`
 
 ### Witness: Expert
 
@@ -7487,18 +7397,6 @@ the time or distance involved, until the task
 is completed or until the creature is slain. A
 dispel evil spell will force the creature to re-
 turn to its home plane.
-```
-
-### Witness: Immortals
-
-- source lane: `Immortals`
-- source label: `Immortals Set`
-- staging anchor / section: `Section 3: Immortal Magic -> Explanation of Terms, Charts S1-S4 -> Invisible Stalker`
-- canonical spell key: `Invisible Stalker`
-- Chapter 06 card heading: `Invisible Stalker`
-
-```text
-Invisible Stalker: See General Notes (Conjuring and Summoning).
 ```
 
 ### Witness: Rules Cyclopedia
@@ -8248,8 +8146,6 @@ turn one living creature, including all
 equipment carried, to stone. The victim
 may make a Saving Throw vs. Turn to
 Stone to avoid the effect.
-
-```
 ```
 
 ### Witness: Rules Cyclopedia
@@ -8727,20 +8623,8 @@ See Chapter 14 for a full description of the
 - canonical spell key: `Animate Objects`
 - Chapter 06 card heading: `Animate Objects`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells`
-- canonical spell key: `Animate Objects`
-- Chapter 06 card heading: `Animate Objects`
-
-```text
-2. Animate Objects
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -8845,20 +8729,8 @@ user spells wall of iron, stoneform, ironform or
 - canonical spell key: `Commune`
 - Chapter 06 card heading: `Commune`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells`
-- canonical spell key: `Commune`
-- Chapter 06 card heading: `Commune`
-
-```text
-1. Commune
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -8894,20 +8766,8 @@ questioned.
 - canonical spell key: `Create Food`
 - Chapter 06 card heading: `Create Food`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells`
-- canonical spell key: `Create Food`
-- Chapter 06 card heading: `Create Food`
-
-```text
-2. Create Food
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -8962,6 +8822,108 @@ may thereafter be sent (by command) up to
 will understand and obey the cleric at all
 times. They will fight if so commanded, and
 will perform other actions (carrying, watch-
+
+[Companion pages 15-17: druid transition, philosophy, and spell material]
+Druid
+A Neutral cleric of 9th level or greater may
+choose to study nature instead of remaining
+among "civilized" areas. This type of cleric is
+called a druid. The cleric must find and live
+in a woodland home, meditating for 1-4
+months. During that time, the cleric is found,
+tested, and taught by a higher level druid
+(usually 25th level or greater), and then joins
+the realm of the druids.
+A druid is pure Neutral, never Lawful or
+Chaotic. The druid’s way of life is devoted to
+the balance of all things, and the study of nat-
+ure. Any change of alignment results in the
+loss of all druid benefits (given below) until
+Neutral alignment is restored.
+The main differences between a druid and
+a normal cleric are:
+1 . A druid cannot cast any spell that affects
+good or evil (personal or ranged protec-
+tion from evil or dispel evil).
+2. New spells only for druids may be cast.
+The total number of spells that may be
+cast in one day does not change, but a
+druid may select from both the cleric and
+druid lists.
+3. A druid must live in a woodland home,
+rather than in a town or city.
+4. A druid may not wear metal armor of any
+type, nor use metal items. Leather is the
+only possible armor for druids, and while
+a shield may be used, it must be made
+entirely of wood. The standard weapon
+restrictions for clerics apply to druids, and
+they may only use wooden weapons (a
+specially made wooden hammer, wooden
+staff, etc.).
+5. There are only nine* druids of 30th level,
+and lesser numbers of each higher level.
+When the character gains enough XP to
+reach 30th level, one of the Nine must be
+found and fought by unarmed combat. If
+the character loses, 30th level is not gained
+(but a new challenge may be issued every
+3 months). Details on this combat, and
+the higher ranks of the druid realm, are
+given in the D&D Master Set.
+*For large-scale campaigns, limits might
+only apply per continent (DM’s choice).
+Druid Philosophy
+A druid character studies life itself-the
+balance of Nature and all living things. Druid
+items and equipment are all made of items
+that were once alive (leather, wood, etc.).
+"Dead" things that have never been alive are
+repulsive to the druid; the character simply
+won’t want to use or touch them. However,
+the character should not object if others use
+"dead" things. Thus, a druid can be a chal-
+lenging character to play, but the role can be
+very entertaining.
+The great enemies of all druids are the
+Undead. Druids have no power to "Turn
+Undead" and may contact town churches if
+Undead threaten their realms.
+Every druid lives in, protects, and tends a
+section of woodlands. Druids do not think of
+themselves as owners, but rather as care-
+takers. Nearly every tree in every woodland
+is cared for by a druid. Although minor dam-
+age to the woods is a fact oflife, deliberate evil
+destruction of trees or nature is often pun-
+ished by druids. Even Chaotic monsters
+know this, and avoid harming things of the
+woods lest they incur the wrath of the local
+druid.
+The DM and players should be sure not to
+abuse this role; druids are not all-powerful,
+and believe in the balance of all things. For
+example, a party foraging for food would not
+be attacked by a druid unless they killed more
+animals than they could eat.
+The battles of Law and Chaos are not the
+affairs of the druids, and they may simply
+watch such encounters from afar, helping nei-
+ther side. When characters perform good
+deeds in the woodlands, such as curing
+wounded animals, this does not make the
+druid automatically friendly. However,
+assistance in fighting a huge disaster-such
+as a magical storm or major forest fire-could
+earn the gratitude and help of a druid.
+Spells
+The following druid spells may be learned
+and cast along with normal cleric spells. The
+total number of spells usable in one day does
+not change from those of a cleric; the charac-
+ter may select freely from both lists, except
+for spells that affect Good or Evil.
+Druid spells are not reversible.
 ```
 
 ### Witness: Rules Cyclopedia
@@ -9059,20 +9021,8 @@ roll to cause the critical wound.
 - canonical spell key: `Cureall`
 - Chapter 06 card heading: `Cureall`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells`
-- canonical spell key: `Cureall`
-- Chapter 06 card heading: `Cureall`
-
-```text
-5. Cureall
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -9113,20 +9063,8 @@ that will work on a newly-raised creature.
 - canonical spell key: `Dispel Evil`
 - Chapter 06 card heading: `Dispel Evil`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells`
-- canonical spell key: `Dispel Evil`
-- Chapter 06 card heading: `Dispel Evil`
-
-```text
-4. Dispel Evil
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -9164,20 +9102,8 @@ influence of any magical charm.
 - canonical spell key: `Earthquake`
 - Chapter 06 card heading: `Earthquake`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells`
-- canonical spell key: `Earthquake`
-- Chapter 06 card heading: `Earthquake`
-
-```text
-1. Earthquake
-```
+- missing expected witness lanes: `Companion`
+- witness count: `2`
 
 ### Witness: Master
 
@@ -9229,20 +9155,8 @@ death to escape falling in).
 - canonical spell key: `Find the Path`
 - Chapter 06 card heading: `Find the Path`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells`
-- canonical spell key: `Find the Path`
-- Chapter 06 card heading: `Find the Path`
-
-```text
-6. Find the Path
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -9279,32 +9193,8 @@ used to find a fast escape route.
 - canonical spell key: `Holy Word`
 - Chapter 06 card heading: `Holy Word`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells`
-- canonical spell key: `Holy Word`
-- Chapter 06 card heading: `Holy Word`
-
-```text
-2. Holy Word
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Seventh-Level Cleric Spells`
-- canonical spell key: `Holy Word`
-- Chapter 06 card heading: `Holy Word`
-
-```text
-2. Holy Word (C13)
-```
+- missing expected witness lanes: `Companion`, `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -9348,20 +9238,8 @@ an anti-magic shell.
 - canonical spell key: `Insect Plague`
 - Chapter 06 card heading: `Insect Plague`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells`
-- canonical spell key: `Insect Plague`
-- Chapter 06 card heading: `Insect Plague`
-
-```text
-5. Insect Plague
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -9392,20 +9270,8 @@ works outdoors and above-ground.
 - canonical spell key: `Quest`
 - Chapter 06 card heading: `Quest`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells`
-- canonical spell key: `Quest`
-- Chapter 06 card heading: `Quest`
-
-```text
-6. Quest*
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -9531,33 +9397,13 @@ dead with 10 or more Hit Dice (phantom,
 haunt, spirit, nightshade, or special).
 ```
 
-## Finger of Death
-
-- canonical spell key: `Finger of Death`
-- Chapter 06 card heading: `Finger of Death`
-- expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `Companion`, `Rules Cyclopedia`
-- witness count: `0`
-
 ## Raise Dead Fully
 
 - canonical spell key: `Raise Dead Fully`
 - Chapter 06 card heading: `Raise Dead Fully`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells`
-- canonical spell key: `Raise Dead Fully`
-- Chapter 06 card heading: `Raise Dead Fully`
-
-```text
-3. Raise Dead Fully*
-```
+- missing expected witness lanes: `Companion`
+- witness count: `2`
 
 ### Witness: Master
 
@@ -9568,274 +9414,8 @@ haunt, spirit, nightshade, or special).
 - Chapter 06 card heading: `Raise Dead Fully`
 
 ```text
-      raise dead fully
-   3. Ability score penalty: The user loses 6-
-       11 (id6 +5) points of Strength, to a
-      minimum Strength of 3.
-   Source: Norse mythology
-   Further Research: See standard works,
-referring to the following names. Verthandi is
-one of the Norns of Norse legend, the immor-
-tal beings who rule the fates of men and gods
-alike. Verthandi rules the Present, Urdur (or
-Urdhr, or Urth) the Past, and Skuld (who
-wears a veil), the Future. Each of the Norns
-may provide ideas for other artifacts.
-   Your Notes:
-
-WIFE OF ILMARINEN
- The legendary Immortal craftsman
- Ilmarinen once used his great skills to cre-
- ate a companion entirely of gold and silver.
- However, the result was too cold to even be
- approached. Appearing as a metallic
- golem, it was given special powers when
- freed, and is said to reside in far northern
- reaches, either alone or with its current
- master.
-
-  Description: The wife appears to be a
-metal statue of an extremely attractive
-human female clad in robes. The entire
-statue is made of a sparkling mixture of gold
-and silver.
-   Magnitude: Minor artifact.
-   Power Limits: 2/A, 1/B, 2/C, 3/D
-   Sphere: Matter (Fighters, earth)
-   Suggested Powers (PP 100):
-A1     Ice breath                       55
-A1     Ice storm                        45
-   Activation: The wife is always active.
-   Use of Powers: The powers of the wife are
-used by the artifact alone, not granted to the
-user. The wife can speak any language it
-hears, and will explain its powers to any who
-ask (unless ordered not to). However, the
-artifact cannot be controlled until a special
-command word is uttered. Once this com-
-mand is spoken, the wife will obey either
-mental or verbal commands from the user.
-The command word can only be obtained
-from Ilmarinen himself (by using a com-
-mune or contact other plane), from a pre-
-vious user of the artifact, or by a wish.
-   Suggested Handicap (1): When control is
-gained, the user becomes aware that the wife
-cannot recharge itself. It can eat gold or sil-
-ver. For each 100 gp value of those metals
-eaten, the artifact recharges 1 PP.
-   Suggested Penalty (1; 1 in 6 chance of
-occurrence whenever a power is used): In-
-stead of attacking as directed, the wife aims
-her attack at the user; normal saving throws
-apply, but the user gains a +4 bonus for the
-second and subsequent appearances of this
-effect.
-   Other Details: AC -20; hp 100; AT 1
-power; D by power; M V 90' (30'); AL N.
-The wife will not attack by any means other
-than its powers.
-   Source: Finnish mythology
-   Further Research: See the Finnish
-national epic poem Kalevala, compiled by
- Elias Lonnrott in the late 19th century.
-   Your Notes:
-
-The following legendary magic items are
-mentioned in history, myths, legends, and lit-
-erature. You may easily develop them into
-either artifacts or powerful but standard
-magic items. Further research is recom-
-mended.
-
-   Ambrosia: This is a potion of Immortality,
-but with a short duration. Repeated drinks
-are needed to maintain Immortal status.
-   Apples of Bragi: In Scandinavian legend,
-Bragi (son of Odin) had a magically inex-
-haustible supply of these items. Each can
-cure weariness, decay of power, ill temper, or
-failing health.
-   Arrow of Abaris: Abaris the Hyperbo-
-rean, a Greek sage in the 6th century BC,
-once received a magic arrow from the god
-Apollo (according to Greek legend). The
-arrow enabled him to become invisible, cure
-disease, fly (riding the arrow, as if a broom)
-and to divine the future.
-    Bag of Aeolus: In Homer’s Odyssey, this
-bag (named for the god of winds) contains a
-divine essence. When opened, it blows Odys-
-seus’ ship back to its starting point.
-    Books, Sibylline: These were written
-prophecies, carefully preserved in ancient
-Rome and occasionally consulted on matters
-of great import. There were nine scrolls at
-first, offered for sale to Rome by the seeress
-Almathaea; the Romans refused her price.
-She kept to the price and burned 3, but again
-was turned down. She sold the remaining 3 at
-the original price. They were preserved in a
-stone chest, with two custodians (later
-increased to 10 and then 15). Finally placed
-in gilt cases at the base of the statue of Apollo
-on Palatine Hill, they were burned in the
-great fire of Nero’s fame.
-    Carpet, Solomon’s Magic: This item,
-made of green silk, was legended to have car-
-ried not only Solomon and his great throne
-but also all of his army.
-    Draupnir: In Scandinavian legend, the
- famed magic ring made by Odin (the
- supreme deity) for the dwarves. Every 9
- nights it produced 8 non-magical rings equal
- in size and beauty to itself, and is thus a fertil-
- ity symbol.
-    Elixir: In Arabic legend, this powder was
- sprinkled on wounds of battle, curing them.
- Treat as a potion of healing, but applied
- instead of consumed.
-    Holy Grail: This vessel of literary fame
- was the cup at the Last Supper, carried to
- England by Joseph of Arimathea. It was said
- to provide food, drink, and spiritual suste-
- nance for the life of the custodian. This term
- may have originally been used in reference to
- the platter of the Paschal lamb (again, at the
- Last Supper).
-    Horse, flying: Clavileno, an enchanted
- wooden rocking horse described in Cer-
- vantes’ "Don Quixote," could fly and carry
- an armed rider. It was guided by a pin in its
- forehead.
-
-    Mill: A magic mill in the Finnish
- "Kalevala," called the Sampo, could grind
-out meal, salt, or gold from straw on com-
-mand.
-   Necklace of Harmonia: Harmonia,
-daughter of the Greek gods Ares and Aphro-
-dite, was given a magical necklace when she
-married Cadmus. Though relatively unre-
-markable at the time, the necklace brought
-disaster to all subsequent owners.
-   Odrovir: In Norse legend, a great war
-took place between the Aesir (the 24 gods of
-heaven, Asgard) and the Vanir (the Nature
-gods of Noatun). At its peaceful conclusion,
-both sides spat into a jar, providing their
-mixed essences as hostage to peace. Kvasir,
-the wisest of all men, was made of the spittle.
-His blood, mixed with honey, was called
-Odrovir (or Odhrevir); all who partook of it
-became poets.
-   Ring of Amasis: Amasis, King of Egypt,
-advised his incredibly lucky friend Polycra-
-tes, King of Samos, to discard something of
-great value to balance the Fates. Polycrates
-threw a prized ring into the sea, but it was
-later found in a fish on the King’s dinner
-table. Amasis promptly recognized this sign
-from the gods and broke off relations with his
-friend; shortly thereafter, Polycrates was bru-
-tally slain.
-   Ring of the Nibelungen: Made famous by
-Richard Wagner’s 1876 opera, this item
-comes from several Scandinavian legends
-(the Volsunga Saga, Nibelungenlied, Elder
-and Younger Eddas, and the Eckelied). The
-ring was part of an entire hoard in the Rhine
-river, which was guarded by the Rhine Maid-
-ens until Alberich gained it by foreswearing
-love. The greedy dwarf cursed the item, and
-when the Ring was later taken by gods and
-heroes for various uses, it brought doom to
-all, resulting even in the destruction of
-Asgard and the gods.
-   Swords: Many magical swords can be
-found in myth and literature. The following
-list is only a sampling; further research is rec-
-ommended to ascertain appropriate powers.
-   Angurvadal (Stream of Anguish) was
-owned by the hero of "Frithiofs Saga," a
-13th century Scandinavian work.
-   Ar’ondight, sword of Launcelot of the
-Lake, was mentioned in several Arthurian
-legends.
-   Balisarda (a sword of slicing) was made by
-the witch Falerina in the 1487 romance epic
-"Orlando Innamorato" (Roland in Love) by
-Matteo Maria Boiardo.
-   Balmung was the sword of Siegfried in
-Scandinavian legend. It was made by
-Wieland, a Germanic name for the immortal
-
-blacksmith Volund, known as "Wayland
-Smith" to the English. (See the artifact
-Armet by Wayland.) Wieland may be similar
-to earlier legends, such as the Greek
-Hephaestus and the Roman Vulcan.
-   Colada was the sword of the Spanish hero
-El Cid, first described in a poem of a
-unknown Castilian bard in 1140. "Cid"
-comes from the Arabic "Sidi," or "Lord."
-The hero was Ruy Diaz de Bivar (1043-
- 1099), also called "ed Campeador" (the
-Champion).
-   Courtain ("the Short Sword") was used by
-Ogier the Dane, a Paladin of Charlemagne
-(who, known as Holger Danske, is the folk
-hero of Denmark). The smith Munifican
-took 3 years to make Courtain.
-   Durandan (or Durandal, Durandana, or
-"the Inflexible") was the Sword of Roland,
-given him by Charlemagne. It once belonged
-to Hector, the noble chieftain of Homer’s
-"Iliad" prominent in the fall of Troy. Roland
-(also called Orlando) is the hero of several lit-
-erary works, including the "Chanson de
-Roland" (Song of Roland) of the 11th cen-
-tury; the "Chronicle of Charlemagne" of the
-12th century; and the later Italian works
-"Morgante Maggiore" by Luigi Pulci
-(1 483), Boiardo’s "Orlando Innamorato"
-(Roland in Love, 1487), and "Orlando Furi-
-oso" (Roland Mad, 1516) by Lodovico
-Ariosto.
-   Excalibur(or Escalibor, in the Old French)
-was the fabled sword of King Arthur (accord-
-ing to most legends). It was also referred to as
-Caliburn (by Geoffrey of Monmouth) and
-Caledvwlch (in the Mabinogion), or Calad-
-bolg in Irish legend (meaning "hard belly").
-It gets its name from the Latin "ex calce
-liberare," or "to liberate from the stone."
-   Flarnberge (or Floberge, meaning Flame
-Cutter) was a sword of Charlemagne.
-   Glorius, sword of the hero Oliver, broke 9
-swords made by the famed smiths Ansias,
-Galas, and Munifican.
-   Gram (German for "grief’) was another
-famous sword of Siegfried.
-  Joyeuse (French, "joyous"), a greatsword
-of Charlemagne, took 3 years to make (by the
-smith Gallas).
-   Mimung, sword of the hero Wittich, was
-loaned to Siegfried for a time.
-   Morglay (Big Glaive) was the sword of Sir
-Bevis of English lore. "Morglay" was then a
-common generic term for "sword."
-   Nagelring (Nail-Ring) was the sword of
-Dietrich of Bern, a hero in the Germanic
-"Heldenbuch" and "Nibelungenlied."
-   Philippan was the sword of Mark Antony,
-a member of the Second Triumvirate of
-
-Rome (43 BC).
-   Sauvagine was another of Ogier’s swords
-(see "Courtain"), also made by Munifican.
-
-```
+   85 Raise Dead Fully (R 60', EF up to 8
+      years dead; C13)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -9896,32 +9476,8 @@ curing blindness or feeblemind, etc.).
 - canonical spell key: `Restore`
 - Chapter 06 card heading: `Restore`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells`
-- canonical spell key: `Restore`
-- Chapter 06 card heading: `Restore`
-
-```text
-4. Restore*
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Seventh-Level Cleric Spells`
-- canonical spell key: `Restore`
-- Chapter 06 card heading: `Restore`
-
-```text
-4. Restore* (C13)
-```
+- missing expected witness lanes: `Companion`, `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -9960,20 +9516,8 @@ but it is a Chaotic act, avoided by Lawful clerics.
 - canonical spell key: `Speak with Monsters`
 - Chapter 06 card heading: `Speak with Monsters`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells`
-- canonical spell key: `Speak with Monsters`
-- Chapter 06 card heading: `Speak with Monsters`
-
-```text
-7. Speak with Monsters*
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -10079,20 +9623,8 @@ and power.
 - canonical spell key: `Word of Recall`
 - Chapter 06 card heading: `Word of Recall`
 - expected witness lanes: `Companion`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells`
-- canonical spell key: `Word of Recall`
-- Chapter 06 card heading: `Word of Recall`
-
-```text
-8. Word of Recall
-```
+- missing expected witness lanes: `Companion`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -10565,40 +10097,27 @@ normal chances for success).
 - Chapter 06 card heading: `Sword`
 
 ```text
-sword).
-The heat causes no damage to magical items.
-Normal weapons or other items may be severely
-damaged, especially if made of both wood and
-metal (as a normal lance), as the wood will burn
-away at the point of contact with metal.
-If the object is being held when heated, the
-heat causes damage to the holder: 1 point of
-damage during the first round, 2 points in the
-second, 4 points in the third, 8 points in the
-fourth, and then decreasing at the same rate (for
-a total of 22 points of heat damage over seven
-rounds). In the fourth round, the searing heat
-will cause leather, wood, paper, and other flam-
-mable objects in contact with the metal to catch
-fire.
-The holder gets no saving throw, but fire re-
-sistance negates all damage. The character can
-drop the item at any time, of course, and crea-
-tures of low intelligence are 80% likely to do so
-(check each round).
-Once the spell has been cast, the druid no
-longer needs to concentrate; the heating and
-cooling proceed automatically. A dispel magic
-can stop the effect, but normal means (immer-
-sion in water, etc.) will not.
-If the spell is used on an item imbedded in an
-opponent (such as an arrow or dagger), the op-
-ponent may remove the item but loses initiative
-for that round (and takes the appropriate heat
-damage for that round as well).
-Heat damage disrupts concentration; the vic-
-tim cannot cast spells during any round in which
-he sustains damage from this spell.
+Sword
+Range: 30'
+Duration: 1 round per level of the caster
+Effect: Creates a magical sword
+When this spell is cast, a glowing sword made
+of magic, rather than metal, appears next to the
+caster. The magic-user may cause it to attack any
+creature within 30', simply by concentrating; the
+sword flies to the target and attacks. If the cast-
+er’s concentration is broken, the sword merely
+stops attacking. It remains in existence for one
+round per level of the spellcaster.
+The sword moves very quickly, attacking twice
+per round and making its attack rolls at the cast-
+er’s level. Damage is the same as a two-handed
+sword (1d10), but this magical creation is capa-
+ble of hitting any target (even those hit only by
+powerful magical weapons).
+The sword cannot be destroyed before the du-
+ration ends, except by a dispel magic spell effect
+(at normal chances of success) or a wish.
 ```
 
 ## Teleport any Object
@@ -10698,32 +10217,8 @@ with a -2 penalty to the roll.
 - canonical spell key: `Anti-Animal Shell`
 - Chapter 06 card heading: `Anti-Animal Shell`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Anti-Animal Shell`
-- Chapter 06 card heading: `Anti-Animal Shell`
-
-```text
-1 . Anti-Animal Shell
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Anti-Animal Shell`
-- Chapter 06 card heading: `Anti-Animal Shell`
-
-```text
- 45 Anti-Animal Shell (DR 40T; C16)
-```
+- missing expected witness lanes: `Companion`, `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -10754,32 +10249,8 @@ tacks, just as the druid is protected from theirs.
 - canonical spell key: `Anti-Plant Shell`
 - Chapter 06 card heading: `Anti-Plant Shell`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Anti-Plant Shell`
-- Chapter 06 card heading: `Anti-Plant Shell`
-
-```text
-1. Anti-Plant Shell
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Anti-Plant Shell`
-- Chapter 06 card heading: `Anti-Plant Shell`
-
-```text
- 30 Anti-Plant Shell (DR 6T; C16)
-```
+- missing expected witness lanes: `Companion`, `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -10812,8 +10283,8 @@ druid is protected from theirs.
 - canonical spell key: `Call Lightning`
 - Chapter 06 card heading: `Call Lightning`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Master`
+- witness count: `2`
 
 ### Witness: Companion
 
@@ -10841,18 +10312,6 @@ damage. The druid need not call the light-
 ning every turn unless desired; it remains
 available until the spell duration (or the
 storm) ends.
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Call Lightning`
-- Chapter 06 card heading: `Call Lightning`
-
-```text
-1. Call Lightning (C15)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -10886,10 +10345,10 @@ less desired; it remains available until the spell
 duration (or the storm) ends.
 ```
 
-## Control Temperature 10’ Radius
+## Control Temperature 10' Radius
 
-- canonical spell key: `Control Temperature 10’ Radius`
-- Chapter 06 card heading: `Control Temperature 10’ Radius`
+- canonical spell key: `Control Temperature 10' Radius`
+- Chapter 06 card heading: `Control Temperature 10' Radius`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
 - missing expected witness lanes: `none`
 - witness count: `3`
@@ -10899,8 +10358,8 @@ duration (or the storm) ends.
 - source lane: `Companion`
 - source label: `Companion Set`
 - staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Control Temperature 10’ Radius`
-- Chapter 06 card heading: `Control Temperature 10’ Radius`
+- canonical spell key: `Control Temperature 10' Radius`
+- Chapter 06 card heading: `Control Temperature 10' Radius`
 
 ```text
 Control Temperature 10 ' radius
@@ -10925,8 +10384,8 @@ extremes.
 - source lane: `Master`
 - source label: `Master Set`
 - staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Control Temperature 10’ Radius`
-- Chapter 06 card heading: `Control Temperature 10’ Radius`
+- canonical spell key: `Control Temperature 10' Radius`
+- Chapter 06 card heading: `Control Temperature 10' Radius`
 
 ```text
  35 Control Temperature 10' radius (DR
@@ -10938,8 +10397,8 @@ extremes.
 - source lane: `Rules Cyclopedia`
 - source label: `Rules Cyclopedia`
 - staging anchor / section: `Druidic Spells List and Spell Descriptions`
-- canonical spell key: `Control Temperature 10’ Radius`
-- Chapter 06 card heading: `Control Temperature 10’ Radius`
+- canonical spell key: `Control Temperature 10' Radius`
+- Chapter 06 card heading: `Control Temperature 10' Radius`
 
 ```text
 Control Temperature 10' radius
@@ -10963,32 +10422,8 @@ survive temperature extremes.
 - canonical spell key: `Control Winds`
 - Chapter 06 card heading: `Control Winds`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Control Winds`
-- Chapter 06 card heading: `Control Winds`
-
-```text
-2. Control Winds
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Control Winds`
-- Chapter 06 card heading: `Control Winds`
-
-```text
-  30 Control Winds (DR 40T, EF 400'; C16)
-```
+- missing expected witness lanes: `Companion`, `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -11028,32 +10463,8 @@ lapses, the creature will attack the druid.
 - canonical spell key: `Creeping Doom`
 - Chapter 06 card heading: `Creeping Doom`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Creeping Doom`
-- Chapter 06 card heading: `Creeping Doom`
-
-```text
-1 . Creeping Doom
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Creeping Doom`
-- Chapter 06 card heading: `Creeping Doom`
-
-```text
-1. Creeping Doom (C16)
-```
+- missing expected witness lanes: `Companion`, `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -11097,8 +10508,8 @@ the normal movement rate.
 - canonical spell key: `Faerie Fire`
 - Chapter 06 card heading: `Faerie Fire`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Master`
+- witness count: `2`
 
 ### Witness: Companion
 
@@ -11128,18 +10539,6 @@ experience. Thus, at 20th level, 48' of fire
 can be produced (outlining one dragon-sized
 creature, 2 horse-sized, or 4 man-sized crea-
 tures).
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Faerie Fire`
-- Chapter 06 card heading: `Faerie Fire`
-
-```text
-2. Faerie Fire (C14)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -11248,8 +10647,8 @@ summoned, conjured, or controlled animals.
 - canonical spell key: `Locate`
 - Chapter 06 card heading: `Locate`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Master`
+- witness count: `2`
 
 ### Witness: Companion
 
@@ -11276,18 +10675,6 @@ plant, but does not need to see the specific
 one he wishes to locate. The animal or plant
 gets no Saving Throw. (This spell is most
 often used to find special plants.)
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Locate`
-- Chapter 06 card heading: `Locate`
-
-```text
-3. Locate (C15)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -11321,20 +10708,8 @@ find special rare plants.)
 - canonical spell key: `Metal to Wood`
 - Chapter 06 card heading: `Metal to Wood`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Metal to Wood`
-- Chapter 06 card heading: `Metal to Wood`
-
-```text
-2. Metal to Wood
-```
+- missing expected witness lanes: `Companion`
+- witness count: `2`
 
 ### Witness: Master
 
@@ -11453,32 +10828,8 @@ blind.
 - canonical spell key: `Pass Plant`
 - Chapter 06 card heading: `Pass Plant`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Pass Plant`
-- Chapter 06 card heading: `Pass Plant`
-
-```text
-3. Pass Plant
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Pass Plant`
-- Chapter 06 card heading: `Pass Plant`
-
-```text
-   35 Pass Plant (EF 300-600 yards; C16)
-```
+- missing expected witness lanes: `Companion`, `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -11513,8 +10864,8 @@ Other trees
 - canonical spell key: `Plant Door`
 - Chapter 06 card heading: `Plant Door`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Master`
+- witness count: `2`
 
 ### Witness: Companion
 
@@ -11538,18 +10889,6 @@ but no other creature can use the passage.
 Note that a druid can hide inside a large
 tree after casting this spell. The druid cannot
 see what is happening while he is in the tree.
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Plant Door`
-- Chapter 06 card heading: `Plant Door`
-
-```text
-  20 Plant Door (DR 40T; C15)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -11648,8 +10987,8 @@ predicts what is to come.
 - canonical spell key: `Produce Fire`
 - Chapter 06 card heading: `Produce Fire`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Master`
+- witness count: `2`
 
 ### Witness: Companion
 
@@ -11678,18 +11017,6 @@ hand while the fire is out. If desired, the fire
 may be dropped or thrown to 30' range, but
 disappears 1 round after leaving the druid’s
 hand.
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Produce Fire`
-- Chapter 06 card heading: `Produce Fire`
-
-```text
-   15 Produce Fire (DR 2T; C15)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -11753,6 +11080,8 @@ Any electrical attacks partially negated are
 handled normally for the remaining damage;
 in the example above, the druid would take 4-
 24 points of damage, or 2-12 points if the Saving Throw were made.
+
+[Companion pages 22-24: layout-column recovery for fifth- through seventh-level magic-user spell bodies]
 ```
 
 ### Witness: Master
@@ -11804,20 +11133,8 @@ against him will do full damage.
 - canonical spell key: `Summon Weather`
 - Chapter 06 card heading: `Summon Weather`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Summon Weather`
-- Chapter 06 card heading: `Summon Weather`
-
-```text
-3. Summon Weather
-```
+- missing expected witness lanes: `Companion`
+- witness count: `2`
 
 ### Witness: Master
 
@@ -11862,20 +11179,8 @@ summon weather from up to 10 miles away.)
 - canonical spell key: `Transport Through Plants`
 - Chapter 06 card heading: `Transport Through Plants`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
-
-### Witness: Companion
-
-- source lane: `Companion`
-- source label: `Companion Set`
-- staging anchor / section: `Druid Spell Material`
-- canonical spell key: `Transport Through Plants`
-- Chapter 06 card heading: `Transport Through Plants`
-
-```text
-2. Transport Through Plants
-```
+- missing expected witness lanes: `Companion`
+- witness count: `2`
 
 ### Witness: Master
 
@@ -12731,6 +12036,72 @@ centration is needed to control the creature.
 It may be sent back to its own plane on com-
 mand of the caster, or by the use of a dispel
 magic or dispel evil spell.
+
+[Master pages 8-12: magic-user spell material]
+Magic-user
+All details on spell casting are given in the
+D&D Basic and Expert sets. Any spell
+marked with an asterisk (*) may be reversed,
+as given in the spell description. All reversible
+magic-user spells must be memorized in
+reversed form to be used.
+C = D&D Companion Set Players Manual
+(page number for the 1984 edition).
+
+MAGIC-USER SAVING THROW TABLE
+
+Category                    25-27  28-30  31-33  34-36
+Death Ray or Poison         4      3      3      2
+Magic Wands                4      4      3      2
+Paralysis or Turn to Stone 5      4      3      2
+Dragon Breath              4      3      2      2
+Rod, Staff, or Spell       5      4      3      2
+
+Special Note: Any damage-causing spell can produce a maximum of 20 dice (of whatever type is applicable) of damage.
+
+MAGIC-USER EXPERIENCE TABLE
+Level  XP         1  2  3  4  5  6  7  8  9
+26     2,850,000  7  7  7  6  6  5  5  4  3
+27     3,000,000  7  7  7  6  6  5  5  5  4
+28     3,150,000  8  8  7  6  6  6  6  5  4
+29     3,300,000  8  8  7  7  7  6  6  5  5
+30     3,450,000  8  8  8  7  7  7  6  6  5
+31     3,600,000  8  8  8  7  7  7  7  6  6
+32     3,750,000  9  8  8  8  8  7  7  7  6
+33     3,900,000  9  9  9  8  8  8  7  7  7
+34     4,050,000  9  9  9  9  8  8  8  8  7
+35     4,200,000  9  9  9  9  9  9  8  8  8
+36     4,350,000  9  9  9  9  9  9  9  9  9
+
+Hit points: +1 per level, with no Constitution effect.
+
+EIGHTH-LEVEL MAGIC-USER SPELLS
+1. Clone (described below)
+2. Create Magical Monsters (page 7)
+3. Dance (C24)
+4. Explosive Cloud (C24)
+5. Force Field (page 8)
+6. Mass Charm* (C24)
+7. Mind Barrier* (C24)
+8. Permanence (C25)
+9. Polymorph Any Object (C25)
+10. Power Word Blind (C25)
+11. Symbol (C25)
+12. Travel (page 8)
+
+NINTH-LEVEL MAGIC-USER SPELLS
+1. Contingency (page 8)
+2. Create Any Monster (page 8)
+3. Gate* (C26)
+4. Heal (page 9)
+5. Immunity (page 9)
+6. Maze (C26)
+7. Meteor Swarm (C26)
+8. Power Word Kill (C26)
+9. Prismatic Wall (page 9)
+10. Shapechange (page 9)
+11. Timestop (page 10)
+12. Wish (page 10)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -13184,8 +12555,6 @@ described as being unchangeable "even with
 a wish," that statement supercedes all others
 here. However, multiple wishes may succeed
 (DM’s choice) where one wish would not.
-
-```
 ```
 
 ### Witness: Rules Cyclopedia
@@ -13357,6 +12726,45 @@ user. For the duration and effect of the magic-
 user spell, the level of caster is treated as the
 minimum necessary for the casting of the
 spell.
+
+[Master pages 6-7: druid spell material]
+Druid
+FIRST-LEVEL DRUID SPELLS
+1. Detect Danger (described below)
+2. Faerie Fire (C14)
+3. Locate (C15)
+4. Predict Weather (C15)
+SECOND-LEVEL DRUID SPELLS
+1. Heat Metal (described below)
+2. Obscure (C15)
+3. Produce Fire (C15)
+4. Warp Wood (C15)
+THIRD-LEVEL DRUID SPELLS
+1. Call Lightning (C15)
+2. Hold Animal (C15)
+3. Protection from Poison (page 5)
+4. Water Breathing (C15)
+FOURTH-LEVEL DRUID SPELLS
+1. Control Temperature 10' radius (C15)
+2. Plant Door (C15)
+3. Protection from Lightning (C15)
+4. Summon Animals (page 5)
+FIFTH-LEVEL DRUID SPELLS
+1. Anti-Plant Shell (C16)
+2. Control Winds (C16)
+3. Dissolve (page 5)
+4. Pass Plant (C16)
+SIXTH-LEVEL DRUID SPELLS
+1 . Anti-Animal Shell (C16)
+2. Summon Weather (C16)
+3. Transport Through Plants (C16)
+4. Turn Wood (page 5)
+SEVENTH-LEVEL DRUID SPELLS
+1. Creeping Doom (C16)
+2. Metal to Wood (C16)
+3. Summon Elemental (page 5)
+4. Weather Control (C16)
+First-Level Druid Spell
 ```
 
 ### Witness: Rules Cyclopedia
@@ -14230,8 +13638,8 @@ spell or wished away.
 - canonical spell key: `Gate`
 - Chapter 06 card heading: `Gate`
 - expected witness lanes: `Companion`, `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `3`
+- missing expected witness lanes: `Master`
+- witness count: `2`
 
 ### Witness: Companion
 
@@ -14286,18 +13694,6 @@ destroy the effect of the normal form of the
 spell (but cannot affect an Immortal). It can
 also be used to close a permanent gate to a
 nearby Plane (such as an elemental vortex).
-```
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Eighth-Level and Ninth-Level Magic-User Spells`
-- canonical spell key: `Gate`
-- Chapter 06 card heading: `Gate`
-
-```text
-  95 Gate (R 30', DR 1T or d%T; C26)
 ```
 
 ### Witness: Rules Cyclopedia
@@ -14747,20 +14143,8 @@ normal attack roll.
 - canonical spell key: `Permanence`
 - Chapter 06 card heading: `Permanence`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Eighth-Level Magic-User Spells`
-- canonical spell key: `Permanence`
-- Chapter 06 card heading: `Permanence`
-
-```text
-  90 Permanence (R 10'; C25)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -14829,20 +14213,8 @@ nently placed upon them.
 - canonical spell key: `Polymorph Any Object`
 - Chapter 06 card heading: `Polymorph Any Object`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Eighth-Level Magic-User Spells`
-- canonical spell key: `Polymorph Any Object`
-- Chapter 06 card heading: `Polymorph Any Object`
-
-```text
-  75 Polymorph Any Object (R 240', DR 40-240T, EF 10' cube; C25)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -15091,39 +14463,48 @@ wish). Negated by continual light spell.
 
 ```text
 Prismatic Wall
-Range: 60'
+
+Range: 60!
+
 Duration: 6 turns
+
 Effect: Creates a multi-colored barrier
 
-   This spell creates a barrier of many colors
-a glittering appearance as if from light sh
-through a prism. This wall is 2" thick, with
-between the colors. The effect must be eit
-sphere with a radius of 10', centered on the
-er, or a flat surface (vertical or horizontal)
+This spell creates a barrier of many colors with
+a glittering appearance as if from light shining
+through a prism. This wall is 2" thick, with 1/8"
+between the colors. The effect must be either a
+sphere with a radius of 10', centered on the cast-
+er, or a flat surface (vertical or horizontal) of up
 to 500 square feet in area.
-   Whatever its form, the prismatic wall ca
-be moved (even by a wish). The caster may
-through it freely and unharmed, with any
-he chooses to carry. All other creatures an
-jects contacting or passing through the pris
-wall are affected by its magic, starting wit
+
+Whatever its form, the prismatic wall cannot
+be moved (even by a wish). The caster may pass
+through it freely and unharmed, with any items
+he chooses to carry. All other creatures and ob-
+jects contacting or passing through the prismatic
+wall are affected by its magic, starting with the
 first color they contact.
-   It takes powerful magic to break throug
-wall. A wish spell or a rod of cancellation w
-move the three outermost remaining colors
+
+It takes powerful magic to break through the
+wall. A wish spell or a rod ofcancellation will re-
+move the three outermost remaining colors, but
 that’s all.
-   To break through a prismatic wall, an att
-must attack it with a specific sequence of s
-Each spell will cancel one color of the pris
-wall. These remedy spells, shown on the
-below, must be cast in the correct order (
-any magical cold to remove the red layer;
-any magical lightning to remove the orange
-er; and so on). When cast successfully, each
-causes the appropriate color to disappear
-the wall. When all layers are gone, so is the
-   A person with an active anti-magic shel
+
+To break through a prismatic wall, an attacker
+must attack it with a specific sequence of spells.
+Each spell will cancel one color of the prismatic
+wall. These remedy spells, shown on the chart
+below, must be cast in the correct order (first,
+any magical cold to remove the red layer; then,
+any magical lightning to remove the orange lay-
+er; and so on). When cast successfully, each spell
+causes the appropriate color to disappear from
+the wall. When all layers are gone, so is the wall.
+
+A person with an active anti-magic shell (in-
+
+[RC page 60 bbox-2 OCR: end of spell, column 2 top]
 including the caster of the prismatic wall) will not
 be able to pass through the wall, but the attempt
 will not damage either the anti-magic shell or
@@ -15137,6 +14518,45 @@ The colors and effects of a prismatic wall are
 always the same; when created, the violet side is
 always closest to the caster. The effects and colors
 of the prismatic wall are summarized below.
+
+[RC page 60 bbox-3 OCR: boxed prismatic effects, bottom across columns 2 and 3]
+Prismatic Wall Effects
+Color    Effect                                                     Negated By
+Red      Blocks all magical missiles;                               Any magical cold
+         inflicts 12 points of damage
+         (no saving throw allowed)
+
+Orange   Blocks all nonmagical missiles;                            Any magical lightning
+         inflicts 24 points of damage
+         (no saving throw allowed)
+
+Yellow   Blocks all breath weapons;                                 Magic missile spell
+         inflicts 48 points of damage
+         (no saving throw allowed)
+
+Green    Blocks all detection spells                                Passwall spell
+         (crystal balls, ESP, etc.);
+         anyone touching it must make a
+         saving throw vs. poison or die
+
+Blue     Blocks all poisons, gases, and                             Disintegrate spell
+         gaze attacks; anyone touching it
+         must make a saving throw vs.
+         turn to stone or be petrified
+
+Indigo   Blocks all matter; anyone                                  Dispel magic spell
+         touching it must make a saving
+         throw vs. spells or be
+         gated to a random
+         outer plane, and possibly (50%)
+         lost forever
+
+Violet   Blocks magic of all types; anyone                          Continual light spell
+         touching it must make a saving
+         throw vs. wands or be struck
+         unconscious and insane (curable
+         only by a cureall spell
+         or a wish)
 ```
 
 ## Feeblemind
@@ -15192,20 +14612,8 @@ by a cleric’s cureall spell.
 - canonical spell key: `Move Earth`
 - Chapter 06 card heading: `Move Earth`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Non-Human Spellcasters and Special Spellcaster Procedures`
-- canonical spell key: `Move Earth`
-- Chapter 06 card heading: `Move Earth`
-
-```text
-  50 Move Earth (R 240', DR 6T; C21)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -15495,20 +14903,8 @@ turbed.
 - canonical spell key: `Wall of Iron`
 - Chapter 06 card heading: `Wall of Iron`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Non-Human Spellcasters and Special Spellcaster Procedures`
-- canonical spell key: `Wall of Iron`
-- Chapter 06 card heading: `Wall of Iron`
-
-```text
- 50 Wall of Iron (R 120', EF 500 sq.ft.; C21)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -15551,20 +14947,8 @@ on battering attacks.
 - canonical spell key: `Lore`
 - Chapter 06 card heading: `Lore`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Artifact Chapter Context and Witnesses`
-- canonical spell key: `Lore`
-- Chapter 06 card heading: `Lore`
-
-```text
-   70 Lore (DR 1T or 1 day; C22)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -15608,20 +14992,8 @@ great power.
 - canonical spell key: `Magic Door`
 - Chapter 06 card heading: `Magic Door`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Artifact Chapter Context and Witnesses`
-- canonical spell key: `Magic Door`
-- Chapter 06 card heading: `Magic Door`
-
-```text
-  40 Magic Door (R 10', DR 7 uses; C22)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -15822,20 +15194,8 @@ falling back down to the floor.
 - canonical spell key: `Statue`
 - Chapter 06 card heading: `Statue`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Artifact Chapter Context and Witnesses`
-- canonical spell key: `Statue`
-- Chapter 06 card heading: `Statue`
-
-```text
-  70 Statue (DR 80T, EF +2 Init; C23)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 
@@ -15989,20 +15349,8 @@ tion from evil or anti-magic shell spell effect.
 - canonical spell key: `Symbol`
 - Chapter 06 card heading: `Symbol`
 - expected witness lanes: `Master`, `Rules Cyclopedia`
-- missing expected witness lanes: `none`
-- witness count: `2`
-
-### Witness: Master
-
-- source lane: `Master`
-- source label: `Master Set`
-- staging anchor / section: `Eighth-Level Magic-User Spells`
-- canonical spell key: `Symbol`
-- Chapter 06 card heading: `Symbol`
-
-```text
-11. Symbol (C25)
-```
+- missing expected witness lanes: `Master`
+- witness count: `1`
 
 ### Witness: Rules Cyclopedia
 

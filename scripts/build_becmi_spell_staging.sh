@@ -243,6 +243,43 @@ render_tsv_col_pages_anchored_until() {
       '
 }
 
+# spell_list_smart_filter — strip spell descriptions from numbered spell list extractions.
+# Pipe raw PDF text through this to keep: ALL-CAPS level/spell headings, pre-list prose
+# notes (before the first numbered entry in a section), numbered list entries, and
+# post-list footnote/annotation lines (lines starting with * — e.g. "*Spell may be cast
+# with reverse effects").
+# Drops: spell stat-block fields (Range/Duration/Effect) and all text that follows them
+# until the next ALL-CAPS heading; also drops post-list prose (spell name + description
+# paragraphs) that follows numbered entries.
+# Handles: leading whitespace before Range/Duration/Effect; OCR space-in-number artifacts
+# like "1 1. Wall of Fire".
+spell_list_smart_filter() {
+  awk '
+    BEGIN { state = "pre" }
+    # ALL-CAPS line containing SPELL or LEVEL → section heading, always keep, reset state.
+    # [^a-z]+ matches lines with no lowercase (includes digits, spaces, hyphens, parens).
+    /^[^a-z]+$/ && /[A-Z]/ && (/SPELL/ || /LEVEL/) { state = "pre"; print; next }
+    # Spell stat-block field (with optional leading whitespace) → enter drain mode
+    /^[[:space:]]*(Range|Duration|Effect)[[:space:]]*:/ { state = "drain"; next }
+    # Blank lines: pass through outside drain
+    /^[[:space:]]*$/ { if (state != "drain") print; next }
+    # While draining: skip all lines (ALL-CAPS heading above fires first and resets)
+    state == "drain" { next }
+    # Numbered list entry (handles OCR space-in-number like "1 1. Spell"): switch to list and keep
+    /^[[:space:]]*[[:digit:]][[:digit:] ]*\.[[:space:]]/ { state = "list"; print; next }
+    # Post-list footnote/annotation (line starts with *): keep, enter footnote state to capture continuation
+    state == "list" && /^[[:space:]]*\*/ { state = "footnote"; print; next }
+    # Footnote continuation: blank line or line ending in period terminates it (drain); otherwise keep passing lines
+    state == "footnote" && /^[[:space:]]*$/ { state = "drain"; next }
+    state == "footnote" && /\.[[:space:]]*$/ { print; state = "drain"; next }
+    state == "footnote" { print; next }
+    # In list state: first non-asterisk non-numbered non-blank line signals end of list → drain
+    state == "list" { state = "drain"; next }
+    # Default (pre state): pass through — captures pre-list prose notes
+    { print }
+  '
+}
+
 render_tsv_cols_pages_anchored() {
   local pdf="$1"
   local start_page="$2"

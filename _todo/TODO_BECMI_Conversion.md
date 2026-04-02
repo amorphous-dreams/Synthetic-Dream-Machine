@@ -258,7 +258,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 **What moves:**
 - From `Battle, Elements, and Force → Traversal and Passage` → Void: Dimension Door, Magic Door, Pass Plant, Passwall, Plant Door, Teleport, Teleport any Object, Transport Through Plants, Travel, Word of Recall. (Keep `Knock` in Force — it is a lock opener, not void transit.)
 - From `Summoning and Binding → Summoning` → Void: Gate (planar aperture / outer-planes crossover).
-- Add missing row: `Plane Shift` → Void (planar transit; currently absent from all migration tables; MU5/C5 → P: 10; tags `[transit][void][dangerous]`).
+- Note: `Plane Shift` is non-canonical for BECMI era — do not add. `Contact Other Plane`, `Gate` and portal-magitech are the canonical form of Void-contact and Void-travel.
 
 **Doctrine work required:**
 - Expand Void sub-module doctrine in `Light and Void` to own void transit as its primary scope. Remove the current "reserved stub / covers void conditions not void transit" language.

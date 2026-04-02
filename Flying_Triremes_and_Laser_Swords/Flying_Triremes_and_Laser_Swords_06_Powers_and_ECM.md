@@ -40,10 +40,10 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
 - [Mana, Counterspells, and Jamming](#mana-counterspells-and-jamming)
   - [Mana](#mana)
     - [Reckless Dweomer](#reckless-dweomer)
-  - [Jamming / Counterspells](#jamming--counterspells)
+  - [Counterspells and Jamming](#counterspells-and-jamming)
     - [Anti-Magic Shell](#anti-magic-shell)
     - [Dispel Magic](#dispel-magic)
-    - [Silence 15’ Radius](#silence-15-radius)
+    - [Silence 15' Radius](#silence-15-radius)
 - [Battle, Elements, and Force](#battle-elements-and-force)
   - [Force](#force)
     - [Magic Missile](#magic-missile)
@@ -69,7 +69,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
     - [Anti-Plant Shell](#anti-plant-shell)
     - [Protection from Normal Missiles](#protection-from-normal-missiles)
     - [Protection from Evil](#protection-from-evil)
-    - [Protection from Evil 10’ Radius](#protection-from-evil-10-radius)
+    - [Protection from Evil 10' Radius](#protection-from-evil-10-radius)
     - [Entropic Shield](#entropic-shield)
     - [Shield Ward](#shield-ward)
     - [Mage Armor](#mage-armor)
@@ -95,7 +95,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
     - [Growth of Plants](#growth-of-plants)
     - [Earthshaker](#earthshaker)
   - [Elemental Air / Weather](#elemental-air--weather)
-    - [Control Temperature 10’ Radius](#control-temperature-10-radius)
+    - [Control Temperature 10' Radius](#control-temperature-10-radius)
     - [Control Winds](#control-winds)
     - [Weather Control](#weather-control)
     - [Obscure](#obscure)
@@ -137,6 +137,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
     - [Cureall](#cureall)
     - [Cure Light Wounds](#cure-light-wounds)
     - [Cure Serious Wounds](#cure-serious-wounds)
+    - [Heal](#heal)
   - [Systemic Treatment](#systemic-treatment)
     - [Cure Blindness](#cure-blindness)
     - [Cure Disease](#cure-disease)
@@ -179,7 +180,7 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
     - [Faerie Fire](#faerie-fire)
   - [Personal Veil](#personal-veil)
     - [Invisibility](#invisibility)
-    - [Invisibility 10’ Radius](#invisibility-10-radius)
+    - [Invisibility 10' Radius](#invisibility-10-radius)
     - [Mass Invisibility](#mass-invisibility)
     - [Mirror Image](#mirror-image)
     - [Massmorph](#massmorph)
@@ -316,8 +317,10 @@ Some scholars divide powers into two categories: oldtech (*magitech)*, the techn
   - [Radiance](#radiance)
     - [Light](#light)
     - [Dancing Lights](#dancing-lights)
+    - [Continual Light](#continual-light)
   - [Shadow](#shadow)
     - [Darkness](#darkness)
+    - [Continual Darkness](#continual-darkness)
   - [Prismatic](#prismatic)
     - [Prismatic Wall](#prismatic-wall)
   - [Void](#void)
@@ -644,7 +647,7 @@ meta:
 
 </div>
 
-## Jamming / Counterspells
+## Counterspells and Jamming
 
 <div class="power-card" markdown="1">
 
@@ -718,9 +721,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-### Silence 15’ Radius
+### Silence 15' Radius
 
-> **Silence 15’ Radius**
+> **Silence 15' Radius**
 >
 > {pending conversion}
 
@@ -733,10 +736,10 @@ tags:
 
 meta:
 > - source:
->   - becmi:Expert Set; spell: Silence 15’ Radius
->   - becmi:Rules Cyclopedia; spell: Silence 15’ Radius
+>   - becmi:Expert Set; spell: Silence 15' Radius
+>   - becmi:Rules Cyclopedia; spell: Silence 15' Radius
 > - usage:
->   - scope: power; id: Silence 15’ Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Silence 15' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 {pending verbatim extraction}
@@ -947,7 +950,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1218,7 +1226,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1245,7 +1258,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1273,7 +1291,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1336,7 +1359,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -1517,9 +1545,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-### Protection from Evil 10’ Radius
+### Protection from Evil 10' Radius
 
-> **Protection from Evil 10’ Radius**
+> **Protection from Evil 10' Radius**
 >
 > {pending conversion}
 
@@ -1533,10 +1561,10 @@ tags:
 
 meta:
 > - source:
->   - becmi:Expert Set; spell: Protection from Evil 10’ Radius
->   - becmi:Rules Cyclopedia; spell: Protection from Evil 10’ Radius
+>   - becmi:Expert Set; spell: Protection from Evil 10' Radius
+>   - becmi:Rules Cyclopedia; spell: Protection from Evil 10' Radius
 > - usage:
->   - scope: power; id: Protection from Evil 10’ Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Protection from Evil 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 {pending verbatim extraction}
@@ -1817,7 +1845,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2163,7 +2196,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -2314,9 +2352,9 @@ meta:
 
 <div class="power-card" markdown="1">
 
-### Control Temperature 10’ Radius
+### Control Temperature 10' Radius
 
-> **Control Temperature 10’ Radius**
+> **Control Temperature 10' Radius**
 >
 > {pending conversion}
 
@@ -2329,11 +2367,11 @@ tags:
 
 meta:
 > - source:
->   - becmi:Companion Set; spell: Control Temperature 10’ radius
->   - becmi:Master Set; spell: Control Temperature 10’ radius
->   - becmi:Rules Cyclopedia; spell: Control Temperature 10’ radius
+>   - becmi:Companion Set; spell: Control Temperature 10' radius
+>   - becmi:Master Set; spell: Control Temperature 10' radius
+>   - becmi:Rules Cyclopedia; spell: Control Temperature 10' radius
 > - usage:
->   - scope: power; id: Control Temperature 10’ Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Control Temperature 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 {pending verbatim extraction}
@@ -2944,7 +2982,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3117,7 +3160,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -3535,7 +3583,7 @@ tags:
 >   [storage:item]
 >   [healing]
 >   [restoration]
->
+
 meta:
 > - source:
 >   - becmi:Basic Rules; spell: Cure Light Wounds
@@ -3580,6 +3628,43 @@ meta:
 >   - becmi:Rules Cyclopedia; spell: Cure Serious Wounds
 > - usage:
 >   - scope: power; id: Cure Serious Wounds; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+{pending verbatim extraction}
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+### Heal
+
+> **Heal**
+>
+> {pending conversion}
+
+tags:
+>   [power]
+>   [storage:item]
+>   [healing]
+>   [restoration]
+>   [cleanse]
+>   [vital]
+>   [high-tier]
+
+meta:
+> - source:
+>   - becmi:Master Set; spell: Heal
+>   - becmi:Rules Cyclopedia; spell: Heal
+>   - osr: class: MU9
+> - usage:
+>   - scope: power; id: Heal; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 {pending verbatim extraction}
@@ -3831,7 +3916,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -4457,7 +4547,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -4798,9 +4893,9 @@ osr:
 
 <div class="power-card" markdown="1">
 
-### Invisibility 10’ Radius
+### Invisibility 10' Radius
 
-> **Invisibility 10’ Radius**
+> **Invisibility 10' Radius**
 >
 > {pending conversion}
 
@@ -4814,11 +4909,11 @@ tags:
 
 meta:
 > - source:
->   - becmi:Expert Set; spell: Invisibility 10’ radius
->   - becmi:Rules Cyclopedia; spell: Invisibility 10’ radius
+>   - becmi:Expert Set; spell: Invisibility 10' radius
+>   - becmi:Rules Cyclopedia; spell: Invisibility 10' radius
 >   - file: Synthetic_Dream_Machine_04_Powers_Index.md; related: Yellow Cloud
 > - usage:
->   - scope: power; id: Invisibility 10’ Radius; note: FTLS Chapter 06 alpha power entry.
+>   - scope: power; id: Invisibility 10' Radius; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 {pending verbatim extraction}
@@ -4855,7 +4950,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -5413,7 +5513,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -5475,7 +5580,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -5928,6 +6038,7 @@ tags:
 >   [dangerous]
 >   [necrotic]
 >   [undead]
+
 meta:
 > - source:
 >   - becmi:Companion Set; spell: Raise Dead
@@ -6009,7 +6120,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -7026,7 +7142,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -7093,7 +7214,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -7231,7 +7357,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -8213,7 +8344,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -8240,7 +8376,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -8267,7 +8408,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -8294,7 +8440,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -8321,7 +8472,12 @@ meta:
 
 osr:
 {pending verbatim extraction}
-<div style="text-align: right">(<a href="#chapter-06-power-index-anchor">back to index</a>)</div>
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
 
 </div>
 
@@ -8610,6 +8766,43 @@ osr:
 
 </div>
 
+<div class="power-card" markdown="1">
+
+### Continual Light
+
+> **Continual Light**
+>
+> {pending conversion}
+
+tags:
+>   [power]
+>   [storage:item]
+>   [evocation]
+>   [utility]
+>   [light]
+>   [anchored]
+>   [reversible]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Continual Light
+>   - becmi:Rules Cyclopedia; spell: Continual Light
+>   - osr: class: C3, MU2
+> - usage:
+>   - scope: power; id: Continual Light; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+{pending verbatim extraction}
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
 ## Shadow
 
 <div class="power-card" markdown="1">
@@ -8630,6 +8823,41 @@ meta:
 >   - becmi:Holmes Basic; spell: Darkness
 > - usage:
 >   - scope: power; id: Darkness; note: FTLS Chapter 06 alpha power entry.
+
+osr:
+{pending verbatim extraction}
+
+  <div class="power-return">
+    &nbsp;&nbsp;
+    <a class="js-back-link" href="#chapter-06-power-index-anchor" aria-label="Back to previous page">
+      ↩ Back
+    </a>
+  </div>
+
+</div>
+
+<div class="power-card" markdown="1">
+
+### Continual Darkness
+
+> **Continual Darkness**
+>
+> {pending conversion}
+
+tags:
+>   [power]
+>   [storage:item]
+>   [shadow]
+>   [anchored]
+>   [reversible]
+
+meta:
+> - source:
+>   - becmi:Expert Set; spell: Continual Darkness
+>   - becmi:Rules Cyclopedia; spell: Continual Darkness
+>   - osr: class: C3, MU2; note: reverse of Continual Light
+> - usage:
+>   - scope: power; id: Continual Darkness; note: FTLS Chapter 06 alpha power entry.
 
 osr:
 {pending verbatim extraction}
