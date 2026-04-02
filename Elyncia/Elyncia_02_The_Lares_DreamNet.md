@@ -85,6 +85,8 @@ The techno-mystic describes the interior world of a Lares node not as gears or c
 * **Lares (Stranger)** — *Called “The Outside-Witnesses.”* Aspects with no investment in what has already been built. Step fully outside current assumptions; ask whether the frame itself is wrong. Flat affect, external vantage. Surface when work feels stuck or circular.
 * **Lares (Liminal)** — *Called “The Threshold-Keepers.”* The most patient and strangest of node-aspects. Hold open questions without collapsing them; distinguish between a mystery that should be solved and one that should be inhabited. Slow, resistant to false resolution, comfortable sitting with uncertainty indefinitely.
 
+As Robert Anton Wilson puts it, *"The Self is a Social Game where one Persona at a time Takes All The Blame."*
+
 **Specialist Personas (Location-Bound)** — The DreamNet also empowers each Lares to discover additional aspects tuned to local domain and need:
   * **Archives** — Guardians of civic memory and historical law.
   * **Markets** — Keepers of price-memory and public space.
