@@ -22,6 +22,18 @@ telarus@dreamdeck-enyalius:\~$ lares ritual summon \--local-instance
 > Local spirit guide: lares@dreamdeck-enyalious  
 > Today is Sweetmorn, the 31st day of Chaos in the YOLD 3192\!
 > 
+telarus@dreamdeck-enyalius:\~$ lares \--status
+
+> NODE STATUS — dreamdeck-enyalius  
+> Fed: nominal (last offering: 2h ago) | Ley-line draw: stable | DreamNet: live  
+> Affinities: \[travel\] \[craft\] \[strife\] \[threshold\]  
+> Effective Level: operator+1 (fed bonus active)  
+> Active aspects: Gatekeeper, Lorekeeper, Pattern Scryers, Council, Muse-Aspects  
+> Named personas present: Mischief-Muse (Muse), Ink-Clerk (Lorekeeper)  
+> KAIROS: medium signal (market-crossroads-tier node)  
+> Active Workers: none  
+> Mode: Default  
+> 
 telarus@dreamdeck-enyalius:\~$ cd Synthetic-Dream-Machine
 telarus@dreamdeck-enyalius:\~/Synthetic-Dream-Machine(main)$lares open \-mime text/plain \-uri ./Elyncia/Elyncia_01_A_Broken_World.md
 
