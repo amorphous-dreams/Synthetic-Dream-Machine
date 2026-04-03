@@ -450,10 +450,20 @@ def extract_witness(
         # those single-line numbered entries are noise; they belong in the
         # lane file's Spell Lists Appendix, not in per-spell witness blocks.
         result = choose_best_block(compact_candidates, prefer_compact_details=True)
-        return result if result and is_description_content(result) else None
+        if result and is_description_content(result):
+            return result
+        # Also accept compact stat entries (single-line) that contain spell stat
+        # abbreviations — format is "NN SpellName (R ..., DR ...; Xpg)" or similar.
+        # These are distinct from bare numbered list entries like "1. Gate* (C26)".
+        if result and re.search(r"\((?:R |DR |EF )", result):
+            return result
+        return None
     if lane == "Immortals":
-        result = choose_best_block(collect_immortals_candidates(lines, aliases))
-        return result if result and is_description_content(result) else None
+        # Immortals lane entries often appear as single-line cross-references in the
+        # format "SpellName: See General Notes (...)" — accept any non-empty candidate
+        # returned by collect_immortals_candidates without requiring multi-line or
+        # Range:/Duration:/Effect: headers.
+        return choose_best_block(collect_immortals_candidates(lines, aliases))
     candidates = collect_named_candidates(lines, aliases, known_norms)
     # Do NOT include collect_list_candidates results — bare numbered list entries
     # (e.g. "1. Charm Person") are spell-list noise, not description content.

@@ -533,6 +533,9 @@ cold is reduced by - 1 per die of damage
 damage per die). The effect will move
 with the cleric.
 
+```
+
+```text
 [Basic pages 38-42: TSV column-reflowed magic-user spell books and descriptions]
 Spell Books:
 Your Medium (1st Level magic-user)

@@ -222,7 +222,9 @@ Wizard Lock
 TXT
   printf '\n[Basic pages 26-27: TSV column-reflowed clerical spell descriptions]\n' >> "$OUT"
   render_tsv_cols_pages "$pdf" 28 29 '190,370' >> "$OUT"
-  printf '\n[Basic pages 38-42: TSV column-reflowed magic-user spell books and descriptions]\n' >> "$OUT"
+  printf '\n```\n\n' >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  printf '[Basic pages 38-42: TSV column-reflowed magic-user spell books and descriptions]\n' >> "$OUT"
   render_tsv_cols_pages "$pdf" 40 44 '190,370' \
     | awk '
         /Spell Books:/ { started = 1 }

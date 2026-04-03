@@ -4920,6 +4920,49 @@ Rome (43 BC).
 
 ```
 
+### Master: Companion Cross-Reference Sourcing Notes
+
+- Extraction note: The Master Set spell lists cite these Companion Set spells by number and page reference only. The Master Set PDF adds no new standalone description for these entries; descriptions are in the Companion staging. These note blocks serve as explicit Master lane provenance markers for the multi-witness builder.
+
+```text
+Call Lightning
+[Master Set sourcing note (D3): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Faerie Fire
+[Master Set sourcing note (D1): Master Set lists this spell as a Companion cross-reference only (C14). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Locate
+[Master Set sourcing note (D1): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Plant Door
+[Master Set sourcing note (D4): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Produce Fire
+[Master Set sourcing note (D2): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Gate
+[Master Set sourcing note (MU9): Master Set lists this spell as a Companion cross-reference only (C26). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Permanence
+[Master Set sourcing note (MU8): Master Set lists this spell as a Companion cross-reference only (C25). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Polymorph Any Object
+[Master Set sourcing note (MU8): Master Set lists this spell as a Companion cross-reference only (C25). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Symbol
+[Master Set sourcing note (MU8): Master Set lists this spell as a Companion cross-reference only (C25). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Holy Word
+[Master Set sourcing note (Cl7): Master Set lists this spell as a Companion cross-reference only (C13). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Restore
+[Master Set sourcing note (Cl7): Master Set lists this spell as a Companion cross-reference only (C13). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Creeping Doom
+[Master Set sourcing note (D7): Master Set lists this spell as a Companion cross-reference only (C16). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+```
+
 
 ## Spell Lists Appendix
 

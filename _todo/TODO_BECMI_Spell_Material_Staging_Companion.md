@@ -3170,6 +3170,82 @@ may punish poisoners.
 
 ```
 
+### Companion: List-Only Spell Sourcing Notes
+
+- Extraction note: The following Companion Set spells (pages 13-17 for cleric/druid, pages 22-24 for magic-user) appear in spell level lists only. The Companion Set PDF includes no standalone description text for these entries; descriptions are in the Rules Cyclopedia staging. These note blocks serve as explicit Companion lane provenance markers for the multi-witness builder.
+
+```text
+Commune
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Create Food
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Dispel Evil
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Insect Plague
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Quest
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Animate Objects
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Cureall
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Find the Path
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Speak with Monsters
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Word of Recall
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Earthquake
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Holy Word
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Raise Dead Fully
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Restore
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Anti-Plant Shell
+[Companion (D5, pp.15-17): list-only; desc → RC]
+
+Control Winds
+[Companion (D5, pp.15-17): list-only; desc → RC]
+
+Pass Plant
+[Companion (D5, pp.15-17): list-only; desc → RC]
+
+Anti-Animal Shell
+[Companion (D6, pp.15-17): list-only; desc → RC]
+
+Transport Through Plants
+[Companion (D6, pp.15-17): list-only; desc → RC]
+
+Summon Weather
+[Companion (D6, pp.15-17): list-only; desc → RC]
+
+Creeping Doom
+[Companion (D7, pp.15-17): list-only; desc → RC]
+
+Metal to Wood
+[Companion (D7, pp.15-17): list-only; desc → RC]
+
+Conjure Elemental
+[Companion (MU5, pp.22-24): list-only; desc → RC]
+
+```
+
 
 ## Spell Lists Appendix
 

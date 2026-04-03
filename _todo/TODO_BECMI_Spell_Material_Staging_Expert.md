@@ -2598,142 +2598,9 @@ within 360'.
 
 ```
 
+### Expert: 3rd-6th Level MU Spell Descriptions (pages 13-14)
 
-## Spell Lists Appendix
-
-- Note: these are raw numbered spell lists from the Expert Set. They are appendix-only  14 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.
-
-### Expert: Cleric Spell Lists (page 6, book page 4)
-
-- Extraction note: TSV column reflow of Expert cleric spell lists from the character class table on book page 4 (PDF page 6). Middle and right columns contain 1st-6th level spell index; stops at the Cleric Saving Throws table.
-
-```text
-FIRST LEVEL CLERIC SPELLS
-1. Cure Light Wounds*
-2. Detect Evil
-3 . Detect Magic
-4. Light*
-5. Protection from Evil
-6. Purify Food and Water
-7. Remove Fear*
-8. Resist Cold
-THIRD LEVEL CLERIC SPELLS
-1. Continual Light*
-2. Cure Blindness
-3. Cure Disease*
-4. Growth of Animals
-5. Locate Object
-6. Remove Curse*
-7. Speak with the Dead
-8. Striking
-FIFTH LEVEL CLERIC SPELLS
-1. Commune
-2. Create Food
-3 . Dispel Evil
-4. Insect Plague
-5. Quest*
-6. Raise Dead*
-SECOND LEVEL CLERIC SPELLS
-1. Bless*
-2. Find Traps
-3. Hold Person*
-4. Know Alignment*
-5. Resist Fire
-6. Silence 15’ radius
-7. Snake Charm
-8. Speak with Animal
-FOURTH LEVEL CLERIC SPELLS
-1. Animate Dead
-2. Create Water
-3 . Cure Serious Wounds*
-4. Dispel Magic
-5. Neutralize Poison*
-6. Protection from Evil 10’ radius
-7. Speak with Plants
-8. Sticks to Snakes
-SIXTH LEVEL CLERIC SPELLS
-1. Animate Objects
-2. Find the Path
-3. Speak with Monsters*
-4. Word of Recall
-*Spell may be cast with reverse effects.
-
-```
-
-### Expert: Magic-User Spell Lists (pages 13-14)
-
-- Extraction note: TSV column reflow of Expert magic-user spell list pages.
-
-```text
-FIRST LEVEL MAGIC-USER SPELLS
-1. Charm Person
-2. Detect Magic
-3. Floating Disc
-4. Hold Portal
-5. Light*
-6. Magic Missile
-7. Protection from Evil
-8. Read Languages
-9. Read Magic
-10. Shield
-11. Sleep
-12. Ventriloquism
-FOURTH LEVEL MAGIC-USER
-SPELLS
-1. Charm Monster
-2. Confusion
-3. Dimension Door
-4. Growth of Plants*
-5. Hallucinatory Terrain
-6. Ice Storm/Wall
-7. Massmorph
-8. Polymorph Others
-9. Polymorph Self
-10. Remove Curse*
-1 1. Wall of Fire
-12. Wizard Eye
-SECOND LEVEL MAGIC-USER SPELLS
-1. Continual Light*
-2 . Detect Evil
-3. Detect Invisible
-4. ESP*
-5. Invisibility
-6. Knock
-7. Levitate
-8. Locate Object
-9. Mirror Image
-10. Phantasmal Force
-11. Web
-12. Wizard Lock
-THIRD LEVEL MAGIC-USER SPELLS
-1. Clairvoyance
-2. Dispel Magic
-3. Fire Ball
-4. Fly
-5. Haste*
-6. Hold Person*
-7. Infravision
-8. Invisibility 10’ radius
-9. Lightning Bolt
-10. Protection from Evil 10’ radius
-1 1. Protection from Normal Missiles
-12. Water Breathing
-SIXTH LEVEL MAGIC-USER SPELLS
-1. Anti-Magic Shell
-2 . Death Spell
-3. Disintegrate
-4. Geas*
-5. Invisible Stalker
-6. Lower Water
-7. Projected Image
-8. Stone to Flesh*
-*Spell may be cast with reverse effect.
-
-```
-
-### Expert: Magic-User Reversible Spell Notes (pages 13-14)
-
-- Extraction note: post-list prose from Expert pages 13-14. Anchored on the intro paragraph about reversible spells. Title-case sub-headers ("First Level Magic-user Spells" etc.) stripped as noise; reverse effect descriptions and footnotes kept.
+- Extraction note: post-list prose extracted from Expert pages 13-14 using TSV column reflow anchored at the reversible-spell intro paragraph. Numbered list entries, ALL-CAPS level headings, and Title Case sub-headers stripped as noise. What remains is description content for 3rd-6th level MU spells (Clairvoyance, Fire Ball, Geas, etc.) plus reversal notes for 1st/2nd level spells. This section is placed before the Spell Lists Appendix sentinel so multi-witness builder strip_appendix() does not discard it.
 
 ```text
 The following first and second level spells
@@ -2955,6 +2822,232 @@ This spell allows the recipient to breathe
 while under water (at any depth). It does
 not affect movement in any way, nor does
 it interfere with the breathing of air.
+
+```
+
+### Expert: 1st and 2nd Level MU Spell Sourcing Notes
+
+- Extraction note: Expert Set (pages 13-14) reproduces 1st and 2nd level MU spell lists without standalone spell descriptions. The Expert Set text reads: "The following first and second level spells may be reversed" — implying descriptions remain as in Basic. These note blocks record that provenance so downstream witness coverage is explicit; they are not description witnesses. See Basic staging section "Spell Lists and Basic Spell Descriptions" for the source text.
+
+```text
+Charm Person
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Magic
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Floating Disc
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Hold Portal
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Magic Missile
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Protection from Evil
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Read Languages
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Read Magic
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Shield
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Sleep
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Ventriloquism
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Evil
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Invisible
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+ESP
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Invisibility
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Knock
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Levitate
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Mirror Image
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Phantasmal Force
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Web
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Wizard Lock
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Geas
+[Expert Set sourcing note (MU6): Expert Set (pages 13-18) includes Geas in the 6th level MU spell list only; no standalone description found in the Expert PDF. Description text in Rules Cyclopedia staging.]
+
+```
+
+
+## Spell Lists Appendix
+
+- Note: these are raw numbered spell lists from the Expert Set. They are appendix-only  14 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.
+
+### Expert: Cleric Spell Lists (page 6, book page 4)
+
+- Extraction note: TSV column reflow of Expert cleric spell lists from the character class table on book page 4 (PDF page 6). Middle and right columns contain 1st-6th level spell index; stops at the Cleric Saving Throws table.
+
+```text
+FIRST LEVEL CLERIC SPELLS
+1. Cure Light Wounds*
+2. Detect Evil
+3 . Detect Magic
+4. Light*
+5. Protection from Evil
+6. Purify Food and Water
+7. Remove Fear*
+8. Resist Cold
+THIRD LEVEL CLERIC SPELLS
+1. Continual Light*
+2. Cure Blindness
+3. Cure Disease*
+4. Growth of Animals
+5. Locate Object
+6. Remove Curse*
+7. Speak with the Dead
+8. Striking
+FIFTH LEVEL CLERIC SPELLS
+1. Commune
+2. Create Food
+3 . Dispel Evil
+4. Insect Plague
+5. Quest*
+6. Raise Dead*
+SECOND LEVEL CLERIC SPELLS
+1. Bless*
+2. Find Traps
+3. Hold Person*
+4. Know Alignment*
+5. Resist Fire
+6. Silence 15’ radius
+7. Snake Charm
+8. Speak with Animal
+FOURTH LEVEL CLERIC SPELLS
+1. Animate Dead
+2. Create Water
+3 . Cure Serious Wounds*
+4. Dispel Magic
+5. Neutralize Poison*
+6. Protection from Evil 10’ radius
+7. Speak with Plants
+8. Sticks to Snakes
+SIXTH LEVEL CLERIC SPELLS
+1. Animate Objects
+2. Find the Path
+3. Speak with Monsters*
+4. Word of Recall
+*Spell may be cast with reverse effects.
+(due to the 12 Hit Dice maximum per try),
+the cleric may make another attempt if de-
+sired. Only one attempt can be made each
+combat round, and no other actions are
+possible while Turning undead. However,
+if any attempt fails, no further attempts at
+Turning that group of undead will succeed
+for that cleric.
+
+```
+
+### Expert: Magic-User Spell Lists (pages 13-14)
+
+- Extraction note: TSV column reflow of Expert magic-user spell list pages.
+
+```text
+FIRST LEVEL MAGIC-USER SPELLS
+1. Charm Person
+2. Detect Magic
+3. Floating Disc
+4. Hold Portal
+5. Light*
+6. Magic Missile
+7. Protection from Evil
+8. Read Languages
+9. Read Magic
+10. Shield
+11. Sleep
+12. Ventriloquism
+FOURTH LEVEL MAGIC-USER
+SPELLS
+1. Charm Monster
+2. Confusion
+3. Dimension Door
+4. Growth of Plants*
+5. Hallucinatory Terrain
+6. Ice Storm/Wall
+7. Massmorph
+8. Polymorph Others
+9. Polymorph Self
+10. Remove Curse*
+1 1. Wall of Fire
+12. Wizard Eye
+SECOND LEVEL MAGIC-USER SPELLS
+1. Continual Light*
+2 . Detect Evil
+3. Detect Invisible
+4. ESP*
+5. Invisibility
+6. Knock
+7. Levitate
+8. Locate Object
+9. Mirror Image
+10. Phantasmal Force
+11. Web
+12. Wizard Lock
+THIRD LEVEL MAGIC-USER SPELLS
+1. Clairvoyance
+2. Dispel Magic
+3. Fire Ball
+4. Fly
+5. Haste*
+6. Hold Person*
+7. Infravision
+8. Invisibility 10’ radius
+9. Lightning Bolt
+10. Protection from Evil 10’ radius
+1 1. Protection from Normal Missiles
+12. Water Breathing
+SIXTH LEVEL MAGIC-USER SPELLS
+1. Anti-Magic Shell
+2 . Death Spell
+3. Disintegrate
+4. Geas*
+5. Invisible Stalker
+6. Lower Water
+7. Projected Image
+8. Stone to Flesh*
+*Spell may be cast with reverse effect.
+This spell destroys other spell effects in a
+cubic area 20’ x 20’ x 20’. It does not affect
+magic items. Spell effects created by a caster
+(whether cleric, magic-user, or elf) of a level
+equal to or lower than the caster of the dispel
+mgz‘c are automatically and immediately de-
+stroyed. Spell effects created by a higher level
+caster might not be affected. The chance of
+failure is 5% per level of difference between
+the casters. For exumpk, a 5th level elf trylng
+to dispel a web spell cast by a 7th level magic-
+user would have a 10% chance of failure.
 
 ```
 

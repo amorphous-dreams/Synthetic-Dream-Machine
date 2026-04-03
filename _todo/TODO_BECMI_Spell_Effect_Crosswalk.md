@@ -408,6 +408,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | --- | --- | --- | --- | --- | --- | --- |
 | Bless | C2 | Basic, Expert, RC | Basic -> Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books; Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Continual Light | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Continual Darkness | C3, MU2 | RC | RC -> RC: Reverse Spell Synthesized Notes | spell | ✓ | - |
 | Cure Blindness | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Cure Disease | C3 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Find Traps | C2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -435,8 +436,9 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Classic Name | Class(es)/Spell-level | Source Book(s) | Staging Anchor / Section | Type | Ch06 Import | osr: imported |
 | --- | --- | --- | --- | --- | --- | --- |
 | Continual Light | C3, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
+| Continual Darkness | C3, MU2 | RC | RC -> RC: Reverse Spell Synthesized Notes | spell | ✓ | - |
 | Dancing Lights | MU1 | Holmes | Holmes -> hb-dancing-lights | spell | ✓ | - |
-| Darkness | MU2 | Greyhawk, Holmes | Greyhawk -> gh-darkness; Holmes -> hb-darkness | spell | ✓ | - |
+| Darkness | MU2 | Greyhawk, Holmes, RC | Greyhawk -> gh-darkness; Holmes -> hb-darkness; RC -> RC: Reverse Spell Synthesized Notes (synthesized from Expert Basic section and Expert MU1 Spell Expansions, within Light*; note: Expert text says "all sight except infravision" — synthesized block adopts Holmes/Greyhawk reading: infravision useless inside darkness) | spell | ✓ | - |
 | Detect Evil | C1, MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Clerical and Magical Spells Lists and Spell Descriptions | spell | ✓ | - |
 | Detect Invisible | MU2 | Expert, RC | Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
 | Dispel Magic | C4, MU3 | Basic, Expert, RC | Basic -> Higher Level Spells, Magic-User Spell Allocation, and Lost Spell Books; Expert -> Clerical and Magic-User Spell Expansions; RC -> Magical Spells List and Spell Descriptions | spell | ✓ | - |
@@ -550,6 +552,7 @@ Expert catalog dedupe note: when an BECMI era spell is shared across cleric and 
 | Insect Plague | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Quest | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Raise Dead | C5 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Fifth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
+| Finger of Death | C5 | Master, RC | Master -> Master Set spell list (R 60'); RC -> RC: Reverse Spell Synthesized Notes; note: Expert embeds death-ray mechanics (R 60', save vs. death ray) within Raise Dead (Expert Spell Expansions); Companion embeds undead-cure (3-30 hp for 10+ HD undead) within Raise Dead (High-Level Cleric Spell Material) | spell | ✓ | - |
 | Raise Dead Fully | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Restore | C7 | Companion, Master, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells; Master -> Seventh-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |
 | Speak with Monsters | C6 | Companion, RC | Companion -> High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells; RC -> Clerical Spells List and Spell Descriptions | spell | ✓ | - |

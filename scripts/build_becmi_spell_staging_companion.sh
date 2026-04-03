@@ -504,6 +504,89 @@ assert_heading_count "$COMP_OUT" 'Spell-Adjacent Rings, Rods, and Miscellaneous 
 assert_heading_count "$COMP_OUT" 'Demi-Human Crafts and Poison' 1 'Companion staging duplicated the demi-human crafts/poison section heading'
 validate_companion_staging
 
+companion_list_only_sourcing_notes() {
+  # These 23 spells appear in the Companion Set cleric and druid spell lists but
+  # the Companion Set PDF provides no standalone description text for them. The
+  # Companion Set either only lists them by name and level or defers descriptions
+  # entirely to earlier sets or the Rules Cyclopedia. These blocks record the
+  # provenance for the multi-witness staging builder and are not description
+  # witnesses. See Rules Cyclopedia staging for source descriptions.
+  printf '### Companion: List-Only Spell Sourcing Notes\n\n' >> "$COMP_OUT"
+  printf -- '- Extraction note: The following Companion Set spells (pages 13-17 for cleric/druid, pages 22-24 for magic-user) appear in spell level lists only. The Companion Set PDF includes no standalone description text for these entries; descriptions are in the Rules Cyclopedia staging. These note blocks serve as explicit Companion lane provenance markers for the multi-witness builder.\n\n' >> "$COMP_OUT"
+  printf '```text\n' >> "$COMP_OUT"
+  cat >> "$COMP_OUT" <<'TXT'
+Commune
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Create Food
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Dispel Evil
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Insect Plague
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Quest
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Animate Objects
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Cureall
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Find the Path
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Speak with Monsters
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Word of Recall
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Earthquake
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Holy Word
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Raise Dead Fully
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Restore
+[Companion (Cl7, pp.13-14): list-only; desc → RC]
+
+Anti-Plant Shell
+[Companion (D5, pp.15-17): list-only; desc → RC]
+
+Control Winds
+[Companion (D5, pp.15-17): list-only; desc → RC]
+
+Pass Plant
+[Companion (D5, pp.15-17): list-only; desc → RC]
+
+Anti-Animal Shell
+[Companion (D6, pp.15-17): list-only; desc → RC]
+
+Transport Through Plants
+[Companion (D6, pp.15-17): list-only; desc → RC]
+
+Summon Weather
+[Companion (D6, pp.15-17): list-only; desc → RC]
+
+Creeping Doom
+[Companion (D7, pp.15-17): list-only; desc → RC]
+
+Metal to Wood
+[Companion (D7, pp.15-17): list-only; desc → RC]
+
+Conjure Elemental
+[Companion (MU5, pp.22-24): list-only; desc → RC]
+TXT
+  printf '\n```\n\n' >> "$COMP_OUT"
+}
+
 companion_spell_lists_appendix() {
   local pdf="$1"
 
@@ -526,4 +609,5 @@ companion_spell_lists_appendix() {
   printf '\n```\n\n' >> "$COMP_OUT"
 }
 
+companion_list_only_sourcing_notes
 companion_spell_lists_appendix "$COMP_PDF"
