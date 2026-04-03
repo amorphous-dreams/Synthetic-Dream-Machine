@@ -756,6 +756,16 @@ the magic-user attacks the victim,
 whether by spell or by weapon. The
 victim will fight normally if attacked by
 the magic-user's allies.
+
+[Basic DM section: Charm Person Spells — save frequency by Intelligence and shapechange break]
+The victim may make a new Saving Throw to break the Charm after a duration
+determined by the victim's Intelligence:
+  High intelligence:    1 day
+  Average intelligence: 1 week
+  Low intelligence:    1 month
+The Charm is automatically broken when the victim assumes animal form (e.g.,
+a charmed lycanthrope who shifts to animal form is no longer Charmed).
+[Source: Basic Rules, DM section ~p.29, lines 5516–5545]
 Detect Magic
 Range: 0
 Duration: 2 turns

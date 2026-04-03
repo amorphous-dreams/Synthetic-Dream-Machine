@@ -257,8 +257,6 @@ Effect: Any one living creature
    This spell either heals damage or removes pa-
 ralysis. If used to heal, it can cure 2-7 (1d6 + 1)
 points of damage. It cannot heal damage if used
-
-[RC page 34: first clerical spell entries]
   to cure paralysis. The cleric may cast it on him-
   self if desired.
      This spell cannot increase a creature's total hit
@@ -3899,33 +3897,21 @@ nated again when slain.
 Reincarnation Results
 Type of Body Appearing (Roll 1d8)
 1 Human
+2 Human
+3 Human
+4 Dwarf
 5 Elf
 6 Halfling
-2 Human
 7 Original race
-3 Human
-8 Monster
-4 Dwarf
-(see below)
+8 Monster (see below)
 Type of Monster Body Appearing (Roll 1d6)
-1d6 Lawful
-Neutral
-Chaotic
-Ape, White Bugbear
-1 Blink Dog
-Bear*
-2 Gnome
-Gnoll
-Kobold
-3 Neanderthal Centaur
-4 Owl, giant
-Griffon
-Manticore
-Lizard Man Orc
-5 Pegasus
-Troglodyte
-6 Treant
-Pixie
+1d6  Lawful          Neutral       Chaotic
+1    Blink Dog       Ape, White    Bugbear
+2    Gnome           Bear*         Gnoll
+3    Neanderthal     Centaur       Kobold
+4    Owl, giant      Griffon       Lizard Man
+5    Pegasus         Manticore     Orc
+6    Treant          Pixie         Troglodyte
 * Any normal bear
 The DM may add more monsters to the lists.
 Such monsters should have 8 Hit Dice or less and

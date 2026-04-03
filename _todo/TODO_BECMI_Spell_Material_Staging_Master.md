@@ -4961,6 +4961,9 @@ Restore
 Creeping Doom
 [Master Set sourcing note (D7): Master Set lists this spell as a Companion cross-reference only (C16). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
 
+Reincarnation
+[Master Set sourcing note (MU6): Master Set lists this spell as a Companion cross-reference only (C21). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
 ```
 
 

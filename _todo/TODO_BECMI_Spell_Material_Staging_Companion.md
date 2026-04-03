@@ -3085,6 +3085,50 @@ rate of 60'/turn is possible.
 
 ```
 
+### Companion: Weapon Talent Spell-Activation Mechanics (item-monster)
+
+- Extraction note: Companion weapon talent table (lines 6628–6653); column-flow OCR with left/right column interleave. Talents using spell-activation parameters captured verbatim. General Note preamble included for context. Slowing talent's "no Saving Throw" is mechanically distinct from the base Slow spell.
+
+```text
+[Companion weapon talents: spell-activation parameters — lines 6628–6653]
+Talents (Table 14c)
+   General Note: All Talents may be used
+only once per day unless noted otherwise.
+Talents which duplicate spell effects are not
+actual spells, and require no verbal casting
+nor concentration. The use of a Talent occurs
+in the magic spells and items phase of a com-
+bat round.
+
+   Breathing: The weapon can create either
+one water breathing spell effect per day, or
+one air breathing effect per day. Air breath-
+ing supplies the user (only) with pure air for 1
+turn, and can be used to counter the effects of
+airlessness, poisoned air (such as a gas trap),
+and so forth; however, it cannot negate the
+effects of any breath weapon.
+   Charming: The weapon can create one
+charm person spell effect per day, to 120'
+range (as the 1st level magic-user spell).
+       Finding: The weapon can create one
+locate object spell effect per day, to 120'
+range (as the 2nd level magic-user spell).
+       Slowing: When a successful hit is made,
+the weapon can cause the opponent struck to
+become slowed (as the reverse of the 3rd level
+magic-user spell haste) for 1 turn (no Saving
+Throw). The user may decide whether or not
+to use this effect after the swing hits.
+   Speeding: The weapon will, on com-
+mand, create a haste spell effect on the user
+(only). The user may then move at double
+normal speed, and attack twice per round, for
+1 turn (similar to the 3rd level magic-user
+spell).
+[Source: Companion Rules, weapon talent descriptions, lines 6628–6653]
+```
+
 ### Demi-Human Crafts and Poison
 
 - Extraction note: flow-first Companion procedures extraction using right-column TSV reflow for the Demi-Human Crafts and Poison sections, explicitly skipping the Hit Points Maximum section between them.

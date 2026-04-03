@@ -324,6 +324,8 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
   - consumable/charged item path,
   - cursed/complication-bearing item path.
 - [ ] Use Chapter 05 armor/shield conversion as the model pattern for `retain BECMI API surface, replace internal mechanics`.
+- **Pre-F2 upstream Epic (planned):** After the metaphysics/world-ontology terms scan (follow-on to the Completeness Capture Epic), run a dedicated full-text extraction Epic targeting all Magical Items and Artifacts blocks across the BECMI/RC corpus. This Epic feeds F2 with source-evidence anchors rather than relying on spell completeness cross-references alone. See `_todo/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B2` for scope detail.
+- **Backlogged RC procedure:** RC `Dispel Magic Attacks` / enchanted vessel interaction rule (rc_full.txt L18814–18833) is deferred to Chapter 05 and tracked at `_todo/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B1`.
   
 
 ### Other Passes

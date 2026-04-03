@@ -359,6 +359,27 @@ Sequencing lock status (2026-04-01):
 2. Resume Chapter 05 bridge rules for stored, delayed, absorbed, and reflected spell effects using the locked Chapter 06 API semantics.
 3. Run the remaining Gear and Loot pointer/integrity checks once resumed bridge wording stabilizes.
 
+## Backlog Items (deferred from Completeness Capture Epic)
+
+### B1: RC Dispel Magic / Enchanted Vessel Procedure
+- Source: `_becmi/extractions/rc_full.txt`, lines 18814–18833 (`Dispel Magic Attacks` section, RC Chapter 16 vessel rules).
+- Content: Procedure for how Dispel Magic interacts with enchanted vessels and large constructs:
+  - Frame-size check: vessel's entire frame must fit within the 20'×20'×20' dispel area; if not, no effect.
+  - If it does fit and the dispel succeeds: non-permanent enchantments are completely dispelled; permanent enchantments go down for 1d10 rounds only.
+  - Behavioral consequences: flying vessel begins to drop until the fly effect returns; submersible stops moving and begins to sink slowly, air goes stale.
+- Deferral reason: this is a vessel/construct interaction rule; belongs in Chapter 05 magic-item adjudication lane, not the spell staging lane.
+- Gate: Capture the whole capter/section, stage verbatim text here when Chapter 05 bridge batches resume (after Chapter 06 alpha).
+
+### B2: Future Epic — Full Magical Items / Artifacts Corpus Extraction
+- After the general metaphysics/world-ontology terms scan (planned as a follow-on to the Completeness Capture Epic), a dedicated Epic should target full-block or full-chapter extraction of all Magical Items and Artifacts text across the BECMI/RC corpus.
+- Scope: all six extraction files (`basic`, `expert`, `companion`, `master`, `immortals`, `rc`), targeting:
+  - Complete magic-item description blocks (generation tables, item behavior descriptions, creation procedures)
+  - Artifact entries (powers, handicaps, penalties, penalties-on-destruction)
+  - Construction and enchantment procedures (RC Chapter 16, Companion/Master demi-human crafts sections)
+  - Interaction rules (Dispel Magic vs items, Anti-Magic vs items, cursed item removal, recharging)
+- This is distinct from the spell completeness survey: the target is prose item-description blocks, not spell-name cross-references.
+- Sequencing: after metaphysics terms scan; before or concurrent with F2 full crosswalk build.
+
 ## Current Wording Rules Locked by Phase A
 - Use `attack`, `melee attack`, or explicit Defense targets instead of `attack roll`.
 - Use SDM save language or Quickstart morale directly instead of mixed morale/resolve/reaction phrasing.

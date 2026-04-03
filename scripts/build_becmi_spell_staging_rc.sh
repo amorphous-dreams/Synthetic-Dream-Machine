@@ -134,7 +134,6 @@ mixed_chapter3_block_named() {
   render_layout_page_chars_lines "$pdf" 34 0.2 1 56 51 73 >> "$OUT"
   printf '\n' >> "$OUT"
   render_layout_page_chars_lines "$pdf" 34 0.2 57 108 51 73 >> "$OUT"
-  printf '\n[RC page 34: first clerical spell entries]\n' >> "$OUT"
   render_layout_page_chars "$pdf" 34 0.2 109 220 >> "$OUT"
   printf '\n' >> "$OUT"
   render_tsv_cols_pages "$pdf" 35 59 '185,370' >> "$OUT"
