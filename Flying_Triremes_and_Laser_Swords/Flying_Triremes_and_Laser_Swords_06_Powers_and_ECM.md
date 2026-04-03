@@ -2397,7 +2397,19 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Anti-Animal Shell
-[Companion (D6, pp.15-17): list-only; desc → RC]
+Range: 0 (druid only)
+Duration: 1 turn per level of the caster
+Effect: Personal barrier which blocks animals
+This spell creates an invisible barrier around
+the druid’s body (less than an inch away).
+The barrier stops all attacks by animals, both
+normal and giant-sized, as well as insects and
+all other non-fantastic creatures of animal
+intelligence or less. The druid cannot attack
+animals while protected except by use of
+magical spells; the animals are protected
+from the druid’s physical attacks, just as the
+druid is protected from theirs.
 
 [Master | Druid Spell Material]
  45 Anti-Animal Shell (DR 40T; C16)
@@ -2452,7 +2464,20 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Anti-Plant Shell
-[Companion (D5, pp.15-17): list-only; desc → RC]
+Range: 0 (druid only)
+Duration: 1 round per level of the druid
+Effect: Personal barrier which blocks plants
+This spell creates an invisible barrier around
+the druid’s body (less than an inch away).
+The barrier stops all attacks by plants and
+plant-like monsters, so that they can inflict no
+damage. If the caster pushes through normal
+but dense growth while protected, an open-
+ing will result, passable by others. While pro-
+tected, the druid cannot attack plants except
+by magic spells; the plants are protected from
+the druid’s physical attacks, just as the druid
+is protected from theirs.
 
 [Master | Druid Spell Material]
  30 Anti-Plant Shell (DR 6T; C16)
@@ -3812,7 +3837,24 @@ meta:
 osr:
 [Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
 Earthquake
-[Companion (Cl7, pp.13-14): list-only; desc → RC]
+Range: 120 yards
+Duration: 1 turn
+Effect: Causes earth tremors
+This powerful spell causes a section of earth
+to shake, and opens large cracks in the
+ground. A 17th level caster can affect an area
+up to 60' square, adding 5' to each dimen-
+sion with each level of experience thereafter.
+For example, an 18th level cleric affects an
+areaup to 65' square; lgthlevel, 70' square;
+and so forth.
+Within the area of effect, all small dwell-
+ings are reduced to rubble, and larger con-
+structions are cracked open. Earthen
+formations (hills, cliffsides, etc.) form rock-
+slides. Cracks in the earth may open and
+engulf 1 creature in 6 (determined ran-
+domly), crushing them.
 
 [Master | Seventh-Level Cleric Spells]
   90 Earthquake (R 120 yards, DR 1T, EF
@@ -4257,7 +4299,27 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Control Winds
-[Companion (D5, pp.15-17): list-only; desc → RC]
+Range: 10' radius per level of the caster
+Duration: 1 turn per level of the caster
+Effect: Calms or increases winds
+With this spell, the druid can cause all the air
+within range to behave as desired, either
+increasing to gale force or slowing to a dead
+calm. One full turn of concentration (can’t
+move or attack) is needed to change the wind
+completely (calm to gale, for example). The
+effect can be countered easily by any higher
+level caster using the same spell. The effect
+moves with the caster.
+If used against an air creature (such as an
+elemental), the victim may make a Saving
+Throw vs. Spells. If this is failed, the druid
+may slay or control the air creature by proper
+use of the wind force. The creature will only
+obey as long as concentration is maintained;
+if concentration is broken, the creature will
+attack (in a manner identical to elemental
+control) .
 
 [Master | Druid Spell Material]
   30 Control Winds (DR 40T, EF 400'; C16)
@@ -4486,7 +4548,20 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Summon Weather
-[Companion (D6, pp.15-17): list-only; desc → RC]
+Range: 5 miles or more
+Duration: 6 turns per level
+Effect: Brings weather to druid’s area
+When this spell is cast, some known nearby
+weather is pulled to the druid’s location. The
+druid does not have control of the weather,
+but merely summons it.
+Severe weather (hurricane, severe heat
+wave, etc.) may only be summoned by a
+druid of 25th level or greater. The range of
+summoning is 5 miles at levels 12 to 15, add-
+ing 1 mile for each level of the caster above
+15th. (For example, a 20th level druid could
+summon weather from up to 10 miles away.)
 
 [Master | Druid Spell Material]
   55 Summon Weather (DR 240T, EF 30
@@ -5177,7 +5252,33 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Creeping Doom
-[Companion (D7, pp.15-17): list-only; desc → RC]
+Range: 120'
+Duration: 1 round per level of the caster
+Effect: Creates a 20' x 20' insect horde
+This spell magically creates a huge swarm of
+1,000 creeping insects, appearing anywhere
+within 120' of the druid (as chosen by the
+caster). They fill an area 20' x 20' at least,
+and can be ordered to fill any area up to 60'.
+60' (at most).
+The creeping doom can move at up to 60'/
+turn (20 '/round) if the caster remains within
+120' of any part of the swarm. They vanish
+after the duration ends, or whenever the
+druid is more than 120' from them.
+The insects always attack everyone and
+everything in their path, inflicting 1 point of
+damage per 10 insects-a total of 100 points
+per round per creature-to all within it (no
+Saving Throw). Normal attacks (such as fire)
+can damage the horde slightly, but even a
+fireball spell will only slay 100 of them (reduc-
+ing the damage accordingly). The creeping
+doom can be destroyed by a dispel magic spell
+(at normal chances for success), but it can
+penetrate a protection from evil effect, and
+can move over most obstacles at the normal
+movement rate.
 
 [Master | Druid Spell Material]
 Creeping Doom
@@ -5493,7 +5594,23 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Pass Plant
-[Companion (D5, pp.15-17): list-only; desc → RC]
+Range: 0 (druid only)
+Duration: Instantaneous
+Effect: Short-range teleportation
+With this spell, the druid can enter one tree,
+teleport, and immediately step out of another
+tree of the same type. The trees must be large
+enough to enclose the druid. The range a
+druid can teleport varies by the type of tree,
+as follows.
+Oak
+600 yards
+360 yards
+Ash, Elm, Linden, Yew
+Evergreen trees
+240 yards
+300 yards
+Other trees
 
 [Master | Druid Spell Material]
    35 Pass Plant (EF 300-600 yards; C16)
@@ -5936,7 +6053,24 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Transport Through Plants
-[Companion (D6, pp.15-17): list-only; desc → RC]
+Range: Infinite
+Duration: Instantaneous
+Effect: Long-range teleportation
+This spell may be used once per day at most.
+The druid must be near a plant (of any size),
+and must choose either a general location or a
+specific known plant elsewhere. After casting
+the spell, the druid magically enters the
+nearby plant and steps out of a plant at the
+destination (the exact plant determined ran-
+domly if not specified). There is no limit to
+the range, but the plants must both be living
+for the spell to work, and must both be on the
+same Plane of Existence. If either plant is
+dead, the spell fails. Otherwise, the caster
+immediately reappears at the new location.
+The caster can transport 2 additional, will-
+ing creatures.
 
 [Master | Druid Spell Material]
    45 Transport Through Plants (EF +2 cr;
@@ -6452,7 +6586,23 @@ meta:
 osr:
 [Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Sixth-Level Cleric Spells]
 Cureall
-[Companion (Cl6, pp.13-14): list-only; desc → RC]
+Range: Touch
+Duration: Permanent
+Effect: Cures anything
+This spell is the most powerful of the healing
+spells. When used to cure wounds, it cures
+nearly all damage, leaving the recipient with
+only 1-6 points of damage. It will remove a
+curse, neutralize a poison, cure paralysis,
+cure a disease, cure blindness, or even
+remove a feeblemind effect. However, it will
+cure one thing only; if the recipient is suffer-
+ing from two or more afflictions (such as
+wounds and a curse), the cleric must name
+the one to be cured. If cast on the recipient of
+a raise dead spell, the cureall eliminates the
+need for 2 weeks of bed rest; the recipient can
+immediately function normally.
 
 [Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Cureall
@@ -10472,6 +10622,19 @@ may thereafter be sent (by command) up to
 will understand and obey the cleric at all
 times. They will fight if so commanded, and
 will perform other actions (carrying, watch-
+ing, etc.) to the best of their abilities. They
+are normal animals, and may attack others
+unless their instructions are carefully
+worded.
+The cleric may choose the number of ani-
+mals created, but not the exact type; the DM
+should decide that (or randomly determine).
+One large (elephant, hippopotamus, etc.), 3
+medium-sized (bear, great cat, etc.), or 6
+small (wolf, rock baboon, etc.) animals can
+be created. "Giant" animals cannot be cre-
+ated. The animals disappear when slain or
+when the spell duration ends.
 
 [Rules Cyclopedia | Clerical Spells List and Spell Descriptions]
 Create Normal Animals
@@ -11895,8 +12058,48 @@ meta:
 
 osr:
 [Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
-Raise Dead Fully
-[Companion (Cl7, pp.13-14): list-only; desc → RC]
+Raise Dead Fully*
+Range: 60'
+Duration: Permanent
+Effect: Raises any living creature
+This spell is similar to the 5th level raise dead
+spell, except that it can raise any living crea-
+ture. Any human or demi-human recipient
+awakens immediately, with no wounds (full
+hit points), and is able to fight, use abilities,
+spells known, etc., without any penalties-
+except those existing at the time of death. For
+example, a victim cursed or diseased at death
+would still suffer the affliction when raised
+fully. If any other living creature (other than
+a human or demi-human) is the recipient, the
+guidelines given in the raise dead spell apply
+(including time limitations, rest needed,
+etc.).
+A 17th level cleric can use this spell on a
+human or demi-human body that has been
+dead up to 4 months; for each level of experi-
+ence above 17th, 4 months are added to this
+time. Thus, a 19th level cleric could cast raise
+dead fully on a body that has been dead up to
+12 months.
+If cast at an Undead creature of 7 Hit Dice
+or less, the creature is immediately destroyed
+(no Saving Throw). An Undead creature of
+7-12 Hit Dice must make a Saving Throw vs.
+Spells, with a -4 penalty to the roll, or be
+destroyed. An Undead of more than 12 Hit
+Dice takes 6-60 (6d10) points of damage, but
+may make a Saving Throw vs. Spells to take
+1/2 damage.
+The reverse of this spell (obliterate) will
+affect a living creature just as the normal
+form affects Undead (destroy 7 Hit Dice or
+less, et al.). If cast at an Undead creature of
+any type, obliterate has the same effect as a
+cureall would on a living creature (curing all
+but 1-6 points of damage, or curing blindness
+or feeblemind, etc.).
 
 [Master | Seventh-Level Cleric Spells]
    85 Raise Dead Fully (R 60', EF up to 8
@@ -12165,8 +12368,28 @@ meta:
 
 osr:
 [Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
-Restore
-[Companion (Cl7, pp.13-14): list-only; desc → RC]
+Restore *
+Range: Touch
+Duration: Permanent
+Effect: Restores 1 Energy Drain
+This spell will restore one full level of energy
+(experience) to any victim who has lost a level
+because of Energy Drain, whether by
+Undead or some other attack form. It will not
+restore more than one level, nor will it add a
+level if none have been lost. Furthermore, the
+casting of this spell causes the cleric to lose 1
+level of experience, as if struck by a wight;
+however, this effect is not permanent, and the
+cleric may rest for 2-20 days to regain the
+loss.
+The reverse of this spell (life drain) will
+drain one level of experience from the victim
+touched, just as if touched by a wight or
+wraith. The casting of this spell does not
+cause any loss to the cleric, nor does it require
+any rest, but it is a Chaotic act, avoided by
+Lawful clerics.
 
 [Master | Seventh-Level Cleric Spells]
 Restore
@@ -12794,7 +13017,25 @@ meta:
 osr:
 [Companion | High-Level Cleric, Druid, and Magic-User Spell Material -> Seventh-Level Cleric Spells]
 Holy Word
-[Companion (Cl7, pp.13-14): list-only; desc → RC]
+Range: 0
+Duration: Instantaneous
+Effect: All creatures within 40'
+This spell affects all creatures, friend or foe,
+within a circular area of 40' radius, centered
+on the caster. When the cleric casts this spell,
+all creatures of alignments other than the
+cleric’s are affected as follows:
+up to 5th level: Killed
+level 6-8: Stunned 2-20 turns
+level 9-12: Deafened 1-6 turns
+level 13.: Stunned 1-10 rounds
+Any victim of 13 levels or more or of the same
+alignment as the caster, may make a Saving
+Throw vs. Spells to avoid the effect entirely.
+This powerful spell cannot be blocked by
+stone, nor by any other solid material except
+lead. (It can be blocked by an antimagic
+shell.)
 
 [Master | Seventh-Level Cleric Spells]
 Holy Word
@@ -16758,7 +16999,19 @@ meta:
 osr:
 [Companion | Druid Spell Material]
 Metal to Wood
-[Companion (D7, pp.15-17): list-only; desc → RC]
+Range: 120'
+Duration: Permanent
+Effect: Changes metal into dead wood
+This spell can be used to change any metal
+item or items into wood. The amount that
+can be transmuted is 50 cn per level of the
+caster. Any magical metal item is 90% resist-
+ant to the magic. The effect is permanent,
+and cannot be changed back with a dispel
+magic spell.
+Any armor changed to wood falls off the
+wearer and any weapons affected turn to
+non-m '-a1 wooden clubs.
 
 [Master | Druid Spell Material]
   80 Metal to Wood (R 120', EF 2,000 cn;

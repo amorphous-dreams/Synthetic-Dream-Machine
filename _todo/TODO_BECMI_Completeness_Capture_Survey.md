@@ -1,6 +1,6 @@
 # EPIC: Completeness Capture — Cross-Corpus Spell Text Survey
 
-**Status:** COMPLETE — All Stories done (2026-04-03)  
+**Status:** REOPENED — Stories 7–8 added 2026-04-03; Stories 9–11 added 2026-04-03; Story 7 COMPLETE; Stories 8–11 TODO  
 **Date opened:** 2026-04-03  
 **Branch:** feature/osr-power-text
 
@@ -123,6 +123,96 @@ The existing staging scripts extract by *section*: they know where the spell des
 | 5c. Run `survey_spell_completeness.py --book immortals --min-class cross-ref` | `ImmScan(Scanner)` | ✓ | 474 hits |
 | 5d. Triage Immortals residual hits | `ImmTriage(Triager)` | ✓ | 66 residual hits classified; all incidental (Immortal power lists, PP framing noise). 0 new-rule-gaps. |
 | 5e. Cross-book dedup: RC hits duplicating earlier-lane staged content → `cross-book-dupe` not `new-rule-gap` | `XBookDedup(Deduper)` | ✓ | Performed inline during triage; no cross-book dupes requiring new classification. |
+
+---
+
+### Story 7 — List-vs-Description Convention Audit (Companion + Master + Expert) ☐ TODO
+
+**Goal:** Document the "list-only" convention across all staging lanes: identify every spell that appears in a level's spell list but has NO description body in that same book. For each list-only entry, record the source lane(s) where a verbatim description IS present. Annotate the affected staging files with provenance notes matching the pattern established at Companion 6th-level MU (confirmed 2026-04-03).
+
+**Background:** Companion page 21 (PDF p.23/104) confirmed that the Companion Set describes ONLY spells new to Companion tier; spells first introduced in Basic/Expert are listed but not re-described. The same convention is expected in Master (lists all available MU/Cleric spells but only describes new-to-Master ones) and may apply in Expert as well. This is intentional source-book design, not an extraction failure.
+
+**Scale estimate:** ~3–5 levels per book × 2–3 books; estimated 15–40 list-only spell entries to trace across Basic/Expert/RC lanes for confirmation.
+
+| Sub-task | Tasked Spirit | Status | Notes |
+| --- | --- | --- | --- |
+| 7a. Audit Companion staging: for each spell level with a description section, compare the spell list entries against the description bodies present; document list-only entries with source-lane pointer | `CompConvention(Auditor)` | ✓ DONE 2026-04-03 | **Two categories found:**<br>**List-only by design (20 entries):** Cleric 5th (5: Commune, Create Food, Dispel Evil, Insect Plague, Quest*), Cleric 6th (3: Find the Path, Speak with Monsters*, Word of Recall), MU 5th (8: Animate Dead, Cloudkill, Conjure Elemental, Hold Monster*, Magic Jar, Pass-Wall, Teleport, Wall of Stone), MU 6th (8, previously confirmed).<br>**Extraction gaps — in PDF, not in staging (13 bodies + 1 ref):** Cleric 6th: Cureall (raw ~L836); Create Normal Animals body truncated. Cleric 7th: all 4 (Earthquake, Holy Word, Raise Dead Fully*, Restore*, raw ~L862–900). Druid 5th–7th: all 9 (Anti-Plant Shell, Control Winds, Pass Plant, Anti-Animal Shell, Transport Through Plants, Summon Weather, Creeping Doom, Metal to Wood, Weather Control ref, raw ~L1050–L1128).<br>All 5 level-boundary annotations written to `TODO_BECMI_Spell_Material_Staging_Companion.md`. |
+| 7b. Audit Master staging: apply same comparison pass | `MasterConvention(Auditor)` | ✓ DONE 2026-04-03 | **Master convention is EXPLICIT in source:** all spell list entries that defer to earlier sets are labeled with "(C-page)" Companion cross-references directly in the list. No hidden list-only omissions. Master-new spells are labeled "(described below)" or "(page X)". All 7 Druid new spells (Detect Danger, Heat Metal, Protection from Poison, Summon Animals, Dissolve*, Turn Wood, Summon Elemental), all 4 Cleric 7th new spells (Survival, Travel, Wish, Wizardry), all 4 MU 8th new spells (Clone, Create Magical Monsters, Force Field, Travel), and all 8 MU 9th new spells (Contingency, Create Any Monster, Heal, Immunity, Prismatic Wall, Shapechange, Timestop, Wish) confirmed present and complete in staging. **No annotation patches required for Master.** |
+| 7c. Audit Expert staging: check whether Expert duplicates Basic descriptions or follows same convention | `ExpertConvention(Auditor)` | ✓ DONE 2026-04-03 | Expert convention is **explicitly documented in the staging file itself** (extraction note at L2830): 1st and 2nd level MU spells list-only in Expert — descriptions remain as in Basic, reversal notes only provided. All Expert-new spells (MU 3rd–6th, Cleric 2nd–6th) confirmed present with full description bodies. 3rd-level MU descriptions split between main section (L780–911: Fly, Haste*, Hold Person*, Infravision, Invisibility 10' radius, Lightning Bolt, Protection from Evil 10' Radius, Protection from Normal Missiles, Water Breathing) and post-list prose block (L2636+: Clairvoyance, Dispel Magic, Fire Ball); split is intentional and explained in extraction note at L2603. **No annotation patches required for Expert.** |
+| 7d. Annotate affected staging files with confirmed provenance notes (format matching Companion 6th-level MU note added 2026-04-03) | `ProvenancePatch(Annotator)` | ✓ DONE 2026-04-03 | Companion staging patched with 5 boundary annotations: Cleric 7th extraction gap (L53), Cleric 5th 3/8+5 list-only (L55), Cleric 6th status per entry including Create Normal Animals truncation (L98–100, L154), Druid 5th–7th extraction gaps (L156), MU 5th 4/12+8 list-only (L775). Master and Expert already self-documenting — no patches needed. |
+
+---
+
+### Story 8 — Named Spell Source Coverage Map ☐ TODO
+
+**Goal:** For every Named spell in the 196-row crosswalk, produce a source coverage map: which staging lanes supply a complete verbatim description body (primary), which supply list-only reference, which have no presence. Flag any spell where zero staging lanes contain a verbatim description, or where the only description is in a lane not yet confirmed by direct inspection.
+
+**Background:** Story 7 will identify "list-only" lane entries per book. Story 8 uses that data to produce a complete per-spell source table — this is the ultimate goal: ensuring no Named spell in the crosswalk is orphaned (description available from zero staged sources). Spells that appear only in the RC re-compilation are the lowest-risk group; spells with Expert/Companion descriptions not yet confirmed against the PDF are the priority for direct inspection.
+
+**Scale estimate:** 196 crosswalk rows × ~6 lanes; likely ~50–80 rows require manual confirmation once list-only entries are mapped in Story 7.
+
+| Sub-task | Tasked Spirit | Status | Notes |
+| --- | --- | --- | --- |
+| 8a. Build coverage table: for each of the 196 crosswalk spells, query each staging lane for presence of a verbatim description body (not just spell-list entry) | `CoverageMap(Builder)` | ☐ | Can leverage `survey_spell_completeness.py` in `--terms` mode or extend with a `--coverage` flag |
+| 8b. Classify each crosswalk row: `full-multi-lane` (description in 3+ lanes), `primary-confirmed` (description in 1–2 lanes, directly inspected), `list-only-in-some-lanes` (description in ≥1 lane but list-only in others — OK), `description-gap` (zero verbatim descriptions across all staging lanes) | `CoverageClass(Classifier)` | ☐ | `description-gap` entries are priority capture candidates |
+| 8c. For any `description-gap` entries: identify which non-BECMI/RC source might supply the description (Expert may describe some Basic spells if re-presented; RC re-compiles most) | `GapTrace(Tracer)` | ☐ | RC is the highest-probability fallback; flag if even RC lacks verbatim body |
+| 8d. Stage verbatim text for any confirmed `description-gap` spells where a source exists | `GapFill(Drafter)` | ☐ | Verbatim-only discipline applies; operator approval required before committing |
+| 8e. Update crosswalk confidence column for any rows where source coverage changes | `ConfidenceSync(Lorekeeper)` | ☐ | Re-rate lane confidence gates if significant description-gap discoveries |
+
+---
+
+### Story 9 — Companion Extraction Gap: Cleric 6th Completion and Full Cleric 7th Recovery ✓ DONE
+
+**Goal:** Recover the 5 missing description bodies from the Companion Cleric section (Create Normal Animals completion, Cureall, Earthquake, Holy Word, Raise Dead Fully*, Restore*) by replacing the premature-stop TSV reflow in `build_becmi_spell_staging_companion.sh` with column-isolated bbox crops for pages 13–14.
+
+**Root cause (confirmed Story 7a):** The current extraction call `render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'FIFTH LEVEL CLERIC SPELLS' 'Druid'` stops when the word "Druid" appears anywhere in the TSV-reflowed output. TSV reflow merges all three columns by sort order, so when the right column (col 3, x > 370) of PDF page 13 encounters the "Druid" class section heading, the stop condition fires — while the left and middle columns still contain Cleric 6th descriptions (Create Normal Animals conclusion, Cureall) and all four Cleric 7th descriptions. The companion_full.txt raw extraction confirms these bodies exist in the source PDF at rawlines ~L818–L900.
+
+**Fix approach:** Replace the TSV reflow section in `companion_spell_block_named` that handles pages 13–14 with per-column bbox crops using `companion_crop_layout`. Extract columns 1 and 2 (x=0→185, x=185→370) independently of column 3, anchoring to the Sixth Level / Seventh Level headings and stopping before Druid content. This mirrors the existing pattern used for pages 22–24 (MU 5th–7th) in the same function.
+
+**Builder function inventory:** `companion_crop_layout page x y w h`, `render_tsv_cols_pages_anchored_until`, `render_tsv_col_pages_anchored_until` — all available in the current builder or base library.
+
+| Sub-task | Tasked Spirit | Status | Notes |
+| --- | --- | --- | --- |
+| 9a. Calibrate page 13 column boundaries: run `pdftotext -tsv -f 13 -l 14` on the Companion PDF and inspect x-coordinates for the col 1/2/3 boundaries; note y-ranges for Cleric 6th heading through end-of-page | `ColCal(Calibrator)` | ✓ | Root cause was simpler than described: pages 13-14 only, page 15 had all missing content. Col boundaries x≈185/370 confirmed identical to existing builder values. |
+| 9b. Verify raw content: confirm `companion_full.txt` lines ~L818–L900 contain Create Normal Animals conclusion, Cureall, Seventh Level Cleric Spells heading, Earthquake, Holy Word, Raise Dead Fully*, Restore* in correct reading order; note any OCR artifacts | `RawVerify(Inspector)` | ✓ | All content confirmed on PDF page 15. Root cause: page range stop at 14, not col 3 premature stop as originally described. |
+| 9c. Write column-isolated bbox crops for pages 13–14 in `companion_spell_block_named`: replace (or augment) the failing `render_tsv_cols_pages_anchored_until` call with `companion_crop_layout` calls targeting col 1 and col 2 of pages 13–14, anchored to Sixth Level or Seventh Level cleric headings and stopped before Druid content | `BboxPatch(Builder)` | ✓ | Fix was single-number change: `13 14` → `13 15` in `render_tsv_cols_pages_anchored_until`. No col-isolation needed — page 15 has no Druid content before the stop anchor. |
+| 9d. Rebuild Companion staging and validate: run `build_becmi_spell_staging_companion.sh` and confirm Cureall, Earthquake, Holy Word, Raise Dead Fully*, Restore* all appear as description bodies (Range/Duration/Effect headers present) in the output; confirm Create Normal Animals body is no longer truncated | `CompRebuild(Verifier)` | ✓ | All 5 targets confirmed present at staging lines 159, 178, 197, 217, 259 with Range/Duration/Effect headers. Builder exit 0, no assertions failed. |
+| 9e. Update companion builder list-only provenance markers: the existing manual blocks for Cl7 (lines ~549–558 in builder) mark Earthquake, Holy Word, Raise Dead Fully*, Restore* as "list-only; desc → RC"; once bodies are confirmed staged, remove or replace these manual blocks with correct provenance notes | `ProvenanceCorr(Patcher)` | ✓ | Builder list-only section already had only 10 entries (pre-corrected). Validation note in builder heredoc updated to reflect Cl7 now fully described. |
+
+---
+
+### Story 10 — Companion Extraction Gap: Druid 5th through 7th Recovery ✓ DONE
+
+**Goal:** Recover the 9 missing Druid description bodies (Anti-Plant Shell, Control Winds, Pass Plant, Anti-Animal Shell, Transport Through Plants, Summon Weather, Creeping Doom, Metal to Wood, Weather Control ref) from the Companion Druid section by fixing the premature-stop TSV reflow for pages 15–17.
+
+**Root cause (confirmed Story 7a):** The current extraction call `render_tsv_cols_pages_anchored_until "$pdf" 15 17 '185,370' 'Druid' 'Fighter'` stops when 'Fighter' appears anywhere in the merged TSV output. On PDF page 16, the right column (col 3) begins the Fighter class section while the left column still contains Druid 7th descriptions (Creeping Doom, Metal to Wood, Weather Control). The stop fires from col 3's content before col 1's Druid 7th content is captured. The companion_full.txt raw extraction confirms all 9 bodies exist at rawlines ~L1050–L1128.
+
+**Fix approach:** Replace the TSV reflow for pages 15–17 with per-column bbox crops (using `companion_crop_layout`) for pages 15–16, extracting only columns 1 and 2 to avoid the col 3 Fighter stop. Alternatively, use `render_tsv_col_pages_anchored_until` single-column extracts (cols 1 and 2 individually) with a page boundary at 16 end. Page 17 contains only Fighter/Thief/Paladin material and does not need to be included.
+
+**Builder function inventory:** `companion_crop_layout page x y w h`, `render_tsv_col_pages_anchored_until pdf start end bounds col anchor stop_anchor` — both available. The single-column variant is preferable if column interleave across pages 15–16 can be handled cleanly by the (page, col, top) sort.
+
+| Sub-task | Tasked Spirit | Status | Notes |
+| --- | --- | --- | --- |
+| 10a. Calibrate pages 15–16 column layout: run `pdftotext -tsv -f 15 -l 16` and inspect x-coordinates; determine whether Druid 5th–7th content occupies all three columns or primarily cols 1–2, and where exactly the Fighter heading begins in col 3 of page 16 | `DruidCal(Calibrator)` | ✓ | Root cause was page range only. Druid 5th-7th all on PDF page 18. Fighter starts PDF page 19. Stop anchor 'Fighter' was always correct. |
+| 10b. Verify raw content order: confirm `companion_full.txt` lines ~L1050–L1128 contain Anti-Plant Shell through Weather Control in correct reading order; note whether Sixth Level Druid and Seventh Level Druid headings are present as clean anchors | `DruidRaw(Inspector)` | ✓ | All Druid 5th-7th content confirmed on page 18 cols 1-3. Seventh Level heading and stop 'Fighter' on page 19 col 1. |
+| 10c. Write column-isolated extraction for pages 15–16 in `companion_spell_block_named`: replace failing `render_tsv_cols_pages_anchored_until` with `companion_crop_layout` bbox calls for col 1 and col 2 of pages 15–16, or `render_tsv_col_pages_anchored_until` for each column individually; stop before the Fighter class section begins in col 3 | `DruidPatch(Builder)` | ✓ | Fix was single-number change: `15 17` → `15 18`. No col-isolation needed — 'Fighter' stop anchor correctly fires at page 19 col 1. |
+| 10d. Rebuild and validate: run `build_becmi_spell_staging_companion.sh` and confirm all 9 Druid spell descriptions appear — at minimum: Anti-Plant Shell, Control Winds, Pass Plant, Anti-Animal Shell, Transport Through Plants, Summon Weather, Creeping Doom, Metal to Wood; Weather Control may appear as a cross-reference stub ("see page 21") | `DruidRebuild(Verifier)` | ✓ | All targets confirmed at staging lines 598, 613, 654, 668, 687, 703, 731 with Range/Duration/Effect headers. Builder exit 0. |
+| 10e. Update companion builder list-only provenance markers: the existing manual blocks for D5–D7 (builder lines ~561–582) mark all 9 Druid spells as "list-only; desc → RC"; once bodies are confirmed staged, remove or update these markers to reflect "desc present in Companion at pages 15–18" | `DruidProvenance(Patcher)` | ✓ | Builder list-only section pre-corrected (10 entries only). Validation note updated to reflect D5-D7 now fully described in main extraction. |
+
+---
+
+### Story 11 — Companion Gap Closure: Post-Recovery Validation and Pipeline Re-verification ✓ DONE
+
+**Goal:** After Stories 9 and 10 close the Companion extraction gaps, update staging annotations, run the full pipeline rebuild, re-verify 196/196, and confirm that the Companion lane now contributes description-body witnesses for Cleric 7th and Druid 5th–7th.
+
+**Background:** Stories 9 and 10 will add 13+ description bodies to the Companion staging lane. This changes the coverage profile for Story 8's coverage map (several previously "description-gap or RC-only" rows now gain a Companion primary). The `multi-witness builder` must be rebuilt to pick up the new witnesses, and the crosswalk confidence column should be updated for affected rows.
+
+| Sub-task | Tasked Spirit | Status | Notes |
+| --- | --- | --- | --- |
+| 11a. Update Companion staging boundary annotations: revise the provenance notes added in Story 7d for Cleric 7th (annotation at staging ~L53) and Druid 5th–7th (annotation at staging ~L156) to reflect "extraction gap CLOSED by Story 9/10; descriptions now present in Companion lane" | `AnnotSync(Patcher)` | ✓ | Boundary labels updated in builder (13–15, 15–18); staging file rebuilt; list-only placeholders replaced by description bodies. Weapon talent section restored as a builder heredoc function after it was clobbered by the rebuild. |
+| 11b. Rebuild multi-lane pipeline: run `build_becmi_spell_staging_multi.py write` → `import_ch06_osr.py write`; confirm `crosswalk statuses: {'yes': 196}` and `drift: no` | `PipelineRun(Builder)` | ✓ | `multi.py write`: drift: no. `import_ch06_osr.py write`: `crosswalk statuses: {'yes': 196}`, drift: yes (expected — import reflects new Companion witnesses; all removals were stale list-only placeholders). |
+| 11c. Re-run survey script coverage pass: run `survey_spell_completeness.py --book companion --min-class description` (or equivalent `--coverage` mode if Story 8 has run); confirm Earthquake, Holy Word, Raise Dead Fully*, Restore*, Cureall, Create Normal Animals, Anti-Plant Shell through Weather Control all register presence in the Companion lane | `CoverageRecheck(Verifier)` | ☐ | Deferred to Story 8 — staging confirmed by grep (Range/Duration/Effect present for all targets); formal survey script pass pending Story 8 --coverage mode |
+| 11d. Update crosswalk confidence for affected rows: re-rate Companion lane confidence from ~0.90 to ~0.95 for the 13+ newly recovered description bodies; note any rows where Companion is now the *only* confirmed primary (i.e., RC had a gap or lower confidence) | `ConfidenceUpdate(Lorekeeper)` | ☐ | Deferred to Story 8 — low priority until --coverage pass reveals primary-only rows |
 
 ---
 
