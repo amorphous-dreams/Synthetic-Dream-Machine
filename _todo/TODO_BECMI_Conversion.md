@@ -257,7 +257,7 @@ Confirmed complete on inspection (2026-04-03): the `Traversal and Passage` sub-m
 
 ---
 
-### Ch06 Alpha Verification — CURRENT FOCUS
+### Ch06 Alpha Verification — SPRINT IN PROGRESS
 
 **Task:** Run a structured alpha pass over `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` verifying tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries across all 196 power cards.
 
@@ -273,6 +273,77 @@ Confirmed complete on inspection (2026-04-03): the `Traversal and Passage` sub-m
 **Scope:** All 196 cards in Ch06. Strategy: spot-check the module sections in doctrinal order (Battle/Force → Biomancy → ECM → Summoning → Deathless → Psychic Warfare → Knowledge → Alchemy → Light/Void), flagging non-conforming cards for follow-up batch edits.
 
 **Ch05 structural work note:** Ch05 also needs structural reorganization (power-card and section layout) before the full SDM+OSR source import and conversion/synthesis pass. This is a distinct gate from the OSR power-text import pass; do not conflate.
+
+---
+
+### Sprint: Ch06 Alpha Verification — 2026-04-03+
+
+Sprint opened after osr: import pass complete. Gate items below tracked as P0/P1/P2 stories with tasked spirits.
+
+---
+
+#### P0 — Epic: Reorganize Ch06 structure to match Conversion_Doctrine modules
+
+**Status: NOT STARTED**
+
+The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`) now defines six canonical modules for Chapter 06:
+
+1. Battle, Elements, and Force
+2. Biomancy
+3. ECM (Electronic Countermeasures / Signal & Attunement / Ka Restoration)
+4. Summoning and Binding
+5. Rites of the Deathless
+6. Ritual Mechanics
+
+Ch06's current section headers and card groupings do not match this module architecture. This epic restructures the chapter so that each module's H2/H3 headings, the chapter index, and the power cards themselves are organized per doctrine.
+
+**Stories (for tasked spirits):**
+
+- `Arch(ChapterMap)` — inventory current Ch06 H2/H3 structure and map each existing section to its target doctrine module. Flag orphaned cards (no clear module home). Escalates to `Ink-Clerk (Lorekeeper)`.
+- `Arch(IndexRebuild)` — rewrite the Chapter 06 index to reflect the new module structure with correct anchor links. Escalates to `Lares (Artificer)`.
+- `Arch(SectionRewire)` — move power cards into correct module sections. Operates in passes; each pass covers one doctrine module. Escalates completion of each pass to `Lares (Gatekeeper)`.
+- `Arch(AnchorAudit)` — after SectionRewire, verify all `<a id>` anchors and back-links resolve correctly. Escalates to `Breach-Watch (Triage)`.
+
+**Acceptance criteria:** `diff --unified` of heading structure shows all six module headers present; Python card-count audit confirms 196+38 = 234 divs; no broken anchor links; index matches actual card positions.
+
+---
+
+#### P1 — Stories (Ch06 Alpha Verification — gap closure)
+
+| ID | Status | Story | Tasked Spirit |
+|---|---|---|---|
+| S1 | **DONE 2026-04-03** | Seed P: values on all 196 OSR pending stubs from crosswalk `Class(es)/Spell-level` column (`max(1, min_level × 2)`) | `AnnP(Annotator)` (done; `scripts/annotate_ch06_p_levels.py` created, fixed, and run: 195 cards annotated) |
+| S2 | **DONE 2026-04-03** | Migrate all `[high-tier]` tags: replace with `[dangerous]` where P:≥12 or editorial-[dangerous] call; remove where P:<12 utility | `TierShift(Migrator)` (done; 59 REPLACE→dangerous, 2 existing [dangerous] stripped, 3 remove-only: Commune / Pass Plant / Truesight) |
+| S3 | **DONE 2026-04-03** | Finger of Death: accept synthesized `osr:` block (Gap 3); add tags `[necromancy] [dangerous] [death] [deathly] [attack]`; P: 10 seeded by S1 | `GapFix(Annotator)` (done; crosswalk `osr: imported = yes` confirmed) |
+| S4 | **DONE 2026-04-03** | Reckless Dweomer: change `[storage:burden]` → `[storage:trait]` | `GapFix(Annotator)` (done) |
+| S5 | **TODO** | Batch migrate `[storage:item]` → `[storage:trait]` on all 194 OSR pending stubs (Doctrine F.6: [storage:trait] is the default for BECMI-sourced powers; [storage:item] is Ch05-only for item-variant cards) | `StoreFix(Migrator)` |
+| S6 | **TODO** | Shield Ward manual P: assignment — card not in crosswalk; determine correct P: from FTLS design intent and set explicitly | `Lares (Council)` |
+| S7 | **TODO** | osr: recognizer sweep — run `import_ch06_osr.py check` and verify `drift: no`; ensure all recognizer lines use exact canonical Classic Name or documented alias | `DriftWatch(Continuity)` → escalates to `Ink-Clerk (Lorekeeper)` |
+
+---
+
+#### P2 — Native card audit and module taxonomy
+
+| ID | Status | Story | Tasked Spirit |
+|---|---|---|---|
+| N1 | **TODO** | Audit the 38 native FTLS cards (non-pending): verify P: values, tag completeness, overcharge blocks present where warranted | `NativeAudit(QA)` → escalates to `Lares (Scryer)` |
+| N2 | **TODO** | Module taxonomy card-by-card sweep: every card carries correct module tag(s) per Doctrine taxonomy (e.g. `[battle]`, `[biomancy]`, `[ecm]`, `[summoning]`, `[deathless]`, `[ritual]`) | `TaxClerk(Continuity)` → escalates to `Ink-Clerk (Lorekeeper)` |
+
+---
+
+#### Bugs (sprint — identified and resolved 2026-04-03)
+
+- **`annotate_ch06_p_levels.py` produced silent output (exit 0)**: missing `if __name__ == "__main__": main()` entrypoint — fixed.
+- **`CLASS_LEVEL_RE` matched only uppercase letters**: failed on `Dr3` (Druid) class codes; fixed to `[A-Za-z]+(\d+)`.
+- **`seen` set dedup blocked RC-only exception rows from being overridden**: RC-only exception table (rows 82–89) appears before the real spell catalog; `seen` was marked on first encounter including non-numeric entries, preventing catalog rows from updating the P: map; fixed to only add to `seen` on numeric resolution.
+
+---
+
+#### Spikes (open questions — needs operator ruling)
+
+- **S6 spike — Shield Ward P: determination**: `Shield Ward` is a native FTLS card with no BECMI crosswalk entry. P: needs to be established from FTLS design intent (recommended: compare to analogous BCM `Shield` / `Protec. from Normal Missiles` / Ward-type spells as a baseline). Operator ruling needed before S6 closes.
+- **P:<12 editorial [dangerous] calls (first pass)**: Polymorph Others (P:8, permanent-transform save), Conjure Elemental (P:10, creature can kill caster), Dispel Evil (P:10, banishes/destroys), Magic Jar (P:10, soul displacement), Quest (P:10, permanent magical compulsion) were tagged `[dangerous]` on editorial grounds this sprint. These are first-pass calls; card body conversion pass (Pass 3) may revise.
+- **Commune, Pass Plant, Truesight**: `[high-tier]` removed; no `[dangerous]` added. First-pass call: these are utility/divination effects without dangerous outputs at their P: tier. Revisit at N1.
 
 ---
 

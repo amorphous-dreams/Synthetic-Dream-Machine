@@ -630,7 +630,7 @@ DEV NOTE: Purely placeholder to complete Chapter 06 conversion. This really belo
 tags:
 >   [power]
 >   [oldtech]
->   [storage:burden]
+>   [storage:trait]
 
 meta:
 > - source:
@@ -655,6 +655,8 @@ meta:
 
 > **Anti-Magic Shell**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -663,7 +665,7 @@ tags:
 >   [abjuration]
 >   [anti-magic]
 >   [ward]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -719,6 +721,8 @@ magic spell) can cancel the barrier.
 ### Dispel Magic
 
 > **Dispel Magic**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -806,6 +810,8 @@ trol and snap him out of that control).
 
 > **Silence 15' Radius**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -889,6 +895,8 @@ the victim may move out of the area.
 ### Magic Missile
 
 > **Magic Missile**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -977,6 +985,8 @@ one target or at different targets.
 
 > **Lightning Bolt**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1047,6 +1057,8 @@ caster until the total length of the bolt is 60'.
 
 > **Ray of Enfeeblement**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1088,6 +1100,8 @@ striking, clawing, biting, squeezing, etc.
 
 > **Slow**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1119,6 +1133,8 @@ of 6" x 12". Duration: 3 turns. Range: 24".
 ### Call Lightning
 
 > **Call Lightning**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -1199,6 +1215,8 @@ duration (or the storm) ends.
 
 > **Sword**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1273,6 +1291,8 @@ ration ends, except by a dispel magic spell effect
 ### Protection from Lightning
 
 > **Protection from Lightning**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -1350,6 +1370,8 @@ against him will do full damage.
 
 > **Barrier**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1358,7 +1380,7 @@ tags:
 >   [barrier]
 >   [control]
 >   [battlefield]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -1423,6 +1445,8 @@ user spells wall of iron, stoneform, ironform or
 
 > **Force Field**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1431,7 +1455,7 @@ tags:
 >   [barrier]
 >   [force]
 >   [ward]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -1566,6 +1590,8 @@ spell or wished away.
 
 > **Levitate**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1647,6 +1673,8 @@ lowed.
 
 > **Floating Disc**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1726,6 +1754,8 @@ throw is allowed.
 ### Fly
 
 > **Fly**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -1807,6 +1837,8 @@ tate spell); this does not require concentration.
 
 > **Immunity**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1816,7 +1848,7 @@ tags:
 >   [ward]
 >   [protection]
 >   [immunity]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -1913,6 +1945,8 @@ ments are possible.
 
 > **Reverse Gravity**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -1997,6 +2031,8 @@ falling back down to the floor.
 
 > **Telekinesis**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -2080,6 +2116,8 @@ turbed.
 ### Wall of Iron
 
 > **Wall of Iron**
+>
+> **P:** 12 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -2170,6 +2208,8 @@ on battering attacks.
 
 > **Maze**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -2179,7 +2219,7 @@ tags:
 >   [exile]
 >   [planar]
 >   [dimensional]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -2248,6 +2288,8 @@ peared.
 
 > **Power Word Stun**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -2308,6 +2350,8 @@ points is stunned for 1d6 turns. No creature with
 ### Striking
 
 > **Striking**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -2376,6 +2420,8 @@ the weapon).
 
 > **Anti-Animal Shell**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -2384,7 +2430,7 @@ tags:
 >   [ward]
 >   [barrier]
 >   [animal]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -2443,6 +2489,8 @@ tacks, just as the druid is protected from theirs.
 ### Anti-Plant Shell
 
 > **Anti-Plant Shell**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -2514,6 +2562,8 @@ druid is protected from theirs.
 
 > **Protection from Normal Missiles**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -2572,6 +2622,8 @@ creature within the spell’s range.
 ### Protection from Evil
 
 > **Protection from Evil**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -2675,6 +2727,8 @@ still apply until the spell duration ends.
 ### Protection from Evil 10' Radius
 
 > **Protection from Evil 10' Radius**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -3010,6 +3064,8 @@ meta:
 
 > **Fireball**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -3095,6 +3151,8 @@ rolled on the dice.
 ### Delayed Blast Fireball
 
 > **Delayed Blast Fireball**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -3187,6 +3245,8 @@ can be dispelled.
 
 > **Meteor Swarm**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -3196,7 +3256,7 @@ tags:
 >   [attack]
 >   [fire]
 >   [area]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -3292,6 +3352,8 @@ be made for each blast the character contac
 
 > **Pyrotechnics**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -3342,6 +3404,8 @@ fire-source is extinguished.
 ### Wall of Fire
 
 > **Wall of Fire**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -3417,6 +3481,8 @@ ble damage while breaking through.
 ### Produce Fire
 
 > **Produce Fire**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -3495,6 +3561,8 @@ round remains burning.)
 ### Heat Metal
 
 > **Heat Metal**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -3585,6 +3653,8 @@ pounds (100 cn—for example, a two-handed
 
 > **Resist Fire**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -3654,6 +3724,8 @@ damage per Hit Die).
 ### Ice Storm/Wall
 
 > **Ice Storm/Wall**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -3757,6 +3829,8 @@ tures each take twice the amount of damage
 
 > **Resist Cold**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -3816,6 +3890,8 @@ fect will move with the cleric.
 
 > **Earthquake**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -3824,7 +3900,7 @@ tags:
 >   [terrain]
 >   [battlefield]
 >   [destruction]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -3898,6 +3974,8 @@ death to escape falling in).
 
 > **Move Earth**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -3960,6 +4038,8 @@ is helpful for constructing castles.
 ### Wall of Stone
 
 > **Wall of Stone**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -4028,6 +4108,8 @@ points of damage to what it hits, and it shatters.
 
 > **Entangle**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4085,6 +4167,8 @@ avoid the effects of the entangle.
 ### Growth of Plants
 
 > **Growth of Plants**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -4208,6 +4292,8 @@ meta:
 
 > **Control Temperature 10' Radius**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4277,6 +4363,8 @@ survive temperature extremes.
 ### Control Winds
 
 > **Control Winds**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -4363,6 +4451,8 @@ lapses, the creature will attack the druid.
 
 > **Weather Control**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4371,7 +4461,7 @@ tags:
 >   [weather]
 >   [environment]
 >   [control]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -4453,6 +4543,8 @@ nado as a storm or gale.
 
 > **Obscure**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4527,6 +4619,8 @@ blind.
 
 > **Summon Weather**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4534,7 +4628,7 @@ tags:
 >   [storage:item]
 >   [weather]
 >   [environment]
->   [high-tier]
+>   [dangerous]
 >   [druid]
 
 meta:
@@ -4600,6 +4694,8 @@ summon weather from up to 10 miles away.)
 
 > **Lower Water**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4608,7 +4704,7 @@ tags:
 >   [terrain]
 >   [water]
 >   [infrastructure]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -4713,6 +4809,8 @@ meta:
 
 > **Death Spell**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4721,7 +4819,7 @@ tags:
 >   [area]
 >   [death]
 >   [kill]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -4781,6 +4879,8 @@ death ray or die.
 
 > **Disintegrate**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4788,7 +4888,6 @@ tags:
 >   [storage:item]
 >   [attack]
 >   [transmutation]
->   [high-tier]
 >   [dangerous]
 
 meta:
@@ -4840,6 +4939,8 @@ effects.
 
 > **Power Word Blind**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4848,7 +4949,7 @@ tags:
 >   [storage:item]
 >   [attack]
 >   [debilitation]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -4915,6 +5016,8 @@ blind.
 
 > **Power Word Kill**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -4923,7 +5026,6 @@ tags:
 >   [storage:item]
 >   [attack]
 >   [dangerous]
->   [high-tier]
 
 meta:
 > - source:
@@ -4993,6 +5095,8 @@ saving throw).
 ### Cloudkill
 
 > **Cloudkill**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -5073,6 +5177,8 @@ poison or be killed by the vapors.
 
 > **Explosive Cloud**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -5081,7 +5187,7 @@ tags:
 >   [attack]
 >   [cloud]
 >   [area-denial]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -5162,6 +5268,8 @@ attacks.
 
 > **Insect Plague**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -5231,6 +5339,8 @@ works outdoors and above-ground.
 
 > **Creeping Doom**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -5239,7 +5349,7 @@ tags:
 >   [summon]
 >   [swarm]
 >   [battlefield]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -5329,6 +5439,8 @@ the normal movement rate.
 
 > **Dimension Door**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -5396,6 +5508,8 @@ throw vs. spells to avoid the effect.
 ### Knock
 
 > **Knock**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -5473,6 +5587,8 @@ type of lock will be opened.
 ### Magic Door
 
 > **Magic Door**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -5572,6 +5688,8 @@ magic spell.
 
 > **Pass Plant**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -5580,7 +5698,6 @@ tags:
 >   [traversal]
 >   [teleport]
 >   [druid]
->   [high-tier]
 
 meta:
 > - source:
@@ -5649,6 +5766,8 @@ Other trees
 
 > **Passwall**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -5714,6 +5833,8 @@ trapped within the reappearing stone, and dies.
 ### Plant Door
 
 > **Plant Door**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -5782,6 +5903,8 @@ what is happening while he is in the tree.
 ### Teleport
 
 > **Teleport**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -5935,6 +6058,8 @@ dungeon) lies at that point (DM’s discretion).
 
 > **Teleport any Object**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6031,6 +6156,8 @@ with a -2 penalty to the roll.
 
 > **Transport Through Plants**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6039,7 +6166,7 @@ tags:
 >   [traversal]
 >   [teleport]
 >   [druid]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -6112,6 +6239,8 @@ port two additional willing creatures.
 
 > **Travel**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6120,7 +6249,7 @@ tags:
 >   [traversal]
 >   [teleport]
 >   [phase]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -6213,6 +6342,8 @@ effect or an anti-magic shell.
 
 > **Word of Recall**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6221,7 +6352,7 @@ tags:
 >   [movement]
 >   [teleport]
 >   [sanctuary]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -6505,6 +6636,8 @@ meta:
 
 > **Cure Critical Wounds**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6566,6 +6699,8 @@ roll to cause the critical wound.
 
 > **Cureall**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6574,7 +6709,7 @@ tags:
 >   [healing]
 >   [restoration]
 >   [cleanse]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -6643,6 +6778,8 @@ that will work on a newly-raised creature.
 ### Cure Light Wounds
 
 > **Cure Light Wounds**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -6719,6 +6856,8 @@ points of damage. It cannot heal damage if used
 
 > **Cure Serious Wounds**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6780,6 +6919,8 @@ cessfully cast the cause serious wounds spell.
 
 > **Heal**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6789,7 +6930,7 @@ tags:
 >   [restoration]
 >   [cleanse]
 >   [vital]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -6843,6 +6984,8 @@ feeblemind effect.
 
 > **Cure Blindness**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -6895,6 +7038,8 @@ however, affect blindness caused by a curse.
 ### Cure Disease
 
 > **Cure Disease**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -6966,6 +7111,8 @@ as long as usual. The disease is fatal in 2d12 (2-
 ### Neutralize Poison
 
 > **Neutralize Poison**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -7051,6 +7198,8 @@ ing in any case, is usually a Chaotic act.
 
 > **Protection from Poison**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7116,6 +7265,8 @@ petrification breath (such as a gorgon’s).
 
 > **Stone to Flesh**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7124,7 +7275,7 @@ tags:
 >   [transformation]
 >   [restoration]
 >   [reversible]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -7217,6 +7368,8 @@ meta:
 
 > **Create Air**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7290,6 +7443,8 @@ a normal component of the atmosphere.
 
 > **Create Food**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7351,6 +7506,8 @@ lay in a big store of food created by this spell.
 ### Create Water
 
 > **Create Water**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -7419,6 +7576,8 @@ spell to create, up to the spell’s maximum.
 
 > **Purify Food and Water**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7481,6 +7640,8 @@ affect any living creature.
 
 > **Survival**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7488,7 +7649,7 @@ tags:
 >   [storage:item]
 >   [survival]
 >   [environment]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -7558,6 +7719,8 @@ damage.
 ### Water Breathing
 
 > **Water Breathing**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -7630,6 +7793,8 @@ the breathing of air.
 ### Haste
 
 > **Haste**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -7711,6 +7876,8 @@ to avoid the effect.
 
 > **Strength**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7751,6 +7918,8 @@ points, a thief’s by 1-6 points, or a cleric’s by 1-4.
 ### Animal Growth
 
 > **Animal Growth**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -7812,6 +7981,8 @@ fantastic creatures.
 ### Enlargement
 
 > **Enlargement**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -7902,6 +8073,8 @@ meta:
 
 > **Infravision**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -7982,6 +8155,8 @@ example, 8' tall or walking with a crutch).
 
 > **Web**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -8056,6 +8231,8 @@ sure) can break free of a web in 4 rounds.
 
 > **Clone**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -8064,7 +8241,7 @@ tags:
 >   [creation]
 >   [body]
 >   [deathless]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -8330,6 +8507,8 @@ cluding spells and spell-like abilities (using the
 
 > **Polymorph Others**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -8337,7 +8516,7 @@ tags:
 >   [storage:item]
 >   [transformation]
 >   [control]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -8421,6 +8600,8 @@ lasts until dispelled, or until the creature dies.
 ### Polymorph Self
 
 > **Polymorph Self**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -8513,13 +8694,15 @@ ual (see polymorph other).
 
 > **Polymorph Any Object**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
 >   [power]
 >   [storage:item]
 >   [transformation]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -8619,6 +8802,8 @@ Dice.
 
 > **Shapechange**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -8627,7 +8812,7 @@ tags:
 >   [storage:item]
 >   [transformation]
 >   [self]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -8738,6 +8923,8 @@ tion from evil or anti-magic shell spell effect.
 
 > **Statue**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -8826,6 +9013,8 @@ fore the attacking spell strikes.
 ### Sticks to Snakes
 
 > **Sticks to Snakes**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -9017,6 +9206,8 @@ meta:
 
 > **Truesight**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -9025,7 +9216,6 @@ tags:
 >   [divination]
 >   [reveal]
 >   [anti-concealment]
->   [high-tier]
 
 meta:
 > - source:
@@ -9084,6 +9274,8 @@ and power.
 ### Detect Invisible
 
 > **Detect Invisible**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -9145,6 +9337,8 @@ spell to see invisible things within 30'.
 
 > **Find Traps**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -9199,6 +9393,8 @@ trap, nor is a natural hazard, such as quicksand.
 ### Faerie Fire
 
 > **Faerie Fire**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -9278,6 +9474,8 @@ four man-sized creatures).
 ### Invisibility
 
 > **Invisibility**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -9369,6 +9567,8 @@ he or she attacks or casts any spell.
 
 > **Invisibility 10' Radius**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -9436,6 +9636,8 @@ others within 10') also become invisible.
 ### Mass Invisibility
 
 > **Mass Invisibility**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -9521,6 +9723,8 @@ ble again for one full turn.
 
 > **Mirror Image**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -9600,6 +9804,8 @@ the spellcaster will be affected by the spell.)
 ### Massmorph
 
 > **Massmorph**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -9718,6 +9924,8 @@ meta:
 
 > **Hallucinatory Terrain**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -9787,6 +9995,8 @@ an intelligent creature, or until dispelled.
 ### Phantasmal Force
 
 > **Phantasmal Force**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -9890,6 +10100,8 @@ damage sustained disappears immediately.
 
 > **Projected Image**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -9898,7 +10110,7 @@ tags:
 >   [illusion]
 >   [decoy]
 >   [control]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -9957,6 +10169,8 @@ by a hand-to-hand weapon, it disappears.
 
 > **Audible Glamer**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10002,6 +10216,8 @@ easily be accomplished by a second level magic-user).
 ### Ventriloquism
 
 > **Ventriloquism**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -10058,6 +10274,8 @@ be within range of the spell.
 ### Magic Mouth
 
 > **Magic Mouth**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -10187,6 +10405,8 @@ meta:
 
 > **Conjure Elemental**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10195,7 +10415,7 @@ tags:
 >   [summon]
 >   [elemental]
 >   [control]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -10278,6 +10498,8 @@ return an uncontrolled elemental to its plane.
 
 > **Invisible Stalker**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10286,7 +10508,7 @@ tags:
 >   [summon]
 >   [servitor]
 >   [invisible]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -10341,6 +10563,8 @@ to its home plane.
 
 > **Aerial Servant**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10349,7 +10573,7 @@ tags:
 >   [summon]
 >   [servitor]
 >   [utility]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -10430,6 +10654,8 @@ See Chapter 14 for a full description of the
 
 > **Summon Elemental**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10438,7 +10664,7 @@ tags:
 >   [summon]
 >   [elemental]
 >   [druid]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -10500,6 +10726,8 @@ magic or dispel evil spell.
 ### Summon Object
 
 > **Summon Object**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -10591,6 +10819,8 @@ plane of existence.
 
 > **Create Normal Animals**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10599,7 +10829,7 @@ tags:
 >   [creation]
 >   [animal]
 >   [summon]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -10677,6 +10907,8 @@ ends.
 ### Create Normal Monsters
 
 > **Create Normal Monsters**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -10783,6 +11015,8 @@ giant weasels (5 Hit Die monsters); and so forth.
 
 > **Create Magical Monsters**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10791,7 +11025,7 @@ tags:
 >   [creation]
 >   [monster]
 >   [construct]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -10886,6 +11120,8 @@ nondispellable constructs.
 
 > **Create Any Monster**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -10894,7 +11130,7 @@ tags:
 >   [creation]
 >   [monster]
 >   [construct]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -10997,6 +11233,8 @@ effect.
 
 > **Summon Animals**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -11091,6 +11329,8 @@ mals encountered while adventuring.
 
 > **Gate**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -11099,7 +11339,7 @@ tags:
 >   [planar]
 >   [portal]
 >   [summon]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -11260,6 +11500,8 @@ meta:
 
 > **Geas**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -11267,7 +11509,7 @@ tags:
 >   [storage:item]
 >   [compulsion]
 >   [binding]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -11327,6 +11569,8 @@ failure (5% per level difference).
 ### Hold Portal
 
 > **Hold Portal**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -11399,6 +11643,8 @@ spellcaster.
 
 > **Wizard Lock**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -11466,6 +11712,8 @@ dispelled). However, a knock spell can open the
 
 > **Contingency**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -11474,7 +11722,7 @@ tags:
 >   [binding]
 >   [trigger]
 >   [ward]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -11589,6 +11837,8 @@ situation described comes to pass.
 
 > **Permanence**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -11597,7 +11847,7 @@ tags:
 >   [binding]
 >   [duration]
 >   [ritual]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -11721,6 +11971,8 @@ nently placed upon them.
 
 > **Symbol**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -11728,7 +11980,7 @@ tags:
 >   [storage:item]
 >   [trap]
 >   [binding]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -11910,6 +12162,8 @@ meta:
 
 > **Raise Dead**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -12038,6 +12292,8 @@ haunt, spirit, nightshade, or special).
 
 > **Raise Dead Fully**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -12045,7 +12301,7 @@ tags:
 >   [storage:item]
 >   [resurrection]
 >   [undead]
->   [high-tier]
+>   [dangerous]
 >   [reversible]
 
 meta:
@@ -12164,6 +12420,8 @@ curing blindness or feeblemind, etc.).
 
 > **Reincarnation**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -12268,11 +12526,18 @@ should be at least semi-intelligent.
 
 > **Finger of Death**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
 >   [power]
 >   [storage:item]
+>   [necromancy]
+>   [dangerous]
+>   [death]
+>   [deathly]
+>   [attack]
 
 meta:
 > - source:
@@ -12349,13 +12614,15 @@ meta:
 
 > **Restore**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
 >   [power]
 >   [storage:item]
 >   [restoration]
->   [high-tier]
+>   [dangerous]
 >   [reversible]
 
 meta:
@@ -12433,6 +12700,8 @@ but it is a Chaotic act, avoided by Lawful clerics.
 
 > **Dispel Evil**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -12441,7 +12710,7 @@ tags:
 >   [abjuration]
 >   [banishment]
 >   [undead]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -12514,6 +12783,8 @@ influence of any magical charm.
 ### Remove Curse
 
 > **Remove Curse**
+>
+> **P:** 6 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -12592,6 +12863,8 @@ make a saving throw vs. spells to avoid the curse.
 ### Bless
 
 > **Bless**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -12701,6 +12974,8 @@ meta:
 
 > **Speak with the Dead**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -12778,6 +13053,8 @@ alignments differ, the spirit may reply in riddles.
 ### Animate Dead, aka Animate Corpse
 
 > **Animate Dead, aka Animate Corpse**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -12909,6 +13186,8 @@ meta:
 
 > **Remove Fear**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -12995,6 +13274,8 @@ of 120'.
 
 > **Holy Word**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -13003,7 +13284,7 @@ tags:
 >   [word]
 >   [banishment]
 >   [undead]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -13170,6 +13451,8 @@ meta:
 
 > **Feeblemind**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -13241,6 +13524,8 @@ by a cleric’s cureall spell.
 
 > **Magic Jar**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -13248,7 +13533,7 @@ tags:
 >   [storage:item]
 >   [mind]
 >   [possession]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -13362,6 +13647,8 @@ act.
 
 > **Mind Barrier**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -13372,7 +13659,7 @@ tags:
 >   [mind]
 >   [protection]
 >   [reversible]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -13465,6 +13752,8 @@ normal attack roll.
 
 > **Quest**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -13473,7 +13762,7 @@ tags:
 >   [mind]
 >   [compulsion]
 >   [curse]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -13568,6 +13857,8 @@ to remove a quest cast by a 20th level cleric has a
 
 > **Sleep**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -13655,6 +13946,8 @@ spell.
 ### Hold Person
 
 > **Hold Person**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -13747,6 +14040,8 @@ ghoul’s paralysis ability.
 ### Charm Person
 
 > **Charm Person**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -13896,6 +14191,8 @@ tacked by the spellcaster’s allies.
 
 > **Charm Monster**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -13954,6 +14251,8 @@ to avoid the effects.
 ### Hold Monster
 
 > **Hold Monster**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -14030,6 +14329,8 @@ fect.
 
 > **Dance**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -14037,7 +14338,7 @@ tags:
 >   [storage:item]
 >   [mind]
 >   [compulsion]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -14104,6 +14405,8 @@ five rounds at levels 25-28, six rounds at levels
 ### Confusion
 
 > **Confusion**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -14181,6 +14484,8 @@ Attack the creature’s own party
 
 > **Snake Charm**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -14254,6 +14559,8 @@ ically hostile).
 
 > **Hold Animal**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -14324,6 +14631,8 @@ summoned, conjured, or controlled animals.
 ### Charm Plant
 
 > **Charm Plant**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -14402,6 +14711,8 @@ plants spell, and possibly a permanence as well.)
 
 > **Mass Charm**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -14411,7 +14722,7 @@ tags:
 >   [control]
 >   [charm]
 >   [mind]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -14496,6 +14807,8 @@ for one turn.
 ### Lore
 
 > **Lore**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -14585,6 +14898,8 @@ great power.
 ### Read Languages
 
 > **Read Languages**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -14684,6 +14999,8 @@ meta:
 
 > **Commune**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -14692,7 +15009,6 @@ tags:
 >   [divination]
 >   [oracle]
 >   [ritual]
->   [high-tier]
 
 meta:
 > - source:
@@ -14755,6 +15071,8 @@ questioned.
 ### Contact Outer Plane
 
 > **Contact Outer Plane**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -14875,6 +15193,8 @@ chart below to determine this.
 
 > **Find the Path**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -14883,7 +15203,7 @@ tags:
 >   [divination]
 >   [navigation]
 >   [utility]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -14949,6 +15269,8 @@ used to find a fast escape route.
 ### Predict Weather
 
 > **Predict Weather**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -15016,6 +15338,8 @@ predicts what is to come.
 ### ESP
 
 > **ESP**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -15116,6 +15440,8 @@ forms of mind-reading for the spell duration.
 
 > **Clairvoyance**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -15183,6 +15509,8 @@ effects of this spell. No saving throw is allowed.
 
 > **Clairaudience**
 >
+> **P:** 6 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -15222,6 +15550,8 @@ Clairaudience: Same as Clairvoyance except it allows hearing rather than visuali
 ### Wizard Eye
 
 > **Wizard Eye**
+>
+> **P:** 8 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -15282,6 +15612,8 @@ through the eye.
 ### Speak with Animals
 
 > **Speak with Animals**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -15363,6 +15695,8 @@ must be able to perform it.
 
 > **Speak with Plants**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -15426,6 +15760,8 @@ cleric to communicate with plantlike monsters
 
 > **Speak with Monsters**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -15434,7 +15770,7 @@ tags:
 >   [divination]
 >   [communication]
 >   [reversible]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -15732,6 +16068,8 @@ meta:
 
 > **Detect Magic**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -15799,6 +16137,8 @@ Detect Magic
 ### Locate Object
 
 > **Locate Object**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -15882,6 +16222,8 @@ The spell will not locate a creature.
 
 > **Detect Evil**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -15951,6 +16293,8 @@ Detect Evil
 ### Know Alignment
 
 > **Know Alignment**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -16025,6 +16369,8 @@ swer will be the result of any further attempts.
 
 > **Analyze**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -16077,6 +16423,8 @@ mate the number of charges on an item within
 ### Detect Danger
 
 > **Detect Danger**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -16157,6 +16505,8 @@ where, the duration is half normal (three turns).
 
 > **Locate**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -16228,6 +16578,8 @@ find special rare plants.)
 ### Read Magic
 
 > **Read Magic**
+>
+> **P:** 2 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -16426,6 +16778,8 @@ meta:
 
 > **Wizardry**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -16433,7 +16787,7 @@ tags:
 >   [storage:item]
 >   [cross-tradition]
 >   [item-use]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -16515,6 +16869,8 @@ idic spells are also not reversible.
 
 > **Clothform**
 >
+> **P:** 8 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -16585,6 +16941,8 @@ quick shelters and to create rope.
 ### Ironform
 
 > **Ironform**
+>
+> **P:** 14 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -16666,6 +17024,8 @@ we find that an iron wall will have an AC of —
 
 > **Steelform**
 >
+> **P:** 16 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -16710,6 +17070,8 @@ about 20 hit points per 1" thickness.
 ### Stoneform
 
 > **Stoneform**
+>
+> **P:** 12 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -16799,6 +17161,8 @@ thick and have 60 hit points.
 
 > **Woodform**
 >
+> **P:** 10 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -16883,6 +17247,8 @@ be about 8" thick and have 40 hit points.
 ### Dissolve
 
 > **Dissolve**
+>
+> **P:** 10 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -16978,6 +17344,8 @@ spells to avoid becoming stuck).
 
 > **Metal to Wood**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -16986,7 +17354,7 @@ tags:
 >   [transformation]
 >   [material]
 >   [druid]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -17047,6 +17415,8 @@ turn to nonmagical wooden clubs.
 
 > **Turn Wood**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17056,7 +17426,7 @@ tags:
 >   [wood]
 >   [control]
 >   [druid]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -17153,6 +17523,8 @@ other secured objects (such as trees).
 
 > **Warp Wood**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17231,6 +17603,8 @@ chance to be unaffected.)
 
 > **Animate Objects**
 >
+> **P:** 12 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17239,7 +17613,7 @@ tags:
 >   [animation]
 >   [control]
 >   [utility]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -17359,6 +17733,8 @@ meta:
 
 > **Light**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17444,6 +17820,8 @@ the victim does get a saving throw.
 
 > **Dancing Lights**
 >
+> **P:** 2 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17483,6 +17861,8 @@ tinued concentration.
 ### Continual Light
 
 > **Continual Light**
+>
+> **P:** 4 **R:** — **T:** — **D:** —  
 >
 > {pending conversion}
 
@@ -17590,6 +17970,8 @@ spell will cancel its effects.
 
 > **Darkness**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17639,6 +18021,8 @@ When reversed, light creates darkness: a circle of darkness 30' in diameter. It 
 
 > **Continual Darkness**
 >
+> **P:** 4 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17682,6 +18066,8 @@ Continual darkness creates a completely dark volume of 60' diameter (30' radius)
 
 > **Prismatic Wall**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17691,7 +18077,7 @@ tags:
 >   [barrier]
 >   [ward]
 >   [area]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -17836,6 +18222,8 @@ A person with an active anti-magic shell (in-
 
 > **Wish**
 >
+> **P:** 14 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17843,7 +18231,7 @@ tags:
 >   [storage:item]
 >   [ritual]
 >   [reality]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
@@ -17928,6 +18316,8 @@ worded wish that’s out of balance. Chara
 
 > **Timestop**
 >
+> **P:** 18 **R:** — **T:** — **D:** —  
+>
 > {pending conversion}
 
 tags:
@@ -17936,7 +18326,7 @@ tags:
 >   [storage:item]
 >   [time]
 >   [self]
->   [high-tier]
+>   [dangerous]
 
 meta:
 > - source:
