@@ -532,16 +532,16 @@ Lineages or sub-cultures offering an alternate expression of the core theme. Use
 5. Bog-of-Extreme-Stench – goblins dam a reeking fen to brew perfume bombs for pranks; the diverted sludge threatens a nearby vineyard’s water supply.  
 6. Labyrinth Map Heist – an ancient parchment shows shortcuts through the Jade Maze; goblins will barter anything to keep it fragmented, lest mortals walk the straightest path.
 
-## Golem
+## Construct
 
 **d6 Referee Hooks**
 
-1. A Golem pilgrim seeks the original runestone that “awoke” them—now sealed in a fae court vault.  
-2. A rogue Golem’s inner fire is leaking into the landscape, causing molten hazards.  
-3. A faction is secretly replacing temple Golems with disguised warforged infiltrators.  
+1. A Construct pilgrim seeks the original runestone that “awoke” them—now sealed in a fae court vault.  
+2. A rogue Construct’s inner fire is leaking into the landscape, causing molten hazards.  
+3. A faction is secretly replacing temple Constructs with disguised warforged infiltrators.  
 4. A wandering Verdant Frame tends an ancient grove on the site of a ley-line rift.  
-5. An Embodied Noospheric Agent Golem is being hunted by corrupted DreamNet daemons for stolen code.  
-6. A Spore-War Veteran Golem offers to guard the caravan—if the party can help remove the geas binding it to a forgotten general.
+5. An Embodied Noospheric Agent Construct is being hunted by corrupted DreamNet daemons for stolen code.  
+6. A Spore-War Veteran Construct offers to guard the caravan—if the party can help remove the geas binding it to a forgotten general.
 
 ## Halfling
 

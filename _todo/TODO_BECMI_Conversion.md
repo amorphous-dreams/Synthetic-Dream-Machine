@@ -286,16 +286,28 @@ Sprint opened after osr: import pass complete. Gate items below tracked as P0/P1
 
 **Status: NOT STARTED**
 
-The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`) now defines six canonical modules for Chapter 06:
+The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## Power Modules`) now defines the canonical module architecture for Chapter 06. Ch06's current section headers and card groupings do not match this architecture. This epic restructures the chapter so that each module's H2/H3 headings, the chapter index, and the power cards themselves are organized per doctrine.
 
-1. Battle, Elements, and Force
-2. Biomancy
-3. ECM (Electronic Countermeasures / Signal & Attunement / Ka Restoration)
-4. Summoning and Binding
-5. Rites of the Deathless
-6. Ritual Mechanics
+**Canonical module list (from Doctrine `## Power Modules` and `## Procedural Modules`):**
 
-Ch06's current section headers and card groupings do not match this module architecture. This epic restructures the chapter so that each module's H2/H3 headings, the chapter index, and the power cards themselves are organized per doctrine.
+*Power Modules (10):*
+
+1. **Mana, Counterspells, and Jamming** — sub-modules: Mana | Counterspells and Jamming
+2. **Battle, Elements, and Force** — sub-modules: Force | Elemental Fire | Elemental Ice/Cold | Elemental Earth | Elemental Air/Weather | Elemental Water | Demolition/Entropy | Atmospheric Hazards
+3. **Biomancy** — sub-modules: Acute Medical Care | Systemic Treatment | Life Support/Metabolic Sustenance | Biotic Augmentation | Sensory Augmentation | Faerie Bodycrafts
+4. **Illusion and Glamour** — sub-modules: Counter-Veil | Personal Veil | Constructed Illusion | Sound Crafting | Self-State
+5. **Summoning and Binding** — sub-modules: Summoning | Covenant and Binding
+6. **Rites of the Deathless** — sub-modules: Resurrection | Ka Restoration | Deathless Communication | Corpse Fabrication | Undead Command
+7. **Psychic Warfare** — sub-modules: Fear and Morale | Mental Destruction | Mind Transfer and Storage | Noospheric Defense | Compulsion and Oath | Charm
+8. **Knowledge and Oracle** — sub-modules: Archive Access | Object and Mind Interrogation | Oracle and Divination | Signal and Attunement | Detection and Analysis
+9. **Alchemy and Artifice** — sub-modules: Brews and Consumables | Inscribed Items and Devices | Fabrication and Artifact Craft
+10. **Light and Void** — sub-modules: Radiance | Shadow | Prismatic | Void
+
+*Procedural Modules (3):*
+
+11. **ECM – Etheric Counter-Magitech**
+12. **Ritual Mechanics — Cross-Module Procedures**
+13. **Immortal Metaphysics**
 
 **Stories (for tasked spirits):**
 
@@ -304,7 +316,7 @@ Ch06's current section headers and card groupings do not match this module archi
 - `Arch(SectionRewire)` — move power cards into correct module sections. Operates in passes; each pass covers one doctrine module. Escalates completion of each pass to `Lares (Gatekeeper)`.
 - `Arch(AnchorAudit)` — after SectionRewire, verify all `<a id>` anchors and back-links resolve correctly. Escalates to `Breach-Watch (Triage)`.
 
-**Acceptance criteria:** `diff --unified` of heading structure shows all six module headers present; Python card-count audit confirms 196+38 = 234 divs; no broken anchor links; index matches actual card positions.
+**Acceptance criteria:** `diff --unified` of heading structure shows all 13 module headers present; Python card-count audit confirms 196+38 = 234 divs; no broken anchor links; index matches actual card positions.
 
 ---
 
