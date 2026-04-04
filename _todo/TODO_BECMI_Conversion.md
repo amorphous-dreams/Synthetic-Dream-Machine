@@ -251,18 +251,26 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 
 > **ON FIRE — start here.** This section identifies the single next action for this pipeline. Read before touching any other queue item.
 
-### Void Module: Doctrine Sub-module Reorganization
+### [DONE 2026-04-03] Void Module: Doctrine Sub-module Reorganization
 
-**Task:** Move all portal / teleport / outer-planes power rows out of `Module: Battle, Elements, and Force → Traversal and Passage` and into `Module: Light and Void → Void` sub-module in `_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`. Gate: Ch06 alpha verification is still pending; this reorganization is a prerequisite for the Ch06 alpha structural pass.
+Confirmed complete on inspection (2026-04-03): the `Traversal and Passage` sub-module no longer exists in `Battle, Elements, and Force`; all portal/teleport rows (Dimension Door, Magic Door, Pass Plant, Passwall, Plant Door, Teleport, Teleport any Object, Transport Through Plants, Travel, Word of Recall) are in `Light and Void → Void` migration table; Gate is in Void table (not Summoning); Void doctrine describes void transit as primary scope with no "reserved stub" language remaining. No further action needed.
 
-**What moves:**
-- From `Battle, Elements, and Force → Traversal and Passage` → Void: Dimension Door, Magic Door, Pass Plant, Passwall, Plant Door, Teleport, Teleport any Object, Transport Through Plants, Travel, Word of Recall. (Keep `Knock` in Force — it is a lock opener, not void transit.)
-- From `Summoning and Binding → Summoning` → Void: Gate (planar aperture / outer-planes crossover).
-- Note: `Plane Shift` is non-canonical for BECMI era — do not add. `Contact Other Plane`, `Gate` and portal-magitech are the canonical form of Void-contact and Void-travel.
+---
 
-**Doctrine work required:**
-- Expand Void sub-module doctrine in `Light and Void` to own void transit as its primary scope. Remove the current "reserved stub / covers void conditions not void transit" language.
-- Update `Battle, Elements, and Force` sub-module list to remove the `Traversal and Passage` entry.
+### Ch06 Alpha Verification — CURRENT FOCUS
+
+**Task:** Run a structured alpha pass over `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` verifying tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries across all 196 power cards.
+
+**Gate:** This is the prerequisite for marking Ch06 `alpha` complete (queue item #5), which in turn gates Ch05 Phase B bridge resumption and the F2 Magic Items pass.
+
+**Verification targets (per card):**
+- `[tags]` match the module taxonomy in `TODO_BECMI_Spell_Effect_Conversion_Doctrine.md` — no orphan tags, no missing mandatory tags
+- `overcharge:` blocks present on all cards with multi-tier effects; absent only where explicitly not applicable
+- `osr:` recognizer line uses the canonical Classic Name or a documented alias (not a paraphrase)
+- `p:` (Power Level) satisfies `Spell Level × 2` scaling rule; any deviation is explicitly documented
+- Cards requiring `[dangerous]` (P: 12+ or no-save instant kill) carry the tag
+
+**Scope:** All 196 cards in Ch06. Strategy: spot-check the module sections in doctrinal order (Battle/Force → Biomancy → ECM → Summoning → Deathless → Psychic Warfare → Knowledge → Alchemy → Light/Void), flagging non-conforming cards for follow-up batch edits.
 
 **Ch05 structural work note:** Ch05 also needs structural reorganization (power-card and section layout) before the full SDM+OSR source import and conversion/synthesis pass. This is a distinct gate from the OSR power-text import pass; do not conflate.
 
@@ -271,7 +279,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 ## Active Queue
 1. [DONE 2026-04-01] **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** — all 11 cards added; `import_ch06_osr.py` unblocked.
 2. Keep the spell/effect crosswalk in lockstep: Chapter 06 `osr:` import-state changes must be mirrored back into the flat catalog immediately.
-3. [DONE 2026-04-01] **Execute the Chapter 06 spell-only `osr:` preservation import pass** — 203/204 rows `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`).
+3. [DONE 2026-04-01; verified 196/196 drift:no 2026-04-03] **Execute the Chapter 06 spell-only `osr:` preservation import pass** — 196/196 `osr: imported = yes`; `import_ch06_osr.py check` → `drift: no`; `audit_crosswalk_source_completeness.py` → 0 candidates.
 4. Run Chapter 06 alpha verification after the preservation import pass (tag consistency, overcharge consistency, recognizer discoverability, Level/Power Level boundaries).
 5. Mark Chapter 06 as `alpha` complete before resuming new Chapter 05 bridge edits.
 6. Resume Chapter 05 Phase B bridge batches with the now-locked Chapter 06 API doctrine.

@@ -75,6 +75,7 @@ import build_becmi_spell_staging_multi as multi  # noqa: E402
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
 HIT_REPORT = ROOT / "_todo/TODO_Completeness_Survey_Hits.md"
+COVERAGE_REPORT = ROOT / "_todo/TODO_Completeness_Survey_Coverage.md"
 
 EXTRACTIONS: dict[str, Path] = {
     "basic":     ROOT / "_becmi/extractions/basic_full.txt",
@@ -309,6 +310,18 @@ def load_staging_text() -> dict[str, str]:
         if path and path.exists():
             raw = path.read_text(encoding="utf-8")
             result[book_key] = multi.norm(raw)
+        else:
+            result[book_key] = ""
+    return result
+
+
+def load_staging_raw() -> dict[str, str]:
+    """Return raw (un-normalised) full text of each per-lane staging file keyed by extraction key."""
+    result: dict[str, str] = {}
+    for book_key, lane_name in BOOK_TO_LANE.items():
+        path = multi.PLAIN_LANE_PATHS.get(lane_name)
+        if path and path.exists():
+            result[book_key] = path.read_text(encoding="utf-8")
         else:
             result[book_key] = ""
     return result
@@ -642,6 +655,163 @@ def render_report(hits: list[Hit], books: list[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Coverage report (--coverage mode)
+# ---------------------------------------------------------------------------
+
+# Matches Range: / Duration: / Effect: header lines in staging files.
+# Handles both bare ("Range: Touch") and markdown-prefixed variants.
+_COVERAGE_HEADER_RE = re.compile(
+    r"(?m)^[ \t-]*(?:\*\*)?(?:Range|Duration|Effect|Area of Effect)\s*[:\*]",
+    re.I,
+)
+
+# Number of lines to scan after a spell-name match when looking for description headers.
+_COVERAGE_WINDOW = 15
+
+_ALL_BOOKS = ["basic", "expert", "companion", "master", "immortals", "rc"]
+_BOOK_LABELS = {"basic": "Basic", "expert": "Expert", "companion": "Companion",
+                "master": "Master", "immortals": "Immortals", "rc": "RC"}
+
+
+def _coverage_status(
+    spell_name: str,
+    book_key: str,
+    source_lanes: list[str],
+    staging_lines: dict[str, list[str]],
+) -> str:
+    """Return coverage status for one spell × book pair.
+
+    Returns:
+        "✓ desc"  — a description body (Range/Duration/Effect headers) is staged
+        "~ list"  — spell name appears but no description headers nearby
+        "✗"       — spell name not found in staging lane
+        ""        — book is not a source lane for this spell (n/a)
+    """
+    if book_key not in source_lanes:
+        return ""
+    lines = staging_lines.get(book_key, [])
+    if not lines:
+        return "✗"
+
+    aliases = survey_aliases(spell_name)
+    alias_patterns: list[re.Pattern[str]] = []
+    for alias in aliases:
+        escaped = re.escape(alias)
+        alias_patterns.append(
+            re.compile(r"(?<![A-Za-z])" + escaped + r"(?![A-Za-z])", re.I)
+        )
+
+    best = "✗"
+    for i, line in enumerate(lines):
+        for pat in alias_patterns:
+            if not pat.search(line):
+                continue
+            # Found the spell name — scan the next _COVERAGE_WINDOW lines for description headers
+            window_text = "\n".join(lines[i: i + _COVERAGE_WINDOW + 1])
+            header_count = len(_COVERAGE_HEADER_RE.findall(window_text))
+            if header_count >= 2:
+                return "✓ desc"  # description body confirmed — no need to keep searching
+            elif header_count == 1:
+                best = "~ list"  # partial match — may be upgraded by a later occurrence
+            elif best == "✗":
+                best = "~ list"  # name found but no headers; mark at least list-only
+            break  # first matching alias wins for this line
+
+    return best
+
+
+def coverage_report(rows: list[SurveyRow], staging_raw: dict[str, str]) -> str:
+    """Produce a per-spell × per-lane description-coverage matrix as Markdown."""
+    # Pre-split staging files into lines for O(n) window scanning.
+    staging_lines: dict[str, list[str]] = {
+        book_key: text.split("\n") for book_key, text in staging_raw.items()
+    }
+
+    # Counters per book lane
+    desc_counts   = {b: 0 for b in _ALL_BOOKS}
+    list_counts   = {b: 0 for b in _ALL_BOOKS}
+    absent_counts = {b: 0 for b in _ALL_BOOKS}
+
+    # Story 8b classification buckets
+    zero_desc: list[str] = []   # description-gap: known source lanes but none have descriptions
+    no_std_source: list[str] = []  # no standard BECMI/RC source lane (Holmes-only, etc.)
+    all_present: list[str] = []    # full-multi-lane: description in 3+ lanes
+
+    table_rows: list[str] = []
+    for row in rows:
+        statuses = {
+            b: _coverage_status(row.classic_name, b, row.source_lanes, staging_lines)
+            for b in _ALL_BOOKS
+        }
+        for b, s in statuses.items():
+            if s == "✓ desc":
+                desc_counts[b] += 1
+            elif s == "~ list":
+                list_counts[b] += 1
+            elif s == "✗":
+                absent_counts[b] += 1
+
+        # 8b: classify per-row
+        desc_lane_count = sum(1 for b in row.source_lanes if statuses[b] == "✓ desc")
+        if not row.source_lanes:
+            no_std_source.append(row.classic_name)
+        elif desc_lane_count == 0:
+            # Has known source lanes but none contain a description body
+            if any(statuses[b] == "✗" for b in row.source_lanes):
+                zero_desc.append(row.classic_name)
+        if desc_lane_count >= 3:
+            all_present.append(row.classic_name)
+
+        cells = [statuses[b] if statuses[b] else "—" for b in _ALL_BOOKS]
+        table_rows.append(f"| {row.classic_name} | " + " | ".join(cells) + " |")
+
+    # Build report
+    header_row = "| Spell | " + " | ".join(_BOOK_LABELS[b] for b in _ALL_BOOKS) + " |"
+    sep_row    = "| --- | " + " | ".join("---" for _ in _ALL_BOOKS) + " |"
+    summary_cells = [
+        f"✓{desc_counts[b]} ~{list_counts[b]} ✗{absent_counts[b]}"
+        for b in _ALL_BOOKS
+    ]
+    summary_row = "| **TOTALS** | " + " | ".join(summary_cells) + " |"
+
+    report_lines: list[str] = [
+        "# Staging Coverage Report\n",
+        "Legend: `✓ desc` = description body present  `~ list` = list-only  "
+        "`✗` = absent  `—` = not a source lane for this spell\n",
+        header_row,
+        sep_row,
+        *table_rows,
+        sep_row,
+        summary_row,
+        "",
+    ]
+
+    if zero_desc:
+        report_lines.append("## Description-Gap Spells (source lane present but no verbatim description staged)\n")
+        for spell in zero_desc:
+            report_lines.append(f"- {spell}")
+        report_lines.append("")
+
+    if no_std_source:
+        report_lines.append(
+            "## No Standard BECMI/RC Source Lane (Holmes-only or unlisted — check pre-add staging)\n"
+        )
+        for spell in no_std_source:
+            report_lines.append(f"- {spell}")
+        report_lines.append("")
+
+    if all_present:
+        report_lines.append(
+            f"## Full-Multi-Lane Spells (description in 3+ source lanes): {len(all_present)}\n"
+        )
+        for spell in all_present:
+            report_lines.append(f"- {spell}")
+        report_lines.append("")
+
+    return "\n".join(report_lines)
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -661,11 +831,36 @@ def parse_args() -> argparse.Namespace:
             "Example: --terms 'anti-magic,magical nature,astral,ethereal,Power Points,divine intervention'"
         ),
     )
+    parser.add_argument(
+        "--coverage", action="store_true",
+        help=(
+            "Emit a per-spell × per-lane description-coverage matrix instead of the hit report. "
+            "For each of the 196 crosswalk spells, reports whether each staging lane contains a "
+            "full description body (Range/Duration/Effect headers present), a list-only entry, "
+            "or no presence at all."
+        ),
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+
+    # --coverage: generate per-spell × per-lane description-coverage matrix
+    if args.coverage:
+        print("Loading crosswalk…", file=sys.stderr)
+        crosswalk_text = CROSSWALK.read_text(encoding="utf-8")
+        rows = parse_survey_rows(crosswalk_text)
+        print(f"  {len(rows)} canonical spell rows loaded.", file=sys.stderr)
+        print("Loading staging files (raw)…", file=sys.stderr)
+        staging_raw = load_staging_raw()
+        print("Building coverage matrix…", file=sys.stderr)
+        report = coverage_report(rows, staging_raw)
+        print(report)
+        if args.mode == "write":
+            COVERAGE_REPORT.write_text(report, encoding="utf-8")
+            print(f"\nWrote coverage report → {COVERAGE_REPORT}", file=sys.stderr)
+        return
 
     # Determine which books to search
     if args.book:

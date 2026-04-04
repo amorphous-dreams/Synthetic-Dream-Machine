@@ -143,7 +143,7 @@ The existing staging scripts extract by *section*: they know where the spell des
 
 ---
 
-### Story 8 — Named Spell Source Coverage Map ☐ TODO
+### Story 8 — Named Spell Source Coverage Map ✓ 8a/8b DONE — 8c/8d/8e pending
 
 **Goal:** For every Named spell in the 196-row crosswalk, produce a source coverage map: which staging lanes supply a complete verbatim description body (primary), which supply list-only reference, which have no presence. Flag any spell where zero staging lanes contain a verbatim description, or where the only description is in a lane not yet confirmed by direct inspection.
 
@@ -151,13 +151,22 @@ The existing staging scripts extract by *section*: they know where the spell des
 
 **Scale estimate:** 196 crosswalk rows × ~6 lanes; likely ~50–80 rows require manual confirmation once list-only entries are mapped in Story 7.
 
+**8a/8b findings (2026-04-03):**
+- `--coverage` mode added to `survey_spell_completeness.py`; report written to `_todo/TODO_Completeness_Survey_Coverage.md`
+- Totals by lane: Basic ✓34/~0/✗0 | Expert ✓79/~14/✗0 | Companion ✓66/~7/✗0 | Master ✓40/~36/✗0 | Immortals ✓0/~3/✗0 | RC ✓187/~0/✗0
+- **Description-gap count: 0** — no spell with a traceable BECMI/RC source lane has zero descriptions staged; all "no-description" entries are Holmes-only source (`_norm_lane()` returns None) — not a gap in BECMI staging
+- **Holmes-only/no-std-source: 9** (Dancing Lights, Enlargement, Audible Glamer, Clairaudience, Magic Mouth, Pyrotechnics, Ray of Enfeeblement, Slow, Strength) — covered via pre-add staging (`TODO_BECMI_Spell_Material_Staging.md`); low priority
+- **Full-multi-lane (3+ lanes): 43** spells; includes all recently recovered Companion Cl7/D5-D7 entries
+- **Master list-only gap: 36 spells** have list-only in Master lane — largest remaining capture target; not a risk item if RC has descriptions (which it does for all of them)
+- Stories 11c/11d: Companion recovery confirmed ✓ (all Story 9/10 targets appear as ✓ desc in Companion lane)
+
 | Sub-task | Tasked Spirit | Status | Notes |
 | --- | --- | --- | --- |
-| 8a. Build coverage table: for each of the 196 crosswalk spells, query each staging lane for presence of a verbatim description body (not just spell-list entry) | `CoverageMap(Builder)` | ☐ | Can leverage `survey_spell_completeness.py` in `--terms` mode or extend with a `--coverage` flag |
-| 8b. Classify each crosswalk row: `full-multi-lane` (description in 3+ lanes), `primary-confirmed` (description in 1–2 lanes, directly inspected), `list-only-in-some-lanes` (description in ≥1 lane but list-only in others — OK), `description-gap` (zero verbatim descriptions across all staging lanes) | `CoverageClass(Classifier)` | ☐ | `description-gap` entries are priority capture candidates |
-| 8c. For any `description-gap` entries: identify which non-BECMI/RC source might supply the description (Expert may describe some Basic spells if re-presented; RC re-compiles most) | `GapTrace(Tracer)` | ☐ | RC is the highest-probability fallback; flag if even RC lacks verbatim body |
-| 8d. Stage verbatim text for any confirmed `description-gap` spells where a source exists | `GapFill(Drafter)` | ☐ | Verbatim-only discipline applies; operator approval required before committing |
-| 8e. Update crosswalk confidence column for any rows where source coverage changes | `ConfidenceSync(Lorekeeper)` | ☐ | Re-rate lane confidence gates if significant description-gap discoveries |
+| 8a. Build coverage table: for each of the 196 crosswalk spells, query each staging lane for presence of a verbatim description body (not just spell-list entry) | `CoverageMap(Builder)` | ✓ | `--coverage` flag added to `survey_spell_completeness.py`; report at `TODO_Completeness_Survey_Coverage.md` |
+| 8b. Classify each crosswalk row: `full-multi-lane` (description in 3+ lanes), `primary-confirmed` (description in 1–2 lanes, directly inspected), `list-only-in-some-lanes` (description in ≥1 lane but list-only in others — OK), `description-gap` (zero verbatim descriptions across all staging lanes) | `CoverageClass(Classifier)` | ✓ | description-gap: 0; no-std-source: 9 (Holmes-only); full-multi-lane: 43; Master list-only: 36 — all RC-backed |
+| 8c. For any `description-gap` entries: identify which non-BECMI/RC source might supply the description (Expert may describe some Basic spells if re-presented; RC re-compiles most) | `GapTrace(Tracer)` | ✓ | No BECMI/RC description-gap entries found; 9 Holmes-only spells are pre-add staging; no GapTrace action required |
+| 8d. Stage verbatim text for any confirmed `description-gap` spells where a source exists | `GapFill(Drafter)` | N/A | No BECMI/RC description-gap entries; Holmes pre-add spells already in `TODO_BECMI_Spell_Material_Staging.md` |
+| 8e. Update crosswalk confidence column for any rows where source coverage changes | `ConfidenceSync(Lorekeeper)` | ☐ | Master list-only gap (36 spells) and Immortals list-only (3 spells) — not a confidence risk (RC covers all); Stories 11c/11d: Companion lane confirmed ✓ for all recovered spells — operator review recommended before updating confidence column |
 
 ---
 
@@ -211,8 +220,8 @@ The existing staging scripts extract by *section*: they know where the spell des
 | --- | --- | --- | --- |
 | 11a. Update Companion staging boundary annotations: revise the provenance notes added in Story 7d for Cleric 7th (annotation at staging ~L53) and Druid 5th–7th (annotation at staging ~L156) to reflect "extraction gap CLOSED by Story 9/10; descriptions now present in Companion lane" | `AnnotSync(Patcher)` | ✓ | Boundary labels updated in builder (13–15, 15–18); staging file rebuilt; list-only placeholders replaced by description bodies. Weapon talent section restored as a builder heredoc function after it was clobbered by the rebuild. |
 | 11b. Rebuild multi-lane pipeline: run `build_becmi_spell_staging_multi.py write` → `import_ch06_osr.py write`; confirm `crosswalk statuses: {'yes': 196}` and `drift: no` | `PipelineRun(Builder)` | ✓ | `multi.py write`: drift: no. `import_ch06_osr.py write`: `crosswalk statuses: {'yes': 196}`, drift: yes (expected — import reflects new Companion witnesses; all removals were stale list-only placeholders). |
-| 11c. Re-run survey script coverage pass: run `survey_spell_completeness.py --book companion --min-class description` (or equivalent `--coverage` mode if Story 8 has run); confirm Earthquake, Holy Word, Raise Dead Fully*, Restore*, Cureall, Create Normal Animals, Anti-Plant Shell through Weather Control all register presence in the Companion lane | `CoverageRecheck(Verifier)` | ☐ | Deferred to Story 8 — staging confirmed by grep (Range/Duration/Effect present for all targets); formal survey script pass pending Story 8 --coverage mode |
-| 11d. Update crosswalk confidence for affected rows: re-rate Companion lane confidence from ~0.90 to ~0.95 for the 13+ newly recovered description bodies; note any rows where Companion is now the *only* confirmed primary (i.e., RC had a gap or lower confidence) | `ConfidenceUpdate(Lorekeeper)` | ☐ | Deferred to Story 8 — low priority until --coverage pass reveals primary-only rows |
+| 11c. Re-run survey script coverage pass: run `survey_spell_completeness.py --book companion --min-class description` (or equivalent `--coverage` mode if Story 8 has run); confirm Earthquake, Holy Word, Raise Dead Fully*, Restore*, Cureall, Create Normal Animals, Anti-Plant Shell through Weather Control all register presence in the Companion lane | `CoverageRecheck(Verifier)` | ✓ | --coverage mode (Story 8 2026-04-03): all Story 9/10 targets confirmed ✓ desc in Companion lane; full-multi-lane list includes Earthquake, Holy Word, Raise Dead Fully*, Restore*, Anti-Animal Shell, Creeping Doom, Metal to Wood, Pass Plant, Summon Weather, Transport Through Plants, Weather Control |
+| 11d. Update crosswalk confidence for affected rows: re-rate Companion lane confidence from ~0.90 to ~0.95 for the 13+ newly recovered description bodies; note any rows where Companion is now the *only* confirmed primary (i.e., RC had a gap or lower confidence) | `ConfidenceUpdate(Lorekeeper)` | ☐ | Coverage matrix shows no rows where Companion is only confirmed primary (RC has ✓ desc for all 196); confidence re-rating is low priority — deferred to 8e operator review |
 
 ---
 
