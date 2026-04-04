@@ -471,13 +471,15 @@ meta:
 
 ## Background (abstract)
 
->   **Background.** A Background is an abstract trait representing who you were before (and partly during) your adventures: your origins, professions, social roles, motives, secrets, and formative experiences. In the Vastlands, a Background is intentionally broad and is meant to anchor fictional positioning rather than provide narrow mechanical bonuses.
+>   **Background.** A Background functions as an abstract trait — the self you inhabited before (and partly during) your adventures: your origins, professions, social roles, motives, secrets, and formative experiences. In the Vastlands, a Background runs intentionally broad, serving to anchor fictional positioning rather than provide narrow mechanical bonuses. Skilled: +3 bonus with a skill/lore package. Expert: +6 bonus, choose an FTLS Affinity. Master: +3 bonus, choose an FTLS Affinity.
 > 
->   Backgrounds are generated procedurally using tables in the Vastlands Guidebook—combining elements such as origin, profession, role, motive, and secret—or agreed upon by the player and referee, and interpreted flexibly at the table.
+>   Backgrounds emerge procedurally from tables in the Vastlands Guidebook — combining elements such as origin, profession, role, motive, and secret — or through negotiation between player and referee, read flexibly at the table.
 > 
->   Player-facing: Your Background establishes your character’s routine competence and fictional positioning. It tells everyone what kinds of things your character should reasonably know, recognize, or attempt without special justification. When an action clearly falls within your Background and nothing unusual is at stake, the referee may treat it as routine: waiving the roll, lowering the target number, or granting narrative permission outright.
+>   Player-facing: Your Background establishes your character’s routine competence and fictional positioning. It tells everyone what kinds of things your character should reasonably know, recognize, or attempt without special justification. When an action clearly falls within your Background and nothing unusual stands at stake, the referee may treat it as routine: waiving the roll, lowering the target number, or granting narrative permission outright.
 > 
->   Referee-facing: Backgrounds should be read generously and used to move play forward. They are permission structures, not straightjackets. When in doubt, let the Background open doors, reveal information, or justify competence rather than restrict action.
+>   Referee-facing: Backgrounds deserve generous readings and should move play forward. They function as permission structures, not straightjackets. When in doubt, let the Background open doors, surface information, or justify competence rather than restrict action.
+>
+> 
 
 tags:
 >   [trait]
@@ -494,31 +496,31 @@ meta:
 
 ##### Example Backgrounds (Vastlands-style)
 
-- **Wizard of the Dark Electronic Arts, Scholar of the Never-Ended War**
-- **Wide-Ranging Merchant and Caravan Trickster with a Coin in Every Sock**
-- **Exiled Blue Lands Caravan Guard with a Corrupted Bloodline Secret**
-- **Clone-Born Court Servant from a Minor Noble House Who Knows Too Much**
+- **Wizard of the Dark Electronic Arts, Scholar of the Never-Ended War** *(Expert Affinity: Illusion • Light • Void)*
+- **Wide-Ranging Merchant and Caravan Trickster with a Coin in Every Sock** *(Expert Affinity: Hearth & Ways)*
+- **Exiled Blue Lands Caravan Guard with a Corrupted Bloodline Secret** *(Expert Affinity: Blood • Bone • Biomancy)*
+- **Clone-Born Court Servant from a Minor Noble House Who Knows Too Much** *(Expert Affinity: Masks & Totems)*
 
 ##### Randomly Rolled Backgrounds (Traditional Generator)
 
 *(Procedure followed: roll 5d40s on the Traditional Background Generator; read across Flavor → Role 1 → Role 2 → Task → Spin. Each column uses its own d40 roll.)*
 
-- **Hexad Therapist–Maximizer Who Optimizes Primary Production and Shaves the Coins for Memories**
-- **Plateau Rogue–Private Who Assigns Assigned Assignations and Clouds Minds for Shared Goals**
-- **Timelost Nöosphere–Maximizer Who Interfaces with Beast-Bodied Minds and Shaves the Coins for Memories**
+- **Hexad Therapist–Maximizer Who Optimizes Primary Production and Shaves the Coins for Memories** *(Expert Affinity: Vome Magitech)*
+- **Plateau Rogue–Private Who Assigns Assigned Assignations and Clouds Minds for Shared Goals** *(Expert Affinity: Chaos • Dream • Shadow)*
+- **Timelost Nöosphere–Maximizer Who Interfaces with Beast-Bodied Minds and Shaves the Coins for Memories** *(Expert Affinity: Serpent Energy)*
 
 ##### OSR Trope Backgrounds
 
-- **Relic-Questing Freeblade from a Candlelit City of Thieves**
-- **Badge-Clad Whisper Spy Who Buys Secrets with Favors**
-- **Skyship Privateer Hunting Immortals’ Lost Toys**
-- **Dragon-Sworn Knight Bearing Oaths, Family Curses, and Bright Lances**
-- **Chrononaut Archaeologist Raiding Time-Locked Vaults**
-- **Planar Cipher Tout Who Knows Every Sigil Portal Key**
-- **Bloodline Scion-General Guiding Storied Domains**
-- **Burning-Waste Dune Walker Who Smuggles Water and Psionic Whispers**
-- **Mourning Vicar Battling Sentient Mists with Silver Verses**
-- **Void Wainwright Maintaining Living Ships Between Crystal Spheres**
+- **Relic-Questing Freeblade from a Candlelit City of Thieves** *(Expert Affinity: Earth • Stone • Wood)*
+- **Badge-Clad Whisper Spy Who Buys Secrets with Favors** *(Expert Affinity: Masks & Totems)*
+- **Skyship Privateer Hunting Immortals’ Lost Toys** *(Expert Affinity: Air • Song • Storm)*
+- **Dragon-Sworn Knight Bearing Oaths, Family Curses, and Bright Lances** *(Expert Affinity: Serpent Energy)*
+- **Chrononaut Archaeologist Raiding Time-Locked Vaults** *(Expert Affinity: Chaos • Dream • Shadow)*
+- **Planar Cipher Tout Who Knows Every Sigil Portal Key** *(Expert Affinity: Illusion • Light • Void)*
+- **Bloodline Scion-General Guiding Storied Domains** *(Expert Affinity: Blood • Bone • Biomancy)*
+- **Burning-Waste Dune Walker Who Smuggles Water and Psionic Whispers** *(Expert Affinity: Fire • Metal • Ceramic)*
+- **Mourning Vicar Battling Sentient Mists with Silver Verses** *(Expert Affinity: Chaos • Dream • Shadow)*
+- **Void Wainwright Maintaining Living Ships Between Crystal Spheres** *(Expert Affinity: Serpent Energy)*
 
 <div class="trait-return">
   &nbsp;&nbsp;

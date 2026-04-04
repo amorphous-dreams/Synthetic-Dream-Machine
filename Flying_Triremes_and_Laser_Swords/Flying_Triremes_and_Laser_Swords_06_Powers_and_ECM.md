@@ -591,6 +591,8 @@ System-level Immortal-tier procedure scaffolding that constrains how all module 
 
 - Placeholder for PP economy, rank progression gates, and sphere-linked advancement constraints.
 - Placeholder for mortal-to-Immortal conversion boundaries and recovery cadence.
+- Placeholder: **Rank Tags on Powers.** Powers may carry rank tags: `[skilled]`, `[expert]`, or `[master]`. A rank tag unlocks additional effects, overcharge options, or riders on that power. To use a rank-tagged power without penalty, the user must have a Path or Background skill at the same rank; otherwise the power is rolled with Disadvantage. This tagging system also applies to RSS Recipes and Secrets (see Ch04 → Recipes) and to magitech/fantascience craft recipes (see Ch05 → Anomolous Object Recipes); for recipes, a rank tag requires a higher grade of ingredient and causes the output item to start above level 0.
+- Placeholder: Faerie folk clans and factions often teach powers to young fae in a partially locked form. Then, once compotence has been demonstraited, the power users can unlock their overcharges witha an initiation ritual. Other initiation rituals allows rank tag upgrades.
 
 ## Immortal Effect Doctrine
 
@@ -623,7 +625,13 @@ DEV NOTE: Purely placeholder to complete Chapter 06 conversion. This really belo
 >
 > This power is Very Dangerous. While you are carrying Mana and you make a Defeat roll, or whenever you make any other Dangerous Magic roll, you must immediately make a another Dangerous Magic roll. Unused Mana disperses back into the ley-lines at sunset or sunrise.
 >
-> _Overcharge:_ n/a
+> _Ritual Overchange:_ The `[ritual]` tag changes a Power's time-rframe tocat. Instead of 1 round, the user must perform an extended ritual - scaled by the time cost given per point of Power required. Time costs: 1 round/P, 1 minute/P, 10 mintues/P, 1 Hour/P, or 1 watch (4 hours)/P. Ritual casting does not require the Power to be "at the ready", and can be cast from Gimoires or other spell storage. This can also be represented by the Power-as-Gear in the form of ritual items in the local Area that do not need to be "at the ready". Each ritual assistant reduces the overcharge Power cost by 1, or the time needed by 1 cost, minimum 1 each. Ritual Helper afifiniies can apply, capped byt the leader's rank bonus in their magic proficiencey skill (+3/+6/+9).
+> 
+> _Overcharge (2):_ `[ritual]`, time cost/P: 1 round; Casting Reckless Dweomer as a x2 overcahrge ritual is the "safe, slow" procedure. The mana pool generated equals the power user's Level or the local Arcane rating, whichever is lower. 
+>
+> _Overcharge (4):_ `[ritual]`, time cost/P: 1 round; Casting Reckless Dweomer as a x4 overcahrge ritual is the "slow, safe, powerful" procedure. The mana pool generated equals the lead caster's Level + Aura, or the area Arcane level x2 (whichever is lower). helpers can either reduce time, or add +1 mana to the final Pool. 
+>
+> _Overcharge (8):_ `[ritual]`, time cost/P: 1 round; Casting Reckless Dweomer as a x4 overcahrge ritual is the "slow, dangerous, powerful" procedure. The mana pool generated equals the lead caster's Level + Aura, or the area Arcane level x2 (whichever is lower). Helpers can either: reduce time, add +1 to the Arcane rating used for this ritual, or add +1 mana to the final Pool. 
 >
 > _Dangerous:_ Very Dangerous: make Dangerous Magic checks as noted in the body text.
 

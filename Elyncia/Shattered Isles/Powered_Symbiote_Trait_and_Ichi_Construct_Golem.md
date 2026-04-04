@@ -6,27 +6,27 @@
 
 ## Powered Symbiote
 
-**Powered Symbiote.** You are a living powered system — personal armor, a helmed vehicle, a mecha, a venom-style symbiont — that can operate independently or be worn/piloted by a bonded operator. The system has its own character sheet (Heritage, Traits, Ability Scores, Life, Level) and occupies a **trait or item inventory slot** on the operator's sheet as a Hallmark.
+**Powered Symbiote.** You are a living powered system — personal armor, a helmed vehicle, a mecha, an alien-style symbiont — that can operate independently or be worn/piloted by a bonded operator. The system has its own character sheet (Heritage, Traits, Ability Scores, Life, Level) and occupies a **trait or item inventory slot** on the operator's sheet as a Hallmark.
 
 ### Mode Switch
 
-Entering or exiting symbiosis requires a **full-round action** from both the system and the operator. Both lose their actions for that round.
+Entering or exiting symbiosis requires an **action** from both the system and the operator. Both lose their actions for that round, but movement and free actions are still possible.
 
 ### When Worn/Piloted (Symbiosis Mode)
 
 The system wraps around or is helmed by the operator. The operator uses the system's **defense ratings** (Armor and Ward) in place of any other worn armor. The system's defense rating **overrides** other worn armor — and you cannot operate multiple Powered systems simultaneously.
 
-**Under-armor:** The operator may wear light armor or clothing beneath the system. The under-armor's **defense rating does not stack** — the system's rating applies instead. However, under-armor **passives, pockets, environmental features, and non-defense properties** still function. (Example: ritual robes worn underneath provide their spiritual effects and pockets but not their armor bonus.)
+**Under-armor:** The operator may wear light armor or clothing beneath the system. The under-armor's **defense rating does not stack** — the system's rating applies instead. However, under-armor **passives, pockets, environmental features, and non-defense properties** still function. Example: ritual robes worn underneath provide their spiritual effects and pockets but not their armor bonus.
 
 **Heritage Armoured Body:** If the operator has an inherent Armoured Body effect from their Heritage (representing their own body — carapace, scales, hide), this **does stack** with the system's armor and ward ratings. Heritage form is not worn equipment; it sits inside the system as an additional layer.
 
 **Action economy:** The system perceives and can communicate but cannot act independently. The operator gains the system's Burn talents and item features.
 
-**Damage Threshold (DT):** The system grants its Level as DT to the operator while worn. DT scales with system category and degrades with negative Levels:
+**Damage Threshold (DT):** The system grants its Level as DT to the operator while worn. DT scales with system category and degrades with negative Levels. Note: `DT 1` does not prevent any incoming dmage, but can serve as a higher base for temproary DT bonuses from gear, traits, or powers. These other sources of DT can also be damaged or degraded.
 
 | Category | Typical DT | Examples |
 |---|---|---|
-| Personal powered armor | 2–3 | Ashigaru symbiont, spectral parasite, porcelain walker |
+| Personal powered armor | 1–3 | alien symbiont, spectral parasite, porcelain walker |
 | Light mecha / mount | 3–5 | War-golem, cavalry mecha, combat symbiont |
 | Heavy mecha | 5–7 | Siege walker, heavy warframe |
 | Helmed vehicle (light) | 5–7 | Skyjammer, gunboat |
@@ -44,19 +44,19 @@ The system uses its own character sheet — its own Heritage, Traits, Ability Sc
 The system has a **Replenish score** (re #) representing its power reserves. When the operator activates a **Burn talent** (as a free action), roll d20 against the re score:
 
 - **Roll above re score:** Burn talent activates. Battery holds.
-- **Roll at or below re score:** Burn talent activates, BUT apply **−1 effective Level** to the system. This reduces powered feature strength (DT), talent output, and may degrade other Level-dependent effects.
-- **At effective Level 0:** The system enters **Unpowered/Emergency Mode**. Powered features shut down. Physical armor still protects. Burn talents unavailable.
+- **Roll at or below re score:** Burn talent activates, BUT apply **−1 effective Level** to the system. This reduces any powered feature or talent strength based on level (DT, etc), and may degrade other Level-dependent effects.
+- **At effective Level 0:** The system enters **Unpowered/Emergency Mode**. Powered features become dormant. Physical armor still protects. Burn talents unavailable.
 - **Damage or drain below Level 0:** Roll **Defeat** for the system. *(This chassis parallels OSR-style level drain — a unified mechanic for power depletion, undead energy drain, and system degradation.)*
 
 **Recharging:** Requires a spare power source, automagical recharging cradle (or prayer altar), or access to a functioning ley-line node / active lararium. Portable recharging unit: 1 sack, €500. Each negative Level recovered requires one full recharge cycle.
 
 ### Slot Economy Summary
 
-- The system occupies **1 trait or item slot** on the operator's sheet (Hallmark companion).
-- When in Symbiosis Mode, this Hallmark slot **overlaps** with the one worn-armor slot. Reduce the usual encumbrance of the gear by 1. (The biological/magical bond handles integration.)
-- The system **counts as** one Powered Armor. You cannot wear multiple Powered Armor systems simultaneously.
-- Installed mods, vehicle-scoped gear, mecha system, and Powers-as-Traits can fill a system's physical and/or trait inventory slots.
-- Repair materials, spare parts, and uninstalled upgrade components occupy **separate** item slots on the operator's sheet as normal gear.
+- The system **counts as** one Powered System. You cannot operate multiple Powered Systems simultaneously.
+- The symbiotic interface occupies **1 trait or item slot** on the operator's sheet (a Hallmark companion).
+- When in Symbiosis Mode, this Hallmark slot **overlaps** with the one worn-armor slot. Reduce the usual encumbrance of the worn symbiotic gear by 1. On light mecha and larger vehicles, the relationship in inversed. The Hallmsrk trait allows the operator to occupy the vehicle's helm wihtout taking any vehicle capacity slots. The biological/magical bond handles integration.
+- Installed mods, vehicle-scoped gear, mecha system, and Powers-as-Traits can fill a system-character's physical and/or trait inventory slots.
+- Repair materials, spare parts, and uninstalled upgrade components occupy **separate** item slots on the operator-character's sheet as normal gear.
 
 ## Powered Mods
 
@@ -142,9 +142,9 @@ Instead of colonizing, the spore-jelly symbiosed with the daemon. Something woke
 
 **Mental Defense (Autonomous):** 10?; 7 + AUR (2) + Ward (+1; heritage Armoured Body) + Skill (?)
 
-**Physical Defense (Worn by Aki):** 13?; 7 + Aki's AGI (?) + Armor (+5 base, +1 Aki's Spider Folk carapace = **+6 total**) + Skill (0). See Powered Symbiote trait.
+**Physical Defense (Worn by Aki):** 14; 7 + Aki's AGI (1) + Armor (+5 base, +1 Aki's Spider Folk carapace = **+6 total**) + Skill (0). See Powered Symbiote trait.
 
-**Mental Defense (Worn by Aki):** 9?; 7 + Aki's AUR (?) + Ward (+1 Ichi base, +1 Aki's Spider Folk carapace = **+2 total**) + Skill (?).0.
+**Mental Defense (Worn by Aki):** 11; 7 + Aki's AUR (2) + Ward (+1 Ichi base, +1 Aki's Spider Folk carapace = **+2 total**) + Skill (0).
 
 ---
 
