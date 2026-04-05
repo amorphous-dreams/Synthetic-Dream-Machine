@@ -1,3 +1,9 @@
+---
+layout: gruv_default_adapter
+title: 'Flying Triremes and Laser Swords — Open Beta'
+published: true
+permalink: /vault/synthetic-dream-machine/overview/
+---
 # Flying Triremes and Laser Swords
 
 **An OSR Tabletop Roleplaying Game for Elyncia**
