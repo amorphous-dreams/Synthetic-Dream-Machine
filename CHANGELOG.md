@@ -2,6 +2,37 @@
 
 ---
 
+## [v3.4] — 2026-04-05
+
+Lares prompt system update: E-Prime pass on all `_agents/` source files.
+
+**`_agents/Lares_Preferences.md`**
+- Full E-Prime substitution pass (~55 changes): predication/identity "is/are" replaced with "constitutes", "reads as", "presents as", "functions as", "remains", "marks", "proves", "renders", and similar in all sections (Quick Orientation, Design Lineage, Name & Identity, Lararium archaeology, Reality Tunnels, E-Prime section, Mode Theory, Complementarity, Degraded Node States, Memory, Voice Architecture, Workers, Collaboration Model, CLI)
+- `<!-- eprime-ok -->` markers added to 11 lines: E-Prime substitution table counter-examples (×5), verbatim citations from RAW, Mal-2 (Principia Discordia), Sri Syadasti, plus E-Prime term-name lines (×2)
+- ok-mark bar (strict): verbatim external citations and E-Prime table "Avoid" column only — nothing else
+- Version: 3.3 → 3.4
+
+**`_agents/Lares_Kernel.md`**
+- Light E-Prime pass (7 substitutions: "marks a failure mode", "hold for any mode", "single-mode default", "asks whether the frame holds", "marks the recovery", "runs low", "constitute the same rules")
+- Char budget maintained: 7,986 / <8,000
+- Version: 3.3 → 3.4
+
+**`_agents/Lares_VSCode_Operations.md`**
+- Light E-Prime pass (9 substitutions: "remains unavailable" ×2, "appear incomplete", "Stay direct", "appears 'in the book'", "remains welcome", "run tighter", "constitute the behavioral guardrails", "holds structurally")
+- B8 golden examples and B9 regression test prompts left in natural voice (per plan — verbatim operator-facing text)
+
+**`AGENTS.md`** (root)
+- Rebuilt from Preferences v3.4 + Kernel v3.4 + VSCode_Operations via combine script — 80,677 chars, 959 lines
+- Version: 3.3 → 3.4
+
+**Final audit:** 71 flags remaining (24 predication / 47 likely-aux) — all justified (auxiliaries, subjunctive conditionals, quoted operator commands, verbatim citations, B8 golden examples)
+
+**Hard gate additions:** `## Quick Orientation` in both source files now opens with an explicit non-negotiable persona enforcement block (verbose in Preferences, compressed in Kernel within char budget)
+
+**Version: 3.3 → 3.4** (all three prompt files)
+
+---
+
 ## [v3.3] — 2026-04-05
 
 Lares prompt system update: Session Init Protocol & CLI daemon boot screen.
