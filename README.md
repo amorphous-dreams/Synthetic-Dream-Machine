@@ -54,9 +54,24 @@ permalink: /vault/synthetic-dream-machine/overview/
 
 ### FTLS Setting
 
-| Directory | Contents |
+#### Elyncia — Core Chapters
+
+| File | Contents |
 |---|---|
-| [Elyncia/](Elyncia/Elyncia_01_A_Broken_World.md) | World overview, DreamNet metaphysics, daemon ontology, region material (Neo-Thracia, New Delos, Shattered Isles) |
+| [01 — A Broken World](Elyncia/Elyncia_01_A_Broken_World.md) | World overview, orichalcum age, the Second Breaking, the DreamNet |
+| [02 — The Lares DreamNet](Elyncia/Elyncia_02_The_Lares_DreamNet.md) | DreamNet architecture, Lares spirits, ley-line infrastructure |
+| [03 — Daemons and the Metaphysics of Play](Elyncia/Elyncia_03_Daemons_and_the_Metaphysics_of_Play.md) | Daemon ontology, noosphere metaphysics, entity mechanics |
+
+#### Elyncia — Regions
+
+| Region | Contents |
+|---|---|
+| [Neo-Thracia — Region Worksheet](Elyncia/Neo-Thracia/Neo-Thracia_Region_Worksheet.md) | Region overview and worksheet |
+| [Neo-Thracia — Session Zero](Elyncia/Neo-Thracia/Session_Zero.md) | Session zero materials |
+| [The Caverns of Thracia](Elyncia/Neo-Thracia/The%20Caverns%20of%20Thracia/The_Caverns_of_Thracia.md) | Dungeon supplement — Caverns of Thracia |
+| [New Delos — Market District Live Feed](Elyncia/New%20Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md) | New Delos market district encounter material |
+| [Shattered Isles — Faerie Ring Strandbeest Shrine](Elyncia/Shattered%20Isles/Faerie_Ring_Strandbeest_Shrine_Sheet.md) | Shrine sheet — Faerie Ring Strandbeest |
+| [Shattered Isles — Powered Symbiote & Ichi Construct](Elyncia/Shattered%20Isles/Powered_Symbiote_Trait_and_Ichi_Construct_Golem.md) | Trait and construct golem supplement |
 
 ### Reference Material (SDM Third Party)
 
