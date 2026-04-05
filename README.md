@@ -20,26 +20,37 @@
 
 ## Repository Structure
 
-### Game Rules
+### SDM Game Rules
 
-| Directory / File | Contents |
+| File | Contents |
 |---|---|
-| `Synthetic_Dream_Machine_01_Quickstart.md` | SDM core rules — the Quickstart entry point |
-| `Synthetic_Dream_Machine_02_Paths_Index.md` | Paths index |
-| `Synthetic_Dream_Machine_03_Traits_Index.md` | Traits index |
-| `Synthetic_Dream_Machine_04_Powers_Index.md` | Powers index |
-| `Synthetic_Dream_Machine_05_Gear_Index.md` | Gear index |
-| `Synthetic_Dream_Machine_06_Campaign_Regions.md` | Campaign regions |
-| `Flying_Triremes_and_Laser_Swords/` | FTLS supplement: Paths, OSR Heritage Traits, Powers, Magitech, Wild Magic, Mass Combat, Loot, Referee resources |
+| [Quickstart](Synthetic_Dream_Machine_01_Quickstart.md) | SDM core rules — the Quickstart entry point |
+| [Paths Index](Synthetic_Dream_Machine_02_Paths_Index.md) | Paths index |
+| [Traits Index](Synthetic_Dream_Machine_03_Traits_Index.md) | Traits index |
+| [Powers Index](Synthetic_Dream_Machine_04_Powers_Index.md) | Powers index |
+| [Gear Index](Synthetic_Dream_Machine_05_Gear_Index.md) | Gear index |
+| [Campaign Regions](Synthetic_Dream_Machine_06_Campaign_Regions.md) | Campaign regions |
 
-### Setting
+### FTLS Game Rules
+
+| File | Contents |
+|---|---|
+| [01 — Title & Introduction](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md) | Overview, five gameplay modes (Delve / Travel / Company / Faction / Mythic) |
+| [02 — FTLS Paths](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_02_FTLS_Paths.md) | Character Paths native to the FTLS setting |
+| [03 — OSR Heritage Trait](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md) | OSR compatibility layer — heritage trait rules |
+| [04 — Recon, Salvage, Secrets](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md) | Procedures for reconnaissance, salvage operations, and secret discovery |
+| [05 — Magitech and Fantascience](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md) | Magitech gear, fantascience devices, and related procedures |
+| [06 — Powers and ECM](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md) | Full powers index with OSR conversion cards *(active sprint)* |
+| [07 — Wild Magic Exposure](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md) | Wild magic rules, corruption, and exposure procedures |
+| [08 — Formations and Mass Combat](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md) | Fleet and army scale combat rules |
+| [09 — Loot and Treasure](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md) | Treasure generation, loot tables, and salvage rewards |
+| [10 — Appendix Null: Referee Resources](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) | Referee-facing tables, random generators, and reference tools |
+
+### FTLS Setting
 
 | Directory | Contents |
 |---|---|
-| `Elyncia/` | World overview, DreamNet metaphysics, daemon ontology, region material (Neo-Thracia, New Delos, Shattered Isles) |
-| `Magitecnica/` | Magitech and fantascience setting material |
-| `Eternal_Return_Key/` | Supplemental dungeon/scenario material |
-| `There_A_Red_Door/` | Supplemental scenario material |
+| [Elyncia/](Elyncia/Elyncia_01_A_Broken_World.md) | World overview, DreamNet metaphysics, daemon ontology, region material (Neo-Thracia, New Delos, Shattered Isles) |
 
 ### Reference Material (SDM Third Party)
 
@@ -47,16 +58,19 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 | Directory | Contents |
 |---|---|
-| `Ultraviolet_Grasslands_and_the_Black_City_2e/` | UVG 2e reference archive |
-| `Vastlands_Guidebook/` | VLG reference archive |
-| `Our_Golden_Age/` | OGA reference archive |
+| [Ultraviolet Grasslands and the Black City 2e](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md) | UVG 2e reference archive |
+| [Vastlands Guidebook](Vastlands_Guidebook/Vastlands_Guidebook.md) | VLG reference archive |
+| [Our Golden Age](Our_Golden_Age/Our_Golden_Age.md) | OGA reference archive |
+| [Magitecnica/](Magitecnica/Magitecnica_01_Codex_1_The_Use_and_Misuse_of_Powers_Great_and_Small.md) | Magitech and fantascience setting material |
+| [Eternal Return Key](Eternal_Return_Key/Eternal_Return_Key.md) | Supplemental dungeon/scenario material |
+| [There, A Red Door](There_A_Red_Door/There_A_Red_Door.md) | Supplemental scenario material |
 
 ### AI Agent Tooling
 
 | Directory / File | Contents |
 |---|---|
-| `_agents/` | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
-| `AGENTS.md` | Root agent configuration — identity, voice architecture, VS Code operational map |
+| [`_agents/`](_agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
+| [AGENTS.md](AGENTS.md) | Root agent configuration — identity, voice architecture, VS Code operational map |
 | `_todo/` | Pipeline operations, conversion tracking, design docs |
 | `scripts/` | Automation scripts for content pipeline |
 | `_becmi/` | BECMI source extractions (conversion pipeline input) |
