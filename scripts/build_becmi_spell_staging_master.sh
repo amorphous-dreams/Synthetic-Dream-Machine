@@ -1481,3 +1481,108 @@ perl -0pi -e '
 ' "$MASTER_OUT"
 master_cleanup_postbuild
 master_dedupe_top_sections
+
+master_compref_sourcing_notes() {
+  # These 9 spells appear in the Master Set lists as numbered cross-references to
+  # the Companion Set (e.g. "1. Call Lightning (C15)"). The Master Set PDF provides
+  # no new standalone description text for them; it expects players to look up the
+  # spell in the Companion Set. These blocks record that provenance so the
+  # multi-witness staging builder can mark the Master lane as explicitly covered.
+  # See Companion staging for the actual description text.
+  printf '### Master: Companion Cross-Reference Sourcing Notes\n\n' >> "$MASTER_OUT"
+  printf -- '- Extraction note: The Master Set spell lists cite these Companion Set spells by number and page reference only. The Master Set PDF adds no new standalone description for these entries; descriptions are in the Companion staging. These note blocks serve as explicit Master lane provenance markers for the multi-witness builder.\n\n' >> "$MASTER_OUT"
+  printf '```text\n' >> "$MASTER_OUT"
+  cat >> "$MASTER_OUT" <<'TXT'
+Call Lightning
+[Master Set sourcing note (D3): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Faerie Fire
+[Master Set sourcing note (D1): Master Set lists this spell as a Companion cross-reference only (C14). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Locate
+[Master Set sourcing note (D1): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Plant Door
+[Master Set sourcing note (D4): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Produce Fire
+[Master Set sourcing note (D2): Master Set lists this spell as a Companion cross-reference only (C15). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Gate
+[Master Set sourcing note (MU9): Master Set lists this spell as a Companion cross-reference only (C26). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Permanence
+[Master Set sourcing note (MU8): Master Set lists this spell as a Companion cross-reference only (C25). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Polymorph Any Object
+[Master Set sourcing note (MU8): Master Set lists this spell as a Companion cross-reference only (C25). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Symbol
+[Master Set sourcing note (MU8): Master Set lists this spell as a Companion cross-reference only (C25). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Holy Word
+[Master Set sourcing note (Cl7): Master Set lists this spell as a Companion cross-reference only (C13). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Restore
+[Master Set sourcing note (Cl7): Master Set lists this spell as a Companion cross-reference only (C13). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+
+Creeping Doom
+[Master Set sourcing note (D7): Master Set lists this spell as a Companion cross-reference only (C16). No new description in Master Set. Description text in Companion staging -> High-Level Cleric, Druid, and Magic-User Spell Material.]
+TXT
+  printf '\n```\n\n' >> "$MASTER_OUT"
+}
+
+master_spell_lists_appendix() {
+  local pdf="$1"
+
+  printf '\n## Spell Lists Appendix\n\n' >> "$MASTER_OUT"
+  printf -- '- Note: these are raw numbered spell lists from the Master Set (with cross-references to the Companion Set). They are appendix-only \x2014 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.\n\n' >> "$MASTER_OUT"
+
+  printf '### Master: Cleric Spell Lists (pages 5-6)\n\n' >> "$MASTER_OUT"
+  printf -- '- Extraction note: TSV column reflow of Master cleric spell list pages (7th-level cleric spells with Companion cross-references).\n\n' >> "$MASTER_OUT"
+  printf '```text\n' >> "$MASTER_OUT"
+  render_tsv_cols_pages "$pdf" 5 6 '185,370' \
+    | awk '
+        started {
+          if (/^Druid$/) exit
+          print
+          next
+        }
+        /SEVENTH-LEVEL CLERIC SPELLS|Seventh.Level Cleric/ { started = 1; print }
+      ' \
+    | spell_list_smart_filter >> "$MASTER_OUT"
+  printf '\n```\n\n' >> "$MASTER_OUT"
+
+  printf '### Master: Druid Spell Lists (pages 6-7)\n\n' >> "$MASTER_OUT"
+  printf -- '- Extraction note: TSV column reflow of Master druid spell list pages (with Companion cross-references).\n\n' >> "$MASTER_OUT"
+  printf '```text\n' >> "$MASTER_OUT"
+  render_tsv_cols_pages "$pdf" 6 7 '185,370' \
+    | awk '
+        started {
+          if (/^Magic-user$/) exit
+          print
+          next
+        }
+        /^Druid$/ { started = 1; print }
+      ' \
+    | spell_list_smart_filter >> "$MASTER_OUT"
+  printf '\n```\n\n' >> "$MASTER_OUT"
+
+  printf '### Master: Magic-User Spell Lists (pages 8-12)\n\n' >> "$MASTER_OUT"
+  printf -- '- Extraction note: TSV column reflow of Master magic-user 8th-9th level spell lists (with Companion cross-references).\n\n' >> "$MASTER_OUT"
+  printf '```text\n' >> "$MASTER_OUT"
+  render_tsv_cols_pages "$pdf" 8 12 '185,370' \
+    | awk '
+        started {
+          if (/^Weapon Mastery$/) exit
+          print
+          next
+        }
+        /EIGHTH-LEVEL MAGIC-USER SPELLS/ { started = 1; print }
+      ' \
+    | spell_list_smart_filter >> "$MASTER_OUT"
+  printf '\n```\n\n' >> "$MASTER_OUT"
+}
+
+master_compref_sourcing_notes
+master_spell_lists_appendix "$MASTER_PDF"

@@ -121,7 +121,7 @@ The red wizards. The magicians of the bled. The vivifactors.
 
 “Fools and foes call us blood wizards, but we are so much more!” they exclaim, “We are sculptors and potters, blood and bone and flesh are our clay! In days of old, the divine biomancers created the 65,536 forms of humanity. Now, in these later, dwindled times you curse us!”
 
-“We whisper in the mysteries of life, we listen for the creative essence of the world, we pray to the world soul, that source that is within all life, that perfect code which lets us exceed the parameters of our physical restrictions. We ride the river that is the ‘blood of power.’”
+“We whisper in the mysteries of life, we listen for the creative essence of the world, we pray to the world soul, that source that is within all life, that perfect code which lets us exceed the parameters of our physical restrictions. We ride the river that is the ’blood of power.’”
 
 The meatmakers. The abomineers.
 
@@ -188,14 +188,14 @@ We don’t know who Usha was or even if she really existed. Based on a reading o
 
 —Edna Boddlebeurk, Metropolitan Academy of Powers
 
-##### **USHA'S HORRORSHOW INFESTATION**
+##### **USHA’S HORRORSHOW INFESTATION**
 
 *Biotic Corruption Augment, Cancer Bomb*
 
 **P:** 4 **R:** spitting distance  
 **T:** one creature **D:** a few minutes
 
-> You spit a corrosive bio-daemon that begins to rewrite the target's genetic code. It writhes and twists, losing one turn, then saves.
+> You spit a corrosive bio-daemon that begins to rewrite the target’s genetic code. It writhes and twists, losing one turn, then saves.
 > 
 > _Success:_ it suffers 4d6 damage as its body voids benign alien tumors.
 > 
@@ -203,7 +203,7 @@ We don’t know who Usha was or even if she really existed. Based on a reading o
 > 
 > _Extract:_ ripping the infestation out is tough and deals another 2d6* damage to the target. The creature (L4) continues to attack mindlessly.
 > 
-> _Overcharge:_ the target automatically fails its save and immediately suffers 4d6* damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody's control.
+> _Overcharge:_ the target automatically fails its save and immediately suffers 4d6* damage as the infestation erupts and begin attacking. If target dies, a fully-grown flesh horror (L6, 54 life) bursts from the corpse in 1d4 rounds. It is under nobody’s control.
 
 <a id="page_0010"></a>
 
@@ -223,14 +223,14 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0011"></a>
 
-##### **USHA'S CHAOS TRIGGER**
+##### **USHA’S CHAOS TRIGGER**
 
 *Biotic Manipulation Augment, Mutation Bomb*
 
 **P:** 3 **R:** scratching distance  
 **T:** one creature **D:** 1d4 rounds
 
-> You speak to the target's genetic code, triggering unpredictable mutation. It suffers 1d6 damage per round for 1d4 rounds as flesh and bone warp and change. After, the target gains a random mutation that fills one of its slots. An unwilling target saves to avoid the mutation. Roll 1d6:
+> You speak to the target’s genetic code, triggering unpredictable mutation. It suffers 1d6 damage per round for 1d4 rounds as flesh and bone warp and change. After, the target gains a random mutation that fills one of its slots. An unwilling target saves to avoid the mutation. Roll 1d6:
 > 
 > **d6** | **Effect**
 > --- | ---
@@ -245,14 +245,14 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0012"></a>
 
-##### **USHA'S UPLIFT**
+##### **USHA’S UPLIFT**
 
 *Biotic Enhancement Augment, Value Added Operation*
 
 **P:** 2 **R:** tickling distance  
 **T:** one creature less smart than yourself **D:** permanent
 
-> You manipulate the target's genetic material, increasing its intelligence over several days. If it has a thought score, this increases by 1.
+> You manipulate the target’s genetic material, increasing its intelligence over several days. If it has a thought score, this increases by 1.
 > 
 > _Note:_ Very dangerous for the target. Usually only works once per target.
 > 
@@ -279,7 +279,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > Perhaps the creature is pleased with its new situation?
 > 
-> **d20** | **Creature's Response**
+> **d20** | **Creature’s Response**
 > --- | ---
 > 1 | Outwardly pleased, secretly plots to overthrow its creator.
 > 2–7 | Brutally depressed by realization of its own mortality.
@@ -287,16 +287,16 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 13 | Disdainful of creator. Convinced it will discover, better truth.
 > 14–15 | Numb with shock of understanding.
 > 16–19 | Obsequious. Convinced the creator is a deity who understands all.
-> 20≤ | Understands you're not so different. It's mortals all the way down.
+> 20≤ | Understands you’re not so different. It’s mortals all the way down.
 
 <a id="page_0013"></a>
 
-8–12 Confused. Desperately seeking meaning and purpose. 13 Disdainful of creator. Convinced it will discover, better truth. 14–15 Numb with shock of understanding. 16–19 Obsequious. Convinced the creator is a deity who understands all. 20≤ Understands you're not so different. It's mortals all the way down.
+8–12 Confused. Desperately seeking meaning and purpose. 13 Disdainful of creator. Convinced it will discover, better truth. 14–15 Numb with shock of understanding. 16–19 Obsequious. Convinced the creator is a deity who understands all. 20≤ Understands you’re not so different. It’s mortals all the way down.
 
 
 <a id="page_0014"></a>
 
-##### **USHA'S CHIMERA SPLICE**
+##### **USHA’S CHIMERA SPLICE**
 
 *Biotic Fusion Augment, Meltflesh Hyperblot*
 
@@ -316,7 +316,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > Before there were two minds, now there is one. Which is it?
 > 
-> **d20** | **Creature's Response**
+> **d20** | **Creature’s Response**
 > --- | ---
 > ≤3 | A new mind, a melding of both that went before. And it hates you.
 > 4–7 | A dominant mind and a subordinate mind and they both hate you.
@@ -329,7 +329,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0015"></a>
 
-##### **USHA'S XENOGRAFT**
+##### **USHA’S XENOGRAFT**
 
 *Biotic Integration Augment, Meetmeat*
 
@@ -369,7 +369,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0017"></a>
 
-##### **USHA'S REPLICATOR STRAND**
+##### **USHA’S REPLICATOR STRAND**
 
 *Biotic Growth Augment, Root Meatmaker*
 
@@ -380,13 +380,13 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > _Save:_ if the tissue is part of an aware creature, the creature saves. If the save fails, the growth deals 2d4* damage over one hour. Cutting away the affected area deals 1d6 damage, the cutaway continues to grow.
 > 
-> _Note:_ the growth does not produce high quality tissue. Grown meat is spongy and tough, expanded ivory is brittle and gnarled, extended hair is flakey and hard. It's just ... bigger.
+> _Note:_ the growth does not produce high quality tissue. Grown meat is spongy and tough, expanded ivory is brittle and gnarled, extended hair is flakey and hard. It’s just ... bigger.
 > 
-> _Overcharge:_ Watch a stone's worth of tissue grow to sack-sized in one hour. The growth deals 4d4* damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
+> _Overcharge:_ Watch a stone’s worth of tissue grow to sack-sized in one hour. The growth deals 4d4* damage to a living creature that fails its save. Cutting away the area deals 1d8 damage.
 
 <a id="page_0018"></a>
 
-##### **USHA'S SWIFT REBUILD**
+##### **USHA’S SWIFT REBUILD**
 
 *Biotic Regeneration Augment, Systemic Limb Back Trigger*
 
@@ -405,7 +405,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 > 
 > **Unsafe Rebuilding**
 > 
-> Didn't remove the damaged part first? Make a biomantic, medical, or other relevant roll.
+> Didn’t remove the damaged part first? Make a biomantic, medical, or other relevant roll.
 > 
 > **Effect** |
 > --- |
@@ -418,33 +418,33 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0019"></a>
 
-### **REHORYAN'S BLOOD CANTICLE**
+### **REHORYAN’S BLOOD CANTICLE**
 
-“Rehoryan? Rehoryan? No, no. Doesn't ring a bell. You say they lives here? Oh, my, well, can't be. It's been just me here these two centuries. Watching the voidlight, guiding the falling feathers, tending the garden. It is lovely, isn't it? I took it up after a decade or so, when the featherfalls started getting scarce. One's got to stay busy, else one's liable to go ... you know, twirly. But no, can't help you with that name. Haven't had anykin like that here since, mmm, well, since they closed the station. Last bus to Ud Nunka came through, what ... Year of the Plangent Neige. That's three, four ... erm ... forty-two years ago now. The almanacks stopped around the same time, so we've our own calender since then. Well, if this Rehoryan was an outtown sort, that'd be where they ghent. Last four outtown anykins left that year and I'd wager they all took the last bus. Myrrhill told me so, and she's the counting sort. Can't keep still but must keep counting, anything she gets ... oh, right, yes, I understand you must be going. Pardon me, off at the mouth, so rare visitors, yes, et cetera, anyway, do travel safe and tell Central Tower Control that Allgaze Iskra is still on duty ... still on duty, yes, watching the voidlight in ... in Per Nano.” —Sima Sky, _The Search for Gregor John,_ Chapter IV: The Ghost Town
+“Rehoryan? Rehoryan? No, no. Doesn’t ring a bell. You say they lives here? Oh, my, well, can’t be. It’s been just me here these two centuries. Watching the voidlight, guiding the falling feathers, tending the garden. It is lovely, isn’t it? I took it up after a decade or so, when the featherfalls started getting scarce. One’s got to stay busy, else one’s liable to go ... you know, twirly. But no, can’t help you with that name. Haven’t had anykin like that here since, mmm, well, since they closed the station. Last bus to Ud Nunka came through, what ... Year of the Plangent Neige. That’s three, four ... erm ... forty-two years ago now. The almanacks stopped around the same time, so we’ve our own calender since then. Well, if this Rehoryan was an outtown sort, that’d be where they ghent. Last four outtown anykins left that year and I’d wager they all took the last bus. Myrrhill told me so, and she’s the counting sort. Can’t keep still but must keep counting, anything she gets ... oh, right, yes, I understand you must be going. Pardon me, off at the mouth, so rare visitors, yes, et cetera, anyway, do travel safe and tell Central Tower Control that Allgaze Iskra is still on duty ... still on duty, yes, watching the voidlight in ... in Per Nano.” —Sima Sky, _The Search for Gregor John,_ Chapter IV: The Ghost Town
 
 
-##### **REHORYAN'S VITAL SYMPHONY**
+##### **REHORYAN’S VITAL SYMPHONY**
 
 *Somatic Insight Probe, Bodyreading*
 
 **P:** 1 **R:** touch  
 **T:** one creature **D:** ten minutes
 
-> You attune to a living organism, hearing the biohistory in its cells. After 10 minutes of contact, you may ask the referee three questions about the creature's medical history and status.
+> You attune to a living organism, hearing the biohistory in its cells. After 10 minutes of contact, you may ask the referee three questions about the creature’s medical history and status.
 > 
 > 
 > _Overcharge:_ The attunement takes mere seconds. Or: you may listen for the biohistory of a dead organism or part thereof.
 
 <a id="page_0020"></a>
 
-##### **REHORYAN'S VIVID REGRESSION**
+##### **REHORYAN’S VIVID REGRESSION**
 
 *Bioatavistic Reformulation*
 
 **P:** 4 **R:** touch  
 **T:** one creature **D:** permanent
 
-> You taste a creature's flesh or blood, unlocking genetic memories of its evolutionary past. Over the next hour you regress it to an ancestral form with gentle song. This is dangerous for the target and it suffers 1d8* damage from severe stress.
+> You taste a creature’s flesh or blood, unlocking genetic memories of its evolutionary past. Over the next hour you regress it to an ancestral form with gentle song. This is dangerous for the target and it suffers 1d8* damage from severe stress.
 > 
 > First, add 1d3 to one ability of choice, then subtract 1d3 from a different random ability.
 > 
@@ -458,7 +458,7 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0021"></a>
 
-##### **REHORYAN'S PROGRESSIVE RESTORATION**
+##### **REHORYAN’S PROGRESSIVE RESTORATION**
 
 *Automedical Self Repair*
 
@@ -485,14 +485,14 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0022"></a>
 
-##### **REHORYAN'S PROPHETIC SONG**
+##### **REHORYAN’S PROPHETIC SONG**
 
 *Purposeful Biotic Evolution*
 
 **P:** 5 **R:** touch  
 **T:** one creature **D:** permanent
 
-> After drinking a sample of the target's spinal fluid, you may chant viridian rituals into its flesh, forcing a rapid evolution. This is dangerous for the target. After 1 day of troubled sleep it permanently gains either:
+> After drinking a sample of the target’s spinal fluid, you may chant viridian rituals into its flesh, forcing a rapid evolution. This is dangerous for the target. After 1 day of troubled sleep it permanently gains either:
 > 
 > New Trait:
 > 
@@ -508,18 +508,18 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0023"></a>
 
-##### **REHORYAN'S PROPHETIC SONG 2**
+##### **REHORYAN’S PROPHETIC SONG 2**
 
-*More Purposeful Biotic Evolution, Rehoryan's Illegal Power*
+*More Purposeful Biotic Evolution, Rehoryan’s Illegal Power*
 
 **P:** 11 **R:** touch  
 **T:** one creature **D:** permanent
 
-> _This off-label power is not included in normal Rehoryan albums. This power can only be used on a creature that has already heard Rehoryan's Prophetic Song, also known as Song 1._
+> _This off-label power is not included in normal Rehoryan albums. This power can only be used on a creature that has already heard Rehoryan’s Prophetic Song, also known as Song 1._
 > 
 > After eating a sample of the [missing], you may chant obsidian rituals into its vitals, encouraging a perfect evolution. This is very dangerous for the target. After 1 day of gentle sleep it permanently gains either:
 > 
-> Far Evolved Trait: 1. gravistatic organ (can levitate in place) 2. televisual abilities (can see through another creature's eyes) 3. photovitalic skin (meets 50% of nutritional needs) 4. improved bioluminescence (display 700 ads on your skin!) 5. incredible heat/cold tolerance 6. radiation immunity or other similar evolved trait
+> Far Evolved Trait: 1. gravistatic organ (can levitate in place) 2. televisual abilities (can see through another creature’s eyes) 3. photovitalic skin (meets 50% of nutritional needs) 4. improved bioluminescence (display 700 ads on your skin!) 5. incredible heat/cold tolerance 6. radiation immunity or other similar evolved trait
 > 
 > Improved Eugenic: +3 to one ability (even above the normal maximum).
 > 
@@ -529,19 +529,19 @@ Treasure (roll d6): (1–3) bém or biomantic materials worth (1 stone, €50), 
 
 <a id="page_0024"></a>
 
-### **SIATO RUNO'S XENON GENESIS**
+### **SIATO RUNO’S XENON GENESIS**
 
 “Siato Runo, Goldenskin, Hierophant of Red Rubra and Orange Araña, Builder of the Pilgrimage, Father-Mother of the Walfarants, we beseech thee, speed this wood, in germ and stem, bough and root, shroom and bloom, speed this wood that it consumes the tomb and hides the glory of the our fallen lord, our well-wandering friend, our Tako-ako vo Frammês.” —Walfarantkin Funeral Supplication at the death of City-Friend Frammês,
 
 Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of the 2nd Quarter, Thirteenth Year,_ Metropolis Corporate Archives
 
 
-##### **RUNO'S BIOCATALYSIS**
+##### **RUNO’S BIOCATALYSIS**
 
 *Biotemporal Manipulation*
 
 **P:** 1 **R:** touch  
-**T:** one human's worth of living organisms **D:** an hour
+**T:** one human’s worth of living organisms **D:** an hour
 
 > You alter the speed of a chosen biological process in the target, accelerating or retarding it as much as 10-fold. Processes include growth, gestation, decay, metabolism, disease progression, etc.
 > 
@@ -551,7 +551,7 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 <a id="page_0025"></a>
 
-##### **RUNO'S PARTHENOGENIC CRADLE**
+##### **RUNO’S PARTHENOGENIC CRADLE**
 
 *Synthetic Egg System*
 
@@ -570,31 +570,31 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 <a id="page_0026"></a>
 
-##### **RUNO'S PARTHENOGENIC POUCH**
+##### **RUNO’S PARTHENOGENIC POUCH**
 
 *Synthetic Marsupilism*
 
 **P:** 4 **R:** touch  
 **T:** one creature **D:** permanent
 
-> You sculpt a viable marsupial pouch and womb structure within a creature's body, enabling it to gestate and carry an embryo to term. The pouch permanently occupies one slot.
+> You sculpt a viable marsupial pouch and womb structure within a creature’s body, enabling it to gestate and carry an embryo to term. The pouch permanently occupies one slot.
 > 
 > _Note:_ Larger species may require larger pouches. Using this power on the same creature twice is very dangerous.
 > 
 > _Overcharge:_ Sculpt three pouches occupying two slots. Dangerous for the subject.
 > 
-> _Synergy:_ Combine with _Runo's Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
+> _Synergy:_ Combine with _Runo’s Parthenogenic Cradle_ to quickly produce clone-broods on the hoof! Popular with nomadic biomancers.
 
 <a id="page_0027"></a>
 
-##### **RUNO'S ONTOGENIC EDITOR**
+##### **RUNO’S ONTOGENIC EDITOR**
 
 *Germline Modifier*
 
 **P:** 4 **R:** touch  
 **T:** one embryo or egg **D:** permanent
 
-> You stretch a tendril of focused aura into an unborn organism to manipulate its developmental pathway, altering it to reach the upper or lower extremes of the species range in one aspect. The effect unfolds through the creature's gestation and maturation.
+> You stretch a tendril of focused aura into an unborn organism to manipulate its developmental pathway, altering it to reach the upper or lower extremes of the species range in one aspect. The effect unfolds through the creature’s gestation and maturation.
 > 
 > **Generic Aspects**
 > 
@@ -615,13 +615,13 @@ Recorded by Ethnospecialist Elwin ap Lehor of the Radicate Company, _Records of 
 
 <a id="page_0028"></a>
 
-### **NUNKA'S AUTOMORPH**
+### **NUNKA’S AUTOMORPH**
 
-“By the Eye of the Spirit, the Vile Ones' warcs are relentless! We mow them down, and do they lose spirit? No! The monsters eat their dead companions to heal and grow! We must break the Embodiment Decree, or we will be overrun.”
+“By the Eye of the Spirit, the Vile Ones’ warcs are relentless! We mow them down, and do they lose spirit? No! The monsters eat their dead companions to heal and grow! We must break the Embodiment Decree, or we will be overrun.”
 
 “But the Embodiment Directive ensures our humanity! Step across that rubicon and we join with the Vile Ones in sacrilege, spitting upon the Garden Protocols of the Dream Canopy.”
 
-“Master President, the warcs overran the Gnaws this autumn, they've cracked the towers of the Eye and eaten the living machines within. By Dead Springtime they might be throwing themselves at the High Rooster.”
+“Master President, the warcs overran the Gnaws this autumn, they’ve cracked the towers of the Eye and eaten the living machines within. By Dead Springtime they might be throwing themselves at the High Rooster.”
 
 “The future will judge us harshly, call us betrayers, teratogens.”
 
@@ -631,14 +631,14 @@ Violet City Scale Library
 
 <a id="page_0029"></a>
 
-##### **NUNKA'S WEAPON MORPH**
+##### **NUNKA’S WEAPON MORPH**
 
 *Biocombat Implementation*
 
 **P:** 2 **R:** touch  
 **T:** one creature **D:** permanent
 
-> You coerce a creature's biology to express natural weapons like claws, spikes, horns, or venom. The manifestation depends on the creature's size and form. The modification occupies an inventory slot. The transformation requires 1 day.
+> You coerce a creature’s biology to express natural weapons like claws, spikes, horns, or venom. The manifestation depends on the creature’s size and form. The modification occupies an inventory slot. The transformation requires 1 day.
 > 
 > _Note:_ Multiple uses on a single individual are dangerous.
 > 
@@ -654,14 +654,14 @@ Violet City Scale Library
 
 <a id="page_0030"></a>
 
-##### **NUNKA'S EPIDERMAL SCULPT**
+##### **NUNKA’S EPIDERMAL SCULPT**
 
 *Biodefense Integration*
 
 **P:** 2 **R:** touch  
 **T:** one creature **D:** permanent
 
-> You reshape a creature's skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
+> You reshape a creature’s skin and other external tissues. The modification occupies an inventory slot. The transformation requires 1 day.
 > 
 > _Note:_ Multiple uses on a single individual are dangerous.
 > 
@@ -709,7 +709,7 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 
 <a id="page_0032"></a>
 
-##### **NUNKA'S BIOPHYSICAL OVERDRIVE**
+##### **NUNKA’S BIOPHYSICAL OVERDRIVE**
 
 *Radical Metabolic Manipulation*
 
@@ -724,20 +724,20 @@ If sculpting an unwilling target, a failed biomantic roll botches the sculpt and
 
 <a id="page_0033"></a>
 
-##### **NUNKA'S SPITTING SYMBIOTE**
+##### **NUNKA’S SPITTING SYMBIOTE**
 
 *Integrated Biological Warfare*
 
 **P:** 4 **R:** touch  
 **T:** one creature **D:** permanent
 
-> You craft a custom symbiote that integrates into the target's digestive tract. The crafting takes a day, the painless embedding another 8 hours. The symbiote occupies one inventory slot.
+> You craft a custom symbiote that integrates into the target’s digestive tract. The crafting takes a day, the painless embedding another 8 hours. The symbiote occupies one inventory slot.
 > 
 > On command, the host can vomit forth part of the organism as a weapon, either directly at an enemy or onto terrain as a trap.
 > 
 > Symbiote options include: 1. Caustic Slime Worm. Short range. 2d6 acid damage in a small radius. Save for half.
 > 
-> 2. Writhing Thornstar. Short range. Entangling thorns in a small radius. Anyone passing through quickly suffers 1d6* damage. 3. Necrotic Fungaloid. Short range. Spore sac deals 1d8 damage on impact or when triggered on. Target must save or suffer 1d6 endurance damage as its lungs are attacked. 4. Snapping Moraykin. Close. Additional bite attack deals 1d6* damage. Automatically strikes enemies who are not expecting the host's mouth to fold open and release a biting second mouth. 5. Green Grappler. Close. Tentacles grapple a target and make it very hard to pull away. 6. Sonic Hive. Short range. Hundreds of stinging insects pour forward, confusing, harassing, annoying. 7. Stunfish. Short range. A pulsating aerial jellyfish that wafts with the air currents. If struck, it detonates in a spectacular shockwave of light and electromagnetic radiation. Creatures near the jellyfish must save or are blinded and stunned for a few rounds. 8. Glue Cucumber. Short range. Spray of gooey yellow proteins glues the target to the surface. Hard save to break free.
+> 2. Writhing Thornstar. Short range. Entangling thorns in a small radius. Anyone passing through quickly suffers 1d6* damage. 3. Necrotic Fungaloid. Short range. Spore sac deals 1d8 damage on impact or when triggered on. Target must save or suffer 1d6 endurance damage as its lungs are attacked. 4. Snapping Moraykin. Close. Additional bite attack deals 1d6* damage. Automatically strikes enemies who are not expecting the host’s mouth to fold open and release a biting second mouth. 5. Green Grappler. Close. Tentacles grapple a target and make it very hard to pull away. 6. Sonic Hive. Short range. Hundreds of stinging insects pour forward, confusing, harassing, annoying. 7. Stunfish. Short range. A pulsating aerial jellyfish that wafts with the air currents. If struck, it detonates in a spectacular shockwave of light and electromagnetic radiation. Creatures near the jellyfish must save or are blinded and stunned for a few rounds. 8. Glue Cucumber. Short range. Spray of gooey yellow proteins glues the target to the surface. Hard save to break free.
 > 
 > After attacking, the symbiote must regrow before it can be used again. This happens naturally in 1 week or more quickly, in an hour or so, if the host spends 1d4 life.
 > 
@@ -815,18 +815,18 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 **P:** 2 **R:** touch  
 **T:** 1 creature **D:** a day
 
-> You override a creature's pain response, providing relief from pain and burdens. Wait, did the scribe mishear "anesthetic"?
+> You override a creature’s pain response, providing relief from pain and burdens. Wait, did the scribe mishear "anesthetic"?
 > 
 > _Overcharge:_ It lasts a week.
 
 ##### **BURDEN SHARE**
 
-*Sanator's Empathy Ritual*
+*Sanator’s Empathy Ritual*
 
 **P:** 2 **R:** touch  
 **T:** 2 creatures **D:** several hours
 
-> You tap into a creature's essence and transfer one of its burdens—fatigue, injury, anxiety, or some other affliction—to another creature. During transfer it transforms into a spiritual stone, a healer's burden. It feels heavy and annoying within the receiver's soul, but causes no permanent damage and dissipates normally with rest.
+> You tap into a creature’s essence and transfer one of its burdens—fatigue, injury, anxiety, or some other affliction—to another creature. During transfer it transforms into a spiritual stone, a healer’s burden. It feels heavy and annoying within the receiver’s soul, but causes no permanent damage and dissipates normally with rest.
 > 
 > _Overcharge:_ The ritual takes several minutes, but inflicts 1d4 damage to each of the parties.
 
@@ -834,12 +834,12 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 ##### **METEMPSYCHOSIS**
 
-*Serapefti's Ka-Ba Translation*
+*Serapefti’s Ka-Ba Translation*
 
 **P:** 6 **R:** touch  
 **T:** 1 patient and 1 host **D:** 1 day and night
 
-> You transfer a patient's essence into a new physical host. A perfect replica of the original body is ideal, but alternate hosts such as crude golems, animals, crystals and even vats of memory liquid can suffice. Changing forms may result in temporary psychophysical stress.
+> You transfer a patient’s essence into a new physical host. A perfect replica of the original body is ideal, but alternate hosts such as crude golems, animals, crystals and even vats of memory liquid can suffice. Changing forms may result in temporary psychophysical stress.
 > 
 > 
 > **Patient Host Compatibility** Some complex transfers require a psychemantic or medimagical roll. If the host is non-compliant, roll twice and take the worse result (disadvantage). If the host is dead, the roll is more difficult.
@@ -858,10 +858,10 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 > 
 > | Result | Effect |
 > | --- | --- |
-> | nat. 1 | Patient's essence lost or replaced with a similar daemon! |
+> | nat. 1 | Patient’s essence lost or replaced with a similar daemon! |
 > | fail | Transfer fails. Both targets exposed to moderate corruption. |
 > | success | Transfer succeeds. Host essence destroyed. |
-> | nat. 20 | Excellent transfer. Patient can choose to retain one of the host's traits or skills. |
+> | nat. 20 | Excellent transfer. Patient can choose to retain one of the host’s traits or skills. |
 > 
 > _Overcharge:_ Attempt to overwrite the mind of a non-compliant host.
 
@@ -869,12 +869,12 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 ##### **OPEN PERSON**
 
-*Hsu Doru's Preparatory Ritual*
+*Hsu Doru’s Preparatory Ritual*
 
 **P:** 6 **R:** touch  
 **T:** 1 standard humanTM **D:** 1 hour
 
-> You activate a person's standard humanTM construction seams® to painlessly unfold them like a flower for easier medical treatment. An open person may seriously injure themselves if not careful (3d6 damage per action). Treatments on an open person are significantly easier, the price of biomantic and medical powers used on them is halved.
+> You activate a person’s standard humanTM construction seams® to painlessly unfold them like a flower for easier medical treatment. An open person may seriously injure themselves if not careful (3d6 damage per action). Treatments on an open person are significantly easier, the price of biomantic and medical powers used on them is halved.
 > 
 > _Note_ : an unattended open person automatically reseals after 1 hour.
 > 
@@ -882,7 +882,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 ##### **PARASOMA TRANSFERENCE**
 
-*Hsu Doru's Life Shunt*
+*Hsu Doru’s Life Shunt*
 
 **P:** 2 **R:** touch  
 **T:** 2 creatures **D:** instant
@@ -893,7 +893,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 ##### **PRIMARY DESENESCENCE**
 
-*Wissa's Fountain of YouthificationTM*
+*Wissa’s Fountain of YouthificationTM*
 
 **P:** 6 **R:** touch  
 **T:** 1 creature **D:** a week
@@ -906,12 +906,12 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 ##### **REAL-TIME REBUILD**
 
-*Zdarovar's Rapid Healing*
+*Zdarovar’s Rapid Healing*
 
 **P:** variable **R:** touch  
 **T:** 1 creature **D:** minutes
 
-> You invoke the oneiroi Quiscus and Sanatus to reach into a creature's essence and replace damaged code with a pristine version. This painful process deals damage equal to its power.
+> You invoke the oneiroi Quiscus and Sanatus to reach into a creature’s essence and replace damaged code with a pristine version. This painful process deals damage equal to its power.
 > 
 > **Power Settings:** P2 remove cosmetic blemishes P4 flush toxins or afflictions P6 restore a damaged organ to factory settings P10 regrow a limb P16 regrow a head or torso P25 rebuild a whole body from dust and fragments
 > 
@@ -919,7 +919,7 @@ Sanator, neoleech, medeorite, zdarovar, serapefti, tien stoi, iatric, wissa.
 
 ##### **RESTORATIVE SLUMBER**
 
-*Medeorite's Healing Dream Ritual*
+*Medeorite’s Healing Dream Ritual*
 
 **P:** 2 **R:** touch  
 **T:** 1 creature **D:** 3 days and nights
@@ -953,7 +953,7 @@ Chrysalist, dog-in, hédeōs, metassia, noömantikoï, skinchanger, yedyayin, zu
 
 3. Relaxed Vital Essence. Easily shift or transform yourself. Reduce the cost of any translation or polymorphic powers by 1 (minimum 1). Also, you find it easier to comprehend oozes and slimes.
 
-4. Animimic. Hop like a hare, pad like a panther. Copy animals' movements, set them at ease, learn their ways. Yes, you also find it easy to trick and deceive them.
+4. Animimic. Hop like a hare, pad like a panther. Copy animals’ movements, set them at ease, learn their ways. Yes, you also find it easy to trick and deceive them.
 
 5. Taxidermist. Skin and stuff, prepare and preserve. Knives and salts, hooks and needles, shiny beady eyes and creepy dioramas.
 
@@ -969,11 +969,11 @@ Unless specified otherwise, all awakened sphere powers powers:
 
 2. May be **inscribed** into your flesh if you have a trait that suggests you have received proper instruction in the use of these powers (such as student of the biosphere or relaxed vital essence). Inscribed powers do not occupy normal inventory slots.
 
-3. May be **shared** with another creature by doubling their cost. Few smart skinchangers would do this, as it gives someone else control over the skinchanger's imbued vital essence. Change some fool into a whale and they forget to change back and get stuck, and, well ... what now?
+3. May be **shared** with another creature by doubling their cost. Few smart skinchangers would do this, as it gives someone else control over the skinchanger’s imbued vital essence. Change some fool into a whale and they forget to change back and get stuck, and, well ... what now?
 
 Some awakened powers may cause:
 
-1. Horror. A character witnessing the power in action for the first time must save or they reel back in horror. They lose 1 action and suffer a psychological burden of horror. A rest, a stiff drink, and companionship removes the burden. Alternatively, a long rest and repression also does the job ... (until it doesn't).
+1. Horror. A character witnessing the power in action for the first time must save or they reel back in horror. They lose 1 action and suffer a psychological burden of horror. A rest, a stiff drink, and companionship removes the burden. Alternatively, a long rest and repression also does the job ... (until it doesn’t).
 
 <a id="page_0044"></a>
 
@@ -985,11 +985,11 @@ You can bear one such burden per point of endurance, and the power occupies no i
 
 Each inscribed power gains a special effect depending on where you inscribe it. You can activate most special effects once per day for free, thereafter it costs 1 life per use.
 
-1. Bone. Harder and more penetrating. Advantage to all of the power's rolls.
+1. Bone. Harder and more penetrating. Advantage to all of the power’s rolls.
 
 2. Brain. Mildly intelligent, the power casts itself as a free action.
 
-3. Heart. Reduce the power's price by your level (minimum 0).
+3. Heart. Reduce the power’s price by your level (minimum 0).
 
 4. Liver. Driven by emotion, the power targets social defenses and charisma instead of the more usual aura (for saves) or agility (for defenses).
 
@@ -1012,7 +1012,7 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 
 > You eat part of a creature you are familiar with to temporarily manifest one of its natural traits. A nail clipping or some fur will suffice.
 > 
-> Each manifested trait occupies an inventory slot somewhere in your body as a 1 stone mass, but it doesn't otherwise interfere with you and is painlessly reabsorbed when you deactivate the power.
+> Each manifested trait occupies an inventory slot somewhere in your body as a 1 stone mass, but it doesn’t otherwise interfere with you and is painlessly reabsorbed when you deactivate the power.
 > 
 > Traits may include:
 > 
@@ -1050,11 +1050,11 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 **P:** 2 **R:** psychosurgical range  
 **T:** 1 creature **D:** imbue
 
-> You inject your mind into a creature, such as a cat or capybara, turning it into a drone under your telepathic control. Accessing a drone's sensory experiences, memories, or skills requires conscious effort and concentration.
+> You inject your mind into a creature, such as a cat or capybara, turning it into a drone under your telepathic control. Accessing a drone’s sensory experiences, memories, or skills requires conscious effort and concentration.
 > 
 > Your control is anchored in a metaphysical anchor occupying an inventory slot. Dropping or dissolving the anchor ends the fusion, releasing the target.
 > 
-> _Note:_ Dominating a creature whose mental attributes exceed your own is dangerous—it may take control of you instead! At the referee's discretion, very alien creatures may be harder to control.
+> _Note:_ Dominating a creature whose mental attributes exceed your own is dangerous—it may take control of you instead! At the referee’s discretion, very alien creatures may be harder to control.
 > 
 > _Overcharge:_ You attempt to inject your mind into a larger creature, such as a man or mammoth.
 
@@ -1177,6 +1177,6 @@ Each inscribed power gains a special effect depending on where you inscribe it. 
 > 
 > - You are in mystic union with the local ecology. You can communicate
 > 
-> with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman's axe, the joy of Spring's blossoming, the tramping of an army, and the fall of a great oak.
+> with any animal or plant or fungus or stranger living thing in the area and metaphysically feel through the many senses of the creatures there. You feel the swing of a woodsman’s axe, the joy of Spring’s blossoming, the tramping of an army, and the fall of a great oak.
 > 
-> _Overcharge:_ Persist as motes in the wind and microbes in the soil for up to 1 week before full reconstitution. Each day counts as a week's rest. At the end of the week, save or permanently replace one of your traits with a deep panpsychic connection to the local ecology: the glen, dale, vale, grove, stream, lake, bay, or what have you. You may choose to fail this save.
+> _Overcharge:_ Persist as motes in the wind and microbes in the soil for up to 1 week before full reconstitution. Each day counts as a week’s rest. At the end of the week, save or permanently replace one of your traits with a deep panpsychic connection to the local ecology: the glen, dale, vale, grove, stream, lake, bay, or what have you. You may choose to fail this save.

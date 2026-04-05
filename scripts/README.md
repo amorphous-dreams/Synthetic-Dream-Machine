@@ -21,7 +21,7 @@ bash scripts/build_becmi_spell_staging_rc.sh
 
 Notes:
 - `build_becmi_spell_staging.sh` is a full-run orchestrator.
-- Lane-only runs regenerate only that lane's staging file and skip index-manifest regeneration.
+- Lane-only runs regenerate only that lane’s staging file and skip index-manifest regeneration.
 - Full runs regenerate all six lane files and the index manifest.
 - The staging pipeline now uses layered cleanup: shared safe normalization first, then lane-specific OCR rescue and table/wrapper repairs.
 - The Basic lane hard-fails if the miscellaneous-item wrapper collapses before the `Rope of Climbing` continuation.

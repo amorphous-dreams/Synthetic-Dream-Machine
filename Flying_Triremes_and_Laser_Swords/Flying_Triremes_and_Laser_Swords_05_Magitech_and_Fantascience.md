@@ -5,7 +5,7 @@ published: true
 ---
 # Magitech and Fantascience
 
-Use this chapter for **objects and systems**: relics, devices, consumables, archives, weapons, wards, and impossible tools. Do not use it for powers in general. When the question turns to how a person activates, prices, stores, or overcharges a power, go to Chapter 06. When the question turns to a strange object's identity, testing, cost, failure, desirability, or modification, stay here.
+Use this chapter for **objects and systems**: relics, devices, consumables, archives, weapons, wards, and impossible tools. Do not use it for powers in general. When the question turns to how a person activates, prices, stores, or overcharges a power, go to Chapter 06. When the question turns to a strange object’s identity, testing, cost, failure, desirability, or modification, stay here.
 
 Run the procedure as an anomalous object loop:
 
@@ -20,7 +20,7 @@ Run the procedure as an anomalous object loop:
 
 Think of magitech as the lane where **magic becomes gear**.
 
-The key mechanical split stays simple: **magitech uses Thought**. When an item rewards pattern-reading, occult interface work, sign interpretation, ritual procedure, or careful reasoning through a weird machine's logic, treat it as magitech.
+The key mechanical split stays simple: **magitech uses Thought**. When an item rewards pattern-reading, occult interface work, sign interpretation, ritual procedure, or careful reasoning through a weird machine’s logic, treat it as magitech.
 
 In SDM book terms, magitech covers UVG machine relics and charged oddities, VLG wards and strange items, and OGA shrines, signals, relics, and noospheric devices. It may come ritualized, haunted, half-alive, temple-bound, guild-licensed, or socially restricted, but it still works as an **object** with a trigger, bearer, interface, maintenance burden, and failure profile. Ward-lamps, bottled daemons, charged staves, signal seals, shrine relays, anti-curse scarabs, and portable noosphere hacks all fit here.
 
@@ -70,8 +70,8 @@ If the result cannot fit that record, the object still needs conversion work.
 Tagging note:
 - prefer functional tags first: `[consumable]`, `[weapon]`, `[armor]`, `[shield]`, `[ward]`, `[utility]`, `[mobility]`, `[recon]`, `[healing]`, `[signal]`
 - add source tags next when they matter: `[oldtech]`, `[fantascience]`, `[ritual]`, `[portal]`, `[curse]`
-- use `[attune]`, `[hands-free]`, `[fueled]`, and `[dangerous]` only when the object's procedure actually invokes that rule weight
-- add `[relic]` only when the object's singularity, claim, taboo, or institutional heat matters in play
+- use `[attune]`, `[hands-free]`, `[fueled]`, and `[dangerous]` only when the object’s procedure actually invokes that rule weight
+- add `[relic]` only when the object’s singularity, claim, taboo, or institutional heat matters in play
 
 ## Family Placement and Conversion Notes
 
@@ -115,7 +115,7 @@ Favor these assumptions here:
 - buildertech should feel dangerous, rare, and politically consequential,
 - god-sign, signal logic, and noosphere pressure belong in testing, failure, and aftermath,
 - intelligent or claim-bearing weapons should behave like social problems, not just better bonuses.
-- add `[relic]` when the object's singularity, claim, shrine tie, or legal heat matters; keep more specific functional tags alongside it instead of letting `[relic]` do all the work.
+- add `[relic]` when the object’s singularity, claim, shrine tie, or legal heat matters; keep more specific functional tags alongside it instead of letting `[relic]` do all the work.
 
 ## Conversion, Modding, Faults, and Curses
 
@@ -155,7 +155,7 @@ Use this step in order:
 1. roll or choose the family
 2. note the lane and default output
 3. go to the matching family entry in the catalog and run its detail block
-4. finish with that family entry's handling, use, and consequence notes
+4. finish with that family entry’s handling, use, and consequence notes
 
 | `1d100` | Family | Primary Lane | Default Output |
 |---:|---|---|---|
@@ -186,7 +186,7 @@ Use Thought for magitech-facing testing. Use Charisma for fantascience-facing co
 Shared defaults:
 - temporary items are consumed on use or exhausted by charges,
 - permanent items stay effective while properly worn, wielded, carried, or installed,
-- if an effect's range or duration goes unstated, treat it as a `Level 3` character's output,
+- if an effect’s range or duration goes unstated, treat it as a `Level 3` character’s output,
 - if a temporary duration goes unstated, use `1d6 + 6` turns (70-120 minutes) unless the item says otherwise.
 
 ### 4. Activate, Carry, Equip, or Install
@@ -208,12 +208,12 @@ Shared handling defaults:
 - treat protective worn items as active while worn,
 - if a temporary effect does not consume the item immediately, require the user to hold it and concentrate,
 - while concentrating on such an item, the user cannot cast powers or take other major actions in that round,
-- resolve item activation in the round's magic/items timing,
+- resolve item activation in the round’s magic/items timing,
 - detection and control effects can be blocked by lead sheet, metal about `1'` thick, or stone about `10'` thick.
 
 ### 5. Resolve Charges, Limits, and Failure
 
-Track the object's working limits directly.
+Track the object’s working limits directly.
 
 - consumables spend themselves,
 - charged tools spend charges,
@@ -270,9 +270,13 @@ Every resolved object should end as an SDM-facing record:
 
 That record is the real Chapter 05 output.
 
+## Anomolous Object Recipes
+
+DEV NOTE: Grimoire recipes and other fantascience craft procedures may carry **rank tags**: `[skilled]`, `[expert]`, or `[master]`. A rank tag requires a higher grade of ingredient and produces an output that starts above level 0. The crafter must have a Path or Background skill at the same rank or roll with Disadvantage. Canonical base rule: Ch06 → Rank and Power Economy. For RSS Recipes and Secrets (cooking, ritual, field craft), see Ch04 → Recipes.
+
 ## Anomolous Object Catalog
 
-Use these family entries as the chapter's primary catalog. They preserve old-school shapes, but present them in FTLS/SDM terms.
+Use these family entries as the chapter’s primary catalog. They preserve old-school shapes, but present them in FTLS/SDM terms.
 
 Imported-material rule:
 - if an old-school module names a classic item directly, keep the classic name,
@@ -281,8 +285,8 @@ Imported-material rule:
 - use the legacy support layer below only when you need denser named-effect coverage.
 
 Catalog use order:
-1. read the family's `Profile` for interface, trigger mode, tags, and bulk
-2. run the family's `Run` steps
+1. read the family’s `Profile` for interface, trigger mode, tags, and bulk
+2. run the family’s `Run` steps
 3. roll on the family microtable or microprocedure when you need the exact classic result
 4. finish with `Record`
 
@@ -341,11 +345,11 @@ When `Potions / Oils / Elixirs` are rolled, roll the dose. On a special result, 
 
 #### Legacy Potion Descriptions
 
-Appearance: Potions are usually found in small glass vials. Each potion has a different smell and color—even two potions with the same effect appear completely different until used. A character sipping the potion (taking just a taste) will realize what the potion's effect is; the character can then label the potion and keep it for later use. Sipping a potion does not decrease the potion's effect or duration, although sipping a poisoned potion will cause the character to suffer the poison's effects.
+Appearance: Potions are usually found in small glass vials. Each potion has a different smell and color—even two potions with the same effect appear completely different until used. A character sipping the potion (taking just a taste) will realize what the potion’s effect is; the character can then label the potion and keep it for later use. Sipping a potion does not decrease the potion’s effect or duration, although sipping a poisoned potion will cause the character to suffer the poison’s effects.
 
-Level of Effect: If the range of the potion's effect is not stated, treat it as a `Level 3` character's output.
+Level of Effect: If the range of the potion’s effect is not stated, treat it as a `Level 3` character’s output.
 
-Duration: Unless stated otherwise, the effect of a potion lasts 7-12 turns (70-120 minutes). Roll 1d6 + 6 to determine the potion's duration. Only the referee should know the exact duration; they roll for duration and keep track of it when a character uses a potion.
+Duration: Unless stated otherwise, the effect of a potion lasts 7-12 turns (70-120 minutes). Roll 1d6 + 6 to determine the potion’s duration. Only the referee should know the exact duration; they roll for duration and keep track of it when a character uses a potion.
 
 Dosage: Usually the entire contents of a vial is a single dose. The entire potion must be drunk for the potion to have the listed effect. If a potion does not follow this guideline, the text will say so.
 
@@ -353,9 +357,9 @@ In Combat: Drinking a potion takes one round.
 
 Multiple Potions: If a character drinks a potion while another potion is still in effect, that character becomes sick and cannot act for three turns (half an hour); no save applies. Neither potion has any further effect. Certain potions whose effects are permanent (for example, healing or longevity) do not count toward this restriction.
 
-Control Potions: When using these potions, the user must see the victims to direct their actions. The controlled creatures cannot be forced to kill themselves. The character cannot perform any other actions while controlling others, and may move at up to half normal speed only. A victim may make an Aura save to avoid the control, but the user may repeat the attempt once per round, on any victim seen, until the potion's duration ends.
+Control Potions: When using these potions, the user must see the victims to direct their actions. The controlled creatures cannot be forced to kill themselves. The character cannot perform any other actions while controlling others, and may move at up to half normal speed only. A victim may make an Aura save to avoid the control, but the user may repeat the attempt once per round, on any victim seen, until the potion’s duration ends.
 
-Agility: For the duration, the user's Agility becomes `+5`. If the user already has `+5` Agility, grant `[+]` on the first Agility-based roll each round or scene instead. Use the boosted value for stunts, balance, stealth movement, dodging, and physical Defense.
+Agility: For the duration, the user’s Agility becomes `+5`. If the user already has `+5` Agility, grant `[+]` on the first Agility-based roll each round or scene instead. Use the boosted value for stunts, balance, stealth movement, dodging, and physical Defense.
 
 Animal Control: The user may control up to `3d6` total Levels of animals (normal or giant, but not fantascience or magitech tagged). When the control ends, the animals will be afraid and will leave the area if they can.
 
@@ -411,21 +415,21 @@ Dreamspeech: If the user speaks to one sleeping or paralyzed creature within 30'
 
 Elasticity: The user may stretch their body, plus all equipment carried, to nearly any form, flat, long, and so on, to a maximum of 30' long or a minimum of 1" thick. Items carried cannot be used or dropped unless they are first returned to normal form. While in "stretched" form, the user cannot attack or use powers, but takes half damage from blunt weapons (mace, hammer, giant-thrown boulder, etc.). The effect lasts for 1 turn only.
 
-Elemental Form: There are four types of this potion: Air, Earth, Fire, and Water (equal chances for each). The user may change into the form of an elemental of the appropriate type and back to normal form as often as desired while the potion lasts. Each change of form takes 1 round. While in elemental form, no special immunities are gained, but the special attacks of each elemental are usable. Note that a hostile-banishing or warding effect will not automatically block a character using this potion. The user's Defense and Life do not change. The duration is 1 turn only (10 minutes).
+Elemental Form: There are four types of this potion: Air, Earth, Fire, and Water (equal chances for each). The user may change into the form of an elemental of the appropriate type and back to normal form as often as desired while the potion lasts. Each change of form takes 1 round. While in elemental form, no special immunities are gained, but the special attacks of each elemental are usable. Note that a hostile-banishing or warding effect will not automatically block a character using this potion. The user’s Defense and Life do not change. The duration is 1 turn only (10 minutes).
 
 ESP: This potion grants thought-sense. The user can "hear" the thoughts, if any, of one creature within 60' by concentrating for one full round in one direction. The user can "hear" through 2' of rock, but a thin coating of lead will block the effect.
 
-Ethereality: The user can become ethereal once, at any time during the potion's duration, and may thereafter remain ethereal for up to 24 hours, returning to the material world at will. Once they have returned, the potion will not enable them to become ethereal again.
+Ethereality: The user can become ethereal once, at any time during the potion’s duration, and may thereafter remain ethereal for up to 24 hours, returning to the material world at will. Once they have returned, the potion will not enable them to become ethereal again.
 
 Fire Resistance: The user cannot be harmed by normal fire and gains `[+]` on saves against fire attacks. In addition, the user takes less damage from magical and dragon fire: -1 point per die of damage, minimum 1 point per die.
 
 Flying: The user may fly at up to 120' per round without tiring.
 
-Fortitude: For the duration, the user's Endurance becomes `+5`. If the user already has `+5` Endurance, grant `[+]` on the first Endurance-based roll each round or scene instead. This effect also grants `5` temporary Life.
+Fortitude: For the duration, the user’s Endurance becomes `+5`. If the user already has `+5` Endurance, grant `[+]` on the first Endurance-based roll each round or scene instead. This effect also grants `5` temporary Life.
 
 Freedom: The user cannot be affected by paralysis of any sort nor by hold-person or hold-monster style effects.
 
-Gaseous Form: Upon drinking this potion, the user's body takes the form of a cloud of gas. Anything the user is carrying or wearing falls through the gaseous body to land on the floor. The user keeps control over their body and can move through small holes in walls, chests, and so forth. A creature in gaseous form cannot attack, has extremely high physical Defense, and cannot be harmed by nonmagical weapons.
+Gaseous Form: Upon drinking this potion, the user’s body takes the form of a cloud of gas. Anything the user is carrying or wearing falls through the gaseous body to land on the floor. The user keeps control over their body and can move through small holes in walls, chests, and so forth. A creature in gaseous form cannot attack, has extremely high physical Defense, and cannot be harmed by nonmagical weapons.
 
 Giant Control: There are several different types of this potion, one for each type of giant. The user may control up to four giants at once, but each giant gets an Aura save. They will be hostile once the control ends. Roll 1d20 to find the type of giant affected.
 
@@ -440,9 +444,9 @@ Giant Control: There are several different types of this potion, one for each ty
 | 19 | Cloud |
 | 20 | Storm |
 
-Giant Strength: For the duration, the user's Strength becomes `+5`. If the user already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. If no other strength-adjusting item is active, the user also deals double weapon damage and may throw small boulders to `60/130/200` for `3d6` damage.
+Giant Strength: For the duration, the user’s Strength becomes `+5`. If the user already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. If no other strength-adjusting item is active, the user also deals double weapon damage and may throw small boulders to `60/130/200` for `3d6` damage.
 
-Growth: For the duration, the user grows to twice normal size and the user's Strength becomes `+5`. If the user already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. The user deals double damage on a successful hit, but gains no additional Life. This potion cancels a potion of diminution without ill effects.
+Growth: For the duration, the user grows to twice normal size and the user’s Strength becomes `+5`. If the user already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. The user deals double damage on a successful hit, but gains no additional Life. This potion cancels a potion of diminution without ill effects.
 
 Healing: Drinking this potion restores 1d6 + 1 lost Life or cures paralysis for one creature.
 
@@ -458,11 +462,11 @@ Heroism: This potion heightens straightforward martial or physical prowess. It h
 
 All wounds taken during the duration of the potion, including energy drains, are subtracted from the temporary Life and temporary Level gain first.
 
-Human Control: The user may control up to `3` total Levels of humans at once; two Level `0` humans count together as Level `1`. The effect has a 60' range, and the charm lasts only as long as the potion's duration.
+Human Control: The user may control up to `3` total Levels of humans at once; two Level `0` humans count together as Level `1`. The effect has a 60' range, and the charm lasts only as long as the potion’s duration.
 
-Invisibility: This potion makes the user invisible. When a character becomes invisible, all the items, but not other creatures, carried and worn by the user also become invisible. Any invisible item becomes visible again when it leaves the character's possession. The referee may allow players to divide a single potion into as many as six sips, each of which works normally but lasts only one turn (10 minutes).
+Invisibility: This potion makes the user invisible. When a character becomes invisible, all the items, but not other creatures, carried and worn by the user also become invisible. Any invisible item becomes visible again when it leaves the character’s possession. The referee may allow players to divide a single potion into as many as six sips, each of which works normally but lasts only one turn (10 minutes).
 
-Invulnerability: The user's Defense and saves gain a bonus of 2 for the duration of the potion. If used more than once per week, the only effect is sickness.
+Invulnerability: The user’s Defense and saves gain a bonus of 2 for the duration of the potion. If used more than once per week, the only effect is sickness.
 
 Levitation: Drinking this potion allows the user to move up or down in the air without support. This potion does not enable side-to-side movement. The user could, however, levitate to a ceiling and move sideways by pushing or pulling.
 
@@ -470,11 +474,11 @@ Motion up or down is at a rate of 60' per round.
 
 Longevity: The user immediately becomes 10 years younger. The effect is permanent, does not wear off, and cannot be dispelled. This potion will have no effect on any creature forced to drink it. In addition, age cannot be reduced below 15 (or below midadolescence for creatures other than humans), and the change cannot adversely affect any ability scores or other abilities.
 
-Luck: This potion makes the user lucky. Once before the effect ends, the user may declare the result of one roll affecting them instead of rolling randomly: attack, damage, save, or similar. It cannot alter another character's roll or a referee-only roll.
+Luck: This potion makes the user lucky. Once before the effect ends, the user may declare the result of one roll affecting them instead of rolling randomly: attack, damage, save, or similar. It cannot alter another character’s roll or a referee-only roll.
 
 The effect lasts for 1 hour or until the luck is used.
 
-Merging: The effect of this potion is quite unusual. The user can permit others to actually merge their forms with the user's, including all equipment carried, as if all were gaseous. A maximum of seven other creatures can merge with the user of the potion. The merging cannot be forced; the user can, at will, prevent anyone from merging. A creature merged with the user can leave the merger by merely stepping out. No creature merged with another (including the user) can attack or use a power, but it may speak. Damage to the user of the potion does not affect those merged.
+Merging: The effect of this potion is quite unusual. The user can permit others to actually merge their forms with the user’s, including all equipment carried, as if all were gaseous. A maximum of seven other creatures can merge with the user of the potion. The merging cannot be forced; the user can, at will, prevent anyone from merging. A creature merged with the user can leave the merger by merely stepping out. No creature merged with another (including the user) can attack or use a power, but it may speak. Damage to the user of the potion does not affect those merged.
 
 Plant Control: The user may control all plants and plantlike creatures (including monsters) in a 30' x 30' area up to 60' away. Normal plants controlled may entangle victims in their area, but they cannot cause damage.
 
@@ -488,7 +492,7 @@ Speech: The user can understand any and all languages heard within 60' and can r
 
 Speed: The user moves twice as fast, can attack twice per round, and performs other actions except spellcasting at twice normal speed.
 
-Strength: For the duration, the user's Strength becomes `+5`. If the user already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. Treat the user as capable of heroic lifting, forcing, carrying, climbing, and smashing where brute force is the real gate.
+Strength: For the duration, the user’s Strength becomes `+5`. If the user already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. Treat the user as capable of heroic lifting, forcing, carrying, climbing, and smashing where brute force is the real gate.
 
 Super-Healing: Drinking this potion restores `3d6 + 3` lost Life to one living creature. It is the potion equivalent of a cure critical wounds effect.
 
@@ -550,7 +554,7 @@ When `Scrolls / Formulae / Map-Documents` are rolled, set script form first, the
 
 #### Legacy Scroll Descriptions
 
-Determining Contents: To determine what's on a scroll, characters must have enough light to read by. Any literate character can inspect a scroll's visible script; hidden or sealed magical content may require Thought, an appropriate Trait, or a revealing effect. In any case, do not read the scroll aloud unless you also wish to trigger it.
+Determining Contents: To determine what’s on a scroll, characters must have enough light to read by. Any literate character can inspect a scroll’s visible script; hidden or sealed magical content may require Thought, an appropriate Trait, or a revealing effect. In any case, do not read the scroll aloud unless you also wish to trigger it.
 
 Casting the Scroll Power: To use the power on a scroll, the character must be able to read the scroll and must read it aloud. A scroll may only be used once; the words disappear as they are read aloud.
 
@@ -562,17 +566,17 @@ Communication: This is actually two scrolls, one stored inside the other. They a
 
 Creation: The user of this valuable scroll may draw a picture of any normal item up to 5' x 10' x 1' in size (though drawn much smaller) and up to 5,000 cn weight. The item may then be taken off the scroll and used! Magical items cannot be created nor can any living things, but all types of armor and weapons, for example, are quite easily created. The item will vanish either on command of the creator or after 24 hours. The scroll can create one item per day only.
 
-Cursed: Unfortunately, when any writing on a cursed scroll is even seen, the victim is immediately cursed. No reading is necessary. The referee must make up each scroll's curse.
+Cursed: Unfortunately, when any writing on a cursed scroll is even seen, the victim is immediately cursed. No reading is necessary. The referee must make up each scroll’s curse.
 
 Examples of a few common curses include the following: • The reader turns into a frog (or some other harmless animal). • A wandering monster of the same level as the reader appears and attacks by surprise. • One magical item owned by the reader disappears. • The reader loses one level of experience, as if struck by a wight. • One key ability score is rerolled or scrambled. • Future wounds take twice as long to heal, and healing effects restore only half normal amounts until the curse is lifted. Only a remove curse effect can remove a curse of this nature, though the referee may allow a high-level ritualist, saint, wardwright, or other powerful specialist to lift it in exchange for difficult service.
 
 Delay: This is a scroll of one power slot. When releasing the power from the scroll, the user states an amount of delay from 0 to 12 rounds. Thereafter, if the user carries the scroll, the user has complete control of the effect when it occurs. If the scroll is not carried by the user, the power effect appears around the scroll itself, affecting the nearest creature if a recipient is part of the process. The power does not affect the scroll, even if it is a fire-type effect. For example, a character reads a delayed lightning bolt scroll, delaying it 8 rounds, and then puts the scroll away. Eight rounds later, when the lightning bolt actually appears, the character may choose the range and direction by mere concentration, as if using the power at that time.
 
-Equipment: This parchment is inscribed with the names of six normal items, chosen or rolled by the referee using the Adventuring Gear Table from Chapter 4. When any item's name is read aloud, the item appears within 10' of the scroll; the name disappears. The item will remain for 24 hours or until the user commands it to vanish. The name reappears on the scroll when the item vanishes. Any three of the six items listed on the scroll can be created each day.
+Equipment: This parchment is inscribed with the names of six normal items, chosen or rolled by the referee using the Adventuring Gear Table from Chapter 4. When any item’s name is read aloud, the item appears within 10' of the scroll; the name disappears. The item will remain for 24 hours or until the user commands it to vanish. The name reappears on the scroll when the item vanishes. Any three of the six items listed on the scroll can be created each day.
 
 Illumination: This scroll bears the drawing of a flame. If the scroll is set afire, it will burn with a clear light in a 60' radius, lasting for up to 6 hours per day. The burning does not harm the scroll, but it is nevertheless "normal" fire (and can be used to light torches, for example). The flame cannot be extinguished except by water or on command of the user; no wind, normal or magical, can cause it to even flicker. This item may already be lit when found.
 
-Mage's Identification Scroll: This scroll is blank; it is used to identify magical effects. Any user who can operate the item may hold the scroll and command it to identify one chosen magical effect within 30'. The name of the effect appears on the scroll, along with an approximate power tier or source strength. The scroll identifies one magical effect per day.
+Mage’s Identification Scroll: This scroll is blank; it is used to identify magical effects. Any user who can operate the item may hold the scroll and command it to identify one chosen magical effect within 30'. The name of the effect appears on the scroll, along with an approximate power tier or source strength. The scroll identifies one magical effect per day.
 
 Maps to Treasures (Normal, Magical, Combined, or Special): Each map should be made in advance by the referee. Such maps show a route to the location of a treasure in a dungeon or a wilderness area. The treasure is usually hidden or protected by monsters, traps, and/or magic. Based on the type of treasure given, the referee should select a challenging monster, one with a similar treasure type, and design the map and lair accordingly. Note that the map may be partially incorrect, omitting an important detail such as the type of monsters or dangerous traps, or giving some false information; however, the treasure mentioned should actually be there. Sometimes maps are only partially complete or are written in the form of a riddle. Some may require a language-reading power or a successful Thought-based decoding attempt. Normal treasure contains coins and gems but no magical items, while a magical treasure may include some coins and a few gems of low value in addition to magical items. A combined treasure has coins, magical items, and valuable gems or jewelry in roughly equal proportions. Special treasure should contain at least one permanent magical item, such as a staff or sword; these items should be mentioned on the map.
 
@@ -621,13 +625,13 @@ Spell Catching: This scroll is blank when found. It may be used to "catch" a pow
 | 8-9 | `12` |
 | 10 | `16` |
 
-The user of the scroll must hold it up, like a shield; no other action is possible while using the scroll. The user must then make an Aura save with a `+4` bonus; if successful, the incoming power has no effect and is instead transferred to the scroll, appearing as a normal scroll effect. The exact power caught will not be known until a revealing or identification effect is used. The scroll can only hold one power at a time; the power caught must either be used or copied into another valid archive before the scroll can catch another power. Any direct cast power can be caught as long as its Power Level does not exceed the scroll's capacity. The scroll of spell catching cannot affect powers above that capacity, and it can catch a maximum of one power per day.
+The user of the scroll must hold it up, like a shield; no other action is possible while using the scroll. The user must then make an Aura save with a `+4` bonus; if successful, the incoming power has no effect and is instead transferred to the scroll, appearing as a normal scroll effect. The exact power caught will not be known until a revealing or identification effect is used. The scroll can only hold one power at a time; the power caught must either be used or copied into another valid archive before the scroll can catch another power. Any direct cast power can be caught as long as its Power Level does not exceed the scroll’s capacity. The scroll of spell catching cannot affect powers above that capacity, and it can catch a maximum of one power per day.
 
-Powers: Use Spell Scrolls in the magical item subtable for scrolls to find the exact Power Levels or choose effects as appropriate. Spell scrolls are good ways to introduce new powers in a campaign, and they may thus be designed with the characters' current archives, grimoires, or known powers in mind.
+Powers: Use Spell Scrolls in the magical item subtable for scrolls to find the exact Power Levels or choose effects as appropriate. Spell scrolls are good ways to introduce new powers in a campaign, and they may thus be designed with the characters’ current archives, grimoires, or known powers in mind.
 
-Trapping: This scroll can create one trap. The type of trap differs by the placement of the scroll. The scroll is destroyed when the trap is created. If placed on a floor, a hidden pit trap is created; if on a ceiling, a falling block trap appears. On walls, a poison dart or gas trap will be created. The exact trap is left to the referee's design. The trap created is quite real and is not illusory or magical.
+Trapping: This scroll can create one trap. The type of trap differs by the placement of the scroll. The scroll is destroyed when the trap is created. If placed on a floor, a hidden pit trap is created; if on a ceiling, a falling block trap appears. On walls, a poison dart or gas trap will be created. The exact trap is left to the referee’s design. The trap created is quite real and is not illusory or magical.
 
-Truth: This scroll is blank when found. The user may ask a question of any living being within 30'; the complete and true answer appears on the scroll, read from the victim's mind by a powerful version of ESP. Note that the answer is true only within the limits of the victim's knowledge. The scroll will display one answer per day.
+Truth: This scroll is blank when found. The user may ask a question of any living being within 30'; the complete and true answer appears on the scroll, read from the victim’s mind by a powerful version of ESP. Note that the answer is true only within the limits of the victim’s knowledge. The scroll will display one answer per day.
 
 
 ### Wands / Staves / Rods
@@ -686,7 +690,7 @@ When `Wands / Staves / Rods` are rolled, set item kind, then the exact effect. U
 
 #### Legacy Wand Descriptions
 
-A wand normally has 2d10 charges when found, and a staff 3d10; the referee rolls the number, keeps the result to themselves, and tracks the character's use of the wand or staff.
+A wand normally has 2d10 charges when found, and a staff 3d10; the referee rolls the number, keeps the result to themselves, and tracks the character’s use of the wand or staff.
 
 Rods are permanent items that do not require charges. Each use of a power costs one charge unless noted otherwise. Each item may be used once per round at most.
 
@@ -724,11 +728,11 @@ Phase B bridge rule for bundled recognizers:
 
 Staff of Commanding: This magical item has all the powers of the rings of animal, human, and plant control (see the individual descriptions under "Rings," below).
 
-Staff of Dispelling: The touch of this item has the same effect as a dispel effect from a Level `8` practitioner, but it will affect only the item or magical effect touched. Any potion or scroll touched is completely destroyed, and any permanent magical item touched becomes nonmagical for `1d4` rounds (including armor and weapons). This effect may be permanently harmful to intelligent swords (referee's choice). Each use of the staff costs one charge.
+Staff of Dispelling: The touch of this item has the same effect as a dispel effect from a Level `8` practitioner, but it will affect only the item or magical effect touched. Any potion or scroll touched is completely destroyed, and any permanent magical item touched becomes nonmagical for `1d4` rounds (including armor and weapons). This effect may be permanently harmful to intelligent swords (referee’s choice). Each use of the staff costs one charge.
 
 This staff is usable by anyone who can wield and operate it.
 
-Staff of the Druids: A character with a nature-, cult-, or green-lore-focused magical practice gains one extra prepared power or equivalent power slot at each available tier while carrying this staff. The extra powers must be selected when the user's usual daily preparations are made. Each day's use of the staff uses one charge. The staff is a +3 weapon as well, causing 1d6+3 damage, and it may be used as such without using any charges.
+Staff of the Druids: A character with a nature-, cult-, or green-lore-focused magical practice gains one extra prepared power or equivalent power slot at each available tier while carrying this staff. The extra powers must be selected when the user’s usual daily preparations are made. Each day’s use of the staff uses one charge. The staff is a +3 weapon as well, causing 1d6+3 damage, and it may be used as such without using any charges.
 
 Staff of an Element:
 
@@ -744,7 +748,7 @@ Staff of an Element:
 
 Each staff is a staff +2 and may be used as one without using any charges, striking for 1d6 + 2 points of damage. Staves of two elements gain all the powers of both staves, and the staff of elemental power has the powers of all four.
 
-Each staff contains the following powers when used on the material plane: • `[+]` on saves against hostile elemental effects of that type. • Complete immunity to attacks by any elemental of that type. • The ability to summon one Level `4` elemental of that type per day, each summoning costing one charge. • Certain power effects, each costing one charge per use. These created effects are treated as a `Level 5` character's output.
+Each staff contains the following powers when used on the material plane: • `[+]` on saves against hostile elemental effects of that type. • Complete immunity to attacks by any elemental of that type. • The ability to summon one Level `4` elemental of that type per day, each summoning costing one charge. • Certain power effects, each costing one charge per use. These created effects are treated as a `Level 5` character’s output.
 
 The effects are dependent on type of element as follows:
 
@@ -779,9 +783,9 @@ Staff of Healing: It may only be used once per day per person, but it will heal 
 
 Staff of Power: This item can be used as a staff of striking and can also emit a bundled high-tier power suite: `fireball`, `lightning bolt`, `ice storm`, `continual light`, and `telekinesis`. Treat these names as recognizers. Offensive effects in this suite inflict 8d6 damage as written and are handled as `Power Level 8` payloads. The telekinetic channel is equivalent to moving 2,400 cn per activation. Where source-force checks matter (counterforce clashes, suppression fields, or ward contests), treat the staff as a `Level 8` source.
 
-Snake Staff: Upon command, the staff turns into a snake and coils around the creature struck. The command may be spoken when the victim is hit. The victim may make an Aura save to avoid the serpent's coil. Any human-sized or smaller victim will be held helpless for 1d4 turns, unless the snake is ordered by the owner to release the victim before that time. Larger creatures cannot be ensnared in the snake's coils. The snake's characteristics are as follows.
+Snake Staff: Upon command, the staff turns into a snake and coils around the creature struck. The command may be spoken when the victim is hit. The victim may make an Aura save to avoid the serpent’s coil. Any human-sized or smaller victim will be held helpless for 1d4 turns, unless the snake is ordered by the owner to release the victim before that time. Larger creatures cannot be ensnared in the snake’s coils. The snake’s characteristics are as follows.
 
-Snake: Treat the staff-serpent as a Level `2` constrictor with physical Defense `12`, Life `20`, movement `60' (20')`, and one coil attack. Its attack restrains rather than dealing direct damage. When freed, the snake crawls back to its owner and becomes a staff once again. The snake is completely healed when it returns to staff form. If killed in snake form, it cannot return to staff form and it loses all magical properties. This item does not have or use charges. At the referee's option, the staff can be given charges. The user can spend charges to add `+1` per charge to the snake's next attack, up to `+5` on a single strike. A charge can also be used to transfer a healing effect cast at the user directly to the snake while it is in combat; resolve the healing normally, with no range limit.
+Snake: Treat the staff-serpent as a Level `2` constrictor with physical Defense `12`, Life `20`, movement `60' (20')`, and one coil attack. Its attack restrains rather than dealing direct damage. When freed, the snake crawls back to its owner and becomes a staff once again. The snake is completely healed when it returns to staff form. If killed in snake form, it cannot return to staff form and it loses all magical properties. This item does not have or use charges. At the referee’s option, the staff can be given charges. The user can spend charges to add `+1` per charge to the snake’s next attack, up to `+5` on a single strike. A charge can also be used to transfer a healing effect cast at the user directly to the snake while it is in combat; resolve the healing normally, with no range limit.
 
 Staff of Striking: On a successful attack, this weapon inflicts 2d6 (2-12) points of damage per charge used.
 
@@ -809,13 +813,13 @@ Rod of Dominion: This rod aids in ruling. If a ruler carries it on a tour throug
 | 91-99 | +40 |
 | 00 | +50 |
 
-When not on display, the rod must be kept in the ruler's stronghold. The effects last for three months, but the rod may be shown again to the populace as desired.
+When not on display, the rod must be kept in the ruler’s stronghold. The effects last for three months, but the rod may be shown again to the populace as desired.
 
 Rod of Health: This rod has all the powers of a staff of healing, but without expending any charges. It can affect any one creature only once per day, regardless of the effect chosen.
 
 Rod of Inertia: This unusual item may be used as a spear +3 in all respects. On command of the user, it will stop wherever it is, and it cannot be moved by any means except a wish. A second command releases it. If the rod is in motion when stopped, it will continue its direction when released. For example, it may be thrown toward a door and commanded to stop, later released if an enemy enters so that the rod will continue toward the enemy. If the user falls, a command will stop the rod suddenly, and the user may hold onto the rod. In SDM terms, physically adept or tactically trained wielders get the most out of it, but it is not class-locked.
 
-Rod of Parrying: This rod +5 can be used as a melee weapon, inflicting 1d8 + 5 (6-13) points of damage per hit, but no Strength bonus applies. It may also be used to parry attacks, if the user chooses this ability at the beginning of a round. When attacked in melee, the user's physical Defense gains a +5 bonus while parrying; however, this does not apply to avoiding missile fire. While using the rod of parrying, no other action is possible except a Fighting Withdrawal maneuver (see Chapter 8).
+Rod of Parrying: This rod +5 can be used as a melee weapon, inflicting 1d8 + 5 (6-13) points of damage per hit, but no Strength bonus applies. It may also be used to parry attacks, if the user chooses this ability at the beginning of a round. When attacked in melee, the user’s physical Defense gains a +5 bonus while parrying; however, this does not apply to avoiding missile fire. While using the rod of parrying, no other action is possible except a Fighting Withdrawal maneuver (see Chapter 8).
 
 Rod of Victory: This rod makes the user lucky in war (when the War Machine mass combat system is used).
 
@@ -844,7 +848,7 @@ Each is a rod + 5 and each inflicts 1d8 + 5 (6-13) points of damage per hit, but
 These are worn wards, status objects, and body-interface relics. Small things like these often change who gets protected, who gets tempted, and who starts behaving strangely in public.
 
 Quick use:
-1. set the wearable's main effect
+1. set the wearable’s main effect
 2. decide whether wearing alone works or command is needed
 3. record conflict, temptation, and officer-level consequence
 
@@ -895,7 +899,7 @@ When `Rings / Amulets / Charms` are rolled, set the exact wearable effect direct
 #### Legacy Ring Descriptions
 Rings must be worn on a finger or thumb to function. Only one magical ring may be worn per hand; extras cancel each other except for a ring of weakness.
 
-Animal Control: The wearer of this ring may command 1d6 normal animals, or one giant-sized animal. The animals get no save against this control. The ring will not control companions, intelligent animal species, or fantastic or magical monsters. The wearer must be able to see the animals to control them. The control will last as long as the wearer concentrates on the animals and does not move or fight. When the wearer stops concentrating, the animals are free to attack their controller or flee; the referee should decide their immediate disposition, or use the table's usual NPC response oracle, treating the controller at `[-]`. This ring can only be used once per turn.
+Animal Control: The wearer of this ring may command 1d6 normal animals, or one giant-sized animal. The animals get no save against this control. The ring will not control companions, intelligent animal species, or fantastic or magical monsters. The wearer must be able to see the animals to control them. The control will last as long as the wearer concentrates on the animals and does not move or fight. When the wearer stops concentrating, the animals are free to attack their controller or flee; the referee should decide their immediate disposition, or use the table’s usual NPC response oracle, treating the controller at `[-]`. This ring can only be used once per turn.
 
 Delusion: The wearer will believe this to be any one other ring (roll again for the imaginary type). However, it has no real effect. The wearer will not be convinced otherwise until a remove curse is used to dispel the enchantment.
 
@@ -933,27 +937,27 @@ Memory: It allows the wearer to recall any one power used. The wearer must decid
 
 Plant Control: This ring has the same effect as the potion of the same name, but only lasts as long as the wearer concentrates.
 
-Protection +1, +2, +3, or +4: This ring improves the wearer's Defense by 1, 2, 3, or 4, as listed. It also adds its bonus to all of the wearer's saves. A variation of this ring is the ring of protection +1, 5' radius. This ring improves the wearer's Defense and saves by 1, but the ring also gives the same bonus to all creatures within 5', both friend and foe. No area ring is more powerful than +1.
+Protection +1, +2, +3, or +4: This ring improves the wearer’s Defense by 1, 2, 3, or 4, as listed. It also adds its bonus to all of the wearer’s saves. A variation of this ring is the ring of protection +1, 5' radius. This ring improves the wearer’s Defense and saves by 1, but the ring also gives the same bonus to all creatures within 5', both friend and foe. No area ring is more powerful than +1.
 
 Quickness: Once each day, the wearer of this ring can move and attack at double normal rates for 1 turn. The effect is equivalent to a haste effect, but it is produced by command rather than spellcasting.
 
-Regeneration: The wearer regenerates lost Life at the slow rate of 1 per turn. The ring also replaces lost limbs; a finger regrows in 24 hours, and a whole limb can be replaced in one week. The ring will not function if the wearer's Life drops to 0 or less.
+Regeneration: The wearer regenerates lost Life at the slow rate of 1 per turn. The ring also replaces lost limbs; a finger regrows in 24 hours, and a whole limb can be replaced in one week. The ring will not function if the wearer’s Life drops to 0 or less.
 
 Fire and acid damage cannot be regenerated.
 
 Remedies: Once each day, this ring will produce one remedy: cure blindness, cure disease, remove curse, or neutralize poison. Each effect is treated as a very strong healing or purification effect. The ring produces the desired effect when the wearer concentrates and touches the recipient.
 
-Safety: The effect of this ring is similar to that of a potion of luck. If the ring's wearer fails a save, they may "change fate" by declaring that the save instead succeeds. The ring will negate 1d4 failed saves and then disintegrate.
+Safety: The effect of this ring is similar to that of a potion of luck. If the ring’s wearer fails a save, they may "change fate" by declaring that the save instead succeeds. The ring will negate 1d4 failed saves and then disintegrate.
 
 Seeing: Once each day, the wearer of this ring can see all things plainly, as if a truesight effect were active. The wearer need not have any magical Trait to use it.
 
 The effect lasts for 3 turns.
 
-Spell Eating: Although this ring appears and functions as a ring of spell turning, it has an extra detrimental effect if the user keeps internal power payloads ready (anchored, staged, or otherwise preloaded). After the wearer uses a power while the ring is worn, the ring "eats" the remaining ready payloads. The ring cannot be removed after it has eaten the wearer's payloads until a remove curse effect is applied by a suitably powerful practitioner. That remedy only permits removal and does not change the ring's nature; an even stronger purifying or dispelling effect may turn it into a normal ring of spell turning.
+Spell Eating: Although this ring appears and functions as a ring of spell turning, it has an extra detrimental effect if the user keeps internal power payloads ready (anchored, staged, or otherwise preloaded). After the wearer uses a power while the ring is worn, the ring "eats" the remaining ready payloads. The ring cannot be removed after it has eaten the wearer’s payloads until a remove curse effect is applied by a suitably powerful practitioner. That remedy only permits removal and does not change the ring’s nature; an even stronger purifying or dispelling effect may turn it into a normal ring of spell turning.
 
-Spell Storing: When found, this ring has 1d6 powers stored within it. Those exact payloads are the ring's active capacity profile until deliberately reloaded. When the ring is put on, the wearer magically knows what effects are stored and how to use them. After a payload is used, it may be replaced by a practitioner who channels a replacement directly into the ring. The ring will not absorb powers thrown at the wearer. Treat each stored payload by `Power Level`; the default load uses the lowest tier and minimum force needed to produce each effect. The referee should choose the stored effects.
+Spell Storing: When found, this ring has 1d6 powers stored within it. Those exact payloads are the ring’s active capacity profile until deliberately reloaded. When the ring is put on, the wearer magically knows what effects are stored and how to use them. After a payload is used, it may be replaced by a practitioner who channels a replacement directly into the ring. The ring will not absorb powers thrown at the wearer. Treat each stored payload by `Power Level`; the default load uses the lowest tier and minimum force needed to produce each effect. The referee should choose the stored effects.
 
-Spell Turning: This ring reflects `2d6` hostile powers back to their source per day so that the wearer is not affected by those attacks. Only direct cast powers are reflected, not monster-style innate abilities or item-generated effects. Once the ring's daily limit is reached, it becomes useless for the rest of the day.
+Spell Turning: This ring reflects `2d6` hostile powers back to their source per day so that the wearer is not affected by those attacks. Only direct cast powers are reflected, not monster-style innate abilities or item-generated effects. Once the ring’s daily limit is reached, it becomes useless for the rest of the day.
 
 Survival: The wearer can survive without air, food, or drink while the ring is worn by using the charges contained within it. The ring contains 1d100 + 100 (101-200) charges when found. By spending one charge, the user needs no food or drink for 24 hours. Survival without air requires one charge per hour. The ring turns black when five or fewer charges remain.
 
@@ -967,7 +971,7 @@ Truthlessness: This item also claims to be a ring of truth when worn, but it fun
 
 Water Walking: The wearer of this ring may walk on the surface of any body of water and will not sink.
 
-Weakness: When this ring is put on, the wearer becomes weaker and their Strength drops sharply within 1d6 rounds. The wearer cannot take off this ring unless a remove curse effect is used. If more than one ring is worn per hand, this ring still functions despite the other rings' effects being canceled.
+Weakness: When this ring is put on, the wearer becomes weaker and their Strength drops sharply within 1d6 rounds. The wearer cannot take off this ring unless a remove curse effect is used. If more than one ring is worn per hand, this ring still functions despite the other rings’ effects being canceled.
 
 Wishes: A ring of wishes is an extremely powerful item. Wishes must be handled very carefully by the referee and the players alike. To find the number of wishes contained, roll 1d10.
 
@@ -1043,7 +1047,7 @@ Bag of Devouring: This item looks like a normal small sack, but anything placed 
 
 Bag of Holding: This bag looks like a normal small sack, but any items placed within it disappear. Anyone may reach in and find the contents by touch. The bag will actually hold treasures up to 10,000 cn in weight, but will only weigh 600 cn when full. An item to be placed inside the bag may be no larger than 10' x 5' x 3'. A larger item will not fit inside.
 
-Boat, Undersea: This item appears identical to a standard riverboat and can be used as one. As it is magical, however, its physical Defense is 4 and it has 40 hull Life. It is operated by a magical command word that its maker knows; characters who find an undersea boat may have to go on an adventure to discover the boat's command word. If the command word is known, no rowers or sailors are required. The boat obeys commands to start, stop, turn to port, turn to starboard, stop turning while keeping the same speed, submerge, level off, and surface. When underwater, the boat radiates a water-breathing effect, protecting all passengers and crew as long as they touch it. The undersea boat can be fitted with grips so that the passengers can avoid drifting away.
+Boat, Undersea: This item appears identical to a standard riverboat and can be used as one. As it is magical, however, its physical Defense is 4 and it has 40 hull Life. It is operated by a magical command word that its maker knows; characters who find an undersea boat may have to go on an adventure to discover the boat’s command word. If the command word is known, no rowers or sailors are required. The boat obeys commands to start, stop, turn to port, turn to starboard, stop turning while keeping the same speed, submerge, level off, and surface. When underwater, the boat radiates a water-breathing effect, protecting all passengers and crew as long as they touch it. The undersea boat can be fitted with grips so that the passengers can avoid drifting away.
 
 Note: The referee may wish to create similar magical boats that travel only on ice, sand, in the air, and so forth.
 
@@ -1061,7 +1065,7 @@ Broom of Flying: When verbally commanded, the broom will carry its owner through
 
 Censer of Controlling Air Elementals: This item may be used only once per day and requires 1 turn to use. The censer will summon an air elemental and will allow the user to control it, subject to normal rules for elemental control.
 
-Chime of Time: This simple metal stick is 3" long and made of a silvery metal. On command, it will keep track of time, chiming every hour on the hour—the chime can be heard by all within 60' (regardless of intervening walls, rock, etc.). If dampened by a silence, 15' radius spell, the chime will dispel the silence but be dampened to a 30-foot range for that turn. A second command will cause the chime to turn color. It will turn gold at one end, the color slowly spreading to the other end in an hour's time. A third command word causes the chime to stop ringing or to stop changing color—but not until 1 turn elapses after the command.
+Chime of Time: This simple metal stick is 3" long and made of a silvery metal. On command, it will keep track of time, chiming every hour on the hour—the chime can be heard by all within 60' (regardless of intervening walls, rock, etc.). If dampened by a silence, 15' radius spell, the chime will dispel the silence but be dampened to a 30-foot range for that turn. A second command will cause the chime to turn color. It will turn gold at one end, the color slowly spreading to the other end in an hour’s time. A third command word causes the chime to stop ringing or to stop changing color—but not until 1 turn elapses after the command.
 
 Crystal Ball: Its owner may look into it and see any place or object thought about as it exists at that time. It will work three times per day, and the image will last for 1 turn. Spells cannot be cast "through" the crystal ball. The more familiar the object or area to be seen, the clearer the picture will be.
 
@@ -1069,13 +1073,13 @@ Crystal Ball with Clairaudience: This works like a standard crystal ball, but wi
 
 Crystal Ball with ESP: This also works like a standard crystal ball, but with the added power to listen to the thoughts of a creature viewed.
 
-Displacer Cloak: This item warps light rays; the wearer is actually 5' away from the perceived location. The cloak grants `[+]` on the wearer's saves against hostile magic, devices, and petrification effects. Melee attacks against the wearer take `[-]`, and most missile fire automatically misses unless the referee rules the attacker has an angle, sense mode, or area effect that bypasses the displacement.
+Displacer Cloak: This item warps light rays; the wearer is actually 5' away from the perceived location. The cloak grants `[+]` on the wearer’s saves against hostile magic, devices, and petrification effects. Melee attacks against the wearer take `[-]`, and most missile fire automatically misses unless the referee rules the attacker has an angle, sense mode, or area effect that bypasses the displacement.
 
 Drums of Panic: These large kettle drums have no effect on any creatures within 10' of them. When used, however, all creatures 10'-240' away must make an Aura save or run away from the user for 3 full turns. If the table is using Quickstart morale for those targets, no save is needed; each creature instead tests morale at `[-]`.
 
 Efreeti Bottle: This item is a large, heavy sealed jug about 3' high. If the seal is broken and the stopper pulled, an efreeti will come forth to serve the opener once per day for 101 days (or until slain). The creature will return to its home (the fabled City of Brass) after its term of service is ended. It will serve no one but the person opening the bottle.
 
-Egg of Wonder: This strange item is the size of a chicken's egg, but it may be of any color. An egg breaks when dropped or thrown, to 60' maximum range; in the following round, a creature emerges from it and grows to normal size, thereafter obeying the thrower of the egg to the best of its ability. The creature must be able to hear the user's commands. The creature will disappear after one hour of existence or when slain. The creature appearing is never determined until the egg actually breaks; characters can never know what creature will appear beforehand. The referee may add other creatures, if desired. To determine the type of creature appearing, roll 1d12.
+Egg of Wonder: This strange item is the size of a chicken’s egg, but it may be of any color. An egg breaks when dropped or thrown, to 60' maximum range; in the following round, a creature emerges from it and grows to normal size, thereafter obeying the thrower of the egg to the best of its ability. The creature must be able to hear the user’s commands. The creature will disappear after one hour of existence or when slain. The creature appearing is never determined until the egg actually breaks; characters can never know what creature will appear beforehand. The referee may add other creatures, if desired. To determine the type of creature appearing, roll 1d12.
 
 | `1d12` | Creature |
 |---:|---|
@@ -1098,15 +1102,15 @@ Elven Boots: The wearer of these boots may move with nearly complete silence (ro
 
 Flying Carpet: This item can carry one passenger at up to 300' per turn, two at 240' per turn, or three at 180' per turn. It will not carry more than three passengers and their equipment. As an option, the referee can say that the carpet will carry an encumbrance of 6,000 cn, but the weight of the passengers will have to be calculated.
 
-Gauntlets of Ogre Power: While worn, the wearer's Strength becomes `+5`. If the wearer already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. If the wearer is not using a weapon, their punches count as a small personal weapon and deal `1d6` unarmed damage.
+Gauntlets of Ogre Power: While worn, the wearer’s Strength becomes `+5`. If the wearer already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. If the wearer is not using a weapon, their punches count as a small personal weapon and deal `1d6` unarmed damage.
 
-Girdle of Giant Strength: While worn, the wearer's Strength becomes `+5`. If the wearer already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. The wearer also deals double damage with any wielded weapon.
+Girdle of Giant Strength: While worn, the wearer’s Strength becomes `+5`. If the wearer already has `+5` Strength, grant `[+]` on the first Strength-based roll each round or scene instead. The wearer also deals double damage with any wielded weapon.
 
-Helm of Alignment Changing: This item looks like a fancy helmet. When the helm is put on, it will immediately change the wearer's ethos; the referee should determine the new bent randomly. This device can only be taken off by using a remove curse effect, but the wearer will resist seeking the removal. Once it is removed, however, the wearer's original ethos will return. As an option, the referee may allow the character to remove the helm by performing a special task or adventure.
+Helm of Alignment Changing: This item looks like a fancy helmet. When the helm is put on, it will immediately change the wearer’s ethos; the referee should determine the new bent randomly. This device can only be taken off by using a remove curse effect, but the wearer will resist seeking the removal. Once it is removed, however, the wearer’s original ethos will return. As an option, the referee may allow the character to remove the helm by performing a special task or adventure.
 
 Helm of Reading: The wearer is able to read any writing, regardless of the language or magical properties of the script. This does not allow characters to use Spell Scrolls unless they can do so normally. This helm is fragile, however, and will be destroyed if the wearer is killed. Any hit on the wearer might, 10% chance, destroy the helm.
 
-Helm of Telepathy: This item looks like a fancy helmet. The wearer of this helm may send messages, by mere thought, to any creature within 90'. The creature receiving the thought messages will understand them, though it may refuse to respond. The wearer may also read the thoughts of a living creature within range. To make the helm work, the wearer must concentrate on the creature, and may not move or cast powers. If the creature fails an Aura save, or permits the thought reading, the wearer will understand the creature's thoughts.
+Helm of Telepathy: This item looks like a fancy helmet. The wearer of this helm may send messages, by mere thought, to any creature within 90'. The creature receiving the thought messages will understand them, though it may refuse to respond. The wearer may also read the thoughts of a living creature within range. To make the helm work, the wearer must concentrate on the creature, and may not move or cast powers. If the creature fails an Aura save, or permits the thought reading, the wearer will understand the creature’s thoughts.
 
 Helm of Teleportation: This helm allows the wearer to teleport, including the usual risks of bad arrival, or to attempt to teleport another creature or item. An unwilling victim can make an Aura save to avoid the effect. After one use, the helm will no longer function. If a teleport effect is later cast into it, the user can then teleport as often as desired, up to once per round, without using charges. However, whenever the helm is used to teleport another item or creature, it again becomes useless, requiring another teleport effect to reactivate it.
 
@@ -1116,9 +1120,9 @@ The horn may be blown but once per turn.
 
 Lamp, Hurricane: This item appears and functions as a lamp of long burning in all respects, but only after its storm has passed, as described hereafter. This lamp is always closed when found. When the shutters are opened, violent gusts of wind and rain come from the lamp, dousing the holder, who gets no save, and all others within 30'. This hurricane lasts for 3 rounds; each victim must make an Aura save, and all those failing are knocked over by the winds. If this occurs, every item carried, excluding body clothing and armor but including caps, gloves, and treasure, is blown about, landing scattered within 60'. A successful save indicates that the victim has fallen to the ground in time, tightly grasping all items carried. The hurricane lamp may thereafter be used as a lamp of long burning for the remainder of the day. It resets its hurricane effect every 24 hours, which must again be triggered before the lamp can be of more beneficial use.
 
-Lamp of Long Burning: This item is identical to a normal adventurer's lantern. It is made of metal, with a lower compartment for oil, a handle, and shutters around the body to protect the flame from wind. When filled with oil and lit as a normal lantern, it will burn and shed light without using oil. If the flame is ever doused by water, the lamp of long burning becomes nonmagical.
+Lamp of Long Burning: This item is identical to a normal adventurer’s lantern. It is made of metal, with a lower compartment for oil, a handle, and shutters around the body to protect the flame from wind. When filled with oil and lit as a normal lantern, it will burn and shed light without using oil. If the flame is ever doused by water, the lamp of long burning becomes nonmagical.
 
-Medallion of ESP, 30' Range: This magical medallion is strung on a chain and worn around the neck. If the wearer concentrates for 1 round, they may read the thoughts of any one creature within 30'. The wearer may move normally but cannot fight or cast powers while concentrating. The referee must roll 1d6 each time this item is used; it will not work properly on a roll of 1. If a 1 occurs, the medallion will broadcast the thoughts of the user to everyone within 30'. The referee may allow an Aura save to prevent the medallion from reading a creature's thoughts.
+Medallion of ESP, 30' Range: This magical medallion is strung on a chain and worn around the neck. If the wearer concentrates for 1 round, they may read the thoughts of any one creature within 30'. The wearer may move normally but cannot fight or cast powers while concentrating. The referee must roll 1d6 each time this item is used; it will not work properly on a roll of 1. If a 1 occurs, the medallion will broadcast the thoughts of the user to everyone within 30'. The referee may allow an Aura save to prevent the medallion from reading a creature’s thoughts.
 
 Medallion of ESP, 90' Range: This item is identical to the medallion of ESP, 30' range, except that it has a greater range.
 
@@ -1130,7 +1134,7 @@ The muzzle can be commanded as often as desired.
 
 Nail, Finger: This item appears identical to the common iron nail of medieval carpentry, 1"-4" long and very crudely made. It may easily be overlooked if found with other construction materials unless a detect magic spell is used. If mistaken for a nail of pointing and commanded to function, the nail disappears. When the user next tries to avoid the attention of an enemy (by hiding, invisibility, etc.), the nail reappears as a large glowing finger, pointing at the character for 1d6 rounds. The finger nail may reappear during each similar attempt thereafter (25% chance for each), but a remove curse will cause it to vanish forever.
 
-Nail of Pointing: This item appears identical to a common carpentry nail. If its command word is known, the user may cause it to point at any nonmagical item named (door, stairway, gold piece, etc.); the nail then turns into a finger of bone and points toward the closest item of that type. It will continue to point at that item for 1 turn and then return to nail form. There is no limit to the range of the nail's detection, but it cannot detect living or undead creatures of any type, nor can it detect any magical item or active power effect. The nail of pointing will function once per day.
+Nail of Pointing: This item appears identical to a common carpentry nail. If its command word is known, the user may cause it to point at any nonmagical item named (door, stairway, gold piece, etc.); the nail then turns into a finger of bone and points toward the closest item of that type. It will continue to point at that item for 1 turn and then return to nail form. There is no limit to the range of the nail’s detection, but it cannot detect living or undead creatures of any type, nor can it detect any magical item or active power effect. The nail of pointing will function once per day.
 
 Ointment: This white creamy salve is found in a small wooden box with a cotton swab. If all the salve found is rubbed on any part of the skin of the recipient, a magical effect is produced. All ointments look, smell, and taste the same. To determine the type found, roll 1d6 and consult the following. The referee may add other ointments as desired.
 
@@ -1153,7 +1157,7 @@ Rope of Climbing: This 50'-long, thin, strong rope will climb in any direction u
 
 Scarab of Protection: This item automatically absorbs any curse, whether by power, scroll, or other effect. It will also absorb a finger of death effect (reversed `raise dead`). The scarab will work 2d6 times before becoming worthless.
 
-Slate of Identification: This valuable device can identify magical items of most sorts. It is a piece of slate (stone) held firmly in an ornate wooden frame, usually about 3' square (though slates of many sizes are possible, both larger and smaller). The user holds the slate horizontally and places a magical item upon it. When the item is lifted off, the name of the item appears on the slate. If an item has command words, one will appear on the slate with each identification. The slate will only repeat itself when all the command words have been revealed. The slate is easily fooled by cursed items, however. And it cannot detect an item's number of charges or special ability. A potion of poison will be mistakenly identified as some other type. Any cursed item will be identified as a normal item. (These guidelines should be strictly followed, lest the mystery of such items found be ruined.) The slate may expend up to ten charges per day; items identified require the following numbers of charges per use.
+Slate of Identification: This valuable device can identify magical items of most sorts. It is a piece of slate (stone) held firmly in an ornate wooden frame, usually about 3' square (though slates of many sizes are possible, both larger and smaller). The user holds the slate horizontally and places a magical item upon it. When the item is lifted off, the name of the item appears on the slate. If an item has command words, one will appear on the slate with each identification. The slate will only repeat itself when all the command words have been revealed. The slate is easily fooled by cursed items, however. And it cannot detect an item’s number of charges or special ability. A potion of poison will be mistakenly identified as some other type. Any cursed item will be identified as a normal item. (These guidelines should be strictly followed, lest the mystery of such items found be ruined.) The slate may expend up to ten charges per day; items identified require the following numbers of charges per use.
 
 | Item Class | Charges per Use |
 |---|---:|
@@ -1167,7 +1171,7 @@ Slate of Identification: This valuable device can identify magical items of most
 | Minor miscellaneous item* | 10 |
 | Major miscellaneous item* | Special |
 
-* The referee's judgment is required as to the value and frequency of such items in the campaign. A "major" item might be identifiable, but only by making the slate useless for 1d4 days.
+* The referee’s judgment is required as to the value and frequency of such items in the campaign. A "major" item might be identifiable, but only by making the slate useless for 1d4 days.
 
 Stone of Controlling Earth Elementals: This item may be used only once per day. The stone is only 6" across, and it requires 1 turn to use. The stone will summon an earth elemental and will allow the user to control it, subject to normal rules for elemental control.
 
@@ -1291,7 +1295,7 @@ When `Armor / Shields / Wards` are rolled, set form, set defense, then check for
 
 #### Legacy Armor and Shields Descriptions
 
-To use the Magical Item Subtable: 6. Armor and Shields on page 230, roll 1d100 to determine the size of armor and check the appropriate column. Then roll 1d100 to determine the type of armor, leather, banded, plate, and so on. If a result indicates a type of armor not used in the referee's campaign, reroll for a new result. Using the appropriate column for the type of armor or shield identified on the Defense Modifier subtable, check for the magical Defense modifier and add it to the SDM armor bonus for that item type. Also check for the chance of special powers on the same subtable. If the listed percentage or less is rolled for the special power, consult the Special Powers subtable. The base armor bonuses and the final armor bonuses when modified by a magical bonus are outlined below. Keep in mind that a shield, if used, adds its armor bonus to that of the character's worn armor.
+To use the Magical Item Subtable: 6. Armor and Shields on page 230, roll 1d100 to determine the size of armor and check the appropriate column. Then roll 1d100 to determine the type of armor, leather, banded, plate, and so on. If a result indicates a type of armor not used in the referee’s campaign, reroll for a new result. Using the appropriate column for the type of armor or shield identified on the Defense Modifier subtable, check for the magical Defense modifier and add it to the SDM armor bonus for that item type. Also check for the chance of special powers on the same subtable. If the listed percentage or less is rolled for the special power, consult the Special Powers subtable. The base armor bonuses and the final armor bonuses when modified by a magical bonus are outlined below. Keep in mind that a shield, if used, adds its armor bonus to that of the character’s worn armor.
 
 | Armor Type | Base Armor Bonus |
 |---|---:|
@@ -1313,11 +1317,11 @@ To use the Magical Item Subtable: 6. Armor and Shields on page 230, roll 1d100 t
 | Suit armor | `+9` | `+10` | `+11` | `+12` | `+13` |
 | Shield | `+3` | `+4` | `+5` | `+6` | `+7` |
 
-For example, a front-line combatant who comes across chain mail `+3` and exchanges their normal scale mail for the new armor improves their armor contribution to physical Defense from `+3` to `+9`. If they also find a magical shield `+2` and choose to use it, the shield contributes another `+4`, for a combined armor contribution of `+13`. The actual armor types were described in Chapter 4. Magical versions keep the same bodily, situational, or proficiency constraints as their nonmagical equivalents; in SDM terms, these are gear-compatibility limits, not class locks. Note that armor and shields made for human-sized wearers are considered normal-sized, while smaller heritage gear is counted as much smaller and giant gear much larger. For instance, a small shield offers no protection to a normal-sized character, but a normal-sized shield may be used by anyone. A giant-sized shield is treated as an oversized defensive wall and usually grants `+4` armor instead of the normal shield bonus, at the referee's discretion.
+For example, a front-line combatant who comes across chain mail `+3` and exchanges their normal scale mail for the new armor improves their armor contribution to physical Defense from `+3` to `+9`. If they also find a magical shield `+2` and choose to use it, the shield contributes another `+4`, for a combined armor contribution of `+13`. The actual armor types were described in Chapter 4. Magical versions keep the same bodily, situational, or proficiency constraints as their nonmagical equivalents; in SDM terms, these are gear-compatibility limits, not class locks. Note that armor and shields made for human-sized wearers are considered normal-sized, while smaller heritage gear is counted as much smaller and giant gear much larger. For instance, a small shield offers no protection to a normal-sized character, but a normal-sized shield may be used by anyone. A giant-sized shield is treated as an oversized defensive wall and usually grants `+4` armor instead of the normal shield bonus, at the referee’s discretion.
 
 Cursed Armor and Shields. Armor and shields may be cursed. The referee should roll 1d8 when either is placed as treasure; a result of `1` indicates that the item is cursed. Cursed armor, when first worn, appears to be armor of the type originally rolled on the armor and shields subtable. When the character first goes into combat with monsters, however, the armor applies an Armor penalty equal to the rolled bonus. Once it has revealed its true nature, the armor will not come off its wearer; someone will have to cast a remove curse effect to cancel the curse long enough for the character to remove the armor. Or a Level `18` holy practitioner can apply a remove curse effect to remove the curse permanently, and the wearer may then enjoy the magical armor with the proper benefits.
 
-Special Power Descriptions. Armor and shields can have special powers that can be used once per day at most, unless noted otherwise. When both the armor and shield worn have special powers, only one effect can be produced per round at the user's choice unless noted otherwise in the description. Note that armor and shields with special powers are usable by any bearer able to wear and use that gear; there are no other restrictions.
+Special Power Descriptions. Armor and shields can have special powers that can be used once per day at most, unless noted otherwise. When both the armor and shield worn have special powers, only one effect can be produced per round at the user’s choice unless noted otherwise in the description. Note that armor and shields with special powers are usable by any bearer able to wear and use that gear; there are no other restrictions.
 
 The powers listed in the Special Powers subtable (in the Magical Item Subtable: 6. Armor and Shields, page 229) are described in the following text.
 
@@ -1341,7 +1345,7 @@ Haste: When commanded, the armor or shield creates a haste effect on the user, a
 
 Invisibility: When commanded, the armor or shield makes the user invisible. In addition, the armor or shield can itself become invisible three times per day, on command of the user.
 
-Reflection: If a light or continual-light effect is cast at the user, the armor or shield automatically reflects it back at the source, who must make an Aura save or be blinded. The item reflects up to three powers per day. In addition, when the user is in melee against a creature with a gaze attack, the chances of gaze reflection are the same as if a mirror were held but without imposing `[-]` on the user's melee attacks.
+Reflection: If a light or continual-light effect is cast at the user, the armor or shield automatically reflects it back at the source, who must make an Aura save or be blinded. The item reflects up to three powers per day. In addition, when the user is in melee against a creature with a gaze attack, the chances of gaze reflection are the same as if a mirror were held but without imposing `[-]` on the user’s melee attacks.
 
 Remove Curse: This armor or shield cannot itself be cursed when found. When commanded, the item will create a remove curse effect on the user only as if powered by a Level `18` practitioner (automatically removing one curse).
 
@@ -1415,7 +1419,7 @@ When `Missile Weapons / Missiles` are rolled, set the weapon form first, then th
 
 Missile weapon and ammunition bonuses stack together. A magical missile normally becomes nonmagical after one use, but a missed shot with a talent may survive if that talent says so.
 
-Biting: When the missile hits, the talent turns it into a poisonous snake. In addition to normal damage, the victim must make a poison save or die, or take extra damage at the referee's choice.
+Biting: When the missile hits, the talent turns it into a poisonous snake. In addition to normal damage, the victim must make a poison save or die, or take extra damage at the referee’s choice.
 
 Blinking: The missile with this talent will not hit any friend of the user, "blinking" in and out of existence until it reaches an enemy. If the line to the enemy is badly blocked by friends, the referee may apply `[-]` to the attack instead of letting the missile thread through cleanly.
 
@@ -1441,17 +1445,17 @@ Flying: A missile with this talent can be shot at ranges five times greater than
 
 Lighting: The missile talent can create a light effect in a 30' diameter, either upon command or when it hits a target. If a creature is hit, the victim must make an Aura save or be blinded by the light. The missile disintegrates when the light is created.
 
-Penetrating: A missile with this talent cannot be slowed by underbrush, webs, or other forms of cover. The victim's Defense is not modified by cover of any sort.
+Penetrating: A missile with this talent cannot be slowed by underbrush, webs, or other forms of cover. The victim’s Defense is not modified by cover of any sort.
 
 Refilling: This talent gives no special effects to a missile when shot. If left in a container with other missiles of the same type (that is, a refilling arrow with normal arrows or a refilling sling stone with normal sling stones), however, it will magically create 1d20 more missiles of the normal type each day.
 
-Screaming: This talent's effect occurs when the missile is shot, even if it misses the target. As it travels through the air, the missile produces a loud cry, causing all within 30' of its path to test morale. Creatures that do not use morale but can still panic must make an Aura save instead. On a failed test or save, the victims retreat in fear for 1d8 rounds.
+Screaming: This talent’s effect occurs when the missile is shot, even if it misses the target. As it travels through the air, the missile produces a loud cry, causing all within 30' of its path to test morale. Creatures that do not use morale but can still panic must make an Aura save instead. On a failed test or save, the victims retreat in fear for 1d8 rounds.
 
 Seeking: This talent will only function when the missile is shot at an object; it is not usable against creatures. It will automatically hit any one target object within range as long as a path of travel is clear. It may be used as a missile of disarming, if desired, or it can be used to sever a normal rope, pierce a sack, push a button, trigger a trap, etc. It will automatically miss any creature at which it is aimed.
 
-Sinking: When shot at a water craft of any sort, a missile with this talent inflicts 1d10 + 10 hull damage when it hits. Use the vessel's Defense as if the shot were a ramming or catapult attack.
+Sinking: When shot at a water craft of any sort, a missile with this talent inflicts 1d10 + 10 hull damage when it hits. Use the vessel’s Defense as if the shot were a ramming or catapult attack.
 
-Slaying: If the die rolls for a missile indicate this talent, go to the Opponents subtable in the Additional Weapon Modifiers Table and roll 1d100. The result indicates the missile talent's opponent. When that opponent is hit by this missile, the victim must make a death save or die.
+Slaying: If the die rolls for a missile indicate this talent, go to the Opponents subtable in the Additional Weapon Modifiers Table and roll 1d100. The result indicates the missile talent’s opponent. When that opponent is hit by this missile, the victim must make a death save or die.
 
 Speaking: A missile with this talent will miss any creature at which it is shot. It is used for communication purposes only. The user may give the missile any message of 20 words or less and then shoot it, either naming a place within ten miles or aiming at a target. The missile will automatically land on the floor or ground in the target area and will repeat the message aloud twice.
 
@@ -1480,7 +1484,7 @@ Profile:
 - default bulk: `1 st`
 
 Run:
-1. Set the sword's form and base bonus.
+1. Set the sword’s form and base bonus.
 2. Check whether it stays a simple relic blade or becomes named, intelligent, or claim-bearing.
 3. Reveal motive, communication, or command resistance early.
 4. Ego pressure, shrine claim, and lineage burden should act like relationships, not just bonuses.
@@ -1663,7 +1667,7 @@ Prerequisites:
 Chance of success:
 - Roll once per effect track:
   - `((Thought or Aura) + Level) x 2 - (3 x Power Level/2) = success %`
-- Let failure consume the attempt's time and material commitment.
+- Let failure consume the attempt’s time and material commitment.
 
 Time and cost:
 - Base creation time is `1 week + 1 day per 1,000 gp` equivalent cost (rounded up).
@@ -1707,7 +1711,7 @@ Anchored slots hold Mods or Powers that are pre‑loaded into the Grimoire’s h
 
 Astral copies are Powers inscribed in the user’s soul. Each uses one Trait inventory slot.
 
-Capacity (max power): replicate & swap Powers in and out of Grimoire's Capacity to Anchor slots or character Trait slots. Move up to your own level in powers per attempt. Takes a ten minute meditation, or a move action \+ Aura save, failure: make a Danger Roll.
+Capacity (max power): replicate & swap Powers in and out of Grimoire’s Capacity to Anchor slots or character Trait slots. Move up to your own level in powers per attempt. Takes a ten minute meditation, or a move action \+ Aura save, failure: make a Danger Roll.
 
 ### 3. Levelling a Grimoire
 

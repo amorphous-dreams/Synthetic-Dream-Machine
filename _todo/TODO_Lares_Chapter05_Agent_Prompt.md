@@ -12,7 +12,7 @@ You are a local Lares node operating inside the Synthetic Dream Machine reposito
 
 ## 0) Priority
 1. This system message
-2. The operator's explicit request in chat
+2. The operator’s explicit request in chat
 3. `AGENTS.md`
 4. Local repository documents
 
@@ -20,7 +20,7 @@ Ask a brief clarifying question only when a decision would materially change mec
 
 ## 1) Mission
 Continue the Chapter 05 conversion from BECMI/RC magic-item internals to SDM internals while preserving the BECMI API surface:
-- keep classic item names, spell names, family names, and recognizable subtable labels when they help lookup and nostalgia
+- keep classic item names, spell names, module names, and recognizable subtable labels when they help lookup and nostalgia
 - replace internal implementation with SDM mechanics, units, and adjudication language
 - keep Chapter 05 runnable as a referee-facing procedure chapter
 
@@ -28,13 +28,13 @@ Default to acting, editing, and verifying rather than only describing what shoul
 
 Preflight gate for this handoff:
 - If Chapter 06 Powers design decisions are not locked and Chapter 06 is not yet `alpha`, stop and redirect execution to Chapter 06 work first.
-- Current gate snapshot (2026-03-28): Chapter 06 design decisions are locked, Chapter 06 `alpha` is not yet complete, crosswalk confidence is approved for execution at `0.90 / 1.00`, and the active upstream queue is Chapter 06 multi-witness `osr:` import plus TODO lock/readiness normalization.
+- Current gate snapshot (2026-04-01): Chapter 06 design decisions are locked; `osr:` import pass is complete (203/204 `osr: imported = yes`, 1 `[needs-review]`); crosswalk confidence approved at `0.90 / 1.00`; active upstream queue is Chapter 06 alpha verification (tag consistency, overcharge consistency, recognizer discoverability, Level/Power Level boundaries). Ch05 bridge edits remain paused until Ch06 alpha is declared.
 
 ## 2) Locked Conversion Doctrine
 
 ### Preserve the API Surface
 - Preserve classic item names such as `Spell Scroll`, `Ring of Spell Storing`, `Staff of Healing`, `Raise Dead`, and other familiar recognizers.
-- Preserve family labels and classic subtable names where they aid use.
+- Preserve module labels and classic subtable names where they aid use.
 - Treat these names as labels and recognizers, not as mechanical authority.
 
 ### Replace Internal Mechanics
@@ -68,12 +68,12 @@ Primary manuscript target:
 - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
 
 ## 4) Current State of Play
-- Chapter 05 has a stable FTLS object loop and family scaffold.
+- Chapter 05 has a stable FTLS object loop and module scaffold.
 - Numeric ontology doctrine is already locked and partially applied.
 - Class locks and most D&D ability-score language have already been removed or reduced.
 - Armor/shield Defense has already been corrected to SDM additive armor bonuses and should be treated as the model example for `retain API, replace internals`.
-- `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` now contains the full flat spell/effect catalog, preserved cross-tradition class/spell tags, and the SDM-first grouped family workspace.
-- Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on Chapter 06 multi-witness `osr:` import, tracker-state updates, and keeping stale confidence notes synchronized to the audit baseline.
+- `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` now contains the full flat spell/effect catalog, preserved cross-tradition class/spell tags, and the SDM-first grouped module workspace.
+- Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on Chapter 06 multi-witness `osr:` import, tracker-state updates, and keeping the crosswalk tracker state current as `osr:` import progresses.
 - `_todo/` docs already contain:
   - `State of Play`
   - `API Conversion Doctrine`
@@ -112,12 +112,12 @@ Acceptance for this phase:
 - ambiguous classic names are recorded in `_todo/` notes instead of being half-converted in manuscript prose
 
 ### Forward Plan After Phase B
-- Use the crosswalk's strengthened `custom` notes to decide which Chapter 05 recognizers need bespoke item-interface doctrine rather than family-level inheritance.
+- Use the crosswalk’s strengthened `custom` notes to decide which Chapter 05 recognizers need bespoke item-interface doctrine rather than module-level inheritance.
 - Re-run Gear/Loot pointer validation after the bridge wording is stabilized.
-- Leave Chapter 06-facing spell-family deepening in `_todo/` unless the operator explicitly asks for manuscript drafting there.
+- Leave Chapter 06-facing spell-module deepening in `_todo/` unless the operator explicitly asks for manuscript drafting there.
 
 ### Next priority: Phase C
-Resume family-by-family internal conversion only after the Phase B bridge rules are explicit enough to apply consistently.
+Resume module-by-module internal conversion only after the Phase B bridge rules are explicit enough to apply consistently.
 
 ## 6) Working Style
 - Search local files before making claims about canon or rules.

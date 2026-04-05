@@ -134,7 +134,6 @@ mixed_chapter3_block_named() {
   render_layout_page_chars_lines "$pdf" 34 0.2 1 56 51 73 >> "$OUT"
   printf '\n' >> "$OUT"
   render_layout_page_chars_lines "$pdf" 34 0.2 57 108 51 73 >> "$OUT"
-  printf '\n[RC page 34: first clerical spell entries]\n' >> "$OUT"
   render_layout_page_chars "$pdf" 34 0.2 109 220 >> "$OUT"
   printf '\n' >> "$OUT"
   render_tsv_cols_pages "$pdf" 35 59 '185,370' >> "$OUT"
@@ -569,6 +568,36 @@ TXT
   printf '\n```\n\n' >> "$OUT"
 }
 
+rc_reverse_spell_synthesized_notes() {
+  printf '### RC: Reverse Spell Synthesized Notes\n\n' >> "$OUT"
+  printf -- '- Extraction note: Synthesized standalone witness blocks for BECMI reverse spells with no standalone description in any source. Each block is assembled from reverse-spell prose embedded in primary spell descriptions across Companion, Expert, Master, and Rules Cyclopedia staging. Confidence ~0.92. These blocks serve as the canonical osr: source for the corresponding Power Card imports.\n\n' >> "$OUT"
+  printf '```text\n' >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+Finger of Death
+Range: 60'
+Duration: Permanent
+Effect: One living creature
+[RC + Companion + Master synthesis: reverse of raise dead (C5); sources: Companion p.12, RC Clerical Spells, Master spell list R 60' X9 C12]
+Finger of death creates a death ray that will kill any one living creature within 60'. The victim may make a saving throw vs. death ray to avoid the effect. A Lawful cleric will only use finger of death in a life-or-death situation.
+Finger of death will actually cure 3d10 (3-30) points of damage for any undead with 10 or more Hit Dice (phantom, haunt, spirit, nightshade, or special).
+
+Continual Darkness
+Range: 120'
+Duration: Permanent
+Effect: Volume of 60' diameter (30' radius)
+[RC + Expert synthesis: reverse of continual light (C3/MU2); sources: Expert MU2 Spell Expansions, RC Clerical and Magical Spells List]
+Continual darkness creates a completely dark volume of 60' diameter (30' radius). Torches, lanterns, and even a light spell will not affect it, and infravision cannot penetrate it. A continual light spell will cancel its effects. If cast directly on a creature's eyes, the creature must make a saving throw vs. spells or be blinded until the spell is removed.
+
+Darkness
+Range: 120'
+Duration: 6 turns
+Effect: Circle of darkness 30' in diameter
+[Expert synthesis: reverse of light (C1/MU1); sources: Expert Basic Section (within Cure Light Wounds/Light), Expert MU1 Spell Expansions (within Light*). Note: Expert text says "all sight except infravision"; Holmes Basic and Greyhawk both state infravision is useless inside darkness. Synthesized block adopts Holmes/Greyhawk reading: infravision provides no benefit inside this darkness.]
+When reversed, light creates darkness: a circle of darkness 30' in diameter. It blocks all sight, including infravision. Darkness will cancel a light spell if cast upon it, but may itself be cancelled by another light spell. If cast at an opponent's eyes, the target may make a saving throw vs. spells; on a failure, the target is blinded until the spell is cancelled or the duration ends.
+TXT
+  printf '\n```\n\n' >> "$OUT"
+}
+
 rc_constructs_block_named() {
   local label="$1"
   local note="$2"
@@ -650,6 +679,7 @@ rc_spell_research_block_named 'Spell Research' 'cropped RC page-255 extraction p
 rc_item_enchantment_block_named 'Magic Item Enchantment, Recharging, and Item Damage Procedures' 'targeted RC Chapter 16 and procedure-layer addition from the magical-item creation pages plus the dedicated item-damage page, capturing spell-effect requirements, specialist and component requirements, chance of success, enchantment time, multiple-enchantment handling, recharge costs, dispel relevance, and damage/destruction handling for magical items.' "$RC_PDF"
 rc_constructs_block_named 'Construct Enchantment and Magical Constructs' 'targeted RC Chapter 16 addition from the actual Magical Constructs pages, capturing construct creation prerequisites, spell gates, cost and time, success chance, HD and immunity guidance, healing rules, damage ceilings, reproduction limits, special attacks, and the nondispellable-frame requirement referenced by Create Any Monster.' "$RC_PDF"
 tsv_cols_block_named_until 'Chapter 16 Item Description Catalog (Potions, Wands/Staves/Rods, Rings, Miscellaneous Items, and Swords)' 'anchored TSV coordinate reflow across RC Chapter 16 item-description pages, starting at the Potions heading and stopping before the Chapter 16 wrap-up/cashout section to preserve the canonical item-property descriptions in reading order.' "$RC_PDF" 232 249 '185,370' 'Potions' 'Cashing Treasure'
+rc_reverse_spell_synthesized_notes
 page_cols_block_named 'Index to Spells' 'three-column extraction from the RC appendix index page using cropped per-column text to preserve alphabetical reading order.' "$RC_PDF" 300 300 "15 15 175 770" "195 15 180 770" "380 15 175 770"
 cleanup_output
 perl -0pi -e '
@@ -686,3 +716,4 @@ assert_heading_count "$RC_OUT" 'Magic Item Enchantment, Recharging, and Item Dam
 assert_heading_count "$RC_OUT" 'Construct Enchantment and Magical Constructs' 1 'RC staging duplicated the constructs section heading'
 assert_heading_count "$RC_OUT" 'Chapter 16 Item Description Catalog \(Potions, Wands/Staves/Rods, Rings, Miscellaneous Items, and Swords\)' 1 'RC staging duplicated the Chapter 16 item catalog section heading'
 assert_heading_count "$RC_OUT" 'Index to Spells' 1 'RC staging duplicated the index-to-spells section heading'
+assert_heading_count "$RC_OUT" 'RC: Reverse Spell Synthesized Notes' 1 'RC staging duplicated the reverse-spell synthesized notes section heading'

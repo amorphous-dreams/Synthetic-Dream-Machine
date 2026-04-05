@@ -257,8 +257,6 @@ Effect: Any one living creature
    This spell either heals damage or removes pa-
 ralysis. If used to heal, it can cure 2-7 (1d6 + 1)
 points of damage. It cannot heal damage if used
-
-[RC page 34: first clerical spell entries]
   to cure paralysis. The cleric may cast it on him-
   self if desired.
      This spell cannot increase a creature's total hit
@@ -3899,33 +3897,21 @@ nated again when slain.
 Reincarnation Results
 Type of Body Appearing (Roll 1d8)
 1 Human
+2 Human
+3 Human
+4 Dwarf
 5 Elf
 6 Halfling
-2 Human
 7 Original race
-3 Human
-8 Monster
-4 Dwarf
-(see below)
+8 Monster (see below)
 Type of Monster Body Appearing (Roll 1d6)
-1d6 Lawful
-Neutral
-Chaotic
-Ape, White Bugbear
-1 Blink Dog
-Bear*
-2 Gnome
-Gnoll
-Kobold
-3 Neanderthal Centaur
-4 Owl, giant
-Griffon
-Manticore
-Lizard Man Orc
-5 Pegasus
-Troglodyte
-6 Treant
-Pixie
+1d6  Lawful          Neutral       Chaotic
+1    Blink Dog       Ape, White    Bugbear
+2    Gnome           Bear*         Gnoll
+3    Neanderthal     Centaur       Kobold
+4    Owl, giant      Griffon       Lizard Man
+5    Pegasus         Manticore     Orc
+6    Treant          Pixie         Troglodyte
 * Any normal bear
 The DM may add more monsters to the lists.
 Such monsters should have 8 Hit Dice or less and
@@ -9835,6 +9821,35 @@ wearer of the mask will be immediately stunned
 for a full turn and will remember nothing of what
 he did while wearing the mask, but he will be
 otherwise unharmed.
+
+```
+
+### RC: Reverse Spell Synthesized Notes
+
+- Extraction note: Synthesized standalone witness blocks for BECMI reverse spells with no standalone description in any source. Each block is assembled from reverse-spell prose embedded in primary spell descriptions across Companion, Expert, Master, and Rules Cyclopedia staging. Confidence ~0.92. These blocks serve as the canonical osr: source for the corresponding Power Card imports.
+
+```text
+Finger of Death
+Range: 60'
+Duration: Permanent
+Effect: One living creature
+[RC + Companion + Master synthesis: reverse of raise dead (C 5); sources: Companion p.12, RC Clerical Spells, Master spell list R 60' X9 C12]
+Finger of death creates a death ray that will kill any one living creature within 60'. The victim may make a saving throw vs. death ray to avoid the effect. A Lawful cleric will only use finger of death in a life-or-death situation.
+Finger of death will actually cure 3d10 (3-30) points of damage for any undead with 10 or more Hit Dice (phantom, haunt, spirit, nightshade, or special).
+
+Continual Darkness
+Range: 120'
+Duration: Permanent
+Effect: Volume of 60' diameter (30' radius)
+[RC + Expert synthesis: reverse of continual light (C3/MU2); sources: Expert MU2 Spell Expansions, RC Clerical and Magical Spells List]
+Continual darkness creates a completely dark volume of 60' diameter (30' radius). Torches, lanterns, and even a light spell will not affect it, and infravision cannot penetrate it. A continual light spell will cancel its effects. If cast directly on a creature's eyes, the creature must make a saving throw vs. spells or be blinded until the spell is removed.
+
+Darkness
+Range: 120'
+Duration: 6 turns
+Effect: Circle of darkness 30' in diameter
+[Expert synthesis: reverse of light (C1/MU1); sources: Expert Basic Section (within Cure Light Wounds/Light), Expert MU1 Spell Expansions (within Light*). Note: Expert text says "all sight except infravision"; Holmes Basic and Greyhawk both state infravision is useless inside darkness. Synthesized block adopts Holmes/Greyhawk reading: infravision provides no benefit inside this darkness.]
+When reversed, light creates darkness: a circle of darkness 30' in diameter. It blocks all sight, including infravision. Darkness will cancel a light spell if cast upon it, but may itself be cancelled by another light spell. If cast at an opponent's eyes, the target may make a saving throw vs. spells; on a failure, the target is blinded until the spell is cancelled or the duration ends.
 
 ```
 

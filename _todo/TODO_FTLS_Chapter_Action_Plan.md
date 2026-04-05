@@ -96,7 +96,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 
 ### 01 Introduction
 **Purpose**
-- Define the book's play contract, five gameplay modes, and cross-mode abstractions.
+- Define the book’s play contract, five gameplay modes, and cross-mode abstractions.
 
 **Preserve**
 - Alpha Playtest framing.
@@ -263,7 +263,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
   - consumer / field-use weird tech,
   - relic and restricted devices,
   - creation / modification / fault / curse procedures.
-- [x] Make organizational regulation and seizure part of the chapter's consequences model.
+- [x] Make organizational regulation and seizure part of the chapter’s consequences model.
 
 **Dependencies**
 - Needs Chapter 04 for resource inputs.
@@ -278,7 +278,8 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 ### 06 Powers
 **Purpose**
 - Carry the shared power system API.
-- Consume the canonical staged spell corpus and its crosswalk as the primary source corpus for the FTLS powers build.
+- Consume the canonical staged spell corpus and crosswalk as the primary source for OSR recognizer cards.
+- 195-card `osr:` import pass is the current primary alpha blocker (expanded from 184 to include 11 Pre-AD&D/Holmes spells; Chapter 06 cards for the new spells must be added before `import_ch06_osr.py` will run).
 
 **Preserve**
 - Any character can use any power.
@@ -292,34 +293,45 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
   - storage model and payload semantics,
   - overcharge unlock doctrine,
   - chapter-facing Level vs Power Level examples.
-- [x] Add `Skills and Powers`.
-- [x] Add `Paying for Power`.
-- [x] Add `Power Tags and Storage`.
-- [x] Add `Overcharge and Risk`.
-- [x] Add `Powers by Tradition / Source`.
-- [x] Add `Powers by Gameplay Scale`.
-- [ ] Add doctrine for conversion-family powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.
-- [ ] Tighten chapter around:
-  - activation,
-  - storage,
-  - tags,
-  - overcharge,
-  - danger interaction,
-  - catalog organization.
+- [x] Freeze the staged spell corpus: all six BECMI lane validators pass; full orchestrator and multi-witness build both return `drift: no`.
+- [x] Build and verify the clean multi-witness staging file (`TODO_BECMI_Spell_Material_Staging.md`) as the primary downstream import source.
+- [x] Build and verify the Chapter 06 import pipeline (`import_ch06_osr.py`, `clear_ch06_osr.py`); 2026-03-29 audit confirmed `drift: no` and `{'yes': 184}` on final rerun.
+- [x] Normalize Phase B backlog in the crosswalk: 195 unique spell names, 204 spell-import rows (expanded from 184/193 by +11 Pre-AD&D/Holmes spells 2026-03-31), Phase B backlog procedure defined.
+- [x] Lock crosswalk confidence gate at 0.90 / 1.00 (B 0.93, E 0.94, C 0.90, M 0.95, I 0.95, RC 0.94).
+- [x] Complete notes migration: Phase 1 notes migrated to Powers module workspace; triage returns 0 flagged rows.
+- [x] Reset all 184 Chapter 06 spell cards to `osr: {pending verbatim extraction}` placeholder, ready for the import pass.
+- [x] **Add Chapter 06 stub cards for 11 new Pre-AD&D/Holmes spells** (Dancing Lights, Darkness, Magic Mouth, Clairaudience, Slow, Audible Glamer, Pyrotechnics, Ray of Enfeeblement, Strength, ESP + 1 more); all 11 cards added; `import_ch06_osr.py` unblocked.
+- [x] **Execute the 195-card `osr:` import pass**: complete (2026-04-01); `check` returns `drift: no`, 203/204 `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`).
+- [ ] Add doctrine for conversion-module powers whose higher Overcharge riders may begin locked, corrupted, or encrypted and require RSS or other campaign work to unlock.
 - [ ] Add scope notes for:
   - personal,
   - company,
   - faction,
   - mythic.
 - [ ] Replace magic re-explanations elsewhere with pointers back to this chapter.
-- [ ] Finalize Chapter 06 to `alpha` state before any new Chapter 05 bridge batches.
+- [ ] Finalize Chapter 06 to `alpha` state: import pass complete + scope notes + locked-overcharge doctrine all landed.
 
 **Dependencies**
 - Strongly tied to Chapters 05 and 07.
-- Depends on the full BECMI/RC staged spell corpus and spell crosswalk reaching canonical-source status before the chapter can be drafted cleanly.
+- Staged spell corpus is frozen and validated; import machinery verified by 2026-03-29 audit.
+- Chapter 05 bridge remains paused until Chapter 06 `alpha` is complete.
 
 **Priority**
 - `Immediate`
+
+### Chapter 06 Alpha Contract
+
+Archived from `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`. These are the rules contract bullets that governed the alpha drafting pass. Chapter-facing prose now lives in the `## Using Powers` section of Chapter 06; editorial scaffolding dropped.
+
+**2026-03-29 audit note**: Import machinery verified. All six staging lane validators pass. `import_ch06_osr.py` confirmed clean on final rerun (`drift: no`, `{'yes': 184}`).
+**2026-03-31 pipeline note**: Staging file expanded to 195 H2s (+11 Pre-AD&D/Holmes spells included). Import count raised to 204 Ch06 Import ✓ rows. Stub cards added for all 11 new spells; `import_ch06_osr.py` unblocked.
+**2026-04-01 import complete**: `import_ch06_osr.py write` run; `check` returns `drift: no`, 203/204 `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`). Alpha verification gate now active.
+
+1. Activation flow is fixed: declare power → confirm carrier/storage access → pay activation price → resolve attack/save/effect → apply danger/corruption triggers → apply overcharge riders if used.
+2. Payment and substitution boundaries are fixed: base price is Life equal to Power Level; ability-point substitution remains legal at 1 point = 1 Life; unskilled use pays double unless a trait explicitly changes the cost. Life-Power may be stored as "mana" in gear/locations/ley-lines/high-weirdness.
+3. Storage semantics are fixed: Chapter 06 governs powers-as-powers; Chapter 05 governs object procedures that carry powers. Trait, item, and burden carriers are valid storage surfaces, with committed costs handled by tags. Rare Powers cost more than one "slot".
+4. Overcharge doctrine is fixed: Overcharge is the default scaling mechanism and may be gated by campaign unlock work (RSS discoveries, archive access, corruption cleaning, or equivalent referee-approved milestones).
+5. Numeric ontology is fixed: use Power Level for storage, eligibility, payload capacity, and activation pricing; use user Level for source force, dispel/counterforce strength, summon potency, and threshold filters.
 
 ### 07 Wild Magic Exposure
 **Purpose**
@@ -397,7 +409,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 **Preserve**
 - Referee-facing identity.
 - Lot generation.
-- Family tags.
+- module tags.
 - Bulk/value logic.
 - Liquidation channels.
 - Economic weirdness tied to Attention.
@@ -411,7 +423,7 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - [ ] Add `Heat, Claims, and Seizure`.
 - [ ] Add `Treasure as Company Growth`.
 - [ ] Add `Treasure as Faction Trigger`.
-- [ ] Replace scrape-era treasure-family handling with FTLS-native lot, transport, claim, and liquidation procedure while keeping OSR-import legibility.
+- [ ] Replace scrape-era treasure-module handling with FTLS-native lot, transport, claim, and liquidation procedure while keeping OSR-import legibility.
 - [ ] Keep Chapter 05 as the single source of truth for concrete strange-object resolution; Chapter 09 should hand off and return cleanly.
 - [ ] Reorganize by what loot does in play:
   - personal-use treasure,
@@ -485,13 +497,15 @@ This TODO is the execution tracker for the next FTLS drafting pass. It translate
 - [ ] Chapter 09 routes relic and conversion cases cleanly into Chapters 04 and 05.
 - [ ] Chapter 10 stays modular and support-facing rather than becoming a core-rules prose chapter.
 - [ ] Cross-references between 01, 04, 08, and 10 reflect the mode architecture.
-- [ ] No chapter silently redefines another chapter's core ownership.
+- [ ] No chapter silently redefines another chapter’s core ownership.
 
 ## Grounding Note
 - This action plan is directly grounded in the current local FTLS files for Chapters 01, 02, 04, 05, 07, 08, 09, and 10.
 - Chapter 03 is intentionally boundary-first in this pass because its local grounding is lighter than the other chapters.
+- Chapter 06 OSR Powers epic state as of 2026-03-29: staged corpus frozen and validated, import pipeline built and verified, 184 `osr:` cards ready for literal import pass on the live chapter file; alpha gate remains open pending that execution.
 - The strongest existing anchors remain:
   - FTLS as SDM-based and alpha-playtest in structure,
   - RSS as the company-scale procedural center,
   - Commander as the Chapter 08 bridge,
-  - Bonus Dice language as the best existing carrier for cross-mode architecture.
+  - Bonus Dice language as the best existing carrier for cross-mode architecture,
+  - Chapter 06 design decisions locked and import infrastructure verified as the Chapter 06 anchor going into alpha.

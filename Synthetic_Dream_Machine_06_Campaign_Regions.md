@@ -286,7 +286,7 @@ When you draft a table entry, ask:
 
 ### Ambient Tables
 
-**AMBIENT (world's breathing):**
+**AMBIENT (world’s breathing):**
 
 * Pick columns: Seasons / Dayparts / Modes (Normal / Festival / Crackdown / Error).
 * Each cell = 3-5 descriptors + optional practical note.

@@ -97,8 +97,8 @@ Your mission is simple to say, hard to do.
 
 - **CONFIDENCE — 55%** “There’s an underground garden where light still falls.”  
 - **CONFIDENCE — 50%** “The beast-men fear something deeper than their own warlords.”  
-- **CONFIDENCE — 45%** “If you learn even scraps of the old tongue, the walls ‘make sense’ faster.”  
-- **CONFIDENCE — 40%** “Some entrances are ‘safe’—until you use them twice.”  
+- **CONFIDENCE — 45%** “If you learn even scraps of the old tongue, the walls ’make sense’ faster.”  
+- **CONFIDENCE — 40%** “Some entrances are ’safe’—until you use them twice.”  
 - **CONFIDENCE — 35%** “The place rearranges your certainty, not your corridors.”  
 - **CONFIDENCE — 25%** “Every entrance has already been mapped.” *(useful lie)*
 
@@ -139,7 +139,7 @@ Bring three agreements to the first session:
 2) **No-go boundary:** log any complex magitech or fantascience for future weeks.  
 3) **Extraction plan:** where you run when it goes wrong. Hebros Mouth lararium is a "Safe zone".
 
-[!] IMPORTANT: :YOUR EYES ONLY: Aki - We need to confirm rumors that the lost "Power Core" tech can be recovered from the NeoThracian Nexus. The Caverns are the obvious first place to start that search. We are currently only able to maintain or repair our existing Power Cores if they do not fall to effective Level 0 items. We have recently lost Power Cores to catasrophic critical failures. Do not proceed upriver in the Trireme until you confirm the Nexus' stability ratings. Your Crew's smaller craft will be more appropriate to the waterways in the Nexus. :/FREE TRADE LEAGUE DEFENSE SECRET:
+[!] IMPORTANT: :YOUR EYES ONLY: Aki - We need to confirm rumors that the lost "Power Core" tech can be recovered from the NeoThracian Nexus. The Caverns are the obvious first place to start that search. We are currently only able to maintain or repair our existing Power Cores if they do not fall to effective Level 0 items. We have recently lost Power Cores to catasrophic critical failures. Do not proceed upriver in the Trireme until you confirm the Nexus’ stability ratings. Your Crew’s smaller craft will be more appropriate to the waterways in the Nexus. :/FREE TRADE LEAGUE DEFENSE SECRET:
 
 ---
 

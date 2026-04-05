@@ -49,8 +49,8 @@ The writing of this game (formerly teased as S.E.A.C.A.T.) has been a journey th
 This free edition includes rules for playing in a strange, trippy world like that of the Ultraviolet Grasslands (read manga-style, from back to front), a character generator for a PC waking in a wasteland with no backstory (read BD-style, from front to back), and lots of whitespace.  
 
 That whitespace hides the third part of the book, an illustrated tale of the well-deserved hero Pointyhelmet and his trusted sidekick, the mighty wizard Poncho.  
-To enjoy that tale, buy the art-full chromademon edition (first printing available at Exalted Funeral) or subscribe to the author's patreon (link below).  
-Don't forget to pike, tear, and inscribe.  
+To enjoy that tale, buy the art-full chromademon edition (first printing available at Exalted Funeral) or subscribe to the author’s patreon (link below).  
+Don’t forget to pike, tear, and inscribe.  
 
 —LR, Seoul, May 2023  
 
@@ -666,7 +666,7 @@ _Universal Translation Protocol_
 
 There is a unified source code underlying reality. This spell lets the user communicate successfully with another entity: plant, animal, mineral, or data store. Entities without senses may have little to say.  
 
-_Overcharge:_ All objects within arms' reach. Or short-range communication at a distance.  
+_Overcharge:_ All objects within arms’ reach. Or short-range communication at a distance.  
 
 #### DAMP MASS
 
@@ -675,7 +675,7 @@ _Nosigoro Logistical Augment_
 **P:** 1 **R:** touch  
 **T:** 1 sack **D:** 1 day
 
-A sub-reality field halves the object's interactive mass. An object of 100 kilos acts like one of fifty.  
+A sub-reality field halves the object’s interactive mass. An object of 100 kilos acts like one of fifty.  
 
 _Overcharge:_ The mass is halved again. Or it affects an object of twice the size. Or it lasts a week instead.  
 
@@ -703,7 +703,7 @@ _Abstracted Attractor_
 
 By articulating the names and locations and velocities of one substance, it is drawn out of a mixture. Salt filters from water, organics rise from soil, water precipitates from air. The finer the name and knowledge, the more perfect the sift. 
 
-_Overcharge:_ Two substances are drawn out at once. Or a sack's worth of substance is sifted over half an hour.
+_Overcharge:_ Two substances are drawn out at once. Or a sack’s worth of substance is sifted over half an hour.
 
 #### MOTOR FIXATIVE
 
@@ -716,16 +716,16 @@ Temporarily burns an observed practical skill into a brain. After watching a swi
 
 _Overcharge:_ It lasts a week instead.
 
-#### REASON'S HARVEST
+#### REASON’S HARVEST
 
 _All-Library Interface_
 
 **P:** 1 **R:** touch  
 **T:** 1 item or book **D:** 1 minute
 
-The harvest protocol skims the ambient infotronium cloud of an object—essentially, it copies a book's worth of information directly into the user's mind. 
+The harvest protocol skims the ambient infotronium cloud of an object—essentially, it copies a book’s worth of information directly into the user’s mind. 
 
-_Overcharge:_ Ten books' worth, but this is painful.
+_Overcharge:_ Ten books’ worth, but this is painful.
 
 <a id="page_0012"></a>
 
@@ -752,7 +752,7 @@ To interrogate, to learn, to master, perhaps to create.
 **Recast.** When your spell fails or a target makes its save, you can cast the spell again for free.  
 Once.  
 Recharge your recast with a hero die.  
-**Soul Fuel.** You can use a nearby friend's life force to fuel your powers.  
+**Soul Fuel.** You can use a nearby friend’s life force to fuel your powers.  
 
 <a id="page_0013"></a>
 
@@ -762,12 +762,12 @@ _The Character→_
 _Thief, talker, trapper._
 To hear, to see, to convince, perhaps to lead.
 
-**Backstabber.** Deal double damage to those who don't expect your attack.  
-**Escapist.** You're skilled at being lucky.  
-That's a +3 bonus to all saves.  
-**Friends.** You can have a number of pets or sidekicks equal to your level who don't need to take up an inventory slot.  
-**Pleasant.** You're skilled at getting people to like you.  
-That's +3 to reaction rolls.  
+**Backstabber.** Deal double damage to those who don’t expect your attack.  
+**Escapist.** You’re skilled at being lucky.  
+That’s a +3 bonus to all saves.  
+**Friends.** You can have a number of pets or sidekicks equal to your level who don’t need to take up an inventory slot.  
+**Pleasant.** You’re skilled at getting people to like you.  
+That’s +3 to reaction rolls.  
 **Pocketmaster.** Conceal a number of small objects equal to your level for free, ignoring inventory.  
 **Swift.** Spend one life or one hero die to get one extra action this round.  
 
@@ -776,15 +776,15 @@ _Warden, worker, warrior._
 To struggle, to fall, to rise, perhaps to succeed.
 
 **Armiger.** Carry a number of hallmark items equal to your level for free, ignoring inventory.  
-**Defender.** You're skilled at defense.  
-That's a +3 bonus, yeah?  
+**Defender.** You’re skilled at defense.  
+That’s a +3 bonus, yeah?  
 **Grit.** Gain 1 life per level and [+] when you roll endurance.  
 **Irresistible.** Every round you deal damage equal to your level to one foe you attacked, whether your attack roll hit or missed.  
 **Second Chance.** When you would fall to 0 life, you fall to 1 life instead.  
 Once.  
 Recharge second chance with a hero die.  
-**Terrifying.** You're skilled at frightening people.  
-That's also a +3 bonus when breaking your foes' morale.  
+**Terrifying.** You’re skilled at frightening people.  
+That’s also a +3 bonus when breaking your foes’ morale.  
 
 <a id="page_0014"></a>
 
@@ -897,7 +897,7 @@ _← Ctrl+Home →_
 
 ## HOME
 
-“ _Si te divi, 'eu món divis_, ” nods the synthetic voice in your head and cuts off.  
+“ _Si te divi, ’eu món divis_, ” nods the synthetic voice in your head and cuts off.  
 
 Can you trust the memories in your head?  
 You share words of home with the others.  
@@ -907,7 +907,7 @@ As you talk, your memories grow together.
 Perhaps, as you travel, you will remember more.  
 
 A fragment of memory floats through in a different register, “ _Potamois tois autois ...  
-mi qupa, mi massima qupa,_ _linga pa'iusta loqi_ .”  
+mi qupa, mi massima qupa,_ _linga pa’iusta loqi_ .”  
 
 Why do these synthetic voices think you can understand them?  
 Are they all mad?  
@@ -936,8 +936,8 @@ You breathe.
 The air is chill, but green.  
 Spring is coming.  
 
-You stand on a plain, you can't complain.  
-There's a road, if you take it slow, maybe things will be just fine.  
+You stand on a plain, you can’t complain.  
+There’s a road, if you take it slow, maybe things will be just fine.  
 
 A compass floats in your hud.  
 
@@ -986,7 +986,7 @@ Gain a new trait (be it skill, power, or mutation) or improve a trait (skilled �
 Every level, your hallmark item gains +1 to saves vs destruction and ...  
 +1 bonus to every damage die rolled or +1 defense bonus or a new trait, power or complication.  
 
-You wonder, must you track this currency “experience” for yourself and all your items and beasts of burdens e'en?  
+You wonder, must you track this currency “experience” for yourself and all your items and beasts of burdens e’en?  
 Or will this daemon Player comfort thee?  
 You wish that you were homeward bound?  
 
@@ -1006,7 +1006,7 @@ Truly, knows it no mercy?
 
 #### LIFE FUELS POWERS
 You pay for power with your life.
-'Ware! The alien fires of the incomprehensible may consume your body (ha), spirit (ka), and memories (ba).
+’Ware! The alien fires of the incomprehensible may consume your body (ha), spirit (ka), and memories (ba).
 
 1 power costs 1 life All spells are of the first power, unless otherwise noted.  
 
@@ -1026,7 +1026,7 @@ Range. Target. Duration.
 Your life is locked in the spell until it ends.
 
 #### OVERCHARGE
-Doubling a spell's power may modify effects.
+Doubling a spell’s power may modify effects.
 Multiple overcharges on one spell cast multiply multiple times: ×2, ×4, ×8, ×16 and so on. Basic mathemagic.
 
 <a id="page_0019"></a>
@@ -1042,7 +1042,7 @@ Items: 7 + ability (strength) Traits: 7 + ability (thought)
 Every item or trait beyond your limit is a burden and imposes -1 to all rolls.  
 Curses, disease, and other afflictions also occupy inventory slots.  
 Pets and sidekicks serving the same daemon Player as yourself also occupy inventory slots.  
-You are the dameon's anchor in this existence.  
+You are the dameon’s anchor in this existence.  
 Non-humans may bear more or less.  
 
 #### UNITS OF MATTER
@@ -1058,7 +1058,7 @@ Why?
 #### UNITS OF MIND
 
 Ideas, background, mutations, spells, things that could be used as skills.  
-Thankfully, even as your skill grows, it occupies no more space in your soul's palace.  
+Thankfully, even as your skill grows, it occupies no more space in your soul’s palace.  
 
 #### HALLMARK
 
@@ -1112,7 +1112,7 @@ Defeat, like all disasters, comes first slow, then all at once.
 
 #### WHAT HAPPENED?
 
-A leader was defeated, a horror from beyond the void appeared, the angels were mowed down like sheaves of wheat, the levy's spear beams glanced off the monster's shimmery form like grains of millet.  
+A leader was defeated, a horror from beyond the void appeared, the angels were mowed down like sheaves of wheat, the levy’s spear beams glanced off the monster’s shimmery form like grains of millet.  
 
 To some, victory seemed impossible.  
 
@@ -1169,14 +1169,14 @@ _←The System_
 
 ### I. Damage
 
-Victory makes untenable your foe's existence.  
+Victory makes untenable your foe’s existence.  
 But ...  
 why would I have foes?  
 What hell is this?  
 
 #### DAMAGE REDUCES LIFE
 
-Though the dagger missed your flesh, it tore your plot armor and life's thread attenuates.  
+Though the dagger missed your flesh, it tore your plot armor and life’s thread attenuates.  
 
 dXX (item) + ability (if applicable) + bonus (if appl.)  
 
@@ -1192,7 +1192,7 @@ Some obnoxious attacks reduce your ability scores: strength, endurance, agility,
 When you cannot reduce your ability score, roll for your defeat overleaf as above (so below).  
 
 Of foes without abilities, what of them?  
-Let the Ref's brow furrow with worry as they reduce their levels and bonuses, and weaken them in many ways.  
+Let the Ref’s brow furrow with worry as they reduce their levels and bonuses, and weaken them in many ways.  
 
 #### DAMAGE IMPOSES BURDENS
 Burdensome effects and modifiers occupy inventory slots, reducing your options. Much may be a burden: broken leg, toothache, phobia, blindness, crippling anxiety, mad delusion, divine hubris.
@@ -1204,7 +1204,7 @@ _←The System_
 ### H. Attack
 
 Your mode of destruction defines your approach.  
-Overcome your target's defense to succeed.  
+Overcome your target’s defense to succeed.  
 Your skill, if applicable, provides a bonus also.  
 
 Melee d20 + ability (strength) + bonus (if applicable) Ranged d20 + ability (agility) + bonus (if applicable) Oldtech d20 + ability (thought) + bonus (if applicable) Fantascience (_also_ _psychemagic_) d20 + ability (charisma) + bonus (if applicable)  
@@ -1217,7 +1217,7 @@ The thick of things.
 Free attack if an enemy disengages carelessly.  
 There Short range.  
 Win initiative to run over and melee or keep opponents at range for the round.  
-O'er there Long range.  
+O’er there Long range.  
 Takes two rounds to reach.  
 Off stage Extreme range.  
 Three+ rounds.  
@@ -1242,13 +1242,13 @@ Roll 2d6 + cha to see how they, the others, behave.
 | 3–5 | Thanks, they hate you. |
 | 6–8 | Unsure, waffling, complicated, suspicious. Mediocre. |
 | 9–11 | Polite, understanding, sympathetic. |
-| 12 | Friendly, interested. They'll help, given half a chance. |
-| Over 12 | They insist on helping, even if you don't need help. Rude to say no, but they will waste your ... Oh, dear. Cup of tea? |
+| 12 | Friendly, interested. They’ll help, given half a chance. |
+| Over 12 | They insist on helping, even if you don’t need help. Rude to say no, but they will waste your ... Oh, dear. Cup of tea? |
 
 #### INITIATIVE
 Talk was ended and lances sang electric harmonies.
 d6 + agility
-Each side rolls initiative every round. A random character every round. High roll goes first. When there's a tie, chaos reigns and everything happens at once.
+Each side rolls initiative every round. A random character every round. High roll goes first. When there’s a tie, chaos reigns and everything happens at once.
 
 #### ROUND
 Cinematic time enough to take an action.
@@ -1284,7 +1284,7 @@ destroyed.
 Could there be other defenses?  
 Spiritual, perhaps, when your soul travels like a butterfly between the dreams of the divers cosmic lords?  
 
-“ _A fair wizard's skull as ward, a mind fortified as ability_,” mutters the daemon.  
+“ _A fair wizard’s skull as ward, a mind fortified as ability_,” mutters the daemon.  
 Again the daemon.  
 
 <a id="page_0027"></a>
@@ -1368,7 +1368,7 @@ Hylospheric persistence, hit points, embodiment, ha. Your narrative resilience. 
 #### HERO DICE
 Dice six-sided to adjust your rolls and regain life. You gain 1 per session and another every couple of hours. Here, in your heart, there is a space to store as many HD as you have levels.
 
-What's a session?  
+What’s a session?  
 Is life not a running stream, unbottled?  
 
 <a id="page_0030"></a>
@@ -1380,7 +1380,7 @@ _←The System_
 When a group endeavors together, a random one rolls.  
 _—Ederacts d4:d20_  
 
-“I rolled last time, now it's your turn,” mutters the daemon and passes the fateful die to another.  
+“I rolled last time, now it’s your turn,” mutters the daemon and passes the fateful die to another.  
 For the first shall be last, and the last shall be first, and none shall know who is coming and going.  
 
 #### ORACLE ROLL

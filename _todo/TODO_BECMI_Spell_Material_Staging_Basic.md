@@ -533,6 +533,9 @@ cold is reduced by - 1 per die of damage
 damage per die). The effect will move
 with the cleric.
 
+```
+
+```text
 [Basic pages 38-42: TSV column-reflowed magic-user spell books and descriptions]
 Spell Books:
 Your Medium (1st Level magic-user)
@@ -753,6 +756,16 @@ the magic-user attacks the victim,
 whether by spell or by weapon. The
 victim will fight normally if attacked by
 the magic-user's allies.
+
+[Basic DM section: Charm Person Spells — save frequency by Intelligence and shapechange break]
+The victim may make a new Saving Throw to break the Charm after a duration
+determined by the victim's Intelligence:
+  High intelligence:    1 day
+  Average intelligence: 1 week
+  Low intelligence:    1 month
+The Charm is automatically broken when the victim assumes animal form (e.g.,
+a charmed lycanthrope who shifts to animal form is no longer Charmed).
+[Source: Basic Rules, DM section ~p.29, lines 5516–5545]
 Detect Magic
 Range: 0
 Duration: 2 turns
@@ -1879,5 +1892,77 @@ upon the command of the owner. It may
 fasten itself to any protruding surface, and
 will support up to 10,000 cn of weight.
 
+```
+
+## Spell Lists Appendix
+
+### Basic: Cleric Spell Lists (pages 26-27)
+
+```text
+FIRST LEVEL CLERIC SPELLS
+1. Cure Light Wounds*
+2. Detect Evil*
+3. Detect Magic
+4. Light*
+5. Protection From Evil
+6. Purify Food and Water
+7. Remove Fear*
+8. Resist Cold
+*These spells may be "reversed" (that is,
+learned and cast with an effect exactly
+opposite from the original) in the D&D
+EXPERT Set. A cleric must reach the
+Fourth Level of Experience before
+learning how to reverse spell effects.
+```
+
+### Basic: Magic-User Spell Lists (pages 40-44)
+
+```text
+FIRST LEVEL MAGIC-USER SPELLS
+1. Charm Person
+2. Detect Magic
+3. Floating Disc
+4. Hold Portal
+5 . Light
+6. Magic Missile
+7. Protection from Evil
+8. Read Languages
+9. Read Magic
+10. Shield
+11. Sleep
+12. Ventriloquism
+SECOND LEVEL
+MAGIC-USER SPELLS
+1. Continual Light
+2. Detect Evil
+3 . Detect Invisible
+4. ESP
+5. Invisibility
+6. Knock
+7. Levitate
+8. Locate Object
+9. Mirror Image
+10. Phantasmal Force
+11. Web
+12. Wizard Lock
+```
+
+### Basic: Higher-Level Cleric Spell Lists (DM pages 17-18)
+
+```text
+Second Level Cleric Spells
+1. Bless*
+2. Hold Person
+3. Silence 15' radius
+```
+
+### Basic: Higher-Level Magic-User Spell Lists (DM pages 17-18)
+
+```text
+Third Level Magic-user Spells
+1. Dispel Magic
+2. Fire Ball
+3. Fly
 ```
 

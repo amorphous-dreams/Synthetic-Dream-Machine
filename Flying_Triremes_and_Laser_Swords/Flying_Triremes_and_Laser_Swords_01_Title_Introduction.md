@@ -45,7 +45,7 @@ daemon-lares@dreamdeck:
 - [03 OSR Heritage Traits](Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md)
 - [04 Recon, Salvage, Secrets](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md)
 - [05 Magitech and Fantascience](Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md)
-- [06 Powers](Flying_Triremes_and_Laser_Swords_06_Powers.md)
+- [06 Powers](Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md)
 - [07 Wild Magic Exposure](Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md)
 - [08 Formations and Mass Combat](Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md)
 - [09 Loot and Treasure](Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md)
@@ -91,7 +91,7 @@ Use Mythic for gods, noosphere weather, immortal interfaces, impossible causalit
 
 FTLS shares a small set of abstractions across scale so the game can zoom cleanly without changing its language. **Hero Dice** and **Bonus Dice** already provide the clearest example: they are portable, scope-specific abstractions of privilege, pressure, access, favor, or momentum. Ticket Dice are the archetypal Bonus Dice, but the same logic can govern other currencies tied to comfort, security, transit, ritual standing, daemon bargains, command authority, or mythic notice.
 
-FTLS metaphysics should be read the same way: not as a separate lore chapter stapled onto the front, but as the setting logic that explains why pressure, attention, favor, omen, and interference can move cleanly across scales. Daemons, gods, and Elyncia's noosphere are present in Travel as route pressure and omens, in Company gameplay as signatures and bargains, in Faction as legitimacy and infrastructure, and in Mythic as direct world-shaping attention.
+FTLS metaphysics should be read the same way: not as a separate lore chapter stapled onto the front, but as the setting logic that explains why pressure, attention, favor, omen, and interference can move cleanly across scales. Daemons, gods, and Elyncia’s noosphere are present in Travel as route pressure and omens, in Company gameplay as signatures and bargains, in Faction as legitimacy and infrastructure, and in Mythic as direct world-shaping attention.
 
 The same design principle should hold for other recurring structures:
 
@@ -128,7 +128,7 @@ This is the default FTLS rhythm in miniature:
 
 ## Metaphysics in Play
 
-The mode ladder above tells you how FTLS moves between Travel, Company, Delve, Faction, and Mythic; this next section tells you what can follow the players across those shifts and make them matter. Bonus Dice, daemons, gods, and Elyncia's dream-logic are not side lore. They are the setting forces that turn ordinary operations into omens, bargains, escalations, and myth-shaped consequences.
+The mode ladder above tells you how FTLS moves between Travel, Company, Delve, Faction, and Mythic; this next section tells you what can follow the players across those shifts and make them matter. Bonus Dice, daemons, gods, and Elyncia’s dream-logic are not side lore. They are the setting forces that turn ordinary operations into omens, bargains, escalations, and myth-shaped consequences.
 
 ## Bonus Dice
 
@@ -148,7 +148,7 @@ When you need pampering. Each comfort die provides +1 temporary life after a goo
 When you need insurance. Each protection die provides +1 to saves against damage to you or your property. You may also permanently spend a protection die to:
 
 1. Reroll a reaction roll. Your armature may frighten off would-be attackers.
-2. Turn an enemy's critical hit into a regular hit.
+2. Turn an enemy’s critical hit into a regular hit.
 3. Wait 1d4 days, then receive a copy of a lost item (terms and conditions apply).
 4. Acquire a combat item.
 

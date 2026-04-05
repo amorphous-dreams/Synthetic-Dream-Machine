@@ -53,11 +53,11 @@ Then, choose one of the following resolution tables to generate an effect—
 | 9 | Anti‑magic field 30 ’ radius for 1d4 rounds (local Arcane rating is a penalty, adding to all power life/mana prices). |
 | 10 | Feedback Overload: caster’s next spell casts at +3 power price and ignores resistance/save. Then Corruption/Wild Magic exposure test. |
 | 11 | Drain: caster’s Life set to 1; their daemon regains 2d6 Hero Dice & makes a Danger Roll. |
-| 12 | All unNamed iron in 60 ’ oxidizes to dust instantly. No worked iron? Roll another Wild Severity test for an adjacent 60’ area (roll 1d6 for direction 1 = towards the nearest higher Flux scored location). |
+| 12 | All unNamed iron in 60 ’ oxidizes to dust instantly. No worked iron? Roll another Wild Severity test for an adjacent 60' area (roll 1d6 for direction 1 = towards the nearest higher Flux scored location). |
 | 13 | Earthquake: structures in 60 ’ Save or crack (marked); all creatures prone, must Save to stand up immediately. |
 | 14 | Planar flood: waist‑deep astral sea water fills 60 ’ radius for 1 minute; swimming rules apply, local Flux score +3. |
 | 15 | Meteor shard slams the ground (30 ’ radius, 3d6 fire/force, Save ½). Local Flux score +3 for 1 minute. |
-| 16 | Grimoire meltdown: one carried Grimoire loses d4 Capacity permanently. No Grimoires in 60’? Roll again. |
+| 16 | Grimoire meltdown: one carried Grimoire loses d4 Capacity permanently. No Grimoires in 60'? Roll again. |
 | 17 | Mutation wave: all characters in 30 ’ take immediate Corruption/ Wild Magic exposure tests. |
 | 18 | Reality exchange: d4 random creatures swap positions; lasts 1d4 minutes, then they swap back. |
 | 19 | Wyldfire arc: void-fire chain lightning leaps between up to 1d6 targets (1d8 damage each) and ignites flammables. |
@@ -102,7 +102,7 @@ Then, choose one of the following resolution tables to generate an effect—
 | 8 | Caster’s boots (or feet, wing, etc) leave glowing footprints or travers that fade after one watch 4 hours). |
 | 9 | Caster sneezes mana sparks, taking 1 Life; the next fire started within one watch lights instantly. |
 | 10 | All written text in 30 ’ briefly scrambles into an unknown encrypted script, then reforms normally after 1 watch (4 hours). |
-| 11 | A random mundane item in 10’ duplicates; echo‑copy lasts until the next dawn. |
+| 11 | A random mundane item in 10' duplicates; echo‑copy lasts until the next dawn. |
 | 12 | Every creature in 20 ’ tastes strawberries for the next minute, no matter what they eat. |
 | 13 | Small rocks levitate to eye‑level, spin for two rounds, drop. |
 | 14 | The caster’s voice echoes with a three‑second delay for 10 minutes. |
@@ -110,5 +110,5 @@ Then, choose one of the following resolution tables to generate an effect—
 | 16 | Caster’s shadow gains tiny horns and tail for 24 h; purely cosmetic. Save, failure: not cosmetic, now an independent Level 3 shadow gremlin - Roll reaction for favors or pranks. |
 | 17 | The smell of summer rain fills a 30 ’ radius; advantage on next morale or reaction roll. |
 | 18 | Tiny illusory fireworks trace the caster’s gesture, lasting one round. Fire tagged powers have advantage on attack rolls, or apply disadvantage on saves. |
-| 19 | Gravity hiccup: small unattended objects hop 1 foot upward. All creatures in 30’ save or take 1d6 damage. |
+| 19 | Gravity hiccup: small unattended objects hop 1 foot upward. All creatures in 30' save or take 1d6 damage. |
 | 20 | Roll twice on the Weird table; both effects . |

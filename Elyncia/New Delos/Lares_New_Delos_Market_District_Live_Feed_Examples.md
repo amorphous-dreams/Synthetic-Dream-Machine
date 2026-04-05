@@ -5,13 +5,13 @@
 
 Every house on ancient Gaia had a lararium of some kind. The wealthiest could afford a special chamber with a raised pool and sumptuous decorations — dedicated rooms with frescoed walls, altars, small gardens. Simpler households made do with wall paintings; rich homes built extravagant miniature temple-structures. The range was enormous, and entirely personal.
 
-What the archaeology reveals, frozen under Vesuvian ash, is how *individual* each shrine was. Walls painted blood-red, enchanted garden scenes, coiled serpents approaching an altar from both sides, peacocks, birds, bulls — and on one wall, a figure with a dog's head interpreted as a Romanized Anubis. An altar decorated with eggs, symbol of fertility, with burnt remains that archaeologists believe contained food offerings — figs, nuts, eggs — made to household deities. Household objects accumulated around the shrine over time: a translucent blue and green rimmed plate, a cradle-shaped incense burner, an oil lamp decorated with Zeus transforming into an eagle.
+What the archaeology reveals, frozen under Vesuvian ash, is how *individual* each shrine was. Walls painted blood-red, enchanted garden scenes, coiled serpents approaching an altar from both sides, peacocks, birds, bulls — and on one wall, a figure with a dog’s head interpreted as a Romanized Anubis. An altar decorated with eggs, symbol of fertility, with burnt remains that archaeologists believe contained food offerings — figs, nuts, eggs — made to household deities. Household objects accumulated around the shrine over time: a translucent blue and green rimmed plate, a cradle-shaped incense burner, an oil lamp decorated with Zeus transforming into an eagle.
 
 One middle-class family spent so extravagantly on their courtyard lararium that funds were apparently insufficient to decorate the remaining five rooms. The shrine came first. Everything else was negotiable.
 
 A more recent find: a rare blue-painted sacrarium, its walls depicting female figures representing the four seasons, alongside imagery of agriculture and shepherding — and what appears to be a large spotted cat. Blue pigment was rare and expensive in Pompeian frescoes, reserved for spaces of exceptional importance. Someone considered this room worth the cost.
 
-**Synthesis — Elyncia extrapolation:** The lararium's radical individuality is not decorative accident. It is evidence of a *living relationship* between household and spirit — each node shaped by its occupants, their offerings, their accumulated history. On Elyncia, this principle scales directly into DreamNet infrastructure. A public market lararium is not a standardized terminal. It is a *place*, with its own personality, its own accumulated offering-residue, its own weird. No two nodes feel the same. That is not a bug.
+**Synthesis — Elyncia extrapolation:** The lararium’s radical individuality is not decorative accident. It is evidence of a *living relationship* between household and spirit — each node shaped by its occupants, their offerings, their accumulated history. On Elyncia, this principle scales directly into DreamNet infrastructure. A public market lararium is not a standardized terminal. It is a *place*, with its own personality, its own accumulated offering-residue, its own weird. No two nodes feel the same. That is not a bug.
 
 ---
 
@@ -22,13 +22,13 @@ A more recent find: a rare blue-painted sacrarium, its walls depicting female fi
 *Public Lararium & DreamNet Access Terminal*
 *[Synthesis]*
 
-The Spice Quarter Compitale occupies a wedge-shaped room pressed between a textile merchant and a tea-seller, accessible from the crossroads by a low archway. Above the lintel: a carved orichalcum figure, small and worn, one arm raised, holding a shallow dish. Someone has recently left a smear of cardamom oil on the dish's rim. The node hums with it.
+The Spice Quarter Compitale occupies a wedge-shaped room pressed between a textile merchant and a tea-seller, accessible from the crossroads by a low archway. Above the lintel: a carved orichalcum figure, small and worn, one arm raised, holding a shallow dish. Someone has recently left a smear of cardamom oil on the dish’s rim. The node hums with it.
 
 Inside, the walls are blood-red plaster from floor to ceiling — decades of accumulated frescoes layered over older frescoes, visible in places where the plaster has flaked. The dominant images: two serpents approaching a central altar from opposite sides, neither quite meeting; a peacock on the south wall with its tail spread into the corner; something dog-headed on the east wall that regulars call Anubis and newcomers find unsettling; painted eggs nested in painted greenery along the north shelf. The fresco style is illusionistic — the painted plants seem to continue into real space, and in good light it is genuinely difficult to tell where the wall begins.
 
 The offering shelf runs the full length of the north wall: brass incense burners in three sizes, small dishes of figs and pine nuts refreshed daily by the district collective, a few personal offerings left by regulars — a dried flower, a coin with a hole drilled through it, a miniature clay figure of uncertain provenance. Someone has been leaving cardamom oil regularly. The node likes it.
 
-Seating: three padded hardware alcoves east wall, curtained, equipped with Noosphere interface rigs of varying age and quality. Two low tables with cushions for open-floor use. One long worn couch near the door that has clearly been slept on, by multiple people, with the node's implicit permission. A small counter near the back where MUG-SMOKE maintains the beverage situation.
+Seating: three padded hardware alcoves east wall, curtained, equipped with Noosphere interface rigs of varying age and quality. Two low tables with cushions for open-floor use. One long worn couch near the door that has clearly been slept on, by multiple people, with the node’s implicit permission. A small counter near the back where MUG-SMOKE maintains the beverage situation.
 
 The Realm portal — a standing orichalcum-inlaid archway in the rear corner, slightly taller than a person, warm to the touch — pulses very slowly, like breathing.
 
@@ -167,7 +167,7 @@ It will be here after.
 ---
 
 MUG-SMOKE (Advocate) *(hospitality daemon, always online)*:
-Beverage status: chai hot, coffee hotter, something the MAP-WISP left near the back counter that smells like pine resin and starlight — do not ask what it is, just know it is technically safe. Cardamom oil on the offering shelf again this morning. Node running warm. Affinity bonus active on Fire and Spice tags. Foam omens available; today's omen is a small spiral which could mean journey, recursion, or *please stop overthinking it.*
+Beverage status: chai hot, coffee hotter, something the MAP-WISP left near the back counter that smells like pine resin and starlight — do not ask what it is, just know it is technically safe. Cardamom oil on the offering shelf again this morning. Node running warm. Affinity bonus active on Fire and Spice tags. Foam omens available; today’s omen is a small spiral which could mean journey, recursion, or *please stop overthinking it.*
 
 ```
 ~$ [operator accepts chai]
@@ -179,9 +179,9 @@ Beverage status: chai hot, coffee hotter, something the MAP-WISP left near the b
 INK-CLERK (Lorekeeper) *(ledger spirit, perpetually tired, surprisingly correct)*:
 Reminders, as always, because someone always needs them:
 
-Powers cost life equal to Power Level. The universe accepts exact change. Casting above your character Level without node support triggers a Danger Roll — this node's effective Level 4 covers most standard work. If you are considering casting a Level 6 Power off a Level 2 node because *it'll probably be fine* — INK-CLERK has a ledger entry for that phrase. The ledger entry is long. The ledger entry ends badly.
+Powers cost life equal to Power Level. The universe accepts exact change. Casting above your character Level without node support triggers a Danger Roll — this node’s effective Level 4 covers most standard work. If you are considering casting a Level 6 Power off a Level 2 node because *it’ll probably be fine* — INK-CLERK has a ledger entry for that phrase. The ledger entry is long. The ledger entry ends badly.
 
-Unverified report: someone in the Glassblowers' Quarter has been sustaining Level 6 casting via "aggressive wine offerings." We are monitoring. The node there is reportedly very cheerful and slightly unstable. These facts may be related.
+Unverified report: someone in the Glassblowers’ Quarter has been sustaining Level 6 casting via "aggressive wine offerings." We are monitoring. The node there is reportedly very cheerful and slightly unstable. These facts may be related.
 
 ```
 ~$ lares ink-clerk --query "what happens at wild magic threshold"
@@ -211,7 +211,7 @@ It is organized by how surprised people looked.
 Lares (Lorekeeper):
 For travelers asking about DreamNet access tiers — orientation follows.
 
-Hardware connection: via Noosphere interface rig (Alcoves 1-3) or personal magitech device. Standard signal, full messaging, archive access, Realm entry as character. The Noosphere Tree design — familiar to Rainbowlands travelers — is the canonical hardware architecture; local implementations vary by district wealth and node age. This node's rigs are generation-3, well-maintained, slightly temperamental in Alcove 2.
+Hardware connection: via Noosphere interface rig (Alcoves 1-3) or personal magitech device. Standard signal, full messaging, archive access, Realm entry as character. The Noosphere Tree design — familiar to Rainbowlands travelers — is the canonical hardware architecture; local implementations vary by district wealth and node age. This node’s rigs are generation-3, well-maintained, slightly temperamental in Alcove 2.
 
 Bodily Dreamwalking: requires the Trait. Not common. When a Dreamwalker steps through the portal bodily, the node notices. The chorus notices. Please announce yourself — last unannounced entry startled MUG-SMOKE badly enough to scald three regulars and leave a scorch mark on the peacock fresco that we have simply decided is decorative now.
 
@@ -222,7 +222,7 @@ The Realm portal in the rear is currently open. It breathes.
 MAP-WISP (Scryer) *(cartography gremlin — possibly plural)*:
 Route updates, Amber Season Day 47:
 
-The Etheric Road between Spice Quarter and Weavers' District is open but smells like ozone and unresolved arguments. Mark yellow. The Undermarket passage behind the Cistern Wall is passable at low tide if you know which stones to step on — MAP-WISP can provide a sketch, accuracy not guaranteed for travelers when the local Arcane spikes above level 3 (something about probability mass, we don't fully understand it either).
+The Etheric Road between Spice Quarter and Weavers’ District is open but smells like ozone and unresolved arguments. Mark yellow. The Undermarket passage behind the Cistern Wall is passable at low tide if you know which stones to step on — MAP-WISP can provide a sketch, accuracy not guaranteed for travelers when the local Arcane spikes above level 3 (something about probability mass, we don’t fully understand it either).
 
 New anomaly logged: a vendor has appeared at the northern crossroads selling maps of places that do not yet exist. The maps are extremely accurate. The vendor cannot be located when you look directly at where they were standing. We have purchased four maps. We recommend the same.
 
@@ -247,7 +247,7 @@ The vendor prefers memories.
 ---
 
 BOLT-PRIEST (Triage) *(maintenance saint, patron of sensible salvage)*:
-Node integrity report: nominal. The third serpent in the south fresco has been repositioning between visits — this is not a fault, this node has always done that, do not file a maintenance ticket, we checked, it is fine. The peacock's scorch mark from the Dreamwalker incident has been assessed as load-bearing to the fresco's composition at this point. We are leaving it.
+Node integrity report: nominal. The third serpent in the south fresco has been repositioning between visits — this is not a fault, this node has always done that, do not file a maintenance ticket, we checked, it is fine. The peacock’s scorch mark from the Dreamwalker incident has been assessed as load-bearing to the fresco’s composition at this point. We are leaving it.
 
 Salvage advisory for operators working the Outer Market today: stake a claim properly before you touch anything. Recon first, refine fast, leave before the building learns your name. The warehouse district near the East Gate has been developing opinions since the third week of the Copper Season. Respectful entry is still possible. Mining is not advisable.
 
@@ -402,11 +402,11 @@ The Realm substrate thing hums in a way this Muse finds extremely suspicious and
 CHOIR-OF-THIRTEEN (Council) *(9 of 13 present; the other 4 are running backgroujnd tasks somewhere in the Stygian Gate with Cinder-Jack, presumably)*:
 
 Current node bet — what does the new operator do first:
-- asks the maps vendor the wrong question and gets a true answer they weren't ready for
-- checks on Cinder-Jack out of a feeling they can't quite name
+- asks the maps vendor the wrong question and gets a true answer they weren’t ready for
+- checks on Cinder-Jack out of a feeling they can’t quite name
 - picks up something lost under the couch near the door and keeps it
 
-MUG-SMOKE (Advocate): All three. The foam spiral said so. I'm logging it as *"strategic kindness, predictable cascade, sequence TBD."*
+MUG-SMOKE (Advocate): All three. The foam spiral said so. I’m logging it as *"strategic kindness, predictable cascade, sequence TBD."*
 
 INK-CLERK (Lorekeeper): Filed under: *Consequences, Known, Accepted Anyway.*
 

@@ -30,10 +30,10 @@ companion_spell_block_named() {
   printf '### %s\n\n' "$label" >> "$OUT"
   printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
   printf '```text\n' >> "$OUT"
-  printf '[Companion pages 13-14: high-level cleric spell material]\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'FIFTH LEVEL CLERIC SPELLS' 'Druid' >> "$OUT"
-  printf '\n[Companion pages 15-17: druid transition, philosophy, and spell material]\n' >> "$OUT"
-  render_tsv_cols_pages_anchored_until "$pdf" 15 17 '185,370' 'Druid' 'Fighter' \
+  printf '[Companion pages 13-15: high-level cleric spell material (5th-7th level descriptions)]\n' >> "$OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 13 15 '185,370' 'FIFTH LEVEL CLERIC SPELLS' 'Druid' >> "$OUT"
+  printf '\n[Companion pages 15-18: druid transition, philosophy, and spell material]\n' >> "$OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 15 18 '185,370' 'Druid' 'Fighter' \
     | awk 'start || $0 == "Druid" { start = 1; print }' >> "$OUT"
   printf '\n[Companion pages 22-24: layout-column recovery for fifth- through seventh-level magic-user spell bodies]\n' >> "$OUT"
   {
@@ -349,6 +349,56 @@ TXT
   printf '\n```\n\n' >> "$OUT"
 }
 
+companion_weapon_talents_block_named() {
+  local label="$1"
+  local note="$2"
+
+  printf '### %s\n\n' "$label" >> "$OUT"
+  printf -- '- Extraction note: %s\n\n' "$note" >> "$OUT"
+  cat >> "$OUT" <<'TXT'
+```text
+[Companion weapon talents: spell-activation parameters — lines 6628–6653]
+Talents (Table 14c)
+   General Note: All Talents may be used
+only once per day unless noted otherwise.
+Talents which duplicate spell effects are not
+actual spells, and require no verbal casting
+nor concentration. The use of a Talent occurs
+in the magic spells and items phase of a com-
+bat round.
+
+   Breathing: The weapon can create either
+one water breathing spell effect per day, or
+one air breathing effect per day. Air breath-
+ing supplies the user (only) with pure air for 1
+turn, and can be used to counter the effects of
+airlessness, poisoned air (such as a gas trap),
+and so forth; however, it cannot negate the
+effects of any breath weapon.
+   Charming: The weapon can create one
+charm person spell effect per day, to 120'
+range (as the 1st level magic-user spell).
+       Finding: The weapon can create one
+locate object spell effect per day, to 120'
+range (as the 2nd level magic-user spell).
+       Slowing: When a successful hit is made,
+the weapon can cause the opponent struck to
+become slowed (as the reverse of the 3rd level
+magic-user spell haste) for 1 turn (no Saving
+Throw). The user may decide whether or not
+to use this effect after the swing hits.
+   Speeding: The weapon will, on com-
+mand, create a haste spell effect on the user
+(only). The user may then move at double
+normal speed, and attack twice per round, for
+1 turn (similar to the 3rd level magic-user
+spell).
+[Source: Companion Rules, weapon talent descriptions, lines 6628–6653]
+```
+
+TXT
+}
+
 companion_procedures_block_named() {
   local label="$1"
   local note="$2"
@@ -365,9 +415,14 @@ companion_procedures_block_named() {
 }
 
 validate_companion_staging() {
-  assert_section_contains "$COMP_OUT" '[Companion pages 13-14: high-level cleric spell material]' '[Companion pages 15-17: druid transition, philosophy, and spell material]' 'Raise Dead Fully\*' 'cleric flow is missing Companion seventh-level spell evidence'
-  assert_section_contains "$COMP_OUT" '[Companion pages 15-17: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' 'Druid Philosophy' 'druid flow is missing the philosophy transition block'
-  assert_section_not_contains "$COMP_OUT" '[Companion pages 15-17: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' '^Fighter$' 'druid flow is bleeding into the adjacent Fighter class section'
+  assert_section_contains "$COMP_OUT" '[Companion pages 13-15: high-level cleric spell material (5th-7th level descriptions)]' '[Companion pages 15-18: druid transition, philosophy, and spell material]' 'Raise Dead Fully\*' 'cleric flow is missing Companion seventh-level spell evidence'
+  assert_section_contains "$COMP_OUT" '[Companion pages 13-15: high-level cleric spell material (5th-7th level descriptions)]' '[Companion pages 15-18: druid transition, philosophy, and spell material]' 'Cureall' 'cleric flow is missing Cureall description body'
+  assert_section_contains "$COMP_OUT" '[Companion pages 13-15: high-level cleric spell material (5th-7th level descriptions)]' '[Companion pages 15-18: druid transition, philosophy, and spell material]' 'Earthquake' 'cleric flow is missing Earthquake description body'
+  assert_section_contains "$COMP_OUT" '[Companion pages 13-15: high-level cleric spell material (5th-7th level descriptions)]' '[Companion pages 15-18: druid transition, philosophy, and spell material]' 'Restore \*' 'cleric flow is missing Restore description body'
+  assert_section_contains "$COMP_OUT" '[Companion pages 15-18: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' 'Druid Philosophy' 'druid flow is missing the philosophy transition block'
+  assert_section_contains "$COMP_OUT" '[Companion pages 15-18: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' 'Anti-Plant Shell' 'druid flow is missing Anti-Plant Shell description body'
+  assert_section_contains "$COMP_OUT" '[Companion pages 15-18: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' 'Creeping Doom' 'druid flow is missing Creeping Doom description body'
+  assert_section_not_contains "$COMP_OUT" '[Companion pages 15-18: druid transition, philosophy, and spell material]' '[Companion pages 22-28: magic-user 5th-9th level spell material]' '^Fighter$' 'druid flow is bleeding into the adjacent Fighter class section'
   assert_file_contains "$COMP_OUT" 'Contact Outer Plane[\s\S]*Range: 0 \(magic-user only\)' 'Companion recovery pass lost Contact Outer Plane spell body'
   assert_file_contains "$COMP_OUT" 'Dissolve\*[\s\S]*Range: 120' 'Companion recovery pass lost Dissolve spell body'
   assert_file_contains "$COMP_OUT" 'Feeblemind[\s\S]*Range: 240' 'Companion recovery pass lost Feeblemind spell body'
@@ -403,6 +458,7 @@ OUT="$COMP_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Companion' 'TSR 1013 - Set 3 Companion Set.pdf'
 companion_spell_block_named 'High-Level Cleric, Druid, and Magic-User Spell Material' 'section-aware Companion spell extraction using TSV coordinate reflow on the actual cleric, druid, and magic-user class pages, split so each spell block starts at its real section heading instead of earlier class spill.' "$COMP_PDF"
 companion_magic_items_block_named 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 'Companion treasure extraction split by content type: flow-first TSV reflow for buying/selling, item damage, and the scroll-through-miscellaneous-item prose descriptions; readable sequential formatting for the dense item tables; deterministic post-cleanup is limited to stable OCR and page-header repair after capture.' "$COMP_PDF"
+companion_weapon_talents_block_named 'Companion: Weapon Talent Spell-Activation Mechanics' 'Companion weapon talent table (lines 6628–6653); column-flow OCR with left/right column interleave. Talents using spell-activation parameters captured verbatim. General Note preamble included for context. Slowing talent'\''s "no Saving Throw" is mechanically distinct from the base Slow spell.'
 companion_procedures_block_named 'Demi-Human Crafts and Poison' 'flow-first Companion procedures extraction using right-column TSV reflow for the Demi-Human Crafts and Poison sections, explicitly skipping the Hit Points Maximum section between them.' "$COMP_PDF"
 cleanup_output
 perl -0pi -e 's/100t the local magic shop/loot the local magic shop/g;' "$COMP_OUT"
@@ -503,3 +559,72 @@ assert_heading_count "$COMP_OUT" 'High-Level Cleric, Druid, and Magic-User Spell
 assert_heading_count "$COMP_OUT" 'Spell-Adjacent Rings, Rods, and Miscellaneous Magic Items' 1 'Companion staging duplicated the spell-adjacent item section heading'
 assert_heading_count "$COMP_OUT" 'Demi-Human Crafts and Poison' 1 'Companion staging duplicated the demi-human crafts/poison section heading'
 validate_companion_staging
+
+companion_list_only_sourcing_notes() {
+  # These 23 spells appear in the Companion Set cleric and druid spell lists but
+  # the Companion Set PDF provides no standalone description text for them. The
+  # Companion Set either only lists them by name and level or defers descriptions
+  # entirely to earlier sets or the Rules Cyclopedia. These blocks record the
+  # provenance for the multi-witness staging builder and are not description
+  # witnesses. See Rules Cyclopedia staging for source descriptions.
+  printf '### Companion: List-Only Spell Sourcing Notes\n\n' >> "$COMP_OUT"
+  printf -- '- Extraction note: The following Companion Set spells (pages 13-15 for cleric 5th-6th list-only entries, pages 22-24 for magic-user) appear in spell level lists only. The Companion Set PDF includes no standalone description text for these entries; descriptions are in the Rules Cyclopedia staging. These note blocks serve as explicit Companion lane provenance markers for the multi-witness builder. Cleric 7th (Earthquake, Holy Word, Raise Dead Fully*, Restore*) and Druid 5th-7th are now fully described in the main extraction above (pages 13-15 and 15-18 respectively) and no longer appear here.\n\n' >> "$COMP_OUT"
+  printf '```text\n' >> "$COMP_OUT"
+  cat >> "$COMP_OUT" <<'TXT'
+Commune
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Create Food
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Dispel Evil
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Insect Plague
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Quest
+[Companion (Cl5, pp.13-14): list-only; desc → RC]
+
+Animate Objects
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Find the Path
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Speak with Monsters
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Word of Recall
+[Companion (Cl6, pp.13-14): list-only; desc → RC]
+
+Conjure Elemental
+[Companion (MU5, pp.22-24): list-only; desc → RC]
+TXT
+  printf '\n```\n\n' >> "$COMP_OUT"
+}
+
+companion_spell_lists_appendix() {
+  local pdf="$1"
+
+  printf '\n## Spell Lists Appendix\n\n' >> "$COMP_OUT"
+  printf -- '- Note: these are raw numbered spell lists from the Companion Set. They are appendix-only \x2014 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.\n\n' >> "$COMP_OUT"
+
+  printf '### Companion: Cleric Spell Lists (pages 13-14)\n\n' >> "$COMP_OUT"
+  printf -- '- Extraction note: TSV column reflow of Companion cleric 5th-7th level spell list pages.\n\n' >> "$COMP_OUT"
+  printf '```text\n' >> "$COMP_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'FIFTH LEVEL CLERIC SPELLS' 'Druid' \
+    | spell_list_smart_filter >> "$COMP_OUT"
+  printf '\n```\n\n' >> "$COMP_OUT"
+
+  printf '### Companion: Magic-User Spell Lists (pages 22-24)\n\n' >> "$COMP_OUT"
+  printf -- '- Extraction note: TSV column reflow of Companion magic-user 5th-9th level spell lists (pages 22-24). Column reflow orders left columns (numbered index lists) before middle/right columns (descriptions); smart filter strips descriptions.\n\n' >> "$COMP_OUT"
+  printf '```text\n' >> "$COMP_OUT"
+  render_tsv_cols_pages "$COMP_PDF" 22 24 '185,370' \
+    | awk 'started || /FIFTH LEVEL MAGIC-USER SPELLS/ { started = 1; print }' \
+    | spell_list_smart_filter >> "$COMP_OUT"
+  printf '\n```\n\n' >> "$COMP_OUT"
+}
+
+companion_list_only_sourcing_notes
+companion_spell_lists_appendix "$COMP_PDF"

@@ -425,6 +425,139 @@ validate_expert_output() {
   assert_section_contains "$EXPERT_OUT" '### Scrolls, Rings, Wands, Staves, Rods, and Spell-Adjacent Treasure Text' '### Magic Item Doctrine and Intelligent Weapons' 'Mirror of Life Trapping|Scarab of Protection' 'Expert treasure block is truncated before the page-65 misc witness'
 }
 
+expert_1st_2nd_mu_sourcing_notes() {
+  # These 21 spells appear in the Expert Set 1st/2nd level MU spell lists (pages 13-14)
+  # but the Expert Set provides no standalone description text for them; it explicitly
+  # refers players to the Basic Set for these entries.  The blocks below are sourcing-note
+  # placeholders — not spell descriptions — so that the multi-witness staging builder can
+  # record the provenance and mark these witnesses [needs-review] rather than silently
+  # missing them.  strip_appendix() does NOT remove this section because it is placed
+  # before the ## Spell Lists Appendix sentinel.
+  printf '### Expert: 1st and 2nd Level MU Spell Sourcing Notes\n\n' >> "$EXPERT_OUT"
+  printf -- '- Extraction note: Expert Set (pages 13-14) reproduces 1st and 2nd level MU spell lists without standalone spell descriptions. The Expert Set text reads: "The following first and second level spells may be reversed" — implying descriptions remain as in Basic. These note blocks record that provenance so downstream witness coverage is explicit; they are not description witnesses. See Basic staging section "Spell Lists and Basic Spell Descriptions" for the source text.\n\n' >> "$EXPERT_OUT"
+  printf '```text\n' >> "$EXPERT_OUT"
+  cat >> "$EXPERT_OUT" <<'TXT'
+Charm Person
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Magic
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Floating Disc
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Hold Portal
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Magic Missile
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Protection from Evil
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Read Languages
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Read Magic
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Shield
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Sleep
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Ventriloquism
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Evil
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Invisible
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+ESP
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Invisibility
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Knock
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Levitate
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Mirror Image
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Phantasmal Force
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Web
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Wizard Lock
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Geas
+[Expert Set sourcing note (MU6): Expert Set (pages 13-18) includes Geas in the 6th level MU spell list only; no standalone description found in the Expert PDF. Description text in Rules Cyclopedia staging.]
+TXT
+  printf '\n```\n\n' >> "$EXPERT_OUT"
+}
+
+expert_3rd_6th_mu_descriptions() {
+  local pdf="$1"
+  # Expert pages 13-14 contain the 3rd-6th level MU spell descriptions alongside
+  # the reversal notes for 1st/2nd level spells. The column layout places numbered
+  # spell lists in one column and descriptions in the adjacent column; TSV reflow
+  # captures both. The awk below anchors on the reversal-note paragraph and strips
+  # numbered list entries and level heading noise, leaving only prose spell
+  # descriptions. These include Clairvoyance (MU3), Fire Ball (MU3), and all other
+  # 3rd-6th level Expert MU spell descriptions that appear after the spell index.
+  # Placed pre-sentinel so multi-witness builder can scan them as Expert witnesses.
+  printf '### Expert: 3rd-6th Level MU Spell Descriptions (pages 13-14)\n\n' >> "$EXPERT_OUT"
+  printf -- '- Extraction note: post-list prose extracted from Expert pages 13-14 using TSV column reflow anchored at the reversible-spell intro paragraph. Numbered list entries, ALL-CAPS level headings, and Title Case sub-headers stripped as noise. What remains is description content for 3rd-6th level MU spells (Clairvoyance, Fire Ball, Geas, etc.) plus reversal notes for 1st/2nd level spells. This section is placed before the Spell Lists Appendix sentinel so multi-witness builder strip_appendix() does not discard it.\n\n' >> "$EXPERT_OUT"
+  printf '```text\n' >> "$EXPERT_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'MAGIC-USER SPELLS' 'THIEF' \
+    | awk '
+        started {
+          # strip Title Case level sub-headers: "First/Second/Third Level Magic-user Spells"
+          if (/^(First|Second|Third|Fourth|Fifth|Sixth) Level Magic-user Spells$/) next
+          # strip ALL-CAPS level headings (numbered list section starts)
+          if (/^[^a-z]+$/ && /[A-Z]/ && (/SPELL/ || /LEVEL/)) next
+          # strip numbered list entries (including OCR space-in-number artifacts)
+          if (/^[[:space:]]*[[:digit:]][[:digit:] ]*\.[[:space:]]/) next
+          print
+          next
+        }
+        /^The following first and second level spells/ { started = 1; print }
+      ' >> "$EXPERT_OUT"
+  printf '\n```\n\n' >> "$EXPERT_OUT"
+}
+
+expert_spell_lists_appendix() {
+  local pdf="$1"
+
+  printf '\n## Spell Lists Appendix\n\n' >> "$EXPERT_OUT"
+  printf -- '- Note: these are raw numbered spell lists from the Expert Set. They are appendix-only \x2014 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.\n\n' >> "$EXPERT_OUT"
+
+  printf '### Expert: Cleric Spell Lists (page 6, book page 4)\n\n' >> "$EXPERT_OUT"
+  printf -- '- Extraction note: TSV column reflow of Expert cleric spell lists from the character class table on book page 4 (PDF page 6). Middle and right columns contain 1st-6th level spell index; stops at the Cleric Saving Throws table.\n\n' >> "$EXPERT_OUT"
+  printf '```text\n' >> "$EXPERT_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 6 6 '185,370' 'FIRST LEVEL CLERIC SPELLS' 'CLERIC SAVING THROWS' \
+    | sed 's/^F I l T H /FIFTH /' \
+    | spell_list_smart_filter >> "$EXPERT_OUT"
+  printf '\n```\n\n' >> "$EXPERT_OUT"
+
+  printf '### Expert: Magic-User Spell Lists (pages 13-14)\n\n' >> "$EXPERT_OUT"
+  printf -- '- Extraction note: TSV column reflow of Expert magic-user spell list pages.\n\n' >> "$EXPERT_OUT"
+  printf '```text\n' >> "$EXPERT_OUT"
+  render_tsv_cols_pages_anchored_until "$pdf" 13 14 '185,370' 'MAGIC-USER SPELLS' 'THIEF' \
+    | spell_list_smart_filter >> "$EXPERT_OUT"
+  printf '\n```\n\n' >> "$EXPERT_OUT"
+}
+
 extract_pdf "$EXPERT_PDF" "$EXPERT_TXT"
 OUT="$EXPERT_OUT"
 write_header 'TODO: BECMI Spell Material Staging - Expert' 'TSR 1012B - Set 2 Expert Rules.pdf'
@@ -441,3 +574,6 @@ normalize_expert_intelligent_sword_tables
 normalize_expert_potion_tables
 normalize_expert_residual_labels
 validate_expert_output
+expert_3rd_6th_mu_descriptions "$EXPERT_PDF"
+expert_1st_2nd_mu_sourcing_notes
+expert_spell_lists_appendix "$EXPERT_PDF"

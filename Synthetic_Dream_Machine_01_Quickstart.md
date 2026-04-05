@@ -249,7 +249,7 @@ When you roll precisely on target, PCs can sacrifice something to succeed. In a 
 
 1. **Resources:** spend more ammo, charges or fuel.
 2. **Damage:** equipment or vehicles get marked.
-3. **Life:** the exertion saps the PC's plot armor.
+3. **Life:** the exertion saps the PC’s plot armor.
 4. **Burden:** the exertion strains or injures the PC.
 5. **Alert:** opponents become aware of your efforts.
 6. **Benefit:** foes get a bonus on their turn.
@@ -268,11 +268,11 @@ When you roll the exploding die’s highest face, roll again and add the results
 
 Six-sided dice (d6) for adjusting rolls and regaining life. You (the Player daemon) gain one per session and one more every couple of hours. Other daemons may have alternate rules. 
 
-Daemons can store HD equal to their PCs' highest **Hero dice** attribute. The referee can grant more hero dice for inspired roleplaying and prosocial behavior like bringing milk and cookies to the game session.
+Daemons can store HD equal to their PCs’ highest **Hero dice** attribute. The referee can grant more hero dice for inspired roleplaying and prosocial behavior like bringing milk and cookies to the game session.
 
 Roll hero dice to do two things:
 
-* Adjust any roll, whether it is a d4 or a d20 or a d100. This does not have to be your character's roll. The adjusted roll counts as a natural roll. This is not an action.  
+* Adjust any roll, whether it is a d4 or a d20 or a d100. This does not have to be your character’s roll. The adjusted roll counts as a natural roll. This is not an action.  
 * Cause one of your Characters to regain life equal to the roll. This is always an action for that character.
 
 Traits and items may provide other uses for hero dice. Rare traits can modify the number or type of hero dice. Burdens do not affect hero die rolls.
@@ -310,7 +310,7 @@ The course of action leaves no room for skill, natural ability, or divine favor.
 
 **Natural Ability Alone**
 
-When skill isn't a factor, or a character lacks any suitable skill. The character **rolls d20 + ability** .
+When skill isn’t a factor, or a character lacks any suitable skill. The character **rolls d20 + ability** .
 
 **Skill and Ability**
 
@@ -426,7 +426,7 @@ Other Modifiers:
 * **Defense (Physical)** \= 7 \+ Agility \+ Bonus (relevant Skill) \+ Armor  
   * **UVG NPCs** are “skilled in Defense” (10 \+ Agility \+ Armor baseline).  
 * **Defense (Mental)** \= 7 \+ Thought \+ Bonus (relevant Skill) \+ Ward  
-  * **Ward** represents psychic and mental resilience, and provides **Save bonuses** and **mental defenses**. Granted by metaphysical trinkets and magitechnical artifacts known as "wards" that protect one's non-physical integrity. They also often protect against spells.
+  * **Ward** represents psychic and mental resilience, and provides **Save bonuses** and **mental defenses**. Granted by metaphysical trinkets and magitechnical artifacts known as "wards" that protect one’s non-physical integrity. They also often protect against spells.
 * **Defense (Social)** \= 7 \+ Charisma \+ Bonus (relevant Skill) \+ Prestige  
   * **Prestige** is a factional reputation from status symbols—titles, properties, valuable possessions, and admired traits—that enhance influence in relevant settings.
 
@@ -531,7 +531,7 @@ For simplicity, the abstract “€” symbol covers them all.
 
 You have **€50 + €50 per level** in physical currency. Enough to live on for a few months, if you are careful and boring. You’re not, though.
 
-That's not much per level, honestly.
+That’s not much per level, honestly.
 
 **What Cash Buys**
 
@@ -598,7 +598,7 @@ Item sizes in the Vastlands use abstract units that combine weight and bulk.
 |1 soap (sp)|25 cash|Small item; a signal whistle, signet ring, spike, or bar of soap (surprisingly useful in the wastes!).|
 |1 cash (€)|some change|Standard currency unit equal to a laborer’s day wages. Named in a nod to ancient Chinese cash.|
 
-Unless otherwise specified, an item takes up 1 stone of inventory space. 250 cash units take up 1 stone. A PC's money is usually a mix of cards, credit, notes, and units that fit in a wallet. Treat the wallet as part of their clothing.
+Unless otherwise specified, an item takes up 1 stone of inventory space. 250 cash units take up 1 stone. A PC’s money is usually a mix of cards, credit, notes, and units that fit in a wallet. Treat the wallet as part of their clothing.
 
 **Available Items and Packed Items**
 
@@ -612,7 +612,7 @@ Items can be packed away to save space. Readying a packed item for use takes at 
 
 Some equipment such as backpacks, pouches, purses, ammo belts, or clothing with hidden pockets can allow characters to pack away more gear than usual, effectively increasing their inventory.
 
-> _Example: Onion's synthetic skin backpack (1 st) allows him to pack away and carry 3 stones worth of small gear. Effectively, Onion can stuff 4 stones of items into a single inventory slot. However, retrieving a specific item from his backpack takes a whole action. Onion had better not pack away his inquisition squirtgun if he plans to use it._
+> _Example: Onion’s synthetic skin backpack (1 st) allows him to pack away and carry 3 stones worth of small gear. Effectively, Onion can stuff 4 stones of items into a single inventory slot. However, retrieving a specific item from his backpack takes a whole action. Onion had better not pack away his inquisition squirtgun if he plans to use it._
 
 ### Suitable and Unsuitable Equipment
 
@@ -745,7 +745,7 @@ Burdens are 20 special inventory slots for afflictions, traits, and items that a
 
 **Each burden imposes a -1 to all rolls.**
 
-At 20 burdens, you can move or speak slowly and carefully, but can't take almost any other actions.
+At 20 burdens, you can move or speak slowly and carefully, but can’t take almost any other actions.
 
 ### Item and Trait Overflow
 
@@ -765,7 +765,7 @@ Curses, diseases, mutations, corruptions, injuries, phobias, the impact of facin
 
 Such afflictions often impose additional penalties in addition to the standard -1 to all rolls.
 
-Some spiritual and psychological afflictions may occupy trait slots instead, while diseases and physical injuries could occupy item slots at the referee's discretion.
+Some spiritual and psychological afflictions may occupy trait slots instead, while diseases and physical injuries could occupy item slots at the referee’s discretion.
 
 **Removing Burdens**
 
@@ -977,8 +977,8 @@ Exactly how a character moves, where they can go, what they can reach, depends o
 | --- | --- | --- | --- |
 | **here** | **close** | Adjacent. Melee combat. The thick of things. A small area, a few meters across. This side of the table, in arm’s reach. You may make a free attack against an adjacent enemy that disengages carelessly. | Side-by-side. Ramming range. Close enough to jump across, to throw a hand grenade. A small area, maybe 10m across. You may make a free attack against an adjacent vehicle trying to perform a delicate maneuver. |
 | **there** | **short** | Nearby. The other side of the table, out of reach. A middling area, maybe 10m across. You can close for melee combat with a nearby opponent. Or, you can retreat further away, keeping them at range while firing. | Nearby. Same block, off-ramp or tunnel. Small arms range. A middling area, say 50m across. Move in to ram a nearby opponent, or retreat to safety, keeping them in range of mounted guns. |
-| **over there** | **medium** | Far. Indoors, through a doorway or at the far end of a hall. A large area, maybe a few dozen meters across. Usually, you need 2 rounds to close with an opponent this far away. The first round to reduce the range to short range, the second to charge in for close combat. | Far. A stretch as long as a mile, a whole bridge, a stretch of streets, a series of switchbacks. Close enough to keep in sight but out of range of all personal arms and many vehicle weapons. A large area, as much as 100–200m across. Takes 2 rounds to reach an opponent. Possibly longer, if they're trying to evade you. |
-| **off-stage** | **long** | Distant. Very far. Indoors, a few rooms away, downstairs, or behind a closed door. Not visible. A massive area, possibly 100m across. At this range you need 3+ rounds to close with an opponent. Reaching them is more a chase than a conflict (see p57). | Very far. The dust of racing hovergolems on the horizon, the roar of heart-of-coal engines in a doomed canyon. Details are obscured. Enormous area, maybe a mile across. Reaching an opponent takes 3+ rounds. If trying to evade, it's a chase not a conflict (see p57). |
+| **over there** | **medium** | Far. Indoors, through a doorway or at the far end of a hall. A large area, maybe a few dozen meters across. Usually, you need 2 rounds to close with an opponent this far away. The first round to reduce the range to short range, the second to charge in for close combat. | Far. A stretch as long as a mile, a whole bridge, a stretch of streets, a series of switchbacks. Close enough to keep in sight but out of range of all personal arms and many vehicle weapons. A large area, as much as 100–200m across. Takes 2 rounds to reach an opponent. Possibly longer, if they’re trying to evade you. |
+| **off-stage** | **long** | Distant. Very far. Indoors, a few rooms away, downstairs, or behind a closed door. Not visible. A massive area, possibly 100m across. At this range you need 3+ rounds to close with an opponent. Reaching them is more a chase than a conflict (see p57). | Very far. The dust of racing hovergolems on the horizon, the roar of heart-of-coal engines in a doomed canyon. Details are obscured. Enormous area, maybe a mile across. Reaching an opponent takes 3+ rounds. If trying to evade, it’s a chase not a conflict (see p57). |
 
 ### Relative Zones
 
@@ -1072,9 +1072,9 @@ The referee may decide that a character who succeeds at several morale tests in 
 
 ## Chase and Escape
 
-Whether trying to close with distant characters or to retreat from a losing fight, it's a chase. In a chase, what matters is who wins and how long it takes.
+Whether trying to close with distant characters or to retreat from a losing fight, it’s a chase. In a chase, what matters is who wins and how long it takes.
 
-Only the pursuers roll—if they don't make an effort, the prey gets away. A random character in the pursuing group makes a group chase roll, adding endurance and any relevant skill bonuses.
+Only the pursuers roll—if they don’t make an effort, the prey gets away. A random character in the pursuing group makes a group chase roll, adding endurance and any relevant skill bonuses.
 
 If the pursuers are faster, better-adapted, or otherwise advantaged in the environment, they get a bonus.
 
@@ -1092,9 +1092,9 @@ The referee can change the length of rounds between fight and chase to suit the 
 | **4–7** | Spend 1d6+1 rounds. Chase fails. |
 | **8–11** | Spend 1d4+1 rounds. Losing them. Roll again with disadvantage if you keep chasing. |
 | **12–14** | Spend 1d4+1 rounds. Gaining on them. Roll again with advantage if you keep chasing. |
-| **15–19** | Spend 1d6+1 rounds. You've caught the prey! Roll initiative. |
-| **20–24** | Spend 1d4 rounds. You've caught them! You win initiative. |
-| **25+** | Spend 1d4 rounds. You took a shortcut. They thought they'd escaped, but ... surprise! You're on top of them! |
+| **15–19** | Spend 1d6+1 rounds. You’ve caught the prey! Roll initiative. |
+| **20–24** | Spend 1d4 rounds. You’ve caught them! You win initiative. |
+| **25+** | Spend 1d4 rounds. You took a shortcut. They thought they’d escaped, but ... surprise! You’re on top of them! |
 
 ## DAMAGE
 
@@ -1110,13 +1110,13 @@ Sometimes, such as while dungeoncrawling or fighting in a battle, the stakes are
 
 In such deadly combat, **if an effect would reduce a character below 0 life**, they are reduced to 0 life and must **roll on the defeat table**.
 
-Most **NPCs are out of the fight at 0 life**. This doesn't mean they are necessarily dead, but unless healed or somehow repaired, they are no longer active participants. Most sentient NPCs try to flee before this happens.
+Most **NPCs are out of the fight at 0 life**. This doesn’t mean they are necessarily dead, but unless healed or somehow repaired, they are no longer active participants. Most sentient NPCs try to flee before this happens.
 
 ### Ability Score Damage
 
 Some obnoxious attacks, traps, curses, or situations reduce ability scores: strength, endurance, agility, charisma, aura, or thought. These are serious shocks, which carry the risk of death.
 
-**If an effect would reduce a character's ability below 0**, it is reduced to 0 and they must **roll on the defeat table**.
+**If an effect would reduce a character’s ability below 0**, it is reduced to 0 and they must **roll on the defeat table**.
 
 NPCs without defined abilities who suffer ability score damage reduce their level **and** attack bonus instead. **If either their level or attack bonus is reduced to 0, they are out of the fight.**
 
@@ -1150,9 +1150,9 @@ Burdens can be nearly anything. Use this eight-by-eight table to come up with so
 Two situations always force a character to roll on the defeat table:
 
 - **Not enough life or level remaining**. If an effect would reduce a character below 0 life (or level), they are reduced to 0 life (or level) and must roll on the defeat table.
-- **Not enough ability remaining**. If an effect would reduce a character's ability below 0, it is reduced to 0 and they must roll on the defeat table.
+- **Not enough ability remaining**. If an effect would reduce a character’s ability below 0, it is reduced to 0 and they must roll on the defeat table.
 
-At the referee's discretion, other situations may impose defeat rolls (especially after failed saving throws):
+At the referee’s discretion, other situations may impose defeat rolls (especially after failed saving throws):
 
 - Terrible foes, oversized enemies, ancient doom laser swords, and other sources of extreme damage.  
 - Dangerous or overwhelming ancient powers that extract extreme costs from their users.  
@@ -1219,7 +1219,7 @@ Indeed, death is not the end.
 
 Living characters recover quite quickly.
 
-These later humans' bodies are blessed with strange powers of narrative healing.
+These later humans’ bodies are blessed with strange powers of narrative healing.
 
 **Each week, remove one affliction** or insult. This may be:
 
@@ -1318,7 +1318,7 @@ Later, you reflect on your strange experiences, so unlike your life before. When
 | Goal | How | Xp |
 |:---|:---|:---|
 | Session | Attend and be a good sport. | 300xp |
-| Discovery | Find the Sender's camp and figure out likely leads to the mystery (fuel for the Referee!). | 1d6 x 20xp |
+| Discovery | Find the Sender’s camp and figure out likely leads to the mystery (fuel for the Referee!). | 1d6 x 20xp |
 | Victory | Acquire the holy clavis before the Antagonist and get a head start on the Hollow House. | 2d6 x 20xp |
 | Survival | Barely escape or avoid a powerful foe. | 1d6 x 10xp |
 | Conquest | Defeat or outwit a powerful foe. | 2d6 x 10xp |
@@ -1328,7 +1328,7 @@ You can now invest your experience in characters, pets, powers or equipment (see
 
 ## INVEST YOUR EXPERIENCE
 
-You bank your PCs' experiences. Places traveled, parties attended, creepy creatures engaged in dialog, mountains bested, ruins survived, treasures sold for profit, pleasures hunted down and carted off, etc. These experiences form a metapsychic currency (xp) which you then invest to increase the capabilities of your PCs, sidekicks, pets, friends, gear, powers, houses, or nearly anything else that makes sense. Each game object with invested xp occupies a trait or item slot on your primary character's sheet. Yes, your player character is also usually your primary character. PC is thus, conveniently, a double acronym. That said, you can have multiple PCs.
+You bank your PCs’ experiences. Places traveled, parties attended, creepy creatures engaged in dialog, mountains bested, ruins survived, treasures sold for profit, pleasures hunted down and carted off, etc. These experiences form a metapsychic currency (xp) which you then invest to increase the capabilities of your PCs, sidekicks, pets, friends, gear, powers, houses, or nearly anything else that makes sense. Each game object with invested xp occupies a trait or item slot on your primary character’s sheet. Yes, your player character is also usually your primary character. PC is thus, conveniently, a double acronym. That said, you can have multiple PCs.
 
 ## Basic Golden Age Upgrading
 
@@ -1362,7 +1362,7 @@ Hero dice! Gain one d6 HD per session and one more every couple of hours or at r
 - **Adjust any roll**, whether a d4, d20, or d100. This does not have to be your roll. The adjusted roll counts as a natural roll. This is not an action.
 - **Regain life** equal to the roll. This is always an action.
 
-> The Daemon holds the Hero dice for all their heroes. They may hold a maximum of their PCs' highest "Hero dice" attribute.
+> The Daemon holds the Hero dice for all their heroes. They may hold a maximum of their PCs’ highest "Hero dice" attribute.
 
 ### Life Upgrades
 
@@ -1428,7 +1428,7 @@ Upgrading your **life** scores starts out cheaper, but gets more expensive.
 
 _n+1 = 3(n)_
 
-Upgrading **ability** scores across the board is a little cheaper this way, but boosting a single score is expensive and best be achieved with a combination of direct ability upgrades and carefully chosen traits that include ability score increases (see the _Vastlands Guidebook_ for over 300 more traits, if that's your marmalade).
+Upgrading **ability** scores across the board is a little cheaper this way, but boosting a single score is expensive and best be achieved with a combination of direct ability upgrades and carefully chosen traits that include ability score increases (see the _Vastlands Guidebook_ for over 300 more traits, if that’s your marmalade).
 
 This is clearly a convenient way to boost your associated attack, defense, and inventory sizes.
 
@@ -1462,7 +1462,7 @@ _n+1 = 5(n)_
 
 They start out quite affordable and should combine with ability score upgrades for maximum effect. You could also combine them with traditional levelling if you were feeling adventurous.
 
-If you're planning a lot of combat or delving into the ruins of Long Ago, where the ghostly golems dwell, you might want to directly boost your natural **defense** and **save** attributes.
+If you’re planning a lot of combat or delving into the ruins of Long Ago, where the ghostly golems dwell, you might want to directly boost your natural **defense** and **save** attributes.
 
 Need more room for traits, mutations, gear, and gold? Just like with defenses and saves, you can now boost your **inventory** sizes directly.
 
@@ -1472,9 +1472,9 @@ Note that all the upgrades on this page could work on your pets, sidekicks, seco
 
 ## Golden Age Item Upgrading
 
-The fabricator technologies of this golden age are better than that. Note down your item's **base attributes**, as you would for a character, and upgrade its attributes step by devastating step.
+The fabricator technologies of this golden age are better than that. Note down your item’s **base attributes**, as you would for a character, and upgrade its attributes step by devastating step.
 
-**Levels** are most relevant for vehicles, where they also translate into other attributes (like life and damage scores). Higher level powers impose penalties to their targets' saves. Weapons with levels may count as "magical" for overcoming strange alien resistances to mundane attacks. Other specific gear, such as golem armor in full auto destruction mode, also benefit from levels.
+**Levels** are most relevant for vehicles, where they also translate into other attributes (like life and damage scores). Higher level powers impose penalties to their targets’ saves. Weapons with levels may count as "magical" for overcoming strange alien resistances to mundane attacks. Other specific gear, such as golem armor in full auto destruction mode, also benefit from levels.
 
 Situationally, levelled gear may also bestow a certain amount of social renown, cachet, and swagger its owner.
 
@@ -1499,7 +1499,7 @@ The bonus to roll [d20], damage per die, and armor or ward upgrades are straight
 
 _n+1 = 2(n)_
 
-**Traits** is a catch-all category for the kinds of upgrades and features that don't add up together easily, such as:
+**Traits** is a catch-all category for the kinds of upgrades and features that don’t add up together easily, such as:
 - area, range, or speed improvements,
 - circumstantial bonuses (e.g. +3 in cold weather),
 - damage dice boosts (e.g. d3 > d4 > d6 > d8),
@@ -1522,7 +1522,7 @@ An oldstyle human would call such gear "hallmarks". One further-fallen from that
 
 All experience earned is banked until you invest it to level up a character(s), their pets and sidekicks, or their hallmarks. You can invest experience in other players’ characters, pets, sidekicks, and hallmarks, if they agree.
 
-Each pet, sidekick, or other hallmark with invested xp occupies a trait or item slot on their owner PC's sheet.
+Each pet, sidekick, or other hallmark with invested xp occupies a trait or item slot on their owner PC’s sheet.
 
 Any treasured possession can become a character’s hallmark—a vehicle, a sword, a power or something more unusual. Heroism rubs off on things.
 
@@ -1530,7 +1530,7 @@ A PC can own a number of hallmarks equal to their level.
 
 All hallmarks start at level 0 unless specified otherwise.
 
-Leveling them up costs experience, as with any other character, but also has material costs if it does not flow from in-game events (at the referee's discretion).
+Leveling them up costs experience, as with any other character, but also has material costs if it does not flow from in-game events (at the referee’s discretion).
 
 Hallmarks use the canonical OGA upgrade model. Upgrade hallmark attributes using the same xp tables and stepwise progression as `### Basic Golden Age Upgrading` and `### Golden Age Item Upgrading`.
 
@@ -1547,11 +1547,11 @@ Typical hallmark upgrades follow the same columns:
 
 ### Shared Characters or Hallmarks
 
-If multiple PCs want to share ownership of a secondary character or item, for example the party's treasured house-golem, they should each write it down in an available slot on their character sheet.
+If multiple PCs want to share ownership of a secondary character or item, for example the party’s treasured house-golem, they should each write it down in an available slot on their character sheet.
 
 ### Recovering Invested Experience
 
-Sometimes, despite a player's best intentions, their character or pet or hallmark suffers terminal existential failure—death or destruction.
+Sometimes, despite a player’s best intentions, their character or pet or hallmark suffers terminal existential failure—death or destruction.
 
 Their owner recovers 50–100% (roll 1d6+4 × 10) of invested xp to their bank. If multiple players have invested xp, fair-minded owners are encouraged to repay the other investors as well.
 
@@ -1583,7 +1583,7 @@ The referee peppers sites and mentor NPCs around the map, creating a personalize
 
 > _The referee agrees this could be a worthy trait. The first place to start learning about masks as faces would obviously be the Porcelain Citadel. This is enough of a hook for the player to write down the facemaker trait, with space for three tallies._
 
-> _The referee consults their Grand Map. It will take Onion at least 3 weeks of travel to reach the Porcelain Citadel and look for a mentor. The search could take another week and Onion's studies will take at least one more week. With travel events and the other PCs' shenanigans, that affords plenty of play time to seed clues for future study locations Onion can research and visit._
+> _The referee consults their Grand Map. It will take Onion at least 3 weeks of travel to reach the Porcelain Citadel and look for a mentor. The search could take another week and Onion’s studies will take at least one more week. With travel events and the other PCs’ shenanigans, that affords plenty of play time to seed clues for future study locations Onion can research and visit._
 
 ## Increasing Ability Scores
 
@@ -1609,19 +1609,19 @@ Alternatively, a player may decide to retire their character and promote a sidek
 
 ## Running A Caravan
 
-The caravan is a group character for the players, a joint mobile base of operations. You don't need a caravan to travel the UVG, but it's a good idea. You can use the caravan sheet provided at the end of the book, or draw your own.
+The caravan is a group character for the players, a joint mobile base of operations. You don’t need a caravan to travel the UVG, but it’s a good idea. You can use the caravan sheet provided at the end of the book, or draw your own.
 
 **Money (Cash)**
 
-Cash (€) is the currency of the UVG. It's called cash as a nod to ancient Chinese cash (文) and the whole Marco Polo meta-theme.
+Cash (€) is the currency of the UVG. It’s called cash as a nod to ancient Chinese cash (文) and the whole Marco Polo meta-theme.
 
 An unskilled laborer earns €1/day. Lower denominations exist, but can generally be ignored at the scale of caravans. Letters of credit made out by private butcher banks are also available.
 
-Outfitting a caravan is expensive. The PCs should start with a loan of €1,000 per character. The financier is dubious and there's 100% annual interest, but it beats scrabbling for pennies. Caravans rack up weekly expenses from wages, food, and more. Don't worry about precision -- an approximate track of ready cash depleting suffices.
+Outfitting a caravan is expensive. The PCs should start with a loan of €1,000 per character. The financier is dubious and there’s 100% annual interest, but it beats scrabbling for pennies. Caravans rack up weekly expenses from wages, food, and more. Don’t worry about precision -- an approximate track of ready cash depleting suffices.
 
 **Financier (Patron)**
 
-Create this NPC together with the players (see p178). The zanier, the better. Ask the players in turn about the patron's goals, the organization, opponents, weaknesses, oddities, and so on.
+Create this NPC together with the players (see p178). The zanier, the better. Ask the players in turn about the patron’s goals, the organization, opponents, weaknesses, oddities, and so on.
 
 **Logo**
 
@@ -1629,7 +1629,7 @@ Every adventuring-trading company needs a cheesy logo. When the players decide t
 
 **Assets**
 
-This section helps track the heroes' investments in trade routes and other shenanigans. Use the table on p.177 to generate returns.
+This section helps track the heroes’ investments in trade routes and other shenanigans. Use the table on p.177 to generate returns.
 
 **Time**
 
@@ -1643,7 +1643,7 @@ Fast (fresh horses) and slow tags (heavy wagons) cancel each other out. The spee
 
 **Traveling the Back Roads**
 
-If a caravan travels slowly and cautiously, they tally an extra 7 days every week, but have bonuses on their travel tests (misfortune, encounter rolls, avoiding notice and ambushes). However, they do have to roll twice, so there's that.
+If a caravan travels slowly and cautiously, they tally an extra 7 days every week, but have bonuses on their travel tests (misfortune, encounter rolls, avoiding notice and ambushes). However, they do have to roll twice, so there’s that.
 
 **Consumption**
 
@@ -1651,11 +1651,11 @@ How many supplies the caravan consumes each week. For simplicity, humans consume
 
 **PCs**
 
-List the players' characters and their usual roles in the caravan. Common roles include expedition leader, navigator, captain of the guards, chief negotiator, mechanic or animal handler, and doctor.
+List the players’ characters and their usual roles in the caravan. Common roles include expedition leader, navigator, captain of the guards, chief negotiator, mechanic or animal handler, and doctor.
 
 **Helpers**
 
-Helpers are secondary characters with specialized skills: navigators, cooks, mechanics, guards, hunters, scouts, etc.. Unless otherwise specified, a helper's weekly wages equal €6 per level.
+Helpers are secondary characters with specialized skills: navigators, cooks, mechanics, guards, hunters, scouts, etc.. Unless otherwise specified, a helper’s weekly wages equal €6 per level.
 
 
 How do you convey how horrible it is to carry lots of gear long distances without a hover-wagon, without strangling the players with the classic pounds and packs as their heroes slog across a giant savanna for months at a time? As with time, we change the scale for the rigors of trans-continental travel.
@@ -1664,7 +1664,7 @@ UVG uses sacks as a unit of measurement of the unwieldiness and weight of things
 
 ### Inventory and Sacks
 
-- All of a hero's adventuring or professional gear. Magic skulls of memory for wizards, a year's supply of swordmaceaxes for fighters, golf clubs for the thief, whatever.
+- All of a hero’s adventuring or professional gear. Magic skulls of memory for wizards, a year’s supply of swordmaceaxes for fighters, golf clubs for the thief, whatever.
 - A **sack of supplies**. Enough food, water, camping gear, and toilet paper to survive for a week. Bad quality supplies cost €2/sack, good ones €10/sack -- or more the deeper they are in the wastes!
 - One **rider** or unconscious human.
 - A unit of trade goods.
@@ -1681,7 +1681,7 @@ For simplicity, a sack is roughly as many neatly bundled pounds, stones, or inve
 - **Soap**: a hundredth of a sack, also a generic small item, like a signal whistle or signet ring or spike. Or bar of soap.
 - **Cash (€)**: one standard unit of currency.
 
-A human's inventory limit is 7 + Strength stones' worth of items _or_ **one packed sack** (10 stones). For every stone over their limit, a human suffers -1 to all rolls.
+A human’s inventory limit is 7 + Strength stones’ worth of items _or_ **one packed sack** (10 stones). For every stone over their limit, a human suffers -1 to all rolls.
 
 A package is easier to carry than loose objects, hence the difference (and for simplicity at the caravan scale). Pouches and bags do the same for soap-sized items. Drawing a weapon from a package in the heat of battle is not feasible. Dropping a package with fragile goods (like sanguine porcelains or jay needles) may damage them.
 
@@ -1689,7 +1689,7 @@ Players will come up with weird ideas for rigging up rollers, ropes, and pulleys
 
 ### The Pleasure of Treasure
 
-Regardless of whether you award xp for treasure recovered or not, heroes will try to make away with rare treasures like the insidious crystal omphalos of Last Fish Heaven (€4,500, 3 sacks). How much are treasures worth? You can either decide based on your rough estimate, a hero's Charisma test, or a flat d00 roll.
+Regardless of whether you award xp for treasure recovered or not, heroes will try to make away with rare treasures like the insidious crystal omphalos of Last Fish Heaven (€4,500, 3 sacks). How much are treasures worth? You can either decide based on your rough estimate, a hero’s Charisma test, or a flat d00 roll.
 
 | d00 | Rough Idea | Charisma Test | Cash Per Sack |
 |---:|:---|---:|---:|
@@ -1709,7 +1709,7 @@ Example: the fabulous _gold_ and _marble statue_ of the _metaphysical_ _insinuat
 
 ### So Hack It Up
 
-A smart (philistine) hero can **hack out** 1d6 + Level percent of a treasure's value in one turn. This will reduce the value of the rest of the work by 10x that amount in percent.
+A smart (philistine) hero can **hack out** 1d6 + Level percent of a treasure’s value in one turn. This will reduce the value of the rest of the work by 10x that amount in percent.
 
 Example: Pikker the Pengling rolls 5%, gouges out the gold bits for €300, and pockets them. The remaining defaced sculpture is now worth 50% less: €3,000. Yeah, looters are not nice.
 
@@ -1718,7 +1718,7 @@ Example: Pikker the Pengling rolls 5%, gouges out the gold bits for €300, and 
 
 _What the hell have you gotten yourself into?_
 
-The UV Grasslands are big. They're weird, sure, but first and foremost they are mind-bogglingly big. Vast and empty -- it's that emptiness that kills heroes because it means there's no wishing well to drink from and no turnip farm to plunder.
+The UV Grasslands are big. They’re weird, sure, but first and foremost they are mind-bogglingly big. Vast and empty -- it’s that emptiness that kills heroes because it means there’s no wishing well to drink from and no turnip farm to plunder.
 
 Rounds, minutes, and turns work for the exploration of dungeons or ruins, while hours and days are fine for overland travel and the exploration of terrain hexes. When traveling in the UVG, a **week** is the basic unit of activity to drive home how far apart everything is.
 
@@ -1729,7 +1729,7 @@ Every week of travel:
 3. Check what **encounters** happen and resolve them.
 4. Any heroes that did not participate in a fight or flight can treat the week as a **long rest**.
 5. Check if the caravan has arrived at a **destination**. Most destinations are a week apart but some require two, or even three, weeks of voyaging in the wastes. If the caravan has not yet arrived at a safe location repeat steps 1 to 5 until it does.
-6. When the caravan arrives at a destination, one hero makes a moderate relevant test for **discoveries** and notes any on the map. These are points of interest a few days' journey from the destination. There are a limited number of discoveries available at each destination.
+6. When the caravan arrives at a destination, one hero makes a moderate relevant test for **discoveries** and notes any on the map. These are points of interest a few days’ journey from the destination. There are a limited number of discoveries available at each destination.
 
 Instead of traveling a caravan may **stop for a full week**.
 
@@ -1804,7 +1804,7 @@ Misfortune applies to the whole caravan, but characters test individually to avo
 | 9 | Pack animal wanders off (-1 day or -1 animal). |
 | 10-11 | A piece of equipment has worn out (useless until repaired in town). |
 | 12 | The road is dusty, long, and dull. Boredom grows. |
-| 13 | The road is exhausting but ... hey ... wait ... what's that? A risky gamble to acquire some unexpected resources? Spend 1d6 Life to attempt a moderate test to gain 1d4 supplies. |
+| 13 | The road is exhausting but ... hey ... wait ... what’s that? A risky gamble to acquire some unexpected resources? Spend 1d6 Life to attempt a moderate test to gain 1d4 supplies. |
 | 14-19 | The road is arduous, but due to good packing and a few travel games, it is manageable. |
 | 20+ | Your understanding of the steppes grows, advance one step towards acquiring a UVG wilderness skill, like Mule Whispering, Steppeland Protocols, or Storytelling. |
 
@@ -1821,7 +1821,7 @@ The referee can provide a bonus or penalty to the roll.
 
 **Charisma and Fortuna**
 
-A character can spend one point of Charisma to re-roll their misfortune. The concept of Charisma comes from Ancient Greek, where it referred to grace and bestowed by capricious deities. This wasn't some approximation of "sex appeal" or "leadership potential."
+A character can spend one point of Charisma to re-roll their misfortune. The concept of Charisma comes from Ancient Greek, where it referred to grace and bestowed by capricious deities. This wasn’t some approximation of "sex appeal" or "leadership potential."
 
 This was straight up divine favoritism. A hero could be a complete dirtbag but her divine mother had dipped her in god ju-ju and given her teflon skin. Others got the plague, she was untouched. Others got scarred, she glowed with beauty and grace. Classical Charisma is utterly unfair which is why it works so well as a proxy for luck.
 
@@ -1857,7 +1857,7 @@ Limit the number of possible discoveries per destination to five or less, unless
 | 1 | Nothing but blank stares, but 1d6 days after leaving, the heroes get to experience an honest-to-goodness bonus ambush encounter. |
 | 2-3 | Nothing interesting nearby, but [-] on the next encounter check. |
 | 4-10 | Dust and haze and broken dreams, that is all. |
-| 11 | Nothing here, but there's this amazing place near the _next_ destination. |
+| 11 | Nothing here, but there’s this amazing place near the _next_ destination. |
 | 12-15 | The locals mutter and nod, ah. A visitor. Another foreign "discoverer." Note down one discovery. |
 | 16-19 | In the silences. In the gaps in conversation. In the forgotten words there is a map. Two discoveries. |
 | 20+ | The locals no longer read the old manuals or the old stelae in the crypts of their founders, but here is a dark clue. Three discoveries. |
@@ -1900,10 +1900,10 @@ Strange radiations, polluted water, and hunger can all be lethal. That is why ca
 Running out of supplies is bad. Waiting until things are very bad can be terrible. Sometimes the weak must be sacrificed for the strong.
 
 1. **Cannibalise** the expedition. This is the fastest way to get supplies. A human provides one sack of supplies, an ordinary pack animal provides two sacks of supplies.
-2. **Forage** for supplies. Instead of traveling, the caravan spends a week securing water, food and shelter. Usually, a week's foraging will net enough supplies for that week and another week of travel. In very harsh environments this may not be so easy.
+2. **Forage** for supplies. Instead of traveling, the caravan spends a week securing water, food and shelter. Usually, a week’s foraging will net enough supplies for that week and another week of travel. In very harsh environments this may not be so easy.
 3. **Buy** more supplies in a settlement. Obviously. Prices vary, but between €2 and €10 per sack is reasonable.
 
-Some inhabitants of the Ultraviolet Grasslands frown on cannibalism. Foraging makes for slow travel, which isn't ideal when a caravan has places to be -- it is best to treat foraging as a stop-gap while a few fast travelers seek out help.
+Some inhabitants of the Ultraviolet Grasslands frown on cannibalism. Foraging makes for slow travel, which isn’t ideal when a caravan has places to be -- it is best to treat foraging as a stop-gap while a few fast travelers seek out help.
 
 ### Out of Supplies
 
@@ -1926,7 +1926,7 @@ Source is the creative essence of the world, sometimes called the _world soul_. 
 | 7-11 | Limbs ripple and rearrange, creature becomes (roll d4) (1) a quadruped, (2) winged, (3) tentacled, (4) a limbless annelid. |
 | 12-15 | Creature is modified with (roll d4) (1) calcite armor plates (+1 Defense), (2) chitin eruptions (spines), (3) bronze bones (+1d4 Life, [-] on tests to resist disease), (4) crystal nodules (€1d20 x 100, removal is fatal). |
 | 16-19 | Bunny error. Creature becomes (roll d4) (1) bunny-headed, (2) bunnytailed, (3) bunny-furred, (4) a large, bipedal, sentient bunny. It seems there are a lot of rabbits hidden deep in the general source code. Note: reputable sources indicate that different basal morphologies may manifest in different fallen regions. |
-| 20+ | Reassembly from source. All creature's stats are shuffled randomly. One random stat increases by 1d4. |
+| 20+ | Reassembly from source. All creature’s stats are shuffled randomly. One random stat increases by 1d4. |
 
 
 ## Trade & Goods
@@ -1944,15 +1944,15 @@ For each destination, make a market roll:
 
 | d20 | Price Factor | Notes |
 |---:|---:|:---|
-| 1 | 0 | It's taboo. Nobody talks about it. Like it doesn't exist. There certainly isn't a local morality cult that murders dealers. |
-| 2 | 0 | No demand or brainwashing? They don't want it at all. |
+| 1 | 0 | It’s taboo. Nobody talks about it. Like it doesn’t exist. There certainly isn’t a local morality cult that murders dealers. |
+| 2 | 0 | No demand or brainwashing? They don’t want it at all. |
 | 3-6 | 0.5 | Low demand. |
 | 7-12 | 1 | Normal market. |
 | 13 | 1 | Depressed market. Haggling checks at a disadvantage. |
 | 14-15 | 2 | Popular but illegal. Stiff penalties for captured dealers. |
 | 16-17 | 2 | High demand. |
 | 18 | 3 | Market bubble! 1 in 6 chance per caravan visit that the market has collapsed (roll 1d10 on this table). |
-| 19 | 4 | The motherload! You're really in business now. 1 in 6 chance per caravan visit that the market has readjusted (roll again on this table). |
+| 19 | 4 | The motherload! You’re really in business now. 1 in 6 chance per caravan visit that the market has readjusted (roll again on this table). |
 | 20 | 1 | Source! They make the trade good here. Buyers make haggling checks at an advantage, sellers at a disadvantage. |
 
 ### Buying and Selling the Goods
@@ -1973,7 +1973,7 @@ When selling multiply the price by the factor, when buying divide.
 | 6-13 | 1 | A fair and reasonable sale. |
 | 14-17 | 1.2 | A solid, profitable sale. |
 | 18-19 | 1.5 | A good trade. Anyone should be proud. |
-| 20+ | 3 | This might be almost too good. Perhaps it wouldn't hurt to quickly skip town now... |
+| 20+ | 3 | This might be almost too good. Perhaps it wouldn’t hurt to quickly skip town now... |
 
 ### Local Special Needs
 
@@ -1998,14 +1998,14 @@ But there is always a catch, and usually quite a journey.
 
 | d10 | The catch is ... | ... and the Destination |
 |---:|:---|:---|
-| 1 | There's a bomb in the cargo. | An adjacent, well-known destination. |
+| 1 | There’s a bomb in the cargo. | An adjacent, well-known destination. |
 | 2 | The cargo is secretly faulty. | A nearby (2-3 stops) destination. |
 | 3 | Local patrols demand bribes. | A far away (4-6 stops) destination. |
 | 4 | Problem with the paperwork. | A small, hidden settlement (2-3 stops). |
 | 5 | Thieves are stalking the cargo. | An illegal camp on the road (2-3 stops). |
 | 6 | A competitor is racing to sell! | X marks the spot a week off the road at the same location. Hurry! (1-3 stops away). |
-| 7 | A third party wants to ensure the delivery fails. | A discovery, here, it's famous. I'll mark it on the map for you (1-3 stops away). |
-| 8 | The cargo is stolen. And someone scary wants it back. | Another caravan, it passed through here 2 weeks ago. It's slow. You can catch it. |
+| 7 | A third party wants to ensure the delivery fails. | A discovery, here, it’s famous. I’ll mark it on the map for you (1-3 stops away). |
+| 8 | The cargo is stolen. And someone scary wants it back. | Another caravan, it passed through here 2 weeks ago. It’s slow. You can catch it. |
 | 9 | The local character is in cahoots with armed bandits. | A lone traveler. Ask at this totally legal watering hole 2-3 stops away. |
 | 10 | The drop-off is under surveillance. Make the delivery ... discreetly. | A dangerous discovery, off in the wilds, a few days from here. Make yourself scarce after the delivery. |
 
@@ -2028,7 +2028,7 @@ Well, it will be, once the loan is paid off. Setting up a caravan can be overwhe
 
 2. **Vehicle**
 
-   A classic two-wheel wicker-and-aluminum covered cart. It's light and tough, and the canvas canopy keeps out the rain. It has (roll d6): (1) corporate paint job, (2) leaky dust-seals, (3) flag pole and flag, (4) plush mascot, (5) strange stains, or (6) chrome rails.
+   A classic two-wheel wicker-and-aluminum covered cart. It’s light and tough, and the canvas canopy keeps out the rain. It has (roll d6): (1) corporate paint job, (2) leaky dust-seals, (3) flag pole and flag, (4) plush mascot, (5) strange stains, or (6) chrome rails.
 
    Capacity: 6 sacks. Value: €200. Speed: Slow.
 
@@ -2060,7 +2060,7 @@ Well, it will be, once the loan is paid off. Setting up a caravan can be overwhe
 
    Occupies: 3 sacks. Value: €300.
 
-That's it! There's 1 sack of capacity spare (or a fella named Spare Sack) and €290 left of the loan. The character can buy some things (p.173) in the Violet City, do market research to figure out where to sell their goods (p.172), then head out into the Utter West and make a fortune. Come the new year, they owe their financier €2,000.
+That’s it! There’s 1 sack of capacity spare (or a fella named Spare Sack) and €290 left of the loan. The character can buy some things (p.173) in the Violet City, do market research to figure out where to sell their goods (p.172), then head out into the Utter West and make a fortune. Come the new year, they owe their financier €2,000.
 
 Multiple PCs can each contribute their starting cart, goods, and animals to the caravan, or they can be specialists attached to the caravan (prospectors, artists, hunters, explorers, ambassadors, or what have you).
 
@@ -2077,7 +2077,7 @@ For convenience, a caravan has one patron (at least initially). The caravan is i
 - **Transport**: five mules
 - **Inventory**: 4 sacks (cheap rations), 5 sacks (fine tubers, €500 total trade value), 1 sack (UVG hiker kit).
 
-A small trader could reach a destination two weeks away. It's risky going without any guards, but the potential for profit is large.
+A small trader could reach a destination two weeks away. It’s risky going without any guards, but the potential for profit is large.
 
 _Presenting the all-new Waste Cruiser ∏ĦΩř model thunder rig._ _Now with upgraded semi-sentient comfort mode!_
 
@@ -2117,7 +2117,7 @@ Safely travel throughout most of the Ultraviolet Grasslands, with enough animals
 - **Speed**: slow
 - **Capacity**: 20 sacks
 - **Transport**: five mules, one wagon, one horse
-- **Inventory**: 15 sacks (good rations), 1 sack (fortified vampire wines, €100 trade value), 3 sacks (adventure kitchen, dungeoneer's kit, excavator's kit), 1 rider.
+- **Inventory**: 15 sacks (good rations), 1 sack (fortified vampire wines, €100 trade value), 3 sacks (adventure kitchen, dungeoneer’s kit, excavator’s kit), 1 rider.
 
 With lots of capacity and a wagon, this caravan can drag large statues, pieces of machinery, or a small mountain of coin out of a dungeon. Additional warriors recommended.
 
@@ -2137,7 +2137,7 @@ This fast party of warriors can strike deep into the steppe and escape quickly. 
 - **Speed**: slow (+ 3 fast autowagons)
 - **Capacity**: 33 sacks + 5 cabins
 - **Transport**: one L12 autogolem and three L4 autowagons
-- **Inventory**: 24 sacks (good rations), 6 sacks of kit (adventure kitchen, hiker kit, golem gear, mechanic's chest, navigator's suitcase, one archaic golem armor), 3 sacks of ammo (cat rifle ammo, 30 magazines), 5 available sacks for cargo, 8 rig riders with cat rifles (2d10, far, reload 4).
+- **Inventory**: 24 sacks (good rations), 6 sacks of kit (adventure kitchen, hiker kit, golem gear, mechanic’s chest, navigator’s suitcase, one archaic golem armor), 3 sacks of ammo (cat rifle ammo, 30 magazines), 5 available sacks for cargo, 8 rig riders with cat rifles (2d10, far, reload 4).
 
 One heavy golem rig as the heart of the group and three fast wicker autowagons to maneuver around and do a full-on road warrior adventure. Mounts for additional heavier weapons on the autogolem rig are optional. Dagger axes (1d8) and spiked leather armors (+2 defense) for the whole crew would add another €520.
 
@@ -2149,7 +2149,7 @@ Most would-be travelers in the vast grasslands, beyond the reach of civilization
 | d20 | Who Are They? | What Do They Want? | Their Organization | Their Opponents | Weaknesses and Oddities |
 |---:|:---|:---|:---|:---|:---|
 | 1 | Hexad RLD smuggler | Money and respect | Ruthless incorporation | Disgruntled nobles | Communicates through telepathy. |
-| 2 | Vintner lord's butler | Willing blood-donor serfs | Aristocratic moiety | Organized proles | Uses a synthetic body-replacement. |
+| 2 | Vintner lord’s butler | Willing blood-donor serfs | Aristocratic moiety | Organized proles | Uses a synthetic body-replacement. |
 | 3 | Metropolitan banker | Infinite cash | Butcher investment fund | Oppressed dogheads | Has many clones. Sends them as agents. |
 | 4 | D.W.A.R.F. industrialist | Rebuild oldtech factory | Synthetic machine guild | Anti-machine fanatics | Wears a modular face replacement. |
 | 5 | Safranj merchant baron | Destroy foe. Financially. | Family company. Mob? | Pro-machine cultists | Always levitates 10cm above the ground. |
@@ -2197,7 +2197,7 @@ Most would-be travelers in the vast grasslands, beyond the reach of civilization
 
 ### Trade Routes (Milk Runs)
 
-What if the PCs figure out a trade route they can keep rinse and repeat for profit -- a milk run? Let them. They'll get bored soon enough. Or they can set up a trade route with an NPC representative and -- probably -- additional financiers. The minimum investment for a trade route is €10,000 per week's journey. Figure out the investment and how safe the PCs choose to play it.
+What if the PCs figure out a trade route they can keep rinse and repeat for profit -- a milk run? Let them. They’ll get bored soon enough. Or they can set up a trade route with an NPC representative and -- probably -- additional financiers. The minimum investment for a trade route is €10,000 per week’s journey. Figure out the investment and how safe the PCs choose to play it.
 
 - **Safe**: a steady 5% return, almost no risk. Right?
 - **Profitable**: good profits, but some risks.
@@ -2205,15 +2205,15 @@ What if the PCs figure out a trade route they can keep rinse and repeat for prof
 
 Trade Route Events & Returns (per trip)
 
-Roll on the chosen column (safe, profitable, or aggressive) when the PCs create a trade route by completing an initial round trip with a full caravan. Roll again whenever they return to collect their profits -- PCs can't collect before a caravan has completed at least one trip (obviously). Hero dice can apply.
+Roll on the chosen column (safe, profitable, or aggressive) when the PCs create a trade route by completing an initial round trip with a full caravan. Roll again whenever they return to collect their profits -- PCs can’t collect before a caravan has completed at least one trip (obviously). Hero dice can apply.
 
-Trade route caravans are always slow and take at least double the number of weeks listed for each trip. With routes blocked by seasons of winter and mud for roughly 25 weeks each year, very long trade routes can become years' long affairs.
+Trade route caravans are always slow and take at least double the number of weeks listed for each trip. With routes blocked by seasons of winter and mud for roughly 25 weeks each year, very long trade routes can become years’ long affairs.
 
 | d20 | Safe Route | Profitable Route | Aggressive or Illegal Route |
 |---:|:---|:---|:---|
 | 1 | Drivers convert to millenarian cult. Gave all to the poor and joined a fraternity. | Slaver attack! Everyone sold for (roll d3): (1) biomatter, (2) labor, (3) reprogramming. 100% loss. | Extra-dimensional incursion swallows the caravan. Everything is gone. 100% loss. |
 | 2 | Savage flash flood. Much cargo ruined. Gold dust found in remaining sacks. Prospect? 50% loss. | Reaver attack. Half of defenders killed. Most of the cargo taken. 75% loss. | Rival mercer guild bribed the drivers to their side with all the goods. Potential 100% loss. |
-| 3 | Local faction locks up caravan for breaking obscure custom. Will be released in 1d4 months. | Nomads block route and take goods. Caravan returned with nomads' thank you letter. 50% loss. | Caravan Ghosts possess the caravan and use it as an infection vector to take over a settlement. Spooky. |
+| 3 | Local faction locks up caravan for breaking obscure custom. Will be released in 1d4 months. | Nomads block route and take goods. Caravan returned with nomads’ thank you letter. 50% loss. | Caravan Ghosts possess the caravan and use it as an infection vector to take over a settlement. Spooky. |
 | 4 | 1% profit and oil paintings (€1k to a collector, roll d6): (1) vomes playing cards, (2) trees, (3) mountains, (4) stars, (5) unicorns, (6) portraits. | Drivers strike out as independents. Dump cargo at a safe town. Make off with vehicles and skimmed profits. 33% loss. Hope it was insured. | Monster attack! Sole survivor tells of horror and woe. Steeds destroyed, goods scattered round the wreckage. 50-75% loss. Some recovery possible. |
 | 5 | 2% profits and iridescent beetles (€1k to a biomancer, roll d6): (1) toxic, (2) ornate, (3) large, (4) surprisingly heavy, (5) delicious, (6) great fun. | Special local taxes. 25% loss. Two sacks of paperwork and receipts received as "proof". | Bandit attack! Most of the steeds and goods taken. 75% loss. Tracks to bandit hideout. |
 | 6 | 3% profits and a two-headed (roll d6): (1) ox, (2) wolf, (3) hamster, (4) statue, (5) shrub, (6) golem. | Weather and vomes catch the caravan. Drivers hid the goods and escaped with the beasts and vehicles. Potential 50% loss. | Caravan upsets local faction, goods seized. Vehicles returned. 75% loss. |
@@ -2222,32 +2222,32 @@ Trade route caravans are always slow and take at least double the number of week
 | 9 | 6% profits and postcards from deeper in the UVG. The cards imply a ... buried ... fan of the PCs? | 11% profits. Also mineral samples from a potential mining region. Worth digging too deep? | Freak snowstorm. Drivers hide goods and corpses in a cave. 25% loss. Corpses reanimate later. Oops. |
 | 10 | 7% profits and a map with scribbled notes of more treasures further away. | 12% profits and some nicely patterned fabric samples. Could be a new trade good? | Autonom warriors killed several members of the caravan. 10% loss due to liabilities. |
 | 11 | 8% profits and a metal gastropod shell that plays Long Ago musics from an implanted vidy crystal. | 14% profits and a new dice game that could be marketed with a small initial investment. | Unusual discovery! Half the crew went mad. 25% loss. Loot odd statues from the site (€11,000+)? |
-| 12 | 9% profits and the bones of some odd creature. A necromancer might resurrect it (€1,500 steed)? | 16% profits and a small, cute pet. It's really very cute. So cute nobody could ever hurt it. | 20% profits and a creepy musical instrument that suggests a deal with a chthonic deity. |
-| 13 | 10% profits and a pet rock. The rock is cursed and will not leave. Still, it is a friendly (if very unlucky) rock. It likes to be held. It is labeled "Pickles." | 19% profits and a new, virulent disease that (roll d6): (1) kills, (2) cripples, (3) disfigures, (4) weakens, (5) exhausts, (6) embarrasses. | 100% profits. Drivers eat one another. Beasts starve. Trade route collapses. Locals say it's a curse. |
+| 12 | 9% profits and the bones of some odd creature. A necromancer might resurrect it (€1,500 steed)? | 16% profits and a small, cute pet. It’s really very cute. So cute nobody could ever hurt it. | 20% profits and a creepy musical instrument that suggests a deal with a chthonic deity. |
+| 13 | 10% profits and a pet rock. The rock is cursed and will not leave. Still, it is a friendly (if very unlucky) rock. It likes to be held. It is labeled "Pickles." | 19% profits and a new, virulent disease that (roll d6): (1) kills, (2) cripples, (3) disfigures, (4) weakens, (5) exhausts, (6) embarrasses. | 100% profits. Drivers eat one another. Beasts starve. Trade route collapses. Locals say it’s a curse. |
 | 14 | 11% profits and some pickled mushrooms. One of the mushrooms is actually a vome (L1, vegetable). | 20% profits and a charming potted plant of unique and baroque charm. It can talk. | 30% profits and an undying servant of gruesome design and odd proportion. They are kind. |
 | 15 | 12% profits and a dutiful little mechanical servant. It can learn any skill. It can remember one skill. | 30% profits and sculptures that cause profound nausea when watched or touched (€2,000, 1 sack). | 40% profits and an empty alien casket. The casket has navigation rituals for accessing a fast star. |
 | 16 | 13% profits and a sack (€250) of ugly shoes -- easy to clean and water resistant. Who made them? | 30% profits and some new fashions. Red suspenders and ruffled shorts here we come! | 40% profits, but all the drivers seem to have been ... replaced. They look the same but feel different. |
 | 17 | 14% profits and a kitschy replica of a monolith with spring-activated altar and prayer-action. | 30% profits and a trained hunting vome (L1d4+2, docile) with silver eyes and iron tusks. | 50% profits. All the animals now have eyes that have seen too much. Also, they are all red. |
-| 18 | 15% profits and a small troupe of hairless monkeys with shocking rainbow manes. | 30% profits and a scholar who is only half there. Promises to unlock a phase gate. Says it's safe. | 60% profits and all the crew have acquired an array of biomechanical parts. This is fine. Right? |
+| 18 | 15% profits and a small troupe of hairless monkeys with shocking rainbow manes. | 30% profits and a scholar who is only half there. Promises to unlock a phase gate. Says it’s safe. | 60% profits and all the crew have acquired an array of biomechanical parts. This is fine. Right? |
 | 19 | 18% profits and a traditional bone war club. It bears a map to a ... Lost World theme-realm? | 30% profits and a beautiful weapon. Probably not an artifact, but worth 10x normal. Also, it talks. | 70% profits and a scary sentient vehicle named Qit Quyo (L7, fast). It eats souls for fuel. |
 | 20-23 | 20% profits and an overlong epic tale of a voyage of self-discovery. Write it all down to gain +1 Aura. | 40% profits and a holy relic. It brings nightmares and prophecies of doom. They are true. | 80% profits and a strange machine that whispers in the dark. It has no name. It has no color. Zu. |
-| 24+ | 30% profits and a free 99-year lease on a nice retirement bungalow in a Metropolitan suburb. Don't ask what the agent had to do to get that. | 60% profits and a machine human servant named Tassilo od Sharamba (L2, butler). They can unlock an aerolithic palace by the Near Moon. | 120% profits and a machine human master named Shoya osi Clavo (L5, ancient abmortal). They say it is time to restart the second sun. |
+| 24+ | 30% profits and a free 99-year lease on a nice retirement bungalow in a Metropolitan suburb. Don’t ask what the agent had to do to get that. | 60% profits and a machine human servant named Tassilo od Sharamba (L2, butler). They can unlock an aerolithic palace by the Near Moon. | 120% profits and a machine human master named Shoya osi Clavo (L5, ancient abmortal). They say it is time to restart the second sun. |
 
 
 ### Caravan Quests
 
-If trading and exploring isn't enough, these secret quests may give additional incentives for travel into the half-forgotten land, between the sunset and the stars, where the veterans of the psychic wars still dwell, ruminating on their lost lives. Completing a quest may net a party enough xp to gain a level.
+If trading and exploring isn’t enough, these secret quests may give additional incentives for travel into the half-forgotten land, between the sunset and the stars, where the veterans of the psychic wars still dwell, ruminating on their lost lives. Completing a quest may net a party enough xp to gain a level.
 
 1. **Big Game Hunting**. A wealthy gentleperson on a mission to acquire seven exceptional (and bulky trophies) has commissioned the caravan.
-2. **Explore Forgotten Ruins**. A wizards' community college is building an archaeology collection. Here, on the map, are five promising locations.
+2. **Explore Forgotten Ruins**. A wizards’ community college is building an archaeology collection. Here, on the map, are five promising locations.
 3. **Glorious Naturalists**. A civilian scientific society seeks to flatter its oligarch founders with new discoveries. The party is tasked with recording nine new minerals, plants, animals, and hyper-natural phenomena.
 4. **Learn Ancient Secrets**. A forbidden book documents five secrets scattered around the UVG, each protected by a crotchety custodian. With the five secrets a wizard can spend figure out how to reactivate an ancient gate, or some other powerful magic.
 5. **Diplomatic Mission**. Ambassadors sent to spy on the barbarians of the wilderness and foment strife. A war breaking out will be best, but three military intelligence reports will also do.
 6. **Escort Duties**. Three loud, squabbling clients are headed to a remote destination. They are (d6): (1) bumbling aristocrats, (2) over-eager dilettantes, (3) cloistered cultists, (4) pampered merchants, (5) ivory-tower scholars, or (6) amateur archaeologists. Their survival is, of course, necessary.
-7. **Assassination**. A (d6): (1) master assassin, (2) rogue pretender, (3) scary wizard, (4) important researcher, (5) beautiful gladiator slave or (6) prophesied scion has escaped into the wilds. Bring their head to the Divine President. Three clues are scattered randomly in the first 10 destinations in the UVG. They provide the key to the target's true location.
+7. **Assassination**. A (d6): (1) master assassin, (2) rogue pretender, (3) scary wizard, (4) important researcher, (5) beautiful gladiator slave or (6) prophesied scion has escaped into the wilds. Bring their head to the Divine President. Three clues are scattered randomly in the first 10 destinations in the UVG. They provide the key to the target’s true location.
 8. **Witness the End of Time**. Must deliver a bulky Long Ago artifact to the Final Destination as defined by the Map to the End of Time. The map was torn into 3 parts, each hidden at a random destination. The End of Time is optional.
 9. **Saving the World**. The holiest of relics from the Final Place will avert the End of the World. A series of random destinations leading into the Deep Grasslands holds the 3 parts of the Key Compass to the Final Place. There is also a 1-in-6 chance that any one of these destinations is home to an **Avatar of the End** (L11, angel of death) bent on ensuring the world ends. Once the Key Compass is reassembled it unlocks access to a deadly dungeon at the Final Place. The End of Time is still optional.
-10. **Ascending into the Sky like the Shamans of Old**. The people's myths tell of the Long Long Ago, when the Ancestors walked in the stars. Following visions from the True Mother, a group of noble and ruthless warriors and seers has been chosen to return to the stars and tell the tale of their oppression and bring the Ancestors back to the earth. Three random destinations each hold a bulky Ladder to the Sky. Once the three Ladders are reunited, a **Demon of Lies** (L11, misunderstood) appears. Inside the Demon's head is a crystal astrolabe that points to the destination of ascendance. Reaching the space port is enough. Actual void-faring is optional.
+10. **Ascending into the Sky like the Shamans of Old**. The people’s myths tell of the Long Long Ago, when the Ancestors walked in the stars. Following visions from the True Mother, a group of noble and ruthless warriors and seers has been chosen to return to the stars and tell the tale of their oppression and bring the Ancestors back to the earth. Three random destinations each hold a bulky Ladder to the Sky. Once the three Ladders are reunited, a **Demon of Lies** (L11, misunderstood) appears. Inside the Demon’s head is a crystal astrolabe that points to the destination of ascendance. Reaching the space port is enough. Actual void-faring is optional.
 
 # COMPANY PLAY (OGA)
 
@@ -2271,7 +2271,7 @@ When you need pampering. Each comfort die provides +2 temporary life after a goo
 
 When you need insurance. Each protection die provides +1 to saves against damage to you or your property. You may also permanently spend a security die to:
 1. Reroll a reaction roll. Your armature may frighten off would-be attackers.
-2. Turn an enemy's critical hit into a regular hit.
+2. Turn an enemy’s critical hit into a regular hit.
 3. Wait 1d4 days, then receive a copy of a lost item (terms and conditions apply).
 4. Acquire a combat item.
 
@@ -2292,7 +2292,7 @@ You buy a **ticket for your week’s travel and accommodation** in advance. Pric
 | Prix | Type | Dice | Conveyances |
 |---:|:---|:---:|:---|
 | €0 | [murder]hobo | no | how _are_ you traveling?! |
-| €5 | basic | 1 | coalem barge, shank's mare, burdenbeast |
+| €5 | basic | 1 | coalem barge, shank’s mare, burdenbeast |
 | €10 | touriste | 2 | omnibus, land train, coasthugger |
 | €25 | specialiste | 3 | bateau, wicker autogolem, pilgrim caravan |
 | €50 | premie | 4 | iron horse, oldtech yacht, atomic train |
@@ -2315,7 +2315,7 @@ Some humans, dissatisfied with their basic design, use magical machines to carry
 
 | d6 | 1–3 (Common) | 4–5 (Uncommon) | 6 (Rare) |
 |---:|:---|:---|:---|
-| 1 | Gore. A gruesome scene. Scattered on dawn's highway. An accident?<br>[-1 aura _and_ a burden of horror] | Accident. A collision, a road collapse?<br>[-1d6 life _and_ a random item is destroyed or save vs. serious injury] | Monster (L7, absorbing abomination). This thing ... was it ever human?<br>[worth €1d6* x 100 as a trophy] |
+| 1 | Gore. A gruesome scene. Scattered on dawn’s highway. An accident?<br>[-1 aura _and_ a burden of horror] | Accident. A collision, a road collapse?<br>[-1d6 life _and_ a random item is destroyed or save vs. serious injury] | Monster (L7, absorbing abomination). This thing ... was it ever human?<br>[worth €1d6* x 100 as a trophy] |
 | 2 | Sore. The hard path. Injured. A bad sprain, a pulled muscle?<br>[-1 agility] | Injured. A bad sprain, a pulled muscle?<br>[-1d3 life and -2 agility] | Infected. Stonefoot spores, feral land coral?<br>[slow, -3 agility, +2 endurance] |
 | 3 | Tired. The long path.<br>[-1d4 life] | Delayed. Boisterous officialdom or mere weather?<br>[+1d4 days] | Closure. The angel bids you take another path.<br>[+1 week or defiance?] |
 | 4 | Bored. Reveal something about yourself to your companions. | Robbed. As you slept. Chase the thief?<br>[lose a random valuable item] | Bandits (L2, feral or barbarian). An ambush? A roadblock?<br>[pay 1d3 items] |
@@ -2347,7 +2347,7 @@ Cheap, slow, and raucous, the public intersanctuary transport system even yet at
 
 | d6 | 1–3 (Common) | 4–5 (Uncommon) | 6 (Rare) |
 |---:|:---|:---|:---|
-| 1 | Fight! Other travelers' fists fly. Bottles are drawn (L1, lubricated).<br>[save or you, too] | Impact. _Something_ (L7, scary) under the bus.<br>[-1d4 life _and_ a random item comes alive with an alien spirit] | Ambush. Falscherbarians (L4, eerie) or electronomads (L5, zapping).<br>[your € or your priciest item or your life] |
+| 1 | Fight! Other travelers’ fists fly. Bottles are drawn (L1, lubricated).<br>[save or you, too] | Impact. _Something_ (L7, scary) under the bus.<br>[-1d4 life _and_ a random item comes alive with an alien spirit] | Ambush. Falscherbarians (L4, eerie) or electronomads (L5, zapping).<br>[your € or your priciest item or your life] |
 | 2 | Broken. Cubist chairs, cruel corridors.<br>[-2 agility or strength] | Dead. Thankfully, insurance. But who pulled your plug?<br>[+1 week and -€50] | Modified. A foreign subroutine in your soul?<br>[+1 aura and a ticking trait] |
 | 3 | Sleepless. Two nights required.<br>[suffer 2 burdens, sleep fixes it] | Tax. Official local inspection.<br>[+1d4 days and -€5 _or_ just -€20] | Partly digested. The vessel is hungry.<br>[lose a limb or 1d3 items] |
 | 4 | Itchy. Lice or mice or seat bugs?<br>[suffer 1 burden, remove with a bath] | Breakdown. Disembark and walk?<br>[+2d6 days] | Ventilation cough. Wheezy, metallic.<br>[burden of disease] |
@@ -2394,7 +2394,7 @@ _Unlock Medical Buildertech, Sacred Pod Charm_
 
 Many rightly humans fear the waters, for they represent that portion of the world given to the cetaceans by the gods. As the old song goes, the sea is a desert with its life underground and an azure disguise above. Restricted from fishing and aquaculture by the pelagic phylakes and alien cetaceans, few traditionalists see much use for the salty watery expanse. Indeed, they would be hard-pressed to see much difference between commercial clans, hexad high-liners, polybody pirates, and feral ferryfolk.
 
-For the traveler, there certainly are differences. For one thing, reputable seafolk won't steal your body.
+For the traveler, there certainly are differences. For one thing, reputable seafolk won’t steal your body.
 
 | d6 | 1–3 (Common) | 4–5 (Uncommon) | 6 (Rare) |
 |---:|:---|:---|:---|
@@ -2445,9 +2445,9 @@ Portals have fascinated humans since prehistory. Some think them gifts from the 
 
 These hard-coded passages between distinct locations form hub-and-spoke networks, with portal temples serving for central access.
 
-The dullway protocol dismantles and reassembles travelers, with journey times and capacity varying based on the portal's information density and usage. Welltraveled routes between major institutions can transport up to a hundred people in hours, while smaller village portals may take months to handle a single traveler. To preserve human sanity, most travel gates were once equipped to run pocket realities for their travelers during point-to-point translation.
+The dullway protocol dismantles and reassembles travelers, with journey times and capacity varying based on the portal’s information density and usage. Welltraveled routes between major institutions can transport up to a hundred people in hours, while smaller village portals may take months to handle a single traveler. To preserve human sanity, most travel gates were once equipped to run pocket realities for their travelers during point-to-point translation.
 
-The Human Wellness Authority maintains that portal travel is completely safe. It claims side effects are very rare, mostly harmless, probably temporary, and the individual traveler's own fault.
+The Human Wellness Authority maintains that portal travel is completely safe. It claims side effects are very rare, mostly harmless, probably temporary, and the individual traveler’s own fault.
 
 Nevertheless, most moderns fear this ancient technology, fearing it may steal their immortal motive sparks. This is not incorrect.
 
@@ -2458,7 +2458,7 @@ Nevertheless, most moderns fear this ancient technology, fearing it may steal th
 | 3 | Emesis. Please clean yourself up.<br>[lose your last meal; hungry now] | Nosebleed. [d6: (1) a second mind enters you; (2–6) cosmetic only] | Illumination. [d6: gain (1-3) a glow, (4–5) a soul, (6) a grim purpose] |
 | 4 | Existential dread. This place is not for humans.<br>[alcohol-soluble burden] | Strange gasses. Burp discreetly.<br>[ingest to levitate for 1d3 days] | Odd machines. They live inside you.<br>[feed them power to gain knowledge] |
 | 5 | Dull. The way is boring. It feels endless.<br>[rethink a position] | Time. Time dilates. It is endless.<br>[grow older and wiser, or the reverse] | Side. Walk besides yourself.<br>[become more; add +1 to your best ability] |
-| 6 | Invigorated. Imbibe the vim of the spaces in-between.<br>[+1d6 life] | Euphoria. You're so happy you could explode.<br>[gain a hero die] | Emptiness. The nothing sets you free.<br>[remove 1 burden and gain +1 aura] |
+| 6 | Invigorated. Imbibe the vim of the spaces in-between.<br>[+1d6 life] | Euphoria. You’re so happy you could explode.<br>[gain a hero die] | Emptiness. The nothing sets you free.<br>[remove 1 burden and gain +1 aura] |
 
 # DOWNTIME (Weeks at Home, OGA)
 
@@ -2488,7 +2488,7 @@ Pleasurable activity that builds up mental and physical resilience, and removes 
 
 [Self]-improvement may combine with relaxation. After a week of relaxation roll d20 + endurance or aura.
 
-| d20 | It's All Fun And Games Until ... |
+| d20 | It’s All Fun And Games Until ... |
 |---:|:---|
 | 1–5 | Acquire expensive new "hobby". It occupies a trait and costs €10 x level to indulge for a week. After such a week (d6): (1) lose d6 x level life, (2) lose your clothes, (3) lose 1d4 burdens, (4) make a new friend, (5) gain 1d4 temporary HD, (6) restore all your mental abilities and remove 1 burden. |
 | 6–10 | Refreshed. Restore all your endurance or aura, _and_ gain +1 temporary life. |
@@ -2509,11 +2509,11 @@ Is your estate too small to grant you a respectable weekly ration of bread, wate
 - ⚙ **Unskilled Labor**. Earn €7 per week (+€7/wk). If you have no skills, or your skills are not in demand, you can always work as a golem polisher, street sitter, manual substitute, or some other job too unprofitable to automate. Roll 1d6 for work rewards.
 - ⚙ **Skilled Labor**. Earn +€15/wk. If you are skilled with a professional trait like tinker, tailor, soldier, or spy. Roll 1d8 for work rewards.
 - ⚙ **Expert Labor**. Earn +€30/wk. Specialization in a trait has its perks. Roll 1d10 for work rewards.
-- ⚙ **Master Labor**. Earn +€60/wk. The pinnacle of the wage labor pyramid. You'd better identify with the authority, now! Look how much it's paying you! Roll 1d12 for work rewards.
+- ⚙ **Master Labor**. Earn +€60/wk. The pinnacle of the wage labor pyramid. You’d better identify with the authority, now! Look how much it’s paying you! Roll 1d12 for work rewards.
 
 Any trait that could be considered a profession may render you eligible for skilled laborer status. See your local wage slave allocation division for more details.
 
-After a week's worth of work, roll for your rewards.
+After a week’s worth of work, roll for your rewards.
 
 ### Work Rewards
 
@@ -2527,9 +2527,9 @@ After a week's worth of work, roll for your rewards.
 | 8–9 | Your skilled work is rewarded with a pat on the back and a firm handshake from the boss. A surge of canine gratitude surges through you, granting you a temporary +1 life per level. Work does give meaning! |
 | 10–11 | Your expert work is recognized with a small plaque naming you employee of the week. It grants access to the porcelain slurry pipe in the canteen and a temporary +1 to charisma and endurance. |
 | 12–17 | You are promoted to a managerial role! It comes with a timepiece of authority, a badge of honor, a cravat of distinction, and an NPC toady ... er ... direct report named **Toddwards** (L0, eager). From now on you roll 2d6 for work rewards. You are also given a 20% raise going forward and, if you succeed at a hard charisma roll, you can combine your labor action with a relaxation or improvement action. |
-| 18+ | You used a hero die, didn't you? Look at you! Thinking outside the box! You are promoted to the position of a vice president. It comes with a corner office that provides a +1d6 bonus to all relaxation rolls. Additionally, you are assigned an assistant manager named **Mangely** (L2, maniacal laugh). Any week you don't feel like actually working while in the office, Mangely will roll 1d10 for your work rewards instead. You can spend that time on relaxation, upkeep, or improvement. |
+| 18+ | You used a hero die, didn’t you? Look at you! Thinking outside the box! You are promoted to the position of a vice president. It comes with a corner office that provides a +1d6 bonus to all relaxation rolls. Additionally, you are assigned an assistant manager named **Mangely** (L2, maniacal laugh). Any week you don’t feel like actually working while in the office, Mangely will roll 1d10 for your work rewards instead. You can spend that time on relaxation, upkeep, or improvement. |
 
-Ah, well, you'll be away a while, yes? Good thing nothing could go awry in your absence! The referee rolls for interruptions on the INTR tables (pXX). Your agent will handle it just fine. You have an agent, yes? For that upkeep table two pages ago?
+Ah, well, you’ll be away a while, yes? Good thing nothing could go awry in your absence! The referee rolls for interruptions on the INTR tables (pXX). Your agent will handle it just fine. You have an agent, yes? For that upkeep table two pages ago?
 
 ## ESTATE PLAY
 

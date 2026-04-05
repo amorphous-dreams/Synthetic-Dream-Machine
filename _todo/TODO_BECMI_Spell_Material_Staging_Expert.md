@@ -2598,3 +2598,456 @@ within 360'.
 
 ```
 
+### Expert: 3rd-6th Level MU Spell Descriptions (pages 13-14)
+
+- Extraction note: post-list prose extracted from Expert pages 13-14 using TSV column reflow anchored at the reversible-spell intro paragraph. Numbered list entries, ALL-CAPS level headings, and Title Case sub-headers stripped as noise. What remains is description content for 3rd-6th level MU spells (Clairvoyance, Fire Ball, Geas, etc.) plus reversal notes for 1st/2nd level spells. This section is placed before the Spell Lists Appendix sentinel so multi-witness builder strip_appendix() does not discard it.
+
+```text
+The following first and second level spells
+may be reversed; Ranges, durations, Sav-
+ing Throws, and areas of effect will remain
+unchanged unless specified.
+Light*
+When reversed, this spell, darkness, creates
+a circle of darkness 30‘ in diameter. It will
+block all sight except infravision. Darkness
+will cancel a light spell if cast upon it (but
+may itself be cancelled by another light
+spell). If cast at an opponent’s eyes, it will
+cause blindness until cancelled, or until the
+duration ends.
+Continual Light*
+The reverse of this spell, continual darkness,
+creates a completely dark volume of 30’
+radius. Torches, lanterns, and even a light
+spell will not affect it, and infravision can-
+not penetrate it. If cast on a creature’s eyes,
+the creature must make a Saving Throw vs.
+Spells or be blinded until the spell is re-
+moved. A continual light spell will cancel its
+effects.
+FIlTH LEVEL MAGIC-USER SPELLS
+ESP*
+The reverse of this spell, mindmask, may be
+cast, by touch, on any one creature. The
+recipient is completely immune to ESP and
+all other forms of mind reading for the
+duration of the spell.
+Clairvoyance
+Range: 60’
+Duration: 12 turns
+Effect: See through another’s eyes
+With this spell, the caster may see an area
+through the eyes of any single creature in
+\
+it. The creature must be in range, and in
+the general direction chosen by the caster.
+The effects of this spell may be blocked by
+more than two feet of rock or a thin coat-
+ing of lead. “Seeing” through a creature’s
+eyes takes one full turn, after which the
+caster can change to another creature, pos-
+sibly in another area entirely.
+Dispel Magic
+Range: 120’
+Duration: Permanent
+Effect: Destroys spells in a 20‘ cube
+Character Classes - Human
+*Spell may be cast with reverse effect.
+This spell destroys other spell effects in a
+cubic area 20’ x 20’ x 20’. It does not affect
+magic items. Spell effects created by a caster
+(whether cleric, magic-user, or elf) of a level
+equal to or lower than the caster of the dispel
+mgz‘c are automatically and immediately de-
+stroyed. Spell effects created by a higher level
+caster might not be affected. The chance of
+failure is 5% per level of difference between
+the casters. For exumpk, a 5th level elf trylng
+to dispel a web spell cast by a 7th level magic-
+user would have a 10% chance of failure.
+Fire Ball
+Range: 240’
+Duration: Instantaneous
+Effect: Explosion in a sphere 40’ diameter
+This spell creates a missile of fire that
+bursts into a ball of fire of 20’ radius when
+it strikes a target. Thefire ball will cause 1-6
+points of fire damage per level of the
+caster to every creature in the area. Each
+victim may make a Saving Throw vs.
+Spells; if successful, the spell will only do
+half damage. For example, afire ball cast by a
+6th level magic-user will burst for 6-36
+points of damage, or one half the total to
+those making the Saving Throw.
+Character Classes - Human
+fly
+Range: Touch
++
+Duration: 1-6 turns 1 turn per level of
+the caster
+Effect: One creature may fly
+This spell allows the recipient (possibly the
+caster) to fly. T h e spell will permit move-
+ment in any direction and at any speed up
+to 360’ per turn (120’ per round) by mere
+concentration. T h e recipient may also stop
+and hover at any point (as a levitate spell),
+which does not require concentration.
+Haste*
+Range: 240’
+Duration: 3 turns
+Effect: Up to 24 creatures move double
+speed
+This spell allows u p to 24 creatures in a 60’
+diameter circle to perform actions at dou-
+ble speed for a half hour. Those affected
+may move at u p to twice normal speed and
+make double the normal number of missile
+or hand-to-hand attacks. This spell does
+not affect the rate at which magic works, so
+the casting of spells and the use of devices
+(such as wands) cannot be speeded up.
+The reverse of this spell, slow, will re-
+move the effects of a haste spell, or will
+cause the victims to move and attack at half
+normal speed for the duration of the spell.
+As with haste, spell casting is not affected.
+The victims may make a Saving Throw vs.
+Spells to avoid the effect.
+Hold Person*
+Range: 120‘
+Duration: 1 turnilevel
+Effect: Paralyzes u p to 4 creatures
+This spell will affect human, demi-human,
+and human-like creatures (bugbear, dryad,
+gnoll, gnome, hobgoblin, kobold, lizard
+man, ogre, orc, nixie, pixie or sprite). It
+will not affect the undead or creatures
+larger than ogres. Each victim must make a
+Saving Throw vs. Spells or be paralyzed.
+The spell may be cast at a single person or
+at a group. If cast at a single person, a - 2
+penalty applies to the Saving Throw. If cast
+at a group, it will affect u p to 4 persons (at
+the magic-user’s choice), but with no
+penalty to their rolls.
+The reverse of the spell, free person, re-
+moves the paralysis of up to 4 victims of
+the normal form of the spell (including
+one cast by a cleric). It has no other effect.
+Infravision
+Range: Touch
+Duration: 1 day
+Effect: One living creature
+This spell enables the recipient to see in the
+dark, to a 60’ range. (See the D&D Basic
+Set DM Rulebook, page 22, for notes on
+Infravision.)
+Invisibility 10‘ radius
+Range: 120‘
+Duration: Permanent until broken
+Effect: All creatures within 10’
+This spell makes the recipient and all oth-
+ers within 10’ (at the time of the casting)
+invisible. This is an area effect, and those
+who move further than 10‘ from the recip-
+ient become visible. They may not regain
+invisibility by returning to the area. Other-
+wise, the invisibility is the same as that be-
+stowed by the spell invisibility (Basic Player’s
+Guide, page 41). All items carried (whether
+by the recipient or others within 10‘) also
+become invisible.
+Lightning Bolt
+Range: 180’
+Duration: Instantaneous
+Effect: Bolt 60‘ long, 5’ wide
+This spell creates a bolt of lightning, start-
+ing up to 180’ away from the caster and
+extending 60‘ further away. All creatures
+within the area of effect take 1-6 points of
+damage per level of the spell caster. Each
+victim may make a Saving Throw vs.
+Spells; if successful, only half damage is
+taken. If the lightning bolt strikes a solid sur-
+face (such as a wall), it will bounce back
+toward the caster until the total length of
+the bolt is 60’.
+Protection from Evil 10’ Radius
+Range: 0
+Duration: 12 turns
+Effect: Barrier 20‘ diameter
+This spell creates an invisible magical bar-
+rier all around the caster, extending 10’ in
+all directions. The spell serves as protec-
+tion from “evil” attacks (attacks by mon-
+sters of an alignment other than the
+caster’s). Each creature within the barrier
+gains a + I to all Saving Throws, and all
+attacks against those within are penalized
+by -1 to the attacker’s Hit roll while the
+spell lasts.
+In addition, “enchanted’ creatures can-
+not attack those within the barrier hand-to-
+hand. Enchanted creatures can attack with
+missile or magical attacks however. An “en-
+chanted” creature is any creature that is
+magically summoned, animated or controlled
+(as with a c h a m spell) or can only be hit by
+a magical weapon. Creatures that can be
+hit by silver weapons are not enchanted.
+If anyone within the barrier attacks an
+enchanted creature, the barrier will no
+longer prevent the creature from attacking
+hand-to-hand, but the bonus to Saving
+Throws and penalty to Hit rolls will still
+apply.
+Protection from Normal Missiles
+Range: 30’
+Duration: 12 turns
+Effect: One creature
+This spell gives complete protection from
+all small non-magical missiles, causing
+them to miss. Thus, a catapult stone or a
+magic arrow would not be affected. Any
+one creature within range may be the re-
+cipient.
+Water Breathing
+Range: 30‘
+Duration: 1 day
+Effect: One air-breathing creature
+This spell allows the recipient to breathe
+while under water (at any depth). It does
+not affect movement in any way, nor does
+it interfere with the breathing of air.
+
+```
+
+### Expert: 1st and 2nd Level MU Spell Sourcing Notes
+
+- Extraction note: Expert Set (pages 13-14) reproduces 1st and 2nd level MU spell lists without standalone spell descriptions. The Expert Set text reads: "The following first and second level spells may be reversed" — implying descriptions remain as in Basic. These note blocks record that provenance so downstream witness coverage is explicit; they are not description witnesses. See Basic staging section "Spell Lists and Basic Spell Descriptions" for the source text.
+
+```text
+Charm Person
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Magic
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Floating Disc
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Hold Portal
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Magic Missile
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Protection from Evil
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Read Languages
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Read Magic
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Shield
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Sleep
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Ventriloquism
+[Expert Set sourcing note (MU1): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Evil
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Detect Invisible
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+ESP
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Invisibility
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Knock
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Levitate
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Mirror Image
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Phantasmal Force
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Web
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Wizard Lock
+[Expert Set sourcing note (MU2): Expert Set (pages 13-14) reproduces the spell list only; no standalone description. Description text in Basic staging -> Spell Lists and Basic Spell Descriptions.]
+
+Geas
+[Expert Set sourcing note (MU6): Expert Set (pages 13-18) includes Geas in the 6th level MU spell list only; no standalone description found in the Expert PDF. Description text in Rules Cyclopedia staging.]
+
+```
+
+
+## Spell Lists Appendix
+
+- Note: these are raw numbered spell lists from the Expert Set. They are appendix-only  14 the per-spell description extraction above is the authoritative witness source. Multi.py strips this section before scanning for spell witnesses.
+
+### Expert: Cleric Spell Lists (page 6, book page 4)
+
+- Extraction note: TSV column reflow of Expert cleric spell lists from the character class table on book page 4 (PDF page 6). Middle and right columns contain 1st-6th level spell index; stops at the Cleric Saving Throws table.
+
+```text
+FIRST LEVEL CLERIC SPELLS
+1. Cure Light Wounds*
+2. Detect Evil
+3 . Detect Magic
+4. Light*
+5. Protection from Evil
+6. Purify Food and Water
+7. Remove Fear*
+8. Resist Cold
+THIRD LEVEL CLERIC SPELLS
+1. Continual Light*
+2. Cure Blindness
+3. Cure Disease*
+4. Growth of Animals
+5. Locate Object
+6. Remove Curse*
+7. Speak with the Dead
+8. Striking
+FIFTH LEVEL CLERIC SPELLS
+1. Commune
+2. Create Food
+3 . Dispel Evil
+4. Insect Plague
+5. Quest*
+6. Raise Dead*
+SECOND LEVEL CLERIC SPELLS
+1. Bless*
+2. Find Traps
+3. Hold Person*
+4. Know Alignment*
+5. Resist Fire
+6. Silence 15’ radius
+7. Snake Charm
+8. Speak with Animal
+FOURTH LEVEL CLERIC SPELLS
+1. Animate Dead
+2. Create Water
+3 . Cure Serious Wounds*
+4. Dispel Magic
+5. Neutralize Poison*
+6. Protection from Evil 10’ radius
+7. Speak with Plants
+8. Sticks to Snakes
+SIXTH LEVEL CLERIC SPELLS
+1. Animate Objects
+2. Find the Path
+3. Speak with Monsters*
+4. Word of Recall
+*Spell may be cast with reverse effects.
+(due to the 12 Hit Dice maximum per try),
+the cleric may make another attempt if de-
+sired. Only one attempt can be made each
+combat round, and no other actions are
+possible while Turning undead. However,
+if any attempt fails, no further attempts at
+Turning that group of undead will succeed
+for that cleric.
+
+```
+
+### Expert: Magic-User Spell Lists (pages 13-14)
+
+- Extraction note: TSV column reflow of Expert magic-user spell list pages.
+
+```text
+FIRST LEVEL MAGIC-USER SPELLS
+1. Charm Person
+2. Detect Magic
+3. Floating Disc
+4. Hold Portal
+5. Light*
+6. Magic Missile
+7. Protection from Evil
+8. Read Languages
+9. Read Magic
+10. Shield
+11. Sleep
+12. Ventriloquism
+FOURTH LEVEL MAGIC-USER
+SPELLS
+1. Charm Monster
+2. Confusion
+3. Dimension Door
+4. Growth of Plants*
+5. Hallucinatory Terrain
+6. Ice Storm/Wall
+7. Massmorph
+8. Polymorph Others
+9. Polymorph Self
+10. Remove Curse*
+1 1. Wall of Fire
+12. Wizard Eye
+SECOND LEVEL MAGIC-USER SPELLS
+1. Continual Light*
+2 . Detect Evil
+3. Detect Invisible
+4. ESP*
+5. Invisibility
+6. Knock
+7. Levitate
+8. Locate Object
+9. Mirror Image
+10. Phantasmal Force
+11. Web
+12. Wizard Lock
+THIRD LEVEL MAGIC-USER SPELLS
+1. Clairvoyance
+2. Dispel Magic
+3. Fire Ball
+4. Fly
+5. Haste*
+6. Hold Person*
+7. Infravision
+8. Invisibility 10’ radius
+9. Lightning Bolt
+10. Protection from Evil 10’ radius
+1 1. Protection from Normal Missiles
+12. Water Breathing
+SIXTH LEVEL MAGIC-USER SPELLS
+1. Anti-Magic Shell
+2 . Death Spell
+3. Disintegrate
+4. Geas*
+5. Invisible Stalker
+6. Lower Water
+7. Projected Image
+8. Stone to Flesh*
+*Spell may be cast with reverse effect.
+This spell destroys other spell effects in a
+cubic area 20’ x 20’ x 20’. It does not affect
+magic items. Spell effects created by a caster
+(whether cleric, magic-user, or elf) of a level
+equal to or lower than the caster of the dispel
+mgz‘c are automatically and immediately de-
+stroyed. Spell effects created by a higher level
+caster might not be affected. The chance of
+failure is 5% per level of difference between
+the casters. For exumpk, a 5th level elf trylng
+to dispel a web spell cast by a 7th level magic-
+user would have a 10% chance of failure.
+
+```
+

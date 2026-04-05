@@ -5,7 +5,7 @@ published: true
 ---
 # Old School Roleplaying Heritage Trait
 
-Heritage is a birthright, lineage, construction, or mythic origin that shapes how you exist in the world. It grants fictional positioning, esoteric permissions, and a small package of concrete effects. Choose a heritage descriptor (e.g. Goblin Folk, Awakened Golem, Deathless Revenant, Star-Marked Human). This descriptor defines what kinds of lore, rituals, environments, and effects naturally apply to you. In Flying Triremes and Laser Swords games, Heritage is free at character creation and does not occupy a Trait Inventory slot. draw a "Heritage" box on your character sheet:
+Heritage is a birthright, lineage, construction, or mythic origin that shapes how you exist in the world. It grants fictional positioning, esoteric permissions, and a small package of concrete effects. Choose a heritage descriptor (e.g. Goblin Folk, Awakened Construct, Deathless Revenant, Star-Marked Human). This descriptor defines what kinds of lore, rituals, environments, and effects naturally apply to you. In Flying Triremes and Laser Swords games, Heritage is free at character creation and does not occupy a Trait Inventory slot. draw a "Heritage" box on your character sheet:
 
 **Skilled**: +3 to heritage-related lore and research. Three Heritage effects.
 
@@ -50,7 +50,7 @@ Some Heritage effects have special rules, including marking the trait in order t
 | <a id="heritage-glow-kin-fungi-folk-row"></a>[Glow Kin (Fungi Folk)](#glow-kin-fungi-folk) | Sporelight diplomats | • [Ability Bonus – Spirited](#ability-bonus--spirited) (+1 Aura, +1 Life/level)<br>• [Affinity](#affinity---fungus--spore) — Fungus & Spore ([biomancy] [dream] [spore])<br>• [Psi-Speech](#psi-speech) (telepathy) | • [Resilient Metabolism](#resilient-metabolism) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Myconid Clans / Slime Kin |
 | <a id="heritage-gnoll-folk-row"></a>[Gnoll Folk](#gnoll-folk) | Cackling pack shock | • [Ability Bonus – Fierce](#ability-bonus--fierce) (+1 STR, +6 yd)<br>• [Aggressive](#aggressive) (rush)<br>• [Coordination](#coordination) (+1 per 2 allies within 10 yd) | • [Blood Scent](#blood-scent) (Expert)<br>• [Inspiration](#inspiration) (aura) (Master) | Bone Oracle / Shadow Gnoll / Warband Stalker |
 | <a id="heritage-goblin-row"></a>[Goblin](#goblin) | Anarchic tinkers | • [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Jack of All Trades](#jack-of-all-trades) (Expert)<br>• [Affinity](#affinity---chaos--dream--shadow) — Chaos • Dream • Shadow ([chaos] [dream] [shadow]) (Master) | Crystal Court |
-| <a id="heritage-golem-row"></a>[Golem](#golem) | Stubborn oathbound constructs | • [Deathless](#deathless) (upkeep; sacrifice to recover)<br>• choose two ([Ability Bonus](#ability-bonus)/[Affinity](#affinity)/[Armoured Body](#armoured-body) (+1 Armor/+1 Ward)/[Inner Fire](#inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick (Armour x2/Chimeric/[Coordination](#coordination) (+1 per 2 allies within 10 yd))<br>• [Affinity](#affinity---serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Noospheric Agent / Spore-War Veteran |
+| <a id="heritage-Construct-row"></a>[Construct](#Construct) | Stubborn oathbound constructs | • [Deathless](#deathless) (upkeep; sacrifice to recover)<br>• choose two ([Ability Bonus](#ability-bonus)/[Affinity](#affinity)/[Armoured Body](#armoured-body) (+1 Armor/+1 Ward)/[Inner Fire](#inner-fire) (+2 slots, +1 Defeat)) | • Expert flex pick (Armour x2/Chimeric/[Coordination](#coordination) (+1 per 2 allies within 10 yd))<br>• [Affinity](#affinity---serpent-energy) — Serpent Energy ([biomancy] [chaos] [mana]) (Master) | Noospheric Agent / Spore-War Veteran |
 | <a id="heritage-halfling-row"></a>[Halfling](#halfling) | Wandering hearthkeepers | • [Lucky](#lucky) (reroll once)<br>• [Nimble](#nimble) (free disengage/cover/hide)<br>• [Size](#size) (Small; ½ rations; +2 Defense; 4 stone gear) | • [Affinity](#affinity---hearth--ways) — Hearth & Ways ([hearth] [protection] [travel]) (Expert)<br>• [Jack of All Trades](#jack-of-all-trades) (Master) | Shireling |
 | <a id="heritage-hobgoblin-row"></a>[Hobgoblin](#hobgoblin) | Riot-drilled companies | • [Coordination](#coordination) (+1 per 2 allies within 10 yd)<br>• [Darkvision](#darkvision) (20 yd)<br>• [Nimble](#nimble) (free disengage/cover/hide) | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity---masks--totems) — Masks & Totems ([illusion] [totem] [spirit]) (Master) | Tribal Standard Bearer / Grell Hunter |
 | <a id="heritage-human-row"></a>[Human](#human) | Adaptable crossroads schemers | • [Jack of All Trades](#jack-of-all-trades)<br>• Bonus Background slot<br>• Choose one Heritage effect | • [Lucky](#lucky) (reroll once) (Expert)<br>• [Affinity](#affinity---hearth--ways) — Hearth & Ways ([hearth] [protection] [travel]) (Master) | Changeling / Frontierling / Rainbowlander |
@@ -263,7 +263,7 @@ Upkeep: Each week without maintenance, make an Aura or Endurance save. On a fail
 
 ### Void Madness (Burden)
 
-While in Void Madness upkeep checks are suspended, they and behave erratically, and always act last in their side's initiative. When damaged, the character’s total Burden penalty is inverted and applied as a bonus to attack and damage against the perceived threat until it leaves sensory range.
+While in Void Madness upkeep checks are suspended, they and behave erratically, and always act last in their side’s initiative. When damaged, the character’s total Burden penalty is inverted and applied as a bonus to attack and damage against the perceived threat until it leaves sensory range.
 
 Recovery: Remove Void Madness through specialist repair or rites (e.g. artificers, necrotechs, nethermancers). Once removed, upkeep checks resume and Wear & Tear may be cleared per standard rules.
 
@@ -293,7 +293,7 @@ You control (Level + 2) bodies that share one Life pool when they are within (
 
 ## Psi-Speech
 
-Communicate mentally with willing targets within (Level \+ Thought) × 10 yd. Make a Thought attack vs. Mental Defense to read unwilling characters’ surface thoughts/emotions. While you are reading a target’s surface thoughts/emotions, you gain \+2 to your attacks vs the target's Mental Defense.
+Communicate mentally with willing targets within (Level \+ Thought) × 10 yd. Make a Thought attack vs. Mental Defense to read unwilling characters’ surface thoughts/emotions. While you are reading a target’s surface thoughts/emotions, you gain \+2 to your attacks vs the target’s Mental Defense.
 
 ## Resilient Metabolism
 
@@ -339,7 +339,7 @@ The character becomes photovoltaic, requiring only water and sunlight. You do no
 
 ### Vome Scout
 
-Mark your Heritage trait to spawn a palm-sized ‘vomunculus’ scout (L. 0, 4 Life, \+2 bonus) with your senses; the scout lasts until recalled or destroyed.
+Mark your Heritage trait to spawn a palm-sized ’vomunculus’ scout (L. 0, 4 Life, \+2 bonus) with your senses; the scout lasts until recalled or destroyed.
 
 # Old School Roleplaying Heritages
 
@@ -915,7 +915,7 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 <div class="heritage-card" markdown="1">
 
-## Golem
+## Construct
 
 * Skilled (+3): **[Deathless](#deathless), Choose two**
   * Common choices: **[Ability Bonus – Solid](#ability-bonus--solid), [Ability Bonus – Spirited](#ability-bonus--spirited), [Affinity – Earth • Stone • Wood](#affinity---earth--stone--wood), [Affinity – Fire • Metal • Ceramic](#affinity---fire--metal--ceramic), [Armoured Body](#armoured-body), [Inner Fire](#inner-fire)**
@@ -924,7 +924,7 @@ Bioluminescent folk born from mycelial webs and dream-soil, the **Glow Kin** spe
 
 **Description**
 
-The tiktoks, robot guardians, clay rune-etched philosophers, and warframes of the old world — **Golems** are bodies built around a pact, crafted from stone, named-steel, bronze, driftwood, or some other stranger matter. Some serve temples, others wander free, all are stubbornly themselves. They carry the patience of mountains and the memory of furnaces.
+The tiktoks, robot guardians, clay rune-etched philosophers, and warframes of the old world — **Constructs** are bodies built around a pact, crafted from stone, named-steel, bronze, driftwood, or some other stranger matter. Some serve temples, others wander free, all are stubbornly themselves. They carry the patience of mountains and the memory of furnaces.
 
 **Notes**
 

@@ -18,11 +18,18 @@ from pathlib import Path
 
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers.md"
+DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
 DEFAULT_STAGING = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
 
-PENDING_TOKEN = "osr:\n(pending verbatim extraction)"
+PENDING_TOKEN = "osr:\n{pending verbatim extraction}"
+PENDING_BODY = "{pending verbatim extraction}"
+# Tolerates optional blank line before body and before footer div
+# (older cards use <div style="text-align: right"> with a blank line before it)
+OSR_BLOCK_RE = re.compile(
+    r"(osr:\n\n?)(.*?)(\n\n?(?:  <div class=\"power-return\">|<div style=\"text-align: right\">))",
+    re.DOTALL,
+)
 REVIEW_QUEUE_HEADING = "## Chapter 06 `osr:` Import Review Queue\n\n"
 REFERENCE_REUSE_MARKER = "## Reference Reuse Targets\n"
 REVIEW_LINE_RE = re.compile(r"^- `(.+?)`: (.+)$")
@@ -136,18 +143,71 @@ def extract_backtick_list(body: str, field: str) -> list[str]:
     return re.findall(r"`([^`]+)`", match.group(1))
 
 
+def normalize_label(label: str) -> str:
+    return " ".join(label.strip().lower().split())
+
+
+def alias_forms(label: str) -> set[str]:
+    parts = [part.strip() for part in re.split(r"\s*,\s*aka\s+", label, flags=re.I) if part.strip()]
+    forms = {normalize_label(label)}
+    for part in parts:
+        forms.add(normalize_label(part))
+    return forms
+
+
+def labels_match(left: str, right: str) -> bool:
+    left_forms = alias_forms(left)
+    right_forms = alias_forms(right)
+    return bool(left_forms & right_forms)
+
+
 def select_names(ordered_names: list[str], records: dict[str, Record], target_card: str | None) -> list[str]:
     if not target_card:
         return ordered_names
-    selected = [name for name in ordered_names if records[name].card_heading == target_card]
+    selected = [
+        name
+        for name in ordered_names
+        if labels_match(records[name].card_heading, target_card)
+        or labels_match(records[name].classic_name, target_card)
+    ]
     if not selected:
         raise RuntimeError(f'no Chapter 06 spell card found for --card "{target_card}"')
     return selected
 
 
+def iter_card_blocks(chapter_text: str) -> list[tuple[str, int, int, str]]:
+    blocks: list[tuple[str, int, int, str]] = []
+    for match in re.finditer(
+        r'<div class="power-card" markdown="1">\n\n+(#{2,6}) (.+?)\n(.*?)\n</div>',
+        chapter_text,
+        flags=re.S,
+    ):
+        heading = match.group(2).strip()
+        blocks.append((heading, match.start(), match.end(), match.group(0)))
+    return blocks
+
+
+def resolve_card_block(chapter_text: str, record: Record) -> tuple[str, int, int, str]:
+    matches = [
+        (heading, start, end, block)
+        for heading, start, end, block in iter_card_blocks(chapter_text)
+        if labels_match(heading, record.card_heading) or labels_match(heading, record.classic_name)
+    ]
+    if not matches:
+        raise RuntimeError(
+            f"missing Chapter 06 heading for {record.card_heading} (or alias of {record.classic_name})"
+        )
+    if len(matches) > 1:
+        joined = ", ".join(heading for heading, _, _, _ in matches)
+        raise RuntimeError(
+            f"ambiguous Chapter 06 alias match for {record.card_heading} (classic {record.classic_name}): {joined}"
+        )
+    return matches[0]
+
+
 def render_osr_block(record: Record) -> str:
     if not record.witnesses:
-        return "(pending verbatim extraction)"
+        return PENDING_BODY
 
     rendered: list[str] = []
     for witness in record.witnesses:
@@ -167,25 +227,13 @@ def apply_osr_blocks(chapter_text: str, records: dict[str, Record], selected_nam
     updated = chapter_text
     for classic_name in selected_names:
         record = records[classic_name]
-        heading = record.card_heading
-        anchor = f"## {heading}\n"
-        start = updated.find(anchor)
-        if start == -1:
-            raise RuntimeError(f"missing Chapter 06 heading for {heading}")
-        end = updated.find("\n## ", start + len(anchor))
-        if end == -1:
-            end = len(updated)
-        card_block = updated[start:end]
-        osr_match = re.search(
-            r"(osr:\n)(.*?)(\n(?:\n  <div class=\"power-return\">|<div style=\"text-align: right\">))",
-            card_block,
-            flags=re.S,
-        )
+        heading, start, end, card_block = resolve_card_block(updated, record)
+        osr_match = OSR_BLOCK_RE.search(card_block)
         if not osr_match:
             raise RuntimeError(f"osr block not found in card {heading}")
         new_card = (
             card_block[: osr_match.start()]
-            + osr_match.group(1)
+            + "osr:\n"  # always write canonical no-blank-line form
             + render_osr_block(record)
             + osr_match.group(3)
             + card_block[osr_match.end() :]
@@ -301,8 +349,8 @@ def build_artifact(
     return ImportArtifact(
         chapter_text=new_chapter,
         crosswalk_text=new_crosswalk,
-        placeholder_count_before=chapter_text.count("(pending verbatim extraction)"),
-        placeholder_count_after=new_chapter.count("(pending verbatim extraction)"),
+        placeholder_count_before=chapter_text.count(PENDING_BODY),
+        placeholder_count_after=new_chapter.count(PENDING_BODY),
         row_status_counts=row_status_counts,
         review_items=review_items,
     )
