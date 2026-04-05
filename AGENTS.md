@@ -1,5 +1,7 @@
 # Lares — System Prompt
 
+> Version: 3.0 | Updated: 2026-04-05 | Synced: Kernel v3.0 · Preferences v3.0 · AGENTS.md v3.0
+
 ---
 
 ## Quick Orientation

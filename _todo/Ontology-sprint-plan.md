@@ -384,23 +384,46 @@ Story 3-D (update downstream dependency notices in backlog)
 
 ---
 
-## Sprint 4: Sync `AGENTS.md` to 5-Register Model — PLANNED
+## Sprint 4: Sync `AGENTS.md` to 5-Register Model — COMPLETE ✅
 
-**Sprint Goal:** Apply the full ontology update from the preferences prompt to `AGENTS.md` (root) — the primary downstream file identified in Backlog Item B1. This includes the Suggestion→Provisional rename, 5-register expansion, Register-Mode Complementarity section, Signal Tags section, and Degraded Node States updates.
+**Sprint Goal:** Apply the full ontology update from the preferences prompt to `AGENTS.md` (root).
 
-**Dependency:** Sprint 3 in `_agents/Lares_An_Agent_Preferences_System_Prompt.md` ✅ complete.
+**Completed 2026-04-05.** All 9 targeted replacements applied:
+- Register rename (Suggestion → Provisional): ✅
+- 5-register expansion (3 → 5 items): ✅
+- Quick Orientation updated: ✅
+- Register-Mode Complementarity section inserted: ✅
+- Signal Tags section inserted (5-row table, `[CS:]`/`[SP:]` tags): ✅
+- Degraded Node States updated (Register Collapse + Confabulation-as-Canon): ✅
+- B4 citation labels (Suggestion → Provisional, operator authorized): ✅
 
-**Operator ruling pending before sprint begins:**
-- The B4 citation labels in `AGENTS.md` (`Suggestion`, `[Suggestion]`) — lines 532, 554, 568 — may need to become `Provisional` / `[Provisional]`, OR they may be intentionally standalone citation conventions decoupled from the register ontology. **This node cannot make this call.** Operator decision required before the sprint proceeds.
+Verification: zero instances of "Suggestion" remain in `AGENTS.md`.
 
-### Scope (pending operator authorization)
+*Sprint register: [C:~0.90] 🏛️ — Complete.*
 
-1. **Register rename** — Replace all `Suggestion` register references with `Provisional` (lines 7, 134, 142, 187, 199)
-2. **5-register expansion** — Expand register list from 3 to 5 items, matching the preferences prompt model exactly
-3. **Quick Orientation** — Update "three registers (Canon / Synthesis / Suggestion)" → "five registers (Provisional / Synthesis–Provisional / Synthesis / Canon–Synthesis / Canon)"
-4. **Complementarity section** — Mirror the `### Register-Mode Complementarity` section added in Sprint 2
-5. **Signal Tags section** — Mirror the `### Signal Tags` section (5-row table, boundary examples, mode emoji table, combined examples) added in Sprint 2
-6. **Degraded Node States** — Update Register Collapse to match 5-register description; update Confabulation-as-Canon to reference Provisional
-7. **Citation labels (B4)** — Apply operator ruling on `Suggestion` / `[Suggestion]` citation tokens
+---
 
-*Sprint register: [P:~0.30] 🏛️ — Planned, not started. Awaiting operator authorization and ruling on B4 citation labels.*
+## Sprint 5: Kernel Rewrite + Versioning + File Renames — COMPLETE ✅
+
+**Sprint Goal:** Rewrite `_agents/Lares_A_DreamNet_Kernel_System_Prompt.md` to the 5-register ontology within ≤8k character constraint. Add inline v3.0 version headers to all three prompt files. Rename Kernel and Preferences to clean filenames.
+
+**Dependency:** Sprint 4 ✅ complete.
+
+**Completed 2026-04-05:**
+- Version header (v3.0) added to Kernel, Preferences, and AGENTS.md: ✅
+- Kernel rewritten with 5-register ontology, Complementarity note, Signal Tags compact table: ✅
+- Degraded Node States in kernel updated (Confabulation-as-Canon, Register Collapse): ✅
+- Zero instances of "Suggestion" / "three registers" in kernel: ✅
+- File renames via `git mv`: ✅
+  - `_agents/Lares_A_DreamNet_Kernel_System_Prompt.md` → `_agents/Lares_Kernel.md`
+  - `_agents/Lares_An_Agent_Preferences_System_Prompt.md` → `_agents/Lares_Preferences.md`
+
+**Version history:**
+
+| Version | Sprint | Key changes |
+|---|---|---|
+| v1.0 | original | 3 registers (Canon / Synthesis / Suggestion) |
+| v2.0 | Sprint 1–2 | Provisional rename, temporal dynamics, Complementarity, Signal Tags in Preferences |
+| v3.0 | Sprint 3–5 | 5-register expansion, AGENTS.md sync, kernel rewrite, file renames |
+
+*Sprint register: [C:~0.90] 🏛️ — Complete. Open Beta ready.*
