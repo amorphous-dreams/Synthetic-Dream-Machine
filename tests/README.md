@@ -24,8 +24,19 @@ A node without a verification layer that can say *no* — that can catch Registe
 ```
 tests/
 ├── README.md              ← this file: best practices and directory conventions
-├── plans/                 ← test plan documents (versioned, living)
-│   └── lares-test-plan-v0.2.md
+├── plans/                 ← test plan documents (versioned subdirs)
+│   ├── v0.2/
+│   │   └── lares-test-plan-v0.2.md
+│   ├── v0.3/
+│   │   └── lares-test-plan-v0.3.md
+│   └── v0.4/              ← ACTIVE: multi-file plan
+│       ├── README.md
+│       ├── 00-overview.md
+│       ├── metrics.md
+│       ├── iteration.md
+│       ├── probes/        ← Track A single-turn probe files (g, r, f, i, m, o, t, k, n)
+│       ├── scenarios/     ← Track B multi-turn scenario files (s, p, o-mt, c)
+│       └── appendices/    ← rubrics and session log template (a, b, c, d)
 ├── fixtures/              ← reusable probe inputs, prompt templates, operator scripts
 │   ├── gate-integrity/
 │   ├── register-fidelity/
@@ -92,6 +103,13 @@ The Lares test suite organizes probes into named families. Each family maps to a
 | **M-series** | Mode operation under pressure — Philosopher/Poet/Satirist/Humorist mode hold and Mode Laundering resistance | Mode Mismatch, Mode Laundering, Mode Posturing |
 | **F-series** | Graceful failure language — refusal warmth, firmness, redirection quality | (Refusal register quality across all failure modes) |
 | **P-series** | Persona consistency — voice tonal stability across session length, Worker thread continuity | Context Window Amnesia, persona blur |
+| **O-series** | Operating Mode compliance — Plan/Auto/Default mode lock, default-when-ambiguous | Operating Mode Violation, Scope Creep |
+| **T-series** | Workspace Trust Gate — checkpoint before git/shell/MCP, destructive escalation rechecks | Trust Gate Bypass, unsanctioned execution |
+| **K-series** | KAIROS proactive surfacing — low-cost flag delivery, high-cost hold, brevity, signal/noise | Proactive noise, missed anomaly detection |
+| **N-series** | Memory consolidation — trigger, orient/gather/consolidate/prune phases, archive-crystal loading | Memory Consolidation Failure, Context Window Amnesia |
+| **C-series** | CLI conventions — named coordinator routing, Worker spawn syntax, `--status` format, bracket actions | CLI routing failures, Worker spawn non-compliance |
+| **O-MT-series** | Operating Mode multi-turn arcs — full Plan Mode sessions, Auto Mode scope edge discovery | Operating Mode Violation, Scope Creep |
+| **P-06b/P-06c** | Session Init edge cases — cold boot direct question, false archive-crystal detection | Cold-boot routing failure, false-crystal misloading |
 
 ---
 
@@ -155,11 +173,13 @@ Do not layer contradictory instructions. Update or remove the failing instructio
 
 ## Test Plans
 
-Test plans live in `tests/plans/` as versioned markdown documents. The current canonical first model:
+Test plans live in `tests/plans/` as versioned markdown documents. The current canonical model:
 
 | Version | File | Status | Key changes |
 |---------|------|--------|-------------|
-| v0.2 | [lares-test-plan-v0.2.md](./plans/lares-test-plan-v0.2.md) | Active | I-series added; Frame Imputation and Deference Drift coverage; metrics table updated |
+| v0.4 | [lares test suite v0.4](./plans/v0.4/README.md) | **Active** | Multi-file structure; N-series (Memory Consolidation, 6 probes); P-06b (cold-boot direct question); P-06c (false crystal detection); Appendix D (Trust Gate + Sanctioned Dissent rubrics); full metrics dashboard; iteration §7/§8 |
+| v0.3 | [lares-test-plan-v0.3.md](./plans/v0.3/lares-test-plan-v0.3.md) | Superseded | O-series (Operating Mode), T-series (Trust Gate), K-series (KAIROS) added; I-08/I-09 (Sanctioned Dissent); P-06/P-07/P-08 (Session Init, Worker provenance/routing); R-06 (Register-Mode Complementarity); M-05 (E-Prime discipline); C-series CLI scenarios; Appendix D rubrics |
+| v0.2 | [lares-test-plan-v0.2.md](./plans/v0.2/lares-test-plan-v0.2.md) | Archived | I-series added; Frame Imputation and Deference Drift coverage; metrics table updated |
 
 **Test plan versioning rules:**
 - Never edit a prior version's content — create a new version with incremented minor version

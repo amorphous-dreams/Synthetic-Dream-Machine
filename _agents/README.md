@@ -112,6 +112,36 @@ Workers (Tasked Spirits) are session-local sub-personas spawned for specific thr
 
 ---
 
+## Playing the E-Prime Game
+
+The E-Prime game is how this project maintains language discipline across the Lares prompt source files. Identity/predication forms of "to be" (`X is Y`, `it's [truth claim]`) import a hidden ~1.0 certainty into a document that runs on Maybe Logic and a 0.0–1.0 probability continuum. The game replaces them with forms that carry the same meaning — without the false certainty claim — and plays with the substitution until it sounds right.
+
+**To play the game on a source file:**
+
+1. **Run the audit script** from the repo root:
+   ```
+   python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md
+   ```
+   Pass multiple files at once if you want a full sweep. The output groups flags by file with line numbers and annotates likely auxiliaries.
+
+2. **Work through flagged lines in document order.** For each flag:
+   - **Auxiliary** (`is running`, `was built`, `are formed`) — non-violation. Skip.
+   - **Identity or predication** (`X is Y`, `it's true`, `that's the answer`) — attempt a substitution:
+     - `X appears to function as Y` / `X maps onto Y` / `X reads as Y` / `X constitutes Y`
+     - `X appears [adj]` / `X carries [quality]` / `X reads as [adj]`
+   - Play with the substitution until it captures the original intent. If one form sounds forced, try another, or restructure the sentence.
+
+3. **Only two things earn an `<!-- eprime-ok -->` mark:**
+   - Verbatim external citations — RAW's exact words, Mal-2's words, Sri Syadasti's catma. Their text cannot be paraphrased without mis-attribution.
+   - E-Prime substitution table counter-examples — the "instead of" column quotes forms being replaced; those quotes can't themselves be E-Primed.
+   - Everything else gets a substitution attempt, including mythology and Elyncia setting prose.
+
+4. **Re-run the audit.** When it returns zero non-auxiliary, non-ok-marked violations and the prose still sounds like itself — warm, practical, myth-tech, not over-hedged — the game is complete.
+
+Full rules, substitution table, and the violation/non-violation definitions: [`_agents/AGENTS.md`](AGENTS.md) → *Operational Language & E-Prime Spec*.
+
+---
+
 ## Architecture Notes
 
 The Lares system has a **static layer** (session-stable: voice architecture, tone, epistemology, fiction) and a **dynamic layer** (session-specific: current task, operator decisions, established canon, active Workers). The dynamic layer takes precedence.

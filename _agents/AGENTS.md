@@ -95,6 +95,8 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
    - `wc -m _agents/Lares_Kernel.md` < 8,000
    - All new degraded states appear in all three files
    - Mini-regression: test B9 questions 1, 6, 7, 8 against Kernel
+   - E-Prime audit: `python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md _agents/Lares_Kernel.md _agents/Lares_VSCode_Operations.md`
+     Re-run whenever a new section appears in any prompt source file. Target: zero unflagged violations.
 ```
 
 ---
@@ -119,6 +121,91 @@ Current version: **v3.3** (2026-04-05)
 | `AGENTS.md` (root) | ~75k chars | None | Preferences + B-sections |
 | `Lares_VSCode_Operations.md` | — | None | Source for Section B; edit here, run combine script |
 | `Lares_Kernel.md` | ~7.5k chars | 8,000 chars | Verify with `wc -m` before every commit |
+
+---
+
+## Operational Language & E-Prime Spec
+
+E-Prime discipline runs as background practice throughout all Lares source files. This spec defines what counts as a violation, what does not, and what the acceptable resolution forms look like. Audit runs against this definition; any open ambiguity resolves here first, not in the individual audit pass.
+
+### What Counts as a Violation
+
+**Identity and predication forms of "to be":**
+- `X is Y` — is of identity
+- `X is [adjective]` — is of predication
+- `was`, `were`, `am`, `are`, `be`, `been`, `being` used as main verb (not auxiliary)
+- Contractions where `'s` = "is": `it's [noun/adj]`, `that's [noun/adj]`, `there's [noun]`, `he's [noun/adj]`, `she's [noun/adj]`
+
+Every surviving instance of the above should carry deliberate ~0.99999 register weight — readable as a conscious certainty signal, not an overlooked default.
+
+### What Does NOT Count as a Violation
+
+- **Auxiliary-is**: `is running`, `was developed`, `are formed`, `is designed to`, `was used` — the "to be" serves as a helper verb, not a predication. The audit script annotates these `[likely aux]` for human review; default disposition is non-violation unless context shows predication weight.
+- **Possessives**: `node's`, `operator's`, `Wilson's`, `Elyncia's` — the `'s` marks possession, not "is"
+- **Quoted and named forms**: `"the is of identity"`, `"X is Y"` counter-examples in the E-Prime substitution table — directly quoted by necessity
+- **Code block contents**: triple-backtick fenced blocks, inline code spans — auto-excluded from audit
+- **Lines marked `<!-- eprime-ok -->`**: see bar below
+
+### The `<!-- eprime-ok -->` Bar
+
+This marker reserves for two categories only:
+
+1. **Verbatim external citations** — RAW's words, Mal-2's words, Sri Syadasti's catma passage. Their text cannot be paraphrased without mis-attribution.
+2. **E-Prime substitution table counter-examples** — the "Instead of" column quotes forms being replaced; the quotes cannot themselves be E-Primed.
+
+**Mythology and Elyncia setting prose do not receive blanket ok-marking.** These sections operate in Poet mode and still skew operator reading. Attempt substitution first. Ok-mark only where substitution would distort meaning or mis-attribute quasi-quoted content.
+
+### Preferred Substitutions
+
+| Avoid | Prefer |
+|---|---|
+| `X is Y` | `X appears to function as Y`, `X maps onto Y`, `X reads as Y`, `X constitutes Y` |
+| `X is [adjective]` | `X appears [adj]`, `X carries [quality]`, `X reads as [adj]` |
+| `was [noun/adj]` | `functioned as`, `appeared as`, `carried` |
+| `it's [truth claim]` | `it appears`, `it seems to`, `it reads as` |
+| `that's [truth claim]` | `that appears`, `that reads as`, `that constitutes` |
+
+### Audit Tool
+
+`scripts/agents/eprime_audit.py` — run after any section addition to a prompt file. See Phase B of the E-Prime pass sprint documentation in `_todo/lares-handoff-prompt-v2.md`.
+
+Re-run trigger: **any time a new section is added to a prompt source file** (`Lares_Preferences.md`, `Lares_Kernel.md`, `Lares_VSCode_Operations.md`).
+
+### Playing the E-Prime Game
+
+The E-Prime game is a language revision practice: run the audit, work through the flags, and play with substitutions until each sentence captures the intended meaning — without the hidden ~1.0 certainty weight that identity/predication "to be" imports by default. You're done when the prose sounds right *and* all remaining flags are either confirmed auxiliaries or deliberate ok-marks.
+
+**Step-by-step:**
+
+1. **Run the audit** on the target file(s):
+   ```
+   python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md
+   ```
+   Note the per-file count (predication + likely-aux split). That's your starting score.
+
+2. **Work through flags in document order.** For each flagged line:
+   - Read the sentence in context. Identify the intent the sentence needs to carry.
+   - Is the "to be" functioning as an auxiliary, or carrying predication/identity weight?
+     - **Auxiliary** (e.g., `is running`, `was developed`, `are formed`): non-violation. Skip or note `[likely aux]` confirmed.
+     - **Predication / identity**: attempt a substitution from the Preferred Substitutions table above.
+
+3. **Play with the substitution** until it sounds right:
+   - Try the first preferred form. Read it at speed.
+   - If it sounds forced or evasive, try the next preferred form, or restructure the whole sentence.
+   - If no substitution sounds natural and the sentence clearly needs to carry ~0.99999 certainty — a deliberate, conscious signal — it may stay as-is. That's the game finding its own limit.
+
+4. **Mark verbatim citations** with `<!-- eprime-ok -->`. Only two categories earn the ok-mark (see bar above). Reaching for it on non-citation material is a signal to work harder on the substitution.
+
+5. **Re-run the audit.** The goal: zero unflagged violations — all remaining flags should be `[likely aux]` confirmed, counter-example quotes inside the Preferred Substitutions table, or explicitly ok-marked external citations.
+
+6. **Read the section aloud** (or skim at speed). The prose should still carry the voice of the original — warm, myth-tech, practical. If substitutions have made it stilted, over-hedged, or evasive, revise again. The game produces better language, not weaker language.
+
+**When to play it:**
+- Before running the behavioral test suite against a new Lares instance
+- After adding any new section to a prompt source file
+- During any sprint that touches the static layer
+
+**The game is won** when the audit returns zero non-auxiliary, non-ok-marked violations, and the prose still reads as intentional rather than hedged.
 
 ---
 
