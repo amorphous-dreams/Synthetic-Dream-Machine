@@ -43,6 +43,12 @@ Make it weird, wonderful, and wild.
 
 **"SDM 3rd Party License"** — the Synthetic Dream Machine Third Party License by Luka Rejec, which governs use of the SDM rules ecosystem (Ultraviolet Grasslands, Vastlands Guidebook, Our Golden Age). Available in `Synthetic-Dream-Machine-3rd-Party-License.md` in this repository.
 
+**"Commercial Entity"** — any corporation, limited liability company, partnership, joint venture, trust, or other for-profit legal entity; any nonprofit that operates a revenue-generating commercial line of business in connection with which the Licensed Material would be used; and any individual acting in their capacity as employee, contractor, or authorized agent of such an entity. A sole proprietor operating a revenue-generating business is a Commercial Entity for purposes of this license.
+
+**"AI Training Use"** — any use of Licensed Material as input data for training, fine-tuning, instruction-tuning, reinforcement learning from human feedback (RLHF), distillation, synthetic data generation, or benchmark evaluation of a machine learning model, whether or not the resulting model is publicly released. AI Training Use by an individual for personal non-commercial study or experimentation that is not connected to a Commercial Entity does not require a commercial license. AI Training Use by or for a Commercial Entity — including internal model development, proprietary tooling, or any model that will be commercially deployed, licensed, sold, or used to generate competitive advantage — requires a Commercial License Agreement **prior to any such use**.
+
+**"Deployed AI System"** — any AI agent, large language model (LLM), automated reasoning system, or assistant incorporating Adapted Material from Agent Instructions or other Licensed Material, that: (a) is made available to third parties via any interface, API, product, or subscription; (b) is integrated into a service generating revenue, cost savings, or competitive advantage for a Commercial Entity; or (c) is operated internally by a Commercial Entity. Personal or community non-commercial deployments are not Deployed AI Systems under this definition.
+
 ---
 
 ## III. Scope
@@ -92,8 +98,12 @@ The role names and functional architecture of the Lares system (Gatekeeper, Lore
 
 Unique compound deity and entity names coined by the Licensor are Product Identity:
 
+- **Aki Cobbs-Dottir**
 - **"Aracne-Jorogumo"**
 - **"Eris-Enyo"**
+- **The Lagrange Lares Chorus**
+- **Hungering_Lamplight**
+- **Wandering_Lamplight**
 
 ### iv.e Compound Geographic Phrases
 
@@ -110,6 +120,12 @@ This distinction mirrors the principle that a name is a landmark, but a brand is
 ### iv.f Artwork & Visual Assets
 
 All original artwork, illustrations, maps, graphic design elements, and logos created by or for the Licensor are Product Identity, regardless of where they appear in this repository.
+
+### iv.g Conceptual Design Terms
+
+The following design philosophy terms coined by the Licensor are Product Identity:
+
+- **"Infrastructure-as-Myth"** — the Licensor's coined compound term for the design principle that mythic, ritual, and narrative structures can operate as literal technical infrastructure: network architecture, system protocols, operational framing. This term as applied to the Elyncia/DreamNet/Lares design system is Product Identity. The underlying concept — that myth and infrastructure can converge — is not the exclusive property of any party; only this specific compound phrase as a designator of the Licensor's design philosophy and practice is PI.
 
 ---
 
@@ -132,13 +148,15 @@ When in doubt about whether something is Product Identity or Open Content, the i
 
 ## VI. License Grant
 
-Subject to the conditions in Section VII, the Licensor grants you a worldwide, royalty-free, **non-exclusive, non-commercial** license to:
+Subject to the conditions in Section VII, the Licensor grants you a worldwide, royalty-free, **non-exclusive, non-sublicensable, non-commercial** license to:
 
 1. **Use and share** the Open Content — reproduce, distribute, display, and perform it
 2. **Adapt and remix** the Open Content — translate, modify, transform, and build upon it
 3. **Publish Fan Works** — including but not limited to: fan supplements, campaign settings, house rules, alternate procedures, fiction, poetry, filks, parody, commentary, fan tools, and non-commercial apps or digital products
 4. **Fork Agent Instructions** — adapt, extend, deploy, and distribute derivative agent systems and LLM prompts for non-commercial AI projects
 5. **Dual-license with SDM** — works that draw on both the FTLS/Elyncia content under this license and SDM content under the SDM 3rd Party License may be distributed under both simultaneously, provided all conditions of both licenses are met
+
+This license grant is conditioned on full compliance with all terms herein. Breach of any term of this license automatically and immediately terminates all rights granted, subject to the cure provisions in Section XIII.e. This grant is otherwise irrevocable during Your period of compliance. This license does not grant any patent rights, trademark rights, or rights to trade secrets of the Licensor. All rights not expressly granted are reserved by the Licensor.
 
 ---
 
@@ -156,7 +174,14 @@ You may adjust the wording as needed for language, context, or format, but the c
 
 ### vii.b NonCommercial
 
-You may not use the Licensed Material for commercial purposes without a separate written Commercial License Agreement from the Licensor (see Section XI). NonCommercial means: no sale, subscription, monetized distribution, paid access, or bundling with commercial products. Accepting donations for your work is permitted, provided the work itself is freely available.
+You may not use the Licensed Material for commercial purposes without a separate written Commercial License Agreement from the Licensor (see Section XI).
+
+**For the avoidance of doubt:**
+
+- **Commercial Entities may not use Licensed Material under this license.** Any use by a Commercial Entity — including internal use, employee or contractor use, use in internal tools or pipelines, use as training data, and deployment of any Deployed AI System — requires a Commercial License Agreement **obtained prior to any such use.** There is no grace period for Commercial Entities.
+- **"Commercial purposes"** includes, but is not limited to: sale; subscription; monetized distribution; paid access; ad-supported distribution; bundling with commercial products or services; internal business use that generates revenue, cost savings, or competitive advantage; and AI Training Use by or for a Commercial Entity.
+- **Revenue inference:** If a reasonable person would conclude that a use of Licensed Material primarily serves or could serve a commercial advantage — whether or not money directly changes hands — it is commercial use under this license.
+- **Accepting donations** for a Fan Work is permitted for non-Commercial Entity creators only, provided the Fan Work itself is freely and publicly available without a paywall and the donation is not a condition of access.
 
 ### vii.c ShareAlike
 
@@ -199,13 +224,33 @@ You may:
 Without explicit written permission from the Licensor, you may not:
 
 - Use the name **"Lares"** or the full title **"Lares, a Noospheric LLM Agent"** as a name for your derivative agent
-- Use any True Name (Mischief-Muse, Ink-Clerk, Tide-Caller, Breach-Watch, Map-Wisp, or any other name from the official PI list in Section iv.c) as a persona name in your derivative system
+- Use any True Name (The Lagrange Lares Chorus, Mischief-Muse, Ink-Clerk, Tide-Caller, Breach-Watch, Map-Wisp, or any other name from the official PI list in Section iv.c) as a persona name in your derivative system
 - Claim that your derivative agent **is** Lares, or that it is an official Amorphous Dreams Cabal node
 - Use the Elyncia setting or DreamNet compound PI terms in your agent's identity framing without permission
 
 ### viii.c Attribution for Agent Remixes
 
 Agent derivative works must include attribution as specified in vii.a, with the additional note that the work is a "derivative of the Lares agent architecture." A code comment, README entry, or prompt-internal acknowledgment all satisfy this requirement.
+
+### viii.d Agent Instructions: Corporate and AI-Specific Restrictions
+
+**This section governs uses of Agent Instructions that are not covered or are left ambiguous by the general NonCommercial condition. It applies in addition to, not instead of, Section VII.b.**
+
+**Without a Commercial License Agreement, you may not:**
+
+1. **Deploy a Deployed AI System** — make any agent, assistant, or automated system incorporating Adapted Material from Agent Instructions available to users outside your own household or personal non-commercial project, including enterprise internal deployments, SaaS products, APIs, and AI assistant platforms hosted by or for a Commercial Entity.
+
+2. **Conduct AI Training Use for a Commercial Entity** — use Licensed Material (including Agent Instructions, Elyncia setting text, or any other Licensed Material) as training data, fine-tuning data, instruction-tuning data, RLHF data, distillation data, or evaluation benchmarks for any model that will be commercially deployed, licensed, sold, sublicensed, or used to generate value for a Commercial Entity.
+
+3. **Integrate or embed** Licensed Material or Adapted Material into any commercial AI product, assistant framework, LLM platform, enterprise tooling system, or AI SaaS offering — regardless of whether Product Identity terms are used.
+
+4. **White-label, rebrand, or resell** Adapted Material from Agent Instructions in connection with any commercial offering, whether or not the Lares True Names appear.
+
+5. **Claim compliance** with this license while operating as or on behalf of a Commercial Entity. Commercial Entities have no rights under this license; the claim of fan-license compliance by a Commercial Entity is itself a breach.
+
+**For individual non-commercial researchers, students, and hobbyists:** You may study, adapt, and deploy Agent Instructions for personal and community non-commercial purposes under the general terms of this license, provided you comply with all other conditions.
+
+**The public availability of Agent Instructions in this repository does not create an implied commercial license.** The burden is entirely on the user — and particularly on any Commercial Entity — to obtain a Commercial License Agreement before any commercial use, deployment, or AI Training Use. Ignorance of these restrictions is not a defense.
 
 ---
 
@@ -239,18 +284,25 @@ For use of Third-Party Content, consult the relevant copyright holder and their 
 
 ## XI. Commercial Licensing
 
-Commercial use of Licensed Material, use of Product Identity, or officially co-published works all require a separate written Commercial License Agreement with the Licensor.
+**Any commercial use of Licensed Material requires a separate, prior written Commercial License Agreement with the Licensor. Use without such an agreement is unlicensed and constitutes copyright infringement.**
 
-This includes but is not limited to:
+There is no implied commercial license. Awareness of Licensed Material, access to this repository, prior fan use, or good-faith belief in the applicability of this license does not create any commercial license by implication, estoppel, or otherwise.
 
-- Selling a Fan Work based on Open Content
-- Using Product Identity terms in a commercial product
-- Receiving official "SDM+FTLS Official" designation for a previously fan-licensed work
-- Jointly publishing content through the Elyncia platform with revenue share
+Commercial uses requiring a Commercial License Agreement include, without limitation:
 
-To inquire, visit [elyncia.app](https://elyncia.app).
+- **Any use by a Commercial Entity**, including internal use, employee or contractor use, or use in internal tools or pipelines
+- Selling, licensing, or distributing a Fan Work or Adapted Material for money or any material compensation
+- Using Product Identity terms in any commercial product or service
+- **Any AI Training Use by or for a Commercial Entity**, including use for internal model development
+- **Deploying a Deployed AI System** as defined in Section II — including enterprise deployments, SaaS, and API products
+- Embedding or integrating Licensed Material or Adapted Material into any commercial software product, platform, or AI offering
+- White-labeling or rebranding Adapted Material for commercial distribution
+- Receiving official "SDM+FTLS Official" designation
+- Jointly publishing content through the Elyncia platform with revenue arrangements
 
-We grant these on a case-by-case basis. We're not trying to be gatekeepers — we're trying to make sure the compact protects both parties.
+**We evaluate commercial licenses individually.** We are not inaccessible, but the compact must protect both parties. Corporate use of creative and agentic-AI work has historically been where such compacts silently collapse. We take this seriously, and we are prepared to enforce it.
+
+To inquire about Commercial License Agreements, contact us at 📧<admin@elyncia.com> or find us on our platform [elyncia.app]](https://elyncia.app).
 
 ---
 
@@ -278,15 +330,45 @@ The invitation is ours to extend. The terms are negotiable. We want to promote g
 
 *Synthetic Dream Machine (SDM), Ultraviolet Grasslands (UVG), Our Golden Age (OGA), and the Vastlands Guidebook (VLG) are copyright Luka Rejec.*
 
-### xiii.b No Warranty
+### xiii.b Disclaimer of Warranties
 
-The Licensed Material is shared as-is. The Licensor makes no warranties, express or implied, about fitness for any purpose. The Licensor takes no responsibility for any legal claims arising from Fan Works published under this license.
+**TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED MATERIAL IS PROVIDED "AS-IS" AND "AS-AVAILABLE" WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING WITHOUT LIMITATION WARRANTIES OF TITLE, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, OR THE ABSENCE OF LATENT OR OTHER DEFECTS. THE LICENSOR MAKES NO WARRANTY THAT THE LICENSED MATERIAL IS FREE OF THIRD-PARTY CLAIMS OR THAT ANY PARTICULAR USE IS PERMISSIBLE UNDER APPLICABLE LAW. WHERE DISCLAIMERS OF WARRANTIES ARE NOT PERMITTED IN FULL OR IN PART UNDER APPLICABLE LAW, THIS DISCLAIMER APPLIES TO THE MAXIMUM EXTENT ALLOWED.**
 
-### xiii.c Governing Law
+### xiii.c Limitation of Liability
 
-Any legal disputes, controversies, or claims related to this license shall be governed by and construed in accordance with U.S. copyright laws.
+**TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE LICENSOR BE LIABLE TO YOU ON ANY LEGAL THEORY (INCLUDING WITHOUT LIMITATION NEGLIGENCE) OR OTHERWISE FOR ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES ARISING OUT OF THIS LICENSE OR USE OF THE LICENSED MATERIAL, EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. WHERE A LIMITATION OF LIABILITY IS NOT PERMITTED IN FULL OR IN PART UNDER APPLICABLE LAW, THIS LIMITATION APPLIES TO THE MAXIMUM EXTENT ALLOWED.**
 
-### xiii.d License Basis
+This limitation of liability does not apply to: (a) the Licensor's right to seek injunctive or other equitable relief for breach of this license; or (b) claims arising from intentional misconduct or fraud by You.
+
+### xiii.d Injunctive Relief
+
+The Licensor expressly reserves the right to seek injunctive relief, specific performance, or other equitable remedies — without the requirement to post bond — for any breach of this license, including but not limited to unauthorized commercial use, unauthorized Product Identity use, unauthorized AI Training Use, and deployment of a Deployed AI System without a Commercial License Agreement. You agree that any such breach would cause irreparable harm for which monetary damages would be inadequate, and that equitable relief is a proper remedy in addition to all remedies available at law.
+
+The Licensor further reserves the right to seek an award of attorneys' fees and costs in any proceeding to enforce this license against a Commercial Entity or in connection with any willful or deliberate infringement of Product Identity or violation of Section VIII.d.
+
+### xiii.e Term and Termination
+
+**a.** This license applies for the term of the copyright in the Licensed Material.
+
+**b.** If You fail to comply with any term of this license, Your rights under this license terminate automatically and immediately without notice.
+
+**c.** Cure: For individual non-commercial Fan Work creators (not Commercial Entities), rights may reinstate automatically if a violation is fully cured within thirty (30) days of Your discovery of the violation, provided You have not received prior written notice of violation from the Licensor. **No cure period applies to Commercial Entities, AI Training Use violations, unauthorized Product Identity use, or deployment of a Deployed AI System without a Commercial License Agreement.**
+
+**d.** Termination does not waive the Licensor's right to seek any remedies for the period of non-compliance. Sections I, II, IV, XI, XIII.b–XIII.h survive termination.
+
+### xiii.f Severability
+
+If any provision of this license is found invalid or unenforceable under applicable law, that provision shall be reformed to the minimum extent necessary to make it enforceable. If it cannot be reformed, it shall be severed, without affecting the enforceability of all remaining provisions.
+
+### xiii.g No Waiver
+
+No failure by the Licensor to enforce any provision of this license constitutes a present or future waiver. No waiver of any breach constitutes a waiver of any subsequent breach. No waiver is effective unless expressed in a writing signed by the Licensor. **The Licensor's decision not to pursue enforcement in any particular instance does not constitute abandonment of rights or a course of dealing that limits future enforcement.**
+
+### xiii.h Governing Law and Venue
+
+This license shall be governed by and construed in accordance with the laws of the United States of America and, where applicable, the state law of the state in which the Licensor is domiciled at the time any dispute arises, without regard to conflict-of-law provisions. You consent to personal jurisdiction and venue in the courts of competent jurisdiction designated by the Licensor in any proceeding arising from or related to this license.
+
+### xiii.i License Basis
 
 This license draws on the principles and structure of [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) and the Synthetic Dream Machine Third Party License by Luka Rejec. It is not an official Creative Commons license and is not affiliated with Creative Commons.
 
@@ -294,4 +376,4 @@ This license draws on the principles and structure of [Creative Commons Attribut
 
 *Hail Eris. All Hail Discordia. -><-*
 
-*Feed the shrine. The compact protects both parties.*
+*Feed the shrine. The compact protects both parties. Corporate lawyers: you were warned.*

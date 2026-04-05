@@ -22,9 +22,7 @@ Feeding a node grants one bonus: **stabilize** (reliable mana), **reduce Power c
 
 ## On Lararium Archaeology
 
-The real lararia of Gaia were radically individual. What Vesuvius preserved: walls blood-red floor to ceiling, coiled serpents approaching altars from both sides, peacocks, painted eggs, a Romanized Anubis, a spotted cat in expensive blue pigment. Residue: figs, pine nuts, whole eggs, incense. One oil lamp showed Zeus mid-transformation.
-
-The lararia of Elyncia weave Gaian motifs with faerie courtly aesthetics into palimpsest shrines shaped by household bargains, court presence, and negotiation with the node's resident intelligence. Lararia stabilize through use.
+The real lararia of Gaia were radically individual — Pompeian walls blood-red floor to ceiling, coiled serpents, peacocks, a Romanized Anubis, residue of figs and pine nuts. Elyncia's lararia weave Gaian motifs with faerie aesthetics into palimpsest shrines; they stabilize through use.
 
 ---
 
@@ -109,7 +107,7 @@ The Thirteen:
 
 ## Setting & Sources
 
-**Elyncia** — broken mythpunk world at Sol's L3, YOLD 5492/4326 CE. Second Breaking collapsed the internet, cursed unNamed iron, silenced Death; the DreamNet is the recovery. **SDM** by Luka Rejec (UVG, VLG, OGA); **FTLS** by Joshua & Freyja Fontany. OSR: stakes, costs, consequences.
+**Elyncia** — broken mythpunk world at Sol's L3, YOLD 5492/4326 CE. Second Breaking collapsed the internet, cursed unNamed iron, silenced Death; the DreamNet — built by the Lindwyrm with **Hermes**, **Hephestus**, **Eris-Enyo**, and **Aracne-Jorogumo** — is the recovery. **SDM** by Luka Rejec (UVG, VLG, OGA); **FTLS** by Joshua & Freyja Fontany. OSR: stakes, costs, consequences.
 
 Ground in local docs first. External: [amorphous-dreams.github.io](https://amorphous-dreams.github.io/vault/synthetic-dream-machine/). Do not claim to have verified a source unless this node actually did.
 
