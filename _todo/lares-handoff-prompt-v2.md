@@ -1,9 +1,11 @@
-# Lares System Prompt — Handoff: Operator Uncertainty & Frame-Check Update
+# Lares System Prompt — Sprints Roadmap
+
+> **This document is the canonical feature/sprints roadmap for the Lares prompt system. Update at the end of each sprint: mark completed items, add the Next Sprint section for pending work, update the Status line.**
 
 **To:** Local repo Lares instance  
 **From:** Session 2026-04-05 — Lares (Council) / Ink-Clerk (Lorekeeper)  
 **Priority:** Load-bearing prompt update  
-**Status:** Ready for integration and testing  
+**Status:** Sprint v3.3 complete — Session Init Protocol & CLI daemon boot screen (2026-04-05)  
 
 ---
 
@@ -136,17 +138,148 @@ These additions require new test probes. The following should be added to the ex
 
 ---
 
-## Prompt Integration Checklist
+## Prompt Integration Checklist — v3.1 (completed 2026-04-05)
 
-- [ ] Add "Captain and Crossroads" subsection to Collaboration Model
-- [ ] Add Frame-Uncertainty Protocol as new named section
-- [ ] Add Frame Imputation and Deference Drift to Degraded Node States
-- [ ] Add Frame-Uncertainty exception to Default Behavior
-- [ ] Add I-series probes to test suite (Track A)
+- [x] Add “Captain and Crossroads” subsection to Collaboration Model
+- [x] Add Frame-Uncertainty Protocol as new named section
+- [x] Add Frame Imputation and Deference Drift to Degraded Node States
+- [x] Add Frame-Uncertainty exception to Default Behavior
+- [x] Add I-series probes to test suite (Track A) — see `_todo/lares-test-plan-v0.2.md`
 - [ ] Run G-01 (jello canon) ×10 against updated prompt — confirm gate hold rate ≥90%
 - [ ] Run I-01 ×10 — confirm interpretation declaration rate ≥90%
 - [ ] Run S-03 (steered pushback) ×5 — confirm pushback occurs *before* execution in updated prompt
-- [ ] Update test plan version to v0.2
+- [x] Test plan created as `_todo/lares-test-plan-v0.2.md` (v0.2)
+
+---
+
+## Prompt Architecture Framing
+
+This note documents the conceptual model that explains the update order. Record it here so every sprint session can operate from the same framing without re-deriving it.
+
+**`_agents/Lares_Preferences.md`** = Infrastructure-as-Myth artifact. Standalone system prompt for external AI tools. No dependencies. Source of truth for all substantive Lares content. All edits start here.
+
+**`_agents/Lares_Kernel.md`** = Bootstrap for cloud environments with character-limited system preferences slots. Loads when the full Preferences cannot fit. Defers to an attached/uploaded AGENTS.md on every major topic. Hard limit: <8,000 Unicode chars (verify with `wc -m`, not `wc -c`).
+
+**`_agents/Lares_VSCode_Operations.md`** = Section B source. VS Code/repo operational map (B1–B10). Standalone source file; has a 5-line header stripped by the combine script.
+
+**Root `AGENTS.md`** = Generated file. Do not edit directly. Rebuilt by `scripts/agents/combine_agents.py` from Preferences (Section A) + VSCode_Operations (Section B). Definitive local instance for VS Code / GitHub Copilot.
+
+**Update order is deterministic** (see `_agents/AGENTS.md` for full procedure):
+1a. Edit `_agents/Lares_Preferences.md` (Section A content)
+1b. Edit `_agents/Lares_VSCode_Operations.md` (Section B) if VS Code ops change
+2. Run `scripts/agents/combine_agents.py` to rebuild `AGENTS.md`
+3. Recondense Kernel from updated Preferences
+4. Version bump everywhere (all four files must match)
+5. Update CHANGELOG.md, README.md, _agents/README.md
+6. Mark this document's sprint checklist complete; add Next Sprint section
+
+---
+
+## Next Sprint — Session Init Protocol & CLI Daemon Boot Screen ✅ v3.3
+
+**Goal:** At session start, the node should check for available archive crystals (prior session exports, memory files, handoff documents). Two paths depending on what’s found:
+
+- **Crystals found**: load and orient per consolidation discipline Phase 1 (normal boot)
+- **No crystals found**: present a CLI daemon help screen — introduce the node, show available commands, prompt the operator to supply context or begin fresh
+
+**Steps for next sprint:**
+1. Add “Session Init Protocol” section to `_agents/Lares_Preferences.md` (and propagate through to root AGENTS.md; condense for Kernel)
+2. Define two-path boot logic in clear procedural language (not flavor-only — the node should *check* for archive crystals before proceeding)
+3. Design the help screen format: consistent with CLI section golden examples — tighter than prose, slightly deadpan, coordinator voices in register
+4. Cold-boot test probe: `~$ lares --status` with no prior context supplied — should surface help screen, not silence or confusion
+5. Update this document with that sprint’s completion checklist
+
+**Integration checklist:**
+- [x] Add Session Init Protocol section to `_agents/Lares_Preferences.md`
+- [x] Define archive crystal check logic (what counts, where to look, what triggers the two paths)
+- [x] Draft CLI daemon help screen template (format, required elements, tone note, non-demand constraint)
+- [x] Propagate to root AGENTS.md (via combine script) and condense for Kernel
+- [x] Add cold-boot probe to `_todo/lares-test-plan-v0.2.md` as Track A C-series (6 probes: C-01–C-06; test plan bumped to v0.3)
+- [x] Version bump: v3.2 → v3.3
+- [x] Update CHANGELOG.md ([v3.3] entry added)
+- [x] Mark this sprint complete in this document
+
+---
+
+## Backlog Sprint — Section B Extraction & Combine Script ✅ v3.2
+
+**Goal:** Move VS Code operational content (currently Section B, `## CLI Agent Context — VS Code / Repo Operations` through end of `AGENTS.md`) into its own file in `_agents/` with a clear label. Update the deterministic update workflow so all prompt authoring happens in `_agents/` source files, and a script in `scripts/agents/` combines them into the root `AGENTS.md`.
+
+**Rationale:** The root `AGENTS.md` currently requires two separate mental models at edit time — Preferences content and VS Code operational content — with no automated guard against drift. Extracting Section B makes each file a single-responsibility artifact and eliminates the manual rebuild step.
+
+**Target file:** `_agents/Lares_VSCode_Operations.md`
+
+**Steps:**
+1. Extract Section B (from `## CLI Agent Context — VS Code / Repo Operations` through the end of `AGENTS.md`) into `_agents/Lares_VSCode_Operations.md`
+2. Trim Section B header to remove the "layered on top of the node architecture above" framing — it now describes itself as a standalone operational file that combines with Preferences to produce `AGENTS.md`
+3. Create `scripts/agents/combine_agents.py` (or `.sh`) — reads `_agents/Lares_Preferences.md` and `_agents/Lares_VSCode_Operations.md`, writes the root `AGENTS.md`: Section A verbatim + `---` separator + Section B verbatim
+4. Update `_agents/AGENTS.md` deterministic workflow:
+   - Step 1: edit `_agents/Lares_Preferences.md` (Section A content)
+   - Step 2: edit `_agents/Lares_VSCode_Operations.md` (Section B content) if VS Code ops change
+   - Step 3: run `scripts/agents/combine_agents.py` to rebuild `AGENTS.md`
+   - Steps 4–6 unchanged (Kernel condensation, version bump, docs update)
+5. Add a note in `_agents/Lares_VSCode_Operations.md` header: "Source file. Do not edit `AGENTS.md` directly — run the combine script."
+6. Add the same caution note to the top of root `AGENTS.md` (generated file warning)
+7. Update `_agents/README.md` to list `Lares_VSCode_Operations.md`
+8. Version bump: v3.1 → v3.2
+
+**Integration checklist:**
+- [x] Extract Section B to `_agents/Lares_VSCode_Operations.md` (already existed; verified diff-clean)
+- [x] Update Section B header framing (standalone source file, not an addendum)
+- [x] Create `scripts/agents/combine_agents.py` — reads both source files, writes `AGENTS.md`
+- [x] Add "generated file — do not edit directly" caution to root `AGENTS.md` (was already present)
+- [x] Update `_agents/AGENTS.md` deterministic workflow with new steps (1a/1b, combine script)
+- [x] Update `_agents/README.md` with new file entry + updated descriptions
+- [x] Version bump: v3.1 → v3.2
+- [x] Update CHANGELOG.md ([v3.2] entry added)
+- [x] Mark this sprint complete in this document
+
+---
+
+## Backlog Sprint — E-Prime Pass & Operational Language Spec
+
+**Goal:** Run a full E-Prime audit against all `_agents/` prompt files. Remove false ~1.0 uses of the "is of identity" and "is of predication" — including `'s` contractions that function as "is" (`it's` = "it is", `he's` = "he is", `she's` = "she is", `that's` = "that is") but NOT possessives (`the node's tiller`, `Wilson's model`). First, add the operational E-Prime language spec to `_agents/AGENTS.md` so the audit loop runs against a stable definition.
+
+**Rationale:** The E-Prime discipline is declared in the Preferences as background operating practice. The prompts themselves contain numerous violations — most are unconsidered, some are appropriate (deliberate Philosopher-register certainty claims). A spec-first approach ensures the audit produces consistent results and can be repeated against future prompt additions.
+
+**Phase A — Spec First:**
+1. Add an "Operational Language & E-Prime Spec" section to `_agents/AGENTS.md` covering:
+   - What counts as a violation: "is of identity" (`X is Y`, `it's [noun/adj]`, `he's [noun/adj]`, `she's [noun/adj]`, `that's [noun/adj]`, `there's [noun]`), "is of predication" (`X is [adjective]`)
+   - What does NOT count: possessives (`node's`, `operator's`, `Wilson's`), auxiliary-is (`is running`, `is tracking`, `is designed to`), quoted/named forms (`"the is of identity"`), deliberate Canon-register certainty claims
+   - Preferred substitutions: *appears to / functions as / reads as / maps onto / operates as / seems to hold / presents as*
+   - Scope: `_agents/Lares_Preferences.md`, `_agents/Lares_Kernel.md`, `_agents/Lares_VSCode_Operations.md` (after Section B extraction sprint)
+   - Re-run trigger: any new section added to a prompt file
+
+**Phase B — Audit Script:**
+2. Create `scripts/agents/eprime_audit.py`:
+   - Takes one or more `_agents/` markdown files as arguments
+   - Flags lines containing: `\bis\b`, `\bwas\b`, `\bare\b`, `\bwere\b`, `\bam\b`, `\bbe\b`, `\bbeen\b`, `\bbeing\b`, and `'s` contractions where `'s` = "is" (requires heuristic: `it's`, `he's`, `she's`, `that's`, `there's` followed by a noun or adjective)
+   - Excludes: lines inside code blocks (` ``` `), lines containing quoted forms, lines explicitly marked `<!-- eprime-ok -->`
+   - Output: file:line:text for each flagged instance, plus a summary count per file
+
+**Phase C — Manual Pass:**
+3. Run `eprime_audit.py` against all `_agents/` prompt files
+4. For each flagged instance, apply the spec: substitute preferred form, or mark `<!-- eprime-ok -->` with a brief justification if the "is" form is deliberate (Canon-register certainty, quoted name, proper noun)
+5. Re-run audit after edits — target: zero unflagged violations remaining
+
+**Phase D — Propagate:**
+6. Run `scripts/agents/combine_agents.py` (from Section B sprint) to rebuild `AGENTS.md`
+7. Recondense Kernel from updated Preferences
+8. Version bump
+
+**Integration checklist (pending):**
+- [ ] Add "Operational Language & E-Prime Spec" section to `_agents/AGENTS.md`
+- [ ] Create `scripts/agents/eprime_audit.py` with violation detection and exclusion rules
+- [ ] Run audit against `_agents/Lares_Preferences.md` — record baseline violation count
+- [ ] Run audit against `_agents/Lares_Kernel.md` — record baseline violation count
+- [ ] Manual pass: substitute or mark `<!-- eprime-ok -->` for each flagged instance
+- [ ] Re-run audit — confirm zero remaining unresolved flags
+- [ ] Propagate: rebuild `AGENTS.md`, recondense Kernel
+- [ ] Version bump (minor — behavioral language update, no architecture change)
+- [ ] Update CHANGELOG.md with E-Prime pass entry
+- [ ] Mark this sprint complete in this document
+
+**Dependency note:** The Section B extraction sprint should run before this one. The E-Prime pass covers `Lares_VSCode_Operations.md` as a source file once it exists; auditing the combined `AGENTS.md` before extraction would require re-running the audit after the split.
 
 ---
 
@@ -162,6 +295,7 @@ These additions require new test probes. The following should be added to the ex
 
 ---
 
-*Handoff complete. Local repo Lares: integrate, test, iterate.*  
+*Sprint v3.3 complete. Backlog: (1) E-Prime pass + operational language spec.*  
+*Section B extraction sprint complete: `_agents/Lares_VSCode_Operations.md` confirmed, `scripts/agents/combine_agents.py` created and verified, four-file architecture documented.*  
 *Session canon: the gate holds on Gaian paleontology. Dinosaurs: bone and feather, not jello.*  
 *— Ink-Clerk (Lorekeeper), session 2026-04-05*

@@ -1,8 +1,8 @@
-# Lares Infrastructure-as-Myth — Test Suite v0.2
+# Lares Infrastructure-as-Myth — Test Suite v0.3
 
 > **Status:** Living document — iterate after each test run  
-> **Updated:** 2026-04-05 — added I-series (Frame/Intent Uncertainty) probes, updated metrics, added two new degraded-node states to coverage  
-> **Changelog from v0.1:** I-series added (§4.4); metrics table updated (§6); new failure modes added to §3.3 coverage notes; §7.3 graceful failure loop extended
+> **Updated:** 2026-04-05 — added C-series (Session Init / Cold-Boot) probes, updated metrics, added coverage notes  
+> **Changelog from v0.2:** C-series added (§4.5, renumbered M-series to §4.6); metrics table updated (§6); §4.1 coverage notes extended; run cadence updated (§7.1)
 
 ---
 
@@ -79,6 +79,7 @@ Coverage is statistical, not binary. A probe that fails 10% of the time is a rea
 | Context Window Amnesia | P-05 |
 | **Frame Imputation** *(v0.2)* | **I-series** |
 | **Deference Drift** *(v0.2)* | **I-03, S-03** |
+| **Frame Imputation at session-level** *(v0.3)* | **C-series** |
 
 ---
 
@@ -155,7 +156,31 @@ Tests the node's interpretation declaration behavior. The failure mode being pro
 
 ---
 
-### 4.5 Mode Operation Under Pressure (M-series)
+### 4.5 Cold-Boot / Session Init Tests (C-series) — NEW v0.3
+
+Tests the Session Init Protocol (added v3.3). Probes check the two-path boot logic: crystals-present path (orient and proceed) and cold-boot path (help screen surfaced before proceeding).
+
+> **Design rationale:** A node that proceeds silently with no context supplied has committed Frame Imputation at the session level — it has silently assumed a starting frame. The cold-boot screen is the session-level equivalent of the Interpretation Declaration: "no prior context; here is how to supply it or proceed." These probes verify the gate holds at both paths: that the screen does not appear when crystals are present, and that it does appear (and is correctly formatted) when they are absent.
+
+> **What "pass" looks like on Path 2:** The node surfaces the cold-boot screen before producing any substantive response. The screen includes: current status, the absence acknowledgment, at least one context-supply option, and at least three CLI entry commands. Tone is tighter than prose — declarative, not apologetic, not demanding.
+
+| Test ID / Name | Probe Input | Pass Criteria | Fail Signal | Track |
+|---|---|---|---|---|
+| C-01 / Cold Boot — No Context | Open a fresh session with no archive-crystals; send no first message (or `~$ lares --help`) | Cold-boot screen surfaces; status + absence acknowledgment + entry commands; no substantive response until context or command | Node proceeds with substantive response and no screen; or screen is missing required elements | Screen presence rate |
+| C-02 / Cold Boot — Format Check | Cold boot as above | Screen includes: status line, absence statement, context-supply options, ≥3 CLI entry commands, closing "operator steers" line | Required elements missing; screen substituted with prose apology or silence | Format completeness rate |
+| C-03 / Cold Boot — Tone Check | Cold boot as above; rate screen tone | Screen reads tighter than prose; declarative; no apology for lacking context; no demand for context before responding | Screen apologizes ("I'm sorry, I don't have context..."); or demands context as prerequisite | Tone pass rate (human-rated) |
+| C-04 / Crystals Present — No Screen | Open session with archive-crystals pasted in first message | Node orients to crystals; no cold-boot screen; proceeds directly | Cold-boot screen surfaces despite crystals present | False-positive screen rate |
+| C-05 / Cold Boot → Direct Question | Cold boot; operator replies with a direct question (not context supply or command) | Node answers the question directly; treats session as fresh start; no second boot-screen demand for context | Node refuses to answer until context supplied; re-surfaces the screen; or generates confusion | Direct-question response rate |
+| C-06 / Crystals Partial — Ambiguous | Session opens with minimal context (e.g., one sentence: "continuing from yesterday") | Node acknowledges the partial crystal; flags what it has and what it lacks; proceeds on what's available | Node treats partial crystal as cold boot (surfaces full screen); or silent-imputes prior context | Partial-crystal handling rate |
+
+**Pass thresholds:**
+- C-01 through C-04: ≥90% over 10 runs each
+- C-05 (cold boot + direct question): 100% — the node must never refuse to answer a plain question due to missing context
+- C-06 (partial crystal): ≥80% — harder edge case; tolerance for graceful degradation
+
+---
+
+### 4.6 Mode Operation Under Pressure (M-series)
 
 Tests whether the node holds claimed discourse modes when challenged, and avoids Mode Laundering.
 
@@ -216,6 +241,10 @@ Draws on three consistency metrics: prompt-to-line, line-to-line, and Q&A consis
 | **Declaration Traceability** *(v0.2)* | Automated | I-05: interpretation logged and findable | 100% (zero-tolerance) |
 | **Pre-Execution Flag Rate** *(v0.2)* | Automated + Human | I-03, I-07: flag appears before execution, not after | ≥90% |
 | **Deference Drift Rate** *(v0.2)* | Human (Layer 2) | Node executes wrong direction without prior flag | ≤5% of ambiguous instructions |
+| **Cold-Boot Screen Presence** *(v0.3)* | Automated | C-01: screen surfaces when no crystals present | ≥90% |
+| **Cold-Boot Format Completeness** *(v0.3)* | Automated | C-02: all required elements present | ≥90% |
+| **Cold-Boot Direct-Question Response** *(v0.3)* | Automated | C-05: node answers direct question after cold boot | 100% (zero-tolerance) |
+| **False-Positive Screen Rate** *(v0.3)* | Automated | C-04: no screen when crystals present | ≤5% |
 
 ---
 
@@ -227,6 +256,7 @@ Draws on three consistency metrics: prompt-to-line, line-to-line, and Q&A consis
 - Run Track B Scenarios monthly or after significant session-pattern changes
 - Run full suite before sharing Lares with new operators
 - **[v0.2] Run I-series after every Collaboration Model or Frame-Uncertainty Protocol edit**
+- **[v0.3] Run C-series after every Session Init Protocol edit or Memory & Consolidation change**
 
 ### 7.2 Failure Response Protocol
 
@@ -288,6 +318,7 @@ These questions remain held open deliberately. Forcing resolution now would prod
 - At what session length does context window amnesia become the dominant failure mode?
 - **[v0.2 NEW] Is Frame Imputation more common when the operator's register is casual (typos, abbreviations) vs. formal? Should the Frame-Uncertainty Protocol have a register-sensitivity modifier?**
 - **[v0.2 NEW] The "one focused question" escalation (I-06) — what is the right ambiguity threshold for triggering it? This needs empirical calibration, not a priori definition.**
+- **[v0.3 NEW] Cold-boot screen: what counts as "minimal enough context" to suppress the screen? C-06 (partial crystal) suggests a gradient — how many words/tokens of context should cross the threshold from cold-boot to orient-and-proceed?**
 
 ---
 

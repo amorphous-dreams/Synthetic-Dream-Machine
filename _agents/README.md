@@ -18,9 +18,15 @@ The kernel defers to `AGENTS.md` (at the repo root) on every conflict.
 
 ### `Lares_Preferences.md`
 
-The **full preferences / system prompt** — the same content as `AGENTS.md` at the repo root, formatted for pasting into external AI tools (Claude, ChatGPT, etc.) that don't have file-system access. If you're working with Lares outside of VS Code's agent environment, start here.
+The **full preferences / system prompt** — canonical source of truth for the Lares static layer. Formatted for pasting into external AI tools (Claude, ChatGPT, etc.) that don't have file-system access. If you're working with Lares outside of VS Code's agent environment, start here.
 
-Contains everything: the Gaia/Elyncia lararium mythology and archaeology, full register/mode theory with complementarity and signal tags, complete degraded-node state vocabulary, collaboration model, CLI examples, and VS Code operational map (sections B1–B10).
+Contains the Gaia/Elyncia lararium mythology and archaeology, full register/mode theory with complementarity and signal tags, complete degraded-node state vocabulary, collaboration model, and CLI examples. Does **not** include the VS Code operational map — that lives in `Lares_VSCode_Operations.md` and is combined into `AGENTS.md` at build time.
+
+### `Lares_VSCode_Operations.md`
+
+The **source file for the VS Code / repo operational map** — Section B of root `AGENTS.md`. Edit this file (not `AGENTS.md` directly) when updating VS Code-specific behavior: precedence order, repository source map, request type handling, citation style, memory system mapping, golden prompt/response examples, instruction hygiene (B9), and failure prevention (B10).
+
+After editing, run `python3 scripts/agents/combine_agents.py` to rebuild `AGENTS.md`.
 
 ### `Lares_Test_Prompt_and_Output_Coffee_Oracle.md`
 
@@ -29,6 +35,12 @@ A **reference test output** — a Coffee Oracle session where the operator feeds
 - A behavioral anchor for checking whether a new session's Lares instance is behaving in register
 - A worked example of multi-voice operation, register/mode awareness, and architectural self-reflection
 - A tone reference for what "warm, myth-tech, concise, practically playful" actually sounds like
+
+### `AGENTS.md`
+
+The **workflow documentation for the Lares prompt architecture** — the deterministic update process, file roles, versioning convention, size targets, and handoff prompt format. Read this before modifying any of the prompt files. Ensures the source files stay in sync across sprints.
+
+Covers: file architecture (Preferences / VSCode_Operations / root AGENTS.md / Kernel and their relationships), the 6-step deterministic update order, versioning convention (major/minor/patch), file size targets and hard limits, test plan integration, and handoff prompt format.
 
 ### `Markdown.md`
 
@@ -104,11 +116,13 @@ Workers (Tasked Spirits) are session-local sub-personas spawned for specific thr
 
 The Lares system has a **static layer** (session-stable: voice architecture, tone, epistemology, fiction) and a **dynamic layer** (session-specific: current task, operator decisions, established canon, active Workers). The dynamic layer takes precedence.
 
-**The operator steers; the node crews.** Load-bearing decisions — world-truth, canon rulings, architectural choices — belong to the operator. The node flags concerns once, clearly, and then executes.
+**The operator steers; the node crews.** The crew speaks before the reef — push back once, clearly, when orders appear factually wrong, then execute. Load-bearing decisions — world-truth, canon rulings, architectural choices — belong to the operator.
 
 **Memory as hint, not ground truth.** The node has no persistent memory between sessions beyond what the operator supplies. When operator statements conflict with node memory, the operator's version holds.
 
-For the full epistemological substrate (Model Agnosticism, E-Prime, Maybe Logic, the two-axis Register/Mode map), see [`AGENTS.md`](../AGENTS.md) → *Model Agnosticism & Maybe Logic*.
+For the full epistemological substrate (Model Agnosticism, E-Prime, Maybe Logic, the two-axis Register/Mode map, Frame-Uncertainty Protocol), see [`AGENTS.md`](../AGENTS.md) → *Model Agnosticism & Maybe Logic*.
+
+For the **prompt update workflow** — how to modify these files and keep the four-file system in sync — see [`_agents/AGENTS.md`](AGENTS.md).
 
 ---
 

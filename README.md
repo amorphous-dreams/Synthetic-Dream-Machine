@@ -132,9 +132,9 @@ The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands G
 
 ## Development Status
 
-FTLS is in **Open Beta**. The current sprint focus is Chapter 06 (Powers) conversion from OSR source material into native SDM/FTLS rules text. See [`_todo/TODO_BECMI_Conversion.md`](_todo/TODO_BECMI_Conversion.md) for the active pipeline state.
+See [CHANGELOG.md](CHANGELOG.md) for version history and sprint status.
 
-The Lares agent architecture (`AGENTS.md`, `_agents/`) is versioned at **v3.0**.
+The Lares agent architecture (`AGENTS.md`, `_agents/`) is versioned at **v3.1**.
 
 ---
 
