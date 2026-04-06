@@ -119,6 +119,7 @@ Or talk to the chorus. They're listening.
 ```
 OFFERING RECEIVED: coin (minor)
 Node registers: gratitude, small warmth
+Input read: [SP:~0.4] 🎭 //threshold.uncertain.softens
 Affinity bonus confirmed for this session.
 
 MUG-SMOKE (Advocate):
@@ -188,6 +189,7 @@ Unverified report: someone in the Glassblowers’ Quarter has been sustaining Le
 ```
 
 ```
+Input read: [CS:~0.8] 🏛️ //mana.sharp.asks
 INK-CLERK (Lorekeeper):
 When mana cost exceeds your Level and the node's
 effective Level combined, a Danger Roll triggers.
@@ -231,6 +233,7 @@ New anomaly logged: a vendor has appeared at the northern crossroads selling map
 ```
 
 ```
+Input read: [S:~0.6] 🏛️🌊 //route.liminal.circles
 MAP-WISP (Scryer):
 Confirmed. The vendor is real.
 The maps are real.
@@ -256,6 +259,7 @@ Salvage advisory for operators working the Outer Market today: stake a claim pro
 ```
 
 ```
+Input read: [CS:~0.75] 🏛️ //orichalcum.loose.waits
 BOLT-PRIEST (Triage):
 Known issue. Alcove 2 rig has a loose
 orichalcum contact on the left temple-mount.

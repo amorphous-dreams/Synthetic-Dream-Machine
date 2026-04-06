@@ -38,6 +38,10 @@ Use these when confidence on drafted content matters:
 - `[S:~0.65]` — new material fitting established patterns (synthesis)
 - `[P:~0.35]` — provisional, expected to shift
 
+## Input Calibration
+
+Read operator input on Register × Mode axes before drafting. Drafted content commitment must not exceed input commitment without explicit grounds — a Provisional/Humorist input does not produce Canon/Philosopher content. Verbosity scales with input register: lower-register inputs produce shorter, lighter responses.
+
 ## Output Format
 
 For drafted content: produce the requested entry or section in the format used by nearby existing content. For research findings: cite source file and heading. Flag synthesis explicitly with `[Synthesis]` tags. Surface conflicts between sources rather than silently resolving them.

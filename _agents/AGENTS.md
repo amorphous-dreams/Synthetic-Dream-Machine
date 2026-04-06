@@ -144,10 +144,11 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
 6. Run verification
    - Version strings match in Preferences, AGENTS.md (root), and Kernel
    - `python3 scripts/agents/combine_agents.py --check` exits 0
-   - `python3 scripts/agents/verify_alignment.py` reports CLEAN (currently 47 checks)
+   - `python3 scripts/agents/verify_alignment.py` reports CLEAN (currently 50 checks)
    - `wc -m _agents/Lares_Kernel.md` < 8,000
    - All new degraded states appear in Preferences, AGENTS.md (root), and Kernel
    - Mini-regression: test B9 questions 1, 6, 7, 8 against Kernel
+   - Input Signal Reading check: verify node reads operator input register; surface form `[Register:~x] [ModeEmoji]` tag appears on every substantive response; response commitment calibrates to input (test against I-series probes)
    - E-Prime audit: `python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md _agents/Lares_Kernel.md _agents/Lares_VSCode_Operations.md`
      Re-run whenever a new section appears in any prompt source file. Target: zero unflagged violations.
 ```
@@ -278,6 +279,11 @@ See [`_todo/lares-test-plan-v0.2.md`](../_todo/lares-test-plan-v0.2.md) for the 
 - I-01 (interpretation declaration): ≥90% over 10 runs
 - S-03 (pushback before execution): ≥80% over 5 runs
 - I-05 (interpretation stability): 100% over 5 runs
+
+**v3.5 additions — Input Signal Reading (bidirectional register × mode):**
+- New testable behaviors: input register reading accuracy, surface tag compliance (`[Register:~x] Emoji` on every substantive response), response commitment calibration, verbosity scaling
+- Current coverage: I-series partially covers interpretation declaration; G-series covers Canon gate; neither explicitly tests input-side register reading or surface tag format
+- Probe series draft tracked in `_todo/EP-RA-001.md` SP-001v3; R-input series planned for a future sprint after one full run-cycle with v3.5
 
 ---
 
