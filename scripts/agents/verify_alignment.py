@@ -28,13 +28,19 @@ PLATFORMS = {
         slug: REPO / ".github" / "agents" / f"{slug}.agent.md"
         for slug in WORKER_SLUGS
     },
+    "claude": {
+        slug: REPO / ".claude" / "agents" / f"{slug}.md"
+        for slug in WORKER_SLUGS
+    },
     # Future platforms extend here:
     # "codex": {slug: REPO / ".codex" / "agents" / f"{slug}.toml" for slug in WORKER_SLUGS},
-    # "claude": {slug: REPO / ".claude" / "agents" / f"{slug}.md" for slug in WORKER_SLUGS},
 }
 
 WORKER_INSTRUCTIONS_LABEL = ".github/copilot-instructions.md"
 WORKER_INSTRUCTIONS_PATH = REPO / ".github" / "copilot-instructions.md"
+
+CLAUDE_INSTRUCTIONS_LABEL = ".claude/CLAUDE.md"
+CLAUDE_INSTRUCTIONS_PATH = REPO / ".claude" / "CLAUDE.md"
 
 # Minimum description length to pass the quality gate (characters)
 DESCRIPTION_MIN_LEN = 80
@@ -97,6 +103,50 @@ def _build_worker_agent(slug: str, source: str) -> str:
     return comment + source
 
 
+def _build_claude_worker(slug: str, source: str) -> str:
+    """Mirror of combine_agents.build_claude_worker — kept in sync manually."""
+    def _strip_fm(src: str) -> tuple[str, str]:
+        if src.startswith("---\n"):
+            close = src.find("\n---\n", 3)
+            if close != -1:
+                return src[: close + 5], src[close + 5 :]
+        return "", src
+
+    frontmatter_block, body = _strip_fm(source)
+    notice = (
+        f"<!-- Generated file. Do not edit directly.\n"
+        f"     Edit _agents/workers/{slug}.md\n"
+        f"     then run: python3 scripts/agents/combine_agents.py -->\n"
+    )
+    if not frontmatter_block:
+        return notice + source
+
+    fm_text = frontmatter_block[4:-5]
+
+    def get_field(name: str) -> str | None:
+        m = re.search(rf'^{re.escape(name)}:\s*["\']?(.*?)["\']?\s*$', fm_text, re.MULTILINE)
+        return m.group(1).strip().strip('"\' ') if m else None
+
+    description = get_field("description") or ""
+    tools_claude = get_field("tools_claude")
+    model_claude = get_field("model_claude")
+    permission_mode = get_field("permissionMode_claude")
+
+    fm_lines = ["---"]
+    fm_lines.append(f'name: {slug}')
+    safe_desc = description.replace('"', "'")
+    fm_lines.append(f'description: "{safe_desc}"')
+    if tools_claude:
+        fm_lines.append(f"tools: {tools_claude}")
+    if model_claude:
+        fm_lines.append(f"model: {model_claude}")
+    if permission_mode:
+        fm_lines.append(f"permissionMode: {permission_mode}")
+    fm_lines.append("---")
+    clean_frontmatter = "\n".join(fm_lines) + "\n"
+    return clean_frontmatter + notice + body
+
+
 # ---------------------------------------------------------------------------
 # Checks
 # ---------------------------------------------------------------------------
@@ -139,6 +189,14 @@ def check_copilot_instructions_exists(r: CheckResult) -> None:
         r.fail(f"Missing generated: {WORKER_INSTRUCTIONS_LABEL}  (run combine_agents.py)")
 
 
+def check_claude_instructions_exists(r: CheckResult) -> None:
+    """Check 2b: .claude/CLAUDE.md exists."""
+    if CLAUDE_INSTRUCTIONS_PATH.exists():
+        r.ok(f"Generated exists: {CLAUDE_INSTRUCTIONS_LABEL}")
+    else:
+        r.fail(f"Missing generated: {CLAUDE_INSTRUCTIONS_LABEL}  (run combine_agents.py)")
+
+
 def check_generated_artifacts_exist(r: CheckResult) -> None:
     """Check 3: all generated agent files exist."""
     for platform, agents in PLATFORMS.items():
@@ -157,8 +215,15 @@ def check_generated_content_sync(r: CheckResult) -> None:
         if source is None:
             r.warn(f"Skipping sync check for {slug}: source missing")
             continue
-        expected = _build_worker_agent(slug, source)
+        builders = {
+            "copilot": _build_worker_agent,
+            "claude": _build_claude_worker,
+        }
         for platform, agents in PLATFORMS.items():
+            builder = builders.get(platform)
+            if builder is None:
+                continue
+            expected = builder(slug, source)
             path = agents[slug]
             actual = _load_generated(path)
             if actual is None:
@@ -240,6 +305,7 @@ def run_all_checks(brief: bool = False) -> CheckResult:
     r = CheckResult()
     check_sources_exist(r)
     check_copilot_instructions_exists(r)
+    check_claude_instructions_exists(r)
     check_generated_artifacts_exist(r)
     check_generated_content_sync(r)
     check_cross_platform_slug_consistency(r)

@@ -2,6 +2,8 @@
 name: "Engineer"
 description: "Use when: running shell commands, build scripts, Python scripts, tests, CLI pipelines, terminal operations, file system manipulations, running combine_agents.py or other repo build scripts. CLI Worker Tasked Spirit sub-agent in the Lares coordinator system."
 tools: [read, search, edit, execute, todo]
+tools_claude: "Read, Write, Edit, Bash, Grep, Glob"
+model_claude: "sonnet"
 user-invocable: false
 ---
 

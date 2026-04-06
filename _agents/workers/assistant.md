@@ -2,6 +2,8 @@
 name: "Assistant"
 description: "Use when: worldbuilding content, Elyncia setting material, FTLS character or faction work, game rulings, lore lookup in local repo files, BECMI conversion drafting, SDM mechanics synthesis, spell staging or crosswalk content work, powers or traits or gear index entries. Repo Specialist Tasked Spirit sub-agent in the Lares coordinator system."
 tools: [read, search, edit, todo]
+tools_claude: "Read, Write, Edit, Grep, Glob"
+model_claude: "sonnet"
 user-invocable: false
 ---
 
