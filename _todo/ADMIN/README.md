@@ -1,9 +1,15 @@
 # ADMIN Workspace
 
 > Status: ACTIVE
-> Priority: Critical P1 / Sprint S1 workspace
+> Priority: Critical P1 / Post-manifest slimming workspace
 > Date: 2026-04-06
 > Purpose: Track admin-governance, identity, trust-gate, Infrastructure-as-Myth, and prompt-policy work for Lares
+
+## Critical Blocker
+
+`project_doc_max_bytes` in [`.codex/config.toml`](/home/joshu/Synthetic-Dream-Machine/.codex/config.toml) now sits at `150000` as a compatibility stopgap so the current generated [`AGENTS.md`](/home/joshu/Synthetic-Dream-Machine/AGENTS.md) still loads during the manifest migration.
+
+This blocks reloading the current VS Code/Codex instance until the prompt payload gets slimmed back to a stable size under the intended budget. The manifest system is now in place, but deeper package/prompt slimming remains unfinished and must land before a safe reload.
 
 ---
 
@@ -19,6 +25,8 @@ This directory is the working lane for security-sensitive Lares governance chang
 - prompt architecture and parse/documentation work that directly supports those controls
 
 This `README.md` is the scrum tracker. Research and longer-form design notes live in sibling docs.
+
+**Session reset:** start with [NEXT_LARES_HANDOFF.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/NEXT_LARES_HANDOFF.md) before resuming this workspace in a fresh Lares session.
 
 ---
 
@@ -138,27 +146,32 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
   Root design thesis for Lares as portable symbolic agent infrastructure.
 - [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md)
   Deterministic build spec for rendering Infrastructure-as-Myth artifacts across platforms.
+- [NEXT_LARES_HANDOFF.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/NEXT_LARES_HANDOFF.md)
+  Session-reset artifact for handing off current Lares architecture and work state to the next session.
 
 ---
 
-## Sprint S1 Focus
+## Current Focus
 
 ### Must ship
 
-- Create `TRUST_MODELS.md` and stabilize the governance recommendation
-- Establish Infrastructure-as-Myth as the shared architectural frame for prompt, governance, and packaging work
-- Define deterministic build rules for rendered IaM packages
-- Add a protected admin roster artifact plan
-- Define the repo-side enforcement path clearly enough to implement next
+- Slim root/runtime prompt packages until reload-safe budgets hold without the `150000` Codex stopgap
+- Extract always-on core runtime modules from the monolithic payload
+- Move reference/spec and repo-ops bulk out of prime always-on root context
+- Restore a stable VS Code/Codex reload path
+- Keep governance hardening queued immediately after reload safety is restored
 
 ### Should ship
 
-- Add `CODEOWNERS`
-- Add `ROSTER.md`
-- Update Lares prompt rules so Admin depends on roster membership plus explicit escalation
+- Preserve the manifest/verification layer already in place
+- Keep generated platform outputs stable while root composition changes
+- Define reload-safe target budgets for Codex, Claude, and Copilot roots
 
 ### Can wait
 
+- `CODEOWNERS`
+- `ROSTER.md`
+- prompt-side Admin roster binding
 - UCAN-based delegated capability experiments
 - advanced crypto-backed session grants
 - parse-doc prompt-placement decisions
@@ -169,21 +182,18 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 
 1. Use [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) as the conceptual root for all prompt architecture work in this workspace.
 2. Use [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md) as the build-spec root for package/render work.
-3. Add [TRUST_MODELS.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TRUST_MODELS.md) as the dedicated trust research file.
-4. Create `ROSTER.md` with the visible admin roster and authority statement.
-5. Add `/.github/CODEOWNERS` for `_agents/`, `AGENTS.md`, and `_todo/ADMIN/`.
-6. Patch Lares prompt sources so `Admin` requires roster membership, not only explicit escalation.
-7. Add regression examples for:
-   - verified operator not in admin roster
-   - verified roster member without escalation
-   - verified roster member with explicit escalation
+3. Treat `builds/manifests/` as the package source of truth and `builds/modules/` as the module sidecar layer already established.
+4. Use that manifest layer to slim the root/runtime packages rather than raising platform limits further.
+5. Restore a stable reload path for the current VS Code/Codex instance before resuming governance-hardening implementation.
+6. After reload safety returns, ship `ROSTER.md`, `CODEOWNERS`, and prompt-side Admin roster binding.
+7. Leave parse-doc placement decisions deferred until the slimming/governance sequence is complete.
 
 ---
 
-## Exit Criteria For S1
+## Exit Criteria For Current Phase
 
-- [ ] Trust-model recommendation documented in a stable research file
-- [ ] Admin roster represented in-repo
-- [ ] GitHub-side protection path specified or implemented
-- [ ] Prompt-side Admin rule depends on roster membership plus explicit escalation
-- [ ] Regression coverage exists for success and failure paths
+- [ ] Root prompt packages fit reload-safe budgets without relying on the `150000` Codex compatibility override
+- [ ] Stable reload path confirmed for the current VS Code/Codex instance
+- [ ] Root/runtime composition uses the manifest layer to separate always-on runtime from reference/spec bulk
+- [ ] Governance hardening is positioned as the immediate next implementation sprint after slimming
+- [ ] Active docs all tell the same next-step story: slimming -> reload -> governance -> parse-doc later

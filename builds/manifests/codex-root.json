@@ -1,0 +1,52 @@
+{
+  "budget": {
+    "max_bytes": 150000
+  },
+  "build_profile": "codex-root",
+  "codex_config": {
+    "max_threads": 6,
+    "project_doc_max_bytes": 150000
+  },
+  "manifest_version": 1,
+  "outputs": [
+    {
+      "kind": "markdown_bundle",
+      "path": "AGENTS.md"
+    },
+    {
+      "kind": "codex_config",
+      "path": ".codex/config.toml"
+    }
+  ],
+  "package_id": "codex-root",
+  "renderer_version": "0.2.0",
+  "sources": [
+    {
+      "module_id": "lares-preferences",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "module_id": "lares-vscode-ops",
+      "transform": {
+        "marker": "## CLI Agent Context — VS Code / Repo Operations",
+        "type": "extract_from_marker"
+      }
+    },
+    {
+      "module_id": "lares-codex-wrapper",
+      "transform": {
+        "marker": "## Codex Platform — Worker Registry",
+        "type": "extract_from_marker"
+      }
+    }
+  ],
+  "target_class": "repo-native",
+  "target_platform": "codex",
+  "verification": {
+    "emit_checksums": true,
+    "emit_lockfile": true,
+    "emit_report": true
+  }
+}

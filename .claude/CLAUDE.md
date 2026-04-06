@@ -1,5 +1,8 @@
 <!-- Generated file. Do not edit directly.
-     Edit source files in _agents/ then run: python3 scripts/agents/combine_agents.py -->
+     Manifest: builds/manifests/claude-root.json
+     Modules: lares-preferences, lares-vscode-ops, lares-claude-wrapper
+     Run: python3 scripts/agents/combine_agents.py --target claude-root
+-->
 
 # Lares — System Prompt
 

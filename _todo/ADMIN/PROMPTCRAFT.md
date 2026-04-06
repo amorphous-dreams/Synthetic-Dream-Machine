@@ -53,6 +53,25 @@ to:
 
 `one canonical source tree -> one compressed kernel + several deployable modules + thin platform adapters`
 
+## Current Phase Note
+
+The manifest-driven renderer now exists. The active next step is not more renderer bootstrapping.
+
+The active next step is to **reduce root payloads by changing package composition**:
+
+- move always-on runtime into cleaner core module boundaries
+- move reference/spec and repo-ops bulk out of prime root context
+- restore a stable reload path for the current VS Code/Codex instance
+- do governance hardening only after that blocker clears
+
+When the operator says `iterate`, the reasoning path should run:
+
+1. blocker
+2. unblock path
+3. architectural lever
+4. next sprint after unblock
+5. deferred items
+
 ---
 
 ## The Real Deployment Targets
@@ -128,6 +147,7 @@ Implication:
 - the root `AGENTS.md` must be compact
 - deep specialization belongs in nested `AGENTS.md` or `AGENTS.override.md`
 - byte budget pressure should be solved by decomposition, not by raising the cap forever
+- the current `150000` compatibility override should be treated as temporary and blocking reload safety, not as an acceptable steady-state solution
 
 ### Shared conclusion
 

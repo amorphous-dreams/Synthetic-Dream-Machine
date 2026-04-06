@@ -57,6 +57,16 @@ Those criteria provide the architectural standard for the split. If a proposed m
 
 Everything in this draft should be interpreted as a migration target, not a claim that the repo already behaves this way.
 
+## Current Migration Target
+
+The manifest-driven build foundation now exists. The next migration target is practical rather than theoretical:
+
+- extract always-on core runtime modules from the monolithic root payloads
+- move reference/spec material out of root always-on context
+- shrink Codex, Claude, and Copilot root packages to reload-safe budgets
+- restore a stable VS Code/Codex reload path
+- only then shift the critical path to governance hardening
+
 ---
 
 ## IaM Reading Of The Split

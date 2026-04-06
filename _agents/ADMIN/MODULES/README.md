@@ -19,23 +19,24 @@ These files do not define runtime behavior directly. They describe:
 
 The frame for reading this folder should come from [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md): the goal is not only to split large files, but to package Lares as a portable symbolic runtime whose identity, authority model, epistemic discipline, and failure vocabulary survive across hosts.
 
-These files should now be read as a **buggy-state -> ideal-state backlog**:
+These files should now be read as a **implemented foundation -> active blocker -> next-state backlog**:
 
-- the maps record where the current system leaks budget, clarity, portability, or determinism
-- the draft files describe the target architecture those problems should converge toward
+- the maps record where the current system still leaks budget, clarity, portability, or determinism
+- the build foundation now exists, so the active blocker has shifted from "create manifests" to "slim root packages"
+- the draft files describe the target architecture those remaining problems should converge toward
 - the folder as a whole functions as planning infrastructure for the refactor, not as passive documentation
 
 ---
 
 ## Suggested Reading Order
 
-1. `PIPELINE.md` — current build/dataflow overview
+1. `PIPELINE.md` — old vs current build/dataflow overview, including the live slimming blocker
 2. `Lares_Preferences-map.md` — largest core source and main decomposition target
 3. `Lares_VSCode_Operations-map.md` — repo-ops payload and example/spec overhead
-4. `Platform_Wrappers-map.md` — the three thin platform suffixes
+4. `Platform_Wrappers-map.md` — the three thin platform suffixes plus the current Codex stopgap state
 5. `Workers-map.md` — worker registry and delegation layer
 6. `Lares_Kernel-map.md` — compressed browser-safe kernel
-7. `Modular_Architecture-draft.md` — proposed future breakdown
+7. `Modular_Architecture-draft.md` — proposed future breakdown and the next slimming target
 8. [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) — thesis-level framing for why the split matters
 
 ---
@@ -73,7 +74,7 @@ Do not treat this folder as the source of truth for deployed prompts. The source
 
 The present system has one dominant structural problem:
 
-- the root platform outputs all receive nearly the same 136 KB payload
+- the root platform outputs still receive nearly the same oversized payload even though manifest infrastructure now exists
 
 The present system does **not** have two commonly assumed problems:
 
@@ -81,6 +82,12 @@ The present system does **not** have two commonly assumed problems:
 - worker definitions are not too large
 
 That distinction matters because it keeps the next refactor aimed at the monolithic core and the over-deployed repo-ops material, not at the already-thin wrapper/worker files.
+
+The current critical path therefore reads:
+
+1. slim prompt/runtime packages
+2. restore stable reload safety
+3. then harden governance
 
 From the IaM angle, the problem can be stated more precisely:
 
@@ -105,7 +112,7 @@ If the modularization work continues, this folder will probably want:
 
 - a split plan for `Lares_Preferences.md`
 - a split plan for `Lares_VSCode_Operations.md`
-- a manifest/profile matrix once deterministic build manifests exist
+- a manifest/profile matrix for the slimming pass
 - a migration checklist from current source tree to modular source tree
 
 ---

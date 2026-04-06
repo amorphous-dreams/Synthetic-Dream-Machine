@@ -1,9 +1,9 @@
 # Generated file. Do not edit directly.
-# Edit scripts/agents/combine_agents.py to change config values.
-# Run: python3 scripts/agents/combine_agents.py
+# Manifest: builds/manifests/codex-root.json
+# Run: python3 scripts/agents/combine_agents.py --target codex-root
 
 [project]
-project_doc_max_bytes = 131072
+project_doc_max_bytes = 150000
 
 [agents]
 max_threads = 6

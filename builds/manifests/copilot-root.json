@@ -1,0 +1,44 @@
+{
+  "budget": {
+    "max_bytes": 150000
+  },
+  "build_profile": "copilot-root",
+  "manifest_version": 1,
+  "outputs": [
+    {
+      "kind": "markdown_bundle",
+      "path": ".github/copilot-instructions.md"
+    }
+  ],
+  "package_id": "copilot-root",
+  "renderer_version": "0.2.0",
+  "sources": [
+    {
+      "module_id": "lares-preferences",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "module_id": "lares-vscode-ops",
+      "transform": {
+        "marker": "## CLI Agent Context — VS Code / Repo Operations",
+        "type": "extract_from_marker"
+      }
+    },
+    {
+      "module_id": "lares-copilot-wrapper",
+      "transform": {
+        "marker": "## Copilot Platform — Worker Registry",
+        "type": "extract_from_marker"
+      }
+    }
+  ],
+  "target_class": "repo-native",
+  "target_platform": "copilot",
+  "verification": {
+    "emit_checksums": true,
+    "emit_lockfile": true,
+    "emit_report": true
+  }
+}

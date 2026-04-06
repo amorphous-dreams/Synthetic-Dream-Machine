@@ -1,0 +1,21 @@
+{
+  "budget": {
+    "max_bytes": 150000
+  },
+  "build_profile": "copilot-root",
+  "governance_integration_points": [
+    "Future roster/CODEOWNERS enforcement should protect builds/manifests/",
+    "Future Admin governance should review module metadata changes under builds/modules/",
+    "Prompt-side Admin binding remains out of scope for this deterministic build MVP"
+  ],
+  "outputs": [
+    {
+      "bytes": 136124,
+      "path": ".github/copilot-instructions.md",
+      "sha256": "eb382994219e4e39955f101a9ba331e23a08521ac78e049451ddf68714162cf9"
+    }
+  ],
+  "package_id": "copilot-root",
+  "target_class": "repo-native",
+  "target_platform": "copilot"
+}

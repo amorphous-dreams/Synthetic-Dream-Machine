@@ -1,0 +1,47 @@
+{
+  "manifest_path": "builds/manifests/copilot-root.json",
+  "manifest_sha256": "5c8bfb17faaeb11ca1dda6e626153ec72fcf5920818abbecdfad3cd1efa7299a",
+  "outputs": [
+    {
+      "bytes": 136124,
+      "path": ".github/copilot-instructions.md",
+      "sha256": "eb382994219e4e39955f101a9ba331e23a08521ac78e049451ddf68714162cf9"
+    }
+  ],
+  "package_id": "copilot-root",
+  "renderer_version": "0.2.0",
+  "sources": [
+    {
+      "metadata_path": "builds/modules/lares-preferences.json",
+      "module_id": "lares-preferences",
+      "rendered_sha256": "921df2740b8a8eafcb54127eb30cb2c94626945f2f2fcc7ff96842120c3648dd",
+      "source_path": "_agents/Lares_Preferences.md",
+      "source_sha256": "921df2740b8a8eafcb54127eb30cb2c94626945f2f2fcc7ff96842120c3648dd",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-vscode-ops.json",
+      "module_id": "lares-vscode-ops",
+      "rendered_sha256": "42f34dd50b687e78896facd53635aa1eb7155c08d2e93a4790f0274c77a276b4",
+      "source_path": "_agents/Lares_VSCode_Operations.md",
+      "source_sha256": "9691069e28f075fb489493b7097e0016bd6e8e22473611344508a15ec7999e77",
+      "transform": {
+        "marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
+        "type": "extract_from_marker"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-copilot-wrapper.json",
+      "module_id": "lares-copilot-wrapper",
+      "rendered_sha256": "d0871ca222b826639334df8af3cfead7ce252d997a3ea9ab5db870b5700636c6",
+      "source_path": "_agents/platform/Lares_Copilot_Wrapper.md",
+      "source_sha256": "5e79d4df62adaa424d88fba34f0ac33a0a8acaddc61fbe739eb11430e11b41fb",
+      "transform": {
+        "marker": "## Copilot Platform \u2014 Worker Registry",
+        "type": "extract_from_marker"
+      }
+    }
+  ]
+}

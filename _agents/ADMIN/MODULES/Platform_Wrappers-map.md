@@ -70,7 +70,7 @@ This makes the wrappers a **backlog contrast case**: they are not the main bug s
 ## Wrapper 3: `Lares_Codex_Wrapper.md` (48 lines)
 
 **Target:** `AGENTS.md` (root)
-**Sprint:** 3 — Planned
+**Sprint:** 3 — Implemented foundation, slimming still open
 
 ### Sections
 
@@ -79,9 +79,9 @@ This makes the wrappers a **backlog contrast case**: they are not the main bug s
 | Source guard notice | `> Source file. Do not edit AGENTS.md directly.` |
 | Worker registry table | Same 5-row table |
 | Platform notes | Codex reads root `AGENTS.md`; coordinator file is root-level not platform-subdirectory |
-| Codex-specific notes | Worker definitions in `.codex/agents/<slug>.toml` (TOML format, not Markdown); do not edit directly; `sandbox_mode` per-worker; size budget ~32 KiB for root `AGENTS.md` |
+| Codex-specific notes | Worker definitions in `.codex/agents/<slug>.toml` (TOML format, not Markdown); do not edit directly; `sandbox_mode` per-worker; root budget still needs slimming back to a stable reload-safe size |
 | Rebuild protocol | Same 4-step procedure |
-| Sprint notes | `project_doc_max_bytes = 131072` config raises limit; full Preferences may still exceed — evaluate trimming |
+| Sprint notes | `project_doc_max_bytes = 150000` currently acts as a temporary compatibility override; slimming root payloads remains the active next step |
 
 **Marker:** `## Codex Platform — Worker Registry`
 
@@ -128,8 +128,8 @@ That boundary matters because wrappers should describe **host integration**, not
 | Tool name style | lowercase aliases (`read`, `edit`) | PascalCase (`Read`, `Edit`) | N/A (in TOML body) |
 | User-invocable gate | `user-invocable: false` field | Via `description` + coordinator prompt | Via Codex session spawn |
 | Memory | `/memories/` (VS Code) | `.claude/agent-memory/` (opt-in) | Not applicable |
-| Sprint status | ✅ Sprint 1 | ✅ Sprint 2 | ⏳ Sprint 3 |
-| Size constraint | No hard limit (but duplication risk) | ~200 lines recommended | 32 KiB default (`project_doc_max_bytes`) |
+| Sprint status | ✅ Sprint 1 | ✅ Sprint 2 | ✅ Foundation landed; slimming pending |
+| Size constraint | No hard limit (but duplication risk) | ~200 lines recommended | temporary `150000` stopgap active; stable target still lower |
 
 ---
 
@@ -163,7 +163,7 @@ This file is the platform operations manual. It is **reference only** — not in
 
 - Copilot YAML: no comments inside frontmatter block — silently corrupts parser
 - Claude: HTML comments stripped before context injection — safe for maintainer notes
-- Codex: `project_doc_max_bytes = 131072` in `.codex/config.toml` raises the 32 KiB default
+- Codex: `.codex/config.toml` currently uses `project_doc_max_bytes = 150000` as a temporary compatibility stopgap; do not treat that as the desired steady state
 - All platforms: never edit generated files; edit sources and rebuild
 - Worker system prompts are isolated (no coordinator context inherited) — prompts must be self-contained
 
@@ -183,6 +183,6 @@ Recommended future handling:
 - move shared worker registry data into one reusable source if drift appears
 - convert wrapper application from marker slicing to explicit templates/manifests when the build system becomes manifest-driven
 
-The Sprint 3 plan proposes a trimmed Codex-variant build path in `combine_agents.py` that selectively excludes lararium archaeology, degraded-node names, and exchange vector theory when building root `AGENTS.md`. Even if that happens as an interim fix, wrappers should remain thin and template-like.
+The next migration target is not more wrapper work. It is package slimming: use the manifest layer to shrink Codex, Claude, and Copilot root payloads by moving always-on runtime, scoped repo behavior, and reference/spec material into cleaner boundaries. Wrappers should remain thin and template-like throughout that pass.
 
 The `## [Platform] Platform — Worker Registry` marker in each wrapper is what `combine_agents.py` uses to locate and append the platform suffix. Do not rename these markers without updating the combine script.

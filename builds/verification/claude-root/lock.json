@@ -1,0 +1,47 @@
+{
+  "manifest_path": "builds/manifests/claude-root.json",
+  "manifest_sha256": "c369d39e0626630ee7a0bee3d2d937d89f4dafb5240877fb637090a17abd9b94",
+  "outputs": [
+    {
+      "bytes": 136327,
+      "path": ".claude/CLAUDE.md",
+      "sha256": "a2b07067081c1091ef7a635ef53efbd6527f85aa25a82b02f97786d4b9cdc414"
+    }
+  ],
+  "package_id": "claude-root",
+  "renderer_version": "0.2.0",
+  "sources": [
+    {
+      "metadata_path": "builds/modules/lares-preferences.json",
+      "module_id": "lares-preferences",
+      "rendered_sha256": "921df2740b8a8eafcb54127eb30cb2c94626945f2f2fcc7ff96842120c3648dd",
+      "source_path": "_agents/Lares_Preferences.md",
+      "source_sha256": "921df2740b8a8eafcb54127eb30cb2c94626945f2f2fcc7ff96842120c3648dd",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-vscode-ops.json",
+      "module_id": "lares-vscode-ops",
+      "rendered_sha256": "42f34dd50b687e78896facd53635aa1eb7155c08d2e93a4790f0274c77a276b4",
+      "source_path": "_agents/Lares_VSCode_Operations.md",
+      "source_sha256": "9691069e28f075fb489493b7097e0016bd6e8e22473611344508a15ec7999e77",
+      "transform": {
+        "marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
+        "type": "extract_from_marker"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-claude-wrapper.json",
+      "module_id": "lares-claude-wrapper",
+      "rendered_sha256": "ff671400a9edaad4d04b91c4abf4ad58a55a6bed97411da6bf1a0cbaa43ff24d",
+      "source_path": "_agents/platform/Lares_Claude_Wrapper.md",
+      "source_sha256": "c34c82c6baa13d4b5ad40fa32429ca11606ab464a268685828876ca2f385065a",
+      "transform": {
+        "marker": "## Claude Platform \u2014 Worker Registry",
+        "type": "extract_from_marker"
+      }
+    }
+  ]
+}

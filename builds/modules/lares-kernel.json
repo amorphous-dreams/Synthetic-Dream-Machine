@@ -1,0 +1,13 @@
+{
+  "browser_safe": true,
+  "class": "kernel",
+  "default_targets": [
+    "browser-kernel"
+  ],
+  "module_id": "lares-kernel",
+  "ordering": {
+    "weight": 50
+  },
+  "repo_safe": true,
+  "source_path": "_agents/Lares_Kernel.md"
+}

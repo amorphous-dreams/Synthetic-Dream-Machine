@@ -8,25 +8,37 @@
 
 ## Overview
 
-The Lares agent build pipeline transforms source files in `_agents/` into platform-specific deployment artifacts via `combine_agents.py`. Three source layers → one combine script → three platform outputs + seventeenth worker artifacts.
+The Lares agent build pipeline now transforms source files in `_agents/` plus metadata in `builds/` into platform-specific deployment artifacts via `combine_agents.py`.
 
-This file should be read as the **buggy-state pipeline map**. It records how the current build actually behaves so the deterministic IaM renderer can replace it without guesswork.
+This file should be read in two layers:
+
+- the **old buggy-state pipeline** explains the concatenation history that produced the oversized root payloads
+- the **current implementation state** explains what the manifest-driven renderer now does
+
+The renderer replacement step has landed. The remaining pipeline defect is payload size: root packages still carry too much always-on material and currently require a temporary Codex budget override.
 
 ---
 
 ## Backlog Framing
 
-**Current buggy state:**
+**Old buggy state:**
 
 - one concatenation-oriented script emits near-identical 136 KB root artifacts for hosts with radically different limits
 - module boundaries do not exist at build time; only file concatenation boundaries do
 - kernel and reference/spec material sit outside the deterministic render path
 
-**Ideal state:**
+**Current implementation state:**
 
-- manifests define inputs, ordering, transforms, and budgets
-- the build emits host-specific IaM packages rather than one monolith plus thin tails
+- manifests define inputs, ordering, transforms, and verification outputs
+- module sidecars exist under `builds/modules/`
+- verification artifacts and a rendered browser kernel package are emitted under `builds/`
+- worker generation remains stable while root package composition still needs slimming
+
+**Next ideal state:**
+
+- the build emits host-specific IaM packages with slim root/runtime payloads rather than one oversized root plus thin tails
 - kernel, core modules, scoped modules, wrappers, and verification artifacts all participate in one deterministic pipeline
+- the temporary Codex budget override disappears because the roots fit stable budgets again
 
 ---
 
@@ -52,7 +64,7 @@ This file should be read as the **buggy-state pipeline map**. It records how the
 
 ---
 
-## Pipeline Dataflow
+## Old Pipeline Dataflow
 
 ```
 _agents/ SOURCE FILES
@@ -84,6 +96,31 @@ GENERATED OUTPUTS
 ├── AGENTS.md (root, Codex)                   136,661 bytes  Preferences + Section B + Codex Wrapper
 ├── .codex/agents/*.toml (×5)                 ~2,800 bytes each  Workers, TOML format
 └── .codex/config.toml                        ~150 bytes     project_doc_max_bytes = 131072
+```
+
+## Current Pipeline Dataflow
+
+```text
+_agents/ SOURCE FILES + builds/ METADATA
+│
+├─ builds/manifests/*.json                   ─── package targets and output contracts
+├─ builds/modules/*.json                     ─── module sidecar metadata
+├─ _agents/Lares_Kernel.md                   ─── browser kernel package source
+├─ _agents/Lares_Preferences.md              ─── still oversized root payload source
+├─ _agents/Lares_VSCode_Operations.md        ─── still oversized repo-ops payload source
+├─ _agents/platform/*.md                     ─── thin host wrappers
+└─ _agents/workers/*.md                      ─── worker sources
+
+                    ↓ combine_agents.py ↓
+
+GENERATED OUTPUTS
+│
+├── AGENTS.md
+├── .claude/CLAUDE.md
+├── .github/copilot-instructions.md
+├── .codex/config.toml                       project_doc_max_bytes = 150000 (temporary compatibility stopgap)
+├── builds/rendered/browser/Lares_Kernel.browser.md
+└── builds/verification/<target>/*           lock/report/checksums
 ```
 
 ---
@@ -140,11 +177,11 @@ These are the **only four extraction points** in the current pipeline. Everythin
 
 ---
 
-## Platform Limit Violations (from PROMPTCRAFT.md)
+## Platform Limit Violations
 
 | Output file | Size | Platform limit | Status |
 |---|---|---|---|
-| `AGENTS.md` (Codex) | 136,661 bytes | 131,072 default cap | 🔴 OVER (4% over current setting) |
+| `AGENTS.md` (Codex) | ~135 KB | intended stable budget below current stopgap | 🔴 Still depends on temporary `150000` override |
 | `.claude/CLAUDE.md` | 136,220 bytes | 200-line adherence target | 🔴 7.5× over target |
 | `.github/copilot-instructions.md` | 136,014 bytes | 4,000 char code review limit | 🔴 34× over limit |
 | `.github/agents/*.agent.md` | ~2,500 bytes each | No stated limit | ✅ Fine |
@@ -195,17 +232,17 @@ python3 scripts/agents/verify_alignment.py
 
 4. **Platform-specific worker frontmatter is handled** (correct) — `tools_claude:` maps to `tools:` in Claude output; `sandbox_mode_codex:` maps to `sandbox_mode` in Codex TOML. This part of the pipeline is well-designed.
 
-5. **`project_doc_max_bytes = 131072`** in `.codex/config.toml` is now *below* the generated AGENTS.md size (136,661 bytes). The combine script generates a file that silently exceeds its own configured limit.
+5. **Temporary Codex compatibility override** — `.codex/config.toml` now uses `project_doc_max_bytes = 150000` so the current generated `AGENTS.md` still loads during the migration. This keeps the system running, but it blocks a safe VS Code/Codex reload until the root payload is slimmed back under a stable budget.
 
 ## Ideal-State Implications
 
 This map points toward a replacement pipeline with these properties:
 
-1. source modules classified by IaM role: kernel, core runtime, scoped repo module, reference/spec
-2. explicit manifests per host/profile
-3. deterministic budget enforcement instead of post hoc surprise
-4. generated provenance/verification artifacts
-5. wrappers applied as final host-integration templates, not as the only platform-specific distinction
+1. use the manifest layer to discriminate package composition rather than shipping nearly identical oversized roots
+2. extract always-on core runtime modules from monolithic root sources
+3. move reference/spec and repo-ops bulk out of prime root context
+4. return Codex, Claude, and Copilot roots to reload-safe budgets
+5. only then shift the critical path to governance hardening
 
 ---
 

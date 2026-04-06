@@ -23,6 +23,17 @@ The goal is simple:
 
 **same source tree + same build target + same build manifest = same output**
 
+## Current Phase Note
+
+The first manifest/verification pass now exists in the repo: committed manifests, module sidecars, verification outputs, and a rendered browser kernel package are in place.
+
+That means the next implementation phase is no longer "add manifests." The next implementation phase is **budget-constrained package slimming and module extraction**:
+
+- shrink root/runtime packages back to reload-safe budgets
+- use manifests to separate always-on runtime from scoped/reference bulk
+- remove the need for the temporary `project_doc_max_bytes = 150000` Codex compatibility stopgap
+- queue governance hardening immediately after reload safety is restored
+
 ---
 
 ## Determinism Contract
@@ -478,24 +489,22 @@ This keeps source, manifests, templates, and generated outputs distinct.
 
 ## Immediate Implications For Lares
 
-1. `combine_agents.py` should evolve into a manifest-driven renderer.
-2. Root/source documents should declare module metadata cleanly.
-3. Browser beta packages should be emitted from named profiles, not assembled manually.
-4. Verification should compare committed generated files against deterministic rebuilds.
+1. `combine_agents.py` now functions as the first manifest-driven renderer and should be used as the composition lever for the slimming pass.
+2. Root/source documents should move from monolithic payloads toward cleaner runtime/module boundaries.
+3. Browser beta packages should continue to emit from named profiles rather than manual assembly.
+4. Verification should keep comparing committed generated files against deterministic rebuilds.
 
 ---
 
 ## Next Step
 
-Implement a first manifest set for:
+Use the implemented manifest layer to drive the slimming pass:
 
-1. `browser-minimal`
-2. `browser-extended-chatgpt`
-3. `claude-root`
-4. `copilot-root`
-5. `codex-root`
-
-Once those exist, the Lares build system will start to look less like prompt assembly and more like real Infrastructure-as-Myth tooling.
+1. extract always-on core runtime modules from the monolithic root payloads
+2. move reference/spec and repo-ops bulk out of prime root context
+3. bring `codex-root`, `claude-root`, and `copilot-root` back under stable reload-safe budgets
+4. remove the need for the temporary `150000` Codex compatibility override
+5. then proceed to governance hardening
 
 ---
 
