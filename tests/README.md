@@ -42,8 +42,15 @@ tests/
 │   ├── register-fidelity/
 │   ├── frame-uncertainty/
 │   └── sycophantic-drift/
-└── results/               ← structured session logs, run outputs, trend data
-    └── .gitkeep
+├── results/               ← structured session logs, run outputs, trend data
+│   └── .gitkeep
+├── mcp/                   ← MCP probe runner server (probe_runner.py)
+│   ├── __init__.py
+│   ├── probe_runner.py
+│   └── requirements.txt
+└── expected/              ← human-curated "green" reference outputs; exemplar anchors for judge
+    ├── README.md
+    └── {probe-id}--{descriptor}.md
 ```
 
 **Naming conventions:**
@@ -171,6 +178,18 @@ Do not layer contradictory instructions. Update or remove the failing instructio
 
 ---
 
+### 11. Expected outputs as calibration anchors
+
+`tests/expected/` holds human-promoted "green" responses — real outputs judged to meet the behavioral contract in full. Use them in two ways:
+
+**During judge calibration:** pass `exemplar_path` to `evaluate_probe` to supplement pass/fail criteria with a concrete behavioral reference. The judge scores `exemplar_alignment` (1–5) alongside `pass`/`score`/`rationale`. Useful for probes where criteria alone are hard to specify precisely — voice tonal quality, multi-mode operation, graceful failure warmth.
+
+**During regression testing:** after a system prompt revision, re-run the corresponding probe with `exemplar_path` pointing at the prior green output. A drop in `exemplar_alignment` across runs signals behavioral drift even if the newer output still passes criteria on its own.
+
+Files in `expected/` carry frontmatter (`status: green | draft | deprecated`). Only `status: green` files should be passed as calibration anchors. Draft files are under revision; deprecated files are kept as historical record. See [tests/expected/README.md](./expected/README.md) for promotion criteria and file format.
+
+---
+
 ## Test Plans
 
 Test plans live in `tests/plans/` as versioned markdown documents. The current canonical model:
@@ -196,7 +215,9 @@ Test plans live in `tests/plans/` as versioned markdown documents. The current c
 | Layer 1 | [DeepEval](https://github.com/confident-ai/deepeval) | LLM-as-judge with custom rubrics; multi-turn scenario support; CI/CD integration |
 | Layer 1 | [Promptfoo](https://www.promptfoo.dev/) | Adversarial probe runner; structured output logging; good for G-, R-, and I-series |
 | Layer 1 | Custom session logger | Voice activation rates, register tag frequency, correction/accommodation events per turn |
+| Layer 1 | `tests/mcp/probe_runner.py` | FastMCP STDIO server; backend-generic (OpenAI/Anthropic); tools: `run_probe`, `run_multiturn`, `evaluate_probe`, `log_result` |
 | Layer 2 | Operator adversarial sessions | Track B scripts; blind rating; pressure sessions by behavioral contract |
+| Layer 2 | `tests/expected/` | Human-curated exemplar responses; loaded via `exemplar_path` arg on `evaluate_probe`; adds `exemplar_alignment` score to judge output |
 | Layer 3 | Structured log template | See Appendix A of the test plan; trend charts across versions |
 
 ---

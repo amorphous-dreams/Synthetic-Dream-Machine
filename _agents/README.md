@@ -28,6 +28,17 @@ The **source file for the VS Code / repo operational map** — Section B of root
 
 After editing, run `python3 scripts/agents/combine_agents.py` to rebuild `AGENTS.md`.
 
+### `Lares_Codex_Coordinator.md`
+
+The **Codex coordinator wrapper source** — a small deployment-specific layer used
+to generate `.codex/agents/lares.toml`. It does not replace
+`Lares_Preferences.md`; it wraps that file when the combine script builds the
+portable Codex coordinator definition.
+
+- Edit this file when Codex-specific coordinator behavior changes.
+- Do **not** edit `.codex/agents/lares.toml` directly — it is generated.
+- Rebuild with `python3 scripts/agents/combine_agents.py`.
+
 ### `Lares_Test_Prompt_and_Output_Coffee_Oracle.md`
 
 A **reference test output** — a Coffee Oracle session where the operator feeds the node ("sips coffee, talks amongst yourselves") and all thirteen voices run free. Useful as:

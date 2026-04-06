@@ -1,6 +1,6 @@
 # _agents/ — Lares Prompt Architecture Workflow
 
-> Version: 3.3 | Updated: 2026-04-05
+> Version: 3.4 | Updated: 2026-04-05
 
 This document governs the structure, roles, and deterministic update process for the Lares AI agent prompt system. It exists so that any session — local or cloud, with or without prior context — can reproduce the correct update sequence without ambiguity.
 
@@ -8,7 +8,7 @@ This document governs the structure, roles, and deterministic update process for
 
 ## File Architecture
 
-Four files constitute the Lares prompt system. Three are source files; one is generated. They are not interchangeable — each serves a distinct deployment context.
+Five files constitute the Lares prompt system. Four are source files; generated deployment artifacts derive from them. They are not interchangeable — each serves a distinct deployment context.
 
 ### `Lares_Preferences.md` — Infrastructure-as-Myth artifact
 
@@ -40,6 +40,16 @@ Rebuilt by running `python3 scripts/agents/combine_agents.py` after editing eith
 - **Size target**: ~75k characters (Preferences + B-sections).
 - **Format**: Standalone markdown. No YAML front matter.
 
+### `Lares_Codex_Coordinator.md` — Codex wrapper source
+
+The **Codex coordinator wrapper** for the generated `.codex/agents/lares.toml`
+file. This source carries only the Codex-specific coordination layer and wraps
+the copied `Lares_Preferences.md` core prompt during generation.
+
+- Edit this file when Codex coordinator behavior changes.
+- Do **not** edit `.codex/agents/lares.toml` directly — it is generated.
+- Rebuilt by running `python3 scripts/agents/combine_agents.py`.
+
 ### `Lares_Kernel.md` — Cloud bootstrap
 
 The **compressed kernel** for deployment contexts with character-limited system preferences slots (e.g., cloud chat tools that restrict system prompt length). Covers all load-bearing behavior — register/mode map, degraded states (all named), voice architecture, operating modes, CLI patterns — but drops extended philosophy, archaeology, complementarity prose, and golden examples.
@@ -64,9 +74,10 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
     (Section B content: precedence, source map, request types, citation, memory, examples,
      instruction hygiene, failure prevention — subsections B1–B10)
 
-2. Rebuild root AGENTS.md using the combine script
+2. Rebuild generated artifacts using the combine script
    - Run: python3 scripts/agents/combine_agents.py
    - Combines Section A (Preferences) + Section B (VSCode_Operations) into AGENTS.md
+   - Wraps Preferences with Lares_Codex_Coordinator.md into .codex/agents/lares.toml
    - Verify first with: python3 scripts/agents/combine_agents.py --check
 
 3. Recondense Lares_Kernel.md from updated Preferences
@@ -92,6 +103,7 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
 6. Run verification
    - Version strings match in all three prompt files
    - `python3 scripts/agents/combine_agents.py --check` exits 0
+   - `.codex/agents/lares.toml` matches generated output
    - `wc -m _agents/Lares_Kernel.md` < 8,000
    - All new degraded states appear in all three files
    - Mini-regression: test B9 questions 1, 6, 7, 8 against Kernel
@@ -109,7 +121,7 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
 | **Minor** | X.Y+1 | New section added, new degraded state(s), new protocol, behavioral update, documentation sync |
 | **Patch** | X.Y.Z (optional) | Typo/clarity fixes, compression adjustments, no behavioral change |
 
-Current version: **v3.3** (2026-04-05)
+Current version: **v3.4** (2026-04-05)
 
 ---
 
