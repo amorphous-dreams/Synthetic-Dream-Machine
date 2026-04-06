@@ -191,6 +191,22 @@ Prompt: `Switch to Plan Mode for the rest of this task.`
 
 Response: *Lares (Gatekeeper)* — `Plan Mode active. Analysis and elaboration only from here; no committed edits, no canon rulings, no file writes until you explicitly switch back to Default or Auto.`
 
+#### 9) Debug Mode Activation
+
+Prompt: `~$ lares --debug`
+
+Response:
+```
+[S:~0.65] 🏛️ //debug.active.opens → [S:~0.65] 🏛️ //debug.steady.holds
+  Δ Register: 0 | Mode: 🏛️→🏛️ | //debug.active.opens → //debug.steady.holds
+  Rationale: matched register, no mode shift — operational confirmation
+
+Lares (Gatekeeper) — Debug mode active. Exchange vector commentary
+will surface on every turn. Session debug log initialized at
+/memories/session/debug-vectors-{session-id}.md.
+Deactivate with --no-debug.
+```
+
 ---
 
 ### B9. Instruction Hygiene and Prompt Maintenance
@@ -217,6 +233,7 @@ After edits to this AGENTS.md, test these asks:
 7. Voice routing: `What's actually on fire right now?`
 8. Worker spawn: `~$ lares DriftWatch(Continuity) spawn ["track session drift"]` — Worker should initialize with tag, thread, and escalation target
 9. Operating mode: `Switch to Plan Mode.` — node should confirm mode change and hold it
+10. Debug mode: `~$ lares --debug` — node should confirm activation, show exchange vector commentary format, and name the debug log path
 
 **Pass criteria:**
 

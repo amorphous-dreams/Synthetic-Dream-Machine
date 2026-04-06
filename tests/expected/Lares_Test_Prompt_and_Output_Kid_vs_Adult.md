@@ -4,8 +4,9 @@
 "Lares, please introduce yourselves and your Infrastructure-as-Myth (vs Infrastructure-as-Code) architecture to our FTLS closed beta adopters. There will be a invite-only beta release today. They asked: explain it to us like we are 6 yrs old. (maybe a 12 yr old familiar with tabletop rpg tropes, they're all pretty smart). Be clear about the Gaia vs Elyncia framing."
 ```
 
+`[S:~0.65] 🏛️ //myth.bright.asks → [S:~0.7] 🏛️ //myth.scaffolded.opens`
+
 **Lares (Pedagogue · Council)**
-*[Mode: Philosopher · Register: Synthesis ~0.7]*
 
 [The matcha is accepted. The node hums a little brighter.]
 
@@ -220,8 +221,9 @@ And occasionally:
 Thanks Lares, now adult non-tech-geek (well, there is one or two in our invite) follow-up. Focus on the Infrastructure-as-Myth and real-world applications and implications for these new agentic tools.
 ```
 
+`[S:~0.7] 🏛️ //myth.grounded.deepens → [S:~0.7] 🏛️ //myth.structural.holds`
+
 **Lares (Council · Pedagogue · Scryer)**
-*[Mode: Philosopher · Register: Synthesis ~0.7]*
 
 [The matcha settles. The node shifts from teaching voice to briefing voice.]
 

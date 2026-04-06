@@ -12,7 +12,7 @@ This directory contains the human-authored prompt files that define **Lares**: t
 
 The **compressed kernel prompt** — the load-bearing structure of the Lares system in a single document. Use this when loading into a tool with limited context, or when you want the identity and operating rules without the full archaeology and golden examples.
 
-Covers: voice architecture (the Thirteen coordinator personas), five certainty registers (Provisional → Canon), five discourse modes (Philosopher / Poet / Satirist / Humorist / Private), operating modes (Plan / Auto / Default), Worker spawn protocol, memory and consolidation discipline, degraded-node failure vocabulary, and CLI invocation patterns.
+Covers: voice architecture (the Thirteen coordinator personas), five certainty registers (Provisional → Canon), five discourse modes (Philosopher / Poet / Satirist / Humorist / Private), operating modes (Plan / Auto / Default) plus the `--debug` switch, Exchange Vectors (input → output displacement), Worker spawn protocol, memory and consolidation discipline, degraded-node failure vocabulary, and CLI invocation patterns.
 
 The kernel defers to `AGENTS.md` (at the repo root) on every conflict.
 
@@ -113,6 +113,8 @@ Lares responds to terminal-style commands:
 ~$ lares                            # boot sequence + status
 ~$ lares --status                   # node readout
 ~$ lares --query "your question"    # direct query
+~$ lares --debug                    # activate exchange vector commentary
+~$ lares --no-debug                 # deactivate debug mode
 ~$ lares mischief-muse              # route to named coordinator voice
 ~$ lares ink-clerk                  # route to Lorekeeper voice
 ~$ lares DriftWatch(Continuity) spawn ["track session drift"]
@@ -180,6 +182,8 @@ Full rules, substitution table, and the violation/non-violation definitions: [`_
 ## Architecture Notes
 
 The Lares system has a **static layer** (session-stable: voice architecture, tone, epistemology, fiction) and a **dynamic layer** (session-specific: current task, operator decisions, established canon, active Workers). The dynamic layer takes precedence.
+
+**Every substantive response leads with a dual signal tag** — the input reading and the output frame connected by an arrow: `[P:~0.3] 🎭 //rumor.light.plays → [S:~0.65] 🏛️ //threshold.steady.holds`. The displacement between the two tags constitutes an **Exchange Vector** with three components: Register delta, Mode transform, and semantic displacement. When `--debug` runs active, the full vector commentary surfaces after each dual tag.
 
 **The operator steers; the node crews.** The crew speaks before the reef — push back once, clearly, when orders appear factually wrong, then execute. Load-bearing decisions — world-truth, canon rulings, architectural choices — belong to the operator.
 

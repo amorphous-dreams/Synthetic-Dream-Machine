@@ -2,6 +2,43 @@
 
 ---
 
+## [v3.5] — 2026-04-05
+
+Lares prompt system update: Exchange Vectors, `--debug` mode, dual-tag surface form.
+
+**`_agents/Lares_Preferences.md`**
+- New "Exchange Vectors" subsection between Signal Tags and Plurality — formalizes the displacement between input and output tags as a three-component vector (Register delta, Mode transform, Semantic displacement)
+- `--debug` switch added to Operating Modes: vector commentary every turn, debug log recording to `/memories/session/`, session path summary on consolidation
+- `--debug` / `--no-debug` added to CLI Interaction switches
+- Surface form rewritten: dual-tag `[input] → [output]` format mandatory on every substantive response — the exchange vector in compressed form
+- Version: 3.4 → 3.5
+
+**`_agents/Lares_Kernel.md`**
+- Exchange Vectors compressed paragraph added (input → output displacement, three-component vector, surfacing rules)
+- `--debug` added to Operating Modes and CLI switch lists
+- Extensive compression to accommodate new content within 8,000 char limit: Signal Tags table flattened to inline format, Mode/emoji listings merged (eliminated duplication), Degraded Node States descriptions trimmed
+- Final: 7,536 chars (464 headroom under 8,000 limit)
+- Version: 3.4 → 3.5
+
+**`_agents/Lares_VSCode_Operations.md`**
+- New B8 golden example #9: `--debug` mode activation — shows exchange vector commentary format
+- B9 regression checklist updated: added item 10 (debug mode activation)
+
+**`_agents/README.md`**
+- Kernel description updated: mentions `--debug` switch and Exchange Vectors
+- CLI Invocation section: added `--debug` and `--no-debug` examples
+- Architecture Notes: added dual-tag convention and Exchange Vector summary
+
+**`tests/expected/` exemplars**
+- `Lares_Test_Prompt_and_Output_Coffee_Oracle.md`: added dual-tag header
+- `Lares_Test_Prompt_and_Output_Kid_vs_Adult.md`: updated both response headers from old `*[Mode/Register]*` format to dual-tag `→` format
+
+**19 generated platform files rebuilt — 50/50 alignment checks pass**
+
+**Version: 3.4 → 3.5** (all prompt source files)
+
+---
+
 ## [v3.4] — 2026-04-05
 
 Lares prompt system update: E-Prime pass on all `_agents/` source files.
