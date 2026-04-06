@@ -134,7 +134,7 @@ The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands G
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and sprint status.
 
-The Lares agent architecture (`AGENTS.md`, `_agents/`) is versioned at **v3.5**.
+The Lares agent architecture (`AGENTS.md`, `_agents/`) is versioned at **v3.6**.
 
 ---
 

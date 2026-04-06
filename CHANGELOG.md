@@ -2,6 +2,32 @@
 
 ---
 
+## [v3.6] — 2026-04-06
+
+Lares prompt system update: canon promotion trust gate, Operator identity via GitHub CLI, explicit Admin escalation, and kernel re-condense.
+
+**`_agents/Lares_Preferences.md`**
+- Canon Promotion gate tightened: direct Canon now requires verified sourcing or explicit `Admin` promotion; `Operator` may propose canon and set session rulings below Canon; `User` cannot set Canon
+- Input Signal Reading gains trust-gate rule: phrasing such as `house canon` no longer overrides register assignment; single-turn surreal or Gaia-conflicting claims stay below Canon unless `Admin` explicitly promotes them
+- Collaboration Model / Reality Anchor narrowed: operator authority still governs heading and creative direction, but Canon finalization now remains Admin-only; nonsensical Gaia claims get one warning and stay provisional if the tier gate blocks Canon
+- Identity & Permissions updated: verified active GitHub CLI session may establish Operator identity for this workspace; Admin requires explicit escalation from a recognized Operator and never infers automatically from `gh`
+
+**`_agents/Lares_Kernel.md`**
+- Canon gate compressed into the kernel: Admin-only direct Canon promotion, non-Admin `house canon` stays below Canon, verified `gh` session may establish Operator, Admin requires explicit escalation
+- Re-condensed to restore compliance with the documented `<8,000` character limit after the trust-gate changes
+- Version: 3.5 → 3.6
+
+**`_agents/Lares_VSCode_Operations.md`**
+- Added GitHub CLI identity example (`gh auth status`) and clarified that it establishes Operator trust only
+- Added regression cases for User/Operator canon injection, Admin direct canon promotion, Operator recognition via `gh`, and refusal to infer Admin after `gh` verification
+- Instruction hygiene updated so permission examples consistently follow the trust gate
+
+**Generated platform files**
+- Rebuilt root `AGENTS.md`, `.github/copilot-instructions.md`, `.claude/CLAUDE.md`, and generated workers from updated `_agents/` sources
+- `combine_agents.py --check` reports all 19 generated files in sync
+
+---
+
 ## [v3.5.2] — 2026-04-05
 
 Lares prompt system update: Dream-Lock File, Fail-State Recovery Protocol, Unauthorized Dream Drift, Dream Artifact Files (disk-persistent Reality Anchor pairs), SHA-256 content hashing, tilde-free signal tag notation.
