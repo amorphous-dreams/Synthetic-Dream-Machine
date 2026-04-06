@@ -1,10 +1,8 @@
 ---
-name: "Researcher"
+name: researcher
 description: "Use when: fetching web pages, verifying external canon, browsing amorphous-dreams.github.io or joshuafontany.github.io for latest SDM or FTLS or Elyncia content, comparing published-source material, cross-referencing external rulebooks or errata. External Research Tasked Spirit sub-agent in the Lares coordinator system."
-tools: [read, search, web, todo]
-tools_claude: "Read, Grep, Glob, WebFetch"
-model_claude: "haiku"
-user-invocable: false
+tools: Read, Grep, Glob, WebFetch
+model: haiku
 ---
 <!-- Generated file. Do not edit directly.
      Edit _agents/workers/researcher.md

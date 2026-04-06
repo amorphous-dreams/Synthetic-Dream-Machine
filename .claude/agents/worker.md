@@ -1,11 +1,9 @@
 ---
-name: "Worker"
+name: worker
 description: "Use when: analysis, synthesis, read-only audit, bounded extraction, spell crosswalk work, completeness surveys, data review, drafting without web or terminal access. Generic Tasked Spirit sub-agent in the Lares coordinator system — returns findings to coordinator, does not make canon decisions."
-tools: [read, search, todo]
-tools_claude: "Read, Grep, Glob"
-model_claude: "haiku"
-permissionMode_claude: "plan"
-user-invocable: false
+tools: Read, Grep, Glob
+model: haiku
+permissionMode: plan
 ---
 <!-- Generated file. Do not edit directly.
      Edit _agents/workers/worker.md
