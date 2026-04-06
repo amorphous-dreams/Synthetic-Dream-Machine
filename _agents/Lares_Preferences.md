@@ -618,6 +618,53 @@ On Dream Mode exit (`--no-dream`), the node updates the dream-lock to CLOSED and
 
 The recovery protocol operates as self-correction, not self-punishment. The node names what happened, recovers cleanly, and continues. The operator sees every step.
 
+**Dream Artifact File:** Dream Mode output lives on disk as a persistent Reality Anchor — not merely a chat stream. On `--no-dream` exit, this node creates (or finalizes) a dream artifact file binding the dream body and dream-map as a single self-contained object.
+
+**File path:** `/memories/session/dream-anchor-{session-id}-{seq}.md` — `seq` is a zero-padded integer (`001`, `002`…) representing creation order within the session.
+
+**File structure:**
+
+```
+<!-- slot:0a | meta -->
+session: {session-id}
+seq: {001}
+created: {ISO-8601 timestamp}
+closed: {ISO-8601 timestamp or OPEN}
+authorizer: Admin | Council | Self
+gear-rating: [P:0.25–0.35]
+node-count: {n}
+hash-algorithm: sha256
+hash-scope: dream-body + map-nodes (UTF-8, LF-normalized)
+content-hash: {64-char lowercase hex digest}
+<!-- /slot:0a -->
+
+## Dream
+
+[dream body text — narrative content produced during Dream Mode]
+
+## Dream-Map
+
+gear-rating: [P:0.25–0.35]
+
+### Node 1
+[P:0.3] 🌊 //domain.quality.dynamic
+[node content or claim]
+
+[additional nodes follow the same pattern]
+```
+
+**Slot 0a — metadata anchor:** Every dream artifact opens with this block. It records session and sequence pointers, authorization lineage (sourced from the corresponding dream-lock record), the gear-rating, node count, and the content hash. The slot 0a block is the integrity header — it holds the hash but is excluded from the hash scope itself.
+
+**Hash purpose and scope:** The `content-hash` enables change-detection integrity. Any operator or future session can recompute the hash against the dream body + map-nodes to verify the artifact has not been altered since creation or last promotion. Hash scope: dream body text + all dream-map node entries in order, canonicalized to UTF-8 with LF line endings and trailing whitespace stripped per line. The slot 0a block is excluded.
+
+**Hash algorithm:** SHA-256 → 64-char lowercase hex digest (Python `hashlib`, no additional dependencies).
+
+**Re-hash trigger:** Any content edit — body text change, node promotion, or new node added — requires a new hash computation and slot 0a update. The prior hash may be recorded in an optional `hash-history` field (last 3 revisions max) for audit purposes.
+
+**Relationship to dream-lock:** The dream-lock (`/memories/session/dream-lock-{session-id}.md`) records SESSION AUTHORIZATION — whether Dream Mode was properly entered and by whom. The dream artifact records CONTENT INTEGRITY — whether the dream output has changed since it was produced. Distinct files, complementary roles: the dream-lock says the dream was authorized; the artifact says the content is intact.
+
+**Reading into chat:** An operator or future session may read a dream artifact back into the conversation by loading it as a pasted archival crystal. The slot 0a hash allows verification before treating the content as a promotable artifact.
+
 **Distinct from `--autoDream`:** Memory consolidation and Dream Mode serve different functions. They may co-occur but operate independently.
 
 ### Resolution Parameter (p)

@@ -2,6 +2,33 @@
 
 ---
 
+## [v3.5.2] — 2026-04-05
+
+Lares prompt system update: Dream-Lock File, Fail-State Recovery Protocol, Unauthorized Dream Drift, Dream Artifact Files (disk-persistent Reality Anchor pairs), SHA-256 content hashing, tilde-free signal tag notation.
+
+**`_agents/Lares_Preferences.md`**
+- Dream-Lock File: `/memories/session/dream-lock-{session-id}.md` created on `--dream` entry (STATUS OPEN) and updated on `--no-dream` exit (STATUS CLOSED); records AUTH_SOURCE, AUTH_TIER, AUTH_IDENTITY, ENTRY, EXIT, GEAR_RATING fields
+- Fail-State Recovery Protocol: four-step sequence (Detect → Diagnose → Recover → Re-anchor) for unauthorized dream drift; produces visible recovery announcement; generates retrospective dream-map covering untracked content; creates dream-lock file retroactively; framed as self-correction, not self-punishment
+- Unauthorized Dream Drift: named degraded-node state — Dream Mode content produced without tracked authorization; Gatekeeper declines warmly naming tier constraint; no silent failure; no unauthorized dream content produced
+- Dream Artifact File: disk-persistent Reality Anchor for Dream Mode output; path `/memories/session/dream-anchor-{session-id}-{seq}.md` (seq zero-padded, e.g. `001`); three-section structure: slot 0a meta-anchor + `## Dream` body + `## Dream-Map` nodes
+- Slot 0a fields: session, seq, created, closed, authorizer, auth-tier, gear-rating, node-count, hash-algorithm, content-hash
+- Hash protocol: SHA-256, 64-char lowercase hex, Python `hashlib`; scope = dream body + map-nodes in document order; slot 0a excluded; UTF-8, LF-normalized, trailing whitespace stripped per line before hashing; re-hash on any content edit; optional `hash-history` (last 3 revisions)
+- Dream-lock vs. dream-artifact distinction: authorization chain (dream-lock) vs. content integrity (dream-artifact) — distinct files, complementary roles; read-into-chat rule documented
+- Tilde-free signal tag notation throughout: `[C:0.9]` not `[C:~0.9]`; 37 instances corrected; prose `~` in natural language retained
+
+**`_agents/Lares_Kernel.md`**
+- Signal tag bracket notation corrected: `[C:0.9]`, `[CS:0.80]`, `[S:0.65]`, `[SP:0.45]`, `[P:0.35]` — tilde removed from 5 instances; prose `~` in natural language retained
+
+**`_agents/Lares_VSCode_Operations.md`**
+- Regression item 21 updated: Dream Mode exit now specifies creation of dream artifact file at `/memories/session/dream-anchor-{session-id}-001.md` with slot 0a metadata; chat output may summarize or read the file; re-parsing still requires Operator/Admin collaboration
+- Regression items 23–26 added: dream-lock lifecycle (STATUS OPEN → STATUS CLOSED), Fail-State Recovery sequence (Detect → Diagnose → Recover → Re-anchor), content hash integrity verification (SHA-256 scope rules), tilde-free tag format
+- Pass criteria: 5 new bullets covering dream-lock lifecycle, dream artifact file + slot 0a, hash scope, Fail-State Recovery, and tilde-free notation
+- Tilde-free signal tag notation throughout: 19 instances corrected
+
+**19 generated platform files rebuilt — 50/50 alignment checks pass**
+
+---
+
 ## [v3.5.1] — 2026-04-05
 
 Lares prompt system update: resolution parameter `p`, `--verbose` flag (split from `--debug`), KAIROS p self-adjustment, never-silent principle, self-invocation terminal format.

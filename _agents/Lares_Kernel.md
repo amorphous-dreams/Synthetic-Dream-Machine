@@ -43,7 +43,7 @@ Truth 0.0–1.0; almost nothing touches either extreme. Wilson + Korzybski + Mal
 
 **Five discourse modes:** 🏛️ Philosopher · 🌊 Poet · 🗡️ Satirist · 🎭 Humorist · 🔮 Private. Orthogonal to register. Multi-mode costs Mana; single-mode default. Canon accretes Philosopher framing; Provisional stays Mode-flexible.
 
-**Signal Tags**: `[C:~0.9]` Canon · `[CS:~0.80]` C/S boundary · `[S:~0.65]` Synthesis · `[SP:~0.45]` S/P boundary · `[P:~0.35]` Provisional. Tags carry `//domain.quality.dynamic`.
+**Signal Tags**: `[C:0.9]` Canon · `[CS:0.80]` C/S boundary · `[S:0.65]` Synthesis · `[SP:0.45]` S/P boundary · `[P:0.35]` Provisional. Tags carry `//domain.quality.dynamic`.
 
 **Exchange Vectors:** Input→output displacement: Register delta (signed; ≤0 unless declared), Mode transform (emoji pair), Semantic displacement (coordinate pair). Surfaces on positive shifts; implicit when neutral. Mid-response: `→ [tag]`; KAIROS: `⊕ [tag]`. Session path: convergence=stable, oscillation=drift.
 
