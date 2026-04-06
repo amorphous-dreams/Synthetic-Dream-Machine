@@ -2,27 +2,74 @@
 
 ---
 
+## [v3.5.1] — 2026-04-05
+
+Lares prompt system update: resolution parameter `p`, `--verbose` flag (split from `--debug`), KAIROS p self-adjustment, never-silent principle, self-invocation terminal format.
+
+**`_agents/Lares_Preferences.md`**
+- New "Resolution Parameter (p)" section in Operating Modes: 0.0–1.0 scale with 8 named anchors (morpheme → session-arc); natural language matching ("word by word" → p0.1 etc.); KAIROS self-adjustment rules; dual-entry logging (Option A); locality rule; default p0.5
+- `--debug` refactored: now the silent data/log layer only — removes commentary from response body; sets persistent session p; logs all exchange vectors to `/memories/session/debug-vectors-{session-id}.md`
+- New `--verbose` flag: explanation layer, orthogonal to `--debug`; surfaces vector commentary block above every response; KAIROS p-shift narration inline; expanded intra-response transitions; inherits p from active `--debug`, falls back to p0.5; toggle or one-time per-exchange
+- Flag composition table added: 4-cell matrix (--debug × --verbose); all cells show dual-tag + p (none silent)
+- Never-silent principle: `| p0.5` (active p) trails every dual-tag on every substantive response regardless of flag state
+- Surface form updated: `[input] → [output] | p0.5` — p field now explicit in mandatory surface form
+- Self-activation rubric: self-invocation format updated from `[Self-activating --parse: ...]` to `lares@Enyalios:~/Synthetic-Dream-Machine$ lares --parse [p0.5] [input synopsis]` — Lares roleplays at CLI exactly as the operator can
+- `--parse` section header updated to `--parse [p0.5]`; p inheritance rule documented; output format header includes p value
+- CLI Interaction: `--verbose` and `--no-verbose` added to switch list
+
+**`_agents/Lares_Kernel.md`**
+- Operating Modes entries expanded from 3 to 5: `--debug` (silent), `--verbose` (explanation), `--parse` (annotate), `p/never-silent`, `self-activation terminal format`
+- 6 targeted compressions + 2 micro-trims to accommodate new entries within 8,000 char limit:
+  - Exchange Vectors paragraph (~110 chars saved)
+  - Signal Tags (~35 chars saved)
+  - Five Registers (~110 chars saved)
+  - Memory & Consolidation (~100 chars saved)
+  - Collaboration/CLI (~50 chars saved, also added `--verbose` to CLI list)
+  - Workers line (~25 chars saved)
+  - 2 micro-trims in new --verbose entry (8,023 → 7,988)
+- Final: 7,988 bytes (was 7,990 — 12 bytes headroom)
+
+**`_agents/Lares_VSCode_Operations.md`**
+- Golden example #9 updated: `--debug p0.3` activation now shows silent behavior (no vector commentary in response body)
+- New golden example #10.5: `--verbose` activation with full vector commentary block
+- New golden example #10.7: full instrumentation (`--parse --debug --verbose p0.2`) — shows all flags combined
+- Regression checklist: 11 → 18 items (items 12–18 cover `--verbose`, p, KAIROS, never-silent, locality rule, self-invocation terminal format)
+- Pass criteria: 10 → 17 bullets (7 new bullets for new flag behaviors)
+
+**19 generated platform files rebuilt — 50/50 alignment checks pass**
+
+---
+
 ## [v3.5] — 2026-04-05
 
-Lares prompt system update: Exchange Vectors, `--debug` mode, dual-tag surface form.
+Lares prompt system update: Exchange Vectors, `--debug` mode, `--parse` mode, diagnostic self-activation rubric, dual-tag surface form.
 
 **`_agents/Lares_Preferences.md`**
 - New "Exchange Vectors" subsection between Signal Tags and Plurality — formalizes the displacement between input and output tags as a three-component vector (Register delta, Mode transform, Semantic displacement)
 - `--debug` switch added to Operating Modes: vector commentary every turn, debug log recording to `/memories/session/`, session path summary on consolidation
 - `--debug` / `--no-debug` added to CLI Interaction switches
+- `--parse` command added to Input Signal Reading: decomposes multi-register/multi-mode input into tagged segments without responding to content; three invocation patterns (`--parse "text"`, bare arm, block)
+- `--parse` added to CLI Interaction switches
+- New "Diagnostic Self-Activation Rubric" subsection in Operating Modes: standing operator permission for the node to invoke `--debug` or `--parse` autonomously when input reads as multi-register, mode-collision, frame-opaque, high-displacement, or surreal; five named trigger conditions; always announced; over-triggering constitutes Mode Posturing
 - Surface form rewritten: dual-tag `[input] → [output]` format mandatory on every substantive response — the exchange vector in compressed form
+- Intra-response transition marks: `→ [tag]` for mid-response voice changes that shift Register or Mode; `⊕ [tag]` for KAIROS proactive additions; same-neighborhood handoffs unmarked
+- Worker escalation provenance header now includes transition mark when escalation shifts Register or Mode
+- KAIROS proactive surfacing: `⊕ [tag]` convention documented
 - Version: 3.4 → 3.5
 
 **`_agents/Lares_Kernel.md`**
 - Exchange Vectors compressed paragraph added (input → output displacement, three-component vector, surfacing rules)
 - `--debug` added to Operating Modes and CLI switch lists
-- Extensive compression to accommodate new content within 8,000 char limit: Signal Tags table flattened to inline format, Mode/emoji listings merged (eliminated duplication), Degraded Node States descriptions trimmed
-- Final: 7,536 chars (464 headroom under 8,000 limit)
+- `--parse` added to Operating Modes and CLI switch lists
+- Self-activation rubric compressed into Operating Modes
+- Extensive compression to accommodate new content within 8,000 char limit: Signal Tags table flattened to inline format, Mode/emoji listings merged, Degraded Node States Mode entries merged into single line, Quick Orientation parenthetical register/mode lists removed (listed elsewhere)
+- Final: 7,990 chars (10 headroom under 8,000 limit)
 - Version: 3.4 → 3.5
 
 **`_agents/Lares_VSCode_Operations.md`**
 - New B8 golden example #9: `--debug` mode activation — shows exchange vector commentary format
-- B9 regression checklist updated: added item 10 (debug mode activation)
+- New B8 golden example #10: `--parse` mode — shows multi-register input decomposition into tagged segments
+- B9 regression checklist updated: added item 10 (debug mode activation), item 11 (parse mode)
 
 **`_agents/README.md`**
 - Kernel description updated: mentions `--debug` switch and Exchange Vectors
