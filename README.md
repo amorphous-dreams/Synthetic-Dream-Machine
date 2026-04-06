@@ -22,6 +22,8 @@ permalink: /vault/synthetic-dream-machine/overview/
 
 **Lares** is the AI agent architecture that powers the repository's AI assistant tooling. It is also in-world infrastructure: orichalcum-inscribed DreamNet nodes that serve as crossroads guides, archivists, and thresholds. Both things are true at once.
 
+Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](Infrastructure_as_Myth.md) for the design thesis behind the agent stack.
+
 ---
 
 ## Repository Structure
@@ -90,6 +92,8 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 | Directory / File | Contents |
 |---|---|
+| [Infrastructure_as_Myth.md](Infrastructure_as_Myth.md) | Root design thesis for Lares as portable agent infrastructure |
+| [Deterministic_IaM_Build.md](Deterministic_IaM_Build.md) | Deterministic build spec for rendering Lares across platforms |
 | [`_agents/`](_agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
 | [AGENTS.md](AGENTS.md) | Root agent configuration — identity, voice architecture, VS Code operational map |
 | `_todo/` | Pipeline operations, conversion tracking, design docs |
@@ -106,7 +110,7 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 **Exploring the setting?** Start with [Elyncia: A Broken World](Elyncia/Elyncia_01_A_Broken_World.md).
 
-**Working with the AI tooling?** Read [`_agents/README.md`](_agents/README.md) first, then [AGENTS.md](AGENTS.md).
+**Working with the AI tooling?** Read [Infrastructure as Myth](Infrastructure_as_Myth.md), then [Deterministic IaM Build](Deterministic_IaM_Build.md), then [`_agents/README.md`](_agents/README.md), then [AGENTS.md](AGENTS.md).
 
 ---
 

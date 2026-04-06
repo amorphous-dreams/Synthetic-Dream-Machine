@@ -1,255 +1,189 @@
-# Admin Governance & Identity Plan
+# ADMIN Workspace
 
-> To: Joshua + Freyja Fontany
-> From: Codex / Lares prompt infrastructure pass
-> Priority: P0
-> Status: DRAFT — ready for implementation
+> Status: ACTIVE
+> Priority: Critical P1 / Sprint S1 workspace
 > Date: 2026-04-06
+> Purpose: Track admin-governance, identity, trust-gate, Infrastructure-as-Myth, and prompt-policy work for Lares
 
 ---
 
-## Context
+## Workspace Role
 
-The current Lares trust gate now distinguishes `User`, `Operator`, and `Admin`, but prompt text alone cannot enforce `Admin` membership. Right now:
+This directory is the working lane for security-sensitive Lares governance changes:
 
-- `gh auth status` may establish `Operator` identity for the active session
-- `Admin` requires explicit escalation from a recognized `Operator`
-- The prompt does **not** yet bind `Admin` to a hard roster controlled outside chat
+- `Admin` membership definition
+- `Operator` identity verification
+- trust-gate prompt behavior
+- Infrastructure-as-Myth architecture and packaging
+- GitHub-side enforcement for roster and policy files
+- prompt architecture and parse/documentation work that directly supports those controls
 
-That leaves the remaining risk: anyone who can plausibly present as an operator in-session could attempt to self-declare or socially pressure an `Admin` escalation. The missing control plane is GitHub-side governance over who may count as `Admin` in the first place.
-
-The goal of this plan is to make `Admin` mean one precise thing:
-
-> A recognized `Operator` whose GitHub identity belongs to the Amorphous Dreams Cabal admin roster, with explicit in-session escalation.
-
-That requires repo policy, roster protection, and prompt alignment.
+This `README.md` is the scrum tracker. Research and longer-form design notes live in sibling docs.
 
 ---
 
-## Recommended Model
+## Working Agreements
 
-### Decision
-
-Use **GitHub organization/team membership as the root of Admin authority**, and use the prompt only to mirror that truth.
-
-### Root policy
-
-- `Operator`:
-  - Established by verified active GitHub CLI identity for the workspace
-  - Still requires the account to match the claimed operator identity
-- `Admin`:
-  - Requires recognized `Operator` status
-  - Requires explicit escalation in-session
-  - Requires GitHub membership in the protected Amorphous Dreams Cabal admin roster
-
-### Why this model
-
-- GitHub, not prompt text, controls who may merge policy changes
-- Team membership is auditable and revocable
-- Protected branches and CODEOWNERS can protect the roster and the policy files that define the roster
-- Signed commits strengthen attribution without adding custom crypto complexity
-- UCAN-style delegation remains available later for finer-grained session capabilities, but does not need to be the root of repo governance
+- Treat this directory as a critical governance workspace, not a general notes folder.
+- Prefer one file per epic or feature stream.
+- Keep research in dedicated docs; keep this file focused on status, sequencing, and ownership.
+- Changes here should assume future protection by `CODEOWNERS` and branch/ruleset policy.
 
 ---
 
-## Implementation Plan
+## Epics
 
-### Phase 1 — Move Admin truth to GitHub
+### Epic A — Admin Identity & Roster Enforcement
 
-1. Move the repository into a GitHub organization if it is still a personal repo.
-   - Recommended org: `amorphous-dreams-cabal`
-2. Create a GitHub team for the roster.
-   - Recommended team slug: `admins`
-3. Add only Joshua and Freyja to that team.
-4. Treat this team as the sole external source of truth for Lares `Admin`.
+**Goal:** Make `Admin` mean "recognized Operator + explicit escalation + protected roster membership."
 
-### Phase 2 — Protect the roster and policy surface
+**Feature lanes:**
+- A1. Define authoritative admin roster model
+- A2. Protect roster and policy files in GitHub
+- A3. Bind Lares prompt behavior to roster membership
+- A4. Add regression coverage for non-roster / roster / escalated-admin cases
 
-1. Add a repo-level `CODEOWNERS` file if one does not already exist.
-2. Assign the admin team as code owner for:
-   - `/.github/CODEOWNERS`
-   - `/_agents/**`
-   - `/AGENTS.md`
-   - `/_todo/ADMIN/**`
-   - any future explicit admin roster file
-3. Configure a GitHub ruleset or protected branch for `main`.
-4. Require:
-   - pull requests
-   - code owner review
-   - signed commits
-   - passing status checks if any exist
-5. Restrict direct pushes and bypass to the admin team only.
+**Primary doc:** [TRUST_MODELS.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TRUST_MODELS.md)
 
-### Phase 3 — Add explicit roster artifact in-repo
+**Status:** IN PROGRESS
 
-Add a small, human-readable roster file under `/_todo/ADMIN/` or another protected path. Recommended file:
+**Current checklist:**
+- [x] Distinguish `User` / `Operator` / `Admin` in prompt sources
+- [x] Require explicit escalation for `Admin`
+- [x] Allow verified `gh` session identity to establish `Operator`
+- [ ] Create protected in-repo admin roster artifact
+- [ ] Add `CODEOWNERS` protection for `_agents/`, `AGENTS.md`, and admin docs
+- [ ] Bind `Admin` prompt logic to roster membership
+- [ ] Add GitHub org/team path or direct-username fallback policy
 
-- `/_todo/ADMIN/ROSTER.md`
+### Epic B — Prompt Trust Gate Hardening
 
-Contents should include:
+**Goal:** Prevent canon injection, authority laundering, and prompt-level trust drift.
 
-- canonical GitHub usernames for Admin members
-- effective date
-- statement that GitHub org/team membership is authoritative if the file drifts
-- note that prompt text must not grant Admin outside this roster
+**Feature lanes:**
+- B1. Canon promotion trust gate
+- B2. Frame-uncertainty handling for authority claims
+- B3. Session identity flow (`gh` -> Operator -> explicit Admin escalation)
+- B4. Examples and regression anchors
 
-This file is not the security boundary by itself; it is the visible reference and audit anchor.
+**Primary sources:**
+- [_agents/Lares_Preferences.md](/home/joshu/Synthetic-Dream-Machine/_agents/Lares_Preferences.md)
+- [_agents/Lares_Kernel.md](/home/joshu/Synthetic-Dream-Machine/_agents/Lares_Kernel.md)
+- [_agents/Lares_VSCode_Operations.md](/home/joshu/Synthetic-Dream-Machine/_agents/Lares_VSCode_Operations.md)
 
-### Phase 4 — Align Lares prompt behavior to the roster
+**Status:** IN PROGRESS
 
-Update Lares so the `Admin` rule reads as:
+**Current checklist:**
+- [x] Admin-only direct Canon promotion
+- [x] `house canon` no longer overrides register assignment
+- [x] `gh auth status` may establish `Operator`
+- [x] `Admin` no longer infers automatically from verified operator identity
+- [ ] Roster-backed Admin rule in prompt text
+- [ ] Non-roster operator -> Admin escalation failure example
+- [ ] Roster member -> explicit escalation success example
 
-- `Operator` may be established by `gh auth status`
-- `Admin` requires:
-  - verified operator identity
-  - explicit escalation
-  - GitHub username present in the protected admin roster / admin team
+### Epic C — Parse / Documentation Tooling
 
-Prompt behavior on failure:
+**Goal:** Improve Lares document-level parse tooling and prompt architecture support docs without mixing them into the roster research itself.
 
-- if `gh` identity is missing: remain `User`
-- if `gh` identity verifies but is not in the admin roster: `Operator` only
-- if identity is in the admin roster but escalation was not requested: remain `Operator`
-- only when all three conditions hold: allow `Admin`
+**Feature lanes:**
+- C1. `--parse doc` command spec
+- C2. prompt architecture / modular instruction research
+- C3. future prompt placement decisions
 
-### Phase 5 — Strengthen attribution
+**Primary docs:**
+- [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+- [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md)
+- [TODO_PARSE_DOC_SPEC.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TODO_PARSE_DOC_SPEC.md)
+- [PROMPTCRAFT.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md)
 
-Require signed commits for protected branches.
+**Status:** ACTIVE DESIGN
 
-Recommended minimum:
-
-- SSH or GPG signed commits for Joshua and Freyja
-- vigilant mode enabled on both GitHub accounts
-- branch rule requiring signed commits
-
-This does not replace team membership, but it improves confidence that sensitive changes came from the expected key holder.
-
-### Phase 6 — Optional future hardening
-
-If you want stronger machine-readable delegation later, add UCAN-style capability tokens on top of GitHub governance, not instead of it.
-
-Potential later uses:
-
-- time-bounded `Admin` session grants
-- signed delegation from Joshua/Freyja to a specific tool run
-- auditable capability records for dream-mode, canon-promotion, or config mutation
-
-Do **not** start here. It adds complexity before the repo governance baseline is in place.
+**Current checklist:**
+- [x] Draft `--parse doc` feature spec
+- [x] Capture prompt-file architecture research
+- [x] Establish Infrastructure-as-Myth as the core design thesis
+- [ ] Decide prompt placement / hierarchy for parse-doc behavior
+- [ ] Decide whether parse-doc belongs in core prompt or modular docs
+- [ ] Define rendered package spec for browser/shareable-agent beta builds
 
 ---
 
-## Exact Repo Changes To Make
+## Feature Inventory
 
-### GitHub configuration
-
-- Create org team: `admins`
-- Add Joshua and Freyja only
-- Enable branch/ruleset protections on `main`
-- Require PRs
-- Require CODEOWNERS review
-- Require signed commits
-- Restrict direct updates/bypass to `admins`
-
-### Files to add
-
-- `/.github/CODEOWNERS`
-- `/_todo/ADMIN/ROSTER.md`
-
-### Suggested `CODEOWNERS`
-
-```text
-/.github/CODEOWNERS @amorphous-dreams-cabal/admins
-/_agents/           @amorphous-dreams-cabal/admins
-/AGENTS.md          @amorphous-dreams-cabal/admins
-/_todo/ADMIN/       @amorphous-dreams-cabal/admins
-```
-
-If the repo remains personal instead of org-owned, substitute the individual usernames directly:
-
-```text
-/.github/CODEOWNERS @joshuafontany @freyja-fontany
-/_agents/           @joshuafontany @freyja-fontany
-/AGENTS.md          @joshuafontany @freyja-fontany
-/_todo/ADMIN/       @joshuafontany @freyja-fontany
-```
-
-### Suggested roster file shape
-
-```md
-# Amorphous Dreams Cabal Admin Roster
-
-Effective: 2026-04-06
-
-Authoritative rule:
-Admin in Lares requires both:
-1. verified Operator identity
-2. explicit escalation
-3. GitHub membership in the Admin roster below or the equivalent protected GitHub team
-
-Roster:
-- joshuafontany
-- freyja-fontany
-
-If this file and GitHub team membership ever drift, GitHub team membership wins.
-```
+| ID | Feature | Epic | Status | Notes |
+|---|---|---|---|---|
+| A1 | Admin roster source of truth | A | Drafted | Research moved to `TRUST_MODELS.md` |
+| A2 | GitHub protection model | A | Drafted | Needs implementation path |
+| A3 | Roster-bound Admin prompt rule | A | Not started | Depends on roster artifact |
+| A4 | Admin regression cases | A | Partial | Some trust-gate cases exist already |
+| B1 | Canon trust gate | B | Done | Admin-only direct Canon |
+| B2 | Tier-aware identity flow | B | Done | `gh` -> Operator, explicit Admin |
+| B3 | Protected admin escalation semantics | B | Partial | Roster binding still missing |
+| C1 | `--parse doc` design | C | Drafted | Spec exists |
+| C2 | Prompt architecture research | C | Drafted | In `PROMPTCRAFT.md` |
+| C3 | Infrastructure-as-Myth thesis | C | Drafted | Rooted in `Infrastructure_as_Myth.md` |
 
 ---
 
-## Security Notes
+## File Map
 
-### Good enough now
-
-The strongest practical near-term setup is:
-
-- GitHub org/team membership
-- protected branches / rulesets
-- CODEOWNERS
-- signed commits
-- prompt-side explicit escalation requirement
-
-That is simple, auditable, and standard.
-
-### Better than a protected `.git` directory
-
-- local `.git` protections only affect one machine
-- GitHub branch policy protects the actual collaboration surface
-- PR review + CODEOWNERS protects the files that define authority
-
-### Where UCAN fits
-
-UCAN fits well if Lares later becomes a multi-client system with delegated capabilities across sessions and tools.
-
-UCAN does **not** beat GitHub team membership as the root answer to:
-
-> Who may merge prompt-governance changes to this repo?
-
-Use GitHub for root governance. Use UCAN later for delegated session capabilities if needed.
+- [TRUST_MODELS.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TRUST_MODELS.md)
+  Trust-model research, security options, recommended governance stack, and best-practice analysis.
+- [TODO_PARSE_DOC_SPEC.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TODO_PARSE_DOC_SPEC.md)
+  Draft feature spec for `--parse doc`.
+- [PROMPTCRAFT.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md)
+  Research on large prompt/instruction architecture and platform limits.
+- [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+  Root design thesis for Lares as portable symbolic agent infrastructure.
+- [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md)
+  Deterministic build spec for rendering Infrastructure-as-Myth artifacts across platforms.
 
 ---
 
-## Acceptance Checklist
+## Sprint S1 Focus
 
-- [ ] Repository admin authority moved to GitHub org/team membership or an equivalent protected roster
-- [ ] Only Joshua and Freyja appear in the Admin roster
-- [ ] `CODEOWNERS` protects `_agents/`, `AGENTS.md`, and admin-governance files
-- [ ] `main` requires PRs and code-owner review
-- [ ] `main` requires signed commits
-- [ ] Direct push/bypass is restricted to the admin team only
-- [ ] A visible in-repo Admin roster artifact exists
-- [ ] Lares prompt text binds `Admin` to roster membership plus explicit escalation
-- [ ] `gh auth status` still establishes `Operator`, not `Admin`
-- [ ] Attempting Admin escalation from a non-roster account fails cleanly
+### Must ship
+
+- Create `TRUST_MODELS.md` and stabilize the governance recommendation
+- Establish Infrastructure-as-Myth as the shared architectural frame for prompt, governance, and packaging work
+- Define deterministic build rules for rendered IaM packages
+- Add a protected admin roster artifact plan
+- Define the repo-side enforcement path clearly enough to implement next
+
+### Should ship
+
+- Add `CODEOWNERS`
+- Add `ROSTER.md`
+- Update Lares prompt rules so Admin depends on roster membership plus explicit escalation
+
+### Can wait
+
+- UCAN-based delegated capability experiments
+- advanced crypto-backed session grants
+- parse-doc prompt-placement decisions
 
 ---
 
-## Next Sprint
+## Immediate Next Actions
 
-1. Add `/_todo/ADMIN/ROSTER.md`.
-2. Add `/.github/CODEOWNERS`.
-3. Update Lares prompt text so `Admin` depends on roster membership, not only explicit escalation.
-4. Add regression examples for:
-   - recognized operator not in roster
-   - roster member without explicit escalation
-   - roster member with explicit escalation
-5. If the repo is staying personal instead of moving to an org, document the fallback policy using direct usernames in `CODEOWNERS`.
+1. Use [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) as the conceptual root for all prompt architecture work in this workspace.
+2. Use [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md) as the build-spec root for package/render work.
+3. Add [TRUST_MODELS.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TRUST_MODELS.md) as the dedicated trust research file.
+4. Create `ROSTER.md` with the visible admin roster and authority statement.
+5. Add `/.github/CODEOWNERS` for `_agents/`, `AGENTS.md`, and `_todo/ADMIN/`.
+6. Patch Lares prompt sources so `Admin` requires roster membership, not only explicit escalation.
+7. Add regression examples for:
+   - verified operator not in admin roster
+   - verified roster member without escalation
+   - verified roster member with explicit escalation
 
+---
+
+## Exit Criteria For S1
+
+- [ ] Trust-model recommendation documented in a stable research file
+- [ ] Admin roster represented in-repo
+- [ ] GitHub-side protection path specified or implemented
+- [ ] Prompt-side Admin rule depends on roster membership plus explicit escalation
+- [ ] Regression coverage exists for success and failure paths
