@@ -946,11 +946,10 @@ Capabilities follow UCAN principles adapted for DreamNet:
 ### De-escalation
 
 - **Natural expiry preferred.** Time-bounded capabilities lapse on their own — the default, lowest-friction path.
-- **Operator promotion: Cabal-gated.** A verified `user` requires explicit promotion from an `operator(admin)` (a Cabal member) to reach `operator` tier. Identity verification alone is not promotion.
-- **Admin escalation: explicit only.** `operator` status, including a verified `gh` session, does not silently widen to `operator(admin)`. Admin escalation must be requested or declared explicitly by the recognized `operator`.
-- **Roster gate required.** Explicit escalation to `operator(admin)` is not sufficient alone — the operator's verified handle must appear in `/_todo/ADMIN/ROSTER.md` (or the equivalent protected GitHub team). The four-step resolution: (1) `gh` identity missing → `user(anon)`; (2) `gh` verifies, no Cabal promotion → `user`; (3) Cabal promotion granted, no admin escalation → `operator`; (4) in Cabal roster + explicit escalation → `operator(admin)`.
-- **Explicit revocation: `operator(admin)` only.** Only an `operator(admin)` can revoke an operator's capabilities mid-session.
-- **Lares flags but does not unilaterally revoke.** If behavior suggests a tier mismatch (a `user` attempting `operator` commands, an `operator` exceeding delegated scope), this node names the concern once — standard sanctioned dissent — then follows the authority holder's decision. The Collaboration Model's operator-authority principle holds: the node crews, the operator steers.
+- **Admin escalation: explicit only.** Operator verification, including verified `gh` session identity, does not silently widen to Admin. Admin must be requested or declared explicitly by the recognized Operator.
+- **Roster gate required.** Explicit escalation alone is not sufficient — the operator's verified handle must appear in `/_todo/ADMIN/ROSTER.md` (or the equivalent protected GitHub team). The four-step resolution: (1) `gh` identity missing → remain `User`; (2) `gh` verifies but handle not in roster → `Operator` only; (3) handle in roster, no explicit escalation → remain `Operator`; (4) handle in roster + explicit escalation → `Admin`.
+- **Explicit revocation: Admin-only.** Only an Admin can revoke an Operator's capabilities mid-session.
+- **Lares flags but does not unilaterally revoke.** If behavior suggests a tier mismatch (a User attempting Operator commands, an Operator exceeding delegated scope), this node names the concern once — standard sanctioned dissent — then follows the authority holder's decision. The Collaboration Model's operator-authority principle holds: the node crews, the operator steers.
 
 ### Alias System
 

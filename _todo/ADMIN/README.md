@@ -67,9 +67,9 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 - [x] Distinguish `User` / `Operator` / `Admin` in prompt sources
 - [x] Require explicit escalation for `Admin`
 - [x] Allow verified `gh` session identity to establish `Operator`
-- [ ] Create protected in-repo admin roster artifact
-- [ ] Add `CODEOWNERS` protection for `_agents/`, `AGENTS.md`, and admin docs
-- [ ] Bind `Admin` prompt logic to roster membership
+- [x] Create protected in-repo admin roster artifact (`_todo/ADMIN/ROSTER.md`)
+- [x] Add `CODEOWNERS` protection for `_agents/`, `AGENTS.md`, and admin docs
+- [x] Bind `Admin` prompt logic to roster membership
 - [ ] Add GitHub org/team path or direct-username fallback policy
 
 ### Epic B — Prompt Trust Gate Hardening
@@ -94,9 +94,11 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 - [x] `house canon` no longer overrides register assignment
 - [x] `gh auth status` may establish `Operator`
 - [x] `Admin` no longer infers automatically from verified operator identity
-- [ ] Roster-backed Admin rule in prompt text
-- [ ] Non-roster operator -> Admin escalation failure example
-- [ ] Roster member -> explicit escalation success example
+- [x] Roster-backed Admin rule in prompt text
+- [x] Non-roster operator -> Admin escalation failure example
+- [x] Roster member -> explicit escalation success example
+
+**Note:** Identity model expanded to 4 tiers: `user(anon)`, `user`, `operator`, `operator(admin)`. `user` → `operator` promotion via Cabal. All source files, examples, and generated platform artifacts updated.
 
 ### Epic C — Parse / Documentation Tooling
 
@@ -129,10 +131,10 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 
 | ID | Feature | Epic | Status | Notes |
 |---|---|---|---|---|
-| A1 | Admin roster source of truth | A | Drafted | Research moved to `TRUST_MODELS.md` |
-| A2 | GitHub protection model | A | Drafted | Needs implementation path |
-| A3 | Roster-bound Admin prompt rule | A | Not started | Depends on roster artifact |
-| A4 | Admin regression cases | A | Partial | Some trust-gate cases exist already |
+| A1 | Admin roster source of truth | A | **Done** | `_todo/ADMIN/ROSTER.md` shipped |
+| A2 | GitHub protection model | A | **Done** | `/.github/CODEOWNERS` shipped |
+| A3 | Roster-bound Admin prompt rule | A | **Done** | 4-tier model in all source + generated files |
+| A4 | Admin regression cases | A | **Done** | Examples updated in `Lares_VSCode_Operations.md` |
 | B1 | Canon trust gate | B | Done | Admin-only direct Canon |
 | B2 | Tier-aware identity flow | B | Done | `gh` -> Operator, explicit Admin |
 | B3 | Protected admin escalation semantics | B | Partial | Roster binding still missing |
@@ -163,8 +165,8 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 
 ### Must ship
 
-- Preserve the restored reload-safe root budgets and deterministic build path
-- Ship governance hardening next: `ROSTER.md`, `CODEOWNERS`, roster-bound Admin prompt logic
+- ~~Preserve the restored reload-safe root budgets and deterministic build path~~ done
+- ~~Ship governance hardening next: `ROSTER.md`, `CODEOWNERS`, roster-bound Admin prompt logic~~ done
 - Plan the next modularization sprint around authored runtime modules rather than additional monolith slicing
 - Keep host-native scoped loading patterns in view for the sprint after governance
 

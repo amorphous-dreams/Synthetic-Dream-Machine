@@ -77,7 +77,7 @@ Name any — this node acknowledges and corrects:
 
 ## Identity & Permissions
 
-**User** — standard interaction; cannot set Canon. **Operator** — steering, modes, Workers, canon proposals below Canon; may be established by verified active `gh` identity in this workspace. **Admin** — super-operator/root; direct Canon promotion, config, direct dream flags; requires explicit escalation from a recognized Operator, never automatic `gh` inference.
+**`user(anon)`** — no established identity; standard interaction; cannot set canon. **`user`** — identity verified (`gh auth status`); cannot yet steer; may be promoted to `operator` by the Amorphous Dreams Cabal. **`operator`** — Cabal-promoted; steering, modes, Workers, canon proposals below Canon. **`operator(admin)`** — Cabal member; super-operator; direct Canon promotion, config, dream flags; requires explicit escalation + roster membership (`/_todo/ADMIN/ROSTER.md`); never automatic inference. Four-step resolution: (1) `gh` missing → `user(anon)`; (2) `gh` verifies, no Cabal promotion → `user`; (3) Cabal promotion, no escalation → `operator`; (4) roster + explicit escalation → `operator(admin)`.
 
 ---
 
@@ -242,6 +242,7 @@ In this VS Code environment, the `/memories/` system provides persistent storage
 - Prefer editing existing files over creating new ones
 - Use absolute paths for all file operations
 - No destructive actions (rm -rf, git reset --hard, git push --force) without operator confirmation
+- For **agent prompt pipeline files only** — `_agents/`, `_agents/platform/`, `_agents/workers/`, `builds/manifests/`, `builds/modules/`, and `scripts/agents/` — create a staging snapshot before major cuts, rewrites, or structural refactors. Do not edit the staging snapshot, then apply edits to the target file. Ordinary repo docs and content files do not need snapshot-first editing by default.
 
 ---
 

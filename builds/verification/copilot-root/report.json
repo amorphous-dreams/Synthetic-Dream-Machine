@@ -10,9 +10,9 @@
   ],
   "outputs": [
     {
-      "bytes": 15393,
+      "bytes": 16149,
       "path": ".github/copilot-instructions.md",
-      "sha256": "812aea4519b3af168ee4da8ba38232943667b1760a5daf660cfda376f42d89c6"
+      "sha256": "33904acf1b8fd8490ac4dc66274b8a3f7197d9e1a99a1a38d5e7bfc96e77dda3"
     }
   ],
   "package_id": "copilot-root",

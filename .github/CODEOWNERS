@@ -1,0 +1,12 @@
+# CODEOWNERS
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Changes to governance-sensitive paths require review from admin roster members.
+# If this repo is under the amorphous-dreams-cabal org, use team syntax:
+#   @amorphous-dreams-cabal/admins
+# Until then, direct usernames apply:
+
+/.github/CODEOWNERS       @joshuafontany @freyja-fontany
+/_agents/**               @joshuafontany @freyja-fontany
+/AGENTS.md                @joshuafontany @freyja-fontany
+/_todo/ADMIN/**           @joshuafontany @freyja-fontany

@@ -8,9 +8,9 @@
       "sha256": "1f5f64091ef1a8eb77cab51c79169225ac9e2b04f39d6ad62b486224d57e2d19"
     },
     {
-      "bytes": 16036,
+      "bytes": 16792,
       "path": "AGENTS.md",
-      "sha256": "9b71d0576ab61c741ba58b8eac240f53d7841d3c79af575a24beac1b6e413542"
+      "sha256": "5089a8b8a24ac72793ae9130dc55f71fdb56d925b4415044f3b3f8eb26680132"
     }
   ],
   "package_id": "codex-root",
@@ -19,9 +19,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.json",
       "module_id": "lares-kernel",
-      "rendered_sha256": "d2779c62a9f92ac3eacf4cc11d3f832bbfea1cdb05e7e09a10dc78b4920f56af",
+      "rendered_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
       "source_path": "_agents/Lares_Kernel.md",
-      "source_sha256": "d2779c62a9f92ac3eacf4cc11d3f832bbfea1cdb05e7e09a10dc78b4920f56af",
+      "source_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
       "transform": {
         "type": "full"
       }
@@ -29,9 +29,9 @@
     {
       "metadata_path": "builds/modules/lares-vscode-ops-core.json",
       "module_id": "lares-vscode-ops-core",
-      "rendered_sha256": "d4ee06450f17fdb3e441a09f132fa4c326a49a7b40861f2a4628b28513719903",
+      "rendered_sha256": "80ef1f7502c58d403d092ef28f7921ddf04af3f4fcc2445e11b4eb3698158c29",
       "source_path": "_agents/Lares_VSCode_Operations.md",
-      "source_sha256": "9691069e28f075fb489493b7097e0016bd6e8e22473611344508a15ec7999e77",
+      "source_sha256": "44a2fba74533a4900496c95dd898fa0998f15e1aca0dfae79bead8f48a2a323b",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",
         "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
