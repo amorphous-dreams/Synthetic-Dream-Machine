@@ -4,6 +4,7 @@ description: "Use when: fetching web pages, verifying external canon, browsing a
 tools: [read, search, web, todo]
 tools_claude: "Read, Grep, Glob, WebFetch"
 model_claude: "haiku"
+sandbox_mode_codex: "read-only"
 user-invocable: false
 ---
 

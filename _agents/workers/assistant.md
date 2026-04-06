@@ -4,6 +4,7 @@ description: "Use when: worldbuilding content, Elyncia setting material, FTLS ch
 tools: [read, search, edit, todo]
 tools_claude: "Read, Write, Edit, Grep, Glob"
 model_claude: "sonnet"
+sandbox_mode_codex: "workspace-write"
 user-invocable: false
 ---
 

@@ -4,6 +4,7 @@ description: "Use when: running shell commands, build scripts, Python scripts, t
 tools: [read, search, edit, execute, todo]
 tools_claude: "Read, Write, Edit, Bash, Grep, Glob"
 model_claude: "sonnet"
+sandbox_mode_codex: "workspace-write"
 user-invocable: false
 ---
 

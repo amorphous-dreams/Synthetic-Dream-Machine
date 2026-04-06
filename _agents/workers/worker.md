@@ -5,6 +5,7 @@ tools: [read, search, todo]
 tools_claude: "Read, Grep, Glob"
 model_claude: "haiku"
 permissionMode_claude: "plan"
+sandbox_mode_codex: "read-only"
 user-invocable: false
 ---
 
