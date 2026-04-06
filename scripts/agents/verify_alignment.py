@@ -4,10 +4,12 @@ Verify alignment of Lares agent infrastructure across platforms.
 
 Checks:
   1. All expected worker source files exist in _agents/workers/
-  2. All expected generated artifacts exist in .github/agents/ (Copilot)
+  2. All expected generated artifacts exist across all 3 platforms
   3. Generated artifacts match what combine_agents.py would produce from sources
-  4. Worker slugs are consistent across platforms (Sprint 1: Copilot only; extended later)
+  4. Worker slugs are consistent across all active platforms
   5. Each worker has a keyword-rich description field (basic quality gate)
+  6. Lares_Kernel.md is under the 8,000 Unicode character hard limit
+  7. Version strings in Kernel and root AGENTS.md match Preferences (canonical source)
 
 Usage:
   python3 scripts/agents/verify_alignment.py           # full report, exits 1 on failures
@@ -61,6 +63,13 @@ REQUIRED_KEYWORDS = {
     "agent-engineer": ["agent", "prompt", "platform", "sync", "infrastructure"],
     "assistant": ["worldbuilding", "lore", "BECMI", "mechanics", "content"],
 }
+
+# Lares_Kernel.md hard size limit (Unicode characters — mirrors `wc -m`)
+KERNEL_PATH = REPO / "_agents" / "Lares_Kernel.md"
+KERNEL_SIZE_LIMIT = 8000
+
+# Preferences — canonical version source (all other files pin to this)
+PREFERENCES_PATH = REPO / "_agents" / "Lares_Preferences.md"
 
 
 # ---------------------------------------------------------------------------
@@ -369,6 +378,62 @@ def check_description_quality(r: CheckResult) -> None:
             )
 
 
+def check_kernel_size(r: CheckResult) -> None:
+    """Check 6: Lares_Kernel.md is under the 8,000 Unicode character hard limit."""
+    if not KERNEL_PATH.exists():
+        r.fail("Missing: _agents/Lares_Kernel.md (cannot check kernel size)")
+        return
+    char_count = len(KERNEL_PATH.read_text(encoding="utf-8"))
+    if char_count < KERNEL_SIZE_LIMIT:
+        r.ok(f"Kernel size OK: {char_count} chars (limit {KERNEL_SIZE_LIMIT})")
+    else:
+        r.fail(
+            f"Kernel too large: {char_count} chars (limit {KERNEL_SIZE_LIMIT})\n"
+            f"    Compress _agents/Lares_Kernel.md before committing"
+        )
+
+
+def check_version_alignment(r: CheckResult) -> None:
+    """Check 7: version string in Preferences matches root AGENTS.md and Kernel."""
+    if not PREFERENCES_PATH.exists():
+        r.fail("Missing: _agents/Lares_Preferences.md (cannot check version alignment)")
+        return
+    prefs_text = PREFERENCES_PATH.read_text(encoding="utf-8")
+    version_match = re.search(r"Version:\s*([\d]+\.[\d]+)", prefs_text)
+    if not version_match:
+        r.warn("Version string not found in _agents/Lares_Preferences.md (skipping version check)")
+        return
+    prefs_version = version_match.group(1)
+
+    # Check root AGENTS.md
+    if not AGENTS_MD_PATH.exists():
+        r.fail(f"Version check skipped for {AGENTS_MD_LABEL}: file missing")
+    else:
+        agents_text = AGENTS_MD_PATH.read_text(encoding="utf-8")
+        if re.search(rf"Version:\s*{re.escape(prefs_version)}\b", agents_text):
+            r.ok(f"Version aligned: {AGENTS_MD_LABEL} matches Preferences v{prefs_version}")
+        else:
+            r.fail(
+                f"Version mismatch: {AGENTS_MD_LABEL} does not contain Version: {prefs_version}\n"
+                f"    Expected: Version: {prefs_version}  (from _agents/Lares_Preferences.md)\n"
+                f"    Fix: run python3 scripts/agents/combine_agents.py"
+            )
+
+    # Check Kernel
+    if not KERNEL_PATH.exists():
+        r.fail("Version check skipped for Lares_Kernel.md: file missing")
+    else:
+        kernel_text = KERNEL_PATH.read_text(encoding="utf-8")
+        if re.search(rf"Version:\s*{re.escape(prefs_version)}\b", kernel_text):
+            r.ok(f"Version aligned: Lares_Kernel.md matches Preferences v{prefs_version}")
+        else:
+            r.fail(
+                f"Version mismatch: _agents/Lares_Kernel.md does not contain Version: {prefs_version}\n"
+                f"    Expected: Version: {prefs_version}  (from _agents/Lares_Preferences.md)\n"
+                f"    Fix: update _agents/Lares_Kernel.md version header"
+            )
+
+
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
@@ -384,6 +449,8 @@ def run_all_checks(brief: bool = False) -> CheckResult:
     check_generated_content_sync(r)
     check_cross_platform_slug_consistency(r)
     check_description_quality(r)
+    check_kernel_size(r)
+    check_version_alignment(r)
     return r
 
 

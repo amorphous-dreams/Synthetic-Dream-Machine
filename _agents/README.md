@@ -28,16 +28,30 @@ The **source file for the VS Code / repo operational map** — Section B of root
 
 After editing, run `python3 scripts/agents/combine_agents.py` to rebuild `AGENTS.md`.
 
-### `Lares_Codex_Coordinator.md`
+### `platform/` — Platform wrapper sources
 
-The **Codex coordinator wrapper source** — a small deployment-specific layer used
-to generate `.codex/agents/lares.toml`. It does not replace
-`Lares_Preferences.md`; it wraps that file when the combine script builds the
-portable Codex coordinator definition.
+Three platform-specific wrapper files live in `_agents/platform/`:
 
-- Edit this file when Codex-specific coordinator behavior changes.
-- Do **not** edit `.codex/agents/lares.toml` directly — it is generated.
-- Rebuild with `python3 scripts/agents/combine_agents.py`.
+- **`Lares_Copilot_Wrapper.md`** — appended to Preferences + Section B to build `.github/copilot-instructions.md`
+- **`Lares_Claude_Wrapper.md`** — appended to Preferences + Section B to build `.claude/CLAUDE.md`
+- **`Lares_Codex_Wrapper.md`** — appended to Preferences + Section B to build root `AGENTS.md` (which Codex reads)
+
+Each wrapper carries its platform's Worker Registry table, platform-specific notes, and Agent-Engineer Rebuild Protocol. `_agents/platform/README.md` documents the full schema for each format.
+
+- Edit a wrapper when that platform's registry, notes, or rebuild instructions change.
+- Do **not** edit generated coordinator files directly — rebuild with `python3 scripts/agents/combine_agents.py`.
+
+### `workers/` — Worker Tasked Spirit sources
+
+Five worker source files live in `_agents/workers/`:
+
+`worker.md` · `engineer.md` · `researcher.md` · `agent-engineer.md` · `assistant.md`
+
+Each carries YAML frontmatter (name, description, plus platform-specific fields) and a Markdown body (the system prompt). The combine script translates each into three generated workers — one per active platform — adapting frontmatter fields to each platform's format.
+
+- Edit here; do **not** edit generated files in `.github/agents/`, `.claude/agents/`, or `.codex/agents/`.
+- Rebuild all workers: `python3 scripts/agents/combine_agents.py`
+- Verify: `python3 scripts/agents/verify_alignment.py`
 
 ### `Lares_Test_Prompt_and_Output_Coffee_Oracle.md`
 
@@ -63,9 +77,19 @@ Key rules for human readers: RPG Book content documents must NOT have YAML front
 
 ## Using the Lares Agent System
 
-### In VS Code (GitHub Copilot / Cline)
+### In VS Code (GitHub Copilot / Cline / Codex)
 
-The root [`AGENTS.md`](../AGENTS.md) is automatically loaded by VS Code's agent infrastructure. You don't need to do anything — the node is already configured. The VS Code operational map (sections B1–B10 in `AGENTS.md`) governs:
+Three platform configs are generated from source files in `_agents/`:
+
+| Platform | Coordinator | Workers |
+|---|---|---|
+| **Copilot** | `.github/copilot-instructions.md` | `.github/agents/*.agent.md` (5) |
+| **Claude** | `.claude/CLAUDE.md` | `.claude/agents/*.md` (5) |
+| **Codex** | `AGENTS.md` (root) | `.codex/agents/*.toml` (5) + `.codex/config.toml` |
+
+All 19 generated files derive from `_agents/` sources. Do not edit them directly — run `python3 scripts/agents/combine_agents.py` to rebuild and `python3 scripts/agents/verify_alignment.py` to confirm all 47 checks pass.
+
+The VS Code operational map (sections B1–B10 in each coordinator file) governs:
 
 - Precedence order when instructions conflict
 - Repository source map (where to find canonical content)
@@ -164,6 +188,16 @@ The Lares system has a **static layer** (session-stable: voice architecture, ton
 For the full epistemological substrate (Model Agnosticism, E-Prime, Maybe Logic, the two-axis Register/Mode map, Frame-Uncertainty Protocol), see [`AGENTS.md`](../AGENTS.md) → *Model Agnosticism & Maybe Logic*.
 
 For the **prompt update workflow** — how to modify these files and keep the four-file system in sync — see [`_agents/AGENTS.md`](AGENTS.md).
+
+---
+
+## Backlog
+
+Active items tracked against the Lares prompt infrastructure. In priority order:
+
+- **BUG — ON FIRE**: An infrastructure bug has been waiting on the 3-platform rebuild to unblock. Details arrive next session; all workers may be needed for diagnosis and repair. Clear everything else before starting.
+- **E-Prime pass on agent files**: `_agents/workers/` and `_agents/platform/` source files need an E-Prime review pass. **Game content files are out of scope** — only agent infrastructure prose. Run `python3 scripts/agents/eprime_audit.py` and work through predication flags. Full rules in [`_agents/AGENTS.md`](AGENTS.md) → *Operational Language & E-Prime Spec*.
+- **Worker descriptions + verifications pass**: Review all five worker `description` fields for routing accuracy, keyword coverage, and Codex auto-delegation quality. Extend `verify_alignment.py` keyword gates as needed. Pairs with any worker body edits.
 
 ---
 

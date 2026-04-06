@@ -8,7 +8,9 @@ This document governs the structure, roles, and deterministic update process for
 
 ## File Architecture
 
-Five files constitute the Lares prompt system. Four are source files; generated deployment artifacts derive from them. They are not interchangeable — each serves a distinct deployment context.
+The Lares prompt system comprises several human-authored source files grouped into three roles: the **core static layer** (Preferences + VSCode Operations), **platform wrappers** (`_agents/platform/`), and **worker definitions** (`_agents/workers/`). Generated deployment artifacts derive from them — do not edit generated files directly. Source files are not interchangeable; each serves a distinct deployment context.
+
+Current generated output: **19 files across 3 platforms** (Copilot · Claude · Codex).
 
 ### `Lares_Preferences.md` — Infrastructure-as-Myth artifact
 
@@ -28,27 +30,55 @@ The **source file for the VS Code / repo operational map** (Section B of root `A
 - Do **not** edit the Section B content in `AGENTS.md` directly — it will be overwritten by the combine script.
 - **Format**: Standalone markdown with a 5-line source-file header (stripped by the combine script).
 
-### `AGENTS.md` (root) — Definitive local instance *(generated)*
+### `AGENTS.md` (root) — Codex coordinator + open-standard root *(generated)*
 
-The **root configuration for VS Code / GitHub Copilot** (and similar agentic tools that load `AGENTS.md` from the repository root). **Generated file — do not edit directly.** Two-section structure:
+The **Codex coordinator instructions** and open-standard root agent file for tools that load `AGENTS.md` from the repository root. **Generated file — do not edit directly.** Three-section structure:
 
 - **Section A** = `Lares_Preferences.md` verbatim.
-- **Section B** = `Lares_VSCode_Operations.md` content (minus standalone header) from `## CLI Agent Context — VS Code / Repo Operations` onward.
+- **Section B** = `Lares_VSCode_Operations.md` content from `## CLI Agent Context — VS Code / Repo Operations` onward.
+- **Section C** = `_agents/platform/Lares_Codex_Wrapper.md` content from `## Codex Platform — Worker Registry` onward.
 
-Rebuilt by running `python3 scripts/agents/combine_agents.py` after editing either source file.
+Note: GitHub Copilot reads `.github/copilot-instructions.md` as its primary config; Claude reads `.claude/CLAUDE.md`. Root `AGENTS.md` serves Codex and any tool following the open `AGENTS.md` discovery standard.
 
-- **Size target**: ~75k characters (Preferences + B-sections).
+Rebuilt by: `python3 scripts/agents/combine_agents.py` (or `--platform codex`).
+
+- **Size target**: ~80k characters (Preferences + B-sections + Codex Wrapper).
 - **Format**: Standalone markdown. No YAML front matter.
 
-### `Lares_Codex_Coordinator.md` — Codex wrapper source
+### `platform/` — Platform wrapper sources
 
-The **Codex coordinator wrapper** for the generated `.codex/agents/lares.toml`
-file. This source carries only the Codex-specific coordination layer and wraps
-the copied `Lares_Preferences.md` core prompt during generation.
+Three platform-specific wrapper files live in `_agents/platform/`:
 
-- Edit this file when Codex coordinator behavior changes.
-- Do **not** edit `.codex/agents/lares.toml` directly — it is generated.
-- Rebuilt by running `python3 scripts/agents/combine_agents.py`.
+- **`Lares_Copilot_Wrapper.md`** — appended to Preferences + Section B to build `.github/copilot-instructions.md`
+- **`Lares_Claude_Wrapper.md`** — appended to Preferences + Section B to build `.claude/CLAUDE.md`
+- **`Lares_Codex_Wrapper.md`** — appended to Preferences + Section B to build root `AGENTS.md` (Codex reads it)
+
+Each wrapper carries its platform's Worker Registry table (marker `## <Platform> Platform — Worker Registry`), platform-specific notes, and Agent-Engineer Rebuild Protocol. `_agents/platform/README.md` documents the full schema, frontmatter fields, and platform-specific notes for each format.
+
+- Edit a wrapper when its platform's registry, notes, or rebuild instructions change.
+- Do **not** edit generated coordinator files directly — they are produced by `combine_agents.py`.
+- Per-platform rebuild: `python3 scripts/agents/combine_agents.py --platform <copilot|claude|codex>`
+
+### `workers/` — Worker Tasked Spirit sources
+
+Five worker source files live in `_agents/workers/`:
+
+`worker.md` · `engineer.md` · `researcher.md` · `agent-engineer.md` · `assistant.md`
+
+Each carries YAML frontmatter and a Markdown body (the system prompt). The combine script translates each into three sets of generated workers — one per platform — adapting frontmatter fields to each platform's format.
+
+| Frontmatter field | Used by |
+|---|---|
+| `name`, `description` | All platforms |
+| `tools_claude` | Claude (→ `tools:`) |
+| `model_claude` | Claude (→ `model:`) |
+| `permissionMode_claude` | Claude (→ `permissionMode:`) |
+| `sandbox_mode_codex` | Codex (→ `sandbox_mode`) |
+| `user-invocable` | Copilot only |
+
+- Edit source files here; do **not** edit generated files in `.github/agents/`, `.claude/agents/`, or `.codex/agents/`.
+- Rebuild all workers: `python3 scripts/agents/combine_agents.py`
+- Verify: `python3 scripts/agents/verify_alignment.py`
 
 ### `Lares_Kernel.md` — Cloud bootstrap
 
@@ -74,11 +104,22 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
     (Section B content: precedence, source map, request types, citation, memory, examples,
      instruction hygiene, failure prevention — subsections B1–B10)
 
+1c. Edit _agents/platform/Lares_*_Wrapper.md  [if a platform registry, notes, or rebuild protocol changes]
+    (• Lares_Copilot_Wrapper.md — Copilot worker registry, invocation control, frontmatter schema
+     • Lares_Claude_Wrapper.md  — Claude worker registry, tool names, permission modes
+     • Lares_Codex_Wrapper.md  — Codex worker registry, sandbox modes, config notes)
+
+1d. Edit _agents/workers/<slug>.md  [if a worker's system prompt, tools, model, or sandbox mode changes]
+    (name, description, tools_claude, model_claude, permissionMode_claude, sandbox_mode_codex, user-invocable)
+
 2. Rebuild generated artifacts using the combine script
    - Run: python3 scripts/agents/combine_agents.py
-   - Combines Section A (Preferences) + Section B (VSCode_Operations) into AGENTS.md
-   - Wraps Preferences with Lares_Codex_Coordinator.md into .codex/agents/lares.toml
-   - Verify first with: python3 scripts/agents/combine_agents.py --check
+   - Copilot: Preferences + Section B + Copilot Wrapper → .github/copilot-instructions.md + 5 .agent.md workers
+   - Claude:  Preferences + Section B + Claude Wrapper  → .claude/CLAUDE.md + 5 .md workers
+   - Codex:   Preferences + Section B + Codex Wrapper   → AGENTS.md + .codex/config.toml + 5 .toml workers
+   - Total: 19 generated files across 3 platforms
+   - Verify content sync: python3 scripts/agents/combine_agents.py --check
+   - Verify full alignment: python3 scripts/agents/verify_alignment.py  (target: CLEAN)
 
 3. Recondense Lares_Kernel.md from updated Preferences
    - All new degraded states: keep (as one-line bullets)
@@ -101,11 +142,11 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
    - _todo/lares-handoff-prompt-v2.md: mark sprint checklist complete; add Next Sprint section
 
 6. Run verification
-   - Version strings match in all three prompt files
+   - Version strings match in Preferences, AGENTS.md (root), and Kernel
    - `python3 scripts/agents/combine_agents.py --check` exits 0
-   - `.codex/agents/lares.toml` matches generated output
+   - `python3 scripts/agents/verify_alignment.py` reports CLEAN (currently 47 checks)
    - `wc -m _agents/Lares_Kernel.md` < 8,000
-   - All new degraded states appear in all three files
+   - All new degraded states appear in Preferences, AGENTS.md (root), and Kernel
    - Mini-regression: test B9 questions 1, 6, 7, 8 against Kernel
    - E-Prime audit: `python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md _agents/Lares_Kernel.md _agents/Lares_VSCode_Operations.md`
      Re-run whenever a new section appears in any prompt source file. Target: zero unflagged violations.
@@ -130,9 +171,11 @@ Current version: **v3.4** (2026-04-05)
 | File | Target | Hard Limit | Notes |
 |---|---|---|---|
 | `Lares_Preferences.md` | ~60k chars | None | Completeness over compression |
-| `AGENTS.md` (root) | ~75k chars | None | Preferences + B-sections |
+| `AGENTS.md` (root) | ~80k chars | None | Preferences + B-sections + Codex Wrapper |
 | `Lares_VSCode_Operations.md` | — | None | Source for Section B; edit here, run combine script |
 | `Lares_Kernel.md` | ~7.5k chars | 8,000 chars | Verify with `wc -m` before every commit |
+| `platform/Lares_*_Wrapper.md` | — | None | Platform registry + notes; one per platform |
+| `workers/*.md` | — | None | Worker sources; 5 files, one worker per file |
 
 ---
 
