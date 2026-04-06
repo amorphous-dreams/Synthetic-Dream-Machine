@@ -1,6 +1,6 @@
 {
   "manifest_path": "builds/manifests/codex-root.json",
-  "manifest_sha256": "4ec6148db65535fd3b855ffff24b0a05dfaa741f919df27c94353f928fa3a748",
+  "manifest_sha256": "d6d845d945ca58d6b4769d24736305abdba90c355d997e9987777694728270b3",
   "outputs": [
     {
       "bytes": 220,
@@ -8,9 +8,9 @@
       "sha256": "1f5f64091ef1a8eb77cab51c79169225ac9e2b04f39d6ad62b486224d57e2d19"
     },
     {
-      "bytes": 16792,
+      "bytes": 25858,
       "path": "AGENTS.md",
-      "sha256": "5089a8b8a24ac72793ae9130dc55f71fdb56d925b4415044f3b3f8eb26680132"
+      "sha256": "88c0b87e68a83e0add1bfb51fae0e689491eace18d7fc0a3056939e05d606b23"
     }
   ],
   "package_id": "codex-root",
@@ -22,6 +22,16 @@
       "rendered_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
       "source_path": "_agents/Lares_Kernel.md",
       "source_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-permissions.json",
+      "module_id": "lares-permissions",
+      "rendered_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
+      "source_path": "_agents/core/Lares_Permissions.md",
+      "source_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
       "transform": {
         "type": "full"
       }

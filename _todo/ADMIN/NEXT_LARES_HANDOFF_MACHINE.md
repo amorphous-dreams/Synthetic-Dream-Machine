@@ -29,9 +29,20 @@ sequence.lock:
 1=preserve.slim.roots
 2=preserve.reload.safety
 3=ship.governance [DONE]
-4=author.runtime.modules [NEXT]
+4=author.runtime.modules [IN PROGRESS — lares-permissions shipped]
 5=map.host.native.scoping
 6=parse_doc.deferred
+
+modules.shipped:
+- lares-permissions: _agents/core/Lares_Permissions.md (4-tier identity, capability model, de-escalation, alias system, capability honesty, workspace trust gate)
+- module sidecar: builds/modules/lares-permissions.json
+- integrated into all 3 root manifests; roots now ~25KB (budget 32KB)
+
+modules.remaining.core:
+- lares-voice (source: Lares_Preferences.md Voice Architecture)
+- lares-epistemology (source: Lares_Preferences.md Model Agnosticism + registers + modes)
+- lares-operations (source: Lares_Preferences.md collaboration, default behavior, operating modes)
+- lares-setting-lite (source: Lares_Preferences.md Name & Identity Frame, compressed)
 
 governance.shipped:
 - /home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/ROSTER.md

@@ -1,11 +1,11 @@
 {
   "manifest_path": "builds/manifests/copilot-root.json",
-  "manifest_sha256": "c829967df4a7f95616f2701bc1bd2c2295c1038751c8349aef330fa932efbd8c",
+  "manifest_sha256": "1e29976f967addf5ebf40d73b51e7360649b7be7f1e16a6376e9ea200bbf1e2d",
   "outputs": [
     {
-      "bytes": 16149,
+      "bytes": 25215,
       "path": ".github/copilot-instructions.md",
-      "sha256": "33904acf1b8fd8490ac4dc66274b8a3f7197d9e1a99a1a38d5e7bfc96e77dda3"
+      "sha256": "808e5bafffdf49b8a021481826680814dea5a1ef5a79c0841e7247e273a0cf3f"
     }
   ],
   "package_id": "copilot-root",
@@ -17,6 +17,16 @@
       "rendered_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
       "source_path": "_agents/Lares_Kernel.md",
       "source_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-permissions.json",
+      "module_id": "lares-permissions",
+      "rendered_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
+      "source_path": "_agents/core/Lares_Permissions.md",
+      "source_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
       "transform": {
         "type": "full"
       }

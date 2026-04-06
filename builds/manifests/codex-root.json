@@ -28,6 +28,12 @@
       }
     },
     {
+      "module_id": "lares-permissions",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
       "module_id": "lares-vscode-ops-core",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",

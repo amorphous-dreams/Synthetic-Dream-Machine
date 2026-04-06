@@ -1,11 +1,11 @@
 {
   "manifest_path": "builds/manifests/claude-root.json",
-  "manifest_sha256": "6021d37bfd27d23077cdc9fc8937a60a89d1f97e0f69a6078a79886afbcd0cd5",
+  "manifest_sha256": "10278bae270d21e1456243b47ce640d04d1d2bcfc6e86ae4177c63363961eacc",
   "outputs": [
     {
-      "bytes": 16352,
+      "bytes": 25418,
       "path": ".claude/CLAUDE.md",
-      "sha256": "2dcc3b3b7c8a9be1041ac30c8a70dc020d1b5dc6bb2b7bc9b9eed80d35e08f4e"
+      "sha256": "55a75734e87224911fd5741b3f65048cbb41d469ba1ffa67b5eaafe2411087d4"
     }
   ],
   "package_id": "claude-root",
@@ -17,6 +17,16 @@
       "rendered_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
       "source_path": "_agents/Lares_Kernel.md",
       "source_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-permissions.json",
+      "module_id": "lares-permissions",
+      "rendered_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
+      "source_path": "_agents/core/Lares_Permissions.md",
+      "source_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
       "transform": {
         "type": "full"
       }

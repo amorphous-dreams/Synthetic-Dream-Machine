@@ -61,17 +61,20 @@ At the moment, the repo sits in an in-between state:
 
 - render modularity exists
 - root-budget recovery is done
-- authored source modularity remains incomplete
+- governance hardening shipped (`ROSTER.md`, `CODEOWNERS`, 4-tier identity model)
+- `lares-permissions` authored as first standalone CORE module — `_agents/core/Lares_Permissions.md`
+- authored source modularity: **in progress** (one of five CORE modules done)
 - host-native scoped loading remains mostly unimplemented
 
 ## Current Migration Target
 
-The manifest-driven build foundation now exists. The next migration target is practical rather than theoretical:
+The manifest-driven build foundation now exists. Governance hardening shipped. The active migration target:
 
-- preserve the solved reload-safe root budgets
-- finish governance hardening while the root package state remains stable
-- then extract always-on core runtime modules from the monolithic authored payloads
-- then map those modules onto host-native scoped loading surfaces
+- ~~preserve the solved reload-safe root budgets~~ done
+- ~~finish governance hardening~~ done — `ROSTER.md`, `CODEOWNERS`, 4-tier identity in all source + generated files
+- ~~author `lares-permissions` as first standalone CORE module~~ done — `_agents/core/Lares_Permissions.md`, manifest sidecar, all root manifests updated
+- author the remaining four CORE modules: `lares-voice`, `lares-epistemology`, `lares-operations`, `lares-setting-lite`
+- then map modules onto host-native scoped loading surfaces
 - only after that revisit deferred parse-doc placement decisions
 
 ---
