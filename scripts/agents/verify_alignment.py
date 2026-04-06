@@ -32,8 +32,10 @@ PLATFORMS = {
         slug: REPO / ".claude" / "agents" / f"{slug}.md"
         for slug in WORKER_SLUGS
     },
-    # Future platforms extend here:
-    # "codex": {slug: REPO / ".codex" / "agents" / f"{slug}.toml" for slug in WORKER_SLUGS},
+    "codex": {
+        slug: REPO / ".codex" / "agents" / f"{slug}.toml"
+        for slug in WORKER_SLUGS
+    },
 }
 
 WORKER_INSTRUCTIONS_LABEL = ".github/copilot-instructions.md"
@@ -41,6 +43,12 @@ WORKER_INSTRUCTIONS_PATH = REPO / ".github" / "copilot-instructions.md"
 
 CLAUDE_INSTRUCTIONS_LABEL = ".claude/CLAUDE.md"
 CLAUDE_INSTRUCTIONS_PATH = REPO / ".claude" / "CLAUDE.md"
+
+AGENTS_MD_LABEL = "AGENTS.md"
+AGENTS_MD_PATH = REPO / "AGENTS.md"
+
+CODEX_CONFIG_LABEL = ".codex/config.toml"
+CODEX_CONFIG_PATH = REPO / ".codex" / "config.toml"
 
 # Minimum description length to pass the quality gate (characters)
 DESCRIPTION_MIN_LEN = 80
@@ -147,6 +155,53 @@ def _build_claude_worker(slug: str, source: str) -> str:
     return clean_frontmatter + notice + body
 
 
+def _build_codex_worker(slug: str, source: str) -> str:
+    """Mirror of combine_agents.build_codex_worker — kept in sync manually."""
+    def _strip_fm(src: str) -> tuple[str, str]:
+        if src.startswith("---\n"):
+            close = src.find("\n---\n", 3)
+            if close != -1:
+                return src[: close + 5], src[close + 5 :]
+        return "", src
+
+    frontmatter_block, body = _strip_fm(source)
+    comment = (
+        f"# Generated file. Do not edit directly.\n"
+        f"# Edit _agents/workers/{slug}.md\n"
+        f"# then run: python3 scripts/agents/combine_agents.py\n"
+    )
+
+    if not frontmatter_block:
+        name = slug
+        description = slug
+        sandbox_mode = "read-only"
+    else:
+        fm_text = frontmatter_block[4:-5]
+
+        def get_field(fname: str) -> str | None:
+            m = re.search(rf'^{re.escape(fname)}:\s*["\']?(.*?)["\']?\s*$', fm_text, re.MULTILINE)
+            return m.group(1).strip().strip('"\'  ') if m else None
+
+        name = get_field("name") or slug
+        description = get_field("description") or slug
+        sandbox_mode = get_field("sandbox_mode_codex") or "read-only"
+
+    safe_body = body.replace('"""', '""\\"')
+    safe_description = description.replace("\\", "\\\\").replace('"', '\\"')
+
+    lines = [
+        comment,
+        f'name = "{name}"',
+        f'description = "{safe_description}"',
+        f'sandbox_mode = "{sandbox_mode}"',
+        'developer_instructions = """',
+        safe_body.rstrip("\n"),
+        '"""',
+        "",
+    ]
+    return "\n".join(lines)
+
+
 # ---------------------------------------------------------------------------
 # Checks
 # ---------------------------------------------------------------------------
@@ -197,6 +252,22 @@ def check_claude_instructions_exists(r: CheckResult) -> None:
         r.fail(f"Missing generated: {CLAUDE_INSTRUCTIONS_LABEL}  (run combine_agents.py)")
 
 
+def check_agents_md_exists(r: CheckResult) -> None:
+    """Check 2c: root AGENTS.md exists (generated for Codex)."""
+    if AGENTS_MD_PATH.exists():
+        r.ok(f"Generated exists: {AGENTS_MD_LABEL}")
+    else:
+        r.fail(f"Missing generated: {AGENTS_MD_LABEL}  (run combine_agents.py)")
+
+
+def check_codex_config_exists(r: CheckResult) -> None:
+    """Check 2d: .codex/config.toml exists."""
+    if CODEX_CONFIG_PATH.exists():
+        r.ok(f"Generated exists: {CODEX_CONFIG_LABEL}")
+    else:
+        r.fail(f"Missing generated: {CODEX_CONFIG_LABEL}  (run combine_agents.py)")
+
+
 def check_generated_artifacts_exist(r: CheckResult) -> None:
     """Check 3: all generated agent files exist."""
     for platform, agents in PLATFORMS.items():
@@ -218,6 +289,7 @@ def check_generated_content_sync(r: CheckResult) -> None:
         builders = {
             "copilot": _build_worker_agent,
             "claude": _build_claude_worker,
+            "codex": _build_codex_worker,
         }
         for platform, agents in PLATFORMS.items():
             builder = builders.get(platform)
@@ -306,6 +378,8 @@ def run_all_checks(brief: bool = False) -> CheckResult:
     check_sources_exist(r)
     check_copilot_instructions_exists(r)
     check_claude_instructions_exists(r)
+    check_agents_md_exists(r)
+    check_codex_config_exists(r)
     check_generated_artifacts_exist(r)
     check_generated_content_sync(r)
     check_cross_platform_slug_consistency(r)

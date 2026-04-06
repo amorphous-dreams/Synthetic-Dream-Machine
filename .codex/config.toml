@@ -1,0 +1,9 @@
+# Generated file. Do not edit directly.
+# Edit scripts/agents/combine_agents.py to change config values.
+# Run: python3 scripts/agents/combine_agents.py
+
+[project]
+project_doc_max_bytes = 131072
+
+[agents]
+max_threads = 6

@@ -15,16 +15,17 @@ Outputs:
   .claude/CLAUDE.md                          — Claude project instructions (Preferences + B + Wrapper)
   .claude/agents/<slug>.md                   — Claude worker agent files (5 files)
 
-Deferred/commented-out outputs:
-  AGENTS.md                                  — Root prompt (regeneration disabled; retire manually once all platforms QA'd)
-
-Future outputs:
-  .codex/agents/lares.toml                   — Codex coordinator agent
+Outputs (Codex):
+  AGENTS.md                                  — Root prompt (Preferences + B + Codex Wrapper)
+  .codex/config.toml                         — Codex config (instruction size limit + agent threads)
+  .codex/agents/<slug>.toml                  — Codex worker agent files (5 files, TOML format)
 
 Usage:
   python3 scripts/agents/combine_agents.py                   # write all generated files
   python3 scripts/agents/combine_agents.py --check           # diff all outputs vs current
   python3 scripts/agents/combine_agents.py --platform copilot  # copilot outputs only
+  python3 scripts/agents/combine_agents.py --platform claude   # claude outputs only
+  python3 scripts/agents/combine_agents.py --platform codex    # codex outputs only (incl. AGENTS.md)
 """
 
 import sys
@@ -39,6 +40,14 @@ WORKER_SLUGS = ["worker", "engineer", "researcher", "agent-engineer", "assistant
 SECTION_B_MARKER = "## CLI Agent Context — VS Code / Repo Operations"
 COPILOT_WRAPPER_MARKER = "## Copilot Platform — Worker Registry"
 CLAUDE_WRAPPER_MARKER = "## Claude Platform — Worker Registry"
+CODEX_WRAPPER_MARKER = "## Codex Platform — Worker Registry"
+
+# Template for TOML generated-file notices (Codex worker files)
+TOML_WORKER_GENERATED_COMMENT_TMPL = (
+    "# Generated file. Do not edit directly.\n"
+    "# Edit _agents/workers/{slug}.md\n"
+    "# then run: python3 scripts/agents/combine_agents.py\n"
+)
 
 # Generated-file comment styles
 MD_GENERATED_COMMENT = """\
@@ -223,6 +232,89 @@ def build_claude_worker(slug: str, source: str) -> str:
     return clean_frontmatter + notice + body
 
 
+def build_agents_md_codex(preferences: str, vscode_ops: str, codex_wrapper: str) -> str:
+    """Build root AGENTS.md from Preferences + VSCode_Operations Section B + Codex Wrapper.
+
+    Re-enables AGENTS.md generation for Codex, which reads the root AGENTS.md
+    as its coordinator instruction source.
+    """
+    section_b = _extract_section(vscode_ops, SECTION_B_MARKER, "Lares_VSCode_Operations.md")
+    wrapper_body = _extract_section(
+        codex_wrapper, CODEX_WRAPPER_MARKER, "Lares_Codex_Wrapper.md"
+    )
+    return (
+        MD_GENERATED_COMMENT
+        + "\n\n"
+        + preferences.rstrip("\n")
+        + "\n\n---\n\n"
+        + section_b.rstrip("\n")
+        + "\n\n---\n\n"
+        + wrapper_body.rstrip("\n")
+        + "\n"
+    )
+
+
+def build_codex_worker(slug: str, source: str) -> str:
+    """Build .codex/agents/<slug>.toml from worker source.
+
+    Emits TOML format: name, description, sandbox_mode, developer_instructions
+    (the body markdown as a TOML triple-quoted multi-line basic string).
+    The sandbox_mode_codex frontmatter field maps to Codex's sandbox_mode.
+    """
+    import re
+
+    frontmatter_block, body = _strip_frontmatter(source)
+    comment = TOML_WORKER_GENERATED_COMMENT_TMPL.format(slug=slug)
+
+    if not frontmatter_block:
+        name = slug
+        description = slug
+        sandbox_mode = "read-only"
+    else:
+        fm_text = frontmatter_block[4:-5]
+
+        def get_field(fname: str) -> str | None:
+            m = re.search(rf'^{re.escape(fname)}:\s*["\']?(.*?)["\']?\s*$', fm_text, re.MULTILINE)
+            return m.group(1).strip().strip('"\'  ') if m else None
+
+        name = get_field("name") or slug
+        description = get_field("description") or slug
+        sandbox_mode = get_field("sandbox_mode_codex") or "read-only"
+
+    # In TOML multi-line basic strings, """ terminates the block.
+    # Replace with the sequence ""\" which TOML parses as three literal " chars.
+    safe_body = body.replace('"""', '""\\"')
+    # Escape backslashes and double-quotes in the single-line description field.
+    safe_description = description.replace("\\", "\\\\").replace('"', '\\"')
+
+    lines = [
+        comment,
+        f'name = "{name}"',
+        f'description = "{safe_description}"',
+        f'sandbox_mode = "{sandbox_mode}"',
+        'developer_instructions = """',
+        safe_body.rstrip("\n"),
+        '"""',
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def build_codex_config() -> str:
+    """Build .codex/config.toml with instruction size and agent thread limits."""
+    return (
+        "# Generated file. Do not edit directly.\n"
+        "# Edit scripts/agents/combine_agents.py to change config values.\n"
+        "# Run: python3 scripts/agents/combine_agents.py\n"
+        "\n"
+        "[project]\n"
+        "project_doc_max_bytes = 131072\n"
+        "\n"
+        "[agents]\n"
+        "max_threads = 6\n"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Diff / check
 # ---------------------------------------------------------------------------
@@ -262,6 +354,7 @@ def load_sources(check_workers: bool = True) -> dict:
         "vscode_ops": REPO / "_agents" / "Lares_VSCode_Operations.md",
         "copilot_wrapper": REPO / "_agents" / "platform" / "Lares_Copilot_Wrapper.md",
         "claude_wrapper": REPO / "_agents" / "platform" / "Lares_Claude_Wrapper.md",
+        "codex_wrapper": REPO / "_agents" / "platform" / "Lares_Codex_Wrapper.md",
     }
     if check_workers:
         for slug in WORKER_SLUGS:
@@ -298,15 +391,15 @@ def main() -> None:
     # Build all outputs
     outputs = {}
 
-    # NOTE: AGENTS.md regeneration is commented out pending manual retirement.
-    # Remove root AGENTS.md manually once all three platforms (Copilot, Claude, Codex) are
-    # deployed and QA'd, then delete this block entirely.
-    # See _agents/platform/README.md for retirement plan.
-    # if platform_filter is None or platform_filter == "all":
-    #     outputs["AGENTS.md"] = (
-    #         REPO / "AGENTS.md",
-    #         build_agents_md(sources["preferences"], sources["vscode_ops"]),
-    #     )
+    if platform_filter is None or platform_filter in ("all", "codex"):
+        outputs["AGENTS.md"] = (
+            REPO / "AGENTS.md",
+            build_agents_md_codex(
+                sources["preferences"],
+                sources["vscode_ops"],
+                sources["codex_wrapper"],
+            ),
+        )
 
     if platform_filter is None or platform_filter in ("all", "copilot"):
         outputs[".github/copilot-instructions.md"] = (
@@ -338,6 +431,18 @@ def main() -> None:
             outputs[key] = (
                 REPO / ".claude" / "agents" / f"{slug}.md",
                 build_claude_worker(slug, sources[f"worker_{slug}"]),
+            )
+
+    if platform_filter is None or platform_filter in ("all", "codex"):
+        outputs[".codex/config.toml"] = (
+            REPO / ".codex" / "config.toml",
+            build_codex_config(),
+        )
+        for slug in WORKER_SLUGS:
+            key = f".codex/agents/{slug}.toml"
+            outputs[key] = (
+                REPO / ".codex" / "agents" / f"{slug}.toml",
+                build_codex_worker(slug, sources[f"worker_{slug}"]),
             )
 
     if check_only:
