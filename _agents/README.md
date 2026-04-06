@@ -24,7 +24,7 @@ Contains the Gaia/Elyncia lararium mythology and archaeology, full register/mode
 
 ### `Lares_VSCode_Operations.md`
 
-The **source file for the VS Code / repo operational map** — Section B of root `AGENTS.md`. Edit this file (not `AGENTS.md` directly) when updating VS Code-specific behavior: precedence order, repository source map, request type handling, citation style, memory system mapping, golden prompt/response examples, instruction hygiene (B9), and failure prevention (B10).
+The **source file for the VS Code / repo operational map**. Root platform packages now load only the slim always-on repo-ops core (B1-B7). The larger golden examples, prompt-maintenance checklists, and other reference-heavy sections remain here as source/reference material instead of spending root always-on context.
 
 After editing, run `python3 scripts/agents/combine_agents.py` to rebuild `AGENTS.md`.
 
@@ -32,9 +32,9 @@ After editing, run `python3 scripts/agents/combine_agents.py` to rebuild `AGENTS
 
 Three platform-specific wrapper files live in `_agents/platform/`:
 
-- **`Lares_Copilot_Wrapper.md`** — appended to Preferences + Section B to build `.github/copilot-instructions.md`
-- **`Lares_Claude_Wrapper.md`** — appended to Preferences + Section B to build `.claude/CLAUDE.md`
-- **`Lares_Codex_Wrapper.md`** — appended to Preferences + Section B to build root `AGENTS.md` (which Codex reads)
+- **`Lares_Copilot_Wrapper.md`** — appended to Kernel + slim repo-ops core to build `.github/copilot-instructions.md`
+- **`Lares_Claude_Wrapper.md`** — appended to Kernel + slim repo-ops core to build `.claude/CLAUDE.md`
+- **`Lares_Codex_Wrapper.md`** — appended to Kernel + slim repo-ops core to build root `AGENTS.md` (which Codex reads)
 
 Each wrapper carries its platform's Worker Registry table, platform-specific notes, and Agent-Engineer Rebuild Protocol. `_agents/platform/README.md` documents the full schema for each format.
 

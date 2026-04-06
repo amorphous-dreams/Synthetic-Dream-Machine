@@ -213,6 +213,27 @@ def _extract_section(content: str, marker: str, source_label: str) -> str:
     return content[pos:]
 
 
+def _extract_between_markers(
+    content: str,
+    start_marker: str,
+    end_marker: str,
+    source_label: str,
+) -> str:
+    start = content.find(start_marker)
+    if start == -1:
+        sys.exit(f"ERROR: Start marker not found in {source_label}:\n  '{start_marker}'")
+    end = content.find(end_marker, start)
+    if end == -1:
+        sys.exit(f"ERROR: End marker not found in {source_label}:\n  '{end_marker}'")
+    if end <= start:
+        sys.exit(
+            f"ERROR: Invalid marker order in {source_label}:\n"
+            f"  start='{start_marker}'\n"
+            f"  end='{end_marker}'"
+        )
+    return content[start:end]
+
+
 def _strip_frontmatter(source: str) -> tuple[str, str]:
     if source.startswith("---\n"):
         close = source.find("\n---\n", 3)
@@ -235,6 +256,13 @@ def resolve_module_content(
         rendered = raw
     elif transform_type == "extract_from_marker":
         rendered = _extract_section(raw, transform["marker"], module.source_path)
+    elif transform_type == "extract_between_markers":
+        rendered = _extract_between_markers(
+            raw,
+            transform["start_marker"],
+            transform["end_marker"],
+            module.source_path,
+        )
     else:
         sys.exit(
             f"ERROR: Unsupported transform '{transform_type}' in "

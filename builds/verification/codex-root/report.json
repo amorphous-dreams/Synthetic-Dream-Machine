@@ -1,6 +1,6 @@
 {
   "budget": {
-    "max_bytes": 150000
+    "max_bytes": 32768
   },
   "build_profile": "codex-root",
   "governance_integration_points": [
@@ -10,14 +10,14 @@
   ],
   "outputs": [
     {
-      "bytes": 221,
+      "bytes": 220,
       "path": ".codex/config.toml",
-      "sha256": "f7af6008758a436fb4bd308ed6de49d5173da842552f249471d89d4be303e701"
+      "sha256": "1f5f64091ef1a8eb77cab51c79169225ac9e2b04f39d6ad62b486224d57e2d19"
     },
     {
-      "bytes": 136765,
+      "bytes": 16036,
       "path": "AGENTS.md",
-      "sha256": "3545e296cef06c46f6dfbdc3e37240001e344ce24ff05e79e32ac35ee2a7e306"
+      "sha256": "9b71d0576ab61c741ba58b8eac240f53d7841d3c79af575a24beac1b6e413542"
     }
   ],
   "package_id": "codex-root",

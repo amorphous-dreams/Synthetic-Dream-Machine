@@ -1,35 +1,36 @@
 {
   "manifest_path": "builds/manifests/copilot-root.json",
-  "manifest_sha256": "5c8bfb17faaeb11ca1dda6e626153ec72fcf5920818abbecdfad3cd1efa7299a",
+  "manifest_sha256": "c829967df4a7f95616f2701bc1bd2c2295c1038751c8349aef330fa932efbd8c",
   "outputs": [
     {
-      "bytes": 136124,
+      "bytes": 15393,
       "path": ".github/copilot-instructions.md",
-      "sha256": "eb382994219e4e39955f101a9ba331e23a08521ac78e049451ddf68714162cf9"
+      "sha256": "812aea4519b3af168ee4da8ba38232943667b1760a5daf660cfda376f42d89c6"
     }
   ],
   "package_id": "copilot-root",
   "renderer_version": "0.2.0",
   "sources": [
     {
-      "metadata_path": "builds/modules/lares-preferences.json",
-      "module_id": "lares-preferences",
-      "rendered_sha256": "921df2740b8a8eafcb54127eb30cb2c94626945f2f2fcc7ff96842120c3648dd",
-      "source_path": "_agents/Lares_Preferences.md",
-      "source_sha256": "921df2740b8a8eafcb54127eb30cb2c94626945f2f2fcc7ff96842120c3648dd",
+      "metadata_path": "builds/modules/lares-kernel.json",
+      "module_id": "lares-kernel",
+      "rendered_sha256": "d2779c62a9f92ac3eacf4cc11d3f832bbfea1cdb05e7e09a10dc78b4920f56af",
+      "source_path": "_agents/Lares_Kernel.md",
+      "source_sha256": "d2779c62a9f92ac3eacf4cc11d3f832bbfea1cdb05e7e09a10dc78b4920f56af",
       "transform": {
         "type": "full"
       }
     },
     {
-      "metadata_path": "builds/modules/lares-vscode-ops.json",
-      "module_id": "lares-vscode-ops",
-      "rendered_sha256": "42f34dd50b687e78896facd53635aa1eb7155c08d2e93a4790f0274c77a276b4",
+      "metadata_path": "builds/modules/lares-vscode-ops-core.json",
+      "module_id": "lares-vscode-ops-core",
+      "rendered_sha256": "d4ee06450f17fdb3e441a09f132fa4c326a49a7b40861f2a4628b28513719903",
       "source_path": "_agents/Lares_VSCode_Operations.md",
       "source_sha256": "9691069e28f075fb489493b7097e0016bd6e8e22473611344508a15ec7999e77",
       "transform": {
-        "marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
-        "type": "extract_from_marker"
+        "end_marker": "### B8. Golden Prompt/Response Examples",
+        "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
+        "type": "extract_between_markers"
       }
     },
     {

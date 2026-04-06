@@ -3,7 +3,7 @@
 # Run: python3 scripts/agents/combine_agents.py --target codex-root
 
 [project]
-project_doc_max_bytes = 150000
+project_doc_max_bytes = 32768
 
 [agents]
 max_threads = 6

@@ -1,11 +1,11 @@
 {
   "budget": {
-    "max_bytes": 150000
+    "max_bytes": 32768
   },
   "build_profile": "codex-root",
   "codex_config": {
     "max_threads": 6,
-    "project_doc_max_bytes": 150000
+    "project_doc_max_bytes": 32768
   },
   "manifest_version": 1,
   "outputs": [
@@ -22,16 +22,17 @@
   "renderer_version": "0.2.0",
   "sources": [
     {
-      "module_id": "lares-preferences",
+      "module_id": "lares-kernel",
       "transform": {
         "type": "full"
       }
     },
     {
-      "module_id": "lares-vscode-ops",
+      "module_id": "lares-vscode-ops-core",
       "transform": {
-        "marker": "## CLI Agent Context — VS Code / Repo Operations",
-        "type": "extract_from_marker"
+        "end_marker": "### B8. Golden Prompt/Response Examples",
+        "start_marker": "## CLI Agent Context — VS Code / Repo Operations",
+        "type": "extract_between_markers"
       }
     },
     {

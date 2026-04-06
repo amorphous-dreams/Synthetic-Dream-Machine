@@ -1,6 +1,6 @@
 {
   "budget": {
-    "max_bytes": 150000
+    "max_bytes": 32768
   },
   "build_profile": "copilot-root",
   "governance_integration_points": [
@@ -10,9 +10,9 @@
   ],
   "outputs": [
     {
-      "bytes": 136124,
+      "bytes": 15393,
       "path": ".github/copilot-instructions.md",
-      "sha256": "eb382994219e4e39955f101a9ba331e23a08521ac78e049451ddf68714162cf9"
+      "sha256": "812aea4519b3af168ee4da8ba38232943667b1760a5daf660cfda376f42d89c6"
     }
   ],
   "package_id": "copilot-root",

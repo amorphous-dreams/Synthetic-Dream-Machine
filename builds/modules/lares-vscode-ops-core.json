@@ -1,0 +1,15 @@
+{
+  "browser_safe": false,
+  "class": "core",
+  "default_targets": [
+    "codex-root",
+    "claude-root",
+    "copilot-root"
+  ],
+  "module_id": "lares-vscode-ops-core",
+  "ordering": {
+    "weight": 150
+  },
+  "repo_safe": true,
+  "source_path": "_agents/Lares_VSCode_Operations.md"
+}

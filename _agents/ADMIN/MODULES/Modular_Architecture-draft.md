@@ -57,15 +57,22 @@ Those criteria provide the architectural standard for the split. If a proposed m
 
 Everything in this draft should be interpreted as a migration target, not a claim that the repo already behaves this way.
 
+At the moment, the repo sits in an in-between state:
+
+- render modularity exists
+- root-budget recovery is done
+- authored source modularity remains incomplete
+- host-native scoped loading remains mostly unimplemented
+
 ## Current Migration Target
 
 The manifest-driven build foundation now exists. The next migration target is practical rather than theoretical:
 
-- extract always-on core runtime modules from the monolithic root payloads
-- move reference/spec material out of root always-on context
-- shrink Codex, Claude, and Copilot root packages to reload-safe budgets
-- restore a stable VS Code/Codex reload path
-- only then shift the critical path to governance hardening
+- preserve the solved reload-safe root budgets
+- finish governance hardening while the root package state remains stable
+- then extract always-on core runtime modules from the monolithic authored payloads
+- then map those modules onto host-native scoped loading surfaces
+- only after that revisit deferred parse-doc placement decisions
 
 ---
 
@@ -190,6 +197,13 @@ Primary source candidate:
 ### Layer 3: Scoped Repo Modules
 
 These load only where the environment or task justifies them.
+
+Host-native deployment direction should now be explicit:
+
+- **Codex**: nested `AGENTS.md` close to the work rather than only a richer root
+- **Claude**: imported modules and subtree-local `CLAUDE.md`
+- **Copilot**: `.github/instructions/*.instructions.md` with `applyTo`, later `excludeAgent` where needed
+- **Browser/Gem-style packages**: standalone kernel plus optional attached references
 
 #### `lares-repo-ops`
 

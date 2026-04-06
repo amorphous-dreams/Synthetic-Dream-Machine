@@ -1,6 +1,6 @@
 {
   "budget": {
-    "max_bytes": 150000
+    "max_bytes": 32768
   },
   "build_profile": "claude-root",
   "governance_integration_points": [
@@ -10,9 +10,9 @@
   ],
   "outputs": [
     {
-      "bytes": 136327,
+      "bytes": 15596,
       "path": ".claude/CLAUDE.md",
-      "sha256": "a2b07067081c1091ef7a635ef53efbd6527f85aa25a82b02f97786d4b9cdc414"
+      "sha256": "7306479726fec41fbb30659db82a8c369ad9713fb73e5303dd0ee564dce2dcf2"
     }
   ],
   "package_id": "claude-root",

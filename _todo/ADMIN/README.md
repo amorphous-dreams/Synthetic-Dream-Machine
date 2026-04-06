@@ -7,9 +7,17 @@
 
 ## Critical Blocker
 
-`project_doc_max_bytes` in [`.codex/config.toml`](/home/joshu/Synthetic-Dream-Machine/.codex/config.toml) now sits at `150000` as a compatibility stopgap so the current generated [`AGENTS.md`](/home/joshu/Synthetic-Dream-Machine/AGENTS.md) still loads during the manifest migration.
+The reload-safety blocker has been cleared.
 
-This blocks reloading the current VS Code/Codex instance until the prompt payload gets slimmed back to a stable size under the intended budget. The manifest system is now in place, but deeper package/prompt slimming remains unfinished and must land before a safe reload.
+`.codex/config.toml` is back on the standard `project_doc_max_bytes = 32768` path, and the generated root artifacts now fit reload-safe budgets again:
+
+- `AGENTS.md` — ~16 KB
+- `.claude/CLAUDE.md` — ~15.6 KB
+- `.github/copilot-instructions.md` — ~15.4 KB
+
+The manifest system is now in place and the live build verifies cleanly again. The active problem has shifted from "restore reload safety" to "continue toward fully modularized manifest-driven builds without regressing the stable root budgets."
+
+Pre-slim backup snapshots now exist under [_todo/ADMIN/staging/](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/staging/) so cut candidates can be compared against preserved source-state while this workspace continues toward fully modularized manifest-driven builds.
 
 ---
 
@@ -155,26 +163,26 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 
 ### Must ship
 
-- Slim root/runtime prompt packages until reload-safe budgets hold without the `150000` Codex stopgap
-- Extract always-on core runtime modules from the monolithic payload
-- Move reference/spec and repo-ops bulk out of prime always-on root context
-- Restore a stable VS Code/Codex reload path
-- Keep governance hardening queued immediately after reload safety is restored
+- Preserve the restored reload-safe root budgets and deterministic build path
+- Ship governance hardening next: `ROSTER.md`, `CODEOWNERS`, roster-bound Admin prompt logic
+- Plan the next modularization sprint around authored runtime modules rather than additional monolith slicing
+- Keep host-native scoped loading patterns in view for the sprint after governance
 
 ### Should ship
 
 - Preserve the manifest/verification layer already in place
 - Keep generated platform outputs stable while root composition changes
-- Define reload-safe target budgets for Codex, Claude, and Copilot roots
+- Use [_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md) to steer future platform-native scoping
+- Define the authored module split for always-on runtime: voice, epistemology, operations, permissions, setting-lite
 
 ### Can wait
 
-- `CODEOWNERS`
-- `ROSTER.md`
-- prompt-side Admin roster binding
 - UCAN-based delegated capability experiments
 - advanced crypto-backed session grants
 - parse-doc prompt-placement decisions
+- Claude import-based composition
+- Copilot `.github/instructions/*.instructions.md` rollout
+- Codex deeper nested `AGENTS.md` rollout
 
 ---
 
@@ -183,17 +191,18 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 1. Use [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) as the conceptual root for all prompt architecture work in this workspace.
 2. Use [Deterministic_IaM_Build.md](/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md) as the build-spec root for package/render work.
 3. Treat `builds/manifests/` as the package source of truth and `builds/modules/` as the module sidecar layer already established.
-4. Use that manifest layer to slim the root/runtime packages rather than raising platform limits further.
-5. Restore a stable reload path for the current VS Code/Codex instance before resuming governance-hardening implementation.
-6. After reload safety returns, ship `ROSTER.md`, `CODEOWNERS`, and prompt-side Admin roster binding.
-7. Leave parse-doc placement decisions deferred until the slimming/governance sequence is complete.
+4. Preserve the new slim-root composition and do not re-open the solved `150000` compatibility-stopgap path.
+5. Ship `ROSTER.md`, `CODEOWNERS`, and prompt-side Admin roster binding as the immediate next implementation sprint.
+6. Use [_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md) to seed the authored-module split and host-native scoped-loading plan that follows governance.
+7. Leave parse-doc placement decisions deferred until the governance/modularization sequence is complete.
 
 ---
 
 ## Exit Criteria For Current Phase
 
-- [ ] Root prompt packages fit reload-safe budgets without relying on the `150000` Codex compatibility override
-- [ ] Stable reload path confirmed for the current VS Code/Codex instance
-- [ ] Root/runtime composition uses the manifest layer to separate always-on runtime from reference/spec bulk
-- [ ] Governance hardening is positioned as the immediate next implementation sprint after slimming
-- [ ] Active docs all tell the same next-step story: slimming -> reload -> governance -> parse-doc later
+- [x] Root prompt packages fit reload-safe budgets without relying on the `150000` Codex compatibility override
+- [x] Stable reload path confirmed for the current VS Code/Codex instance
+- [x] Root/runtime composition uses the manifest layer to separate always-on runtime from reference/spec bulk
+- [x] Governance hardening is positioned as the immediate next implementation sprint after slimming
+- [x] Active docs tell the same immediate story: slimming -> reload -> governance
+- [ ] The next-layer docs tell the same longer story: governance -> authored runtime modules -> host-native scoped loading -> parse-doc placement later

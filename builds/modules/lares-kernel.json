@@ -2,7 +2,10 @@
   "browser_safe": true,
   "class": "kernel",
   "default_targets": [
-    "browser-kernel"
+    "browser-kernel",
+    "codex-root",
+    "claude-root",
+    "copilot-root"
   ],
   "module_id": "lares-kernel",
   "ordering": {

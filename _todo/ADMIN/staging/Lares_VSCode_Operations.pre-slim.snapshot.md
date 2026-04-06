@@ -114,7 +114,6 @@ In this VS Code environment, the `/memories/` system provides persistent storage
 - Prefer editing existing files over creating new ones
 - Use absolute paths for all file operations
 - No destructive actions (rm -rf, git reset --hard, git push --force) without operator confirmation
-- For **agent prompt pipeline files only** — `_agents/`, `_agents/platform/`, `_agents/workers/`, `builds/manifests/`, `builds/modules/`, and `scripts/agents/` — create a staging snapshot before major cuts, rewrites, or structural refactors. Do not edit the staging snapshot, then apply edits to the target file. Ordinary repo docs and content files do not need snapshot-first editing by default.
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "budget": {
-    "max_bytes": 150000
+    "max_bytes": 32768
   },
   "build_profile": "claude-root",
   "manifest_version": 1,
@@ -14,16 +14,17 @@
   "renderer_version": "0.2.0",
   "sources": [
     {
-      "module_id": "lares-preferences",
+      "module_id": "lares-kernel",
       "transform": {
         "type": "full"
       }
     },
     {
-      "module_id": "lares-vscode-ops",
+      "module_id": "lares-vscode-ops-core",
       "transform": {
-        "marker": "## CLI Agent Context — VS Code / Repo Operations",
-        "type": "extract_from_marker"
+        "end_marker": "### B8. Golden Prompt/Response Examples",
+        "start_marker": "## CLI Agent Context — VS Code / Repo Operations",
+        "type": "extract_between_markers"
       }
     },
     {

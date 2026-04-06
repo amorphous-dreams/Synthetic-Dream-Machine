@@ -64,6 +64,14 @@ The active next step is to **reduce root payloads by changing package compositio
 - restore a stable reload path for the current VS Code/Codex instance
 - do governance hardening only after that blocker clears
 
+That root-budget recovery work has now landed.
+
+The next doc-facing problem therefore changes from "how do we get under the platform ceilings" to:
+
+- how do we keep those ceilings stable while moving from extraction-based composition to authored modules
+- how do we map those modules onto host-native scoping mechanisms instead of only pre-bundled root outputs
+- how do we preserve deterministic manifest-driven builds while using each host's modular instruction surface properly
+
 When the operator says `iterate`, the reasoning path should run:
 
 1. blocker
@@ -160,6 +168,19 @@ Across Claude, Copilot, and Codex, the durable pattern remains the same:
 
 That same pattern also serves browser environments, except there the "small root file" must function as the full standalone kernel.
 
+Lares now partially matches that pattern:
+
+- root files are small again
+- deterministic regeneration exists
+- the browser kernel is first-class
+
+But Lares does **not** yet fully match the host-native best-practice layer:
+
+- Claude is still emitted as one root bundle rather than import-led composition
+- Copilot still lacks `.github/instructions/*.instructions.md` scoped files
+- Codex still relies mostly on the root file rather than a richer nested instruction topology
+- source modularity still trails render modularity
+
 ---
 
 ## Design Principle: Kernel First, Modules Second
@@ -206,6 +227,8 @@ Target:
 
 `_agents/Lares_Kernel.md` already proves the compression is feasible. The next step is to treat that compressed layer as a first-class deployment artifact, not a manual sidecar.
 
+That step is now complete at the rendered-artifact layer. The next incomplete step sits one layer down: the authored source tree still needs to be split into real runtime modules instead of relying primarily on extraction transforms from composite source files.
+
 ---
 
 ## Infrastructure-as-Myth
@@ -245,6 +268,12 @@ not merely as a prompt with lore.
 This distinction matters because it tells us what to modularize first.
 
 The high-priority modules should not follow old chapter boundaries mechanically. They should follow the minimum infrastructure needed to make the myth operational.
+
+The current research-backed packaging rule now reads:
+
+`authored module split first -> deterministic manifest composition second -> host-native scoped loading third`
+
+Root-budget recovery happened before all three were complete because it had to. That should be treated as a migration bridge, not as the final architecture.
 
 ---
 
