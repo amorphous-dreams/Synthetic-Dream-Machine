@@ -132,16 +132,44 @@ def _strip_frontmatter(source: str) -> tuple[str, str]:
 def build_worker_agent(slug: str, source: str) -> str:
     """Build .github/agents/<slug>.agent.md from worker source.
 
+    Emits only Copilot-native frontmatter fields (name, description, tools,
+    user-invocable). Cross-platform fields (tools_claude, model_claude,
+    permissionMode_claude, sandbox_mode_codex) are stripped.
+
     Inserts a generated-file comment into the Markdown body (after the
     closing '---') rather than inside the YAML block, avoiding YAML parser
     issues with comment injection.
     """
+    import re
+
     comment = MD_WORKER_GENERATED_COMMENT_TMPL.format(slug=slug)
-    frontmatter, body = _strip_frontmatter(source)
-    if frontmatter:
-        return frontmatter + comment + body
-    # Fallback: no frontmatter — prepend as markdown comment
-    return comment + source
+    frontmatter_block, body = _strip_frontmatter(source)
+    if not frontmatter_block:
+        return comment + source
+
+    fm_text = frontmatter_block[4:-5]  # strip leading '---\n' and trailing '\n---\n'
+
+    def get_field(fname: str) -> str | None:
+        m = re.search(rf'^{re.escape(fname)}:\s*(.*?)\s*$', fm_text, re.MULTILINE)
+        return m.group(1).strip() if m else None
+
+    # Copilot-native fields only — strip cross-platform noise
+    name_val = get_field("name") or f'"{slug}"'
+    description = get_field("description") or '""'
+    tools = get_field("tools")
+    user_invocable = get_field("user-invocable")
+
+    fm_lines = ["---"]
+    fm_lines.append(f"name: {name_val}")
+    fm_lines.append(f"description: {description}")
+    if tools:
+        fm_lines.append(f"tools: {tools}")
+    if user_invocable is not None:
+        fm_lines.append(f"user-invocable: {user_invocable}")
+    fm_lines.append("---")
+    clean_frontmatter = "\n".join(fm_lines) + "\n"
+
+    return clean_frontmatter + comment + body
 
 
 def build_claude_instructions(

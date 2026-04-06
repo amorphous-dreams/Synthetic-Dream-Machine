@@ -105,19 +105,48 @@ def _load_generated(path: pathlib.Path) -> str | None:
 
 
 def _build_worker_agent(slug: str, source: str) -> str:
-    """Mirror of combine_agents.build_worker_agent — kept in sync manually."""
+    """Mirror of combine_agents.build_worker_agent — kept in sync manually.
+
+    Emits only Copilot-native frontmatter fields (name, description, tools,
+    user-invocable). Cross-platform fields (tools_claude, model_claude,
+    permissionMode_claude, sandbox_mode_codex) are stripped.
+    """
     comment = (
         f"<!-- Generated file. Do not edit directly.\n"
         f"     Edit _agents/workers/{slug}.md\n"
         f"     then run: python3 scripts/agents/combine_agents.py -->\n"
     )
-    if source.startswith("---\n"):
-        close = source.find("\n---\n", 3)
-        if close != -1:
-            frontmatter = source[: close + 5]
-            body = source[close + 5 :]
-            return frontmatter + comment + body
-    return comment + source
+    if not source.startswith("---\n"):
+        return comment + source
+
+    close = source.find("\n---\n", 3)
+    if close == -1:
+        return comment + source
+
+    frontmatter_block = source[: close + 5]
+    body = source[close + 5 :]
+    fm_text = frontmatter_block[4:-5]  # strip leading '---\n' and trailing '\n---\n'
+
+    def get_field(fname: str) -> str | None:
+        m = re.search(rf'^{re.escape(fname)}:\s*(.*?)\s*$', fm_text, re.MULTILINE)
+        return m.group(1).strip() if m else None
+
+    name_val = get_field("name") or f'"{slug}"'
+    description = get_field("description") or '""'
+    tools = get_field("tools")
+    user_invocable = get_field("user-invocable")
+
+    fm_lines = ["---"]
+    fm_lines.append(f"name: {name_val}")
+    fm_lines.append(f"description: {description}")
+    if tools:
+        fm_lines.append(f"tools: {tools}")
+    if user_invocable is not None:
+        fm_lines.append(f"user-invocable: {user_invocable}")
+    fm_lines.append("---")
+    clean_frontmatter = "\n".join(fm_lines) + "\n"
+
+    return clean_frontmatter + comment + body
 
 
 def _build_claude_worker(slug: str, source: str) -> str:

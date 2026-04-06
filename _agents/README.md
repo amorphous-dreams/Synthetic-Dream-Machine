@@ -87,7 +87,7 @@ Three platform configs are generated from source files in `_agents/`:
 | **Claude** | `.claude/CLAUDE.md` | `.claude/agents/*.md` (5) |
 | **Codex** | `AGENTS.md` (root) | `.codex/agents/*.toml` (5) + `.codex/config.toml` |
 
-All 19 generated files derive from `_agents/` sources. Do not edit them directly — run `python3 scripts/agents/combine_agents.py` to rebuild and `python3 scripts/agents/verify_alignment.py` to confirm all 47 checks pass.
+All 19 generated files derive from `_agents/` sources. Do not edit them directly — run `python3 scripts/agents/combine_agents.py` to rebuild and `python3 scripts/agents/verify_alignment.py` to confirm all 50 checks pass.
 
 The VS Code operational map (sections B1–B10 in each coordinator file) governs:
 
@@ -195,7 +195,6 @@ For the **prompt update workflow** — how to modify these files and keep the fo
 
 Active items tracked against the Lares prompt infrastructure. In priority order:
 
-- **BUG — ON FIRE**: An infrastructure bug has been waiting on the 3-platform rebuild to unblock. Details arrive next session; all workers may be needed for diagnosis and repair. Clear everything else before starting.
 - **E-Prime pass on agent files**: `_agents/workers/` and `_agents/platform/` source files need an E-Prime review pass. **Game content files are out of scope** — only agent infrastructure prose. Run `python3 scripts/agents/eprime_audit.py` and work through predication flags. Full rules in [`_agents/AGENTS.md`](AGENTS.md) → *Operational Language & E-Prime Spec*.
 - **Worker descriptions + verifications pass**: Review all five worker `description` fields for routing accuracy, keyword coverage, and Codex auto-delegation quality. Extend `verify_alignment.py` keyword gates as needed. Pairs with any worker body edits.
 
