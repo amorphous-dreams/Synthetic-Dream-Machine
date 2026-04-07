@@ -3,9 +3,9 @@
   "manifest_sha256": "e5535929a913a860921ef08108d37ce09a997c04a50d281d739bb7f3ee949e24",
   "outputs": [
     {
-      "bytes": 31440,
+      "bytes": 31494,
       "path": ".claude/CLAUDE.md",
-      "sha256": "ddf7b1521c8fe6ca359cec870378cd1ed37a82b031f868db725e24e14c5ee6c3"
+      "sha256": "f090485bd8f210ac3ffa2118ce6ae8d09cd5815b9663d3fb0b48b0d87d34d646"
     }
   ],
   "package_id": "claude-root",
@@ -15,7 +15,7 @@
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
       "rendered_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
-      "source_path": "_agents/Lares_Kernel.md",
+      "source_path": "builds/agents/Lares_Kernel.md",
       "source_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "transform": {
         "type": "full"
@@ -25,7 +25,7 @@
       "metadata_path": "builds/modules/lares-permissions.toml",
       "module_id": "lares-permissions",
       "rendered_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
-      "source_path": "_agents/core/Lares_Permissions.md",
+      "source_path": "builds/agents/core/Lares_Permissions.md",
       "source_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
       "transform": {
         "type": "full"
@@ -35,7 +35,7 @@
       "metadata_path": "builds/modules/lares-epistemology.toml",
       "module_id": "lares-epistemology",
       "rendered_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
-      "source_path": "_agents/core/Lares_Epistemology.md",
+      "source_path": "builds/agents/core/Lares_Epistemology.md",
       "source_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
       "transform": {
         "type": "full"
@@ -44,9 +44,9 @@
     {
       "metadata_path": "builds/modules/lares-vscode-ops-core.toml",
       "module_id": "lares-vscode-ops-core",
-      "rendered_sha256": "36292ce82a40789275e41fbd41be35da1a0dc0d08976550d72ccc259fa26711c",
-      "source_path": "_agents/Lares_VSCode_Operations.md",
-      "source_sha256": "072e23bbef2e66eb4ccb77088056bca6ba33ff3edc81b0287a7b0a4d0a2e7824",
+      "rendered_sha256": "88e654f5ac87711e78567c6b1d900349ff405faa1e915d8ab57e5d485530996c",
+      "source_path": "builds/agents/Lares_VSCode_Operations.md",
+      "source_sha256": "5c369d75b594bf4b64212bafaa03d05a65583a930c6510585df95cef60842257",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",
         "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
@@ -56,9 +56,9 @@
     {
       "metadata_path": "builds/modules/lares-claude-wrapper.toml",
       "module_id": "lares-claude-wrapper",
-      "rendered_sha256": "ff671400a9edaad4d04b91c4abf4ad58a55a6bed97411da6bf1a0cbaa43ff24d",
-      "source_path": "_agents/platform/Lares_Claude_Wrapper.md",
-      "source_sha256": "90093128575aa7d33780c8c195d50347c32cbd460646501ea2523e0870779eee",
+      "rendered_sha256": "c929b13c40316ef3e608a50507320a385abaf0a6f8d257baf83c7d476ee54b1d",
+      "source_path": "builds/agents/platform/Lares_Claude_Wrapper.md",
+      "source_sha256": "e651af48e7e5df9af3175c37aba8fe4f3e75d949746a768c53941a919d842a8a",
       "transform": {
         "marker": "## Claude Platform \u2014 Worker Registry",
         "type": "extract_from_marker"

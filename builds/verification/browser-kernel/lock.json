@@ -15,7 +15,7 @@
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
       "rendered_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
-      "source_path": "_agents/Lares_Kernel.md",
+      "source_path": "builds/agents/Lares_Kernel.md",
       "source_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "transform": {
         "type": "full"

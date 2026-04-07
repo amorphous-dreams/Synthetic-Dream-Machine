@@ -345,7 +345,7 @@ Use the nearest and most specific source before inventing or generalizing.
 - `Flying_Triremes_and_Laser_Swords/`: FTLS setting material, procedures, subsystems, faction and scenario support
 - `Synthetic_Dream_Machine_*.md`: SDM rules, paths, traits, powers, gear, campaign-region support
 - `SDM/Vastlands_Guidebook/`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `SDM/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
-- `_agents/`: role framing, examples, and compatibility materials
+- `builds/agents/`: role framing, examples, and compatibility materials
 - `_todo/`: pipeline operations, conversion docs, audit reports — governed by `_todo/AGENTS.md`
 - `Synthetic-Dream-Machine-3rd-Party-License.md`: licensing and reuse boundaries
 - Canonical external URIs: `https://amorphous-dreams.github.io/` (FTLS/Elyncia), `https://joshuafontany.github.io/Synthetic-Dream-Machine` (SDM)
@@ -426,7 +426,7 @@ In this VS Code environment, the `/memories/` system provides persistent storage
 - Prefer editing existing files over creating new ones
 - Use absolute paths for all file operations
 - No destructive actions (rm -rf, git reset --hard, git push --force) without operator confirmation
-- For **agent prompt pipeline files only** — `_agents/`, `_agents/platform/`, `_agents/workers/`, `builds/manifests/`, `builds/modules/`, and `scripts/agents/` — create a staging snapshot before major cuts, rewrites, or structural refactors. Do not edit the staging snapshot, then apply edits to the target file. Ordinary repo docs and content files do not need snapshot-first editing by default.
+- For **agent prompt pipeline files only** — `builds/agents/`, `builds/agents/platform/`, `builds/agents/workers/`, `builds/manifests/`, `builds/modules/`, and `scripts/agents/` — create a staging snapshot before major cuts, rewrites, or structural refactors. Do not edit the staging snapshot, then apply edits to the target file. Ordinary repo docs and content files do not need snapshot-first editing by default.
 
 ---
 
@@ -459,7 +459,7 @@ decisions route through the main coordinator or the operator directly.
 
 - Worker agents have no `user-invocable` equivalent in Claude Code — delegation is controlled
   entirely through the `description` field and coordinator instructions.
-- Worker source definitions live in `_agents/workers/*.md`. Do not edit `.claude/agents/*.md`
+- Worker source definitions live in `builds/agents/workers/*.md`. Do not edit `.claude/agents/*.md`
   directly — those are generated artifacts.
 - Claude tool names differ from Copilot: use PascalCase (`Read`, `Write`, `Edit`, `Bash`, `Grep`,
   `Glob`, `WebFetch`). Worker sources carry a `tools_claude:` frontmatter field for Claude-specific
@@ -469,10 +469,10 @@ decisions route through the main coordinator or the operator directly.
 
 ## Agent-Engineer Rebuild Protocol
 
-When `_agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all
+When `builds/agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all
 platform deployments:
 
-1. Verify source files are saved: `_agents/Lares_Preferences.md`, `_agents/Lares_VSCode_Operations.md`, `_agents/platform/Lares_Claude_Wrapper.md`
+1. Verify source files are saved: `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_VSCode_Operations.md`, `builds/agents/platform/Lares_Claude_Wrapper.md`
 2. Run: `python3 scripts/agents/combine_agents.py`
 3. Run: `python3 scripts/agents/verify_alignment.py`
 4. Commit all generated files together with their sources as a single coherent change

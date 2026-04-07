@@ -1,5 +1,5 @@
 # Generated file. Do not edit directly.
-# Edit _agents/workers/engineer.md
+# Edit builds/agents/workers/engineer.md
 # then run: python3 scripts/agents/combine_agents.py
 
 name = "Engineer"
