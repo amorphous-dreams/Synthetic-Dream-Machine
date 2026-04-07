@@ -3,9 +3,9 @@
   "manifest_sha256": "0007ebefe7ce2d78addc671067461ba2653e4288dcca58a434c1d153fcb5f91b",
   "outputs": [
     {
-      "bytes": 31291,
+      "bytes": 31263,
       "path": ".github/copilot-instructions.md",
-      "sha256": "74a12c6a3fd128d673c8cd1288450866f574a7bc186efd581c9b1b976cd20b79"
+      "sha256": "9bbaf39acde4c3a7a071c682937ed86bc1dd9c68da4f7a9cdf5ff0d0a9f3d6a4"
     }
   ],
   "package_id": "copilot-root",
@@ -44,9 +44,9 @@
     {
       "metadata_path": "builds/modules/lares-vscode-ops-core.toml",
       "module_id": "lares-vscode-ops-core",
-      "rendered_sha256": "88e654f5ac87711e78567c6b1d900349ff405faa1e915d8ab57e5d485530996c",
+      "rendered_sha256": "8a76f4429f7ee838008734c3cab4ad58fbc3a19fdb3b934e1a2e4efa9efbcc4b",
       "source_path": "builds/agents/Lares_VSCode_Operations.md",
-      "source_sha256": "5c369d75b594bf4b64212bafaa03d05a65583a930c6510585df95cef60842257",
+      "source_sha256": "63e5e2332b0ad088f4a4f39387c6cdb2535500fa81a867ba0bbf4d774337a327",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",
         "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",

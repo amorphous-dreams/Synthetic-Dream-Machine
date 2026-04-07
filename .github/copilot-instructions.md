@@ -342,7 +342,7 @@ If a conflict blocks correct work, ask a short clarifying question. Otherwise pr
 Use the nearest and most specific source before inventing or generalizing.
 
 - `Elyncia/`: setting ontology, DreamNet worldview, Lares framing, metaphysics, cosmology
-- `Flying_Triremes_and_Laser_Swords/`: FTLS setting material, procedures, subsystems, faction and scenario support
+- `FTLS/`: FTLS setting material, procedures, subsystems, faction and scenario support
 - `Synthetic_Dream_Machine_*.md`: SDM rules, paths, traits, powers, gear, campaign-region support
 - `SDM/Vastlands_Guidebook/`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `SDM/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
 - `builds/agents/`: role framing, examples, and compatibility materials

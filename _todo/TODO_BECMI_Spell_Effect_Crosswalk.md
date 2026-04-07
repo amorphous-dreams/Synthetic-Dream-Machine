@@ -171,7 +171,7 @@ Threshold definitions for moving between confidence bands:
 2. Pass 2: build the clean multi-witness staging layer, then import literal `osr:` text into Chapter 06 Power cards for every in-scope spell recognizer row.
 3. Pass 3: convert, power by power, `osr:` references into SDM system terms with the minimum changes required.
 4. Pass 4: refine the Chapter 06 main-content rules blocks after the preservation pass is frozen.
-5. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
+5. **Phase B: Power / Spell API Bridge** — consume crosswalk doctrine to finish the bridge inside `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`: convert classic spell names that still function only as recognizers into explicit SDM `power` language; lock `Power Level` for storage/capacity and `Level` for counterforce/dispel.
 
 ## Phase B Backlog: Chapter 06 `osr:` Import
 
@@ -255,7 +255,7 @@ This is the execution backlog for the first downstream phase after the staging-c
 
 - Reuse [Synthetic_Dream_Machine_04_Powers_Index.md](/home/joshu/Synthetic-Dream-Machine/Synthetic_Dream_Machine_04_Powers_Index.md) for power template shape, storage tags, and existing variant precedent.
 - Reuse [Synthetic_Dream_Machine_05_Gear_Index.md](/home/joshu/Synthetic-Dream-Machine/Synthetic_Dream_Machine_05_Gear_Index.md) for ward mechanics, antimagic handling, spell-eater style item interfaces, and storage-facing gear language.
-- Reuse [Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md](/home/joshu/Synthetic-Dream-Machine/Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) for tag vocabulary that should inform grouped family heuristics and cross-labels.
+- Reuse [FTLS/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md](/home/joshu/Synthetic-Dream-Machine/FTLS/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) for tag vocabulary that should inform grouped family heuristics and cross-labels.
 - Reuse [Synthetic_Dream_Machine_01_Quickstart.md](/home/joshu/Synthetic-Dream-Machine/Synthetic_Dream_Machine_01_Quickstart.md) for burden, item, and broad powers-access assumptions when the mechanics-delta note needs a canonical anchor.
 - Reuse [Synthetic_Dream_Machine_03_Traits_Index.md](/home/joshu/Synthetic-Dream-Machine/Synthetic_Dream_Machine_03_Traits_Index.md) when storage-form differences or bearer-access doctrine suggest trait-side handling such as `Power Scroller`.
 - Reuse [SDM/Vastlands_Guidebook/Vastlands_Guidebook.md](/home/joshu/Synthetic-Dream-Machine/SDM/Vastlands_Guidebook/Vastlands_Guidebook.md) for `Albums of Power`, `Storing Powers`, `Activating Powers`, and `Proper Wizard` as the clearest non-slot precedent set for SDM family naming and power storage behavior. Also a good referencve for Luka Rejec style & tone mapping.

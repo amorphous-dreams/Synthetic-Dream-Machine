@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
+DEFAULT_CHAPTER = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 
 # Matches every power card div (one or more blank lines after opening tag)
 CARD_RE = re.compile(

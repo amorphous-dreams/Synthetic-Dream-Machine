@@ -43,16 +43,16 @@ Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt
 
 | File | Contents |
 |---|---|
-| [01 — Title & Introduction](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md) | Overview, five gameplay modes (Delve / Travel / Company / Faction / Mythic) |
-| [02 — FTLS Paths](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_02_FTLS_Paths.md) | Character Paths native to the FTLS setting |
-| [03 — OSR Heritage Trait](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md) | OSR compatibility layer — heritage trait rules |
-| [04 — Recon, Salvage, Secrets](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md) | Procedures for reconnaissance, salvage operations, and secret discovery |
-| [05 — Magitech and Fantascience](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md) | Magitech gear, fantascience devices, and related procedures |
-| [06 — Powers and ECM](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md) | Full powers index with OSR conversion cards *(active sprint)* |
-| [07 — Wild Magic Exposure](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md) | Wild magic rules, corruption, and exposure procedures |
-| [08 — Formations and Mass Combat](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md) | Fleet and army scale combat rules |
-| [09 — Loot and Treasure](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md) | Treasure generation, loot tables, and salvage rewards |
-| [10 — Appendix Null: Referee Resources](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) | Referee-facing tables, random generators, and reference tools |
+| [01 — Title & Introduction](FTLS/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md) | Overview, five gameplay modes (Delve / Travel / Company / Faction / Mythic) |
+| [02 — FTLS Paths](FTLS/Flying_Triremes_and_Laser_Swords_02_FTLS_Paths.md) | Character Paths native to the FTLS setting |
+| [03 — OSR Heritage Trait](FTLS/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md) | OSR compatibility layer — heritage trait rules |
+| [04 — Recon, Salvage, Secrets](FTLS/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md) | Procedures for reconnaissance, salvage operations, and secret discovery |
+| [05 — Magitech and Fantascience](FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md) | Magitech gear, fantascience devices, and related procedures |
+| [06 — Powers and ECM](FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md) | Full powers index with OSR conversion cards *(active sprint)* |
+| [07 — Wild Magic Exposure](FTLS/Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md) | Wild magic rules, corruption, and exposure procedures |
+| [08 — Formations and Mass Combat](FTLS/Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md) | Fleet and army scale combat rules |
+| [09 — Loot and Treasure](FTLS/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md) | Treasure generation, loot tables, and salvage rewards |
+| [10 — Appendix Null: Referee Resources](FTLS/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) | Referee-facing tables, random generators, and reference tools |
 
 ### FTLS Setting
 
@@ -105,7 +105,7 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 ## Starting Points for Human Readers
 
-**New to FTLS?** Start with [Flying Triremes and Laser Swords — Introduction](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md).
+**New to FTLS?** Start with [Flying Triremes and Laser Swords — Introduction](FTLS/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md).
 
 **New to SDM?** Start with [SDM Quickstart](Synthetic_Dream_Machine_01_Quickstart.md).
 

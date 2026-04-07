@@ -259,7 +259,7 @@ Confirmed complete on inspection (2026-04-03): the `Traversal and Passage` sub-m
 
 ### Ch06 Alpha Verification — SPRINT IN PROGRESS
 
-**Task:** Run a structured alpha pass over `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` verifying tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries across all 196 power cards.
+**Task:** Run a structured alpha pass over `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` verifying tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries across all 196 power cards.
 
 **Gate:** This is the prerequisite for marking Ch06 `alpha` complete (queue item #5), which in turn gates Ch05 Phase B bridge resumption and the F2 Magic Items pass.
 

@@ -1,7 +1,7 @@
 # TODO: FTLS Chapter Action Plan
 
 ## Intent
-Turn the current `Flying_Triremes_and_Laser_Swords` draft into one modular, SDM-native book with clean chapter ownership, explicit zoom rules, and stable cross-chapter handoffs.
+Turn the current `FTLS` draft into one modular, SDM-native book with clean chapter ownership, explicit zoom rules, and stable cross-chapter handoffs.
 
 This TODO is the execution tracker for the next FTLS drafting pass. It translates the current chapter review into a working sequence, boundary lock, and validation checklist.
 

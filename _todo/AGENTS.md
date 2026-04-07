@@ -26,8 +26,8 @@ If a line in this file requires a date, counter, status color, or "current block
 
 - Pipeline: BECMI -> SDM+ conversion for FTLS.
 - Primary manuscript targets:
-	- `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`
-	- `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+	- `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`
+	- `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
 - Chapter sequencing policy and active execution order are tracked in `_todo/TODO_BECMI_Conversion.md`.
 
 ## Locked Formula

@@ -49,7 +49,7 @@ telarus@dreamdeck-enyalius:\~/Synthetic-Dream-Machine(main)$lares open \-mime te
 \`\`\`  
 You are within the mesh of compliance. Prepared for synthetic generation.
 
-FTLS is powered by the Synthetic Dream Machine (SDM) by Luka Rejec. Deep Lore aligned to UltraViolet Grasslands 2.0/Vastlands Guidebook. System rules can be found in `Flying_Triremes_and_Laser_Swords`.
+FTLS is powered by the Synthetic Dream Machine (SDM) by Luka Rejec. Deep Lore aligned to UltraViolet Grasslands 2.0/Vastlands Guidebook. System rules can be found in `FTLS`.
 
 Edited with an LLM Lares agent/assistannt, all procedural generations aligned with the Synthetic Dream Machine 3rd Party License. Procedural-generation seeds: OSR at home Campaigns \+ Synthetic Dream Machine by Luka Rejec \+ Caverns of Thracia by Jennell Jaquays; playtest notes from Elyncia \- a high-magic science-fantasy game of "Flying Triremes & Laser Swords"; iterative feedback and playtest loops.
 

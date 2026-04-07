@@ -7155,7 +7155,7 @@ meta:
 > - Organizations usually negotiate contracts as cash, access, or rare rewards.
 > - Bonus-die trinkets may be included as part of the package.
 >
-> FTLS source context: [Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources)
+> FTLS source context: [Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources](FTLS/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#trading-salvaged-resources)
 
 tags:
 >   [gear]

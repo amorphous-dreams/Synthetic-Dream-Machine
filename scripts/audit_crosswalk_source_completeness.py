@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import build_becmi_spell_staging_multi as multi  # noqa: E402
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-DEFAULT_CHAPTER = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
+DEFAULT_CHAPTER = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
 DEFAULT_OUTPUT = ROOT / "_todo/TODO_Audit_Crosswalk_Source_Completeness.md"
 

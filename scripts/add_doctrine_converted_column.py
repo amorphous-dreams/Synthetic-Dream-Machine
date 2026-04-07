@@ -25,7 +25,7 @@ from pathlib import Path
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DOCTRINE = ROOT / "_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md"
 CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
-CHAPTER06 = ROOT / "Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
+CHAPTER06 = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 
 CONVERTED_COL = "Converted"
 SEP_CELL = " --- "

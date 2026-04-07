@@ -55,7 +55,7 @@ Make it weird, wonderful, and wild.
 
 This license applies to all Licensed Material in this repository. This includes but is not limited to:
 
-- The *Flying Triremes and Laser Swords* game text (`Flying_Triremes_and_Laser_Swords/`)
+- The *Flying Triremes and Laser Swords* game text (`FTLS/`)
 - The Elyncia setting material (`Elyncia/`)
 - Original conversion and design work in pipeline directories (`_todo/`)
 - Agent Instructions: root `AGENTS.md`, all files in `_agents/`, and all agent prompt files in other repository directories

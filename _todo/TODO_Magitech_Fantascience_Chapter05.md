@@ -229,9 +229,9 @@ Sequencing lock status (2026-04-01):
 
 ## Chapter Targets
 - Primary chapter target:
-  - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+  - `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
 - Pointer-only chapter target:
-  - `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md`
+  - `FTLS/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md`
 
 ## Active Work Plan
 

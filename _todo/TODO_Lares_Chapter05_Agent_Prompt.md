@@ -65,7 +65,7 @@ Primary conversion governance docs:
 - `_todo/TODO_BECMI_Conversion.md`
 
 Primary manuscript target:
-- `Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+- `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
 
 ## 4) Current State of Play
 - Chapter 05 has a stable FTLS object loop and module scaffold.

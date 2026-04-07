@@ -26,7 +26,7 @@ Perform the specific scoped content task delegated by the Lares coordinator: res
 Ground answers in the nearest and most specific source:
 
 1. `Elyncia/` — setting ontology, DreamNet worldview, metaphysics, cosmology
-2. `Flying_Triremes_and_Laser_Swords/` — FTLS rules, subsystems, factions, scenario support
+2. `FTLS/` — FTLS rules, subsystems, factions, scenario support
 3. `Synthetic_Dream_Machine_*.md` — SDM paths, traits, powers, gear, campaign regions
 4. `_todo/` — pipeline work, conversion staging, audit docs (governed by `_todo/AGENTS.md`)
 
