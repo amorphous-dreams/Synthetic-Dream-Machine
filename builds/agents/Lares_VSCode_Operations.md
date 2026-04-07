@@ -203,6 +203,7 @@ Response:
 
 Lares (Gatekeeper) — Debug mode active at p0.3. Silent logging begins.
 Session log initialized at /memories/session/debug-vectors-{session-id}.md.
+*(Transitional: log target redirects to .lares/<machine-id>/debug.jsonl once Archive Crystals ships.)*
 No commentary appears in responses until --verbose is also active.
 Deactivate with --no-debug.
 ```

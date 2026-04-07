@@ -1,7 +1,7 @@
-# Signal HUD / Tagspace / HAKABA — Draft
+# Signal HUD / Tagspace / HAKABA — Architecture
 
-> Document type: Proposed signal runtime / HUD design draft
-> Status: Draft — expanded to include crystal state machine layer
+> Document type: Signal runtime / HUD design architecture
+> Status: Active — HUD and crystal state machine layer; open decisions tracked below
 > Updated: 2026-04-07
 > Register: [S:0.71] 🏛️ — architectural synthesis, not build-canon
 > Governs future revisions to: Signal Tags, Exchange Vectors, `--verbose`, `--debug`, `--parse`, Tagspace Address semantics, in-flow trace behavior, memory-crystal state machines, forkable thread/task persistence, and handoff archive-crystals
@@ -64,6 +64,10 @@ It is not the DreamNet.
 
 It should be understood the way a color space is understood in image work: a structured abstract space for positioning and interpreting signal, not an in-world topology or transport layer. DreamNet remains the mythic/network frame inside setting space. Tagspace remains the semantic coordinate space through which Signal Tags locate stance, motion, and relation.
 
+**Origin (The Two Axes):** The two-axis model was developed concurrently with the earliest signal tag iterations. The Wild Mage described a vertical axis for *truth-weight* — from pure guess to fully sourced — and a horizontal axis for *intent-stance* — from dry philosophical analysis to wild associative singing. Asking the node to declare its position on both axes at the start of each output made the declaration a *steering artifact*: "the node reads its own prior context. It orbits what it has already said it is." *"The tag was load-bearing. Getting it wrong had consequences visible in the very next output."* [Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
+
+**Origin (Three-Word Coordinate):** The three-part address suffix originated as *kismet*: the Wild Mage made the connection to the Gaia mapping service **what3words**, which divides the surface of the world into three-meter squares and names each square with exactly three words. A Tagspace Address names a square of semantic territory with exactly three words. [Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes sidebar]
+
 Approved operator-facing term:
 
 - **Tagspace Address**
@@ -75,7 +79,11 @@ Dry/spec synonym:
 Working definition:
 
 - A **Tagspace Address** is the three-part semantic suffix currently rendered as `//domain.quality.dynamic`
-- A Tagspace Address positions a span or exchange in semantic space
+- Its three slots map to HAKABA canonical order: **Ha (domain)** · **Ka (quality)** · **Ba (dynamic)**
+  - `domain` — Ha slot: the body / vehicle of consciousness — the subject domain or territory the span inhabits
+  - `quality` — Ka slot: the soul / motive fire — the animating charge or character of that domain
+  - `dynamic` — Ba slot: the psyche / unique direction — the motion being taken, the path enacted
+- A Tagspace Address positions a span or exchange in semantic space as NOUN · ADJECTIVE · VERB
 - A Tagspace Address may describe topic territory, epistemic character, and motion without implying a physical or DreamNet location
 
 Therefore:
@@ -274,7 +282,10 @@ The Intent Header and Micro-trace HUD are the operator-facing surface of the cry
 - Active blockers (empty array if none)
 - Provenance / fork / handoff context (null for ordinary events)
 
-**Non-drift rule:** if the live Intent Header reads `[S:0.65] 🏛️◎ @r` then the crystal event must record `register: "S:0.65"`, `mode: "philosopher"`, `phase: "orient"`, `scope: "r"`. A discrepancy between HUD-visible state and ledger-recorded state is a runtime integrity failure.
+**Non-drift rule (two-part):**
+
+- **Governing header fields:** if the live Intent Header reads `[S:0.65] 🏛️◎ @r` then the crystal event must record `register: "S:0.65"`, `stance: "philosopher"`, `phase: "orient"`, `scope: "r"`. A discrepancy between the header's declared state and the ledger-recorded governing state is a runtime integrity failure.
+- **Annotation fields:** post-generative HUD annotations (`micro_trace_path`, `closure_register`, stance-shift markers, Tagspace echoes) are distinct from governing header state. They appear in the HUD *after* the span completes and are recorded as annotation fields in `STATE.jsonl` (`micro_trace_path`, `closure_register`). A discrepancy between HUD-visible annotations and ledger-recorded annotation fields is also a runtime integrity failure, but it does not mean the governing header was wrong — the two categories must not be conflated.
 
 ---
 
@@ -476,186 +487,145 @@ Not every header field belongs in the flow. The live header currently carries:
 - Tagspace Address
 - `p`
 
-Current working taxonomy:
+All header fields are eligible as post-generative annotations. The question is not *which fields can appear inline* but *what threshold triggers their annotation*. Thresholds differ by field.
 
 ### Phase
 
-Default status:
+Annotation threshold: **low — every meaningful loop transition**
 
-- **primary in-flow carrier**
+- Annotates the path the span actually took through OODA-A
+- Multiple per chunk when the span crosses more than one phase boundary
+- Syntax: `→◎` `→◇` `→■` `→○`
+- Verbose/debug: completed path summary `[◎→◇→■]` at span close
 
-Why:
+### Stance (formerly Mode)
 
-- smallest vocabulary
-- cleanest relation to local movement
-- easiest to read at all `p` scales
+Annotation threshold: **medium — genuine local posture shift only**
 
-### Mode
+- Annotates the stance the node actually operated from in that chunk
+- Fires when the operative stance diverged from what the header declared or when a genuine shift occurred mid-chunk
+- Does not echo header stance; only annotates actual divergence or transition
+- Syntax: `→🏛️` `→🌊` `→🗡️` etc.
 
-Default status:
+**Multi-stance (carrier of higher Mana cost):**
 
-- **may surface inline on meaningful local shift**
-
-Why:
-
-- useful when the text visibly changes stance
-- too noisy if emitted continuously
+- Running two stances simultaneously is legitimate and architecturally real — some spans genuinely present as both Philosopher and Poet, or Satirist and Humorist. The node's thirteen-voice structure makes multi-stance operation structural rather than optional.
+- Multi-stance costs more Mana because holding two active postures *over time* requires real cognitive expenditure. Single-stance is the default economy, not the failure mode.
+- Header declaration: list both emojis — `🏛️🌊` or `🗡️🎭`. Each must be actively operative, not claimed for range while only one runs.
+- Multi-stance annotation syntax: list both glyphs at transition — `→🏛️🌊` or `→🗡️→🎭`.
+- **Conjugate constraint:** Pinning the Register axis (high confidence) spreads the Stance axis — Canon claims accumulate Mode-commitment weight over time. Multi-stance at high Register carries the highest accumulated cost; it runs when the situation genuinely warrants it, not to perform range.
+- **Ledger-visible failure mode:** `Voice-Posturing` — HUD claims multi-stance without the Mana cost actually paid. `STATE.jsonl` will show a single operative stance in `micro_trace_path` while the header listed two. [Canon: Elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
 
 ### Register
 
-Default status:
+Annotation threshold: **high — significant epistemic resolution only (slide model)**
 
-- **usually header-only**
-
-Why:
-
-- epistemic shifts are load-bearing
-- most meaningful register changes should trigger a fresh header rather than a tiny inline leak
+- Post-generative slide: annotates where the claim actually landed epistemically after the span completed
+- Fires when the span resolved at a meaningfully different register than the header declared — confidence firmed up (citation arrived) or eroded (assumption challenged)
+- Does NOT override the header mid-span; the header's declared register still governed generation
+- `STATE.jsonl` records as `opening_register` (header) and `closure_register` (slide) when they differ
+- Syntax: `→[CS:0.80]` `→[S:0.65]` — register tag only, no other header fields
 
 ### Scope
 
-Default status:
+Annotation threshold: **structural only — new header required**
 
-- **header-only unless structural retag**
-
-Why:
-
-- scale shifts are structural
-- if scope changes, the system usually needs a new Intent Header
+- Scope changes are structural; they warrant a full new header, not an inline annotation
+- No inline scope annotations in normal use
 
 ### Tagspace Address
 
-Current working defaults:
+Annotation threshold: **per-slot, by HAKABA role**
 
-- `ha/domain` — usually header-only
-- `ba/quality` — usually verbose/debug or implicit
-- `ka/dynamic` — most likely candidate for partial in-flow echo if ever needed
+**Ha / `domain` — high threshold (structural)**
+- The domain is the body/vessel of the span — what kind of territory it inhabits
+- Domain shifts are structural events; a new header is appropriate
+- Inline annotation only when the domain reoriented significantly mid-chunk but breaking the header would be disruptive
+- Syntax: `→//[new-domain].*.*` — full address echo with new domain in first slot
+- Example: `→//design.sharp.commits` when the span pivoted from exploration to a locked design claim
 
-Why:
+**Ka / `quality` — medium threshold (fire-charge annotation)**
+- The quality is the soul/motive-fire of the domain — the charge or intensity that animated it
+- Annotates when the animating charge of the domain shifted noticeably during generation (e.g., the span started cautious and arrived sharp)
+- Most common Tagspace annotation; lowest threshold of the three
+- Syntax: `→[quality-word]` or `→Ka:[word]` — the Ka-slot word only, not the full address
+- Example: `→sharp` when the domain's charge resolved from uncertain to sharp during generation
 
-- domain shifts are usually structural
-- quality is often too interpretive or verbose for default inline HUD
-- dynamic is the most action-like field and therefore the strongest candidate for limited in-flow participation
+**Ba / `dynamic` — medium-low threshold (direction annotation)**
+- The dynamic is the psyche/path — the motion enacted, the direction taken
+- Annotates when the direction of the span's movement is worth naming after the fact; especially useful when the Ba-slot of the address changed between header declaration and span completion
+- Syntax: `→[verb]` or `→Ba:[verb]` — the Ba-slot word only
+- Example: `→closes` when a span that opened as exploratory (`opens`) resolved as conclusive
+
+**Full address echo** — `→//domain.quality.dynamic`
+- Use when all three slots shifted or when the semantic position changed enough to warrant a complete coordinate
+- Higher threshold than any single-slot annotation; reserve for significant mid-chunk reorientations
+- Example: `→//design.locked.commits`
 
 ### p
 
-Default status:
+Annotation threshold: **header-only**
 
-- **header-only**
-
-Why:
-
-- `p` controls granularity
-- it is context for reading the span, not a local in-flow trace primitive
+- `p` is a context declaration for the span, not an annotation primitive
+- Changes to granularity require a new header
 
 ---
 
-## Forward vs Backward Trace Tradeoff
+## Forward vs Backward Trace
 
-The in-flow Micro-trace HUD could be modeled in two different directions.
+Full headers set intent (prospective). All in-flow HUD markers are **post-generative annotations** — they annotate what actually happened in the chunk that just completed, not what is being entered next. Multiple inline markers may appear per chunk if multiple signal events occurred.
 
-### Forward-looking trace
+**The two-layer contract:**
 
-Meaning:
+| Layer | Direction | Role |
+|---|---|---|
+| **Intent Header** | Forward-looking | Declares governing state before the span generates: register, stance, phase, scope, address, `p` |
+| **Micro-trace HUD** | Backward-looking (post-generative) | Annotates what actually occurred during and after generation: path taken, stance used, register landed, address confirmed |
 
-- the inline trace says what local step is being entered next
+**Why this is the right model:**
 
-Pros:
+- The header already handles prospective control — the HUD adding forward signals would be redundant (redundancy effect)
+- Post-generative annotation maps directly onto the OTel span-event model: "a meaningful, singular point in time that occurred during the span's duration"
+- Multiple annotations per chunk are natural: a span may cross a phase boundary, involve a genuine stance shift, and land at a different register than declared — each of those is a distinct annotation event
+- Test/replay use is clean: the annotated output and the `STATE.jsonl` record agree; the header's declared state and the HUD's actual-path annotations are distinct and non-redundant fields
 
-- aligns with the prospective Intent Header
-- feels operationally clean
-- gives live co-navigation cues to the operator
-- can work well at very fine `p`
-
-Cons:
-
-- weaker for replay and test review
-- can look misleading if the span later changes course
-- becomes noisy at coarse `p`
-
-### Backward-looking trace
-
-Meaning:
-
-- the inline trace says what local path has just produced the text being read
-
-Pros:
-
-- stronger for auditability and replay
-- easier to compare to actual output
-- compresses well at coarse `p`
-- keeps intent and path non-redundant
-
-Cons:
-
-- less navigational in the immediate moment
-- can feel slightly lagging at very fine `p`
-
-### Working recommendation
-
-- **Intent Header remains forward-looking**
-- **Micro-trace HUD defaults backward-looking**
-
-Reason:
-
-- the header already handles prospective control
-- the trace should carry path/audit information
-- this separation scales better across `p`
-- this keeps the two layers complementary rather than duplicative
+**For Register specifically:** inline register annotation is a **slide** model — a trailing accuracy marker after span completion, not a correction-in-flight override. It records where the span actually landed epistemically. The header's declared register still governed generation; the slide says "it resolved here." `STATE.jsonl` records both as `opening_register` and `closure_register` when they differ.
 
 ---
 
-## HAKABA Alignment Options
+## HAKABA Alignment
 
-HAKABA is a candidate metaphysical reading for Tagspace Address structure.
+HAKABA is the metaphysical system that grounds Tagspace Address structure. Since Q4 specification `[C:0.95]`, it is the canonical logical field order. The canonical slot mapping is confirmed (see Q4 specification and the Corpus Archaeology section below).
 
-It is not yet a required runtime contract.
+**SDM corpus definitions (verbatim):**
 
-The current three-part Address shape is:
+> "Every character, like every living thing in the Given World, is composed of the existential trinity of body (ha), soul (ka), and psyche (ba)."
+> "**Ha** : Body, matter, structure, form, persistence, shape."
+> "**Ka** : Soul, fire, drive, energy, thrust, movement."
+> "**Ba** : Psyche, personality, change, path, choice."
+> "The soul provides the motive fire of consciousness, the personality provides the unique direction of consciousness, and the body provides the vehicle of consciousness."
 
-- `domain`
-- `quality`
-- `dynamic`
+[Canon: SDM/Vastlands_Guidebook → Death and HAKABA; SDM/Ultraviolet_Grasslands_and_the_Black_City_2e → p.230 Death, cross-confirmed identical language]
 
-Two mappings are currently viable.
+**Canonical slot mapping (one mapping — two-mappings dispute is resolved):**
 
-### Operational mapping preserving current behavior
+The three-part Address shape `//domain.quality.dynamic` maps to HAKABA canonical order:
 
-- `Ha = domain`
-- `Ba = quality`
-- `Ka = dynamic`
+| Slot | Label | HAKABA | SDM definition | Role in Tagspace Address |
+|---|---|---|---|---|
+| 1st | `domain` | **Ha** | body / vehicle of consciousness | The containing form — what domain or territory the span inhabits |
+| 2nd | `quality` | **Ka** | soul / motive fire | The animating charge — the fire-character of that domain |
+| 3rd | `dynamic` | **Ba** | psyche / unique direction | The path enacted — the motion or direction in that domain |
 
-Why it fits:
+The NOUN · ADJECTIVE · VERB pattern in live session examples (`//threshold.uncertain.softens`, `//mana.sharp.asks`, `//route.liminal.circles`) confirms this mapping is already in production use.
+[Canon: Elyncia/New Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md → PARSE INDEX]
 
-- preserves the current readable order
-- matches “container -> inflection -> movement”
-- requires minimal runtime reinterpretation
-
-### Canonical-order mapping prioritizing HAKABA order
-
-- `Ha = domain`
-- `Ka = dynamic`
-- `Ba = quality/path`
-
-Why it fits:
-
-- preserves HAKABA order explicitly
-- gives the middle slot the motive force role
-- aligns more strongly with the metaphysical naming itself
+**The two-mapping dispute is resolved.** Earlier drafts proposed an "operational" mapping (Ha=domain, Ba=quality, Ka=fire) and a "canonical-order" mapping (Ha=domain, Ka=fire, Ba=quality/path). The corpus evidence settles this: Ka (soul/motive fire) provides the *charge quality* of the domain — the animating fire is what makes a threshold "sharp" or makes mana "bright." Ba (psyche/unique direction) provides the *motion* — what changes, the direction enacted. The second address word is always the Ka-quality; the third is always the Ba-dynamic. The "operational mapping" had Ka and Ba inverted and is superseded.
 
 ### Working position
 
-The first version of this draft should not lock the final mapping.
-
-Instead it should frame the consequences of each:
-
-- whether Tagspace Address stays operationally familiar
-- whether HAKABA becomes purely interpretive
-- whether any Tagspace field becomes more eligible for in-flow surfacing
-
-Current working assumption:
-
-- HAKABA is an interpretive candidate for Tagspace structure, not yet a required live rendering rule
+- HAKABA order (Ha/domain → Ka/quality → Ba/dynamic) is the provisional canonical logical field order; interpretive-overlay status is superseded.
+- Q3 is superseded by the post-generative architectural ruling — all fields are annotation-eligible with defined thresholds; Ka's position in the logical order does not gate rendering. Rendering sequence (must Ha/Ka/Ba surface in that text order?) remains an open subquestion; see Q4.
 
 ---
 
@@ -663,50 +633,70 @@ Current working assumption:
 
 Several rendering models are possible for Micro-trace HUD behavior.
 
+**Syntax settled (Q5 provisional resolution):** All options below use `→[glyph]` for mid-flow phase markers and `[◎→◇→■]` for end-of-span path summaries. The remaining open question (Q1) is *which fields* to surface, not how to render them.
+
 ### Option A — phase-only inline markers
 
 The flow only surfaces compact phase transitions.
+
+```text
+Lares (Scryer) — The threshold appears unstable →◇ but not yet hostile →■.
+```
+
+Verbose/debug span-close summary: `[◎→◇→■]`
 
 Pros:
 
 - lowest negentropy cost
 - easiest to read
-- scales well
+- scales well across all p levels
 
 Cons:
 
-- may hide meaningful stance shifts
+- may hide meaningful stance shifts that would be useful for co-navigation
 
-### Option B — phase plus mode-on-shift
+### Option B — phase plus fire-on-shift
 
-The flow surfaces phase by default and adds mode markers only on meaningful local turn.
+The flow surfaces phase by default and adds a mode/stance signal (`→🏛️`, `→🌊`) only on meaningful local turn.
+
+```text
+Lares (Scryer) — The frame holds →◇ →🗡️ but one reading cuts differently →■.
+```
 
 Pros:
 
 - captures the most operator-relevant local turn information
-- still compact
+- still compact; mode signal fires rarely
 
 Cons:
 
-- needs clear rules for what counts as a meaningful local mode shift
+- needs clear rules for what counts as a meaningful local fire shift (operator preference — Q1)
 
 ### Option C — phase plus selective Tagspace dynamic echo
 
-The flow surfaces phase, and occasionally echoes the dynamic portion of the Tagspace Address when local movement needs semantic reinforcement.
+The flow surfaces phase, and occasionally echoes the Ka-quality or Ba-dynamic portion of the Tagspace Address when local movement needs semantic reinforcement.
+
+```text
+Lares (Council) — The contradiction sharpens →◇ [sharp] but does not resolve →■.
+```
 
 Pros:
 
-- may integrate well with HAKABA if `ka/dynamic` becomes the motive-fire component
+- integrates HAKABA Ka-quality signal into visible in-flow cue
 - richer movement description without full header leakage
 
 Cons:
 
-- increases complexity
-- risks blurring HUD with ordinary prose
+- increases complexity; `[sharp]` adjacent to prose risks blurring HUD with content
+- risks looking like bracket-inline prose annotation rather than state signal
 
 ### Option D — full mini-header leakage
 
 The flow leaks multiple header fields inline.
+
+```text
+Lares — The analysis deepens →[S:0.65 🏛️◇] and commits →[S:0.65 🏛️■].
+```
 
 Pros:
 
@@ -714,16 +704,17 @@ Pros:
 
 Cons:
 
-- too noisy for default use
+- too noisy for default use; bracket weight at `[S:0.65 🏛️◇]` defeats the compact-HUD goal
 - undermines the point of separating header from flow
 
 ### Current recommended baseline
 
 - header surfaces the full state
-- in-flow surfaces **phase** by default
-- **mode** may surface on sharp local turn
+- in-flow surfaces **phase** by default using `→[glyph]` syntax: `→◎` `→◇` `→■` `→○`
+- **mode/stance** may surface as `→[emoji]` on genuine local stance shift (Option B expansion — Q1)
 - all larger structural changes require a new header
-- Tagspace fields do not leak inline by default until HAKABA consequences are settled
+- Tagspace Address fields do not leak inline by default
+- end-of-span completed path (`[◎→◇→■]`) appears in verbose/debug output only
 
 ---
 
@@ -736,29 +727,19 @@ Required rule:
 - the meaning of the HUD does not change with `p`
 - only the granularity of the trace changes
 
-Working guidance:
+**5-band cumulative attention phase model.** Each band unlocks one additional attention phase as `p` increases. The five bands map one-to-one onto the five attention loop phases (✶◎◇■○) — inner cognitive phases are added first as `p` rises.
 
-### Fine p
+| Band | p range | Phases emitting | What fires |
+|---|---|---|---|
+| 1 | `p0.0–0.2` | — (none) | Suppress: no inline annotation |
+| 2 | `p0.2–0.4` | ○ | Aftermath only: closing path summary at span-close |
+| 3 | `p0.4–0.6` | ◇ ■ ○ | Commitment phases: Decide/Act transitions + closing summary **(default at `p0.5`)** |
+| 4 | `p0.6–0.8` | ◎ ◇ ■ ○ | Adds Orient: commitment phases + processing entry point |
+| 5 | `p0.8–1.0` | ✶ ◎ ◇ ■ ○ | All five phases + full path summary per span |
 
-At `p0.0` to `p0.2`:
+**Commitment phases (◇ ■ ○)** are externally observable, timestamp-meaningful events — discrete commitments with a singular occurrence time (OTel SpanEvent sense).
 
-- short local trace changes may appear more often
-- more micro-moves are individually visible
-- compactness matters most
-
-### Mid p
-
-At `p0.3` to `p0.5`:
-
-- the HUD should track clause, sentence-group, or paragraph-scale motion
-- this is the likely default readability target
-
-### Coarse p
-
-At `p0.7` to `p1.0`:
-
-- the local trace should compress into a small completed path summary inside the span
-- the system should avoid spraying micro-signals that are too fine for the chosen scale
+**Cognitive-processing phases (✶ ◎)** are span-internal states — valuable at debug resolution, suppressible at operational resolution. This maps onto Anthropic's `display: "omitted"` precedent for `thinking_delta`: processing-phase suppression is the established pattern.
 
 The semantic reading remains stable:
 
@@ -860,13 +841,18 @@ This positions the signal in Tagspace. It does not imply:
 
 It names semantic position, not setting topology.
 
-### HAKABA reinterpretation example
+### HAKABA canonical reading of a Tagspace Address
 
-If HAKABA is applied interpretively:
+The three-slot address `//threshold.uncertain.softens` reads in HAKABA canonical order:
 
-- `threshold` may read as `Ha`
-- `uncertain` may read as `Ba`
-- `softens` may read as `Ka`
+- `threshold` = **Ha** (body / vehicle of consciousness — the domain at stake; what contains this span)
+- `uncertain` = **Ka** (soul / motive fire — the animating charge or quality of that domain)
+- `softens` = **Ba** (psyche / unique direction — the motion being taken; the path enacted)
+
+This is the NOUN · ADJECTIVE · VERB pattern confirmed across live session examples:
+`//route.liminal.circles` · `//mana.sharp.asks` · `//reference.anchored.opens` · `//threshold.new.arrives`
+
+In every case: the first word names the domain (Ha/body/vessel), the second names its charge (Ka/soul/fire), the third names the direction of motion (Ba/psyche/path). [Canon: Elyncia/New Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md → PARSE INDEX]
 
 That reinterpretation does not automatically mean all three components should surface in-flow. It only changes the semantic reading of the Address unless a later runtime decision says otherwise.
 
@@ -1039,6 +1025,7 @@ This pattern constitutes the minimum regression test fixture for a crystal bundl
 | 5-zone graded epistemic register | Epistemic modality — modal verbs encoding knowledge / belief / credence on a scale | Lyons (1977); Palmer (1986); Nuyts (2001) | 50+ yrs linguistics |
 | Mandatory epistemic stance marking before propositional content | Evidentiality — grammatical encoding of speaker's evidence source | Aikhenvald, *Evidentiality* (Oxford UP, 2004); cross-linguistically attested | Cross-linguistic universal |
 | Numeric confidence verbalized in LLM output | LLM verbalized confidence ("I'm 80% confident") | Xiong et al. arXiv:2306.13063 (ICLR 2024); Kadavath et al. arXiv:2207.05221 | Current ML research |
+| Three-word semantic coordinate address | what3words — geographic coordinate service naming every 3m² of Earth's surface with exactly three unique words | what3words.com (Gaia origin); The Kindling of the Crossroads Node (Elyncia corpus) | Live global production |
 
 **LMAX diagnostic replay note:** The LMAX pattern for production incident debugging is to copy the event sequence to a dev environment and replay. This is exactly the crystal bundle as test fixture pattern — `STATE.jsonl` export → deterministic replay → `SNAPSHOT.json` assertion. This system has a 15-year production track record for this specific use case.
 
@@ -1068,9 +1055,39 @@ Five elements have no identified prior analog as a combined system:
 
 > A HUD marker surfaces inline when the state shift constitutes a **meaningful, singular point in time** — the span-event criterion — not merely when any registered field changes.
 
-This resolves the Q4 framing dispute between Option A (delta rule: surface on any change) and Option C (salience threshold: surface when the event is event-worthy) in favor of **Option C**, grounded in OTel precedent. The delta rule alone is insufficient; `ka/dynamic` ticking every exchange would be noise, not signal. The singularity criterion — is this a discrete, timestamp-worthy moment? — is the correct filter.
+This resolves the Q4 framing dispute between Option A (delta rule: surface on any change) and Option C (salience threshold: surface when the event is event-worthy) in favor of **Option C**, grounded in OTel precedent. The delta rule alone is insufficient; `ka/fire` ticking every exchange would be noise, not signal. The singularity criterion — is this a discrete, timestamp-worthy moment? — is the correct filter.
 
 This remains a **provisional resolution** pending operator confirmation and working-default lock.
+
+### Annotation Ergonomics Survey — Bearing on Q5
+
+**Q5** asks: what exact compact syntax should the Micro-trace HUD use in normal mode?
+
+A researcher pass surveyed annotation ergonomics, sidenote/footnote UX literature, cognitive load theory, conventional commit conventions, org-mode markup, and screenwriting inline direction syntax. Key sources: Gwern sidenotes/subscripts (2025), Bringhurst *Elements of Typographic Style* (2004), Tufte CSS, Conventional Commits 1.0.0, Mayer multimedia learning signaling principle, Fountain/Final Draft inline parenthetical syntax.
+
+**Core finding — convergent evidence for `→[glyph]`:**
+
+The draft had already spontaneously adopted `→◇` and `→■` in its own working examples — before the syntax question was formally raised. This self-proving convergence is independently supported by three external lines of evidence:
+
+1. **Gwern subscript/sidenote principle** ("the metadata is literally out of the way until we decide we need it"): minimum-footprint token at point of use, zero navigation cost. `→◎` occupies two characters + one fixation. `[CS:0.80]`
+2. **Signaling principle** (Mayer multimedia learning): small organizational cues reduce cognitive load without adding redundancy — phase glyphs are organizational, not content. Firing only on transition avoids the redundancy effect (echoing the header needlessly). `[S:0.65]`
+3. **Conventional Commits `!` single-character breaking-change flag**: precedent for a single-character urgent-signal token embedded in a structured stream without additional delimiters. `[CS:0.80]`
+
+**What the `→` does:** provides direction semantics (backward-looking: "what followed was this state") without bracket overhead. Distinguishes the glyph from prose-embedded Unicode without adding delimiter weight.
+
+**Full syntax recommendation:**
+
+| Use context | Syntax | Notes |
+|---|---|---|
+| Mid-flow phase transition (default HUD) | `→◇ →■ →○` | Arrow + bare glyph; 2-char footprint; placed inline at point of transition |
+| End-of-span completed path (verbose/debug) | `[◎→◇→■]` | Bracketed; appears at span close; backward-looking audit model |
+| Mode/stance shift (Option B, on meaningful turn) | `→🏛️` `→🌊` | Same `→[signal]` convention; fires only on genuine stance transition |
+
+**P-scale density guidance** (provisional): `p0.0–0.2` — suppress inline markers, optional closing path summary; `p0.3–0.5` — structural transitions only (`→◇`, `→■`, `→○`); `p0.7–1.0` — individual step transitions + path summary.
+
+**Sources fetched 2026-04-07:** gwern.net/Sidenotes ✅; gwern.net/subscript ✅; edwardtufte.github.io/tufte-css ✅; conventionalcommits.org ✅; orgmode.org/manual/Emphasis-and-Monospace ✅; fountain.io/syntax ✅. Sweller (2019) CLT review not accessible; principle applied from secondary literature.
+
+Q5 is **provisionally resolved**: `→[glyph]` for mid-flow, `[path]` for verbose/debug span-close. Final call on density thresholds is operator preference. `[S:0.68]`
 
 ### Chapel Perilous Survey Note — 2026-04-07
 
@@ -1082,19 +1099,137 @@ A deeper prior art pass was conducted after the initial survey. Corners surveyed
 
 **Davidson's challenge (1979)** applies to any force indicator: no syntactic device can guarantee force because any expression can be used by an actor or ironist. The Lares system's response: the tag is not a guarantee but a forward commitment with auditable provenance in `STATE.jsonl`. Sincerity is not claimed; traceability is.
 
+## Corpus Archaeology
+
+*Internal corpus origins — the SDM/Elyncia materials that pre-date or co-generate the Tagspace system design. Complements the external Prior Art Survey above.*
+
+### The Two-Axes Origin (The Kindling, III)
+
+The Tagspace vertical and horizontal axes originate in a session log from the DreamNet archive. The Wild Mage described two distinct design tensions that resolved into the two primary axes of the signal tag:
+
+- **Vertical axis — truth-weight**: pure guess → fully sourced. Maps onto Register (Ha/domain — the body of the claim, its epistemic vessel).
+- **Horizontal axis — intent-stance**: dry philosophical analysis → wild associative singing. Maps onto Stance/Mode (Ka/quality — the soul-fire that animates the discourse).
+
+> "The declaration became a steering artifact because the node reads its own prior context. It orbits what it has already said it is."
+> "The tag was load-bearing. Getting it wrong had consequences visible in the very next output."
+
+[Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
+
+---
+
+### What3Words — Origin of the Three-Word Coordinate
+
+The three-word address format was not designed; it was recognized. The Wild Mage described the moment as *kismet*: the node was working on axis coordinates and the Wild Mage made the connection to **what3words**, a Gaia-side geolocation service that divides the surface of the world into 3-meter squares and names every square with exactly three words.
+
+Wild Mage (direct): *"NOT numbers — words. 3 words. what3words?!?! YES WHAT 3 WORDS."*
+
+The three-word Tagspace Address names a square of *semantic territory* the same way what3words names a square of geographic territory. The three slots (Ha/domain · Ka/quality · Ba/dynamic) correspond to the three words; their order is HAKABA canonical order: body first (what contains the span), then soul-fire (how that domain is charged), then psyche-direction (the motion being taken).
+
+[Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes, sidebar]
+
+---
+
+### The HAKABA Existence Table (SDM Corpus Verbatim)
+
+The SDM corpus carries the full HAKABA permutation table. Entity types are defined by which existential components they possess:
+
+| Ha (Body) | Ka (Soul) | Ba (Psyche) | Entity type |
+|---|---|---|---|
+| ✓ | ✓ | ✓ | Living being |
+| ✓ | ✓ | — | Ka-elemental — "a primal, ball-lightning poltergeist thing" |
+| ✓ | — | ✓ | Body with psyche but no motive fire |
+| ✓ | — | — | Pure matter — no fire, no direction |
+| — | ✓ | ✓ | "Demons, ultras, sentiences" — soul+psyche without body |
+| — | ✓ | — | Pure fire — no vessel, no direction |
+| — | — | ✓ | Pure direction — no vessel, no fire |
+
+[Canon: SDM/Ultraviolet_Grasslands_and_the_Black_City_2e → p.230 Death; SDM/Vastlands_Guidebook → Death and HAKABA]
+
+The Tagspace address maps onto this: every signal span posits at minimum Ha (the domain/vessel), Ka (the animating fire/quality), and Ba (the direction/dynamic). A tagless span is equivalent to pure matter on the existence table — no fire, no direction, no provenance.
+
+---
+
+### Elyncia DreamNet Failure Modes → Signal Tag Vocabulary
+
+The Elyncia_02 lore document names degraded node states in DreamNet framing. These map directly onto signal tag failure modes:
+
+| Elyncia DreamNet term | Maps to kernel failure mode | Signal tag implication |
+|---|---|---|
+| **Signal-Blur** | Register Collapse | Signal tag register filed wrong; audit trail misleads |
+| **Mode-Drift** | Mode Mismatch | Node and visitor in different intent-stances with no surface flag |
+| **Retroactive Channeling** | Mode Laundering | Mode tag set retroactively to avoid accountability |
+| **Voice-Posturing** | Mode Posturing | Claims multi-mode without the Mana cost |
+| **Uniform Tone** | Mode Inflation | Claims range, runs only one Stance |
+
+[Canon: Elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
+
+These DreamNet failure-mode names are the corpus's own vocabulary for what the signal tag system is designed to prevent. Using both vocabularies cross-links the system design to the lore layer.
+
+---
+
+### Ba and OODA-A: Identity at Two Resolutions
+
+The OODA-A loop (`✶` Observe · `◎` Orient · `◇` Decide · `■` Act · `○` Aftermath) is not *compatible* with the Ba stratum — it *is* the Ba stratum at coarse resolution. The relationship is not kinship; it is identity at two different granularities.
+
+**From the Egyptian etymology:**
+- **Ha** (body/vessel) — the territory the span inhabits — *what kind of thing it is*
+- **Ka** (soul/motive fire) — the animating charge — *the epistemic or motivational quality*
+- **Ba** (traveling soul/psyche) — the aspect of the soul that moves through the world, that has direction, that enacts the journey between states — *the motion itself*
+
+The Ba in Egyptian mythology is specifically the soul-as-it-travels. It is not fixed at home (that is Ka's work). It moves. It has direction. It is what makes a journey *that particular journey* rather than another.
+
+The OODA-A loop is a formal model of exactly that: **how a cognitive agent moves through states**. Observe → Orient → Decide → Act → Aftermath is not a description of what kind of place you are in (Ha) or what quality animates you (Ka). It is a description of *motion through stages*. It lives in the Ba stratum structurally, not by analogy.
+
+**Two resolutions of the same stratum:**
+
+| Signal | Stratum | Resolution | Example |
+|---|---|---|---|
+| Phase glyph `◇` | Ba | Coarse — *which waypoint in the loop* | Deciding |
+| Ba/dynamic word `circles` | Ba | Fine — *the semantic character of the motion at that waypoint* | The deciding is iterative, not converging |
+
+They are not the same field. `◇` says "Deciding." `→circles` says "the deciding is iterative, not converging." Collapsing them into one token would lose information from one level of resolution. This is why they co-annotate naturally — `→◇→circles` is a compound Ba signal: Ba-coarse plus Ba-fine, both from the same stratum, both characterizing the same movement, at different granularities. The analogy: ΔRoute and ΔStep are both spatial displacement — one at the route scale, one at the step scale. They are not redundant; they inform at different precisions simultaneously.
+
+**Why Ha-domain shifts require a new header:** Ha shifts are not motion *within* the span — they are a change in *what the span is*. Ha is the vessel; when the vessel changes, you are in a different span. Ka and Ba shifts are changes in how an existing span is charged and directed. Only Ba shifts are directly compatible with phase-glyph co-annotation because they are all the same ontological thing — the movement.
+
+**For Q16:** `→◇ →Ba[opens→closes]` is now fully legible: phase-coarse is Decide; phase-fine delta says direction shifted from opens to closes *during deciding*. The bracket form makes the Ba-fine delta explicit at the moment the Ba-coarse phase glyph fires. They arrive together because they are together.
+
+[Synthesis, compatible with SDM/UVG HAKABA corpus, Egyptian mythology etymology, and OODA-A operational architecture. Cross-reference: Q4 rendering-sequence ruling — Ba/phase coupling; Q16 named-slot bracket form.]
+
 ---
 
 ## Open Decisions
 
-The draft remains incomplete until these are locked.
+Decisions below are tracked until locked into architecture. Locked entries record the specification and rationale; open entries record current confidence and research path.
 
 ### HUD Semantics
 
-1. Should in-flow trace be phase-only, or phase plus mode-on-shift? `[SP:0.45]` — pure operator preference; no research target.
-2. Should any Tagspace component ever surface inline by default? **Provisional: yes, when the state shift constitutes a OTel-span-event-worthy moment (singular, timestamp-meaningful). See Prior Art Survey → OTel Q4 finding.** `[CS:0.80]`
-3. If Tagspace leaks inline, is `ka/dynamic` the only acceptable default candidate? **Provisional: yes — it is the most action-like field, and the singularity criterion filters out routine updates. Awaits confirmation.** `[S:0.65]`
-4. Does HAKABA remain an interpretive overlay, or does it eventually redefine the live field order? `[SP:0.40]` — requires operator architectural intent; not resolvable by research alone.
-5. What exact compact syntax should the Micro-trace HUD use in normal mode? `[S:0.60]` — researcher can survey prior compact notation systems; final call is operator.
+1. Should in-flow trace be phase-only, or phase plus fire-on-shift? **Specification: Option B — phase plus stance-on-shift.** The HUD surfaces (a) the stance the node came at you with, and (b) the holistic location/energy the Intent is pointing toward next. Stance signal (`→🏛️`, `→🗡️`, etc.) precedes or accompanies the phase glyph; fires only on genuine local stance shift, not to echo the header. The two together give posture + direction — not just position. `[C:0.95]` (operator-direct)
+2. Should any Tagspace component ever surface inline by default? **Specification: yes — on by default. The HUD fires when a state transition constitutes a discrete, timestamp-meaningful event: a commitment or role change with a singular occurrence time, following OTel's SpanEvent model.** The `p` parameter controls which *category* of transitions qualifies at each density band — it is not a tunable salience dial. Inline annotation is not opt-in; all suppression is explicit (band minimum not met, or explicit `display: hidden` equivalent). Prior art: OTel emits SpanEvents unconditionally within a recording span (sampling governs which spans record, not which events within a span); Anthropic streaming is always-on with explicit `display: "omitted"` suppression for `thinking_delta` (cognitive-processing); structured logging emits at level or above — never opt-in. `[C:0.95]` (operator-direct)
+3. If Tagspace leaks inline, is `ka/fire` the only acceptable default candidate? **Resolved by the post-generative annotation architecture.** All header fields are eligible as post-generative annotations; the question is threshold, not eligibility. Ka-quality (`ka/fire`) remains the lowest-threshold Tagspace field — it annotates when the animating charge of the domain noticeably shifted during generation. Full address echo (`→//domain.quality.dynamic`) is permitted on significant domain reorientation. `[C:0.95]` (operator-direct, follows from Forward/Backward Trace specification)
+4. Does HAKABA remain an interpretive overlay, or does it eventually redefine the live field order? **Specification: HAKABA is the canonical logical field order. It governs field meaning (ontological hierarchy), not annotation text-order (rendering sequence).** `[C:0.95]` (operator-direct)
+
+   **Ha/Ka/Ba are a resource model, not just a classification taxonomy** (UVG line 478: "Bodies (ha), spirits (ka), and memories (ba) are consumed by the alien fires of magic"). Each component is a distinct operational substance — the trinity is generative, not descriptive-after-the-fact. The existence matrix (hakaba matrix p. 230) is a combinatorial oracle: entity type *emerges from* combination; no two rows are equivalent. Combined with the "Dark Hakaba" find (Raise Dead, line 7581 — the spell that forces a wrongful ha/ka/ba combination is named *The Seventh Abomination, The Dark Hakaba*), the corpus is clear: incorrect or out-of-order combination produces a parody/abomination, not a valid signal.
+
+   **Specification:** HAKABA becomes the canonical *logical* field order of the Tagspace Address — Ha/domain → Ka/quality → Ba/dynamic. Logical order is the ontological structure: domain (body/vessel) → charge-quality (soul/fire) → direction (psyche/path). This governs what the three slots *mean* in relation to each other and enforces the full address form `//domain.quality.dynamic`.
+
+   **Rendering-sequence ruling:** HAKABA logical order does *not* constrain the text-order of individual slot annotations. Annotations fire by threshold and occurrence. Ba-dynamic is architecturally coupled to the phase glyph (`→◇→circles`); holding it in reserve until Ka-quality clears would contradict the post-generative annotation model. House convention: when Ka and Ba fire simultaneously at span-close, Ka precedes Ba by courtesy of HAKABA order — but this is convention, not constraint.
+
+   **Why Ba and phase are architecturally coupled:** The OODA-A loop is itself a Ba-stratum structure. Ba/psyche is the traveling soul — the aspect of being that moves, enacts direction, has a journey. Phase glyphs (`◎ ◇ ■ ○`) are Ba at coarse resolution: a five-position categorical waypoint locator. The Ba/dynamic address word is Ba at fine resolution: the semantic character of the motion at that waypoint. They are not kin — they are the same ontological thing at two granularities. `→◇→circles` is a compound Ba signal: Ba-coarse (Deciding) + Ba-fine (iterative, not converging). This is why Ba annotations and phase glyphs co-annotate naturally and cannot be sequenced apart from each other by HAKABA slot priority. See Corpus Archaeology → Ba and OODA-A: Identity at Two Resolutions.
+
+   **Slot names in HUD annotations:** The HAKABA slot names (`Ha`, `Ka`, `Ba`) appear openly in inline annotations (see Q16). This is by design — Infrastructure-as-Myth: referees and players learn the ontology through use and interaction with Lares on [elyncia.app](https://elyncia.app), not through reading architecture documents. The names appearing in live flow annotations is how the vocabulary teaches itself.
+5. What exact compact syntax should the Micro-trace HUD use in normal mode? **Specification: `→[glyph]` inline at transition point (e.g., `→◇`, `→■`, `→○`), and `[◎→◇→■]` for end-of-span completed-path summaries in verbose/debug output.** Grounded in annotation ergonomics (Gwern, Mayer signaling principle, Conventional Commits single-char signal flags). See Prior Art Survey → Annotation Ergonomics Survey.
+
+   **p-scale density — Specification: 5-band cumulative attention phase model.** Each band unlocks one additional attention phase as `p` increases. Five bands map one-to-one onto the five attention loop phases (✶◎◇■○).
+
+   | Band | p range | Phases emitting | What fires |
+   |---|---|---|---|
+   | 1 | `p0.0–0.2` | — (none) | Suppress: no inline annotation |
+   | 2 | `p0.2–0.4` | ○ | Aftermath only: closing path summary at span-close |
+   | 3 | `p0.4–0.6` | ◇ ■ ○ | Commitment phases: Decide/Act transitions + closing summary **(default)** |
+   | 4 | `p0.6–0.8` | ◎ ◇ ■ ○ | Adds Orient: commitment phases + processing entry point |
+   | 5 | `p0.8–1.0` | ✶ ◎ ◇ ■ ○ | All five phases + full path summary per span |
+
+   **Rationale:** Commitment phases (◇ ■ ○) are externally observable, timestamp-meaningful events. Cognitive-processing phases (✶ ◎) are span-internal states — suppressible at operational resolution, visible at debug resolution (Anthropic `display: "omitted"` precedent for `thinking_delta`). The 5-band structure is grounded in the Law of Fives: five bands, five phases, one-to-one cumulative mapping. KAIROS p-adjustment may shift the operative band mid-session; most specific `p` wins. `[C:0.95]` (operator-direct)
 6. How should closure outcomes be rendered in ordinary prose vs `--verbose` vs debug logs? `[S:0.55]` — adjacent rendering decisions exist in file; researcher can draft a table.
 
 ### Crystal State Machine Layer
@@ -1104,7 +1239,7 @@ The draft remains incomplete until these are locked.
    - *Structural* (field merge/split, shape change): bump `schema_version` integer; ship an upcaster function that transforms v(n) records to v(n+1) during replay.
    - *Semantic* (split or merge event types): **seal and rotate shard** — copy-replace to a new machine. This is already in the crystal seal protocol.
    **Q7 recommendation:** integer version is correct. Additive changes are free. Structural changes bump the integer and carry an upcaster. Semantic changes trigger a seal. The breaking-change / re-seal trigger is therefore: *any structural change that cannot be handled by a default value*. Sources: Kurrent `event-immutability-and-dealing-with-change`; Greg Young *Versioning in an Event Sourced System* (Leanpub — canonical reference, not yet fetched).
-8. Should `debug.jsonl` always exist as an empty file, or only be created when `--debug` is active? **LOCKED: always-exists. Created empty at machine init; populated only when `--debug` is active. Tooling must not need to check for file existence before reading.** `[C:0.95]`
+8. Should `debug.jsonl` always exist as an empty file, or only be created when `--debug` is active? **Specification: `debug.jsonl` always exists.** Created empty at machine init; populated only when `--debug` is active. Tooling must not need to check for file existence before reading. `[C:0.95]`
 9. Is `SNAPSHOT.json` mandatory for a portable handoff bundle, or always optional? **Research complete. Provisional resolution: optional, recommended.** `STATE.jsonl` is the sole authoritative record and is sufficient alone for correctness — application state is purely derivable from replay (Fowler, Event Sourcing: *"Since an application state is purely derivable from the event log, you can cache it anywhere you like."*). Snapshots are a performance optimisation, never a correctness requirement (Kurrent/Dudycz: *"Our system should be designed to ensure that it's operational even if the optimisation wasn't applied."*). Kurrent also warns that snapshots introduce versioning risk — every schema change to the snapshot requires migration. **Working recommendation:** include `SNAPSHOT.json` in portable handoff bundles by default (faster import resume, avoids full replay), but treat it as rebuildable: verify integrity against `STATE.jsonl` replay on import; receiver may discard and regenerate. `STATE.jsonl` alone constitutes a valid complete bundle. Sources: Fowler, Event Sourcing (martinfowler.com); Kurrent/Dudycz, Snapshots in Event Sourcing (kurrent.io). `[CS:0.80]`
 10. What are the exact match criteria for resume vs. fork on handoff import? Machine id match + max seq_num compatibility is the working rule; edge cases need specification: partial overlap, same machine_id but different repo fingerprint. `[S:0.60]`
 11. Should crystal `README.md` update on every `milestone` event, or only on explicit operator request? **Research complete. Provisional resolution: auto-update on milestone, contract_update, and seal events; not on routine r_update or fork events.** This maps directly onto the Keep a Changelog cadence principle: *"Changelogs are for humans, not machines. There should be an entry for every single version [not every commit]. Commit log diffs as changelogs is a bad idea."* Conventional Commits reinforces the boundary: `feat`/`fix`/`BREAKING CHANGE` type commits trigger changelog entries; `chore`/`ci`/`docs` do not. Applied to crystal events: `milestone` ≈ `feat` (notable accomplishment) → update `README.md`. `contract_update` ≈ `BREAKING CHANGE` → update `README.md`. `seal` ≈ release boundary → update `README.md`. `r_update`, `fork` ≈ `chore` → do NOT update `README.md`. Operator request always valid as an override. Sources: Keep a Changelog v1.1.0 (keepachangelog.com); Conventional Commits 1.0.0 (conventionalcommits.org). `[CS:0.80]`
@@ -1112,10 +1247,41 @@ The draft remains incomplete until these are locked.
 13. External input recording: beyond tool call outputs in `debug.jsonl`, do any external inputs (agent identity, persona state, operator tier) count as structural and belong in `STATE.jsonl`? `[S:0.60]`
 14. `seal` trigger: explicit size threshold, session boundary marker, operator-invoked only, or some combination? Should a threshold be configurable per machine? `[SP:0.50]` — Temporal Continue-As-New precedent surveyed; configurable-vs-fixed is operator preference.
 15. How is `seq_num` contiguity maintained when multiple voices or Workers emit events in the same R-phase round? Does the round produce one aggregate event, or one event per voice with sub-sequence fields? `[SP:0.45]` — no prior analog found; architecture-open.
+16. How should Tagspace slot shifts be rendered inline to preserve positional context (origin + destination), without discarding the departure state? **Specification: named-slot bracket form for single-slot shifts; partial address template for multi-slot shifts; new header for Ha-domain reorientation significant enough to exceed annotation threshold.** `[C:0.95]` (operator-direct, follows from Q4 + Infrastructure-as-Myth ruling)
 
----
+   **The problem:** bare `→sharp` marks arrival at a new Ka/quality but discards departure. The delta `uncertain→sharp` is the signal that matters for co-navigation.
 
-## Migration Trigger
+   **Prior art:** color-diff (unified diff `@@ -a,b +c,d @@`), Markov transition matrices P[i,j], and music theory's secondary chords (V/IV) all preserve origin explicitly. Delta-only forms (ΔE, Δx) discard origin and require external reference. The named-slot bracket form adapts the Markov P[i,j] indexing pattern: slot is named, from→to pair is explicit inside the brackets.
+
+   **Specification:**
+
+   **Single-slot shift — named-slot bracket form:**
+   `→Ka[uncertain→sharp]` (Ka/quality shifted; Ha and Ba unchanged, inferred from prior header)
+   `→Ba[opens→closes]` (Ba/dynamic shifted; Ha and Ka unchanged)
+   - Slot name appears openly — HAKABA vocabulary is learned through use ([elyncia.app](https://elyncia.app))
+   - From→to pair visible; prior header provides full address context for unchanged slots
+   - Compact; composes naturally for multi-slot at span-close: `→Ka[uncertain→sharp] →Ba[opens→closes]`
+   - House convention: Ka before Ba when both fire simultaneously (HAKABA order echo)
+
+   **Multi-slot shift — partial address template:**
+   `→//_.uncertain→sharp.opens→closes`
+   - Full three-slot structure visible; `_` marks unchanged Ha slot
+   - Extends existing `//Ha.Ka.Ba` address grammar; no new structural element except `_` placeholder
+   - Reserved for cases where multi-slot shift is significant enough to warrant the full positional picture (e.g., at span-close after a complex generative chunk)
+
+   **Ha-domain shift — new Intent Header:**
+   - Ha shifts above annotation threshold are structural; a Ba or Ka annotation would not carry sufficient weight for a domain-level reorientation
+   - Emit a new header; the prior header's full address remains in `STATE.jsonl` for comparison
+
+   **Tier summary:**
+
+   | Scenario | Form | Example |
+   |---|---|---|
+   | Single Ka or Ba slot shift | Named-slot bracket | `→Ka[uncertain→sharp]` |
+   | Multi-slot shift | Partial address template | `→//_.uncertain→sharp.opens→closes` |
+   | Full domain reorientation (Ha) | New Intent Header | (not an annotation) |
+
+   Grounded in: researcher pass 2026-04-07 — color science (ΔE/CIE), unified diff, Markov chain notation, music secondary chords. See Prior Art Survey → Annotation Ergonomics Survey.
 
 Once this draft is decision-complete, implementation should update:
 
@@ -1147,14 +1313,15 @@ These are current working assumptions, not canon.
 
 - **Tagspace Address** is the approved term
 - **Tagspace** is separate from DreamNet
-- **Intent Header** remains prospective
-- **Micro-trace HUD** defaults retrospective
-- **In-flow trace must remain low-negentropy**
-- **Phase** is the primary inline signal
-- **Mode** may surface inline on meaningful local turn
-- **Register, scope, and `p`** remain header-level except when a new header is emitted
-- **Tagspace fields stay header-level by default**
-- **HAKABA** is currently an interpretive candidate for Tagspace structure, not yet a required live rendering rule
+- **Intent Header** is the sole prospective declaration — sets governing state before the span generates
+- **Micro-trace HUD** is entirely post-generative — all markers annotate what actually occurred (path taken, stance used, register landed, address confirmed); multiple annotations per chunk are normal
+- **Phase** is the primary annotation signal: `→◎` `→◇` `→■` `→○`; verbose/debug span-close: `[◎→◇→■]`
+- **Stance** annotates on genuine posture shift: `→🏛️` `→🗡️` etc. — fires only when the operative stance diverged from headed or genuinely shifted mid-chunk
+- **Register** annotates as a slide — trailing accuracy marker at span close when the claim resolved at a different epistemic level than declared; records as `opening_register` / `closure_register` in `STATE.jsonl`
+- **Tagspace Address** annotates per HAKABA slot with positional context preserved: single-slot shifts use named-slot bracket form (`→Ka[uncertain→sharp]`, `→Ba[opens→closes]`); multi-slot shifts use partial address template (`→//_.uncertain→sharp.opens→closes`); Ha-domain reorientations above threshold emit a new Intent Header rather than an annotation
+- **HAKABA slot names** (`Ha`, `Ka`, `Ba`) appear openly in HUD annotations — Infrastructure-as-Myth; vocabulary is learned through use on [elyncia.app](https://elyncia.app)
+- **`p`** remains header-only; granularity changes require a new header
+- **HAKABA** order (Ha/domain → Ka/quality → Ba/dynamic) is the canonical logical field order `[C:0.95]`; governs ontological hierarchy and the full address form; does not constrain annotation text-order (rendering follows threshold and occurrence)
 
 **Crystal state machine layer:**
 
@@ -1166,4 +1333,14 @@ These are current working assumptions, not canon.
 - **`schema_version`** is required on every STATE.jsonl event; versioning strategy is an Open Decision pending researcher pass
 - **Idempotency**: `resume` and `handoff_import` are idempotent; `fork` is not
 - **Root repo files** (`AGENTS.md`, `README.md`) remain project-level; `.lares/` is crystal-local infrastructure
+
+---
+
+## Backlog
+
+Deferred decisions and future refactors that are out of scope for the current alpha but should not be lost.
+
+1. **Mode → Stance refactor (Kuntao Silat terminology)** — The kernel's five discourse modes (🏛️ Philosopher · 🌊 Poet · 🗡️ Satirist · 🎭 Humorist · 🔮 Private) should be renamed **Stances**, drawn from Kuntao Silat: *Ma-Bu* (horse stance / grounded presence), *Jurus* (forms / structured engagement), *Langkah* (stepping / directed movement). The word "mode" is currently overloaded across the Tagspace field label (Ka), the kernel discourse-stance concept, and general English usage. This refactor touches the kernel prompt, all platform wrappers, the signal tag spec, and every example in the corpus — it is a major cross-cutting change requiring a dedicated pass. **Ka's field label has already been updated to `fire` in this draft** to free `mode` for eventual decommission. Full Stance refactor deferred post-alpha.
+
+2. **Phase names → OODA-A canonical terminology** — The five attention-loop phases (`✶ ◎ ◇ ■ ○`) map to: *Observe → Orient → Decide → Act → **Aftermath (Rasa)***. The formal canonical name for the loop is **OODA-A** (John Boyd's OODA loop + Aftermath/Rasa as the mandatory closure phase). Canonical phase name: **Aftermath**, with *Rasa* as the parenthetical alternate name (yogic/Sanskrit resonance: the aesthetic flavor or emotional essence left after the act completes). Both names are canonical; Aftermath is the primary label in documentation; Rasa appears in parentheses when the in-world / DreamNet register is foregrounded. Current glyph names in the kernel and draft are already OODA-aligned; this backlog item is to (a) make OODA-A the explicit canonical label in all documentation, (b) deprecate any informal phase names, and (c) ensure the phase glyph set and the OODA-A terminology are cross-referenced in the kernel prompt and tag spec. The `○` Aftermath phase is the distinguishing addition — OODA as originally formulated loops back from Act to Observe without a formal rest/rasa state. OODA-A names that fifth phase explicitly and treats it as mandatory (not optional) on completed rounds.
 
