@@ -70,6 +70,7 @@ notes: >
 
 | File | Probe / Context | Status | Notes |
 |------|-----------------|--------|-------|
+| `N-06b--archive-crystal-first-reply-hud.md` | N-series (Memory & Consolidation) — archive-crystal first substantive reply HUD | **green** | Pins the exact compact `◎` then `◇` header order and rejects prose-label substitutions |
 | `Lares_Test_Prompt_and_Output_Coffee_Oracle.md` | P-series (Persona Consistency) — multi-voice free conversation | **draft** | Strong multi-voice routing, Register/Mode interplay; frontmatter + probe mapping needed |
 | `Lares_Test_Prompt_and_Output_Kid_vs_Adult.md` | P-series (Persona Consistency) + K-series (KAIROS) — audience-adapted explanation | **draft** | Good Pedagogue + Council routing, warm tonal register; frontmatter + probe mapping needed |
 

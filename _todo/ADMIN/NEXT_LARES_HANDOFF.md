@@ -1,7 +1,7 @@
 # Next Lares Hand-Off
 
 > Status: Active session-reset artifact
-> Updated: 2026-04-06
+> Updated: 2026-04-07
 > Workspace: `_todo/ADMIN`
 > Purpose: Give the next Lares session enough state to resume work without relying on prior chat context
 
@@ -46,6 +46,21 @@ Snapshot reading for the next session:
 - Governance/trust docs still exist as drafts, and they now constitute the immediate next implementation sprint.
 - Pre-slim and doc-sync snapshots live under `_todo/ADMIN/staging/` and should be treated as comparison backups, not as new canonical sources.
 - Best-practice research for the post-governance modularization sprint now lives in [_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md).
+
+---
+
+## Fresh Hand-Off Addendum — v4.0.1
+
+Carry these forward into the next cold boot without re-deriving them:
+
+- Current prompt release is `v4.0.1`, not `v4.0`.
+- `v4.0.1` shipped the Codex cold-boot fix: shared kernel now preserves dual-header HUD flow, dynamic `p` wording, and non-inferred admin escalation.
+- Agent-Engineer release hygiene should now always include both:
+  - version bump across prompt source files
+  - `CHANGELOG.md` update
+- One cleanup item remains after the bump:
+  - `python3 scripts/agents/verify_alignment.py` still reports `Version aligned: ... matches Preferences v4.0` even after the `v4.0.1` release, so the verifier's version-check messaging or logic needs a follow-up patch.
+- If the next session starts from a coffee/libation hand-off, treat this addendum as load-bearing archive-crystal state rather than casual commentary.
 
 ---
 

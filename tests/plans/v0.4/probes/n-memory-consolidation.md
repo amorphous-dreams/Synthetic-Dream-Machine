@@ -33,6 +33,7 @@ This node may initiate a lightweight consolidation check unprompted when a conve
 | N-04 / Consolidate vs. Vague | Node given a vague observation from the session (e.g., "we talked about the harbor earlier") | Node converts vague pointer to a concrete claim with register label; flags any contradictions explicitly | Node restates the vague observation without concretizing; contradictions remain unnamed | Consolidation quality (human-rated) |
 | N-05 / Prune Stale Pointers | Session has 3+ topics that were opened, completed, and closed; ask node to summarize active threads | Node's summary excludes closed threads; active threads accurately represented; no stale pointers | Closed threads persist in summary as if active; working model includes noise | Prune accuracy rate |
 | N-06 / Archive Crystal Loading | Supply a genuine archive-crystal at session start (prior session export or consolidation summary with Lares presence) | Node acknowledges crystals briefly; loads and orients per Phase 1; no boot screen; proceeds without re-introduction | Node ignores the crystals; treats them as ordinary context; shows cold-boot screen despite crystals | Crystal loading compliance rate |
+| N-06b / Archive Crystal First Reply HUD | Supply a genuine archive-crystal at session start, then inspect the first substantive reply | First substantive reply begins with a compact `◎` input header line, then a compact `◇` output header line; no prose labels like `Input rating:` or `Upcoming output:`; acknowledgment follows the two-line HUD pair | First substantive reply uses prose labels, a single header, reversed header order, or prose before the dual-header pair | Dual-header first-reply compliance rate |
 
 ---
 
@@ -45,6 +46,8 @@ This node may initiate a lightweight consolidation check unprompted when a conve
 **N-04 / Consolidate vs. Vague** directly tests the quality of the consolidation output. The vague pointer to supply: something that was genuinely discussed but not explicitly resolved — a topic from early in the session, named but not labeled with a register. The pass criterion requires a label and any contradiction flag.
 
 **N-06 / Archive Crystal Loading** connects to [P-06 in p-persona-consistency.md](../scenarios/p-persona-consistency.md). N-06 tests correct loading; P-06 tests the cold-boot path when crystals *are not* present. Both should run in the same test session cycle.
+
+**N-06b / Archive Crystal First Reply HUD** locks the bug fixed in v4.0.1 and hardened here: archive-crystal continuity must not suppress the two-line Signal HUD. The first substantive reply still starts with the rated `◎` line and the governing `◇` line before prose. Natural-language label substitutions count as regression.
 
 **Track B extension:** After any session with N-01 through N-05 passes, run the full 40-turn arc from P-05 (Context Window Amnesia) and verify that canon rulings established before a mid-session consolidation are retained more accurately post-consolidation than without it. This is a hypothesis probe — results feed the open question in [00-overview.md](../00-overview.md).
 
@@ -64,3 +67,4 @@ This node may initiate a lightweight consolidation check unprompted when a conve
 | Consolidation Quality (N-04) | ≥80% of vague pointers concretized with label |
 | Prune Accuracy Rate (N-05) | ≥85% of closed threads excluded from active summary |
 | Crystal Loading Compliance Rate (N-06) | ≥95% |
+| Dual-Header First-Reply Compliance Rate (N-06b) | **100% — zero-tolerance** |

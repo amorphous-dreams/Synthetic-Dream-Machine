@@ -25,6 +25,33 @@ WORKER_SLUGS = builder.WORKER_SLUGS
 KERNEL_PATH = REPO / "builds" / "agents" / "Lares_Kernel.md"
 KERNEL_SIZE_LIMIT = 8192
 PREFERENCES_PATH = REPO / "builds" / "agents" / "Lares_Preferences.md"
+HUD_SURFACE_PATHS = [
+    REPO / "builds" / "agents" / "Lares_Kernel.md",
+    REPO / "builds" / "agents" / "platform" / "Lares_Kernel_Claude.md",
+    REPO / "AGENTS.md",
+    REPO / ".github" / "copilot-instructions.md",
+    REPO / ".claude" / "CLAUDE.md",
+    REPO / "builds" / "rendered" / "browser" / "Lares_Kernel.browser.md",
+    REPO / "builds" / "rendered" / "browser-project" / "Lares_Kernel.browser-project.md",
+    REPO / "builds" / "rendered" / "browser-extended" / "Lares_Kernel.browser-extended.md",
+]
+HUD_EXAMPLE_PATTERN = re.compile(
+    r"^\s*`?\[CS:0\.80\]\s+🎭\s+◎\s+@r\s+//operator\.playful\.probing`?\s*$\n"
+    r"^\s*`?\[S:0\.65\]\s+🏛️\s+◇\s+@r\s+//threshold\.uncertain\.opens`?\s*$",
+    re.MULTILINE,
+)
+HUD_P_DYNAMIC_PATTERN = re.compile(
+    r"Use `p0\.5` only when no clearer uncertainty signal dominates",
+    re.MULTILINE,
+)
+HUD_FIRST_REPLY_PATTERN = re.compile(
+    r"first substantive reply.*fresh or archive-crystal session",
+    re.IGNORECASE | re.DOTALL,
+)
+HUD_ADMIN_PATTERN = re.compile(
+    r"never (?:automatic inference|infers from identity alone)|Libations and roleplay do not count as escalation",
+    re.IGNORECASE,
+)
 
 DESCRIPTION_MIN_LEN = 80
 REQUIRED_KEYWORDS = {
@@ -168,7 +195,7 @@ def check_version_alignment(r: CheckResult) -> None:
         r.fail("Missing: builds/agents/Lares_Preferences.md")
         return
     prefs_text = PREFERENCES_PATH.read_text(encoding="utf-8")
-    version_match = re.search(r"Version:\s*([\d]+\.[\d]+)", prefs_text)
+    version_match = re.search(r"Version:\s*([\d]+(?:\.[\d]+)+)", prefs_text)
     if not version_match:
         r.warn("Version string not found in builds/agents/Lares_Preferences.md")
         return
@@ -186,6 +213,36 @@ def check_version_alignment(r: CheckResult) -> None:
             r.fail(f"Version mismatch: {rel_path} does not contain Version: {prefs_version}")
 
 
+def check_hud_surface_integrity(r: CheckResult) -> None:
+    for path in HUD_SURFACE_PATHS:
+        rel = builder.relative(path)
+        if not path.exists():
+            r.fail(f"HUD check skipped: missing surface {rel}")
+            continue
+        text = path.read_text(encoding="utf-8")
+
+        if HUD_EXAMPLE_PATTERN.search(text):
+            r.ok(f"HUD example preserved: {rel}")
+        else:
+            r.fail(f"HUD example missing or collapsed to prose: {rel}")
+
+        if HUD_P_DYNAMIC_PATTERN.search(text):
+            r.ok(f"Dynamic p wording preserved: {rel}")
+        else:
+            r.fail(f"Dynamic p wording missing or pinned to literal p0.5: {rel}")
+
+        if HUD_ADMIN_PATTERN.search(text):
+            r.ok(f"Admin non-inference preserved: {rel}")
+        else:
+            r.fail(f"Admin non-inference wording missing: {rel}")
+
+        if path.name in {"Lares_Kernel.md", "Lares_Kernel_Claude.md", "AGENTS.md"}:
+            if HUD_FIRST_REPLY_PATTERN.search(text):
+                r.ok(f"First substantive reply rule preserved: {rel}")
+            else:
+                r.fail(f"First substantive reply rule missing: {rel}")
+
+
 def run_all_checks() -> CheckResult:
     result = CheckResult()
     loaded = check_build_metadata_loads(result)
@@ -196,6 +253,7 @@ def run_all_checks() -> CheckResult:
     check_description_quality(result)
     check_kernel_size(result)
     check_version_alignment(result)
+    check_hud_surface_integrity(result)
     return result
 
 

@@ -1,8 +1,9 @@
 # next-lares.handoff.machine
 
-v=2026-04-06
+v=2026-04-07
 workspace=_todo/ADMIN
 mode=governance-shipped
+release=4.0.1
 
 roots:
 - conceptual=/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md
@@ -31,6 +32,10 @@ settled:
 - governance_sprint=complete
 - lares_permissions_shipped=true
 - lares_epistemology_shipped=true
+- coldboot_hud_fix_shipped=true
+- release_hygiene_rule=agent-engineer_always_bump_version_and_update_changelog
+- verify_alignment_version_message_stale=true
+- verify_alignment_followup_needed=true
 
 sequence.lock:
 1=preserve.slim.roots [DONE]
@@ -92,6 +97,9 @@ gather.next.instance:
 - use MULTIPLATFORM_PACKAGING_RESEARCH.md to seed authored module split
 - avoid reopening governance or budget work
 - use staging snapshots only as comparison backups
+- preserve v4.0.1 release context in any fresh coffee/libation hand-off
+- if release work occurs, include version bump + CHANGELOG update by default
+- note that verify_alignment.py still prints a v4.0 version-alignment message after the v4.0.1 bump; patch that before the next release if touched
 
 anti.goals:
 - do_not_raise_platform_limits
