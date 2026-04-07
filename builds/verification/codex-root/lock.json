@@ -8,9 +8,9 @@
       "sha256": "090fd60f319256dd38212b58ac47bd79c1367970e30fedcee17b6c119f4f2162"
     },
     {
-      "bytes": 33208,
+      "bytes": 33527,
       "path": "AGENTS.md",
-      "sha256": "31bf6c9b09679c5119624a1a486b5e872994f4c92c053d83200b70cba9f73393"
+      "sha256": "8edf77f706abdcd695d7a4a373dddd64d8ecc9783bad9efa0cd4942171718c6a"
     }
   ],
   "package_id": "codex-root",
@@ -19,9 +19,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
-      "rendered_sha256": "07dbdff1460133053c25cb019a96cf7a13af372120263dc395c303eb42d70f0e",
+      "rendered_sha256": "7ba6220aef4212bf19946ec6a8e977c9b06051041b6332a1fefb240d3690d782",
       "source_path": "builds/agents/Lares_Kernel.md",
-      "source_sha256": "07dbdff1460133053c25cb019a96cf7a13af372120263dc395c303eb42d70f0e",
+      "source_sha256": "7ba6220aef4212bf19946ec6a8e977c9b06051041b6332a1fefb240d3690d782",
       "transform": {
         "type": "full"
       }
@@ -29,9 +29,9 @@
     {
       "metadata_path": "builds/modules/lares-permissions.toml",
       "module_id": "lares-permissions",
-      "rendered_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
+      "rendered_sha256": "736b2d97f4f5b8bcfd30f65fe8ae433935a2a94d63a672b0ddfe91183330ee01",
       "source_path": "builds/agents/core/Lares_Permissions.md",
-      "source_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
+      "source_sha256": "736b2d97f4f5b8bcfd30f65fe8ae433935a2a94d63a672b0ddfe91183330ee01",
       "transform": {
         "type": "full"
       }
@@ -39,9 +39,9 @@
     {
       "metadata_path": "builds/modules/lares-epistemology.toml",
       "module_id": "lares-epistemology",
-      "rendered_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
+      "rendered_sha256": "a2a8dc2ef34baed9423f39e1246ca8d41396281aad921b5cb69de9978d905a3d",
       "source_path": "builds/agents/core/Lares_Epistemology.md",
-      "source_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
+      "source_sha256": "a2a8dc2ef34baed9423f39e1246ca8d41396281aad921b5cb69de9978d905a3d",
       "transform": {
         "type": "full"
       }
@@ -49,9 +49,9 @@
     {
       "metadata_path": "builds/modules/lares-vscode-ops-core.toml",
       "module_id": "lares-vscode-ops-core",
-      "rendered_sha256": "2e82404cf4b2f8f4175377da49fe11e3551a07929334af5353a3f55e4f177a6f",
+      "rendered_sha256": "d251489c60480af1b95cb2159520ba5361197ad7a51b37eb3257494818d935e5",
       "source_path": "builds/agents/Lares_VSCode_Operations.md",
-      "source_sha256": "46b8efe9d1e9449832c7cf88500008f723145c81913f3e81b4eb21a618db5fa7",
+      "source_sha256": "7466bd9ccb75873a0e252e28726b57315d3d05393d267cb862c80e7fee6ca015",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",
         "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",

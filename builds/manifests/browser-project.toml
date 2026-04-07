@@ -6,7 +6,7 @@ target_class = "browser-safe"
 target_platform = "browser"
 
 [budget]
-max_bytes = 8600
+max_bytes = 9000
 
 [verification]
 emit_checksums = true

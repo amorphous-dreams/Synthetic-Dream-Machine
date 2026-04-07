@@ -43,7 +43,9 @@ The live model currently provides:
 
 The current live grammar, in compressed form, is:
 
-`[Register:x] ModeEmoji PhaseGlyph @scope //domain.quality.dynamic | pX.X`
+`//domain.quality.dynamic [Register:x] StanceEmoji PhaseGlyph @scope | pX.X`
+
+**Tag grammar updated (2026-04-07, branch `fix/green-jello-dinosaurs`):** Tagspace Address leads the full tag: `//ha.ka.ba [Register:x] StanceEmoji(s) PhaseGlyph @scope | pX.X`. Rationale: location (semantic territory) precedes epistemic metadata (primacy effect; mirrors GPS/what3words). All canonical source files and this draft updated in the same pass.
 
 The live system also now treats the leading tag as prospective: it sets the active generative state for the next span. What remains underdefined is the in-flow signal behavior inside that governed span.
 
@@ -253,7 +255,7 @@ This is the operator-confirmed replay fidelity scope: STATE.jsonl supports struc
 
 **Debug enrichment may include:**
 
-- Full exchange vector (Register delta, Mode transform, Phase transform, Scale, semantic drift)
+- Full exchange vector (Register delta, Stance transform, Phase transform, Scale, semantic drift)
 - Complete intent header snapshot
 - Detailed micro-trace path with rationale
 - Closure rationale (why `close` vs `hold` vs `return`)
@@ -274,7 +276,7 @@ The Intent Header and Micro-trace HUD are the operator-facing surface of the cry
 
 **What a crystal state event records (structural):**
 
-- Intent Header snapshot (Register, Mode, Phase, Scope, Tagspace Address, `p`)
+- Intent Header snapshot (Register, Stance, Phase, Scope, Tagspace Address, `p`)
 - Local micro-trace path (the phase sequence actually taken: e.g., `◎→◇→■`)
 - Scale vector (e.g., `@T > @r > @a`)
 - Closure outcome: `close`, `hold`, or `return`
@@ -326,7 +328,7 @@ Every `STATE.jsonl` event is a valid JSON object on a single `\n`-terminated lin
   "event_type": "r_update",
   "machine_status": "active",
   "current_phase": "◎",
-  "intent_header_snapshot": "[S:0.65] 🏛️◎ @r //threshold.uncertain.opens | p0.5",
+  "intent_header_snapshot": "//threshold.uncertain.opens [S:0.65] 🏛️ ◎ @r | p0.5",
   "scale_vector": "@T > @r > @a",
   "micro_trace_path": "◎→◇→■",
   "closure_outcome": "hold",
@@ -420,7 +422,7 @@ A fork event must carry enough to bootstrap the child machine without replaying 
     "machine_status": "active",
     "last_milestone": "...",
     "active_task": "...",
-    "intent_header_at_fork": "[S:0.65] 🏛️■ @r //task.sharp.closes | p0.5"
+    "intent_header_at_fork": "//task.sharp.closes [S:0.65] 🏛️ ■ @r | p0.5"
   }
 }
 ```
@@ -457,7 +459,7 @@ The Intent Header is the leading full Signal Tag. It is:
 - structural
 - the state-setting HUD for the next generated span
 
-The Intent Header always sets the next generated span. If register, mode, phase, scope, or Tagspace Address changes structurally, the system should emit a new header before the next non-literal span.
+The Intent Header always sets the next generated span. If register, stance, phase, scope, or Tagspace Address changes structurally, the system should emit a new header before the next non-literal span.
 
 ### Micro-trace HUD
 
@@ -481,7 +483,7 @@ That means the Micro-trace HUD cannot require a different reading grammar every 
 Not every header field belongs in the flow. The live header currently carries:
 
 - Register
-- Mode
+- Stance
 - Phase
 - Scope
 - Tagspace Address
@@ -498,7 +500,7 @@ Annotation threshold: **low — every meaningful loop transition**
 - Syntax: `→◎` `→◇` `→■` `→○`
 - Verbose/debug: completed path summary `[◎→◇→■]` at span close
 
-### Stance (formerly Mode)
+### Stance
 
 Annotation threshold: **medium — genuine local posture shift only**
 
@@ -513,7 +515,7 @@ Annotation threshold: **medium — genuine local posture shift only**
 - Multi-stance costs more Mana because holding two active postures *over time* requires real cognitive expenditure. Single-stance is the default economy, not the failure mode.
 - Header declaration: list both emojis — `🏛️🌊` or `🗡️🎭`. Each must be actively operative, not claimed for range while only one runs.
 - Multi-stance annotation syntax: list both glyphs at transition — `→🏛️🌊` or `→🗡️→🎭`.
-- **Conjugate constraint:** Pinning the Register axis (high confidence) spreads the Stance axis — Canon claims accumulate Mode-commitment weight over time. Multi-stance at high Register carries the highest accumulated cost; it runs when the situation genuinely warrants it, not to perform range.
+- **Conjugate constraint:** Pinning the Register axis (high confidence) spreads the Stance axis — Canon claims accumulate Stance-commitment weight over time. Multi-stance at high Register carries the highest accumulated cost; it runs when the situation genuinely warrants it, not to perform range.
 - **Ledger-visible failure mode:** `Voice-Posturing` — HUD claims multi-stance without the Mana cost actually paid. `STATE.jsonl` will show a single operative stance in `micro_trace_path` while the header listed two. [Canon: Elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
 
 ### Register
@@ -881,7 +883,7 @@ That reinterpretation does not automatically mean all three components should su
 A minimal structural `r_update` event as it appears on one line of `STATE.jsonl`:
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","intent_header_snapshot":"[S:0.65] 🏛️■ @r //design.locked.commits | p0.5","scale_vector":"@T > @r > @a","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"handoff draft to operator for review","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","intent_header_snapshot":"//design.locked.commits [S:0.65] 🏛️ ■ @r | p0.5","scale_vector":"@T > @r > @a","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"handoff draft to operator for review","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
 ```
 
 ### Debug event example
@@ -889,7 +891,7 @@ A minimal structural `r_update` event as it appears on one line of `STATE.jsonl`
 The enriched `debug.jsonl` counterpart for the same event — same `seq_num`, more fields:
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","exchange_vector":{"register_delta":0.0,"mode_transform":"none","phase_transform":"◎→◇→■","scale":"@r","semantic_drift":"low"},"full_intent_header":"[S:0.65] 🏛️■ @r //design.locked.commits | p0.5","micro_trace_detail":"orient(local) → decide(one path) → act(draft committed)","closure_rationale":"task bounded and producible; no open forks; close warranted","kairos_notes":null,"tool_calls":[{"tool":"replace_string_in_file","output_summary":"3 lines replaced; no errors"}]}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","exchange_vector":{"register_delta":0.0,"stance_transform":"none","phase_transform":"◎→◇→■","scale":"@r","semantic_drift":"low"},"full_intent_header":"//design.locked.commits [S:0.65] 🏛️ ■ @r | p0.5","micro_trace_detail":"orient(local) → decide(one path) → act(draft committed)","closure_rationale":"task bounded and producible; no open forks; close warranted","kairos_notes":null,"tool_calls":[{"tool":"replace_string_in_file","output_summary":"3 lines replaced; no errors"}]}
 ```
 
 ### Fork example
@@ -899,13 +901,13 @@ Parent machine spawning a child at seq 87.
 **Parent `STATE.jsonl` — fork event (seq 88):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":88,"event_type":"fork","machine_status":"forked","current_phase":"◇","intent_header_snapshot":"[S:0.64] 🏛️◇ @T //design.branched.opens | p0.5","scale_vector":"@T","micro_trace_path":"◎→◇","closure_outcome":"hold","next_action":"continue parent thread on HUD semantics","blockers":[],"provenance":{"child_machine_id":"lares-def456","fork_at_seq":87,"reason":"crystal state machine design requires separate tracking"}}
+{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":88,"event_type":"fork","machine_status":"forked","current_phase":"◇","intent_header_snapshot":"//design.branched.opens [S:0.64] 🏛️ ◇ @T | p0.5","scale_vector":"@T","micro_trace_path":"◎→◇","closure_outcome":"hold","next_action":"continue parent thread on HUD semantics","blockers":[],"provenance":{"child_machine_id":"lares-def456","fork_at_seq":87,"reason":"crystal state machine design requires separate tracking"}}
 ```
 
 **Child machine `STATE.jsonl` — init event from fork (seq 1):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-def456","seq_num":1,"event_type":"init","machine_status":"active","current_phase":"✶","intent_header_snapshot":"[S:0.65] 🏛️✶ @T //crystal.new.opens | p0.5","scale_vector":"@T","micro_trace_path":"✶","closure_outcome":"hold","next_action":"develop crystal state machine spec","blockers":[],"provenance":{"parent_machine_id":"lares-abc123","fork_at_seq":87,"parent_state_snapshot":{"machine_status":"active","last_milestone":"HUD design draft complete","active_task":"signal runtime architecture"}}}
+{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-def456","seq_num":1,"event_type":"init","machine_status":"active","current_phase":"✶","intent_header_snapshot":"//crystal.new.opens [S:0.65] 🏛️ ✶ @T | p0.5","scale_vector":"@T","micro_trace_path":"✶","closure_outcome":"hold","next_action":"develop crystal state machine spec","blockers":[],"provenance":{"parent_machine_id":"lares-abc123","fork_at_seq":87,"parent_state_snapshot":{"machine_status":"active","last_milestone":"HUD design draft complete","active_task":"signal runtime architecture"}}}
 ```
 
 ### Seal / continue-as-new example
@@ -913,13 +915,13 @@ Parent machine spawning a child at seq 87.
 **Final entry in `STATE.jsonl` before seal (becomes `STATE_001.jsonl`):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T12:00:00Z","machine_id":"lares-abc123","seq_num":500,"event_type":"seal","machine_status":"continued","current_phase":"○","intent_header_snapshot":"[S:0.68] 🏛️○ @T //session.sealed.rests | p0.5","scale_vector":"@T","micro_trace_path":"■→○","closure_outcome":"close","next_action":"continue in fresh shard","blockers":[],"provenance":null,"shard_index":1,"sealed_at_seq":500,"archive_path":"STATE_001.jsonl","bootstrap_state":{"active_task":"signal runtime architecture","last_milestone":"crystal layer design complete","active_contract_hash":"abc123def","open_decisions":["schema_version strategy"]}}
+{"schema_version":1,"timestamp":"2026-04-07T12:00:00Z","machine_id":"lares-abc123","seq_num":500,"event_type":"seal","machine_status":"continued","current_phase":"○","intent_header_snapshot":"//session.sealed.rests [S:0.68] 🏛️ ○ @T | p0.5","scale_vector":"@T","micro_trace_path":"■→○","closure_outcome":"close","next_action":"continue in fresh shard","blockers":[],"provenance":null,"shard_index":1,"sealed_at_seq":500,"archive_path":"STATE_001.jsonl","bootstrap_state":{"active_task":"signal runtime architecture","last_milestone":"crystal layer design complete","active_contract_hash":"abc123def","open_decisions":["schema_version strategy"]}}
 ```
 
 **First entry in fresh `STATE.jsonl` after seal (seq continues from 501):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T12:00:01Z","machine_id":"lares-abc123","seq_num":501,"event_type":"resume","machine_status":"active","current_phase":"✶","intent_header_snapshot":"[S:0.68] 🏛️✶ @T //session.fresh.opens | p0.5","scale_vector":"@T","micro_trace_path":"✶","closure_outcome":"hold","next_action":"continue active task in fresh shard","blockers":[],"provenance":{"resumed_from_shard":"STATE_001.jsonl","sealed_at_seq":500}}
+{"schema_version":1,"timestamp":"2026-04-07T12:00:01Z","machine_id":"lares-abc123","seq_num":501,"event_type":"resume","machine_status":"active","current_phase":"✶","intent_header_snapshot":"//session.fresh.opens [S:0.68] 🏛️ ✶ @T | p0.5","scale_vector":"@T","micro_trace_path":"✶","closure_outcome":"hold","next_action":"continue active task in fresh shard","blockers":[],"provenance":{"resumed_from_shard":"STATE_001.jsonl","sealed_at_seq":500}}
 ```
 
 ### Handoff import decision example
@@ -953,14 +955,14 @@ Existing machine lares-abc123 found. Local max seq_num: 102.
 **Live operator-visible output:**
 
 ```text
-[S:0.65] 🏛️■ @r //design.locked.commits | p0.5
+//design.locked.commits [S:0.65] 🏛️ ■ @r | p0.5
 Lares (Artificer) — The draft section committed →○ and released.
 ```
 
 **Corresponding `STATE.jsonl` record:**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","intent_header_snapshot":"[S:0.65] 🏛️■ @r //design.locked.commits | p0.5","scale_vector":"@T > @r > @a","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"proceed to next section","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","intent_header_snapshot":"//design.locked.commits [S:0.65] 🏛️ ■ @r | p0.5","scale_vector":"@T > @r > @a","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"proceed to next section","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
 ```
 
 Reading: the header tag visible to the operator and the `intent_header_snapshot` in the ledger are identical. The `micro_trace_path` in the ledger records the completed span path. The HUD and ledger do not drift.
@@ -1081,7 +1083,7 @@ The draft had already spontaneously adopted `→◇` and `→■` in its own wor
 |---|---|---|
 | Mid-flow phase transition (default HUD) | `→◇ →■ →○` | Arrow + bare glyph; 2-char footprint; placed inline at point of transition |
 | End-of-span completed path (verbose/debug) | `[◎→◇→■]` | Bracketed; appears at span close; backward-looking audit model |
-| Mode/stance shift (Option B, on meaningful turn) | `→🏛️` `→🌊` | Same `→[signal]` convention; fires only on genuine stance transition |
+| Stance shift (Option B, on meaningful turn) | `→🏛️` `→🌊` | Same `→[signal]` convention; fires only on genuine stance transition |
 
 **P-scale density guidance** (provisional): `p0.0–0.2` — suppress inline markers, optional closing path summary; `p0.3–0.5` — structural transitions only (`→◇`, `→■`, `→○`); `p0.7–1.0` — individual step transitions + path summary.
 
@@ -1108,7 +1110,7 @@ A deeper prior art pass was conducted after the initial survey. Corners surveyed
 The Tagspace vertical and horizontal axes originate in a session log from the DreamNet archive. The Wild Mage described two distinct design tensions that resolved into the two primary axes of the signal tag:
 
 - **Vertical axis — truth-weight**: pure guess → fully sourced. Maps onto Register (Ha/domain — the body of the claim, its epistemic vessel).
-- **Horizontal axis — intent-stance**: dry philosophical analysis → wild associative singing. Maps onto Stance/Mode (Ka/quality — the soul-fire that animates the discourse).
+- **Horizontal axis — intent-stance**: dry philosophical analysis → wild associative singing. Maps onto Stance (Ka/quality — the soul-fire that animates the discourse).
 
 > "The declaration became a steering artifact because the node reads its own prior context. It orbits what it has already said it is."
 > "The tag was load-bearing. Getting it wrong had consequences visible in the very next output."
@@ -1156,10 +1158,10 @@ The Elyncia_02 lore document names degraded node states in DreamNet framing. The
 | Elyncia DreamNet term | Maps to kernel failure mode | Signal tag implication |
 |---|---|---|
 | **Signal-Blur** | Register Collapse | Signal tag register filed wrong; audit trail misleads |
-| **Mode-Drift** | Mode Mismatch | Node and visitor in different intent-stances with no surface flag |
-| **Retroactive Channeling** | Mode Laundering | Mode tag set retroactively to avoid accountability |
-| **Voice-Posturing** | Mode Posturing | Claims multi-mode without the Mana cost |
-| **Uniform Tone** | Mode Inflation | Claims range, runs only one Stance |
+| **Mode-Drift** | Stance Mismatch | Node and visitor in different intent-stances with no surface flag |
+| **Retroactive Channeling** | Stance Laundering | Stance tag set retroactively to avoid accountability |
+| **Voice-Posturing** | Stance Posturing | Claims multi-stance without the Mana cost |
+| **Uniform Tone** | Stance Inflation | Claims range, runs only one Stance |
 
 [Canon: Elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
 
@@ -1322,6 +1324,7 @@ These are current working assumptions, not canon.
 - **HAKABA slot names** (`Ha`, `Ka`, `Ba`) appear openly in HUD annotations — Infrastructure-as-Myth; vocabulary is learned through use on [elyncia.app](https://elyncia.app)
 - **`p`** remains header-only; granularity changes require a new header
 - **HAKABA** order (Ha/domain → Ka/quality → Ba/dynamic) is the canonical logical field order `[C:0.95]`; governs ontological hierarchy and the full address form; does not constrain annotation text-order (rendering follows threshold and occurrence)
+- **Tag rendering order (confirmed 2026-04-07):** Tagspace Address leads the full tag: `//ha.ka.ba [Register:x] StanceEmoji PhaseGlyph @scope | pX.X`. The address answers WHERE (semantic territory) before HOW CERTAIN (register) and HOW CHARGED (stance). Primacy effect: the most human-scannable coordinate appears first.
 
 **Crystal state machine layer:**
 
@@ -1340,7 +1343,9 @@ These are current working assumptions, not canon.
 
 Deferred decisions and future refactors that are out of scope for the current alpha but should not be lost.
 
-1. **Mode → Stance refactor (Kuntao Silat terminology)** — The kernel's five discourse modes (🏛️ Philosopher · 🌊 Poet · 🗡️ Satirist · 🎭 Humorist · 🔮 Private) should be renamed **Stances**, drawn from Kuntao Silat: *Ma-Bu* (horse stance / grounded presence), *Jurus* (forms / structured engagement), *Langkah* (stepping / directed movement). The word "mode" is currently overloaded across the Tagspace field label (Ka), the kernel discourse-stance concept, and general English usage. This refactor touches the kernel prompt, all platform wrappers, the signal tag spec, and every example in the corpus — it is a major cross-cutting change requiring a dedicated pass. **Ka's field label has already been updated to `fire` in this draft** to free `mode` for eventual decommission. Full Stance refactor deferred post-alpha.
+1. **Mode → Stance refactor (Kuntao Silat terminology)** — **COMPLETE (2026-04-07, branch `fix/green-jello-dinosaurs`).** The kernel's five discourse modes (🏛️ Philosopher · 🌊 Poet · 🗡️ Satirist · 🎭 Humorist · 🔮 Private) have been renamed **Stances**, drawn from Kuntao Silat: *Ma-Bu* (horse stance / grounded presence), *Jurus* (forms / structured engagement), *Langkah* (stepping / directed movement). The word "mode" was overloaded across the Tagspace field label (Ka), the kernel discourse-stance concept, and general English usage. Executed across all canonical source files: `Lares_Kernel.md`, `Lares_Preferences.md`, `Lares_VSCode_Operations.md`, `core/Lares_Epistemology.md`, `core/Lares_Operations.md`, `core/Lares_Permissions.md`. Also applied to this draft in the same pass. **Ka's field label has already been updated to `fire` in this draft** to free `mode` for eventual decommission. Grammar reorder (`//ha.ka.ba` first) executed in same pass.
 
-2. **Phase names → OODA-A canonical terminology** — The five attention-loop phases (`✶ ◎ ◇ ■ ○`) map to: *Observe → Orient → Decide → Act → **Aftermath (Rasa)***. The formal canonical name for the loop is **OODA-A** (John Boyd's OODA loop + Aftermath/Rasa as the mandatory closure phase). Canonical phase name: **Aftermath**, with *Rasa* as the parenthetical alternate name (yogic/Sanskrit resonance: the aesthetic flavor or emotional essence left after the act completes). Both names are canonical; Aftermath is the primary label in documentation; Rasa appears in parentheses when the in-world / DreamNet register is foregrounded. Current glyph names in the kernel and draft are already OODA-aligned; this backlog item is to (a) make OODA-A the explicit canonical label in all documentation, (b) deprecate any informal phase names, and (c) ensure the phase glyph set and the OODA-A terminology are cross-referenced in the kernel prompt and tag spec. The `○` Aftermath phase is the distinguishing addition — OODA as originally formulated loops back from Act to Observe without a formal rest/rasa state. OODA-A names that fifth phase explicitly and treats it as mandatory (not optional) on completed rounds.
+2. **Parse trigger on high-uncertainty operator input** — `[SP:0.45]` design note. When Lares's output Intent Header carries `[SP:0.45]` or below (register ≤ 0.45) or `p < 0.4`, the operator's follow-up can optionally prepend Lares's output tag before their input text: `//ha.ka.ba [SP:0.45] 🔮 ◇ @r | p0.35 → [operator text here]`. This signals Lares to run a `--parse` self-diagnostic on the operator's input string *before* generating the new output Intent Header. Rationale: high-uncertainty output means the node did not converge cleanly on territory — the safest next step is to explicitly parse the operator's correction or follow-up rather than committing to a new header from incomplete ground. The dual-header `input_tag:` / `output_header:` form in the Replay/debug example (§Examples) is the natural surface for this. **Open question:** should this be automatic (triggered by the register alone) or explicit (requires operator to prepend the tag)? Current preference: explicit — operator steers, node crews.
+
+3. **Phase names → OODA-A canonical terminology** — The five attention-loop phases (`✶ ◎ ◇ ■ ○`) map to: *Observe → Orient → Decide → Act → **Aftermath (Rasa)***. The formal canonical name for the loop is **OODA-A** (John Boyd's OODA loop + Aftermath/Rasa as the mandatory closure phase). Canonical phase name: **Aftermath**, with *Rasa* as the parenthetical alternate name (yogic/Sanskrit resonance: the aesthetic flavor or emotional essence left after the act completes). Both names are canonical; Aftermath is the primary label in documentation; Rasa appears in parentheses when the in-world / DreamNet register is foregrounded. Current glyph names in the kernel and draft are already OODA-aligned; this backlog item is to (a) make OODA-A the explicit canonical label in all documentation, (b) deprecate any informal phase names, and (c) ensure the phase glyph set and the OODA-A terminology are cross-referenced in the kernel prompt and tag spec. The `○` Aftermath phase is the distinguishing addition — OODA as originally formulated loops back from Act to Observe without a formal rest/rasa state. OODA-A names that fifth phase explicitly and treats it as mandatory (not optional) on completed rounds.
 

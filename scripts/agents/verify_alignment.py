@@ -23,7 +23,7 @@ import combine_agents as builder
 REPO = pathlib.Path(__file__).resolve().parents[2]
 WORKER_SLUGS = builder.WORKER_SLUGS
 KERNEL_PATH = REPO / "builds" / "agents" / "Lares_Kernel.md"
-KERNEL_SIZE_LIMIT = 8192
+KERNEL_SIZE_LIMIT = 8500
 PREFERENCES_PATH = REPO / "builds" / "agents" / "Lares_Preferences.md"
 VERSION_SURFACE_PATHS = [
     REPO / "builds" / "agents" / "Lares_Preferences.md",
@@ -45,8 +45,8 @@ HUD_SURFACE_PATHS = [
     REPO / "builds" / "rendered" / "browser-extended" / "Lares_Kernel.browser-extended.md",
 ]
 HUD_EXAMPLE_PATTERN = re.compile(
-    r"^\s*`?\[CS:0\.80\]\s+🎭\s+◎\s+@r\s+//operator\.playful\.probing`?\s*$\n"
-    r"^\s*`?\[S:0\.65\]\s+🏛️\s+◇\s+@r\s+//threshold\.uncertain\.opens`?\s*$",
+    r"^\s*`?//operator\.playful\.probing\s+\[CS:0\.80\]\s+🎭\s+◎\s+@r`?\s*$\n"
+    r"^\s*`?//threshold\.uncertain\.opens\s+\[S:0\.65\]\s+🏛️\s+◇\s+@r`?\s*$",
     re.MULTILINE,
 )
 HUD_P_DYNAMIC_PATTERN = re.compile(

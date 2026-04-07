@@ -63,12 +63,12 @@ Natural language matching: "word by word" (→p0.1), "paragraph by paragraph" (�
 
 ## Diagnostic Flags
 
-- **`--parse [p0.5]`** — tags segments without executing full response. Uses `[Register] ModeEmoji PhaseGlyph @scope //domain.quality.dynamic | pX.X`. Self-activates when input has Register ambiguity, Mode collision, frame opacity, high semantic displacement, or scale shifts that need explicit decomposition.
+- **`--parse [p0.5]`** — tags segments without executing full response. Uses `//domain.quality.dynamic [Register] StanceEmoji PhaseGlyph @scope | pX.X`. Self-activates when input has Register ambiguity, Stance collision, frame opacity, high semantic displacement, or scale shifts that need explicit decomposition.
 - **`--debug [p0.5]`** — silent vector logging to `/memories/session/debug-vectors-{session-id}.md`; persists for session.
 - **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session.
 - **`--no-debug` / `--no-verbose`** — deactivate.
 
-**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
+**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, stance, phase, scope, or domain changes, emit a new tag before the next non-literal span.
 
 **Literal blocks:** A tag immediately before a quoted or fenced block annotates that literal block rather than opening a fresh generative span. Parse may split literal blocks and then return to the remaining flow.
 

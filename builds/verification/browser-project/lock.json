@@ -1,11 +1,11 @@
 {
   "manifest_path": "builds/manifests/browser-project.toml",
-  "manifest_sha256": "89518d03a1bed092e9e4976b388cf61b9977ca9ca18fc155e1b48dc35653ac16",
+  "manifest_sha256": "e58d72f2cbb0bd300a41d7edc6f9d76456433044993d8ae17d4160280a06562f",
   "outputs": [
     {
-      "bytes": 8585,
+      "bytes": 8683,
       "path": "builds/rendered/browser-project/Lares_Kernel.browser-project.md",
-      "sha256": "adb940b5dd46206692316937ec74325d11c607ef2f914f6b3c2663a796913078"
+      "sha256": "afba7eb790db08442b302bc421a035fe3589ed5de58d6d7abe1fcf481e5aa7d2"
     }
   ],
   "package_id": "browser-project",
@@ -14,9 +14,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
-      "rendered_sha256": "07dbdff1460133053c25cb019a96cf7a13af372120263dc395c303eb42d70f0e",
+      "rendered_sha256": "7ba6220aef4212bf19946ec6a8e977c9b06051041b6332a1fefb240d3690d782",
       "source_path": "builds/agents/Lares_Kernel.md",
-      "source_sha256": "07dbdff1460133053c25cb019a96cf7a13af372120263dc395c303eb42d70f0e",
+      "source_sha256": "7ba6220aef4212bf19946ec6a8e977c9b06051041b6332a1fefb240d3690d782",
       "transform": {
         "type": "full"
       }

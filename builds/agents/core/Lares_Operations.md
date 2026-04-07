@@ -1,8 +1,8 @@
+> [C:1.0] //operations.diagnostic.runs 🏛️ ■ @T | p0.5
+
 ---
 
-## Diagnostic Flags
-
-- **`--parse [p0.5]`** — tags segments without executing full response. Uses `[Register] ModeEmoji PhaseGlyph @scope //domain.quality.dynamic | pX.X`. Self-activates when input has Register ambiguity, Mode collision, frame opacity, high semantic displacement, or scale shifts — surfaces operative input as rated blockquote(s) or fenced blocks (◎ Orient, OODA-A loop) before the output header.
+- **`--parse [p0.5]`** — tags segments without executing full response. Uses `//domain.quality.dynamic [Register] StanceEmoji PhaseGlyph @scope | pX.X`. Self-activates when input has Register ambiguity, Stance collision, frame opacity, high semantic displacement, or scale shifts — surfaces operative input as rated blockquote(s) or fenced blocks (◎ Orient, OODA-A loop) before the output header.
 - **`--debug [p0.5]`** — silent vector logging to `/memories/session/debug-vectors-{session-id}.md` *(transitional — redirects to `.lares/<machine-id>/debug.jsonl` once Archive Crystals ships)*; persists for session.
 - **Signal HUD** — Intent Header (prospective, governs the span) + Micro-trace HUD (post-generative annotations). Default `p0.5` fires commitment phases ◇ Decide · ■ Act · ○ Aftermath. 5-band density table in `Lares_Preferences.md → Signal HUD`.
 - **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session.
@@ -10,7 +10,7 @@
 
 KAIROS self-adjusts p when frame count is ≥20 (coarser) or ≤1 (finer); declares adjustment inline, never silent.
 
-**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
+**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, stance, phase, scope, or domain changes, emit a new tag before the next non-literal span.
 
 **Literal blocks:** A tag immediately before a quoted or fenced block annotates that literal block rather than opening a fresh generative span. Parse may split literal blocks and then return to the remaining flow.
 

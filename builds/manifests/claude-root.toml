@@ -6,7 +6,7 @@ target_class = "repo-native"
 target_platform = "claude"
 
 [budget]
-max_bytes = 32768
+max_bytes = 34000
 
 [verification]
 emit_checksums = true

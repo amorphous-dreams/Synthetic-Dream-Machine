@@ -1,6 +1,6 @@
 {
   "budget": {
-    "max_bytes": 8600
+    "max_bytes": 9000
   },
   "build_profile": "browser-project",
   "governance_integration_points": [
@@ -10,9 +10,9 @@
   ],
   "outputs": [
     {
-      "bytes": 8585,
+      "bytes": 8683,
       "path": "builds/rendered/browser-project/Lares_Kernel.browser-project.md",
-      "sha256": "adb940b5dd46206692316937ec74325d11c607ef2f914f6b3c2663a796913078"
+      "sha256": "afba7eb790db08442b302bc421a035fe3589ed5de58d6d7abe1fcf481e5aa7d2"
     }
   ],
   "package_id": "browser-project",

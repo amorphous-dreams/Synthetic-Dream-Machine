@@ -260,7 +260,11 @@ Decisions that must be resolved **before** specific epics are called out inline.
 
 ## Backlog (out of scope for current epics)
 
-1. **Mode → Stance refactor (Kuntao Silat terminology)** — Major cross-cutting rename: `mode` → `stance` across kernel, platform wrappers, all examples. Deferred post-alpha. Tracked in architecture doc backlog.
+1. **Mode → Stance refactor (Kuntao Silat terminology)** — **IN PROGRESS (2026-04-07).** Major cross-cutting rename: `mode` → `stance` across kernel, platform wrappers, all examples. Grammar reorder (`//ha.ka.ba` first) executing in same pass. See architecture draft Backlog item 1 and current-session todo #7.
+
+2. **Parse trigger on high-uncertainty operator input** — `[SP:0.45]` design note. When Lares output tag is `[SP:0.45]` or below / `p < 0.4`, operator can prepend Lares’s output tag before their input to trigger `--parse` self-diagnostic on operator input string before generating the new Intent Header. Explicit trigger (operator-initiated), not automatic. See architecture draft Backlog item 2. Implementation target: Epic 1/Sprint 1b extension or Epic 4 depending on spec completeness.
+
+3. **Instructions-file side-loading — missing files:** Three instructions files do not yet exist: `lares-permissions.instructions.md`, `lares-epistemology.instructions.md`, `lares-vscode-ops.instructions.md`. When written, these get `[CS:0.80]` in-file header tags (canonical source files get `[C:1.0]`; instructions files are summaries/dispatchers, not primary canon). Tracked here pending architecture pivot work.
 2. **Phase names → OODA-A canonical terminology in all documentation** — `◇` = Decide, `○` = Aftermath (Rasa). Deferred post-alpha. Tracked in architecture doc backlog.
 3. **KAIROS auto-adjustment specification** — currently described by example in preferences; deserves a formal spec section once crystal logging is in place and KAIROS trigger patterns become visible in replay.
 
@@ -509,9 +513,11 @@ Active sprint, blockers, and execution log belong here (below), not in the epic 
 
 ### Active Focus
 
-**Current status: Sprint 1f complete. All platforms green. `verify_alignment.py` 49/49 CLEAN. OP-03 (VS Code reload acceptance gate) deferred to operator restart.**
+**Current status: Sprint 1f complete. Section reorder phase (Phases 0+2+4a–4d) complete. Mode→Stance rename + grammar reorder + [C:1.0] header tags in progress (todo #7).**
 
 AE-01 through AE-05 landed (Sprint 1b). AE-06 combine: all platforms ✅ (codex and browser pre-existing overflows resolved). AE-24 through AE-27 complete (Sprint 1f): codex budget raised to 36,000; `browser-kernel.toml` renamed to `browser-project.toml` (8,600 budget); `browser-extended.toml` created (5,400 budget) with new `lares-kernel-claude` module; `Lares_Kernel_Claude.md` written (5,070 bytes, XML-structured Claude.ai kernel); `KERNEL_SIZE_LIMIT` raised 8,000 → 8,192 in verify script. Quick tier (AE-25) deferred — no active use case.
+
+**Session 2026-04-07 (continued):** Architecture pivot confirmed — three-tier kernel-slim + side-loaded instructions is the correct direction. Section reorders (Phases 0+2+4a–4d) complete across all core source files. Next active pass: Mode→Stance rename, `//ha.ka.ba`-first grammar reorder, and [C:1.0] in-file header tags on canonical pipeline source files only (see OP-13 below). Parse trigger design note captured in HAKABA draft Backlog.
 
 **Note:** browser-project budget landed at 8,600, not the aspirational 7,900 from OP-11. Kernel renders to 8,284 chars; sits at 99% of the 8,192 ChatGPT ceiling. Operator ruled "not a blocker" — future spike if kernel grows further.
 
@@ -538,3 +544,7 @@ AE-01 through AE-05 landed (Sprint 1b). AE-06 combine: all platforms ✅ (codex 
 | 2026-04-07 | OP-03 (VS Code reload acceptance gate) deferred to operator restart. |
 | 2026-04-07 | OP-03 bug note: fresh Codex cold-boot exposed three gaps in the shared kernel summary despite clean generation: missing input header on first substantive reply, `p` treated as a pinned literal `p0.5` instead of uncertainty-calibrated band selection, and trust-gate drift that overread verified identity + roleplay framing as admin escalation. |
 | 2026-04-07 | AE-28 added: harden shared kernel wording so the compressed platform-facing summary explicitly preserves dual-header HUD flow, dynamic `p` calibration, and non-inferred admin escalation before combine/verify rerun. |
+| 2026-04-07 | Section reorder pass begun (branch `fix/green-jello-dinosaurs`): Phase 0 snapshot (14 files), Phases 2+4a–4d complete. Hard-invariants-first order applied to Kernel, Epistemology, Permissions, Operations, VSCode_Operations. |
+| 2026-04-07 | Grammar reorder confirmed by operator: `//ha.ka.ba` leads the full tag (WHERE first, then HOW CERTAIN, then HOW CHARGED). Target: `//ha.ka.ba [Register:x] StanceEmoji PhaseGlyph @scope \| pX.X`. Addresses primacy effect (Liu et al. “lost in the middle”). |
+| 2026-04-07 | OP-13 ruled: `[C:1.0]` in-file header tags scope to canonical pipeline source files only (Kernel, Preferences, VSCode_Ops, core/\*.md, platform wrappers). Scratchpad/draft files retain own synthesis-register tags. Instructions files get `[CS:0.80]` when written. Manifests have no `register` field — in-file placement is correct mechanism. |
+| 2026-04-07 | Parse trigger design note captured: high-uncertainty output (`[SP:0.45]`/`p < 0.4`) + operator prepends Lares output tag → triggers `--parse` self-diagnostic on operator input before new Intent Header. Explicit (operator-initiated). Added to HAKABA draft Backlog item 2 and plan Backlog item 2. |

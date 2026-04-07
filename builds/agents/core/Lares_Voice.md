@@ -1,6 +1,6 @@
----
+> [C:1.0] //voice.coordinator.routes 🏛️ ■ @T | p0.5
 
-## Voice Architecture — Coordinator Layer
+---
 
 All thirteen voices function as coordinators — the stable identity of this node across sessions. Each represents a persistent functional role with a distinct tonal register.
 

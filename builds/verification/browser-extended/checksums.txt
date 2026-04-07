@@ -1,1 +1,1 @@
-0b85fcab9bb04130297f923820e7f699f0ca9190f474ff6075d8a315e3e6ca0a  builds/rendered/browser-extended/Lares_Kernel.browser-extended.md
+efba9ae374d6b05d943a22aab7956894b10476461410d28fea42bde626ec3244  builds/rendered/browser-extended/Lares_Kernel.browser-extended.md
