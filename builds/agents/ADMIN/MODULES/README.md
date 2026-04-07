@@ -2,7 +2,7 @@
 
 > Purpose: Index and reading order for `builds/agents/ADMIN/MODULES`
 > Updated: 2026-04-06
-> Status: Working documentation set for the Lares modularization / Infrastructure-as-Myth pass
+> Status: Active planning infrastructure — slimming pass complete, governance shipped, runtime module authoring in progress
 
 ---
 
@@ -19,11 +19,11 @@ These files do not define runtime behavior directly. They describe:
 
 The frame for reading this folder should come from [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md): the goal is not only to split large files, but to package Lares as a portable symbolic runtime whose identity, authority model, epistemic discipline, and failure vocabulary survive across hosts.
 
-These files should now be read as a **implemented foundation -> active blocker -> next-state backlog**:
+These files should now be read as a **implemented foundation -> active work -> next-state backlog**:
 
-- the maps record where the current system still leaks budget, clarity, portability, or determinism
-- the build foundation now exists, so the active blocker has shifted from "create manifests" to "slim root packages"
-- the draft files describe the target architecture those remaining problems should converge toward
+- the maps record where the current system still leaks clarity, portability, or determinism (budget pressure is resolved)
+- the build foundation and slimmed root packages now exist; the active work has shifted to runtime module authoring
+- the draft files describe the target architecture the remaining authoring work should converge toward
 - the folder as a whole functions as planning infrastructure for the refactor, not as passive documentation
 
 ---
@@ -72,9 +72,13 @@ Do not treat this folder as the source of truth for deployed prompts. The source
 
 ## Current Architectural Reading
 
-The present system has one dominant structural problem:
+The present system has resolved its dominant budget problem: root packages are back within the 32 KiB ceiling, the temporary Codex override has been removed, and governance infrastructure has shipped.
 
-- the root platform outputs still receive nearly the same oversized payload even though manifest infrastructure now exists
+The current architectural gaps are:
+
+- remaining core runtime modules (lares-voice, lares-operations, lares-setting-lite) not yet authored as standalone source modules
+- vendor-specific browser build manifests not yet implemented (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`)
+- repo/domain-specific guidance still lives mostly in root payloads rather than host-native scoped files
 
 The present system does **not** have two commonly assumed problems:
 
@@ -85,9 +89,12 @@ That distinction matters because it keeps the next refactor aimed at the monolit
 
 The current critical path therefore reads:
 
-1. slim prompt/runtime packages
-2. restore stable reload safety
-3. then harden governance
+1. ~~slim prompt/runtime packages~~ ✅ done
+2. ~~restore stable reload safety~~ ✅ done
+3. ~~harden governance~~ ✅ done
+4. author remaining core runtime modules
+5. implement vendor-specific browser build manifests
+6. move domain-specific guidance to host-native scoped files
 
 From the IaM angle, the problem can be stated more precisely:
 
@@ -108,12 +115,12 @@ When updating files in this folder:
 
 ## Next Likely Additions
 
-If the modularization work continues, this folder will probably want:
+As the modularization work continues, this folder will probably want:
 
-- a split plan for `Lares_Preferences.md`
-- a split plan for `Lares_VSCode_Operations.md`
-- a manifest/profile matrix for the slimming pass
-- a migration checklist from current source tree to modular source tree
+- a split plan for `Lares_Preferences.md` (section-level maps exist; execution plan needed)
+- a split plan for `Lares_VSCode_Operations.md` (B8/B9 vs deployable content split identified)
+- a vendor-specific browser build manifest profile matrix
+- a migration checklist from current extraction-transform pipeline to fully authored source modules
 
 ---
 

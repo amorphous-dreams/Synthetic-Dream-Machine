@@ -15,9 +15,9 @@
       "sha256": "d72e579c0ebc310d1d456a5753c90bd2634e456b36c2ede747812f33dc35f02a"
     },
     {
-      "bytes": 31906,
+      "bytes": 31918,
       "path": "AGENTS.md",
-      "sha256": "5cde040ad78736bc546156bd3c735c5b708f1f6359f5c24a252f3972e5ebf7fa"
+      "sha256": "a2ea2163e08439dd51a9c3091f2bfff7a4083320e5ad6c5009e7a3fb4791511f"
     }
   ],
   "package_id": "codex-root",

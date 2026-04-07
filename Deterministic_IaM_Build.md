@@ -25,14 +25,16 @@ The goal is simple:
 
 ## Current Phase Note
 
-The first manifest/verification pass now exists in the repo: committed manifests, module sidecars, verification outputs, and a rendered browser kernel package are in place.
+The first manifest/verification pass exists in the repo: committed manifests, module sidecars (TOML), verification outputs, and a rendered browser kernel package are in place.
 
-That means the next implementation phase is no longer "add manifests." The next implementation phase is **budget-constrained package slimming and module extraction**:
+The budget-constrained package slimming pass is complete. Manifests and modules migrated from JSON to TOML. The source tree is canonical at `builds/agents/` (via `git mv`, history preserved). Root packages now sit under the 32 KiB ceiling (~31 KB each, ~1 KB margin). The temporary `project_doc_max_bytes = 150000` Codex compatibility stopgap has been removed. Governance infrastructure shipped: ROSTER, CODEOWNERS, four-tier identity, `operator(admin)` escalation rules. lares-permissions and lares-epistemology authored and integrated into all three roots.
 
-- shrink root/runtime packages back to reload-safe budgets
-- use manifests to separate always-on runtime from scoped/reference bulk
-- remove the need for the temporary `project_doc_max_bytes = 150000` Codex compatibility stopgap
-- queue governance hardening immediately after reload safety is restored
+The current implementation phase is **runtime module authoring and host-native scoping**:
+
+- author remaining core runtime modules (lares-voice, lares-operations, lares-setting-lite)
+- map each authored module to host-native loading patterns per platform
+- implement vendor-specific browser build manifests (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`)
+- move repo/domain-specific guidance into scoped files rather than root payloads
 
 ---
 
@@ -351,6 +353,40 @@ Requirements:
 
 ---
 
+## Browser Vendor Builds
+
+Browser vendor builds are a subclass of Class D — Browser Extended. Each major browser-based cloud AI platform requires its own named manifest because:
+
+- instruction injection mechanisms differ (system prompt, custom instructions, project context, Gem configuration)
+- character/token limits differ
+- attached file support differs
+- module inclusion logic differs
+
+### Planned Vendor Targets
+
+| Profile name | Platform | Key constraint | Status |
+|---|---|---|---------|
+| `browser-extended-chatgpt` | ChatGPT / OpenAI | Custom instructions; file attachments via Projects | Specified, not yet implemented |
+| `browser-extended-claude` | Claude.ai / Anthropic | Project knowledge + instructions; file attachments supported | Specified, not yet implemented |
+| `browser-extended-gemini` | Gemini / Google | Gem configuration + optional attached files | Specified, not yet implemented |
+
+### Each Vendor Target Should Declare
+
+- kernel source (always the rendered browser kernel artifact)
+- which core modules to attach as separate context files
+- a setup guide fragment for the platform's specific attachment workflow
+- byte/character budget check against the platform's effective limit
+
+### Determinism Rule for Browser Vendor Builds
+
+Because browser platforms do not offer deterministic retrieval, the guarantee is package-side:
+
+**same manifest → same package contents**
+
+Runtime behavior after loading is not guaranteed deterministic — that is an inherent property of the host. This rule is stated in the Browser Package Determinism section above. Vendor builds inherit it without exception.
+
+---
+
 ## Build Profiles
 
 The renderer should support named profiles, for example:
@@ -468,19 +504,23 @@ That distinction should stay explicit.
 ```text
 builds/
   manifests/
-    browser-minimal.yaml
-    browser-extended-chatgpt.yaml
-    browser-extended-claude.yaml
-    browser-extended-gemini.yaml
-    codex-root.yaml
-    claude-root.yaml
-    copilot-root.yaml
-  templates/
-    codex-wrapper.md
-    claude-wrapper.md
-    copilot-wrapper.md
-  output/
-  reports/
+    browser-minimal.toml
+    browser-extended-chatgpt.toml
+    browser-extended-claude.toml
+    browser-extended-gemini.toml
+    codex-root.toml
+    claude-root.toml
+    copilot-root.toml
+  modules/
+    lares-kernel.toml
+    lares-voice.toml
+    lares-epistemology.toml
+    lares-operations.toml
+    lares-permissions.toml
+    lares-setting-lite.toml
+  agents/
+  rendered/
+  verification/
 ```
 
 This keeps source, manifests, templates, and generated outputs distinct.
@@ -498,13 +538,13 @@ This keeps source, manifests, templates, and generated outputs distinct.
 
 ## Next Step
 
-Use the implemented manifest layer to drive the slimming pass:
+The slimming pass is complete and governance has shipped. Use the implemented manifest and module layer to drive the next phase:
 
-1. extract always-on core runtime modules from the monolithic root payloads
-2. move reference/spec and repo-ops bulk out of prime root context
-3. bring `codex-root`, `claude-root`, and `copilot-root` back under stable reload-safe budgets
-4. remove the need for the temporary `150000` Codex compatibility override
-5. then proceed to governance hardening
+1. author remaining core runtime modules (`lares-voice`, `lares-operations`, `lares-setting-lite`) from the modularized source tree
+2. map each module to host-native loading patterns (`builds/agents/core/` for repo-native, standalone bundles for browser targets)
+3. implement vendor-specific browser build manifests (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`) per the Browser Vendor Builds section above
+4. move repo/domain-specific guidance into scoped files (`.github/instructions/`, nested `AGENTS.md`, subtree `CLAUDE.md`)
+5. then proceed to deferred parse-doc placement and further sequence items per the state machine
 
 ---
 

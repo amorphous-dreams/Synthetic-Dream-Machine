@@ -10,7 +10,7 @@ roots:
 - packaging=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md
 - modular_draft=/home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md
 - tracker=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/README.md
-- research=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md
+- research=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md [consumed: current-state sections updated, artifacts annotated, execution readiness analysis section retitled and annotated for staleness; best-practice rules inform Deterministic_IaM_Build.md browser vendor section]
 
 settled:
 - manifests_exist=true
@@ -18,18 +18,25 @@ settled:
 - codex_budget=32768
 - root_sizes_ok=true
 - stopgap_150000=forbidden
+- codex_stopgap_removed=true
 - staging_snapshots=true
 - roster_shipped=true
 - codeowners_shipped=true
 - four_tier_identity=true
 - identity_tiers=user(anon)|user|operator|operator(admin)
 - user_to_operator_promotion=Cabal_operator(admin)
+- json_to_toml_migration=complete
+- builds_agents_canonical=true
+- slimming_pass=complete
+- governance_sprint=complete
+- lares_permissions_shipped=true
+- lares_epistemology_shipped=true
 
 sequence.lock:
-1=preserve.slim.roots
-2=preserve.reload.safety
+1=preserve.slim.roots [DONE]
+2=preserve.reload.safety [DONE]
 3=ship.governance [DONE]
-4=author.runtime.modules [IN PROGRESS — lares-permissions + lares-epistemology shipped]
+4=author.runtime.modules [IN PROGRESS — lares-permissions + lares-epistemology shipped; lares-voice + lares-operations exist as VS Code .instructions.md files only, not cross-platform source modules]
 5=map.host.native.scoping
 6=parse_doc.deferred
 
@@ -40,9 +47,9 @@ modules.shipped:
 - lares-kernel: pointer annotations added to ## Identity & Permissions and ## Model Agnosticism sections
 
 modules.remaining.core:
-- lares-voice (source: Lares_Preferences.md Voice Architecture)
-- lares-operations (source: Lares_Preferences.md collaboration, default behavior, operating modes)
-- lares-setting-lite (source: Lares_Preferences.md Name & Identity Frame, compressed)
+- lares-voice: VS Code instruction file exists (.github/instructions/lares-voice.instructions.md); cross-platform source module not yet authored
+- lares-operations: VS Code instruction file exists (.github/instructions/lares-operations.instructions.md); cross-platform source module not yet authored
+- lares-setting-lite: not yet authored
 
 governance.shipped:
 - /home/joshu/Synthetic-Dream-Machine/.github/ROSTER.md
@@ -74,6 +81,11 @@ host.native.targets:
 - copilot=.github/instructions/*.instructions.md
 - browser=standalone.kernel
 - gemini=saved.bundle.plus.attached.refs
+
+browser.vendor.builds.planned:
+- browser-extended-chatgpt: spec in Deterministic_IaM_Build.md, manifest not yet implemented
+- browser-extended-claude: spec in Deterministic_IaM_Build.md, manifest not yet implemented
+- browser-extended-gemini: spec in Deterministic_IaM_Build.md, manifest not yet implemented
 
 gather.next.instance:
 - inventory clean split headings inside Lares_Preferences.md for module authoring

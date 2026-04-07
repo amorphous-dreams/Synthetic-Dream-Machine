@@ -117,17 +117,22 @@ That convergence does not prove Infrastructure-as-Myth as a named concept. It do
 
 ### What now aligns
 
-- Root package budgets are back under control.
-- Manifests and verification artifacts exist.
+- Root package budgets are back under control (all three roots ~31 KB, within 32 KiB ceiling; temporary Codex override removed).
+- Manifests (TOML) and verification artifacts exist; modules (TOML) provide per-module metadata under `builds/modules/`.
+- Source tree is canonical at `builds/agents/` (git history preserved via `git mv`).
 - Browser-safe kernel exists as a first-class rendered artifact.
-- Repo-native roots now compose from a smaller bundle instead of the full Preferences monolith.
+- Repo-native roots compose from a modular bundle via manifest-driven rendering.
+- Governance infrastructure shipped: ROSTER, CODEOWNERS, four-tier identity, `operator(admin)` escalation rules.
+- Scoped VS Code instruction files exist at `.github/instructions/` (lares-voice, lares-operations).
+- lares-permissions and lares-epistemology authored and integrated into all three roots.
 
 ### What still falls short of full best practice
 
 - Claude is still emitted as one generated root bundle rather than using `@imports` or deeper subtree-local `CLAUDE.md` layering.
-- Copilot does not yet use `.github/instructions/*.instructions.md` scoped files.
+- Copilot root remains a generated bundle; scoped `.github/instructions/` files cover lares-voice and lares-operations but not all domain areas.
 - Codex uses a slim root, but the richer nested `AGENTS.md` strategy remains mostly unrealized.
-- The authored source tree still centers large composite documents, with extraction transforms standing in for fully separated runtime modules.
+- Three remaining core runtime modules (lares-voice, lares-operations, lares-setting-lite) exist as VS Code instruction files but are not yet authored as standalone cross-platform source modules.
+- Vendor-specific browser build manifests (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`) are specified in `Deterministic_IaM_Build.md` but not yet implemented.
 
 ---
 
@@ -202,6 +207,9 @@ The only addition here is that after governance hardening, further modularizatio
 
 ---
 
+<!-- AI session artifacts: tool-call log from a prior research session. The Read [] links below are agent read operations, not human-authored content. The Execution Readiness Analysis section that follows was produced from those reads. -->
+<!-- reason: artifact toolcall log retained in-place as session provenance; cannot be extracted to a separate operator(admin) file without losing context for the analysis below -->
+
 # Additional Research
 
 Let me crawl the relevant architecture and planning docs in parallel.   
@@ -262,11 +270,11 @@ Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#26
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#120-120), lines 120 to 180
 
-I have everything I need. Here's the confidence ratings analysis.
-
 ---
 
-## Confidence Ratings: Kernel + Module Architecture Conversion
+## Execution Readiness Analysis
+
+> [S:0.65] — Written before TOML migration, slimming pass, and governance sprint completion (all three now done). Gaps noted in Rating 5 regarding manifests are partially resolved: 4 active TOML manifests and 11 module sidecars exist; vendor-specific browser manifests remain unimplemented. See state machine for current settled items.
 
 *Lares (Scryer) + Ink-Clerk (Lorekeeper)*
 
@@ -334,7 +342,7 @@ These are straightforward execution steps, not design gaps.
 
 The manifest metadata schema is specified (YAML, with `module_id`, `class`, `browser_safe`, `default_targets`, `compression_target`, `depends_on`). The ordering rules are explicit. The pure transform list defines what the renderer must and must not do.
 
-**The gap:** No manifest files exist. No refactored script exists. The current combine_agents.py is concatenation-only and would need to be either replaced or significantly extended.
+**Current state:** 4 active TOML manifests (`codex-root`, `claude-root`, `copilot-root`, `browser-kernel`) and 11 module sidecars exist in `builds/manifests/` and `builds/modules/`. Vendor-specific browser manifests (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`) remain unimplemented. The combine_agents.py script is a concatenation-based renderer — a manifest-driven renderer script does not yet exist and remains the load-bearing implementation task.
 
 The Codex agent has enough specification to implement this, but it is the largest single execution task in the project. The risk is not design ambiguity — the design is solid — it's implementation scope. The manifest renderer needs to:
 1. Read manifest files

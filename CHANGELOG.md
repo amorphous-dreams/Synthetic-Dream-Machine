@@ -2,6 +2,24 @@
 
 ---
 
+## [v3.6.1] — 2026-04-07
+
+Lares prompt system update: downstream path migration from `_agents/` to `builds/agents/`.
+
+**`builds/agents/` source and governance docs**
+- Updated live path references in prompt architecture docs, admin module maps, pipeline notes, trust/governance docs, and licensing text to point at `builds/agents/` instead of the retired `_agents/` root
+- Corrected source-of-truth references for kernel, preferences, VS Code operations, platform wrappers, worker definitions, and module sidecars to use the new location
+- Updated helper text and examples that referenced `wc -m`, E-Prime audit targets, worker paths, and admin-module paths
+
+**Generated platform files**
+- Rebuilt root `AGENTS.md`, `.github/copilot-instructions.md`, `.claude/CLAUDE.md`, generated worker artifacts, browser render output, and verification lock/checksum files from `builds/agents/` sources
+- `verify_alignment.py` reports clean alignment after regeneration: 45/45 checks pass
+
+**Historical material**
+- Left prior changelog entries and staging snapshots unchanged where they function as historical records of the former `_agents/` layout
+
+---
+
 ## [v3.6] — 2026-04-06
 
 Lares prompt system update: canon promotion trust gate, Operator identity via GitHub CLI, explicit Admin escalation, and kernel re-condense.

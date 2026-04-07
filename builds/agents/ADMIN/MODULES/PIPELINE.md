@@ -15,7 +15,7 @@ This file should be read in two layers:
 - the **old buggy-state pipeline** explains the concatenation history that produced the oversized root payloads
 - the **current implementation state** explains what the manifest-driven renderer now does
 
-The renderer replacement step has landed. The remaining pipeline defect is payload size: root packages still carry too much always-on material and currently require a temporary Codex budget override.
+The slimming pass has landed and governance has shipped. Root packages are back within budget (~31 KB each, 32 KiB ceiling). The temporary Codex override has been removed. The remaining work is runtime module authoring, host-native scoping, and vendor-specific browser build manifests.
 
 ---
 
@@ -29,16 +29,19 @@ The renderer replacement step has landed. The remaining pipeline defect is paylo
 
 **Current implementation state:**
 
-- manifests define inputs, ordering, transforms, and verification outputs
-- module sidecars exist under `builds/modules/`
+- manifests (TOML) define inputs, ordering, transforms, and verification outputs
+- module sidecars (TOML) exist under `builds/modules/`
 - verification artifacts and a rendered browser kernel package are emitted under `builds/`
-- worker generation remains stable while root package composition still needs slimming
+- root package sizes are back within budget (~31 KB each, 32 KiB ceiling); temporary Codex override removed
+- governance shipped: ROSTER, CODEOWNERS, four-tier identity model
+- lares-permissions and lares-epistemology authored and integrated into all three roots
 
 **Next ideal state:**
 
-- the build emits host-specific IaM packages with slim root/runtime payloads rather than one oversized root plus thin tails
+- remaining core runtime modules authored as standalone source files (`lares-voice`, `lares-operations`, `lares-setting-lite`)
+- vendor-specific browser build manifests (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`) implemented
 - kernel, core modules, scoped modules, wrappers, and verification artifacts all participate in one deterministic pipeline
-- the temporary Codex budget override disappears because the roots fit stable budgets again
+- repo/domain-specific guidance lives in scoped host-native files rather than bundled root payloads
 
 ---
 
@@ -103,8 +106,8 @@ GENERATED OUTPUTS
 ```text
 builds/agents/ SOURCE FILES + builds/ METADATA
 │
-├─ builds/manifests/*.json                   ─── package targets and output contracts
-├─ builds/modules/*.json                     ─── module sidecar metadata
+├─ builds/manifests/*.toml                   ─── package targets and output contracts
+├─ builds/modules/*.toml                     ─── module sidecar metadata
 ├─ builds/agents/Lares_Kernel.md             ─── browser kernel package source
 ├─ builds/agents/Lares_Preferences.md        ─── still oversized root payload source
 ├─ builds/agents/Lares_VSCode_Operations.md  ─── still oversized repo-ops payload source
@@ -118,7 +121,7 @@ GENERATED OUTPUTS
 ├── AGENTS.md
 ├── .claude/CLAUDE.md
 ├── .github/copilot-instructions.md
-├── .codex/config.toml                       project_doc_max_bytes = 150000 (temporary compatibility stopgap)
+├── .codex/config.toml                       project_doc_max_bytes = 32768
 ├── builds/rendered/browser/Lares_Kernel.browser.md
 └── builds/verification/<target>/*           lock/report/checksums
 ```
@@ -181,9 +184,9 @@ These are the **only four extraction points** in the current pipeline. Everythin
 
 | Output file | Size | Platform limit | Status |
 |---|---|---|---|
-| `AGENTS.md` (Codex) | ~135 KB | intended stable budget below current stopgap | 🔴 Still depends on temporary `150000` override |
-| `.claude/CLAUDE.md` | 136,220 bytes | 200-line adherence target | 🔴 7.5× over target |
-| `.github/copilot-instructions.md` | 136,014 bytes | 4,000 char code review limit | 🔴 34× over limit |
+| `AGENTS.md` (Codex) | ~31 KB | 32 KiB stable budget | ✅ Within budget (temporary override removed) |
+| `.claude/CLAUDE.md` | ~31 KB | 200-line adherence target | ⚠️ Exceeds adherence line target; within byte limit |
+| `.github/copilot-instructions.md` | ~31 KB | 4,000 char code review limit | ⚠️ Code review window still saturated; scoped instructions exist |
 | `.github/agents/*.agent.md` | ~2,500 bytes each | No stated limit | ✅ Fine |
 | `.codex/agents/*.toml` | ~2,800 bytes each | No stated limit | ✅ Fine |
 
@@ -232,7 +235,7 @@ python3 scripts/agents/verify_alignment.py
 
 4. **Platform-specific worker frontmatter is handled** (correct) — `tools_claude:` maps to `tools:` in Claude output; `sandbox_mode_codex:` maps to `sandbox_mode` in Codex TOML. This part of the pipeline is well-designed.
 
-5. **Temporary Codex compatibility override** — `.codex/config.toml` now uses `project_doc_max_bytes = 150000` so the current generated `AGENTS.md` still loads during the migration. This keeps the system running, but it blocks a safe VS Code/Codex reload until the root payload is slimmed back under a stable budget.
+5. **Temporary Codex compatibility override — RESOLVED** — `.codex/config.toml` now uses `project_doc_max_bytes = 32768`. Root packages are back within the stable 32 KiB budget. Reload safety restored.
 
 ## Ideal-State Implications
 
