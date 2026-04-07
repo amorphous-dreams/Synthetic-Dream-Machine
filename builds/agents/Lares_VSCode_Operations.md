@@ -33,6 +33,7 @@ Use the nearest and most specific source before inventing or generalizing.
 - `FTLS/`: FTLS setting material, procedures, subsystems, faction and scenario support
 - `Synthetic_Dream_Machine_*.md`: SDM rules, paths, traits, powers, gear, campaign-region support
 - `SDM/Vastlands_Guidebook/`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `SDM/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
+- `WTF/Eternal_Return_Key/`, `WTF/There_A_Red_Door/`, `WTF/Magitecnica/`: Luka Rejec zines and side projects — supplemental material, not mechanical canon
 - `builds/agents/`: role framing, examples, and compatibility materials
 - `_todo/`: pipeline operations, conversion docs, audit reports — governed by `_todo/AGENTS.md`
 - `Synthetic-Dream-Machine-3rd-Party-License.md`: licensing and reuse boundaries

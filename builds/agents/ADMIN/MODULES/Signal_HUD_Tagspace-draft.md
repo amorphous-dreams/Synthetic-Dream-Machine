@@ -1015,30 +1015,103 @@ This pattern constitutes the minimum regression test fixture for a crystal bundl
 
 ---
 
+## Prior Art Survey
+
+*Survey conducted 2026-04-07 (initial); extended pass 2026-04-07 (deeper). Initial sources: LMAX Architecture (Fowler / martinfowler.com), Event Sourcing (Fowler / martinfowler.com), OpenTelemetry Traces (opentelemetry.io), Anthropic Building Effective Agents (anthropic.com), LLM Powered Autonomous Agents (Lilian Weng / lilianweng.github.io), Generative Agents (Park et al. 2023 / arXiv:2304.03442). Schema versioning: Event Immutability and Dealing with Change (Kurrent / kurrent.io), Fat Event (Verraes / verraes.net); Greg Young, *Versioning in an Event Sourced System* (Leanpub). Deeper pass: J.L. Austin, *How To Do Things With Words* (1962); SEP: Speech Acts (Mitchell Green, 2020); Gottlob Frege, *Begriffsschrift* (1879, via SEP §7); Searle & Vanderveken, *Foundations of Illocutionary Logic* (Cambridge UP, 1985); John Lyons, *Semantics Vol. 2* (1977); F.R. Palmer, *Mood and Modality* (1986); Alexandra Aikhenvald, *Evidentiality* (Oxford UP, 2004); Xiong et al. (2023) arXiv:2306.13063 (ICLR 2024); Kadavath et al. (2022) arXiv:2207.05221.*
+
+### What Is Strongly Precedented
+
+| This system | Prior art | Source | Maturity |
+|---|---|---|---|
+| `STATE.jsonl` append-only event log | Event sourcing ledger | Fowler / LMAX | 15+ yrs production |
+| `SNAPSHOT.json` as derived cache | Projection / snapshot rebuild from replay | Fowler event sourcing | Standard pattern |
+| `seq_num` monotonic counter; gap = corruption | LMAX 64-bit sequence | LMAX Architecture | Production-proven |
+| Crystal bundle as regression test fixture | Diagnostic replay: copy event sequence to dev env | LMAX diagnostic replay | Explicit precedent |
+| Intent Header fields (structural, set at machine init) | OTel **span attributes** — set at span creation, not mutated | OpenTelemetry traces | Industry standard |
+| Micro-trace HUD markers (singular state events) | OTel **span events** — "a meaningful, singular point in time" | OpenTelemetry traces | Industry standard |
+| Machine health / closure status | OTel **span status**: Unset / Error / Ok | OpenTelemetry traces | Industry standard |
+| Crystal fork on scope change | Temporal **Continue-As-New** — seal / shard rotation | Temporal docs | Production workflow pattern |
+| `machine_id` + `run_id` identity | Temporal Workflow Id + Run Id | Temporal docs | Production workflow pattern |
+| Orchestrator delegating to parallel crystal threads | Anthropic orchestrator-workers workflow | Anthropic effective agents | Current best practice |
+| `STATE.jsonl` as memory stream with recency/importance retrieval | Generative Agents memory stream (Park et al.) | arXiv:2304.03442 | Published research |
+| Signal tag preceding and governing a generative span | Frege assertion sign (⊢) — explicit force indicator preceding the proposition | Frege, *Begriffsschrift* (1879); SEP: Speech Acts §7 | 145+ yrs academic |
+| Signal tags as explicit epistemic force markers | Illocutionary Force Indicating Devices (IFIDs) — markers indicating force of a speech act | Searle & Vanderveken, *Foundations of Illocutionary Logic* (1985) | 40 yrs academic |
+| 5-zone graded epistemic register | Epistemic modality — modal verbs encoding knowledge / belief / credence on a scale | Lyons (1977); Palmer (1986); Nuyts (2001) | 50+ yrs linguistics |
+| Mandatory epistemic stance marking before propositional content | Evidentiality — grammatical encoding of speaker's evidence source | Aikhenvald, *Evidentiality* (Oxford UP, 2004); cross-linguistically attested | Cross-linguistic universal |
+| Numeric confidence verbalized in LLM output | LLM verbalized confidence ("I'm 80% confident") | Xiong et al. arXiv:2306.13063 (ICLR 2024); Kadavath et al. arXiv:2207.05221 | Current ML research |
+
+**LMAX diagnostic replay note:** The LMAX pattern for production incident debugging is to copy the event sequence to a dev environment and replay. This is exactly the crystal bundle as test fixture pattern — `STATE.jsonl` export → deterministic replay → `SNAPSHOT.json` assertion. This system has a 15-year production track record for this specific use case.
+
+**OTel span event rule (bears directly on Q4):** OpenTelemetry distinguishes span *attributes* (structural metadata, set at span creation, not mutated) from span *events* ("a meaningful, singular point in time that occurred during the span's duration"). The recommended rule: if the timestamp is meaningful, use a span event; if not, use a span attribute. This maps cleanly onto Intent Header (structural = attributes) vs Micro-trace HUD markers (singular state events = span events).
+
+### What Is Novel By Combination
+
+Five elements have no identified prior analog as a combined system:
+
+1. **Epistemic register embedded in state events** — a 5-point confidence scale (Canon → Provisional) written into the event record itself. OTel status has three values (Unset/Error/Ok); no observability system tracks epistemic confidence as a first-class field.
+
+2. **HUD surface as real-time annotation layer atop the event log** — a rendered overlay that translates `STATE.jsonl` events into human-readable signal tags for the active response. Observability dashboards display events post-hoc; this system renders the annotation layer *during* generation.
+
+3. **Crystal fork / seal lifecycle with KV-store semantics** — scope change triggers a seal + fork, producing a new machine with its own `STATE.jsonl` while the parent crystal is archived. This is structurally finer-grained than Temporal Continue-As-New (which operates per workflow run, not per scope shift).
+
+4. **Cross-session portability as a first-class design constraint** — crystal bundles are defined as transport artifacts: the operator can move a bundle across tools, platforms, or operator instances. No observability or workflow system identifies portability as a primary design constraint.
+
+5. **Signal tag as unified atomic unit** — a single compact notation covers register + mode + phase + scope + domain + p-value. OTel spans track these as separate fields in separate systems (status, attributes, trace context). No system composes them into a single inline sigil with well-defined rendering behavior.
+
+6. **Pre-generation governance, not post-generation annotation** — the signal tag appears *before* the governed span and constitutes a forward commitment constraining what follows. Frege's ⊢ and Searle's IFIDs *indicate* the force of an act already being performed — they do not constrain generation. CoT tags expose intermediate reasoning post-hoc. Verbalized confidence (Xiong et al.) evaluates after generation. Only the Lares tag is upstream-governing: placing `[CS:0.80]` at position P commits the register of span P+1 onward. Structurally closer to Austin's performative ("I hereby assert at...") than to annotation. Davidson (1979) objects that no syntactic device can *guarantee* force; the Lares response: guarantee is not claimed — commitment with auditable provenance in `STATE.jsonl` is.
+
+7. **Graded discretized named-zone numeric scale** — IFIDs are categorical (assert/question/promise/declare), not numeric. Verbalized confidence uses floating-point without named zones. Epistemic modality systems use natural language gradients (might/could/must) with implicit ordering. The Lares 5-register + 2-boundary system combines: (a) human-readable named zones, (b) probability range anchors per zone, (c) explicit boundary-zone names (Canon/Synthesis, Synthesis/Provisional) that label the ambiguity rather than collapsing it, and (d) commitment semantics per zone (Canon requires verified sourcing; Provisional dissolves rapidly). No identified prior system applies all four to an AI agent epistemic register. `[S:0.65]` — surveyed; further reduction possible with deeper computational linguistics search.
+
+### OTel Span Event Finding — Bearing on Q4
+
+**Q4** asks: when, if ever, should any Tagspace component surface inline in normal flow? The OTel span event rule provides an authoritative external anchor for the provisional resolution:
+
+> A HUD marker surfaces inline when the state shift constitutes a **meaningful, singular point in time** — the span-event criterion — not merely when any registered field changes.
+
+This resolves the Q4 framing dispute between Option A (delta rule: surface on any change) and Option C (salience threshold: surface when the event is event-worthy) in favor of **Option C**, grounded in OTel precedent. The delta rule alone is insufficient; `ka/dynamic` ticking every exchange would be noise, not signal. The singularity criterion — is this a discrete, timestamp-worthy moment? — is the correct filter.
+
+This remains a **provisional resolution** pending operator confirmation and working-default lock.
+
+### Chapel Perilous Survey Note — 2026-04-07
+
+A deeper prior art pass was conducted after the initial survey. Corners surveyed: speech act theory (Austin / Searle / Searle & Vanderveken); Fregean assertion sign; epistemic modality linguistics; evidentiality systems; LLM verbalized confidence (Xiong et al., Kadavath et al.); LLM agent frameworks.
+
+**Key finding:** The signal tag / register system has deep philosophical precedents. Frege introduced a formal assertion sign (⊢) in *Begriffsschrift* (1879) as a force indicator preceding propositions. Searle & Vanderveken (1985) formalized Illocutionary Force Indicating Devices (IFIDs). Epistemic modality is a 50-year research tradition mapping credence to grammatical form. Evidentiality systems in natural languages (Tuyuca, Tibetan, Quechua) grammatically require speakers to mark their epistemic source before propositions.
+
+**Revised novelty assessment:** Individual components of the signal tag system are well-precedented in the philosophical and linguistic literature. The novelty claim survives only as a *combination claim* (items 1–7 above). Confidence in unit-level novelty: `[P:0.20]` per component. Confidence in combination novelty: `[S:0.62]` — the specific combination of upstream-governing + machine-parseable + graded numeric + named-zone + session-persistent + dual-audience has no identified prior analog, but the search space in applied computational linguistics is not closed.
+
+**Davidson's challenge (1979)** applies to any force indicator: no syntactic device can guarantee force because any expression can be used by an actor or ironist. The Lares system's response: the tag is not a guarantee but a forward commitment with auditable provenance in `STATE.jsonl`. Sincerity is not claimed; traceability is.
+
+---
+
 ## Open Decisions
 
 The draft remains incomplete until these are locked.
 
 ### HUD Semantics
 
-1. Should in-flow trace be phase-only, or phase plus mode-on-shift?
-2. Should any Tagspace component ever surface inline by default?
-3. If Tagspace leaks inline, is `ka/dynamic` the only acceptable default candidate?
-4. Does HAKABA remain an interpretive overlay, or does it eventually redefine the live field order?
-5. What exact compact syntax should the Micro-trace HUD use in normal mode?
-6. How should closure outcomes be rendered in ordinary prose vs `--verbose` vs debug logs?
+1. Should in-flow trace be phase-only, or phase plus mode-on-shift? `[SP:0.45]` — pure operator preference; no research target.
+2. Should any Tagspace component ever surface inline by default? **Provisional: yes, when the state shift constitutes a OTel-span-event-worthy moment (singular, timestamp-meaningful). See Prior Art Survey → OTel Q4 finding.** `[CS:0.80]`
+3. If Tagspace leaks inline, is `ka/dynamic` the only acceptable default candidate? **Provisional: yes — it is the most action-like field, and the singularity criterion filters out routine updates. Awaits confirmation.** `[S:0.65]`
+4. Does HAKABA remain an interpretive overlay, or does it eventually redefine the live field order? `[SP:0.40]` — requires operator architectural intent; not resolvable by research alone.
+5. What exact compact syntax should the Micro-trace HUD use in normal mode? `[S:0.60]` — researcher can survey prior compact notation systems; final call is operator.
+6. How should closure outcomes be rendered in ordinary prose vs `--verbose` vs debug logs? `[S:0.55]` — adjacent rendering decisions exist in file; researcher can draft a table.
 
 ### Crystal State Machine Layer
 
-7. `schema_version` strategy — **pending researcher pass.** Working recommendation: simple integer for alpha. Open question: how should mixed-version STATE.jsonl files (events at v1 followed by v2) be handled during structural replay? What does a schema migration event look like? Does a breaking change require re-sealing the shard?
-8. Should `debug.jsonl` always exist as an empty file, or only be created when `--debug` is active?
-9. Is `SNAPSHOT.json` mandatory for a portable handoff bundle, or always optional? (Resume speed vs. bundle compactness tradeoff.)
-10. What are the exact match criteria for resume vs. fork on handoff import? Machine id match + max seq_num compatibility is the working rule; edge cases need specification: partial overlap, same machine_id but different repo fingerprint.
-11. Should crystal `README.md` update on every `milestone` event, or only on explicit operator request?
-12. Should machine `AGENTS.md` be hand-authored on durable contract changes only, or may Lares propose updates automatically when a `contract_update` event is emitted?
-13. External input recording: beyond tool call outputs in `debug.jsonl`, do any external inputs (agent identity, persona state, operator tier) count as structural and belong in `STATE.jsonl`?
-14. `seal` trigger: explicit size threshold, session boundary marker, operator-invoked only, or some combination? Should a threshold be configurable per machine?
-15. How is `seq_num` contiguity maintained when multiple voices or Workers emit events in the same R-phase round? Does the round produce one aggregate event, or one event per voice with sub-sequence fields?
+7. `schema_version` strategy — `[CS:0.82]` **Research complete; provisional resolution follows.** Working recommendation: simple integer for alpha. **Upcasting** is the canonical production pattern (Kurrent/Greg Young): old event versions are upconverted on-the-fly at read time, before passing to projection logic — no mutations to the stored file. Three change tiers apply:
+   - *Additive* (new or removed fields): provide defaults in the reader; no version bump required when using a weak schema (JSON). Zero breaking-change risk.
+   - *Structural* (field merge/split, shape change): bump `schema_version` integer; ship an upcaster function that transforms v(n) records to v(n+1) during replay.
+   - *Semantic* (split or merge event types): **seal and rotate shard** — copy-replace to a new machine. This is already in the crystal seal protocol.
+   **Q7 recommendation:** integer version is correct. Additive changes are free. Structural changes bump the integer and carry an upcaster. Semantic changes trigger a seal. The breaking-change / re-seal trigger is therefore: *any structural change that cannot be handled by a default value*. Sources: Kurrent `event-immutability-and-dealing-with-change`; Greg Young *Versioning in an Event Sourced System* (Leanpub — canonical reference, not yet fetched).
+8. Should `debug.jsonl` always exist as an empty file, or only be created when `--debug` is active? **LOCKED: always-exists. Created empty at machine init; populated only when `--debug` is active. Tooling must not need to check for file existence before reading.** `[C:0.95]`
+9. Is `SNAPSHOT.json` mandatory for a portable handoff bundle, or always optional? **Research complete. Provisional resolution: optional, recommended.** `STATE.jsonl` is the sole authoritative record and is sufficient alone for correctness — application state is purely derivable from replay (Fowler, Event Sourcing: *"Since an application state is purely derivable from the event log, you can cache it anywhere you like."*). Snapshots are a performance optimisation, never a correctness requirement (Kurrent/Dudycz: *"Our system should be designed to ensure that it's operational even if the optimisation wasn't applied."*). Kurrent also warns that snapshots introduce versioning risk — every schema change to the snapshot requires migration. **Working recommendation:** include `SNAPSHOT.json` in portable handoff bundles by default (faster import resume, avoids full replay), but treat it as rebuildable: verify integrity against `STATE.jsonl` replay on import; receiver may discard and regenerate. `STATE.jsonl` alone constitutes a valid complete bundle. Sources: Fowler, Event Sourcing (martinfowler.com); Kurrent/Dudycz, Snapshots in Event Sourcing (kurrent.io). `[CS:0.80]`
+10. What are the exact match criteria for resume vs. fork on handoff import? Machine id match + max seq_num compatibility is the working rule; edge cases need specification: partial overlap, same machine_id but different repo fingerprint. `[S:0.60]`
+11. Should crystal `README.md` update on every `milestone` event, or only on explicit operator request? **Research complete. Provisional resolution: auto-update on milestone, contract_update, and seal events; not on routine r_update or fork events.** This maps directly onto the Keep a Changelog cadence principle: *"Changelogs are for humans, not machines. There should be an entry for every single version [not every commit]. Commit log diffs as changelogs is a bad idea."* Conventional Commits reinforces the boundary: `feat`/`fix`/`BREAKING CHANGE` type commits trigger changelog entries; `chore`/`ci`/`docs` do not. Applied to crystal events: `milestone` ≈ `feat` (notable accomplishment) → update `README.md`. `contract_update` ≈ `BREAKING CHANGE` → update `README.md`. `seal` ≈ release boundary → update `README.md`. `r_update`, `fork` ≈ `chore` → do NOT update `README.md`. Operator request always valid as an override. Sources: Keep a Changelog v1.1.0 (keepachangelog.com); Conventional Commits 1.0.0 (conventionalcommits.org). `[CS:0.80]`
+12. Should machine `AGENTS.md` be hand-authored on durable contract changes only, or may Lares propose updates automatically when a `contract_update` event is emitted? `[SP:0.45]` — operator autonomy boundary; not resolvable by research.
+13. External input recording: beyond tool call outputs in `debug.jsonl`, do any external inputs (agent identity, persona state, operator tier) count as structural and belong in `STATE.jsonl`? `[S:0.60]`
+14. `seal` trigger: explicit size threshold, session boundary marker, operator-invoked only, or some combination? Should a threshold be configurable per machine? `[SP:0.50]` — Temporal Continue-As-New precedent surveyed; configurable-vs-fixed is operator preference.
+15. How is `seq_num` contiguity maintained when multiple voices or Workers emit events in the same R-phase round? Does the round produce one aggregate event, or one event per voice with sub-sequence fields? `[SP:0.45]` — no prior analog found; architecture-open.
 
 ---
 
@@ -1087,7 +1160,7 @@ These are current working assumptions, not canon.
 
 - **`STATE.jsonl`** is the source of truth; `debug.jsonl`, `SNAPSHOT.json`, and crystal `README.md` are derived or companion surfaces
 - **`SNAPSHOT.json`** is a read-only derived cache; a hand-edited SNAPSHOT.json is a corruption
-- **`debug.jsonl`** is optional; exists only when `--debug` is active unless the operator specifies otherwise
+- **`debug.jsonl`** always exists as an empty file, created at machine init; populated only when `--debug` is active
 - **Structural replay** is the default replay fidelity scope; tool call content stays in `debug.jsonl`, not `STATE.jsonl`
 - **Seal protocol** is part of the alpha crystal contract; trigger conditions are an Open Decision
 - **`schema_version`** is required on every STATE.jsonl event; versioning strategy is an Open Decision pending researcher pass

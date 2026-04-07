@@ -359,10 +359,10 @@ When a character lacks a required trait for a task, the referee assigns a penalt
   * Higher levels: more cash.
 * **A Motive (optional)**:
   * A motivation for ADVENTURE!
-  * See: [MOTIVE](Vastlands_Guidebook/Vastlands_Guidebook.md#motive).
+  * See: [MOTIVE](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#motive).
 * **A Name (optional)**:
   * "Unnamed" or generic characters do not use the six named Ability Scores, and instead use a *Bonus* Ability Score (See below).
-  * See: [NAME](Vastlands_Guidebook/Vastlands_Guidebook.md#name).
+  * See: [NAME](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#name).
 
 ## 2. Levels & Life
 
@@ -941,7 +941,7 @@ Some actions, such as dropping a carried sack or responding to an opponent’s f
 
 A character can take **at least one free action per round**.
 
-See: [Free Actions](Vastlands_Guidebook/Vastlands_Guidebook.md#free-actions).
+See: [Free Actions](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#free-actions).
 
 ## Improvising Actions
 
@@ -1508,7 +1508,7 @@ _n+1 = 2(n)_
 - size reductions (minimum 1) or capacity increases,
 - other unique features (see the _Vastlands Guidebook_ equipment section pp64–93 for a few ideas).
 
-For traditional leveling and traditional item levelling, see **Our_Golden_Age/Our_Golden_Age.md → Traditional Levelling / Traditional Item Levelling**.
+For traditional leveling and traditional item levelling, see **SDM/Our_Golden_Age/Our_Golden_Age.md → Traditional Levelling / Traditional Item Levelling**.
 
 ## Hallmarks, Pets, and Sidekicks
 
