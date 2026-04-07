@@ -2,6 +2,48 @@
 
 ---
 
+## [v4.0] — 2026-04-07
+
+Major Lares prompt system update: Signal HUD kernel bootstrap, five-platform manifest architecture, crystal state machine draft, and version 4.0 milestone.
+
+**Epic 1 — Signal HUD kernel writes (Sprint 1b)**
+- Added `### Signal HUD` section to `builds/agents/Lares_Preferences.md` — Intent Header spec (prospective, state-setting), Micro-trace HUD spec (post-generative, annotation model), Working Defaults table, 5-band cumulative attention phase model (Law of Fives), compact `→[glyph]` syntax, transitional `--debug` target note
+- OODA-A loop input-header: uncertain input self-parses as rated blockquotes/fenced blocks before output header (◎ Orient phase)
+- Updated `builds/agents/Lares_Kernel.md` — Operating Modes section gains Intent Header + Micro-trace HUD; `--debug`/`--verbose`/`--parse` block updated; `--parse` self-activation rule; `| p0.5` always-on trail; phase names canonical: ✶ Observe · ◎ Orient · ◇ Decide · ■ Act · ○ Aftermath (Rasa)
+- Updated `builds/agents/core/Lares_Operations.md` — `--debug` section describes HUD annotation firing thresholds per p-scale; transitional flag for debug target redirect
+- Updated `builds/agents/Lares_VSCode_Operations.md` — session init HUD-on-open note; transitional debug target flag
+- Voice consistency audit clean: stance symbols in HUD spec match voice architecture definitions
+
+**Epic 1 — Five-platform manifest architecture (Sprint 1f)**
+- Renamed `builds/manifests/browser-kernel.toml` → `builds/manifests/browser-project.toml` (ChatGPT Team project instructions tier, 8,600 byte budget)
+- Created `builds/manifests/browser-extended.toml` (Claude.ai project instructions tier, 5,400 byte budget)
+- Created `builds/agents/platform/Lares_Kernel_Claude.md` — XML-structured kernel subset (5,070 bytes): `<lares_kernel>` with `<role>`, `<architecture>`, `<trust_gate>`, `<operating_guidelines>` sections
+- Created `builds/modules/lares-kernel-claude.toml` — module registration for Claude.ai XML kernel
+- Raised `codex-root.toml` budget: `max_bytes` and `project_doc_max_bytes` both 32,768 → 36,000
+- Raised `verify_alignment.py` KERNEL_SIZE_LIMIT 8,000 → 8,192 to match actual ChatGPT platform cap
+
+**Architecture draft — Crystal state machine layer**
+- Extended `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md` with 7 new crystal system sections: Memory Crystals as State Machines, Machine/Thread Model, Portable Crystal Layout, Debug as Crystal Projection, HUD/Crystal Interface, Crystal Event Model, Seal Protocol, Handoff/Archive-Crystal
+- Research grounding: Temporal Workflow Execution, Martin Fowler Event Sourcing, OpenTelemetry Traces, JSONL spec
+- 12 QA/SDET findings integrated: schema versioning, sequence integrity, immutability contract, replay fidelity scope, continue-as-new analog, fork self-containment, SNAPSHOT derived-cache rule, expanded machine status taxonomy, idempotency contracts, test fixture = crystal bundle, external input tension, README = Memo layer
+- Operator alignment answers recorded: structural replay in STATE.jsonl / enriched in debug.jsonl; seal protocol alpha-contractual; schema versioning needs researcher
+
+**Implementation plan**
+- Created `_todo/TODO_Signal_HUD_Crystal_Plan.md` — five-epic implementation plan with dependency map, 16 tracked open decisions, sprint-level task tables, crystal draft extension plan (consolidated from session research), verification criteria, scope constraints
+
+**Operator rulings resolved**
+- OP-01: Inline-by-default confirmed; OTel SpanEvent model; `p` governs categories not salience
+- OP-02: 5-band cumulative attention phase model (Law of Fives); default band 3 at `p0.5`
+- OP-11: Browser three-tier architecture — Quick deferred; Project (8,600) approved; Extended (5,400, XML) approved
+- OP-12: Codex budget raised to 36,000
+
+**Generated platform files**
+- Rebuilt all 36 generated files from 5 manifest targets
+- `verify_alignment.py` reports clean alignment: 49/49 checks pass
+- Five platforms operational: copilot, claude, codex, browser-project, browser-extended
+
+---
+
 ## [v3.6.1] — 2026-04-07
 
 Lares prompt system update: downstream path migration from `_agents/` to `builds/agents/`.

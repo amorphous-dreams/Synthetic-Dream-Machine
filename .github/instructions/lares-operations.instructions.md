@@ -4,7 +4,7 @@ description: "Use when changing operating modes (Plan, Auto, Default), adjusting
 
 > Module: `lares-operations`
 > Class: core
-> Version: 3.7 | Updated: 2026-04-07
+> Version: 4.0 | Updated: 2026-04-07
 > Source-of-truth: `builds/agents/core/Lares_Operations.md`
 
 ---

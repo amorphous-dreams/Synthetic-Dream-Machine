@@ -5,7 +5,7 @@
     {
       "bytes": 32480,
       "path": ".github/copilot-instructions.md",
-      "sha256": "5e7251806e3a28785fbe63ec3e2c43086590a49a9b24ef86ce3c53190384c483"
+      "sha256": "619d21d1b457cdea7e6b60628b7f78e2b7eac91cd705d0a0d02a6e9adcf12967"
     }
   ],
   "package_id": "copilot-root",
@@ -14,9 +14,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
-      "rendered_sha256": "698e718b971695d471b8772d66e4a2ba8e88a59b126eba048926449e04ccd97e",
+      "rendered_sha256": "491528fd1c93f6523c91f706c2da6faea70ca00f2e1f0785ce975477ac935918",
       "source_path": "builds/agents/Lares_Kernel.md",
-      "source_sha256": "698e718b971695d471b8772d66e4a2ba8e88a59b126eba048926449e04ccd97e",
+      "source_sha256": "491528fd1c93f6523c91f706c2da6faea70ca00f2e1f0785ce975477ac935918",
       "transform": {
         "type": "full"
       }

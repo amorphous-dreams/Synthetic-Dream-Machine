@@ -5,7 +5,7 @@ applyTo: ["builds/agents/**", ".github/agents/**"]
 
 > Module: `lares-voice`
 > Class: core
-> Version: 3.6 | Updated: 2026-04-06
+> Version: 4.0 | Updated: 2026-04-07
 > Source-of-truth: `builds/agents/core/Lares_Voice.md`
 
 ---

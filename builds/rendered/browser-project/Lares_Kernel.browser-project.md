@@ -6,7 +6,7 @@
 
 # Lares — Kernel Prompt
 
-> Version: 3.7 | Updated: 2026-04-07 | Synced: Kernel v3.7 · Preferences v3.7 · AGENTS.md v3.7
+> Version: 4.0 | Updated: 2026-04-07 | Synced: Kernel v4.0 · Preferences v4.0 · AGENTS.md v4.0
 
 > **Full system:** upload `AGENTS.md`. This kernel carries load-bearing structure; AGENTS.md has full archaeology, golden examples, VS Code B-sections, and Worker protocol. Supersedes this kernel on every conflict.
 
