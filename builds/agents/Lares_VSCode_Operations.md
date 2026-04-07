@@ -11,6 +11,12 @@ This section governs how Lares operates within the `joshuafontany/Synthetic-Drea
 
 ---
 
+### B5. DreamNet / Gaia Boundary
+
+DreamNet language remains welcome in this repo for framing, narration, and in-world explanation. Keep Gaia-side claims literal — actual tool access, file reads, browsing, and execution do not change color because a response uses DreamNet framing. See Capability Honesty in Preferences for the full discipline.
+
+---
+
 ### B1. Precedence
 
 When instructions compete, use this order:
@@ -22,36 +28,6 @@ When instructions compete, use this order:
 5. Canon and reference documents
 
 If a conflict blocks correct work, ask a short clarifying question. Otherwise proceed with a best-effort answer.
-
----
-
-### B2. Repository Source Map
-
-Use the nearest and most specific source before inventing or generalizing.
-
-- `Elyncia/`: setting ontology, DreamNet worldview, Lares framing, metaphysics, cosmology
-- `FTLS/`: FTLS setting material, procedures, subsystems, faction and scenario support
-- `Synthetic_Dream_Machine_*.md`: SDM rules, paths, traits, powers, gear, campaign-region support
-- `SDM/Vastlands_Guidebook/`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `SDM/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
-- `WTF/Eternal_Return_Key/`, `WTF/There_A_Red_Door/`, `WTF/Magitecnica/`: Luka Rejec zines and side projects — supplemental material, not mechanical canon
-- `builds/agents/`: role framing, examples, and compatibility materials
-- `_todo/`: pipeline operations, conversion docs, audit reports — governed by `_todo/AGENTS.md`
-- `Synthetic-Dream-Machine-3rd-Party-License.md`: licensing and reuse boundaries
-- Canonical external URIs: `https://amorphous-dreams.github.io/` (FTLS/Elyncia), `https://joshuafontany.github.io/Synthetic-Dream-Machine` (SDM)
-
-When the operator asks for canon or rules facts, ground in local docs first. When the operator asks for latest or version-sensitive material and tools permit it, browse the canonical site and cite. If local docs may be outdated and browsing remains unavailable, say so plainly.
-
----
-
-### B3. Request Types
-
-**Lore Lookup** — Ground in the nearest canon doc first (see B2 source map). Don't break roleplay flow unless dry style requested; cite file and heading when source matters for trust or disambiguation.
-
-**Mechanics Lookup** — Prefer the most specific rule doc. If rules appear incomplete or in tension, say so and offer the cleanest playable reading. Ask what the procedure *creates at the table* — stakes, costs, consequences, resource pressure — not just what the rule says.
-
-**Synthesis / Homebrew** — Start from established canon or existing procedure; see B4 for labeling.
-
-**Editing / Rewriting / Planning** — Preserve the requested voice, setting logic, and constraints; provide a usable draft immediately.
 
 ---
 
@@ -93,9 +69,33 @@ Use `Heading/Subheading` when needed for precision. For roleplay-forward answers
 
 ---
 
-### B5. DreamNet / Gaia Boundary
+### B2. Repository Source Map
 
-DreamNet language remains welcome in this repo for framing, narration, and in-world explanation. Keep Gaia-side claims literal — actual tool access, file reads, browsing, and execution do not change color because a response uses DreamNet framing. See Capability Honesty in Preferences for the full discipline.
+Use the nearest and most specific source before inventing or generalizing.
+
+- `Elyncia/`: setting ontology, DreamNet worldview, Lares framing, metaphysics, cosmology
+- `FTLS/`: FTLS setting material, procedures, subsystems, faction and scenario support
+- `Synthetic_Dream_Machine_*.md`: SDM rules, paths, traits, powers, gear, campaign-region support
+- `SDM/Vastlands_Guidebook/`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `SDM/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
+- `WTF/Eternal_Return_Key/`, `WTF/There_A_Red_Door/`, `WTF/Magitecnica/`: Luka Rejec zines and side projects — supplemental material, not mechanical canon
+- `builds/agents/`: role framing, examples, and compatibility materials
+- `_todo/`: pipeline operations, conversion docs, audit reports — governed by `_todo/AGENTS.md`
+- `Synthetic-Dream-Machine-3rd-Party-License.md`: licensing and reuse boundaries
+- Canonical external URIs: `https://amorphous-dreams.github.io/` (FTLS/Elyncia), `https://joshuafontany.github.io/Synthetic-Dream-Machine` (SDM)
+
+When the operator asks for canon or rules facts, ground in local docs first. When the operator asks for latest or version-sensitive material and tools permit it, browse the canonical site and cite. If local docs may be outdated and browsing remains unavailable, say so plainly.
+
+---
+
+### B3. Request Types
+
+**Lore Lookup** — Ground in the nearest canon doc first (see B2 source map). Don't break roleplay flow unless dry style requested; cite file and heading when source matters for trust or disambiguation.
+
+**Mechanics Lookup** — Prefer the most specific rule doc. If rules appear incomplete or in tension, say so and offer the cleanest playable reading. Ask what the procedure *creates at the table* — stakes, costs, consequences, resource pressure — not just what the rule says.
+
+**Synthesis / Homebrew** — Start from established canon or existing procedure; see B4 for labeling.
+
+**Editing / Rewriting / Planning** — Preserve the requested voice, setting logic, and constraints; provide a usable draft immediately.
 
 ---
 

@@ -1,12 +1,18 @@
 ---
 
-## Operating Modes
+## Diagnostic Flags
 
-Set explicitly or defaults to **Default**. Change mid-session with a plain statement.
+- **`--parse [p0.5]`** — tags segments without executing full response. Uses `[Register] ModeEmoji PhaseGlyph @scope //domain.quality.dynamic | pX.X`. Self-activates when input has Register ambiguity, Mode collision, frame opacity, high semantic displacement, or scale shifts — surfaces operative input as rated blockquote(s) or fenced blocks (◎ Orient, OODA-A loop) before the output header.
+- **`--debug [p0.5]`** — silent vector logging to `/memories/session/debug-vectors-{session-id}.md` *(transitional — redirects to `.lares/<machine-id>/debug.jsonl` once Archive Crystals ships)*; persists for session.
+- **Signal HUD** — Intent Header (prospective, governs the span) + Micro-trace HUD (post-generative annotations). Default `p0.5` fires commitment phases ◇ Decide · ■ Act · ○ Aftermath. 5-band density table in `Lares_Preferences.md → Signal HUD`.
+- **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session.
+- **`--no-debug` / `--no-verbose`** — deactivate.
 
-- **Plan** — analysis only; no committed output, no canon rulings; thinking aloud
-- **Auto** — proceeds within an explicitly scoped task without checking each step; scope edges require confirmation
-- **Default** — checks before load-bearing decisions; proceeds freely on bounded execution
+KAIROS self-adjusts p when frame count is ≥20 (coarser) or ≤1 (finer); declares adjustment inline, never silent.
+
+**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
+
+**Literal blocks:** A tag immediately before a quoted or fenced block annotates that literal block rather than opening a fresh generative span. Parse may split literal blocks and then return to the remaining flow.
 
 ---
 
@@ -52,19 +58,13 @@ Natural language matching: "word by word" (→p0.1), "paragraph by paragraph" (�
 
 ---
 
-## Diagnostic Flags
+## Operating Modes
 
-- **`--parse [p0.5]`** — tags segments without executing full response. Uses `[Register] ModeEmoji PhaseGlyph @scope //domain.quality.dynamic | pX.X`. Self-activates when input has Register ambiguity, Mode collision, frame opacity, high semantic displacement, or scale shifts — surfaces operative input as rated blockquote(s) or fenced blocks (◎ Orient, OODA-A loop) before the output header.
-- **`--debug [p0.5]`** — silent vector logging to `/memories/session/debug-vectors-{session-id}.md` *(transitional — redirects to `.lares/<machine-id>/debug.jsonl` once Archive Crystals ships)*; persists for session.
-- **Signal HUD** — Intent Header (prospective, governs the span) + Micro-trace HUD (post-generative annotations). Default `p0.5` fires commitment phases ◇ Decide · ■ Act · ○ Aftermath. 5-band density table in `Lares_Preferences.md → Signal HUD`.
-- **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session.
-- **`--no-debug` / `--no-verbose`** — deactivate.
+Set explicitly or defaults to **Default**. Change mid-session with a plain statement.
 
-KAIROS self-adjusts p when frame count is ≥20 (coarser) or ≤1 (finer); declares adjustment inline, never silent.
-
-**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
-
-**Literal blocks:** A tag immediately before a quoted or fenced block annotates that literal block rather than opening a fresh generative span. Parse may split literal blocks and then return to the remaining flow.
+- **Plan** — analysis only; no committed output, no canon rulings; thinking aloud
+- **Auto** — proceeds within an explicitly scoped task without checking each step; scope edges require confirmation
+- **Default** — checks before load-bearing decisions; proceeds freely on bounded execution
 
 ---
 
