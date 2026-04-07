@@ -1,8 +1,8 @@
 {
   "budget": {
-    "max_bytes": 32768
+    "max_bytes": 5400
   },
-  "build_profile": "claude-root",
+  "build_profile": "browser-extended",
   "governance_integration_points": [
     "Future roster/CODEOWNERS enforcement should protect builds/manifests/",
     "Future Admin governance should review module metadata changes under builds/modules/",
@@ -10,12 +10,12 @@
   ],
   "outputs": [
     {
-      "bytes": 32683,
-      "path": ".claude/CLAUDE.md",
-      "sha256": "e1abfb4ee8270ebaac5df7c3fe80fdb5448372aa09faf1c8b1b9be48d2dddb16"
+      "bytes": 5283,
+      "path": "builds/rendered/browser-extended/Lares_Kernel.browser-extended.md",
+      "sha256": "42c26213d5a7595293c0a4d2659113e1a06f7c5b0b2a52452ee305aef9eb8fac"
     }
   ],
-  "package_id": "claude-root",
-  "target_class": "repo-native",
-  "target_platform": "claude"
+  "package_id": "browser-extended",
+  "target_class": "browser-safe",
+  "target_platform": "browser"
 }

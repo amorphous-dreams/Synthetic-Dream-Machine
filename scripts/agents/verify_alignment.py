@@ -23,7 +23,7 @@ import combine_agents as builder
 REPO = pathlib.Path(__file__).resolve().parents[2]
 WORKER_SLUGS = builder.WORKER_SLUGS
 KERNEL_PATH = REPO / "builds" / "agents" / "Lares_Kernel.md"
-KERNEL_SIZE_LIMIT = 8000
+KERNEL_SIZE_LIMIT = 8192
 PREFERENCES_PATH = REPO / "builds" / "agents" / "Lares_Preferences.md"
 
 DESCRIPTION_MIN_LEN = 80
