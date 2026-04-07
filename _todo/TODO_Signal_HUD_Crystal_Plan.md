@@ -11,6 +11,8 @@ Convert the Signal HUD / Tagspace / HAKABA architecture document into shipped be
 **Architecture source:** `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md`
 **Governs:** `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_Kernel.md`, `builds/agents/core/Lares_Operations.md`, `builds/agents/Lares_VSCode_Operations.md`, all platform wrappers, and the future `.lares/` crystal infrastructure.
 
+> **⚠ Draft dependency:** The architecture draft (`Signal_HUD_Tagspace-draft.md`) is the **sole source** for multiple load-bearing specs that this plan's tasks depend on. Do not archive it until Epic 2 (AE-08/AE-09) promotes its content into canonical spec files. Key specs only in the draft: Header Field Taxonomy (per-field annotation thresholds), Forward vs Backward Trace contract, Seal Protocol procedure + QA assertions, Non-drift rule (two-part testable invariant), Working Defaults (20 consolidated items), Tagspace Definition & DreamNet boundary rule, multi-stance rules, Prior Art Survey, Ba/OODA-A identity analysis, Q7 upcasting research. Read the draft before starting any AE task that references these.
+
 ---
 
 ## Dependency Map (read first)
@@ -51,10 +53,10 @@ Decisions that must be resolved **before** specific epics are called out inline.
 | Q# | Summary | Tag | Blocks | Type |
 |---|---|---|---|---|
 | Q1 | Phase + stance-on-shift spec | `[C:0.95]` | — | Locked |
-| Q2 | Inline by default (OTel anchor) | `[CS:0.80]` | Epic 1 | Operator ruling needed |
+| Q2 | Inline by default (OTel anchor) | `[C:0.95]` | — | Locked (OP-01 resolved) |
 | Q3 | All header fields eligible post-gen | `[C:0.95]` | — | Locked |
 | Q4 | HAKABA canonical logical order | `[C:0.95]` | — | Locked |
-| Q5 | Compact HUD syntax `→[glyph]` | `[S:0.68]` | Epic 1 | Operator ruling needed (density thresholds) |
+| Q5 | Compact HUD syntax `→[glyph]` | `[C:0.95]` | — | Locked (OP-02 resolved) |
 | Q6 | Closure rendering tiers | `[S:0.55]` | Epic 2 | Researcher task |
 | Q7 | Schema_version strategy (integer) | `[CS:0.82]` | Epic 5 | Operator confirm |
 | Q8 | `debug.jsonl` always exists | `[C:0.95]` | — | Locked |
