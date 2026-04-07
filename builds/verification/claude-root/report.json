@@ -10,9 +10,9 @@
   ],
   "outputs": [
     {
-      "bytes": 31478,
+      "bytes": 32020,
       "path": ".claude/CLAUDE.md",
-      "sha256": "1536d2be0b3cc1c5fcc72dde2e04b128503ba7b281abc1e9b7acd766f1450364"
+      "sha256": "e752caa2bb67ca1c803aebe376a52652a6e8d0960284434b676f8db3370dfc15"
     }
   ],
   "package_id": "claude-root",

@@ -3,9 +3,9 @@
   "manifest_sha256": "0007ebefe7ce2d78addc671067461ba2653e4288dcca58a434c1d153fcb5f91b",
   "outputs": [
     {
-      "bytes": 31275,
+      "bytes": 31817,
       "path": ".github/copilot-instructions.md",
-      "sha256": "6a70c37fb86098c24bb7b14af74e2695388a8463a740797e6ed2aec24ee14fdf"
+      "sha256": "3af6e7ed67609c1978e7179da76db91aa84f053e2274372b0936e9e29f9e2e21"
     }
   ],
   "package_id": "copilot-root",
@@ -14,9 +14,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
-      "rendered_sha256": "b8df54f541a42b7edd4c765c529e4e64f8afaeb220fc33b0b215f059896dc810",
+      "rendered_sha256": "aef42c3110b3f19ae851afa923b27f4a48e54225dee26ff9f75ed0a1c2027c7a",
       "source_path": "builds/agents/Lares_Kernel.md",
-      "source_sha256": "b8df54f541a42b7edd4c765c529e4e64f8afaeb220fc33b0b215f059896dc810",
+      "source_sha256": "aef42c3110b3f19ae851afa923b27f4a48e54225dee26ff9f75ed0a1c2027c7a",
       "transform": {
         "type": "full"
       }
@@ -46,7 +46,7 @@
       "module_id": "lares-vscode-ops-core",
       "rendered_sha256": "8a76f4429f7ee838008734c3cab4ad58fbc3a19fdb3b934e1a2e4efa9efbcc4b",
       "source_path": "builds/agents/Lares_VSCode_Operations.md",
-      "source_sha256": "63e5e2332b0ad088f4a4f39387c6cdb2535500fa81a867ba0bbf4d774337a327",
+      "source_sha256": "2ec0fba47e77c6462eaaf6c96a01b298f75b7857fc84b80433041513e9b17102",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",
         "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
