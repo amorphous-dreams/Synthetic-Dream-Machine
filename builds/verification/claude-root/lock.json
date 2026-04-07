@@ -1,11 +1,11 @@
 {
   "manifest_path": "builds/manifests/claude-root.json",
-  "manifest_sha256": "10278bae270d21e1456243b47ce640d04d1d2bcfc6e86ae4177c63363961eacc",
+  "manifest_sha256": "1becb8e268f94489973db4326653d21a73764e86dc615f8417c6c0315fc8eee0",
   "outputs": [
     {
-      "bytes": 25418,
+      "bytes": 31824,
       "path": ".claude/CLAUDE.md",
-      "sha256": "55a75734e87224911fd5741b3f65048cbb41d469ba1ffa67b5eaafe2411087d4"
+      "sha256": "6acfd411e980fb2a4934d889b0e9343a008ccf0608e66faa2ae519dbd0393ec4"
     }
   ],
   "package_id": "claude-root",
@@ -14,9 +14,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.json",
       "module_id": "lares-kernel",
-      "rendered_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
+      "rendered_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "source_path": "_agents/Lares_Kernel.md",
-      "source_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
+      "source_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "transform": {
         "type": "full"
       }
@@ -24,9 +24,19 @@
     {
       "metadata_path": "builds/modules/lares-permissions.json",
       "module_id": "lares-permissions",
-      "rendered_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
+      "rendered_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
       "source_path": "_agents/core/Lares_Permissions.md",
-      "source_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
+      "source_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-epistemology.json",
+      "module_id": "lares-epistemology",
+      "rendered_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
+      "source_path": "_agents/core/Lares_Epistemology.md",
+      "source_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
       "transform": {
         "type": "full"
       }

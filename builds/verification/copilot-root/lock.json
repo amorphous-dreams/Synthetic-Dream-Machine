@@ -1,11 +1,11 @@
 {
   "manifest_path": "builds/manifests/copilot-root.json",
-  "manifest_sha256": "1e29976f967addf5ebf40d73b51e7360649b7be7f1e16a6376e9ea200bbf1e2d",
+  "manifest_sha256": "df3017fdd963d124e112df6670e06de826646a59a3e778101b44f77b62f5c640",
   "outputs": [
     {
-      "bytes": 25215,
+      "bytes": 31621,
       "path": ".github/copilot-instructions.md",
-      "sha256": "808e5bafffdf49b8a021481826680814dea5a1ef5a79c0841e7247e273a0cf3f"
+      "sha256": "6b4be725098192999b7bd16eb5ba1950b92999d122fceea3edd7542c54d0b10c"
     }
   ],
   "package_id": "copilot-root",
@@ -14,9 +14,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.json",
       "module_id": "lares-kernel",
-      "rendered_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
+      "rendered_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "source_path": "_agents/Lares_Kernel.md",
-      "source_sha256": "336211ad56faf7f3ea4b7391b57c6eeb70745cdd2bd59b5b32e309e25a2b208f",
+      "source_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "transform": {
         "type": "full"
       }
@@ -24,9 +24,19 @@
     {
       "metadata_path": "builds/modules/lares-permissions.json",
       "module_id": "lares-permissions",
-      "rendered_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
+      "rendered_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
       "source_path": "_agents/core/Lares_Permissions.md",
-      "source_sha256": "06ef85dfe17c5059efbbfb969308fd78468ff6b23538cc8288be3465ba45f657",
+      "source_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
+      "transform": {
+        "type": "full"
+      }
+    },
+    {
+      "metadata_path": "builds/modules/lares-epistemology.json",
+      "module_id": "lares-epistemology",
+      "rendered_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
+      "source_path": "_agents/core/Lares_Epistemology.md",
+      "source_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
       "transform": {
         "type": "full"
       }

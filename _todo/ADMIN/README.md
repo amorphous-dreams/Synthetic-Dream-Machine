@@ -67,7 +67,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 - [x] Distinguish `User` / `Operator` / `Admin` in prompt sources
 - [x] Require explicit escalation for `Admin`
 - [x] Allow verified `gh` session identity to establish `Operator`
-- [x] Create protected in-repo admin roster artifact (`_todo/ADMIN/ROSTER.md`)
+- [x] Create protected in-repo admin roster artifact (`.github/ROSTER.md`)
 - [x] Add `CODEOWNERS` protection for `_agents/`, `AGENTS.md`, and admin docs
 - [x] Bind `Admin` prompt logic to roster membership
 - [ ] Add GitHub org/team path or direct-username fallback policy
@@ -131,7 +131,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 
 | ID | Feature | Epic | Status | Notes |
 |---|---|---|---|---|
-| A1 | Admin roster source of truth | A | **Done** | `_todo/ADMIN/ROSTER.md` shipped |
+| A1 | Admin roster source of truth | A | **Done** | `.github/ROSTER.md` shipped |
 | A2 | GitHub protection model | A | **Done** | `/.github/CODEOWNERS` shipped |
 | A3 | Roster-bound Admin prompt rule | A | **Done** | 4-tier model in all source + generated files |
 | A4 | Admin regression cases | A | **Done** | Examples updated in `Lares_VSCode_Operations.md` |

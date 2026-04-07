@@ -29,23 +29,23 @@ sequence.lock:
 1=preserve.slim.roots
 2=preserve.reload.safety
 3=ship.governance [DONE]
-4=author.runtime.modules [IN PROGRESS — lares-permissions shipped]
+4=author.runtime.modules [IN PROGRESS — lares-permissions + lares-epistemology shipped]
 5=map.host.native.scoping
 6=parse_doc.deferred
 
 modules.shipped:
-- lares-permissions: _agents/core/Lares_Permissions.md (4-tier identity, capability model, de-escalation, alias system, capability honesty, workspace trust gate)
-- module sidecar: builds/modules/lares-permissions.json
-- integrated into all 3 root manifests; roots now ~25KB (budget 32KB)
+- lares-permissions: _agents/core/Lares_Permissions.md — Trust Gate Kernel block + full 4-tier model, UCAN capability model, de-escalation, alias system, capability honesty, workspace trust gate (weight 120)
+- lares-epistemology: _agents/core/Lares_Epistemology.md — RAW/Korzybski foundation, reality tunnels+catma, E-Prime practice, registers/modes WHY (boundary zones, canon gate pointer, register-mode complementarity, multi-mode cost), signal tag vector constraints, degraded state archaeology (weight 125)
+- integrated into all 3 root manifests; roots now ~31.3KB (budget 32KB, ~1KB margin)
+- lares-kernel: pointer annotations added to ## Identity & Permissions and ## Model Agnosticism sections
 
 modules.remaining.core:
 - lares-voice (source: Lares_Preferences.md Voice Architecture)
-- lares-epistemology (source: Lares_Preferences.md Model Agnosticism + registers + modes)
 - lares-operations (source: Lares_Preferences.md collaboration, default behavior, operating modes)
 - lares-setting-lite (source: Lares_Preferences.md Name & Identity Frame, compressed)
 
 governance.shipped:
-- /home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/ROSTER.md
+- /home/joshu/Synthetic-Dream-Machine/.github/ROSTER.md
 - /home/joshu/Synthetic-Dream-Machine/.github/CODEOWNERS
 - _agents/Lares_Preferences.md (4-tier identity, roster-bound Admin rule)
 - _agents/Lares_Kernel.md (condensed 4-tier rule)

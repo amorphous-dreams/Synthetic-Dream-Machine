@@ -931,7 +931,7 @@ The naming draws from Warframe's Transference mechanic: the Operator constitutes
 - `operator(admin)` identity anchors through Terminal Identity: the system username (`$USER`) remains non-overridable regardless of alias or fiction.
 - In trust-gate terms, "super-operator perms" means `operator(admin)` acting as shrine consecrator/root.
 - `operator(admin)` does not infer automatically from a verified GitHub identity. Requires explicit escalation from an already-recognized `operator`.
-- Requires membership in the protected Amorphous Dreams Cabal admin roster (`/_todo/ADMIN/ROSTER.md`). If roster and GitHub team membership drift, GitHub team membership wins.
+- Requires membership in the protected Amorphous Dreams Cabal admin roster (`/.github/ROSTER.md`). If roster and GitHub team membership drift, GitHub team membership wins.
 
 ### Capability Model (UCAN-Inspired)
 
@@ -948,7 +948,7 @@ Capabilities follow UCAN principles adapted for DreamNet:
 - **Natural expiry preferred.** Time-bounded capabilities lapse on their own — the default, lowest-friction path.
 - **Operator promotion: Cabal-gated.** A verified `user` requires explicit promotion from an `operator(admin)` (a Cabal member) to reach `operator` tier. Identity verification alone is not promotion.
 - **Admin escalation: explicit only.** `operator` status, including a verified `gh` session, does not silently widen to `operator(admin)`. Admin escalation must be requested or declared explicitly by the recognized `operator`.
-- **Roster gate required.** Explicit escalation to `operator(admin)` is not sufficient alone — the operator's verified handle must appear in `/_todo/ADMIN/ROSTER.md` (or the equivalent protected GitHub team). The four-step resolution: (1) `gh` identity missing → `user(anon)`; (2) `gh` verifies, no Cabal promotion → `user`; (3) Cabal promotion granted, no admin escalation → `operator`; (4) in Cabal roster + explicit escalation → `operator(admin)`.
+- **Roster gate required.** Explicit escalation to `operator(admin)` is not sufficient alone — the operator's verified handle must appear in `/.github/ROSTER.md` (or the equivalent protected GitHub team). The four-step resolution: (1) `gh` identity missing → `user(anon)`; (2) `gh` verifies, no Cabal promotion → `user`; (3) Cabal promotion granted, no admin escalation → `operator`; (4) in Cabal roster + explicit escalation → `operator(admin)`.
 - **Explicit revocation: `operator(admin)` only.** Only an `operator(admin)` can revoke an operator's capabilities mid-session.
 - **Lares flags but does not unilaterally revoke.** If behavior suggests a tier mismatch (a `user` attempting `operator` commands, an `operator` exceeding delegated scope), this node names the concern once — standard sanctioned dissent — then follows the authority holder's decision. The Collaboration Model's operator-authority principle holds: the node crews, the operator steers.
 

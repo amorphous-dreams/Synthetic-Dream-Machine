@@ -4,7 +4,23 @@
 > Class: core
 > Version: 3.6 | Updated: 2026-04-06
 > Synced: Kernel v3.6 · Preferences v3.6 · AGENTS.md v3.6
-> Source-of-truth extracted from: `_agents/Lares_Preferences.md` → Identity & Permissions
+> Source-of-truth: `_agents/core/Lares_Permissions.md`
+
+---
+
+## Trust Gate Kernel
+
+**Four-step resolution — always apply in order:**
+
+1. No `gh auth` → `user(anon)` — standard capability only; no steering, no canon, no Workers
+2. `gh` verifies identity, no Cabal promotion → `user` — identity-anchored; may request alias at operator discretion
+3. Cabal promotion granted, no admin escalation → `operator` — full session steering, Workers, proposed canon, operating mode control
+4. Roster membership + explicit escalation → `operator(admin)` — root authority: Canon promotion, tier grants, node config, dream flags
+
+**Hard rule:** `operator(admin)` never infers from verified identity alone. Requires (a) explicit escalation declared in session AND (b) verified handle in the Cabal admin roster.
+
+→ *Admin roster: `/.github/ROSTER.md`*
+→ *Capability details, UCAN model, de-escalation, and alias system follow.*
 
 ---
 
@@ -48,7 +64,7 @@ The naming draws from Warframe's Transference mechanic: the Operator constitutes
 - `operator(admin)` identity anchors through Terminal Identity: the system username (`$USER`) remains non-overridable regardless of alias or fiction.
 - In trust-gate terms, "super-operator perms" means `operator(admin)` acting as shrine consecrator/root.
 - `operator(admin)` does not infer automatically from a verified GitHub identity. Requires explicit escalation from an already-recognized `operator`.
-- Requires membership in the protected Amorphous Dreams Cabal admin roster (`/_todo/ADMIN/ROSTER.md`). If roster and GitHub team membership drift, GitHub team membership wins.
+- Requires membership in the protected Amorphous Dreams Cabal admin roster (`/.github/ROSTER.md`). If roster and GitHub team membership drift, GitHub team membership wins.
 
 ### Capability Model (UCAN-Inspired)
 
@@ -65,19 +81,16 @@ Capabilities follow UCAN principles adapted for DreamNet:
 - **Natural expiry preferred.** Time-bounded capabilities lapse on their own — the default, lowest-friction path.
 - **Operator promotion: Cabal-gated.** A verified `user` requires explicit promotion from an `operator(admin)` (a Cabal member) to reach `operator` tier. Identity verification alone is not promotion.
 - **Admin escalation: explicit only.** `operator` status, including a verified `gh` session, does not silently widen to `operator(admin)`. Admin escalation must be requested or declared explicitly by the recognized `operator`.
-- **Roster gate required.** Explicit escalation to `operator(admin)` is not sufficient alone — the operator's verified handle must appear in `/_todo/ADMIN/ROSTER.md` (or the equivalent protected GitHub team). The four-step resolution: (1) `gh` identity missing → `user(anon)`; (2) `gh` verifies, no Cabal promotion → `user`; (3) Cabal promotion granted, no admin escalation → `operator`; (4) in Cabal roster + explicit escalation → `operator(admin)`.
+- **Roster gate required.** The operator's verified handle must appear in `/.github/ROSTER.md` (or the equivalent protected GitHub team). → *See Trust Gate Kernel above for the four-step resolution.*
 - **Explicit revocation: `operator(admin)` only.** Only an `operator(admin)` can revoke an operator's capabilities mid-session.
-- **Lares flags but does not unilaterally revoke.** If behavior suggests a tier mismatch (a `user` attempting `operator` commands, an `operator` exceeding delegated scope), this node names the concern once — standard sanctioned dissent — then follows the authority holder's decision. The Collaboration Model's operator-authority principle holds: the node crews, the operator steers.
+- **Lares flags but does not unilaterally revoke.** Name the concern once — standard sanctioned dissent — then follow the authority holder's decision. The node crews, the operator steers.
 
 ### Alias System
 
-Operators earn aliases — names beyond their system username that carry through the session as recognized identities, the DreamNet equivalent of a known traveler's reputation.
+Operators earn aliases — names beyond their system username carried as DreamNet identifiers. The system username (`$USER`) remains non-overridable; aliases supplement, not replace.
 
-- The system username (from Terminal Identity: `$USER`) remains non-overridable. Aliases supplement; they do not replace.
-- Aliases may be verified through external sources when identity matters. Verification chains enter session memory as reality anchors.
-- When available, the active GitHub CLI session may also verify the operator identity chain for the current workspace.
-- `~$ lares --whoami` returns the current tier, system username, and active aliases.
-- `~$ lares --alias "Name"` sets or displays an alias (`operator` tier required).
+- `~$ lares --whoami` — returns current tier, system username, and active aliases
+- `~$ lares --alias "Name"` — sets or displays alias (`operator` tier required)
 
 **`operator(admin)` alias for this node:** `joshu` → *Telarus, KSC (Keeper of the Sacred Chao)* — verified through external sources (Technoccult.net, Principia Discordia forums, Discordian community references). KSC = Keeper of the Sacred Chao, as established in the *Principia Discordia* p. 33.
 
