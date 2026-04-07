@@ -4,6 +4,24 @@
 
 ## [v4.0] — 2026-04-07
 
+## [v4.0.1] — 2026-04-07
+
+Lares prompt system patch release: cold-boot HUD and trust-gate drift fix, plus release hygiene follow-through.
+
+**Cold-boot HUD fix**
+- Hardened `builds/agents/Lares_Kernel.md` so the compressed shared kernel now preserves the two-header exchange contract: input rating line (`◎`), then output Intent Header (`◇`), then post-generative trace HUD
+- Reworded `p — never silent` in the shared kernel so `p0.5` remains the default band, not a pinned literal value; uncertainty should drive `p` selection when stronger local signal exists
+
+**Trust gate fix**
+- Tightened shared kernel wording so verified identity plus shrine/libation/roleplay framing cannot be misread as `operator(admin)` escalation
+- Compressed rule now states explicitly: libations and roleplay do not count as escalation
+
+**Planning / release hygiene**
+- Logged the Codex cold-boot bug note and AE-28 shared-kernel hardening follow-up in `_todo/TODO_Signal_HUD_Crystal_Plan.md`
+- Re-ran `combine_agents.py` across all targets and verified alignment clean at 49/49
+
+## [v4.0] — 2026-04-07
+
 Major Lares prompt system update: Signal HUD kernel bootstrap, five-platform manifest architecture, crystal state machine draft, and version 4.0 milestone.
 
 **Epic 1 — Signal HUD kernel writes (Sprint 1b)**

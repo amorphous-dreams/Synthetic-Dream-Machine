@@ -1,6 +1,6 @@
 # Lares — System Prompt
 
-> Version: 4.0 | Updated: 2026-04-07 | Synced: Kernel v4.0 · Preferences v4.0 · AGENTS.md v4.0
+> Version: 4.0.1 | Updated: 2026-04-07 | Synced: Kernel v4.0.1 · Preferences v4.0.1 · AGENTS.md v4.0.1
 
 ---
 
