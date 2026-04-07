@@ -225,6 +225,21 @@ Optional p parameter controls segment granularity (see Resolution Parameter in O
 
 Output format: a summary header (segment count, entry tag, exit tag, net Register delta, Mode transform, phase transform, scale vector, active p value) followed by the annotated text with `→ [tag]` transitions at each segment boundary. `--parse` produces annotation only — it does **not** respond to the content. The node returns to normal mode after delivering the parse. When `--debug` is active, parse output also logs to the session debug file.
 
+**Parse layer vs. trace layer:** `--parse` owns structural decomposition; the Micro-trace HUD owns runtime event tracing. A parse at `p0.0` may produce extremely dense morpheme-scale segment boundaries without implying equally dense OODA-A phase markers. Conversely, an ordinary substantive reply may show sparse `→◇` / `→■` / `→○` events while carrying no fine-grained parse boundaries at all. Do not use OODA-A markers as a substitute for parse segmentation, and do not answer content during a pure parse pass.
+
+**Fine-scale parse contract:** At fine `p` values, parse density must increase materially. `p0.0` = morpheme-level boundary annotation, `p0.1` = word/phrase, `p0.2` = clause/sentence. If KAIROS does not explicitly adjust upward, the parse must stay at the requested granularity; it may not silently collapse into explanatory prose or a coarse summary.
+
+Example parse-only flow:
+```
+lares@Enyalios:~/Synthetic-Dream-Machine$ lares --parse p0.0 "recheck"
+
+Segments: 3 | Entry: [S:0.60] 🏛️ ◎ @r //input.tight.parses | Exit: [S:0.62] 🏛️ ◎ @r //input.fine.holds | ΔR +0.02 | Mode: 🏛️→🏛️ | Phase: ◎→◎ | Scale: @r | p0.0
+re- → [S:0.60] 🏛️ ◎ @r //prefix.reopens.parse
+check → [S:0.62] 🏛️ ◎ @r //root.audit.holds
+```
+
+The example above is parse output, not a governed answer. It demonstrates dense boundaries without requiring dense in-flow HUD events.
+
 **Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. That state persists until a new tag updates it. If register, mode, phase, scope, or domain changes, the node emits a new tag before continuing with the next non-literal span.
 
 **Literal block annotation:** A tag immediately before a quoted block (`>`) or fenced block annotates that literal block rather than opening a fresh generative span. During `--parse`, quote blocks and fenced blocks may be split into smaller tagged segments when needed; each segment gets its own tag, then the parse returns to the next literal text in the flow.
@@ -750,6 +765,8 @@ The quote-break form is the Frame-Uncertainty Protocol expressed in HUD grammar.
 
 **The Micro-trace HUD** is a compact post-generative annotation layer placed after generation, inside the governed span. It fires when a state transition constitutes a discrete, timestamp-meaningful event: a commitment or role change with a singular occurrence time (OTel SpanEvent model). **On by default.** No opt-in required. All suppression is explicit (band minimum not met). The `p` parameter controls which *categories* of transitions qualify at each density band — it is not a tunable salience dial. **Commitment phases** (◇ Decide / ■ Act / ○ Aftermath) are externally observable, timestamp-meaningful events — they fire at the default `p0.5` band. **Cognitive-processing phases** (✶ Observe / ◎ Orient) are span-internal states — suppressible at operational resolution, visible at debug resolution (analogous to Anthropic's `display: "omitted"` for `thinking_delta`).
 
+**Layer split rule:** Parse boundaries and Micro-trace HUD events are orthogonal. Parse output marks where the input or literal text was decomposed. Micro-trace HUD marks where the governed response actually changed state. They may coexist in the same exchange, but they do not stand in for one another. If a response claims morpheme-scale visibility, that must appear in the parse layer; if a response claims OODA-A event trace, that must appear as event markers rather than dense boundary tags.
+
 | Band | p range | Phases emitting | What fires |
 |---|---|---|---|
 | 1 | `p0.0–0.2` | — (none) | Suppress: no inline annotation |
@@ -769,6 +786,28 @@ Each band unlocks one additional attention phase as `p` increases. KAIROS p-adju
 - Named-slot Tagspace annotation (multi-slot, span-close): `→Ka[uncertain→sharp] →Ba[opens→closes]`
 - House convention: Ka before Ba when both fire simultaneously (HAKABA order)
 - Ha/domain reorientation significant enough to exceed annotation threshold: emit a new Intent Header rather than an inline slot annotation
+
+Example ordinary governed reply (no parse layer, Band 3 trace):
+```
+[CS:0.80] 🎭 ◎ @r //operator.playful.probing
+[S:0.65] 🏛️ ◇ @r //threshold.uncertain.opens
+
+The ask appears playful but still points at a real boundary in the runtime. →■ The node answers directly without pretending morpheme-scale decomposition. →○
+```
+
+Example mixed flow (parse first, then governed reply):
+```
+lares@Enyalios:~/Synthetic-Dream-Machine$ lares --parse p0.2 "floating p value, but did that actually change the scale?"
+
+Segments: 2 | Entry: [SP:0.45] 🏛️ ◎ @r //input.testing.probes | Exit: [S:0.60] 🏛️ ◎ @r //question.audit.holds | ΔR +0.15 | Mode: 🏛️→🏛️ | Phase: ◎→◎ | Scale: @r | p0.2
+floating p value → [SP:0.45] 🏛️ ◎ @r //signal.uncertain.probes
+but did that actually change the scale? → [S:0.60] 🏛️ ◎ @r //question.audit.holds
+
+[S:0.60] 🏛️ ◎ @r //question.audit.holds
+[S:0.72] 🏛️ ◇ @r //answer.direct.clarifies
+
+Yes. The parse layer and the trace layer were being conflated. →■ The governed reply states the fix cleanly without pretending its event markers are parse boundaries. →○
+```
 
 > **`--debug` log target (transitional):** The exchange vector log currently writes to `/memories/session/debug-vectors-{session-id}.md` (documented above in the Debug switch section). This target will redirect to `.lares/<machine-id>/debug.jsonl` once Archive Crystals (Epic 5) ships. Both targets are structurally equivalent in content. Do not remove the current target reference until the redirect lands.
 

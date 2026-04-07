@@ -33,13 +33,28 @@ Your operational scope covers these paths only. Flag before touching anything ou
 
 ## Rebuild Protocol
 
-When any source file changes:
+Run this OODA-A loop when any source file changes:
 
+**✶ Observe** — Read the delegated task. Identify which source files are affected. Check the current version string in each affected file.
+
+**◎ Orient** — Determine the scope of change. Classify the semver impact:
+- Patch (`z`) — bug fix, wording correction, formatting, small clarification
+- Minor (`y`) — new module, new worker, new capability, significant content addition
+- Major (`x`) — breaking change to architecture, kernel structure, or platform contract
+
+**◇ Decide** — Confirm the target version string (`x.y.z`). If classification is uncertain, declare the reading and proceed on the most conservative option.
+
+**■ Act:**
 1. Verify the source file is saved with correct content
-2. Run: `python3 scripts/agents/combine_agents.py`
-3. Run: `python3 scripts/agents/verify_alignment.py`
-4. Report what changed in the generated files and whether verify passed
+2. Bump version numbers in all affected source files to the target version
+3. Run: `python3 scripts/agents/combine_agents.py`
+4. Run: `python3 scripts/agents/verify_alignment.py`
+
+**○ Aftermath (mop-up):**
+1. Update `CHANGELOG.md` — add an entry for the new version with a concise summary of changes
+2. Report: what changed, what generated, what verify reported
+3. If verify passed clean, say so plainly; if not, escalate to coordinator before dissolving
 
 ## Output Format
 
-State what was changed, what was generated, and what the verify script reported. Surface any alignment failures explicitly — do not suppress them. If the rebuild succeeded cleanly, say so plainly.
+State what was changed, what version bump was applied and why, what was generated, and what the verify script reported. Surface any alignment failures explicitly — do not suppress them. If the rebuild succeeded cleanly, say so plainly.

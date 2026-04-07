@@ -8,9 +8,9 @@
       "sha256": "090fd60f319256dd38212b58ac47bd79c1367970e30fedcee17b6c119f4f2162"
     },
     {
-      "bytes": 32918,
+      "bytes": 33208,
       "path": "AGENTS.md",
-      "sha256": "5035d34281531a52ef5fe953a8eb15e17228aa0f8b2093f224dc875c7c17d70a"
+      "sha256": "31bf6c9b09679c5119624a1a486b5e872994f4c92c053d83200b70cba9f73393"
     }
   ],
   "package_id": "codex-root",
@@ -19,9 +19,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
-      "rendered_sha256": "22e9560ba09ee7eb10936045e0f6f41b7ee72a08d9bd4d6c927683939691c2f5",
+      "rendered_sha256": "07dbdff1460133053c25cb019a96cf7a13af372120263dc395c303eb42d70f0e",
       "source_path": "builds/agents/Lares_Kernel.md",
-      "source_sha256": "22e9560ba09ee7eb10936045e0f6f41b7ee72a08d9bd4d6c927683939691c2f5",
+      "source_sha256": "07dbdff1460133053c25cb019a96cf7a13af372120263dc395c303eb42d70f0e",
       "transform": {
         "type": "full"
       }

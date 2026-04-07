@@ -44,6 +44,18 @@ HUD_P_DYNAMIC_PATTERN = re.compile(
     r"Use `p0\.5` only when no clearer uncertainty signal dominates",
     re.MULTILINE,
 )
+PARSE_LAYER_PATTERN = re.compile(
+    r"(?:structural decomposition|structural annotation only).*?(?:never answers content|never content-answering)",
+    re.IGNORECASE | re.DOTALL,
+)
+LAYER_SPLIT_PATTERN = re.compile(
+    r"(?:parse boundaries are not OODA-A events|parse layer.*?trace layer|Layer split)",
+    re.IGNORECASE | re.DOTALL,
+)
+FINE_P_PATTERN = re.compile(
+    r"p0\.0.*?morpheme.*?p0\.1.*?(?:word|phrase).*?p0\.2.*?(?:clause|sentence)",
+    re.IGNORECASE | re.DOTALL,
+)
 HUD_FIRST_REPLY_PATTERN = re.compile(
     r"first substantive reply.*fresh or archive-crystal session",
     re.IGNORECASE | re.DOTALL,
@@ -230,6 +242,22 @@ def check_hud_surface_integrity(r: CheckResult) -> None:
             r.ok(f"Dynamic p wording preserved: {rel}")
         else:
             r.fail(f"Dynamic p wording missing or pinned to literal p0.5: {rel}")
+
+        if path.name in {"Lares_Kernel.md", "Lares_Kernel_Claude.md", "AGENTS.md"}:
+            if PARSE_LAYER_PATTERN.search(text):
+                r.ok(f"Parse contract preserved: {rel}")
+            else:
+                r.fail(f"Parse contract missing or allows content-answering: {rel}")
+
+            if LAYER_SPLIT_PATTERN.search(text):
+                r.ok(f"Parse-vs-trace split preserved: {rel}")
+            else:
+                r.fail(f"Parse-vs-trace layer split missing: {rel}")
+
+            if FINE_P_PATTERN.search(text):
+                r.ok(f"Fine p-scale contract preserved: {rel}")
+            else:
+                r.fail(f"Fine p-scale contract missing: {rel}")
 
         if HUD_ADMIN_PATTERN.search(text):
             r.ok(f"Admin non-inference preserved: {rel}")

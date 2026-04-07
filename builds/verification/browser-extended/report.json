@@ -10,9 +10,9 @@
   ],
   "outputs": [
     {
-      "bytes": 5360,
+      "bytes": 5325,
       "path": "builds/rendered/browser-extended/Lares_Kernel.browser-extended.md",
-      "sha256": "b0dc7392258ec7b5adef622cccbf480e0c1bd1dde59bed5d9dd33d729cbcf050"
+      "sha256": "0b85fcab9bb04130297f923820e7f699f0ca9190f474ff6075d8a315e3e6ca0a"
     }
   ],
   "package_id": "browser-extended",

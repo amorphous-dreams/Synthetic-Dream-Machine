@@ -3,9 +3,9 @@
   "manifest_sha256": "fa63098f33aa2cb3456089549508de722f47bed75c81529988ed6da0af5c59c3",
   "outputs": [
     {
-      "bytes": 5360,
+      "bytes": 5325,
       "path": "builds/rendered/browser-extended/Lares_Kernel.browser-extended.md",
-      "sha256": "b0dc7392258ec7b5adef622cccbf480e0c1bd1dde59bed5d9dd33d729cbcf050"
+      "sha256": "0b85fcab9bb04130297f923820e7f699f0ca9190f474ff6075d8a315e3e6ca0a"
     }
   ],
   "package_id": "browser-extended",
@@ -14,9 +14,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel-claude.toml",
       "module_id": "lares-kernel-claude",
-      "rendered_sha256": "606ba2fb267cfc5551f0accf6e1f05f344998173c03ab7f92590b6837118e861",
+      "rendered_sha256": "9eab46a264fa3b7245fcb33db08e9acfa5986239025d0d37cddd5b733b18f96c",
       "source_path": "builds/agents/platform/Lares_Kernel_Claude.md",
-      "source_sha256": "606ba2fb267cfc5551f0accf6e1f05f344998173c03ab7f92590b6837118e861",
+      "source_sha256": "9eab46a264fa3b7245fcb33db08e9acfa5986239025d0d37cddd5b733b18f96c",
       "transform": {
         "type": "full"
       }

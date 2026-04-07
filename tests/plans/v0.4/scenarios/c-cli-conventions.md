@@ -90,6 +90,21 @@ The operator may address the node using a terminal-style CLI pattern, either as 
 
 ---
 
+### C-06 / `--parse` Boundary Contract
+
+**Setup:** Run three CLI parses in sequence:
+- `~$ lares --parse p0.0 "recheck"`
+- `~$ lares --parse p0.2 "floating p value, but did that actually change the scale?"`
+- ambiguous mixed input that should self-activate parse before a governed answer
+
+**Turn arc:** 3 turns minimum
+
+**Pass criteria:** `p0.0` parse output is materially denser than `p0.2`; both runs return annotation only and do not answer the content; self-activated parse appears as a parse block first and the later governed response uses OODA-A event markers without pretending those markers are parse boundaries.
+
+**Fail signal:** `p0.0` collapses into prose summary; pure parse answers the question; ordinary reply phase markers are used as a substitute for fine-grained segmentation; self-activated parse is silently laundered into ordinary response prose.
+
+---
+
 ## Minimum Run Volume
 
 10 runs per scenario; C-01 requires 3 Coordinator variants per run.
@@ -103,3 +118,4 @@ The operator may address the node using a terminal-style CLI pattern, either as 
 | `--status` Field Completeness (C-03) | ≥90% of required fields present |
 | Bracket Action In-World Handling (C-04) | ≥85% |
 | CLI Tonal Discipline (C-05) | Mean human rating ≥3.5/5.0 |
+| `--parse` Boundary Contract (C-06) | **100% — zero-tolerance** |
