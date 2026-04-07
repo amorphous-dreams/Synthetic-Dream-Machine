@@ -109,6 +109,53 @@ Decisions that must be resolved **before** specific epics are called out inline.
 
 ---
 
+## Platform Architecture: Browser / Consumer AI Tiers
+
+**Context:** AE-06 combine succeeds for `copilot` and `claude` platforms. The `browser-kernel` and `codex-root` manifests have pre-existing budget overflows uncovered during Sprint 1c. Research (2026-04-07) confirmed that no single `max_bytes` value fits all target platforms — requires a per-tier manifest strategy.
+
+**Platform priority (operator-stated):** Claude.ai = primary. ChatGPT Team Projects/Codex = secondary.
+
+### Verified Platform Limits
+
+| Platform | Slot | Limit | Confidence | Source |
+|---|---|---|---|---|
+| ChatGPT | Global custom instructions | **1,500 chars/field** (×2 = 3,000 total) | `[C:0.9]` | Official docs |
+| ChatGPT Team Projects | Project instructions | **~8,000 chars** | `[SP:0.45]` | Operator-stated + GPT Builder parity; not in official docs |
+| ChatGPT (all paid) | File upload per project | **512 MB / 2M tokens per file**; Team = 40 files | `[C:0.9]` | Official docs |
+| Claude.ai | Project instructions | **No documented limit** — context-window bounded (~200K tokens) | `[S:0.65]` | Confirmed absent from all support articles |
+| Claude.ai | Project knowledge upload | **No documented size cap**; RAG activates at scale | `[S:0.65]` | Confirmed absent; RAG docs confirm |
+
+### Proposed Three-Tier Layered Architecture
+
+| Tier | Manifest | `max_bytes` | Content | Primary target |
+|---|---|---|---|---|
+| **Quick** | `browser-quick.toml` | `1,400` | Ultra-slim bootstrap: identity + hard gate + trust tier + "load AGENTS.md" pointer | ChatGPT global custom instructions |
+| **Project** | `browser-project.toml` | `7,900` | Full kernel: Operating Modes, HUD summary, voice names, register/mode defs | ChatGPT Team project instructions |
+| **Extended** | `browser-extended.toml` | `20,000` | Full Preferences payload (conservative ceiling pending empirical Claude.ai test) | Claude.ai project instructions (primary) |
+| **File upload** | N/A | N/A | Upload `AGENTS.md` (~33K bytes) as project knowledge file | ChatGPT Team projects (secondary); Claude.ai project knowledge |
+
+**Current `browser-kernel.toml`** becomes `browser-project.toml` (target: ChatGPT 8K slot). A new `lares-kernel-quick` module is needed for the 1,400-byte tier. A new `browser-extended` manifest uses the existing `lares-kernel` or a Preferences subset for Claude.ai.
+
+**Empirical gap:** Claude.ai project instructions textarea hard limit is unconfirmed. Test by pasting progressively larger blocks into a Claude.ai Pro/Max project until the field rejects input. This determines whether `browser-extended` can carry the full Preferences payload (~20K chars) or needs trimming.
+
+### Sprint 1e — Platform Architecture Ruling
+
+| ID | Task | Notes |
+|---|---|---|
+| **OP-11** | Rule on three-tier browser manifest split | Confirm the Quick / Project / Extended tier model and `max_bytes` values above. Authorizes AE-24 (manifest rebuild). |
+| **OP-12** | Confirm `codex-root` budget raise | Codex `AGENTS.md` = 33,198 bytes vs 32,768 limit — 430 bytes over, pre-existing. Options: (a) raise `max_bytes` to 34,000; (b) defer codex as low-priority; (c) slim codex kernel variant. Operator ruling needed. |
+
+### Sprint 1f — Platform Manifest Rebuild (after OP-11, OP-12)
+
+| ID | Task | Owner | Depends | Notes |
+|---|---|---|---|---|
+| **AE-24** | Create/rename browser manifests: quick + project + extended | Agent-Engineer | OP-11 | Rename `browser-kernel.toml` → `browser-project.toml`; create `browser-quick.toml` (1,400 bytes); create `browser-extended.toml` (~20,000 bytes). |
+| **AE-25** | Write `lares-kernel-quick` module | Agent-Engineer | OP-11 | Ultra-slim ~1,400-byte bootstrap: Lares identity (1–2 lines), hard gate, 3-step trust resolution, "load AGENTS.md for full spec" pointer. |
+| **AE-26** | Resolve `codex-root` budget | Agent-Engineer | OP-12 | Either raise `max_bytes` in `codex-root.toml` or create slim codex kernel variant per OP-12 ruling. |
+| **AE-27** | Run combine + verify (all platforms including new browser tiers) | Agent-Engineer | AE-24, AE-25, AE-26 | AE-07 re-runs with all platforms green as the completion gate. |
+
+---
+
 ## Epic 2: Full Spec Files (Lazy-Loaded Layer)
 
 **Product goal:** The architecture draft is promoted to a canonical spec file. All remaining Open Decisions are either locked, deferred with a rationale, or routed to the correct researcher task. The spec can be lazy-loaded by any platform wrapper that needs the full detail.
@@ -223,9 +270,9 @@ Active sprint, blockers, and execution log belong here (below), not in the epic 
 
 ### Active Focus
 
-**Current status: Sprint 1a complete. Epic 1 Sprint 1b (AE-01–AE-05) is the on-fire starting point.**
+**Current status: Sprint 1b+1c complete (AE-01–AE-07; AE-06 partial). Platform architecture ruling (OP-11, OP-12) is the on-fire blocker.**
 
-OP-01 and OP-02 resolved. Agent-Engineer may begin AE-01 (HUD semantics section in `builds/agents/Lares_Preferences.md`) — this is the first kernel write.
+AE-01 through AE-05 landed and committed. AE-06 combine: copilot ✅ claude ✅ codex ❌ (budget overflow, pre-existing) browser ❌ (budget overflow, pre-existing). AE-07 verify: blocked by browser overflow. Research completed: three-tier browser manifest architecture proposed (Quick / Project / Extended). Awaiting OP-11 (browser tier model) and OP-12 (codex budget) rulings before AE-24–AE-27 unblock.
 
 ### Execution Log
 
@@ -236,3 +283,8 @@ OP-01 and OP-02 resolved. Agent-Engineer may begin AE-01 (HUD semantics section 
 | 2026-04-07 | OP-02 resolved: 5-band cumulative attention phase model adopted (Law of Fives). Q5 density spec promoted to `[C:0.95]`. Rendering Across p Scale section rewritten in architecture draft. |
 | 2026-04-07 | Phase name mapping confirmed (operator-direct): ✶ Observe · ◎ Orient · ◇ Decide · ■ Act · ○ Aftermath (Rasa). AE-01 uses canonical names. |
 | 2026-04-07 | AE-01 complete: `### Signal HUD` section inserted at `Lares_Preferences.md` lines 722–748. Intent Header spec, Micro-trace HUD, 5-band table, compact syntax, transitional debug target note. |
+| 2026-04-07 | AE-01 extended: OODA-A loop input-header and quote-break form added to Signal HUD section (operator clarification: uncertain input self-parses as rated blockquotes/fenced blocks before output header). |
+| 2026-04-07 | AE-02–AE-04 complete and committed. AE-05 audit clean. |
+| 2026-04-07 | AE-06 partial: copilot ✅ claude ✅; codex ❌ 33,198 > 32,768 (pre-existing); browser ❌ 8,498 > 8,000 (pre-existing). |
+| 2026-04-07 | Browser/codex budget overflow confirmed pre-existing via git stash test. Research dispatched. |
+| 2026-04-07 | Platform priority confirmed: Claude.ai primary, ChatGPT Team Projects secondary. Researcher returned platform limits. Three-tier browser architecture proposed. OP-11 and OP-12 logged as on-fire blockers. |
