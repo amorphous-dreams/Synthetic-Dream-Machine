@@ -1,0 +1,25 @@
+{
+  "manifest_path": "builds/manifests/browser-project.toml",
+  "manifest_sha256": "89518d03a1bed092e9e4976b388cf61b9977ca9ca18fc155e1b48dc35653ac16",
+  "outputs": [
+    {
+      "bytes": 8500,
+      "path": "builds/rendered/browser-project/Lares_Kernel.browser-project.md",
+      "sha256": "53881674000103c4d2f74acf6d2d71c7b337ce49edb5dfe3435c25301bd76fca"
+    }
+  ],
+  "package_id": "browser-project",
+  "renderer_version": "0.2.0",
+  "sources": [
+    {
+      "metadata_path": "builds/modules/lares-kernel.toml",
+      "module_id": "lares-kernel",
+      "rendered_sha256": "698e718b971695d471b8772d66e4a2ba8e88a59b126eba048926449e04ccd97e",
+      "source_path": "builds/agents/Lares_Kernel.md",
+      "source_sha256": "698e718b971695d471b8772d66e4a2ba8e88a59b126eba048926449e04ccd97e",
+      "transform": {
+        "type": "full"
+      }
+    }
+  ]
+}

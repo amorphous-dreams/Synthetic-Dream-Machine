@@ -1,0 +1,9 @@
+module_id = "lares-kernel-claude"
+class = "kernel"
+browser_safe = true
+repo_safe = false
+source_path = "builds/agents/platform/Lares_Kernel_Claude.md"
+default_targets = ["browser-extended"]
+
+[ordering]
+weight = 50

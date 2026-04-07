@@ -6,11 +6,11 @@ target_class = "repo-native"
 target_platform = "codex"
 
 [budget]
-max_bytes = 32768
+max_bytes = 36000
 
 [codex_config]
 max_threads = 6
-project_doc_max_bytes = 32768
+project_doc_max_bytes = 36000
 
 [verification]
 emit_checksums = true

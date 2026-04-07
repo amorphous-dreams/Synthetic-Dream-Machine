@@ -3,7 +3,7 @@ class = "kernel"
 browser_safe = true
 repo_safe = true
 source_path = "builds/agents/Lares_Kernel.md"
-default_targets = ["browser-kernel", "codex-root", "claude-root", "copilot-root"]
+default_targets = ["browser-project", "codex-root", "claude-root", "copilot-root"]
 
 [ordering]
 weight = 50
