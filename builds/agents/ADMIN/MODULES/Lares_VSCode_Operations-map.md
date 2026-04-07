@@ -1,4 +1,4 @@
-# Module-Map: `_agents/Lares_VSCode_Operations.md`
+# Module-Map: `builds/agents/Lares_VSCode_Operations.md`
 
 > Module-Map type: Source file structural analysis
 > Source measured: 2026-04-06 | 453 lines | 27,677 bytes
@@ -49,7 +49,7 @@ Operationally critical. Defines conflict resolution. Short.
 ---
 
 ### `### B2. Repository Source Map` · Lines 28–44 · ~17 lines
-*Directory-to-domain mapping: Elyncia/, FTLS/, Synthetic_Dream_Machine_*.md, _agents/, _todo/, external URIs.*
+*Directory-to-domain mapping: Elyncia/, FTLS/, Synthetic_Dream_Machine_*.md, builds/agents/, _todo/, external URIs.*
 Critical for grounding responses in local sources. Compact.
 > **Future module:** Root `AGENTS.md` (operational index) — this is exactly the kind of content the root should lead with
 > **⚠️ Note:** This section should be in the first 200 lines (ideally first 4K chars) of any platform output. Currently it appears at position ~1,100+ lines in the assembled file.
@@ -122,7 +122,7 @@ This is the largest section by far, containing:
 > **Future module:** This content does not belong in any always-loaded rule file. It is reference documentation.
 > **Options:**
 > - Keep in `Lares_VSCode_Operations.md` as reference (not deployed to platforms)
-> - Extract to `_agents/ADMIN/examples.md` for human reference only
+> - Extract to `builds/agents/ADMIN/examples.md` for human reference only
 > - Convert into actual test fixtures in `tests/`
 > **⚠️ Size:** 315 lines for golden examples is 1.75× the entire Claude Code recommended file size. These examples are useful for human authors but add significant token overhead when loaded in every session.
 

@@ -218,31 +218,31 @@ Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md#1-
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/NEXT_LARES_HANDOFF.md#1-1), lines 1 to 80
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN)
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN)
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/scripts)
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md#120-120), lines 120 to 200
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES)
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES)
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/scripts/agents)
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/PIPELINE.md#1-1), lines 1 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/PIPELINE.md#1-1), lines 1 to 120
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/README.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/README.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Modular_Architecture-draft.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Modular_Architecture-draft.md#100-100), lines 100 to 200
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md#100-100), lines 100 to 200
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Lares_Preferences-map.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_Preferences-map.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Lares_Preferences-map.md#100-100), lines 100 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_Preferences-map.md#100-100), lines 100 to 120
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Lares_Kernel-map.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_Kernel-map.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/Lares_Kernel.md#1-1), lines 1 to 80
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/Lares_Kernel.md#1-1), lines 1 to 80
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#80-80), lines 80 to 150
 
@@ -250,17 +250,17 @@ Read [](file:///home/joshu/Synthetic-Dream-Machine/scripts/agents/combine_agents
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#200-200), lines 200 to 200
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#1-1), lines 1 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#1-1), lines 1 to 120
 
 Compacted conversation
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#200-200), lines 200 to 260
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#120-120), lines 120 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#120-120), lines 120 to 120
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#260-260), lines 260 to 300
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#120-120), lines 120 to 180
+Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#120-120), lines 120 to 180
 
 I have everything I need. Here's the confidence ratings analysis.
 
@@ -310,7 +310,7 @@ PROMPTCRAFT.md fully specifies what must and must not appear in the kernel. Lare
 
 Two execution items required:
 - Kernel must be promoted into the build pipeline (currently manually maintained, not a deterministic artifact)
-- The kernel's section structure should be locked to a `KERNEL/` subdirectory under _agents per the draft architecture target
+- The kernel's section structure should be locked to a `KERNEL/` subdirectory under builds/agents per the draft architecture target
 
 These are straightforward execution steps, not design gaps.
 
@@ -372,10 +372,10 @@ The plan is unusually well-specified for a prompt architecture project. Most of 
 
 **What the Codex agent can start immediately without additional design discussion:**
 
-1. Create `_agents/KERNEL/Lares_Kernel.md` (move/rename current kernel)
-2. Create `_agents/modules/lares-voice.md` (extract from Preferences using the line-range map)
-3. Create `_agents/modules/lares-epistemology.md` (extract Model Agnosticism section — the 261-line monolith of Section 3 — using the Preferences map)
-4. Create `_agents/modules/lares-repo-ops.md` (~89 lines from VSCode_Operations after stripping B8/B9)
+1. Create `builds/agents/KERNEL/Lares_Kernel.md` (move/rename current kernel)
+2. Create `builds/agents/modules/lares-voice.md` (extract from Preferences using the line-range map)
+3. Create `builds/agents/modules/lares-epistemology.md` (extract Model Agnosticism section — the 261-line monolith of Section 3 — using the Preferences map)
+4. Create `builds/agents/modules/lares-repo-ops.md` (~89 lines from VSCode_Operations after stripping B8/B9)
 5. Extract B8 and B9 into tests fixtures
 6. Write a manifest file for each platform target using the documented YAML schema
 
@@ -410,7 +410,7 @@ The plan is unusually well-specified for a prompt architecture project. Most of 
 **The single most important thing the Codex agent should do before anything else:** Scale-estimate the manifest renderer refactor. The rest of the work (module splits, kernel promotion, B8/B9 extraction to tests) can be done with simple file operations against the existing line-range maps. The renderer refactor is the load-bearing implementation task and is the one that could produce a partial-done-state that breaks all three platform outputs simultaneously if scoped poorly.
 
 **Suggested execution order for the Codex agent:**
-1. Module splits first (file operations only, no script changes, outputs go to `_agents/modules/`)
+1. Module splits first (file operations only, no script changes, outputs go to `builds/agents/modules/`)
 2. Kernel promotion (move to `KERNEL/` subdirectory, no pipeline change yet)
 3. B8/B9 extraction to tests
 4. Write manifest files for all platforms

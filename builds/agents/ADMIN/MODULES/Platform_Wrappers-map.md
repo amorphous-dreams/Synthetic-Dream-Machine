@@ -1,7 +1,7 @@
 # Module-Map: Platform Wrappers
 
 > Module-Map type: Platform Integration
-> Source: `_agents/platform/Lares_Copilot_Wrapper.md` (34 lines), `Lares_Claude_Wrapper.md` (43 lines), `Lares_Codex_Wrapper.md` (48 lines), `platform/README.md` (362 lines)
+> Source: `builds/agents/platform/Lares_Copilot_Wrapper.md` (34 lines), `Lares_Claude_Wrapper.md` (43 lines), `Lares_Codex_Wrapper.md` (48 lines), `platform/README.md` (362 lines)
 > Updated: 2026-04-06
 > Register: [S:0.65] 🏛️ — current state measured directly from source
 
@@ -58,7 +58,7 @@ This makes the wrappers a **backlog contrast case**: they are not the main bug s
 | Source guard notice | `> Source file. Do not edit .claude/CLAUDE.md directly.` |
 | Worker registry table | Same 5-row table as Copilot |
 | Platform notes | Subagents stateless — receive only their own system prompt; delegation via description field |
-| Claude-specific notes | Worker source definitions in `_agents/workers/*.md`; do not edit `.claude/agents/*.md` directly; tool names differ from Copilot (PascalCase); regeneration command |
+| Claude-specific notes | Worker source definitions in `builds/agents/workers/*.md`; do not edit `.claude/agents/*.md` directly; tool names differ from Copilot (PascalCase); regeneration command |
 | Rebuild protocol | Same 4-step procedure |
 
 **Marker:** `## Claude Platform — Worker Registry`

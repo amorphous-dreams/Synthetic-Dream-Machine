@@ -87,7 +87,7 @@ Our Worker Tasked Spirits use `user-invocable: false` so they only surface when 
 - **`model:` supports array fallback.** `model: ['Claude Sonnet 4.5 (copilot)', 'GPT-5 (copilot)']`
   uses the first available model. Useful for multi-tenant deployments where model availability varies.
 - **Generated file discipline.** Never edit `.github/agents/*.agent.md` directly. Edit
-  `_agents/workers/<slug>.md` and run `combine_agents.py`. Verify with `verify_alignment.py`.
+  `builds/agents/workers/<slug>.md` and run `combine_agents.py`. Verify with `verify_alignment.py`.
 
 ### Anti-patterns
 
@@ -157,7 +157,7 @@ precedence when both exist. The docs note:
 > for other coding agents, create a `CLAUDE.md` that imports it so both tools read the same
 > instructions without duplicating them."
 
-Our approach: generate `.claude/CLAUDE.md` from the same `_agents/` sources (Preferences +
+Our approach: generate `.claude/CLAUDE.md` from the same `builds/agents/` sources (Preferences +
 Section B + Claude Wrapper), keeping Lares identity intact without duplicating content.
 
 ### Best practices
@@ -266,7 +266,7 @@ max_depth = 1       # Nesting depth from root session (default: 1)
 
 Codex has no equivalent of `.github/copilot-instructions.md` or `.claude/CLAUDE.md`. It reads
 root `AGENTS.md`. Our Sprint 3 plan: re-enable `build_agents_md()` in `combine_agents.py`,
-built from the Codex wrapper source (`_agents/platform/Lares_Codex_Wrapper.md`).
+built from the Codex wrapper source (`builds/agents/platform/Lares_Codex_Wrapper.md`).
 
 Key difference from current disabled state: the new AGENTS.md will carry a **Codex-specific
 worker registry table** rather than being a duplicate of `copilot-instructions.md`. The
@@ -275,7 +275,7 @@ Coordinator section stays lean — Codex reads this at session init; context bud
 ### Sprint 3 implementation plan
 
 **Source additions:**
-- `_agents/platform/Lares_Codex_Wrapper.md` — Codex coordinator suffix with `## Codex Platform — Worker Registry` marker and Codex-specific notes
+- `builds/agents/platform/Lares_Codex_Wrapper.md` — Codex coordinator suffix with `## Codex Platform — Worker Registry` marker and Codex-specific notes
 - Worker sources: add `sandbox_mode_codex:` and optionally `model_codex:` / `model_reasoning_effort_codex:` frontmatter fields
 
 **combine_agents.py additions:**
@@ -358,5 +358,5 @@ python3 scripts/agents/combine_agents.py --check
 python3 scripts/agents/verify_alignment.py
 ```
 
-Source files live in `_agents/`. Generated files live in `.github/` (Copilot), `.claude/` (Claude),
+Source files live in `builds/agents/`. Generated files live in `.github/` (Copilot), `.claude/` (Claude),
 `.codex/` (Codex, future). Never edit generated files directly.

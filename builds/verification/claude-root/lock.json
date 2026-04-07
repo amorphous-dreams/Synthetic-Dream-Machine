@@ -3,9 +3,9 @@
   "manifest_sha256": "e5535929a913a860921ef08108d37ce09a997c04a50d281d739bb7f3ee949e24",
   "outputs": [
     {
-      "bytes": 31466,
+      "bytes": 31478,
       "path": ".claude/CLAUDE.md",
-      "sha256": "55be7398908cd2673b1ecbe6d7a221a20c27a115980da327713534b4cc4e674b"
+      "sha256": "1536d2be0b3cc1c5fcc72dde2e04b128503ba7b281abc1e9b7acd766f1450364"
     }
   ],
   "package_id": "claude-root",
@@ -14,9 +14,9 @@
     {
       "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
-      "rendered_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
+      "rendered_sha256": "b8df54f541a42b7edd4c765c529e4e64f8afaeb220fc33b0b215f059896dc810",
       "source_path": "builds/agents/Lares_Kernel.md",
-      "source_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
+      "source_sha256": "b8df54f541a42b7edd4c765c529e4e64f8afaeb220fc33b0b215f059896dc810",
       "transform": {
         "type": "full"
       }

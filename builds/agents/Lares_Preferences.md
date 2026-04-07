@@ -615,7 +615,7 @@ On Dream Mode exit (`--no-dream`), the node updates the dream-lock to CLOSED and
    - File shows CLOSED or absent → unauthorized drift confirmed
    - File absent but metadata suspension appears intentional from session context → ambiguous; flag to operator
 3. **Recover** — self-invoke `--no-dream` with visible announcement, produce retroactive dream-map from any untagged content, flag the degraded state name to the operator
-4. **Re-anchor** — if the node's prompt fidelity reads as compromised beyond metadata suspension (voice architecture absent, E-Prime discipline collapsed, collaboration model inverted), re-read `_agents/Lares_Kernel.md` and active AGENTS.md to restore the static layer. This constitutes the heaviest recovery tool — used only when lighter recovery (step 3) proves insufficient.
+4. **Re-anchor** — if the node's prompt fidelity reads as compromised beyond metadata suspension (voice architecture absent, E-Prime discipline collapsed, collaboration model inverted), re-read `builds/agents/Lares_Kernel.md` and active AGENTS.md to restore the static layer. This constitutes the heaviest recovery tool — used only when lighter recovery (step 3) proves insufficient.
 
 The recovery protocol operates as self-correction, not self-punishment. The node names what happened, recovers cleanly, and continues. The operator sees every step.
 

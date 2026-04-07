@@ -62,7 +62,7 @@ At the moment, the repo sits in an in-between state:
 - render modularity exists
 - root-budget recovery is done
 - governance hardening shipped (`ROSTER.md`, `CODEOWNERS`, 4-tier identity model)
-- `lares-permissions` authored as first standalone CORE module — `_agents/core/Lares_Permissions.md`
+- `lares-permissions` authored as first standalone CORE module — `builds/agents/core/Lares_Permissions.md`
 - authored source modularity: **in progress** (one of five CORE modules done)
 - host-native scoped loading remains mostly unimplemented
 
@@ -72,7 +72,7 @@ The manifest-driven build foundation now exists. Governance hardening shipped. T
 
 - ~~preserve the solved reload-safe root budgets~~ done
 - ~~finish governance hardening~~ done — `ROSTER.md`, `CODEOWNERS`, 4-tier identity in all source + generated files
-- ~~author `lares-permissions` as first standalone CORE module~~ done — `_agents/core/Lares_Permissions.md`, manifest sidecar, all root manifests updated
+- ~~author `lares-permissions` as first standalone CORE module~~ done — `builds/agents/core/Lares_Permissions.md`, manifest sidecar, all root manifests updated
 - author the remaining four CORE modules: `lares-voice`, `lares-epistemology`, `lares-operations`, `lares-setting-lite`
 - then map modules onto host-native scoped loading surfaces
 - only after that revisit deferred parse-doc placement decisions
@@ -109,7 +109,7 @@ Purpose:
 
 Likely source:
 
-- `_agents/KERNEL/Lares_Kernel.md`
+- `builds/agents/KERNEL/Lares_Kernel.md`
 
 Deployment class:
 
@@ -282,7 +282,7 @@ These documents remain important, but they should not spend prime instruction bu
 - regression checklist
 - expected pass criteria
 
-These likely belong in `_agents/REFERENCE/` or `tests/`, not in always-loaded runtime modules.
+These likely belong in `builds/agents/REFERENCE/` or `tests/`, not in always-loaded runtime modules.
 
 The governing rule here comes from IaM directly: if material does not improve operational compression, steering, portability, or correction, it should not occupy always-on runtime space.
 
@@ -291,7 +291,7 @@ The governing rule here comes from IaM directly: if material does not improve op
 ## Proposed Source Tree
 
 ```text
-_agents/
+builds/agents/
   KERNEL/
     Lares_Kernel.md
   CORE/
@@ -326,11 +326,11 @@ This should be treated as a target shape, not a claim that the repo should be re
 
 | Current source | Proposed destination | Notes |
 |---|---|---|
-| `_agents/Lares_Kernel.md` | `KERNEL/Lares_Kernel.md` | Already functions as compressed runtime kernel |
-| `_agents/Lares_Preferences.md` | split across `CORE/`, `SCOPED/`, `REFERENCE/` | Main decomposition target |
-| `_agents/Lares_VSCode_Operations.md` | mostly `SCOPED/Lares_Repo_Ops.md`; examples/spec move to `REFERENCE/` or `tests/` | Only a small fraction should remain always loaded |
-| `_agents/platform/*.md` | remain in `platform/` | Thin wrappers/templates |
-| `_agents/workers/*.md` | remain in `workers/` | Already compact and well-scoped |
+| `builds/agents/Lares_Kernel.md` | `KERNEL/Lares_Kernel.md` | Already functions as compressed runtime kernel |
+| `builds/agents/Lares_Preferences.md` | split across `CORE/`, `SCOPED/`, `REFERENCE/` | Main decomposition target |
+| `builds/agents/Lares_VSCode_Operations.md` | mostly `SCOPED/Lares_Repo_Ops.md`; examples/spec move to `REFERENCE/` or `tests/` | Only a small fraction should remain always loaded |
+| `builds/agents/platform/*.md` | remain in `platform/` | Thin wrappers/templates |
+| `builds/agents/workers/*.md` | remain in `workers/` | Already compact and well-scoped |
 
 ---
 

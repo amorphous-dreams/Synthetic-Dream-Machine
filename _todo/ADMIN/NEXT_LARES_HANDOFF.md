@@ -61,7 +61,7 @@ Snapshot reading for the next session:
    Create `ROSTER.md`, add `CODEOWNERS`, and bind Lares Admin behavior to roster membership plus explicit escalation once reload safety is restored.
 
 4. Author real runtime modules and plan host-native scoped loading.
-   Use [_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md), [_todo/ADMIN/PROMPTCRAFT.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md), and [_agents/ADMIN/MODULES/Modular_Architecture-draft.md](/home/joshu/Synthetic-Dream-Machine/_agents/ADMIN/MODULES/Modular_Architecture-draft.md) after governance lands.
+   Use [_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md), [_todo/ADMIN/PROMPTCRAFT.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md), and [builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md](/home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md) after governance lands.
 
 5. Decide whether `--parse doc` behavior belongs in the core prompt or in modular docs.
    Use [_todo/ADMIN/TODO_PARSE_DOC_SPEC.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/TODO_PARSE_DOC_SPEC.md) after the governance/modularization sequence.
@@ -83,8 +83,8 @@ These decisions are already set unless the user explicitly reopens them:
 
 Keep this list narrow unless the work expands:
 
-- `_agents/Lares_Preferences.md`
-- `_agents/Lares_VSCode_Operations.md`
+- `builds/agents/Lares_Preferences.md`
+- `builds/agents/Lares_VSCode_Operations.md`
 - `_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md`
 - `builds/manifests/*`
 - [_todo/ADMIN/README.md](/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/README.md)
@@ -139,7 +139,7 @@ Next-instance seed order:
 3. read `_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md`
 4. read `_todo/ADMIN/PROMPTCRAFT.md`
 5. read `Deterministic_IaM_Build.md`
-6. read `_agents/ADMIN/MODULES/Modular_Architecture-draft.md`
+6. read `builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md`
 
 State assertions:
 

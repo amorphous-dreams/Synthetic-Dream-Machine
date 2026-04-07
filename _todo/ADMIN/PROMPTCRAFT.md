@@ -225,7 +225,7 @@ Target:
 - **4-8 KB ideal**
 - hard ceiling: whatever still pastes comfortably into browser instruction fields without crowding out task context
 
-`_agents/Lares_Kernel.md` already proves the compression is feasible. The next step is to treat that compressed layer as a first-class deployment artifact, not a manual sidecar.
+`builds/agents/Lares_Kernel.md` already proves the compression is feasible. The next step is to treat that compressed layer as a first-class deployment artifact, not a manual sidecar.
 
 That step is now complete at the rendered-artifact layer. The next incomplete step sits one layer down: the authored source tree still needs to be split into real runtime modules instead of relying primarily on extraction transforms from composite source files.
 
@@ -476,7 +476,7 @@ These documents remain useful, but they should not compete with operational guid
 Canonical source should move toward something like:
 
 ```text
-_agents/
+builds/agents/
   KERNEL/
     Lares_Kernel.md
   CORE/

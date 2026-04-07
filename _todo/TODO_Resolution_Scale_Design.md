@@ -210,9 +210,9 @@ This extends the existing Captain/Crossroads metaphor pair. The ship metaphor co
 ## Implementation Checklist
 
 ### Source File Edits
-- [x] `_agents/Lares_Preferences.md` — implement p, split --debug/--verbose, add KAIROS self-adjustment, add self-invocation flow, add never-silent principle
-- [x] `_agents/Lares_Kernel.md` — compress + add p/flag split (final: 7,988 bytes — within 8,000 limit)
-- [x] `_agents/Lares_VSCode_Operations.md` — new golden examples for --verbose, update existing --debug example, new regression items
+- [x] `builds/agents/Lares_Preferences.md` — implement p, split --debug/--verbose, add KAIROS self-adjustment, add self-invocation flow, add never-silent principle
+- [x] `builds/agents/Lares_Kernel.md` — compress + add p/flag split (final: 7,988 bytes — within 8,000 limit)
+- [x] `builds/agents/Lares_VSCode_Operations.md` — new golden examples for --verbose, update existing --debug example, new regression items
 
 ### Documentation
 - [x] CHANGELOG amendment for p + flag split (v3.5.1 entry added; skill entry deferred pending SKILL.md)
@@ -223,4 +223,3 @@ This extends the existing Captain/Crossroads metaphor pair. The ship metaphor co
 - [ ] Git commit
 
 ---
-

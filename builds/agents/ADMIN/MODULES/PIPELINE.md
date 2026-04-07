@@ -8,7 +8,7 @@
 
 ## Overview
 
-The Lares agent build pipeline now transforms source files in `_agents/` plus metadata in `builds/` into platform-specific deployment artifacts via `combine_agents.py`.
+The Lares agent build pipeline now transforms source files in `builds/agents/` plus metadata in `builds/` into platform-specific deployment artifacts via `combine_agents.py`.
 
 This file should be read in two layers:
 
@@ -46,19 +46,19 @@ The renderer replacement step has landed. The remaining pipeline defect is paylo
 
 | File | Lines | Bytes | Role |
 |---|---|---|---|
-| `_agents/Lares_Preferences.md` | 1,009 | 106,248 | **Core static layer** — all platform outputs |
-| `_agents/Lares_VSCode_Operations.md` | 453 | 27,677 | **Section B** — repo operations, golden examples |
-| `_agents/platform/Lares_Claude_Wrapper.md` | 43 | 2,431 | Claude platform tail block |
-| `_agents/platform/Lares_Codex_Wrapper.md` | 48 | 2,864 | Codex platform tail block |
-| `_agents/platform/Lares_Copilot_Wrapper.md` | 34 | 2,239 | Copilot platform tail block |
-| `_agents/workers/agent-engineer.md` | 45 | 2,532 | Worker: agent-engineer |
-| `_agents/workers/assistant.md` | 47 | 2,753 | Worker: assistant |
-| `_agents/workers/engineer.md` | 33 | 1,839 | Worker: engineer |
-| `_agents/workers/researcher.md` | 39 | 2,114 | Worker: researcher |
-| `_agents/workers/worker.md` | 37 | 2,077 | Worker: worker |
-| `_agents/Lares_Kernel.md` | 124 | 6,632 | Cloud bootstrap (NOT in combine pipeline) |
-| `_agents/Markdown.md` | 407 | 15,518 | Markdown conventions (NOT in combine pipeline) |
-| `_agents/AGENTS.md` | 307 | 19,250 | Pipeline docs (NOT in combine pipeline) |
+| `builds/agents/Lares_Preferences.md` | 1,009 | 106,248 | **Core static layer** — all platform outputs |
+| `builds/agents/Lares_VSCode_Operations.md` | 453 | 27,677 | **Section B** — repo operations, golden examples |
+| `builds/agents/platform/Lares_Claude_Wrapper.md` | 43 | 2,431 | Claude platform tail block |
+| `builds/agents/platform/Lares_Codex_Wrapper.md` | 48 | 2,864 | Codex platform tail block |
+| `builds/agents/platform/Lares_Copilot_Wrapper.md` | 34 | 2,239 | Copilot platform tail block |
+| `builds/agents/workers/agent-engineer.md` | 45 | 2,532 | Worker: agent-engineer |
+| `builds/agents/workers/assistant.md` | 47 | 2,753 | Worker: assistant |
+| `builds/agents/workers/engineer.md` | 33 | 1,839 | Worker: engineer |
+| `builds/agents/workers/researcher.md` | 39 | 2,114 | Worker: researcher |
+| `builds/agents/workers/worker.md` | 37 | 2,077 | Worker: worker |
+| `builds/agents/Lares_Kernel.md` | 124 | 6,632 | Cloud bootstrap (NOT in combine pipeline) |
+| `builds/agents/Markdown.md` | 407 | 15,518 | Markdown conventions (NOT in combine pipeline) |
+| `builds/agents/AGENTS.md` | 307 | 19,250 | Pipeline docs (NOT in combine pipeline) |
 
 **Total source content:** ~3,195 lines / ~194 KB
 
@@ -67,7 +67,7 @@ The renderer replacement step has landed. The remaining pipeline defect is paylo
 ## Old Pipeline Dataflow
 
 ```
-_agents/ SOURCE FILES
+builds/agents/ SOURCE FILES
 │
 ├─ Lares_Preferences.md (1009 lines)          ─── used in ALL platform builds
 ├─ Lares_VSCode_Operations.md (453 lines)     ─── used in ALL platform builds
@@ -101,15 +101,15 @@ GENERATED OUTPUTS
 ## Current Pipeline Dataflow
 
 ```text
-_agents/ SOURCE FILES + builds/ METADATA
+builds/agents/ SOURCE FILES + builds/ METADATA
 │
 ├─ builds/manifests/*.json                   ─── package targets and output contracts
 ├─ builds/modules/*.json                     ─── module sidecar metadata
-├─ _agents/Lares_Kernel.md                   ─── browser kernel package source
-├─ _agents/Lares_Preferences.md              ─── still oversized root payload source
-├─ _agents/Lares_VSCode_Operations.md        ─── still oversized repo-ops payload source
-├─ _agents/platform/*.md                     ─── thin host wrappers
-└─ _agents/workers/*.md                      ─── worker sources
+├─ builds/agents/Lares_Kernel.md             ─── browser kernel package source
+├─ builds/agents/Lares_Preferences.md        ─── still oversized root payload source
+├─ builds/agents/Lares_VSCode_Operations.md  ─── still oversized repo-ops payload source
+├─ builds/agents/platform/*.md               ─── thin host wrappers
+└─ builds/agents/workers/*.md                ─── worker sources
 
                     ↓ combine_agents.py ↓
 
@@ -191,14 +191,14 @@ These are the **only four extraction points** in the current pipeline. Everythin
 
 ## Files NOT in Current Combine Pipeline
 
-These source files exist in `_agents/` but are not referenced by `combine_agents.py`:
+These source files exist in `builds/agents/` but are not referenced by `combine_agents.py`:
 
 | File | Purpose | Deployment status |
 |---|---|---|
-| `_agents/Lares_Kernel.md` | Compressed bootstrap for cloud AI APIs | Manual upload / paste only |
-| `_agents/Markdown.md` | Markdown/link conventions for this repo | Referenced in session context manually |
-| `_agents/AGENTS.md` | Pipeline documentation | Read by humans; not deployed |
-| `_agents/platform/README.md` | Platform architecture docs | Read by humans; not deployed |
+| `builds/agents/Lares_Kernel.md` | Compressed bootstrap for cloud AI APIs | Manual upload / paste only |
+| `builds/agents/Markdown.md` | Markdown/link conventions for this repo | Referenced in session context manually |
+| `builds/agents/AGENTS.md` | Pipeline documentation | Read by humans; not deployed |
+| `builds/agents/platform/README.md` | Platform architecture docs | Read by humans; not deployed |
 
 ---
 

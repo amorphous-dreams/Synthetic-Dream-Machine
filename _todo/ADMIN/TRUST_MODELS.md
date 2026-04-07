@@ -144,7 +144,7 @@ Use **GitHub organization/team membership as the root of Admin authority**, and 
    - require signed commits
    - restrict bypass/direct updates to the admin team only
 4. Add `CODEOWNERS` for:
-   - `/_agents/**`
+   - `/builds/agents/**`
    - `/AGENTS.md`
    - `/_todo/ADMIN/**`
    - `/.github/CODEOWNERS`
@@ -204,7 +204,7 @@ Use GitHub for repo governance. Use the prompt for behavior. Do not reverse thos
 
 ```text
 /.github/CODEOWNERS @amorphous-dreams-cabal/admins
-/_agents/           @amorphous-dreams-cabal/admins
+/builds/agents/     @amorphous-dreams-cabal/admins
 /AGENTS.md          @amorphous-dreams-cabal/admins
 /_todo/ADMIN/       @amorphous-dreams-cabal/admins
 ```
@@ -213,7 +213,7 @@ If the repo stays personal instead of org-owned, use direct usernames:
 
 ```text
 /.github/CODEOWNERS @joshuafontany @freyja-fontany
-/_agents/           @joshuafontany @freyja-fontany
+/builds/agents/     @joshuafontany @freyja-fontany
 /AGENTS.md          @joshuafontany @freyja-fontany
 /_todo/ADMIN/       @joshuafontany @freyja-fontany
 ```
@@ -285,7 +285,7 @@ Use GitHub for root governance first. Use UCAN later if Lares needs formal deleg
 
 - [ ] GitHub org/team membership or equivalent protected roster defines Admin membership
 - [ ] Only Joshua and Freyja are in the Admin roster
-- [ ] `_agents/`, `AGENTS.md`, and admin-governance docs are code-owner protected
+- [ ] `builds/agents/`, `AGENTS.md`, and admin-governance docs are code-owner protected
 - [ ] `main` requires PRs and code-owner review
 - [ ] `main` requires signed commits
 - [ ] direct push/bypass is restricted to the admin team only

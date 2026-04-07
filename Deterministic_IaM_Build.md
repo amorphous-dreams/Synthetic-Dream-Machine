@@ -173,15 +173,15 @@ target_class: repo-native
 renderer_version: 0.1.0
 
 sources:
-  - path: _agents/KERNEL/Lares_Kernel.md
+  - path: builds/agents/KERNEL/Lares_Kernel.md
     role: kernel
-  - path: _agents/CORE/Lares_Voice.md
+  - path: builds/agents/CORE/Lares_Voice.md
     role: core
-  - path: _agents/CORE/Lares_Epistemology.md
+  - path: builds/agents/CORE/Lares_Epistemology.md
     role: core
-  - path: _agents/CORE/Lares_Operations.md
+  - path: builds/agents/CORE/Lares_Operations.md
     role: core
-  - path: _agents/CORE/Lares_Permissions.md
+  - path: builds/agents/CORE/Lares_Permissions.md
     role: core
 
 ordering:

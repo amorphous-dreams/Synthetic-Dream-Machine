@@ -1,4 +1,4 @@
-# _agents/
+# builds/agents/
 
 **Lares — AI Agent Prompt Architecture**
 
@@ -30,20 +30,20 @@ After editing, run `python3 scripts/agents/combine_agents.py` to rebuild `AGENTS
 
 ### `platform/` — Platform wrapper sources
 
-Three platform-specific wrapper files live in `_agents/platform/`:
+Three platform-specific wrapper files live in `builds/agents/platform/`:
 
 - **`Lares_Copilot_Wrapper.md`** — appended to Kernel + slim repo-ops core to build `.github/copilot-instructions.md`
 - **`Lares_Claude_Wrapper.md`** — appended to Kernel + slim repo-ops core to build `.claude/CLAUDE.md`
 - **`Lares_Codex_Wrapper.md`** — appended to Kernel + slim repo-ops core to build root `AGENTS.md` (which Codex reads)
 
-Each wrapper carries its platform's Worker Registry table, platform-specific notes, and Agent-Engineer Rebuild Protocol. `_agents/platform/README.md` documents the full schema for each format.
+Each wrapper carries its platform's Worker Registry table, platform-specific notes, and Agent-Engineer Rebuild Protocol. `builds/agents/platform/README.md` documents the full schema for each format.
 
 - Edit a wrapper when that platform's registry, notes, or rebuild instructions change.
 - Do **not** edit generated coordinator files directly — rebuild with `python3 scripts/agents/combine_agents.py`.
 
 ### `workers/` — Worker Tasked Spirit sources
 
-Five worker source files live in `_agents/workers/`:
+Five worker source files live in `builds/agents/workers/`:
 
 `worker.md` · `engineer.md` · `researcher.md` · `agent-engineer.md` · `assistant.md`
 
@@ -79,7 +79,7 @@ Key rules for human readers: RPG Book content documents must NOT have YAML front
 
 ### In VS Code (GitHub Copilot / Cline / Codex)
 
-Three platform configs are generated from source files in `_agents/`:
+Three platform configs are generated from source files in `builds/agents/`:
 
 | Platform | Coordinator | Workers |
 |---|---|---|
@@ -87,7 +87,7 @@ Three platform configs are generated from source files in `_agents/`:
 | **Claude** | `.claude/CLAUDE.md` | `.claude/agents/*.md` (5) |
 | **Codex** | `AGENTS.md` (root) | `.codex/agents/*.toml` (5) + `.codex/config.toml` |
 
-All 19 generated files derive from `_agents/` sources. Do not edit them directly — run `python3 scripts/agents/combine_agents.py` to rebuild and `python3 scripts/agents/verify_alignment.py` to confirm all 50 checks pass.
+All 19 generated files derive from `builds/agents/` sources. Do not edit them directly — run `python3 scripts/agents/combine_agents.py` to rebuild and `python3 scripts/agents/verify_alignment.py` to confirm all 50 checks pass.
 
 The VS Code operational map (sections B1–B10 in each coordinator file) governs:
 
@@ -157,7 +157,7 @@ The E-Prime game is how this project maintains language discipline across the La
 
 1. **Run the audit script** from the repo root:
    ```
-   python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md
+   python3 scripts/agents/eprime_audit.py builds/agents/Lares_Preferences.md
    ```
    Pass multiple files at once if you want a full sweep. The output groups flags by file with line numbers and annotates likely auxiliaries.
 
@@ -175,7 +175,7 @@ The E-Prime game is how this project maintains language discipline across the La
 
 4. **Re-run the audit.** When it returns zero non-auxiliary, non-ok-marked violations and the prose still sounds like itself — warm, practical, myth-tech, not over-hedged — the game is complete.
 
-Full rules, substitution table, and the violation/non-violation definitions: [`_agents/AGENTS.md`](AGENTS.md) → *Operational Language & E-Prime Spec*.
+Full rules, substitution table, and the violation/non-violation definitions: [`builds/agents/AGENTS.md`](AGENTS.md) → *Operational Language & E-Prime Spec*.
 
 ---
 
@@ -191,7 +191,7 @@ The Lares system has a **static layer** (session-stable: voice architecture, ton
 
 For the full epistemological substrate (Model Agnosticism, E-Prime, Maybe Logic, the two-axis Register/Mode map, Frame-Uncertainty Protocol), see [`AGENTS.md`](../AGENTS.md) → *Model Agnosticism & Maybe Logic*.
 
-For the **prompt update workflow** — how to modify these files and keep the four-file system in sync — see [`_agents/AGENTS.md`](AGENTS.md).
+For the **prompt update workflow** — how to modify these files and keep the four-file system in sync — see [`builds/agents/AGENTS.md`](AGENTS.md).
 
 ---
 
@@ -199,7 +199,7 @@ For the **prompt update workflow** — how to modify these files and keep the fo
 
 Active items tracked against the Lares prompt infrastructure. In priority order:
 
-- **E-Prime pass on agent files**: `_agents/workers/` and `_agents/platform/` source files need an E-Prime review pass. **Game content files are out of scope** — only agent infrastructure prose. Run `python3 scripts/agents/eprime_audit.py` and work through predication flags. Full rules in [`_agents/AGENTS.md`](AGENTS.md) → *Operational Language & E-Prime Spec*.
+- **E-Prime pass on agent files**: `builds/agents/workers/` and `builds/agents/platform/` source files need an E-Prime review pass. **Game content files are out of scope** — only agent infrastructure prose. Run `python3 scripts/agents/eprime_audit.py` and work through predication flags. Full rules in [`builds/agents/AGENTS.md`](AGENTS.md) → *Operational Language & E-Prime Spec*.
 - **Worker descriptions + verifications pass**: Review all five worker `description` fields for routing accuracy, keyword coverage, and Codex auto-delegation quality. Extend `verify_alignment.py` keyword gates as needed. Pairs with any worker body edits.
 
 ---

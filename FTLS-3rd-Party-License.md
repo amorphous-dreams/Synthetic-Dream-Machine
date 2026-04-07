@@ -33,7 +33,7 @@ Make it weird, wonderful, and wild.
 
 **"Product Identity (PI)"** — specific terms, names, marks, and imagery designated in Section IV. Product Identity may not be used in derivative works without explicit written permission from the Licensor.
 
-**"Agent Instructions"** — all LLM system prompts, persona definitions, operating mode descriptions, voice architecture documents, and related prompt engineering content contained in this repository, including `AGENTS.md` (root), all files in the `_agents/` directory, and all similar prompt files in other repository directories.
+**"Agent Instructions"** — all LLM system prompts, persona definitions, operating mode descriptions, voice architecture documents, and related prompt engineering content contained in this repository, including `AGENTS.md` (root), all files in the `builds/agents/` directory, and all similar prompt files in other repository directories.
 
 **"Fan Work"** — any derivative work, adaptation, supplement, fiction, tool, agent fork, or other material created under this license.
 
@@ -58,7 +58,7 @@ This license applies to all Licensed Material in this repository. This includes 
 - The *Flying Triremes and Laser Swords* game text (`FTLS/`)
 - The Elyncia setting material (`Elyncia/`)
 - Original conversion and design work in pipeline directories (`_todo/`)
-- Agent Instructions: root `AGENTS.md`, all files in `_agents/`, and all agent prompt files in other repository directories
+- Agent Instructions: root `AGENTS.md`, all files in `builds/agents/`, and all agent prompt files in other repository directories
 
 Where Licensed Material overlaps with content also covered by the SDM 3rd Party License (such as SDM rules mechanics), that content is subject to **both** licenses. See Section IX for how dual-coverage resolves.
 
@@ -139,7 +139,7 @@ The following are Open Content and may be freely used, adapted, and built upon u
 - The role-function names of the Lares voice architecture (Gatekeeper, Lorekeeper, Scryer, Council, Muse, Artificer, Advocate, Diplomat, Pedagogue, Hierophant, Triage, Stranger, Liminal)
 - The Agent Instructions architecture itself: operating models, register/mode frameworks, Worker persona methodology, CLI interaction patterns, escalation protocols, degraded-node vocabulary
 - Root `AGENTS.md` (including all content under the Lares system prompt and the CLI Agent Context section)
-- All files in the `_agents/` directory
+- All files in the `builds/agents/` directory
 - All other Agent Instructions files in other repository directories
 
 When in doubt about whether something is Product Identity or Open Content, the intent is: **use the ideas freely; don't wear the names as a claim to be us**.
@@ -212,7 +212,7 @@ The Lares architecture, its voice system, its operational methodology, and all A
 
 You may:
 
-- Read, study, and adapt the Agent Instructions in `AGENTS.md`, `_agents/`, and other repository directories for your own projects
+- Read, study, and adapt the Agent Instructions in `AGENTS.md`, `builds/agents/`, and other repository directories for your own projects
 - Build derivative AI agent systems, system prompts, and personas based on the architecture and methodology
 - Deploy derivative agents for non-commercial purposes
 - Publish your derivative agent instructions under this license or CC BY-NC-SA 4.0

@@ -1,4 +1,4 @@
-# Module-Map: `_agents/Lares_Preferences.md`
+# Module-Map: `builds/agents/Lares_Preferences.md`
 
 > Module-Map type: Source file structural analysis
 > Source measured: 2026-04-06 | 1,009 lines | 106,248 bytes

@@ -3,7 +3,7 @@
 
 Flags lines containing forms of the verb "to be" used as identity or
 predication. Used to enforce the E-Prime discipline described in
-_agents/AGENTS.md -> Operational Language & E-Prime Spec.
+builds/agents/AGENTS.md -> Operational Language & E-Prime Spec.
 
 Usage:
     python3 scripts/agents/eprime_audit.py FILE [FILE ...]

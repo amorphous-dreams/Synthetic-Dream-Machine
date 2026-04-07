@@ -1,6 +1,6 @@
 # MODULES — Index
 
-> Purpose: Index and reading order for `_agents/ADMIN/MODULES`
+> Purpose: Index and reading order for `builds/agents/ADMIN/MODULES`
 > Updated: 2026-04-06
 > Status: Working documentation set for the Lares modularization / Infrastructure-as-Myth pass
 
@@ -66,7 +66,7 @@ Use these docs when you need to:
 
 Use [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md) alongside this folder when the question shifts from "what should move where?" to "what operational behavior must remain portable after the move?"
 
-Do not treat this folder as the source of truth for deployed prompts. The source of truth remains the actual files under `_agents/`, `platform/`, and `workers/`.
+Do not treat this folder as the source of truth for deployed prompts. The source of truth remains the actual files under `builds/agents/`, `builds/agents/platform/`, and `builds/agents/workers/`.
 
 ---
 

@@ -1,7 +1,7 @@
 # Workers — Module-Map
 
 > Module-Map type: Worker Definitions
-> Source: `_agents/workers/*.md` (5 files)
+> Source: `builds/agents/workers/*.md` (5 files)
 > Updated: 2026-04-06
 > Purpose: Section-by-section map of all worker definitions — inputs for modular extraction.
 
@@ -115,7 +115,7 @@ This file should be read as a **stability map**, not a decomposition target. Wor
 |---|---|---|
 | YAML frontmatter | 1–10 | name, description, tools, claude fields, sandbox |
 | Role | (prose) | Edit source files, run combine script, run alignment verification, sync platform deployments |
-| Scope | (bullets) | `_agents/`, `.github/`, `.codex/`, `.claude/`, `scripts/agents/` — flag before touching outside these |
+| Scope | (bullets) | `builds/agents/`, `.github/`, `.codex/`, `.claude/`, `scripts/agents/` — flag before touching outside these |
 | Constraints | (bullets) | `Lares_Preferences.md` requires explicit operator instruction; do not edit generated files directly |
 
 **Delegation triggers:** editing agent prompt source files · rewriting worker definitions · updating platform wrapper files · running `combine_agents.py` · running `verify_alignment.py` · syncing Lares platform deployments · rebuilding `.github` or `.codex` infrastructure · version alignment

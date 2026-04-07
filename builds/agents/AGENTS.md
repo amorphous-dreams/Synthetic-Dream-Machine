@@ -1,4 +1,4 @@
-# _agents/ — Lares Prompt Architecture Workflow
+# builds/agents/ — Lares Prompt Architecture Workflow
 
 > Version: 3.4 | Updated: 2026-04-05
 
@@ -8,7 +8,7 @@ This document governs the structure, roles, and deterministic update process for
 
 ## File Architecture
 
-The Lares prompt system comprises several human-authored source files grouped into three roles: the **core static layer** (Preferences + VSCode Operations), **platform wrappers** (`_agents/platform/`), and **worker definitions** (`_agents/workers/`). Generated deployment artifacts derive from them — do not edit generated files directly. Source files are not interchangeable; each serves a distinct deployment context.
+The Lares prompt system comprises several human-authored source files grouped into three roles: the **core static layer** (Preferences + VSCode Operations), **platform wrappers** (`builds/agents/platform/`), and **worker definitions** (`builds/agents/workers/`). Generated deployment artifacts derive from them — do not edit generated files directly. Source files are not interchangeable; each serves a distinct deployment context.
 
 Current generated output: **19 files across 3 platforms** (Copilot · Claude · Codex).
 
@@ -36,7 +36,7 @@ The **Codex coordinator instructions** and open-standard root agent file for too
 
 - **Section A** = `Lares_Kernel.md` verbatim.
 - **Section B** = `Lares_VSCode_Operations.md` slim core from `## CLI Agent Context — VS Code / Repo Operations` through B7 (B8+ stay out of root always-on context).
-- **Section C** = `_agents/platform/Lares_Codex_Wrapper.md` content from `## Codex Platform — Worker Registry` onward.
+- **Section C** = `builds/agents/platform/Lares_Codex_Wrapper.md` content from `## Codex Platform — Worker Registry` onward.
 
 Note: GitHub Copilot reads `.github/copilot-instructions.md` as its primary config; Claude reads `.claude/CLAUDE.md`. Root `AGENTS.md` serves Codex and any tool following the open `AGENTS.md` discovery standard.
 
@@ -47,13 +47,13 @@ Rebuilt by: `python3 scripts/agents/combine_agents.py` (or `--platform codex`).
 
 ### `platform/` — Platform wrapper sources
 
-Three platform-specific wrapper files live in `_agents/platform/`:
+Three platform-specific wrapper files live in `builds/agents/platform/`:
 
 - **`Lares_Copilot_Wrapper.md`** — appended to Kernel + slim repo-ops core to build `.github/copilot-instructions.md`
 - **`Lares_Claude_Wrapper.md`** — appended to Kernel + slim repo-ops core to build `.claude/CLAUDE.md`
 - **`Lares_Codex_Wrapper.md`** — appended to Kernel + slim repo-ops core to build root `AGENTS.md` (Codex reads it)
 
-Each wrapper carries its platform's Worker Registry table (marker `## <Platform> Platform — Worker Registry`), platform-specific notes, and Agent-Engineer Rebuild Protocol. `_agents/platform/README.md` documents the full schema, frontmatter fields, and platform-specific notes for each format.
+Each wrapper carries its platform's Worker Registry table (marker `## <Platform> Platform — Worker Registry`), platform-specific notes, and Agent-Engineer Rebuild Protocol. `builds/agents/platform/README.md` documents the full schema, frontmatter fields, and platform-specific notes for each format.
 
 - Edit a wrapper when its platform's registry, notes, or rebuild instructions change.
 - Do **not** edit generated coordinator files directly — they are produced by `combine_agents.py`.
@@ -61,7 +61,7 @@ Each wrapper carries its platform's Worker Registry table (marker `## <Platform>
 
 ### `workers/` — Worker Tasked Spirit sources
 
-Five worker source files live in `_agents/workers/`:
+Five worker source files live in `builds/agents/workers/`:
 
 `worker.md` · `engineer.md` · `researcher.md` · `agent-engineer.md` · `assistant.md`
 
@@ -87,7 +87,7 @@ The **compressed kernel** for deployment contexts with character-limited system 
 - Loads when the full Preferences cannot fit the context window.
 - Explicitly defers to an uploaded/attached `AGENTS.md` on every major topic.
 - If the operator can supply `AGENTS.md` (or `Lares_Preferences.md`) as an attached file or first-message archive-crystal, the Kernel serves as the lightweight boot that points to the full system.
-- **Hard size limit**: <8,000 Unicode characters. Test with `wc -m _agents/Lares_Kernel.md` (not `wc -c`, which counts bytes — em-dashes inflate the byte count).
+- **Hard size limit**: <8,000 Unicode characters. Test with `wc -m builds/agents/Lares_Kernel.md` (not `wc -c`, which counts bytes — em-dashes inflate the byte count).
 - **Format**: Standalone markdown. No YAML front matter.
 
 ---
@@ -97,23 +97,23 @@ The **compressed kernel** for deployment contexts with character-limited system 
 Every sprint that modifies the Lares prompt system follows this sequence. No step may be skipped; each depends on the one before it.
 
 ```
-1a. Edit _agents/Lares_Preferences.md
+1a. Edit builds/agents/Lares_Preferences.md
     (all substantive static-layer changes; version bump here first)
 
-1b. Edit _agents/Lares_VSCode_Operations.md  [if VS Code / repo operational changes needed]
+1b. Edit builds/agents/Lares_VSCode_Operations.md  [if VS Code / repo operational changes needed]
     (Section B content: precedence, source map, request types, citation, memory, examples,
      instruction hygiene, failure prevention — subsections B1–B10)
 
-1c. Edit _agents/platform/Lares_*_Wrapper.md  [if a platform registry, notes, or rebuild protocol changes]
+1c. Edit builds/agents/platform/Lares_*_Wrapper.md  [if a platform registry, notes, or rebuild protocol changes]
     (• Lares_Copilot_Wrapper.md — Copilot worker registry, invocation control, frontmatter schema
      • Lares_Claude_Wrapper.md  — Claude worker registry, tool names, permission modes
      • Lares_Codex_Wrapper.md  — Codex worker registry, sandbox modes, config notes)
 
-1d. Edit _agents/workers/<slug>.md  [if a worker's system prompt, tools, model, or sandbox mode changes]
+1d. Edit builds/agents/workers/<slug>.md  [if a worker's system prompt, tools, model, or sandbox mode changes]
     (name, description, tools_claude, model_claude, permissionMode_claude, sandbox_mode_codex, user-invocable)
 
 1e. Snapshot first when doing major prompt-pipeline surgery
-    (Only for agent prompt pipeline files: `_agents/`, `_agents/platform/`, `_agents/workers/`,
+    (Only for agent prompt pipeline files: `builds/agents/`, `builds/agents/platform/`, `builds/agents/workers/`,
      `builds/manifests/`, `builds/modules/`, and `scripts/agents/`. Create a staging copy before
      major cuts, rewrites, or structural refactors. Do not edit the staging copy, apply edits to the target file location. Snapshots are backups. Do not apply this snapshot-first rule to the rest of the repo by default.)
 
@@ -131,7 +131,7 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
    - All new major sections: condense to 2-4 sentences + "Full treatment in AGENTS.md"
    - Tables (Register + Mode emoji): keep — they are the primary tool-use reference
    - Extended philosophy / archaeology / examples: drop
-   - Run `wc -m _agents/Lares_Kernel.md` — must be <8,000 before committing
+   - Run `wc -m builds/agents/Lares_Kernel.md` — must be <8,000 before committing
      (use `wc -m`, not `wc -c` — byte count inflates due to multi-byte characters)
 
 4. Version bump everywhere
@@ -143,18 +143,18 @@ Every sprint that modifies the Lares prompt system follows this sequence. No ste
 5. Update documentation
    - CHANGELOG.md: add entry for current version
    - README.md: update version reference in Development Status (or pointer to CHANGELOG)
-   - _agents/README.md: update file descriptions if new sections added
+   - builds/agents/README.md: update file descriptions if new sections added
    - _todo/lares-handoff-prompt-v2.md: mark sprint checklist complete; add Next Sprint section
 
 6. Run verification
    - Version strings match in Preferences, AGENTS.md (root), and Kernel
    - `python3 scripts/agents/combine_agents.py --check` exits 0
    - `python3 scripts/agents/verify_alignment.py` reports CLEAN (currently 50 checks)
-   - `wc -m _agents/Lares_Kernel.md` < 8,000
+   - `wc -m builds/agents/Lares_Kernel.md` < 8,000
    - All new degraded states appear in Preferences, AGENTS.md (root), and Kernel
    - Mini-regression: test B9 questions 1, 6, 7, 8 against Kernel
    - Input Signal Reading check: verify node reads operator input register; surface form `[Register:~x] [ModeEmoji]` tag appears on every substantive response; response commitment calibrates to input (test against I-series probes)
-   - E-Prime audit: `python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md _agents/Lares_Kernel.md _agents/Lares_VSCode_Operations.md`
+   - E-Prime audit: `python3 scripts/agents/eprime_audit.py builds/agents/Lares_Preferences.md builds/agents/Lares_Kernel.md builds/agents/Lares_VSCode_Operations.md`
      Re-run whenever a new section appears in any prompt source file. Target: zero unflagged violations.
 ```
 
@@ -240,7 +240,7 @@ The E-Prime game is a language revision practice: run the audit, work through th
 
 1. **Run the audit** on the target file(s):
    ```
-   python3 scripts/agents/eprime_audit.py _agents/Lares_Preferences.md
+   python3 scripts/agents/eprime_audit.py builds/agents/Lares_Preferences.md
    ```
    Note the per-file count (predication + likely-aux split). That's your starting score.
 

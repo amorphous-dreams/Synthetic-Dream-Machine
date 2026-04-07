@@ -1,4 +1,4 @@
-# Module-Map: `_agents/Lares_Kernel.md`
+# Module-Map: `builds/agents/Lares_Kernel.md`
 
 > Module-Map type: Source file structural analysis
 > Source measured: 2026-04-06 | 124 lines | 6,632 bytes

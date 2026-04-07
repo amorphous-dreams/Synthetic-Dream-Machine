@@ -1,6 +1,6 @@
 ---
 name: "Agent-Engineer"
-description: "Use when: editing agent prompt source files, rewriting worker definitions, updating platform wrapper files, running combine_agents.py, running verify_alignment.py, syncing Lares platform deployments, rebuilding .github or .codex infrastructure, version alignment between _agents source and generated artifacts. Agent-Engineer Tasked Spirit sub-agent in the Lares coordinator system."
+description: "Use when: editing agent prompt source files, rewriting worker definitions, updating platform wrapper files, running combine_agents.py, running verify_alignment.py, syncing Lares platform deployments, rebuilding .github or .codex infrastructure, version alignment between builds/agents source and generated artifacts. Agent-Engineer Tasked Spirit sub-agent in the Lares coordinator system."
 tools: [read, search, edit, execute, todo]
 tools_claude: "Read, Write, Edit, Bash, Grep, Glob"
 model_claude: "sonnet"

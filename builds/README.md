@@ -9,6 +9,6 @@ This tree holds the deterministic Infrastructure-as-Myth build layer for Lares.
 
 Governance integration points for the next sprint:
 
-- Protect `builds/manifests/` and `builds/modules/` alongside `_agents/` and `AGENTS.md`.
+- Protect `builds/manifests/` and `builds/modules/` alongside `builds/agents/` and `AGENTS.md`.
 - Bind future roster/CODEOWNERS review to manifest and module metadata changes.
 - Keep prompt-side `Admin` binding outside this MVP; this sprint only defines where governance attaches.
