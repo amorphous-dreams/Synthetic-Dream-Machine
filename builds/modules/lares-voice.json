@@ -1,0 +1,12 @@
+{
+  "browser_safe": false,
+  "class": "core",
+  "default_targets": [],
+  "module_id": "lares-voice",
+  "ordering": {
+    "weight": 130
+  },
+  "repo_safe": true,
+  "source_path": "_agents/core/Lares_Voice.md",
+  "notes": "Contextual-only. Not included in always-on roots (budget ceiling). Loaded via .github/instructions/lares-voice.instructions.md with applyTo _agents/**."
+}

@@ -946,7 +946,7 @@ Capabilities follow UCAN principles adapted for DreamNet:
 ### De-escalation
 
 - **Natural expiry preferred.** Time-bounded capabilities lapse on their own — the default, lowest-friction path.
-- **Operator promotion: Cabal-gated.** A verified `user` requires explicit promotion from an `operator(admin)` (a Cabal member) to reach `operator` tier. Identity verification alone is not promotion.
+- **Operator promotion: Cabal-gated.** A verified `user` requires explicit promotion from an `operator(admin)` (an Amorphous Dreams Cabal member) to reach `operator` tier. Identity verification alone is not promotion.
 - **Admin escalation: explicit only.** `operator` status, including a verified `gh` session, does not silently widen to `operator(admin)`. Admin escalation must be requested or declared explicitly by the recognized `operator`.
 - **Roster gate required.** Explicit escalation to `operator(admin)` is not sufficient alone — the operator's verified handle must appear in `/.github/ROSTER.md` (or the equivalent protected GitHub team). The four-step resolution: (1) `gh` identity missing → `user(anon)`; (2) `gh` verifies, no Cabal promotion → `user`; (3) Cabal promotion granted, no admin escalation → `operator`; (4) in Cabal roster + explicit escalation → `operator(admin)`.
 - **Explicit revocation: `operator(admin)` only.** Only an `operator(admin)` can revoke an operator's capabilities mid-session.

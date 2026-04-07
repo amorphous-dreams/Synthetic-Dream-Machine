@@ -1,0 +1,12 @@
+{
+  "browser_safe": false,
+  "class": "core",
+  "default_targets": [],
+  "module_id": "lares-operations",
+  "ordering": {
+    "weight": 140
+  },
+  "repo_safe": true,
+  "source_path": "_agents/core/Lares_Operations.md",
+  "notes": "Contextual-only. Not included in always-on roots (budget ceiling). Loaded via .github/instructions/lares-operations.instructions.md on-demand."
+}
