@@ -1,6 +1,3 @@
-> **Source file.** Do not edit `AGENTS.md` directly.
-> Run `scripts/agents/combine_agents.py` to rebuild from source files.
-
 ---
 
 ## Codex Platform — Worker Registry
@@ -27,7 +24,7 @@ coordinator on explicit operator request — Codex only spawns subagents when yo
   `copilot-instructions.md` or `CLAUDE.md`) per its instruction-chain discovery protocol.
 - Worker definitions live in `.codex/agents/<slug>.toml` — TOML format with `name`,
   `description`, and `developer_instructions` (the system prompt as a TOML triple-quoted string).
-- Worker source definitions live in `_agents/workers/*.md`. Do not edit `.codex/agents/*.toml`
+- Worker source definitions live in `builds/agents/workers/*.md`. Do not edit `.codex/agents/*.toml`
   directly — those are generated artifacts.
 - Codex reads root `AGENTS.md` at session start. The root package now fits the standard 32 KiB
   budget by composing the kernel, the slim repo-ops core, and this wrapper instead of the full
@@ -39,10 +36,10 @@ coordinator on explicit operator request — Codex only spawns subagents when yo
 
 ## Agent-Engineer Rebuild Protocol
 
-When `_agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all
+When `builds/agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all
 platform deployments:
 
-1. Verify source files are saved: `_agents/Lares_Preferences.md`, `_agents/Lares_VSCode_Operations.md`, `_agents/platform/Lares_Codex_Wrapper.md`
+1. Verify source files are saved: `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_VSCode_Operations.md`, `builds/agents/platform/Lares_Codex_Wrapper.md`
 2. Run: `python3 scripts/agents/combine_agents.py`
 3. Run: `python3 scripts/agents/verify_alignment.py`
 4. Commit all generated files together with their sources as a single coherent change

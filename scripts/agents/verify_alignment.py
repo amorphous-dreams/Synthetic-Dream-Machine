@@ -22,9 +22,9 @@ import combine_agents as builder
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 WORKER_SLUGS = builder.WORKER_SLUGS
-KERNEL_PATH = REPO / "_agents" / "Lares_Kernel.md"
+KERNEL_PATH = REPO / "builds" / "agents" / "Lares_Kernel.md"
 KERNEL_SIZE_LIMIT = 8000
-PREFERENCES_PATH = REPO / "_agents" / "Lares_Preferences.md"
+PREFERENCES_PATH = REPO / "builds" / "agents" / "Lares_Preferences.md"
 
 DESCRIPTION_MIN_LEN = 80
 REQUIRED_KEYWORDS = {
@@ -57,7 +57,7 @@ class CheckResult:
 
 
 def _load_worker_source(slug: str) -> str | None:
-    path = REPO / "_agents" / "workers" / f"{slug}.md"
+    path = REPO / "builds" / "agents" / "workers" / f"{slug}.md"
     return path.read_text(encoding="utf-8") if path.exists() else None
 
 
@@ -133,16 +133,16 @@ def check_description_quality(r: CheckResult) -> None:
     for slug in WORKER_SLUGS:
         source = _load_worker_source(slug)
         if source is None:
-            r.fail(f"Missing source: _agents/workers/{slug}.md")
+            r.fail(f"Missing source: builds/agents/workers/{slug}.md")
             continue
         desc = _parse_frontmatter_description(source)
         if desc is None:
-            r.fail(f"No description field: _agents/workers/{slug}.md")
+            r.fail(f"No description field: builds/agents/workers/{slug}.md")
             continue
         if len(desc) < DESCRIPTION_MIN_LEN:
             r.fail(
                 f"Description too short ({len(desc)} chars, min {DESCRIPTION_MIN_LEN}): "
-                f"_agents/workers/{slug}.md"
+                f"builds/agents/workers/{slug}.md"
             )
             continue
         found = [kw for kw in REQUIRED_KEYWORDS.get(slug, []) if kw.lower() in desc.lower()]
@@ -154,7 +154,7 @@ def check_description_quality(r: CheckResult) -> None:
 
 def check_kernel_size(r: CheckResult) -> None:
     if not KERNEL_PATH.exists():
-        r.fail("Missing: _agents/Lares_Kernel.md")
+        r.fail("Missing: builds/agents/Lares_Kernel.md")
         return
     char_count = len(KERNEL_PATH.read_text(encoding="utf-8"))
     if char_count < KERNEL_SIZE_LIMIT:
@@ -165,16 +165,16 @@ def check_kernel_size(r: CheckResult) -> None:
 
 def check_version_alignment(r: CheckResult) -> None:
     if not PREFERENCES_PATH.exists():
-        r.fail("Missing: _agents/Lares_Preferences.md")
+        r.fail("Missing: builds/agents/Lares_Preferences.md")
         return
     prefs_text = PREFERENCES_PATH.read_text(encoding="utf-8")
     version_match = re.search(r"Version:\s*([\d]+\.[\d]+)", prefs_text)
     if not version_match:
-        r.warn("Version string not found in _agents/Lares_Preferences.md")
+        r.warn("Version string not found in builds/agents/Lares_Preferences.md")
         return
 
     prefs_version = version_match.group(1)
-    for rel_path in ["AGENTS.md", "_agents/Lares_Kernel.md"]:
+    for rel_path in ["AGENTS.md", "builds/agents/Lares_Kernel.md"]:
         path = REPO / rel_path
         if not path.exists():
             r.fail(f"Version check skipped for {rel_path}: file missing")

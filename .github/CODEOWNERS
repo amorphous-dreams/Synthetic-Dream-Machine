@@ -7,6 +7,6 @@
 # Until then, direct usernames apply:
 
 /.github/CODEOWNERS       @joshuafontany @freyja-fontany
-/_agents/**               @joshuafontany @freyja-fontany
+/builds/**               @joshuafontany @freyja-fontany
 /AGENTS.md                @joshuafontany @freyja-fontany
 /.github/ROSTER.md        @joshuafontany @freyja-fontany

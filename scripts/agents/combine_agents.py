@@ -6,10 +6,10 @@ Sprint S2 introduces manifest-driven package rendering for root instruction
 artifacts while preserving the existing cross-platform worker generation path.
 
 Primary inputs:
-  builds/manifests/*.json      — package manifests
-  builds/modules/*.json        — module metadata sidecars
-  _agents/...                  — authored source modules
-  _agents/workers/*.md         — worker source files
+  builds/manifests/*.toml      — package manifests
+  builds/modules/*.toml        — module metadata sidecars
+  builds/agents/...                  — authored source modules
+  builds/agents/workers/*.md         — worker source files
 
 Primary outputs:
   AGENTS.md
@@ -38,6 +38,7 @@ import hashlib
 import json
 import pathlib
 import sys
+import tomllib
 from dataclasses import dataclass
 from typing import Any
 
@@ -99,11 +100,11 @@ def relative(path: pathlib.Path) -> str:
     return str(path.relative_to(REPO))
 
 
-def load_json(path: pathlib.Path) -> dict[str, Any]:
+def load_toml(path: pathlib.Path) -> dict[str, Any]:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        sys.exit(f"ERROR: Invalid JSON in {relative(path)}: {exc}")
+        return tomllib.loads(path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as exc:
+        sys.exit(f"ERROR: Invalid TOML in {relative(path)}: {exc}")
 
 
 def validate_module_data(path: pathlib.Path, data: dict[str, Any]) -> ModuleSpec:
@@ -137,8 +138,8 @@ def load_modules() -> dict[str, ModuleSpec]:
     if not MODULES_DIR.exists():
         sys.exit(f"ERROR: Missing module metadata directory: {relative(MODULES_DIR)}")
 
-    for path in sorted(MODULES_DIR.glob("*.json")):
-        data = load_json(path)
+    for path in sorted(MODULES_DIR.glob("*.toml")):
+        data = load_toml(path)
         spec = validate_module_data(path, data)
         if spec.module_id in modules:
             sys.exit(
@@ -195,8 +196,8 @@ def load_manifests(modules: dict[str, ModuleSpec]) -> dict[str, ManifestSpec]:
     if not MANIFESTS_DIR.exists():
         sys.exit(f"ERROR: Missing manifests directory: {relative(MANIFESTS_DIR)}")
 
-    for path in sorted(MANIFESTS_DIR.glob("*.json")):
-        spec = validate_manifest(path, load_json(path), modules)
+    for path in sorted(MANIFESTS_DIR.glob("*.toml")):
+        spec = validate_manifest(path, load_toml(path), modules)
         if spec.package_id in manifests:
             sys.exit(
                 f"ERROR: Duplicate package_id '{spec.package_id}' in "
@@ -434,7 +435,7 @@ def build_worker_agent(slug: str, source: str) -> str:
 
     comment = (
         "<!-- Generated file. Do not edit directly.\n"
-        f"     Edit _agents/workers/{slug}.md\n"
+        f"     Edit builds/agents/workers/{slug}.md\n"
         "     then run: python3 scripts/agents/combine_agents.py -->\n"
     )
     frontmatter_block, body = _strip_frontmatter(source)
@@ -468,7 +469,7 @@ def build_claude_worker(slug: str, source: str) -> str:
     frontmatter_block, body = _strip_frontmatter(source)
     notice = (
         "<!-- Generated file. Do not edit directly.\n"
-        f"     Edit _agents/workers/{slug}.md\n"
+        f"     Edit builds/agents/workers/{slug}.md\n"
         "     then run: python3 scripts/agents/combine_agents.py -->\n"
     )
     if not frontmatter_block:
@@ -503,7 +504,7 @@ def build_codex_worker(slug: str, source: str) -> str:
     frontmatter_block, body = _strip_frontmatter(source)
     comment = (
         "# Generated file. Do not edit directly.\n"
-        f"# Edit _agents/workers/{slug}.md\n"
+        f"# Edit builds/agents/workers/{slug}.md\n"
         "# then run: python3 scripts/agents/combine_agents.py\n"
     )
 
@@ -542,7 +543,7 @@ def load_worker_sources() -> dict[str, str]:
     sources: dict[str, str] = {}
     missing = []
     for slug in WORKER_SLUGS:
-        path = REPO / "_agents" / "workers" / f"{slug}.md"
+        path = REPO / "builds" / "agents" / "workers" / f"{slug}.md"
         if path.exists():
             sources[slug] = path.read_text(encoding="utf-8")
         else:

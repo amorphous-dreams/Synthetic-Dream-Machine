@@ -1,23 +1,23 @@
 {
-  "manifest_path": "builds/manifests/codex-root.json",
-  "manifest_sha256": "3815bca647fe3586870bea8e536bf3ee77000825e0ae5829874f812478f43c3d",
+  "manifest_path": "builds/manifests/codex-root.toml",
+  "manifest_sha256": "219bdbd1e492b9997e6799613408d3edb94830bc28082159f108c5cce00b4404",
   "outputs": [
     {
       "bytes": 220,
       "path": ".codex/config.toml",
-      "sha256": "1f5f64091ef1a8eb77cab51c79169225ac9e2b04f39d6ad62b486224d57e2d19"
+      "sha256": "d72e579c0ebc310d1d456a5753c90bd2634e456b36c2ede747812f33dc35f02a"
     },
     {
-      "bytes": 32264,
+      "bytes": 31880,
       "path": "AGENTS.md",
-      "sha256": "3fa14a352dc1b80d27b1b2272b25dd7f50946cef49985cd974b74530e01162fc"
+      "sha256": "4447e18696085947dc9d24dcfe05b50c087b346a659ced23b5145814f82fe360"
     }
   ],
   "package_id": "codex-root",
   "renderer_version": "0.2.0",
   "sources": [
     {
-      "metadata_path": "builds/modules/lares-kernel.json",
+      "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
       "rendered_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "source_path": "_agents/Lares_Kernel.md",
@@ -27,31 +27,31 @@
       }
     },
     {
-      "metadata_path": "builds/modules/lares-permissions.json",
+      "metadata_path": "builds/modules/lares-permissions.toml",
       "module_id": "lares-permissions",
-      "rendered_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
+      "rendered_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
       "source_path": "_agents/core/Lares_Permissions.md",
-      "source_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
+      "source_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
       "transform": {
         "type": "full"
       }
     },
     {
-      "metadata_path": "builds/modules/lares-epistemology.json",
+      "metadata_path": "builds/modules/lares-epistemology.toml",
       "module_id": "lares-epistemology",
-      "rendered_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
+      "rendered_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
       "source_path": "_agents/core/Lares_Epistemology.md",
-      "source_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
+      "source_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
       "transform": {
         "type": "full"
       }
     },
     {
-      "metadata_path": "builds/modules/lares-vscode-ops-core.json",
+      "metadata_path": "builds/modules/lares-vscode-ops-core.toml",
       "module_id": "lares-vscode-ops-core",
-      "rendered_sha256": "80ef1f7502c58d403d092ef28f7921ddf04af3f4fcc2445e11b4eb3698158c29",
+      "rendered_sha256": "36292ce82a40789275e41fbd41be35da1a0dc0d08976550d72ccc259fa26711c",
       "source_path": "_agents/Lares_VSCode_Operations.md",
-      "source_sha256": "44a2fba74533a4900496c95dd898fa0998f15e1aca0dfae79bead8f48a2a323b",
+      "source_sha256": "072e23bbef2e66eb4ccb77088056bca6ba33ff3edc81b0287a7b0a4d0a2e7824",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",
         "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
@@ -59,11 +59,11 @@
       }
     },
     {
-      "metadata_path": "builds/modules/lares-codex-wrapper.json",
+      "metadata_path": "builds/modules/lares-codex-wrapper.toml",
       "module_id": "lares-codex-wrapper",
       "rendered_sha256": "8b0de609ed03a75847dc7b1382e2b26ec911d194253cb70697ed4caf0fedae8d",
       "source_path": "_agents/platform/Lares_Codex_Wrapper.md",
-      "source_sha256": "bb5ba05f997b856e24fd914e030ae85a018a52d67b1ef9464bee77f2c04e1293",
+      "source_sha256": "9f74db6090e103b5143fb698cd2ae2a20b69fb68d24689fff348b01c86ceac04",
       "transform": {
         "marker": "## Codex Platform \u2014 Worker Registry",
         "type": "extract_from_marker"

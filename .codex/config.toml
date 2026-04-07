@@ -1,5 +1,5 @@
 # Generated file. Do not edit directly.
-# Manifest: builds/manifests/codex-root.json
+# Manifest: builds/manifests/codex-root.toml
 # Run: python3 scripts/agents/combine_agents.py --target codex-root
 
 [project]

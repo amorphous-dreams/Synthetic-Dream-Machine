@@ -1,6 +1,3 @@
-> **Source file.** Do not edit `.github/copilot-instructions.md` directly.
-> Run `scripts/agents/combine_agents.py` to rebuild from source files.
-
 ---
 
 ## Copilot Platform — Worker Registry
@@ -20,15 +17,15 @@ Workers are session-local Tasked Spirits. They execute; they do not set canon. A
 ## Copilot-Specific Notes
 
 - Worker agents are configured `user-invocable: false` and surface only when explicitly invoked.
-- Worker definitions live in `_agents/workers/*.md`. Do not edit `.github/agents/*.agent.md` directly — those are generated artifacts.
+- Worker definitions live in `builds/agents/workers/*.md`. Do not edit `.github/agents/*.agent.md` directly — those are generated artifacts.
 - Regenerate all Copilot platform files: `python3 scripts/agents/combine_agents.py --platform copilot`
 - Verify alignment across platforms: `python3 scripts/agents/verify_alignment.py`
 
 ## Agent-Engineer Rebuild Protocol
 
-When `_agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all platform deployments:
+When `builds/agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all platform deployments:
 
-1. Verify source files are saved: `_agents/Lares_Preferences.md`, `_agents/Lares_VSCode_Operations.md`, `_agents/platform/Lares_Copilot_Wrapper.md`
+1. Verify source files are saved: `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_VSCode_Operations.md`, `builds/agents/platform/Lares_Copilot_Wrapper.md`
 2. Run: `python3 scripts/agents/combine_agents.py`
 3. Run: `python3 scripts/agents/verify_alignment.py`
 4. Commit all generated files together with their sources as a single coherent change

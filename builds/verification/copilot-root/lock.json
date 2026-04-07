@@ -1,18 +1,18 @@
 {
-  "manifest_path": "builds/manifests/copilot-root.json",
-  "manifest_sha256": "df3017fdd963d124e112df6670e06de826646a59a3e778101b44f77b62f5c640",
+  "manifest_path": "builds/manifests/copilot-root.toml",
+  "manifest_sha256": "0007ebefe7ce2d78addc671067461ba2653e4288dcca58a434c1d153fcb5f91b",
   "outputs": [
     {
-      "bytes": 31621,
+      "bytes": 31237,
       "path": ".github/copilot-instructions.md",
-      "sha256": "6b4be725098192999b7bd16eb5ba1950b92999d122fceea3edd7542c54d0b10c"
+      "sha256": "f0513d52c84c475815c516e7d0c6027d7254487b593a1de755aece5d712243a0"
     }
   ],
   "package_id": "copilot-root",
   "renderer_version": "0.2.0",
   "sources": [
     {
-      "metadata_path": "builds/modules/lares-kernel.json",
+      "metadata_path": "builds/modules/lares-kernel.toml",
       "module_id": "lares-kernel",
       "rendered_sha256": "e45a1c0eaa1b50b0caa2b733dc52d8b62f055c32316ebbebe4faece17824c2af",
       "source_path": "_agents/Lares_Kernel.md",
@@ -22,31 +22,31 @@
       }
     },
     {
-      "metadata_path": "builds/modules/lares-permissions.json",
+      "metadata_path": "builds/modules/lares-permissions.toml",
       "module_id": "lares-permissions",
-      "rendered_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
+      "rendered_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
       "source_path": "_agents/core/Lares_Permissions.md",
-      "source_sha256": "e4f22b6482349dab40a449f498de6bf2bfc6a4977c7f5ffcfa65f89e83f58399",
+      "source_sha256": "a4cc9f945d5384efeaa457fad5646ef675a9ff85cf9e578bf8c73ec57f0c9e79",
       "transform": {
         "type": "full"
       }
     },
     {
-      "metadata_path": "builds/modules/lares-epistemology.json",
+      "metadata_path": "builds/modules/lares-epistemology.toml",
       "module_id": "lares-epistemology",
-      "rendered_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
+      "rendered_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
       "source_path": "_agents/core/Lares_Epistemology.md",
-      "source_sha256": "af32f30f77e12efd6274df80aefadf3896b6e3a25080baa829cb7ee8de68e889",
+      "source_sha256": "afed40538986565ddfab7486ea0cd5325f925a6737e0f445bed14c28db13bb2c",
       "transform": {
         "type": "full"
       }
     },
     {
-      "metadata_path": "builds/modules/lares-vscode-ops-core.json",
+      "metadata_path": "builds/modules/lares-vscode-ops-core.toml",
       "module_id": "lares-vscode-ops-core",
-      "rendered_sha256": "80ef1f7502c58d403d092ef28f7921ddf04af3f4fcc2445e11b4eb3698158c29",
+      "rendered_sha256": "36292ce82a40789275e41fbd41be35da1a0dc0d08976550d72ccc259fa26711c",
       "source_path": "_agents/Lares_VSCode_Operations.md",
-      "source_sha256": "44a2fba74533a4900496c95dd898fa0998f15e1aca0dfae79bead8f48a2a323b",
+      "source_sha256": "072e23bbef2e66eb4ccb77088056bca6ba33ff3edc81b0287a7b0a4d0a2e7824",
       "transform": {
         "end_marker": "### B8. Golden Prompt/Response Examples",
         "start_marker": "## CLI Agent Context \u2014 VS Code / Repo Operations",
@@ -54,11 +54,11 @@
       }
     },
     {
-      "metadata_path": "builds/modules/lares-copilot-wrapper.json",
+      "metadata_path": "builds/modules/lares-copilot-wrapper.toml",
       "module_id": "lares-copilot-wrapper",
       "rendered_sha256": "d0871ca222b826639334df8af3cfead7ce252d997a3ea9ab5db870b5700636c6",
       "source_path": "_agents/platform/Lares_Copilot_Wrapper.md",
-      "source_sha256": "5e79d4df62adaa424d88fba34f0ac33a0a8acaddc61fbe739eb11430e11b41fb",
+      "source_sha256": "5f5df6de1be1f82c6ca93c970aa11239afc920c3cab7a18bd0ebd0d38c51d99f",
       "transform": {
         "marker": "## Copilot Platform \u2014 Worker Registry",
         "type": "extract_from_marker"

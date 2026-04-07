@@ -12,12 +12,12 @@
     {
       "bytes": 220,
       "path": ".codex/config.toml",
-      "sha256": "1f5f64091ef1a8eb77cab51c79169225ac9e2b04f39d6ad62b486224d57e2d19"
+      "sha256": "d72e579c0ebc310d1d456a5753c90bd2634e456b36c2ede747812f33dc35f02a"
     },
     {
-      "bytes": 32264,
+      "bytes": 31880,
       "path": "AGENTS.md",
-      "sha256": "3fa14a352dc1b80d27b1b2272b25dd7f50946cef49985cd974b74530e01162fc"
+      "sha256": "4447e18696085947dc9d24dcfe05b50c087b346a659ced23b5145814f82fe360"
     }
   ],
   "package_id": "codex-root",

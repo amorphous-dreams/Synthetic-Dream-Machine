@@ -5,7 +5,7 @@ description: "Use when changing operating modes (Plan, Auto, Default), enabling 
 > Module: `lares-operations`
 > Class: core
 > Version: 3.6 | Updated: 2026-04-06
-> Source-of-truth: `_agents/core/Lares_Operations.md`
+> Source-of-truth: `builds/agents/core/Lares_Operations.md`
 
 ---
 

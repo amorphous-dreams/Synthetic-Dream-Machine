@@ -1,6 +1,3 @@
-> **Source file.** Do not edit `.claude/CLAUDE.md` directly.
-> Run `scripts/agents/combine_agents.py` to rebuild from source files.
-
 ---
 
 ## Claude Platform — Worker Registry
@@ -24,7 +21,7 @@ decisions route through the main coordinator or the operator directly.
 
 - Worker agents have no `user-invocable` equivalent in Claude Code — delegation is controlled
   entirely through the `description` field and coordinator instructions.
-- Worker source definitions live in `_agents/workers/*.md`. Do not edit `.claude/agents/*.md`
+- Worker source definitions live in `builds/agents/workers/*.md`. Do not edit `.claude/agents/*.md`
   directly — those are generated artifacts.
 - Claude tool names differ from Copilot: use PascalCase (`Read`, `Write`, `Edit`, `Bash`, `Grep`,
   `Glob`, `WebFetch`). Worker sources carry a `tools_claude:` frontmatter field for Claude-specific
@@ -34,10 +31,10 @@ decisions route through the main coordinator or the operator directly.
 
 ## Agent-Engineer Rebuild Protocol
 
-When `_agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all
+When `builds/agents/Lares_Preferences.md` changes, the Agent-Engineer worker knows how to rebuild all
 platform deployments:
 
-1. Verify source files are saved: `_agents/Lares_Preferences.md`, `_agents/Lares_VSCode_Operations.md`, `_agents/platform/Lares_Claude_Wrapper.md`
+1. Verify source files are saved: `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_VSCode_Operations.md`, `builds/agents/platform/Lares_Claude_Wrapper.md`
 2. Run: `python3 scripts/agents/combine_agents.py`
 3. Run: `python3 scripts/agents/verify_alignment.py`
 4. Commit all generated files together with their sources as a single coherent change

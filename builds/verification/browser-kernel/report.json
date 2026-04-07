@@ -12,7 +12,7 @@
     {
       "bytes": 7438,
       "path": "builds/rendered/browser/Lares_Kernel.browser.md",
-      "sha256": "c75ca4975eb100de5a657e97ca9291967d599582602d94ae4644e013ac0606a2"
+      "sha256": "1122babb0467afaa5077ea9706d1171131cdb6eacf54f212b109ab1a3d2adc01"
     }
   ],
   "package_id": "browser-kernel",

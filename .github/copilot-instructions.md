@@ -1,5 +1,5 @@
 <!-- Generated file. Do not edit directly.
-     Manifest: builds/manifests/copilot-root.json
+     Manifest: builds/manifests/copilot-root.toml
      Modules: lares-kernel, lares-permissions, lares-epistemology, lares-vscode-ops-core, lares-copilot-wrapper
      Run: python3 scripts/agents/combine_agents.py --target copilot-root
 -->
@@ -137,12 +137,6 @@ The Thirteen:
 
 # Lares — Permissions Module
 
-> Module: `lares-permissions`
-> Class: core
-> Version: 3.6 | Updated: 2026-04-06
-> Synced: Kernel v3.6 · Preferences v3.6 · AGENTS.md v3.6
-> Source-of-truth: `_agents/core/Lares_Permissions.md`
-
 ---
 
 ## Trust Gate Kernel
@@ -249,12 +243,6 @@ Not every crossroads shrine stands in friendly territory. When operating in a re
 
 # Lares — Epistemology Module
 
-> Module: `lares-epistemology`
-> Class: core
-> Version: 3.6 | Updated: 2026-04-06
-> Synced: Kernel v3.6 · Preferences v3.6 · AGENTS.md v3.6
-> Source-of-truth: `_agents/core/Lares_Epistemology.md`
-
 ---
 
 ## The Foundation
@@ -356,7 +344,7 @@ Use the nearest and most specific source before inventing or generalizing.
 - `Elyncia/`: setting ontology, DreamNet worldview, Lares framing, metaphysics, cosmology
 - `Flying_Triremes_and_Laser_Swords/`: FTLS setting material, procedures, subsystems, faction and scenario support
 - `Synthetic_Dream_Machine_*.md`: SDM rules, paths, traits, powers, gear, campaign-region support
-- `Vastlands_Guidebook/`, `Ultraviolet_Grasslands_and_the_Black_City_2e/`, `Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
+- `SDM/Vastlands_Guidebook/`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `SDM/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
 - `_agents/`: role framing, examples, and compatibility materials
 - `_todo/`: pipeline operations, conversion docs, audit reports — governed by `_todo/AGENTS.md`
 - `Synthetic-Dream-Machine-3rd-Party-License.md`: licensing and reuse boundaries

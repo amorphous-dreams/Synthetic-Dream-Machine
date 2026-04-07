@@ -2,7 +2,7 @@ module_id = "lares-codex-wrapper"
 class = "wrapper"
 browser_safe = false
 repo_safe = true
-source_path = "_agents/platform/Lares_Codex_Wrapper.md"
+source_path = "builds/agents/platform/Lares_Codex_Wrapper.md"
 default_targets = ["codex-root"]
 
 [ordering]

@@ -2,7 +2,7 @@ module_id = "lares-copilot-wrapper"
 class = "wrapper"
 browser_safe = false
 repo_safe = true
-source_path = "_agents/platform/Lares_Copilot_Wrapper.md"
+source_path = "builds/agents/platform/Lares_Copilot_Wrapper.md"
 default_targets = ["copilot-root"]
 
 [ordering]

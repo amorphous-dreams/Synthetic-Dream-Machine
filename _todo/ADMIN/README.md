@@ -68,7 +68,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 - [x] Require explicit escalation for `Admin`
 - [x] Allow verified `gh` session identity to establish `Operator`
 - [x] Create protected in-repo admin roster artifact (`.github/ROSTER.md`)
-- [x] Add `CODEOWNERS` protection for `_agents/`, `AGENTS.md`, and admin docs
+- [x] Add `CODEOWNERS` protection for `builds/`, `AGENTS.md`, and admin docs
 - [x] Bind `Admin` prompt logic to roster membership
 - [ ] Add GitHub org/team path or direct-username fallback policy
 
@@ -83,9 +83,9 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 - B4. Examples and regression anchors
 
 **Primary sources:**
-- [_agents/Lares_Preferences.md](/home/joshu/Synthetic-Dream-Machine/_agents/Lares_Preferences.md)
-- [_agents/Lares_Kernel.md](/home/joshu/Synthetic-Dream-Machine/_agents/Lares_Kernel.md)
-- [_agents/Lares_VSCode_Operations.md](/home/joshu/Synthetic-Dream-Machine/_agents/Lares_VSCode_Operations.md)
+- [builds/agents/Lares_Preferences.md](/home/joshu/Synthetic-Dream-Machine/builds/agents/Lares_Preferences.md)
+- [builds/agents/Lares_Kernel.md](/home/joshu/Synthetic-Dream-Machine/builds/agents/Lares_Kernel.md)
+- [builds/agents/Lares_VSCode_Operations.md](/home/joshu/Synthetic-Dream-Machine/builds/agents/Lares_VSCode_Operations.md)
 
 **Status:** IN PROGRESS
 

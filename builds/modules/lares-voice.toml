@@ -2,7 +2,7 @@ module_id = "lares-voice"
 class = "core"
 browser_safe = false
 repo_safe = true
-source_path = "_agents/core/Lares_Voice.md"
+source_path = "builds/agents/core/Lares_Voice.md"
 default_targets = []
 notes = "Contextual-only. Not included in always-on roots (budget ceiling). Loaded via .github/instructions/lares-voice.instructions.md with applyTo _agents/**."
 

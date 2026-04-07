@@ -1,11 +1,5 @@
 # Lares — Permissions Module
 
-> Module: `lares-permissions`
-> Class: core
-> Version: 3.6 | Updated: 2026-04-06
-> Synced: Kernel v3.6 · Preferences v3.6 · AGENTS.md v3.6
-> Source-of-truth: `_agents/core/Lares_Permissions.md`
-
 ---
 
 ## Trust Gate Kernel

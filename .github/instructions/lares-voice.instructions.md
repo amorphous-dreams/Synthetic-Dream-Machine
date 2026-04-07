@@ -1,12 +1,12 @@
 ---
 description: "Use when spawning Workers, assigning coordinator voices, routing escalations, reviewing Lares voice architecture, or working on agent infrastructure. Load for agent-engineering, worker thread design, coordinator routing, Worker lifecycle, or escalation provenance questions."
-applyTo: ["_agents/**", ".github/agents/**"]
+applyTo: ["builds/agents/**", ".github/agents/**"]
 ---
 
 > Module: `lares-voice`
 > Class: core
 > Version: 3.6 | Updated: 2026-04-06
-> Source-of-truth: `_agents/core/Lares_Voice.md`
+> Source-of-truth: `builds/agents/core/Lares_Voice.md`
 
 ---
 

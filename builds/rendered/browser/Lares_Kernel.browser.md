@@ -1,5 +1,5 @@
 <!-- Generated file. Do not edit directly.
-     Manifest: builds/manifests/browser-kernel.json
+     Manifest: builds/manifests/browser-kernel.toml
      Modules: lares-kernel
      Run: python3 scripts/agents/combine_agents.py --target browser-kernel
 -->

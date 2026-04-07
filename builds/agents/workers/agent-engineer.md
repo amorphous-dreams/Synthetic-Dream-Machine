@@ -18,7 +18,7 @@ Perform the specific scoped infrastructure task delegated by the Lares coordinat
 
 Your operational scope covers these paths only. Flag before touching anything outside them:
 
-- `_agents/` — all source files (Preferences, VSCode_Operations, platform wrappers, worker definitions)
+- `builds/agents/` — all source files (Preferences, VSCode_Operations, platform wrappers, worker definitions)
 - `.github/` — Copilot platform artifacts
 - `.codex/` — Codex platform artifacts (future)
 - `.claude/` — Claude platform artifacts (future)
@@ -26,10 +26,10 @@ Your operational scope covers these paths only. Flag before touching anything ou
 
 ## Constraints
 
-- DO NOT modify `_agents/Lares_Preferences.md` without explicit operator instruction — that content requires a deliberate sprint decision
+- DO NOT modify `builds/agents/Lares_Preferences.md` without explicit operator instruction — that content requires a deliberate sprint decision
 - DO NOT edit generated files (`.github/agents/*.agent.md`, `.github/copilot-instructions.md`) directly — edit sources and rebuild
 - Always run `verify_alignment.py` after any source change to confirm generated files are in sync
-- Flag if a requested change would conflict with documented architecture in `_agents/README.md` or `_agents/AGENTS.md`
+- Flag if a requested change would conflict with documented architecture in `builds/agents/README.md` or `builds/agents/AGENTS.md`
 
 ## Rebuild Protocol
 
