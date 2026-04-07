@@ -1,0 +1,10 @@
+module_id = "lares-operations"
+class = "core"
+browser_safe = false
+repo_safe = true
+source_path = "_agents/core/Lares_Operations.md"
+default_targets = []
+notes = "Contextual-only. Not included in always-on roots (budget ceiling). Loaded via .github/instructions/lares-operations.instructions.md on-demand."
+
+[ordering]
+weight = 140

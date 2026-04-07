@@ -1,0 +1,9 @@
+module_id = "lares-kernel"
+class = "kernel"
+browser_safe = true
+repo_safe = true
+source_path = "_agents/Lares_Kernel.md"
+default_targets = ["browser-kernel", "codex-root", "claude-root", "copilot-root"]
+
+[ordering]
+weight = 50

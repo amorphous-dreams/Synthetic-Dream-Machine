@@ -1,0 +1,9 @@
+module_id = "lares-permissions"
+class = "core"
+browser_safe = false
+repo_safe = true
+source_path = "_agents/core/Lares_Permissions.md"
+default_targets = ["codex-root", "claude-root", "copilot-root"]
+
+[ordering]
+weight = 120

@@ -1,0 +1,24 @@
+build_profile = "browser-kernel"
+manifest_version = 1
+package_id = "browser-kernel"
+renderer_version = "0.2.0"
+target_class = "browser-safe"
+target_platform = "browser"
+
+[budget]
+max_bytes = 8000
+
+[verification]
+emit_checksums = true
+emit_lockfile = true
+emit_report = true
+
+[[outputs]]
+kind = "single_source_markdown"
+path = "builds/rendered/browser/Lares_Kernel.browser.md"
+
+[[sources]]
+module_id = "lares-kernel"
+
+[sources.transform]
+type = "full"
