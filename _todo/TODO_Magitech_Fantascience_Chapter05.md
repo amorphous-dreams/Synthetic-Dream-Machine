@@ -40,13 +40,13 @@ Sequencing lock status (2026-04-01):
   - slot pressure,
   - ward/armor language,
   - catalog-facing output format.
-- `Vastlands_Guidebook/Vastlands_Guidebook.md` controls everyday weird-gear tone:
+- `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md` controls everyday weird-gear tone:
   - wards,
   - albums,
   - strange items,
   - mods,
   - portable occult gear.
-- `Our_Golden_Age/Our_Golden_Age.md` controls relic consequence and metaphysical pressure:
+- `SDM/Our_Golden_Age/Our_Golden_Age.md` controls relic consequence and metaphysical pressure:
   - shrines,
   - godsign,
   - signals,
@@ -220,9 +220,9 @@ Sequencing lock status (2026-04-01):
 - Primary conversion source:
   - `_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf` (magic-item procedure bands)
 - SDM context sources:
-  - `Our_Golden_Age/Our_Golden_Age.md`
-  - `Vastlands_Guidebook/Vastlands_Guidebook.md`
-  - `Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`
+  - `SDM/Our_Golden_Age/Our_Golden_Age.md`
+  - `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md`
+  - `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`
 - Canonical destination references:
   - `Synthetic_Dream_Machine_01_Quickstart.md`
   - `Synthetic_Dream_Machine_05_Gear_Index.md`

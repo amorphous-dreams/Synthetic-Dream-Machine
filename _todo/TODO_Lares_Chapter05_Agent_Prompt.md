@@ -58,7 +58,7 @@ Use these sources in this order when making conversion decisions:
 3. `Synthetic_Dream_Machine_04_Powers_Index.md`
 4. `Synthetic_Dream_Machine_03_Traits_Index.md`
 5. `Synthetic_Dream_Machine_06_Campaign_Regions.md` only when region/faction/world-process context matters
-6. `Vastlands_Guidebook/Vastlands_Guidebook.md`, `Our_Golden_Age/Our_Golden_Age.md`, `Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md` as style guides, not mechanical canon
+6. `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md`, `SDM/Our_Golden_Age/Our_Golden_Age.md`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md` as style guides, not mechanical canon
 
 Primary conversion governance docs:
 - `_todo/TODO_Magitech_Fantascience_Chapter05.md`

@@ -260,7 +260,7 @@ meta:
 
 ## Gear-Focused Powers
 
-- [The Viridian Practice (source context)](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094): album context for hallmark projectile-weapon anchoring and gun-monk usage.
+- [The Viridian Practice (source context)](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0094): album context for hallmark projectile-weapon anchoring and gun-monk usage.
 - [Mother of Bullets](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-mother-of-bullets): interfaces with ammo/replenish flow for ranged gear and anchor weapons.
 - [Dancing in the Hail](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-dancing-in-the-hail): defensive ranged-combat stance tied to equipped projectile weapons.
 - [Ring of Lead](Synthetic_Dream_Machine_04_Powers_Index.md#sdm-power-ring-of-lead): converts loaded/available ammo into adjacent multi-target weapon output.
@@ -1557,17 +1557,17 @@ meta:
 >
 > | Cybernetic Opportunity | Form | Effect | Market Value (Base) | Source Context |
 > | --- | --- | --- | ---: | --- |
-> | Noojack neural plug | Noospheric cranial implant | Extension plug to local noosphere; also stores 3 vidys; fast utility pick for social/intel scenes | €50 | [VLG Noojack item](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0133) (`implant, 1 sp, €50`). |
-> | Mental Shackles | Glyph-crusted head implant | Protects against mind control and coercive thought patterns (`ward +3` profile in item form) | €150 | [VLG Mental Shackles](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0143) (head implant ward entry). |
-> | Box of Eyes | Multi-ocular dermal implant cluster | Grows functional eyes across body (`implant`, ward-profile +3); strong surveillance/ambush counterpick | €450 | [VLG Box of Eyes](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0079) (implant ward entry). |
-> | Synthetic Subsystem organ | Battery-powered replacement organ | Maintains vital functions when air/water/food fail; plugs into most human phenotypes | €2,000 | [VLG Synthetic Subsystem](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0135) (`re 5`, `1 st`). |
-> | Vile Recorder | Implantable backup-recorder module | Keeps an up-to-date personal backup record; strong continuity/security pick with clear social/legal heat | €8,500 | [VLG Vile Recorder](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0079) (implantable heretical item). |
-> | Street-tier implant install (inferred) | One-day low-tier bio-chirurgy | Common implant install with moderate test; failure adds burden or infection complications (do it yourself? [disadvantage] or [-] with an appropriate skill) | €10* to €100* | Inferred from [VLG economy baselines](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0023) (`€10` professional-tool day, `€100` rare/expert-tool day). |
-> | Implant extraction procedure | Field pull or clinic extraction | Removal is never free: rushed extraction costs life and can cascade complications; controlled extraction reduces fallout | `€2d6*` to `€2d6* x 10` | [VLG implant feature context](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0080) (`Implant. Attaches to your body. 1 life to remove.`) + [Recovery ladders](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0062). |
-> | Secret-tier augmentation and rebuild | Recovery-secret tech interventions | Legendary augments, builder-tech body mods, and relife-grade body rework behind access checks | `€1d6 × 1,000` | [VLG Faster Recovery Services](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0062) (`secret 25+`). |
-> | High-end augment package access | Elite/post-human augmentation market | Campaign-grade bodily upgrades with social and faction consequences; gate by settlement class and patron access | €100,000 to €1,000,000 | [VLG Equipment economy examples](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0023) (`€100k` near super-heroic augment, `€1m` abmortality). |
-> | Relife overhead stack | Licensing/integration/legal surcharge | Total replacement cost is procedure plus civic/legal overhead for continuity and embodiment | `+fees/taxes` on top of base relife cost | [VLG Relife service framing](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0063) (`licensing fees`, `integration tax`, `reincarnation penalty`, `gardening fine`). |
-> | Post-relife stabilization upkeep | Ongoing fluid and recovery maintenance | Weekly upkeep pressure until body state stabilizes after compromised replacement outcomes | `€1d6 × 10/week` | [VLG Relife consequence track](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0063) (`body requires vital fluids weekly`). |
+> | Noojack neural plug | Noospheric cranial implant | Extension plug to local noosphere; also stores 3 vidys; fast utility pick for social/intel scenes | €50 | [VLG Noojack item](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0133) (`implant, 1 sp, €50`). |
+> | Mental Shackles | Glyph-crusted head implant | Protects against mind control and coercive thought patterns (`ward +3` profile in item form) | €150 | [VLG Mental Shackles](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0143) (head implant ward entry). |
+> | Box of Eyes | Multi-ocular dermal implant cluster | Grows functional eyes across body (`implant`, ward-profile +3); strong surveillance/ambush counterpick | €450 | [VLG Box of Eyes](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0079) (implant ward entry). |
+> | Synthetic Subsystem organ | Battery-powered replacement organ | Maintains vital functions when air/water/food fail; plugs into most human phenotypes | €2,000 | [VLG Synthetic Subsystem](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0135) (`re 5`, `1 st`). |
+> | Vile Recorder | Implantable backup-recorder module | Keeps an up-to-date personal backup record; strong continuity/security pick with clear social/legal heat | €8,500 | [VLG Vile Recorder](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0079) (implantable heretical item). |
+> | Street-tier implant install (inferred) | One-day low-tier bio-chirurgy | Common implant install with moderate test; failure adds burden or infection complications (do it yourself? [disadvantage] or [-] with an appropriate skill) | €10* to €100* | Inferred from [VLG economy baselines](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0023) (`€10` professional-tool day, `€100` rare/expert-tool day). |
+> | Implant extraction procedure | Field pull or clinic extraction | Removal is never free: rushed extraction costs life and can cascade complications; controlled extraction reduces fallout | `€2d6*` to `€2d6* x 10` | [VLG implant feature context](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0080) (`Implant. Attaches to your body. 1 life to remove.`) + [Recovery ladders](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0062). |
+> | Secret-tier augmentation and rebuild | Recovery-secret tech interventions | Legendary augments, builder-tech body mods, and relife-grade body rework behind access checks | `€1d6 × 1,000` | [VLG Faster Recovery Services](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0062) (`secret 25+`). |
+> | High-end augment package access | Elite/post-human augmentation market | Campaign-grade bodily upgrades with social and faction consequences; gate by settlement class and patron access | €100,000 to €1,000,000 | [VLG Equipment economy examples](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0023) (`€100k` near super-heroic augment, `€1m` abmortality). |
+> | Relife overhead stack | Licensing/integration/legal surcharge | Total replacement cost is procedure plus civic/legal overhead for continuity and embodiment | `+fees/taxes` on top of base relife cost | [VLG Relife service framing](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0063) (`licensing fees`, `integration tax`, `reincarnation penalty`, `gardening fine`). |
+> | Post-relife stabilization upkeep | Ongoing fluid and recovery maintenance | Weekly upkeep pressure until body state stabilizes after compromised replacement outcomes | `€1d6 × 10/week` | [VLG Relife consequence track](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0063) (`body requires vital fluids weekly`). |
 >
 > `*` Inferred value, derived from VLG prose economy bands (`€10` professional day-scale, `€100` rare/expert day-scale) to support at-table adjudication when no explicit implant service fee is provided.
 >
@@ -1805,13 +1805,13 @@ meta:
 >
 > | Referee Lever | Where To Pull It | What It Pays | Friction (Weight, Time, Trouble) | Table Use |
 > | --- | --- | ---: | --- | --- |
-> | Set the opening floor | [VLG ONE STRANGE ITEM](Vastlands_Guidebook/Vastlands_Guidebook.md#one-strange-item) | Start package includes one strange item + `€100` strange currency | Immediate, item-scale value; no extraction clock | Use to calibrate session-1 risk/reward before first major haul. |
-> | Liquidate odd finds via buyer ladder | [VLG Selling Your Strange Item](Vastlands_Guidebook/Vastlands_Guidebook.md#selling-your-strange-item) | `Random Merchant: €1d6* x 10`; `Sage Patron: €1d6* x 100`; `Legendary Collector: €1d6* x 1000` | Better buyers are harder to reach and more dangerous to access | Core sale procedure for "we found a weird thing." |
-> | Calibrate sale swing | [VLG THE ROLL example](Vastlands_Guidebook/Vastlands_Guidebook.md#the-roll) | Example offer `€110` from a `€1d6* x 10` pull | Exploding dice and hero dice can spike outcomes | Benchmark for hard bargaining and bold asks. |
-> | Convert haul directly into XP | [VLG EARNING EXPERIENCE](Vastlands_Guidebook/Vastlands_Guidebook.md#earning-experience) (`Scavengers`) | `1 xp per €1` of treasure recovered | Requires actual recovery/extraction from ruin context | Turns treasure movement into immediate progression pressure. |
-> | Burn cash into XP + complications | [VLG EARNING EXPERIENCE](Vastlands_Guidebook/Vastlands_Guidebook.md#earning-experience) (`Pícaros`) | Spend `€1d6 x 100` for equivalent XP | One-week action with setback risk | Primary sink that keeps loot from stagnating. |
-> | Reinvest money into hallmark power | [VLG Investing in Hallmarks](Vastlands_Guidebook/Vastlands_Guidebook.md#investing-in-hallmarks) | `€5` per item-level damage step; `€10` per defense step | Requires owned hallmark and upgrade opportunity | Converts liquidity into long-term combat capability. |
-> | Handle extreme windfalls* | [VLG Selling Your Strange Item](Vastlands_Guidebook/Vastlands_Guidebook.md#selling-your-strange-item) + [VLG THE ROLL example](Vastlands_Guidebook/Vastlands_Guidebook.md#the-roll) | `€25,000+`* (explosion-chain edge case) | Rare outcome requiring stacked luck + elite access | Treat as campaign event, not baseline expectation. |
+> | Set the opening floor | [VLG ONE STRANGE ITEM](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#one-strange-item) | Start package includes one strange item + `€100` strange currency | Immediate, item-scale value; no extraction clock | Use to calibrate session-1 risk/reward before first major haul. |
+> | Liquidate odd finds via buyer ladder | [VLG Selling Your Strange Item](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#selling-your-strange-item) | `Random Merchant: €1d6* x 10`; `Sage Patron: €1d6* x 100`; `Legendary Collector: €1d6* x 1000` | Better buyers are harder to reach and more dangerous to access | Core sale procedure for "we found a weird thing." |
+> | Calibrate sale swing | [VLG THE ROLL example](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#the-roll) | Example offer `€110` from a `€1d6* x 10` pull | Exploding dice and hero dice can spike outcomes | Benchmark for hard bargaining and bold asks. |
+> | Convert haul directly into XP | [VLG EARNING EXPERIENCE](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#earning-experience) (`Scavengers`) | `1 xp per €1` of treasure recovered | Requires actual recovery/extraction from ruin context | Turns treasure movement into immediate progression pressure. |
+> | Burn cash into XP + complications | [VLG EARNING EXPERIENCE](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#earning-experience) (`Pícaros`) | Spend `€1d6 x 100` for equivalent XP | One-week action with setback risk | Primary sink that keeps loot from stagnating. |
+> | Reinvest money into hallmark power | [VLG Investing in Hallmarks](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#investing-in-hallmarks) | `€5` per item-level damage step; `€10` per defense step | Requires owned hallmark and upgrade opportunity | Converts liquidity into long-term combat capability. |
+> | Handle extreme windfalls* | [VLG Selling Your Strange Item](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#selling-your-strange-item) + [VLG THE ROLL example](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#the-roll) | `€25,000+`* (explosion-chain edge case) | Rare outcome requiring stacked luck + elite access | Treat as campaign event, not baseline expectation. |
 >
 >
 > `*` Minimally synthesized phrasing/price-banding.
@@ -2820,7 +2820,7 @@ The quartermaster squints over your papers, checks your boots, then taps a chipp
 
 "Path folk don’t shop the same. A noble asks for lineage steel. A ruster asks for what still works in dust and hunger. Pick your line, pick your burden, pay in coin, blood, or favor."
 
-Source, Vastlands Guidebook: [Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+Source, Vastlands Guidebook: [Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 <div class="gear-table-card" markdown="1">
 
@@ -3170,7 +3170,7 @@ meta:
 > | 11 | Ancient Jezail | Killed a builderspawn Long Ago? Maker-charged, long range. | 1d12 dmg, 2 st | €5,000 |
 > | 12 | The Spear Named | Each time it wounds a foe, it roars and gains +3 on its next attack. Blood Drinker resets when you switch foes; two-handed, it deals 1d12 damage. | reach, 1d10 dmg, 1 st | €9,000 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3216,7 +3216,7 @@ meta:
 > | 11 | Vidy Unity Box | Long Long Ago holo-plays such as Willow Wolf’s Wall and Temple of the Serpent King. Brings folks together in a soft blue glow. | 2 st | €2,000 |
 > | 12 | Vicious Bird | This pet is no one’s friend. It curses like a star sailor. | L1, 6 life | NA |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3262,7 +3262,7 @@ meta:
 > | 11 | Elegant Eater Sword | An energy blade. Vorpal. Cuts through most things. | re 5, 1d8 dmg, 5 sp | €2,099 |
 > | 12 | Limousine Golem | An elegant living machine to project gravitas. Roads only. | L4, capacity 6 | €3,299 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3308,7 +3308,7 @@ meta:
 > | 11 | Living Suit | Synthetic anthropoid flesh to protect your endoskeleton. | armor +1, life +5, 1 st | €2,000 |
 > | 12 | EM Harness | Protects positronic innards, halving radiant and electric damage. | arm +3, wrd +3, 2 st | €2,500 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3354,7 +3354,7 @@ meta:
 > | 11 | Estate Key | Lucky day! An estate worth €15/wk can be yours if you clear out the falscher infestation. It’s just 2d10 days’ travel away. | 1 sp | €3,500 |
 > | 12 | Doormaker | This empathic brushpen lets you draw doors in livingstone and shipmetal structures. Originally made for Metropolis maintainers. Eraser sold separately. | re 7, restricted, 1 st | €4,500 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3400,7 +3400,7 @@ meta:
 > | 11 | Book of Hellaesthetics | Words to cause pain or take it away. Spend 2 life to restore or remove (save) 1d6+1 life. Seal to recharge overnight. | re 5, 1 st | €800 |
 > | 12 | Rotting Angel’s Ring | Taken off a dying phylake, it opens spirit doors. | ward +3, 1 sp | €1,300 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3446,7 +3446,7 @@ meta:
 > | 11 | Fireward Circlet | The semi-sentient band of daemon-matrix jewels protects your identity. Spend 1 life to block your mind for 1 round. | ward +3, 1 st | €1,100 |
 > | 12 | Articulated G-Wagon | Six wheels, seven gears, and a solar omnibattery. | L4, capacity 5 | €2,700 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3492,7 +3492,7 @@ meta:
 > | 11 | Phylake Clavus | A key that lets you pass unseen in front of an angel. Or daemon. | ward +3, 1 st | €20k |
 > | 12 | Travel Deck | Private portal cards to 54 great houses. Many are now toxic husks. | 2 sp | €25k |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3538,7 +3538,7 @@ meta:
 > | 11 | Power Scroll Printer | Insert a pliant human hand to extract life (and blood) to imbue power into a synthskin scroll. Sacrifice 1d6 life to refill. | re 3, 2 st | €1,450 |
 > | 12 | Solaris Disc | Fancy headgear uses light and fire to block hostile powers. Also, it absorbs solar energy to recharge 1 omnibattery per day. | ward +2, 1 st | €2,500 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3584,7 +3584,7 @@ meta:
 > | 11 | Zunkwaffel Wandgun | The undead suppression pistol temporarily disrupts their animating force (save or knocked out for a minute). | 2d6 dmg, 1 st | €1,200 |
 > | 12 | Synthetic Subsystem | This battery-powered organ maintains vital functions when food, water, and air grow scarce. Plugs into most human phenotypes. | re 5, 1 st | €2,000 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3630,7 +3630,7 @@ meta:
 > | 11 | Fairy Key | Pass through a fairy cat portal. | ward +1, 2 sp | €895 |
 > | 12 | Folk Hero Source Code | A stack of source cards that teaches a mother machine how to reincarnate a folk hero of the pre-feline times. | thought +1, 2 st | €4,000 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3677,7 +3677,7 @@ meta:
 > | 11 | Glass Cannon | Fires your blood as toxic shards. Targets are nauseated (save) and suffer a penalty to physical actions. Spend 3 life to reload. | long, re 5, 2H, 1d12 dmg, 1 st | €4,995 |
 > | 12 | Mindvault Helm | A traditional helm, of godbone and shipmetal, it blocks the Vile One’s mental assaults. Sunder to negate all damage from a critical hit. | armor +1, ward +3, 1 st | €7,500 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3723,7 +3723,7 @@ meta:
 > | 11 | Godbone Exoskeleton | Gruesome golem armor, replenished with your hero dice. Burn: gain armor +5, +20 temporary life and +3 strength. | re 5, 3 st | €16k |
 > | 12 | Black Mandible | You know this metal bone came from a Builder. A god, of sorts. | 3 sp | 3rr0r |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3769,7 +3769,7 @@ meta:
 > | 11 | Master Eyeball | In a preservative jar. Lets you pass for higher class. | charisma +1, 1 st | €4,500 |
 > | 12 | Face Crab | Wear it to look like someone nice and established and not at all like you. The crab needs an hour and 1d4 life to replace its face. Obviously, it also needs a fresh human face. Very illegal. | 1 st | €5,000 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3815,7 +3815,7 @@ meta:
 > | 11 | Ghost Bone Sabre | The noöspheric bones deal full damage to spirits. | 1d10, 1 st | €950 |
 > | 12 | Fresh Face | Feed it blood every day (1 life) so it stays rosy. | ward +1, 1 st | €2,000 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3861,7 +3861,7 @@ meta:
 > | 11 | Nightblade | The gibbering spirit of the Eater in Darkness dwells in this blade. Each blow reduces its target’s level by 1. If this would reduce its level below 0 it dies. | 1d8 dmg, 1 st | €13,500 |
 > | 12 | Friend Horse | It talks, but will not share its name. | L4, cap 2 | €NA |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3907,7 +3907,7 @@ meta:
 > | 11 | Safety Blanket | Possibly a large towel. Grants invisibility vs very large and stupid predators. | ward +4, 1 st | €2,950 |
 > | 12 | This Old Thing | A tatty, silvery undershirt from ages ago. Probably not worth much. | armor +4, 1 st | €4,500 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3953,7 +3953,7 @@ meta:
 > | 11 | Dale Four-Four | Sentient Long Long Ago four-shot bolter of many colors. Settings: stun (1d4 rounds save), burn (1d6), disintegrate (4d4). | 1d6 dmg, 1 st | €4,000 |
 > | 12 | Friend Spider | It might actually be a coal elemental? Or a carbon golem? “Sooty” is very fire resistant and likes flowers. | L0, tiny (1 sp) | NA |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -3999,7 +3999,7 @@ meta:
 > | 11 | Flesh Pocket | This symbiote lets you hide objects (1 st) inside yourself! The hidden object counts as clothes—not taking up inventory space. | 1 st | €300 |
 > | 12 | Book of True Thought | Written by the master’s master, it holds every answer. With it, spend a hero die to find your way. Works 5-in-6 times. | ward +3, 1 st | €800 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -4046,7 +4046,7 @@ meta:
 > | 11 | Pause | Declaration of Daemon suspension incantation cylinder, hooked to a wind-up speaker. Spend 1 life: nearby daemon loses their turn (save). | 1 st | €400 |
 > | 12 | Plug-In Chimeric | Hybrid burdenbeast with a dome head and electric discharge. | L5, capacity 3 | €550 |
 >
-> Source: [Vastlands Guidebook Other Paths](Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
+> Source: [Vastlands Guidebook Other Paths](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0114).
 
 
 tags:
@@ -4073,7 +4073,7 @@ meta:
 
 # ULTRAVIOLET GRASSLANDS
 
-Source, Ultraviolet Grasslands and the Black City 2e: [Gear & Services](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#gear-services).
+Source, Ultraviolet Grasslands and the Black City 2e: [Gear & Services](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#gear-services).
 
 "We’re going to the Black City and we don’t care if it’s supposed to take eight weeks, we’ll make it in four and bring enough black-light to set us all up. Now, how many horses will you loan us?" Inge and Ingot, the bearded ambiguously dwarfsh merchants glowered and pointed to the large sign that read, "No Lones to Adventerers, Frybooters or Wagonbonds."
 
@@ -4373,28 +4373,28 @@ meta:
 > 
 > | Vomish Implant | Form | Effect | Market Value (Base) | Source Context |
 > |---|---|---|---:|---|
-> | Telescopic Eye | Ocular implant | Vomish. The heretic that designed the vomes gifted them with impressive optics: tetrachromatic, capable of seeing in the infrared and ultraviolet. Improved versions have up to 9x zoom and macro enhance. | €250 | [Implants & Prosthetics (p.194)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
-> | Pharyngeal Proboscis | Throat implant | Vomish. Sensitive prehensile tubes extend from the throat to carry out detailed chemical sampling and analysis. | €250 | [Implants & Prosthetics (p.194)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
-> | Vome Photophores | Dermal implant | Vomish. Dermal upgrade that lets PC modulate their skin like they were a cuttlefish or squid. Shiny! | €200 | [Implants & Prosthetics (p.194)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
-> | Caustic Talons | Vampiric hand/finger mod | Vampiric. Vomish. Fingernails replaced with acid-tipped talons. Corrode metals. Grant a 1d6 unarmed attack. | €100 | [Implants & Prosthetics (p.194)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
-> | Vome Arm | Vampiric prosthetic arm | Vomish. Vampiric. Replaces an arm with a monstrous claw. Increase Strength by 2. Grants a 1d8 unarmed attack. | €500 | [Implants & Prosthetics (p.194)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
-> | Vome Legs | Vampiric prosthetic legs | Vomish. Vampiric. Liquid metal and synthetic flesh appendages. Increase speed (Fast). Increase Endurance by 2. | €750 | [Implants & Prosthetics (p.194)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
-> | Poison-gland implant | Humanoid-vome ranged combat implant | `1d6`, Short, `Reload 5`, **Intravenous** (**Inquisition Squirtgun** + intravenous payload rule). Humanoid-vome “ranged combat implant (poison-gland)”; can be loaded with liquid toxins or holy water. | €600* | [Vome Nests: humanoid vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Stump-ray implant | Humanoid-vome ranged combat implant | `2d6`, Short, `Reload 1`, radiant, blinding, rare (small **Ultra Blaster**). Referee may swap damage type to necrotic to fit local vome-ray tech. | €900* | [Vome Nests: humanoid vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Slagger Implant | Combat implant | Vomish. 3d6 damage, Medium range frag ray, Reload 10. Can spend 1 Life to reload as a free action. | €1,500 | [Implants & Prosthetics (p.194)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
-> | Mass-driver implant | Humanoid-vome ranged combat implant | `2d6`, Short, `Reload 1`, `burst`, revolutionary, rare (**Redland District SMG**). | €1,100* | [Vome Nests: humanoid vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Silver & jade domination implant | Active neural domination implant | Single-target neural/social override; treat as **Charm Person** when activated. Salvage context explicitly prices an active unit at €750. | €750 | [Encounters on the Open Trail (p.39)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#encounters-on-the-open-trail-d8) |
-> | Swarm Controller | Telepathic brain implant | Telepathic implant for **one-word** swarm commands. Learning each command word requires a moderate Thought test, and each word can only be attempted once. | €1,500* | [Archaic wonders of the ultras (p.59)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vault-of-the-lost-ultras) |
-> | Fleshburn | Vome upgrade trait | “Burning their own biomatter for speed.” Spend `1d6-1` Life to gain the Fast trait for a day. | €450* | [Vomes as PCs > Vome Upgrades (p.216)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
-> | Power From The Sun | Vome upgrade trait | “The vome becomes photovoltaic, feeding only on sunlight.” | €600* | [Vomes as PCs > Vome Upgrades (p.216)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
-> | Power From Nothing | Vome upgrade trait | “Prerequiste: Power From The Sun.” The vome feeds on “a strange zero-point energy,” certainly not making micro-tears in reality. | €1,600* | [Vomes as PCs > Vome Upgrades (p.216)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
-> | Vome Birth | Vome upgrade trait | Spend 1 Life to expectorate a vomunculus scout (L0, life 3); it looks like a “fleshy, skittery, half-metal rat.” | €1,000* | [Vomes as PCs > Vome Upgrades (p.216)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
-> | Assimilator | Vome upgrade trait | Eats a brain/CPU to secrete a memory nodule (1 stone) giving a single skill; it decays in a few hours if removed from inventory. | €1,000* | [Vomes as PCs > Vome Upgrades (p.216)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
-> | Cranial stimulation implants | Neural mood-conditioning implants | Neural pleasure-conditioning package; cited as a Crystal Tree “True Purpose” conversion path that keeps subjects in stable electronic bliss. | €600* | [Crystal Tree objective list](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#crystal-tree-and-the-decayed-city) |
-> | Slaved vomish synthesizer retrofit | Machine-part replacement rig | Retrofit process performed via a slaved vomish synthesizer, replacing flesh components with machine parts in pursuit of “more human than human” transfiguration. | €1,800* | [Heretic ecstatics site text](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#the-neon-ziggurat) |
-> | Vome assimilator suit kit | Wearable assimilation kit | Harness-and-interface chassis for parasite-mediated assimilation workflows; typically paired with a command parasite as a complete control package. | €4,200* | [100 Strange Items #96 (p.197)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#100-strange-items) |
-> | Command parasite | Control parasite | Symbiotic control organism intended to be mounted through an assimilator suit kit; provides the command layer for vome assimilation procedures. | €1,800* | [100 Strange Items #96 (p.197)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#100-strange-items) |
-> | Biomechanical servitor parasite bond | Symbiotic auto-upgrade parasite | If accepted, the servitor parasite bonds visibly and raises one stat by `+1` (`1–5` on d6), `+2` (`6`), or `+3` (`6` then `6` again), matching the UVG encounter roll procedure. | €1,500* | [Random encounter: servitor parasite auto-upgrade](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#misfortune-in-the-metal-graveyard-d20) |
+> | Telescopic Eye | Ocular implant | Vomish. The heretic that designed the vomes gifted them with impressive optics: tetrachromatic, capable of seeing in the infrared and ultraviolet. Improved versions have up to 9x zoom and macro enhance. | €250 | [Implants & Prosthetics (p.194)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
+> | Pharyngeal Proboscis | Throat implant | Vomish. Sensitive prehensile tubes extend from the throat to carry out detailed chemical sampling and analysis. | €250 | [Implants & Prosthetics (p.194)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
+> | Vome Photophores | Dermal implant | Vomish. Dermal upgrade that lets PC modulate their skin like they were a cuttlefish or squid. Shiny! | €200 | [Implants & Prosthetics (p.194)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
+> | Caustic Talons | Vampiric hand/finger mod | Vampiric. Vomish. Fingernails replaced with acid-tipped talons. Corrode metals. Grant a 1d6 unarmed attack. | €100 | [Implants & Prosthetics (p.194)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
+> | Vome Arm | Vampiric prosthetic arm | Vomish. Vampiric. Replaces an arm with a monstrous claw. Increase Strength by 2. Grants a 1d8 unarmed attack. | €500 | [Implants & Prosthetics (p.194)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
+> | Vome Legs | Vampiric prosthetic legs | Vomish. Vampiric. Liquid metal and synthetic flesh appendages. Increase speed (Fast). Increase Endurance by 2. | €750 | [Implants & Prosthetics (p.194)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
+> | Poison-gland implant | Humanoid-vome ranged combat implant | `1d6`, Short, `Reload 5`, **Intravenous** (**Inquisition Squirtgun** + intravenous payload rule). Humanoid-vome “ranged combat implant (poison-gland)”; can be loaded with liquid toxins or holy water. | €600* | [Vome Nests: humanoid vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Stump-ray implant | Humanoid-vome ranged combat implant | `2d6`, Short, `Reload 1`, radiant, blinding, rare (small **Ultra Blaster**). Referee may swap damage type to necrotic to fit local vome-ray tech. | €900* | [Vome Nests: humanoid vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Slagger Implant | Combat implant | Vomish. 3d6 damage, Medium range frag ray, Reload 10. Can spend 1 Life to reload as a free action. | €1,500 | [Implants & Prosthetics (p.194)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#implants-prosthetics) |
+> | Mass-driver implant | Humanoid-vome ranged combat implant | `2d6`, Short, `Reload 1`, `burst`, revolutionary, rare (**Redland District SMG**). | €1,100* | [Vome Nests: humanoid vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Silver & jade domination implant | Active neural domination implant | Single-target neural/social override; treat as **Charm Person** when activated. Salvage context explicitly prices an active unit at €750. | €750 | [Encounters on the Open Trail (p.39)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#encounters-on-the-open-trail-d8) |
+> | Swarm Controller | Telepathic brain implant | Telepathic implant for **one-word** swarm commands. Learning each command word requires a moderate Thought test, and each word can only be attempted once. | €1,500* | [Archaic wonders of the ultras (p.59)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vault-of-the-lost-ultras) |
+> | Fleshburn | Vome upgrade trait | “Burning their own biomatter for speed.” Spend `1d6-1` Life to gain the Fast trait for a day. | €450* | [Vomes as PCs > Vome Upgrades (p.216)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
+> | Power From The Sun | Vome upgrade trait | “The vome becomes photovoltaic, feeding only on sunlight.” | €600* | [Vomes as PCs > Vome Upgrades (p.216)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
+> | Power From Nothing | Vome upgrade trait | “Prerequiste: Power From The Sun.” The vome feeds on “a strange zero-point energy,” certainly not making micro-tears in reality. | €1,600* | [Vomes as PCs > Vome Upgrades (p.216)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
+> | Vome Birth | Vome upgrade trait | Spend 1 Life to expectorate a vomunculus scout (L0, life 3); it looks like a “fleshy, skittery, half-metal rat.” | €1,000* | [Vomes as PCs > Vome Upgrades (p.216)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
+> | Assimilator | Vome upgrade trait | Eats a brain/CPU to secrete a memory nodule (1 stone) giving a single skill; it decays in a few hours if removed from inventory. | €1,000* | [Vomes as PCs > Vome Upgrades (p.216)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vomes-violent-mechanisms) |
+> | Cranial stimulation implants | Neural mood-conditioning implants | Neural pleasure-conditioning package; cited as a Crystal Tree “True Purpose” conversion path that keeps subjects in stable electronic bliss. | €600* | [Crystal Tree objective list](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#crystal-tree-and-the-decayed-city) |
+> | Slaved vomish synthesizer retrofit | Machine-part replacement rig | Retrofit process performed via a slaved vomish synthesizer, replacing flesh components with machine parts in pursuit of “more human than human” transfiguration. | €1,800* | [Heretic ecstatics site text](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#the-neon-ziggurat) |
+> | Vome assimilator suit kit | Wearable assimilation kit | Harness-and-interface chassis for parasite-mediated assimilation workflows; typically paired with a command parasite as a complete control package. | €4,200* | [100 Strange Items #96 (p.197)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#100-strange-items) |
+> | Command parasite | Control parasite | Symbiotic control organism intended to be mounted through an assimilator suit kit; provides the command layer for vome assimilation procedures. | €1,800* | [100 Strange Items #96 (p.197)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#100-strange-items) |
+> | Biomechanical servitor parasite bond | Symbiotic auto-upgrade parasite | If accepted, the servitor parasite bonds visibly and raises one stat by `+1` (`1–5` on d6), `+2` (`6`), or `+3` (`6` then `6` again), matching the UVG encounter roll procedure. | €1,500* | [Random encounter: servitor parasite auto-upgrade](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#misfortune-in-the-metal-graveyard-d20) |
 >
 > #### Implants for Drones and Expendables
 >
@@ -4404,12 +4404,12 @@ meta:
 >
 > | Vomish Implant | Form | Effect | Market Value (Base) | Source Context |
 > |---|---|---|---:|---|
-> | Explosive payload | Single-use implanted payload | `1d6*`, area S, single-use blast (**Concussive** grenade baseline). Carrier is destroyed on discharge; tuned to VLG `Erratic Expendables` strike scale. | €260* | [Vome Nests: detona-vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Incendiary payload | Single-use implanted payload | `1d6`, area S, single-use **Heat** payload (Flarestick/UVG heat scaling). Flammable targets save or burn for `1d4` extra damage next round. | €280* | [Vome Nests: detona-vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Acidic payload | Single-use implanted payload | `1d6`, area S, single-use corrosive burst (Concussive-scale payload). Damaged targets save or suffer `-1` Defense from armor etching until repaired. | €300* | [Vome Nests: detona-vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Toxic payload | Single-use implanted payload | `1d6`, area S, single-use toxic dispersal (**Intravenous** toxin logic). Damaged targets save or lose next round and take `1` Agility damage (painful venom benchmark). | €360* | [Vome Nests: detona-vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Soporific payload | Single-use implanted payload | `1d4`, area S, single-use **Slumber** payload (Solipsism-shotgun-style sleep effect). Damaged targets save or fall asleep for `1d6` rounds; damage wakes them. | €340* | [Vome Nests: detona-vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
-> | Paralytic payload | Single-use implanted payload | `1d4`, area S, single-use paralytic venom payload (`Nunka's Weapon Morph` benchmark). Damaged targets save each round or lose action; after 3 failed saves, paralyzed for 1 hour (3 successes ends). | €420* | [Vome Nests: detona-vomes (p.40)](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Explosive payload | Single-use implanted payload | `1d6*`, area S, single-use blast (**Concussive** grenade baseline). Carrier is destroyed on discharge; tuned to VLG `Erratic Expendables` strike scale. | €260* | [Vome Nests: detona-vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Incendiary payload | Single-use implanted payload | `1d6`, area S, single-use **Heat** payload (Flarestick/UVG heat scaling). Flammable targets save or burn for `1d4` extra damage next round. | €280* | [Vome Nests: detona-vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Acidic payload | Single-use implanted payload | `1d6`, area S, single-use corrosive burst (Concussive-scale payload). Damaged targets save or suffer `-1` Defense from armor etching until repaired. | €300* | [Vome Nests: detona-vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Toxic payload | Single-use implanted payload | `1d6`, area S, single-use toxic dispersal (**Intravenous** toxin logic). Damaged targets save or lose next round and take `1` Agility damage (painful venom benchmark). | €360* | [Vome Nests: detona-vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Soporific payload | Single-use implanted payload | `1d4`, area S, single-use **Slumber** payload (Solipsism-shotgun-style sleep effect). Damaged targets save or fall asleep for `1d6` rounds; damage wakes them. | €340* | [Vome Nests: detona-vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
+> | Paralytic payload | Single-use implanted payload | `1d4`, area S, single-use paralytic venom payload (`Nunka's Weapon Morph` benchmark). Damaged targets save each round or lose action; after 3 failed saves, paralyzed for 1 hour (3 successes ends). | €420* | [Vome Nests: detona-vomes (p.40)](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#vome-nests) |
 >
 > `*` Synthesized base market value estimate (no explicit book price).
 >
@@ -4450,31 +4450,31 @@ meta:
 >
 > | Reference | Source Context | € Signal | Combat Role | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Force blade in ancient walker wreck | [Steppe misfortune result](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0022): encounter text calls out a "sliver of stuckforce in a glass matrix" lodged in a broken walker fossil, treated as portable high-value relic salvage | €500 | dmg `1d6`*; range `close`; enc `1 st`*; hands `1H`; features `armor piercing`*, `fantascience`*, `restricted`*; flavor `relic`* (see: [Weird Melee Weapons (d10)](#weird-melee-weapons-d10)) | Place as a risky stumble-reward after movement attrition. |
-> | Alien wand-guns and mind-breaker rods | [Near Moon museum battle remains](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0089): ruin inventory explicitly includes intact archaic armaments such as wand-guns and mind-breaker rods among battle debris and curated relic stock | €100 to €300 | dmg `1d8`*; range `near`; enc `1 st`*; hands `1H`; reload `3`*; features `reload`*, `oldtech`*, `fantascience`*, `restricted`*; flavor `archaic`* (see: [Ranged Weapons: Bows and Gun Wands](#ranged-weapons-bows-and-gun-wands)) | Seed as immediate armament for under-equipped crews in deep delves. |
-> | Ba-hardened wooden short sword | [Moon-facing ford trade line](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0082): market note prices a Ba-hardened anti-ultra short sword as a practical anti-incorporeal sidearm rather than prestige loot | €60 | dmg `1d6`*; range `close`; enc `1 st`*; hands `1H`; features `restricted`*; flavor `disturbing`*, `anti-spirit`* (see: [Skeleton Items](#skeleton-items) > Ghost Bone Sabre) | Offer when spectral pressure rises and players need a practical counter. |
-> | Machine-folk hero un-rusting weapon | [Way Stone misfortune result](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0052): grave-find result includes a preserved machine-folk weapon called out as permanently un-rusting despite weathered surroundings | €300 | dmg `1d8`*; range `close`; enc `1 st`*; hands `1H`; features `restricted`*; flavor `durable`*, `anti-rust`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Use as a durable reward where weather and neglect matter. |
+> | Force blade in ancient walker wreck | [Steppe misfortune result](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0022): encounter text calls out a "sliver of stuckforce in a glass matrix" lodged in a broken walker fossil, treated as portable high-value relic salvage | €500 | dmg `1d6`*; range `close`; enc `1 st`*; hands `1H`; features `armor piercing`*, `fantascience`*, `restricted`*; flavor `relic`* (see: [Weird Melee Weapons (d10)](#weird-melee-weapons-d10)) | Place as a risky stumble-reward after movement attrition. |
+> | Alien wand-guns and mind-breaker rods | [Near Moon museum battle remains](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0089): ruin inventory explicitly includes intact archaic armaments such as wand-guns and mind-breaker rods among battle debris and curated relic stock | €100 to €300 | dmg `1d8`*; range `near`; enc `1 st`*; hands `1H`; reload `3`*; features `reload`*, `oldtech`*, `fantascience`*, `restricted`*; flavor `archaic`* (see: [Ranged Weapons: Bows and Gun Wands](#ranged-weapons-bows-and-gun-wands)) | Seed as immediate armament for under-equipped crews in deep delves. |
+> | Ba-hardened wooden short sword | [Moon-facing ford trade line](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0082): market note prices a Ba-hardened anti-ultra short sword as a practical anti-incorporeal sidearm rather than prestige loot | €60 | dmg `1d6`*; range `close`; enc `1 st`*; hands `1H`; features `restricted`*; flavor `disturbing`*, `anti-spirit`* (see: [Skeleton Items](#skeleton-items) > Ghost Bone Sabre) | Offer when spectral pressure rises and players need a practical counter. |
+> | Machine-folk hero un-rusting weapon | [Way Stone misfortune result](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0052): grave-find result includes a preserved machine-folk weapon called out as permanently un-rusting despite weathered surroundings | €300 | dmg `1d8`*; range `close`; enc `1 st`*; hands `1H`; features `restricted`*; flavor `durable`*, `anti-rust`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Use as a durable reward where weather and neglect matter. |
 >
 > #### Armor Shield Ward Mentions
 >
 > | Reference | Source Context | € Signal | Defense Role | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Metal armor degradation and field repair pressure | [Lime Steppe misfortune](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0022): hazard text describes gear corrosion where metal protection is degraded until repair resources are spent | €100* | def `armor -1`*; duration `until repaired`*; enc `n/a`; features `cumbersome`*; flavor `hazard`*, `corrosion`* (see: [UVG Armors](#uvg-armors)) | Spend this when pace should feel punishing and maintenance choices matter. |
-> | Animated chitin armors in Great House ruins | [Fallen Umber encounters](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0066): "Animated chitin armors (L2, half-lost)..." at a tumbled Great House; recoveries range from scrap shell to wearable suit depending on condition | €100 salvage or €600 intact suit* | def `armor +2`* (damaged shell) or `armor +4`* (intact cuirass); enc `2 st`; features `cool`*, `cumbersome`*, `living`*; flavor `chitin`, `half-lost`* (see: [UVG Armors](#uvg-armors), [Medium Armors](#medium-armors)) | Run as a two-stage prize: survive the shambling suits, then test salvage quality to decide quick sale vs field-usable armor. |
-> | Calcite armor plate mutation result | [New discoveries mutation table](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0225): mutation outcomes explicitly include visible calcite plating that functions as bodily armor | €100* | def `armor +1`*; duration `mutation-bound`*; enc `body`*; features `living`*; flavor `mutation`* (see: [UVG Armors](#uvg-armors)) | Use as body-horror upgrade bait with consequences in social scenes. |
-> | Defensive slime mold symbiont | [Grass Colossus local actor](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0042): local description notes slime mold strains that "eat striking weapons," framing a temporary defensive symbiosis option | €250* | ward `+1 vs melee`*; duration `1 combat`*; enc `1 sp`*; features `auto`*; flavor `symbiont`*, `anti-weapon`* (see: [WARDS](#wards)) | Introduce as a rare countermeasure against melee-heavy threats. |
+> | Metal armor degradation and field repair pressure | [Lime Steppe misfortune](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0022): hazard text describes gear corrosion where metal protection is degraded until repair resources are spent | €100* | def `armor -1`*; duration `until repaired`*; enc `n/a`; features `cumbersome`*; flavor `hazard`*, `corrosion`* (see: [UVG Armors](#uvg-armors)) | Spend this when pace should feel punishing and maintenance choices matter. |
+> | Animated chitin armors in Great House ruins | [Fallen Umber encounters](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0066): "Animated chitin armors (L2, half-lost)..." at a tumbled Great House; recoveries range from scrap shell to wearable suit depending on condition | €100 salvage or €600 intact suit* | def `armor +2`* (damaged shell) or `armor +4`* (intact cuirass); enc `2 st`; features `cool`*, `cumbersome`*, `living`*; flavor `chitin`, `half-lost`* (see: [UVG Armors](#uvg-armors), [Medium Armors](#medium-armors)) | Run as a two-stage prize: survive the shambling suits, then test salvage quality to decide quick sale vs field-usable armor. |
+> | Calcite armor plate mutation result | [New discoveries mutation table](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0225): mutation outcomes explicitly include visible calcite plating that functions as bodily armor | €100* | def `armor +1`*; duration `mutation-bound`*; enc `body`*; features `living`*; flavor `mutation`* (see: [UVG Armors](#uvg-armors)) | Use as body-horror upgrade bait with consequences in social scenes. |
+> | Defensive slime mold symbiont | [Grass Colossus local actor](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0042): local description notes slime mold strains that "eat striking weapons," framing a temporary defensive symbiosis option | €250* | ward `+1 vs melee`*; duration `1 combat`*; enc `1 sp`*; features `auto`*; flavor `symbiont`*, `anti-weapon`* (see: [WARDS](#wards)) | Introduce as a rare countermeasure against melee-heavy threats. |
 >
 > #### Combat Trophy Salvage Conversions
 >
 > | Salvage Signal | Source Context | € Signal | Extraction Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Crystal worm teeth suitable for weapon crafting | [Nomad discovery](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0023): discovery procedure states excavation can yield 2d6 crystal teeth for swords and spears | €100 each | yield `2d6 teeth`; time `1 day dig`; enc `1 st each`*; features `weapon`*; flavor `crafting`*, `material`*, `melee`* (see: [Weird Melee Weapons (d10)](#weird-melee-weapons-d10)) | Convert a monster site into immediate weapon-material economy. |
-> | Cryptich offerings from swords to cannons | [Craquelure Queen cryptich](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0025): offerings list spans martial relics from swords through cannons with explicit value conversion at hand-in | €100 to €1,000 each | yield `1 offering`; bulk `1d6-1 sacks`; risk `deep-site threat`; features `weapon`, `oldtech`*, `restricted`*; flavor `relic`*, `trade-in`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Let players choose between quick cash and hard-to-haul war relics. |
-> | Obsidian Knives stuckforce sliver salvage | [Obsidian Knives site text](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0105): excavation notes emphasize force-plane slivers harvested as blade-grade curios under active environmental instability | €500 per sack | yield `1 sack slivers`; clock `site excavation`; hazard `force tremors/tendrils`; features `restricted`*; flavor `blade-stock`*, `hazardous`* (see: [Weird Melee Weapons (d10)](#weird-melee-weapons-d10)) | Strong combat-material extraction for crews willing to mine cursed ruins. |
-> | Ka-elemental slaughter-value recovery | [Near Moon encounter text](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0084): encounter guidance ties successful kill-sites to recoverable, monetizable remnants rather than clean commodity harvest | €400 to €2,400 | yield `kill-site remnants`; risk `apex retaliation`; enc `varies`*; features `restricted`*; flavor `bounty`*, `trophy`*, `volatile`* (see: [Ranged Weapons: Bows and Gun Wands](#ranged-weapons-bows-and-gun-wands)) | Run as a dangerous cleanup contract, not routine looting. |
-> | Crystal nodules from modified creatures | [New discoveries mutation table](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0225): mutation text specifies crystal nodules are valuable but fatal to remove, turning valuation into an ethical procedure | €100 to €2,000 | yield `1 nodule`; risk `fatal extraction`; enc `1 sp`*; features `implant`*; flavor `biotech`*, `ethical-cost`*, `trophy`* (see: [WARDS](#wards)) | Force hard choices between compassion, profit, and urgency. |
-> | Custodian Death mirror blade liquidation | [Near Moon Custodian Death chamber](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0090): chamber text states the Custodian Death "wields a great mirror blade" and prices that singular artifact for elite autarch buyers | €50,000 | item `great mirror blade`; profile `war scythe / falx polearm`*; dmg `1d12*`*; range `close`; enc `2 st`*; hands `2H`; features `reach`*, `restricted`*, `deathly`*; flavor `mirror`*, `spirit-cutting`*, `artifact`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Run as a boss-signature arm: terrifying in close, coveted by autarch patrons, and loud enough to trigger immediate faction interest when carried openly. |
-> | Salvation Complex rare-alloy weapon cache | [Dead Shore Salvation Complexes](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0078): cache outcomes include "archaic collectible rare-alloy weapons" as a distinct salvage class with explicit sack pricing | €750 per sack | yield `1 sack weapon stock`; risk `dead-zone cache`; features `weapon`, `oldtech`*, `restricted`*; flavor `archaic`*, `collectible`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Reliable armed-relic haul for groups willing to brave corpse zones. |
+> | Crystal worm teeth suitable for weapon crafting | [Nomad discovery](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0023): discovery procedure states excavation can yield 2d6 crystal teeth for swords and spears | €100 each | yield `2d6 teeth`; time `1 day dig`; enc `1 st each`*; features `weapon`*; flavor `crafting`*, `material`*, `melee`* (see: [Weird Melee Weapons (d10)](#weird-melee-weapons-d10)) | Convert a monster site into immediate weapon-material economy. |
+> | Cryptich offerings from swords to cannons | [Craquelure Queen cryptich](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0025): offerings list spans martial relics from swords through cannons with explicit value conversion at hand-in | €100 to €1,000 each | yield `1 offering`; bulk `1d6-1 sacks`; risk `deep-site threat`; features `weapon`, `oldtech`*, `restricted`*; flavor `relic`*, `trade-in`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Let players choose between quick cash and hard-to-haul war relics. |
+> | Obsidian Knives stuckforce sliver salvage | [Obsidian Knives site text](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0105): excavation notes emphasize force-plane slivers harvested as blade-grade curios under active environmental instability | €500 per sack | yield `1 sack slivers`; clock `site excavation`; hazard `force tremors/tendrils`; features `restricted`*; flavor `blade-stock`*, `hazardous`* (see: [Weird Melee Weapons (d10)](#weird-melee-weapons-d10)) | Strong combat-material extraction for crews willing to mine cursed ruins. |
+> | Ka-elemental slaughter-value recovery | [Near Moon encounter text](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0084): encounter guidance ties successful kill-sites to recoverable, monetizable remnants rather than clean commodity harvest | €400 to €2,400 | yield `kill-site remnants`; risk `apex retaliation`; enc `varies`*; features `restricted`*; flavor `bounty`*, `trophy`*, `volatile`* (see: [Ranged Weapons: Bows and Gun Wands](#ranged-weapons-bows-and-gun-wands)) | Run as a dangerous cleanup contract, not routine looting. |
+> | Crystal nodules from modified creatures | [New discoveries mutation table](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0225): mutation text specifies crystal nodules are valuable but fatal to remove, turning valuation into an ethical procedure | €100 to €2,000 | yield `1 nodule`; risk `fatal extraction`; enc `1 sp`*; features `implant`*; flavor `biotech`*, `ethical-cost`*, `trophy`* (see: [WARDS](#wards)) | Force hard choices between compassion, profit, and urgency. |
+> | Custodian Death mirror blade liquidation | [Near Moon Custodian Death chamber](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0090): chamber text states the Custodian Death "wields a great mirror blade" and prices that singular artifact for elite autarch buyers | €50,000 | item `great mirror blade`; profile `war scythe / falx polearm`*; dmg `1d12*`*; range `close`; enc `2 st`*; hands `2H`; features `reach`*, `restricted`*, `deathly`*; flavor `mirror`*, `spirit-cutting`*, `artifact`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Run as a boss-signature arm: terrifying in close, coveted by autarch patrons, and loud enough to trigger immediate faction interest when carried openly. |
+> | Salvation Complex rare-alloy weapon cache | [Dead Shore Salvation Complexes](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0078): cache outcomes include "archaic collectible rare-alloy weapons" as a distinct salvage class with explicit sack pricing | €750 per sack | yield `1 sack weapon stock`; risk `dead-zone cache`; features `weapon`, `oldtech`*, `restricted`*; flavor `archaic`*, `collectible`* (see: [Military Melee Weapons (d14)](#military-melee-weapons-d14)) | Reliable armed-relic haul for groups willing to brave corpse zones. |
 >
 > `*` Synthesized from nearest UVG/VLG price and mechanics anchors; damage/armor/ward profiles are referee-adjustable.
 
@@ -4969,7 +4969,7 @@ meta:
 > - source:
 >   - book: Ultraviolet_Grasslands_and_the_Black_City_2e; section: GEAR & SERVICES > 100 Strange Items
 > - see-also:
->   - Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#gear-services
+>   - SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#gear-services
 
   <div class="gear-return">
     &nbsp;&nbsp;
@@ -5102,36 +5102,36 @@ meta:
 >
 > | Signal | Source Context | € Signal | Access Bulk Time | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Hostile Yellowlander drug haul | [Long Ridge encounter traffic](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0072): encounter text presents armed Yellowlander traffic with burdenbeasts loaded with high-value "spicy drugs" as moving cargo | €2,000 per sack | Armed escort and theft retaliation risk | High-yield moving cargo for ambush, escort, or hard bargaining scenes. |
-> | B.U.G. ration-pellet cargo | [Old River crossing event](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0083): crossing material describes cocooned ration-pellet output from a biomechanical food unit with sack-quantity logistics | €20 per sack | Swarm encounter chance during crossing days | Good low-value bulk cargo for desperate caravans and resupply dilemmas. |
-> | Porcelain prospector salvage haul | [Potsherd encounter traffic](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0032): traffic encounters call out prospectors moving fragile sanguine porcelain loads after successful digs | €1,200 total | 6 slots of fragile salvage under escort | Fast contested-cargo scene with clear payout and breakage risk. |
+> | Hostile Yellowlander drug haul | [Long Ridge encounter traffic](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0072): encounter text presents armed Yellowlander traffic with burdenbeasts loaded with high-value "spicy drugs" as moving cargo | €2,000 per sack | Armed escort and theft retaliation risk | High-yield moving cargo for ambush, escort, or hard bargaining scenes. |
+> | B.U.G. ration-pellet cargo | [Old River crossing event](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0083): crossing material describes cocooned ration-pellet output from a biomechanical food unit with sack-quantity logistics | €20 per sack | Swarm encounter chance during crossing days | Good low-value bulk cargo for desperate caravans and resupply dilemmas. |
+> | Porcelain prospector salvage haul | [Potsherd encounter traffic](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0032): traffic encounters call out prospectors moving fragile sanguine porcelain loads after successful digs | €1,200 total | 6 slots of fragile salvage under escort | Fast contested-cargo scene with clear payout and breakage risk. |
 >
 > #### Discovery Extraction Loops
 >
 > | Signal | Source Context | € Signal | Access Bulk Time | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Behemoth ivory scale and core mining | [Behemoth Shell extraction](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0074): extraction procedure provides both daily drip yields and sack-rate conversion for ivory/core harvest | €50 to €200 per day; €400 per sack | Daily mining with disease pressure | A reliable grind option for depleted caravans. |
-> | Fallen Umber spore and perfumery harvest | [Fallen Umber site text](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0064): site text distinguishes common fungal haul from premium perfumery-grade harvest with different time clocks | €100 to €2,000 per sack | 1d4 days to 1d4 weeks depending on target | Scale this from local gather to major expedition objective. |
-> | Copper Cairn extraction | [Long Ridge copper cairn](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0072): cairn description names sealed deep reserves with explicit per-unit value and major hauling volume | €400 each | 40 sacks guarded by curse triggers and autofac hazards | Use when players want a heavy, lucrative extraction under sustained pressure. |
+> | Behemoth ivory scale and core mining | [Behemoth Shell extraction](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0074): extraction procedure provides both daily drip yields and sack-rate conversion for ivory/core harvest | €50 to €200 per day; €400 per sack | Daily mining with disease pressure | A reliable grind option for depleted caravans. |
+> | Fallen Umber spore and perfumery harvest | [Fallen Umber site text](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0064): site text distinguishes common fungal haul from premium perfumery-grade harvest with different time clocks | €100 to €2,000 per sack | 1d4 days to 1d4 weeks depending on target | Scale this from local gather to major expedition objective. |
+> | Copper Cairn extraction | [Long Ridge copper cairn](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0072): cairn description names sealed deep reserves with explicit per-unit value and major hauling volume | €400 each | 40 sacks guarded by curse triggers and autofac hazards | Use when players want a heavy, lucrative extraction under sustained pressure. |
 >
 > #### Delve Cache Liquidation
 >
 > | Signal | Source Context | € Signal | Access Bulk Time | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Fake worm hole mixed cache | [Nomad discoveries](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0023): discovery text gives a fixed mixed cache package with defined total value and sack burden | €1,500 total | 2d4 sacks | A clean one-room payout to restart expedition momentum. |
-> | Cablecar living-book extraction | [Endless Houses cablecar vault](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0142): vault text prices each recovered living book at museum-grade rates and stresses retrieval-method consequences | €1,000 to €6,000 each | Retrieval method affects survival and downstream utility | Strong delve payoff that forces the table to choose between careful recovery and violent shortcuts. |
-> | Near Moon neural-implant archive | [Crystal Core null vault](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0092): archive section gives explicit museum-grade sale brackets for recovered neural implant stock | €20,000 to €120,000 | Delve extraction under high-risk cosmic conditions | Campaign-scale cache that justifies specialist buyers and escorts. |
-> | Way Stone clock-wagon prism and silk freight | [Way Stone traffic and cargo text](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0052): passing freight is priced in text as prism loads and many-colored shift-silk lots by sack | €250 to €750 per sack | Guarded caravan freight with interception and retaliation risk | Useful mid-to-high cargo objective for raids, escorts, or urgent purchase scenes. |
-> | Dead Shore Salvation Complexes mixed cache | [Dead Shore Salvation Complexes](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0078): cache tables explicitly include cryonic wand stock and biomorphic protein tins as separate recoverable classes | €200 to €1,800 per sack | Cache pull under radiation-dead shore pressure | Strong cache objective when crews need fast supplies plus occasional premium salvage. |
+> | Fake worm hole mixed cache | [Nomad discoveries](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0023): discovery text gives a fixed mixed cache package with defined total value and sack burden | €1,500 total | 2d4 sacks | A clean one-room payout to restart expedition momentum. |
+> | Cablecar living-book extraction | [Endless Houses cablecar vault](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0142): vault text prices each recovered living book at museum-grade rates and stresses retrieval-method consequences | €1,000 to €6,000 each | Retrieval method affects survival and downstream utility | Strong delve payoff that forces the table to choose between careful recovery and violent shortcuts. |
+> | Near Moon neural-implant archive | [Crystal Core null vault](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0092): archive section gives explicit museum-grade sale brackets for recovered neural implant stock | €20,000 to €120,000 | Delve extraction under high-risk cosmic conditions | Campaign-scale cache that justifies specialist buyers and escorts. |
+> | Way Stone clock-wagon prism and silk freight | [Way Stone traffic and cargo text](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0052): passing freight is priced in text as prism loads and many-colored shift-silk lots by sack | €250 to €750 per sack | Guarded caravan freight with interception and retaliation risk | Useful mid-to-high cargo objective for raids, escorts, or urgent purchase scenes. |
+> | Dead Shore Salvation Complexes mixed cache | [Dead Shore Salvation Complexes](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0078): cache tables explicitly include cryonic wand stock and biomorphic protein tins as separate recoverable classes | €200 to €1,800 per sack | Cache pull under radiation-dead shore pressure | Strong cache objective when crews need fast supplies plus occasional premium salvage. |
 >
 > #### Paid Opportunity Hooks
 >
 > | Signal | Source Context | € Signal | Access Bulk Time | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Shock-peddler documentation buyout | [Violet City hooks](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0012): opening hooks offer direct payment for useful "western wonders" documentation with explicit quality multipliers | €100 to €1,000 | Doubles for quality documentation | Reward scouting and note-taking instead of only violence. |
-> | Guard hire to Last Serai trade caravan | [Violet City hooks](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0012): contract hook quotes per-guard pay contingent on successful arrival at Last Serai | €100 per guard | Payout on safe completion | Straightforward contract work between high-risk runs. |
-> | Rescue-a-dog pit-fight intervention | [Violet City hooks](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0012): hook frames intervention as immediate spend with graded payout and social fallout | €50 to €300 | Immediate scene expense with social consequences | Great for forcing moral spend choices under pressure. |
-> | Satrap crystal clock paid immersion | [Two Roads encounter](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0018): encounter sells a full-day satrap crystal clock immersion as paid experience rather than tradable cargo | €200 | One full day | Converts cash into advancement rhythm and schedule pressure. |
+> | Shock-peddler documentation buyout | [Violet City hooks](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0012): opening hooks offer direct payment for useful "western wonders" documentation with explicit quality multipliers | €100 to €1,000 | Doubles for quality documentation | Reward scouting and note-taking instead of only violence. |
+> | Guard hire to Last Serai trade caravan | [Violet City hooks](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0012): contract hook quotes per-guard pay contingent on successful arrival at Last Serai | €100 per guard | Payout on safe completion | Straightforward contract work between high-risk runs. |
+> | Rescue-a-dog pit-fight intervention | [Violet City hooks](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0012): hook frames intervention as immediate spend with graded payout and social fallout | €50 to €300 | Immediate scene expense with social consequences | Great for forcing moral spend choices under pressure. |
+> | Satrap crystal clock paid immersion | [Two Roads encounter](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0018): encounter sells a full-day satrap crystal clock immersion as paid experience rather than tradable cargo | €200 | One full day | Converts cash into advancement rhythm and schedule pressure. |
 
 tags:
 >   [gear]
@@ -5227,27 +5227,27 @@ meta:
 >
 > | Signal | Source Context | € Signal | Capacity Upkeep Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Horned horse herd purchase chance | [Lime Steppe encounter](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0022): encounter listing includes tradable horned horse herds with explicit value and carry profile cues | €150 each | Capacity 2; live-animal handling and temperament risk | Useful mid-tier way to scale a caravan without machine infrastructure. |
-> | Wild horse capture and taming | [South-facing passage encounter](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0060): passage encounter values captured strong, fast wild mounts as a skill-gated acquisition path | €300 each | Capacity 2; difficult taming and herd control overhead | Gate speed upgrades behind skill and time instead of pure cash. |
-> | Large biomantic beast from village celebrations | [Three Sticks local carousing](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0104): carousing outcomes can award a large biomantic beast as social fallout rather than market purchase | €600 | Capacity 2 baseline; mutation quirks may alter upkeep | A social-play vehicle acquisition path with flavorful variance. |
+> | Horned horse herd purchase chance | [Lime Steppe encounter](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0022): encounter listing includes tradable horned horse herds with explicit value and carry profile cues | €150 each | Capacity 2; live-animal handling and temperament risk | Useful mid-tier way to scale a caravan without machine infrastructure. |
+> | Wild horse capture and taming | [South-facing passage encounter](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0060): passage encounter values captured strong, fast wild mounts as a skill-gated acquisition path | €300 each | Capacity 2; difficult taming and herd control overhead | Gate speed upgrades behind skill and time instead of pure cash. |
+> | Large biomantic beast from village celebrations | [Three Sticks local carousing](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0104): carousing outcomes can award a large biomantic beast as social fallout rather than market purchase | €600 | Capacity 2 baseline; mutation quirks may alter upkeep | A social-play vehicle acquisition path with flavorful variance. |
 >
 > #### Vehicle Prize Salvage Signals
 >
 > | Signal | Source Context | € Signal | Capacity Upkeep Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Highway Star recovery objective | [Near Moon museum vault](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0089): museum-vault inventory preserves the void-hardened Highway Star as a recoverable prize asset | €6,000 | Capacity 8 plus 4 passengers; difficult extraction off-moon | Build a full expedition around retrieval logistics and escort. |
-> | Bubble-wheeled autowagon patrol units | [Glass-region encounter](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0100): satrap patrol encounter gives bubble-wheeled autowagon profile and value-significant transport specs | €2,500 | Capacity 6; high profile in faction territory | Good capture-or-contract prize in politically tense regions. |
-> | Black hot rod autogolem named Betty | [Black City misfortune high roll](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0152): misfortune high result awards "Betty," a named sentient autogolem transport with major upkeep and fiction weight | €7,500 | Capacity 12; 2 supply per week and personality risk | Use as campaign-defining windfall with social consequences. |
-> | Last Serai prismatic walker pair | [Satrap embassy profile](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0049): embassy profile describes stationed prismatic heavy walkers as politically guarded strategic transport | €8,000 | Capacity 12; heavily defended and politically sensitive | Prime objective for heists, sabotage, or faction alliance deals. |
-> | Porcelain walker carousing windfall | [Porcelain Citadel carousing outcomes](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0036): high-result carousing can grant a functional small porcelain walker as direct status fallout | €4,000 | Capacity 8; acquired through social fallout rather than open market | A social-play route to major vehicle acquisition with immediate upkeep choices. |
+> | Highway Star recovery objective | [Near Moon museum vault](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0089): museum-vault inventory preserves the void-hardened Highway Star as a recoverable prize asset | €6,000 | Capacity 8 plus 4 passengers; difficult extraction off-moon | Build a full expedition around retrieval logistics and escort. |
+> | Bubble-wheeled autowagon patrol units | [Glass-region encounter](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0100): satrap patrol encounter gives bubble-wheeled autowagon profile and value-significant transport specs | €2,500 | Capacity 6; high profile in faction territory | Good capture-or-contract prize in politically tense regions. |
+> | Black hot rod autogolem named Betty | [Black City misfortune high roll](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0152): misfortune high result awards "Betty," a named sentient autogolem transport with major upkeep and fiction weight | €7,500 | Capacity 12; 2 supply per week and personality risk | Use as campaign-defining windfall with social consequences. |
+> | Last Serai prismatic walker pair | [Satrap embassy profile](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0049): embassy profile describes stationed prismatic heavy walkers as politically guarded strategic transport | €8,000 | Capacity 12; heavily defended and politically sensitive | Prime objective for heists, sabotage, or faction alliance deals. |
+> | Porcelain walker carousing windfall | [Porcelain Citadel carousing outcomes](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0036): high-result carousing can grant a functional small porcelain walker as direct status fallout | €4,000 | Capacity 8; acquired through social fallout rather than open market | A social-play route to major vehicle acquisition with immediate upkeep choices. |
 >
 > #### Transport Cargo Hybrid Signals
 >
 > | Signal | Source Context | € Signal | Capacity Upkeep Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Wagon convoy carrying land-coral schematics | [Ruinland traveler encounter](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0142): traveler event calls out exhausted movers hauling land-coral schematics under severe stress and bio-risk | €8,000 | Damaged teams, infection risk, and desperate security posture | Useful moving-objective scene: rescue, intercept, or buy the plans under stress. |
-> | Ghostly caravan with time-dilated goods | [Fallen Umber encounter](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0066): encounter text frames a ghostly caravan whose archaic cargo can be liquidated if PCs solve contact and timing constraints | €700 per sack | Access depends on contact, follow, and blood-solidification trick | Reward patience, weird diplomacy, and daring opportunism. |
-> | Bone-work golem wagon merchant-hunter train | [Fallen Umber encounter](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0066): encounter profile shows bone-work merchant-hunter freight rigs functioning as armed mobile logistics assets | €4,000* | Capacity 12 per wagon; maintenance and crew discipline burden | Use as a moving objective with both vehicle and cargo value. |
+> | Wagon convoy carrying land-coral schematics | [Ruinland traveler encounter](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0142): traveler event calls out exhausted movers hauling land-coral schematics under severe stress and bio-risk | €8,000 | Damaged teams, infection risk, and desperate security posture | Useful moving-objective scene: rescue, intercept, or buy the plans under stress. |
+> | Ghostly caravan with time-dilated goods | [Fallen Umber encounter](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0066): encounter text frames a ghostly caravan whose archaic cargo can be liquidated if PCs solve contact and timing constraints | €700 per sack | Access depends on contact, follow, and blood-solidification trick | Reward patience, weird diplomacy, and daring opportunism. |
+> | Bone-work golem wagon merchant-hunter train | [Fallen Umber encounter](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0066): encounter profile shows bone-work merchant-hunter freight rigs functioning as armed mobile logistics assets | €4,000* | Capacity 12 per wagon; maintenance and crew discipline burden | Use as a moving objective with both vehicle and cargo value. |
 
 > `*` Synthesized from nearest UVG price anchors; referee-adjustable.
 
@@ -5996,16 +5996,16 @@ meta:
 >
 > | Cybernetic Opportunity | Form | Effect | Market Value (Base) | Source Context |
 > | --- | --- | --- | ---: | --- |
-> | Injectable brain-rewiring language package | Neurochemical + cognitive rewrite | Installs language/culture package into a trait slot; slow embed takes 1 week, fast embed 1 hour; referee may roll listed d6 side effects on rushed/cheap jobs | `€1d6 x 200` (slow), `x10` for fast | [OGA injectable brain-rewiring prose](Our_Golden_Age/Our_Golden_Age.md#page_0037) including embed times and side-effect list. |
-> | Tlumac daemon as embedded translator scaffold | Bound item-servitor (amulet/earworm/jawbud/third eye etc.) | Provides competent day-to-day communication across local speech systems; does not automatically grant high-register charm, rhetoric, or etiquette fluency | `€1d4/week` rental; `€100` (5-language), `€500` (10-language) purchase | [OGA tlumac daemon prose](Our_Golden_Age/Our_Golden_Age.md#page_0037) + communication tier notes. |
-> | Sense-organ implantation event | Surgical/biomech sensory augmentation | Permanent +1 to Thought or Aura; character-grade implant outcome tied to event resolution, not routine shopping | €300* | [OGA event result band](Our_Golden_Age/Our_Golden_Age.md#page_0048) (`21–24`: awake with a new sense organ implanted, +300 xp). |
-> | Synthetic Ghost jewel block | Personality-block jewel (ingestible/sacrificial) | Ingest to learn a new trait (self-change); alternatively sacrifice to block one power/spell | €1,000 | [OGA Valuable Debris result (`Synthetic Ghost`)](Our_Golden_Age/Our_Golden_Age.md#this-valuable-debris-this-stranger-stuff). |
-> | Good Restrictor cognitive stripping service | Brainfac-assisted neural intervention | Removes unwanted abilities/traits; on poor outcomes, convert "clean removal" into memory loss, social telltales, or replacement burden to keep consequences visible | `€1d6* x 100` to `€1d6* x 1,000` | [OGA station text: Good Restrictor](Our_Golden_Age/Our_Golden_Age.md#page_0223) paired to burden/trait-removal service tiers. |
-> | Hospicoppice replacement growth | Biomantic replacement body/limb/implant cultivation | Replaces missing anatomy; funeral processing is free, but grafting/integration is billable and should be handled as staged care (replacement + integration + stabilization) | `€2d6* x 10` (limb/organ), `€1d6* x 100` (rare replacement), `€1d6* x 1,000` (full relife-tier rebuild) | [OGA station text: Hospicoppice](Our_Golden_Age/Our_Golden_Age.md#page_0223) + [Quickstart recovery/relife ladders](Synthetic_Dream_Machine_01_Quickstart.md#recovery). |
-> | Comfort-tier replacement entitlement | Civilized medical-economic package | One limb or organ replacement every 10 weeks while maintained at comfort-tier lifestyle | `€3,000` estate; `€30/week` upkeep | [OGA prosperity tier text](Our_Golden_Age/Our_Golden_Age.md#page_0061) (Comfortable line with replacement cadence). |
-> | Full body-and-soul backup service exists as premium lodging utility | Backup-vault hospitality service | Weekly stay includes complete body/soul backup refresh; booking shorter than a week does not include the full backup benefit | `€100/week` | [OGA lodging entry: Vault of All Flesh](Our_Golden_Age/Our_Golden_Age.md#page_0217). |
-> | Backup transcription into jewel copy | Canopic-matrix snapshot workflow | Creates current-state mind/spirit jewel copy (no body); incident version also costs a week and can force an immediate follow-on incident | `€1d6* x 100` to `€1d6* x 1,000` | [OGA incident text: Groundhog Reality Error](Our_Golden_Age/Our_Golden_Age.md#page_0228) + [Quickstart relife anchors](Synthetic_Dream_Machine_01_Quickstart.md#relife). |
-> | Paradisiac continuity transfer | Premium backup-personhood service stack | If killed/seriously injured/annoyed, transfer consciousness into backup self in `1d4` days at no extra fee | `€333k` estate; `€999/week` upkeep | [OGA prosperity tier text](Our_Golden_Age/Our_Golden_Age.md#page_0061) (Paradisiac line with backup transfer). |
+> | Injectable brain-rewiring language package | Neurochemical + cognitive rewrite | Installs language/culture package into a trait slot; slow embed takes 1 week, fast embed 1 hour; referee may roll listed d6 side effects on rushed/cheap jobs | `€1d6 x 200` (slow), `x10` for fast | [OGA injectable brain-rewiring prose](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0037) including embed times and side-effect list. |
+> | Tlumac daemon as embedded translator scaffold | Bound item-servitor (amulet/earworm/jawbud/third eye etc.) | Provides competent day-to-day communication across local speech systems; does not automatically grant high-register charm, rhetoric, or etiquette fluency | `€1d4/week` rental; `€100` (5-language), `€500` (10-language) purchase | [OGA tlumac daemon prose](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0037) + communication tier notes. |
+> | Sense-organ implantation event | Surgical/biomech sensory augmentation | Permanent +1 to Thought or Aura; character-grade implant outcome tied to event resolution, not routine shopping | €300* | [OGA event result band](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0048) (`21–24`: awake with a new sense organ implanted, +300 xp). |
+> | Synthetic Ghost jewel block | Personality-block jewel (ingestible/sacrificial) | Ingest to learn a new trait (self-change); alternatively sacrifice to block one power/spell | €1,000 | [OGA Valuable Debris result (`Synthetic Ghost`)](SDM/Our_Golden_Age/Our_Golden_Age.md#this-valuable-debris-this-stranger-stuff). |
+> | Good Restrictor cognitive stripping service | Brainfac-assisted neural intervention | Removes unwanted abilities/traits; on poor outcomes, convert "clean removal" into memory loss, social telltales, or replacement burden to keep consequences visible | `€1d6* x 100` to `€1d6* x 1,000` | [OGA station text: Good Restrictor](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0223) paired to burden/trait-removal service tiers. |
+> | Hospicoppice replacement growth | Biomantic replacement body/limb/implant cultivation | Replaces missing anatomy; funeral processing is free, but grafting/integration is billable and should be handled as staged care (replacement + integration + stabilization) | `€2d6* x 10` (limb/organ), `€1d6* x 100` (rare replacement), `€1d6* x 1,000` (full relife-tier rebuild) | [OGA station text: Hospicoppice](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0223) + [Quickstart recovery/relife ladders](Synthetic_Dream_Machine_01_Quickstart.md#recovery). |
+> | Comfort-tier replacement entitlement | Civilized medical-economic package | One limb or organ replacement every 10 weeks while maintained at comfort-tier lifestyle | `€3,000` estate; `€30/week` upkeep | [OGA prosperity tier text](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0061) (Comfortable line with replacement cadence). |
+> | Full body-and-soul backup service exists as premium lodging utility | Backup-vault hospitality service | Weekly stay includes complete body/soul backup refresh; booking shorter than a week does not include the full backup benefit | `€100/week` | [OGA lodging entry: Vault of All Flesh](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0217). |
+> | Backup transcription into jewel copy | Canopic-matrix snapshot workflow | Creates current-state mind/spirit jewel copy (no body); incident version also costs a week and can force an immediate follow-on incident | `€1d6* x 100` to `€1d6* x 1,000` | [OGA incident text: Groundhog Reality Error](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0228) + [Quickstart relife anchors](Synthetic_Dream_Machine_01_Quickstart.md#relife). |
+> | Paradisiac continuity transfer | Premium backup-personhood service stack | If killed/seriously injured/annoyed, transfer consciousness into backup self in `1d4` days at no extra fee | `€333k` estate; `€999/week` upkeep | [OGA prosperity tier text](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0061) (Paradisiac line with backup transfer). |
 >
 > `*` Inferred range from OGA prose + Quickstart recovery/relife service ladders and medical-procedure supports in the Powers Index (`Open Person`, `Swift Rebuild`, `Xenograft`). Keep as a referee dial, not fixed canon.
 >
@@ -6043,63 +6043,63 @@ meta:
 >
 > | Referee Lever | Where To Pull It | What It Pays | Friction (Weight, Time, Trouble) | Table Use |
 > | --- | --- | ---: | --- | --- |
-> | Resolve hazard, then pay salvage | [OGA treasure clauses](Our_Golden_Age/Our_Golden_Age.md#page_0149) + [OGA Gardener Géants](Our_Golden_Age/Our_Golden_Age.md#page_0189) | Typical salvage `€100-€1,000`; géant leavings `€500/sack` | Site danger first, then hauling, then buyer heat | Run in order: survive the scene, secure the haul, find a buyer, collect under pressure. |
-> | Inject cash hooks between delves | [OGA encounter line](Our_Golden_Age/Our_Golden_Age.md#page_0193) + [OGA I.N.T.R. Generator](Our_Golden_Age/Our_Golden_Age.md#page_0228) | `€5,000` offers, `€(1d4* x 1d1000)` lottery | Obligation chains, travel-to-claim windows, interception risk | Use when pacing needs a sudden treasury spike with consequences. |
-> | Run decay pressure on volatile artifacts | [OGA This Valuable Debris, This Stranger Stuff](Our_Golden_Age/Our_Golden_Age.md#this-valuable-debris-this-stranger-stuff) | `€20` to `€20,000` table values | Explicit one-year decay (faster if used) | Forces liquidation timing decisions. |
-> | Escalate to campaign-scale stakes | [OGA Omega Jubilee context](Our_Golden_Age/Our_Golden_Age.md#page_0228) | `€1,500,000,000` theoretical liquidation | Systemic political/economic destabilization | Reserve for endgame arcs only. |
+> | Resolve hazard, then pay salvage | [OGA treasure clauses](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0149) + [OGA Gardener Géants](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0189) | Typical salvage `€100-€1,000`; géant leavings `€500/sack` | Site danger first, then hauling, then buyer heat | Run in order: survive the scene, secure the haul, find a buyer, collect under pressure. |
+> | Inject cash hooks between delves | [OGA encounter line](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0193) + [OGA I.N.T.R. Generator](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0228) | `€5,000` offers, `€(1d4* x 1d1000)` lottery | Obligation chains, travel-to-claim windows, interception risk | Use when pacing needs a sudden treasury spike with consequences. |
+> | Run decay pressure on volatile artifacts | [OGA This Valuable Debris, This Stranger Stuff](SDM/Our_Golden_Age/Our_Golden_Age.md#this-valuable-debris-this-stranger-stuff) | `€20` to `€20,000` table values | Explicit one-year decay (faster if used) | Forces liquidation timing decisions. |
+> | Escalate to campaign-scale stakes | [OGA Omega Jubilee context](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0228) | `€1,500,000,000` theoretical liquidation | Systemic political/economic destabilization | Reserve for endgame arcs only. |
 >
 > #### Uncommon (`~€50`)
 >
 > | Loot Signal | Source Context | € Signal | Carry/Decay/Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Daily prospecting trickle | [OGA wonder text](Our_Golden_Age/Our_Golden_Age.md#page_0197): "A day’s careful prospecting may deliver jewels of the past worth €1d10" | `€1d10` | Full day committed; tiny, portable yield; no guaranteed repeat rate | Use as default "something worth carrying home" when players poke ruins without a formal delve clock. |
-> | Hazard harvest pull* | [OGA regional incident](Our_Golden_Age/Our_Golden_Age.md#page_0157): "Harvesting the fauxbones is dangerous (net €1d6 x 50)" | `€1d6 x 50` | Hazard up front; payout only matters if they survive and can haul | Offer when you want blood-price money, not safe bookkeeping. |
-> | Roadside body-find | [OGA vehicle incident line](Our_Golden_Age/Our_Golden_Age.md#page_0030): "loot €1d6 x 20 or bury the body?" | `€1d6 x 20` | Moral/social blowback potential; short delay in transit | Fast temptation test to set table ethics. |
-> | Blue-god fragment bounty | [OGA Blue Land faction hook](Our_Golden_Age/Our_Golden_Age.md#page_0091): "€50 per fragment of the Blue God delivered" | `€50` per fragment | Requires hunting/processing dangerous contaminated targets | Reliable low-band bounty pressure in Blue Land patrol play. |
-> | Broken peacemaker cache | [OGA Blue Land road event](Our_Golden_Age/Our_Golden_Age.md#page_0085): "Broken peacemaker golem ... Supplies worth €75 remain" | `€75` | Opportunistic salvage under patrol/legal risk | Quick roadside salvage that can spark custody trouble. |
+> | Daily prospecting trickle | [OGA wonder text](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0197): "A day’s careful prospecting may deliver jewels of the past worth €1d10" | `€1d10` | Full day committed; tiny, portable yield; no guaranteed repeat rate | Use as default "something worth carrying home" when players poke ruins without a formal delve clock. |
+> | Hazard harvest pull* | [OGA regional incident](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0157): "Harvesting the fauxbones is dangerous (net €1d6 x 50)" | `€1d6 x 50` | Hazard up front; payout only matters if they survive and can haul | Offer when you want blood-price money, not safe bookkeeping. |
+> | Roadside body-find | [OGA vehicle incident line](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0030): "loot €1d6 x 20 or bury the body?" | `€1d6 x 20` | Moral/social blowback potential; short delay in transit | Fast temptation test to set table ethics. |
+> | Blue-god fragment bounty | [OGA Blue Land faction hook](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0091): "€50 per fragment of the Blue God delivered" | `€50` per fragment | Requires hunting/processing dangerous contaminated targets | Reliable low-band bounty pressure in Blue Land patrol play. |
+> | Broken peacemaker cache | [OGA Blue Land road event](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0085): "Broken peacemaker golem ... Supplies worth €75 remain" | `€75` | Opportunistic salvage under patrol/legal risk | Quick roadside salvage that can spark custody trouble. |
 >
 > #### Valuable (`~€250`)
 >
 > | Loot Signal | Source Context | € Signal | Carry/Decay/Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Concrescence biomatter market* | [OGA Concrescence](Our_Golden_Age/Our_Golden_Age.md#page_0215): locals "offer good prices for bodies, compounds, fluids and tissues" | `€1d6* x 50` to `€1d6* x 500`* | Wet cargo, spoilage, taboo commerce, and likely scrutiny from authorities or rivals | Turns monster aftermath and grisly salvage into a repeatable sell loop in one location. |
-> | Géant-leavings extraction | [OGA Gardener Géants](Our_Golden_Age/Our_Golden_Age.md#page_0189), treasure line includes "crushed soul stuff worth €500 per sack" | `€500/sack` | Sack-scale bulk near extremely dangerous entities/sites | Core mid-tier haul for crews that want steady money under pressure. |
-> | Castle salvage oddments | [OGA Castle Inside procedures](Our_Golden_Age/Our_Golden_Age.md#page_0019): "slurry autopacker ... €250", "extra-spatial storage unit ... €500", "observation orb (€500, face-locked)" | `€250` to `€500` | Small, portable finds gated behind scenario danger and access | Good pocket-value rewards while running dense site procedures. |
-> | Purple event-side payouts | [OGA Purple Land events](Our_Golden_Age/Our_Golden_Age.md#page_0115): "sell her out ... €95", "20₧ (€150)", "purple jade toe (€300)", "jade finger (€200)" | `€95` to `€300` | Social betrayal, faction backlash, and scene volatility | Fast mid-band cash hooks when city events need teeth and temptation. |
-> | Grickle-cub buyer offer | [OGA Blue Land faction hook](Our_Golden_Age/Our_Golden_Age.md#page_0104): "pay up to €200 per grickle cub" | `€200` per cub | Live-capture logistics and obvious ethical/faction blowback | Turns creature encounters into contested bounty commerce. |
-> | Dead-god jewel salvage* | [OGA dead-golem salvage context](Our_Golden_Age/Our_Golden_Age.md#page_0096), dead god "shed ... jewels ... worth €500 each" | `€500` per jewel | Compact value, but acquisition site is lethal and politically sensitive | Good "grab-and-go" objective for short, surgical expeditions. |
-> | Trophy from absorbing abomination | [OGA foot-road incident](Our_Golden_Age/Our_Golden_Age.md#page_0030): "worth €1d6* x 100 as a trophy" | `€1d6* x 100` | Earned only through dangerous encounter resolution | Pays violence with a portable trophy while preserving consequence weight. |
-> | Shrine revelation cache | [OGA foot-road incident](Our_Golden_Age/Our_Golden_Age.md#page_0030): "oldtech site, artefact and €1d4* x 100" | `€1d4* x 100` | Cash is bundled with site content, so payout naturally spawns extra scenes | Use as a bridge from road events into proper location play. |
-> | Strange-idea corpse bounty | [OGA district danger text](Our_Golden_Age/Our_Golden_Age.md#page_0078): "Burn them ... for rewards (€500 per corpse)" | `€500` per corpse | Requires neutralizing hazardous daemonic entities and proving disposal | Clean bounty loop for authorities hiring deniable troubleshooters. |
+> | Concrescence biomatter market* | [OGA Concrescence](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0215): locals "offer good prices for bodies, compounds, fluids and tissues" | `€1d6* x 50` to `€1d6* x 500`* | Wet cargo, spoilage, taboo commerce, and likely scrutiny from authorities or rivals | Turns monster aftermath and grisly salvage into a repeatable sell loop in one location. |
+> | Géant-leavings extraction | [OGA Gardener Géants](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0189), treasure line includes "crushed soul stuff worth €500 per sack" | `€500/sack` | Sack-scale bulk near extremely dangerous entities/sites | Core mid-tier haul for crews that want steady money under pressure. |
+> | Castle salvage oddments | [OGA Castle Inside procedures](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0019): "slurry autopacker ... €250", "extra-spatial storage unit ... €500", "observation orb (€500, face-locked)" | `€250` to `€500` | Small, portable finds gated behind scenario danger and access | Good pocket-value rewards while running dense site procedures. |
+> | Purple event-side payouts | [OGA Purple Land events](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0115): "sell her out ... €95", "20₧ (€150)", "purple jade toe (€300)", "jade finger (€200)" | `€95` to `€300` | Social betrayal, faction backlash, and scene volatility | Fast mid-band cash hooks when city events need teeth and temptation. |
+> | Grickle-cub buyer offer | [OGA Blue Land faction hook](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0104): "pay up to €200 per grickle cub" | `€200` per cub | Live-capture logistics and obvious ethical/faction blowback | Turns creature encounters into contested bounty commerce. |
+> | Dead-god jewel salvage* | [OGA dead-golem salvage context](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0096), dead god "shed ... jewels ... worth €500 each" | `€500` per jewel | Compact value, but acquisition site is lethal and politically sensitive | Good "grab-and-go" objective for short, surgical expeditions. |
+> | Trophy from absorbing abomination | [OGA foot-road incident](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0030): "worth €1d6* x 100 as a trophy" | `€1d6* x 100` | Earned only through dangerous encounter resolution | Pays violence with a portable trophy while preserving consequence weight. |
+> | Shrine revelation cache | [OGA foot-road incident](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0030): "oldtech site, artefact and €1d4* x 100" | `€1d4* x 100` | Cash is bundled with site content, so payout naturally spawns extra scenes | Use as a bridge from road events into proper location play. |
+> | Strange-idea corpse bounty | [OGA district danger text](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0078): "Burn them ... for rewards (€500 per corpse)" | `€500` per corpse | Requires neutralizing hazardous daemonic entities and proving disposal | Clean bounty loop for authorities hiring deniable troubleshooters. |
 >
 > #### Rare (`~€1,000`)
 >
 > | Loot Signal | Source Context | € Signal | Carry/Decay/Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Ancient wreckage salvage clauses | [OGA treasure clauses](Our_Golden_Age/Our_Golden_Age.md#page_0149): "oldtech innards worth €100-€1,000" | `€100` to `€1,000` | Buyer qualification and handling issues; danger baked into site access | Baseline ruin economy for "we pry it out and fence it" play. |
-> | Transit trophy payouts | [OGA voyage events](Our_Golden_Age/Our_Golden_Age.md#page_0030): "trophy worth €1d6* x 1,000" (also lower `€1d6* x 100` pulls) | `€1d6* x 100` to `€1d6* x 1,000` | Paid in bruises, delays, and damaged transport | Keeps overland movement lucrative and dangerous between major nodes. |
-> | Citizen lottery incident | [OGA I.N.T.R. Generator](Our_Golden_Age/Our_Golden_Age.md#page_0228): "gain €(1d4* x 1d1000)" | `€(1d4* x 1d1000)` | Must travel `1d6-1` days to claim; windfall attracts attention | Insert when you need sudden liquidity plus immediate complications. |
-> | Soul pearl from encounter aftermath | [OGA Purple-Land encounter line](Our_Golden_Age/Our_Golden_Age.md#page_0108): "soul pearl holds its mind (worth €1k)" | `€1,000` | Philosophical/taboo handling and high-interest buyers | Compact rare-value object that can become a social or moral problem. |
-> | Ghost ship liquidation value | [OGA sea-travel incident](Our_Golden_Age/Our_Golden_Age.md#page_0030): "Ghost ship ... haunted but worth €1d4* x 1,000" | `€1d4* x 1,000` | Potentially huge tow/crew/security burden before any sale | Run as prize-capture scenario, not instant coin payout. |
-> | Lost-song math poem | [OGA Castle Inside procedures](Our_Golden_Age/Our_Golden_Age.md#page_0019): "unknown epic math poem (€1,500)" | `€1,500` | Compact high-value object with implied specialist-buyer market | Drop as a strange rare prize in archive and scholar-heavy scenes. |
+> | Ancient wreckage salvage clauses | [OGA treasure clauses](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0149): "oldtech innards worth €100-€1,000" | `€100` to `€1,000` | Buyer qualification and handling issues; danger baked into site access | Baseline ruin economy for "we pry it out and fence it" play. |
+> | Transit trophy payouts | [OGA voyage events](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0030): "trophy worth €1d6* x 1,000" (also lower `€1d6* x 100` pulls) | `€1d6* x 100` to `€1d6* x 1,000` | Paid in bruises, delays, and damaged transport | Keeps overland movement lucrative and dangerous between major nodes. |
+> | Citizen lottery incident | [OGA I.N.T.R. Generator](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0228): "gain €(1d4* x 1d1000)" | `€(1d4* x 1d1000)` | Must travel `1d6-1` days to claim; windfall attracts attention | Insert when you need sudden liquidity plus immediate complications. |
+> | Soul pearl from encounter aftermath | [OGA Purple-Land encounter line](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0108): "soul pearl holds its mind (worth €1k)" | `€1,000` | Philosophical/taboo handling and high-interest buyers | Compact rare-value object that can become a social or moral problem. |
+> | Ghost ship liquidation value | [OGA sea-travel incident](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0030): "Ghost ship ... haunted but worth €1d4* x 1,000" | `€1d4* x 1,000` | Potentially huge tow/crew/security burden before any sale | Run as prize-capture scenario, not instant coin payout. |
+> | Lost-song math poem | [OGA Castle Inside procedures](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0019): "unknown epic math poem (€1,500)" | `€1,500` | Compact high-value object with implied specialist-buyer market | Drop as a strange rare prize in archive and scholar-heavy scenes. |
 >
 > #### Exceptional (`~€5,000`)
 >
 > | Loot Signal | Source Context | € Signal | Carry/Decay/Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Encounter-side offers | [OGA encounter line](Our_Golden_Age/Our_Golden_Age.md#page_0193): "defaced vagabund ... offers €5,000, a bomb, and a letter" | `€5,000` (plus `€1,000` class hooks) | Offer is explicitly entangling, with likely follow-through debts/enemies | Contract-grade money injection that naturally propels the next session. |
-> | Shipmetal body-part windfall | [OGA Lesser Phylake treasure](Our_Golden_Age/Our_Golden_Age.md#page_0149): "face, hand, or foot of pure shipmetal (€5,000)" | `€5,000` | High-signature contraband with immediate buyer/faction attention | Exceptional compact prize when phylake scenes turn violent. |
-> | Voidway debris high-end pull* | [OGA This Valuable Debris, This Stranger Stuff](Our_Golden_Age/Our_Golden_Age.md#this-valuable-debris-this-stranger-stuff), high-value entries | `€5,000` to `€20,000`* | Explicit one-year decay, faster with use; conspicuous weirdness | High-value portable loot that punishes hoarding and indecision. |
-> | Air predator trophy | [OGA air-travel incident line](Our_Golden_Age/Our_Golden_Age.md#page_0030): "aerolith-infused bones worth €7k" | `€7,000` | Requires surviving an airborne apex threat | Premium reward for taking the sky where death is faster. |
-> | Castaway bounty hook | [OGA sea-travel incident](Our_Golden_Age/Our_Golden_Age.md#page_0030): "Castaway ... [€5k bounty]" | `€5,000` | Identity/body-hopper complications can invert who is prey | Clean bounty value with immediate roleplay and trust fallout. |
-> | Falscher clone-factory bud contract | [OGA Free Falschers hook](Our_Golden_Age/Our_Golden_Age.md#page_0134): "pay at least €10k for viable factory buds" | `€10,000` | Requires infiltration, extraction, and handling highly contested living assets | Turns espionage into a high-cash, high-heat job arc. |
+> | Encounter-side offers | [OGA encounter line](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0193): "defaced vagabund ... offers €5,000, a bomb, and a letter" | `€5,000` (plus `€1,000` class hooks) | Offer is explicitly entangling, with likely follow-through debts/enemies | Contract-grade money injection that naturally propels the next session. |
+> | Shipmetal body-part windfall | [OGA Lesser Phylake treasure](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0149): "face, hand, or foot of pure shipmetal (€5,000)" | `€5,000` | High-signature contraband with immediate buyer/faction attention | Exceptional compact prize when phylake scenes turn violent. |
+> | Voidway debris high-end pull* | [OGA This Valuable Debris, This Stranger Stuff](SDM/Our_Golden_Age/Our_Golden_Age.md#this-valuable-debris-this-stranger-stuff), high-value entries | `€5,000` to `€20,000`* | Explicit one-year decay, faster with use; conspicuous weirdness | High-value portable loot that punishes hoarding and indecision. |
+> | Air predator trophy | [OGA air-travel incident line](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0030): "aerolith-infused bones worth €7k" | `€7,000` | Requires surviving an airborne apex threat | Premium reward for taking the sky where death is faster. |
+> | Castaway bounty hook | [OGA sea-travel incident](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0030): "Castaway ... [€5k bounty]" | `€5,000` | Identity/body-hopper complications can invert who is prey | Clean bounty value with immediate roleplay and trust fallout. |
+> | Falscher clone-factory bud contract | [OGA Free Falschers hook](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0134): "pay at least €10k for viable factory buds" | `€10,000` | Requires infiltration, extraction, and handling highly contested living assets | Turns espionage into a high-cash, high-heat job arc. |
 >
 > #### Unique (`~€25,000+`)
 >
 > | Loot Signal | Source Context | € Signal | Carry/Decay/Risk | Referee Use |
 > | --- | --- | ---: | --- | --- |
-> | Divine-builder cache spike | [OGA treasure clause](Our_Golden_Age/Our_Golden_Age.md#page_0149): "an actual terrifying bit of buildertech kit (worth €50k)" | `€50,000` | Singular high-signature artifact; acquisition and sale both trigger response | Arc-level jackpot to launch hunts, seizures, and faction wars. |
-> | Gemstone matrix liquidation scenario | [OGA Omega Jubilee context](Our_Golden_Age/Our_Golden_Age.md#page_0228): "mined and sold, it would net €1,500,000,000" | `€1,500,000,000` | Not a normal market item; implies world-shaping conflict over extraction rights | Use only when campaign scope expands to geopolitical/economic endgame play. |
+> | Divine-builder cache spike | [OGA treasure clause](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0149): "an actual terrifying bit of buildertech kit (worth €50k)" | `€50,000` | Singular high-signature artifact; acquisition and sale both trigger response | Arc-level jackpot to launch hunts, seizures, and faction wars. |
+> | Gemstone matrix liquidation scenario | [OGA Omega Jubilee context](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0228): "mined and sold, it would net €1,500,000,000" | `€1,500,000,000` | Not a normal market item; implies world-shaping conflict over extraction rights | Use only when campaign scope expands to geopolitical/economic endgame play. |
 >
 > `*` Minimally synthesized phrasing/price-banding.
 >
@@ -6181,7 +6181,7 @@ meta:
 
 ## BLUE LAND
 
-Source, Our Golden Age: [Blue Land](Our_Golden_Age/Our_Golden_Age.md#page_0082).
+Source, Our Golden Age: [Blue Land](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0082).
 
 <div class="gear-table-card" markdown="1">
 
@@ -6460,7 +6460,7 @@ meta:
 
 ## PURPLE LAND
 
-Source, Our Golden Age: [Purple Land](Our_Golden_Age/Our_Golden_Age.md#page_0106).
+Source, Our Golden Age: [Purple Land](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0106).
 
 "It’s not a shell game. It’s a cat game." —a tourist happy to use the local currency exchange
 
@@ -6746,7 +6746,7 @@ meta:
 
 ## RED LAND
 
-Source, Our Golden Age: [Red Land](Our_Golden_Age/Our_Golden_Age.md#page_0124).
+Source, Our Golden Age: [Red Land](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0124).
 
 <div class="gear-table-card" markdown="1">
 
@@ -7179,7 +7179,7 @@ meta:
 
 ## ORANGE LAND
 
-Source, Our Golden Age: [Orange Land](Our_Golden_Age/Our_Golden_Age.md#page_0156).
+Source, Our Golden Age: [Orange Land](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0156).
 
 <div class="gear-table-card" markdown="1">
 
@@ -7463,7 +7463,7 @@ meta:
 
 ## YELLOW LAND
 
-Source, Our Golden Age: [Yellow Land](Our_Golden_Age/Our_Golden_Age.md#page_0180).
+Source, Our Golden Age: [Yellow Land](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0180).
 
 <div class="gear-table-card" markdown="1">
 
@@ -7744,7 +7744,7 @@ meta:
 
 ## GREEN LAND
 
-Source, Our Golden Age: [Green Land](Our_Golden_Age/Our_Golden_Age.md#page_0204).
+Source, Our Golden Age: [Green Land](SDM/Our_Golden_Age/Our_Golden_Age.md#page_0204).
 
 <div class="gear-table-card" markdown="1">
 

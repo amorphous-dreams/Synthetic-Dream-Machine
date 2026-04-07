@@ -1,21 +1,21 @@
 # QA Summary
 
 ## Done Summary
-- Scans completed: `Vastlands_Guidebook/Vastlands_Guidebook.md`, `Eternal_Return_Key/Eternal_Return_Key.md`, `There_A_Red_Door/There_A_Red_Door.md`, `Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`, `Our_Golden_Age/Our_Golden_Age.md`
-- Formatting fixes: tables restored and quote-block cleanup in `Synthetic_Dream_Machine_04_Powers_Index.md`; tables restored in `Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md`
+- Scans completed: `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md`, `WTF/Eternal_Return_Key/Eternal_Return_Key.md`, `WTF/There_A_Red_Door/There_A_Red_Door.md`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`, `SDM/Our_Golden_Age/Our_Golden_Age.md`
+- Formatting fixes: tables restored and quote-block cleanup in `Synthetic_Dream_Machine_04_Powers_Index.md`; tables restored in `WTF/Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md`
 
 ## Progress
 - Status: in progress (started 2026-02-03)
-- Latest update: completed Our Golden Age power scan; restored “Patient Host Compatibility” tables in `Synthetic_Dream_Machine_04_Powers_Index.md` and `Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md`; fixed quote-block spacing and a broken sentence in `Synthetic_Dream_Machine_04_Powers_Index.md`
+- Latest update: completed Our Golden Age power scan; restored “Patient Host Compatibility” tables in `Synthetic_Dream_Machine_04_Powers_Index.md` and `WTF/Magitecnica/Magitecnica_02_Codex_2_The_Flesh_Source_Protocols.md`; fixed quote-block spacing and a broken sentence in `Synthetic_Dream_Machine_04_Powers_Index.md`
 - Next action: confirm if any other sources need powers scans
-- Eternal_Return_Key/Eternal_Return_Key.md = DONE
+- WTF/Eternal_Return_Key/Eternal_Return_Key.md = DONE
 
 
 # TODO: SDM Powers Index QA & Expansion
-- Extract all Powers from `Our_Golden_Age/` and add to `Synthetic_Dream_Machine_04_Powers_Index.md` (update reference metadata if already there). = DONE
-- Scan `Eternal_Return_Key/Eternal_Return_Key.md` and add any Powers found to the `Synthetic_Dream_Machine_04_Powers_Index.md` (updating the reference metadata if already there). = DONE
-- Scan `There_A_Red_Door/There_A_Red_Door.md` and add any Powers found to the `Synthetic_Dream_Machine_04_Powers_Index.md` (updating the reference metadata if already there). = DONE
-- Scan `Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md` and add any Powers found to the `Synthetic_Dream_Machine_04_Powers_Index.md` (updating the reference metadata if already there). = DONE
+- Extract all Powers from `SDM/Our_Golden_Age/` and add to `Synthetic_Dream_Machine_04_Powers_Index.md` (update reference metadata if already there). = DONE
+- Scan `WTF/Eternal_Return_Key/Eternal_Return_Key.md` and add any Powers found to the `Synthetic_Dream_Machine_04_Powers_Index.md` (updating the reference metadata if already there). = DONE
+- Scan `WTF/There_A_Red_Door/There_A_Red_Door.md` and add any Powers found to the `Synthetic_Dream_Machine_04_Powers_Index.md` (updating the reference metadata if already there). = DONE
+- Scan `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md` and add any Powers found to the `Synthetic_Dream_Machine_04_Powers_Index.md` (updating the reference metadata if already there). = DONE
 
 ## QA Tracking Table
 

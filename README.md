@@ -81,12 +81,12 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 | Directory | Contents |
 |---|---|
-| [Ultraviolet Grasslands and the Black City 2e](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md) | UVG 2e reference archive |
-| [Vastlands Guidebook](Vastlands_Guidebook/Vastlands_Guidebook.md) | VLG reference archive |
-| [Our Golden Age](Our_Golden_Age/Our_Golden_Age.md) | OGA reference archive |
-| [Magitecnica/](Magitecnica/Magitecnica_01_Codex_1_The_Use_and_Misuse_of_Powers_Great_and_Small.md) | Magitech and fantascience setting material |
-| [Eternal Return Key](Eternal_Return_Key/Eternal_Return_Key.md) | Supplemental dungeon/scenario material |
-| [There, A Red Door](There_A_Red_Door/There_A_Red_Door.md) | Supplemental scenario material |
+| [Ultraviolet Grasslands and the Black City 2e](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md) | UVG 2e reference archive |
+| [Vastlands Guidebook](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md) | VLG reference archive |
+| [Our Golden Age](SDM/Our_Golden_Age/Our_Golden_Age.md) | OGA reference archive |
+| [Magitecnica/](WTF/Magitecnica/Magitecnica_01_Codex_1_The_Use_and_Misuse_of_Powers_Great_and_Small.md) | Magitech and fantascience setting material |
+| [Eternal Return Key](WTF/Eternal_Return_Key/Eternal_Return_Key.md) | Supplemental dungeon/scenario material |
+| [There, A Red Door](WTF/There_A_Red_Door/There_A_Red_Door.md) | Supplemental scenario material |
 
 ### AI Agent Tooling
 
