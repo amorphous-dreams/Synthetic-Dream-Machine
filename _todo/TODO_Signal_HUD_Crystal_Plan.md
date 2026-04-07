@@ -270,9 +270,11 @@ Active sprint, blockers, and execution log belong here (below), not in the epic 
 
 ### Active Focus
 
-**Current status: Sprint 1b+1c complete (AE-01–AE-07; AE-06 partial). Platform architecture ruling (OP-11, OP-12) is the on-fire blocker.**
+**Current status: Sprint 1f complete. All platforms green. `verify_alignment.py` 49/49 CLEAN. OP-03 (VS Code reload acceptance gate) deferred to operator restart.**
 
-AE-01 through AE-05 landed and committed. AE-06 combine: copilot ✅ claude ✅ codex ❌ (budget overflow, pre-existing) browser ❌ (budget overflow, pre-existing). AE-07 verify: blocked by browser overflow. Research completed: three-tier browser manifest architecture proposed (Quick / Project / Extended). Awaiting OP-11 (browser tier model) and OP-12 (codex budget) rulings before AE-24–AE-27 unblock.
+AE-01 through AE-05 landed (Sprint 1b). AE-06 combine: all platforms ✅ (codex and browser pre-existing overflows resolved). AE-24 through AE-27 complete (Sprint 1f): codex budget raised to 36,000; `browser-kernel.toml` renamed to `browser-project.toml` (8,600 budget); `browser-extended.toml` created (5,400 budget) with new `lares-kernel-claude` module; `Lares_Kernel_Claude.md` written (5,070 bytes, XML-structured Claude.ai kernel); `KERNEL_SIZE_LIMIT` raised 8,000 → 8,192 in verify script. Quick tier (AE-25) deferred — no active use case.
+
+**Note:** browser-project budget landed at 8,600, not the aspirational 7,900 from OP-11. Kernel renders to 8,284 chars; sits at 99% of the 8,192 ChatGPT ceiling. Operator ruled "not a blocker" — future spike if kernel grows further.
 
 ### Execution Log
 
@@ -288,3 +290,10 @@ AE-01 through AE-05 landed and committed. AE-06 combine: copilot ✅ claude ✅ 
 | 2026-04-07 | AE-06 partial: copilot ✅ claude ✅; codex ❌ 33,198 > 32,768 (pre-existing); browser ❌ 8,498 > 8,000 (pre-existing). |
 | 2026-04-07 | Browser/codex budget overflow confirmed pre-existing via git stash test. Research dispatched. |
 | 2026-04-07 | Platform priority confirmed: Claude.ai primary, ChatGPT Team Projects secondary. Researcher returned platform limits. Three-tier browser architecture proposed. OP-11 and OP-12 logged as on-fire blockers. |
+| 2026-04-07 | OP-11 resolved (revised by Council): Quick tier deferred; Project tier approved (browser-project, 8,600 bytes); Extended tier approved (~5K XML-structured, Claude.ai). |
+| 2026-04-07 | OP-12 resolved: codex budget raised to 36,000 (both `max_bytes` and `project_doc_max_bytes`). |
+| 2026-04-07 | AE-26 complete: `codex-root.toml` budget fields updated. Combine clean; AGENTS.md 32,724 chars under 36,000 limit. |
+| 2026-04-07 | AE-24a complete: `browser-kernel.toml` → `browser-project.toml`. Old file `git rm`'d. `lares-kernel.toml` default_targets updated. Budget 8,600 (kernel renders 8,284 chars). |
+| 2026-04-07 | AE-24b/25b complete: `Lares_Kernel_Claude.md` written (5,070 bytes). Four rating gaps patched: input-header rule, `\| p0.5` always-on, calibration rule 1, `//domain.quality.dynamic` schema. New module `lares-kernel-claude.toml` registered. `browser-extended.toml` manifest created (5,400 budget). |
+| 2026-04-07 | AE-27 complete: `verify_alignment.py` KERNEL_SIZE_LIMIT raised 8,000 → 8,192. Full verify 49/49 CLEAN. All platforms green: copilot ✅ claude ✅ codex ✅ browser-project ✅ browser-extended ✅. |
+| 2026-04-07 | OP-03 (VS Code reload acceptance gate) deferred to operator restart. |
