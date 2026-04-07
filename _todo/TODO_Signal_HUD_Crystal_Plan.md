@@ -264,6 +264,243 @@ Decisions that must be resolved **before** specific epics are called out inline.
 
 ---
 
+## Crystal State Machine Draft Extension Plan
+
+> Consolidated from session memory. Register: `[S:~0.70]` — architectural synthesis, not build-canon.
+
+### Summary
+
+Revise `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md` to extend its scope from HUD semantics alone into a unified architecture covering the forkable memory-crystal state machine layer that the HUD reads from and writes to. The `--debug` log is reconceptualized from a free-floating session file into a projection of the authoritative crystal ledger (`STATE.jsonl`). No live runtime files change until the draft is decision-complete.
+
+This is a **document-only** edit of one file. No code, no scripts, no other files change.
+
+### Target File
+
+`builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md`
+
+Current approximate structure (line reference approximate — read before editing):
+1. Header (frontmatter block)
+2. Purpose
+3. Current Live Model
+4. Tagspace Definition
+5. Intent Header vs In-Flow Signal
+6. Header Field Taxonomy
+7. Forward vs Backward Trace Tradeoff
+8. HAKABA Alignment Options
+9. In-Flow Rendering Options
+10. Rendering Across p Scale
+11. Replay / Test-Run Use Case
+12. Examples
+13. Open Decisions
+14. Migration Trigger
+15. Working Defaults
+
+### Research Sources Surveyed
+
+- **Temporal Workflow Execution** (docs.temporal.io): Replay = commands vs. event history; deterministic constraints; status taxonomy (Open: Running / Closed: Cancelled, Completed, Continued-As-New, Failed, Terminated, Timed Out); `continue-as-new` for large histories; Memos as non-indexed human metadata.
+- **Martin Fowler Event Sourcing** (martinfowler.com): Event log = source of truth; SNAPSHOT = derived cache; Complete Rebuild, Temporal Query, Event Replay capabilities; code change 3 types (features / bugfixes / temporal logic); snapshot → replay → snapshot regression pattern; external query responses must be logged for deterministic replay.
+- **OpenTelemetry Traces** (opentelemetry.io): trace_id (constant across trace), span_id (per span), parent_id (null for root); attributes = structural metadata; events = timestamped singular points; span status (Unset/Error/Ok); spans as structured logs with hierarchy. Maps to: machine_id = trace_id, event_seq = span_id, parent_machine_id = parent trace.
+- **JSONL spec** (jsonlines.org): UTF-8, each line is valid JSON, `\n` terminator required. Append-friendly, unix-pipeline-compatible.
+
+### QA/SDET-Specific Findings
+
+Critical additions the original plan was missing:
+
+1. **Schema versioning is load-bearing, not optional metadata** — Fowler explicitly covers code changes breaking event replay. Every event must carry `schema_version`. Breaking changes require a schema migration strategy.
+
+2. **Sequence number integrity** — STATE.jsonl must have no gaps in sequence numbers. This is a machine-testable assertion (grep seq numbers, assert contiguous). Gaps indicate truncation or corruption.
+
+3. **Immutability contract** — Events are append-only, never overwritten. Corrections are new events (e.g., a `corrective_note` or `contract_update` event), not edits to past events. This must be stated as a hard rule in the draft.
+
+4. **Replay fidelity scope is an undecided design question** — Temporal enforces byte-for-byte determinism (commands must match history). For Lares, "replay" could mean: (a) exact structural-path replay (same phases, closures, loop depth) without tool content, or (b) full content replay (requires recording tool call outputs in events). This is a critical Open Decision that gates whether STATE.jsonl needs to log tool responses.
+
+5. **`continue_as_new` analog** — Temporal handles event history growth via "Continue-As-New" (atomic handoff to a fresh execution with compact bootstrap state). Fowler uses "overnight snapshot". STATE.jsonl will grow unbounded without a truncation protocol. The draft must address this: emit a `milestone` or `seal` event with a compact state bootstrap, then allow subsequent STATE.jsonl to start from that sealed state.
+
+6. **Fork event must be self-contained** — Fowler's reversal examples show events must carry all data needed for the operation. A fork event must include enough to bootstrap the child machine without reprocessing the entire parent history. Minimum: parent_machine_id + fork_at_sequence + optional compact state snapshot at fork point.
+
+7. **SNAPSHOT.json immutability rule** — Fowler: "application state is purely derivable from the event log, you can cache it anywhere." Consequence: SNAPSHOT.json is a read-only derived cache. Never hand-edited. The draft should call out that a hand-edited SNAPSHOT.json is a corruption, and the integrity check is: replay STATE.jsonl → compare to stored SNAPSHOT.json.
+
+8. **Machine status taxonomy needs "Closed" states** — Temporal's closed states (Cancelled, Completed, Continued-As-New, Failed, Terminated, Timed Out) are more useful than just `archived`. The draft's machine statuses should expand to: `active`, `held`, `handoff`, `continued` (continue-as-new analog), `completed`, `failed`, `cancelled`, `forked` (parent after fork), `archived`.
+
+9. **Idempotency contracts** — `resume`, `handoff_import`, and `fork` must be documented: can they be safely retried? Temporal guarantees idempotency via deterministic replay. Our system should define what happens if the same STATE.jsonl is imported twice.
+
+10. **Test fixture = crystal bundle** — This is the SDET payoff: a STATE.jsonl + crystal bundle IS a regression test fixture. Production exports become test inputs. Format stability is therefore a first-class design concern. Any schema change is a compatibility event, not just an implementation detail.
+
+11. **External inputs and replay safety (tension)** — Fowler's External Queries section: query responses must be logged for deterministic replay but this adds bulk. For Lares: tool call responses are "external queries." The draft should define the replay fidelity scope before specifying what goes in STATE.jsonl vs. stays ephemeral.
+
+12. **README.md = Memo layer** — Temporal memos are "non-indexed, non-type-safe, not critical to execution." Crystal README.md maps exactly. Hard QA rule: nothing that should be programmatically queried goes in README.md. Human-facing only.
+
+### Draft Edit Steps
+
+#### Phase 1 — Header and Purpose (top of document)
+
+1. **Update frontmatter scope line** — expand `> Governs future revisions to:` bullet list to include:
+   `memory-crystal state machines`, `forkable thread/task persistence`, `handoff archive-crystals`
+
+2. **Add two lines to the Purpose section** (end of the Purpose narrative):
+   - "the operator-facing HUD and the machine-facing crystal ledger are one system"
+   - "the HUD is the readable surface; the crystal state machine is the durable substrate"
+
+#### Phase 2 — New sections (insert after Tagspace Definition, before Intent Header vs In-Flow Signal)
+
+3. **Section: Memory Crystals as State Machines** — defines:
+   - crystal = portable machine/thread state bundle
+   - one crystal = one task/thread/conversation state machine
+   - multiple crystals may coexist; crystals may fork; one marked current/active
+   - portability model: filesystem-native or exported artifact when no FS available
+   - conceptual mapping table:
+
+     | Term | Role |
+     |---|---|
+     | Intent Header | current operator-readable control state |
+     | Micro-trace HUD | readable local trace inside active state |
+     | Crystal ledger | authoritative append-only machine history |
+     | Crystal snapshot | latest materialized machine image |
+     | Crystal README | brief surface summary |
+     | Crystal AGENTS | durable thread-specific contract |
+
+4. **Section: Machine / Thread Model** — defines:
+   - state machines are thread-centric
+   - each crystal has a stable `machine-id`
+   - machine statuses: `active`, `held`, `handoff`, `archived`, `forked`
+   - `parent_machine_id` field for forks
+   - fork triggers: task branches materially / operator asks to split / imported handoff diverges
+   - `CURRENT` pointer selects default active machine
+   - explicit LangGraph/Temporal analogy table:
+
+     | Concept | LangGraph analog | Temporal analog |
+     |---|---|---|
+     | machine-id | thread identity | workflow run id |
+     | STATE.jsonl | checkpoint history | event journal |
+     | SNAPSHOT.json | latest checkpoint | latest workflow state |
+     | fork | branch thread | child workflow |
+     | resume | replay from checkpoint | resume workflow |
+
+5. **Section: Portable Crystal Layout** — defines the `.lares/` directory contract:
+   ```
+   .lares/
+     CURRENT
+     README.md
+     machines/
+       <machine-id>/
+         AGENTS.md
+         README.md
+         STATE.jsonl
+         SNAPSHOT.json
+         debug.jsonl
+   ```
+   With interpretation rules for each file, and the explicit rule:
+   - `STATE.jsonl` is source of truth
+   - `debug.jsonl`, `SNAPSHOT.json`, crystal README are derived/companion surfaces
+   - root repo `AGENTS.md` and root `README.md` remain project-level, not crystal-level
+
+6. **Section: Debug as Crystal Projection** — redefines `--debug` semantics:
+   - `--debug` writes into active crystal machine, not free-floating session log
+   - canonical event lands in `STATE.jsonl`
+   - `debug.jsonl` is an optional debug-focused projection
+   - `debug.jsonl` must never outrank `STATE.jsonl`
+   - every meaningful R-phase appends to `STATE.jsonl`
+   - if `--debug` active, enriched derivative also appended to `debug.jsonl`
+   - `debug.jsonl` may include: full exchange vector, intent header, micro-trace, closure outcome, rationale, KAIROS notes
+   - `STATE.jsonl` stays compact enough for handoff transport
+
+7. **Section: HUD / Crystal Interface** — defines the relationship between live output and durable state:
+   - every generated span has an Intent Header
+   - every span may emit compact in-flow micro-trace
+   - every meaningful R-phase produces a crystal state event
+   - event fields: intent header, local micro-trace path, scale vector, closure outcome, next meaningful action, blockers, provenance/fork/handoff context
+   - explicit constraint: HUD and crystal ledger must not drift semantically
+
+8. **Section: Crystal Event Model** — minimum event vocabulary:
+   - event types: `init`, `r_update`, `milestone`, `handoff_import`, `handoff_export`, `fork`, `resume`, `hold`, `archive`, `contract_update`
+   - minimum event fields: schema version, timestamp, machine id, sequence number, event type, machine status, current phase, current Intent Header snapshot, scale vector, micro-trace path, closure outcome (`close`/`hold`/`return`), next action, blockers, provenance/import/fork metadata, repo/context fingerprint
+
+9. **Section: Handoff / Archive-Crystal** — defines portable handoff behavior:
+   - if STATE file supplied at session start → handoff request
+   - matching existing machine → resume
+   - related but divergent → fork from it
+   - foreign/ambiguous → new machine, record import provenance
+   - handoff bundle minimum: machine AGENTS.md, machine README.md, machine STATE.jsonl, optional SNAPSHOT.json
+   - in-world line: archive-crystal is the mythic wrapper; machine bundle is the operational form
+
+#### Phase 3 — Examples extension
+
+10. **Add 6 new examples** to the existing Examples section:
+    - Crystal layout example (directory tree + explanation)
+    - State event example (header + micro-trace + closure + next action as JSONL)
+    - Fork example (parent and child machine records)
+    - Debug event example (richer vector/rationale in debug.jsonl)
+    - Handoff import example (resume vs fork decision logic)
+    - HUD / crystal correspondence example (one prose line + matching STATE.jsonl record)
+
+#### Phase 4 — Revise trailing sections
+
+11. **Update Open Decisions** — add state-machine layer decisions:
+    - Should `debug.jsonl` always exist, or only when `--debug` active?
+    - Should `SNAPSHOT.json` be mandatory or optional?
+    - When exactly does the system fork vs resume on imported handoff?
+    - Should crystal README update on every milestone only, or also on major R-phase shifts?
+    - Should machine AGENTS.md be hand-authored by Lares only on durable contract changes?
+    - Retain and renumber existing HUD decisions
+
+12. **Update Migration Trigger** — extend to cover:
+    - Preferences / Operations / Kernel / VSCode examples (existing)
+    - generated outputs (existing)
+    - **state-machine directory policy** (new)
+    - **debug logging semantics** (new — `--debug` target changes from free-floating session file to crystal projection)
+    - **handoff crystal behavior** (new)
+
+### Relevant Files
+
+- `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md` — sole edit target
+- `builds/agents/core/Lares_Operations.md` — reference only (current `--debug` definition at line 58, points to `/memories/session/debug-vectors-{session-id}.md` — will change at migration time, not now)
+- `builds/agents/Lares_Preferences.md` — reference only (archive-crystal semantics, consolidation protocol)
+- `builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md` — reference for module context
+
+### Verification Criteria
+
+1. The revised draft answers all 8 test/review criteria:
+   - What is the authoritative state artifact? → `STATE.jsonl`
+   - How do Intent Header and Micro-trace map into the crystal ledger? → HUD/Crystal Interface section
+   - Where does `--debug` write, canonical or derived? → Debug as Crystal Projection section
+   - How are multiple machines indexed and resumed? → Machine/Thread Model + Portable Crystal Layout
+   - How does a fork work? → Machine/Thread Model section
+   - What happens when STATE file supplied at session start? → Handoff/Archive-Crystal section
+   - Which files are required for portable handoff? → Handoff/Archive-Crystal section
+   - How do root project files stay separate from crystal-local? → Portable Crystal Layout section
+
+2. Register annotation updated in frontmatter to reflect expanded scope (still [S] — synthesis; still not build-canon)
+
+3. No live runtime docs (`Lares_Operations.md`, `Lares_Preferences.md`, etc.) are modified
+
+4. All new sections maintain draft-spec tone consistent with existing document voice
+
+5. HAKABA remains an interpretive candidate, not a required live rendering rule — no lock forced in expanded sections
+
+### Scope Constraints
+
+- **Sole file changed**: `Signal_HUD_Tagspace-draft.md` only
+- **Register stays Synthesis**: the expanded draft is still [S:~0.70] architectural synthesis, not build-canon
+- **`.lares/` directory is conceptual**: the draft defines the contract; no actual directory or files created
+- **No live `--debug` redirect yet**: `Lares_Operations.md` still points to `/memories/session/` until migration trigger fires post-decision-complete
+- **LangGraph/Temporal analogies informative only**: not a requirement to deploy those frameworks
+- **`debug.jsonl` remains optional**: the draft should not mandate it exists when `--debug` is off; this goes into Open Decisions
+- **HAKABA order not locked**: draft notes both mappings and defers the lock
+
+### Operator Answers (Alignment Session)
+
+- **Replay fidelity**: Both — STATE.jsonl records structural behavior only (phases, closures, loop depth, decisions); debug.jsonl optionally adds richer content including tool call responses. This is the canonical answer: STATE stays compact and structural; debug enriches on demand.
+- **Seal protocol**: Design it now — part of the alpha crystal contract.
+- **Schema versioning**: "Needs researcher" — defer to Open Decisions, add research note. Working recommendation: simple integer for alpha, pending deeper research into migration patterns for mixed-version STATE.jsonl files.
+
+### Further Considerations
+
+1. **Section insertion order** — all 7 new sections insert between Tagspace Definition and Intent Header vs In-Flow Signal. That block will grow large. If it becomes unwieldy for a single draft, a future pass could split the crystal sections into a sibling draft (`Crystal_State_Machine-draft.md`). For now, keeping it unified per the operator's stated assumption.
+
+2. **`STATE.jsonl` compactness vs `debug.jsonl` richness tradeoff** — the plan draws a clear line (STATE stays compact, debug enriches), but the exact field split is an Open Decision. The draft should name this explicitly.
+
+---
+
 ## Mutable State Boundary
 
 Active sprint, blockers, and execution log belong here (below), not in the epic definitions above.
