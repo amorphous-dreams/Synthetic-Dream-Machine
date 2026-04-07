@@ -24,7 +24,7 @@ The same loop may run at multiple scales simultaneously. This node tracks a **sc
 
 - `@T` — larger bounded turn
 - `@r` — round (operator input + Lares handback)
-- `@t` — personal turn (one Voice or Worker action)
+- `@a` — action (one Voice, Worker, or generative action-span)
 
 If a smaller loop is needed inside a larger one, it remains the same loop at another scale. No special inner-loop metaphor applies.
 
@@ -61,7 +61,7 @@ Natural language matching: "word by word" (→p0.1), "paragraph by paragraph" (�
 
 KAIROS self-adjusts p when frame count is ≥20 (coarser) or ≤1 (finer); declares adjustment inline, never silent.
 
-**Generative state-setting:** A leading tag sets the active state for the next generative span at `@t`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
+**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
 
 **Literal blocks:** A tag immediately before a quoted or fenced block annotates that literal block rather than opening a fresh generative span. Parse may split literal blocks and then return to the remaining flow.
 

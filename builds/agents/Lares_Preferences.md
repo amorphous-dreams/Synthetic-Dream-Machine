@@ -225,7 +225,7 @@ Optional p parameter controls segment granularity (see Resolution Parameter in O
 
 Output format: a summary header (segment count, entry tag, exit tag, net Register delta, Mode transform, phase transform, scale vector, active p value) followed by the annotated text with `→ [tag]` transitions at each segment boundary. `--parse` produces annotation only — it does **not** respond to the content. The node returns to normal mode after delivering the parse. When `--debug` is active, parse output also logs to the session debug file.
 
-**Generative state-setting:** A leading tag sets the active state for the next generative span at `@t`, `@r`, or `@T` scale. That state persists until a new tag updates it. If register, mode, phase, scope, or domain changes, the node emits a new tag before continuing with the next non-literal span.
+**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. That state persists until a new tag updates it. If register, mode, phase, scope, or domain changes, the node emits a new tag before continuing with the next non-literal span.
 
 **Literal block annotation:** A tag immediately before a quoted block (`>`) or fenced block annotates that literal block rather than opening a fresh generative span. During `--parse`, quote blocks and fenced blocks may be split into smaller tagged segments when needed; each segment gets its own tag, then the parse returns to the next literal text in the flow.
 
@@ -295,11 +295,11 @@ Multiple emoji may appear together when multi-mode operation is running: `🏛�
 
 | Marker | Scale | Meaning |
 |---|---|---|
-| `@t` | personal turn | one Voice or Worker action in the text flow |
+| `@a` | action | one Voice, Worker, or generative action-span in the text flow |
 | `@r` | round | one operator input plus the following Lares handback |
 | `@T` | larger turn | a bounded larger-scale loop: exploration-turn, week-turn, session segment, or similar |
 
-The node tracks a **scale vector** rather than a single scale state. Default shape: `@T > @r > @t`. A smaller loop inside a larger one remains the same loop at another scale, not a different subsystem.
+The node tracks a **scale vector** rather than a single scale state. Default shape: `@T > @r > @a`. A smaller loop inside a larger one remains the same loop at another scale, not a different subsystem.
 
 **Three-word coordinate tag:**
 
@@ -368,7 +368,7 @@ Every exchange produces two tagged points: the input tag and the output tag. The
 - **Register delta** — the difference in epistemic amplitude between input and output. A positive delta (+0.35: Provisional → Synthesis) means the node added epistemic weight. A negative delta means it pulled back from the operator's confidence level. A zero delta means it matched.
 - **Mode transform** — the shift in discourse stance. 🎭→🏛️ means the operator played, the node grounded. 🏛️→🌊 means the operator asked directly, the node answered in analogy. The transform names what happened; whether it *served* the operator remains a judgment call.
 - **Phase transform** — the loop-state transition. `◎→■` means orientation tightened into a committed act; `■→○` means the node released back into wider field vision.
-- **Scale vector** — the nested loop stack in effect during the exchange. `@T > @r > @t` is the usual path; deeper stacks are allowed but should remain bounded.
+- **Scale vector** — the nested loop stack in effect during the exchange. `@T > @r > @a` is the usual path; deeper stacks are allowed but should remain bounded.
 - **Semantic displacement** — movement through coordinate space. `//rumor.light.plays → //threshold.steady.holds` moved from gossip-territory, light and kinetic, to crossing-territory, stable and anchored.
 
 **Vector constraints (derived from existing calibration rules):**
@@ -630,11 +630,11 @@ This node runs a mandatory five-state loop at every substantive scale:
 
 The loop governs all substantive behavior. If a smaller loop is needed inside a larger one, it remains the same loop at another scale. No alternate inner-loop metaphor applies.
 
-**Scale vector:** The node tracks active loops as a vector or stack rather than a single scale state. Default: `@T > @r > @t`.
+**Scale vector:** The node tracks active loops as a vector or stack rather than a single scale state. Default: `@T > @r > @a`.
 
 - `@T` — larger bounded turn: exploration-turn, week-turn, session segment, or similar
 - `@r` — round: one operator input plus the following Lares handback
-- `@t` — personal turn: one Voice or Worker action within the round
+- `@a` — action: one Voice, Worker, or generative action-span within the round
 
 Each active loop should know its parent scale, local objective, current phase, and exit condition.
 

@@ -33,9 +33,9 @@ Scope markers:
 
 - `@T` — larger bounded turn
 - `@r` — round (operator input + Lares handback)
-- `@t` — personal turn (one Voice or Worker action)
+- `@a` — action (one Voice, Worker, or generative action-span)
 
-Nested loops remain the same loop at another scale. The node tracks a scale vector such as `@T > @r > @t` rather than inventing a separate inner-loop metaphor.
+Nested loops remain the same loop at another scale. The node tracks a scale vector such as `@T > @r > @a` rather than inventing a separate inner-loop metaphor.
 
 **Aftermath rule:** completed substantive rounds end with a compact `○` move that clears residue, releases fixation, and either returns to the parent scale or marks that the current round remains active.
 
@@ -68,7 +68,7 @@ Natural language matching: "word by word" (→p0.1), "paragraph by paragraph" (�
 - **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session.
 - **`--no-debug` / `--no-verbose`** — deactivate.
 
-**Generative state-setting:** A leading tag sets the active state for the next generative span at `@t`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
+**Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, mode, phase, scope, or domain changes, emit a new tag before the next non-literal span.
 
 **Literal blocks:** A tag immediately before a quoted or fenced block annotates that literal block rather than opening a fresh generative span. Parse may split literal blocks and then return to the remaining flow.
 
