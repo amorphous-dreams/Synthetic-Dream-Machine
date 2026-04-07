@@ -25,6 +25,15 @@ WORKER_SLUGS = builder.WORKER_SLUGS
 KERNEL_PATH = REPO / "builds" / "agents" / "Lares_Kernel.md"
 KERNEL_SIZE_LIMIT = 8192
 PREFERENCES_PATH = REPO / "builds" / "agents" / "Lares_Preferences.md"
+VERSION_SURFACE_PATHS = [
+    REPO / "builds" / "agents" / "Lares_Preferences.md",
+    REPO / "builds" / "agents" / "Lares_Kernel.md",
+    REPO / "AGENTS.md",
+    REPO / ".github" / "copilot-instructions.md",
+    REPO / ".claude" / "CLAUDE.md",
+    REPO / "builds" / "rendered" / "browser" / "Lares_Kernel.browser.md",
+    REPO / "builds" / "rendered" / "browser-project" / "Lares_Kernel.browser-project.md",
+]
 HUD_SURFACE_PATHS = [
     REPO / "builds" / "agents" / "Lares_Kernel.md",
     REPO / "builds" / "agents" / "platform" / "Lares_Kernel_Claude.md",
@@ -111,6 +120,11 @@ def _parse_frontmatter_description(content: str) -> str | None:
     if match:
         return match.group(1).strip().strip('"\'')
     return None
+
+
+def _extract_version(text: str) -> str | None:
+    match = re.search(r"Version:\s*([\d]+(?:\.[\d]+)+)", text)
+    return match.group(1) if match else None
 
 
 def check_build_metadata_loads(r: CheckResult) -> tuple[dict[str, builder.ModuleSpec], dict[str, builder.ManifestSpec]] | None:
@@ -207,22 +221,28 @@ def check_version_alignment(r: CheckResult) -> None:
         r.fail("Missing: builds/agents/Lares_Preferences.md")
         return
     prefs_text = PREFERENCES_PATH.read_text(encoding="utf-8")
-    version_match = re.search(r"Version:\s*([\d]+(?:\.[\d]+)+)", prefs_text)
-    if not version_match:
+    prefs_version = _extract_version(prefs_text)
+    if not prefs_version:
         r.warn("Version string not found in builds/agents/Lares_Preferences.md")
         return
 
-    prefs_version = version_match.group(1)
-    for rel_path in ["AGENTS.md", "builds/agents/Lares_Kernel.md"]:
-        path = REPO / rel_path
+    for path in VERSION_SURFACE_PATHS:
+        rel_path = builder.relative(path)
         if not path.exists():
             r.fail(f"Version check skipped for {rel_path}: file missing")
             continue
         text = path.read_text(encoding="utf-8")
-        if re.search(rf"Version:\s*{re.escape(prefs_version)}\b", text):
-            r.ok(f"Version aligned: {rel_path} matches Preferences v{prefs_version}")
+        actual_version = _extract_version(text)
+        if not actual_version:
+            r.fail(f"Version string missing: {rel_path}")
+            continue
+        if actual_version == prefs_version:
+            r.ok(f"Version aligned: {rel_path} = v{actual_version}")
         else:
-            r.fail(f"Version mismatch: {rel_path} does not contain Version: {prefs_version}")
+            r.fail(
+                f"Version mismatch: {rel_path} = v{actual_version}, "
+                f"expected v{prefs_version} from builds/agents/Lares_Preferences.md"
+            )
 
 
 def check_hud_surface_integrity(r: CheckResult) -> None:
