@@ -232,23 +232,23 @@ Read [](file:///home/joshu/Synthetic-Dream-Machine/scripts)
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md#120-120), lines 120 to 200
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES)
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core) *(was builds/agents/ADMIN/MODULES)*
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/scripts/agents)
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/PIPELINE.md#1-1), lines 1 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/PIPELINE.md#1-1), lines 1 to 120
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/README.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/README.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Modular_Architecture-draft.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md#100-100), lines 100 to 200
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Modular_Architecture-draft.md#100-100), lines 100 to 200
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_Preferences-map.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Lares_Preferences-map.md#1-1), lines 1 to 100
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_Preferences-map.md#100-100), lines 100 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Lares_Preferences-map.md#100-100), lines 100 to 120
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_Kernel-map.md#1-1), lines 1 to 100
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Lares_Kernel-map.md#1-1), lines 1 to 100
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/Lares_Kernel.md#1-1), lines 1 to 80
 
@@ -258,17 +258,17 @@ Read [](file:///home/joshu/Synthetic-Dream-Machine/scripts/agents/combine_agents
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#200-200), lines 200 to 200
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#1-1), lines 1 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Lares_VSCode_Operations-map.md#1-1), lines 1 to 120
 
 Compacted conversation
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#200-200), lines 200 to 260
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#120-120), lines 120 to 120
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Lares_VSCode_Operations-map.md#120-120), lines 120 to 120
 
 Read [](file:///home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md#260-260), lines 260 to 300
 
-Read [](file:///home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Lares_VSCode_Operations-map.md#120-120), lines 120 to 180
+Read [](file:///home/joshu/Synthetic-Dream-Machine/_todo/core/Lares_VSCode_Operations-map.md#120-120), lines 120 to 180
 
 ---
 

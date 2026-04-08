@@ -1,7 +1,7 @@
 # MODULES — Index
 
-> Purpose: Index and reading order for `builds/agents/ADMIN/MODULES`
-> Updated: 2026-04-06
+> Purpose: Index and reading order for `_todo/core` (formerly `builds/agents/ADMIN/MODULES`)
+> Updated: 2026-04-07
 > Status: Active planning infrastructure — slimming pass complete, governance shipped, runtime module authoring in progress
 
 ---
