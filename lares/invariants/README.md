@@ -35,7 +35,7 @@
 | File | Consumed? | Notes |
 |---|---|---|
 | `../../_todo/core/A_deep-research-report.md` | No | Primary invariant research; 8 `lares.core.*` examples; priority layers; URI guidance |
-| `../EP-RA-001.md` | No | Bidirectional register/mode protocol |
+| `../../_todo/core/EP-RA-001.md` | No | Bidirectional register/mode protocol |
 | `../../_todo/core/TRUST_MODELS.md` | No | Admin governance and trust tier authority caps |
 
 ---

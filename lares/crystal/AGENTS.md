@@ -14,7 +14,7 @@ Design workers in this subdirectory spec the crystal event-sourced JSONL archite
 ## Checklist: What To Do Here
 
 1. Read `README.md` in this directory — check the critical review summary before beginning.
-2. Read crystal sections of `../Signal_HUD_Tagspace-draft.md`.
+2. Read crystal sections of `../../_todo/core/Signal_HUD_Tagspace-draft.md`.
 3. **Resolve Q10 and Q15 first.** Surface options to operator. Do not extend spec until operator rules.
 4. Prototype external tooling path (MCP server / sidecar) before writing LLM-native STATE.jsonl maintenance spec.
 5. Label all outputs by register.

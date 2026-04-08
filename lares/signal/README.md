@@ -47,4 +47,6 @@ Q16 (Tagspace slot shift notation) — locked.
 
 ## Design Status
 
-Sprint 1a operator calls (OP-01, OP-02) resolved. Sprint 1b (AE-01–AE-05) is the active implementation workstream in `builds/agents/`.
+Sprint 0 operator calls (OP-01, OP-02) resolved. URI schema promoted to `[C:0.95]` in `lares/sprints/0/URI_SCHEMA.md`. Next workstream: Sprint 1 Crystal State Machine (`lares/crystal/`). Old AE-01–AE-05 implementation references have been superseded — see `lares/sprints/SPRINT_ROADMAP_1_4.md`.
+
+**Note:** `builds/agents/` does not exist. Deployment targets are the paths in `REFINEMENT_LOG.md` PA-01 through PA-05 (S4 Deployment sprint scope).

@@ -15,7 +15,17 @@ This is the **canonical design ontology tree** for the Lares agent architecture.
 2. New research is digested and synthesized into typed design artifacts
 3. Design artifacts graduate from draft → design-canon → `builds/` once each subdomain's `lares:` URI schema settles at `C:~0.95`
 
-**The source of truth for deployed prompts remains `builds/agents/`.** Files here are design specifications, not live runtime. Source scratch docs remain in `_todo/core/` until consumed.
+This system runs a **three-truth model** — not a single source of truth:
+
+| Truth layer | Location | What it holds |
+|---|---|---|
+| **Design / ontological truth** | `lares/**` | Epistemic gradient: `[P] → [SP] → [S] → [CS] → [C:0.95+]`. Semantic objects can advance in place as confidence rises. |
+| **Deployment truth** | `builds/agents/` | Published, evaluable, rollback-ready staging artifacts. Deployed prompts are published as new versioned artifacts — not mutated in place. |
+| **Historical / governance truth** | `registry/` promotion ledger (append-only) | Records what got promoted, from where, under what evals, at what register, superseding what prior deployment pointer. |
+
+Design objects carry their confidence as a tag (`[S:0.72]`, `[CS:0.86]`, `[C:0.95]`). A semantic URI can remain stable as its register advances — promote semantics in place. Deployed artifacts in `builds/agents/` should be published as new immutable versions with a moving alias/pointer, never overwritten. All promotion events are recorded append-only in the registry ledger.
+
+Source scratch docs remain in `_todo/core/` until consumed. *[Anthropic Prompt Eng Docs, 2026; hamel.dev/evals, 2024]*
 
 ---
 
@@ -69,9 +79,16 @@ A design artifact is promoted when:
 1. Its subdir's scope is settled (README.md finalized, AGENTS.md current)
 2. The design reaches `C:0.95` — operator confirms, sources are verified
 3. A `lares:` URI is assigned from the registry (see `registry/`)
-4. The content migrates to `builds/agents/` or a new module source file
+4. A new versioned build artifact is published to `builds/agents/` — not an in-place overwrite
+5. The active runtime pointer (alias in the registry) is updated to the new artifact
+6. The promotion event is appended to the registry promotion ledger (what, from where, under what evals, superseding what)
 
 Until then, all content is `[S:]` or below.
+
+**Promotion action flow:**
+`design URI [C:0.95] → evaluated candidate → published build artifact (new version) → registry alias pointer update → ledger append`
+
+Not: `design file edited until it also becomes runtime`.
 
 ---
 

@@ -9,8 +9,8 @@
 
 Design workers in this subdirectory extract, refine, and canonicalize the HUD layer.
 
-- Primary working source: `../Signal_HUD_Tagspace-draft.md` (HUD sections only — **do not archive or delete**)
-- Output target: `builds/agents/` and `builds/modules/` once a section reaches `C:0.95`
+- Primary working source: `../../_todo/core/Signal_HUD_Tagspace-draft.md` (HUD sections only — **do not archive or delete**)
+- Output target: deployment paths per `lares/sprints/0/REFINEMENT_LOG.md` (PA-01 through PA-05) — `builds/agents/` does not exist yet
 
 ---
 
