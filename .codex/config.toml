@@ -1,9 +1,0 @@
-# Generated file. Do not edit directly.
-# Manifest: builds/manifests/codex-root.toml
-# Run: python3 scripts/agents/combine_agents.py --target codex-root
-
-[project]
-project_doc_max_bytes = 36000
-
-[agents]
-max_threads = 6
