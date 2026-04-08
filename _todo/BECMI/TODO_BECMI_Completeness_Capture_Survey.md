@@ -55,13 +55,13 @@ The existing staging scripts extract by *section*: they know where the spell des
 | --- | --- | --- | --- |
 | 1a. Extract all 6 PDFs to `_becmi/extractions/` using `pdftotext -layout` | `CorpusBuild(Extractor)` | ✓ | Names: `basic_full.txt`, `expert_full.txt`, `companion_full.txt`, `master_full.txt`, `immortals_full.txt`, `rc_full.txt` |
 | 1b. Post-extraction sanity check: verify line counts, confirm 10 known spell names resolve per file, flag PDF-quality issues | `CorpusCheck(Validator)` | ✓ | Python spot-check script |
-| 1c. Document known extraction artifacts (multi-column interleave, truncated lines, soft-hyphen breaks) as filter notes | `ArtifactLog(Annotator)` | ✓ | Written to `scripts/survey_spell_completeness.py` docstring |
+| 1c. Document known extraction artifacts (multi-column interleave, truncated lines, soft-hyphen breaks) as filter notes | `ArtifactLog(Annotator)` | ✓ | Written to `_todo/BECMI/scripts/survey_spell_completeness.py` docstring |
 
 ---
 
 ### Story 2 — Survey Script and Classification Engine ✓ DONE
 
-**Goal:** Write `scripts/survey_spell_completeness.py` — searches the corpus extractions × canonical spell names × existing staging content, outputs a structured hit report with auto-classification.
+**Goal:** Write `_todo/BECMI/scripts/survey_spell_completeness.py` — searches the corpus extractions × canonical spell names × existing staging content, outputs a structured hit report with auto-classification.
 
 **Acceptance:** Script runs cleanly on all 6 books; ToC/index noise auto-classified; primary-block hits identified and skipped; residual output is triageable by a human.
 

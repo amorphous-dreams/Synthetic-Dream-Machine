@@ -6,7 +6,7 @@ predication. Used to enforce the E-Prime discipline described in
 builds/agents/AGENTS.md -> Operational Language & E-Prime Spec.
 
 Usage:
-    python3 scripts/agents/eprime_audit.py FILE [FILE ...]
+    python3 builds/scripts/eprime_audit.py FILE [FILE ...]
 
 Output:
     FILE:LINE [GROUP] [likely-aux?] -> line text

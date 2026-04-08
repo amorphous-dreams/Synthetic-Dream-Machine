@@ -98,7 +98,7 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 | [`builds/agents/`](builds/agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
 | [AGENTS.md](AGENTS.md) | Root agent configuration — identity, voice architecture, VS Code operational map |
 | `_todo/` | Pipeline operations, conversion tracking, design docs |
-| `scripts/` | Automation scripts for content pipeline |
+| `_todo/BECMI/scripts/` | Automation scripts for BECMI conversion pipeline |
 | `_becmi/` | BECMI source extractions (conversion pipeline input) |
 
 ---

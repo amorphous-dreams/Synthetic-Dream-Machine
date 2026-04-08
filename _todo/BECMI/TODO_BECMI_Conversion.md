@@ -131,7 +131,7 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 - This phase captures and cleans context only; conversion design choices are deferred to implementation passes.
 - Confidence lift is earned by shrinking the `Missing Context Queue`, not by forcing mapping statuses.
 - Provenance must remain at `1.00`; any source/staging drift blocks lane sign-off.
-- For OCR-heavy or layout-dense pages, render page PNGs first and curate against the image plus extracted text before writing staging updates. Preferred helper: `scripts/render_becmi_pages_png.sh`.
+- For OCR-heavy or layout-dense pages, render page PNGs first and curate against the image plus extracted text before writing staging updates. Preferred helper: `_todo/BECMI/scripts/render_becmi_pages_png.sh`.
 - Store rendered page images under `_todo/_page_renders/.cache/<lane>/` and keep page numbers in the filename for source-traceability.
 - Sequence rule: complete lane staging evidence harvest first (scrape + clean missing context from PDFs), then run crosswalk updates as a follow-up pass.
 - During this phase, avoid crosswalk status churn unless needed to fix provenance pointer breakage.
@@ -324,7 +324,7 @@ The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## 
 
 | ID | Status | Story | Tasked Spirit |
 |---|---|---|---|
-| S1 | **DONE 2026-04-03** | Seed P: values on all 196 OSR pending stubs from crosswalk `Class(es)/Spell-level` column (`max(1, min_level × 2)`) | `AnnP(Annotator)` (done; `scripts/annotate_ch06_p_levels.py` created, fixed, and run: 195 cards annotated) |
+| S1 | **DONE 2026-04-03** | Seed P: values on all 196 OSR pending stubs from crosswalk `Class(es)/Spell-level` column (`max(1, min_level × 2)`) | `AnnP(Annotator)` (done; `_todo/BECMI/scripts/annotate_ch06_p_levels.py` created, fixed, and run: 195 cards annotated) |
 | S2 | **DONE 2026-04-03** | Migrate all `[high-tier]` tags: replace with `[dangerous]` where P:≥12 or editorial-[dangerous] call; remove where P:<12 utility | `TierShift(Migrator)` (done; 59 REPLACE→dangerous, 2 existing [dangerous] stripped, 3 remove-only: Commune / Pass Plant / Truesight) |
 | S3 | **DONE 2026-04-03** | Finger of Death: accept synthesized `osr:` block (Gap 3); add tags `[necromancy] [dangerous] [death] [deathly] [attack]`; P: 10 seeded by S1 | `GapFix(Annotator)` (done; crosswalk `osr: imported = yes` confirmed) |
 | S4 | **DONE 2026-04-03** | Reckless Dweomer: change `[storage:burden]` → `[storage:trait]` | `GapFix(Annotator)` (done) |
