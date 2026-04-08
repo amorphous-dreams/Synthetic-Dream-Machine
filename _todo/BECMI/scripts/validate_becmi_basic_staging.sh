@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT='/home/joshu/Synthetic-Dream-Machine'
-TARGET="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Basic.md"
+TARGET="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md"
 
 fail() {
   printf 'FAIL: %s\n' "$1" >&2

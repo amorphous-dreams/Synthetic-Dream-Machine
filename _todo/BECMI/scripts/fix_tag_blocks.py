@@ -7,7 +7,7 @@ Two fixes, applied only inside `tags:` … `meta:` blocks:
   2. Re-indent misindented tradition tags: `> [tag]` → `>   [tag]`.
 
 Usage:
-  python3 scripts/fix_tag_blocks.py [--dry-run] FILE [FILE ...]
+  python3 _todo/BECMI/scripts/fix_tag_blocks.py [--dry-run] FILE [FILE ...]
 """
 
 import re

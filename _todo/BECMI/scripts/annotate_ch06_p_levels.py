@@ -9,10 +9,10 @@ For multi-class or multi-level rows the minimum spell level is used
 forms in the card body during Pass 3).
 
 Usage:
-    python3 scripts/annotate_ch06_p_levels.py check
-    python3 scripts/annotate_ch06_p_levels.py write
-    python3 scripts/annotate_ch06_p_levels.py write --card "Magic Missile"
-    python3 scripts/annotate_ch06_p_levels.py check --show-edge-cases
+    python3 _todo/BECMI/scripts/annotate_ch06_p_levels.py check
+    python3 _todo/BECMI/scripts/annotate_ch06_p_levels.py write
+    python3 _todo/BECMI/scripts/annotate_ch06_p_levels.py write --card "Magic Missile"
+    python3 _todo/BECMI/scripts/annotate_ch06_p_levels.py check --show-edge-cases
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
-DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
+DEFAULT_CROSSWALK = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
 
 # Attribute-line marker written into pending stubs
 PENDING_BODY = "{pending conversion}"

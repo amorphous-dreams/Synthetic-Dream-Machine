@@ -11,7 +11,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 EXPERT_TXT="$TMPDIR/expert.txt"
 EXPERT_PDF="$ROOT/_becmi/TSR 1012B - Set 2 Expert Rules.pdf"
-EXPERT_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Expert.md"
+EXPERT_OUT="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Expert.md"
 
 expert_crop_layout() {
   local page="$1"

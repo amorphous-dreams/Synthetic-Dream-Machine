@@ -2,10 +2,10 @@
 """Deterministically import Chapter 06 `osr:` blocks from staged BECMI witnesses.
 
 Usage:
-    python3 scripts/import_ch06_osr.py check
-    python3 scripts/import_ch06_osr.py write
-    python3 scripts/import_ch06_osr.py check --card "Magic Missile"
-    python3 scripts/import_ch06_osr.py write --card "Magic Missile"
+    python3 _todo/BECMI/scripts/import_ch06_osr.py check
+    python3 _todo/BECMI/scripts/import_ch06_osr.py write
+    python3 _todo/BECMI/scripts/import_ch06_osr.py check --card "Magic Missile"
+    python3 _todo/BECMI/scripts/import_ch06_osr.py write --card "Magic Missile"
 """
 
 from __future__ import annotations
@@ -19,8 +19,8 @@ from pathlib import Path
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
-DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
-DEFAULT_STAGING = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
+DEFAULT_CROSSWALK = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
+DEFAULT_STAGING = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md"
 
 PENDING_TOKEN = "osr:\n{pending verbatim extraction}"
 PENDING_BODY = "{pending verbatim extraction}"

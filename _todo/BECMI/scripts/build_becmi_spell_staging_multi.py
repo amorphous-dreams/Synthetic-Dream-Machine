@@ -2,8 +2,8 @@
 """Build a clean multi-witness Chapter 06 spell staging artifact.
 
 Usage:
-    python3 scripts/build_becmi_spell_staging_multi.py check
-    python3 scripts/build_becmi_spell_staging_multi.py write
+    python3 _todo/BECMI/scripts/build_becmi_spell_staging_multi.py check
+    python3 _todo/BECMI/scripts/build_becmi_spell_staging_multi.py write
 """
 
 from __future__ import annotations
@@ -14,16 +14,16 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-# Pull in sibling script without making `scripts/` a package.
+# Pull in sibling script without making `_todo/BECMI/scripts/` a package.
 sys.path.insert(0, str(Path(__file__).parent))
 from fix_staging_fence_apostrophes import fix_fences  # noqa: E402
 
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
-DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
-DEFAULT_OUTPUT = ROOT / "_todo/TODO_BECMI_Spell_Material_Staging.md"
-DEFAULT_PRE_ADD = ROOT / "_todo/TODO_PRE_ADD_Spell_Staging.md"
+DEFAULT_CROSSWALK = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
+DEFAULT_OUTPUT = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md"
+DEFAULT_PRE_ADD = ROOT / "_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md"
 
 LANE_ORDER = [
     "Men & Magic",
@@ -39,12 +39,12 @@ LANE_ORDER = [
 ]
 
 PLAIN_LANE_PATHS = {
-    "Basic": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Basic.md",
-    "Expert": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Expert.md",
-    "Companion": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Companion.md",
-    "Master": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Master.md",
-    "Immortals": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Immortals.md",
-    "Rules Cyclopedia": ROOT / "_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md",
+    "Basic": ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md",
+    "Expert": ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Expert.md",
+    "Companion": ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md",
+    "Master": ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Master.md",
+    "Immortals": ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md",
+    "Rules Cyclopedia": ROOT / "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md",
 }
 
 LANE_SOURCE_LABEL = {
@@ -621,13 +621,13 @@ def build_output(
         "- The staged spell source docs remain the frozen upstream truth; this file is the primary downstream import source for Chapter 06.",
         "",
         "Upstream source files:",
-        "- `_todo/TODO_PRE_ADD_Spell_Staging.md`",
-        "- `_todo/TODO_BECMI_Spell_Material_Staging_Basic.md`",
-        "- `_todo/TODO_BECMI_Spell_Material_Staging_Expert.md`",
-        "- `_todo/TODO_BECMI_Spell_Material_Staging_Companion.md`",
-        "- `_todo/TODO_BECMI_Spell_Material_Staging_Master.md`",
-        "- `_todo/TODO_BECMI_Spell_Material_Staging_Immortals.md`",
-        "- `_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`",
+        "- `_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md`",
+        "- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md`",
+        "- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Expert.md`",
+        "- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md`",
+        "- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Master.md`",
+        "- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md`",
+        "- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`",
     ]
 
     for row in rows:

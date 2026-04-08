@@ -2,12 +2,12 @@
 """Clear Chapter 06 `osr:` block bodies and/or power text bodies for all cards or a named card.
 
 Usage:
-    python3 scripts/clear_ch06_osr.py check --all
-    python3 scripts/clear_ch06_osr.py write --all --clear-osr
-    python3 scripts/clear_ch06_osr.py write --all --clear-bodies
-    python3 scripts/clear_ch06_osr.py write --all --clear-osr --clear-bodies
-    python3 scripts/clear_ch06_osr.py check --name "Timestop" --clear-osr
-    python3 scripts/clear_ch06_osr.py write --name "Timestop" --clear-bodies
+    python3 _todo/BECMI/scripts/clear_ch06_osr.py check --all
+    python3 _todo/BECMI/scripts/clear_ch06_osr.py write --all --clear-osr
+    python3 _todo/BECMI/scripts/clear_ch06_osr.py write --all --clear-bodies
+    python3 _todo/BECMI/scripts/clear_ch06_osr.py write --all --clear-osr --clear-bodies
+    python3 _todo/BECMI/scripts/clear_ch06_osr.py check --name "Timestop" --clear-osr
+    python3 _todo/BECMI/scripts/clear_ch06_osr.py write --name "Timestop" --clear-bodies
 
 Flags:
     --clear-osr        Clear osr: block bodies (default: on when no flag specified)
@@ -28,7 +28,7 @@ from pathlib import Path
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
 DEFAULT_CHAPTER = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
-DEFAULT_CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
+DEFAULT_CROSSWALK = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
 PENDING_OSR_BODY = "{pending verbatim extraction}"
 PENDING_POWER_BODY = "> {pending conversion}"
 

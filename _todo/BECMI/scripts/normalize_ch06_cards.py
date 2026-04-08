@@ -11,10 +11,10 @@ Normalizations applied:
   4. Trailing empty blockquote line (>) at end of tags: block → removed
 
 Usage:
-    python3 scripts/normalize_ch06_cards.py check
-    python3 scripts/normalize_ch06_cards.py write
-    python3 scripts/normalize_ch06_cards.py check --name "Sword"
-    python3 scripts/normalize_ch06_cards.py write --name "Cure Light Wounds"
+    python3 _todo/BECMI/scripts/normalize_ch06_cards.py check
+    python3 _todo/BECMI/scripts/normalize_ch06_cards.py write
+    python3 _todo/BECMI/scripts/normalize_ch06_cards.py check --name "Sword"
+    python3 _todo/BECMI/scripts/normalize_ch06_cards.py write --name "Cure Light Wounds"
 """
 
 from __future__ import annotations

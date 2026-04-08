@@ -7,8 +7,8 @@ since parse_spell_rows() in build_becmi_spell_staging_multi.py deduplicates
 by classic_name — the first row wins.
 
 Usage:
-    python3 scripts/fix_crosswalk_source_lanes.py check
-    python3 scripts/fix_crosswalk_source_lanes.py write
+    python3 _todo/BECMI/scripts/fix_crosswalk_source_lanes.py check
+    python3 _todo/BECMI/scripts/fix_crosswalk_source_lanes.py write
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ import argparse
 import re
 import sys
 
-CROSSWALK = "/home/joshu/Synthetic-Dream-Machine/_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
+CROSSWALK = "/home/joshu/Synthetic-Dream-Machine/_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
 
 # ── Anchors ─────────────────────────────────────────────────────────────────
 # Values are the path portion ONLY — the lane prefix is added automatically

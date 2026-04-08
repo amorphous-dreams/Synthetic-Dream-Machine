@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT='/home/joshu/Synthetic-Dream-Machine'
-OUT="$ROOT/_todo/TODO_BECMI_Spell_Extraction_Spot_Check.md"
+OUT="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Extraction_Spot_Check.md"
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
@@ -96,7 +96,7 @@ write_flow_case() {
   local status='needs-review'
 
   BECMI_STAGING_HELPERS_ONLY=1 bash -lc \
-    "source '$ROOT/scripts/build_becmi_spell_staging.sh'; render_tsv_cols_pages_anchored_until '$pdf' '$start_page' '$end_page' '$bounds' '$anchor' '$stop_anchor'" \
+    "source '$ROOT/_todo/BECMI/scripts/build_becmi_spell_staging.sh'; render_tsv_cols_pages_anchored_until '$pdf' '$start_page' '$end_page' '$bounds' '$anchor' '$stop_anchor'" \
     > "$sample_file"
 
   if rg -q "$expected_regex" "$sample_file"; then
@@ -135,7 +135,7 @@ write_layout_flow_case() {
   local status='needs-review'
 
   BECMI_STAGING_HELPERS_ONLY=1 bash -lc \
-    "source '$ROOT/scripts/build_becmi_spell_staging.sh'; render_layout_pages_anchored_until '$pdf' '$start_page' '$end_page' '$colspacing' '$anchor' '$stop_anchor'" \
+    "source '$ROOT/_todo/BECMI/scripts/build_becmi_spell_staging.sh'; render_layout_pages_anchored_until '$pdf' '$start_page' '$end_page' '$colspacing' '$anchor' '$stop_anchor'" \
     > "$sample_file"
 
   if rg -q "$expected_regex" "$sample_file"; then
@@ -175,7 +175,7 @@ write_column_flow_case() {
   local status='needs-review'
 
   BECMI_STAGING_HELPERS_ONLY=1 bash -lc \
-    "source '$ROOT/scripts/build_becmi_spell_staging.sh'; render_tsv_col_pages_anchored_until '$pdf' '$start_page' '$end_page' '$bounds' '$target_col' '$anchor' '$stop_anchor'" \
+    "source '$ROOT/_todo/BECMI/scripts/build_becmi_spell_staging.sh'; render_tsv_col_pages_anchored_until '$pdf' '$start_page' '$end_page' '$bounds' '$target_col' '$anchor' '$stop_anchor'" \
     > "$sample_file"
 
   if rg -q "$expected_regex" "$sample_file"; then

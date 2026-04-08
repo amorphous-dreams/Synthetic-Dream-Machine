@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT='/home/joshu/Synthetic-Dream-Machine'
-OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging.md"
+OUT="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md"
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 

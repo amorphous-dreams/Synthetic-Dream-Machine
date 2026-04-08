@@ -3,8 +3,8 @@
 entries have a corresponding heading in FTLS Chapter 06.
 
 Usage:
-    python3 scripts/add_doctrine_converted_column.py check
-    python3 scripts/add_doctrine_converted_column.py write
+    python3 _todo/BECMI/scripts/add_doctrine_converted_column.py check
+    python3 _todo/BECMI/scripts/add_doctrine_converted_column.py write
 
 `check` reports which tables would be modified and what values would be written.
 `write` applies changes in-place.
@@ -23,8 +23,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-DOCTRINE = ROOT / "_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md"
-CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
+DOCTRINE = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md"
+CROSSWALK = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
 CHAPTER06 = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 
 CONVERTED_COL = "Converted"

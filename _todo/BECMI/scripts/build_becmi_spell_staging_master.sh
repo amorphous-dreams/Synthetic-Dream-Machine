@@ -11,7 +11,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 MASTER_TXT="$TMPDIR/master.txt"
 MASTER_PDF="$ROOT/_becmi/TSR 1021 - Set 4 Master Rules.pdf"
-MASTER_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Master.md"
+MASTER_OUT="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Master.md"
 
 master_replace_block_between_markers() {
   local start="$1"

@@ -35,8 +35,8 @@ ArtifactLog(Annotator) — pdftotext -layout extraction artifacts:
               new activation mechanics.
 
 Usage:
-    python3 scripts/survey_spell_completeness.py check [options]
-    python3 scripts/survey_spell_completeness.py write [options]
+    python3 _todo/BECMI/scripts/survey_spell_completeness.py check [options]
+    python3 _todo/BECMI/scripts/survey_spell_completeness.py write [options]
 
 Flags:
     --spell SPELL       Filter to a specific spell name (partial, case-insensitive match).
@@ -53,7 +53,7 @@ Flags:
 
 Modes:
     check   Print the hit report to stdout only.
-    write   Write the hit report to _todo/TODO_Completeness_Survey_Hits.md
+    write   Write the hit report to _todo/BECMI/TODO_Completeness_Survey_Hits.md
             (overwrites any existing file) and also print to stdout.
 """
 
@@ -73,9 +73,9 @@ import build_becmi_spell_staging_multi as multi  # noqa: E402
 # ---------------------------------------------------------------------------
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-CROSSWALK = ROOT / "_todo/TODO_BECMI_Spell_Effect_Crosswalk.md"
-HIT_REPORT = ROOT / "_todo/TODO_Completeness_Survey_Hits.md"
-COVERAGE_REPORT = ROOT / "_todo/TODO_Completeness_Survey_Coverage.md"
+CROSSWALK = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
+HIT_REPORT = ROOT / "_todo/BECMI/TODO_Completeness_Survey_Hits.md"
+COVERAGE_REPORT = ROOT / "_todo/BECMI/TODO_Completeness_Survey_Coverage.md"
 
 EXTRACTIONS: dict[str, Path] = {
     "basic":     ROOT / "_becmi/extractions/basic_full.txt",

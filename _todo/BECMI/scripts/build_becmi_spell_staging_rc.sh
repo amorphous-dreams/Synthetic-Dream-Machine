@@ -11,7 +11,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 RC_TXT="$TMPDIR/rc.txt"
 RC_PDF="${RC_PDF_OVERRIDE:-$ROOT/_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf}"
-RC_OUT="${RC_OUT_OVERRIDE:-$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md}"
+RC_OUT="${RC_OUT_OVERRIDE:-$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md}"
 
 render_rc_max_spellcaster_table() {
   local pdf="$1"

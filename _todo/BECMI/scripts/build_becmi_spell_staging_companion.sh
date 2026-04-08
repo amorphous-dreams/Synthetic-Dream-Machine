@@ -11,7 +11,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 COMP_TXT="$TMPDIR/companion.txt"
 COMP_PDF="$ROOT/_becmi/TSR 1013 - Set 3 Companion Set.pdf"
-COMP_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Companion.md"
+COMP_OUT="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md"
 
 companion_crop_layout() {
   local page="$1"

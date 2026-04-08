@@ -11,7 +11,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 BASIC_TXT="$TMPDIR/basic.txt"
 BASIC_PDF="$ROOT/_becmi/TSR 1011B - Set 1 Basic Rules.pdf"
-BASIC_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Basic.md"
+BASIC_OUT="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md"
 
 require_command() {
   local cmd="$1"

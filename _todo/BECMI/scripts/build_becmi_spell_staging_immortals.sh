@@ -11,7 +11,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 IMM_TXT="$TMPDIR/immortals.txt"
 IMM_PDF="$ROOT/_becmi/TSR 1017 - Set 5 Immortals Rules.pdf"
-IMM_OUT="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Immortals.md"
+IMM_OUT="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md"
 
 crop_layout() {
   local page="$1"

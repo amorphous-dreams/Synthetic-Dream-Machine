@@ -3,9 +3,9 @@ set -euo pipefail
 
 # Render selected PDF pages to PNG images for OCR-heavy review.
 # Usage:
-#   scripts/render_becmi_pages_png.sh <pdf_path> <pages_spec> [out_dir] [dpi]
+#   _todo/BECMI/scripts/render_becmi_pages_png.sh <pdf_path> <pages_spec> [out_dir] [dpi]
 # Example:
-#   scripts/render_becmi_pages_png.sh "_becmi/TSR 1011B - Set 1 Basic Rules.pdf" "35,40-44" "_todo/_page_renders/.cache/basic" 220
+#   _todo/BECMI/scripts/render_becmi_pages_png.sh "_becmi/TSR 1011B - Set 1 Basic Rules.pdf" "35,40-44" "_todo/_page_renders/.cache/basic" 220
 
 if [[ $# -lt 2 || $# -gt 4 ]]; then
   echo "Usage: $0 <pdf_path> <pages_spec> [out_dir] [dpi]" >&2

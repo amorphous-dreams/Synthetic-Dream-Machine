@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT='/home/joshu/Synthetic-Dream-Machine'
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-TARGET="$ROOT/_todo/TODO_BECMI_Spell_Material_Staging_Companion.md"
+TARGET="$ROOT/_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md"
 
 BECMI_STAGING_HELPERS_ONLY=1 source "$SCRIPT_DIR/build_becmi_spell_staging.sh"
 

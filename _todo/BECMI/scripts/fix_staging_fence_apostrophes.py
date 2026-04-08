@@ -58,7 +58,7 @@ The typographic apostrophe / right single quotation mark is U+2019 (').
 ────────────────────────────────────────────────────────────────────────────────
 
 USAGE
-    python3 scripts/fix_staging_fence_apostrophes.py [--dry-run] [root_dir]
+    python3 _todo/BECMI/scripts/fix_staging_fence_apostrophes.py [--dry-run] [root_dir]
 
     --dry-run   Print changes without writing files.
     root_dir    Repo root (default: current working directory).
@@ -73,13 +73,13 @@ import sys
 # Add paths here (relative to repo root) to expand the scope.
 # Keep paths relative so the script stays portable.
 TARGET_FILES = [
-    "_todo/TODO_BECMI_Spell_Material_Staging.md",
-    # "_todo/TODO_BECMI_Spell_Material_Staging_Basic.md",
-    # "_todo/TODO_BECMI_Spell_Material_Staging_Expert.md",
-    # "_todo/TODO_BECMI_Spell_Material_Staging_Companion.md",
-    # "_todo/TODO_BECMI_Spell_Material_Staging_Master.md",
-    # "_todo/TODO_BECMI_Spell_Material_Staging_Immortals.md",
-    # "_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md",
+    "_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md",
+    # "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md",
+    # "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Expert.md",
+    # "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md",
+    # "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Master.md",
+    # "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md",
+    # "_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md",
 ]
 
 STRAIGHT = "\u0027"   # '  ASCII apostrophe / straight single quote
