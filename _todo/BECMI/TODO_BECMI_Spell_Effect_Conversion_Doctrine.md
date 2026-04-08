@@ -127,7 +127,7 @@
    - Encourages custom power albums instead of class-bound spell lists
 
 5. **Trend Reference Workflow** — apply before finalizing any P: assignment:
-   - Source witness: consult the locked staging corpus (`_todo/TODO_BECMI_Spell_Material_Staging.md` + lane files) for the spell’s mechanics.
+   - Source witness: consult the locked staging corpus (`_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md` + lane files) for the spell’s mechanics.
    - Calibration check: cross-reference the SDM Powers Index for analogous powers.
    - Primary anchor: `Pyreball` (SDM Powers Index) = P: 6, confirming 3rd-level Fireball at `3 × 2 = 6`.
    - The staged corpus is frozen; no new ad hoc scraping against PDFs during conversion work.

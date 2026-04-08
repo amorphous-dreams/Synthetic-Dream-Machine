@@ -119,7 +119,7 @@ The existing staging scripts extract by *section*: they know where the spell des
 | Sub-task | Tasked Spirit | Status | Notes |
 | --- | --- | --- | --- |
 | 5a. Run `survey_spell_completeness.py --book rc --min-class cross-ref` | `RCScan(Scanner)` | ✓ | 1,007 hits |
-| 5b. Triage RC residual hits in module batches | `RCTriage(Triager)` | ✓ | 73 residual hits classified; all incidental. RC Dispel Magic / Enchanted Vessel procedure (L18814–18833) identified as genuine gap but backlisted to `_todo/TODO_Magitech_Fantascience_Chapter05.md` (B1) — belongs to future Magic Items/Artifacts Epic. |
+| 5b. Triage RC residual hits in module batches | `RCTriage(Triager)` | ✓ | 73 residual hits classified; all incidental. RC Dispel Magic / Enchanted Vessel procedure (L18814–18833) identified as genuine gap but backlisted to `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md` (B1) — belongs to future Magic Items/Artifacts Epic. |
 | 5c. Run `survey_spell_completeness.py --book immortals --min-class cross-ref` | `ImmScan(Scanner)` | ✓ | 474 hits |
 | 5d. Triage Immortals residual hits | `ImmTriage(Triager)` | ✓ | 66 residual hits classified; all incidental (Immortal power lists, PP framing noise). 0 new-rule-gaps. |
 | 5e. Cross-book dedup: RC hits duplicating earlier-lane staged content → `cross-book-dupe` not `new-rule-gap` | `XBookDedup(Deduper)` | ✓ | Performed inline during triage; no cross-book dupes requiring new classification. |
@@ -298,7 +298,7 @@ Active hit report: `_todo/BECMI/TODO_Completeness_Survey_Hits.md` (created by `s
 2. **Companion — Weapon Talent 5-talent block** (`TODO_BECMI_Spell_Material_Staging_Companion.md`): Verbatim OCR, `companion_full.txt` L6628–6653. Talents: Breathing (Water Breathing / Air Breathing 1/day), Charming (charm person 1/day 120'), Finding (locate object 1/day 120'), Slowing (reverse Haste 1 turn, **no Save**), Speeding (haste 1 turn on user).
 
 ### Deferred / out of scope
-- **RC Dispel Magic / Enchanted Vessel procedure** (`rc_full.txt` L18814–18833): backlisted to `_todo/TODO_Magitech_Fantascience_Chapter05.md` (B1). Belongs to future Magic Items/Artifacts full-text Epic.
+- **RC Dispel Magic / Enchanted Vessel procedure** (`rc_full.txt` L18814–18833): backlisted to `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md` (B1). Belongs to future Magic Items/Artifacts full-text Epic.
 
 ### Terms scan results (2026-04-03)
 - Ran `--terms 'anti-magic,magical nature,enchanted,dweomer,permanent magic,temporary magic,spell effect,magical effect,metaphysical,astral,ethereal,Power Points,mana'` across all 6 books; 288 hits total at `rules-note` minimum.

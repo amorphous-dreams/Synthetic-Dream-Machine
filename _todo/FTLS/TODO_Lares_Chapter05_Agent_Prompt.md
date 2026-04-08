@@ -87,7 +87,7 @@ Primary manuscript target:
 Do not revert these changes.
 
 ## 5) Immediate Work Queue
-Resume from the current shared phase tracker in `_todo/TODO_Magitech_Fantascience_Chapter05.md`.
+Resume from the current shared phase tracker in `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`.
 
 ### Immediate priority: sequencing gate check
 Before any new Chapter 05 edits, confirm Chapter 06 has locked design decisions and reached `alpha` status.

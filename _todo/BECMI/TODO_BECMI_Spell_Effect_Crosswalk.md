@@ -221,7 +221,7 @@ This is the execution backlog for the first downstream phase after the staging-c
 
 ### Manuscript Import Pass
 
-19. Build or refresh `_todo/TODO_BECMI_Spell_Material_Staging.md` before manuscript import work so Chapter 06 consumes one clean downstream witness bundle.
+19. Build or refresh `_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md` before manuscript import work so Chapter 06 consumes one clean downstream witness bundle.
 20. Replace every Chapter 06 spell-card `osr:` block for OSR recognizer cards with the full staged witness bundle for that spell.
 21. Keep the FTLS main rules body, tags, and existing `meta:` structure stable during this pass except where minimum provenance cleanup is required to match the imported witness.
 22. Do not import `osr:` blocks for non-OSR heritage powers, item-effects, procedures, or other entries that are not part of the spell recognizer bridge.
