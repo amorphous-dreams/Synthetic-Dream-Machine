@@ -61,6 +61,7 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 3. Parentheses in userinfo confirmed legal per RFC 3986 sub-delimiter rules
 4. Multi-value `stance=` parameter confirmed legal per RFC 3986 query syntax
 5. Fragment client-side-only property (§3.5) confirmed compatible with chronometer usage
+6. **Scope declaration:** This task applies to the **machine form only**. The sigil form is an IRI-class display projection (RFC 3987); RFC 3986 compliance is not claimed for it and is not assessed by this task.
 
 **Deliverable:** Annotated §3 with RFC section citations per component. Any violations flagged with proposed fix.
 
@@ -77,6 +78,8 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 3. No ambiguous mappings (glyphs that could represent multiple keywords)
 4. Path separator projection (machine `/` ↔ sigil `.`) is lossless after leading `/`
 5. Round-trip test: machine → sigil → machine produces identical URI for all examples in Appendix A
+6. **IRI encoding note:** The machine→sigil projection for emoji-valued fields (`stance=`, phase glyph, fragment scope prefix) includes a UTF-8/IRI encoding step. Round-trip tests for these fields must account for the IRI ↔ URI percent-encoding transform — a `stance=�️` in sigil form encodes as `stance=%F0%9F%8F%9B%EF%B8%8F` in strict RFC 3986 form. The round-trip is defined as machine→sigil→machine using projection table rules, not percent-encoding.
+7. **Rendering portability check:** Confirm all 15 HUD symbols (5 stance emoji, 5 scope prefix emoji, 5 phase glyphs) render correctly in: (a) VS Code integrated terminal, (b) Claude.ai chat interface, (c) GitHub markdown preview, (d) plain text / ASCII fallback. Symbols using VS16 variation selectors (🏛️ `U+1F3DB U+FE0F`, ⚙️ `U+2699 U+FE0F`) are highest risk — may render as text glyphs in some environments. Any symbol that fails to render as intended in any of the four surfaces must have a fallback character documented in the symbol table (SIG-05, `HAKABA_REFERENCE.md`). This check feeds directly into SIG-05's symbol table stability section.
 
 **Deliverable:** Round-trip test results for all Appendix A examples. Any failures flagged.
 
@@ -105,8 +108,8 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 **Register target:** `[C:0.95]`
 **Input:** URI_SCHEMA.md §10
 **Acceptance criteria:**
-1. Each of the 11 well-formedness rules is testable — can be expressed as a boolean assertion against a URI string
-2. Provide 3 valid and 3 invalid examples per rule (33 valid + 33 invalid = 66 test vectors minimum)
+1. Each of the **12 validation rules** (11 well-formedness rules in §10.1–10.3 + the canonical form / comparison rules in §10.4) is testable — can be expressed as a boolean assertion against a URI string
+2. Provide 3 valid and 3 invalid examples per rule (36 valid + 36 invalid = 72 test vectors minimum)
 3. Consistency check (§10.2): verify that the machine/sigil example pairs in Appendix A pass
 4. Stable address derivation (§10.3): verify for all Appendix A examples
 5. No rule contradicts another rule
@@ -127,6 +130,14 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 3. The example event in §7.1 is consistent with the STATE.jsonl event schema in the draft (all field names match, types match)
 4. No field in the crystal event model references URI data that isn't captured in these four + two fields
 5. The non-drift rule (from draft §HUD/Crystal Interface) is satisfiable given this field mapping
+
+> **NOTE — CRY-01 prerequisites (two):**
+>
+> **Prereq A — Schema version transition contract:** The crystal event model currently treats `schema_version` as a static integer with no schema migration contract. Before CRY-01 is promoted, the crystal sprint must define the transition-window behavior: a `contract_update` event must precede any `schema_version` change; readers must handle both versions during the transition window; the seal protocol serves as the clean-boundary escape hatch.
+>
+> **Prereq B — `drift_correction` event type:** The intent header is a forward commitment — declared *before* generation begins. When the declared header diverges from the actual output (register, stance, or scope mismatch), this is a detectable failure. CRY-07's non-drift rule must include a mismatch recovery protocol, not just detection. The recovery requires a dedicated `drift_correction` event type in the STATE.jsonl event schema. Fields: `declared_uri` (original intent header, machine form), `actual_register`, `actual_stance`, `delta_description`. The corrected end-of-span tag is the authoritative record; the original `r_update` event is not modified (immutability holds).
+>
+> Both prereqs must be flagged as CRY-01 blockers in the S1 task board.
 
 **Deliverable:** Field derivation table showing source URI component → crystal field for each of the 6 fields. Any gaps flagged.
 

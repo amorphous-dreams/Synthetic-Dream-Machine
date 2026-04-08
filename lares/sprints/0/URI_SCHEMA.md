@@ -11,7 +11,7 @@
 
 ## 1. Design Intent
 
-The `lares:` URI encodes the full signal state of a Lares node exchange in a single string conforming to RFC 3986 generic syntax. Each URI component carries a distinct, non-overlapping concern across three semantic layers:
+The `lares:` URI encodes the full signal state of a Lares node exchange in a single string whose **machine form** conforms to RFC 3986 generic syntax. Each URI component carries a distinct, non-overlapping concern across three semantic layers:
 
 1. **WHERE** — the HAKABA address (path) locates semantic territory
 2. **HOW** — signal parameters (query) describe stance, register, p
@@ -29,6 +29,8 @@ The URI serves as both a human-readable annotation (sigil form) and a machine-pa
 | Dereferenceability | Non-dereferenceable identifier (RFC 4151 precedent) |
 | Resolution | Via `lares/registry/` resolver; never via network fetch |
 | IANA status | Unregistered; internal use only |
+
+> **Form and compliance:** The **machine form** is the RFC 3986-compliant canonical form. The **sigil form** is an IRI-class display projection (RFC 3987); it contains emoji and Unicode glyphs in the `stance=` parameter, phase field, and fragment scope prefix that are not legal in RFC 3986 URIs without percent-encoding. RFC 3986 compliance is not claimed for the sigil form. The projection table (§5) is a rendering transform between forms — it is not a URI-to-URI identity mapping. Consumers that require network transport or strict RFC 3986 parsing must use the machine form.
 
 The `lares:` scheme identifies semantic positions, signal states, and machine events within the Lares agent architecture. It does not resolve to a network resource. URI consumers (crystal replay tools, debug log parsers, registry resolvers) treat it as an opaque structured identifier parsed according to this specification.
 
@@ -60,6 +62,8 @@ lares://alias:tier(phase)@host:seq/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.
 | 6 | **path** | Hierarchical resource | HAKABA address: `/ha/ka/ba` | `/threshold/uncertain/opens` | `/threshold.uncertain.opens` |
 | 7 | **`?query`** | Non-hierarchical params | Signal parameters | `?stance=philosopher&register=S:0.65&p=0.5` | `?stance=🏛️&register=S:0.65&p=0.5` |
 | 8 | **`#fragment`** | Secondary resource / viewpoint | Scope prefix + chronometer vector | `#@T.3.2.7` | `#🔍.3.2.7` |
+
+> **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. The HAKABA-first design decision was correct. *Source: `../../_todo/E-deep-research-report.md` §4.2*
 
 ### 3.4 Component Semantics
 
@@ -94,11 +98,11 @@ Machine form uses `/` separators: `/threshold/uncertain/opens`. Sigil form uses 
 
 Multi-stance: repeated `stance=` parameters. Example: `stance=🏛️&stance=🗡️`.
 
-**fragment** (`#scope.W.w.t.r.a`) — Scope prefix + chronometer vector clock. Client-side only per RFC 3986 §3.5 — never sent to a server; session-local viewpoint data.
+**fragment** (`#scope.W.w.t.r.a`) — Scope prefix + chronometer (hierarchical scope counter). Client-side only per RFC 3986 §3.5 — never sent to a server; session-local viewpoint data.
 
 ---
 
-## 4. The Chronometer — 5-Level Nested OODA-A Vector Clock
+## 4. The Chronometer — 5-Level Nested OODA-A Hierarchical Scope Counter
 
 The chronometer occupies the URI fragment position. It tracks nested OODA-A loop iterations across five simulation time-scales, aligned with the FTLS RSS time-scale hierarchy.
 
@@ -235,7 +239,7 @@ Every STATE.jsonl event that carries URI data uses four derived fields:
 | `lares_uri` | Full URI, machine form, all components | No — changes per event | Complete queryable state; machine-parseable |
 | `lares_address` | Path only (no authority/query/fragment) | Yes — stable territory | Named graph identifier |
 | `intent_header_snapshot` | Full URI, sigil form | No — changes per event | Human-readable HUD; what the operator saw |
-| `chronometer` | Fragment value without `#`; includes scope prefix | No — increments with time | Scope + vector clock; temporal/scale queries |
+| `chronometer` | Fragment value without `#`; includes scope prefix | No — increments with time | Scope + hierarchical scope counter; temporal/scale queries |
 
 Additional quick-filter fields extracted from URI components:
 
@@ -337,6 +341,16 @@ A pair of `lares_uri` (machine form) and `intent_header_snapshot` (sigil form) a
 3. Path is identical to the `lares_uri` path (machine form: `/` separators)
 4. Query and fragment are absent
 
+### 10.4 Canonical Form and Comparison
+
+When comparing two `lares:` URIs as stable addresses:
+
+1. Convert both to machine form (apply projection normalization — sigil → machine — before comparison)
+2. Compare path components **case-insensitively**
+3. Canonical form uses **lowercase** path components (e.g., `lares:///threshold/uncertain/opens` not `lares:///Threshold/Uncertain/Opens`)
+4. Two URIs designate the same stable address iff their lowercased machine-form paths are byte-identical
+5. Query and fragment components are excluded from stable-address comparison
+
 ---
 
 ## 11. Open Design Questions
@@ -362,7 +376,7 @@ Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Sy
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]`. The full generic syntax applies.
 - **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource.
-- **Lamport / Vector clocks** — The chronometer is structurally a vector clock with nesting. Each position is an independent counter; the full vector provides a partial ordering across scales.
+- **Lamport / Vector clocks** — The chronometer shares a surface resemblance to a vector clock (array of counters, nesting relationship) but functions as a **hierarchical scope counter** in a single process — not a distributed causality tracker across concurrent independent processes. Vector clocks grow with process count, carry the full vector on every message, and exhibit known dynamic-membership costs; none of those constraints apply to Lares's fixed-depth 5-position counter. OTel `traceparent` is the closer prior art (see below).
 - **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The OODA-A nesting is synthesis applied to canon time-scales.
 - **OTel Trace Context** — `traceparent` carries `trace-id`, `parent-id`, `trace-flags`. The chronometer fragment functions as a hierarchical trace context; each depth is a span scope; Aftermath → Observation is the parent-child span relationship.
 - **what3words** — Three-word geocoding of 3m² squares. Inverse design principle: Tagspace words encode semantic content rather than randomizing for error prevention.

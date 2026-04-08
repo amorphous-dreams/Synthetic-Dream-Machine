@@ -63,7 +63,8 @@ The promotion ledger is append-only. Each entry records a single promotion event
   "promoted_to_register": "C:0.95",
   "design_source": "lares/signal/URI_SCHEMA.md",
   "build_artifact": "builds/agents/signal/uri-schema-v1.md",
-  "build_version": "sha256:abc123...",
+  "file_sha256": "sha256:abc123...",
+  "semantic_sha256": null,
   "supersedes": null,
   "eval_summary": "Sprint 0 acceptance: validation rules pass, projection table verified, example set complete",
   "authorized_by": "operator",
@@ -81,8 +82,9 @@ The promotion ledger is append-only. Each entry records a single promotion event
 | `promoted_to_register` | Register tag | Yes | Register after promotion |
 | `design_source` | File path | Yes | Where the design content lives |
 | `build_artifact` | File path | Yes | Where the deployed artifact was published |
-| `build_version` | Hash or version ID | Yes | Content-addressed identifier of the artifact |
-| `supersedes` | Hash/version or null | Yes | The `build_version` this replaces (null for first promotion) |
+| `file_sha256` | SHA-256 hex digest | Yes | Raw-bytes content hash; no normalization; primary integrity check |
+| `semantic_sha256` | SHA-256 hex digest or null | No | Normalized content hash (UTF-8, LF, sorted TOML keys, stripped comments); deferred to S3 — null until normalization spec is tested and a prototype run confirms consistent output |
+| `supersedes` | Hash/version or null | Yes | The `file_sha256` this replaces (null for first promotion) |
 | `eval_summary` | Free text | Yes | Brief description of what was evaluated |
 | `authorized_by` | Identity | Yes | Who authorized the promotion |
 | `authorization_tier` | `admin` / `operator` | Yes | Trust tier of the authorizer |
@@ -114,6 +116,7 @@ Updated only on status change, spawn, seal, or fork. Subject to 200-line discipl
 | R2 | Build version scheme — content hash vs semver vs both? | `[SP:0.45]` | Content hash preferred for integrity; semver for human readability |
 | R3 | Ledger location — `lares/registry/LEDGER.jsonl` vs `.lares/PROMOTION_LEDGER.jsonl`? | `[S:0.55]` | Design tree vs crystal tree; different audiences |
 | R4 | Should the resolver be a runtime tool or a design-time reference? | `[S:0.60]` | Alpha: design-time reference; future: runtime resolver |
+| R5 | When is `semantic_sha256` ready to promote from deferred to required? | `[SP:0.45]` | Requires: normalization spec written, prototype run executed on at least one real artifact, two independent tools produce identical hash. Until then, `null` in all ledger entries (use `file_sha256` for integrity). |
 
 ---
 

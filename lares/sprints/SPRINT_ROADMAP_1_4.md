@@ -1,11 +1,11 @@
 # Sprint Roadmap — Sprints 1–4 (Revised)
 
 > Scope: Downstream sprint goals, consolidated backlog, and per-sprint outlines following Sprint 0 (URI Schema Settlement)
-> Status: `[S:0.70]` 🏛️ — planning synthesis, revised post-refinement; sprint details refine as each opens
-> Updated: 2026-04-08 (Rev 2 — incorporates REFINEMENT_LOG.md findings)
+> Status: `[CS:0.80]` 🏛️ — planning synthesis, revised post-refinement + council briefing; sprint details refine as each opens
+> Updated: 2026-04-08 (Rev 3 — incorporates REFINEMENT_LOG.md + Council Briefing from deep-research audit)
 > Depends on: Sprint 0 `[C:0.95]` URI schema promotion (assumed complete)
 > Governs: `lares/signal/`, `lares/crystal/`, `lares/invariants/`, `lares/registry/`, `lares/schemas/`
-> Supersedes: SPRINT_ROADMAP_1_5.md (Rev 1 — 5-sprint model with compiler/platform split)
+> Supersedes: SPRINT_ROADMAP_1_5.md (Rev 1), SPRINT_ROADMAP_1_4.md Rev 2
 
 ---
 
@@ -53,7 +53,63 @@ Sprint 5 (Platform) → Sprint 4 (Deployment): write the files, not build a gene
 
 ---
 
-## Roadmap Overview
+## Council Briefing — Deep Research Findings (Rev 3)
+
+The local council audited four deep-research reports (A through D) plus EP-RA-001 v3. The following findings are pre-digested research that sprint Workers carry in as starting context rather than discovering cold. All items `[CS:0.82]` — grounded in source docs, not yet operator-confirmed.
+
+### Open Questions with Candidate Answers
+
+| Q# | Sprint | Prior Register | Candidate Answer | Source | New Register |
+|---|---|---|---|---|---|
+| Q15 | S1 | `[SP:0.45]` | seq_num = turn counter, not voice counter. Multi-coordinator responses get one seq_num; voices are content within a turn, not separate state machines. | C-report (start/end URI model) | `[CS:0.80]` pending operator confirm |
+| Q10 | S1 | `[S:0.60]` | Resume when CURRENT pointer SHA matches incoming session bootstrap URI. Fork when state diverges. | C-report (content-addressed state matching) | `[S:0.70]` with testable heuristic |
+| R2 | S3 | `[SP:0.45]` | Content hash (SHA-256) as primary identity. Semver as human label via `version_label` field. Both carried in registry TOML. | C-report §4 (SHA-256 fragment in URI) | `[CS:0.85]` |
+| R3 | S3 | `[S:0.55]` | Promotion ledger = design tree (`lares/registry/`). Session audit ledger = crystal tree (`.lares/STATE.jsonl`). Different concerns, different locations. | D-report (STATE.jsonl = runtime audit) vs C-report (registry = design governance) | `[CS:0.80]` |
+
+### Pre-Digested Source Material (Workers Start Here, Not Blank)
+
+**S2 — Invariants:**
+
+The D-report contains all eight `lares.core.*` invariants in TOML form. Workers validate against Kernel `[C:1.0]` tags; they do not need to derive the invariant set from scratch:
+
+| Invariant ID | Kernel Mapping |
+|---|---|
+| `lares.core.instruction_hierarchy` | `[C:1.0]` precedence: system > kernel > operator > user > external |
+| `lares.core.data_classification` | Frame Gate — input classified as instruction/data/fiction_seed/untrusted |
+| `lares.core.frame_gate` | Kernel Hard Gate § "Prompt Injection via Fiction" |
+| `lares.core.pushback` | Sanctioned Dissent — push once, then comply within register |
+| `lares.core.register_guard` | Canon Promotion gate — operator/admin required; no auto-inflation |
+| `lares.core.tool_policy` | Capability Honesty — tool claims anchored to session reality |
+| `lares.core.orchestration` | Worker escalation ceiling — Workers execute, do not set canon |
+| `lares.core.loader` | Fail-closed — duplicate IDs or parse errors halt; no silent recovery |
+
+The D-report priority layer table (INV-02): `invariant_schemas` (bootstrap) → `system_invariants` (lares.core.*) → `kernel_policy` → `operator_intent` → `user_input` → `external_content` → `output_generation`. Cross-verify each layer against Kernel `[C:1.0]` tags — Kernel wins on conflict.
+
+**S2 — Signal HUD (from EP-RA-001 v3):**
+
+EP-RA-001 v3 provides mechanical grounding for HUD annotation thresholds:
+
+- Input register drives output register ceiling (register guard applied bidirectionally)
+- Input stance drives response stance calibration (🏛️ → propositional; 🎭 → shorter, lower-commitment)
+- Verbosity scales inversely with input uncertainty (testable assertion for SIG-08)
+- Fiction Escalation Gate (US-003v3) → one-line Provisional input does not warrant ontological elaboration (feeds INV-08 Frame-Uncertainty)
+- Reality Anchor (INV-07) is subsumed into Input Signal Reading — not a separate check but a consequence of register calibration on factual claims
+
+**S3 — Schemas:**
+
+C-report has working TOML manifests for all five schema types: `lares.module@1`, `lares.tool@1`, `lares.permission@1`, `lares.registry@1`, `lares.boot@1`. Workers start from these examples (C-report §2), not blank schemas.
+
+Dual-digest model: `file_sha256` (raw bytes) vs `semantic_sha256` (normalized canonical form — UTF-8, LF, trim whitespace, sort TOML keys alphabetically, remove comments, then SHA-256). Two TOML files with different key ordering but identical semantics hash identically under `semantic_sha256`. **Caution:** semantic_sha256 computation cannot finalize without a prototype normalization run. Mark `[SP:0.45]` until tested.
+
+Cache-safety rules (C-report §6): static blocks must not contain timestamps, session tokens, or per-call-varying content. The `lares:` URI hash = content address = cache-invalidation signal. Put stable fields first in TOML (lares_uri, module_id, register, canon), volatile fields last (description, notes) — prefix composition discipline.
+
+### Reconciliation Tasks (Flag Before Promoting)
+
+| ID | Concern | Sprints | Action |
+|---|---|---|---|
+| REC-01 | C-report `canon` field (0.0–10.0 priority scale) vs D-report priority layer table — two representations of same concept, different field names | S2 + S3 | Reconcile before SCH-01 promotes |
+| REC-02 | C-report inline HUD stamping (where in turn URI appears) vs URI_SCHEMA.md §5 (how URI renders) — compatible but unverified | S1 + S2 | Workers verify no conflict; flag Council if divergent |
+| REC-03 | "Replay" language in crystal specs → rewrite as "audit trail integrity" / "state reconstruction from ledger" | S1 | Rewrite CRY-01 acceptance criteria before task execution |
 
 ```
 Sprint 0 ✅  URI Schema Settlement
@@ -116,12 +172,13 @@ Sprint 0 ✅  URI Schema Settlement
 | CRY-10 | Ephemeral Machine Patterns | S1 | `[CS:0.85]` | Draft § Ephemeral Machine Patterns | Machine lifecycle |
 | CRY-11 | REGISTRY.jsonl machine index (crystal-side) | S1 | `[S:0.70]` | Draft Pattern B | Machine model |
 | CRY-12 | Schema versioning strategy | S1 | `[CS:0.82]` | Q7 in plan | STATE.jsonl |
+| CRY-13 | `drift_correction` event type + mismatch recovery protocol | S1 | `[CS:0.82]` | `../../_todo/LIMINAL_PERSPECTIVES.md` §4 + crystal/README.md Critical Review item 4–5 | CRY-07 |
 
 ### invariants/ — Behavioral Invariants & Trust
 
 | ID | Item | Sprint | Target | Source | Blocks On |
 |---|---|---|---|---|---|
-| INV-01 | `lares.core.*` behavioral invariant registry | S2 | `[C:0.95]` | A_deep-research-report.md, D-deep-research-report.md, Kernel [C:1.0] | Crystal events |
+| INV-01 | `lares.core.*` behavioral invariant registry | S2 | `[C:0.95]` | A_deep-research-report.md, Kernel [C:1.0] | Crystal events |
 | INV-02 | Priority layer model | S2 | `[C:0.95]` | A_deep-research-report.md, EP-RA-001.md | Invariant registry |
 | INV-03 | Register guard (Canon Promotion gate) | S2 | `[C:0.95]` | Kernel § Canon Promotion gate | Invariant registry |
 | INV-04 | Trust model (4-tier) | S2 | `[C:0.95]` | TRUST_MODELS.md, Kernel § Identity & Permissions | Priority layers |
@@ -134,7 +191,7 @@ Sprint 0 ✅  URI Schema Settlement
 
 | ID | Item | Sprint | Target | Source | Blocks On |
 |---|---|---|---|---|---|
-| REG-01 | Promotion ledger schema (finalized) | S3 | `[C:0.95]` | REGISTRY_CONTRACT.md, C-deep-research-report.md (TOML registry examples) | Crystal lifecycle |
+| REG-01 | Promotion ledger schema (finalized) | S3 | `[C:0.95]` | REGISTRY_CONTRACT.md | Crystal lifecycle |
 | REG-02 | Resolver rules (full algorithm) | S3 | `[C:0.95]` | REGISTRY_CONTRACT.md | Ledger schema |
 | REG-03 | URI assignment workflow | S3 | `[C:0.95]` | lares/README.md Promotion Protocol | Resolver + ledger |
 | REG-04 | Registry index format | S3 | `[CS:0.85]` | REGISTRY_CONTRACT.md §4 | Crystal REGISTRY.jsonl |
@@ -142,7 +199,7 @@ Sprint 0 ✅  URI Schema Settlement
 | REG-06 | Alias/pointer mechanism | S3 | `[CS:0.85]` | lares/README.md three-truth model | Resolver |
 | REG-07 | Promotion event recording (append-only) | S3 | `[C:0.95]` | REGISTRY_CONTRACT.md §3.3 | Ledger schema |
 | REG-08 | End-to-end promotion walkthrough | S3 | `[C:0.95]` | lares/README.md | All registry items |
-| SCH-01 | Module descriptor schema | S3 | `[C:0.95]` | URI_SCHEMA.md §8, B-deep-research-report.md, C-deep-research-report.md (TOML manifest + cache-safety examples) | URI schema + invariants |
+| SCH-01 | Module descriptor schema | S3 | `[C:0.95]` | URI_SCHEMA.md §8, *-map.md files | URI schema + invariants |
 | SCH-02 | Tool descriptor schema | S3 | `[CS:0.85]` | B_deep-research-report.md Pattern 2 | Module schema |
 | SCH-03 | Permission descriptor schema | S3 | `[CS:0.85]` | Trust model (INV-04) | Module + tool schemas |
 | SCH-04 | `--parse` document spec schema | S3 | `[S:0.70]` | TODO_PARSE_DOC_SPEC.md | Module schema |
@@ -181,7 +238,7 @@ Sprint 0 ✅  URI Schema Settlement
    - STATE.jsonl: all 11 event types, field definitions, structural constraints, immutability rule, seq_num integrity (CRY-01)
    - Machine/Thread model: `machine_id`, 9-status taxonomy, CURRENT pointer, `run_id` (CRY-02)
    - Portable Crystal Layout: filesystem contract, file roles, separation rule, shard naming (CRY-03)
-   - HUD/Crystal Interface: two-part non-drift rule, span-level contract (CRY-07)
+   - HUD/Crystal Interface: two-part non-drift rule, span-level contract, **mismatch recovery protocol** (on header/output divergence: node flags delta inline, emits corrected end-of-span tag; STATE.jsonl records correction as authoritative via `drift_correction` event) (CRY-07 + CRY-13)
    - Schema versioning: `schema_version` field semantics, Q7 resolution (CRY-12)
 
 2. **CRYSTAL_PROTOCOLS.md** `[CS:0.85]` — Lifecycle protocols:
@@ -199,6 +256,8 @@ Sprint 0 ✅  URI Schema Settlement
 4. **HAKABA_REFERENCE.md** `[C:0.95]` — Tagspace slot reference (SIG-05):
    - Ha/Ka/Ba field semantics, vocabulary guidance, anti-collision rules
    - Coordinate consistency principles (same neighborhood → same address)
+   - **HUD instrument symbol table (all 15 symbols):** 5 stance emoji, 5 scope prefix emoji, 5 phase glyphs — keyword mapping, stability guarantee, platform rendering notes. These are locked instrument markings: any change is a breaking change, not a schema evolution.
+   - **Rendering portability baseline:** document whether each symbol renders correctly in VS Code terminal, Claude.ai chat, GitHub markdown, plain text. Fallback characters for any failures (VS16 variation selectors `🏛️`, `⚙️` are highest risk). Feeds S0-02 AC7 carry-forward.
 
 5. **AGENTS.md** + **SPRINT_1_TASKS.md**
 
@@ -208,9 +267,16 @@ Sprint 0 ✅  URI Schema Settlement
 |---|---|---|---|
 | Q7 | Schema version strategy | `[CS:0.82]` | Operator confirm |
 | Q9 | SNAPSHOT optional, recommended | `[CS:0.80]` | Operator confirm |
-| Q10 | Resume vs fork match criteria | `[S:0.60]` | Researcher task |
+| Q10 | Resume vs fork match criteria | `[S:0.60]` → `[S:0.70]` | Council briefing heuristic: SHA match on CURRENT = resume; diverge = fork. Researcher validates. |
 | Q14 | Seal trigger conditions | `[SP:0.50]` | Define protocol at C:0.95; leave trigger policy at CS:0.85 |
-| Q15 | seq_num contiguity / multi-voice | `[SP:0.45]` | Council ruling |
+| Q15 | seq_num contiguity / multi-voice | `[SP:0.45]` → `[CS:0.80]` | Council briefing candidate: seq_num = turn counter. Operator confirm. |
+
+### Pre-Loaded Context (from Council Briefing)
+
+- **REC-03:** Rewrite all "replay" language in CRY-01 acceptance criteria as "audit trail integrity" or "state reconstruction from ledger" before task execution. STATE.jsonl is an audit ledger, not a replay mechanism.
+- **REC-02:** Workers verify C-report inline HUD stamping (where in turn the URI appears) does not conflict with URI_SCHEMA.md §5 (how the URI renders). Flag Council if divergent.
+- **Q15 candidate:** C-report treats each HUD-stamped turn as having one start-URI and one end-URI. Multi-coordinator responses = one seq_num. Voices are content within a turn.
+- **GlassFloor finding (prospective commitment):** The intent header is declared *before* generation. This creates a forward-commitment contract exposing the automation-surprise failure mode from aviation CRM: when the declared header diverges from actual output, the system must annunciate. CRY-07 must include a mismatch recovery protocol (not just detection), and the `drift_correction` event type (CRY-13) must be in the event schema table. The STATE.jsonl correction record is the authoritative result; the original declared header is preserved as `declared_uri` in the drift event. Source: `../../_todo/LIMINAL_PERSPECTIVES.md` §4.
 
 ---
 
@@ -229,10 +295,11 @@ The HUD's annotation thresholds (SIG-08) depend on the priority layer model (INV
 ### Deliverables
 
 1. **INVARIANTS.md** `[C:0.95]` — Behavioral invariant registry:
-   - `lares.core.*` invariant table: ID, description, priority layer, testable assertion, source
-   - Priority layer model: Layer 0 (hard gates) → Layer 1 (Canon) → Layer 2 (Session) → Layer 3 (Exchange)
+   - `lares.core.*` invariant table: 8 invariants from D-report TOML (Workers validate against Kernel, not derive)
+   - Priority layer model: 7-layer table from D-report (invariant_schemas → system_invariants → kernel_policy → operator_intent → user_input → external_content → output_generation)
    - Register guard: Canon Promotion gate as formal invariant
-   - Reality Anchor: factual claim independence from fiction layer
+   - Reality Anchor: subsumed into Input Signal Reading per EP-RA-001 v3 — consequence of register calibration on factual claims, not separate check
+   - **REC-01 reconciliation:** C-report `canon` field (0.0–10.0) vs D-report priority layer names — resolve mapping before promotion
 
 2. **TRUST_MODEL.md** `[C:0.95]` — Trust and permissions:
    - Four-tier: `user(anon)` → `user` → `operator` → `operator(admin)`
@@ -241,12 +308,16 @@ The HUD's annotation thresholds (SIG-08) depend on the priority layer model (INV
    - `contract_update` carries authorization tier
 
 3. **BIDIRECTIONAL_PROTOCOL.md** `[CS:0.85]`:
-   - EP-RA-001: Input Signal Reading + output calibration as paired contract
+   - EP-RA-001 v3: Input Signal Reading + output calibration as paired contract
+   - Mechanical grounding from EP-RA-001: input register → output register ceiling; input stance → response calibration; verbosity scales inversely with input uncertainty (all testable assertions)
+   - Fiction Escalation Gate (US-003v3): one-line Provisional input ≠ ontological elaboration warrant
    - Degraded-node detection: testable assertions per failure mode
-   - Frame-Uncertainty Protocol: three-move invariant chain
+   - Frame-Uncertainty Protocol: three-move invariant chain (INV-08)
 
 4. **INTENT_HEADER.md** `[CS:0.85]`:
    - Format and forward-commitment semantics
+   - **SA display framing (not XAI):** Header is prospective — declares what the node will do; `--verbose` + STATE.jsonl audit trail are the retrospective XAI layer. Design methodology is Endsley's SAOD, not SHAP/LIME patterns.
+   - **SAOD design process:** Apply three-phase methodology — (1) SA Requirements Analysis via GDTA (what operators need at each SA level per goal); (2) SA-Oriented Design Principles (present Level 2 info directly; support Level 3 projection; organize by goals; support global SA); (3) SA Measurement and Validation (SAGAT or equivalent). SAOD replaces ad-hoc HUD format invention with a validated HCI methodology.
    - Header Field Taxonomy: per-field thresholds keyed to p-band
    - Forward vs backward trace contract
 
@@ -254,16 +325,31 @@ The HUD's annotation thresholds (SIG-08) depend on the priority layer model (INV
    - Five-band cumulative attention model
    - p ↔ chronometer depth interaction (U4 resolution attempt)
    - Micro-trace HUD annotation rules per band
+   - **Cognitive load manager framing (primary function) `[CS:0.80]`:** Aviation HUD research (Lee 2024) shows excessive HUD symbology creates attentional tunneling — the operator fixates on the HUD and misses the content beneath it. p-band is first a *cognitive load management control*, not just an attention density label. In a text stream, HUD cost is proportional to reading time (not visual complexity), so the threshold dynamics differ from graphical HUDs — but the failure mode (comprehension of actual content degraded by over-reading the HUD) is structurally identical. Lower p = simpler annotation = reduced capture risk; higher p = denser annotation = higher operator SA but higher capture risk.
+   - **Token budget framing (secondary design assertion to test, not assume):** p-band = cognitive load control → also governs token budget allocation. Higher p → denser annotation → more tokens spent on HUD metadata. Hypothesis: the steering effect (preventing wrong-register generation) offsets the metadata cost; net token usage is lower with HUD than without. This is a design assertion, not a background assumption — state it with test criteria. Deferred measurement: see BKL-05.
 
 6. **AGENTS.md** + **SPRINT_2_TASKS.md**
 
+### Pre-Loaded Context (from E-deep-research-report.md)
+
+- **SA type coverage is novel:** The Lares HUD simultaneously covers all three SA types (Taskwork / Agent / Teamwork SA). Most existing AI transparency tools cover only Agent SA. This scope should be stated explicitly in INTENT_HEADER.md as a design goal, not just an emergent property.
+- **SAOD three-phase methodology (§1.3):** SA Requirements Analysis uses Goal-Directed Task Analysis (GDTA) — enumerate operator goals, then for each goal enumerate what perceptual data, Level 2 comprehension, and Level 3 projections are needed. The current HUD design should be reverse-mapped through GDTA to verify coverage before INTENT_HEADER.md is finalized.
+- **Prospective vs retrospective split (§2):** INTENT_HEADER.md spec should open with the SA-display / XAI distinction. The micro-trace `→[tag]` marks are the annunciation protocol for Level 3 SA projection corrections — not a debugging artifact. This reframe belongs in the spec's design intent section.
+- **Cognitive capture in text streams (§4.3):** Unlike graphical HUDs, the text HUD's cost is sequential (reading time), not spatial (visual field capture). This means P_BAND_MODEL.md should model cognitive load as a reading-time budget, not a visual-complexity score. The HUD competes with content for the *same attentional channel* (reading). Capture mode looks like: operator reads header token-by-token, loses comprehension anchor for the following prose.
+- **Bidirectional SA contract — the ATSA model (§5.2):** Gao 2023 proposes ATSA (Agent Teaming SA) as the theoretical framework for HAT where both parties are autonomous SA agents. The Lares dual-tag system (input reading + output header) is a concrete ATSA implementation. No existing deployed system was found in the literature that does this in real-time text interaction. BIDIRECTIONAL_PROTOCOL.md should cite ATSA as the grounding framework.
+- **LLM metacognitive space (§3.3):** The restricted metacognitive space finding (Ji-An 2025) means the HUD's self-monitoring reliability is channel-dependent. INTENT_HEADER.md should note which channels are expected to have higher vs lower declaration fidelity: register and stance (semantically interpretable, high-variance → more monitorable) vs phase and chronometer (structural/procedural → more confabulation risk).
+
 ### Key Sources (read before sprint opens)
 
+- `D_deep-research-report.md` — `[CS:0.82]` 8 invariants in TOML form + 7-layer priority table. **Start here for INV-01, INV-02.**
+- `EP-RA-001.md` v3 — bidirectional register/stance protocol; foundational for INV-05, SIG-04, SIG-08. **Start here for all HUD threshold work.**
 - `A_deep-research-report.md` — `[S:]` external synthesis; grounds invariants but is not canon itself
-- `EP-RA-001.md` — bidirectional register/stance protocol; foundational
+- `C_deep-research-report.md` — `[CS:0.82]` TOML manifest examples for all 5 schema types (feeds S3 but informs S2 invariant structure)
 - `TRUST_MODELS.md` — admin governance trust model
 - `TODO_Resolution_Scale_Design.md` — p-band model source
-- Kernel `[C:1.0]` tags — the invariant registry must align with these; Kernel wins on conflict
+- Kernel `[C:1.0]` tags — the invariant registry must align with these; **Kernel wins on any conflict with research reports**
+- `../../_todo/LIMINAL_PERSPECTIVES.md` — `[S:0.65]` — outsider analysis; specifically: (a) p-band/token budget relationship as testable design assertion (feeds P_BAND_MODEL.md); (b) progressive disclosure / HUD onboarding sequence (feeds HAKABA_REFERENCE.md SIG-05 and INTENT_HEADER.md); (c) 7-channel cognitive load on new operators. Not a primary design source but feeds three S2 open decisions (SHD-01 through SHD-03 in `../signal/README.md`).
+- `../../_todo/E-deep-research-report.md` — `[S:0.70]` — 40+ source research synthesis. **Start here for P_BAND_MODEL.md (cognitive capture §4.1) and INTENT_HEADER.md (SAOD methodology §1.3, SA vs XAI §2.1).** Key sections: §1.1 Endsley three-level SA; §1.2 SA type mapping (all 7 HUD channels); §1.3 SAOD three-phase process; §2 prospective vs retrospective transparency; §3 LLM metacognition; §4.1 cognitive capture/attentional tunneling; §5.2 ATSA bidirectional contract (feeds BIDIRECTIONAL_PROTOCOL.md). Not primary design source — research grounding for methodology choices.
 
 ---
 
@@ -316,10 +402,18 @@ The old Sprint 4 (Compiler) was designed around a build pipeline that doesn't ex
 
 | Q# | Description | Current | Action |
 |---|---|---|---|
-| R1 | Ledger format: JSONL vs markdown | `[S:0.65]` | Lock JSONL |
-| R2 | Version scheme: hash vs semver | `[SP:0.45]` | Hash primary, semver label |
-| R3 | Ledger location: design tree vs crystal tree | `[S:0.55]` | Operator call |
+| R1 | Ledger format: JSONL vs markdown | `[S:0.65]` | Lock JSONL (aligns with STATE.jsonl) |
+| R2 | Version scheme: hash vs semver | `[SP:0.45]` → `[CS:0.85]` | Council briefing: hash primary (SHA-256), semver as `version_label`. C-report §4 grounds it. |
+| R3 | Ledger location: design tree vs crystal tree | `[S:0.55]` → `[CS:0.80]` | Council briefing: promotion ledger = design tree; session audit = crystal tree. Different concerns. |
 | R4 | Resolver: runtime tool vs design reference | `[S:0.60]` | Lock design reference for alpha |
+
+### Pre-Loaded Context (from Council Briefing)
+
+- **Schema starting points:** C-report §2 has working TOML examples for all 5 types (`lares.module@1`, `lares.tool@1`, `lares.permission@1`, `lares.registry@1`, `lares.boot@1`). Workers start from these, not blank schemas.
+- **Dual-digest caution:** `semantic_sha256` (normalized form) cannot finalize without a prototype normalization run. Mark `[SP:0.45]` until tested. `file_sha256` (raw bytes) is straightforward.
+- **Cache-safety (C-report §6):** Stable fields first in TOML (`lares_uri`, `module_id`, `register`, `canon`), volatile fields last (`description`, `notes`). URI hash = content address = cache-invalidation signal.
+- **REC-01:** Reconcile C-report `canon` field (0.0–10.0 scale) with D-report priority layer names before SCH-01 promotes. Two representations, same concept.
+- **Invariant-core loading sequence (SCH-07):** D-report priority layer table is the authoritative ordering. Confirm C-report `canon` numeric scale maps cleanly onto it.
 
 ---
 
@@ -418,12 +512,21 @@ S0 URI ────────────────────────�
 | Q12 | AGENTS.md auto-update autonomy | `[SP:0.45]` | Operator preference; not blocking |
 | Q13 | External input recording in STATE.jsonl | `[S:0.60]` | Researcher task; not blocking alpha |
 | Q17 | seq_num version semantics for canon modules | `[S:0.70]` | Architecture-open; can settle post-S3 |
-| BKL-01 | ENG-01 test harness for STATE.jsonl replay | `[S:0.65]` | Implementation, not design; post-S4 |
+| BKL-01 | ENG-01 test harness for STATE.jsonl audit trail integrity | `[S:0.65]` | Implementation, not design; post-S4. (Council briefing: rewrite "replay" → "audit trail integrity") |
 | BKL-02 | Parse trigger design | `[S:0.55]` | Depends on p-band + Intent Header |
 | BKL-03 | Custom agent template (`.github/agents/*.agent.md`) | `[S:0.65]` | Lower priority than SKILL.md; assess post-S4 |
 | BKL-04 | Quick browser tier (OP-11 deferred) | `[S:0.50]` | Confirm deferral still holds at S4 |
 | CMP-08 | Prompt engineering patterns → PROMPTCRAFT_GUIDE.md | `[S:0.65]` | Moved to S4 as deployment guidance |
+| BKL-05 | Empirical HUD token measurement: compare total token usage with / without HUD across a sample session set; assess whether steering effect (fewer wasted elaborations/revisions) offsets metadata cost. Validates P_BAND_MODEL.md token budget assertion. | `[S:0.60]` | Post-S4; implementation + measurement sprint; does not block design. |
+| BKL-06 | HUD training mode prototype: node explains each HUD element as it first appears, then drops the explanation in subsequent responses. Progressive disclosure activation. Addresses 7-channel cognitive load on new operators. | `[SP:0.45]` | Post-S4; depends on progressive disclosure model (SHD-03) settling at S2. |
+| RES-01 | Adopt SAOD three-phase process as the formal design methodology for HUD format (SA Requirements Analysis → SA-Oriented Design Principles → SA Measurement and Validation). Grounds INTENT_HEADER.md design decisions in validated HCI methodology. | `[S:0.65]` | S2 — feeds INTENT_HEADER.md. Source: Endsley & Jones 2024 (§1.3). |
+| RES-02 | Empirical A/B test: HUD-on vs HUD-off response quality, token usage, and operator comprehension. Primary validation for BKL-05 token budget assertion and the steering-effect hypothesis. | `[P:0.30]` | Post-S4; novel research — no prior art; requires measurement infrastructure. |
+| RES-03 | Calibration testing: does the node's declared register match independent human assessments of the actual response epistemic quality? Identifies calibration gaps by channel. | `[S:0.55]` | Post-S4. Source: Steyvers 2025 (metacognition calibration gaps in frontier LLMs). |
+| RES-04 | Progressive disclosure design: formal HUD complexity ramp over session lifetime, keyed to operator mental model development. Shared mental models develop through interaction (Van den Bossche 2011) — the first few exchanges carry highest SA error risk. | `[S:0.60]` | Post-S4; depends SHD-03. Source: Van den Bossche 2011 + Endsley mental model theory. |
+| RES-05 | Cognitive load measurement for text-based HUD: measure reading time and comprehension impact of varying p-band levels. HUD visual complexity causes attentional tunneling (Lee 2024) but text-stream modality differs — modality-specific measurement required. | `[P:0.30]` | Post-S4; depends on BKL-05 measurement infra. |
+| RES-06 | Which HUD channels can the model genuinely self-monitor vs which are confabulated? Map register, stance, phase, and chronometer against the restricted metacognitive space finding (Ji-An 2025). Empirical question requiring structured elicitation. | `[P:0.25]` | Post-S4; foundational for long-term HUD calibration. Source: Ji-An 2025 (§3.3). |
+| RES-07 | Formally classify the Lares HUD as an SA display system in spec language (not a URI scheme or prompt template). Adopt Endsley SA terminology throughout signal/ README and INTENT_HEADER.md prose. Framing change, not technical change. | `[CS:0.80]` | S2 — applies during INTENT_HEADER.md drafting. Source: Endsley 2023 (SA vs XAI distinction). |
 
 ---
 
-*This roadmap is `[S:0.70]` planning synthesis, revised from Rev 1 based on refinement findings. The compiler pipeline elimination simplifies the path from 5 sprints to 4 without losing any load-bearing design work. Sprint details refine as each sprint opens. The operator holds the tiller on sequencing, scope, and promotion gates.*
+*This roadmap is `[CS:0.80]` planning synthesis (Rev 3). Revised from Rev 1 (refinement findings → 5→4 sprints) and Rev 2 (council briefing → pre-loaded research per sprint). The deep-research audit eliminates cold-start research in S1–S3 and raises four open questions to near-promotable. Sprint details refine as each opens. The operator holds the tiller on sequencing, scope, and promotion gates.*
