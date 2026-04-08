@@ -12,13 +12,13 @@ All mutable state belongs in TODO and audit files, not here.
 
 Use these as the live control surfaces:
 
-- `_todo/TODO_BECMI_Conversion.md` for active queue, active focus, and execution log.
-- `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` for import tracker state (`Ch06 Import`, `osr: imported`) and review queue.
-- `_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md` for doctrine decisions and mapping policy.
+- `_todo/BECMI/TODO_BECMI_Conversion.md` for active queue, active focus, and execution log.
+- `_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md` for import tracker state (`Ch06 Import`, `osr: imported`) and review queue.
+- `_todo/BECMI/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md` for doctrine decisions and mapping policy.
 
 Audit reports have been archived to commit history and are no longer present as live files.
 
-**When starting a new session, read `_todo/TODO_BECMI_Conversion.md → ## Active Focus` first. That section identifies the on-fire item — the exact next action — before the general queue.**
+**When starting a new session, read `_todo/BECMI/TODO_BECMI_Conversion.md → ## Active Focus` first. That section identifies the on-fire item — the exact next action — before the general queue.**
 
 If a line in this file requires a date, counter, status color, or "current blocker" wording, it belongs in a TODO or audit file instead.
 
@@ -28,13 +28,13 @@ If a line in this file requires a date, counter, status color, or "current block
 - Primary manuscript targets:
 	- `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`
 	- `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
-- Chapter sequencing policy and active execution order are tracked in `_todo/TODO_BECMI_Conversion.md`.
+- Chapter sequencing policy and active execution order are tracked in `_todo/BECMI/TODO_BECMI_Conversion.md`.
 
 ## Locked Formula
 
 `P: = max(1, BECMI Spell Level x 2)`
 
-Treat this as stable unless doctrine is explicitly revised in `_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`.
+Treat this as stable unless doctrine is explicitly revised in `_todo/BECMI/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`.
 
 ## Operator Loop (Targeted OSR Power)
 
@@ -78,20 +78,20 @@ Semantics:
 
 Stable references only:
 
-- `_todo/TODO_BECMI_Conversion.md`
-- `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`
-- `_todo/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Basic.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Expert.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Companion.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Master.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Immortals.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`
-- `_todo/TODO_PRE_ADD_Spell_Staging.md`
-- `_todo/TODO_FTLS_Chapter_Action_Plan.md`
-- `_todo/TODO_Magitech_Fantascience_Chapter05.md`
-- `_todo/TODO_Lares_Chapter05_Agent_Prompt.md`
+- `_todo/BECMI/TODO_BECMI_Conversion.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Effect_Conversion_Doctrine.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Expert.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Master.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`
+- `_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md`
+- `_todo/FTLS/TODO_FTLS_Chapter_Action_Plan.md`
+- `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`
+- `_todo/FTLS/TODO_Lares_Chapter05_Agent_Prompt.md`
 - `_todo/AUDIT_REPORT_Doctrine_APPROVAL_2026-03-31.md`
 - `_todo/AUDIT_REPORT_Confidence_Ratings.md`
 

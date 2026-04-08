@@ -17,7 +17,7 @@ Lares prompt system patch release: cold-boot HUD and trust-gate drift fix, plus 
 - Compressed rule now states explicitly: libations and roleplay do not count as escalation
 
 **Planning / release hygiene**
-- Logged the Codex cold-boot bug note and AE-28 shared-kernel hardening follow-up in `_todo/TODO_Signal_HUD_Crystal_Plan.md`
+- Logged the Codex cold-boot bug note and AE-28 shared-kernel hardening follow-up in `_todo/core/TODO_Signal_HUD_Crystal_Plan.md`
 - Re-ran `combine_agents.py` across all targets and verified alignment clean at 49/49
 
 ## [v4.0] — 2026-04-07
@@ -47,7 +47,7 @@ Major Lares prompt system update: Signal HUD kernel bootstrap, five-platform man
 - Operator alignment answers recorded: structural replay in STATE.jsonl / enriched in debug.jsonl; seal protocol alpha-contractual; schema versioning needs researcher
 
 **Implementation plan**
-- Created `_todo/TODO_Signal_HUD_Crystal_Plan.md` — five-epic implementation plan with dependency map, 16 tracked open decisions, sprint-level task tables, crystal draft extension plan (consolidated from session research), verification criteria, scope constraints
+- Created `_todo/core/TODO_Signal_HUD_Crystal_Plan.md` — five-epic implementation plan with dependency map, 16 tracked open decisions, sprint-level task tables, crystal draft extension plan (consolidated from session research), verification criteria, scope constraints
 
 **Operator rulings resolved**
 - OP-01: Inline-by-default confirmed; OTel SpanEvent model; `p` governs categories not salience
@@ -354,4 +354,4 @@ Lares prompt system update: handoff integration from session 2026-04-05.
 
 FTLS **Open Beta** baseline. Lares agent architecture established at v3.0.
 
-Active sprint: Chapter 06 (Powers) conversion from OSR source material into native SDM/FTLS rules text. See [`_todo/TODO_BECMI_Conversion.md`](_todo/TODO_BECMI_Conversion.md) for pipeline state.
+Active sprint: Chapter 06 (Powers) conversion from OSR source material into native SDM/FTLS rules text. See [`_todo/BECMI/TODO_BECMI_Conversion.md`](_todo/BECMI/TODO_BECMI_Conversion.md) for pipeline state.

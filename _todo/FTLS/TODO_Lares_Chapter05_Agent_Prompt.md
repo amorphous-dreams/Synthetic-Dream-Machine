@@ -61,8 +61,8 @@ Use these sources in this order when making conversion decisions:
 6. `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md`, `SDM/Our_Golden_Age/Our_Golden_Age.md`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md` as style guides, not mechanical canon
 
 Primary conversion governance docs:
-- `_todo/TODO_Magitech_Fantascience_Chapter05.md`
-- `_todo/TODO_BECMI_Conversion.md`
+- `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`
+- `_todo/BECMI/TODO_BECMI_Conversion.md`
 
 Primary manuscript target:
 - `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
@@ -72,7 +72,7 @@ Primary manuscript target:
 - Numeric ontology doctrine is already locked and partially applied.
 - Class locks and most D&D ability-score language have already been removed or reduced.
 - Armor/shield Defense has already been corrected to SDM additive armor bonuses and should be treated as the model example for `retain API, replace internals`.
-- `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md` now contains the full flat spell/effect catalog, preserved cross-tradition class/spell tags, and the SDM-first grouped module workspace.
+- `_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md` now contains the full flat spell/effect catalog, preserved cross-tradition class/spell tags, and the SDM-first grouped module workspace.
 - Grouped `partial` rows have already been synced back into Phase 1. Current crosswalk work is focused on Chapter 06 multi-witness `osr:` import, tracker-state updates, and keeping the crosswalk tracker state current as `osr:` import progresses.
 - `_todo/` docs already contain:
   - `State of Play`

@@ -9,13 +9,13 @@ Rules for this artifact:
 - The staged spell source docs remain the frozen upstream truth; this file is the primary downstream import source for Chapter 06.
 
 Upstream source files:
-- `_todo/TODO_PRE_ADD_Spell_Staging.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Basic.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Expert.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Companion.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Master.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Immortals.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`
+- `_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Expert.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Master.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`
 
 ## Cure Light Wounds
 

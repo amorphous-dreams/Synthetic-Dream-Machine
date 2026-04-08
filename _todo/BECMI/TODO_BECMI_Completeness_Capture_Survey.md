@@ -69,9 +69,9 @@ The existing staging scripts extract by *section*: they know where the spell des
 | --- | --- | --- | --- |
 | 2a. Core search loop: for each spell name + aliases × each source file, find all line-number hits with ±6 line context window | `ScanRig(Builder)` | ✓ | Reuse `norm`, `spell_aliases` from `build_becmi_spell_staging_multi.py` |
 | 2b. Noise filters: auto-classify ToC lines, spell-list table rows, index page hits | `NoiseCut(Classifier)` | ✓ | Regex + heuristic classifiers on context window |
-| 2c. Already-staged filter: test whether hit context overlaps text already in the individual lane staging files | `StagedCheck(Deduper)` | ✓ | Sliding-window text match against `_todo/TODO_BECMI_Spell_Material_Staging_*.md` |
+| 2c. Already-staged filter: test whether hit context overlaps text already in the individual lane staging files | `StagedCheck(Deduper)` | ✓ | Sliding-window text match against `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_*.md` |
 | 2d. Alias + fuzzy-match: Fire Ball/Fireball, Pass-Wall/Passwall, standalone reversals (Finger of Death, Darkness, Continual Darkness) | `AliasMap(Resolver)` | ✓ | Extends existing `spell_aliases` dict; records match form in hit report |
-| 2e. Output: Markdown table hit report; columns: Spell \| Source Book \| Line # \| Auto-Class \| Context Preview \| Staging Match \| Decision; `check`/`write` modes; `--spell`, `--book`, `--min-class`, `--module` flags | `HitLog(Reporter)` | ✓ | `--write` outputs to `_todo/TODO_Completeness_Survey_Hits.md` |
+| 2e. Output: Markdown table hit report; columns: Spell \| Source Book \| Line # \| Auto-Class \| Context Preview \| Staging Match \| Decision; `check`/`write` modes; `--spell`, `--book`, `--min-class`, `--module` flags | `HitLog(Reporter)` | ✓ | `--write` outputs to `_todo/BECMI/TODO_Completeness_Survey_Hits.md` |
 
 ---
 
@@ -152,7 +152,7 @@ The existing staging scripts extract by *section*: they know where the spell des
 **Scale estimate:** 196 crosswalk rows × ~6 lanes; likely ~50–80 rows require manual confirmation once list-only entries are mapped in Story 7.
 
 **8a/8b findings (2026-04-03):**
-- `--coverage` mode added to `survey_spell_completeness.py`; report written to `_todo/TODO_Completeness_Survey_Coverage.md`
+- `--coverage` mode added to `survey_spell_completeness.py`; report written to `_todo/BECMI/TODO_Completeness_Survey_Coverage.md`
 - Totals by lane: Basic ✓34/~0/✗0 | Expert ✓79/~14/✗0 | Companion ✓66/~7/✗0 | Master ✓40/~36/✗0 | Immortals ✓0/~3/✗0 | RC ✓187/~0/✗0
 - **Description-gap count: 0** — no spell with a traceable BECMI/RC source lane has zero descriptions staged; all "no-description" entries are Holmes-only source (`_norm_lane()` returns None) — not a gap in BECMI staging
 - **Holmes-only/no-std-source: 9** (Dancing Lights, Enlargement, Audible Glamer, Clairaudience, Magic Mouth, Pyrotechnics, Ray of Enfeeblement, Slow, Strength) — covered via pre-add staging (`TODO_BECMI_Spell_Material_Staging.md`); low priority
@@ -285,7 +285,7 @@ A hit is **incidental** if it:
 
 ## Hit Report
 
-Active hit report: `_todo/TODO_Completeness_Survey_Hits.md` (created by `survey_spell_completeness.py --write`)
+Active hit report: `_todo/BECMI/TODO_Completeness_Survey_Hits.md` (created by `survey_spell_completeness.py --write`)
 
 ---
 

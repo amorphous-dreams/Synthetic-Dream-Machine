@@ -4,8 +4,8 @@
 Convert BECMI/RC magic-item procedures into SDM chapter-ready form using the current canonical SDM model:
 - Core mechanics baseline: `Synthetic_Dream_Machine_01_Quickstart.md`
 - Gear/item/vehicle table surface: `Synthetic_Dream_Machine_05_Gear_Index.md` (near-final, catalog-focused)
-- Conversion-governance master: `_todo/TODO_BECMI_Conversion.md`
-- Loot integration acceptance: `_todo/TODO_Loot_Treasure_Conversion.md`
+- Conversion-governance master: `_todo/BECMI/TODO_BECMI_Conversion.md`
+- Loot integration acceptance: `_todo/FTLS/TODO_Loot_Treasure_Conversion.md`
 
 This TODO is the execution tracker for magic-item conversion specifically.
 
@@ -168,7 +168,7 @@ Sequencing lock status (2026-04-01):
 - Use `Power Level` for storage, eligibility, and capacity.
 - Use `Level` for source force, dispel/counterforce, summon strength, and curse removal strength.
 - Add TODO-side bridge notes for ambiguous or unmapped classic spell names.
-- Minimum viable bridge inputs now live in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`, but that document is now being expanded into the full canonical spell crosswalk for Chapter 06 rather than remaining a Chapter 05-only bridge sheet.
+- Minimum viable bridge inputs now live in `_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md`, but that document is now being expanded into the full canonical spell crosswalk for Chapter 06 rather than remaining a Chapter 05-only bridge sheet.
 - Phase B should explicitly clear these bridge tasks before any Phase C module conversion resumes:
   - confirm seeded crosswalk coverage for the Chapter 05 recognizer set,
   - confirm the seeded entries keep current `direct`, `partial`, `custom`, or `undecided` status after each focused cleanup,
@@ -346,7 +346,7 @@ Sequencing lock status (2026-04-01):
 
 ## Validation Checklist
 - [ ] Crosswalk completeness reviewed for all targeted magic-item families.
-- [x] Phase B recognizer set seeded and reviewed in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
+- [x] Phase B recognizer set seeded and reviewed in `_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md`.
 - [x] Phase B bridge batch 1 landed in Chapter 05 for deferred staff/ring recognizer bundles (`Staff of Elemental Power`, `Staff of Power`, `Staff of Wizardry`, `Spell Eating`, `Spell Storing`).
 - [ ] Chapter 06 design decisions locked and Chapter 06 `alpha` status confirmed before new Chapter 05 batches.
 - [ ] Chapter 05 flow run-through completed for at least 3 item families.
@@ -387,9 +387,9 @@ Sequencing lock status (2026-04-01):
 - Preserve classic spell/effect names only as recognizers until the Phase B bridge assigns them explicit SDM `power` behavior.
 
 ## Dependencies and Coordination
-- Depends on boundary lock in `_todo/TODO_SDM_Gear_Index_Master.md`.
-- Must stay compatible with acceptance model in `_todo/TODO_Loot_Treasure_Conversion.md`.
-- Must follow overlay standards in `_todo/TODO_BECMI_Conversion.md`.
+- Depends on boundary lock in `_todo/FTLS/TODO_SDM_Gear_Index_Master.md`.
+- Must stay compatible with acceptance model in `_todo/FTLS/TODO_Loot_Treasure_Conversion.md`.
+- Must follow overlay standards in `_todo/BECMI/TODO_BECMI_Conversion.md`.
 
 ## Out of Scope
 - Owning or redefining the full staged spell corpus itself; that work now belongs to the active spell-staging and spell-crosswalk phase feeding Chapter 06.

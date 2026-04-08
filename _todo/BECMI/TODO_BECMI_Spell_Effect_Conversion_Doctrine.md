@@ -1408,7 +1408,7 @@ Covers powers whose primary effect is light emission, darkness manipulation, pri
 
 ### Step 1 — Create temp file
 
-Create `_todo/TODO_Ch06_Temp_Structure.md` and copy the full current contents of `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` into it. The original chapter file is unmodified until the temp passes QA.
+Create `_todo/BECMI/TODO_Ch06_Temp_Structure.md` and copy the full current contents of `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` into it. The original chapter file is unmodified until the temp passes QA.
 
 ### Step 2 — Restructure headers in temp file
 

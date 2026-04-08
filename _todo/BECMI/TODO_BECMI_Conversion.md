@@ -26,14 +26,14 @@ Base model (locked):
 - Numeric ontology is locked policy for active conversion work: BECMI level, HD, and spell-tier references already map to SDM `Level` and `Power Level`.
 - Class locks and most D&D ability-score terminology have already been removed or reduced in active chapter conversion.
 - Armor/shield Defense has been corrected from descending AC assumptions to SDM additive armor bonuses.
-- The full staged spell corpus now exists across `_todo/TODO_PRE_ADD_Spell_Staging.md` and the six `_todo/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md`.
+- The full staged spell corpus now exists across `_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md` and the six `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_*.md` files and feeds a live crosswalk workspace in `_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md`.
 - That crosswalk now has a flat canonical catalog, preserved cross-tradition class/spell tags, an SDM-first grouped module layer, and completed grouped-`partial` to Phase 1 sync.
 - Method correction (2026-03-23): staging docs should contain scraped/curated source text from `_becmi` extraction, not synthesized context overlays.
 - The Chapter 06 multi-witness `osr:` preservation import pass is complete (2026-04-01; 203/204 rows `osr: imported = yes`, 1 `[needs-review]`). Next gate: Ch06 alpha verification before Chapter 05 bridge work resumes.
 
 ## Execution Lock Snapshot (2026-03-28)
 
-- **Staging corpus**: the staged lane docs (`_todo/TODO_PRE_ADD_Spell_Staging.md` and the six BECMI lane files) are frozen as the legal upstream witness base, and the clean multi-witness staging file is the legal downstream Chapter 06 import source.
+- **Staging corpus**: the staged lane docs (`_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md` and the six BECMI lane files) are frozen as the legal upstream witness base, and the clean multi-witness staging file is the legal downstream Chapter 06 import source.
 - **Confidence gate**: approved working infrastructure at `0.90 / 1.00` floor-based after the 2026-03-28 audit.
 - **Chapter 06 design decisions**: locked.
 - **Chapter 06 alpha**: `osr:` import pass complete (2026-04-01); alpha verification pending (tag consistency, overcharge consistency, recognizer discoverability, Level/Power Level boundaries).
@@ -210,8 +210,8 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 - Apply `Level` for force-of-source, dispel/counterforce, summon strength, and curse-removal strength.
 - Record ambiguous classic spell names in TODO notes rather than leaving them implicit in chapter prose.
 - Phase B execution order is locked for this pass: Chapter 06 design decisions -> Chapter 06 alpha completion -> Chapter 05 bridge continuation.
-- Phase B operational queue source: `_todo/TODO_BECMI_Spell_Effect_Crosswalk.md -> Phase B Backlog: Chapter 06 osr: Import`.
-- Phase B Chapter 06 import pipeline is now two-step: regenerate `_todo/TODO_BECMI_Spell_Material_Staging.md`, then import those witness bundles into `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`.
+- Phase B operational queue source: `_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md -> Phase B Backlog: Chapter 06 osr: Import`.
+- Phase B Chapter 06 import pipeline is now two-step: regenerate `_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md`, then import those witness bundles into `Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`.
 
 ### Phase C: module-by-module Internal Conversion
 - Convert item families in a fixed order:
@@ -240,11 +240,11 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 
 ## Active Linked TODOs
 - Loot/Treasure stabilized plan:
-  - `_todo/TODO_Loot_Treasure_Conversion.md`
+  - `_todo/FTLS/TODO_Loot_Treasure_Conversion.md`
 - Magitech Chapter 05 alignment:
-  - `_todo/TODO_Magitech_Fantascience_Chapter05.md`
+  - `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`
 - SDM consolidation master:
-  - `_todo/TODO_SDM_Gear_Index_Master.md`
+  - `_todo/FTLS/TODO_SDM_Gear_Index_Master.md`
 
 
 ## Active Focus
@@ -384,7 +384,7 @@ The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## 
 ## Future TODO Passes
 
 ### F1: Spells -> Powers
-- [x] Treat `_todo/TODO_BECMI_Spell_Material_Staging.md` as the canonical staged spell corpus for this pass.
+- [x] Treat `_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md` as the canonical staged spell corpus for this pass.
 - [x] Preserve canonical OSR spell names as the primary crosswalk row keys and Chapter 06 lookup surface.
 - [x] Record existing stylized entries from `Synthetic_Dream_Machine_04_Powers_Index.md` as named SDM variants with `see` handling, not as replacements for canonical spell names.
 - [x] Define fallback policy for unmatched spells (`direct map`, `partial map`, `custom power required`, `undecided`).
@@ -415,8 +415,8 @@ The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## 
   - consumable/charged item path,
   - cursed/complication-bearing item path.
 - [ ] Use Chapter 05 armor/shield conversion as the model pattern for `retain BECMI API surface, replace internal mechanics`.
-- **Pre-F2 upstream Epic (planned):** After the metaphysics/world-ontology terms scan (follow-on to the Completeness Capture Epic), run a dedicated full-text extraction Epic targeting all Magical Items and Artifacts blocks across the BECMI/RC corpus. This Epic feeds F2 with source-evidence anchors rather than relying on spell completeness cross-references alone. See `_todo/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B2` for scope detail.
-- **Backlogged RC procedure:** RC `Dispel Magic Attacks` / enchanted vessel interaction rule (rc_full.txt L18814–18833) is deferred to Chapter 05 and tracked at `_todo/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B1`.
+- **Pre-F2 upstream Epic (planned):** After the metaphysics/world-ontology terms scan (follow-on to the Completeness Capture Epic), run a dedicated full-text extraction Epic targeting all Magical Items and Artifacts blocks across the BECMI/RC corpus. This Epic feeds F2 with source-evidence anchors rather than relying on spell completeness cross-references alone. See `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B2` for scope detail.
+- **Backlogged RC procedure:** RC `Dispel Magic Attacks` / enchanted vessel interaction rule (rc_full.txt L18814–18833) is deferred to Chapter 05 and tracked at `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B1`.
   
 
 ### Other Passes

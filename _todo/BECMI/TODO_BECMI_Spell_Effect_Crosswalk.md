@@ -9,13 +9,13 @@ Purpose:
 - support the broader `Spells -> Powers` conversion pass
 
 Source corpus:
-- `_todo/TODO_PRE_ADD_Spell_Staging.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Basic.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Expert.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Companion.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Master.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Immortals.md`
-- `_todo/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`
+- `_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Basic.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Expert.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Companion.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Master.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md`
+- `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`
 
 Rules for this artifact:
 - This is a crosswalk workspace, not a source-text staging file.
@@ -195,7 +195,7 @@ This is the execution backlog for the first downstream phase after the staging-c
 ### Gate And Freeze
 
 6. Record the import gate as open only when the staging corpus remains frozen, provenance stays at required confidence, the exception ledger remains verified, and the clean multi-witness staging file remains reproducible from the frozen lane docs.
-7. Treat the staged spell source set (`_todo/TODO_PRE_ADD_Spell_Staging.md` and the six BECMI lane staging docs) as the only legal upstream witness base for `osr:` imports, and `_todo/TODO_BECMI_Spell_Material_Staging.md` as the primary downstream import source. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
+7. Treat the staged spell source set (`_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md` and the six BECMI lane staging docs) as the only legal upstream witness base for `osr:` imports, and `_todo/BECMI/TODO_BECMI_Spell_Material_Staging.md` as the primary downstream import source. Do not copy from PDFs, OCR scratch files, or ad hoc notes once this phase begins.
 8. Keep the current exception doctrine in force:
    - verified `RC`-only rows remain `RC`-only exceptions,
    - verified `Master`-only procedures remain `Master`-only exceptions,
