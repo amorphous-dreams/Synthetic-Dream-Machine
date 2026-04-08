@@ -1,23 +1,33 @@
 # `lares:` URI Schema — Canonical Specification
 
-> Domain: `lares/signal/` · URI scheme anatomy, projection model, validation rules
+> Domain: `lares/signal/` · intent HUD anatomy, co-primary encodings, validation rules
 > Status: `[CS:0.85]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
 > Updated: 2026-04-08
 > Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art
-> Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; `lares/compiler/` module descriptor `lares_uri` field
+> Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
 > Candidate URI: `lares://core/design/signal/uri-schema@CS:0.85`
 
 ---
 
 ## 1. Design Intent
 
-The `lares:` URI encodes the full signal state of a Lares node exchange in a single string whose **machine form** conforms to RFC 3986 generic syntax. Each URI component carries a distinct, non-overlapping concern across three semantic layers:
+The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD that both operator and node read before or alongside generation. In persistence it functions as a structured record string suitable for logs, validation, and registry metadata.
 
-1. **WHERE** — the HAKABA address (path) locates semantic territory
-2. **HOW** — signal parameters (query) describe stance, register, p
-3. **WHEN** — the chronometer (fragment) locates position in nested time
+Each URI component carries a distinct, non-overlapping concern across four semantic layers:
 
-The URI serves as both a human-readable annotation (sigil form) and a machine-parseable identifier (machine form). The two forms share identical structure; only glyph/keyword rendering differs.
+1. **WHO** — authority (`userinfo@host:port`) identifies speaker, machine, and event position
+2. **WHERE** — the HAKABA address (path) locates semantic territory
+3. **HOW** — signal parameters (query) describe stance, register, and p-band
+4. **WHEN** — the chronometer (fragment) locates position in nested time
+
+Resource-state annotations such as the mana pool (`⚡87%`) are HUD adjuncts, not core URI components. They remain outside canonical URI grammar until the resource-state model settles.
+
+The system has two co-primary encodings of the same state:
+
+- **Record form** — RFC 3986-compliant, keyword-based, machine-safe
+- **HUD form** — operator-facing, Unicode/sigil-rich, optimized for scan speed
+
+Record form is canonical for transport, comparison, and storage. HUD form is canonical for in-stream navigation.
 
 ---
 
@@ -30,7 +40,7 @@ The URI serves as both a human-readable annotation (sigil form) and a machine-pa
 | Resolution | Via `lares/registry/` resolver; never via network fetch |
 | IANA status | Unregistered; internal use only |
 
-> **Form and compliance:** The **machine form** is the RFC 3986-compliant canonical form. The **sigil form** is an IRI-class display projection (RFC 3987); it contains emoji and Unicode glyphs in the `stance=` parameter, phase field, and fragment scope prefix that are not legal in RFC 3986 URIs without percent-encoding. RFC 3986 compliance is not claimed for the sigil form. The projection table (§5) is a rendering transform between forms — it is not a URI-to-URI identity mapping. Consumers that require network transport or strict RFC 3986 parsing must use the machine form.
+> **Form and compliance:** The **record form** is the RFC 3986-compliant canonical form for transport, persistence, comparison, and strict parsing. The **HUD form** is an IRI-class instrument rendering (RFC 3987); it contains emoji and Unicode glyphs in the `stance=` parameter, phase field, and fragment scope prefix that are not legal in RFC 3986 URIs without percent-encoding. RFC 3986 compliance is not claimed for the HUD form. The rendering table (§5) defines a deterministic transform between forms for the projected fields; it is a co-primary display/record mapping, not a claim that the HUD form itself is network-safe.
 
 The `lares:` scheme identifies semantic positions, signal states, and machine events within the Lares agent architecture. It does not resolve to a network resource. URI consumers (crystal replay tools, debug log parsers, registry resolvers) treat it as an opaque structured identifier parsed according to this specification.
 
@@ -52,7 +62,7 @@ lares://alias:tier(phase)@host:seq/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.
 
 ### 3.3 Component Map
 
-| # | Component | RFC 3986 Role | Lares Mapping | Machine Example | Sigil Example |
+| # | Component | RFC 3986 Role | Lares Mapping | Record Example | HUD Example |
 |---|---|---|---|---|---|
 | 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable | `lares:` | `lares:` |
 | 2 | **userinfo** | Requesting party identity | `alias:tier(phase)` | `telarus:operator(orient)` | `telarus:operator(◎)` |
@@ -86,17 +96,19 @@ lares://alias:tier(phase)@host:seq/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.
 | Ka | quality | Soul / motive fire — animating charge or character | ADJECTIVE |
 | Ba | dynamic | Psyche / direction — the motion being taken | VERB |
 
-Machine form uses `/` separators: `/threshold/uncertain/opens`. Sigil form uses `.` after a leading `/`: `/threshold.uncertain.opens`. The leading `/` appears in both forms.
+Record form uses `/` separators: `/threshold/uncertain/opens`. HUD form uses `.` after a leading `/`: `/threshold.uncertain.opens`. The leading `/` appears in both forms.
 
 **query** (`?stance=X&register=R:N&p=N`) — Signal parameters, non-hierarchical.
 
-| Parameter | Type | Repeatable? | Machine Values | Sigil Values |
+| Parameter | Type | Repeatable? | Record Values | HUD Values |
 |---|---|---|---|---|
 | `stance` | keyword/emoji | Yes (multi-stance) | `philosopher`, `poet`, `satirist`, `humorist`, `private` | `🏛️`, `🌊`, `🗡️`, `🎭`, `🔮` |
 | `register` | `R:N` | No | `P:0.35`, `SP:0.45`, `S:0.65`, `CS:0.80`, `C:0.90` | Same |
 | `p` | `N` | No | `0.5` | Same |
 
 Multi-stance: repeated `stance=` parameters. Example: `stance=🏛️&stance=🗡️`.
+
+Register remains a point value even under multi-stance. Stance count communicates fuzz; no `~delta` suffix is permitted.
 
 **fragment** (`#scope.W.w.t.r.a`) — Scope prefix + chronometer (hierarchical scope counter). Client-side only per RFC 3986 §3.5 — never sent to a server; session-local viewpoint data.
 
@@ -163,11 +175,11 @@ Depth:     1 position    2 positions   3 positions     4 positions       5 posit
 
 ---
 
-## 5. Bidirectional Projection — Display Split
+## 5. Co-Primary Encodings — Record Form and HUD Form
 
 The URI anatomy remains identical across both forms. Only rendering differs.
 
-### 5.1 Projection Table — The Only Differences
+### 5.1 Rendering Table — The Only Differences
 
 **userinfo phase field** (`alias:tier(phase)`):
 
@@ -216,6 +228,104 @@ The URI anatomy remains identical across both forms. Only rendering differs.
 | p= | `0.5` | Numeric, both forms |
 | chronometer counters | `3.2.7` | Dot-separated, universal |
 
+### 5.3 Unified HUD Symbol Table
+
+All HUD-form symbols used in the Intent HUD, in one reference. Workers and operators should not need to cross-reference §3.4, §4.1, or §5.1 during live use. This table is the instrument panel legend.
+
+#### 5.3.1 Individual Symbol Sets
+
+**Phase (userinfo — cognitive state of the speaker):**
+
+| Sigil | Record | OODA-A State | One-Line Reading |
+|---|---|---|---|
+| ✶ | `observe` | Observe | Gathering raw signal; no commitment yet |
+| ◎ | `orient` | Orient | Making sense of what was gathered |
+| ◇ | `decide` | Decide | Choosing a path; fork point |
+| ■ | `act` | Act | Committed; executing |
+| ○ | `aftermath` | Aftermath | Assessing outcome; feeding upward |
+
+**Stance (query — discourse posture of the claim):**
+
+| Sigil | Record | Stance | One-Line Reading |
+|---|---|---|---|
+| 🏛️ | `philosopher` | Philosopher | Propositional; evaluate for truth-value |
+| 🌊 | `poet` | Poet | Analogical; resonance, not verification |
+| 🗡️ | `satirist` | Satirist | Critical through indirection |
+| 🎭 | `humorist` | Humorist | Relational; maintaining working rapport |
+| 🔮 | `private` | Private | Self-referential; present, not to decode |
+
+**Scope (fragment prefix — active simulation scale):**
+
+| Sigil | Record | Scale | Duration | One-Line Reading |
+|---|---|---|---|---|
+| 🗺️ | `@S` | Strategic | ~6 days | The big arc; logistics and navigation |
+| ⚙️ | `@O` | Operational | ~4 hours | Watch-level; perception and endurance |
+| 🔍 | `@T` | Tactical | ~10 min | Exploration turn; investigation |
+| ⚔️ | `@C` | Combat | ~6 sec | Round; immediate response |
+| ⚡ | `@A` | Action | Variable | Single action; precision execution |
+
+#### 5.3.2 State Tuple — Reading Three Symbols as One State
+
+In a live HUD tag, the operator reads phase + stance + scope as a single cognitive state, not three unrelated fields. The state tuple is the composed reading: phase x stance x scope -> one sentence describing the node's current condition.
+
+**How to compose:** Read the phase (what cognitive step), the stance (what kind of claim), and the scope (at what time-scale), then merge them into one state sentence.
+
+**The triangle:** Phase x Stance x Scope form the state tuple triangle. Multi-stance spreads the stance corner from a point into a distribution. The number of active stances communicates the spread directly:
+
+| Stances Active | Register Character | What It Tells the Operator |
+|---|---|---|
+| 1 (`🏛️`) | Point value | Trust the number |
+| 2 (`🏛️🗡️`) | Bimodal spread | Register is fuzzy around the declared value |
+| 3 (`🏛️🌊🗡️`) | Trimodal spread | Register is a rough center-of-mass |
+| 4 (`🏛️🌊🗡️🎭`) | Wide spread | Register is an approximation; high mana cost |
+| 5 (`🏛️🌊🗡️🎭🔮`) | Full Discordian | Register is a gesture toward center; maximum fuzz |
+
+Stance count IS the fuzz indicator. No numeric delta is needed. The visual density of the stance field communicates register uncertainty directly.
+
+**Worked readings:**
+
+| Phase | Stance | Scope | State Tuple Reading |
+|---|---|---|---|
+| ◎ | 🏛️ | 🔍 | Orienting analytically at exploration scale — making sense of a local finding |
+| ■ | 🗡️ | ⚔️ | Acting critically in combat — executing under pressure with an edge |
+| ◇ | 🏛️🌊 | 🗺️ | Deciding at strategic scale, holding propositional and analogical frames together |
+| ✶ | 🎭 | 🔍 | Observing playfully at tactical scale — light reconnaissance, no commitment |
+| ○ | 🏛️ | ⚙️ | Aftermath at operational scale in Philosopher stance — assessing what happened across a watch |
+| ◎ | 🏛️🌊🗡️🎭🔮 | 🗺️ | Full Discordian orientation at strategic scale — maximum spread, rare, mana-expensive |
+
+#### 5.3.3 Register Is Stance-Dependent (Syadasti Reading Rule)
+
+Register measures confidence within the active stance's evaluation frame, not truth-weight universally.
+
+This principle derives from the Discordian catma of Sri Syadasti, which reproduces the Jaina Saptabhangi. The active stance declares the standpoint (`syad`) from which the number should be read.
+
+| Stance | Syadasti Primitive | 0.0 Means | 0.5 Means | 1.0 Means |
+|---|---|---|---|---|
+| 🏛️ Philosopher | asti (true) | Unsupported | Contested but plausible | Fully confirmed |
+| 🌊 Poet | avaktavya (inexpressible) | No resonance | Partial correspondence | Perfect resonance |
+| 🗡️ Satirist | nasti -> asti | Indirection missed target | Hit glancingly | Landed with full force |
+| 🎭 Humorist | asti-nasti | Relational move fell flat | Mixed reception | Connected perfectly |
+| 🔮 Private | avaktavya (inexpressible) | Minimal presence | Present | Maximal presence |
+
+**Reading rule:** ask what the number measures for the active stance. A Philosopher at `0.65` is propositionally contested. A Poet at `0.65` is resonating solidly. A Satirist at `0.65` is landing with moderate force. Same number, different meaning.
+
+When multiple stances are active, the declared register value sits at the intersection of their evaluation frames. The stance count tells the operator how fuzzy that intersection is.
+
+### 5.4 HUD Adjuncts Outside Canonical URI Grammar
+
+The node may emit a compact HUD line that combines the canonical URI with scan-oriented adjuncts after the URI body:
+
+```text
+lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5 ⚡87%
+```
+
+Adjunct rules:
+
+1. The canonical `lares:` URI ends at the fragment. Anything after a separating space and `|` is HUD adjunct data, not URI grammar.
+2. `p0.5` in the adjunct is a compact re-rendering of the query's `p=0.5` for fast scan.
+3. `⚡87%` is the mana-pool / resource-state indicator: estimated remaining context window as a navigational resource.
+4. Mana is a HUD element, not yet a URI parameter. It should not be serialized into `lares_uri`, `lares_address`, or registry identity fields until S2 settles the resource-state contract.
+
 ---
 
 ## 6. Stable Address — Named Graph Form
@@ -232,13 +342,15 @@ No authority (empty), no query, no fragment. This is the invariant semantic coor
 
 ## 7. Crystal Schema Field Mapping
 
+In the Consecration model, URI-derived fields belong to the calibration layer. They may be mirrored into MemPalace metadata for query support, but the storage distinction remains: MemPalace stores content; Lares crystal metadata stores orientation.
+
 Every STATE.jsonl event that carries URI data uses four derived fields:
 
 | Field | Content | Stable? | Purpose |
 |---|---|---|---|
-| `lares_uri` | Full URI, machine form, all components | No — changes per event | Complete queryable state; machine-parseable |
+| `lares_uri` | Full URI, record form, all components | No — changes per event | Complete queryable state; machine-parseable |
 | `lares_address` | Path only (no authority/query/fragment) | Yes — stable territory | Named graph identifier |
-| `intent_header_snapshot` | Full URI, sigil form | No — changes per event | Human-readable HUD; what the operator saw |
+| `intent_header_snapshot` | Full URI, HUD form | No — changes per event | Human-readable HUD; what the operator saw |
 | `chronometer` | Fragment value without `#`; includes scope prefix | No — increments with time | Scope + hierarchical scope counter; temporal/scale queries |
 
 Additional quick-filter fields extracted from URI components:
@@ -247,8 +359,11 @@ Additional quick-filter fields extracted from URI components:
 |---|---|---|
 | `current_phase` | userinfo phase sub-field | Phase-based event filtering |
 | `active_scale` | fragment scope prefix | Scale-based event filtering (strategic/operational/tactical/combat/action) |
+| `stance_count` | repeated `stance=` params | Quick fuzz estimate; multi-stance complexity filter |
 
-### 7.1 Example Event (Machine Form)
+URI fields do not encode exchange vectors or resource-state directly. Those remain adjacent calibration metadata (`input_tag`, `output_tag`, `mana_pct`, authority markings, and related fields) until their contracts settle in S1/S2.
+
+### 7.1 Example Event (Record Form)
 
 ```json
 {
@@ -268,9 +383,9 @@ Additional quick-filter fields extracted from URI components:
 
 ---
 
-## 8. Module Descriptor Integration
+## 8. Module and Registry Metadata Integration
 
-The `lares_uri` + `register` fields on module descriptors serve as the compiler's sort key. Modules load by register descending — highest confidence first.
+The `lares_uri` + `register` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
 
 ```toml
 # Tier 1 — Global Core (version-controlled by seq_num)
@@ -326,10 +441,10 @@ A `lares:` URI is **well-formed** when:
 
 ### 10.2 Consistency
 
-A pair of `lares_uri` (machine form) and `intent_header_snapshot` (sigil form) are **consistent** when:
+A pair of `lares_uri` (record form) and `intent_header_snapshot` (HUD form) are **consistent** when:
 
 1. All non-projected components are byte-identical
-2. All projected components (phase, stance, path separators, scope prefix) map correctly through the projection table
+2. All projected components (phase, stance, path separators, scope prefix) map correctly through the rendering table
 3. No information is present in one form but absent from the other
 
 ### 10.3 Stable Address Derivation
@@ -338,14 +453,14 @@ A pair of `lares_uri` (machine form) and `intent_header_snapshot` (sigil form) a
 
 1. Scheme is `lares:`
 2. Authority is empty (double-slash, no host/port)
-3. Path is identical to the `lares_uri` path (machine form: `/` separators)
+3. Path is identical to the `lares_uri` path (record form: `/` separators)
 4. Query and fragment are absent
 
 ### 10.4 Canonical Form and Comparison
 
 When comparing two `lares:` URIs as stable addresses:
 
-1. Convert both to machine form (apply projection normalization — sigil → machine — before comparison)
+1. Convert both to record form (apply normalization — HUD -> record — before comparison)
 2. Compare path components **case-insensitively**
 3. Canonical form uses **lowercase** path components (e.g., `lares:///threshold/uncertain/opens` not `lares:///Threshold/Uncertain/Opens`)
 4. Two URIs designate the same stable address iff their lowercased machine-form paths are byte-identical
@@ -357,7 +472,7 @@ When comparing two `lares:` URIs as stable addresses:
 
 | Q# | Question | Current Position | Register | Blocks |
 |---|---|---|---|---|
-| U1 | Should `userinfo` carry operator alias in machine form, or only `machine_id` in authority? | Operator alias in userinfo | `[S:0.65]` | Registry resolver design |
+| U1 | Should `userinfo` carry operator alias in record form, or only `machine_id` in authority? | Operator alias in userinfo | `[S:0.65]` | Registry resolver design |
 | U2 | Is `seq_num` as `:port` the right mapping, or should port carry something else? | seq_num as port | `[S:0.70]` | Crystal shard semantics |
 | U3 | Should the chronometer carry phase *per level* or just counters? | Counters only; phase at lowest active level | `[CS:0.80]` | Iteration |
 | U4 | How does chronometer interact with `--parse` self-activation? | Provisional yes — depth increases p | `[SP:0.45]` | p-band model |
@@ -385,13 +500,13 @@ Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Sy
 
 ## Appendix A — Complete Examples
 
-### A.1 Machine Form
+### A.1 Record Form
 
 ```
 lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7
 ```
 
-### A.2 Sigil Form
+### A.2 HUD Form
 
 ```
 lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
@@ -418,6 +533,38 @@ lares:///threshold/uncertain/opens
 #⚡.4.1.4.1.2    Action 2 of Round 1
 #🔍.4.1.5        Combat over: scale contracts, Turn increments to 5
 ```
+
+---
+
+## Appendix B — How to Read a HUD Tag
+
+A complete HUD-form tag, annotated by scan order:
+
+```text
+lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5 ⚡87%
+```
+
+Quick read:
+
+> Telarus (operator), in Orient phase, machine `lares-abc123`, event 42.
+> Territory: threshold / uncertain / opens.
+> Philosopher stance, Synthesis-0.65 confidence, tactical scope at Week 3 / Watch 2 / Turn 7.
+> p-band 0.5 density, mana 87%.
+
+Field order for live scan:
+
+1. Territory first: what semantic neighborhood are we in?
+2. Register + stance: what kind of claim is this, and how should the number be read?
+3. Phase + scope: what is the node doing, and at what scale?
+4. p-band + mana: how dense is the instrumentation, and how much context remains?
+
+Multi-stance example:
+
+```text
+lares://telarus:operator(◇)@lares-abc123:43/threshold.sharp.closes?stance=🏛️&stance=🌊&register=S:0.60&p=0.7#🗺️.3 | p0.7 ⚡62%
+```
+
+This does **not** mean "truth-confidence 0.60" in a universal sense. It means a `0.60` reading held across both Philosopher and Poet frames. The two stance glyphs tell the operator that the declared register carries more spread than a single-stance point reading.
 
 ---
 
