@@ -1638,8 +1638,8 @@ register < 0.50  ← trimmable under budget pressure
 
 **Pattern B — `.lares/REGISTRY.jsonl` as Lightweight Index:**
 ```jsonl
-{"machine_id":"lares-abc123","lares_address":"lares:///session/main","status":"active","tier":"durable","seq_num":42,"chronometer":"3.2.7"}
-{"machine_id":"lares-def456","lares_address":"lares:///task/uri-schema","status":"completed","tier":"ephemeral","seq_num":15,"chronometer":"3.2"}
+{"machine_id":"lares-abc123","lares_address":"lares:///session/main","status":"active","tier":"durable","seq_num":42,"chronometer":"@T.3.2.7"}
+{"machine_id":"lares-def456","lares_address":"lares:///task/uri-schema","status":"completed","tier":"ephemeral","seq_num":15,"chronometer":"@O.3.2"}
 ```
 
 One line per machine. Updated only on status change, spawn, seal, fork. 200-line discipline (Claude Code Pattern 5).
