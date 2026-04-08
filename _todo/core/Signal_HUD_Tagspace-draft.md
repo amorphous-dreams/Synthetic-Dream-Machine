@@ -1626,6 +1626,64 @@ register=S:0.65  ← architectural synthesis; provisional
 register < 0.50  ← trimmable under budget pressure
 ```
 
+### Layered Invariant Core — Cache Tier Mapping
+
+`[S:0.70]` The register tiers above map directly onto a three-layer prompt caching architecture. Anthropic's `cache_control` API exposes multiple explicit breakpoints — each breakpoint marks a boundary between content layers of different volatility. The Lares register system formalizes the same structure: the `register` field on each module descriptor declares which cache tier it belongs to.
+
+#### Tier ↔ Register ↔ Cache Placement
+
+| Tier | Content Layer | Cache Strategy | Register Range | Lares Modules | Volatility |
+|---|---|---|---|---|---|
+| **1 — Global Core** | System parameter; first `cache_control` breakpoint | Cached across sessions; rarely invalidated | `C:1.0` – `C:0.95` | Kernel, identity, hard gates, tool schemas, epistemology | Near-static |
+| **2 — Session Core** | Conversation prefix; rolling `cache_control` breakpoint on history | Cached within session; invalidated on permission or profile change | `C:0.95` – `S:0.65` | Permissions, user profile, session canon, Workers, operating mode | Session-stable |
+| **3 — Dynamic** | Latest user message + tool results; `cache_control: ephemeral` on last user turn | Ephemeral (5-min TTL with hit-reset); re-fetched on every exchange | `< 0.50` trimmable | Current task context, tool results, active exchange state | Per-exchange |
+
+#### Context Engineering Primitives ↔ Machine Lifecycle Tiers
+
+| Anthropic Primitive | Behavior | Lares Machine Tier | Lares Behavior |
+|---|---|---|---|
+| `compaction_control` | Distills history into summary at token threshold | **Ephemeral** (10–100 events) | Seal `completed`/`cancelled` → summary folded into parent SNAPSHOT |
+| `clear_tool_uses` | Drops tool result content; retains call metadata ("remembers the call, forgets the content") | **Nano** (< 10 events) | Discarded at session end; summary folded into parent |
+| `memory_20250818` tool | Agent writes persistent knowledge to `/memories/` | **Durable** (100+ events) | Full crystal with seal/rotate; archived shards retained |
+
+#### Speculative Caching as Observation Phase
+
+Anthropic's speculative prompt-caching pattern — send `max_tokens=1` with full context while the user types, warming the cache before the real query — maps onto phase `✶ Observe` in the attention loop. The invariant core (Tier 1) pre-loads during observation; Tier 2 stabilizes during `◎ Orient`; Tier 3 materializes at `◇ Decide`.
+
+#### Chronometer as Version Vector for Canon Modules
+
+For `register=C:1.0` modules (kernel, hard gates, identity), the chronometer's vector clock doubles as a **version control number**. Because these modules change rarely and each change constitutes a canonical event:
+
+- The `seq_num` on a `C:1.0` module's descriptor increments only when the module content changes — effectively a monotonic version counter.
+- The chronometer position (`#@T.W.w.t`) on a canon module's `r_update` event records *when* that version was loaded, not just *what* it contains.
+- A `contract_update` event with `register=C:1.0` carries version semantics: it represents a canonical schema migration, not a routine state change. Build-time validation can compare `seq_num` across deployments to detect version drift.
+
+This applies transitively to Tier 2 (`C:0.95` locked axioms) — the same `seq_num` increment + chronometer timestamp pattern serves as session-scoped version tracking for permissions and profile modules.
+
+```
+# Tier 1 (Global Core) — version-controlled by seq_num
+lares_uri   = "lares:///kernel/invariant/anchors"
+register    = "C:1.0"
+module_id   = "lares-kernel"
+seq_num     = 4            # ← version 4 of the kernel module
+
+# Tier 2 (Session Core) — version-controlled within session
+lares_uri   = "lares:///session/permissions/gates"
+register    = "C:0.95"
+module_id   = "lares-permissions"
+seq_num     = 2            # ← second revision this session
+
+# Tier 3 (Dynamic) — no version semantics; seq_num is event counter only
+lares_uri   = "lares:///task/current/recon"
+register    = "S:0.55"
+module_id   = "lares-task-recon"
+seq_num     = 47           # ← 47th event, not 47th version
+```
+
+For Tier 3 dynamic modules, `seq_num` retains its original meaning: a monotonic event counter, not a version number. The distinction arises from the register — parsers and loaders can branch on `register >= C:0.95` to treat `seq_num` as version.
+
+> **Source:** Anthropic claude-cookbooks (deepwiki.com/anthropics/claude-cookbooks): 9.1 Prompt Caching (cache_control breakpoints, ephemeral TTL, speculative warming), 7.4 Context Engineering for Agents (compaction, tool-result clearing, memory tool), 6.3 Context Management and Compaction (background compaction, session memory patterns). Mapped against this document's Invariant-Core Loading Sequence and Ephemeral Machine Patterns.
+
 ### Ephemeral Machine Patterns
 
 **Pattern A — Lifecycle Tiers:**

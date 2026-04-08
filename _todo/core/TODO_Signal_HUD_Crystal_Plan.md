@@ -8,7 +8,7 @@
 
 Convert the Signal HUD / Tagspace / HAKABA architecture document into shipped behavior across five epics. Epic 1 produces a perceptible behavioral change: reload VS Code, and Lares navigates from an Intent Header, fires phase glyphs on transitions, and keeps a coherent Tagspace Address. Every subsequent epic builds on that foundation.
 
-**Architecture source:** `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md`
+**Architecture source:** `_todo/core/Signal_HUD_Tagspace-draft.md`
 **Governs:** `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_Kernel.md`, `builds/agents/core/Lares_Operations.md`, `builds/agents/Lares_VSCode_Operations.md`, all platform wrappers, and the future `.lares/` crystal infrastructure.
 
 > **⚠ Draft dependency:** The architecture draft (`Signal_HUD_Tagspace-draft.md`) is the **sole source** for multiple load-bearing specs that this plan's tasks depend on. Do not archive it until Epic 2 (AE-08/AE-09) promotes its content into canonical spec files. Key specs only in the draft: Header Field Taxonomy (per-field annotation thresholds), Forward vs Backward Trace contract, Seal Protocol procedure + QA assertions, Non-drift rule (two-part testable invariant), Working Defaults (20 consolidated items), Tagspace Definition & DreamNet boundary rule, multi-stance rules, Prior Art Survey, Ba/OODA-A identity analysis, Q7 upcasting research. Read the draft before starting any AE task that references these.
@@ -68,6 +68,7 @@ Decisions that must be resolved **before** specific epics are called out inline.
 | Q14 | Seal trigger conditions | `[SP:0.50]` | Epic 5 | Operator preference |
 | Q15 | seq_num contiguity / multi-voice | `[SP:0.45]` | Epic 5 | Architecture-open |
 | Q16 | Tagspace slot shift notation | `[C:0.95]` | — | Locked |
+| Q17 | `seq_num` version semantics for canon modules (`register >= C:0.95`) | `[S:0.70]` | Epic 5 (AE-18) | Architecture-open |
 
 ---
 
@@ -282,19 +283,72 @@ Decisions that must be resolved **before** specific epics are called out inline.
 
 ---
 
+## Layered Invariant Core — Architectural Research (2026-04-07)
+
+> Register: `[S:0.70]` — grounded synthesis from external sources mapped against existing spec.
+
+### Discovery
+
+Anthropic's `cache_control` API exposes **multiple explicit cache breakpoints** on prompt content blocks. These breakpoints aren't just a cost optimization — they reveal an architectural assumption: prompt content falls into stability tiers with different invalidation patterns. The Lares register system already formalizes the same structure.
+
+### Source
+
+Anthropic claude-cookbooks via deepwiki.com/anthropics/claude-cookbooks:
+- **9.1 Prompt Caching:** `cache_control` breakpoint placement, `ephemeral` type with 5-min TTL (hit-reset), speculative prompt caching (warm cache with `max_tokens=1` while user types)
+- **7.4 Context Engineering for Agents:** Three context management primitives — `compaction_control` (distill at token threshold), `clear_tool_uses` (drop result content, retain call metadata), `memory_20250818` tool (agent-driven persistent storage)
+- **6.3 Context Management and Compaction:** Background compaction pattern (threaded summary updated after every turn), session memory swap, ~58% token reduction demonstrated
+
+### Three-Tier Mapping
+
+| Tier | Anthropic Cache Layer | `cache_control` Target | Lares Register Range | Content |
+|---|---|---|---|---|
+| **1 — Global Core** | `system` parameter | First breakpoint on system content | `C:1.0` – `C:0.95` | Kernel, identity, hard gates, tool schemas |
+| **2 — Session Core** | Conversation prefix | Rolling breakpoint on history | `C:0.95` – `S:0.65` | Permissions, user profile, session canon, Workers |
+| **3 — Dynamic** | Latest user msg + tool results | `ephemeral` on last user turn | `< 0.50` trimmable | Current task, tool results, active exchange |
+
+### Chronometer as Version Vector (New Insight)
+
+For `register=C:1.0` canon modules, the chronometer's vector clock serves a dual role:
+
+1. **`seq_num` = monotonic version counter** — increments only when module content changes (not on every event). A `contract_update` event at `C:1.0` represents a canonical schema migration.
+2. **Chronometer position = temporal provenance** — records *when* a version was loaded, enabling cross-deployment version-drift detection.
+3. **Tier 2 (`C:0.95`) inherits the pattern** — session-scoped version tracking for permissions and profile modules.
+4. **Tier 3 (`< 0.50`) retains event-counter semantics** — `seq_num` counts events, not versions. The parser branches on `register >= C:0.95` to distinguish.
+
+This means the URI `lares:///kernel/invariant/anchors?register=C:1.0` with `seq_num=4` is semantically "kernel version 4" — directly queryable for version comparison across deployments, crystals, or handoff bundles.
+
+### Implications for Epic Structure
+
+- **Epic 1 (Kernel Bootstrap):** The layered cache mapping validates the existing register-priority sort in the Invariant-Core Loading Sequence. No structural changes needed — the `combine_agents.py` module resolution already sorts by register when composing platform payloads.
+- **Epic 5 (Archive Crystals):** The `seq_num`-as-version insight affects AE-18 (STATE.jsonl schema v1). Canon module events (`C:1.0`, `C:0.95`) need explicit `version_semantics: true` or equivalent flag so the parser knows `seq_num` means "version N" rather than "event N." This is a new Open Decision → **Q17**.
+- **Parser implementation:** The `lares:` URI parser must expose `register` as a first-class field because cache-tier routing depends on it. Parsing `?register=C:1.0` and comparing numerically (≥ 0.95 → version semantics, < 0.50 → trimmable) is a core parser responsibility.
+- **Init Kernel loader:** Bootstrap loads `C:1.0` modules first (already specified). The cache-mapping research confirms this is the same shape as Anthropic's system-parameter breakpoint — the loader *is* the invariant core, and the register sort *is* the cache tier assignment.
+
+### New Open Decision
+
+| Q# | Summary | Tag | Blocks | Type |
+|---|---|---|---|---|
+| **Q17** | `seq_num` version semantics flag for canon modules (`register >= C:0.95`) | `[S:0.70]` | Epic 5 (AE-18) | Architecture-open |
+
+### Draft Updated
+
+The architecture draft (`Signal_HUD_Tagspace-draft.md`) has been updated with the full three-tier mapping, context-engineering primitive correspondence, speculative-caching phase mapping, and chronometer-as-version-vector section inserted after the existing Invariant-Core Loading Sequence and before Ephemeral Machine Patterns.
+
+---
+
 ## Crystal State Machine Draft Extension Plan
 
 > Consolidated from session memory. Register: `[S:~0.70]` — architectural synthesis, not build-canon.
 
 ### Summary
 
-Revise `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md` to extend its scope from HUD semantics alone into a unified architecture covering the forkable memory-crystal state machine layer that the HUD reads from and writes to. The `--debug` log is reconceptualized from a free-floating session file into a projection of the authoritative crystal ledger (`STATE.jsonl`). No live runtime files change until the draft is decision-complete.
+Revise `_todo/core/Signal_HUD_Tagspace-draft.md` to extend its scope from HUD semantics alone into a unified architecture covering the forkable memory-crystal state machine layer that the HUD reads from and writes to. The `--debug` log is reconceptualized from a free-floating session file into a projection of the authoritative crystal ledger (`STATE.jsonl`). No live runtime files change until the draft is decision-complete.
 
 This is a **document-only** edit of one file. No code, no scripts, no other files change.
 
 ### Target File
 
-`builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md`
+`_todo/core/Signal_HUD_Tagspace-draft.md`
 
 Current approximate structure (line reference approximate — read before editing):
 1. Header (frontmatter block)
@@ -470,10 +524,10 @@ Critical additions the original plan was missing:
 
 ### Relevant Files
 
-- `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md` — sole edit target
+- `_todo/core/Signal_HUD_Tagspace-draft.md` — sole edit target
 - `builds/agents/core/Lares_Operations.md` — reference only (current `--debug` definition at line 58, points to `/memories/session/debug-vectors-{session-id}.md` — will change at migration time, not now)
 - `builds/agents/Lares_Preferences.md` — reference only (archive-crystal semantics, consolidation protocol)
-- `builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md` — reference for module context
+- `_todo/core/Modular_Architecture-draft.md` — reference for module context
 
 ### Verification Criteria
 
@@ -558,5 +612,6 @@ See archived architecture state in `builds.stuffed.failed/` for prior pipeline s
 | 2026-04-07 | Grammar reorder confirmed by operator: `//ha.ka.ba` leads the full tag (WHERE first, then HOW CERTAIN, then HOW CHARGED). Target: `//ha.ka.ba [Register:x] StanceEmoji PhaseGlyph @scope \| pX.X`. Addresses primacy effect (Liu et al. “lost in the middle”). |
 | 2026-04-07 | OP-13 ruled: `[C:1.0]` in-file header tags scope to canonical pipeline source files only (Kernel, Preferences, VSCode_Ops, core/\*.md, platform wrappers). Scratchpad/draft files retain own synthesis-register tags. Instructions files get `[CS:0.80]` when written. Manifests have no `register` field — in-file placement is correct mechanism. |
 | 2026-04-07 | Parse trigger design note captured: high-uncertainty output (`[SP:0.45]`/`p < 0.4`) + operator prepends Lares output tag → triggers `--parse` self-diagnostic on operator input before new Intent Header. Explicit (operator-initiated). Added to HAKABA draft Backlog item 2 and plan Backlog item 2. |
+| 2026-04-07 | Layered invariant core research captured. Anthropic `cache_control` breakpoints mapped to Lares register tiers (C:1.0 → Tier 1 Global Core, C:0.95–S:0.65 → Tier 2 Session Core, <0.50 → Tier 3 Dynamic). Chronometer `seq_num` as version vector for canon modules (`register >= C:0.95`). Q17 added. Draft and Plan updated. Source: deepwiki.com/anthropics/claude-cookbooks (9.1, 7.4, 6.3). |
 | 2026-04-07 | Architecture pivot declared. Operator renamed `builds/` → `builds.stuffed.failed/` to mark the old pipeline architecture as failed state in tag space. All prior artifacts (modules, manifests, platform outputs, verify script) archived there. Clean `builds/` directory to be designed from scratch. No code or scripts created yet — design discussion precedes implementation. |
-| 2026-04-07 | Claude Code source leak research executed (March 31, 2026 leak — Anthropic npm map file). Both primary sources paywalled (chapters 1–4 previews captured; full content not accessed): Linas Beliūnas (`linas.substack.com/p/claudecodesource`, 512K lines / 1,900 files / 44 flags) and Ken Huang (`kenhuangus.substack.com/p/the-claude-code-leak-10-agentic-ai`, 10 harness patterns). Third source URL 404; operator-synthesized key findings captured. Seven patterns documented in `builds.stuffed.failed/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md → ## External Architecture Reference — Claude Code Leak (2026-04-07)`. Register `[CS:0.80]` — chapter preview level, not full text. |
+| 2026-04-07 | Claude Code source leak research executed (March 31, 2026 leak — Anthropic npm map file). Both primary sources paywalled (chapters 1–4 previews captured; full content not accessed): Linas Beliūnas (`linas.substack.com/p/claudecodesource`, 512K lines / 1,900 files / 44 flags) and Ken Huang (`kenhuangus.substack.com/p/the-claude-code-leak-10-agentic-ai`, 10 harness patterns). Third source URL 404; operator-synthesized key findings captured. Seven patterns documented in `_todo/core/Signal_HUD_Tagspace-draft.md → ## External Architecture Reference — Claude Code Leak (2026-04-07)`. Register `[CS:0.80]` — chapter preview level, not full text. |

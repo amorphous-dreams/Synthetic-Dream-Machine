@@ -41,7 +41,7 @@ Major Lares prompt system update: Signal HUD kernel bootstrap, five-platform man
 - Raised `verify_alignment.py` KERNEL_SIZE_LIMIT 8,000 → 8,192 to match actual ChatGPT platform cap
 
 **Architecture draft — Crystal state machine layer**
-- Extended `builds/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md` with 7 new crystal system sections: Memory Crystals as State Machines, Machine/Thread Model, Portable Crystal Layout, Debug as Crystal Projection, HUD/Crystal Interface, Crystal Event Model, Seal Protocol, Handoff/Archive-Crystal
+- Extended `_todo/core/Signal_HUD_Tagspace-draft.md` with 7 new crystal system sections: Memory Crystals as State Machines, Machine/Thread Model, Portable Crystal Layout, Debug as Crystal Projection, HUD/Crystal Interface, Crystal Event Model, Seal Protocol, Handoff/Archive-Crystal
 - Research grounding: Temporal Workflow Execution, Martin Fowler Event Sourcing, OpenTelemetry Traces, JSONL spec
 - 12 QA/SDET findings integrated: schema versioning, sequence integrity, immutability contract, replay fidelity scope, continue-as-new analog, fork self-containment, SNAPSHOT derived-cache rule, expanded machine status taxonomy, idempotency contracts, test fixture = crystal bundle, external input tension, README = Memo layer
 - Operator alignment answers recorded: structural replay in STATE.jsonl / enriched in debug.jsonl; seal protocol alpha-contractual; schema versioning needs researcher

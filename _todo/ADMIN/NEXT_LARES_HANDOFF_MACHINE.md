@@ -9,7 +9,7 @@ roots:
 - conceptual=/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md
 - buildspec=/home/joshu/Synthetic-Dream-Machine/Deterministic_IaM_Build.md
 - packaging=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/PROMPTCRAFT.md
-- modular_draft=/home/joshu/Synthetic-Dream-Machine/builds/agents/ADMIN/MODULES/Modular_Architecture-draft.md
+- modular_draft=/home/joshu/Synthetic-Dream-Machine/_todo/core/Modular_Architecture-draft.md
 - tracker=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/README.md
 - research=/home/joshu/Synthetic-Dream-Machine/_todo/ADMIN/MULTIPLATFORM_PACKAGING_RESEARCH.md [consumed: current-state sections updated, artifacts annotated, execution readiness analysis section retitled and annotated for staleness; best-practice rules inform Deterministic_IaM_Build.md browser vendor section]
 
