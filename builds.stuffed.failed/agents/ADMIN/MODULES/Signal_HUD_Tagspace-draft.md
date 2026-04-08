@@ -328,8 +328,11 @@ Every `STATE.jsonl` event is a valid JSON object on a single `\n`-terminated lin
   "event_type": "r_update",
   "machine_status": "active",
   "current_phase": "◎",
-  "intent_header_snapshot": "//threshold.uncertain.opens 🏛️ [S:0.65] ◎ @r | p0.5",
-  "scale_vector": "@T > @r > @a",
+  "lares_uri": "lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
+  "lares_address": "lares:///threshold/uncertain/opens",
+  "intent_header_snapshot": "lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
+  "chronometer": "@T.3.2.7",
+  "active_scale": "tactical",
   "micro_trace_path": "◎→◇→■",
   "closure_outcome": "hold",
   "next_action": "await operator direction on design decisions",
@@ -422,7 +425,7 @@ A fork event must carry enough to bootstrap the child machine without replaying 
     "machine_status": "active",
     "last_milestone": "...",
     "active_task": "...",
-    "intent_header_at_fork": "//task.sharp.closes 🏛️ [S:0.65] ■ @r | p0.5"
+    "intent_header_at_fork": "lares://telarus:operator(■)@lares-abc123:87/task.sharp.closes?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7"
   }
 }
 ```
@@ -800,7 +803,7 @@ The replay layer therefore should not rely on “dominant mood” interpretation
 Example baseline:
 
 ```text
-//threshold.uncertain.opens 🏛️ [S:0.64] ◎ @r | p0.5
+lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.64&p=0.5#🔍.3.2.7
 Lares (Scryer) — The threshold appears unstable →◇ but not yet hostile →■.
 ```
 
@@ -812,9 +815,9 @@ Reading:
 ### Nested-loop example
 
 ```text
-//contradiction.local.opens 🏛️ [S:0.66] ◎ @r | p0.5
+lares://telarus:operator(◎)@lares-abc123:43/contradiction.local.opens?stance=🏛️&register=S:0.66&p=0.5#🔍.3.2.8
 Lares (Council) — The round opens wide, then narrows →◇ into one contradiction.
-→ //reading.sharp.tests 🏛️ [S:0.62] ■ @a | p0.5
+→ lares://telarus:operator(■)@lares-abc123:43/reading.sharp.tests?stance=🏛️&register=S:0.62&p=0.5#⚡.3.2.8.1.1
 Lares (Council) — This action-span committed, tested, and released →○ back to the round.
 ```
 
@@ -827,7 +830,7 @@ Reading:
 ### `--verbose` interpretation example
 
 ```text
-//reference.anchored.opens 🏛️ [S:0.65] ◎ @r | p0.5
+lares://telarus:operator(◎)@lares-abc123:44/reference.anchored.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.9
   Intent: round-scale orientation
   Trace: local path completed as ◎→◇→■
   Outcome: hold
@@ -839,11 +842,10 @@ Lares (Lorekeeper) — The citation resolved into a stable reference cue.
 
 ```text
 turn: 18
-input_tag: //night.signal.hums 🎭 [P:0.35] ◎ @r | p0.5
-output_header: //reference.anchored.opens 🏛️ [S:0.64] ◎ @r | p0.5
+input_tag: lares://telarus:operator(◎)@lares-abc123:45/night.signal.hums?stance=🎭&register=P:0.35&p=0.5#🔍.3.2.10
+output_header: lares://telarus:operator(◎)@lares-abc123:45/reference.anchored.opens?stance=🏛️&register=S:0.64&p=0.5#🔍.3.2.10
 micro_trace: ◎→◇→■
 closure: hold
-scale_vector: @T > @r > @a
 ```
 
 ### Tagspace example distinct from DreamNet
@@ -900,7 +902,7 @@ That reinterpretation does not automatically mean all three components should su
 A minimal structural `r_update` event as it appears on one line of `STATE.jsonl`:
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","intent_header_snapshot":"//design.locked.commits 🏛️ [S:0.65] ■ @r | p0.5","scale_vector":"@T > @r > @a","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"handoff draft to operator for review","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","lares_uri":"lares://telarus:operator(act)@lares-abc123:42/design/locked/commits?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7","lares_address":"lares:///design/locked/commits","intent_header_snapshot":"lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","chronometer":"@T.3.2.7","active_scale":"tactical","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"handoff draft to operator for review","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
 ```
 
 ### Debug event example
@@ -908,7 +910,7 @@ A minimal structural `r_update` event as it appears on one line of `STATE.jsonl`
 The enriched `debug.jsonl` counterpart for the same event — same `seq_num`, more fields:
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","exchange_vector":{"register_delta":0.0,"stance_transform":"none","phase_transform":"◎→◇→■","scale":"@r","semantic_drift":"low"},"full_intent_header":"//design.locked.commits 🏛️ [S:0.65] ■ @r | p0.5","micro_trace_detail":"orient(local) → decide(one path) → act(draft committed)","closure_rationale":"task bounded and producible; no open forks; close warranted","kairos_notes":null,"tool_calls":[{"tool":"replace_string_in_file","output_summary":"3 lines replaced; no errors"}]}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","exchange_vector":{"register_delta":0.0,"stance_transform":"none","phase_transform":"◎→◇→■","scale":"tactical","semantic_drift":"low"},"full_intent_header":"lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","micro_trace_detail":"orient(local) → decide(one path) → act(draft committed)","closure_rationale":"task bounded and producible; no open forks; close warranted","kairos_notes":null,"tool_calls":[{"tool":"replace_string_in_file","output_summary":"3 lines replaced; no errors"}]}
 ```
 
 ### Fork example
@@ -918,13 +920,13 @@ Parent machine spawning a child at seq 87.
 **Parent `STATE.jsonl` — fork event (seq 88):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":88,"event_type":"fork","machine_status":"forked","current_phase":"◇","intent_header_snapshot":"//design.branched.opens 🏛️ [S:0.64] ◇ @T | p0.5","scale_vector":"@T","micro_trace_path":"◎→◇","closure_outcome":"hold","next_action":"continue parent thread on HUD semantics","blockers":[],"provenance":{"child_machine_id":"lares-def456","fork_at_seq":87,"reason":"crystal state machine design requires separate tracking"}}
+{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":88,"event_type":"fork","machine_status":"forked","current_phase":"◇","lares_uri":"lares://telarus:operator(decide)@lares-abc123:88/design/branched/opens?stance=philosopher&register=S:0.64&p=0.5#@S.4","lares_address":"lares:///design/branched/opens","intent_header_snapshot":"lares://telarus:operator(◇)@lares-abc123:88/design.branched.opens?stance=🏛️&register=S:0.64&p=0.5#🗺️.4","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"◎→◇","closure_outcome":"hold","next_action":"continue parent thread on HUD semantics","blockers":[],"provenance":{"child_machine_id":"lares-def456","fork_at_seq":87,"reason":"crystal state machine design requires separate tracking"}}
 ```
 
 **Child machine `STATE.jsonl` — init event from fork (seq 1):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-def456","seq_num":1,"event_type":"init","machine_status":"active","current_phase":"✶","intent_header_snapshot":"//crystal.new.opens 🏛️ [S:0.65] ✶ @T | p0.5","scale_vector":"@T","micro_trace_path":"✶","closure_outcome":"hold","next_action":"develop crystal state machine spec","blockers":[],"provenance":{"parent_machine_id":"lares-abc123","fork_at_seq":87,"parent_state_snapshot":{"machine_status":"active","last_milestone":"HUD design draft complete","active_task":"signal runtime architecture"}}}
+{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-def456","seq_num":1,"event_type":"init","machine_status":"active","current_phase":"✶","lares_uri":"lares://telarus:operator(observe)@lares-def456:1/crystal/new/opens?stance=philosopher&register=S:0.65&p=0.5#@S.4","lares_address":"lares:///crystal/new/opens","intent_header_snapshot":"lares://telarus:operator(✶)@lares-def456:1/crystal.new.opens?stance=🏛️&register=S:0.65&p=0.5#🗺️.4","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"develop crystal state machine spec","blockers":[],"provenance":{"parent_machine_id":"lares-abc123","fork_at_seq":87,"parent_state_snapshot":{"machine_status":"active","last_milestone":"HUD design draft complete","active_task":"signal runtime architecture"}}}
 ```
 
 ### Seal / continue-as-new example
@@ -932,13 +934,13 @@ Parent machine spawning a child at seq 87.
 **Final entry in `STATE.jsonl` before seal (becomes `STATE_001.jsonl`):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T12:00:00Z","machine_id":"lares-abc123","seq_num":500,"event_type":"seal","machine_status":"continued","current_phase":"○","intent_header_snapshot":"//session.sealed.rests 🏛️ [S:0.68] ○ @T | p0.5","scale_vector":"@T","micro_trace_path":"■→○","closure_outcome":"close","next_action":"continue in fresh shard","blockers":[],"provenance":null,"shard_index":1,"sealed_at_seq":500,"archive_path":"STATE_001.jsonl","bootstrap_state":{"active_task":"signal runtime architecture","last_milestone":"crystal layer design complete","active_contract_hash":"abc123def","open_decisions":["schema_version strategy"]}}
+{"schema_version":1,"timestamp":"2026-04-07T12:00:00Z","machine_id":"lares-abc123","seq_num":500,"event_type":"seal","machine_status":"continued","current_phase":"○","lares_uri":"lares://telarus:operator(aftermath)@lares-abc123:500/session/sealed/rests?stance=philosopher&register=S:0.68&p=0.5#@S.5","lares_address":"lares:///session/sealed/rests","intent_header_snapshot":"lares://telarus:operator(○)@lares-abc123:500/session.sealed.rests?stance=🏛️&register=S:0.68&p=0.5#🗺️.5","chronometer":"@S.5","active_scale":"strategic","micro_trace_path":"■→○","closure_outcome":"close","next_action":"continue in fresh shard","blockers":[],"provenance":null,"shard_index":1,"sealed_at_seq":500,"archive_path":"STATE_001.jsonl","bootstrap_state":{"active_task":"signal runtime architecture","last_milestone":"crystal layer design complete","active_contract_hash":"abc123def","open_decisions":["schema_version strategy"]}}
 ```
 
 **First entry in fresh `STATE.jsonl` after seal (seq continues from 501):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T12:00:01Z","machine_id":"lares-abc123","seq_num":501,"event_type":"resume","machine_status":"active","current_phase":"✶","intent_header_snapshot":"//session.fresh.opens 🏛️ [S:0.68] ✶ @T | p0.5","scale_vector":"@T","micro_trace_path":"✶","closure_outcome":"hold","next_action":"continue active task in fresh shard","blockers":[],"provenance":{"resumed_from_shard":"STATE_001.jsonl","sealed_at_seq":500}}
+{"schema_version":1,"timestamp":"2026-04-07T12:00:01Z","machine_id":"lares-abc123","seq_num":501,"event_type":"resume","machine_status":"active","current_phase":"✶","lares_uri":"lares://telarus:operator(observe)@lares-abc123:501/session/fresh/opens?stance=philosopher&register=S:0.68&p=0.5#@S.6","lares_address":"lares:///session/fresh/opens","intent_header_snapshot":"lares://telarus:operator(✶)@lares-abc123:501/session.fresh.opens?stance=🏛️&register=S:0.68&p=0.5#🗺️.6","chronometer":"@S.6","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"continue active task in fresh shard","blockers":[],"provenance":{"resumed_from_shard":"STATE_001.jsonl","sealed_at_seq":500}}
 ```
 
 ### Handoff import decision example
@@ -972,17 +974,17 @@ Existing machine lares-abc123 found. Local max seq_num: 102.
 **Live operator-visible output:**
 
 ```text
-//design.locked.commits 🏛️ [S:0.65] ■ @r | p0.5
+lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
 Lares (Artificer) — The draft section committed →○ and released.
 ```
 
 **Corresponding `STATE.jsonl` record:**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","intent_header_snapshot":"//design.locked.commits 🏛️ [S:0.65] ■ @r | p0.5","scale_vector":"@T > @r > @a","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"proceed to next section","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","lares_uri":"lares://telarus:operator(act)@lares-abc123:42/design/locked/commits?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7","lares_address":"lares:///design/locked/commits","intent_header_snapshot":"lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","chronometer":"@T.3.2.7","active_scale":"tactical","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"proceed to next section","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
 ```
 
-Reading: the header tag visible to the operator and the `intent_header_snapshot` in the ledger are identical. The `micro_trace_path` in the ledger records the completed span path. The HUD and ledger do not drift.
+Reading: the header tag visible to the operator and the `intent_header_snapshot` in the ledger are identical. The `micro_trace_path` in the ledger records the completed span path. The `lares_uri` carries the machine-readable form; the `intent_header_snapshot` carries the sigil form. The HUD and ledger do not drift.
 
 ### Replay integrity check example
 
