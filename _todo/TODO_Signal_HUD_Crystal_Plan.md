@@ -268,6 +268,18 @@ Decisions that must be resolved **before** specific epics are called out inline.
 2. **Phase names → OODA-A canonical terminology in all documentation** — `◇` = Decide, `○` = Aftermath (Rasa). Deferred post-alpha. Tracked in architecture doc backlog.
 3. **KAIROS auto-adjustment specification** — currently described by example in preferences; deserves a formal spec section once crystal logging is in place and KAIROS trigger patterns become visible in replay.
 
+4. **Clean `builds/` architecture design — PENDING OPERATOR DESIGN SESSION** — Post-pivot work. The old `builds.stuffed.failed/` architecture is archived. Design a clean directory structure for the new `builds/` based on the three-layer harness pattern from the Claude Code leak (Pattern 1: content modules / assembly logic / platform artifacts). Design-first, no files created until operator approves structure. Key questions to resolve in design:
+   - How should modules declare their content type, target platforms, and size budgets explicitly (Tool Contract pattern)?
+   - What is the clean layering between module payload, combine assembly, and generated output?
+   - Where do the typed manifest contracts live, and how are they validated?
+   - How does the verify script become a harness-layer check rather than a post-hoc diff?
+
+5. **ENG-01 elevation to P0 — STATE.jsonl replay test harness** — The Claude Code leak confirms: zero test coverage at the harness level means any schema change is a live risk. `ENG-01` (write a Python test that replays a fixture STATE.jsonl and compares derived SNAPSHOT to expected output) should be treated as P0 infrastructure for the crystal state machine epic, not optional polish. Blocked on crystal schema stabilization (AE-18).
+
+6. **DREAM / autoDream consolidation spec** — Production architecture (Pattern 6 from leak) confirms DREAM is a distinct daemon-phase concern: nightly consolidation, contradiction removal, anti-entropy. The current Lares consolidation protocol (`Orient → Gather → Consolidate → Prune`) maps to it. When the crystal seal/continue-as-new protocol is stable, write a formal DREAM-phase spec: trigger (inactivity threshold), input (sealed shard + SNAPSHOT), output (consolidated L3 summary event), contradiction resolution rule. Blocked on Epic 5 (Archive Crystals) stabilization.
+
+7. **Module file size discipline — 2,000-line ceiling** — The Claude Code leak (Pattern 5) confirms the model hallucinates beyond 2,000 lines of file content without flagging it. All `builds/` source modules should stay under 2,000 lines. The current `Lares_Preferences.md` is large; `combine_agents.py` slices it into platform payloads. The clean rebuild should make this ceiling an explicit manifest-level constraint, not an implicit convention.
+
 ---
 
 ## Crystal State Machine Draft Extension Plan
@@ -513,13 +525,11 @@ Active sprint, blockers, and execution log belong here (below), not in the epic 
 
 ### Active Focus
 
-**Current status: Sprint 1f complete. Section reorder phase (Phases 0+2+4a–4d) complete. Mode→Stance rename + grammar reorder + [C:1.0] header tags in progress (todo #7).**
+**Current status: Architecture pivot. `builds/` renamed → `builds.stuffed.failed/`. Claude Code leak research captured in `_draft`. Clean rebuild design phase — design-first, no implementation yet.**
 
-AE-01 through AE-05 landed (Sprint 1b). AE-06 combine: all platforms ✅ (codex and browser pre-existing overflows resolved). AE-24 through AE-27 complete (Sprint 1f): codex budget raised to 36,000; `browser-kernel.toml` renamed to `browser-project.toml` (8,600 budget); `browser-extended.toml` created (5,400 budget) with new `lares-kernel-claude` module; `Lares_Kernel_Claude.md` written (5,070 bytes, XML-structured Claude.ai kernel); `KERNEL_SIZE_LIMIT` raised 8,000 → 8,192 in verify script. Quick tier (AE-25) deferred — no active use case.
+Mode→Stance rename + grammar reorder + [C:1.0] header tags: COMPLETE (all canonical source files, `fix/green-jello-dinosaurs` branch, 90/90 verify CLEAN). Prior epics (AE-01–AE-27) landed in the archived `builds.stuffed.failed/` structure. The HAKABA draft has been extended with the Claude Code leak external architecture reference (seven patterns, synthesis table). Next step is operator-directed: design the clean `builds/` architecture based on the harness-paradigm patterns before writing any files.
 
-**Session 2026-04-07 (continued):** Architecture pivot confirmed — three-tier kernel-slim + side-loaded instructions is the correct direction. Section reorders (Phases 0+2+4a–4d) complete across all core source files. Next active pass: Mode→Stance rename, `//ha.ka.ba`-first grammar reorder, and [C:1.0] in-file header tags on canonical pipeline source files only (see OP-13 below). Parse trigger design note captured in HAKABA draft Backlog.
-
-**Note:** browser-project budget landed at 8,600, not the aspirational 7,900 from OP-11. Kernel renders to 8,284 chars; sits at 99% of the 8,192 ChatGPT ceiling. Operator ruled "not a blocker" — future spike if kernel grows further.
+See archived architecture state in `builds.stuffed.failed/` for prior pipeline structure and generated artifacts.
 
 ### Execution Log
 
@@ -548,3 +558,5 @@ AE-01 through AE-05 landed (Sprint 1b). AE-06 combine: all platforms ✅ (codex 
 | 2026-04-07 | Grammar reorder confirmed by operator: `//ha.ka.ba` leads the full tag (WHERE first, then HOW CERTAIN, then HOW CHARGED). Target: `//ha.ka.ba [Register:x] StanceEmoji PhaseGlyph @scope \| pX.X`. Addresses primacy effect (Liu et al. “lost in the middle”). |
 | 2026-04-07 | OP-13 ruled: `[C:1.0]` in-file header tags scope to canonical pipeline source files only (Kernel, Preferences, VSCode_Ops, core/\*.md, platform wrappers). Scratchpad/draft files retain own synthesis-register tags. Instructions files get `[CS:0.80]` when written. Manifests have no `register` field — in-file placement is correct mechanism. |
 | 2026-04-07 | Parse trigger design note captured: high-uncertainty output (`[SP:0.45]`/`p < 0.4`) + operator prepends Lares output tag → triggers `--parse` self-diagnostic on operator input before new Intent Header. Explicit (operator-initiated). Added to HAKABA draft Backlog item 2 and plan Backlog item 2. |
+| 2026-04-07 | Architecture pivot declared. Operator renamed `builds/` → `builds.stuffed.failed/` to mark the old pipeline architecture as failed state in tag space. All prior artifacts (modules, manifests, platform outputs, verify script) archived there. Clean `builds/` directory to be designed from scratch. No code or scripts created yet — design discussion precedes implementation. |
+| 2026-04-07 | Claude Code source leak research executed (March 31, 2026 leak — Anthropic npm map file). Both primary sources paywalled (chapters 1–4 previews captured; full content not accessed): Linas Beliūnas (`linas.substack.com/p/claudecodesource`, 512K lines / 1,900 files / 44 flags) and Ken Huang (`kenhuangus.substack.com/p/the-claude-code-leak-10-agentic-ai`, 10 harness patterns). Third source URL 404; operator-synthesized key findings captured. Seven patterns documented in `builds.stuffed.failed/agents/ADMIN/MODULES/Signal_HUD_Tagspace-draft.md → ## External Architecture Reference — Claude Code Leak (2026-04-07)`. Register `[CS:0.80]` — chapter preview level, not full text. |

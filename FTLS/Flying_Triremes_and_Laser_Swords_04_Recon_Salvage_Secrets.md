@@ -101,7 +101,7 @@ Create the profile for an **Area** (also known as a Discovery in SDM). Tracks ho
    - Tags: pick 2–3 that will change rulings (not just vibes).
    - Nodes: 0-3 exploitable sites, see **Recon** for generating node details.
 
-When players say “What can we get / make / learn here?” pick an Area, generate 0–3 Nodes and Tag them. When action happens, use the lowest time scale that matters (Week / Watch / Turn).
+When players say “What can we get / make / learn here?” pick an Area, generate 0–3 Nodes and Tag them. When conflcit happens, use the lowest time scale that matters (Week / Watch / Exploration Turn / Round / Action).
 
 ### 2. **Recon the Nodes**
 

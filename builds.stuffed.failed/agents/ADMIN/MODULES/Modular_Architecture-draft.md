@@ -1,25 +1,61 @@
-# Modular Architecture — Draft
+# Deterministic Build Architecture — Draft
 
-> Document type: Proposed source-tree/module breakdown
-> Status: Draft derived from `PROMPTCRAFT.md` + `Deterministic_IaM_Build.md` + `Infrastructure_as_Myth.md`
-> Updated: 2026-04-06
-> Register: [S:0.68] 🏛️ — structural synthesis, not yet build-canon
+> Document type: restart architecture draft
+> Status: Draft for the post-failure rebuild of `builds.stuffed.failed/`
+> Updated: 2026-04-07
+> Register: [S:0.72] 🏛️ — grounded synthesis from local pipeline audit plus external March 31, 2026 leak analysis
 
 ---
 
 ## Purpose
 
-This document turns the modularization direction in `PROMPTCRAFT.md` into a concrete draft architecture for the Lares source tree and build system.
+This draft replaces the earlier "modularize the current prompt bundle" framing with a stricter goal:
 
-It treats Lares as an Infrastructure-as-Myth package, not merely a large prompt that needs trimming. In this frame, module boundaries should preserve the symbolic-operational runtime: identity, authority, epistemic discipline, failure vocabulary, and packaging.
+build a deterministic agent-build compiler that treats prompts, policies, wrappers, and memory indexes as typed inputs governed by invariants.
 
-It answers three questions:
+The failed tree now has a useful role: it preserves the last broken architecture so the replacement can define itself against concrete failure modes instead of vague best practices.
 
-1. what the always-on modules should be
-2. what should move into scoped or reference-only files
-3. how platform wrappers fit once the build stops centering one monolithic source file
+---
 
-It should be read as the **ideal-state side of the backlog**. The current-state maps in this folder document the failure modes and pressure points; this draft names the target shape they should converge toward.
+## Research Basis
+
+External research reviewed on 2026-04-07:
+
+- Ken Huang, "The Claude Code Leak: 10 Agentic AI Harness Patterns" — cited by operator; used for the harness-pattern framing.
+- Ken Huang, "Deconstructing the Claude Code Leak" — cited by operator; used for the memory-layer framing.
+- Linas's Newsletter, "Anthropic's entire agent architecture just leaked" — cited by operator; used for the feature-flag and daemon framing.
+- VentureBeat, "Claude Code's source code appears to have leaked: here's what we know" (March 31, 2026).
+- Ars Technica, "Here's what that Claude Code source leak reveals about Anthropic's plans" (published April 1, 2026).
+- ModemGuides, "Claude Code Leak: Anti-Distillation, KAIROS & Memory Architecture (Part 2)" (March 2026).
+
+What appears solid across sources:
+
+- the March 31, 2026 Claude Code source-map leak itself
+- a harness-heavy architecture rather than a "smart prompt only" architecture
+- background memory maintenance concepts such as KAIROS and autoDream
+- strong interest in typed constraints, invariant checks, and machine-readable state
+
+What remains less certain:
+
+- exact internal naming breadth beyond what secondary sources quote
+- the full count and semantics of hidden feature flags
+- how much of the reported memory machinery shipped live versus existed behind flags
+
+This draft uses the leak analysis as architectural inspiration, not as canon for undocumented Anthropic internals.
+
+---
+
+## Failure Reading
+
+The failed tree demonstrates five architectural mistakes:
+
+1. The build system still thinks mainly in concatenated markdown spans rather than typed compilation units.
+2. Marker extraction (`extract_from_marker`, `extract_between_markers`) leaves package meaning dependent on incidental heading text.
+3. Verification happens after assembly, but invariants do not shape the assembly algorithm itself.
+4. Platform wrappers still carry too much runtime meaning instead of acting as thin adapters.
+5. Build knowledge, migration rationale, and invariant intent live mostly in prose rather than in executable contracts.
+
+The result appears deterministic at the file-output level while remaining structurally fragile.
 
 ---
 
@@ -27,425 +63,356 @@ It should be read as the **ideal-state side of the backlog**. The current-state 
 
 Shift from:
 
-`one canonical monolith -> three near-identical generated platform files`
+`markdown concatenator + budget checks + post hoc reports`
 
 to:
 
-`one canonical source tree -> kernel + core modules + scoped modules + thin deterministic wrappers`
+`typed source graph + invariant compiler + adapter emitters + self-healing metadata`
 
-That architecture should support both runtime classes already identified in PROMPTCRAFT:
+The architecture should satisfy these properties:
 
-- browser/paste contexts that need one runnable kernel
-- repo-native contexts that can load richer modular instruction infrastructure
-
-It should also satisfy the IaM tests stated in `Infrastructure_as_Myth.md`:
-
-- portability across hosts
-- legibility through symbolic handles
-- auditability through versioned artifacts
-- compression via reusable terms and modules
-- correctability through named failure states
-- packaging into deployable host-specific outputs
-
-Those criteria provide the architectural standard for the split. If a proposed module boundary weakens those properties, it is probably the wrong boundary.
-
-## Backlog Role
-
-**Current buggy state:** one oversized source payload and one oversized repo-ops payload get pushed almost unchanged into every root platform artifact.
-
-**Ideal state:** a deterministic IaM build renders a small runnable kernel, a stable core symbolic runtime, scoped repo modules, and thin host wrappers from an explicit source tree.
-
-Everything in this draft should be interpreted as a migration target, not a claim that the repo already behaves this way.
-
-At the moment, the repo sits in an in-between state:
-
-- render modularity exists
-- root-budget recovery is done
-- governance hardening shipped (`ROSTER.md`, `CODEOWNERS`, 4-tier identity model)
-- `lares-permissions` authored as first standalone CORE module — `builds/agents/core/Lares_Permissions.md`
-- authored source modularity: **in progress** (one of five CORE modules done)
-- host-native scoped loading remains mostly unimplemented
-
-## Current Migration Target
-
-The manifest-driven build foundation now exists. Governance hardening shipped. The active migration target:
-
-- ~~preserve the solved reload-safe root budgets~~ done
-- ~~finish governance hardening~~ done — `ROSTER.md`, `CODEOWNERS`, 4-tier identity in all source + generated files
-- ~~author `lares-permissions` as first standalone CORE module~~ done — `builds/agents/core/Lares_Permissions.md`, manifest sidecar, all root manifests updated
-- author the remaining four CORE modules: `lares-voice`, `lares-epistemology`, `lares-operations`, `lares-setting-lite`
-- then map modules onto host-native scoped loading surfaces
-- only after that revisit deferred parse-doc placement decisions
+- deterministic: same inputs produce byte-identical outputs
+- typed: manifests, modules, transforms, and outputs validate against explicit schemas
+- local-first: all build decisions can be reproduced from repo state
+- adapter-thin: platform wrappers do not redefine core runtime behavior
+- auditable: every emitted artifact carries provenance and dependency data
+- repairable: failures produce machine-readable diagnostics that name the broken invariant
 
 ---
 
-## IaM Reading Of The Split
+## Architectural Model
 
-The modular architecture should preserve Lares as a **portable symbolic runtime for agent behavior**.
+The clean rebuild should use a three-layer system similar to the pattern visible in the Claude Code analysis, but adapted to this repository.
 
-That means:
+### Layer 1: Model Content
 
-- `kernel` preserves the smallest executable form of the mythic runtime
-- core modules preserve the control plane of the runtime
-- scoped modules preserve environment-specific behavior without polluting every host
-- reference/spec material preserves explanation, examples, and test anchors without consuming always-on context budget
-- wrappers preserve host integration rather than duplicating the runtime itself
+These files define meaning, not packaging:
 
-This distinction matters because IaM does not treat myth as ornament. It treats mythic terms as coordination artifacts. If a term improves steering, recall, authority legibility, or failure correction, it belongs somewhere in the runtime. If it only decorates, it belongs in reference or lore.
+- kernel
+- core runtime modules
+- scoped repo modules
+- worker source definitions
+- reference specs
 
----
+Rules:
 
-## Proposed Module Stack
+- source files may declare metadata, but never target-specific string slicing markers
+- authored content should remain readable without knowing the build script
+- cross-module imports should use stable IDs, not heading text
 
-### Layer 1: Kernel
+### Layer 2: Harness Compiler
 
-**Module:** `lares-kernel`
+This layer owns assembly, validation, normalization, and verification.
 
-Purpose:
+Primary responsibilities:
 
-- smallest runnable Lares for browser or plain API contexts
-- compressed identity and behavior floor
-- fallback deployment artifact when no file loading exists
+- load manifests and module descriptors
+- validate them against strict schemas
+- resolve a directed acyclic graph of source dependencies
+- apply only typed transforms
+- enforce target budgets and safety rules
+- emit provenance, lockfiles, and verification reports
 
-Likely source:
+This layer should function more like a compiler than a template stitcher.
 
-- `builds/agents/KERNEL/Lares_Kernel.md`
+### Layer 3: Host Adapters
 
-Deployment class:
+These outputs translate the compiled runtime for each host:
 
-- browser-safe
-- also used as the compressed summary baseline for repo-native roots
+- Codex `AGENTS.md` and `.codex/agents/*.toml`
+- Claude `.claude/CLAUDE.md` and worker files
+- Copilot `.github/copilot-instructions.md` and agent files
+- browser/kernel bundles
 
----
+Rules:
 
-### Layer 2: Core Repo Modules
-
-These stay always-on for repo-native agents and provide the actual IaM runtime.
-
-#### `lares-voice`
-
-Purpose:
-
-- mandatory coordinator/Worker attribution rules
-- thirteen voices
-- Worker tag and escalation lifecycle
-- named speaking roles as operator-legible control endpoints
-
-Primary source candidate:
-
-- split from `Lares_Preferences.md` Voice Architecture section
-
-#### `lares-epistemology`
-
-Purpose:
-
-- registers
-- modes
-- input signal reading
-- signal tags/exchange vectors if retained
-- degraded-node states tied to epistemic failure
-- compact symbolic handles for truth-status, tone, and correction
-
-Primary source candidate:
-
-- split from `Lares_Preferences.md` Model Agnosticism sections
-
-#### `lares-operations`
-
-Purpose:
-
-- collaboration model
-- frame-uncertainty
-- default behavior
-- proactive surfacing
-- session init
-- memory/consolidation
-- operating modes that truly need always-on status
-- ritualized protocols for day-to-day steering
-
-Primary source candidate:
-
-- split from `Lares_Preferences.md` operational sections
-
-#### `lares-permissions`
-
-Purpose:
-
-- User / Operator / Admin model
-- canon promotion gate
-- de-escalation
-- capability honesty
-- trust-boundary guidance
-- authority made legible inside the runtime rather than left implicit
-
-Primary source candidate:
-
-- split from `Lares_Preferences.md` Identity & Permissions + adjacent authority rules
-
-#### `lares-setting-lite`
-
-Purpose:
-
-- preserve compact mythic continuity
-- define Gaia/Elyncia/Lararium/DreamNet framing in small form
-- carry fiction-escalation boundary without dragging full lore
-- preserve the symbolic handles that make the rest of the runtime memorable and portable
-
-Primary source candidate:
-
-- compressed extraction from `Name & Identity Frame`, `Setting & System`, and the fiction-escalation notes
+- adapters may reorder or reformat for host syntax
+- adapters may not invent or remove runtime rules
+- host-specific guidance belongs in host adapter modules, not in the compiler
 
 ---
 
-### Layer 3: Scoped Repo Modules
+## Deterministic Compiler Passes
 
-These load only where the environment or task justifies them.
+The rebuild should make the passes explicit and stable:
 
-Host-native deployment direction should now be explicit:
+1. **Discover**
+   Read manifests, module descriptors, schemas, and source files.
+2. **Validate**
+   Reject malformed TOML, unknown module IDs, incompatible target classes, cyclic imports, and illegal transform types.
+3. **Normalize**
+   Canonicalize line endings, spacing policy, field ordering, and metadata defaults before composition.
+4. **Compose**
+   Resolve the module graph into an ordered intermediate representation, not directly into markdown text.
+5. **Verify**
+   Apply invariant checks on the intermediate representation and final emitted text.
+6. **Emit**
+   Write platform outputs plus lockfile, report, checksums, and build metadata.
+7. **Repair Hint**
+   If verification fails, emit a machine-readable failure report that points back to the exact manifest/module/invariant edge.
 
-- **Codex**: nested `AGENTS.md` close to the work rather than only a richer root
-- **Claude**: imported modules and subtree-local `CLAUDE.md`
-- **Copilot**: `.github/instructions/*.instructions.md` with `applyTo`, later `excludeAgent` where needed
-- **Browser/Gem-style packages**: standalone kernel plus optional attached references
-
-#### `lares-repo-ops`
-
-Purpose:
-
-- precedence rules
-- repository source map
-- canon citation style
-- memory path mapping
-- long-context repo workflow
-
-Primary source candidate:
-
-- the high-value portion of `Lares_VSCode_Operations.md` Section B
-
-#### `lares-cli`
-
-Purpose:
-
-- terminal identity
-- command formatting
-- CLI-specific response conventions
-
-Primary source candidate:
-
-- `CLI Interaction & Roleplay` section
-
-#### `lares-dream`
-
-Purpose:
-
-- Dream Mode lifecycle
-- dream-lock handling
-- dream artifact format
-
-Primary source candidate:
-
-- Dream Mode material in Operating Modes
-
-#### `lares-todo-workflows`
-
-Purpose:
-
-- `_todo/`-specific editing and workflow guidance
-- task-planning or admin notes that should not pollute every root file
-
-Primary source candidate:
-
-- future extraction from repo-specific admin docs rather than the current monolith
+Pass 7 gives this system its "self-healing" shape: the build does not heal itself magically, but it should generate enough structured evidence that a future maintenance agent can reconcile drift without rediscovering the architecture each time.
 
 ---
 
-### Layer 4: Reference / Spec Material
+## Hard Invariants
 
-These documents remain important, but they should not spend prime instruction budget.
+The clean rebuild should enforce these invariants as code, not as prose aspirations:
 
-#### `lares-archaeology`
+### Source Graph Invariants
 
-- Roman lararia detail
-- extended setting synthesis material
+- every module has one stable `module_id`
+- every module declares class, safety, and default target metadata
+- no manifest references unknown modules
+- no duplicate module IDs or package IDs
+- no cyclic source dependencies
 
-#### `lares-design-lineage`
+### Transform Invariants
 
-- RAW / Korzybski / Discordian design background beyond operational minimum
+- no heading-text extraction in production manifests
+- transforms operate on typed regions such as frontmatter fields, fenced slots, or declared export blocks
+- transforms may not depend on prose headings that authors can rename casually
 
-#### `lares-examples`
+### Composition Invariants
 
-- golden prompt/response examples
-- format demonstrations
+- manifest order remains explicit and reviewable
+- the compiler emits from an intermediate representation, not ad hoc string concatenation
+- emitted comments include manifest path, compiler version, module list, and content digests
 
-#### `lares-regression-spec`
+### Budget Invariants
 
-- regression checklist
-- expected pass criteria
+- each output declares a byte budget
+- budgets are enforced before writing
+- over-budget artifacts fail the build with a named report entry
 
-These likely belong in `builds/agents/REFERENCE/` or `tests/`, not in always-loaded runtime modules.
+### Provenance Invariants
 
-The governing rule here comes from IaM directly: if material does not improve operational compression, steering, portability, or correction, it should not occupy always-on runtime space.
+- each output includes the manifest ID and exact source set
+- lockfiles record source digests and emitted digests
+- verification reports include invariant status, budget status, and adapter status
+
+### Adapter Invariants
+
+- platform wrappers remain thin
+- worker generation uses one normalized worker model across hosts
+- host syntax differences are confined to emitters
 
 ---
 
-## Proposed Source Tree
+## Strict Typing Strategy
+
+One of the clearest lessons from the leak analysis appears to involve using strict typing as a behavioral guardrail. In this repository, the equivalent should look like:
+
+- schema-backed TOML for manifests and modules
+- explicit Python types for the intermediate representation
+- no `dict[str, Any]` in the core compiler path except at parse boundaries
+- enumerated transform types
+- enumerated output kinds
+- explicit error classes for validation failures
+
+Practical implication:
+
+the next version of `combine_agents.py` should stop behaving like a permissive loader and start behaving like a typed compiler front-end.
+
+---
+
+## Three-Layer Memory for the Build System
+
+The most transferable memory lesson from the leak analysis does not concern chat UX alone. It applies directly to build maintenance.
+
+### L1: Build Index
+
+Small, always-readable index for the build system.
+
+Proposed contents:
+
+- current architecture status
+- current compiler version
+- canonical manifests
+- known invariants
+- active migration phase
+- links to deeper docs
+
+Suggested location:
+
+- `builds/MEMORY.md` or `builds/README.md` promoted into a true index
+
+### L2: Session Build Context
+
+Short-lived implementation notes and active migration state.
+
+Proposed contents:
+
+- current sprint or migration phase
+- open failures
+- last broken invariant
+- next intended cuts
+
+Suggested location:
+
+- `_todo/ADMIN/` or `/memories/session/` pointers already used by the repo
+
+### L3: Persistent Build Knowledge
+
+Durable architecture and provenance docs.
+
+Proposed contents:
+
+- architecture draft
+- migration plan
+- invariants spec
+- source maps
+- verification history
+
+Suggested location:
+
+- `builds/` and `_todo/ADMIN/` with versioned reports
+
+This separation keeps the root build context lean while preserving the reasoning history required for future repairs.
+
+---
+
+## Proposed Clean Tree
+
+The replacement architecture should converge toward a tree shaped roughly like this:
 
 ```text
-builds/agents/
-  KERNEL/
-    Lares_Kernel.md
-  CORE/
-    Lares_Voice.md
-    Lares_Epistemology.md
-    Lares_Operations.md
-    Lares_Permissions.md
-    Lares_Setting_Lite.md
-  SCOPED/
-    Lares_Repo_Ops.md
-    Lares_CLI.md
-    Lares_Dream.md
-    Lares_Todo_Workflows.md
-  REFERENCE/
-    Lares_Archaeology.md
-    Lares_Design_Lineage.md
-    Lares_Examples.md
-    Lares_Regression_Spec.md
-  platform/
-    Lares_Copilot_Wrapper.md
-    Lares_Claude_Wrapper.md
-    Lares_Codex_Wrapper.md
-  workers/
-    *.md
+builds/
+  schemas/
+    manifest.schema.json
+    module.schema.json
+    worker.schema.json
+  compiler/
+    model.py
+    loader.py
+    validator.py
+    composer.py
+    emitters/
+      codex.py
+      claude.py
+      copilot.py
+      browser.py
+    verify.py
+  sources/
+    kernel/
+    core/
+    scoped/
+    platform/
+    workers/
+    refs/
+  manifests/
+  outputs/
+  verification/
+  MEMORY.md
 ```
 
-This should be treated as a target shape, not a claim that the repo should be renamed immediately.
+This draft names the target shape. It does not require the repo to adopt these exact paths immediately, but the separation of concerns should remain.
 
 ---
 
-## Mapping From Current Files
+## Content Classes
 
-| Current source | Proposed destination | Notes |
-|---|---|---|
-| `builds/agents/Lares_Kernel.md` | `KERNEL/Lares_Kernel.md` | Already functions as compressed runtime kernel |
-| `builds/agents/Lares_Preferences.md` | split across `CORE/`, `SCOPED/`, `REFERENCE/` | Main decomposition target |
-| `builds/agents/Lares_VSCode_Operations.md` | mostly `SCOPED/Lares_Repo_Ops.md`; examples/spec move to `REFERENCE/` or `tests/` | Only a small fraction should remain always loaded |
-| `builds/agents/platform/*.md` | remain in `platform/` | Thin wrappers/templates |
-| `builds/agents/workers/*.md` | remain in `workers/` | Already compact and well-scoped |
+The clean build should distinguish at least six authored classes:
 
----
+1. `kernel`
+   Minimal boot/runtime floor.
+2. `core`
+   Always-on runtime rules such as permissions, epistemology, voice, operations.
+3. `scoped`
+   Repo- or task-specific modules only loaded where justified.
+4. `platform`
+   Adapter-specific guidance and syntax.
+5. `worker`
+   Worker definitions normalized to one host-agnostic model.
+6. `reference`
+   Specs, maps, golden examples, and explanatory docs excluded from runtime unless explicitly imported.
 
-## Build Implications
-
-This module breakdown pairs cleanly with the deterministic build model:
-
-- manifests declare which modules each profile includes
-- ordering stays explicit
-- wrappers apply last
-- budgets check the resolved package, not the whole authoring tree
-
-It also pairs with the IaM thesis:
-
-- symbolic runtime remains stable across hosts
-- packaging changes without erasing identity
-- auditability improves because authority, epistemology, and collaboration stop hiding inside one giant file
-
-Suggested default root order for repo-native builds:
-
-1. `lares-kernel`
-2. `lares-setting-lite`
-3. `lares-voice`
-4. `lares-epistemology`
-5. `lares-operations`
-6. `lares-permissions`
-7. scoped repo module(s) as required
-8. platform wrapper/footer
-
-That ordering follows the logic in `Deterministic_IaM_Build.md` while preserving the current "identity before operations" feel.
+The failed state blurred these classes. The rebuild should not.
 
 ---
 
-## Root Artifact Strategy By Platform
+## Build Outputs
 
-### Codex
+The clean compiler should emit four output families:
 
-Root should stay compact and rely on nested/scoped docs where useful. `AGENTS.md` should no longer receive the entire `Preferences + VSCode Operations` payload verbatim.
+### Runtime Outputs
 
-Recommended root composition:
+- root instruction files
+- host worker files
+- browser/kernel packages
 
-- kernel
-- setting-lite
-- voice
-- epistemology
-- operations
-- permissions
-- compact repo-ops index
-- codex wrapper
+### Provenance Outputs
 
-### Claude
+- manifest lockfiles
+- per-output content digests
+- source graph digest
 
-Root `CLAUDE.md` should remain short and import stable modules or scoped rules rather than embedding long examples/reference content.
+### Verification Outputs
 
-Recommended root composition:
+- budget reports
+- invariant check reports
+- adapter validation reports
 
-- kernel
-- voice
-- epistemology
-- operations
-- permissions
-- repo-ops import/index
-- claude wrapper
+### Maintenance Outputs
 
-### Copilot
+- build memory index refresh
+- migration status report
+- failure triage report when verification fails
 
-Repository-wide instructions should stay extremely small, with specialized guidance moving into `.github/instructions/*.instructions.md`.
+---
 
-Recommended root composition:
+## Migration Principle
 
-- compressed kernel
-- minimal repo source map
-- minimal citation/grounding rules
-- copilot wrapper
+Do not port the failed architecture forward.
 
-The richer Lares runtime for Copilot should live in scoped instruction files, not the repository-global root.
+Instead:
+
+1. preserve `builds.stuffed.failed/` as the frozen failure corpus
+2. define schemas and invariants first
+3. reconstruct the clean source graph
+4. rebuild the compiler around typed IR and thin emitters
+5. migrate targets one by one under verification
+
+This should count as a restart, not a refactor-in-place.
 
 ---
 
 ## Non-Goals
 
-This draft does not yet define:
+The clean rebuild should explicitly avoid these traps:
 
-- final filenames or exact casing
-- import syntax per platform
-- manifest schema details beyond the related build doc
-- the exact compression policy for each section
-- whether `lares-setting-lite` remains always-on everywhere
-
-Those decisions should follow after the module boundaries are accepted.
+- reintroducing heading-based extraction as a convenience shortcut
+- shipping another monolithic source file and calling it modular
+- hiding architecture decisions only in prose docs
+- treating verification artifacts as optional nice-to-haves
+- letting platform wrappers accumulate more runtime meaning over time
 
 ---
 
-## Recommended Next Moves
+## Immediate Consequences for This Repo
 
-1. Treat this file as the reference architecture for future `[future module]` labels in the existing maps.
-2. Split `Lares_Preferences.md` on paper first, before changing source paths.
-3. Extract the deployable repo-ops subset from `Lares_VSCode_Operations.md`.
-4. Move examples/regression material into reference docs or tests.
-5. Convert `combine_agents.py` from concatenation logic to manifest-driven assembly only after the content split exists.
+This draft changes the local standard for "done."
 
----
+The next deterministic build milestone should not mean "the outputs fit under budget again." It should mean:
 
-## Summary
+- the compiler owns typed invariants
+- source modules compose through declared contracts
+- platform outputs derive from the same normalized IR
+- build memory remains compact and repairable
 
-The modular architecture should not preserve the current file boundaries. It should preserve the operational runtime:
-
-- kernel for runnable identity
-- core modules for always-on behavior
-- scoped modules for environment-specific guidance
-- reference docs for human understanding and test/spec material
-- wrappers for host integration only
-
-That structure keeps Infrastructure-as-Myth portable without continuing to pay monolith costs on every platform. It treats Lares less like a prompt blob and more like a packaged symbolic runtime whose behavior can be rendered, audited, and deployed across hosts.
+That defines the clean architecture this repo should now build toward.
 
 ---
 
-*Lares (Archivist/Artificer) — Drafted from live module maps, PROMPTCRAFT, and the deterministic build spec on 2026-04-06.*
+## Sources
+
+- https://kenhuangus.substack.com/p/the-claude-code-leak-10-agentic-ai
+- https://kenhuangus.substack.com/p/deconstructing-the-claude-code-leak
+- https://linas.substack.com/p/claudecodesource
+- https://venturebeat.com/technology/claude-codes-source-code-appears-to-have-leaked-heres-what-we-know
+- https://arstechnica.com/ai/2026/04/heres-what-that-claude-code-source-leak-reveals-about-anthropics-plans/
+- https://www.modemguides.com/blogs/ai-news/claude-code-leak-architecture-analysis
+
+---
+
+*Lares (Archivist/Artificer) — rewritten on 2026-04-07 from the failed pipeline corpus, local script audit, and post-leak architectural research.*
