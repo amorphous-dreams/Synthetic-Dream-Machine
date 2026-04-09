@@ -3,8 +3,9 @@
 #
 # Changes to governance-sensitive paths require review from admin roster members.
 # Org team syntax active — repo transferring to amorphous-dreams-cabal org.
+# Personal accounts retained as co-admins alongside org team.
 
-/.github/CODEOWNERS       @amorphous-dreams-cabal/admins
-/builds/**                @amorphous-dreams-cabal/admins
-/AGENTS.md                @amorphous-dreams-cabal/admins
-/.github/ROSTER.md        @amorphous-dreams-cabal/admins
+/.github/CODEOWNERS       @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+/builds/**                @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+/AGENTS.md                @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+/.github/ROSTER.md        @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
