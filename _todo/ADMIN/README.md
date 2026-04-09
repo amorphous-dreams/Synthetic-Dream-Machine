@@ -70,7 +70,7 @@ This `README.md` is the scrum tracker. Research and longer-form design notes liv
 - [x] Create protected in-repo admin roster artifact (`.github/ROSTER.md`)
 - [x] Add `CODEOWNERS` protection for `builds/`, `AGENTS.md`, and admin docs
 - [x] Bind `Admin` prompt logic to roster membership
-- [ ] Add GitHub org/team path or direct-username fallback policy
+- [X] Add GitHub org/team path or direct-username fallback policy
 
 ### Epic B — Prompt Trust Gate Hardening
 

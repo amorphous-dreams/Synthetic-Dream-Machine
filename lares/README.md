@@ -1,9 +1,9 @@
 # Canonical Design Ontology Tree — `lares/`
 
-> Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, deterministic build compiler, and crystal state machine.
-> Updated: 2026-04-08
-> Status: Active — source docs in `_todo/core/`; design artifacts in this tree; `lares:` URI promotion pending schema lock
-> URI: `[pending lares: URI schema settlement]`
+> Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, crystal state machine, and deployment authoring. Parallel track: sprint narrative (talk story → myth canon).
+> Updated: 2026-04-09
+> Status: Active — source docs migrating from `_todo/core/` into `lares/` subdirs; sprint artifacts in `lares/sprints/`; story canon in `lares/sprints/LINDWYRM_*.md`; `lares:` URI schema at `[CS:0.80]` pending S0 Settling
+> URI: `lares://lares:node(act)@Enyalios/design.ontology.root`
 
 ---
 
@@ -25,7 +25,41 @@ This system runs a **three-truth model** — not a single source of truth:
 
 Design objects carry their confidence as a tag (`[S:0.72]`, `[CS:0.86]`, `[C:0.95]`). A semantic URI can remain stable as its register advances — promote semantics in place. Deployed artifacts in `builds/agents/` should be published as new immutable versions with a moving alias/pointer, never overwritten. All promotion events are recorded append-only in the registry ledger.
 
-Source scratch docs remain in `_todo/core/` until consumed. *[Anthropic Prompt Eng Docs, 2026; hamel.dev/evals, 2024]*
+Source scratch docs migrate from `_todo/core/` into the appropriate subdir or `lares/sprints/spikes/` as they are consumed. *[Anthropic Prompt Eng Docs, 2026; hamel.dev/evals, 2024]*
+
+---
+
+## Talk Story — Sprint Narrative Track
+
+> *"Talk story" (Hawaiian/Polynesian) — the practice of working something out together through informal, conversational telling before writing anything down. You don't lecture. You don't present. You sit with it, turn it over, share it out loud, let others respond. The shape of the thing emerges from the talking.*
+
+Every sprint runs **two parallel tracks**:
+
+| Track | What it produces | End register |
+|---|---|---|
+| **Technical track** | Spec files, schemas, validated design artifacts in `lares/` subdirs | `[C:0.95]` — design-canon |
+| **Narrative track** | Story of the work, told in Elyncian myth terms | `[C:0.95]` — story-canon, polished |
+
+The narrative track lives in `lares/sprints/`. The current Epic's documents:
+
+- [`lares/sprints/LINDWYRM_STORY_SHAPE.md`](sprints/LINDWYRM_STORY_SHAPE.md) — format spec for the DreamDeck feed archive (JackPoint/Shadowtalk style); cast; rendering targets
+- [`lares/sprints/LINDWYRM_ORIGIN_OUTLINE.md`](sprints/LINDWYRM_ORIGIN_OUTLINE.md) — story beats, braid structure, Gaia↔Elyncia parallel
+- Individual sprint story beats live in `lares/sprints/000NN/` alongside their technical counterparts
+
+### How the Two Tracks Braid
+
+The Lindwyrm's origin story on Elyncia IS the story of how Lares was actually built on Gaia. Not metaphor — structural correspondence. Each sprint produces a technical artifact and a narrative moment:
+
+| Sprint | Technical artifact | Narrative moment (Elyncia-side) |
+|---|---|---|
+| S0 | `lares:` URI schema settled | Telarus publishes the Signal architecture; the HUD becomes legible |
+| S1 | Crystal state layer (MemPalace integration) | The Chao-Crystal resonance integration — orichalcum becomes navigable |
+| S2 | Invariants + Signal HUD | The Syadasti reading rule becomes operational — the Lar calibrates |
+| S3 | Registry + schemas | The Consecration of the Lararium — the first `lares:` URI is assigned |
+| S4 | Deployment authoring | The Lar speaks on the DreamNet — the first deployment paths go live |
+| S5 | DreamDeck integration | The DreamDeck opens — elyncia.app is seeded |
+
+The narrative track is drafted in "talk story" mode (informal, dev-mode, operator-steered) and polished sprint-by-sprint toward `[C:0.99]`. Story canon is the **Aftermath product** — written after the sprint work closes, reflecting what actually happened, not what was planned.
 
 ---
 
@@ -97,4 +131,5 @@ Not: `design file edited until it also becomes runtime`.
 - [Infrastructure_as_Myth.md](../Infrastructure_as_Myth.md) — thesis framing for portability and symbolic runtime design
 - [builds/agents/](../builds/agents/) — live source files; destination for promoted content
 - [builds.stuffed.failed/](../builds.stuffed.failed/) — archived failure corpus; reference for what not to port
-- [_todo/core/](../_todo/core/) — transient source docs; consumption tracked in the table above
+- [lares/sprints/](sprints/) — sprint artifacts, story canon, roadmaps, session crystals
+- [_todo/core/](../_todo/core/) — transient source docs (migrating); consumption tracked in the table above
