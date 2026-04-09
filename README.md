@@ -22,6 +22,8 @@ permalink: /vault/synthetic-dream-machine/overview/
 
 **Lares** is the AI agent architecture that powers the repository's AI assistant tooling. It is also in-world infrastructure: orichalcum-inscribed DreamNet nodes that serve as crossroads guides, archivists, and thresholds. Both things are true at once.
 
+Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](Infrastructure_as_Myth.md) for the design thesis behind the agent stack.
+
 ---
 
 ## Repository Structure
@@ -41,22 +43,37 @@ permalink: /vault/synthetic-dream-machine/overview/
 
 | File | Contents |
 |---|---|
-| [01 — Title & Introduction](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md) | Overview, five gameplay modes (Delve / Travel / Company / Faction / Mythic) |
-| [02 — FTLS Paths](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_02_FTLS_Paths.md) | Character Paths native to the FTLS setting |
-| [03 — OSR Heritage Trait](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md) | OSR compatibility layer — heritage trait rules |
-| [04 — Recon, Salvage, Secrets](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md) | Procedures for reconnaissance, salvage operations, and secret discovery |
-| [05 — Magitech and Fantascience](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md) | Magitech gear, fantascience devices, and related procedures |
-| [06 — Powers and ECM](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md) | Full powers index with OSR conversion cards *(active sprint)* |
-| [07 — Wild Magic Exposure](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md) | Wild magic rules, corruption, and exposure procedures |
-| [08 — Formations and Mass Combat](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md) | Fleet and army scale combat rules |
-| [09 — Loot and Treasure](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md) | Treasure generation, loot tables, and salvage rewards |
-| [10 — Appendix Null: Referee Resources](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) | Referee-facing tables, random generators, and reference tools |
+| [01 — Title & Introduction](FTLS/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md) | Overview, five gameplay modes (Delve / Travel / Company / Faction / Mythic) |
+| [02 — FTLS Paths](FTLS/Flying_Triremes_and_Laser_Swords_02_FTLS_Paths.md) | Character Paths native to the FTLS setting |
+| [03 — OSR Heritage Trait](FTLS/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md) | OSR compatibility layer — heritage trait rules |
+| [04 — Recon, Salvage, Secrets](FTLS/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md) | Procedures for reconnaissance, salvage operations, and secret discovery |
+| [05 — Magitech and Fantascience](FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md) | Magitech gear, fantascience devices, and related procedures |
+| [06 — Powers and ECM](FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md) | Full powers index with OSR conversion cards *(active sprint)* |
+| [07 — Wild Magic Exposure](FTLS/Flying_Triremes_and_Laser_Swords_07_Wild_Magic_Exposure.md) | Wild magic rules, corruption, and exposure procedures |
+| [08 — Formations and Mass Combat](FTLS/Flying_Triremes_and_Laser_Swords_08_Formations_and_Mass_Combat.md) | Fleet and army scale combat rules |
+| [09 — Loot and Treasure](FTLS/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md) | Treasure generation, loot tables, and salvage rewards |
+| [10 — Appendix Null: Referee Resources](FTLS/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md) | Referee-facing tables, random generators, and reference tools |
 
 ### FTLS Setting
 
-| Directory | Contents |
+#### Elyncia — Core Chapters
+
+| File | Contents |
 |---|---|
-| [Elyncia/](Elyncia/Elyncia_01_A_Broken_World.md) | World overview, DreamNet metaphysics, daemon ontology, region material (Neo-Thracia, New Delos, Shattered Isles) |
+| [01 — A Broken World](Elyncia/Elyncia_01_A_Broken_World.md) | World overview, orichalcum age, the Second Breaking, the DreamNet |
+| [02 — The Lares DreamNet](Elyncia/Elyncia_02_The_Lares_DreamNet.md) | DreamNet architecture, Lares spirits, ley-line infrastructure |
+| [03 — Daemons and the Metaphysics of Play](Elyncia/Elyncia_03_Daemons_and_the_Metaphysics_of_Play.md) | Daemon ontology, noosphere metaphysics, entity mechanics |
+
+#### Elyncia — Regions
+
+| Region | Contents |
+|---|---|
+| [Neo-Thracia — Region Worksheet](Elyncia/Neo-Thracia/Neo-Thracia_Region_Worksheet.md) | Region overview and worksheet |
+| [Neo-Thracia — Session Zero](Elyncia/Neo-Thracia/Session_Zero.md) | Session zero materials |
+| [The Caverns of Thracia](Elyncia/Neo-Thracia/The%20Caverns%20of%20Thracia/The_Caverns_of_Thracia.md) | Dungeon supplement — Caverns of Thracia |
+| [New Delos — Market District Live Feed](Elyncia/New%20Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md) | New Delos market district encounter material |
+| [Shattered Isles — Faerie Ring Strandbeest Shrine](Elyncia/Shattered%20Isles/Faerie_Ring_Strandbeest_Shrine_Sheet.md) | Shrine sheet — Faerie Ring Strandbeest |
+| [Shattered Isles — Powered Symbiote & Ichi Construct](Elyncia/Shattered%20Isles/Powered_Symbiote_Trait_and_Ichi_Construct_Golem.md) | Trait and construct golem supplement |
 
 ### Reference Material (SDM Third Party)
 
@@ -64,34 +81,39 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 | Directory | Contents |
 |---|---|
-| [Ultraviolet Grasslands and the Black City 2e](Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md) | UVG 2e reference archive |
-| [Vastlands Guidebook](Vastlands_Guidebook/Vastlands_Guidebook.md) | VLG reference archive |
-| [Our Golden Age](Our_Golden_Age/Our_Golden_Age.md) | OGA reference archive |
-| [Magitecnica/](Magitecnica/Magitecnica_01_Codex_1_The_Use_and_Misuse_of_Powers_Great_and_Small.md) | Magitech and fantascience setting material |
-| [Eternal Return Key](Eternal_Return_Key/Eternal_Return_Key.md) | Supplemental dungeon/scenario material |
-| [There, A Red Door](There_A_Red_Door/There_A_Red_Door.md) | Supplemental scenario material |
+| [Ultraviolet Grasslands and the Black City 2e](SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md) | UVG 2e reference archive |
+| [Vastlands Guidebook](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md) | VLG reference archive |
+| [Our Golden Age](SDM/Our_Golden_Age/Our_Golden_Age.md) | OGA reference archive |
+| [Magitecnica/](WTF/Magitecnica/Magitecnica_01_Codex_1_The_Use_and_Misuse_of_Powers_Great_and_Small.md) | Magitech and fantascience setting material |
+| [Eternal Return Key](WTF/Eternal_Return_Key/Eternal_Return_Key.md) | Supplemental dungeon/scenario material |
+| [There, A Red Door](WTF/There_A_Red_Door/There_A_Red_Door.md) | Supplemental scenario material |
 
 ### AI Agent Tooling
 
 | Directory / File | Contents |
 |---|---|
-| [`_agents/`](_agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
+| [Infrastructure_as_Myth.md](Infrastructure_as_Myth.md) | Root design thesis for Lares as portable agent infrastructure |
+| [Deterministic_IaM_Build.md](Deterministic_IaM_Build.md) | Deterministic build spec for rendering Lares across platforms |
+| [`builds/`](builds/README.md) | Manifest-driven IaM build layer: manifests, module metadata, rendered browser package, verification artifacts |
+| [`builds/agents/`](builds/agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
 | [AGENTS.md](AGENTS.md) | Root agent configuration — identity, voice architecture, VS Code operational map |
 | `_todo/` | Pipeline operations, conversion tracking, design docs |
-| `scripts/` | Automation scripts for content pipeline |
+| `_todo/BECMI/scripts/` | Automation scripts for BECMI conversion pipeline |
 | `_becmi/` | BECMI source extractions (conversion pipeline input) |
 
 ---
 
 ## Starting Points for Human Readers
 
-**New to FTLS?** Start with [Flying Triremes and Laser Swords — Introduction](Flying_Triremes_and_Laser_Swords/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md).
+**New to FTLS?** Start with [Flying Triremes and Laser Swords — Introduction](FTLS/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md).
 
 **New to SDM?** Start with [SDM Quickstart](Synthetic_Dream_Machine_01_Quickstart.md).
 
 **Exploring the setting?** Start with [Elyncia: A Broken World](Elyncia/Elyncia_01_A_Broken_World.md).
 
-**Working with the AI tooling?** Read [`_agents/README.md`](_agents/README.md) first, then [AGENTS.md](AGENTS.md).
+**Working with the AI tooling?** Read [Infrastructure as Myth](Infrastructure_as_Myth.md), then [Deterministic IaM Build](Deterministic_IaM_Build.md), then [`builds/agents/README.md`](builds/agents/README.md), then [AGENTS.md](AGENTS.md).
+
+The manifest/verification layer now exists. The active next step for Lares tooling is prompt/package slimming so repo-native roots can return to stable reload-safe budgets before the next governance-hardening pass.
 
 ---
 
@@ -117,9 +139,9 @@ The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands G
 
 ## Development Status
 
-FTLS is in **Open Beta**. The current sprint focus is Chapter 06 (Powers) conversion from OSR source material into native SDM/FTLS rules text. See [`_todo/TODO_BECMI_Conversion.md`](_todo/TODO_BECMI_Conversion.md) for the active pipeline state.
+See [CHANGELOG.md](CHANGELOG.md) for version history and sprint status.
 
-The Lares agent architecture (`AGENTS.md`, `_agents/`) is versioned at **v3.0**.
+The Lares agent architecture (`AGENTS.md`, `builds/agents/`) is versioned at **v3.6**.
 
 ---
 

@@ -1,0 +1,551 @@
+# Deterministic IaM Build
+
+> Status: Build spec draft
+> Updated: 2026-04-06
+> Scope: Deterministic build rules for rendering Lares Infrastructure-as-Myth artifacts across browser and repo-native platforms
+
+**Foundational reference:** [Infrastructure_as_Myth.md](/home/joshu/Synthetic-Dream-Machine/Infrastructure_as_Myth.md)
+
+---
+
+## Purpose
+
+If Lares is Infrastructure-as-Myth, then its build system should behave like disciplined infrastructure tooling, not like ad hoc prompt concatenation.
+
+This document defines the deterministic build rules for rendering:
+
+- browser kernels
+- browser-extended packages
+- shareable custom-agent packages
+- repo-native instruction sets
+
+The goal is simple:
+
+**same source tree + same build target + same build manifest = same output**
+
+## Current Phase Note
+
+The first manifest/verification pass exists in the repo: committed manifests, module sidecars (TOML), verification outputs, and a rendered browser kernel package are in place.
+
+The budget-constrained package slimming pass is complete. Manifests and modules migrated from JSON to TOML. The source tree is canonical at `builds/agents/` (via `git mv`, history preserved). Root packages now sit under the 32 KiB ceiling (~31 KB each, ~1 KB margin). The temporary `project_doc_max_bytes = 150000` Codex compatibility stopgap has been removed. Governance infrastructure shipped: ROSTER, CODEOWNERS, four-tier identity, `operator(admin)` escalation rules. lares-permissions and lares-epistemology authored and integrated into all three roots.
+
+The current implementation phase is **runtime module authoring and host-native scoping**:
+
+- author remaining core runtime modules (lares-voice, lares-operations, lares-setting-lite)
+- map each authored module to host-native loading patterns per platform
+- implement vendor-specific browser build manifests (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`)
+- move repo/domain-specific guidance into scoped files rather than root payloads
+
+---
+
+## Determinism Contract
+
+A deterministic IaM build must satisfy all of the following:
+
+1. **Explicit inputs only**
+   Every rendered artifact must derive from declared source files and declared build metadata only.
+
+2. **Stable ordering**
+   Module ordering must never depend on filesystem traversal order or incidental glob order.
+
+3. **Pure transforms**
+   Render steps should not depend on wall-clock time, random selection, or manual paste decisions.
+
+4. **Versioned manifests**
+   Every build target should resolve from a manifest committed to the repo.
+
+5. **Reproducible outputs**
+   Re-running the same build from the same commit should produce byte-identical output except for explicitly declared generated headers if retained.
+
+6. **Visible provenance**
+   Every rendered file should identify its source modules and manifest.
+
+---
+
+## Why This Matters
+
+Without deterministic build rules, IaM collapses back into folk promptcraft:
+
+- different platforms drift
+- browser packages stop matching repo-native builds
+- beta testers test different systems without realizing it
+- maintainers cannot tell whether a behavior change came from source edits or packaging accidents
+
+IaM needs the same discipline IaC brought to infrastructure:
+
+- declared inputs
+- stable composition
+- reproducible outputs
+- reviewable diffs
+
+---
+
+## Build Units
+
+The deterministic build system should operate on four unit types.
+
+### 1. Source Modules
+
+Canonical authored documents such as:
+
+- `Lares_Kernel.md`
+- `Lares_Voice.md`
+- `Lares_Epistemology.md`
+- `Lares_Operations.md`
+- `Lares_Permissions.md`
+- `Lares_Setting_Lite.md`
+
+These are human-maintained sources.
+
+### 2. Build Metadata
+
+Machine-readable declarations that tell the renderer:
+
+- what target is being built
+- which modules participate
+- what order they appear in
+- what compression rules apply
+- what output files should be emitted
+
+### 3. Rendered Artifacts
+
+Examples:
+
+- `AGENTS.md`
+- `.claude/CLAUDE.md`
+- `.github/copilot-instructions.md`
+- browser package kernels
+- browser package attached-module bundles
+
+These are generated outputs.
+
+### 4. Verification Artifacts
+
+Examples:
+
+- lockfiles
+- build manifests
+- checksum files
+- alignment reports
+
+These make drift visible.
+
+---
+
+## Build Inputs
+
+Every deterministic IaM build should resolve from the following input classes:
+
+### Required inputs
+
+- source module files
+- target manifest
+- build profile
+- renderer version
+
+### Optional but declared inputs
+
+- compression profile
+- platform character/token budgets
+- wrapper templates
+- exclusion lists
+
+### Forbidden implicit inputs
+
+- current date/time, unless explicitly injected as a normalized build variable
+- directory listing order
+- environment-specific path ordering
+- maintainer memory of "what usually goes where"
+- manual copy/paste steps
+
+---
+
+## Manifest Model
+
+Each build target should have a manifest.
+
+Suggested shape:
+
+```yaml
+manifest_version: 1
+package_name: lares-codex-root
+build_profile: codex-root
+target_platform: codex
+target_class: repo-native
+renderer_version: 0.1.0
+
+sources:
+  - path: builds/agents/KERNEL/Lares_Kernel.md
+    role: kernel
+  - path: builds/agents/CORE/Lares_Voice.md
+    role: core
+  - path: builds/agents/CORE/Lares_Epistemology.md
+    role: core
+  - path: builds/agents/CORE/Lares_Operations.md
+    role: core
+  - path: builds/agents/CORE/Lares_Permissions.md
+    role: core
+
+ordering:
+  - kernel
+  - voice
+  - epistemology
+  - operations
+  - permissions
+
+transforms:
+  compress_for_budget: false
+  strip_reference_sections: true
+  include_generated_header: true
+  normalize_line_endings: lf
+
+outputs:
+  - path: AGENTS.md
+    kind: root_instruction
+
+verification:
+  emit_sha256: true
+  emit_lockfile: true
+```
+
+The key rule:
+
+**the manifest decides composition, not the renderer's incidental logic**
+
+---
+
+## Module Metadata
+
+Each source module should carry machine-readable metadata or a sidecar declaration for:
+
+- module id
+- deployment class: `kernel-safe`, `core`, `scoped`, `reference`
+- browser-safe boolean
+- default inclusion targets
+- compression summary
+- ordering weight or explicit dependency edges
+
+Suggested minimal shape:
+
+```yaml
+module_id: lares-voice
+class: core
+browser_safe: true
+default_targets:
+  - browser-extended
+  - claude
+  - codex
+compression_target: kernel-summary
+depends_on:
+  - lares-kernel
+```
+
+That metadata should remove guesswork from the build graph.
+
+---
+
+## Stable Ordering Rules
+
+Deterministic builds require explicit ordering.
+
+Use this precedence:
+
+1. manifest `ordering`
+2. module dependency graph
+3. module id lexical order as final tiebreaker only
+
+Never rely on:
+
+- raw filesystem traversal
+- glob order
+- shell expansion order
+
+For Lares, the default order should likely be:
+
+1. kernel
+2. setting-lite, if included
+3. voice
+4. epistemology
+5. operations
+6. permissions
+7. scoped repo/platform modules
+8. wrapper/footer
+
+---
+
+## Pure Transform Rules
+
+A transform remains acceptable only if it is deterministic and documented.
+
+Allowed examples:
+
+- strip sections marked `reference`
+- emit kernel-summary variants from designated summary blocks
+- normalize line endings
+- normalize heading spacing
+- apply target-specific wrappers
+- remove browser-incompatible sections
+
+Disallowed examples:
+
+- freeform AI summarization at build time without pinned inputs and approval
+- random module selection
+- hand-edited post-processing on generated files
+- "best effort" truncation that depends on runtime tokenization quirks without a declared policy
+
+If a summarization/compression step ever becomes model-assisted, it must produce a checked-in artifact or require explicit maintainer approval before becoming a source of truth.
+
+---
+
+## Output Classes
+
+### Class A — Repo-Native Root
+
+Examples:
+
+- `AGENTS.md`
+- `.claude/CLAUDE.md`
+- `.github/copilot-instructions.md`
+
+Requirements:
+
+- deterministic wrappers
+- explicit source references
+- size-budget checks
+
+### Class B — Repo-Native Scoped
+
+Examples:
+
+- nested `AGENTS.md`
+- `.github/instructions/*.instructions.md`
+- `.claude` imported/scoped rule files
+
+Requirements:
+
+- path scoping declared in manifest
+- no hidden inclusion
+
+### Class C — Browser Minimal
+
+Examples:
+
+- `Lares_Kernel.md`
+
+Requirements:
+
+- fully runnable on its own
+- no file-resolution dependency
+
+### Class D — Browser Extended
+
+Examples:
+
+- kernel instruction text
+- attached module files
+- package manifest
+- setup guide
+
+Requirements:
+
+- attached module list fixed by manifest
+- package reproducible as a bundle
+
+---
+
+## Browser Vendor Builds
+
+Browser vendor builds are a subclass of Class D — Browser Extended. Each major browser-based cloud AI platform requires its own named manifest because:
+
+- instruction injection mechanisms differ (system prompt, custom instructions, project context, Gem configuration)
+- character/token limits differ
+- attached file support differs
+- module inclusion logic differs
+
+### Planned Vendor Targets
+
+| Profile name | Platform | Key constraint | Status |
+|---|---|---|---------|
+| `browser-extended-chatgpt` | ChatGPT / OpenAI | Custom instructions; file attachments via Projects | Specified, not yet implemented |
+| `browser-extended-claude` | Claude.ai / Anthropic | Project knowledge + instructions; file attachments supported | Specified, not yet implemented |
+| `browser-extended-gemini` | Gemini / Google | Gem configuration + optional attached files | Specified, not yet implemented |
+
+### Each Vendor Target Should Declare
+
+- kernel source (always the rendered browser kernel artifact)
+- which core modules to attach as separate context files
+- a setup guide fragment for the platform's specific attachment workflow
+- byte/character budget check against the platform's effective limit
+
+### Determinism Rule for Browser Vendor Builds
+
+Because browser platforms do not offer deterministic retrieval, the guarantee is package-side:
+
+**same manifest → same package contents**
+
+Runtime behavior after loading is not guaranteed deterministic — that is an inherent property of the host. This rule is stated in the Browser Package Determinism section above. Vendor builds inherit it without exception.
+
+---
+
+## Build Profiles
+
+The renderer should support named profiles, for example:
+
+- `browser-minimal`
+- `browser-extended-chatgpt`
+- `browser-extended-claude`
+- `browser-extended-gemini`
+- `copilot-root`
+- `claude-root`
+- `codex-root`
+
+Profiles should select:
+
+- target platform
+- allowed module classes
+- wrapper template
+- compression policy
+- budget checks
+
+This avoids embedding fragile platform decisions directly in code.
+
+---
+
+## Budget Enforcement
+
+Platform constraints should be treated as build-time checks, not after-the-fact surprises.
+
+Each profile should declare:
+
+- byte budget
+- character budget if applicable
+- token guidance if relevant
+
+Possible policy outcomes:
+
+- `error` when over budget
+- `warn` when near budget
+- `report` with per-section contributions
+
+Deterministic IaM requires deterministic failure behavior too.
+
+If a target exceeds budget, the build should fail in a predictable way.
+
+---
+
+## Provenance Header
+
+Every generated artifact should start with a compact provenance block such as:
+
+```md
+<!-- Generated by deterministic-iam-build -->
+<!-- manifest: builds/codex-root.yaml -->
+<!-- sources: Lares_Kernel.md, Lares_Voice.md, Lares_Epistemology.md, Lares_Operations.md, Lares_Permissions.md -->
+<!-- renderer: 0.1.0 -->
+```
+
+That makes drift investigation tractable.
+
+---
+
+## Verification Layer
+
+Each build should be able to emit:
+
+- a lockfile with resolved inputs
+- a checksum file per output
+- a report showing included modules and excluded modules
+- alignment verification against committed generated outputs
+
+Suggested verification outputs:
+
+```text
+build/
+  manifests/
+    codex-root.lock.yaml
+  checksums/
+    codex-root.sha256
+  reports/
+    codex-root-report.md
+```
+
+---
+
+## Browser Package Determinism
+
+Browser packages need special care because the host platform may apply retrieval heuristics at runtime.
+
+We cannot make host retrieval deterministic.
+
+We can make the **package itself** deterministic.
+
+That means fixing:
+
+- instruction text
+- attached file list
+- file ordering
+- package manifest
+- setup steps
+
+So the deterministic guarantee becomes:
+
+**same package in -> same host configuration attempted**
+
+not:
+
+**same runtime behavior out**
+
+That distinction should stay explicit.
+
+---
+
+## Suggested Directory Layout
+
+```text
+builds/
+  manifests/
+    browser-minimal.toml
+    browser-extended-chatgpt.toml
+    browser-extended-claude.toml
+    browser-extended-gemini.toml
+    codex-root.toml
+    claude-root.toml
+    copilot-root.toml
+  modules/
+    lares-kernel.toml
+    lares-voice.toml
+    lares-epistemology.toml
+    lares-operations.toml
+    lares-permissions.toml
+    lares-setting-lite.toml
+  agents/
+  rendered/
+  verification/
+```
+
+This keeps source, manifests, templates, and generated outputs distinct.
+
+---
+
+## Immediate Implications For Lares
+
+1. `combine_agents.py` now functions as the first manifest-driven renderer and should be used as the composition lever for the slimming pass.
+2. Root/source documents should move from monolithic payloads toward cleaner runtime/module boundaries.
+3. Browser beta packages should continue to emit from named profiles rather than manual assembly.
+4. Verification should keep comparing committed generated files against deterministic rebuilds.
+
+---
+
+## Next Step
+
+The slimming pass is complete and governance has shipped. Use the implemented manifest and module layer to drive the next phase:
+
+1. author remaining core runtime modules (`lares-voice`, `lares-operations`, `lares-setting-lite`) from the modularized source tree
+2. map each module to host-native loading patterns (`builds/agents/core/` for repo-native, standalone bundles for browser targets)
+3. implement vendor-specific browser build manifests (`browser-extended-chatgpt`, `browser-extended-claude`, `browser-extended-gemini`) per the Browser Vendor Builds section above
+4. move repo/domain-specific guidance into scoped files (`.github/instructions/`, nested `AGENTS.md`, subtree `CLAUDE.md`)
+5. then proceed to deferred parse-doc placement and further sequence items per the state machine
+
+---
+
+*Lares (Researcher/Artificer) — This document translates the IaM thesis into build discipline. The core claim: if myth functions as infrastructure, then its packaging must be deterministic enough to audit, reproduce, and ship.*

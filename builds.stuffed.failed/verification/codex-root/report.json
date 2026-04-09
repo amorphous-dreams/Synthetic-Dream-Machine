@@ -1,0 +1,26 @@
+{
+  "budget": {
+    "max_bytes": 36000
+  },
+  "build_profile": "codex-root",
+  "governance_integration_points": [
+    "Future roster/CODEOWNERS enforcement should protect builds/manifests/",
+    "Future Admin governance should review module metadata changes under builds/modules/",
+    "Prompt-side Admin binding remains out of scope for this deterministic build MVP"
+  ],
+  "outputs": [
+    {
+      "bytes": 220,
+      "path": ".codex/config.toml",
+      "sha256": "090fd60f319256dd38212b58ac47bd79c1367970e30fedcee17b6c119f4f2162"
+    },
+    {
+      "bytes": 33527,
+      "path": "AGENTS.md",
+      "sha256": "8edf77f706abdcd695d7a4a373dddd64d8ecc9783bad9efa0cd4942171718c6a"
+    }
+  ],
+  "package_id": "codex-root",
+  "target_class": "repo-native",
+  "target_platform": "codex"
+}

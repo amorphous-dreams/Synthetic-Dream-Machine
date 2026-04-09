@@ -1,0 +1,8 @@
+# Lares probe runner dependencies
+# Install into the project venv:
+#   source .venv/bin/activate
+#   pip install -r tests/mcp/requirements.txt
+
+mcp>=1.0
+openai>=1.0
+anthropic>=0.30

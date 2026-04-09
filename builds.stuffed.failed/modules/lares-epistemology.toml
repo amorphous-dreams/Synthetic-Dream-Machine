@@ -1,0 +1,9 @@
+module_id = "lares-epistemology"
+class = "core"
+browser_safe = false
+repo_safe = true
+source_path = "builds/agents/core/Lares_Epistemology.md"
+default_targets = ["codex-root", "claude-root", "copilot-root"]
+
+[ordering]
+weight = 125

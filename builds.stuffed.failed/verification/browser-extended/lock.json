@@ -1,0 +1,25 @@
+{
+  "manifest_path": "builds/manifests/browser-extended.toml",
+  "manifest_sha256": "fa63098f33aa2cb3456089549508de722f47bed75c81529988ed6da0af5c59c3",
+  "outputs": [
+    {
+      "bytes": 5351,
+      "path": "builds/rendered/browser-extended/Lares_Kernel.browser-extended.md",
+      "sha256": "efba9ae374d6b05d943a22aab7956894b10476461410d28fea42bde626ec3244"
+    }
+  ],
+  "package_id": "browser-extended",
+  "renderer_version": "0.2.0",
+  "sources": [
+    {
+      "metadata_path": "builds/modules/lares-kernel-claude.toml",
+      "module_id": "lares-kernel-claude",
+      "rendered_sha256": "2ca52a6e4a4f645f98d1c896b394f8e9abb2b3aa517ecefdc76d1b4adf94fd8b",
+      "source_path": "builds/agents/platform/Lares_Kernel_Claude.md",
+      "source_sha256": "2ca52a6e4a4f645f98d1c896b394f8e9abb2b3aa517ecefdc76d1b4adf94fd8b",
+      "transform": {
+        "type": "full"
+      }
+    }
+  ]
+}

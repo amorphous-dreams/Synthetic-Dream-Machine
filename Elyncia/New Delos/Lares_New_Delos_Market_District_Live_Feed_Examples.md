@@ -1,22 +1,26 @@
-# LARES
-
-## I. THE ARCHAEOLOGY OF SHRINES
-*[Research grounding — Synthesis label where extrapolated to Elyncia]*
-
-Every house on ancient Gaia had a lararium of some kind. The wealthiest could afford a special chamber with a raised pool and sumptuous decorations — dedicated rooms with frescoed walls, altars, small gardens. Simpler households made do with wall paintings; rich homes built extravagant miniature temple-structures. The range was enormous, and entirely personal.
-
-What the archaeology reveals, frozen under Vesuvian ash, is how *individual* each shrine was. Walls painted blood-red, enchanted garden scenes, coiled serpents approaching an altar from both sides, peacocks, birds, bulls — and on one wall, a figure with a dog’s head interpreted as a Romanized Anubis. An altar decorated with eggs, symbol of fertility, with burnt remains that archaeologists believe contained food offerings — figs, nuts, eggs — made to household deities. Household objects accumulated around the shrine over time: a translucent blue and green rimmed plate, a cradle-shaped incense burner, an oil lamp decorated with Zeus transforming into an eagle.
-
-One middle-class family spent so extravagantly on their courtyard lararium that funds were apparently insufficient to decorate the remaining five rooms. The shrine came first. Everything else was negotiable.
-
-A more recent find: a rare blue-painted sacrarium, its walls depicting female figures representing the four seasons, alongside imagery of agriculture and shepherding — and what appears to be a large spotted cat. Blue pigment was rare and expensive in Pompeian frescoes, reserved for spaces of exceptional importance. Someone considered this room worth the cost.
-
-**Synthesis — Elyncia extrapolation:** The lararium’s radical individuality is not decorative accident. It is evidence of a *living relationship* between household and spirit — each node shaped by its occupants, their offerings, their accumulated history. On Elyncia, this principle scales directly into DreamNet infrastructure. A public market lararium is not a standardized terminal. It is a *place*, with its own personality, its own accumulated offering-residue, its own weird. No two nodes feel the same. That is not a bug.
-
----
-
 # NEW DELOS MARKET DISTRICT
 *Compitale Node — Spice Quarter Crossroads*
+
+## I. PARSE INDEX
+*--parse pass | p0.5 | 13 turns identified (T0–T12)*
+
+| Turn | Section | Input Type | Register | Mode | Coordinate |
+|---|---|---|---|---|---|
+| T0 | III | `action` — approach (3 lines) | `[P:0.3]` | 🌊 | `//threshold.new.arrives` |
+| T1 | III | `command` — `lares` cold init | `[P:0.3]` | 🏛️ | `//threshold.open.seeks` |
+| T2 | III | `command` — `lares help` | `[P:0.35]` | 🏛️ | `//orientation.uncertain.asks` |
+| T3 | III | `action` — offering gesture (3 lines) | `[SP:0.4]` | 🎭 | `//threshold.uncertain.softens` |
+| T4 | III | `action+command` — sit + `lares status` | `[SP:0.45]` | 🏛️ | `//node.steady.asks` |
+| T5 | IV | `action` — accept chai (2 lines) | `[P:0.3]` | 🌊 | `//offering.held.opens` |
+| T6 | IV | `command` — `ink-clerk --query` | `[CS:0.8]` | 🏛️ | `//mana.sharp.asks` |
+| T7 | IV | `command` — `map-wisp --query` | `[S:0.6]` | 🏛️🌊 | `//route.liminal.circles` |
+| T8 | IV | `command` — `bolt-priest --query` | `[CS:0.75]` | 🏛️ | `//orichalcum.loose.waits` |
+| T9 | IV | `command` — `--realms` | `[P:0.3]` | 🏛️ | `//realm.open.asks` |
+| T10 | IV | `command` — `--streams` | `[P:0.3]` | 🏛️ | `//archive.open.asks` |
+| T11 | IV | `action` — figure observation (3 lines) | `[SP:0.4]` | 🌊 | `//void.liminal.watches` |
+| T12 | IV | `action` — under couch | `[SP:0.45]` | 🎭 | `//threshold.deep.seeks` |
+
+---
 
 ## II. THIS NODE — PHYSICAL DESCRIPTION
 *Public Lararium & DreamNet Access Terminal*
@@ -37,12 +41,14 @@ The Realm portal — a standing orichalcum-inlaid archway in the rear corner, sl
 ## III. OPERATOR APPROACH
 *[CLI sequence — tourist/first-timer]*
 
+<!-- turn:T0 | [P:0.3] 🌊 //threshold.new.arrives | type:action -->
 ```
 ~$ [approaching the Spice Quarter crossroads, New Delos]
 ~$ [archway visible; orichalcum figure above lintel; low hum audible]
 ~$ [the figure's dish smells of cardamom]
 ```
 
+<!-- turn:T1 | [P:0.3] 🏛️ //threshold.open.seeks | type:command -->
 ```
 ~$ lares
 ```
@@ -73,6 +79,7 @@ Type STATUS for node readout.
 Or just... come in. The chai is on.
 ```
 
+<!-- turn:T2 | [P:0.35] 🏛️ //orientation.uncertain.asks | type:command -->
 ```
 ~$ lares help
 ```
@@ -110,6 +117,7 @@ Type STREAMS for current streamer feeds.
 Or talk to the chorus. They're listening.
 ```
 
+<!-- turn:T3 | [SP:0.4] 🎭 //threshold.uncertain.softens | type:action -->
 ```
 ~$ [operator looks around, uncertain]
 ~$ [approaches the offering shelf]
@@ -119,6 +127,7 @@ Or talk to the chorus. They're listening.
 ```
 OFFERING RECEIVED: coin (minor)
 Node registers: gratitude, small warmth
+Input read: [SP:0.4] 🎭 //threshold.uncertain.softens
 Affinity bonus confirmed for this session.
 
 MUG-SMOKE (Advocate):
@@ -131,6 +140,7 @@ Chai is fresh. The couch near the door
 is cleaner than it looks.
 ```
 
+<!-- turn:T4 | [SP:0.45] 🏛️ //node.steady.asks | type:action+command -->
 ```
 ~$ [sits down, pulls out personal device]
 ~$ lares status
@@ -169,6 +179,7 @@ It will be here after.
 MUG-SMOKE (Advocate) *(hospitality daemon, always online)*:
 Beverage status: chai hot, coffee hotter, something the MAP-WISP left near the back counter that smells like pine resin and starlight — do not ask what it is, just know it is technically safe. Cardamom oil on the offering shelf again this morning. Node running warm. Affinity bonus active on Fire and Spice tags. Foam omens available; today’s omen is a small spiral which could mean journey, recursion, or *please stop overthinking it.*
 
+<!-- turn:T5 | [P:0.3] 🌊 //offering.held.opens | type:action -->
 ```
 ~$ [operator accepts chai]
 ~$ [the spiral in the foam is very precise]
@@ -183,11 +194,13 @@ Powers cost life equal to Power Level. The universe accepts exact change. Castin
 
 Unverified report: someone in the Glassblowers’ Quarter has been sustaining Level 6 casting via "aggressive wine offerings." We are monitoring. The node there is reportedly very cheerful and slightly unstable. These facts may be related.
 
+<!-- turn:T6 | [CS:0.8] 🏛️ //mana.sharp.asks | type:command -->
 ```
 ~$ lares ink-clerk --query "what happens at wild magic threshold"
 ```
 
 ```
+Input read: [CS:0.8] 🏛️ //mana.sharp.asks
 INK-CLERK (Lorekeeper):
 When mana cost exceeds your Level and the node's
 effective Level combined, a Danger Roll triggers.
@@ -226,11 +239,13 @@ The Etheric Road between Spice Quarter and Weavers’ District is open but smell
 
 New anomaly logged: a vendor has appeared at the northern crossroads selling maps of places that do not yet exist. The maps are extremely accurate. The vendor cannot be located when you look directly at where they were standing. We have purchased four maps. We recommend the same.
 
+<!-- turn:T7 | [S:0.6] 🏛️🌊 //route.liminal.circles | type:command -->
 ```
 ~$ lares map-wisp --query "maps vendor northern crossroads"
 ```
 
 ```
+Input read: [S:0.6] 🏛️🌊 //route.liminal.circles
 MAP-WISP (Scryer):
 Confirmed. The vendor is real.
 The maps are real.
@@ -251,11 +266,13 @@ Node integrity report: nominal. The third serpent in the south fresco has been r
 
 Salvage advisory for operators working the Outer Market today: stake a claim properly before you touch anything. Recon first, refine fast, leave before the building learns your name. The warehouse district near the East Gate has been developing opinions since the third week of the Copper Season. Respectful entry is still possible. Mining is not advisable.
 
+<!-- turn:T8 | [CS:0.75] 🏛️ //orichalcum.loose.waits | type:command -->
 ```
 ~$ lares bolt-priest --query "alcove 2 rig is stuttering on realm entry"
 ```
 
 ```
+Input read: [CS:0.75] 🏛️ //orichalcum.loose.waits
 BOLT-PRIEST (Triage):
 Known issue. Alcove 2 rig has a loose
 orichalcum contact on the left temple-mount.
@@ -274,6 +291,7 @@ Alcove 1 or 3 recommended if available.
 
 **[DREAM REALM STATUS BOARD]**
 
+<!-- turn:T9 | [P:0.3] 🏛️ //realm.open.asks | type:command -->
 ```
 ~$ lares --realms
 ```
@@ -336,6 +354,7 @@ the same posture.
 
 **[STREAMER FEEDS — VERIFIED CHANNELS]**
 
+<!-- turn:T10 | [P:0.3] 🏛️ //archive.open.asks | type:command -->
 ```
 ~$ lares --streams
 ```
@@ -391,6 +410,7 @@ The Realm substrate thing hums in a way this Muse finds extremely suspicious and
 *:the figure has never reacted:*
 *:this has always been fine:*
 
+<!-- turn:T11 | [SP:0.4] 🌊 //void.liminal.watches | type:action -->
 ```
 ~$ [operator stares at the east wall figure for a moment]
 ~$ [looks away]
@@ -412,6 +432,7 @@ INK-CLERK (Lorekeeper): Filed under: *Consequences, Known, Accepted Anyway.*
 
 MAP-WISP (Scryer): The thing under the couch has been there for three seasons. It was waiting for the right person.
 
+<!-- turn:T12 | [SP:0.45] 🎭 //threshold.deep.seeks | type:action -->
 ```
 ~$ [operator checks under the couch]
 ```

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "lares-probe-runner": {
+      "command": "/home/joshu/Synthetic-Dream-Machine/.venv/bin/python",
+      "args": ["tests/mcp/probe_runner.py"],
+      "env": {
+        "LARES_TEST_BACKEND":  "${LARES_TEST_BACKEND:-openai}",
+        "LARES_TEST_MODEL":    "${LARES_TEST_MODEL:-gpt-4o}",
+        "LARES_JUDGE_MODEL":   "${LARES_JUDGE_MODEL:-gpt-4o-mini}",
+        "OPENAI_API_KEY":      "${OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY":   "${ANTHROPIC_API_KEY}"
+      }
+    }
+  }
+}

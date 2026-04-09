@@ -1,0 +1,21 @@
+{
+  "budget": {
+    "max_bytes": 9000
+  },
+  "build_profile": "browser-project",
+  "governance_integration_points": [
+    "Future roster/CODEOWNERS enforcement should protect builds/manifests/",
+    "Future Admin governance should review module metadata changes under builds/modules/",
+    "Prompt-side Admin binding remains out of scope for this deterministic build MVP"
+  ],
+  "outputs": [
+    {
+      "bytes": 8683,
+      "path": "builds/rendered/browser-project/Lares_Kernel.browser-project.md",
+      "sha256": "afba7eb790db08442b302bc421a035fe3589ed5de58d6d7abe1fcf481e5aa7d2"
+    }
+  ],
+  "package_id": "browser-project",
+  "target_class": "browser-safe",
+  "target_platform": "browser"
+}

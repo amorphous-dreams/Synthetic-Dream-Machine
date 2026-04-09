@@ -1,0 +1,9 @@
+module_id = "lares-vscode-ops-core"
+class = "core"
+browser_safe = false
+repo_safe = true
+source_path = "builds/agents/Lares_VSCode_Operations.md"
+default_targets = ["codex-root", "claude-root", "copilot-root"]
+
+[ordering]
+weight = 150

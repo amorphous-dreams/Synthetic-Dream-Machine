@@ -1,0 +1,21 @@
+{
+  "budget": {
+    "max_bytes": 34000
+  },
+  "build_profile": "claude-root",
+  "governance_integration_points": [
+    "Future roster/CODEOWNERS enforcement should protect builds/manifests/",
+    "Future Admin governance should review module metadata changes under builds/modules/",
+    "Prompt-side Admin binding remains out of scope for this deterministic build MVP"
+  ],
+  "outputs": [
+    {
+      "bytes": 33087,
+      "path": ".claude/CLAUDE.md",
+      "sha256": "f0c9542ae8ca6eaac3ead917e2d74137c701a14a0f2c749f0b999531598f4b6e"
+    }
+  ],
+  "package_id": "claude-root",
+  "target_class": "repo-native",
+  "target_platform": "claude"
+}
