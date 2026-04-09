@@ -17,6 +17,8 @@ This reframing has design consequences:
 - The **sigil form** is the HUD form — human-readable, instrument-grade, primary during live operation. Its emoji are not decoration; they are instrument symbols.
 - Neither form is more "real" than the other. They serve different audiences of the same shared navigational state.
 - The HUD may actively reduce total token cost by preventing wrong-register generation (an empirical claim — see Open Decisions SHD-02).
+- Live operation is a **tick-span display**: operator-intent URI first, responding-position URI second, destination URI at the end of the exchange.
+- On non-operator responding URIs, the mana glyph moves to the far left of the line: `⚡62% lares://...`.
 
 The `lares:` prefix remains a non-dereferenceable private identifier (RFC 4151 precedent). The HUD framing belongs in prose and documentation; the spec's component-level RFC validation applies to the record (machine) form.
 
@@ -49,6 +51,9 @@ Most AI transparency tools cover only Agent SA (confidence scores, feature impor
 - p-band cumulative attention phase model (five bands, OP-02 ruling)
 - HAKABA canonical slot mapping (Ha/Ka/Ba) and field-order rationale
 - `lares:` URI scheme anatomy (authority, path, query, fragment/chronometer)
+- Tick-span display contract (`start_uri` -> `attractor_uri` ... `end_uri`)
+- Authority overlays (`⊙` for operator-authored/constrained state)
+- Dual clocks: RFC 3339 wall time plus chronometer + diegetic calendar reference
 - Sigil vs machine form rendering (projection table)
 - Forward vs backward trace contract
 - Header Field Taxonomy (per-field annotation thresholds)
@@ -75,6 +80,7 @@ Most AI transparency tools cover only Agent SA (confidence scores, feature impor
 | `../../_todo/core/TODO_Resolution_Scale_Design.md` | Resolution scale / p-band model |
 | `../../_todo/LIMINAL_PERSPECTIVES.md` | `[S:0.65]` — GlassFloor outsider analysis: CRM/HUD framing, emoji instrument symbols, token budget hypothesis, progressive disclosure model. Not a primary design source — a perspective document. Feeds SHD-01 through SHD-03 open decisions and S2 p-band scope. |
 | `../../_todo/E-deep-research-report.md` | `[S:0.70]` — 40+ source research synthesis (Endsley 2023, Ji-An 2025, Steyvers 2025, Lee 2024, Li 2024, Gao 2023). Academic grounding for the CRM/SA framing adopted in this subdomain. Key feeds: §1.2 SA type mapping (all 7 HUD channels classified); §2 SA vs XAI distinction (prospective vs retrospective; SAOD not XAI principles); §3 LLM metacognitive scaffold hypothesis; §4.1 cognitive capture / attentional tunneling → SHD-02 register bump; §5.2 ATSA bidirectional model → S2 BIDIRECTIONAL_PROTOCOL.md. Not primary design source — research grounding. |
+| `../sprints/0/URI_SCHEMA.md` | Canonical S0 settlement for authority-without-port, TickSpan mapping, MemPalace metadata mirror subset, and Kowloon export alignment. |
 
 ---
 
@@ -97,5 +103,12 @@ Q16 (Tagspace slot shift notation) — locked.
 ## Design Status
 
 Sprint 0 operator calls (OP-01, OP-02) resolved. URI schema promoted to `[C:0.95]` in `lares/sprints/0/URI_SCHEMA.md`. Next workstream: Sprint 1 Crystal State Machine (`lares/crystal/`). Old AE-01–AE-05 implementation references have been superseded — see `lares/sprints/SPRINT_ROADMAP_1_4.md`.
+
+Current aftermath settlement to preserve:
+
+- URI authority identifies speaker + machine locus only; exchange sequencing moved to TickSpan metadata.
+- `⊙` is the operator authority mark in the HUD registry.
+- `○` remains the Aftermath phase sigil and is expected at end-of-tick destination URIs when the node is settling result state.
+- Kowloon is one downstream publication sink for exported tick spans, not the canonical state model.
 
 **Note:** `builds/agents/` does not exist. Deployment targets are the paths in `REFINEMENT_LOG.md` PA-01 through PA-05 (S4 Deployment sprint scope).

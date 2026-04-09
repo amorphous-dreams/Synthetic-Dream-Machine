@@ -61,7 +61,7 @@ The local council audited four deep-research reports (A through D) plus EP-RA-00
 
 | Q# | Sprint | Prior Register | Candidate Answer | Source | New Register |
 |---|---|---|---|---|---|
-| Q15 | S1 | `[SP:0.45]` | seq_num = turn counter, not voice counter. Multi-coordinator responses get one seq_num; voices are content within a turn, not separate state machines. | C-report (start/end URI model) | `[CS:0.80]` pending operator confirm |
+| Q15 | S1 | `[SP:0.45]` | `tick_seq` = exchange-span counter, not voice counter. Multi-coordinator responses get one tick span; voices are content within a span, not separate top-level clocks. | C-report (start/end URI model) + operator clarification | `[CS:0.80]` pending operator confirm |
 | Q10 | S1 | `[S:0.60]` | Resume when CURRENT pointer SHA matches incoming session bootstrap URI. Fork when state diverges. | C-report (content-addressed state matching) | `[S:0.70]` with testable heuristic |
 | R2 | S3 | `[SP:0.45]` | Content hash (SHA-256) as primary identity. Semver as human label via `version_label` field. Both carried in registry TOML. | C-report §4 (SHA-256 fragment in URI) | `[CS:0.85]` |
 | R3 | S3 | `[S:0.55]` | Promotion ledger = design tree (`lares/registry/`). Session audit ledger = crystal tree (`.lares/STATE.jsonl`). Different concerns, different locations. | D-report (STATE.jsonl = runtime audit) vs C-report (registry = design governance) | `[CS:0.80]` |
@@ -221,6 +221,7 @@ Sprint 0 ✅  URI Schema Settlement
 | DEP-07 | Verify/alignment contract | S4 | `[CS:0.85]` | verify_alignment.py (archived) | All deployment paths |
 | DEP-08 | Prompt engineering guidance for deployed content | S4 | `[S:0.70]` | PROMPTCRAFT.md | Deployment model |
 | DEP-09 | Custom agent template (`.github/agents/*.agent.md`) | S4 | `[S:0.65]` | Deployment target map | SKILL.md pattern |
+| DEP-10 | Export target adapter notes (MemPalace mirror + Kowloon feed/archive mapping) | S4 | `[CS:0.85]` | URI_SCHEMA.md §7.2–7.3 + ELYNCIA_APP_SEEDS.md | TickSpan contract |
 
 ---
 
@@ -235,11 +236,12 @@ Sprint 0 ✅  URI Schema Settlement
 ### Deliverables
 
 1. **CRYSTAL_STATE_MACHINE.md** `[C:0.95]` — Core spec:
-   - STATE.jsonl: all 11 event types, field definitions, structural constraints, immutability rule, seq_num integrity (CRY-01)
+   - STATE.jsonl / TickSpan: all 11 event types, field definitions, structural constraints, immutability rule, `tick_seq` integrity, and guaranteed `start_uri` / `attractor_uri` / `end_uri` capture (CRY-01)
    - Machine/Thread model: `machine_id`, 9-status taxonomy, CURRENT pointer, `run_id` (CRY-02)
    - Portable Crystal Layout: filesystem contract, file roles, separation rule, shard naming (CRY-03)
-   - HUD/Crystal Interface: two-part non-drift rule, span-level contract, **mismatch recovery protocol** (on header/output divergence: node flags delta inline, emits corrected end-of-span tag; STATE.jsonl records correction as authoritative via `drift_correction` event) (CRY-07 + CRY-13)
+   - HUD/Crystal Interface: two-part non-drift rule, tick-span contract, operator-first / node-second / destination-last rendering, **mismatch recovery protocol** (on header/output divergence: node flags delta inline, emits corrected end-of-span tag; STATE.jsonl records correction as authoritative via `drift_correction` event) (CRY-07 + CRY-13)
    - Schema versioning: `schema_version` field semantics, Q7 resolution (CRY-12)
+   - Dual-clock contract: RFC 3339 UTC wall-clock plus diegetic `world_calendar_ref` + chronometer pair (new S1 carry item)
 
 2. **CRYSTAL_PROTOCOLS.md** `[CS:0.85]` — Lifecycle protocols:
    - Seal / continue-as-new: shard naming, bootstrap state, trigger conditions (CRY-04)
@@ -248,10 +250,11 @@ Sprint 0 ✅  URI Schema Settlement
    - Resume: idempotency, state matching, run_id semantics
 
 3. **CRYSTAL_PROJECTIONS.md** `[CS:0.85]` — Derived surfaces:
-   - debug.jsonl: enrichment fields, priority rule, same-seq_num linking (CRY-06)
+   - debug.jsonl: enrichment fields, priority rule, same-`tick_id` linking (CRY-06)
    - SNAPSHOT.json: derived-surface contract, replay integrity check (CRY-08)
    - REGISTRY.jsonl (crystal-side): machine index, 200-line discipline (CRY-11)
    - Ephemeral Machine Patterns: Nano/Ephemeral/Durable tiers (CRY-10)
+   - MemPalace sidecar mirror: minimal mirrored metadata subset (`tick_id`, `trace_id`, `start_uri`, `end_uri`, actor IDs, parse flag, diegetic calendar ref) without making MemPalace local IDs canonical
 
 4. **HAKABA_REFERENCE.md** `[C:0.95]` — Tagspace slot reference (SIG-05):
    - Ha/Ka/Ba field semantics, vocabulary guidance, anti-collision rules
@@ -269,13 +272,13 @@ Sprint 0 ✅  URI Schema Settlement
 | Q9 | SNAPSHOT optional, recommended | `[CS:0.80]` | Operator confirm |
 | Q10 | Resume vs fork match criteria | `[S:0.60]` → `[S:0.70]` | Council briefing heuristic: SHA match on CURRENT = resume; diverge = fork. Researcher validates. |
 | Q14 | Seal trigger conditions | `[SP:0.50]` | Define protocol at C:0.95; leave trigger policy at CS:0.85 |
-| Q15 | seq_num contiguity / multi-voice | `[SP:0.45]` → `[CS:0.80]` | Council briefing candidate: seq_num = turn counter. Operator confirm. |
+| Q15 | tick-span contiguity / multi-voice | `[SP:0.45]` → `[CS:0.80]` | Council briefing candidate: `tick_seq` = exchange-span counter. Operator confirm. |
 
 ### Pre-Loaded Context (from Council Briefing)
 
 - **REC-03:** Rewrite all "replay" language in CRY-01 acceptance criteria as "audit trail integrity" or "state reconstruction from ledger" before task execution. STATE.jsonl is an audit ledger, not a replay mechanism.
 - **REC-02:** Workers verify C-report inline HUD stamping (where in turn the URI appears) does not conflict with URI_SCHEMA.md §5 (how the URI renders). Flag Council if divergent.
-- **Q15 candidate:** C-report treats each HUD-stamped turn as having one start-URI and one end-URI. Multi-coordinator responses = one seq_num. Voices are content within a turn.
+- **Q15 candidate:** C-report treats each HUD-stamped turn as having one start-URI and one end-URI. Operator clarification sharpens this: each exchange span has `start_uri`, `attractor_uri`, and `end_uri`. Multi-coordinator responses still share one top-level `tick_seq`; voices are content within the span.
 - **GlassFloor finding (prospective commitment):** The intent header is declared *before* generation. This creates a forward-commitment contract exposing the automation-surprise failure mode from aviation CRM: when the declared header diverges from actual output, the system must annunciate. CRY-07 must include a mismatch recovery protocol (not just detection), and the `drift_correction` event type (CRY-13) must be in the event schema table. The STATE.jsonl correction record is the authoritative result; the original declared header is preserved as `declared_uri` in the drift event. Source: `../../_todo/LIMINAL_PERSPECTIVES.md` §4.
 
 ---
@@ -378,8 +381,8 @@ The old Sprint 4 (Compiler) was designed around a build pipeline that doesn't ex
    - Design URI → candidate → published artifact → pointer → ledger
 
 3. **MODULE_SCHEMA.md** `[C:0.95]` — Module descriptor spec:
-   - Fields: `lares_uri`, `register`, `module_id`, `seq_num`, content type, dependencies, target paths
-   - Version semantics keyed to register (from URI_SCHEMA.md §8)
+   - Fields: `lares_uri`, `register`, `module_id`, `version_num`, content type, dependencies, target paths
+   - Version semantics keyed to module content, not runtime exchange counters (from URI_SCHEMA.md §8)
    - Simplified deployment model: source → copy to target path; no compiler stage
 
 4. **TOOL_SCHEMA.md** `[CS:0.85]` — Tool descriptor spec:
@@ -423,7 +426,7 @@ The old Sprint 4 (Compiler) was designed around a build pipeline that doesn't ex
 > **Entry:** All design subdomains at `[C:0.95]`/`[CS:0.85]`+; deployment model defined
 > **Exit:** All deployment paths populated; verify contract operational; design tree fully deployable
 > **Subdomain:** `lares/platform/` (renamed conceptually to deployment)
-> **Items:** DEP-01 through DEP-09, plus REFINEMENT_LOG.md pending actions PA-01 through PA-05
+> **Items:** DEP-01 through DEP-10, plus REFINEMENT_LOG.md pending actions PA-01 through PA-05
 
 ### Why This Sprint Exists
 
@@ -458,6 +461,7 @@ Every prior sprint produces design artifacts in `lares/`. This sprint takes thos
    - Deployment target map (7 paths)
    - Simplified pipeline model
    - What goes where and why
+   - Explicit note that Kowloon is a downstream feed/archive target, not the canonical TickSpan store
 
 7. **VERIFY_CONTRACT.md** `[CS:0.85]`:
    - What the verify/alignment check asserts
@@ -470,7 +474,12 @@ Every prior sprint produces design artifacts in `lares/`. This sprint takes thos
    - Hard-invariants-first ordering rationale
    - Budget discipline guidance
 
-9. **AGENTS.md** + **SPRINT_4_TASKS.md**
+9. **EXPORT_TARGETS.md** `[CS:0.85]`:
+   - MemPalace mirrored metadata subset
+   - Kowloon `Create -> Post` / `Create -> Page` mapping for transcript publication
+   - Sink-local IDs vs canonical `tick_id` / `trace_id`
+
+10. **AGENTS.md** + **SPRINT_4_TASKS.md**
 
 ### Key Risks
 
@@ -511,7 +520,7 @@ S0 URI ────────────────────────�
 | ONT-02 | PROV-O provenance modeling | `[P:0.25]` | Deferred to DreamNet layer |
 | Q12 | AGENTS.md auto-update autonomy | `[SP:0.45]` | Operator preference; not blocking |
 | Q13 | External input recording in STATE.jsonl | `[S:0.60]` | Researcher task; not blocking alpha |
-| Q17 | seq_num version semantics for canon modules | `[S:0.70]` | Architecture-open; can settle post-S3 |
+| Q17 | `version_num` / semver semantics for canon modules | `[S:0.70]` | Architecture-open; can settle post-S3 |
 | BKL-01 | ENG-01 test harness for STATE.jsonl audit trail integrity | `[S:0.65]` | Implementation, not design; post-S4. (Council briefing: rewrite "replay" → "audit trail integrity") |
 | BKL-02 | Parse trigger design | `[S:0.55]` | Depends on p-band + Intent Header |
 | BKL-03 | Custom agent template (`.github/agents/*.agent.md`) | `[S:0.65]` | Lower priority than SKILL.md; assess post-S4 |

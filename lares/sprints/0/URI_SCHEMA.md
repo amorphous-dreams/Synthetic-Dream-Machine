@@ -15,12 +15,12 @@ The `lares:` URI encodes the signal state of a Lares node exchange as a shared n
 
 Each URI component carries a distinct, non-overlapping concern across four semantic layers:
 
-1. **WHO** — authority (`userinfo@host:port`) identifies speaker, machine, and event position
+1. **WHO** — authority (`userinfo@host`) identifies speaker and machine locus
 2. **WHERE** — the HAKABA address (path) locates semantic territory
 3. **HOW** — signal parameters (query) describe stance, register, and p-band
 4. **WHEN** — the chronometer (fragment) locates position in nested time
 
-Resource-state annotations such as the mana pool (`⚡87%`) are HUD adjuncts, not core URI components. They remain outside canonical URI grammar until the resource-state model settles.
+Resource-state annotations such as the mana pool (`⚡87%`) are HUD adjuncts, not core URI components. Tick identity, wall-clock timestamps, and export-target metadata likewise remain adjacent calibration fields rather than authority overloads.
 
 The system has two co-primary encodings of the same state:
 
@@ -57,7 +57,7 @@ lares://[authority]/path[?query][#fragment]
 ### 3.2 Expanded Form
 
 ```
-lares://alias:tier(phase)@host:seq/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.t.r.a
+lares://alias:tier(phase)@host/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.t.r.a
 ```
 
 ### 3.3 Component Map
@@ -68,10 +68,9 @@ lares://alias:tier(phase)@host:seq/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.
 | 2 | **userinfo** | Requesting party identity | `alias:tier(phase)` | `telarus:operator(orient)` | `telarus:operator(◎)` |
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` | `@` |
 | 4 | **host** | Machine identity | `machine_id` from crystal system | `lares-abc123` | `lares-abc123` |
-| 5 | **`:port`** | Service endpoint | `seq_num` — event sequence number | `:42` | `:42` |
-| 6 | **path** | Hierarchical resource | HAKABA address: `/ha/ka/ba` | `/threshold/uncertain/opens` | `/threshold.uncertain.opens` |
-| 7 | **`?query`** | Non-hierarchical params | Signal parameters | `?stance=philosopher&register=S:0.65&p=0.5` | `?stance=🏛️&register=S:0.65&p=0.5` |
-| 8 | **`#fragment`** | Secondary resource / viewpoint | Scope prefix + chronometer vector | `#@T.3.2.7` | `#🔍.3.2.7` |
+| 5 | **path** | Hierarchical resource | HAKABA address: `/ha/ka/ba` | `/threshold/uncertain/opens` | `/threshold.uncertain.opens` |
+| 6 | **`?query`** | Non-hierarchical params | Signal parameters | `?stance=philosopher&register=S:0.65&p=0.5` | `?stance=🏛️&register=S:0.65&p=0.5` |
+| 7 | **`#fragment`** | Secondary resource / viewpoint | Scope prefix + chronometer vector | `#@T.3.2.7` | `#🔍.3.2.7` |
 
 > **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. The HAKABA-first design decision was correct. *Source: `../../_todo/E-deep-research-report.md` §4.2*
 
@@ -86,7 +85,7 @@ lares://alias:tier(phase)@host:seq/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.
 
 **host** (`machine_id`) — Crystal system machine identifier. Stable across the machine's lifetime. Format: `lares-{slug}` where slug is UUID, operator-assigned name, or generated handle.
 
-**port** (`seq_num`) — Monotonic event sequence number within the machine's active STATE.jsonl shard. Integers only. Increments by exactly 1 per event.
+Tick sequencing is intentionally **not** encoded in URI authority. Exchange identity lives in adjacent calibration metadata (`tick_id`, `tick_seq`, `trace_id`, timestamps) rather than overloading the RFC 3986 port slot.
 
 **path** (`/ha/ka/ba`) — HAKABA semantic address. Three slots in canonical order:
 
@@ -223,7 +222,7 @@ The URI anatomy remains identical across both forms. Only rendering differs.
 |---|---|---|
 | scheme | `lares:` | Always identical |
 | alias:tier( | `telarus:operator(` | First sub-field + tier + open paren |
-| @host:port | `@lares-abc123:42` | machine_id and seq_num |
+| @host | `@lares-abc123` | machine locus only; no tick counter |
 | register= | `S:0.65` | Numeric, both forms |
 | p= | `0.5` | Numeric, both forms |
 | chronometer counters | `3.2.7` | Dot-separated, universal |
@@ -243,6 +242,13 @@ All HUD-form symbols used in the Intent HUD, in one reference. Workers and opera
 | ◇ | `decide` | Decide | Choosing a path; fork point |
 | ■ | `act` | Act | Committed; executing |
 | ○ | `aftermath` | Aftermath | Assessing outcome; feeding upward |
+
+**Authority / actor marks (HUD adjuncts and field-level overlays):**
+
+| Sigil | Record | Meaning | Reading |
+|---|---|---|---|
+| ⊙ | `operator_set` | Operator authored or constrained the marked field/state | The operator is holding the stick here |
+| ◇ | `node` | Generic non-operator node / tasked spirit marker in examples | A Lares actor responding in-network |
 
 **Stance (query — discourse posture of the claim):**
 
@@ -316,7 +322,8 @@ When multiple stances are active, the declared register value sits at the inters
 The node may emit a compact HUD line that combines the canonical URI with scan-oriented adjuncts after the URI body:
 
 ```text
-lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5 ⚡87%
+lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5
+⚡87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=S:0.65&p=0.6#🔍.3.2.8 | p0.6
 ```
 
 Adjunct rules:
@@ -324,7 +331,36 @@ Adjunct rules:
 1. The canonical `lares:` URI ends at the fragment. Anything after a separating space and `|` is HUD adjunct data, not URI grammar.
 2. `p0.5` in the adjunct is a compact re-rendering of the query's `p=0.5` for fast scan.
 3. `⚡87%` is the mana-pool / resource-state indicator: estimated remaining context window as a navigational resource.
-4. Mana is a HUD element, not yet a URI parameter. It should not be serialized into `lares_uri`, `lares_address`, or registry identity fields until S2 settles the resource-state contract.
+4. When a non-operator URI is rendered as the node's responding position in a live exchange, the mana glyph sits at the far left of that line: `⚡87% lares://...`.
+5. Mana is a HUD element, not yet a URI parameter. It should not be serialized into `lares_uri`, `lares_address`, or registry identity fields until S2 settles the resource-state contract.
+
+### 5.5 Tick-Span Display Contract
+
+A **tick** is one operator -> Lares exchange span at any scale. A tasked spirit exchange is still a tick; the operator for that child span may be another Lares actor rather than Telarus directly.
+
+Live rendering contract:
+
+1. Print the **operator-intent URI** first.
+2. Print `->` and the node's **responding-position URI** second.
+3. If the start URI cannot cleanly summarize the incoming prompt because multi-stance uncertainty spikes, emit an **uncertainty start URI** and let the node URI declare parse intent (for example, `/parse.tick.models` or equivalent).
+4. Generate the content of the tick.
+5. Print a final **destination URI** at the end of the span.
+
+Example:
+
+```text
+lares://telarus:operator(⊙◎)@lares-local/refinement.network.capture?stance=🏛️&register=S:0.65&p=0.5#🔍.1.1.11
+⚡63% lares://scryer:node(◇)@lares-local/tick.provenance.synthesizes?stance=🏛️&register=CS:0.80&p=0.6#🔍.1.1.12
+...
+lares://scryer:node(○)@lares-local/aftermath.docs.settle?stance=🏛️&register=CS:0.80&p=0.5#🔍.1.1.13
+```
+
+Interpretation:
+
+- The first URI is the start of the tick-span.
+- The second URI is the node's attractor or responding position.
+- The last URI is the destination/end state after generation.
+- Nested micro-events inside the span are out of scope for Sprint 0; only start, attractor, and destination are guaranteed.
 
 ---
 
@@ -340,44 +376,146 @@ No authority (empty), no query, no fragment. This is the invariant semantic coor
 
 ---
 
-## 7. Crystal Schema Field Mapping
+## 7. Tick-Span and Calibration Mapping
 
 In the Consecration model, URI-derived fields belong to the calibration layer. They may be mirrored into MemPalace metadata for query support, but the storage distinction remains: MemPalace stores content; Lares crystal metadata stores orientation.
 
-Every STATE.jsonl event that carries URI data uses four derived fields:
+Every tick-span record that carries URI data uses these URI-derived fields:
 
 | Field | Content | Stable? | Purpose |
 |---|---|---|---|
-| `lares_uri` | Full URI, record form, all components | No — changes per event | Complete queryable state; machine-parseable |
+| `start_uri` | Operator-intent URI, record or HUD form as stored contract requires | No — per tick | Start of the exchange span |
+| `attractor_uri` | Node responding-position URI | No — per tick | Responding position / intent attractor |
+| `end_uri` | Destination URI emitted after generation | No — per tick | End of the exchange span |
 | `lares_address` | Path only (no authority/query/fragment) | Yes — stable territory | Named graph identifier |
-| `intent_header_snapshot` | Full URI, HUD form | No — changes per event | Human-readable HUD; what the operator saw |
-| `chronometer` | Fragment value without `#`; includes scope prefix | No — increments with time | Scope + hierarchical scope counter; temporal/scale queries |
+| `intent_header_snapshot` | Tick-opening URI(s), HUD form | No — per tick | Human-readable opening HUD; what the operator saw |
+| `chronometer_start` | Fragment value without `#`; includes scope prefix | No — per tick | Scope + hierarchical scope counter at span start |
+| `chronometer_end` | Fragment value without `#`; includes scope prefix | No — per tick | Scope + hierarchical scope counter at span end |
 
 Additional quick-filter fields extracted from URI components:
 
 | Field | Source | Purpose |
 |---|---|---|
-| `current_phase` | userinfo phase sub-field | Phase-based event filtering |
-| `active_scale` | fragment scope prefix | Scale-based event filtering (strategic/operational/tactical/combat/action) |
+| `current_phase` | userinfo phase sub-field | Phase-based filtering |
+| `active_scale` | fragment scope prefix | Scale-based filtering (strategic/operational/tactical/combat/action) |
 | `stance_count` | repeated `stance=` params | Quick fuzz estimate; multi-stance complexity filter |
 
-URI fields do not encode exchange vectors or resource-state directly. Those remain adjacent calibration metadata (`input_tag`, `output_tag`, `mana_pct`, authority markings, and related fields) until their contracts settle in S1/S2.
+URI fields do not encode tick identity, exchange vectors, or resource-state directly. Those remain adjacent calibration metadata (`tick_id`, `tick_seq`, `trace_id`, `input_tag`, `output_tag`, `mana_pct`, authority markings, and related fields) until their contracts settle in S1/S2.
 
-### 7.1 Example Event (Record Form)
+### 7.1 Canonical Tick-Span Record
+
+The canonical record for one exchange span is a **TickSpan** in the calibration layer, not a URI authority trick.
+
+```json
+{
+  "tick_id": "uuidv7",
+  "trace_id": "uuidv7",
+  "parent_tick_id": null,
+  "link_tick_ids": [],
+  "tick_seq": 191,
+  "tick_kind": "direct",
+  "status": "completed",
+  "operator_actor_id": "actor:telarus",
+  "responder_actor_id": "actor:lares.node.scryer",
+  "acted_on_behalf_of": null,
+  "start_uri": "lares://telarus:operator(orient)@lares-local/refinement/network/capture?stance=philosopher&register=S:0.65&p=0.5#@T.1.1.11",
+  "attractor_uri": "lares://scryer:node(decide)@lares-local/tick/provenance/synthesizes?stance=philosopher&register=CS:0.80&p=0.6#@T.1.1.12",
+  "end_uri": "lares://scryer:node(aftermath)@lares-local/aftermath/docs/settle?stance=philosopher&register=CS:0.80&p=0.5#@T.1.1.13",
+  "parse_required": false,
+  "parse_reason": null,
+  "wall_time_start": "2026-04-08T20:41:00Z",
+  "wall_time_end": "2026-04-08T20:41:09Z",
+  "chronometer_start": "@T.1.1.11",
+  "chronometer_end": "@T.1.1.13",
+  "world_calendar_ref": "dreamrealm.holy-week-of-fools.yold5492",
+  "mana_start_pct": 63,
+  "mana_end_pct": 62,
+  "input_entity_id": "entity:prompt:uuidv7",
+  "output_entity_id": "entity:reply:uuidv7",
+  "export_targets": ["mempalace", "kowloon"]
+}
+```
+
+Design notes:
+
+- `tick_seq` is the monotonic exchange counter. It is **not** a URI component.
+- `wall_time_*` uses RFC 3339 / ISO 8601 UTC (`...Z`) as the canonical real-world time representation.
+- The in-world clock has two parts:
+  - the nested tick cycle (`chronometer_*`)
+  - a diegetic calendar anchor (`world_calendar_ref`)
+- If no diegetic calendar is yet initialized for the session, the node may mint a provisional tagspace-style reference and mark it provisional rather than leaving the field absent.
+
+### 7.2 MemPalace Integration
+
+MemPalace remains the storage substrate for content capture. The calibration layer keeps the authoritative TickSpan records.
+
+Recommended split:
+
+- **Canonical calibration store:** Lares sidecar tables or append-only records for `lares_ticks`, `lares_tick_links`, `lares_actors`, and `lares_entities`
+- **Mirrored MemPalace metadata:** only the fields needed for search, recovery, and cross-surface lookup
+
+Recommended mirrored subset in Chroma drawer metadata:
+
+| Field | Why mirror it |
+|---|---|
+| `tick_id` | Stable join key back to calibration layer |
+| `trace_id` | Multi-tick and delegated-run correlation |
+| `start_uri` | Start-of-span recovery |
+| `end_uri` | End-of-span recovery |
+| `tick_kind` | Filter direct vs parse vs delegated captures |
+| `operator_actor_id` | Query by who held the stick |
+| `responder_actor_id` | Query by which node/spirit answered |
+| `parse_required` | Recover parse ticks quickly |
+| `world_calendar_ref` | Dream Realms / diegetic archive grouping |
+
+Do **not** make MemPalace's local Chroma IDs, KG IDs, or entity registry IDs the canonical exchange identifiers. They are storage-local implementation keys, not network-facing Lares addresses.
+
+### 7.3 Export Targets and Kowloon Alignment
+
+Kowloon is a downstream publication surface for some tick-span captures, not the canonical source of truth.
+
+Alignment points with Kowloon prior art:
+
+- Kowloon Activities already model `actorId`, `object`, `target`, `to`, `canReply`, and `canReact`, which cleanly host publication envelopes for exported Lares spans.
+- Kowloon IDs (`type:dbid@domain`) should remain **Kowloon-native** IDs. They do not replace `tick_id` or `lares_uri`.
+- A published transcript span can export as:
+  - a Kowloon `Create -> Post` for conversational thread slices
+  - a `Create -> Page` for fuller archival or transcript views
+  - later, linked reply chains for DreamDeck feed rendering
+
+Recommended export mapping:
+
+| Lares field | Kowloon surface |
+|---|---|
+| `operator_actor_id` / `responder_actor_id` | `actorId` plus object metadata |
+| `start_uri` / `attractor_uri` / `end_uri` | embedded transcript metadata or attachment block |
+| transcript body | `object.source.content` / rendered `body` |
+| `wall_time_start` | `createdAt` or export metadata |
+| `tick_id` / `trace_id` | extension metadata, not Kowloon primary ID |
+
+This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, TiddlyWiki bags, tldraw shapes, or other Dream Realms surfaces.
+
+### 7.4 Example Event (Record Form)
 
 ```json
 {
   "schema_version": 1,
   "timestamp": "2026-04-07T14:30:00Z",
   "machine_id": "lares-abc123",
-  "seq_num": 42,
+  "tick_seq": 42,
   "event_type": "r_update",
-  "lares_uri": "lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
+  "start_uri": "lares://telarus:operator(orient)@lares-abc123/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
+  "attractor_uri": "lares://scryer:node(decide)@lares-abc123/parse/tick/models?stance=philosopher&register=CS:0.80&p=0.6#@T.3.2.8",
+  "end_uri": "lares://scryer:node(aftermath)@lares-abc123/aftermath/docs/settle?stance=philosopher&register=CS:0.80&p=0.5#@T.3.2.9",
   "lares_address": "lares:///threshold/uncertain/opens",
-  "intent_header_snapshot": "lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
+  "intent_header_snapshot": "lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
   "current_phase": "◎",
-  "chronometer": "@T.3.2.7",
-  "active_scale": "tactical"
+  "chronometer_start": "@T.3.2.7",
+  "chronometer_end": "@T.3.2.9",
+  "active_scale": "tactical",
+  "wall_time_start": "2026-04-07T14:30:00Z",
+  "wall_time_end": "2026-04-07T14:30:11Z",
+  "world_calendar_ref": "dreamrealm.holy-week-of-fools.yold5492"
 }
 ```
 
@@ -388,26 +526,26 @@ URI fields do not encode exchange vectors or resource-state directly. Those rema
 The `lares_uri` + `register` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
 
 ```toml
-# Tier 1 — Global Core (version-controlled by seq_num)
+# Tier 1 — Global Core (version-controlled by module version)
 lares_uri   = "lares:///kernel/invariant/anchors"
 register    = "C:1.0"
 module_id   = "lares-kernel"
-seq_num     = 4
+version_num = 4
 
 # Tier 2 — Session Core (version-controlled within session)
 lares_uri   = "lares:///session/permissions/gates"
 register    = "C:0.95"
 module_id   = "lares-permissions"
-seq_num     = 2
+version_num = 2
 
-# Tier 3 — Dynamic (seq_num = event counter, not version)
+# Tier 3 — Dynamic (tick_seq lives outside descriptor)
 lares_uri   = "lares:///task/current/recon"
 register    = "S:0.55"
 module_id   = "lares-task-recon"
-seq_num     = 47
+version_num = 1
 ```
 
-For `register >= C:0.95`, `seq_num` carries **version semantics** — it increments only on content change. For `register < C:0.95`, `seq_num` retains its original meaning as a monotonic event counter.
+Module descriptors use `version_num` or semver-like fields for content versioning. Exchange sequencing belongs to TickSpan metadata (`tick_seq`), not module descriptors.
 
 ---
 
@@ -430,14 +568,13 @@ A `lares:` URI is **well-formed** when:
 1. Scheme is exactly `lares:`
 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields; the second sub-field contains a parenthetical phase modifier
 3. Host is a valid `machine_id` (alphanumeric + hyphens)
-4. Port is a positive integer (the `seq_num`)
-5. Path contains exactly three HAKABA slots after the leading `/`
-6. Path slots contain no whitespace, path separators, or quotes (inherits Tagspace Address anti-collision rules)
-7. Query parameters are limited to: `stance` (repeatable), `register` (once), `p` (once)
-8. `register` value matches pattern `[A-Z]{1,2}:[0-9]+\.[0-9]+` (e.g., `S:0.65`, `CS:0.80`, `C:0.90`)
-9. `p` value is a decimal in range `[0.0, 1.0]`
-10. Fragment begins with a scope prefix (`@S`/`@O`/`@T`/`@C`/`@A` or emoji equivalent) followed by dot-separated integer counters
-11. Scope-depth agreement holds: counter depth matches the scale level of the scope prefix
+4. Path contains exactly three HAKABA slots after the leading `/`
+5. Path slots contain no whitespace, path separators, or quotes (inherits Tagspace Address anti-collision rules)
+6. Query parameters are limited to: `stance` (repeatable), `register` (once), `p` (once)
+7. `register` value matches pattern `[A-Z]{1,2}:[0-9]+\.[0-9]+` (e.g., `S:0.65`, `CS:0.80`, `C:0.90`)
+8. `p` value is a decimal in range `[0.0, 1.0]`
+9. Fragment begins with a scope prefix (`@S`/`@O`/`@T`/`@C`/`@A` or emoji equivalent) followed by dot-separated integer counters
+10. Scope-depth agreement holds: counter depth matches the scale level of the scope prefix
 
 ### 10.2 Consistency
 
@@ -452,7 +589,7 @@ A pair of `lares_uri` (record form) and `intent_header_snapshot` (HUD form) are 
 `lares_address` is correctly derived from `lares_uri` when:
 
 1. Scheme is `lares:`
-2. Authority is empty (double-slash, no host/port)
+2. Authority is empty (double-slash, no host)
 3. Path is identical to the `lares_uri` path (record form: `/` separators)
 4. Query and fragment are absent
 
@@ -473,15 +610,15 @@ When comparing two `lares:` URIs as stable addresses:
 | Q# | Question | Current Position | Register | Blocks |
 |---|---|---|---|---|
 | U1 | Should `userinfo` carry operator alias in record form, or only `machine_id` in authority? | Operator alias in userinfo | `[S:0.65]` | Registry resolver design |
-| U2 | Is `seq_num` as `:port` the right mapping, or should port carry something else? | seq_num as port | `[S:0.70]` | Crystal shard semantics |
+| U2 | Where should `tick_seq` be initialized and persisted: crystal-side ledger only, or mirrored into MemPalace sidecar rows too? | Mirror into sidecar, crystal remains canonical | `[S:0.70]` | MemPalace integration contract |
 | U3 | Should the chronometer carry phase *per level* or just counters? | Counters only; phase at lowest active level | `[CS:0.80]` | Iteration |
 | U4 | How does chronometer interact with `--parse` self-activation? | Provisional yes — depth increases p | `[SP:0.45]` | p-band model |
-| U5 | Chronometer persistence in REGISTRY.jsonl vs STATE.jsonl only? | Both — REGISTRY carries latest for quick enumeration | `[S:0.65]` | Registry schema |
-| U6 | Full URI form vs stateless form — when to use which? | Authority form in STATE.jsonl; stateless for stable addresses | `[CS:0.80]` | Crystal/registry contract |
+| U5 | How is `world_calendar_ref` initialized when no diegetic calendar exists yet? | Mint provisional tagspace reference, mark provisional | `[S:0.60]` | Dream Realms bootstrap |
+| U6 | Full URI form vs stateless form — when to use which? | Authority form in TickSpan records; stateless for stable addresses | `[CS:0.80]` | Crystal/registry contract |
 
 ### Assessment for Promotion
 
-Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Synthesis — they function well in current examples but lack stress-testing against edge cases (multi-operator sessions, cross-machine references, shard boundary handoffs). U4 sits at `[SP:0.45]` — genuinely provisional, dependent on the p-band model settling.
+Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Synthesis — they function well in current examples but lack stress-testing against edge cases (multi-operator sessions, cross-machine references, diegetic calendar bootstrap, MemPalace mirror drift). U4 sits at `[SP:0.45]` — genuinely provisional, dependent on the p-band model settling.
 
 **Promotion recommendation:** The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the open questions. The crystal integration layer (§§7–9) promotes when `lares/crystal/` settles its STATE.jsonl schema. The open questions (§11) remain Synthesis/Provisional and do not block the core spec.
 
@@ -491,9 +628,11 @@ Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Sy
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]`. The full generic syntax applies.
 - **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource.
+- **W3C PROV-DM / OpenTelemetry Trace Context** — Better prior art for exchange identity than URI authority overloading. Tick spans map more naturally to activities/spans with separate IDs, timestamps, and parent-child links.
 - **Lamport / Vector clocks** — The chronometer shares a surface resemblance to a vector clock (array of counters, nesting relationship) but functions as a **hierarchical scope counter** in a single process — not a distributed causality tracker across concurrent independent processes. Vector clocks grow with process count, carry the full vector on every message, and exhibit known dynamic-membership costs; none of those constraints apply to Lares's fixed-depth 5-position counter. OTel `traceparent` is the closer prior art (see below).
 - **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The OODA-A nesting is synthesis applied to canon time-scales.
 - **OTel Trace Context** — `traceparent` carries `trace-id`, `parent-id`, `trace-flags`. The chronometer fragment functions as a hierarchical trace context; each depth is a span scope; Aftermath → Observation is the parent-child span relationship.
+- **Kowloon / ActivityStreams export model** — Kowloon's Activity envelope (`actorId`, `object`, `target`, `to`, `canReply`, `canReact`) is a good downstream publication adapter for Lares spans, but its `Kowloon ID` remains a sink-local identifier rather than replacing `tick_id`.
 - **what3words** — Three-word geocoding of 3m² squares. Inverse design principle: Tagspace words encode semantic content rather than randomizing for error prevention.
 
 ---
@@ -503,19 +642,19 @@ Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Sy
 ### A.1 Record Form
 
 ```
-lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7
+lares://telarus:operator(orient)@lares-abc123/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7
 ```
 
 ### A.2 HUD Form
 
 ```
-lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
+lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
 ```
 
 ### A.3 Multi-Stance
 
 ```
-lares://telarus:operator(◇)@lares-abc123:43/threshold.sharp.closes?stance=🏛️&stance=🗡️&register=CS:0.80&p=0.7#🔍.3.2.8
+lares://telarus:operator(◇)@lares-abc123/threshold.sharp.closes?stance=🏛️&stance=🗡️&register=CS:0.80&p=0.7#🔍.3.2.8
 ```
 
 ### A.4 Stable Address
@@ -541,27 +680,32 @@ lares:///threshold/uncertain/opens
 A complete HUD-form tag, annotated by scan order:
 
 ```text
-lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5 ⚡87%
+lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5
+⚡87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=CS:0.80&p=0.6#🔍.3.2.8 | p0.6
+lares://scryer:node(○)@lares-abc123/aftermath.docs.settle?stance=🏛️&register=CS:0.80&p=0.5#🔍.3.2.9
 ```
 
 Quick read:
 
-> Telarus (operator), in Orient phase, machine `lares-abc123`, event 42.
+> Telarus (operator), in operator-authored Orient phase, machine `lares-abc123`.
 > Territory: threshold / uncertain / opens.
 > Philosopher stance, Synthesis-0.65 confidence, tactical scope at Week 3 / Watch 2 / Turn 7.
-> p-band 0.5 density, mana 87%.
+> The responding node opens a parse attractor under mana 87%, then settles in Aftermath.
 
 Field order for live scan:
 
 1. Territory first: what semantic neighborhood are we in?
 2. Register + stance: what kind of claim is this, and how should the number be read?
 3. Phase + scope: what is the node doing, and at what scale?
-4. p-band + mana: how dense is the instrumentation, and how much context remains?
+4. Authority marking (`⊙`) when present: who held the stick for the declared state?
+5. p-band + mana: how dense is the instrumentation, and how much context remains?
 
 Multi-stance example:
 
 ```text
-lares://telarus:operator(◇)@lares-abc123:43/threshold.sharp.closes?stance=🏛️&stance=🌊&register=S:0.60&p=0.7#🗺️.3 | p0.7 ⚡62%
+lares://telarus:operator(◇)@lares-abc123/threshold.sharp.closes?stance=🏛️&stance=🌊&register=S:0.60&p=0.7#🗺️.3 | p0.7
+⚡62% lares://mischief-muse:node(◇)@lares-abc123/chorus.lateral.gathers?stance=🎭&register=S:0.65&p=0.6#🗺️.3
+lares://mischief-muse:node(○)@lares-abc123/chorus.landed.settle?stance=🎭&register=S:0.65&p=0.5#🗺️.4
 ```
 
 This does **not** mean "truth-confidence 0.60" in a universal sense. It means a `0.60` reading held across both Philosopher and Poet frames. The two stance glyphs tell the operator that the declared register carries more spread than a single-stance point reading.
