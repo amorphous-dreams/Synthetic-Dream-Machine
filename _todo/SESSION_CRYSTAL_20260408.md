@@ -423,7 +423,7 @@ Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair**
 | Branch cleanup | Merged local+remote branches deleted; `fetch --prune` run |
 | 13 work branches pushed to origin | Preserved for org transfer survival |
 | Branch protection applied to main | PR + 1 approving review required; force pushes + deletions blocked |
-| Org transfer | **PENDING OPERATOR ACTION** — GitHub UI: Settings → Danger Zone → Transfer → `amorphous-dreams` |
+| Org transfer | **COMPLETE** — `amorphous-dreams/Synthetic-Dream-Machine` — 2026-04-08. Remote URL updated locally. |
 
 **Branches on Origin at Session Close**
 
@@ -468,7 +468,7 @@ Operator dispatched an Explore sub-agent to crawl the repo state after the brows
 
 ### Pending (Deferred to Next Session or Operator Action)
 
-- **Org transfer:** Operator initiates from GitHub UI. After transfer, verify `@amorphous-dreams-cabal/admins` team exists and CODEOWNERS resolves correctly.
+- **CODEOWNERS team resolution:** Transfer complete. Verify `@amorphous-dreams-cabal/admins` team exists in the org and that CODEOWNERS entries resolve correctly for protected paths.
 - **4 unmerged feature branches:** `feature/osr-power-text`, `feature/ftls-gear`, `feature/ftls-dev`, `feature/FTLS-refinement` — substantial work, need triage pass before PR
 - **S0_REFINEMENT_PLAN.md Rev 4:** Sprint skeleton from Payload 2 ready; document not yet updated
 - **Lindwyrm Act II:** Feed thread opening is the tonal anchor. Continue from "the Lindwyrm pauses to compose the next segment"

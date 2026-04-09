@@ -130,7 +130,7 @@ These were made in the 2026-04-08 browser session. They are `[CS:0.80]` — near
 | Branch protection on main | `joshuafontany/Synthetic-Dream-Machine` main branch now requires PR + 1 approving review before merge. Force pushes and deletions blocked. `enforce_admins: false` (admin bypass allowed — flip to true post org-transfer if desired). | Local session tick 21 |
 | CODEOWNERS retargeted | Covers new repo architecture: `/.github/`, `/AGENTS.md`, `/lares/`, `/builds/` → full org+admin; `/sdm/`, `/ftls/`, `/elyncia/` → personal accounts; `/_todo/`, `/_becmi/`, `/tests/` → lighter touch. `builds.stuffed.failed/` and `wtf/` intentionally uncovered. | Local session tick 20 |
 | Work branches backed up | 13 local feature/work branches pushed to origin before org transfer. Will survive transfer intact. | Local session tick 21 |
-| Org transfer pending | Repo transfer to `amorphous-dreams` org is the next operator action (GitHub UI: Settings → Danger Zone → Transfer). Verify `@amorphous-dreams-cabal/admins` team exists post-transfer. | Local session tick 21 |
+| Org transfer complete | Repo transferred to `amorphous-dreams/Synthetic-Dream-Machine` — 2026-04-08. Remote URL updated to `git@github.com:amorphous-dreams/Synthetic-Dream-Machine.git`. Verify `@amorphous-dreams-cabal/admins` team CODEOWNERS resolution. | Local session tick 23 |
 
 ---
 
