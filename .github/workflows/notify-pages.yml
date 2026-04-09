@@ -1,0 +1,17 @@
+name: Notify Pages on Push to Main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger amorphous-dreams.github.io rebuild
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAGES_DISPATCH_TOKEN }}
+          repository: amorphous-dreams/amorphous-dreams.github.io
+          event-type: content-updated
+          client-payload: '{"source": "Synthetic-Dream-Machine", "ref": "${{ github.ref_name }}"}'

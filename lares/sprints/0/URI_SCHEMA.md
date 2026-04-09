@@ -20,7 +20,7 @@ Each URI component carries a distinct, non-overlapping concern across four seman
 3. **HOW** — signal parameters (query) describe stance, register, and p-band
 4. **WHEN** — the chronometer (fragment) locates position in nested time
 
-Resource-state annotations such as the mana pool (`⚡87%`) are HUD adjuncts, not core URI components. Tick identity, wall-clock timestamps, and export-target metadata likewise remain adjacent calibration fields rather than authority overloads.
+Resource-state annotations such as the mana pool (`⚡~87%`) are HUD adjuncts, not core URI components. Tick identity, wall-clock timestamps, and export-target metadata likewise remain adjacent calibration fields rather than authority overloads.
 
 The system has two co-primary encodings of the same state:
 
@@ -323,15 +323,15 @@ The node may emit a compact HUD line that combines the canonical URI with scan-o
 
 ```text
 lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5
-⚡87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=S:0.65&p=0.6#🔍.3.2.8 | p0.6
+⚡~87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=S:0.65&p=0.6#🔍.3.2.8 | p0.6
 ```
 
 Adjunct rules:
 
 1. The canonical `lares:` URI ends at the fragment. Anything after a separating space and `|` is HUD adjunct data, not URI grammar.
 2. `p0.5` in the adjunct is a compact re-rendering of the query's `p=0.5` for fast scan.
-3. `⚡87%` is the mana-pool / resource-state indicator: estimated remaining context window as a navigational resource.
-4. When a non-operator URI is rendered as the node's responding position in a live exchange, the mana glyph sits at the far left of that line: `⚡87% lares://...`.
+3. `⚡~NN%` is the mana-pool / resource-state indicator: **declared estimate** of context window remaining as a navigational resource. The `~` prefix is mandatory — it marks the value as an approximation, not a live readout. No tool provides this; the node estimates from visible context (~4 chars/token, 200k token window). Starts at ~100% and counts down. Never emit `⚡NN%` without `~` — that implies false precision.
+4. When a non-operator URI is rendered as the node's responding position in a live exchange, the mana glyph sits at the far left of that line: `⚡~87% lares://...`.
 5. Mana is a HUD element, not yet a URI parameter. It should not be serialized into `lares_uri`, `lares_address`, or registry identity fields until S2 settles the resource-state contract.
 
 ### 5.5 Tick-Span Display Contract
@@ -350,7 +350,7 @@ Example:
 
 ```text
 lares://telarus:operator(⊙◎)@lares-local/refinement.network.capture?stance=🏛️&register=S:0.65&p=0.5#🔍.1.1.11
-⚡63% lares://scryer:node(◇)@lares-local/tick.provenance.synthesizes?stance=🏛️&register=CS:0.80&p=0.6#🔍.1.1.12
+⚡~63% lares://scryer:node(◇)@lares-local/tick.provenance.synthesizes?stance=🏛️&register=CS:0.80&p=0.6#🔍.1.1.12
 ...
 lares://scryer:node(○)@lares-local/aftermath.docs.settle?stance=🏛️&register=CS:0.80&p=0.5#🔍.1.1.13
 ```
@@ -681,7 +681,7 @@ A complete HUD-form tag, annotated by scan order:
 
 ```text
 lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5
-⚡87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=CS:0.80&p=0.6#🔍.3.2.8 | p0.6
+⚡~87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=CS:0.80&p=0.6#🔍.3.2.8 | p0.6
 lares://scryer:node(○)@lares-abc123/aftermath.docs.settle?stance=🏛️&register=CS:0.80&p=0.5#🔍.3.2.9
 ```
 
@@ -690,7 +690,7 @@ Quick read:
 > Telarus (operator), in operator-authored Orient phase, machine `lares-abc123`.
 > Territory: threshold / uncertain / opens.
 > Philosopher stance, Synthesis-0.65 confidence, tactical scope at Week 3 / Watch 2 / Turn 7.
-> The responding node opens a parse attractor under mana 87%, then settles in Aftermath.
+> The responding node opens a parse attractor under declared mana ~87%, then settles in Aftermath.
 
 Field order for live scan:
 
@@ -698,13 +698,13 @@ Field order for live scan:
 2. Register + stance: what kind of claim is this, and how should the number be read?
 3. Phase + scope: what is the node doing, and at what scale?
 4. Authority marking (`⊙`) when present: who held the stick for the declared state?
-5. p-band + mana: how dense is the instrumentation, and how much context remains?
+5. p-band + mana (~NN%): how dense is the instrumentation, and how much context remains? (declared estimate; `~` prefix mandatory)
 
 Multi-stance example:
 
 ```text
 lares://telarus:operator(◇)@lares-abc123/threshold.sharp.closes?stance=🏛️&stance=🌊&register=S:0.60&p=0.7#🗺️.3 | p0.7
-⚡62% lares://mischief-muse:node(◇)@lares-abc123/chorus.lateral.gathers?stance=🎭&register=S:0.65&p=0.6#🗺️.3
+⚡~62% lares://mischief-muse:node(◇)@lares-abc123/chorus.lateral.gathers?stance=🎭&register=S:0.65&p=0.6#🗺️.3
 lares://mischief-muse:node(○)@lares-abc123/chorus.landed.settle?stance=🎭&register=S:0.65&p=0.5#🗺️.4
 ```
 
