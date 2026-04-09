@@ -5,7 +5,7 @@ Convert BECMI/RC magic-item procedures into SDM chapter-ready form using the cur
 - Core mechanics baseline: `Synthetic_Dream_Machine_01_Quickstart.md`
 - Gear/item/vehicle table surface: `Synthetic_Dream_Machine_05_Gear_Index.md` (near-final, catalog-focused)
 - Conversion-governance master: `_todo/BECMI/TODO_BECMI_Conversion.md`
-- Loot integration acceptance: `_todo/FTLS/TODO_Loot_Treasure_Conversion.md`
+- Loot integration acceptance: `_todo/ftls/TODO_Loot_Treasure_Conversion.md`
 
 This TODO is the execution tracker for magic-item conversion specifically.
 
@@ -40,13 +40,13 @@ Sequencing lock status (2026-04-01):
   - slot pressure,
   - ward/armor language,
   - catalog-facing output format.
-- `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md` controls everyday weird-gear tone:
+- `sdm/Vastlands_Guidebook/Vastlands_Guidebook.md` controls everyday weird-gear tone:
   - wards,
   - albums,
   - strange items,
   - mods,
   - portable occult gear.
-- `SDM/Our_Golden_Age/Our_Golden_Age.md` controls relic consequence and metaphysical pressure:
+- `sdm/Our_Golden_Age/Our_Golden_Age.md` controls relic consequence and metaphysical pressure:
   - shrines,
   - godsign,
   - signals,
@@ -220,18 +220,18 @@ Sequencing lock status (2026-04-01):
 - Primary conversion source:
   - `_becmi/TSR 1071 - The D&D Rules Cyclopedia.pdf` (magic-item procedure bands)
 - SDM context sources:
-  - `SDM/Our_Golden_Age/Our_Golden_Age.md`
-  - `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md`
-  - `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`
+  - `sdm/Our_Golden_Age/Our_Golden_Age.md`
+  - `sdm/Vastlands_Guidebook/Vastlands_Guidebook.md`
+  - `sdm/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md`
 - Canonical destination references:
   - `Synthetic_Dream_Machine_01_Quickstart.md`
   - `Synthetic_Dream_Machine_05_Gear_Index.md`
 
 ## Chapter Targets
 - Primary chapter target:
-  - `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+  - `ftls/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
 - Pointer-only chapter target:
-  - `FTLS/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md`
+  - `ftls/Flying_Triremes_and_Laser_Swords_09_Loot_and_Treasure.md`
 
 ## Active Work Plan
 
@@ -387,8 +387,8 @@ Sequencing lock status (2026-04-01):
 - Preserve classic spell/effect names only as recognizers until the Phase B bridge assigns them explicit SDM `power` behavior.
 
 ## Dependencies and Coordination
-- Depends on boundary lock in `_todo/FTLS/TODO_SDM_Gear_Index_Master.md`.
-- Must stay compatible with acceptance model in `_todo/FTLS/TODO_Loot_Treasure_Conversion.md`.
+- Depends on boundary lock in `_todo/ftls/TODO_SDM_Gear_Index_Master.md`.
+- Must stay compatible with acceptance model in `_todo/ftls/TODO_Loot_Treasure_Conversion.md`.
 - Must follow overlay standards in `_todo/BECMI/TODO_BECMI_Conversion.md`.
 
 ## Out of Scope

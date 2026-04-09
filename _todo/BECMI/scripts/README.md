@@ -40,7 +40,7 @@ Companion flow-first notes:
 Run:
 
 ```bash
-./_todo/BECMI/scripts/validate_md_internal_links.sh Synthetic_Dream_Machine_05_Gear_Index.md FTLS/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md
+./_todo/BECMI/scripts/validate_md_internal_links.sh Synthetic_Dream_Machine_05_Gear_Index.md ftls/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md
 ```
 
 Behavior:

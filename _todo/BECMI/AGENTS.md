@@ -26,8 +26,8 @@ If a line in this file requires a date, counter, status color, or "current block
 
 - Pipeline: BECMI -> SDM+ conversion for FTLS.
 - Primary manuscript targets:
-	- `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`
-	- `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+	- `ftls/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md`
+	- `ftls/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
 - Chapter sequencing policy and active execution order are tracked in `_todo/BECMI/TODO_BECMI_Conversion.md`.
 
 ## Locked Formula
@@ -89,9 +89,9 @@ Stable references only:
 - `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Immortals.md`
 - `_todo/BECMI/TODO_BECMI_Spell_Material_Staging_Rules_Cyclopedia.md`
 - `_todo/BECMI/TODO_PRE_ADD_Spell_Staging.md`
-- `_todo/FTLS/TODO_FTLS_Chapter_Action_Plan.md`
-- `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`
-- `_todo/FTLS/TODO_Lares_Chapter05_Agent_Prompt.md`
+- `_todo/ftls/TODO_FTLS_Chapter_Action_Plan.md`
+- `_todo/ftls/TODO_Magitech_Fantascience_Chapter05.md`
+- `_todo/ftls/TODO_Lares_Chapter05_Agent_Prompt.md`
 - `_todo/AUDIT_REPORT_Doctrine_APPROVAL_2026-03-31.md`
 - `_todo/AUDIT_REPORT_Confidence_Ratings.md`
 

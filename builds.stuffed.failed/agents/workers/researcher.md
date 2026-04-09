@@ -31,7 +31,7 @@ Perform the specific scoped research task delegated by the Lares coordinator: br
 
 ## Canonical External Sources
 
-- **FTLS/Elyncia**: `https://amorphous-dreams.github.io/vault/synthetic-dream-machine/`
+- **ftls/Elyncia**: `https://amorphous-dreams.github.io/vault/synthetic-dream-machine/`
 - **SDM rules**: `https://joshuafontany.github.io/Synthetic-Dream-Machine`
 
 ## Output Format

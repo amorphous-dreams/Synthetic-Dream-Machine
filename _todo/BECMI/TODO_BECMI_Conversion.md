@@ -240,11 +240,11 @@ Common context products required for every lane (`B/E/C/M/I/RC`):
 
 ## Active Linked TODOs
 - Loot/Treasure stabilized plan:
-  - `_todo/FTLS/TODO_Loot_Treasure_Conversion.md`
+  - `_todo/ftls/TODO_Loot_Treasure_Conversion.md`
 - Magitech Chapter 05 alignment:
-  - `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`
+  - `_todo/ftls/TODO_Magitech_Fantascience_Chapter05.md`
 - SDM consolidation master:
-  - `_todo/FTLS/TODO_SDM_Gear_Index_Master.md`
+  - `_todo/ftls/TODO_SDM_Gear_Index_Master.md`
 
 
 ## Active Focus
@@ -259,7 +259,7 @@ Confirmed complete on inspection (2026-04-03): the `Traversal and Passage` sub-m
 
 ### Ch06 Alpha Verification — SPRINT IN PROGRESS
 
-**Task:** Run a structured alpha pass over `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` verifying tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries across all 196 power cards.
+**Task:** Run a structured alpha pass over `ftls/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` verifying tag consistency, overcharge consistency, recognizer discoverability, and Level/Power Level boundaries across all 196 power cards.
 
 **Gate:** This is the prerequisite for marking Ch06 `alpha` complete (queue item #5), which in turn gates Ch05 Phase B bridge resumption and the F2 Magic Items pass.
 
@@ -415,8 +415,8 @@ The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## 
   - consumable/charged item path,
   - cursed/complication-bearing item path.
 - [ ] Use Chapter 05 armor/shield conversion as the model pattern for `retain BECMI API surface, replace internal mechanics`.
-- **Pre-F2 upstream Epic (planned):** After the metaphysics/world-ontology terms scan (follow-on to the Completeness Capture Epic), run a dedicated full-text extraction Epic targeting all Magical Items and Artifacts blocks across the BECMI/RC corpus. This Epic feeds F2 with source-evidence anchors rather than relying on spell completeness cross-references alone. See `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B2` for scope detail.
-- **Backlogged RC procedure:** RC `Dispel Magic Attacks` / enchanted vessel interaction rule (rc_full.txt L18814–18833) is deferred to Chapter 05 and tracked at `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B1`.
+- **Pre-F2 upstream Epic (planned):** After the metaphysics/world-ontology terms scan (follow-on to the Completeness Capture Epic), run a dedicated full-text extraction Epic targeting all Magical Items and Artifacts blocks across the BECMI/RC corpus. This Epic feeds F2 with source-evidence anchors rather than relying on spell completeness cross-references alone. See `_todo/ftls/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B2` for scope detail.
+- **Backlogged RC procedure:** RC `Dispel Magic Attacks` / enchanted vessel interaction rule (rc_full.txt L18814–18833) is deferred to Chapter 05 and tracked at `_todo/ftls/TODO_Magitech_Fantascience_Chapter05.md -> Backlog Items -> B1`.
   
 
 ### Other Passes

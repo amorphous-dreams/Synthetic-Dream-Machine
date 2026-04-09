@@ -1,6 +1,6 @@
 # Powered Symbiote [Hallmark Trait]
 
-*A new Hallmark-only Trait for SDM/FTLS. This section presents the trait rules first, then Ichi & Aki as the worked example.*
+*A new Hallmark-only Trait for sdm/FTLS. This section presents the trait rules first, then Ichi & Aki as the worked example.*
 
 ---
 

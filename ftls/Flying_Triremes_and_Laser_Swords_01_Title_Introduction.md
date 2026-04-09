@@ -19,7 +19,7 @@ operator-anon@dreamdeck:~/documents/FTLS(main)
 $ lares open -mime text/vnd.tiddlywiki;mode=edit -uri "./Flying Triremes and Laser Swords - Alpha Playtest"
 daemon-lares@dreamdeck:
   Loading...
-  ~/documents/FTLS/Alpha Playtest
+  ~/documents/ftls/Alpha Playtest
   # FTLS draft game rules. Alpha: Shard contents do not reflect final Playtest document structure.
   end(uri)
   Next query?

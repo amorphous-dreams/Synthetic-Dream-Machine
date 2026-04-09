@@ -112,7 +112,7 @@ The chronometer occupies the URI fragment position. It tracks nested OODA-A loop
 | 4 | Combat | Round | ~6 seconds | `@C` | `⚔️` | Immediate Response |
 | 5 | Action | Action/Free Action | Variable | `@A` | `⚡` | Precision Execution |
 
-[Canon: FTLS/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md → Key Terms → Time]
+[Canon: ftls/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md → Key Terms → Time]
 
 ### 4.2 Notation
 

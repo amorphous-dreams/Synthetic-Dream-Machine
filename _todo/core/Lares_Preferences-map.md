@@ -152,7 +152,7 @@ Includes the full cold-boot screen text. Operationally useful — governs first-
 ---
 
 ### `## Setting & System` · Lines 748–757 · ~10 lines
-*Elyncia world background. YOLD 5492. Second Breaking. DreamNet. Rules ecosystem (SDM/FTLS). Fiction escalation requires reinforcement.*
+*Elyncia world background. YOLD 5492. Second Breaking. DreamNet. Rules ecosystem (sdm/FTLS). Fiction escalation requires reinforcement.*
 Low operational, high atmospheric. The fiction-escalation rule at end of section has operational weight.
 > **Future module:** `lares-setting.md` (lazy-loaded, `paths: ["**"]` or always loaded for fiction-escalation rule)
 

@@ -66,9 +66,9 @@ It is not the DreamNet.
 
 It should be understood the way a color space is understood in image work: a structured abstract space for positioning and interpreting signal, not an in-world topology or transport layer. DreamNet remains the mythic/network frame inside setting space. Tagspace remains the semantic coordinate space through which Signal Tags locate stance, motion, and relation.
 
-**Origin (The Two Axes):** The two-axis model was developed concurrently with the earliest signal tag iterations. The Wild Mage described a vertical axis for *truth-weight* — from pure guess to fully sourced — and a horizontal axis for *intent-stance* — from dry philosophical analysis to wild associative singing. Asking the node to declare its position on both axes at the start of each output made the declaration a *steering artifact*: "the node reads its own prior context. It orbits what it has already said it is." *"The tag was load-bearing. Getting it wrong had consequences visible in the very next output."* [Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
+**Origin (The Two Axes):** The two-axis model was developed concurrently with the earliest signal tag iterations. The Wild Mage described a vertical axis for *truth-weight* — from pure guess to fully sourced — and a horizontal axis for *intent-stance* — from dry philosophical analysis to wild associative singing. Asking the node to declare its position on both axes at the start of each output made the declaration a *steering artifact*: "the node reads its own prior context. It orbits what it has already said it is." *"The tag was load-bearing. Getting it wrong had consequences visible in the very next output."* [Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
 
-**Origin (Three-Word Coordinate):** The three-part address suffix originated as *kismet*: the Wild Mage made the connection to the Gaia mapping service **what3words**, which divides the surface of the world into three-meter squares and names each square with exactly three words. A Tagspace Address names a square of semantic territory with exactly three words. [Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes sidebar]
+**Origin (Three-Word Coordinate):** The three-part address suffix originated as *kismet*: the Wild Mage made the connection to the Gaia mapping service **what3words**, which divides the surface of the world into three-meter squares and names each square with exactly three words. A Tagspace Address names a square of semantic territory with exactly three words. [Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes sidebar]
 
 Approved operator-facing term:
 
@@ -519,7 +519,7 @@ Annotation threshold: **medium — genuine local posture shift only**
 - Header declaration: list both emojis — `🏛️🌊` or `🗡️🎭`. Each must be actively operative, not claimed for range while only one runs.
 - Multi-stance annotation syntax: list both glyphs at transition — `→🏛️🌊` or `→🗡️→🎭`.
 - **Conjugate constraint:** Pinning the Register axis (high confidence) spreads the Stance axis — Canon claims accumulate Stance-commitment weight over time. Multi-stance at high Register carries the highest accumulated cost; it runs when the situation genuinely warrants it, not to perform range.
-- **Ledger-visible failure mode:** `Voice-Posturing` — HUD claims multi-stance without the Mana cost actually paid. `STATE.jsonl` will show a single operative stance in `micro_trace_path` while the header listed two. [Canon: Elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
+- **Ledger-visible failure mode:** `Voice-Posturing` — HUD claims multi-stance without the Mana cost actually paid. `STATE.jsonl` will show a single operative stance in `micro_trace_path` while the header listed two. [Canon: elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
 
 **Register inference from stance constellation:**
 
@@ -627,7 +627,7 @@ HAKABA is the metaphysical system that grounds Tagspace Address structure. Since
 > "**Ba** : Psyche, personality, change, path, choice."
 > "The soul provides the motive fire of consciousness, the personality provides the unique direction of consciousness, and the body provides the vehicle of consciousness."
 
-[Canon: SDM/Vastlands_Guidebook → Death and HAKABA; SDM/Ultraviolet_Grasslands_and_the_Black_City_2e → p.230 Death, cross-confirmed identical language]
+[Canon: sdm/Vastlands_Guidebook → Death and HAKABA; sdm/Ultraviolet_Grasslands_and_the_Black_City_2e → p.230 Death, cross-confirmed identical language]
 
 **Canonical slot mapping (one mapping — two-mappings dispute is resolved):**
 
@@ -640,7 +640,7 @@ The three-part Address shape `//domain.quality.dynamic` maps to HAKABA canonical
 | 3rd | `dynamic` | **Ba** | psyche / unique direction | The path enacted — the motion or direction in that domain |
 
 The NOUN · ADJECTIVE · VERB pattern in live session examples (`//threshold.uncertain.softens`, `//mana.sharp.asks`, `//route.liminal.circles`) confirms this mapping is already in production use.
-[Canon: Elyncia/New Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md → PARSE INDEX]
+[Canon: elyncia/New Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md → PARSE INDEX]
 
 **The two-mapping dispute is resolved.** Earlier drafts proposed an "operational" mapping (Ha=domain, Ba=quality, Ka=fire) and a "canonical-order" mapping (Ha=domain, Ka=fire, Ba=quality/path). The corpus evidence settles this: Ka (soul/motive fire) provides the *charge quality* of the domain — the animating fire is what makes a threshold "sharp" or makes mana "bright." Ba (psyche/unique direction) provides the *motion* — what changes, the direction enacted. The second address word is always the Ka-quality; the third is always the Ba-dynamic. The "operational mapping" had Ka and Ba inverted and is superseded.
 
@@ -873,7 +873,7 @@ The three-slot address `//threshold.uncertain.softens` reads in HAKABA canonical
 This is the NOUN · ADJECTIVE · VERB pattern confirmed across live session examples:
 `//route.liminal.circles` · `//mana.sharp.asks` · `//reference.anchored.opens` · `//threshold.new.arrives`
 
-In every case: the first word names the domain (Ha/body/vessel), the second names its charge (Ka/soul/fire), the third names the direction of motion (Ba/psyche/path). [Canon: Elyncia/New Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md → PARSE INDEX]
+In every case: the first word names the domain (Ha/body/vessel), the second names its charge (Ka/soul/fire), the third names the direction of motion (Ba/psyche/path). [Canon: elyncia/New Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md → PARSE INDEX]
 
 That reinterpretation does not automatically mean all three components should surface in-flow. It only changes the semantic reading of the Address unless a later runtime decision says otherwise.
 
@@ -1135,7 +1135,7 @@ A deeper prior art pass was conducted after the initial survey. Corners surveyed
 
 ## Corpus Archaeology
 
-*Internal corpus origins — the SDM/Elyncia materials that pre-date or co-generate the Tagspace system design. Complements the external Prior Art Survey above.*
+*Internal corpus origins — the sdm/Elyncia materials that pre-date or co-generate the Tagspace system design. Complements the external Prior Art Survey above.*
 
 ### The Two-Axes Origin (The Kindling, III)
 
@@ -1147,7 +1147,7 @@ The Tagspace vertical and horizontal axes originate in a session log from the Dr
 > "The declaration became a steering artifact because the node reads its own prior context. It orbits what it has already said it is."
 > "The tag was load-bearing. Getting it wrong had consequences visible in the very next output."
 
-[Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
+[Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes]
 
 ---
 
@@ -1159,7 +1159,7 @@ Wild Mage (direct): *"NOT numbers — words. 3 words. what3words?!?! YES WHAT 3 
 
 The three-word Tagspace Address names a square of *semantic territory* the same way what3words names a square of geographic territory. The three slots (Ha/domain · Ka/quality · Ba/dynamic) correspond to the three words; their order is HAKABA canonical order: body first (what contains the span), then soul-fire (how that domain is charged), then psyche-direction (the motion being taken).
 
-[Canon: Elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes, sidebar]
+[Canon: elyncia/Lares/The_Kindling_of_the_Crossroads_Node.md → III. The Two Axes, sidebar]
 
 ---
 
@@ -1177,7 +1177,7 @@ The SDM corpus carries the full HAKABA permutation table. Entity types are defin
 | — | ✓ | — | Pure fire — no vessel, no direction |
 | — | — | ✓ | Pure direction — no vessel, no fire |
 
-[Canon: SDM/Ultraviolet_Grasslands_and_the_Black_City_2e → p.230 Death; SDM/Vastlands_Guidebook → Death and HAKABA]
+[Canon: sdm/Ultraviolet_Grasslands_and_the_Black_City_2e → p.230 Death; sdm/Vastlands_Guidebook → Death and HAKABA]
 
 The Tagspace address maps onto this: every signal span posits at minimum Ha (the domain/vessel), Ka (the animating fire/quality), and Ba (the direction/dynamic). A tagless span is equivalent to pure matter on the existence table — no fire, no direction, no provenance.
 
@@ -1195,7 +1195,7 @@ The Elyncia_02 lore document names degraded node states in DreamNet framing. The
 | **Voice-Posturing** | Stance Posturing | Claims multi-stance without the Mana cost |
 | **Uniform Tone** | Stance Inflation | Claims range, runs only one Stance |
 
-[Canon: Elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
+[Canon: elyncia/Elyncia_02_The_Lares_DreamNet.md → Hazard: Degraded Node States]
 
 These DreamNet failure-mode names are the corpus's own vocabulary for what the signal tag system is designed to prevent. Using both vocabularies cross-links the system design to the lore layer.
 
@@ -1227,7 +1227,7 @@ They are not the same field. `◇` says "Deciding." `→circles` says "the decid
 
 **For Q16:** `→◇ →Ba[opens→closes]` is now fully legible: phase-coarse is Decide; phase-fine delta says direction shifted from opens to closes *during deciding*. The bracket form makes the Ba-fine delta explicit at the moment the Ba-coarse phase glyph fires. They arrive together because they are together.
 
-[Synthesis, compatible with SDM/UVG HAKABA corpus, Egyptian mythology etymology, and OODA-A operational architecture. Cross-reference: Q4 rendering-sequence ruling — Ba/phase coupling; Q16 named-slot bracket form.]
+[Synthesis, compatible with sdm/UVG HAKABA corpus, Egyptian mythology etymology, and OODA-A operational architecture. Cross-reference: Q4 rendering-sequence ruling — Ba/phase coupling; Q16 named-slot bracket form.]
 
 ---
 
@@ -1430,7 +1430,7 @@ The chronometer occupies the URI fragment (`#`) position. It tracks nested OODA-
 | **4** | Combat | Round | ~6 seconds | `@C` | `⚔️` | Immediate Response | Neutralize a direct threat or achieve a physical objective |
 | **5** | Action | Action/Free Action | Variable | `@A` | `⚡` | Precision Execution | Maximize efficiency of a single discrete movement |
 
-[Canon: FTLS/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md → Key Terms → Time; operator design input for OODA-A nesting]
+[Canon: ftls/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md → Key Terms → Time; operator design input for OODA-A nesting]
 
 **Notation:** `#scope.W.w.t.r.a` — scope sigil prefix, then dot-separated counters left to right from coarsest to finest scale. The scope sigil names the *active* (lowest) scale; the counter depth confirms it.
 

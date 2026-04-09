@@ -112,7 +112,7 @@ Roll `1d20` once per loot pick.
 | 17 | Treasure lot: mixed coin and goods (use [B](#treasure-table-b-coin-mix)) | mixed | `1 sk` | `3d6 x 100` | `[hoard] [bulk]` |
 | 18 | Restricted relic or cult asset (use [G](#treasure-table-g-relicmagic-yield)) | Claimed, stolen, or taboo assets | `1 st` | `3d6 x 120` | `[illegal] [relic] [wanted]` |
 | 19 | Major cache marker; add 2 more rolls | mixed | varies | roll + roll | `[cache] [escalation]` |
-| 20 | Strange Item ([VLG d50](../SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0022) / [UVG d100](../SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0196)) + 1 bonus roll | Artifacts and named relics | `1 st` | `4d6 x 100` (if not given by Strange Item table) | `[strange] [high-interest]` |
+| 20 | Strange Item ([VLG d50](../sdm/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0022) / [UVG d100](../sdm/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0196)) + 1 bonus roll | Artifacts and named relics | `1 st` | `4d6 x 100` (if not given by Strange Item table) | `[strange] [high-interest]` |
 
 ### Treasure Table A: Area-Level Multiplier
 
@@ -128,7 +128,7 @@ Use the same value-bands as RSS salvage trading so loot and salvage do not drift
 ### Treasure Table B: Coin Mix
 
 Use when a lot contains significant coin or bullion. This table sets the **currency face** (what it looks like in fiction), while value is still tracked as `cash`.
-Style anchors: [OGA cash abstraction and exchange weirdness](../SDM/Our_Golden_Age/Our_Golden_Age.md#cash-assets), plus Elyncia mixed-market circulation (coins/tokens/favors across fractured trade routes) in [Elyncia world material](../Elyncia/Elyncia_01_A_Broken_World.md).
+Style anchors: [OGA cash abstraction and exchange weirdness](../sdm/Our_Golden_Age/Our_Golden_Age.md#cash-assets), plus Elyncia mixed-market circulation (coins/tokens/favors across fractured trade routes) in [Elyncia world material](../elyncia/Elyncia_01_A_Broken_World.md).
 
 | Context | Roll | Output (cash) | Currency Face |
 |---|---:|---:|---|
@@ -147,8 +147,8 @@ SDM Economy Weirdness (optional `1d6`, once per major lot):
 | 6 | Error | Monetary shock: counterfeit panic, emergency recall, asset seizure, or bank run. The lot is temporarily "hot": Tick Attention once and schedule one immediate economy interruption scene before normal liquidation can proceed. |
 
 Concept references:
-- Cash abstraction / liquid assets: [OGA `Cash Assets`](../SDM/Our_Golden_Age/Our_Golden_Age.md#cash-assets).
-- Multi-currency exchange volatility and fee spread: [OGA `Purr-Purr Exchange Rates`](../SDM/Our_Golden_Age/Our_Golden_Age.md#purr-purr-exchange-rates).
+- Cash abstraction / liquid assets: [OGA `Cash Assets`](../sdm/Our_Golden_Age/Our_Golden_Age.md#cash-assets).
+- Multi-currency exchange volatility and fee spread: [OGA `Purr-Purr Exchange Rates`](../sdm/Our_Golden_Age/Our_Golden_Age.md#purr-purr-exchange-rates).
 - `Tick Attention` and tick escalation interface: [FTLS 04 `RSS Attention`](Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md#rss-attention), [FTLS 09 `Step 5: Escalation Hooks`](#step-5-escalation-hooks).
 
 Referee note: keep the local medium in fiction (coin, bells, cards, scrip, credits, oath-tokens), but settle outcomes in `cash`.
@@ -356,7 +356,7 @@ Speed guidance:
 - If a carrier already at `slow` overloads further, keep `slow` and apply the overload consequences instead of stacking extra speed downgrades.
 - A VLG fracture result is a lasting downgrade (`normal -> slow`, or `slow -> very slow`) until properly repaired.
 
-References: [SDM inventory + weekly cadence](../Synthetic_Dream_Machine_01_Quickstart.md), [VLG supplies](../SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0085), [VLG vehicles/mounts](../SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0086), [VLG capacity/overloading/speed/power](../SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0087), [UVG transport capacities](../SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0187), [UVG transport fixes/features](../SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0188), [UVG gear/services supplies](../SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189).
+References: [SDM inventory + weekly cadence](../Synthetic_Dream_Machine_01_Quickstart.md), [VLG supplies](../sdm/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0085), [VLG vehicles/mounts](../sdm/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0086), [VLG capacity/overloading/speed/power](../sdm/Vastlands_Guidebook/Vastlands_Guidebook.md#page_0087), [UVG transport capacities](../sdm/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0187), [UVG transport fixes/features](../sdm/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0188), [UVG gear/services supplies](../sdm/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md#page_0189).
 
 
 ## Liquidation and Fencing Treasure

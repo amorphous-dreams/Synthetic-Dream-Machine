@@ -352,17 +352,17 @@ When a character lacks a required trait for a task, the referee assigns a penalt
   * Assign **7 ability score points** (max 5 for now), **OR**  
   * Roll a flavor tag & ability array on the d100 table (VLG p.12).  
 * **Traits at Level 0:** 2 traits. Either a Background and 1 other (VLG style); or roll 1 status trait and 1 skill trait (OGA style).
-* **Heritage Trait (FTLS, optional):** A gift from the goddess (Elyncia/FTLS). Does not take a Trait Inventory slot.  
+* **Heritage Trait (FTLS, optional):** A gift from the goddess (elyncia/FTLS). Does not take a Trait Inventory slot.
 * **Starting Gear (VLG, optional):**  
   * Level 0: no strange item, only €50.  
   * Level 1: strange item (VLG p.22), quantum gear kit (VLG p.23), €100.  
   * Higher levels: more cash.
 * **A Motive (optional)**:
   * A motivation for ADVENTURE!
-  * See: [MOTIVE](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#motive).
+  * See: [MOTIVE](sdm/Vastlands_Guidebook/Vastlands_Guidebook.md#motive).
 * **A Name (optional)**:
   * "Unnamed" or generic characters do not use the six named Ability Scores, and instead use a *Bonus* Ability Score (See below).
-  * See: [NAME](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#name).
+  * See: [NAME](sdm/Vastlands_Guidebook/Vastlands_Guidebook.md#name).
 
 ## 2. Levels & Life
 
@@ -941,7 +941,7 @@ Some actions, such as dropping a carried sack or responding to an opponent’s f
 
 A character can take **at least one free action per round**.
 
-See: [Free Actions](SDM/Vastlands_Guidebook/Vastlands_Guidebook.md#free-actions).
+See: [Free Actions](sdm/Vastlands_Guidebook/Vastlands_Guidebook.md#free-actions).
 
 ## Improvising Actions
 
@@ -1508,7 +1508,7 @@ _n+1 = 2(n)_
 - size reductions (minimum 1) or capacity increases,
 - other unique features (see the _Vastlands Guidebook_ equipment section pp64–93 for a few ideas).
 
-For traditional leveling and traditional item levelling, see **SDM/Our_Golden_Age/Our_Golden_Age.md → Traditional Levelling / Traditional Item Levelling**.
+For traditional leveling and traditional item levelling, see **sdm/Our_Golden_Age/Our_Golden_Age.md → Traditional Levelling / Traditional Item Levelling**.
 
 ## Hallmarks, Pets, and Sidekicks
 

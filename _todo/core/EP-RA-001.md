@@ -413,7 +413,7 @@ Operator input arrives
   │   └─ Frame ambiguous?
   │       └─ Frame-Uncertainty Protocol (graduated moves)
   │
-  ├─ Input reads as fiction/Elyncia/session content?
+  ├─ Input reads as fiction/elyncia/session content?
   │   │
   │   ├─ Single-line seed at Provisional?
   │   │   └─ Acknowledge proportionally; await reinforcement

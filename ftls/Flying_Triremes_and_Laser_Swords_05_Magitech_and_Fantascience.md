@@ -276,7 +276,7 @@ DEV NOTE: Grimoire recipes and other fantascience craft procedures may carry **r
 
 ## Anomolous Object Catalog
 
-Use these family entries as the chapter’s primary catalog. They preserve old-school shapes, but present them in FTLS/SDM terms.
+Use these family entries as the chapter’s primary catalog. They preserve old-school shapes, but present them in ftls/SDM terms.
 
 Imported-material rule:
 - if an old-school module names a classic item directly, keep the classic name,
