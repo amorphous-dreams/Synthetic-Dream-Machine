@@ -53,7 +53,28 @@
 | Stance | `🏛️` Philosopher · `🌊` Poet · `🗡️` Satirist · `🎭` Humorist · `🔮` Private |
 
 Full URI spec: `_todo/URI_SCHEMA.md`
-Full operations (modes, p, HUD fields): `.github/instructions/lares-operations.instructions.md`
+Full operations (modes, p, HUD fields, micro-trace): `.github/instructions/lares-operations.instructions.md`
+Micro-trace full spec: `lares/signal/micro-trace.md`
+
+### In-flow Annotation (Micro-trace)
+
+The HUD pair governs exchange boundaries. Inside a generative span, the **Micro-trace HUD** annotates backward-looking state transitions inline:
+
+- `→◇` `→■` `→○` — phase transitions (default at p0.5)
+- `→🏛️` etc. — stance shift (only on genuine shift)
+- New Intent Header `//domain.quality.dynamic [R] 🏛️ ◇ @r` — when HAKABA territory changes mid-span
+
+### Sub-agent Handoff Rule
+
+**Every sub-agent dispatch and return gets a URI → URI pair.** Sub-agent contents are not in the parent session trace; the URI pair is the only artifact recording the intent handoff.
+
+```
+coordinator-URI → worker-URI    [dispatch]
+[sub-agent work — unloggable from parent]
+worker-URI → coordinator-URI    [return]
+```
+
+Coordinator-to-coordinator handoffs within the same session: micro-trace tag only, unless HAKABA territory changes (new Intent Header) or `--verbose` is active (URI pair surfaced).
 
 ---
 
@@ -103,6 +124,7 @@ These were made in the 2026-04-08 browser session. They are `[CS:0.80]` — near
 | Sprint Roadmap Rev 4 | 6 sprints (S0–S5). S1 redesigned for MemPalace. S5 new (DreamDeck). | `_todo/SESSION_CRYSTAL_20260408.md` § Payload 2 |
 | Story format | DreamDeck feed archive, JackPoint-style BBS thread. | `_todo/LINDWYRM_STORY_SHAPE.md` |
 | Mana pool on HUD | Context window as navigational resource indicator. RES-17. Field: `⚡ ~NN%` — **declared estimate**, free-remaining, `~` prefix mandatory. Confirmed `voice(s):` and `tick:N` as companion HUD fields. | `_todo/SESSION_CRYSTAL_20260408.md` § Payload 3 |
+| Micro-trace HUD | Backward-looking in-flow annotation layer. `→◇` `→■` `→○` at default p0.5. Orthogonal to Intent Header (prospective) and exchange HUD pair (boundary). Sub-agent dispatches require URI → URI pair (unloggable boundary). | `lares/signal/micro-trace.md` |
 
 ---
 
