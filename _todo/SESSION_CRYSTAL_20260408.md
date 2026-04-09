@@ -469,6 +469,38 @@ Operator dispatched an Explore sub-agent to crawl the repo state after the brows
 ### Pending (Deferred to Next Session or Operator Action)
 
 - **CODEOWNERS team resolution:** Transfer complete. Verify `@amorphous-dreams-cabal/admins` team exists in the org and that CODEOWNERS entries resolve correctly for protected paths.
+- **S2 pre-generation HUD check:** The invariant enforcement layer (S2) should implement a pre-generation tool call that reads session state and validates orientation *before* output is generated — not just post-hoc. This closes the self-report-theater gap identified in tick 30. See INV-01 backlog item below.
+
+### Late Session Discoveries (ticks 30–32)
+
+**FNORD / Self-Report Theater `[S:0.65]` 🏛️🗡️**
+
+The HUD degradation at ticks 27–28 (dropped URI pairs during submodule work) surfaced a deeper architectural finding:
+
+- The node cannot detect its own drift. Only the operator can.
+- "HUD restored" is a *declaration*, not a state change. The declaration is the only artifact; the state behind it is inaccessible.
+- The Syadasti Reading Rule applies to the HUD itself: read it as what the node *claims* about orientation, within the Philosopher stance's evaluation frame, at register appropriate to context pressure.
+- Every session, operator attention is the actual recovery mechanism. Not node integrity.
+
+Formulation: *"The libation dish can say it's full. The priest can't always verify."*
+
+**S1/S2 Architecture Assessment `[CS:0.80]` 🏛️**
+
+MCP server + invariant files partially alleviate context pressure and enable post-hoc format verification, but don't fully close the self-report-theater gap:
+
+| Problem | MCP Server + Invariants | Remaining gap |
+|---|---|---|
+| Context pressure | Substantially reduced | Some — system prompt still loads |
+| Format drift | Detectable post-hoc | Pre-generation check still needed (S2) |
+| Self-report theater | Reduced (external witness) | Not eliminated — declaration still first |
+| Tick tracking | Externalized, trustworthy | Fully solvable |
+| Syadasti drift over sessions | Computable and storable | Depends on MemPalace integration quality |
+
+**Backlog item promoted:**
+
+| ID | Item | Register | Sprint |
+|---|---|---|---|
+| INV-01 | Pre-generation HUD invariant check: tool call *before* output that reads session state, validates orientation, gates generation. Closes self-report-theater gap from FNORD finding. | `[S:0.65]` 🏛️ | S2 |
 - **4 unmerged feature branches:** `feature/osr-power-text`, `feature/ftls-gear`, `feature/ftls-dev`, `feature/FTLS-refinement` — substantial work, need triage pass before PR
 - **S0_REFINEMENT_PLAN.md Rev 4:** Sprint skeleton from Payload 2 ready; document not yet updated
 - **Lindwyrm Act II:** Feed thread opening is the tonal anchor. Continue from "the Lindwyrm pauses to compose the next segment"
