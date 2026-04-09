@@ -2,15 +2,15 @@
 # Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
 # Changes to governance-sensitive paths require review from admin roster members.
-# Org team syntax active — repo transferring to amorphous-dreams-cabal org.
+# Org team: @amorphous-dreams/admins. Personal accounts added once freyja-fontany GitHub account is set up.
 # Personal accounts retained as co-admins alongside org team.
 
 # --- Governance & Meta ---
-/.github/                 @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
-/AGENTS.md                @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+/.github/                 @amorphous-dreams/admins @joshuafontany @freyja-fontany
+/AGENTS.md                @amorphous-dreams/admins @joshuafontany @freyja-fontany
 
 # --- Lares agent architecture (canon-protected) ---
-/lares/                   @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+/lares/                   @amorphous-dreams/admins @joshuafontany @freyja-fontany
 
 # --- Game content (operator-owned) ---
 /sdm/                     @joshuafontany @freyja-fontany
@@ -18,7 +18,7 @@
 /elyncia/                 @joshuafontany @freyja-fontany
 
 # --- Build pipeline ---
-/builds/                  @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+/builds/                  @amorphous-dreams/admins @joshuafontany @freyja-fontany
 
 # --- Working / staging dirs (lighter touch) ---
 /_todo/                   @joshuafontany @freyja-fontany
