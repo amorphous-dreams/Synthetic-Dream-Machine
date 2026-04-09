@@ -2,6 +2,21 @@
 
 ---
 
+## [v4.1.1] — 2026-04-08
+
+Submodule registration: Kowloon stack, tldraw, and mempalace re-pointed to org forks.
+
+**Submodules registered**
+- `kowloon/` → `amorphous-dreams/kowloon` (fork of `jzellis/kowloon`)
+- `kowloon-frontend/` → `amorphous-dreams/kowloon-frontend` (fork of `jzellis/kowloon-frontend`)
+- `kowloon-client/` → `amorphous-dreams/kowloon-client` (fork of `jzellis/kowloon-client`)
+- `tldraw/` → `amorphous-dreams/tldraw` (fork of `tldraw/tldraw`)
+- `mempalace/` re-pointed from `milla-jovovich/mempalace` → `amorphous-dreams/mempalace`
+
+All five submodules now track org-owned forks under `amorphous-dreams`.
+
+---
+
 ## [v4.1.0] — 2026-04-08
 
 Lares node infrastructure release: URI+HUD exchange protocol finalized, micro-trace spec promoted, repo governance hardened, org transfer completed.
