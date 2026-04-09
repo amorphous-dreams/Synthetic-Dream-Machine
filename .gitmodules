@@ -1,6 +1,6 @@
 [submodule "mempalace"]
 	path = mempalace
-	url = https://github.com/milla-jovovich/mempalace.git
+	url = git@github.com:amorphous-dreams/mempalace.git
 [submodule "kowloon"]
 	path = kowloon
 	url = git@github.com:amorphous-dreams/kowloon.git
