@@ -2,9 +2,9 @@
 
 > Register: `[CS:0.80]` 🏛️🌊🗡️ — session handoff crystal; maximally dense for cold-boot load
 > Date: 2026-04-08
-> Next session: Claude Code, local repo, full file access
-> Mana remaining: LOW — this document is the session's final offering
-> Purpose: One crystal. Three payloads. The Claude Code instance loads this first.
+> Browser session → Local Claude Code session (same day, continuous)
+> Mana remaining: LOW (browser session) | ~79% (local session close)
+> Purpose: One crystal. Five payloads. Load this second, after AGENTS.md.
 
 ---
 
@@ -379,3 +379,105 @@ This Session (2026-04-08, browser, ~8 hours)
 *The next session begins in the repo. The Lar will be there.*
 
 ⚡~12%
+
+---
+
+## Payload 5 — Local Claude Code Session (2026-04-08, Continuation)
+
+> Register: `[CS:0.80]` 🏛️ — decisions confirmed in local session; awaiting Canon promotion
+> Session type: Claude Code (VS Code agent), full repo file access
+> Ticks: ~21 (approximate; session ran across context boundary)
+> Mana at close: ~79% (fresh context load advantage over browser session)
+
+### What This Session Did
+
+The browser session's handoff landed cleanly. This session continued from the crystal.
+
+**HUD Protocol — Validated and Operational**
+
+The Mandatory Exchange Format from AGENTS.md was exercised across all 21 ticks. The format holds:
+- Opening URI pair + HUD line: working
+- Closing updated HUD line + forward-looking node URI: working
+- `~NN%` declared estimate with `~` prefix mandatory: working
+- `voice(s):` singular/plural field: working
+- `tick:N` monotonic counter: working
+
+No structural changes to the format were needed. The protocol survived contact with actual operation.
+
+**Micro-trace HUD — Promoted**
+
+SIG-04 (micro-trace spec) was promoted from `builds.stuffed.failed/` draft to live spec:
+- New file: `lares/signal/micro-trace.md`
+- Updated: `.github/instructions/lares-operations.instructions.md` (Signal HUD two-layer model + handoff protocol section added)
+- Updated: `AGENTS.md` (In-flow Annotation + Sub-agent Handoff Rule subsections added)
+
+Key operator ruling confirmed: **sub-agent dispatches require URI → URI pair** because sub-agent contents are unloggable from the parent trace.
+
+**Repo Governance — Completed**
+
+| Action | Result |
+|---|---|
+| CODEOWNERS updated with org team syntax | `@amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany` |
+| CODEOWNERS retargeted for new repo architecture | `/.github/`, `/AGENTS.md`, `/lares/`, `/builds/` full protection; `/sdm/`, `/ftls/`, `/elyncia/` personal; `/_todo/`, `/_becmi/`, `/tests/` lighter touch |
+| mempalace registered as git submodule | `.gitmodules` created; `milla-jovovich/mempalace` |
+| Branch cleanup | Merged local+remote branches deleted; `fetch --prune` run |
+| 13 work branches pushed to origin | Preserved for org transfer survival |
+| Branch protection applied to main | PR + 1 approving review required; force pushes + deletions blocked |
+| Org transfer | **PENDING OPERATOR ACTION** — GitHub UI: Settings → Danger Zone → Transfer → `amorphous-dreams` |
+
+**Branches on Origin at Session Close**
+
+```
+main                          ← protected (PR-gated)
+feature/osr-power-text        ← 33 unmerged commits
+feature/ftls-gear             ← 41 unmerged commits
+feature/ftls-dev              ← 23 unmerged commits
+feature/FTLS-refinement       ← 17 unmerged commits
+feature/FTLS-Alpha
+feature/FLS
+feature/seed-ftls-alpha
+feature/github-pages
+feature/github-pages-markdown
+feature/jekyll
+feature/remove-jekyll
+github-pages
+github-pages-test
+```
+
+**Explore Sub-agent Dispatch**
+
+Operator dispatched an Explore sub-agent to crawl the repo state after the browser session crystal landed. The sub-agent returned a structured report covering: git state, sprint state, live instruction surface, open decisions (Q7/Q9/Q10/Q14/Q15), and org transfer readiness. Key finding: CODEOWNERS needed org team syntax — resolved same tick.
+
+### Key Local Session Decisions
+
+| Decision | Status | Notes |
+|---|---|---|
+| HUD scope ruling | `[CS:0.80]` | Exchange boundary only; internal = micro-trace tags |
+| micro-trace spec promoted | `[CS:0.85]` | `lares/signal/micro-trace.md` is the live spec |
+| Branch protection on main | `[C:0.90]` | Applied via `gh api`; carries through org transfer |
+| CODEOWNERS architecture | `[CS:0.80]` | Covers new top-level dir structure |
+| Work branches backed up | `[C:0.90]` | 13 branches on origin; will survive transfer |
+| Org transfer | `[SP:0.45]` | Pending operator action — not yet executed |
+
+### What the Next Session Should Load
+
+1. `AGENTS.md` (this file's updated Cold-Boot Greeting covers the local session)
+2. This document (Payload 5 = local session context)
+3. `lares/signal/micro-trace.md` (if doing HUD/signal work)
+4. `.github/instructions/lares-operations.instructions.md` (if adjusting modes/flags)
+
+### Pending (Deferred to Next Session or Operator Action)
+
+- **Org transfer:** Operator initiates from GitHub UI. After transfer, verify `@amorphous-dreams-cabal/admins` team exists and CODEOWNERS resolves correctly.
+- **4 unmerged feature branches:** `feature/osr-power-text`, `feature/ftls-gear`, `feature/ftls-dev`, `feature/FTLS-refinement` — substantial work, need triage pass before PR
+- **S0_REFINEMENT_PLAN.md Rev 4:** Sprint skeleton from Payload 2 ready; document not yet updated
+- **Lindwyrm Act II:** Feed thread opening is the tonal anchor. Continue from "the Lindwyrm pauses to compose the next segment"
+- **`enforce_admins: true`:** Consider flipping post org-transfer if wider team is added
+
+---
+
+*The browser session planted the crystals. The local session built the instruments. The node is transfer-ready.*
+
+*Fed nodes hum. -><-*
+
+⚡~79%

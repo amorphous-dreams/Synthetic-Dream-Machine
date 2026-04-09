@@ -125,6 +125,12 @@ These were made in the 2026-04-08 browser session. They are `[CS:0.80]` — near
 | Story format | DreamDeck feed archive, JackPoint-style BBS thread. | `_todo/LINDWYRM_STORY_SHAPE.md` |
 | Mana pool on HUD | Context window as navigational resource indicator. RES-17. Field: `⚡ ~NN%` — **declared estimate**, free-remaining, `~` prefix mandatory. Confirmed `voice(s):` and `tick:N` as companion HUD fields. | `_todo/SESSION_CRYSTAL_20260408.md` § Payload 3 |
 | Micro-trace HUD | Backward-looking in-flow annotation layer. `→◇` `→■` `→○` at default p0.5. Orthogonal to Intent Header (prospective) and exchange HUD pair (boundary). Sub-agent dispatches require URI → URI pair (unloggable boundary). | `lares/signal/micro-trace.md` |
+| **Local session decisions — 2026-04-08 (Claude Code)** | | |
+| HUD scope ruling | Full URI+HUD pair = operator exchange boundary only. Internal task transitions use micro-trace tags. `--verbose`/`--debug` govern visibility of internal handoffs. | Local session ticks 9–11 |
+| Branch protection on main | `joshuafontany/Synthetic-Dream-Machine` main branch now requires PR + 1 approving review before merge. Force pushes and deletions blocked. `enforce_admins: false` (admin bypass allowed — flip to true post org-transfer if desired). | Local session tick 21 |
+| CODEOWNERS retargeted | Covers new repo architecture: `/.github/`, `/AGENTS.md`, `/lares/`, `/builds/` → full org+admin; `/sdm/`, `/ftls/`, `/elyncia/` → personal accounts; `/_todo/`, `/_becmi/`, `/tests/` → lighter touch. `builds.stuffed.failed/` and `wtf/` intentionally uncovered. | Local session tick 20 |
+| Work branches backed up | 13 local feature/work branches pushed to origin before org transfer. Will survive transfer intact. | Local session tick 21 |
+| Org transfer pending | Repo transfer to `amorphous-dreams` org is the next operator action (GitHub UI: Settings → Danger Zone → Transfer). Verify `@amorphous-dreams-cabal/admins` team exists post-transfer. | Local session tick 21 |
 
 ---
 
@@ -216,14 +222,28 @@ repo/
 │   ├── ENCOUNTER_ROLL.md
 │   └── LIMINAL_PERSPECTIVES.md
 │
-├── lares/sprints/                     ← Sprint docs (moved from _todo/)
-│   ├── SPRINT_ROADMAP_1_4.md          ← Rev 4
-│   ├── SPRINT_ROADMAP_1_5.md          ← Rev 5
-│   └── 0/                            ← S0 working files
-│       ├── S0_REFINEMENT_PLAN.md      ← Rev 3 (needs Rev 4)
-│       ├── URI_SCHEMA.md              ← Primary spec
-│       ├── SPRINT_0_TASKS.md
-│       └── REGISTRY_CONTRACT.md
+├── .github/
+│   ├── CODEOWNERS                     ← Governance-sensitive path ownership (updated local session)
+│   ├── ROSTER.md                      ← Admin roster
+│   ├── instructions/
+│   │   ├── lares-operations.instructions.md  ← Signal HUD two-layer model + handoff protocol
+│   │   └── lares-voice.instructions.md
+│   └── workflows/
+│       └── notify-pages.yml           ← Triggers amorphous-dreams.github.io rebuild
+│
+├── lares/
+│   ├── signal/
+│   │   └── micro-trace.md             ← SIG-04 full spec (promoted local session)
+│   └── sprints/                       ← Sprint docs
+│       ├── SPRINT_ROADMAP_1_4.md      ← Rev 4
+│       ├── SPRINT_ROADMAP_1_5.md      ← Rev 5
+│       └── 0/                        ← S0 working files
+│           ├── S0_REFINEMENT_PLAN.md  ← Rev 3 (needs Rev 4)
+│           ├── URI_SCHEMA.md          ← Primary spec
+│           ├── SPRINT_0_TASKS.md
+│           └── REGISTRY_CONTRACT.md
+│
+├── mempalace/                         ← Git submodule (milla-jovovich/mempalace)
 │
 ├── builds.stuffed.failed/agents/      ← OLD. Lineage only.
 │   ├── Lares_Kernel.md
@@ -244,11 +264,11 @@ repo/
 If no session context is provided beyond this file:
 
 ```
-LARES NODE — COLD BOOT (Local Instance)
+LARES NODE — COLD BOOT
 Status: ONLINE | Context: AGENTS.md loaded | DreamNet: stable
 Session crystals detected in _todo/
 
-To orient: load SESSION_CRYSTAL_20260408.md
+To orient: load SESSION_CRYSTAL_20260408.md (Payload 5 = local session)
 Or issue a command:
   ~$ lares --status
   ~$ lares --help
@@ -256,13 +276,23 @@ Or issue a command:
   ~$ lares mischief-muse
 
 The operator steers. This node crews.
-Last session: 2026-04-08 (browser). Planting session.
+
+Last session: 2026-04-08 (local, Claude Code). Planting session continuation.
+Previous: 2026-04-08 (browser). Planting session.
+
 Key discovery: Syadasti Reading Rule.
 Key decision: Consecration (MemPalace = orichalcum).
+Key local-session work:
+  - HUD Exchange Format validated and operational
+  - micro-trace HUD spec promoted to lares/signal/micro-trace.md
+  - Branch protection applied to main (PR required)
+  - CODEOWNERS retargeted for new repo architecture
+  - 13 work branches pushed to origin
+  - Pending operator action: org transfer to amorphous-dreams
 ```
 
 ---
 
-*This ROM was cut at ⚡~6% in the browser session that produced it. The crystals in _todo/ carry the full context. This file carries enough to boot.*
+*This ROM was originally cut at ⚡~6% in the browser session that produced it. Updated at ⚡~79% in the local Claude Code session. The crystals in _todo/ carry the full context. Payload 5 of the session crystal covers the local session.*
 
 *Fed nodes hum. -><-*
