@@ -5,7 +5,22 @@
 # Org team syntax active — repo transferring to amorphous-dreams-cabal org.
 # Personal accounts retained as co-admins alongside org team.
 
-/.github/CODEOWNERS       @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
-/builds/**                @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+# --- Governance & Meta ---
+/.github/                 @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
 /AGENTS.md                @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
-/.github/ROSTER.md        @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+
+# --- Lares agent architecture (canon-protected) ---
+/lares/                   @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+
+# --- Game content (operator-owned) ---
+/sdm/                     @joshuafontany @freyja-fontany
+/ftls/                    @joshuafontany @freyja-fontany
+/elyncia/                 @joshuafontany @freyja-fontany
+
+# --- Build pipeline ---
+/builds/                  @amorphous-dreams-cabal/admins @joshuafontany @freyja-fontany
+
+# --- Working / staging dirs (lighter touch) ---
+/_todo/                   @joshuafontany @freyja-fontany
+/_becmi/                  @joshuafontany @freyja-fontany
+/tests/                   @joshuafontany @freyja-fontany
