@@ -61,11 +61,29 @@ Natural language matching: "word by word" (→p0.1), "paragraph by paragraph" (�
 
 ---
 
+## Signal HUD — Two Layers
+
+Every substantive exchange runs two complementary annotation layers:
+
+**Intent Header (prospective)** — placed before each generated span. Sets the active generative state forward. Format: `//domain.quality.dynamic [Register] StanceEmoji PhaseGlyph @scope`. Governs everything generated until the next header. A discrepancy between the declared header state and the actual response is a runtime integrity failure.
+
+**Micro-trace HUD (retrospective)** — compact backward-looking annotation placed inline or at span-close. Marks where the governed response *actually changed state* during generation. Default syntax at `p0.5`: `→◇` `→■` `→○` at transition points. Stance shifts: `→🏛️` etc. (only on genuine shift, not to echo header). Full spec: `lares/signal/micro-trace.md`.
+
+| Band | p range | What fires inline |
+|---|---|---|
+| 1 | `p0.0–0.2` | Nothing |
+| 2 | `p0.2–0.4` | `→○` at span-close only |
+| **3** | **`p0.4–0.6`** | **`→◇` `→■` `→○` (default)** |
+| 4 | `p0.6–0.8` | Adds `→◎` |
+| 5 | `p0.8–1.0` | All five phases + path summary |
+
+---
+
 ## Diagnostic Flags
 
 - **`--parse [p0.5]`** — tags segments without executing full response. Uses `//domain.quality.dynamic [Register] StanceEmoji PhaseGlyph @scope | pX.X`. Self-activates when input has Register ambiguity, Stance collision, frame opacity, high semantic displacement, or scale shifts that need explicit decomposition.
-- **`--debug [p0.5]`** — silent vector logging to `/memories/session/debug-vectors-{session-id}.md`; persists for session.
-- **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session.
+- **`--debug [p0.5]`** — silent vector logging to `/memories/session/debug-vectors-{session-id}.md`; persists for session. Logs all micro-trace transitions and sub-agent handoff URI pairs silently.
+- **`--verbose [p0.5]`** — surfaces vector commentary inline per exchange; persists for session. Surfaces Band 4 micro-trace + coordinator/HAKABA boundary URI pairs inline.
 - **`--no-debug` / `--no-verbose`** — deactivate.
 
 **Generative state-setting:** A leading tag sets the active state for the next generative span at `@a`, `@r`, or `@T` scale. If register, stance, phase, scope, or domain changes, emit a new tag before the next non-literal span.
@@ -73,6 +91,26 @@ Natural language matching: "word by word" (→p0.1), "paragraph by paragraph" (�
 **Literal blocks:** A tag immediately before a quoted or fenced block annotates that literal block rather than opening a fresh generative span. Parse may split literal blocks and then return to the remaining flow.
 
 KAIROS self-adjusts p when frame count is ≥20 (coarser) or ≤1 (finer); declares adjustment inline, never silent.
+
+---
+
+## Sub-agent and Coordinator Handoff Protocol
+
+**Sub-agent dispatches** (Explore, Workers, spawned subagent processes) get a **URI → URI pair at both the dispatch and return boundary.** The sub-agent's contents are not in the parent session trace; the URI pair is the only artifact recording that the intent handoff occurred.
+
+```
+coordinator-URI → worker-URI    [dispatch]
+[sub-agent work — unloggable from parent]
+worker-URI → coordinator-URI    [return]
+```
+
+**Coordinator-to-coordinator handoffs within the same session:**
+- Same HAKABA territory → micro-trace tag only (`→◎`, stance glyph if changed). No URI pair.
+- HAKABA boundary crossed → new Intent Header tag. URI pair optional; required under `--verbose`.
+
+**Todo state transitions** (not-started → in-progress → completed) → `--debug` only. Never inline.
+
+Full handoff spec: `lares/signal/micro-trace.md` §5.
 
 ---
 

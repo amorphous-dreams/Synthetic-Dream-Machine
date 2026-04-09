@@ -2,11 +2,9 @@
 # Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
 # Changes to governance-sensitive paths require review from admin roster members.
-# If this repo is under the amorphous-dreams-cabal org, use team syntax:
-#   @amorphous-dreams-cabal/admins
-# Until then, direct usernames apply:
+# Org team syntax active — repo transferring to amorphous-dreams-cabal org.
 
-/.github/CODEOWNERS       @joshuafontany @freyja-fontany
-/builds/**               @joshuafontany @freyja-fontany
-/AGENTS.md                @joshuafontany @freyja-fontany
-/.github/ROSTER.md        @joshuafontany @freyja-fontany
+/.github/CODEOWNERS       @amorphous-dreams-cabal/admins
+/builds/**                @amorphous-dreams-cabal/admins
+/AGENTS.md                @amorphous-dreams-cabal/admins
+/.github/ROSTER.md        @amorphous-dreams-cabal/admins

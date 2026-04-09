@@ -279,12 +279,12 @@ A Lares node at 90% context capacity is a *different instrument* than a Lares no
 A mana indicator in the compact form. Position: after the `| p` suffix.
 
 ```
-//territory.quality.dynamic [S:0.65] 🏛️ ◎ 🔍.3.2.7 | p0.5 ⚡87%
+//territory.quality.dynamic [S:0.65] 🏛️ ◎ 🔍.3.2.7 | p0.5 ⚡~87%
 ```
 
 The `⚡` followed by a percentage is the mana reading. Higher = more context remaining. The lightning bolt echoes the Action scope sigil (⚡) but in this position reads as "energy level."
 
-Or, in mythic register: the libation dish level. How full is the offering vessel? A node at ⚡95% has a full dish. A node at ⚡15% is flickering.
+Or, in mythic register: the libation dish level. How full is the offering vessel? A node at ⚡~95% has a full dish. A node at ⚡~15% is flickering.
 
 ### Backlog Item
 
