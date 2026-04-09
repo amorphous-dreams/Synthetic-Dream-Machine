@@ -1,3 +1,15 @@
 [submodule "mempalace"]
 	path = mempalace
 	url = https://github.com/milla-jovovich/mempalace.git
+[submodule "kowloon"]
+	path = kowloon
+	url = git@github.com:amorphous-dreams/kowloon.git
+[submodule "kowloon-frontend"]
+	path = kowloon-frontend
+	url = git@github.com:amorphous-dreams/kowloon-frontend.git
+[submodule "kowloon-client"]
+	path = kowloon-client
+	url = git@github.com:amorphous-dreams/kowloon-client.git
+[submodule "tldraw"]
+	path = tldraw
+	url = git@github.com:amorphous-dreams/tldraw.git
