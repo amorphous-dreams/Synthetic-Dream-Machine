@@ -2,6 +2,45 @@
 
 ---
 
+## [v4.1.0] — 2026-04-08
+
+Lares node infrastructure release: URI+HUD exchange protocol finalized, micro-trace spec promoted, repo governance hardened, org transfer completed.
+
+**HUD Exchange Protocol — Validated and Operational**
+- Mandatory Exchange Format established: every operator tick opens with URI pair + HUD line, closes with updated HUD + forward-looking node URI
+- `⚡ ~NN%` mana/context-window field formalized as declared estimate; `~` prefix mandatory (approximation, not live readout); counts free-remaining from ~100%
+- `voice(s):` field: singular when one coordinator leads, plural when multiple active
+- `tick:N` field: monotonic exchange-tick counter (trackable, not estimated)
+- HUD scope ruling: full URI+HUD pair = operator exchange boundary only; internal task transitions use micro-trace tags; `--verbose`/`--debug` govern visibility of internal handoffs
+- All spec changes propagated to `AGENTS.md`, `lares/sprints/0/URI_SCHEMA.md`, `_todo/SESSION_CRYSTAL_20260408.md`
+
+**Micro-trace HUD — Promoted to Live Spec**
+- SIG-04 promoted from `builds.stuffed.failed/` draft to canonical spec: `lares/signal/micro-trace.md`
+- Sub-agent handoff rule established: every dispatch/return requires URI → URI pair (sub-agent contents are unloggable from the parent trace)
+- `.github/instructions/lares-operations.instructions.md` updated: Signal HUD two-layer model section + sub-agent handoff protocol section added
+- `AGENTS.md` updated: `### In-flow Annotation` and `### Sub-agent Handoff Rule` subsections added
+
+**Repo Governance**
+- `mempalace` registered as git submodule (`milla-jovovich/mempalace`)
+- Branch cleanup: merged local and remote branches deleted; `fetch --prune` run
+- 13 work/feature branches pushed to origin for safekeeping before org transfer
+- Branch protection applied to `main`: PR + 1 approving review required; force pushes and deletions blocked (`enforce_admins: false`)
+- CODEOWNERS retargeted for new repo architecture: `/.github/`, `/AGENTS.md`, `/lares/`, `/builds/` under full org+admin protection; `/sdm/`, `/ftls/`, `/elyncia/` under personal accounts; `/_todo/`, `/_becmi/`, `/tests/` lighter touch; `builds.stuffed.failed/` and `wtf/` intentionally uncovered
+- CODEOWNERS team slug corrected: `@amorphous-dreams/admins` (team created at `github.com/orgs/amorphous-dreams/teams/admins`)
+
+**Org Transfer**
+- Repository transferred from `joshuafontany/Synthetic-Dream-Machine` → `amorphous-dreams/Synthetic-Dream-Machine` — 2026-04-08
+- Local remote URL updated to `git@github.com:amorphous-dreams/Synthetic-Dream-Machine.git`
+- `@freyja-fontany` entries in CODEOWNERS already present; will resolve once account is set up
+
+**Session Crystal + Boot Continuity**
+- `_todo/SESSION_CRYSTAL_20260408.md` updated: Payload 5 added covering full local session (HUD validation, micro-trace promotion, branch state at close, governance, pending items)
+- `AGENTS.md` Key Decisions table updated with all local session decisions
+- `AGENTS.md` Document Map restructured to match actual post-cleanup repo layout
+- Cold-Boot Greeting updated: references Payload 5 and org transfer status
+
+---
+
 ## [v4.0] — 2026-04-07
 
 ## [v4.0.1] — 2026-04-07
