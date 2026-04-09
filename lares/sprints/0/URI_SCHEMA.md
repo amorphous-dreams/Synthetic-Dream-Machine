@@ -834,6 +834,12 @@ When comparing two `lares:` URIs as stable addresses:
 | U5 | How is `world_calendar_ref` initialized when no diegetic calendar exists yet? | Mint provisional tagspace reference, mark provisional | `[S:0.60]` | Dream Realms bootstrap |
 | U6 | Full URI form vs stateless form — when to use which? | Authority form in TickSpan records; stateless for stable addresses | `[CS:0.80]` | Crystal/registry contract |
 
+**Resolved (closed, not open):**
+
+| Q# | Question | Decision | Where documented |
+|---|---|---|---|
+| U2 (old) | Should `seq_num` occupy the `:port` slot of the URI authority? | **No.** Port slot dropped entirely. Tick sequencing (`tick_seq`) lives in adjacent TickSpan calibration metadata — not in URI authority. URI authority encodes *identity*, not event position. | §3.4 (`host`): "Tick sequencing is intentionally not encoded in URI authority." §7.1 TickSpan record: `tick_seq` as top-level field. |
+
 ### Assessment for Promotion
 
 Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Synthesis — they function well in current examples but lack stress-testing against edge cases (multi-operator sessions, cross-machine references, diegetic calendar bootstrap, MemPalace mirror drift). U4 sits at `[SP:0.45]` — genuinely provisional, dependent on the p-band model settling.
