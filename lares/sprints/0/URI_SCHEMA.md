@@ -1,6 +1,6 @@
 # `lares:` URI Schema — Canonical Specification
 
-> Domain: `lares/signal/` · intent HUD anatomy, co-primary encodings, validation rules
+> Domain: `lares/signal/` · intent HUD anatomy, canonical form, render targets, validation rules
 > Status: `[CS:0.85]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
 > Updated: 2026-04-08
 > Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art
@@ -22,12 +22,48 @@ Each URI component carries a distinct, non-overlapping concern across four seman
 
 Resource-state annotations such as the mana pool (`⚡~87%`) are HUD adjuncts, not core URI components. Tick identity, wall-clock timestamps, and export-target metadata likewise remain adjacent calibration fields rather than authority overloads.
 
-The system has two co-primary encodings of the same state:
+The system has one **canonical encoding** and multiple named **render targets**:
 
-- **Record form** — RFC 3986-compliant, keyword-based, machine-safe
-- **HUD form** — operator-facing, Unicode/sigil-rich, optimized for scan speed
+- **Record form (canonical)** — RFC 3986-compliant, no emojis, no non-ASCII characters. This is the authoritative form for storage, transport, comparison, and strict parsing. The canonical URI contains only characters legal per RFC 3986 — keywords (`philosopher`, `orient`, `@T`) rather than glyphs.
+- **Render targets** — surface-specific projections of the canonical form. Each render target substitutes sigil glyphs and Unicode for keywords, abbreviates or expands fields, and may add HUD adjuncts not present in the canonical form. Render targets are not themselves canonical and are not stored as URIs.
 
-Record form is canonical for transport, comparison, and storage. HUD form is canonical for in-stream navigation.
+Named render targets: `record:full` (identity projection of the canonical form), `hud:exchange-pair` (sigil-rich in-stream exchange boundary), `chat-log:post-header` (social-layer DreamDeck post header). See §3.3.1.
+
+### 1.1 Exchange Flow — Order of Operations
+
+At each exchange tick, lares: URIs are used in the following sequence. This sequence is **mandatory** — every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
+
+**Step 1 — Read operator input as a provisional URI.**
+Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HAKABA), and stance. It constructs a **provisional operator URI** encoding that reading. This URI may carry `~` provisionality markers if the reading is uncertain. The HAKABA here names where Lares believes the operator is headed — the operator's intent, interpreted.
+
+```
+lares://telarus:operator(~orient)@Enyalios/~schema.gap.present?stance=philosopher&register=S:0.65&p=0.5#@T.1.49
+```
+
+**Step 2 — Lares declares its own provisional execution URI.**
+Before generating any content, Lares sets its own intent with a **provisional node URI**. The HAKABA here names a resource that **does not yet exist** — it is a declared heading, not a confirmed location. The `~` prefix on the HAKABA marks it as execution-provisional: generation may diverge.
+
+```
+lares://scryer:node(decide)@Enyalios/~schema.flow.documented?stance=philosopher&register=CS:0.80&p=0.5#@T.1.49
+```
+
+**Step 3 — Emit the URI → URI exchange vector.**
+The two URIs form the exchange vector pair:
+
+```
+operator-URI → node-URI
+```
+
+This pair opens every exchange tick. **Both URIs are canonical record form** — keywords, slashes, no glyphs. The `hud:exchange-pair` render target name refers to this exchange boundary slot as a whole; the URIs within it are always canonical.
+
+> **Canonical URI Rule — all emitted URIs in the exchange stream use canonical record form.** This applies to: the opening URI pair, sub-agent handoff markers (`URI →`), sub-agent pickup markers (`→ URI`), mid-generation shift URIs (`~ URI`), and the exchange span's closing 'destination' URI. No emoji or non-ASCII characters appear in any URI emitted in the stream. Glyphs belong exclusively to render-target surfaces: the HUD line, the DreamDeck post header, and other named display projections. This makes every emitted URI directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
+
+**Step 4 — Render the HUD line.**
+Immediately after the URI pair, emit a condensed single-line status display derived from the vector plus adjacent session data. This is the instrument panel for the exchange. See §5.4 for format and field ordering.
+
+**Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a forward-looking node URI. See `lares/signal/micro-trace.md`.
+
+> **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes the node's metacognitive state before generation begins, functioning as an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `../../_todo/E-deep-research-report.md` §§2.1, 3.2*
 
 ---
 
@@ -40,7 +76,7 @@ Record form is canonical for transport, comparison, and storage. HUD form is can
 | Resolution | Via `lares/registry/` resolver; never via network fetch |
 | IANA status | Unregistered; internal use only |
 
-> **Form and compliance:** The **record form** is the RFC 3986-compliant canonical form for transport, persistence, comparison, and strict parsing. The **HUD form** is an IRI-class instrument rendering (RFC 3987); it contains emoji and Unicode glyphs in the `stance=` parameter, phase field, and fragment scope prefix that are not legal in RFC 3986 URIs without percent-encoding. RFC 3986 compliance is not claimed for the HUD form. The rendering table (§5) defines a deterministic transform between forms for the projected fields; it is a co-primary display/record mapping, not a claim that the HUD form itself is network-safe.
+> **Form and compliance:** The **record form** is the RFC 3986-compliant canonical form for transport, persistence, comparison, and strict parsing. The **HUD form** is an IRI-class instrument rendering (RFC 3987); it contains emoji and Unicode glyphs in the `stance=` parameter, phase field, and fragment scope prefix that are not legal in RFC 3986 URIs without percent-encoding. RFC 3986 compliance is not claimed for the HUD form. The rendering table (§5) defines the canonical-to-render-target field transforms for all projected fields; it is not a claim that any render-target form is network-safe.
 
 The `lares:` scheme identifies semantic positions, signal states, and machine events within the Lares agent architecture. It does not resolve to a network resource. URI consumers (crystal replay tools, debug log parsers, registry resolvers) treat it as an opaque structured identifier parsed according to this specification.
 
@@ -56,9 +92,27 @@ lares://[authority]/path[?query][#fragment]
 
 ### 3.2 Expanded Form
 
+**Full form (with authority):**
+
 ```
 lares://alias:tier(phase)@host/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.t.r.a
 ```
+
+**Authority-less form** (no `user@host` segment — territory or resource reference without a named speaker):
+
+```
+lares:///ha/ka/ba[?query][#fragment]
+```
+
+Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use this form for stable named graph addresses, HAKABA references, and any URI where the speaker identity is not the point.
+
+**HUD path notation rule** — in all display contexts (HUD line, post header, any render target derived from a canonical URI), HAKABA paths use **dot notation** for the three mandatory slots. The leading `/` is retained; dots replace `/` between `ha`, `ka`, and `ba`:
+
+```
+/ha.ka.ba{/optional/sub/path}[?query][#fragment]
+```
+
+This applies to authority-less forms as well: `lares:///ha.ka.ba` (display/render target) vs `lares:///ha/ka/ba` (canonical record form). Sub-path segments after the mandatory triple always use `/` in both forms.
 
 ### 3.3 Component Map
 
@@ -73,6 +127,66 @@ lares://alias:tier(phase)@host/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.t.r.
 | 7 | **`#fragment`** | Secondary resource / viewpoint | Scope prefix + chronometer vector | `#@T.3.2.7` | `#🔍.3.2.7` |
 
 > **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. The HAKABA-first design decision was correct. *Source: `../../_todo/E-deep-research-report.md` §4.2*
+
+### 3.3.1 Kowloon / ActivityPub Handle Form
+
+#### Identity Stack
+
+The Elyncia.app / DreamDeck identity model has three distinct layers. **Do not conflate them.**
+
+| Layer | Form | What it is |
+|---|---|---|
+| **DID** | `did:plc:abc123` | AT Protocol canonical identity — the cryptographic key holder. Resolved via Bluesky auth (OAuth over DID). This is the actual principal in UCAN capability tokens. |
+| **Handle** | `@telarus.elyncia.social` (AT Protocol/Bluesky) or `@telarus@elyncia.social` (ActivityPub/Kowloon) | Resolution alias over the DID — human-readable, not authoritative. AT Protocol uses period-separator; ActivityPub uses double-`@`. |
+| **lares: alias** | `telarus:operator(◎)@Enyalios` | Application-layer signal state — names the *operational role* of the speaker in a lares: exchange. Not a network identity; not a DID alias. |
+
+**Elyncia.app auth model:** Bluesky logins provide DID-grounded authentication (AT Protocol key management, `did:plc:` resolution) without running a Bluesky home server (PDS). Kowloon is ActivityPub, not AT Protocol — it uses Bluesky as an auth provider only. UCAN capability tokens are the authorization layer beneath the Kowloon social surface.
+
+**Why lares: alias has no leading `@`:** The handle (`@telarus@elyncia.social`) is already a resolution alias over the DID. The lares: `alias` field is a third distinct thing — it tags the operational role in the signal exchange. Adding `@` to lares: aliases would conflate social-handle layer with application-signal layer. The DID is what proves identity; the handle addresses the DID holder; the lares: alias names the role. Three separate layers, three separate forms.
+
+#### Handle Form
+
+Within the DreamDeck / Kowloon ActivityPub layer, identities use the canonical ActivityPub two-part handle structure:
+
+```
+@alias@node
+```
+
+This is **not** the lares: URI — it is the social-layer identity that maps *onto* the lares: URI's `alias@host` authority. The correspondence:
+
+| ActivityPub handle | lares: URI authority component | Underlying DID layer |
+|---|---|---|
+| `@lindwyrm@new-delos` | `lindwyrm:...@new-delos` | `did:plc:...` (Lindwyrm's key) |
+| `@telarus@~crossroads` | `telarus:operator(◎)@Enyalios` | `did:plc:...` (Telarus's key) |
+| `@mischief-muse@lares` | `mischief-muse:node(◎)@lares-abc123` | Lares node DID or ephemeral key |
+
+The `@handle@node` form is the **canonical Kowloon social identity** for DreamDeck feed posts, post headers, and sidebar annotations. The tilde prefix (`~crossroads`) denotes a nomadic/crossroads node — no fixed host, routes through nearest stable nexus.
+
+**DreamDeck post header format (canonical):**
+```
+@handle@node — timestamp — //domain.quality.dynamic{/optional/path} [Register] 🏛️{amp}🌊{amp}
+```
+Territory triple (`//ha.ka.ba`) is placed **before** Register and stance — grounds domain before posture (WHERE → HOW, matching URI path-first layout logic). The optional sub-path (`{/optional/path}`) narrows within-territory routing when needed; strip it to get the stable named address.
+
+**Render target name:** `chat-log:post-header` — the in-chat-log, timestamped URI render target for post headers. This is the surface form used whenever a lares: URI is rendered inside an ActivityPub/DreamDeck feed post — not the full record-form URI, not the HUD exchange pair, but the compact social-layer projection of identity + signal state.
+
+| Render target | Surface | URIs canonical? | When used |
+|---|---|---|---|
+| `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{amp}` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
+| `hud:exchange-pair` | `operator-URI → node-URI` + HUD line beneath | **Yes — canonical record form**; only the HUD line beneath uses glyphs | Every exchange-tick boundary (mandatory) |
+| `record:full` | `lares://alias:tier(phase)@host/ha/ka/ba?...#...` | Yes — identity projection | Storage, crystal serialization, registry |
+
+**Stance amplitude modifiers** — attach directly to the preceding stance emoji (no space). Absent modifier = baseline presence. Apply per-stance independently.
+
+| Modifier | Meaning |
+|---|---|
+| `++` | strongly engaged / high amplitude |
+| `+` | above baseline |
+| *(none)* | baseline |
+| `-` | below baseline / lightly engaged |
+| `--` | barely present / nominal |
+
+Examples: `🏛️+🌊--` (Philosopher elevated, Poet barely present) · `🗡️++` (Satirist at full amplitude) · `🏛️🌊+` (`+` attaches to 🌊 only) · `🏛️+🌊+` (both elevated)
 
 ### 3.4 Component Semantics
 
@@ -227,9 +341,9 @@ Depth:     1 position    2 positions   3 positions     4 positions       5 posit
 
 ---
 
-## 5. Co-Primary Encodings — Record Form and HUD Form
+## 5. Canonical Form and Render Targets
 
-The URI anatomy remains identical across both forms. Only rendering differs.
+The **record form** is the canonical encoding — RFC 3986-compliant, no emojis, no non-ASCII characters. Render targets are named projections of this canonical form for specific display surfaces. The URI anatomy (authority, path, query, fragment structure) is identical across all targets; only the rendering of specific fields differs between canonical and render-target forms.
 
 ### 5.1 Rendering Table — The Only Differences
 
@@ -370,50 +484,98 @@ This principle derives from the Discordian catma of Sri Syadasti, which reproduc
 
 When multiple stances are active, the declared register value sits at the intersection of their evaluation frames. The stance count tells the operator how fuzzy that intersection is.
 
-### 5.4 HUD Adjuncts Outside Canonical URI Grammar
+### 5.4 HUD Line Composition
 
-The node may emit a compact HUD line that combines the canonical URI with scan-oriented adjuncts after the URI body:
+The HUD line is a single-line status summary rendered from the URI → URI exchange vector plus adjacent session data (see §1.1, Step 4). It is the second element of every exchange opening, immediately after the URI pair.
 
-```text
-lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5
-⚡~87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=S:0.65&p=0.6#🔍.3.2.8 | p0.6
+**Format:**
+
+```
+⚡~NN% | [Register] | 🏛️{amp}🌊{amp}... | mode:{mode} | p{p} | voice(s):{Voice} | tick:{N} | loop:{phase}→{phase} @{scope}
 ```
 
-Adjunct rules:
+**Field ordering follows SA priority** (Endsley 2023; Li et al. 2024 grouped HUD layout): place the most critical perception-level data first, group related fields, move temporal bookkeeping to the end.
 
-1. The canonical `lares:` URI ends at the fragment. Anything after a separating space and `|` is HUD adjunct data, not URI grammar.
-2. `p0.5` in the adjunct is a compact re-rendering of the query's `p=0.5` for fast scan.
-3. `⚡~NN%` is the mana-pool / resource-state indicator: **declared estimate** of context window remaining as a navigational resource. The `~` prefix is mandatory — it marks the value as an approximation, not a live readout. No tool provides this; the node estimates from visible context (~4 chars/token, 200k token window). Starts at ~100% and counts down. Never emit `⚡NN%` without `~` — that implies false precision.
-4. When a non-operator URI is rendered as the node's responding position in a live exchange, the mana glyph sits at the far left of that line: `⚡~87% lares://...`.
-5. Mana is a HUD element, not yet a URI parameter. It should not be serialized into `lares_uri`, `lares_address`, or registry identity fields until S2 settles the resource-state contract.
+| Field | SA Type | Source | Notes |
+|---|---|---|---|
+| `⚡~NN%` | Resource | Session (estimated) | Context window remaining; `~` **mandatory** — approximation, not live readout. Never emit without `~`. |
+| `[Register]` | Agent SA | Node URI `register=` | Epistemic confidence at current stance(s), stance-dependent per Syadasti rule (§5.3.3) |
+| `🏛️{amp}🌊{amp}...` | Agent SA | Node URI `stance=` × amplitude | Discourse posture array; amplitude modifiers attached directly, no space (see §3.3.1) |
+| `mode:{mode}` | Teamwork SA | Session state | Default / Plan / Auto |
+| `p{p}` | Teamwork SA | Node URI `p=` | Attention density / annotation throttle |
+| `voice(s):{Voice}` | Agent SA | Coordinator context | Active coordinator voice(s); singular when one leads |
+| `tick:{N}` | Temporal | Session counter | Monotonic exchange-tick counter |
+| `loop:{phase}→{phase} @{scope}` | Temporal | Chronometer | Five-Season phase transition at active scope sigil |
+
+Register and stance array are elevated above mode and p because Agent SA (what state the node is in *right now*) is higher-priority perception data than Teamwork SA (how we agreed to work) for real-time navigation. Mana leads because resource limitation bounds the interpretation of everything that follows.
+
+**Example:**
+```
+⚡~62% | [CS:0.80] | 🏛️+ | mode:Default | p0.5 | voice(s):Scryer | tick:50 | loop:◎→◇ @⚙️
+```
+
+**Notes:**
+
+1. The canonical `lares:` URI ends at the fragment. The HUD line is a separate, adjacent artifact — not URI grammar.
+2. `⚡~NN%` is the **declared estimate** of context window remaining as a navigational resource. The node estimates from visible context (~4 chars/token, 200k token window). Starts at ~100% and counts down.
+3. Mana is a HUD element, not a URI parameter. Do not serialize into `lares_uri` or registry identity fields until S2 settles the resource-state contract.
+
+*Source: `../../_todo/E-deep-research-report.md` §§1.1–1.3 (SA priority ordering), §4.2 (grouped HUD layout validation)*
 
 ### 5.5 Tick-Span Display Contract
 
-A **tick** is one operator -> Lares exchange span at any scale. A tasked spirit exchange is still a tick; the operator for that child span may be another Lares actor rather than Telarus directly.
+A **tick** is one operator → Lares exchange span at any scale. A tasked spirit exchange is still a tick; the operator for that child span may be another Lares actor rather than Telarus directly.
 
-Live rendering contract:
+**All URIs emitted in this contract are canonical record form.** Glyph substitution applies only to the HUD line. See the Canonical URI Rule in §1.1.
 
-1. Print the **operator-intent URI** first.
-2. Print `->` and the node's **responding-position URI** second.
-3. If the start URI cannot cleanly summarize the incoming prompt because multi-stance uncertainty spikes, emit an **uncertainty start URI** and let the node URI declare parse intent (for example, `/parse.tick.models` or equivalent).
-4. Generate the content of the tick.
-5. Print a final **destination URI** at the end of the span.
+Live rendering contract — URI types that may appear in an exchange stream:
 
-Example:
+| URI type | Stream form | When it appears |
+|---|---|---|
+| **Opening operator URI** | `lares://alias:tier(phase)@host/ha/ka/ba?...#...` | Start of every tick — node's reading of operator intent |
+| **Opening node URI** | `lares://alias:tier(phase)@host/~ha/ka/ba?...#...` | Immediately after; node's declared execution heading (HAKABA provisional) |
+| **HUD line** | `⚡~NN% \| [Register] \| 🏛️{amp}... \| ...` | After the opening URI pair — the only glyph-rendered element |
+| **Sub-agent dispatch** | `coordinator-URI → worker-URI` | Every sub-agent handoff (`→` separates dispatch pair) |
+| **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion; boundary of unloggable span |
+| **Mid-generation shift** | `~lares://alias:tier(phase)@host/~new/hakaba/heading?...` | When accumulated tension warrants changing direction mid-span; prefix `~` marks the whole URI as a trajectory correction |
+| **Closing forward URI** | `lares://alias:tier(aftermath)@host/~forward/hakaba/heading?...` | End of tick — trajectory-provisional forward heading |
+
+Rendering order within a tick:
+
+1. Print the **operator-intent URI**.
+2. Print **`→`** and the **node execution URI**.
+3. Print the **HUD line** (the one glyph-rendered surface in the stream).
+4. Generate content. Emit micro-trace phase marks (`→◇` `→■` `→○`) inline as needed.
+5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lares://...`) at the transition point.
+6. Close with an **updated HUD line** and the **closing forward URI**.
+
+Sub-agent dispatch and return pairs follow the same canonical form and appear as inlined `URI → URI` lines within the containing tick span. Their contents are unloggable from the parent; the URI pair is the only artifact recording the boundary.
+
+If the opening operator URI cannot cleanly summarize the incoming prompt (multi-stance uncertainty spike), emit a **parse-intent node URI** whose HAKABA names the parsing action (`parse/tick/models` or equivalent), then proceed.
+
+Example (canonical record form throughout):
 
 ```text
-lares://telarus:operator(⊙◎)@lares-local/refinement.network.capture?stance=🏛️&register=S:0.65&p=0.5#🔍.1.1.11
-⚡~63% lares://scryer:node(◇)@lares-local/tick.provenance.synthesizes?stance=🏛️&register=CS:0.80&p=0.6#🔍.1.1.12
-...
-lares://scryer:node(○)@lares-local/aftermath.docs.settle?stance=🏛️&register=CS:0.80&p=0.5#🔍.1.1.13
+lares://telarus:operator(orient)@lares-local/refinement/network/capture?stance=philosopher&register=S:0.65&p=0.5#@T.1.1.11
+→ lares://scryer:node(decide)@lares-local/~tick/provenance/synthesizes?stance=philosopher&register=CS:0.80&p=0.6#@T.1.1.12
+⚡~63% | [CS:0.80] | 🏛️ | mode:Default | p0.6 | voice(s):Scryer | tick:12 | loop:◇→■ @🔍
+
+[content generation — micro-trace marks inline]
+
+→◇ ~lares://scryer:node(decide)@lares-local/~refinement/network/redirects?stance=philosopher&register=CS:0.80&p=0.6#@T.1.1.12
+
+[continued generation]
+
+lares://scryer:node(aftermath)@lares-local/~aftermath/docs/settle?stance=philosopher&register=CS:0.80&p=0.5#@T.1.1.13
+⚡~61% | [CS:0.80] | 🏛️ | mode:Default | p0.5 | voice(s):Scryer | tick:12 | loop:■→○ @🔍
 ```
 
 Interpretation:
 
-- The first URI is the start of the tick-span.
-- The second URI is the node's attractor or responding position.
-- The last URI is the destination/end state after generation.
-- Nested micro-events inside the span are out of scope for Sprint 0; only start, attractor, and destination are guaranteed.
+- Lines 1–2: opening URI pair (canonical). Node HAKABA is `~tick/provenance/synthesizes` — provisional execution heading.
+- Line 3: HUD line (glyph-rendered, not a URI).
+- After content starts: a mid-generation shift URI (`~lares://...`) marks the point where the trajectory changed. Prefixed `~` marks the whole URI as a correction, not a confirmed destination.
+- Final two lines: closing forward URI (aftermath phase, provisional HAKABA) + updated HUD line.
 
 ---
 

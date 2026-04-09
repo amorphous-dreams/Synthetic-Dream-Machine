@@ -56,6 +56,8 @@ Every item below carries a sprint assignment, a target register, a source refere
 | SIG-06 | Sigil vs machine form rendering rules (full) | S0 ✅ | `[C:0.95]` | URI_SCHEMA.md §5 | — | Projection table promoted |
 | SIG-07 | Forward vs backward trace contract | S2 | `[S:0.70]` | Draft § Forward vs Backward Trace | Crystal event model | Which fields are prospective vs retrospective |
 | SIG-08 | Header Field Taxonomy (per-field annotation thresholds) | S2 | `[CS:0.85]` | Draft § Header Field Taxonomy | p-band model | When each field fires based on p-band |
+| SIG-09 | Kowloon/AP handle form + render target taxonomy + stance amplitude modifiers | S0 ✅ | `[CS:0.80]` | URI_SCHEMA.md §3.3.1; LINDWYRM_STORY_SHAPE.md | — | `@handle@node` canonical social identity; three render targets named (`chat-log:post-header` / `hud:exchange-pair` / `record:full`); `++`/`+`/(none)/`-`/`--` amplitude modifiers; territory-first ordering |
+| SIG-09 | Kowloon/AP handle form + render target taxonomy + stance amplitude modifiers | S0 ✅ | `[CS:0.80]` | URI_SCHEMA.md §3.3.1; LINDWYRM_STORY_SHAPE.md | — | `@handle@node` canonical social identity; three render targets named; `++`/`+`/(none)/`-`/`--` amplitude modifiers; territory-first ordering in `chat-log:post-header` |
 
 ### crystal/ — Crystal State Machine
 

@@ -26,10 +26,27 @@ The DreamDeck runs on Kowloon (ActivityPub backend by jzellis) + TiddlyWiki + tl
 
 ### Format Conventions
 
-**Post headers:**
+**Post headers** *(render target: `chat-log:post-header` — see URI Schema §3.3.1)*:
 ```
-@handle@node — timestamp — [optional HUD tag]
+@handle@node — timestamp — //domain.quality.dynamic{/optional/path} [Register] 🏛️{amp}🌊{amp}
 ```
+Territory triple first (grounds domain before posture), then optional sub-path segments for within-territory routing, then Register bracket, then stance emoji(s) with optional amplitude modifier attached directly to each emoji.
+
+**Stance amplitude modifiers** (attach directly to preceding stance emoji, no space):
+
+| Modifier | Meaning |
+|---|---|
+| `++` | strongly engaged / high amplitude |
+| `+` | above baseline |
+| *(none)* | baseline presence |
+| `-` | below baseline / lightly engaged |
+| `--` | barely present / nominal |
+
+Example:
+```
+@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces [SC:0.80] 🏛️+🌊
+```
+The `@handle@node` structure is the canonical Kowloon ActivityPub identity form (see URI Schema §3.3.1). For non-Lares-connected posts the HUD tag may be omitted entirely.
 
 **Sidebar annotations (inline, like Shadowrun shadowtalk):**
 ```

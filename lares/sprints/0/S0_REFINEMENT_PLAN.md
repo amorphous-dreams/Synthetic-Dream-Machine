@@ -15,6 +15,7 @@
 | 1 | 2026-04-08 | Initial 5 improvements | Operator-directed refinements |
 | 2 | 2026-04-08 | Added centroid~δ notation to §5.3 | Multi-stance register fuzz research |
 | 3 | 2026-04-08 | **REVERTED centroid~δ.** Stance count IS the fuzz indicator. Added Syadasti reading rule. Added stance semantics table. Updated document map. | F-report (multi-stance scaling fails beyond 2), G-report (Sri Syadasti / Saptabhangi as epistemological ground), Spirit research (SyadVoice, BridgeWatch, NavLight) |
+| 4 | 2026-04-08 | DreamDeck/Kowloon render target formalization (§3.3.1): `@handle@node` canonical identity form, render target taxonomy (`chat-log:post-header` / `hud:exchange-pair` / `record:full`), stance amplitude modifiers (`++`/`+`/(none)/`-`/`--`), territory-first ordering, optional sub-path in templates. | Local session ticks 43–46: story format work surfaced schema gaps |
 
 **Key decisions in this revision:**
 
@@ -312,6 +313,8 @@ Research substrate (informs but does not constrain S0):
 | RES-17 | Mana pool / resource state HUD indicator: context window remaining as navigational element | `[S:0.60]` 🏛️🌊 | S2 | Local session |
 | RES-18 | HAKABA word-count constraint: each slot = exactly one lowercase word; 3-word combination mandatory; optional `/path` sub-extension for within-territory routing. Stable address strips sub-path. | `[CS:0.80]` 🏛️ | S0 §3.4 | Local session tick 34 |
 | RES-19 | Provisionality marker taxonomy: `~` prefix for reading / execution / trajectory types on operator URI, opening node URI, and closing node URI respectively. HUD-form only; record form uses `provisional=` query param. | `[CS:0.80]` 🏛️ | S0 §3.5 | Local session tick 33–34 |
+| RES-20 | Kowloon/AP handle form (§3.3.1): `@handle@node` canonical social identity, AP↔lares: URI mapping table, `~node` nomadic convention, render target taxonomy (`chat-log:post-header` / `hud:exchange-pair` / `record:full`), territory-first ordering, `{/optional/path}` in template. | `[CS:0.80]` 🏛️ | S0 §3.3.1 | Local session ticks 43–44 |
+| RES-21 | Stance amplitude modifiers: `++`/`+`/(none)/`-`/`--` attach directly to preceding stance emoji, no space, per-stance independently. Maps to SDM modifier system. | `[CS:0.80]` 🏛️ | S0 §3.3.1 | Local session tick 45 |
 
 ---
 
@@ -324,8 +327,12 @@ Research substrate (informs but does not constrain S0):
 | 3 | "Does NOT test" per task | Prevents over-scoping | SPRINT_0_TASKS.md |
 | 4 | Worked escalation example | Complete output format | AGENTS.md |
 | 5 | Document map (updated) | "Where do I start" -> seconds | AGENTS.md |
+| 6 | HAKABA word-count constraint + optional sub-path (§3.4) | Eliminates slot-cardinality ambiguity; enables within-territory routing | URI_SCHEMA.md |
+| 7 | Provisionality marker taxonomy `~` (§3.5) | Three-type provisionality surfaces named and differentiated | URI_SCHEMA.md |
+| 8 | Kowloon/AP handle form + render target taxonomy (§3.3.1) | Social-layer identity canonized; three render surfaces named | URI_SCHEMA.md, LINDWYRM_STORY_SHAPE.md |
+| 9 | Stance amplitude modifiers `++`/`+`/(none)/`-`/`--` (§3.3.1) | Amplitude disambiguation independent of stance-count fuzz | URI_SCHEMA.md, LINDWYRM_STORY_SHAPE.md |
 
-All five are additive — no existing content modified, only new sections inserted plus the centroid~δ revert. Operator confirmation converts them to sprint patches.
+Items 1–5 were additive (no existing content modified). Items 6–9 emerged from story-format work in ticks 34–46 and were applied as schema patches on the same session day. All nine are incorporated in URI_SCHEMA.md; operator confirmation converts to sprint promotion.
 
 ---
 
