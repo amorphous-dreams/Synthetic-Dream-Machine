@@ -16,7 +16,7 @@ Each subfolder contains one `.md` source file and an `images/` directory.
 
 These files occupy the **B2 source map** tier in the Lares agent configuration (`builds/agents/Lares_VSCode_Operations.md`):
 
-> `SDM/Vastlands_Guidebook/`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `SDM/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
+> `sdm/Vastlands_Guidebook/`, `sdm/Ultraviolet_Grasslands_and_the_Black_City_2e/`, `sdm/Our_Golden_Age/`: adjacent rules, tone anchors, and comparative mechanics
 
 When answering rules or setting questions, Lares grounds first in local SDM supplement files (`Synthetic_Dream_Machine_*.md`), then in these canonical sources. VLG in particular receives deep-linked citations throughout the Paths, Traits, and Gear indices.
 

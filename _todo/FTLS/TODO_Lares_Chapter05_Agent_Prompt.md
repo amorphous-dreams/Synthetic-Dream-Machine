@@ -58,14 +58,14 @@ Use these sources in this order when making conversion decisions:
 3. `Synthetic_Dream_Machine_04_Powers_Index.md`
 4. `Synthetic_Dream_Machine_03_Traits_Index.md`
 5. `Synthetic_Dream_Machine_06_Campaign_Regions.md` only when region/faction/world-process context matters
-6. `SDM/Vastlands_Guidebook/Vastlands_Guidebook.md`, `SDM/Our_Golden_Age/Our_Golden_Age.md`, `SDM/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md` as style guides, not mechanical canon
+6. `sdm/Vastlands_Guidebook/Vastlands_Guidebook.md`, `sdm/Our_Golden_Age/Our_Golden_Age.md`, `sdm/Ultraviolet_Grasslands_and_the_Black_City_2e/Ultraviolet_Grasslands_and_the_Black_City_2e.md` as style guides, not mechanical canon
 
 Primary conversion governance docs:
-- `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`
+- `_todo/ftls/TODO_Magitech_Fantascience_Chapter05.md`
 - `_todo/BECMI/TODO_BECMI_Conversion.md`
 
 Primary manuscript target:
-- `FTLS/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
+- `ftls/Flying_Triremes_and_Laser_Swords_05_Magitech_and_Fantascience.md`
 
 ## 4) Current State of Play
 - Chapter 05 has a stable FTLS object loop and module scaffold.
@@ -87,7 +87,7 @@ Primary manuscript target:
 Do not revert these changes.
 
 ## 5) Immediate Work Queue
-Resume from the current shared phase tracker in `_todo/FTLS/TODO_Magitech_Fantascience_Chapter05.md`.
+Resume from the current shared phase tracker in `_todo/ftls/TODO_Magitech_Fantascience_Chapter05.md`.
 
 ### Immediate priority: sequencing gate check
 Before any new Chapter 05 edits, confirm Chapter 06 has locked design decisions and reached `alpha` status.

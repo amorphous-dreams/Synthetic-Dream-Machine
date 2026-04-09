@@ -55,8 +55,8 @@ Make it weird, wonderful, and wild.
 
 This license applies to all Licensed Material in this repository. This includes but is not limited to:
 
-- The *Flying Triremes and Laser Swords* game text (`FTLS/`)
-- The Elyncia setting material (`Elyncia/`)
+- The *Flying Triremes and Laser Swords* game text (`ftls/`)
+- The Elyncia setting material (`elyncia/`)
 - Original conversion and design work in pipeline directories (`_todo/`)
 - Agent Instructions: root `AGENTS.md`, all files in `builds/agents/`, and all agent prompt files in other repository directories
 
@@ -125,7 +125,7 @@ All original artwork, illustrations, maps, graphic design elements, and logos cr
 
 The following design philosophy terms coined by the Licensor are Product Identity:
 
-- **"Infrastructure-as-Myth"** — the Licensor's coined compound term for the design principle that mythic, ritual, and narrative structures can operate as literal technical infrastructure: network architecture, system protocols, operational framing. This term as applied to the Elyncia/DreamNet/Lares design system is Product Identity. The underlying concept — that myth and infrastructure can converge — is not the exclusive property of any party; only this specific compound phrase as a designator of the Licensor's design philosophy and practice is PI.
+- **"Infrastructure-as-Myth"** — the Licensor's coined compound term for the design principle that mythic, ritual, and narrative structures can operate as literal technical infrastructure: network architecture, system protocols, operational framing. This term as applied to the elyncia/DreamNet/Lares design system is Product Identity. The underlying concept — that myth and infrastructure can converge — is not the exclusive property of any party; only this specific compound phrase as a designator of the Licensor's design philosophy and practice is PI.
 
 ---
 
@@ -154,7 +154,7 @@ Subject to the conditions in Section VII, the Licensor grants you a worldwide, r
 2. **Adapt and remix** the Open Content — translate, modify, transform, and build upon it
 3. **Publish Fan Works** — including but not limited to: fan supplements, campaign settings, house rules, alternate procedures, fiction, poetry, filks, parody, commentary, fan tools, and non-commercial apps or digital products
 4. **Fork Agent Instructions** — adapt, extend, deploy, and distribute derivative agent systems and LLM prompts for non-commercial AI projects
-5. **Dual-license with SDM** — works that draw on both the FTLS/Elyncia content under this license and SDM content under the SDM 3rd Party License may be distributed under both simultaneously, provided all conditions of both licenses are met
+5. **Dual-license with SDM** — works that draw on both the ftls/Elyncia content under this license and SDM content under the SDM 3rd Party License may be distributed under both simultaneously, provided all conditions of both licenses are met
 
 This license grant is conditioned on full compliance with all terms herein. Breach of any term of this license automatically and immediately terminates all rights granted, subject to the cure provisions in Section XIII.e. This grant is otherwise irrevocable during Your period of compliance. This license does not grant any patent rights, trademark rights, or rights to trade secrets of the Licensor. All rights not expressly granted are reserved by the Licensor.
 
@@ -312,7 +312,7 @@ The Elyncia platform at [elyncia.app](https://elyncia.app) exists to host, featu
 
 **Platform feature is not a license upgrade.** Appearing on the Elyncia platform does not change a Fan Work's license status, grant commercial rights, or imply official endorsement. Fan Works remain Fan Works unless a separate Commercial License Agreement is signed.
 
-**The fan-to-official pathway:** Fan Works that demonstrate creative excellence, community traction, or strong alignment with the setting and design values of FTLS/Elyncia may be invited to enter the official content pipeline. This involves:
+**The fan-to-official pathway:** Fan Works that demonstrate creative excellence, community traction, or strong alignment with the setting and design values of ftls/Elyncia may be invited to enter the official content pipeline. This involves:
 
 1. A conversation with the Licensor through [elyncia.app](https://elyncia.app)
 2. A written Commercial License Agreement, which will specify: official designation, revenue arrangement, co-authorship credit, and any constraints

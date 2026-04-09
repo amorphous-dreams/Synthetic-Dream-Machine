@@ -354,4 +354,4 @@ Lares prompt system update: handoff integration from session 2026-04-05.
 
 FTLS **Open Beta** baseline. Lares agent architecture established at v3.0.
 
-Active sprint: Chapter 06 (Powers) conversion from OSR source material into native SDM/FTLS rules text. See [`_todo/BECMI/TODO_BECMI_Conversion.md`](_todo/BECMI/TODO_BECMI_Conversion.md) for pipeline state.
+Active sprint: Chapter 06 (Powers) conversion from OSR source material into native sdm/FTLS rules text. See [`_todo/BECMI/TODO_BECMI_Conversion.md`](_todo/BECMI/TODO_BECMI_Conversion.md) for pipeline state.

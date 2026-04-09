@@ -16,9 +16,9 @@ This folder contains Luka Rejec's Wizard Thief Fighter zines and side projects. 
 
 These files occupy a supplemental tier in the Lares agent configuration (`builds/agents/Lares_VSCode_Operations.md`):
 
-> `WTF/Eternal_Return_Key/`, `WTF/There_A_Red_Door/`, `WTF/Magitecnica/`: Luka Rejec zines and side projects — supplemental material, not mechanical canon
+> `wtf/Eternal_Return_Key/`, `wtf/There_A_Red_Door/`, `wtf/Magitecnica/`: Luka Rejec zines and side projects — supplemental material, not mechanical canon
 
-Lares treats these as tone and setting texture. They inform homebrew synthesis and worldbuilding but do not carry the same mechanical authority as the core SDM source files in `SDM/`.
+Lares treats these as tone and setting texture. They inform homebrew synthesis and worldbuilding but do not carry the same mechanical authority as the core SDM source files in `sdm/`.
 
 ## License
 

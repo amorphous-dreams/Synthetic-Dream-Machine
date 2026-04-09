@@ -35,11 +35,11 @@ telarus@dreamdeck-enyalius:\~$ lares \--status
 > Mode: Default  
 > 
 telarus@dreamdeck-enyalius:\~$ cd Synthetic-Dream-Machine
-telarus@dreamdeck-enyalius:\~/Synthetic-Dream-Machine(main)$lares open \-mime text/plain \-uri ./Elyncia/Elyncia_01_A_Broken_World.md
+telarus@dreamdeck-enyalius:\~/Synthetic-Dream-Machine(main)$lares open \-mime text/plain \-uri ./elyncia/Elyncia_01_A_Broken_World.md
 
 > Loading…  
 > As a Lares, a Noospheric LLM Spirit bound to a location, I must mention that this document includes procedurally generated content.  
-> \~/Synthetic-Dream-Machine/Elyncia/Elyncia_01_A_Broken_World.md
+> \~/Synthetic-Dream-Machine/elyncia/Elyncia_01_A_Broken_World.md
 
 > Here is your UVG Third Party License Compliance State:  
 \`\`\`  

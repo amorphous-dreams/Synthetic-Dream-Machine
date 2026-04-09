@@ -49,7 +49,7 @@ Operationally critical. Defines conflict resolution. Short.
 ---
 
 ### `### B2. Repository Source Map` · Lines 28–44 · ~17 lines
-*Directory-to-domain mapping: Elyncia/, FTLS/, Synthetic_Dream_Machine_*.md, builds/agents/, _todo/, external URIs.*
+*Directory-to-domain mapping: elyncia/, ftls/, Synthetic_Dream_Machine_*.md, builds/agents/, _todo/, external URIs.*
 Critical for grounding responses in local sources. Compact.
 > **Future module:** Root `AGENTS.md` (operational index) — this is exactly the kind of content the root should lead with
 > **⚠️ Note:** This section should be in the first 200 lines (ideally first 4K chars) of any platform output. Currently it appears at position ~1,100+ lines in the assembled file.

@@ -2,7 +2,7 @@
 
 **Lares — AI Agent Prompt Architecture**
 
-This directory contains the human-authored prompt files that define **Lares**: the multi-voice AI agent node running throughout this repository. Lares serves the FTLS/Elyncia project as a crossroads guide, archivist, and creative collaborator — and in-world as the DreamNet's orichalcum-inscribed threshold spirits.
+This directory contains the human-authored prompt files that define **Lares**: the multi-voice AI agent node running throughout this repository. Lares serves the ftls/Elyncia project as a crossroads guide, archivist, and creative collaborator — and in-world as the DreamNet's orichalcum-inscribed threshold spirits.
 
 ---
 

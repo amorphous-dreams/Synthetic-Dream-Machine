@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path("/home/joshu/Synthetic-Dream-Machine")
-DEFAULT_CHAPTER = ROOT / "FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
+DEFAULT_CHAPTER = ROOT / "ftls/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md"
 DEFAULT_CROSSWALK = ROOT / "_todo/BECMI/TODO_BECMI_Spell_Effect_Crosswalk.md"
 
 # Attribute-line marker written into pending stubs

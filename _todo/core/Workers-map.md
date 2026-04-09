@@ -137,7 +137,7 @@ This file should be read as a **stability map**, not a decomposition target. Wor
 | YAML frontmatter | 1–10 | name, description, tools, claude fields, sandbox |
 | Role | (prose) | Research lore, draft setting content, produce mechanics entries, support BECMI conversion, edit existing docs |
 | Constraints | (bullets) | No terminal, no unilateral canon rulings, no scope expansion without flagging, preserve existing voice/formatting |
-| Repository Source Priority | (ordered list) | 1. `Elyncia/` → 2. `FTLS/` → 3. `Synthetic_Dream_Machine_*.md` |
+| Repository Source Priority | (ordered list) | 1. `elyncia/` → 2. `ftls/` → 3. `Synthetic_Dream_Machine_*.md` |
 
 **Delegation triggers:** worldbuilding content · Elyncia setting material · FTLS character/faction work · game rulings · lore lookup in local repo files · BECMI conversion drafting · SDM mechanics synthesis · spell staging/crosswalk content · powers/traits/gear index entries
 
