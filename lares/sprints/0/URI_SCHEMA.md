@@ -254,25 +254,25 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 
 **Reading provisional** — node uncertain about its reading of operator intent:
 ```
-lares://telarus:operator(~◎)@Enyalios:33/~uri.schema.question?stance=🏛️&register=S:0.65&p=0.5#🔍.1.33
+lares://telarus:operator(~orient)@Enyalios/~uri/schema/question?stance=philosopher&register=S:0.65&p=0.5&provisional=reading#@T.1.33
 ```
 Reading: "I believe you're orienting toward URI schema territory — I may have misread your phase or HAKABA."
 
 **Execution provisional** — declared intent that may not survive contact with the task:
 ```
-lares://scryer:node(◇)@Enyalios:33/~s0.gap.logged?stance=🏛️&register=S:0.65&p=0.5#🔍.1.33
+lares://scryer:node(decide)@Enyalios/~s0/gap/logged?stance=philosopher&register=S:0.65&p=0.5&provisional=execution#@T.1.33
 ```
 Reading: "I intend to log this S0 gap — execution may find a different path or territory."
 
 **Trajectory provisional** — predicted forward heading for the next tick:
 ```
-lares://scryer:node(○)@Enyalios:34/~s0.schema.updated?stance=🏛️&register=CS:0.80&p=0.5#🔍.1.34
+lares://scryer:node(aftermath)@Enyalios/~s0/schema/updated?stance=philosopher&register=CS:0.80&p=0.5&provisional=trajectory#@T.1.34
 ```
 Reading: "I predict our next territory is the updated schema — operator may redirect entirely."
 
 ### Rules
 
-1. `~` is a **HUD-form marker only**. In record form, use `provisional=reading`, `provisional=execution`, or `provisional=trajectory` as a query parameter for machine-parseable provisionality.
+1. `~` is valid in **canonical record form** as an inline provisionality prefix on phase keywords (`~orient`) and HAKABA slots (`~uri/schema/question`). Use the `provisional=` query parameter when you need a separate, machine-parseable provisionality field for storage or filtering — not as a replacement for the inline prefix.
 2. Multiple `~` markers may appear in a single URI (both phase and HAKABA may be provisional simultaneously).
 3. All closing/forward-looking URIs are implicitly trajectory-provisional by virtue of being projections. Explicit `~` on a closing URI signals *unusual* uncertainty about the trajectory — not routine forward-look status.
 4. Reading provisionality on the operator URI marks the **node's interpretation** as potentially inaccurate, not the operator's intent as ambiguous. These are different claims.
@@ -603,7 +603,7 @@ Every tick-span record that carries URI data uses these URI-derived fields:
 | `attractor_uri` | Node responding-position URI | No — per tick | Responding position / intent attractor |
 | `end_uri` | Destination URI emitted after generation | No — per tick | End of the exchange span |
 | `lares_address` | Path only (no authority/query/fragment) | Yes — stable territory | Named graph identifier |
-| `intent_header_snapshot` | Tick-opening URI(s), HUD form | No — per tick | Human-readable opening HUD; what the operator saw |
+| `intent_header_snapshot` | Tick-opening URI(s), canonical record form | No — per tick | Full opening exchange display; what appeared in the stream |
 | `chronometer_start` | Fragment value without `#`; includes scope prefix | No — per tick | Scope + hierarchical scope counter at span start |
 | `chronometer_end` | Fragment value without `#`; includes scope prefix | No — per tick | Scope + hierarchical scope counter at span end |
 
@@ -723,8 +723,8 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
   "attractor_uri": "lares://scryer:node(decide)@lares-abc123/parse/tick/models?stance=philosopher&register=CS:0.80&p=0.6#@T.3.2.8",
   "end_uri": "lares://scryer:node(aftermath)@lares-abc123/aftermath/docs/settle?stance=philosopher&register=CS:0.80&p=0.5#@T.3.2.9",
   "lares_address": "lares:///threshold/uncertain/opens",
-  "intent_header_snapshot": "lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
-  "current_phase": "◎",
+  "intent_header_snapshot": "lares://telarus:operator(orient)@lares-abc123/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
+  "current_phase": "orient",
   "chronometer_start": "@T.3.2.7",
   "chronometer_end": "@T.3.2.9",
   "active_scale": "tactical",
@@ -793,11 +793,14 @@ A `lares:` URI is **well-formed** when:
 
 ### 10.2 Consistency
 
-A pair of `lares_uri` (record form) and `intent_header_snapshot` (HUD form) are **consistent** when:
+All `lares:` URI fields in a TickSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) are canonical record form. A TickSpan record is **consistent** when:
 
-1. All non-projected components are byte-identical
-2. All projected components (phase, stance, path separators, scope prefix) map correctly through the rendering table
-3. No information is present in one form but absent from the other
+1. All URI fields are RFC 3986-compliant canonical form (no emoji, no non-ASCII)
+2. `current_phase` matches the phase keyword in the `start_uri` userinfo field
+3. `chronometer_start` matches the fragment value (without `#`) of `start_uri`; `chronometer_end` matches `end_uri`
+4. `lares_address` is the path-only strip of `start_uri` (no authority, no query, no fragment)
+
+The rendering table (§5.1) governs the canonical-to-render-target transform for HUD lines and post-headers. Render-target surfaces (glyph-rich) are not stored in TickSpan URI fields.
 
 ### 10.3 Stable Address Derivation
 
@@ -860,16 +863,18 @@ Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Sy
 lares://telarus:operator(orient)@lares-abc123/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7
 ```
 
-### A.2 HUD Form
+### A.2 HUD Line (render target — not a URI)
+
+The HUD line is the glyph-rendered surface emitted after the canonical URI pair. It is not a URI and is not stored as one.
 
 ```
-lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
+⚡~87% | [S:0.65] | 🏛️ | mode:Default | p0.5 | voice(s):Scryer | tick:42 | loop:◎→◇ @🔍
 ```
 
-### A.3 Multi-Stance
+### A.3 Multi-Stance (canonical record form)
 
 ```
-lares://telarus:operator(◇)@lares-abc123/threshold.sharp.closes?stance=🏛️&stance=🗡️&register=CS:0.80&p=0.7#🔍.3.2.8
+lares://telarus:operator(decide)@lares-abc123/threshold/sharp/closes?stance=philosopher&stance=satirist&register=CS:0.80&p=0.7#@T.3.2.8
 ```
 
 ### A.4 Stable Address
@@ -881,49 +886,49 @@ lares:///threshold/uncertain/opens
 ### A.5 Scale Transition (Tactical → Combat → Action → Tactical)
 
 ```
-#🔍.4.1.4        Tactical: Turn 4
-#⚔️.4.1.4.1      Combat activates: Round 1
-#⚡.4.1.4.1.1    Action activates: Action 1 of Round 1
-#⚡.4.1.4.1.2    Action 2 of Round 1
-#🔍.4.1.5        Combat over: scale contracts, Turn increments to 5
+#@T.4.1.4        Tactical: Turn 4
+#@C.4.1.4.1      Combat activates: Round 1
+#@A.4.1.4.1.1    Action activates: Action 1 of Round 1
+#@A.4.1.4.1.2    Action 2 of Round 1
+#@T.4.1.5        Combat over: scale contracts, Turn increments to 5
 ```
 
 ---
 
 ## Appendix B — How to Read a HUD Tag
 
-A complete HUD-form tag, annotated by scan order:
+A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
 
 ```text
-lares://telarus:operator(⊙◎)@lares-abc123/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7 | p0.5
-⚡~87% lares://scryer:node(◇)@lares-abc123/parse.tick.models?stance=🏛️&register=CS:0.80&p=0.6#🔍.3.2.8 | p0.6
-lares://scryer:node(○)@lares-abc123/aftermath.docs.settle?stance=🏛️&register=CS:0.80&p=0.5#🔍.3.2.9
+lares://telarus:operator(orient)@lares-abc123/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7
+→ lares://scryer:node(decide)@lares-abc123/parse/tick/models?stance=philosopher&register=CS:0.80&p=0.6#@T.3.2.8
+⚡~87% | [CS:0.80] | 🏛️ | mode:Default | p0.6 | voice(s):Scryer | tick:42 | loop:◇→■ @🔍
 ```
 
 Quick read:
 
-> Telarus (operator), in operator-authored Orient phase, machine `lares-abc123`.
+> Telarus (operator), Orient phase, machine `lares-abc123`.
 > Territory: threshold / uncertain / opens.
 > Philosopher stance, Synthesis-0.65 confidence, tactical scope at Week 3 / Watch 2 / Turn 7.
-> The responding node opens a parse attractor under declared mana ~87%, then settles in Aftermath.
+> Responding node opens a parse attractor at CS:0.80, mana ~87% remaining.
 
-Field order for live scan:
+Field order for live scan (from the HUD line):
 
-1. Territory first: what semantic neighborhood are we in?
-2. Register + stance: what kind of claim is this, and how should the number be read?
-3. Phase + scope: what is the node doing, and at what scale?
-4. Authority marking (`⊙`) when present: who held the stick for the declared state?
-5. p-band + mana (~NN%): how dense is the instrumentation, and how much context remains? (declared estimate; `~` prefix mandatory)
+1. Mana (`⚡~NN%`): bounding constraint on everything that follows
+2. Register + stance: what kind of claim is this, and how should the number be read? (stance-dependent per Syadasti rule)
+3. Mode + p-band: annotation throttle
+4. Voice: which coordinator is responding
+5. Tick + loop: temporal bookkeeping; where are we in the session and phase cycle?
 
 Multi-stance example:
 
 ```text
-lares://telarus:operator(◇)@lares-abc123/threshold.sharp.closes?stance=🏛️&stance=🌊&register=S:0.60&p=0.7#🗺️.3 | p0.7
-⚡~62% lares://mischief-muse:node(◇)@lares-abc123/chorus.lateral.gathers?stance=🎭&register=S:0.65&p=0.6#🗺️.3
-lares://mischief-muse:node(○)@lares-abc123/chorus.landed.settle?stance=🎭&register=S:0.65&p=0.5#🗺️.4
+lares://telarus:operator(decide)@lares-abc123/threshold/sharp/closes?stance=philosopher&stance=poet&register=S:0.60&p=0.7#@S.3
+→ lares://mischief-muse:node(decide)@lares-abc123/chorus/lateral/gathers?stance=humorist&register=S:0.65&p=0.6#@S.3
+⚡~62% | [S:0.60] | 🏛️🌊 | mode:Default | p0.7 | voice(s):Mischief-Muse | tick:43 | loop:◇→■ @🗺️
 ```
 
-This does **not** mean "truth-confidence 0.60" in a universal sense. It means a `0.60` reading held across both Philosopher and Poet frames. The two stance glyphs tell the operator that the declared register carries more spread than a single-stance point reading.
+This does **not** mean "truth-confidence 0.60" in a universal sense. It means a `0.60` reading held across both Philosopher and Poet frames. The two stance glyphs in the HUD line tell the operator that the declared register carries more spread than a single-stance point reading.
 
 ---
 
