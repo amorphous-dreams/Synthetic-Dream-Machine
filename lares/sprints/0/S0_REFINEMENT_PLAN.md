@@ -217,6 +217,49 @@ Annotated full URI + compact form + multi-stance example showing the Syadasti re
 
 ---
 
+## 6. HAKABA Word-Count Constraint + Optional Sub-Path Extension
+
+### Problem
+
+The path section specifies three slots (Ha/Ka/Ba) but does not constrain the cardinality of each slot or prohibit multi-word tokens. "uri-schema-question" could be parsed as one slot or three. The spec is silent on sub-territory routing within a named HAKABA (e.g. navigating to a specific section of a territory without declaring a new full HAKABA).
+
+### Fix: Formalize in §3.4
+
+1. **Each slot = exactly one lowercase word.** No hyphens, underscores, or spaces within a slot.
+2. **Three-slot combination is mandatory.** No HAKABA with fewer than three populated slots.
+3. **Optional sub-path extension** using `/`-separated segments after the three-slot HAKABA. Sub-path segments are free-form routing tokens, not HAKABA slots. They do not carry Egyptian soul semantics.
+4. **Stable named graph address strips sub-path:** `lares:///threshold/uncertain/opens` (no sub-path).
+
+```
+Record form:  /threshold/uncertain/opens/sub/territory
+HUD form:     /threshold.uncertain.opens/sub/territory
+Named graph:  lares:///threshold/uncertain/opens
+```
+
+### Files Changed
+
+- `URI_SCHEMA.md` — update §3.4 path component semantics
+
+---
+
+## 7. Provisionality Marker Taxonomy (`~`)
+
+### Problem
+
+The URI pair has three structurally distinct provisionality surfaces that are currently undifferentiated. Reading provisionality (node's interpretation of operator), execution provisionality (node's declared intent may not survive contact), and trajectory provisionality (forward-looking closing URI is a prediction) all collapse into the register value — which is wrong because register measures confidence *within a stance's frame*, not interpretation accuracy.
+
+### Fix: Add §3.5 — Provisionality Markers
+
+New section before §4 Chronometer. Documents the three types, the `~` HUD-form convention (component-level, not URI-level), the equivalent record-form `provisional=` query parameter, and the distinction between reading (marks node's interpretation), execution (marks node's declared heading), and trajectory (marks node's prediction — applies to all closing URIs, explicit `~` signals unusual uncertainty).
+
+**Key rule:** The `~` prefix applies only to the specific component it prefixes. `~◎` marks only the phase; `~threshold.uncertain.opens` marks only the HAKABA. Unprefixed components are declared with normal confidence.
+
+### Files Changed
+
+- `URI_SCHEMA.md` — add §3.5 between component semantics and §4 Chronometer
+
+---
+
 ## 5. Document Relationship Map (Updated for Research Docs)
 
 ```text
@@ -266,6 +309,9 @@ Research substrate (informs but does not constrain S0):
 | RES-14 | HUD as memory prosthetic / grounding artifact (Clark & Brennan) | `[S:0.60]` | S1 | BridgeWatch |
 | RES-15 | Meaning asymmetry in mutual recognition contract | `[S:0.55]` | S2 | G-report |
 | RES-16 | Session boundary as avaktavya | `[SP:0.45]` | Deferred | G-report |
+| RES-17 | Mana pool / resource state HUD indicator: context window remaining as navigational element | `[S:0.60]` 🏛️🌊 | S2 | Local session |
+| RES-18 | HAKABA word-count constraint: each slot = exactly one lowercase word; 3-word combination mandatory; optional `/path` sub-extension for within-territory routing. Stable address strips sub-path. | `[CS:0.80]` 🏛️ | S0 §3.4 | Local session tick 34 |
+| RES-19 | Provisionality marker taxonomy: `~` prefix for reading / execution / trajectory types on operator URI, opening node URI, and closing node URI respectively. HUD-form only; record form uses `provisional=` query param. | `[CS:0.80]` 🏛️ | S0 §3.5 | Local session tick 33–34 |
 
 ---
 

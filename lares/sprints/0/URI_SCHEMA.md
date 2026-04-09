@@ -87,7 +87,7 @@ lares://alias:tier(phase)@host/ha/ka/ba?stance=X&register=R:N&p=N#scope.W.w.t.r.
 
 Tick sequencing is intentionally **not** encoded in URI authority. Exchange identity lives in adjacent calibration metadata (`tick_id`, `tick_seq`, `trace_id`, timestamps) rather than overloading the RFC 3986 port slot.
 
-**path** (`/ha/ka/ba`) — HAKABA semantic address. Three slots in canonical order:
+**path** (`/ha/ka/ba`) — HAKABA semantic address. Three mandatory slots in canonical order:
 
 | Slot | Name | Semantic Role | Grammatical Analog |
 |---|---|---|---|
@@ -95,7 +95,18 @@ Tick sequencing is intentionally **not** encoded in URI authority. Exchange iden
 | Ka | quality | Soul / motive fire — animating charge or character | ADJECTIVE |
 | Ba | dynamic | Psyche / direction — the motion being taken | VERB |
 
-Record form uses `/` separators: `/threshold/uncertain/opens`. HUD form uses `.` after a leading `/`: `/threshold.uncertain.opens`. The leading `/` appears in both forms.
+**Mandatory word-count rule:** Each slot is exactly **one lowercase word**. No hyphens, underscores, or spaces within a slot. The three-slot combination is mandatory — no HAKABA may have fewer than three populated slots. A HAKABA is always a `noun.adjective.verb` triple.
+
+**Optional sub-path extension:** After the mandatory three-slot HAKABA, additional `/`-separated path segments may follow to navigate within the named territory.
+
+```
+Record: /threshold/uncertain/opens/sub/territory
+HUD:    /threshold.uncertain.opens/sub/territory
+```
+
+Sub-path segments are free-form routing tokens, not HAKABA slots. They do **not** carry Egyptian soul semantics. The stable named graph address strips the sub-path (`lares:///threshold/uncertain/opens`); the sub-path is session-scope navigation only.
+
+Record form uses `/` separators for all three HAKABA slots: `/threshold/uncertain/opens`. HUD form uses `.` between the three HAKABA slots after the leading `/`: `/threshold.uncertain.opens`. Sub-path segments use `/` in both forms. The leading `/` appears in all variants.
 
 **query** (`?stance=X&register=R:N&p=N`) — Signal parameters, non-hierarchical.
 
@@ -110,6 +121,48 @@ Multi-stance: repeated `stance=` parameters. Example: `stance=🏛️&stance=�
 Register remains a point value even under multi-stance. Stance count communicates fuzz; no `~delta` suffix is permitted.
 
 **fragment** (`#scope.W.w.t.r.a`) — Scope prefix + chronometer (hierarchical scope counter). Client-side only per RFC 3986 §3.5 — never sent to a server; session-local viewpoint data.
+
+---
+
+## 3.5 Provisionality Markers
+
+The `~` prefix marks URI components as provisional. Three structurally distinct provisionality types can appear in an exchange URI pair:
+
+| Type | Location | Convention | What It Marks |
+|---|---|---|---|
+| **Reading** | Operator URI — phase and/or HAKABA | `~` before phase glyph; `~` before HAKABA | Node's interpretation of operator intent — may be inaccurate |
+| **Execution** | Opening node URI — HAKABA | `~` before HAKABA | Declared intent; execution may diverge from this heading |
+| **Trajectory** | Closing/forward-looking node URI — HAKABA | `~` before HAKABA | Predicted forward heading — operator may redirect |
+
+These are orthogonal. A URI may carry multiple `~` markers on different components simultaneously.
+
+### Examples
+
+**Reading provisional** — node uncertain about its reading of operator intent:
+```
+lares://telarus:operator(~◎)@Enyalios:33/~uri.schema.question?stance=🏛️&register=S:0.65&p=0.5#🔍.1.33
+```
+Reading: "I believe you're orienting toward URI schema territory — I may have misread your phase or HAKABA."
+
+**Execution provisional** — declared intent that may not survive contact with the task:
+```
+lares://scryer:node(◇)@Enyalios:33/~s0.gap.logged?stance=🏛️&register=S:0.65&p=0.5#🔍.1.33
+```
+Reading: "I intend to log this S0 gap — execution may find a different path or territory."
+
+**Trajectory provisional** — predicted forward heading for the next tick:
+```
+lares://scryer:node(○)@Enyalios:34/~s0.schema.updated?stance=🏛️&register=CS:0.80&p=0.5#🔍.1.34
+```
+Reading: "I predict our next territory is the updated schema — operator may redirect entirely."
+
+### Rules
+
+1. `~` is a **HUD-form marker only**. In record form, use `provisional=reading`, `provisional=execution`, or `provisional=trajectory` as a query parameter for machine-parseable provisionality.
+2. Multiple `~` markers may appear in a single URI (both phase and HAKABA may be provisional simultaneously).
+3. All closing/forward-looking URIs are implicitly trajectory-provisional by virtue of being projections. Explicit `~` on a closing URI signals *unusual* uncertainty about the trajectory — not routine forward-look status.
+4. Reading provisionality on the operator URI marks the **node's interpretation** as potentially inaccurate, not the operator's intent as ambiguous. These are different claims.
+5. The `~` marker applies only to the specific component it prefixes. `~◎` marks only the phase; `~uri.schema.question` marks only the HAKABA. Unprefixed components are declared with normal confidence.
 
 ---
 
