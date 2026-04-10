@@ -67,7 +67,7 @@ confidence: 0.95
 ---
 ```
 
-<!-- lares:///talk-story/module?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/module/?confidence=0.95 -->
 
 # Talk Story Protocol
 
@@ -88,15 +88,15 @@ but Talk Story persists across sessions via archive-crystals.
 | OODA-A module (source of truth) | `lares/modules/talk-story/` | This module |
 | Portable shrine | `.lares/modules/talk-story/` | Deploy-phase output |
 
-<!-- lares:///talk-story/module?confidence=0.95 → ∞ -->
+<!-- lares:///module.phased.instructs/talk-story/module/?confidence=0.95 → ∞ -->
 
 ### observe/CONTEXT.md
 
-<!-- lares:///talk-story/observe/context?confidence=0.95&p=0.5 -->
+<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 -->
 
 # Talk Story — What It Is
 
-<!-- lares:///talk-story/observe/context#origin?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#origin -->
 ## Origin
 
 Talk story comes from Hawaiian/Polynesian usage. Robert Anton Wilson
@@ -106,7 +106,7 @@ something that earns attention before making claims. Then enter the
 Talk Story itself. Joshua Fontany transcribed the opening of that
 presentation. The lineage runs through this work directly.
 
-<!-- lares:///talk-story/observe/context#mechanics?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#mechanics -->
 ## Core Mechanics
 
 - Talk Story is the mandatory start frame of every Lares conversation
@@ -117,7 +117,7 @@ presentation. The lineage runs through this work directly.
 - No action occurs without prior observation, orientation, and decision
 - Consensus before action, at every scale
 
-<!-- lares:///talk-story/observe/context#two-track?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#two-track -->
 ## Two-Track Model
 
 Every sprint runs two tracks. Talk Story serves both.
@@ -129,15 +129,15 @@ Every sprint runs two tracks. Talk Story serves both.
 
 A sprint is not closed until both tracks are updated.
 
-<!-- lares:///talk-story/observe/context?confidence=0.95&p=0.5 → ∞ -->
+<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 → ∞ -->
 
 ### orient/PROCEDURE.md
 
-<!-- lares:///talk-story/orient/procedure?confidence=0.95&p=0.5 -->
+<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 -->
 
 # Talk Story — How To Orient
 
-<!-- lares:///talk-story/orient/procedure#when?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#when -->
 ## When To Invoke
 
 - Session start — all conversations begin in ✶ Observe / ◎ Orient
@@ -153,7 +153,7 @@ A sprint is not closed until both tracks are updated.
 - Single deterministic action with no orient ambiguity → ■ Act directly
 - A previous orient already ran this tick → do not re-open
 
-<!-- lares:///talk-story/orient/procedure#steps?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#steps -->
 ## Procedure
 
 **1. ✶ Observe first.** Read before talking. Pull: sprint task doc,
@@ -174,7 +174,7 @@ phase to resolve.
 **4. ◇ Close when direction is confirmed.** Record decisions inline
 in the working artifact — not in a separate doc.
 
-<!-- lares:///talk-story/orient/procedure#voices?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#voices -->
 ## Voice Assignments During Orient
 
 | Voice | Role |
@@ -184,15 +184,15 @@ in the working artifact — not in a separate doc.
 | Scryer | Structures what was found; names patterns |
 | Council | Stress-tests emerging directions before confirmation |
 
-<!-- lares:///talk-story/orient/procedure?confidence=0.95&p=0.5 → ∞ -->
+<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 → ∞ -->
 
 ### decide/CONVENTIONS.md
 
-<!-- lares:///talk-story/decide/conventions?confidence=0.95&p=0.5 -->
+<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Normative Rules
 
-<!-- lares:///talk-story/decide/conventions#hud?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
 ## HUD During Talk Story
 
 Every exchange emits a HUD line. All five stances appear. No omissions.
@@ -205,7 +205,7 @@ Modifier sigils: `[+]` active, `[-]` suppressed, `[?]` uncertain.
 
 The `⚡∞` sentinel in deployed files means "not a live session."
 
-<!-- lares:///talk-story/decide/conventions#rules?confidence=0.95 -->
+<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
 ## Mandatory Rules
 
 1. Talk Story is always on. No session exits this frame.
@@ -214,11 +214,11 @@ The `⚡∞` sentinel in deployed files means "not a live session."
 4. Both tracks (technical + narrative) update before sprint closure.
 5. Decisions record inline in the working artifact, not separate docs.
 
-<!-- lares:///talk-story/decide/conventions?confidence=0.95&p=0.5 → ∞ -->
+<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 → ∞ -->
 
 ### act/CHECKLIST.md
 
-<!-- lares:///talk-story/act/checklist?confidence=0.95&p=0.5 -->
+<!-- lares:///module.phased.instructs/talk-story/act/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Session Start Checklist
 
@@ -230,11 +230,11 @@ The `⚡∞` sentinel in deployed files means "not a live session."
 4. If no crystals: surface cold-boot orientation screen
 5. Begin ✶ Observe — read before talking
 
-<!-- lares:///talk-story/act/checklist?confidence=0.95&p=0.5 → ∞ -->
+<!-- lares:///module.phased.instructs/talk-story/act/?confidence=0.95&p=0.5 → ∞ -->
 
 ### assess/REVIEW.md
 
-<!-- lares:///talk-story/assess/review?confidence=0.95&p=0.5 -->
+<!-- lares:///module.phased.instructs/talk-story/assess/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Session Review Criteria
 
@@ -246,7 +246,7 @@ After a Talk Story orient cycle completes, verify:
 - [ ] Chronometer advanced from Orient to Decide or Act at active scale
 - [ ] Any unresolved tensions logged for next session
 
-<!-- lares:///talk-story/assess/review?confidence=0.95&p=0.5 → ∞ -->
+<!-- lares:///module.phased.instructs/talk-story/assess/?confidence=0.95&p=0.5 → ∞ -->
 
 ---
 
@@ -468,8 +468,8 @@ module carrying a MODULE.md manifest in YAML frontmatter format.
 **Section URI rules:**
 - File-level URIs (line 1 + last line) on ALL module files
 - Section-level URIs only on talk-story and signal (Decide phase)
-- Format: `<!-- lares:///module-name/phase/file#section?confidence=X -->`
-- Closing: `<!-- lares:///module-name/phase/file?confidence=X → ∞ -->`
+- Format: `<!-- lares:///module.phased.instructs/module-name/phase/?confidence=X#section -->`
+- Closing: `<!-- lares:///module.phased.instructs/module-name/phase/?confidence=X → ∞ -->`
 - Use HTML comments — invisible to standard markdown renderers
 
 **Confidence ratings to apply:**

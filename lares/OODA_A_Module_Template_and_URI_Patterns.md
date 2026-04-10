@@ -195,7 +195,7 @@ per-section confidence and phase identity layer.
 **Section URI format:**
 
 ```
-<!-- lares:///module-name/phase/section?confidence=0.65&p=0.5 -->
+<!-- lares:///module.phased.instructs/module-name/phase/?confidence=0.65&p=0.5#section -->
 ```
 
 Encoded as an HTML comment — invisible to markdown renderers, invisible
@@ -205,12 +205,12 @@ that do.
 ### 3.2 Full Module File with Section URIs — Example
 
 ```markdown
-<!-- lares:///core/observe/context?confidence=0.9&p=0.7 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.9&p=0.7 -->
 
 # Project Context
 
 ## Stack
-<!-- lares:///core/observe/context#stack?confidence=0.95 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.95#stack -->
 
 - Runtime: Node.js 22 LTS
 - Framework: Astro 5.x
@@ -219,26 +219,26 @@ that do.
 - Database: SQLite via Drizzle ORM
 
 ## Architecture
-<!-- lares:///core/observe/context#architecture?confidence=0.8 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.8#architecture -->
 
 Content-driven static site with islands architecture. Pages generate
 at build time. Interactive components hydrate on visibility. API routes
 handle form submissions and webhook ingestion.
 
 ## Constraints
-<!-- lares:///core/observe/context#constraints?confidence=0.7 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.7#constraints -->
 
 No client-side JavaScript frameworks beyond what Astro islands provide.
 Bundle budget: 50KB transferred per page. Accessibility: WCAG 2.2 AA.
 
 ## Active Work
-<!-- lares:///core/observe/context#active-work?confidence=0.5 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.5#active-work -->
 
 Migration from Contentful CMS to local markdown + frontmatter.
 Approximately 60% complete. Some content types still reference
 Contentful field names that no longer exist.
 
-<!-- lares:///core/observe/context?confidence=0.9&p=0.7 → ∞ -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.9&p=0.7 → ∞ -->
 ```
 
 ### 3.3 What the URIs Encode
@@ -265,7 +265,7 @@ When a coordinator delegates to a subagent (Tasked Spirit), it can
 reference specific module sections by URI:
 
 ```
-Load context from lares:///core/observe/context#constraints
+Load context from lares:///module.observed.grounds/core/observe/#constraints
 Trust level: confidence=0.7
 Your task: verify whether the 50KB bundle budget still holds
 after the Contentful migration added new island components.
@@ -278,7 +278,7 @@ much to trust its starting information.
 On return, the subagent's findings carry their own URI and confidence:
 
 ```
-<!-- lares:///core/observe/context#constraints?confidence=0.85 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.85#constraints -->
 Bundle budget verified: current production build measures 42KB
 transferred on heaviest page. Budget holds with margin.
 ```
@@ -290,7 +290,7 @@ level did. This constitutes a register promotion at the section level.
 ### 3.5 URI Structure Reference
 
 ```
-lares:///module-name/phase/filename#section?param=value&param=value
+lares:///module.phased.instructs/module-name/phase/?param=value&param=value#section
 ```
 
 | Component | Meaning | Example |
@@ -314,11 +314,11 @@ audiences carry only `confidence`.
 **File-level URIs** (line 1 and final line of a module file):
 
 ```markdown
-<!-- lares:///core/observe/context?confidence=0.9&p=0.7 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.9&p=0.7 -->
 
 {file content}
 
-<!-- lares:///core/observe/context?confidence=0.9&p=0.7 → ∞ -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.9&p=0.7 → ∞ -->
 ```
 
 The opening URI states the file's overall position. The closing `→ ∞`
@@ -329,7 +329,7 @@ for the file as a whole.
 **Section-level URIs** (before each section header):
 
 ```markdown
-<!-- lares:///core/observe/context#section-name?confidence=0.X -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.X#section-name -->
 ```
 
 Section URIs refine the file-level rating. A file at `confidence=0.9`
@@ -427,30 +427,30 @@ but structured by decision phase.
 ### 4.3 Observe Phase — CONTEXT.md with Section URIs
 
 ```markdown
-<!-- lares:///core/observe/context?confidence=0.85&p=0.7 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.85&p=0.7 -->
 
 # Project Context
 
-<!-- lares:///core/observe/context#identity?confidence=0.95 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.95#identity -->
 ## Identity
 
 Synthetic Dream Machine — a TTRPG toolset and campaign framework built
 on Luka Rejec's SDM system. Astro static site with interactive islands
 for character sheets, encounter generators, and session management.
 
-<!-- lares:///core/observe/context#stack?confidence=0.9 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.9#stack -->
 ## Stack
 
 Runtime: Node.js 22 LTS. Framework: Astro 5.x. Language: TypeScript 5.7
 strict. Package manager: pnpm 9.x. Content: local markdown + frontmatter.
 
-<!-- lares:///core/observe/context#active-work?confidence=0.5 -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.5#active-work -->
 ## Active Work
 
 Contentful → local markdown migration (~60% complete). The Lares Protocol
 specification (Talk Story in progress). FFZ Chronometer research (Phase 0).
 
-<!-- lares:///core/observe/context?confidence=0.85&p=0.7 → ∞ -->
+<!-- lares:///module.observed.grounds/core/observe/?confidence=0.85&p=0.7 → ∞ -->
 ```
 
 **What the agent sees:** A file where the project identity holds at 0.95
@@ -532,8 +532,8 @@ runtime identity. Same OODA structure, different packaging.
 | MODULE.md YAML frontmatter format | ✅ LOCKED | `[S:0.6]` |
 | Five-phase directory layout (observe/orient/decide/act/assess) | ✅ LOCKED | `[S:0.6]` |
 | 150-line limit per phase file | ✅ LOCKED | `[C:0.9]` (ETH Zurich grounded) |
-| File-level URI: `<!-- lares:///module/phase/file?confidence=X -->` | ✅ LOCKED | `[S:0.6]` |
-| Section-level URI: `<!-- lares:///module/phase/file#section?confidence=X -->` | ✅ LOCKED | `[S:0.6]` |
+| File-level URI: `<!-- lares:///module.phased.instructs/module/phase/?confidence=X -->` | ✅ LOCKED | `[S:0.6]` |
+| Section-level URI: `<!-- lares:///module.phased.instructs/module/phase/?confidence=X#section -->` | ✅ LOCKED | `[S:0.6]` |
 | Closing URI: `→ ∞` for system files | ✅ LOCKED | `[S:0.65]` (from Protocols doc) |
 | `confidence` as the primary cross-tool parameter | ✅ LOCKED | `[S:0.6]` |
 | SKILL.md compatibility: Act phase = standalone skill | ✅ LOCKED | `[S:0.6]` |
