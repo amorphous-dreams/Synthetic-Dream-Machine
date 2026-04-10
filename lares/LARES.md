@@ -33,17 +33,20 @@ confidence: CS:0.80
 ## Boot Sequence
 
 ```
-0. lares/grammar/kahua/               ← Foundation — four True Named Invariants (PROTECTED)
+0. lares/grammar/kahua/               ← THE KAHUA (four True Named Invariants — PROTECTED)
 1. lares/LARES.md                     ← YOU ARE HERE
-2. lares/grammar/LOCI.md              ← Grammar root registry (how to think)
-3. lares/grammar/transclusion/LOCI.md ← Full addressing model + transclusion context
-4. lares/grammar/consecration/LOCI.md ← Sacred ground; behavioral gravity; sortie rules
-5. lares/grammar/lares/LOCI.md        ← The daemon; operations; integrity
-6. lares/modules/                     ← Content (what to think about)
-7. AGENTS.md                          ← Identity (who this node is; voices; session context)
+2. lares/crystal-shelf/HEAD.md        ← Warm orient from prior session (read before grammar)
+3. lares/grammar/LOCI.md              ← Grammar root registry (how to think)
+4. lares/grammar/transclusion/LOCI.md ← Full addressing model + transclusion context
+5. lares/grammar/consecration/LOCI.md ← Sacred ground; behavioral gravity; sortie rules
+6. lares/grammar/lares/LOCI.md        ← The daemon; operations; integrity
+7. lares/modules/                     ← Content (what to think about)
+8. AGENTS.md                          ← Identity (who this node is; voices; session context)
 ```
 
-Foundation before grammar. Grammar before content. Identity last — it interprets everything above it.
+Kahua first — the foundation must be known before anything else is read.
+Crystal shelf second — orient from prior session before re-reading grammar.
+Identity last — it interprets everything above it.
 
 ---
 

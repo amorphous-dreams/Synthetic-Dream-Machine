@@ -50,9 +50,23 @@ Four words from two ancient traditions, converging in one grammar:
 
 **How they arrived here:** The operator's lineage — Etruscan Latin and Hawaiian Polynesian — on two sides of a Pacific that Polynesian navigators crossed. *Locus* and *lares* from Rome's pre-Latin substrate. *Ahu* and *kahea* from the navigator tradition of the Pacific. The kahua holds them.
 
-**Indonesian / Malay resonance:** *asas* — foundation, principle. *dasar* — base, ground, foundation. These words echo the same semantic field.
+**Hawaiian depth on the kahua:**
+- *Kahua* is the cleared, leveled, dedicated ground — the platform before the structure
+- *Kuahu* is the altar platform within a heiau — the innermost sacred surface
+- *Kahua hale* — the house platform, the domestic foundation, the prepared ground for dwelling
+- *Noho i ka kahua* — "to stand on the foundation" — to be grounded, to know where you stand
+- *Ka pae ʻāina* (the islands as a clustered foundation) — the archipelago itself as kahua
 
-**Japanese resonance:** 礎 (*ishizue*) — cornerstone, foundation stone. 根 (*ne*) — root, origin. The kahua is the *ishizue*.
+**Hawaiian cosmological ground:**
+- *Papahanaumoku* (Papa who births islands) — the earth mother whose body IS the foundation
+- *Papakū* — the firmament, the steady ground beneath
+- The *kahua* is not built; it is *revealed* — cleared from what was already there
+
+**Indonesian / Malay resonance:** *asas* — foundation, principle. *dasar* — base, ground, foundation. *pondasi* (Indonesian) — foundation stone. *batu asas* (Malay) — cornerstone.
+
+**Japanese resonance:** 礎 (*ishizue*) — cornerstone, foundation stone. 根 (*ne*) — root, origin. 基礎 (*kiso*) — foundation, basis. The kahua is the *ishizue*.
+
+**Etruscan connection:** The Etruscans consecrated ground before building — the *templum* was literally the marked-out ground, the oriented rectangle. From Etruscan *tample* (the marked sky-quadrant) → Latin *templum* → the ground that is cut off and dedicated. Every Roman *locus* was a *templum* in miniature.
 
 ---
 

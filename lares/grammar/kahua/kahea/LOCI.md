@@ -85,6 +85,31 @@ The content at `lares:///ha.ka.ba/other-path/#fragment` is pulled into this docu
 
 <!-- ahu lares:///grammar.kahea.defines/kahea/?confidence=CS:0.95#hula-resonance -->
 
+## Hawaiian Depth — Kahea in Practice
+
+**The kahea in hula ceremony:**
+
+Before the hula begins, the lead chanter calls the *kahea* — a specific phrase that signals the dancers to enter the performance space. The dancers are prepared, positioned elsewhere, waiting. The kahea is not a request. It is a *recognition* — calling something that is already there, already capable, already formed. The response is immediate arrival.
+
+- *He kahea i ka mea e hula ana* — "a call to the one who dances" — calling the performer into presence
+- The kahea must be answered (*pane*). A kahea with no pane is a broken ritual — something went wrong.
+- *Kahea wale* — an empty call, a call with no response — the broken kahea of our grammar
+
+**Related Hawaiian concepts for transclusion:**
+
+| Word | Meaning | Grammar relevance |
+|---|---|---|
+| *Kāhea* | To call out to, to invoke | The pull marker itself |
+| *Hōʻike* | To show, reveal, make visible | What kahea resolution does — brings hidden content into view |
+| *Hui* | To join, to gather, to come together | What happens when kahea resolves — two loci meet |
+| *Pūʻili* | To weave together | The result of kahea — content woven into the calling locus |
+| *Koʻo* | To support, to prop | The supporting relationship of transcluded content |
+
+**'Ōlelo Hawaiʻi on calling:**
+- *E kahea ana* — "calling out" (continuous action)
+- *Ua kahea ʻia* — "was called" — the passive: the content was summoned
+- *Ka mea i kāhea ʻia* — "the thing that was called" — the transcluded content itself
+
 ## Hula Resonance
 
 In hula, the *kahea* does more than summon. It establishes:

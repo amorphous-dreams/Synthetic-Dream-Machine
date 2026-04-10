@@ -68,6 +68,24 @@ The fragment (`#fragment-name`) is what external references navigate to. The ahu
 
 <!-- ahu lares:///grammar.ahu.defines/ahu/?confidence=CS:0.95#placement -->
 
+## Hawaiian Depth — Ahu Types
+
+Not all ahu are the same. Hawaiian tradition distinguishes:
+
+| Type | Description | Grammar analog |
+|---|---|---|
+| *Ahu pohaku* | Stacked stone cairn — trail marker, boundary marker | Section waypoint in a LOCI.md |
+| *Ahu heiau* | Altar platform within a sacred complex — the innermost working surface | The high-confidence section (`[CS:0.90+]`) |
+| *Ahu ko'a* | Fishing shrine — small coastal stone where fishermen offered before going out | Pre-sortie orientation point |
+| *Ahu pā* | Boundary marker of a land division (*ahupuaʻa*) | The kapu line between loci |
+| *Ahu a Māui* | "The cairn of Māui" — mythic stacked islands | The grammar root itself |
+
+**Pōhaku** (stone): in Hawaiian thought, stones are not inert — *nā pōhaku* (the stones) are ancestors, witnesses, holders of *mana*. An ahu is not merely a marker; it is a site of accumulated mana. An ahu in a LOCI.md accumulates navigational trust — it is placed where many readers walk, and that traffic is itself a form of witness.
+
+**Koʻa** (coral head, fishing shrine, navigational reference): the *koʻa* marked fishing grounds visible from shore. Navigators triangulated from *koʻa* to *koʻa*. An ahu in a LOCI.md is a *koʻa* — a known point from which you can take a bearing to other content.
+
+**'Ike aku, 'ike mai** (to see and be seen): a Hawaiian navigational and relational principle. An ahu is placed where it can *be seen*. In the grammar: an ahu must be at a point that external references can resolve to. A hidden ahu is a broken marker.
+
 ## Placement Conventions
 
 | Situation | Place ahu here? |

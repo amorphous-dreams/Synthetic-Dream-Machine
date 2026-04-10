@@ -70,6 +70,19 @@ A locus is NOT a transient exchange (those use HUD pair format). It is NOT a nav
 
 <!-- ahu lares:///grammar.locus.defines/locus/?confidence=CS:0.95#lineage -->
 
+## Hawaiian Resonance — Wahi Pana
+
+**Wahi pana** (Hawaiian): *storied places* — legendary sites whose names encode events, genealogies, and knowledge. Every wahi pana is a named place that holds its history in its name. You do not merely go there; you enter its story.
+
+- *Wahi* — place, site, space, position
+- *Pana* — storied, legendary, famous — to throb with accumulated meaning
+- *Inoa* — name; a Hawaiian place-name IS the story of what happened there
+- *Kuleana* — right, responsibility, authority over a place — the obligation that comes with addressing something
+
+**The locus as wahi pana:** When you open a locus with `<!-- ∞ → lares:///... -->`, you are naming a wahi pana — a place with a story, addressable by name, holding its contents for those who know to go there. The URI is the *inoa*. The content is the *mele* (chant) of that place.
+
+**'Āina** (land, that which feeds): in Hawaiian thought, the land is not property — it is relationship. A locus is *'āina* in the same sense: the content is not owned, it is held in trust, feeding those who come to it.
+
 ## Memory Palace Lineage
 
 Latin *locus* (place) → Cicero's *loci* in *De Oratore* (55 BCE) → *Ad Herennium* method of loci →
