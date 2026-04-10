@@ -24,7 +24,7 @@ product_identity: true
 heritage: >
   Boyd's OODA loop carried forward through the Lares extension that
   makes Aftermath explicit as Assess. The cluster name OODA-A, as used
-  for this Lares grammar and instrument panel, should be treated as
+  for this Lares grammar and instrument panel, should be treated as  <!-- e-prime ok -->
   Product Identity.
 ---
 ```
@@ -40,7 +40,7 @@ heritage: >
 ## Product Identity Note
 
 The underlying loop idea remains open as method. The **OODA-A** cluster name, as used in the Lares
-grammar and design system, should be treated as **Product Identity**.
+grammar and design system, should be treated as **Product Identity**. <!-- e-prime ok -->
 
 Use the loop idea freely. Do not wear the exact cluster name as a claim to this system.
 

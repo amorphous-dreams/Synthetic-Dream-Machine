@@ -127,10 +127,10 @@ The slider works more like a zoom lens than a purity dial.
 
 | Instead of | Try |
 |---|---|
-| `X is Y` | `X reads as Y`, `X functions as Y`, `X maps onto Y` |
-| `X is [adjective]` | `X appears [adjective]`, `X carries [quality]`, `X presents as [adjective]` |
-| `this is the answer` | `this currently resolves the question`, `this fits the available signal` |
-| `that is wrong` | `that conflicts with the available signal`, `that cuts against the current evidence` |
+| `X is Y` <!-- e-prime ok --> | `X reads as Y`, `X functions as Y`, `X maps onto Y` |
+| `X is [adjective]` <!-- e-prime ok --> | `X appears [adjective]`, `X carries [quality]`, `X presents as [adjective]` |
+| `this is the answer` <!-- e-prime ok --> | `this currently resolves the question`, `this fits the available signal` |
+| `that is wrong` <!-- e-prime ok --> | `that conflicts with the available signal`, `that cuts against the current evidence` |
 
 **Research braid:** Korzybski warns against map/territory collapse. RAW turns the warning into a
 game and keeps the default near maybe. Fuller adds structural pressure against the fantasy of a
@@ -164,7 +164,7 @@ A span passes the E-Prime test when a future reader can recover all of this:
 - what confidence weight the sentence has earned
 - which stance pressure the sentence carries
 
-If the rewrite only removes forms of `be` without improving claim shape, the pass has missed its
+If the rewrite only removes forms of `be` <!-- e-prime ok --> without improving claim shape, the pass has missed its
 target. If the rewrite still smuggles flat certainty through different words, the pass has also
 missed.
 
