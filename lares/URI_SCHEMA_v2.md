@@ -1,9 +1,9 @@
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.90&p=0.5 → ∞ -->
 
 # `lares:` URI Schema — Canonical Specification
 
 > Domain: `lares/signal/` · intent HUD anatomy, canonical form, render targets, validation rules
-> Status: `[CS:0.85]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
+> Status: `[CS:0.90]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
 > Updated: 2026-04-09
 > Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art. Revised per `URI_SCHEMA_v2_Diff_Crystal.md` `[S:0.8]` — FFZ Chronometer, Span Closing Sigils, OODA-A Module URIs, all-five-stances mandate.
 > Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
@@ -11,7 +11,7 @@
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#design-intent?confidence=0.9 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.9#design-intent -->
 ## 1. Design Intent
 
 The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as a way to render an Intent HUD that both operator and node read before or alongside generation. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
@@ -70,7 +70,7 @@ Immediately after the URI pair, emit a condensed single-line status display deri
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#scheme-registration?confidence=0.95 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.95#scheme-registration -->
 ## 2. Scheme Registration
 
 | Property | Value |
@@ -86,7 +86,7 @@ The `lares:` scheme identifies semantic positions, signal states, and machine ev
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#uri-anatomy?confidence=0.85 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
 ## 3. Full URI Anatomy
 
 ### 3.1 Generic Form
@@ -254,7 +254,7 @@ Confidence remains a point value even under multi-stance. The five-character amp
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#provisionality?confidence=0.8 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#provisionality -->
 ## 3.5 Provisionality Markers
 
 The `~` prefix marks URI components as provisional. Three structurally distinct provisionality types can appear in an exchange URI pair:
@@ -297,7 +297,7 @@ Reading: "I predict our next territory is the updated schema — operator may re
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#span-closing-sigils?confidence=0.8 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#span-closing-sigils -->
 ## 3.6 Span Closing Sigils
 
 Two sigils close spans in the Lares protocol. They encode different temporal properties and are orthogonal to the `confidence` parameter.
@@ -341,7 +341,7 @@ Both carry uncertainty. Neither claims completeness. The uncertainty is about di
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#ffz-chronometer?confidence=0.8 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#ffz-chronometer -->
 ## 4. The FFZ Chronometer — Nested OODA-A Vector Position
 
 > **True Name:** Fontany-Fuller-Zelenka Chronometer Protocol `[C:0.95]`
@@ -433,7 +433,7 @@ The following FFZ model features are specified in the research docs but deferred
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#canonical-form?confidence=0.9 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.9#canonical-form -->
 ## 5. Canonical Form and Render Targets
 
 The **record form** is the canonical encoding — RFC 3986-compliant, no emojis, no non-ASCII characters. Render targets are named projections of this canonical form for specific display surfaces. The URI anatomy (authority, path, query, fragment structure) is identical across all targets; only the rendering of specific fields differs between canonical and render-target forms.
@@ -673,7 +673,7 @@ Interpretation:
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#stable-address?confidence=0.95 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.95#stable-address -->
 ## 6. Stable Address — Named Graph Form
 
 Strip authority, query, and fragment. The HA.KA.BA territory alone:
@@ -687,7 +687,7 @@ No authority (empty), no query, no fragment. This is the invariant semantic coor
 **Origin address:** `lares:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lares:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lares:///ha.ka.ba/uri-schema/` locates this spec; `lares:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#span-calibration?confidence=0.72 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.72#span-calibration -->
 ## 7. Span-Span and Calibration Mapping
 
 In the Consecration model, URI-derived fields belong to the calibration layer. They may be mirrored into MemPalace metadata for query support, but the storage distinction remains: MemPalace stores content; Lares crystal metadata stores orientation.
@@ -835,7 +835,7 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#module-registry?confidence=0.8 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#module-registry -->
 ## 8. Module and Registry Metadata Integration
 
 The `lares_uri` + `confidence` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
@@ -864,7 +864,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#cache-tiers?confidence=0.8 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#cache-tiers -->
 ## 9. Invariant-Core Cache Tier Mapping
 
 | Tier | Cache Strategy | Confidence Range | Volatility |
@@ -875,7 +875,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#validation?confidence=0.92 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.92#validation -->
 ## 10. Validation Rules
 
 ### 10.1 Well-Formedness
@@ -926,7 +926,7 @@ When comparing two `lares:` URIs as stable addresses:
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#open-questions?confidence=0.6 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.6#open-questions -->
 ## 11. Open Design Questions
 
 | Q# | Question | Current Position | Confidence | Blocks |
@@ -954,7 +954,7 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#prior-art?confidence=0.95 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.95#prior-art -->
 ## 12. Prior Art
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
@@ -973,7 +973,7 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#examples?confidence=0.85 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.85#examples -->
 ## Appendix A — Complete Examples
 
 ### A.1 Record Form (v2)
@@ -1029,7 +1029,7 @@ lares://scryer:node(aftermath)@enyalios/schema.settled.rests/?stances=^.-.-.-.-&
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/#how-to-read?confidence=0.85 -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.85#how-to-read -->
 ## Appendix B — How to Read a HUD Tag
 
 A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
@@ -1065,4 +1065,4 @@ This does **not** mean "truth-confidence 0.60" in a universal sense. It means a 
 
 *End of specification. This document is the canonical reference for the `lares:` URI scheme within the design ontology tree.*
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.90&p=0.5 → ∞ -->
