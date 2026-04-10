@@ -1,8 +1,9 @@
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 → ∞ -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 -->
 
 # Talk Story — What It Is
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#origin -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#origin -->
 ## Origin
 
 Talk story comes from Hawaiian/Polynesian usage. Robert Anton Wilson
@@ -12,7 +13,8 @@ something that earns attention before making claims. Then enter the
 Talk Story itself. Joshua Fontany transcribed the opening of that
 presentation. The lineage runs through this work directly.
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#mechanics -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#mechanics -->
 ## Core Mechanics
 
 - Talk Story is the mandatory start frame of every Lares conversation
@@ -23,7 +25,8 @@ presentation. The lineage runs through this work directly.
 - No action occurs without prior observation, orientation, and decision
 - Consensus before action, at every scale
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#two-track -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#two-track -->
 ## Two-Track Model
 
 Every sprint runs two tracks. Talk Story serves both.
@@ -35,4 +38,4 @@ Every sprint runs two tracks. Talk Story serves both.
 
 A sprint is not closed until both tracks are updated.
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 → ∞ -->
+<!-- → ? -->

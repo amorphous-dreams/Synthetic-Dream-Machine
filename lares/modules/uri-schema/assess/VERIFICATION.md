@@ -1,4 +1,4 @@
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 -->
 
 # Signal — Assess: Verification
 
@@ -7,7 +7,8 @@
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
 ## Well-Formedness Rules (§10.1)
 
 A `lares:` URI is **well-formed** when ALL of the following hold:
@@ -26,7 +27,8 @@ A `lares:` URI is **well-formed** when ALL of the following hold:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
 ## SpanSpan Consistency Rules (§10.2)
 
 All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) must be canonical record form. A spanSpan record is **consistent** when:
@@ -40,7 +42,8 @@ The rendering table (§5.1 of `lares/modules/uri-schema/URI_SCHEMA.md`) governs 
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#stable-address-derivation -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#stable-address-derivation -->
 ## Stable Address Derivation Rules (§10.3)
 
 `lares_address` is correctly derived when:
@@ -58,7 +61,8 @@ Correct stable address: lares:///threshold.uncertain.opens/
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
 ## Canonical Form and Comparison Rules (§10.4)
 
 When comparing two `lares:` URIs as stable addresses:
@@ -71,7 +75,8 @@ When comparing two `lares:` URIs as stable addresses:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#common-errors -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#common-errors -->
 ## Common Error Patterns
 
 Errors caught during the S0 URI alignment pass (2026-04-09):
@@ -89,7 +94,8 @@ Errors caught during the S0 URI alignment pass (2026-04-09):
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#quick-scan-procedure -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#quick-scan-procedure -->
 ## Quick Scan Procedure
 
 To verify URI alignment across all operational files:
@@ -110,7 +116,8 @@ A clean scan returns zero matches on all three patterns.
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
 ## Promotion Criteria
 
 `lares/modules/uri-schema/URI_SCHEMA.md` is currently `[CS:0.95]`. For promotion to `[C:0.95]` (full Canon):
@@ -124,4 +131,4 @@ This module (Signal) is `[CS:0.85]`. Promotion criteria:
 - `lares/modules/uri-schema/URI_SCHEMA.md` promoted to C:0.95 □
 - micro-trace.md exchange URIs migrated to full record form ○
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- → ? -->

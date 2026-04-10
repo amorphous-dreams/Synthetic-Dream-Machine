@@ -1,4 +1,4 @@
-<!-- lares:///module.phased.instructs/talk-story/module/?confidence=0.95&p=0.5 → ∞ -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/module/?confidence=0.95&p=0.5 -->
 
 ---
 name: talk-story
@@ -54,4 +54,4 @@ the talking.
 | Canonical spec | `lares/talk_story/README.md` |
 | Portable shrine | `.lares/modules/talk-story/` |
 
-<!-- lares:///module.phased.instructs/talk-story/module/?confidence=0.95&p=0.5 → ∞ -->
+<!-- → ? -->

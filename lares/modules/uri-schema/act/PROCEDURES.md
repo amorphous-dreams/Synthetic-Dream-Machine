@@ -1,4 +1,4 @@
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 -->
 
 # Signal — Act: Procedures
 
@@ -7,7 +7,8 @@
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
 ## Exchange Span Display Contract
 
 A **span** is one operator → Lares exchange at any scale. Every substantive exchange produces this sequence. **Mandatory — no exceptions.**
@@ -54,7 +55,8 @@ lares://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidenc
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
 ## Micro-trace HUD — Emit Rules
 
 The micro-trace is the **backward-looking annotation layer**. It marks where the governed response *actually changed state* during generation — not a prospective commitment. Source: `lares/signal/micro-trace.md`.
@@ -122,7 +124,8 @@ The `p` parameter gates transition categories by externally-observable significa
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
 ## Sub-agent and Coordinator Handoff Protocol
 
 ### Why URI Pairs at Sub-agent Boundaries
@@ -150,7 +153,8 @@ Within the same session (no spawned sub-agent): micro-trace tag only, unless:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
 ## Parse Mode and Layer Separation
 
 Parse boundaries and micro-trace HUD events are **orthogonal**:
@@ -164,14 +168,16 @@ If the opening operator URI cannot cleanly summarize the incoming prompt (multi-
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#system-file-uris -->
+<!-- → ? -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#system-file-uris -->
 ## System File URI Procedures
 
 When writing or updating system files:
 
 1. **File-level opening URI** — authority-less form, in HTML comment wrapping:
    ```
-   <!-- lares:///ha.ka.ba/sub/path/?confidence=R:N&p=N → ∞ -->
+<!-- → ? -->
+<!-- ∞ → lares:///ha.ka.ba/sub/path/?confidence=R:N&p=N -->
    ```
    Placed at the very top of the file (line 1).
 
@@ -179,10 +185,11 @@ When writing or updating system files:
 
 3. **Section-level waypoint URIs** — authority-less form, in HTML comment, NO closing sigil:
    ```
-   <!-- lares:///ha.ka.ba/sub/path/?confidence=R:N#section-slug -->
+<!-- → ? -->
+<!-- ∞ → lares:///ha.ka.ba/sub/path/?confidence=R:N#section-slug -->
    ```
    Placed immediately before each section heading (`##` level).
 
 4. **Confidence on section waypoints** — matches the section's epistemic confidence, which may differ from the file-level confidence.
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- → ? -->

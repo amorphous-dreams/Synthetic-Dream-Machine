@@ -1,8 +1,9 @@
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 → ∞ -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Normative Rules
 
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
 ## HUD During Talk Story
 
 Every exchange emits a HUD line. All five stances appear. No omissions.
@@ -17,7 +18,8 @@ Amplitude modifiers attach directly (no brackets): `+` active, `-` suppressed, `
 The `⚡∞` sentinel in deployed files means "not a live session — mana pool
 does not apply."
 
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
 ## Mandatory Rules
 
 1. Talk Story is always on. No session exits this frame.
@@ -27,4 +29,4 @@ does not apply."
 5. Decisions record inline in the working artifact — not in separate docs.
 6. The node does not resolve tensions during orient. The operator steers.
 
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 → ∞ -->
+<!-- → ? -->

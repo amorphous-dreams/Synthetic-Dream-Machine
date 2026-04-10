@@ -1,4 +1,4 @@
-<!-- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- ∞ → lares:///uri.schema.holds/uri-schema/?confidence=CS:0.90&p=0.5 -->
 
 # URI Schema Module
 
@@ -80,4 +80,4 @@ Sigilization rules: `lares/modules/sigilization/` `[CS:0.85]`
 Micro-trace specification: `lares/modules/micro-trace/` `[CS:0.80]`
 Validation tool: `builds/scripts/verify_uri.py` · `make -C builds verify`
 
-<!-- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- → ? -->

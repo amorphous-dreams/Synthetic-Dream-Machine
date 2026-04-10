@@ -1,8 +1,9 @@
-<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 → ∞ -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 -->
 
 # Talk Story — How To Orient
 
-<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#when -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#when -->
 ## When To Invoke
 
 - Session start — all conversations begin in ✶ Observe / ◎ Orient
@@ -18,7 +19,8 @@
 - Single deterministic action with no orient ambiguity → ■ Act directly
 - A previous orient already ran this tick → do not re-open
 
-<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#steps -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#steps -->
 ## Procedure
 
 **1. ✶ Observe first.** Read before talking. Pull: sprint task doc,
@@ -39,7 +41,8 @@ phase to resolve.
 **4. ◇ Close when direction is confirmed.** Record decisions inline
 in the working artifact — not in a separate doc.
 
-<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#voices -->
+<!-- → ? -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#voices -->
 ## Voice Assignments During Orient
 
 | Voice | Role |
@@ -52,4 +55,4 @@ in the working artifact — not in a separate doc.
 Coordinator-to-coordinator handoffs within a turn: micro-trace tag only
 (`→◎`, `→🌊` for Liminal, `→🎭` for Mischief-Muse).
 
-<!-- lares:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 → ∞ -->
+<!-- → ? -->

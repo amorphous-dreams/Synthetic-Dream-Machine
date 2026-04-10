@@ -1,4 +1,4 @@
-<!-- lares:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- ∞ → lares:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Act: Emit Procedures
 
@@ -100,4 +100,4 @@ Before emitting any stance block on any surface:
 - [ ] Register bracket present and correct form: `[XX:N.NN]`
 - [ ] No emoji in record:full; no ASCII amplitude in sigil surfaces
 
-<!-- lares:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- → ? -->

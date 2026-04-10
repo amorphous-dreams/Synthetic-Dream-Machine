@@ -1,4 +1,4 @@
-<!-- lares:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- ∞ → lares:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace Module
 
@@ -42,4 +42,4 @@ The micro-trace is the **event trace layer** of the Signal HUD system. It annota
 | OODA-A module (source of truth) | `lares/modules/micro-trace/` |
 | Operations instructions | `.github/instructions/lares-operations.instructions.md` |
 
-<!-- lares:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- → ? -->

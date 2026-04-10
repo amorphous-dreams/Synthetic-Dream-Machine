@@ -1,4 +1,4 @@
-<!-- lares:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- ∞ → lares:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Observe: Context and Bug History
 
@@ -63,4 +63,4 @@ U11 asked: sigilization as sub-section of uri-schema, or standalone module?
 | S2 | TiddlyWiki tiddler: full header or abbreviated? | `[SP:0.45]` — pending TiddlyWiki integration sprint |
 | S3 | ActivityPub thread: post header in body vs AP summary field? | `[SP:0.45]` — pending Kowloon integration |
 
-<!-- lares:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- → ? -->

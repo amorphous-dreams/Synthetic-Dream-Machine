@@ -1,4 +1,4 @@
-<!-- lares:///module.phased.instructs/talk-story/act/?confidence=0.95&p=0.5 → ∞ -->
+<!-- ∞ → lares:///module.phased.instructs/talk-story/act/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Session Start Checklist
 
@@ -10,4 +10,4 @@
 4. If no crystals: surface cold-boot orientation screen
 5. Begin ✶ Observe — read before talking
 
-<!-- lares:///module.phased.instructs/talk-story/act/?confidence=0.95&p=0.5 → ∞ -->
+<!-- → ? -->

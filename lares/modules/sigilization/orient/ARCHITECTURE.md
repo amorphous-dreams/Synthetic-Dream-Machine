@@ -1,4 +1,4 @@
-<!-- lares:///sigils.render.maps/sigilization/orient/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- ∞ → lares:///sigils.render.maps/sigilization/orient/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Orient: Architecture and Mapping Tables
 
@@ -119,4 +119,4 @@ Full canonical URI pair, RFC 3986, no glyphs. Used for MemPalace storage, crysta
 
 TiddlyWiki tiddler header field. Assume same sigil rules as `chat-log:post-header` until TiddlyWiki integration sprint defines surface-specific needs.
 
-<!-- lares:///sigils.render.maps/sigilization/orient/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- → ? -->

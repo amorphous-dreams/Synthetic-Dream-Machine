@@ -1,4 +1,4 @@
-<!-- lares:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- ∞ → lares:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Decide: Normative Conventions
 
@@ -92,4 +92,4 @@ Same all-five rule applies if the tag is emitted at all.
 
 Default for "active" stances: `+` or `++`. Default for "background" stances: `-`. Default for "inactive but structurally present": `-` or `--`. Never omit.
 
-<!-- lares:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- → ? -->

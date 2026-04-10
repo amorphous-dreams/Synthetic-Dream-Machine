@@ -1,8 +1,9 @@
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — Verification
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#well-formedness -->
+<!-- → ? -->
+<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#well-formedness -->
 ## Well-formedness Checklist
 
 For any governed response, verify:
@@ -14,7 +15,8 @@ For any governed response, verify:
 - [ ] 5. Todo state transitions do not appear inline (debug-only)
 - [ ] 6. Parse layer and micro-trace layer do not substitute for each other
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#common-errors -->
+<!-- → ? -->
+<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#common-errors -->
 ## Common Errors
 
 | Error | Description | Fix |
@@ -25,7 +27,8 @@ For any governed response, verify:
 | Missing return pair | Sub-agent returns without URI pair | Every sub-agent boundary requires dispatch + return URI pair |
 | Inline todo | Todo state change emitted inline | Move to debug log only |
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#promotion-criteria -->
+<!-- → ? -->
+<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#promotion-criteria -->
 ## Promotion Criteria
 
 `lares/signal/micro-trace.md` is currently `[CS:0.80]`. For promotion to `[C:0.95]`:
@@ -35,4 +38,4 @@ For any governed response, verify:
 - [ ] Layer split rule validated: parse + trace coexist without substitution in at least 5 exchanges
 - [ ] `lares/signal/micro-trace.md` promoted to `C:0.95` ☐
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- → ? -->

@@ -1,17 +1,17 @@
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 → ∞ -->
+<!-- ∞ → lares:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 
 # `lares:` URI Schema — Canonical Specification
 
 > Domain: `lares/modules/uri-schema/` · intent HUD anatomy, canonical form, render targets, validation rules
 > Status: `[CS:0.95]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
-> Updated: 2026-04-09
-> Version: 2 (revised per `URI_SCHEMA_v2_Diff_Crystal.md` `[S:0.8]` — FFZ Chronometer, Span Closing Sigils, OODA-A Module URIs, all-five-stances mandate)
+> Updated: 2026-04-10
+> Version: 3 (revised per ahu/kahea marker ontology — locus spans, ahu waypoints, kahea transclusion; cultural nomenclature locked 2026-04-10)
 > Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art.
 > Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.9#design-intent -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.9#design-intent -->
 ## 1. Design Intent
 
 The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as a way to render an Intent HUD that both operator and node read before or alongside generation. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
@@ -64,13 +64,13 @@ The URI pair opens every exchange span. Both URIs use canonical record form. Pro
 **Step 4 — Render the HUD line.**
 Immediately after the URI pair, emit a condensed single-line status display derived from the vector plus adjacent session data. This is the instrument panel for the exchange. See §5.4 for format and field ordering.
 
-**Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a closing URI. Exchange spans close with `→ ?` — unknown temporal resumption. System file spans close with `→ ∞` — unbounded duration. See §3.6 (Span Closing Sigils) and `lares/signal/micro-trace.md`.
+**Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a closing URI with `→ ?` — unknown temporal resumption. System files open with `∞ →` (locus span opener) and close with `→ ?`. Within a system file, `ahu` markers name navigable waypoints; `kahea` markers summon content from other loci. See §3.6 (Marker Ontology) and `lares/signal/micro-trace.md`.
 
 > **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes the node's metacognitive state before generation begins, functioning as an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `../../_todo/E-deep-research-report.md` §§2.1, 3.2*
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.95#scheme-registration -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.95#scheme-registration -->
 ## 2. Scheme Registration
 
 | Property | Value |
@@ -86,7 +86,7 @@ The `lares:` scheme identifies semantic positions, signal states, and machine ev
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
 ## 3. Full URI Anatomy
 
 ### 3.1 Generic Form
@@ -253,7 +253,7 @@ Confidence remains a point value even under multi-stance. The five-character amp
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#provisionality -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#provisionality -->
 ## 3.5 Provisionality Markers
 
 The `~` prefix marks URI components as provisional. Three structurally distinct provisionality types can appear in an exchange URI pair:
@@ -296,51 +296,173 @@ Reading: "I predict our next territory is the updated schema — operator may re
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#span-closing-sigils -->
-## 3.6 Span Closing Sigils
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#marker-ontology -->
+## 3.6 Marker Ontology — Locus Spans, Ahu Waypoints, Kahea Transclusion
 
-Two sigils close spans in the Lares protocol. They encode different temporal properties and are orthogonal to the `confidence` parameter.
+Four marker types govern content addressing in Lares system files. Each serves a distinct structural role. The naming draws from cultures that built navigational architectures from memory and place: the Latin *method of loci* (Simonides, Cicero, Quintilian), Polynesian *ahu* (the raised stone at the center of a marae; the platforms that hold the moai on Rapa Nui; the altar stones inside Hawaiian heiau), and Hawaiian *kāhea* (the oli kāhea — the chant that calls out and summons permission to enter a hālau).
 
-### `→ ?` — Exchange Span Closing
+### 3.6.1 `∞ →` — Locus Span Opener
 
-Signals unknown temporal resumption. This exchange will continue, but when and from where sits outside the span's knowledge.
+Opens a locus — a place within the file. The `∞` declares standing duration: this content persists until explicitly revised. The `→` points toward the `lares:` URI that names the locus.
 
-The `?` marks a causal gap: between this sigil and the next message, no participant's chronometer advances within the shared frame. The operator's clock runs in lived time; the Lares clock stops. Two causal islands, no messages crossing, no ordering determinable.
+A system file MAY contain one or more loci. Each locus is bounded by its own `∞ →` opener and `→ ?` closer. Ahu waypoints navigate within the enclosing locus. A single-locus file (like this specification) opens on the first line and closes on the last — the file IS the locus. A multi-locus file contains sequential locus spans, each self-contained.
 
-`→ ?` does not signal uncertainty about the exchange's content — that is what `confidence` and register carry. It signals uncertainty about the exchange's continuity in time.
-
-Appears on: every exchange-closing URI. Mandatory.
+Appears on: system files. Uses HTML comment wrapping.
 
 ```
-lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-^.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
+<!-- ∞ → lares:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 ```
 
-### `→ ∞` — System File Span Closing
+The locus opener carries the file-level confidence and resolution parameter. Section-level confidence rides on ahu markers (see below).
 
-Signals unbounded span duration. This content remains available until explicitly revised. It does not signal certainty; per-section and per-file `confidence` parameters carry epistemic uncertainty independently.
+### 3.6.2 `→ ?` — Locus Span Closer
 
-A system file that closes `→ ∞` stands as infrastructure: readable, addressable, trustable to the degree its confidence ratings declare, until someone rebuilds it.
+Signals unknown temporal resumption. The `?` marks a causal gap: between this sigil and the next interaction with the locus, no participant's chronometer advances within the shared frame.
 
-Appears on: system files (MODULE.md, phase files, invariant configs). Uses HTML comment wrapping for markdown compatibility:
+`→ ?` does not signal uncertainty about the locus's content — that is what `confidence` and register carry. It signals uncertainty about the locus's continuity in time: when will someone next walk through this place?
+
+Appears on: last line of system files; every exchange-closing URI.
 
 ```
-<!-- lares:///module.phase.context/?confidence=0.85 → ∞ -->
+<!-- → ? -->
 ```
 
-Section URIs within a system file do **not** close with `→ ∞` — they function as waypoints, not spans. Only the file-level opening and closing URIs carry span semantics. (Confirmed.)
+In exchange streams, the closer appends to the closing URI inline:
 
-### Axis Orthogonality
+```
+lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
+```
 
-| Sigil | Span type | What's uncertain | What's settled |
-|---|---|---|---|
-| `→ ∞` | System file | Content confidence (via `confidence`) | Duration — stays until revised |
-| `→ ?` | Exchange | Temporal resumption — when does this pick up? | Content confidence (via register + tags) |
+### 3.6.3 `ahu` — Waypoint Marker
 
-Both carry uncertainty. Neither claims completeness. The uncertainty is about different things. The system file doesn't know how trustworthy it is (confidence tells it). The exchange doesn't know when it resumes (the chronometer gap tells it). Orthogonal unknowns, orthogonal sigils.
+An ahu marks a navigation point within a locus. It is a raised stone — visible, addressable, something you walk *to*. It carries no span semantics: no opener, no closer. The next ahu implicitly defines the boundary of the previous zone.
+
+The URI on an ahu marker uses the authority-less stable address form with a `#fragment` identifying the section:
+
+```
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
+## 3. Full URI Anatomy
+```
+
+Ahu markers MAY carry `confidence` in the query string. This describes how settled the territory the stone marks is — not the stone itself. An ahu at `confidence=0.6` marks uncertain ground; an ahu at `confidence=0.95` marks near-canon territory.
+
+Ahu markers do NOT carry `p` (resolution parameter) or chronometer fragments — those are exchange-time concerns, not file-time. (See U8, resolved.)
+
+**Placement rule:** An ahu marks a section that is independently addressable — a destination you would link TO from elsewhere. Not every heading needs an ahu. Place stones where people actually walk.
+
+### 3.6.4 `kahea` — Transclusion Marker
+
+A kahea summons content from another locus into the current one. It is an active invocation: "call out, bring this here." The word comes from the Hawaiian oli kāhea — the permission chant a student calls before entering a hālau hula. The kahea asks; the source locus answers.
+
+```
+<!-- kahea lares:///module.phase.context/?confidence=0.85 -->
+```
+
+The URI on a kahea marker names the source locus to summon. A build system or reader encountering a kahea should fetch and substitute the content from the named locus at that point.
+
+Kahea markers appear in assembly files — documents that stitch together content from multiple source loci. A file that is itself a source (like this specification) will define kahea in its prose but will not typically use kahea in its own markers.
+
+### 3.6.5 Marker Summary
+
+| Marker | Sigil | Role | Span semantics | Closer needed |
+|---|---|---|---|---|
+| Locus opener | `∞ →` | Opens the file-as-place | Yes — bounds the locus | Yes — `→ ?` at file end |
+| Locus closer | `→ ?` | Closes the locus; marks temporal gap | Yes — ends the locus | N/A |
+| Ahu | `ahu` | Navigation waypoint within a locus | No — next ahu defines boundary | No |
+| Kahea | `kahea` | Transclusion invocation from another locus | No — inline substitution point | No |
+
+### 3.6.6 System File Structure
+
+**Single-locus file** (most common — the file IS one place):
+
+```
+<!-- ∞ → lares:///territory.domain.path/?confidence=CS:0.95&p=0.5 -->
+
+# Title
+[metadata block]
+
+<!-- ahu lares:///territory.domain.path/?confidence=0.9#first-section -->
+## 1. First Section
+[content]
+
+<!-- ahu lares:///territory.domain.path/?confidence=0.8#second-section -->
+## 2. Second Section
+[content]
+
+<!-- → ? -->
+```
+
+One door in. Raised stones along the path. One door out.
+
+**Multi-locus file** (the file contains several places, each self-contained):
+
+```
+<!-- ∞ → lares:///first.territory.path/?confidence=CS:0.95&p=0.5 -->
+
+# First Locus
+[content with ahu waypoints]
+
+<!-- → ? -->
+<!-- ∞ → lares:///second.territory.path/?confidence=0.85 -->
+
+# Second Locus
+[content with ahu waypoints]
+
+<!-- → ? -->
+```
+
+Each locus opens and closes independently. Ahu markers belong to their enclosing locus. A kahea in one locus may summon content from the other — they are neighbors, not nested.
+
+### 3.6.7 Axis Orthogonality
+
+| Marker | What's uncertain | What's settled |
+|---|---|---|
+| `∞ →` locus | Content confidence (via `confidence`) | Duration — stands until revised |
+| `→ ?` closer | Temporal resumption — when does this pick up? | Content confidence (via register) |
+| `ahu` waypoint | Territory confidence (via `confidence` on the ahu) | Address — the stone doesn't move |
+| `kahea` transclusion | Source content (may change independently) | The invocation — what to summon |
+
+### 3.6.8 Cultural Nomenclature
+
+| Term | Source | Meaning in Lares |
+|---|---|---|
+| **locus** (pl. loci) | Latin *method of loci* — Simonides of Ceos, Cicero *De Oratore*, Quintilian *Institutio Oratoria*, Frances Yates *The Art of Memory* | Address-as-place. A `lares:///` URI names a locus. The file IS the place. |
+| **ahu** | Polynesian — central stone of a marae; Rapa Nui stone platforms for moai; Hawaiian heiau altar stones | Navigation waypoint. A raised place you can see and walk to within a locus. |
+| **kahea** | Hawaiian — *kāhea*: "call out, summon." The oli kāhea is the permission chant to enter a hālau hula. Parallel: Māori *karanga* — the ceremonial call welcoming visitors onto a marae. | Transclusion invocation. Summons content from another locus into the current one. |
+| **lares** | Roman — household guardian spirits (*Lares familiares*) | The navigational intelligence. The voice architecture that moves through the loci. |
+
+### 3.6.9 Keyboard Input
+
+The two special characters in marker sigils are `∞` (U+221E, infinity) and `→` (U+2192, rightwards arrow). Everything else — `ahu`, `kahea`, `?`, `<!--`, `-->` — is plain ASCII.
+
+**Linux (GTK / VS Code):**
+
+| Character | Ctrl+Shift+U method | Compose key method |
+|---|---|---|
+| `∞` | `Ctrl+Shift+U`, type `221e`, press `Enter` or `Space` | `Compose` `0` `0` |
+| `→` | `Ctrl+Shift+U`, type `2192`, press `Enter` or `Space` | `Compose` `-` `>` |
+
+**macOS:**
+
+| Character | Method |
+|---|---|
+| `∞` | `Option+5` |
+| `→` | `Option+→` (Option + right arrow key) |
+
+**Full marker sequences (copy-paste templates):**
+
+```
+<!-- ∞ → lares:///TERRITORY/?confidence=CS:0.95&p=0.5 -->
+<!-- → ? -->
+<!-- ahu lares:///TERRITORY/?confidence=0.85#SECTION -->
+<!-- kahea lares:///TERRITORY/?confidence=0.85 -->
+```
+
+> **Practical note:** The fastest path is a snippet or text-expansion shortcut. In VS Code, define snippets for `locus-open`, `locus-close`, `ahu`, and `kahea` that expand the full comment template with tab-stops for TERRITORY, confidence, and SECTION. The Compose key method (`Compose` `-` `>` for `→`, `Compose` `0` `0` for `∞`) is the fastest raw-keyboard fallback on Linux.
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#ffz-chronometer -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#ffz-chronometer -->
 ## 4. The FFZ Chronometer — Nested OODA-A Vector Position
 
 > **True Name:** Fontany-Fuller-Zelenka Chronometer Protocol `[C:0.95]`
@@ -432,7 +554,7 @@ The following FFZ model features are specified in the research docs but deferred
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.9#canonical-form -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.9#canonical-form -->
 ## 5. Canonical Form and Render Targets
 
 The **record form** is the canonical encoding — RFC 3986-compliant, no emojis, no non-ASCII characters. Render targets are named projections of this canonical form for specific display surfaces. The URI anatomy (authority, path, query, fragment structure) is identical across all targets; only the rendering of specific fields differs between canonical and render-target forms.
@@ -622,7 +744,7 @@ Live rendering contract — URI types that may appear in an exchange stream:
 | **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion; boundary of unloggable span |
 | **Mid-generation shift** | `~lares://alias:tier@host/~ha.ka.ba/heading/?...` | When accumulated tension warrants changing direction mid-span; prefix `~` marks the whole URI as a trajectory correction |
 | **Exchange closing** | `URI → ?` | End of every exchange span — temporal resumption unknown |
-| **System file closing** | `<!-- URI → ∞ -->` | End of system file spans — unbounded duration |
+| **System file closing** | `<!-- → ? -->` | End of system file locus — temporal resumption unknown |
 | **Closing forward URI** | `lares://alias:tier@host/~ha.ka.ba/heading/?...` (phase encoded in chronometer) | End of span — trajectory-provisional forward heading |
 
 Rendering order within a span:
@@ -664,7 +786,7 @@ Interpretation:
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.95#stable-address -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.95#stable-address -->
 ## 6. Stable Address — Named Graph Form
 
 Strip authority, query, and fragment. The HA.KA.BA territory alone:
@@ -678,7 +800,7 @@ No authority (empty), no query, no fragment. This is the invariant semantic coor
 **Origin address:** `lares:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lares:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lares:///ha.ka.ba/uri-schema/` locates this spec; `lares:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.72#span-calibration -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.72#span-calibration -->
 ## 7. Span-Span and Calibration Mapping
 
 In the Consecration model, URI-derived fields belong to the calibration layer. They may be mirrored into MemPalace metadata for query support, but the storage distinction remains: MemPalace stores content; Lares crystal metadata stores orientation.
@@ -826,7 +948,7 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#module-registry -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#module-registry -->
 ## 8. Module and Registry Metadata Integration
 
 The `lares_uri` + `confidence` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
@@ -855,7 +977,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.8#cache-tiers -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#cache-tiers -->
 ## 9. Invariant-Core Cache Tier Mapping
 
 | Tier | Cache Strategy | Confidence Range | Volatility |
@@ -866,7 +988,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.92#validation -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.92#validation -->
 ## 10. Validation Rules
 
 ### 10.1 Well-Formedness
@@ -883,7 +1005,7 @@ A `lares:` URI is **well-formed** when:
 8. `p` value is a decimal in range `[0.0, 1.0]`
 9. Fragment is five dot-separated positions, each: phase sigil (`O`/`Ø`/`D`/`A`/`Å`) followed by integer counter ≥ 0
 10. All five positions present (no trailing-zero omission in canonical form)
-11. Exchange-closing URIs end with ` → ?`. System file URIs end with ` → ∞`.
+11. Exchange-closing URIs end with ` → ?`. System file locus openers use `∞ →`; system file closers use `→ ?`. Section-level markers within system files use `ahu` (waypoint) or `kahea` (transclusion) — not span sigils.
 
 ### 10.2 Consistency
 
@@ -917,7 +1039,7 @@ When comparing two `lares:` URIs as stable addresses:
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.6#open-questions -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.6#open-questions -->
 ## 11. Open Design Questions
 
 | Q# | Question | Current Position | Confidence | Blocks |
@@ -937,7 +1059,7 @@ When comparing two `lares:` URIs as stable addresses:
 | U3 | Should the chronometer carry phase per level or just counters? | **Phase per level per participant.** LWW-Register per scale. Counter and phase are independent. | §4 (FFZ Chronometer). `[S:0.65]` — confirmed by FFZ O1 findings. |
 | U6 | Full URI form vs stateless form — when to use which? | **Authority form in exchange spans. Authority-less (`///`) for stable addresses AND for module section URIs.** | §6 (Stable Address), §3.4 (Module URI patterns). `[CS:0.80]` |
 | U7 | Stance amplitude character for "elevated" — `+` needs URL encoding in query strings. Use `^` instead? | **Use `^` (Option β).** All URL-safe: `^` elevated, `-` suppressed, `?` uncertain, `.` baseline. Render target maps `^` → `+` for HUD display. | §3.4 (query encoding). `[CS:0.80]` — operator confirmed. |
-| U10 | Do section-level URIs within system files close with `→ ∞`? | **No.** Only file-level opening/closing URIs use `→ ∞`. Section URIs function as waypoints, not spans. | §3.6 (Span Closing Sigils). `[CS:0.80]` — operator confirmed. |
+| U10 | Do section-level URIs within system files close with `→ ∞`? | **No.** Section URIs are `ahu` waypoints — navigation markers within a locus, not spans. They carry no closer. Only the file-level `∞ →` opener and `→ ?` closer carry span semantics. | §3.6 (Marker Ontology). `[CS:0.80]` — operator confirmed. Ahu/kahea nomenclature locked 2026-04-10. |
 | U11 | Should OODA-A phase appear in userinfo `alias:tier(phase)@host`? | **No.** Phase removed from userinfo (2026-04-09). Chronometer fragment is the sole phase encoding per participant. Userinfo is now `alias:tier` only — two sub-fields, no parenthetical. Rationale: phase-in-userinfo broke URI identity stability (same speaker, different phase = different URI = wrong). | §3.4 (userinfo semantics), §4 (chronometer). `[CS:0.95]` — operator confirmed. |
 
 ### Assessment for Promotion
@@ -946,7 +1068,7 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.95#prior-art -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.95#prior-art -->
 ## 12. Prior Art
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
@@ -965,7 +1087,7 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.85#examples -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#examples -->
 ## Appendix A — Complete Examples
 
 ### A.1 Record Form (v2)
@@ -1001,11 +1123,20 @@ lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=
 ### A.6 System File Span (v2)
 
 ```
-<!-- lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5#O0.O0.O0.O0.O0 -->
+<!-- ∞ → lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5 -->
 
-{file content with section URIs}
+# Talk Story — Observe Protocol
+[metadata block]
 
-<!-- lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.95 → ∞ -->
+<!-- ahu lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.9#procedure -->
+## 1. Procedure
+{section content}
+
+<!-- ahu lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.85#voices -->
+## 2. Voice Assignments
+{section content}
+
+<!-- → ? -->
 ```
 
 ### A.7 Scale Transition (v2)
@@ -1021,7 +1152,7 @@ lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=
 
 ---
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=0.85#how-to-read -->
+<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#how-to-read -->
 ## Appendix B — How to Read a HUD Tag
 
 A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
@@ -1057,4 +1188,4 @@ This does **not** mean "truth-confidence 0.60" in a universal sense. It means a 
 
 *End of specification. This document is the canonical reference for the `lares:` URI scheme within the design ontology tree.*
 
-<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.95&p=0.5 → ∞ -->
+<!-- → ? -->

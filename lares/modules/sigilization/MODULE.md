@@ -1,4 +1,4 @@
-<!-- lares:///sigils.render.maps/sigilization/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- ∞ → lares:///sigils.render.maps/sigilization/?confidence=CS:0.85&p=0.5 -->
 
 ```yaml
 ---
@@ -77,4 +77,4 @@ Bug origin: `LINDWYRM_STORY_SHAPE.md` post-header example showed active-only sta
 | ■ Act | `act/PROCEDURES.md` | How to emit for each named surface |
 | ○ Assess | `assess/VERIFICATION.md` | Validation checklist; well-formedness rules |
 
-<!-- lares:///sigils.render.maps/sigilization/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- → ? -->

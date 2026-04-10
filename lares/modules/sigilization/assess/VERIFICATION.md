@@ -1,4 +1,4 @@
-<!-- lares:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- ∞ → lares:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Assess: Verification
 
@@ -75,4 +75,4 @@ Evaluate these — well-formed or violation?
 |---|---|---|
 | 0.1 | 2026-04-10 | Initial — U10 resolution. All-five invariant codified. |
 
-<!-- lares:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- → ? -->
