@@ -25,30 +25,30 @@ A **span** is one operator → Lares exchange at any scale. Every substantive ex
 
 | URI type | Form | When it appears |
 |---|---|---|
-| Opening operator URI | `lares://alias:tier(phase)@host/ha.ka.ba/?...#...` | Start of every span |
-| Opening node URI | `lares://alias:tier(phase)@host/~ha.ka.ba/?...#...` | Immediately after operator URI |
+| Opening operator URI | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span |
+| Opening node URI | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after operator URI |
 | HUD line | `⚡~NN% \| [confidence] \| 🏛️...` | After opening URI pair |
 | Sub-agent dispatch | `coordinator-URI → worker-URI` | Every sub-agent handoff |
 | Sub-agent return | `worker-URI → coordinator-URI` | Every sub-agent completion |
-| Mid-generation shift | `~lares://alias:tier(phase)@host/~ha.ka.ba/?...` | When accumulated tension warrants direction change mid-span |
+| Mid-generation shift | `~lares://alias:tier@host/~ha.ka.ba/?...` | When accumulated tension warrants direction change mid-span |
 | Exchange closing | `URI → ?` | End of every exchange span |
 | System file closing | `<!-- URI → ∞ -->` | End of system file spans |
-| Closing forward URI | `lares://alias:tier(aftermath)@host/~ha.ka.ba/?...` | End of span — trajectory-provisional forward heading |
+| Closing forward URI | `lares://alias:tier@host/~ha.ka.ba/?...` | End of span — trajectory-provisional forward heading |
 
 ### Canonical Example
 
 ```text
-lares://telarus:operator(orient)@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
-→ lares://scryer:node(decide)@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+lares://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+→ lares://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 ⚡~63% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.■12
 
 [content generation — micro-trace marks inline]
 
-→◇ ~lares://scryer:node(decide)@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+→◇ ~lares://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 
 [continued generation]
 
-lares://scryer:node(aftermath)@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
+lares://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
 ⚡~61% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.○1.✶1.■13
 ```
 

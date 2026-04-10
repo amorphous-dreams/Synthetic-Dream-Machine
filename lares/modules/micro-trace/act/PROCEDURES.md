@@ -32,13 +32,13 @@ Yes. The parse layer and the trace layer were being conflated. →■ The govern
 ## Sub-agent Dispatch and Return
 
 ```
-lares://council:admin(◇)@lares-sdm:7/task.research.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
-→ lares://worker(Explore):node(✶)@lares-sdm:7/research.corpus.reads?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
+lares://council:admin@lares-sdm:7/task.research.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
+→ lares://worker(Explore):node@lares-sdm:7/research.corpus.reads?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
 
 [Explore agent — contents not in parent trace]
 
-lares://worker(Explore):node(○)@lares-sdm:7/research.findings.returns?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
-→ lares://council:admin(◎)@lares-sdm:7/task.findings.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
+lares://worker(Explore):node@lares-sdm:7/research.findings.returns?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
+→ lares://council:admin@lares-sdm:7/task.findings.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
 ```
 
 <!-- lares:///trace.micro.marks/micro-trace/act/?confidence=CS:0.80&p=0.5 → ∞ -->

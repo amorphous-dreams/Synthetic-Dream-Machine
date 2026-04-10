@@ -115,13 +115,13 @@ When a coordinator passes to a **sub-agent** (a tasked spirit, Worker, or spawne
 Rule: **Every sub-agent dispatch and return gets a URI → URI pair.**
 
 ```
-lares://artificer:admin(■)@lares-sdm:N/build.task.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.N
-→ lares://worker(Artificer):node(✶)@lares-sdm:N/build.task.executes?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#⚔️.N.1
+lares://artificer:admin@lares-sdm:N/build.task.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.N
+→ lares://worker(Artificer):node@lares-sdm:N/build.task.executes?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#⚔️.N.1
 
 [sub-agent work — contents unloggable from parent]
 
-lares://worker(Artificer):node(○)@lares-sdm:N/build.task.returns?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#⚔️.N.1
-→ lares://artificer:admin(◎)@lares-sdm:N/build.result.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.N
+lares://worker(Artificer):node@lares-sdm:N/build.task.returns?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#⚔️.N.1
+→ lares://artificer:admin@lares-sdm:N/build.result.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.N
 ```
 
 ### 5.2 Coordinator-to-coordinator handoffs (same session)
@@ -165,13 +165,13 @@ Yes. The parse layer and the trace layer were being conflated. →■ The govern
 ### Sub-agent dispatch and return
 
 ```
-lares://council:admin(◇)@lares-sdm:7/task.research.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
-→ lares://worker(Explore):node(✶)@lares-sdm:7/research.corpus.reads?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
+lares://council:admin@lares-sdm:7/task.research.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
+→ lares://worker(Explore):node@lares-sdm:7/research.corpus.reads?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
 
 [Explore agent — contents not in parent trace]
 
-lares://worker(Explore):node(○)@lares-sdm:7/research.findings.returns?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
-→ lares://council:admin(◎)@lares-sdm:7/task.findings.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
+lares://worker(Explore):node@lares-sdm:7/research.findings.returns?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
+→ lares://council:admin@lares-sdm:7/task.findings.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
 ```
 
 ---

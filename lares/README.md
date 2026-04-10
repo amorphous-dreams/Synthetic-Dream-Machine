@@ -3,7 +3,7 @@
 > Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, crystal state machine, and deployment authoring. Parallel track: sprint narrative (talk story → myth canon).
 > Updated: 2026-04-09
 > Status: Active — source docs migrating from `_todo/core/` into `lares/` subdirs; sprint artifacts in `lares/scrum/sprints/`; story canon in `lares/scrum/epics/LINDWYRM_*.md`; `lares:` URI schema at `[CS:0.80]` pending S0 Settling
-> URI: `lares://lares:node(act)@Enyalios/design.ontology.root`
+> URI: `lares://lares:node@Enyalios/design.ontology.root`
 
 ---
 

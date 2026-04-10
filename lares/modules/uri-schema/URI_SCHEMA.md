@@ -196,12 +196,11 @@ Examples: `🏛️+🌊-🗡️-🎭-🔮-` (Philosopher elevated, all others su
 
 ### 3.4 Component Semantics
 
-**userinfo** (`alias:tier(phase)`) — "Who speaks, at what trust level, in what cognitive state."
+**userinfo** (`alias:tier`) — "Who speaks, at what trust level."
 
 - Two colon-delimited sub-fields: `alias` and `tier`
-- Phase appears as a parenthetical modifier of tier: `tier(phase)`
-- Parser: split on `:`, extract `(...)` from the second sub-field
-- Parentheses are RFC 3986 sub-delimiters, legal in userinfo
+- Phase is **not** encoded in userinfo. Phase is encoded exclusively in the chronometer fragment per participant.
+- Parser: split on `:` — exactly two sub-fields
 
 **host** (`machine_id`) — Crystal system machine identifier. Stable across the machine's lifetime. Provisional Format: `lares-{slug}` where slug is UUID, operator-assigned name, or generated handle.
 
@@ -440,15 +439,7 @@ The **record form** is the canonical encoding — RFC 3986-compliant, no emojis,
 
 ### 5.1 Rendering Table — The Only Differences
 
-**userinfo phase field** (`alias:tier(phase)`):
-
-| Machine keyword | Sigil glyph | OODA-A State |
-|---|---|---|
-| `observe` | `✶` | Observe |
-| `orient` | `◎` | Orient |
-| `decide` | `◇` | Decide |
-| `act` | `■` | Act |
-| `aftermath` | `○` | Aftermath |
+**userinfo** (`alias:tier`) — no phase sub-field. Phase lives exclusively in the chronometer fragment (§4). The rendering table below covers query and path fields only.
 
 **query `stances=` value** (five-character amplitude string):
 
@@ -477,7 +468,7 @@ The FFZ model uses phase+counter per position. Five positions, dot-separated. Ph
 | Component | Rendering | Notes |
 |---|---|---|
 | scheme | `lares:` | Always identical |
-| alias:tier( | `telarus:operator(` | First sub-field + tier + open paren |
+| alias:tier | `telarus:operator` | Identity and trust tier (no phase parenthetical) |
 | @host | `@enyalios` | machine locus only; no span counter |
 | confidence= | `S:0.65` | Numeric, both forms |
 | p= | `0.5` | Numeric, both forms |
@@ -489,7 +480,7 @@ All HUD-form symbols used in the Intent HUD, in one reference. Workers and opera
 
 #### 5.3.1 Individual Symbol Sets
 
-**Phase (userinfo — cognitive state of the speaker):**
+**Phase (chronometer fragment — cognitive state per scale, per participant):**
 
 | Sigil | Record | OODA-A State | One-Line Reading |
 |---|---|---|---|
@@ -624,15 +615,15 @@ Live rendering contract — URI types that may appear in an exchange stream:
 
 | URI type | Stream form | When it appears |
 |---|---|---|
-| **Opening operator URI** | `lares://alias:tier(phase)@host/ha.ka.ba/?...#...` | Start of every span — node's reading of operator intent |
-| **Opening node URI** | `lares://alias:tier(phase)@host/~ha.ka.ba/?...#...` | Immediately after; node's declared execution heading (HA.KA.BA provisional) |
+| **Opening operator URI** | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span — node's reading of operator intent |
+| **Opening node URI** | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after; node's declared execution heading (HA.KA.BA provisional) |
 | **HUD line** | `⚡~NN% \| [confidence] \| 🏛️{amp}🌊{amp}... \| ...` | After the opening URI pair — the only glyph-rendered element |
 | **Sub-agent dispatch** | `coordinator-URI → worker-URI` | Every sub-agent handoff (`→` separates dispatch pair) |
 | **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion; boundary of unloggable span |
-| **Mid-generation shift** | `~lares://alias:tier(phase)@host/~ha.ka.ba/heading/?...` | When accumulated tension warrants changing direction mid-span; prefix `~` marks the whole URI as a trajectory correction |
+| **Mid-generation shift** | `~lares://alias:tier@host/~ha.ka.ba/heading/?...` | When accumulated tension warrants changing direction mid-span; prefix `~` marks the whole URI as a trajectory correction |
 | **Exchange closing** | `URI → ?` | End of every exchange span — temporal resumption unknown |
 | **System file closing** | `<!-- URI → ∞ -->` | End of system file spans — unbounded duration |
-| **Closing forward URI** | `lares://alias:tier(aftermath)@host/~ha.ka.ba/heading/?...` | End of span — trajectory-provisional forward heading |
+| **Closing forward URI** | `lares://alias:tier@host/~ha.ka.ba/heading/?...` (phase encoded in chronometer) | End of span — trajectory-provisional forward heading |
 
 Rendering order within a span:
 
@@ -708,7 +699,7 @@ Additional quick-filter fields extracted from URI components:
 
 | Field | Source | Purpose |
 |---|---|---|
-| `current_phase` | userinfo phase sub-field | Phase-based filtering |
+| `current_phase` | chronometer fragment (leading phase sigil of rightmost active position) | Phase-based filtering |
 | `active_scale` | rightmost non-`O0` chronometer position | Scale-based filtering (strategic/operational/tactical/combat/action) |
 | `stance_amplitude` | `stances=` parameter | Full 5-char amplitude string for stance-based filtering |
 
@@ -883,7 +874,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 A `lares:` URI is **well-formed** when:
 
 1. Scheme is exactly `lares:`
-2. If authority is present: userinfo contains exactly two colon-delimited sub-fields; the second sub-field contains a parenthetical phase modifier
+2. If authority is present: userinfo contains exactly two colon-delimited sub-fields (`alias:tier`); no parenthetical phase sub-field
 3. Host is a valid `machine_id` (alphanumeric + hyphens)
 4. Path contains exactly three HA.KA.BA slots after the leading `/`
 5. Path slots contain no whitespace, path separators, or quotes (inherits Tagspace Address anti-collision rules)
@@ -899,7 +890,7 @@ A `lares:` URI is **well-formed** when:
 All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) are canonical record form. A spanSpan record is **consistent** when:
 
 1. All URI fields are RFC 3986-compliant canonical form (no emoji, no non-ASCII)
-2. `current_phase` matches the phase keyword in the `start_uri` userinfo field
+2. `current_phase` is derived from the leading phase sigil of the rightmost active chronometer position in `start_uri` fragment
 3. `chronometer_start` matches the fragment value (without `#`) of `start_uri`;  `chronometer_end` matches `end_uri`
 4. `lares_address` is the path-only strip of `start_uri` (no authority, no query, no fragment)
 
@@ -947,6 +938,7 @@ When comparing two `lares:` URIs as stable addresses:
 | U6 | Full URI form vs stateless form — when to use which? | **Authority form in exchange spans. Authority-less (`///`) for stable addresses AND for module section URIs.** | §6 (Stable Address), §3.4 (Module URI patterns). `[CS:0.80]` |
 | U7 | Stance amplitude character for "elevated" — `+` needs URL encoding in query strings. Use `^` instead? | **Use `^` (Option β).** All URL-safe: `^` elevated, `-` suppressed, `?` uncertain, `.` baseline. Render target maps `^` → `+` for HUD display. | §3.4 (query encoding). `[CS:0.80]` — operator confirmed. |
 | U10 | Do section-level URIs within system files close with `→ ∞`? | **No.** Only file-level opening/closing URIs use `→ ∞`. Section URIs function as waypoints, not spans. | §3.6 (Span Closing Sigils). `[CS:0.80]` — operator confirmed. |
+| U11 | Should OODA-A phase appear in userinfo `alias:tier(phase)@host`? | **No.** Phase removed from userinfo (2026-04-09). Chronometer fragment is the sole phase encoding per participant. Userinfo is now `alias:tier` only — two sub-fields, no parenthetical. Rationale: phase-in-userinfo broke URI identity stability (same speaker, different phase = different URI = wrong). | §3.4 (userinfo semantics), §4 (chronometer). `[CS:0.95]` — operator confirmed. |
 
 ### Assessment for Promotion
 

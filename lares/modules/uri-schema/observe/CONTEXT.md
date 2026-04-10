@@ -17,7 +17,7 @@ The `lares:` URI v2 schema resolved the core design tensions that blocked consis
 A `lares:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
 
 ```
-lares://alias:tier(phase)@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
+lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
 ```
 
 | Layer | Component | Concern |

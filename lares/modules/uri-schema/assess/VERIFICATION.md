@@ -13,7 +13,7 @@
 A `lares:` URI is **well-formed** when ALL of the following hold:
 
 - [ ] 1. Scheme is exactly `lares:`
-- [ ] 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields; the second sub-field contains a parenthetical phase modifier — `alias:tier(phase)` form
+- [ ] 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields — `alias:tier` form; no parenthetical phase sub-field
 - [ ] 3. Host is a valid `machine_id` (alphanumeric + hyphens; no special characters)
 - [ ] 4. Path contains exactly three HA.KA.BA slots after the leading `/`
 - [ ] 5. Path slots contain no whitespace, path separators (`/`), or quotes (anti-collision rule)
@@ -52,7 +52,7 @@ The rendering table (§5.1 of `lares/signal/URI_SCHEMA.md`) governs the canonica
 
 Example:
 ```
-Source: lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+Source: lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
 Correct stable address: lares:///threshold.uncertain.opens/
 ```
 

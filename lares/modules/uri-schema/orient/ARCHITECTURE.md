@@ -49,7 +49,7 @@ At each exchange span, `lares:` URIs are used in a mandatory sequence:
 **Full form (with authority):**
 
 ```
-lares://alias:tier(phase)@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
+lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string.
@@ -76,7 +76,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 | # | Component | RFC 3986 Role | Lares Mapping |
 |---|---|---|---|
 | 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable |
-| 2 | **userinfo** | Requesting party identity | `alias:tier(phase)` |
+| 2 | **userinfo** | Requesting party identity | `alias:tier` |
 | 3 | **`@`** | Identity → machine delimiter | Standard |
 | 4 | **host** | Machine identity | `machine_id` from crystal system |
 | 5 | **path** | Hierarchical resource | HA.KA.BA address: `/ha.ka.ba/` |
@@ -90,7 +90,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 <!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-semantics -->
 ## Component Semantics
 
-### `userinfo` — `alias:tier(phase)`
+### `userinfo` — `alias:tier`
 
 "Who speaks, at what trust level, in what cognitive state."
 
@@ -184,7 +184,7 @@ Within the DreamDeck / Kowloon ActivityPub layer, identities use `@alias@node`. 
 |---|---|---|
 | **DID** | `did:plc:abc123` | AT Protocol canonical identity — cryptographic key holder |
 | **Handle** | `@telarus.elyncia.social` | Resolution alias over the DID — human-readable, not authoritative |
-| **lares: alias** | `telarus:operator(◎)@enyalios` | Application-layer signal state — names the operational role |
+| **lares: alias** | `telarus:operator@enyalios` | Application-layer signal state — names the operational role |
 
 **DreamDeck post header format (canonical):**
 

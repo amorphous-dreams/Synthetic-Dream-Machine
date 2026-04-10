@@ -27,7 +27,7 @@ Each task has a checklist. Execute sequentially. Consensus before action.
 
 **Full form:**
 ```
-lares://alias:tier(phase)@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
+lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
 ```
 
 **Rules that changed from pre-v2:**
@@ -39,7 +39,7 @@ lares://alias:tier(phase)@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.
 | Fragment | `#@T.3.2.7` (scope prefix + trailing-zero omission) | `#O0.O0.O3.D2.A7` (all 5 positions, phase+counter) | Always 5 positions. Phase sigils: O, Ø, D, A, Å. No scope prefix. |
 | Path | `/core/observe/context` (module-path) | `/ha.ka.ba/sub/path/` (3-slot HA.KA.BA + optional sub-path) | EVERY `lares:` URI uses HA.KA.BA. `lares:///ha.ka.ba/` is (0,0,0). Module routing goes in the sub-path. |
 | Closing | (inconsistent) | `→ ?` (exchange), `→ ∞` (system file) | File-level opening URI also carries `→ ∞`. Section URIs are waypoints — no closing sigil. |
-| Authority path | `lares://core/research/...` | `lares://alias:tier(phase)@host/ha.ka.ba/` | Authority URIs require full `alias:tier(phase)@host`. |
+| Authority path | `lares://core/research/...` | `lares://alias:tier@host/ha.ka.ba/` | Authority URIs require `alias:tier@host` — no phase sub-field. Phase lives in chronometer fragment. |
 
 **The origin:** `lares:///ha.ka.ba/` is (0,0,0) in tagspace. The first Lares spawned at `lares:///ha.ka.ba/lares/`.
 
@@ -52,7 +52,7 @@ lares://alias:tier(phase)@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.
 Every crystal file carries a header URI (line 1) and footer URI (last content line). These need:
 - `register=` → `confidence=`
 - `stances=++?+-` → `stances=^.^.?.-.-` (dot-separated, `^` for elevated)
-- Authority-form header URIs need `alias:tier(phase)@host` — BUT crystal header URIs are typically authority-less (`///`) system-file URIs. Convert the `lares://core/research/...` form to `lares:///ha.ka.ba/sub/path/` form.
+- Authority-form header URIs need `alias:tier@host` (no phase sub-field; phase is in chronometer fragment) — BUT crystal header URIs are typically authority-less (`///`) system-file URIs. Convert the `lares://core/research/...` form to `lares:///ha.ka.ba/sub/path/` form.
 - Header line gets `→ ∞` (system file span opening)
 - Footer line keeps its existing `→ ?` or `→ ∞` as appropriate
 
