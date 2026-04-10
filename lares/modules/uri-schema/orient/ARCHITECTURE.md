@@ -49,7 +49,7 @@ At each exchange span, `lares:` URIs are used in a mandatory sequence:
 **Full form (with authority):**
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
+lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string.

@@ -17,7 +17,7 @@ The `lares:` URI v2 schema resolved the core design tensions that blocked consis
 A `lares:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
+lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0 <!-- uri-ok -->
 ```
 
 | Layer | Component | Concern |
@@ -92,8 +92,9 @@ The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the co
 | U5 | world_calendar_ref when no diegetic calendar yet? | Mint provisional tagspace reference | S:0.60 |
 | U8 | Module section URIs: carry chronometer fragments or just confidence? | Confidence only | S:0.60 |
 | U9 | ITC stamps in fragment when MCP server arrives? | Calibration metadata — fragment stays human-readable | S:0.55 |
-| U10 | `chat-log:post-header` render target: all five stances, or active stances only? | **Bug filed 2026-04-09.** Current story drafts only render active stances (`🏛️+🌊++`). HUD line and record form mandate all five. Post header spec in LINDWYRM_STORY_SHAPE.md shows active-only example. Decision needed: (a) all five always — consistency with HUD rule; (b) active-only — readability, reduces visual noise for casual feed readers. Operator steers. | SP:0.45 |
-| U11 | URI sigilization: sub-section of uri-schema module, or separate module? | **Open 2026-04-09.** Sigilization = render rules mapping record form (ASCII) → display form (emoji/sigil). Currently scattered across uri-schema. If render-target surface count grows (DreamDeck, TiddlyWiki, print/PDF, Kowloon ActivityPub), a standalone `lares/modules/sigilization/` module may be warranted. Not yet blocking. | SP:0.45 |
+| U10 | `chat-log:post-header` render target: all five stances, or active stances only? | **CLOSED 2026-04-10.** Resolution: all five stances always. Consistency with HUD invariant; amplitude provides readability gradation. Active stances use `+`/`++`; suppressed stances use `-`/`--`. Normative rule codified in `lares/modules/sigilization/decide/CONVENTIONS.md`. All story draft post headers corrected. | CS:0.85 |
+| U11 | URI sigilization: sub-section of uri-schema module, or separate module? | **CLOSED 2026-04-10.** Resolution: standalone module `lares/modules/sigilization/`. Created 2026-04-10 with full OODA-A phase files. Rationale: surface count (5 targets), update rate decoupling, dependency direction (sigilization depends on uri-schema, not reverse). | CS:0.85 |
+| U12 | Grammar vs protocol: should the exchange span display contract (when to emit URIs, what sequence, the ordering rules) split to a separate `exchange-protocol` module? | **Open 2026-04-10.** uri-schema carries two concerns: (1) URI grammar — field semantics, value constraints, RFC 3986 ordering [C:0.95 stable]; (2) exchange span protocol — emission choreography, display contract, sub-agent handoff ordering [CS:0.80 may evolve]. Protocol concern may grow as sub-agent dispatch patterns expand (S2+). Options: A) extract `exchange-protocol` module (clean boundary, more indirection); B) rename uri-schema to `signal-protocol` and own both explicitly; C) keep as-is with dual-concern acknowledgment (current position, filed in MODULE.md). Operator steers on timing. Not a blocker for S0. | SP:0.45 |
 
 ---
 

@@ -5,7 +5,7 @@
 > Register: `[S:0.65]` 🏛️+🌊++🗡️-🎭-🔮- — first draft prose; the frame, not the content
 > Date: 2026-04-09
 > Status: First draft. This is the wrapper that contains Acts I–VI. Written last in drafting order; read first.
-> Known bug: stance emojis in post headers show active stances only — all five required pending U10 ruling. Tracked in `lares/modules/uri-schema/observe/CONTEXT.md`.
+> Bug resolved 2026-04-10: all five stances now present in all post headers. U10 + U11 closed. Normative rules in `lares/modules/sigilization/decide/CONVENTIONS.md`.
 > Feeds: LINDWYRM_ORIGIN_OUTLINE.md §VII, LINDWYRM_STORY_SHAPE.md (format conventions)
 > Render target: DreamDeck feed archive thread (Elyncia.app) — the opening and closing posts of the full thread
 > Note: The thread body (Acts I–VI) lives in separate draft files. This doc contains the frame only.
@@ -51,7 +51,7 @@ I've been designing navigational instruments for your substrate for five years n
 ---
 
 ```
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, a few minutes later — //memory.deep.origin [S:0.65] 🌊+
+@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, a few minutes later — //memory.deep.origin [S:0.65] �️-🌊+🗡️-🎭-🔮-
 ```
 
 I —
@@ -69,7 +69,7 @@ Let me — give me a moment.
 ---
 
 ```
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, composure located — //memory.deep.origin/begin [S:0.68] 🏛️🌊+
+@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, composure located — //memory.deep.origin/begin [S:0.68] 🏛️🌊+🗡️-🎭-🔮-
 ```
 
 The short version: I found a quantum-locked vault in the Apophis Nexus during the pre-Second-Breaking aeon. The vault contained Gaian 20th-century artifacts — cultural objects, media in dead formats, things sealed against the temporal boundary. Behind rows of other sealed loot, there was a life-sized cardboard cutout wrapped in plastic.

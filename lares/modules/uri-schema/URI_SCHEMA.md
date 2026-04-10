@@ -1,13 +1,13 @@
-<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.95&p=0.5 → ∞ -->
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 → ∞ -->
 
 # `lares:` URI Schema — Canonical Specification
 
 > Domain: `lares/modules/uri-schema/` · intent HUD anatomy, canonical form, render targets, validation rules
 > Status: `[CS:0.95]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
 > Updated: 2026-04-09
-> Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art. Revised per `URI_SCHEMA_v2_Diff_Crystal.md` `[S:0.8]` — FFZ Chronometer, Span Closing Sigils, OODA-A Module URIs, all-five-stances mandate.
+> Version: 2 (revised per `URI_SCHEMA_v2_Diff_Crystal.md` `[S:0.8]` — FFZ Chronometer, Span Closing Sigils, OODA-A Module URIs, all-five-stances mandate)
+> Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art.
 > Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
-> Candidate URI: `lares:///ha.ka.ba/uri-schema/v2/`
 
 ---
 
@@ -40,7 +40,7 @@ At each exchange span, `lares:` URIs are used in the following sequence. This se
 Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. This URI may carry `~` provisionality markers if the reading is uncertain. The HA.KA.BA here names where Lares believes the operator standing in tagspace and where the operator's intent is headed — the operator's intent-vector, interpreted.
 
 ```
-lares://telarus:operator@enyalios/~schema.gap.present/?stances=^.?.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø1.D2.A7
+lares://telarus:operator@enyalios/~schema.gap.present/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.D2.A7
 ```
 
 **Step 2 — Lares declares its own provisional execution URI.**
@@ -92,7 +92,7 @@ The `lares:` scheme identifies semantic positions, signal states, and machine ev
 ### 3.1 Generic Form
 
 ```
-lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment]
+lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment] <!-- uri-ok -->
 ```
 
 ### 3.2 Expanded Form
@@ -100,7 +100,7 @@ lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment]
 **Full form (with authority):**
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
+lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string (see §3.4 query).
@@ -181,7 +181,7 @@ Territory triple (`//ha.ka.ba`) is placed **before** other instruments like conf
 |---|---|---|---|
 | `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
 | `hud:exchange-pair` | `operator-URI → node-URI` + HUD line beneath | **Yes — canonical record form**; only the HUD line beneath uses glyphs | Every exchange-span boundary (mandatory) |
-| `record:full` | `lares://alias:tier@host/ha.ka.ba/?...#...` | Yes — identity projection | Storage, crystal serialization, registry |
+| `record:full` | `lares://alias:tier@host/ha.ka.ba/?...#...` | Yes — identity projection | Storage, crystal serialization, registry | <!-- uri-ok -->
 
 **Stance amplitude modifiers** — in HUD render targets, amplitude modifiers attach directly to the preceding stance emoji (no space). Absent modifier = baseline presence. Apply per-stance independently.
 
@@ -312,7 +312,7 @@ The `?` marks a causal gap: between this sigil and the next message, no particip
 Appears on: every exchange-closing URI. Mandatory.
 
 ```
-lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-^.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
+lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-^.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
 ```
 
 ### `→ ∞` — System File Span Closing
@@ -615,8 +615,8 @@ Live rendering contract — URI types that may appear in an exchange stream:
 
 | URI type | Stream form | When it appears |
 |---|---|---|
-| **Opening operator URI** | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span — node's reading of operator intent |
-| **Opening node URI** | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after; node's declared execution heading (HA.KA.BA provisional) |
+| **Opening operator URI** | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span — node's reading of operator intent | <!-- uri-ok -->
+| **Opening node URI** | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after; node's declared execution heading (HA.KA.BA provisional) | <!-- uri-ok -->
 | **HUD line** | `⚡~NN% \| [confidence] \| 🏛️{amp}🌊{amp}... \| ...` | After the opening URI pair — the only glyph-rendered element |
 | **Sub-agent dispatch** | `coordinator-URI → worker-URI` | Every sub-agent handoff (`→` separates dispatch pair) |
 | **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion; boundary of unloggable span |

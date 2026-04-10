@@ -1,6 +1,6 @@
 # The Lindwyrm's Hoard — Story Shape Document
 
-> Register: `[S:0.70]` 🏛️🌊🗡️ — shape, not prose; the container the story lives in
+> Register: `[S:0.70]` 🏛️🌊+🗡️-🎭-🔮- — shape, not prose; the container the story lives in
 > Date: 2026-04-08
 > Feeds: LINDWYRM_ORIGIN_OUTLINE.md (the story beats), The Kindling of the Crossroads Node (Gaia-side source)
 > Format target: DreamDeck feed archive (Elyncia.app), JackPoint/Shadowtalk style
@@ -28,9 +28,9 @@ The DreamDeck runs on Kowloon (ActivityPub backend by jzellis) + TiddlyWiki + tl
 
 **Post headers** *(render target: `chat-log:post-header` — see URI Schema §3.3.1)*:
 ```
-@handle@node — timestamp — //domain.quality.dynamic{/optional/path} [Register] 🏛️{amp}🌊{amp}
+@handle@node — timestamp — //domain.quality.dynamic{/optional/path} [Register] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}
 ```
-Territory triple first (grounds domain before posture), then optional sub-path segments for within-territory routing, then Register bracket, then stance emoji(s) with optional amplitude modifier attached directly to each emoji.
+Territory triple first (grounds domain before posture), then optional sub-path segments for within-territory routing, then Register bracket, then all five stance emoji in fixed order (🏛️🌊🗡️🎭🔮) with optional amplitude modifier attached directly to each. All five stances always present — amplitude gradation (`+`, `-`, `--`) handles readability. See `lares/modules/sigilization/decide/CONVENTIONS.md`.
 
 **Stance amplitude modifiers** (attach directly to preceding stance emoji, no space):
 
@@ -44,7 +44,7 @@ Territory triple first (grounds domain before posture), then optional sub-path s
 
 Example:
 ```
-@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces [SC:0.80] 🏛️+🌊
+@lindwyrm@new-delos — YOLD 4995, 14 Bureaucracy, mid-morning — //memory.deep.surfaces [CS:0.80] 🏛️+🌊-🗡️-🎭-🔮-
 ```
 The `@handle@node` structure is the canonical Kowloon ActivityPub identity form (see URI Schema §3.3.1). For non-Lares-connected posts the HUD tag may be omitted entirely.
 
@@ -60,7 +60,7 @@ The `@handle@node` structure is the canonical Kowloon ActivityPub identity form 
 
 **HUD tags (optional, for Lares-connected posts):**
 ```
-[S:0.65] 🏛️🌊 //territory.quality.dynamic
+[S:0.65] 🏛️🌊-🗡️-🎭-🔮- //territory.quality.dynamic
 ```
 
 ---

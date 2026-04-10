@@ -25,8 +25,8 @@ A **span** is one operator → Lares exchange at any scale. Every substantive ex
 
 | URI type | Form | When it appears |
 |---|---|---|
-| Opening operator URI | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span |
-| Opening node URI | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after operator URI |
+| Opening operator URI | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span | <!-- uri-ok -->
+| Opening node URI | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after operator URI | <!-- uri-ok -->
 | HUD line | `⚡~NN% \| [confidence] \| 🏛️...` | After opening URI pair |
 | Sub-agent dispatch | `coordinator-URI → worker-URI` | Every sub-agent handoff |
 | Sub-agent return | `worker-URI → coordinator-URI` | Every sub-agent completion |
