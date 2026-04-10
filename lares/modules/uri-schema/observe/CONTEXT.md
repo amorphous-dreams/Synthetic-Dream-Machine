@@ -92,6 +92,8 @@ The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the co
 | U5 | world_calendar_ref when no diegetic calendar yet? | Mint provisional tagspace reference | S:0.60 |
 | U8 | Module section URIs: carry chronometer fragments or just confidence? | Confidence only | S:0.60 |
 | U9 | ITC stamps in fragment when MCP server arrives? | Calibration metadata — fragment stays human-readable | S:0.55 |
+| U10 | `chat-log:post-header` render target: all five stances, or active stances only? | **Bug filed 2026-04-09.** Current story drafts only render active stances (`🏛️+🌊++`). HUD line and record form mandate all five. Post header spec in LINDWYRM_STORY_SHAPE.md shows active-only example. Decision needed: (a) all five always — consistency with HUD rule; (b) active-only — readability, reduces visual noise for casual feed readers. Operator steers. | SP:0.45 |
+| U11 | URI sigilization: sub-section of uri-schema module, or separate module? | **Open 2026-04-09.** Sigilization = render rules mapping record form (ASCII) → display form (emoji/sigil). Currently scattered across uri-schema. If render-target surface count grows (DreamDeck, TiddlyWiki, print/PDF, Kowloon ActivityPub), a standalone `lares/modules/sigilization/` module may be warranted. Not yet blocking. | SP:0.45 |
 
 ---
 
