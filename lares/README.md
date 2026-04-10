@@ -75,6 +75,8 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 | [`schemas/`](schemas/README.md) | TOML schemas: module, tool, permission descriptors | Active draft |
 | [`registry/`](registry/README.md) | `lares:` URI registry · resolver rules · promotion ledger | Active draft |
 | [`talk_story/`](talk_story/README.md) | Talk story protocol · ◎ Orient phase spec · two-track model · voice assignments | Active — canonical |
+| [`chronometer/`](chronometer/) | FFZ Chronometer Protocol · vector clock · ITC · OODA-A nested time · causal islands | Active research — `[S:0.55]` |
+| [`protocols/`](protocols/README.md) | Cross-cutting synthesis specs · intent vectors · deploy architecture · agentic stack | Active — `[S:0.65]` |
 | `compiler/` | ~~Deterministic build compiler~~ | **Invalidated** — compiler pipeline does not exist; content absorbed into S3/S4. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |
 | `platform/` | ~~Multi-platform packaging~~ | **Invalidated** — replaced by deployment authoring model. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |
 

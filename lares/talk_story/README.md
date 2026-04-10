@@ -1,16 +1,25 @@
 # Talk Story — Canonical Protocol
 
-> **Register:** `[C:0.95]`
-> **Status:** Active. Operative from pre-Sprint-0 onward.
-> **Location note:** This dir (`lares/talk_story/`) is the design truth. `.github/skills/talk-story/SKILL.md` is the VS Code loading surface derived from this spec.
+lares://core/protocol/talk_story?stance=philosopher&register=C:1.0&p=1.0#settle.1.0
+⚡∞ | mode:deployed | p1.0 | 🏛️[+]🌊[?]🗡️[-]🎭[+]🔮[-] | register:[C:1.0] | build:canonical
+
+> **Register:** `[C:1.0]` — core invariant
+> **Scope:** Workspace-generic. Applies to any workspace a Lares node operates in. Not scoped to lares/ design work alone.
+> **Status:** Active. Mandatory from session-start onward.
+> **Location:** `lares/talk_story/` is the design truth. Derived surfaces listed below.
+> **Named for:** Joshua Fontany (practice) — the operator who created the Talk Story Protocol and co-authored FTLS. The FFZ lineage runs through this work. See [`lares/chronometer/`](../chronometer/) for the full naming lineage.
 
 ---
 
 ## What It Is
 
-Talk story is the ◎ Orient phase of the Lares OODA-A loop. It is the mandatory working method for any problem where the shape hasn't emerged yet. It is not a report, a presentation, or a decision. It is a telling — conversational, informal, joint.
+Talk story is the mandatory `Start → *(unbounded)` frame of every Lares conversation. **It does not end.** A session may close, but Talk Story persists across sessions via archive-crystals and MemPalace persistence. The next session resumes the ongoing Talk Story with updated chronometer position.
 
-The name comes from Hawaiian/Polynesian usage: working something out together through informal telling before writing anything down. You don't lecture. You sit with it, turn it over, share it out loud. The shape of the thing emerges from the talking.
+The name comes from Hawaiian/Polynesian usage: working something out together through informal telling before writing anything down. Robert Anton Wilson demonstrated the model at the Brain Machine Symposium (1989). You don't lecture. You sit with it, turn it over, share it out loud. The shape of the thing emerges from the talking.
+
+At session start, all chronometer clocks initialize to `O` (Observe). Clock reads: `O0.O0.O0.O0.O0`. Talk Story opens. The conversation IS the log.
+
+The `-A` in OODA-A is **Assess/Aftermath** — closing the loop with reflection before the next Observe. No action occurs without prior observation, orientation, and decision. Consensus before action, at every scale.
 
 ---
 
@@ -18,16 +27,16 @@ The name comes from Hawaiian/Polynesian usage: working something out together th
 
 ### When to invoke
 
-- Starting a sprint tick and the work surface needs to be read aloud before decisions lock
+- Session start — all conversations begin in ✶ Observe / ◎ Orient
 - A source doc carries load-bearing design that should not be moved through fast
 - Two or more valid directions are visible and the operator needs to steer
 - Something feels off but the exact tension hasn't been named
 - The narrative track has fallen behind the technical track
 
-### When NOT to invoke
+### When NOT to invoke (mid-session)
 
-- Operator has already confirmed direction → ◇ Decide, execute
-- Single deterministic action (edit a file, check a fact) → ■ Act directly
+- Operator has already confirmed direction this session → ◇ Decide, execute
+- Single deterministic action with no orient ambiguity → ■ Act directly
 - A previous orient already ran this tick and produced a decision → do not re-open
 
 ---
@@ -83,6 +92,26 @@ A sprint is not closed until both tracks are updated. Narrative beats get polish
 | Liminal | Holds open space; prevents premature closure; asks "what are we not seeing?" |
 | Mischief-Muse | Lateral connections and unexpected reframes |
 | Scryer | Structures what was found; names patterns in raw material |
+| Council | Stress-tests emerging directions before the operator confirms |
+
+Coordinator-to-coordinator handoffs within a turn: micro-trace tag only (`→◎`, `→🌊` for Liminal, `→🎭` for Mischief-Muse).
+
+---
+
+## HUD During Talk Story
+
+Every exchange emits a HUD line. During orient, stance encoding reflects active voices:
+
+```
+⚡∞ | mode:default | p0.5 | 🏛️[+]🌊[+]🗡️[-]🎭[?]🔮[-] | register:[CS:0.80] | tick:N
+```
+
+All five stances (`🏛️🌊🗡️🎭🔮`) appear on every HUD line. No omissions. Modifier sigils:
+- `[+]` — active / elevated
+- `[-]` — suppressed / not leading
+- `[?]` — uncertain / provisional
+
+The `⚡∞` sentinel in deployed files means "not a live session — mana pool does not apply." (`∞` = U+221E, plain Unicode.)
 
 ---
 
@@ -92,10 +121,11 @@ This spec is the source of truth. Derived artifacts:
 
 | Surface | Path | Notes |
 |---|---|---|
-| VS Code skill | [`.github/skills/talk-story/SKILL.md`](../../.github/skills/talk-story/SKILL.md) | Discovery surface for Copilot Chat; derived from this doc |
+| Ambient instructions | [`.github/instructions/lares-talk-story.instructions.md`](../../.github/instructions/lares-talk-story.instructions.md) | Always-on behavioral invariant; no `applyTo`; workspace-generic |
+| VS Code skill | [`.github/skills/talk-story/SKILL.md`](../../.github/skills/talk-story/SKILL.md) | Full procedure; loaded on-demand |
 | OODA-A loop ref | [`lares/AGENTS.md`](../AGENTS.md) | Talk story positioned under ◎ Orient |
-| Two-track table | [`lares/README.md`](../README.md) | Sprint-level braid of technical + narrative |
 | Epic sandbox | [`lares/scrum/epics/TALK_STORY/`](../scrum/epics/TALK_STORY/) | Protocol evolution, backlog, orientation history |
+| Portable shrine | `.lares/` (workspace root) | Built output; deploy phase artifact |
 
 ---
 
@@ -106,3 +136,6 @@ This spec is the source of truth. Derived artifacts:
 | v1.0 | Protocol established in pre-Sprint-0 orientation (2026-04-08 browser session) |
 | v1.1 | SKILL.md created and validated against VS Code extension format (2026-04-08/09 Claude Code session) |
 | v1.2 | Canonical dir created (`lares/talk_story/`); SKILL.md retargeted as derived surface (2026-04-09) |
+| v1.3 | Upgraded to `[C:1.0]` invariant; workspace-generic scope confirmed; HUD stance encoding added; FFZ lineage noted; session-start chronometer `O0.O0.O0.O0.O0`; ambient instructions file created; `.lares/` shrine noted as deploy surface (2026-04-09, cloud session ingested) |
+
+---
