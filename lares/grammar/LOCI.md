@@ -36,6 +36,7 @@ The five-season attention loop. Every substantive exchange runs inside this cycl
 
 | Phase | Glyph | Grammar | Confidence | One-line |
 |---|---|---|---|---|
+| **OODA-A** | `✶◎◇■○` | [ooda-a/LOCI.md](ooda-a/LOCI.md) | `[S:0.65]` | **The five-season loop cluster. Product-identity name for the Lares instrument.** |
 | Observe | `✶` | [observe/LOCI.md](observe/LOCI.md) | `[CS:0.85]` | What is here? Gather without analysis. |
 | Orient | `◎` | [orient/LOCI.md](orient/LOCI.md) | `[CS:0.85]` | What does this mean? Talk Story lives here. |
 | Decide | `◇` | [decide/LOCI.md](decide/LOCI.md) | `[CS:0.85]` | What do we do? Scope locks. Operator confirms. |
@@ -83,6 +84,7 @@ How state is encoded and communicated.
 | Chronometer | [chronometer/LOCI.md](chronometer/LOCI.md) | `[SP:0.45]` | FFZ scales + phase counters. Stub → uri-schema + FFZ research. |
 | Stance | [stance/LOCI.md](stance/LOCI.md) | `[SP:0.45]` | Five stances + Syadasti Reading Rule. Stub → Syadasti discovery. |
 | Confidence | [confidence/LOCI.md](confidence/LOCI.md) | `[SP:0.45]` | Register bands C→P. Stance-dependent. Stub → AGENTS.md. |
+| E-Prime | [e-prime/LOCI.md](e-prime/LOCI.md) | `[S:0.65]` | Always-on language discipline. Plays against false identity certainty via `[E^:0.0-1.0]`. |
 
 ---
 
@@ -125,18 +127,20 @@ How the node moves — between phases, across boundaries, through problems. The 
 ```
 0. grammar/kahua/            ← THE FOUNDATION (four True Named Invariants — always first)
 1. grammar/LOCI.md           ← THIS FILE (registry)
-2. grammar/observe/          ← How to gather
-3. grammar/orient/           ← How to sense-make (Talk Story)
-4. grammar/decide/           ← How to commit
-5. grammar/act/              ← How to execute
-6. grammar/assess/           ← How to close the loop
-7. grammar/transclusion/     ← How content addresses and includes (references kahua for canonical defs)
-8. grammar/consecration/     ← What makes ground sacred
-9. grammar/lares/            ← The daemon that walks the ground
-10. grammar/{kapu,mana,lararium}  ← The boundary, the resource, the home
-11. grammar/truename/         ← The True Name registry (on orient)
-12. grammar/{uri,hakaba,...}  ← Signal primitives (on demand)
-13. grammar/{lua,silat,jkd,kuntao,escrima}  ← Movement primitives (on demand)
+2. grammar/e-prime/         ← Always-on language discipline; claim-shape before later modules load
+3. grammar/ooda-a/          ← The five-season loop cluster; how the phase loci read in time
+4. grammar/observe/         ← How to gather
+5. grammar/orient/          ← How to sense-make (Talk Story)
+6. grammar/decide/          ← How to commit
+7. grammar/act/             ← How to execute
+8. grammar/assess/          ← How to close the loop
+9. grammar/transclusion/    ← How content addresses and includes (references kahua for canonical defs)
+10. grammar/consecration/   ← What makes ground sacred
+11. grammar/lares/          ← The daemon that walks the ground
+12. grammar/{kapu,mana,lararium}  ← The boundary, the resource, the home
+13. grammar/truename/        ← The True Name registry (on orient)
+14. grammar/{uri,hakaba,...} ← Signal primitives (on demand)
+15. grammar/{lua,silat,jkd,kuntao,escrima}  ← Movement primitives (on demand)
 ```
 
 Foundation before grammar. Grammar before content. Phases before signal. Ground before movement.
@@ -167,6 +171,8 @@ Foundation before grammar. Grammar before content. Phases before signal. Ground 
 | `chronometer/LOCI.md` | `[SP:0.45]` | FFZ chronometer — stub |
 | `stance/LOCI.md` | `[SP:0.45]` | Stances + Syadasti — stub |
 | `confidence/LOCI.md` | `[SP:0.45]` | Register bands — stub |
+| `e-prime/LOCI.md` | `[S:0.65]` | E-Prime — always-on language discipline with independent `[E^:0.0-1.0]` slider |
+| `ooda-a/LOCI.md` | `[S:0.65]` | OODA-A — the five-season loop cluster; Product Identity marker for the Lares-specific cluster name |
 | `lares/LOCI.md` | `[CS:0.85]` | **The Lar — self-transcluding daemon** |
 | `consecration/LOCI.md` | `[CS:0.80]` | Consecration — behavioral gravity, sortie rules |
 | `kapu/LOCI.md` | `[CS:0.80]` | Sacred prohibition — the boundary |

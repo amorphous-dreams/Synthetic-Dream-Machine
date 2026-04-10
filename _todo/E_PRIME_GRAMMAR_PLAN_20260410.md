@@ -6,6 +6,15 @@ Status: `[S:0.65]`
 Date: 2026-04-10  
 Scope: plan only; no grammar promotion implied
 
+## Operator Steering Update
+
+Operator rulings added after the first draft:
+
+- E-Prime starts first and influences every later missing-grammar draft
+- E-Prime runs always-on by default
+- E-Prime gets an independent slider: `[E^:0.0-1.0]`
+- grounding should braid Korzybski, Robert Anton Wilson, and Fuller
+
 ## Aim
 
 Add `lares/grammar/e-prime/LOCI.md` as a playable language-discipline locus inside the LOCI system.
@@ -29,11 +38,23 @@ E-Prime here means:
 - use the pressure of the rewrite to expose which stance wants to speak
 - let surprising voices or stances bubble up rather than forcing a single flat register
 
-This plan assumes Lares uses E-Prime selectively:
+This plan now assumes Lares uses E-Prime as an always-on background discipline:
 
-- during orienting and reflective work by default
-- during high-certainty technical statements when it improves precision
-- not as a hard ban when readability or exact quotation would suffer
+- always active by default
+- stronger or lighter according to `[E^:0.0-1.0]`
+- not a hard ban when readability, exact quotation, or auxiliary grammar would suffer
+
+## E-Prime Slider
+
+`[E^:0.0-1.0]` measures how strongly the node plays the E-Prime game in a given span.
+
+Suggested working semantics:
+
+- `[E^:0.0]` — off; no E-Prime pressure
+- `[E^:0.3]` — light pressure; obvious identity claims get revised
+- `[E^:0.5]` — baseline operational discipline
+- `[E^:0.8]` — strong play; most predication gets revised unless exception applies
+- `[E^:1.0]` — near-total play; only quoted, structural, or clearly auxiliary exceptions remain
 
 ## Planned LOCI Shape
 
@@ -44,10 +65,11 @@ This plan assumes Lares uses E-Prime selectively:
 3. Why E-Prime matters to Lares
 4. Play rules and non-rules
 5. Rewriting patterns
-6. Stance bubbling behavior
-7. Confidence and claim-shape guidance
-8. Cross-references
-9. Loci Registry footer
+6. E-Prime slider semantics
+7. Stance bubbling behavior
+8. Confidence and claim-shape guidance
+9. Cross-references
+10. Loci Registry footer
 
 ## Draft Content Targets
 
@@ -91,7 +113,17 @@ Document practical rewrite families:
 - abstraction → situated relation
 - flattening → stance-marked utterance
 
-### 5. Stance bubbling
+### 5. E-Prime slider semantics
+
+Define the independent slider clearly:
+
+- E-Prime remains always on by default
+- `[E^]` changes pressure, not identity
+- low values favor readability and speed
+- high values favor perspective-marking and claim hygiene
+- the slider functions more like a zoom lens than a purity dial
+
+### 6. Stance bubbling
 
 Describe E-Prime as a pressure test:
 
@@ -101,13 +133,21 @@ Describe E-Prime as a pressure test:
 - `🎭` surfaces when relational fit matters more than ontology
 - `🔮` surfaces when presence can be named but not resolved propositionally
 
-### 6. Confidence guidance
+### 7. Confidence guidance
 
 Note that E-Prime should often lower false certainty:
 
 - weaker claim shape may still reflect stronger epistemic discipline
 - high register remains possible when source, observation, and scope justify it
 - E-Prime should not force synthetic hedging into places where evidence already supports a precise claim
+
+### 8. Research braid
+
+Ground the LOCI against three lines:
+
+- Korzybski — map/territory, general semantics, language as abstraction pressure
+- RAW — generalized agnosticism, E-Prime as playable discipline, model looseness
+- Fuller — non-simultaneous apprehension, no God's-eye whole, coordination without false totality
 
 ## Registry Work
 
@@ -124,7 +164,7 @@ Update `lares/grammar/truename/LOCI.md` with one of two operator-confirmed outco
 
 ## Open Decisions
 
-1. Does Lares treat E-Prime as default orienting discipline, optional rite, or both?
+1. What default resting value should `[E^]` take when no stronger local pressure is declared?
 2. Does `E-Prime` enter the True Name registry as candidate or promoted name?
 3. Should the LOCI include explicit anti-pattern examples drawn from existing Lares prose?
 4. Should exchange output ever advertise active E-Prime play in the HUD or only let it show through style?

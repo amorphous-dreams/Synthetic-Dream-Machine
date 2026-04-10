@@ -68,6 +68,35 @@ heritage: >
 
 ---
 
+<!-- ahu lares:///grammar.truename.holds/truename/?confidence=S:0.65#operational-language -->
+
+## Operational Language True Names
+
+*Confidence: `[S:0.65]`. Active draft under operator steering.*
+
+| True Name | Language | LOCUS | Function |
+|---|---|---|---|
+| **E-Prime** | English / General Semantics lineage (*English Prime*; carried here through Korzybski, Bourland, and RAW) | [e-prime/LOCI.md](../e-prime/LOCI.md) | Always-on language game that reduces identity-predication pressure and makes stance, confidence, and observation easier to hear |
+
+---
+
+<!-- ahu lares:///grammar.truename.holds/truename/?confidence=S:0.65#loop-names -->
+
+## Loop and Phase True Names
+
+*Confidence: `[S:0.65]`. Active draft under operator steering.*
+
+| True Name | Language | LOCUS | Function |
+|---|---|---|---|
+| **OODA-A** | English acronym lineage (Observe, Orient, Decide, Act, Assess) | [ooda-a/LOCI.md](../ooda-a/LOCI.md) | The five-season loop cluster; the timed instrument that lets grammar read in motion rather than as static pages |
+| **Observe** | English operational verb (*observe* — attend, notice, watch) | [observe/LOCI.md](../observe/LOCI.md) | The gather phase; receives raw input without premature analysis |
+| **Orient** | English operational verb with navigational resonance (*orient* — find bearing, relate to direction) | [orient/LOCI.md](../orient/LOCI.md) | The sense-making phase; names pattern, tension, and plurality |
+| **Decide** | English operational verb (*decide* — cut off, settle, resolve) | [decide/LOCI.md](../decide/LOCI.md) | The commitment phase; locks heading and scope |
+| **Act** | English operational verb (*act* — do, perform, execute) | [act/LOCI.md](../act/LOCI.md) | The execution phase; turns commitment into artifact |
+| **Assess** | English operational verb (*assess* — evaluate, appraise, sit beside to judge) | [assess/LOCI.md](../assess/LOCI.md) | The closure phase; evaluates outcome, residue, and what carries forward |
+
+---
+
 <!-- ahu lares:///grammar.truename.holds/truename/?confidence=CS:0.80#na-lako -->
 
 ## Nā Lako — The Four Implements (Dual-Named)
