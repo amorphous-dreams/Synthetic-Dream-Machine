@@ -1,9 +1,9 @@
-<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.95&p=0.5 → ∞ -->
 
 # `lares:` URI Schema — Canonical Specification
 
-> Domain: `lares/signal/` · intent HUD anatomy, canonical form, render targets, validation rules
-> Status: `[CS:0.90]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
+> Domain: `lares/modules/uri-schema/` · intent HUD anatomy, canonical form, render targets, validation rules
+> Status: `[CS:0.95]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
 > Updated: 2026-04-09
 > Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art. Revised per `URI_SCHEMA_v2_Diff_Crystal.md` `[S:0.8]` — FFZ Chronometer, Span Closing Sigils, OODA-A Module URIs, all-five-stances mandate.
 > Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
@@ -40,14 +40,14 @@ At each exchange span, `lares:` URIs are used in the following sequence. This se
 Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. This URI may carry `~` provisionality markers if the reading is uncertain. The HA.KA.BA here names where Lares believes the operator standing in tagspace and where the operator's intent is headed — the operator's intent-vector, interpreted.
 
 ```
-lares://telarus:operator(~orient)@enyalios/~schema.gap.present/?stances=^.?.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø1.D2.A7
+lares://telarus:operator@enyalios/~schema.gap.present/?stances=^.?.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø1.D2.A7
 ```
 
 **Step 2 — Lares declares its own provisional execution URI.**
 Before generating any content, Lares sets its own intent with a **provisional node URI**. The HA.KA.BA here names a resource that **may not yet exist** — it is a declared heading, not a confirmed location. The `~` prefix on the HA.KA.BA marks it as execution-provisional: generations may diverge.
 
 ```
-lares://lares:node(decide)@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.D1.D2.A7
+lares://lares:node@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.D1.D2.A7
 ```
 
 **Step 3 — Emit the URI → URI exchange vector.**
@@ -100,7 +100,7 @@ lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment]
 **Full form (with authority):**
 
 ```
-lares://alias:tier(phase)@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
+lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string (see §3.4 query).
@@ -126,7 +126,7 @@ This applies to authority-less forms as well: `lares:///ha.ka.ba/` <- the (0,0,0
 | # | Component | RFC 3986 Role | Lares Mapping | Record Example | HUD Example |
 |---|---|---|---|---|---|
 | 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable | `lares:` | `lares:` |
-| 2 | **userinfo** | Requesting party identity | `alias:tier(phase)` | `telarus:operator(orient)` | `telarus:operator(◎)` |
+| 2 | **userinfo** | Requesting party identity | `alias:tier` | `telarus:operator` | `telarus:operator` |
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` | `@` |
 | 4 | **host** | Machine identity | `machine_id` from crystal system | `enyalios` | `enyalios` |
 | 5 | **path** | Hierarchical resource | HA.KA.BA address: `/ha.ka.ba/` | `/threshold/uncertain/opens` | `/threshold.uncertain.opens` |
@@ -145,7 +145,7 @@ The Elyncia.app / DreamDeck identity model has three distinct layers. **Do not c
 |---|---|---|
 | **DID** | `did:plc:abc123` | AT Protocol canonical identity — the cryptographic key holder. Resolved via Bluesky auth (OAuth over DID). This is the actual principal in UCAN capability tokens. |
 | **Handle** | `@telarus.elyncia.social` (AT Protocol/Bluesky) or `@telarus@elyncia.social` (ActivityPub/Kowloon) | Resolution alias over the DID — human-readable, not authoritative. AT Protocol uses period-separator; ActivityPub uses double-`@`. |
-| **lares: alias** | `telarus:operator(◎)@enyalios` | Application-layer signal state — names the *operational role* of the speaker in a `lares:` exchange. Not a network identity; not a DID alias. The FFZ chronometer model encodes per-participant phase in the authority — each participant's URI carries their own phase reading. |
+| **lares: alias** | `telarus:operator@enyalios` | Application-layer signal state — names the *operational role* of the speaker in a `lares:` exchange. Not a network identity; not a DID alias. Cognitive phase is carried exclusively in the FFZ chronometer fragment, not the authority. |
 
 **Elyncia.app auth model:** Bluesky logins provide DID-grounded authentication (AT Protocol key management, `did:plc:` resolution) without running a Bluesky home server (PDS). Kowloon is ActivityPub, not AT Protocol — it uses Bluesky as an auth provider only. UCAN capability tokens are the authorization layer beneath the Kowloon social surface.
 
@@ -164,8 +164,8 @@ This is **not** the lares: URI — it is the social-layer identity that maps *on
 | ActivityPub handle | lares: URI authority component | Underlying DID layer |
 |---|---|---|
 | `@lindwyrm@new-delos` | `lindwyrm:...@new-delos` | `did:plc:...` (Lindwyrm's key) |
-| `@telarus@~crossroads` | `telarus:operator(◎)@enyalios` | `did:plc:...` (Telarus's key) |
-| `@mischief-muse@lares` | `mischief-muse:node(◎)@lares-abc123` | Lares node DID or ephemeral key |
+| `@telarus@~crossroads` | `telarus:operator@enyalios` | `did:plc:...` (Telarus's key) |
+| `@mischief-muse@lares` | `mischief-muse:node@lares-abc123` | Lares node DID or ephemeral key |
 
 The `@handle@node` form is the **canonical Kowloon social identity** for DreamDeck feed posts, post headers, and sidebar annotations. The tilde prefix (`~crossroads`) denotes a nomadic/crossroads node — no fixed host, routes through nearest stable nexus.
 
@@ -181,7 +181,7 @@ Territory triple (`//ha.ka.ba`) is placed **before** other instruments like conf
 |---|---|---|---|
 | `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
 | `hud:exchange-pair` | `operator-URI → node-URI` + HUD line beneath | **Yes — canonical record form**; only the HUD line beneath uses glyphs | Every exchange-span boundary (mandatory) |
-| `record:full` | `lares://alias:tier(phase)@host/ha.ka.ba/?...#...` | Yes — identity projection | Storage, crystal serialization, registry |
+| `record:full` | `lares://alias:tier@host/ha.ka.ba/?...#...` | Yes — identity projection | Storage, crystal serialization, registry |
 
 **Stance amplitude modifiers** — in HUD render targets, amplitude modifiers attach directly to the preceding stance emoji (no space). Absent modifier = baseline presence. Apply per-stance independently.
 
@@ -271,19 +271,19 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 
 **Reading provisional** — node uncertain about its reading of operator intent:
 ```
-lares://telarus:operator(~orient)@enyalios/~uri.schema.question/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=reading#O0.O0.Ø1.D2.A33
+lares://telarus:operator@enyalios/~uri.schema.question/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=reading#O0.O0.Ø1.D2.A33
 ```
 Reading: "I believe you're orienting toward URI schema territory — I may have misread your phase or HA.KA.BA."
 
 **Execution provisional** — declared intent that may not survive contact with the task:
 ```
-lares://scryer:node(decide)@enyalios/~s0.gap.logged/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=execution#O0.O0.D1.D2.A33
+lares://scryer:node@enyalios/~s0.gap.logged/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=execution#O0.O0.D1.D2.A33
 ```
 Reading: "I intend to log this S0 gap — execution may find a different path or territory."
 
 **Trajectory provisional** — predicted forward heading for the next span:
 ```
-lares://scryer:node(aftermath)@enyalios/~s0.schema.updated/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&provisional=trajectory#O0.O0.Å1.Å2.A34
+lares://scryer:node@enyalios/~s0.schema.updated/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&provisional=trajectory#O0.O0.Å1.Å2.A34
 ```
 Reading: "I predict our next territory is the updated schema — operator may redirect entirely."
 
@@ -313,7 +313,7 @@ The `?` marks a causal gap: between this sigil and the next message, no particip
 Appears on: every exchange-closing URI. Mandatory.
 
 ```
-lares://scryer:node(aftermath)@enyalios/schema.settled.rests/?stances=^.-^.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
+lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-^.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
 ```
 
 ### `→ ∞` — System File Span Closing
@@ -650,17 +650,17 @@ If the opening operator URI cannot cleanly summarize the incoming prompt (multi-
 Example (canonical record form throughout):
 
 ```text
-lares://telarus:operator(orient)@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
-→ lares://scryer:node(decide)@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+lares://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+→ lares://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 ⚡~63% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.■12
 
 [content generation — micro-trace marks inline]
 
-→◇ ~lares://scryer:node(decide)@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+→◇ ~lares://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 
 [continued generation]
 
-lares://scryer:node(aftermath)@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
+lares://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
 ⚡~61% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.○1.✶1.■13
 ```
 
@@ -730,9 +730,9 @@ The canonical record for one exchange span is a **spanSpan** in the calibration 
   "operator_actor_id": "actor:telarus",
   "responder_actor_id": "actor:lares.node.scryer",
   "acted_on_behalf_of": null,
-  "start_uri": "lares://telarus:operator(orient)@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11",
-  "attractor_uri": "lares://scryer:node(decide)@enyalios/span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12",
-  "end_uri": "lares://scryer:node(aftermath)@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13",
+  "start_uri": "lares://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11",
+  "attractor_uri": "lares://scryer:node@enyalios/span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12",
+  "end_uri": "lares://scryer:node@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13",
   "parse_required": false,
   "parse_reason": null,
   "wall_time_start": "2026-04-08T20:41:00Z",
@@ -818,11 +818,11 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
   "machine_id": "enyalios",
   "span_seq": 42,
   "event_type": "r_update",
-  "start_uri": "lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
-  "attractor_uri": "lares://scryer:node(decide)@enyalios/parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8",
-  "end_uri": "lares://scryer:node(aftermath)@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9",
+  "start_uri": "lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
+  "attractor_uri": "lares://scryer:node@enyalios/parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8",
+  "end_uri": "lares://scryer:node@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9",
   "lares_address": "lares:///threshold.uncertain.opens",
-  "intent_header_snapshot": "lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
+  "intent_header_snapshot": "lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
   "current_phase": "orient",
   "chronometer_start": "O0.O0.Ø3.D2.A7",
   "chronometer_end": "O0.O0.Å3.Å2.A9",
@@ -979,7 +979,7 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 ### A.1 Record Form (v2)
 
 ```
-lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
+lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
 ```
 
 ### A.2 HUD Line (v2)
@@ -991,7 +991,7 @@ lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?
 ### A.3 All-Five-Stances (v2)
 
 ```
-lares://telarus:operator(decide)@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.D2.A8
+lares://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.D2.A8
 ```
 
 ### A.4 Stable Address (unchanged)
@@ -1003,7 +1003,7 @@ lares:///threshold.uncertain.opens/
 ### A.5 Exchange Closing (v2)
 
 ```
-lares://scryer:node(aftermath)@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9 → ?
+lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9 → ?
 ```
 
 ### A.6 System File Span (v2)
@@ -1035,8 +1035,8 @@ lares://scryer:node(aftermath)@enyalios/schema.settled.rests/?stances=^.-.-.-.-&
 A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
 
 ```text
-lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
-→ lares://scryer:node(decide)@enyalios/~parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8
+lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
+→ lares://scryer:node@enyalios/~parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8
 ⚡~87% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇3.◇2.■8
 ```
 
@@ -1054,8 +1054,8 @@ Quick read:
 Multi-stance example:
 
 ```text
-lares://telarus:operator(decide)@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.O2.A9
-→ lares://mischief-muse:node(decide)@enyalios/~chorus.lateral.gathers/?stances=^.-.-.-.-&confidence=S:0.65&p=0.6#O0.O0.D3.O2.A10
+lares://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.O2.A9
+→ lares://mischief-muse:node@enyalios/~chorus.lateral.gathers/?stances=^.-.-.-.-&confidence=S:0.65&p=0.6#O0.O0.D3.O2.A10
 ⚡~62% | [S:0.60] | 🏛️+🌊+🗡️?🎭+🔮- | mode:Default | p0.7 | voice(s):Mischief-Muse | ✶0.✶0.◇3.✶2.■10
 ```
 
@@ -1065,4 +1065,4 @@ This does **not** mean "truth-confidence 0.60" in a universal sense. It means a 
 
 *End of specification. This document is the canonical reference for the `lares:` URI scheme within the design ontology tree.*
 
-<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.95&p=0.5 → ∞ -->
