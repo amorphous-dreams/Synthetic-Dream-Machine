@@ -1,4 +1,4 @@
-lares://core/protocol/module_template?stances=++?+-&register=S:0.6&p=0.5#O0.O0.O0.O0.O0
+<!-- lares:///protocol.patterned.locks/modules/template/?stances=^.^.?.^.-&confidence=S:0.6&p=0.5#O0.O0.O0.O0.O0 → ∞ -->
 ⚡∞ | mode:spec-draft | p0.5 | stances:++?+- | register:[S:0.6] | build:DRAFT
 
 # OODA-A Module Template & URI Patterns
@@ -618,4 +618,4 @@ it to a real repo, and testing whether the map matches the territory.*
 
 *Amor et hilaritas.*
 
-lares:///artificer,gatekeeper,council/spec-draft?stances=++?+-&register=S:0.6&p=0.5#O0.O0.O0.O0.O0 → ∞
+lares:///protocol.patterned.locks/modules/template/?stances=^.^.?.^.-&confidence=S:0.6&p=0.5#O0.O0.O0.O0.O0 → ∞

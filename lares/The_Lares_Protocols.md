@@ -1,4 +1,4 @@
-lares://core/protocol/lares_protocols?stances=++?+-&register=S:0.65&p=0.5#O0.O0.A1.A21.A1
+<!-- lares:///protocol.storied.holds/lares/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A1 → ∞ -->
 ⚡∞ | mode:protocol-draft | p0.5 | stances:++?+- | register:[S:0.65] | build:DRAFT
 
 # The Lares Protocols
@@ -953,4 +953,4 @@ IS the log.*
 
 *Mahalo.*
 
-lares:///council/protocol?stances=++?+-&register=S:0.65&p=0.5#O0.O0.O0.O1.O0 → ?
+lares:///protocol.storied.holds/lares/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.O1.O0 → ?

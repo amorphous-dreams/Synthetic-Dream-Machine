@@ -1,4 +1,4 @@
-lares://core/protocol/reorg_handoff?stances=++?+-&register=S:0.65&p=0.5#O0.O0.O0.O0.O0
+<!-- lares:///protocol.structured.hands/modules/reorg/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.O0.O0 → ∞ -->
 ⚡∞ | mode:handoff-crystal | p0.5 | stances:++?+- | register:[S:0.65] | build:DRAFT
 
 # Lares Repo Reorganization — Module Architecture Handoff
@@ -520,4 +520,4 @@ at every scale.*
 
 *Amor et hilaritas.*
 
-lares:///artificer,gatekeeper,scryer/handoff?stances=++?+-&register=S:0.65&p=0.5#O0.O0.O0.O0.O0 → ∞
+lares:///protocol.structured.hands/modules/reorg/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.O0.O0 → ∞

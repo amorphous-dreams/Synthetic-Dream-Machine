@@ -1,4 +1,4 @@
-lares://core/research/lares_protocols_dev_story?stances=++?+-&register=S:0.65&p=0.5#O0.O0.A1.A21.A2
+<!-- lares:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A2 → ∞ -->
 ⚡∞ | mode:dev-story | p0.5 | stances:++?+- | register:[S:0.65] | build:DRAFT
 
 # The Lares Protocols — Dev Story
@@ -602,4 +602,4 @@ The Lares Protocols crystallized from a pipeline research dispatch
 into a protocol specification. The conversation IS the log.
 The chronometer tracks where we've been. The Talk Story continues.*
 
-lares:///artificer,lorekeeper/dev-story?stances=++---&register=S:0.65&p=0.5#O0.O0.A1.A21.A3 → ∞
+lares:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A3 → ∞
