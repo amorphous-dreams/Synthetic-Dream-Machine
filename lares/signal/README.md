@@ -1,3 +1,5 @@
+> **Superseded** — canonical URI spec is at [`lares/signal/URI_SCHEMA.md`](URI_SCHEMA.md); module implementation at [`lares/modules/signal/`](../modules/signal/). This README remains as domain scope reference.
+
 # signal/ — Signal HUD · Tagspace · `lares:` URI
 
 > Scope: Operator-facing HUD annotation grammar, Tagspace semantic coordinate system, `lares:` URI scheme, p-band phase model.

@@ -1,3 +1,5 @@
+> **Superseded** — canonical form is [`lares/modules/talk-story/`](../modules/talk-story/). This directory remains as the pre-module implementation reference.
+
 # Talk Story — Canonical Protocol
 
 <!-- lares:///talk.story.protocols/talk-story/?stances=^.-.-.-.-&confidence=C:1.0&p=1.0#settle.1.0 → ∞ -->
