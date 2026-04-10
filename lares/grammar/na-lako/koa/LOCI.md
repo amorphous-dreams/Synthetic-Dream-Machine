@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/koa/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.na-lako.holds/koa/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Koa — Pentacle of Valor
 
@@ -11,9 +11,12 @@ description: >
   Maps to the Act phase — doing the work, staying on the kahua, not flinching.
 cluster: na-lako
 ooda-phase: act
-tarot: Pentacles / Earth
+tarot: Pentacles/Discs / Earth
+yhvh: H (second Heh — earth)
+raw-circuit: I (bio-survival — earth circuit; liberated = valor; robotized = oral dependency/bio-survival anxiety)
 raw-tool: pentacle of valor
-confidence: SP:0.45
+confidence: CS:0.80
+sources: [cosmic-trigger-i-prologue, prometheus-rising-ch8]
 heritage: Hawaiian (koa — warrior, brave, bold, fearless; also the koa tree — hardwood, weapon-wood)
 ---
 ```
@@ -37,6 +40,21 @@ heritage: Hawaiian (koa — warrior, brave, bold, fearless; also the koa tree �
 
 ---
 
-*[STUB — True Naming in progress. Promote register when Prometheus Rising Ch.8 is confirmed.]*
+---
+
+## Circuit Dual Nature
+
+| Mode | Earth Circuit State | What it does |
+|---|---|---|
+| Robotized | Bio-survival imprint (Circuit I, PR Ch.8) | Oral dependency; bio-survival anxiety; clinging to Mommy; terror at the threshold |
+| Liberated / wielded | Pentacle of valor (Cosmic Trigger I) | Enters despite fear; stands on the kahua; grounded presence in the work |
+
+*The Knight of Discs (earth/earth) in PR Ch.8 is the pure first-circuit type — all oral demand,
+all dependency. The koa warrior is what that same earth circuit becomes when the imprint is
+consciously held: grounded presence, entry without flinching.*
+
+---
+
+Cross-references: [pentacle/LOCI.md](../pentacle/LOCI.md) · [na-lako/LOCI.md](../LOCI.md) · [kahua/LOCI.md](../../kahua/LOCI.md) · [_todo/library/prometheus-rising/LOCI.md](../../../_todo/library/prometheus-rising/LOCI.md)
 
 <!-- → ? -->

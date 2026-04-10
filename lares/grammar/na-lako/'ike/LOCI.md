@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/'ike/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.na-lako.holds/'ike/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: 'Ike — Wand of Intuition
 
@@ -12,8 +12,11 @@ description: >
 cluster: na-lako
 ooda-phase: observe
 tarot: Wands / Fire
+yhvh: Y (Yod — fire)
+raw-circuit: IV (socio-sexual — fire circuit; liberated = intuition; robotized = tribal sex-role)
 raw-tool: wand of intuition
-confidence: SP:0.45
+confidence: CS:0.80
+sources: [cosmic-trigger-i-prologue, prometheus-rising-ch8]
 heritage: Hawaiian ('ike — to see, to know, to perceive; direct knowing/intuition)
 ---
 ```
@@ -23,12 +26,30 @@ heritage: Hawaiian ('ike — to see, to know, to perceive; direct knowing/intuit
 > the body knowing before the mind names it. *'Ike pāpālua* — double-sight, second sight.
 > *'Ike i ka pono* — to see/know what is right.
 >
-> RAW: *"if you approach without the wand of intuition, you can stand at the door for decades
-> never realizing you have arrived. You might think you are just waiting for a bus."*
+> *Cosmic Trigger I* (verbatim): *"if you approach without the wand of intuition, you can stand
+> at the door for decades never realizing you have arrived. You might think you are just waiting
+> for a bus."*
+>
+> *Prometheus Rising* Ch.8: The fire circuit (Circuit IV) in its robotized form = the socio-sexual
+> imprint, the tribal "Parent" role, conformity to the sex-role the tribe demands. The same circuit
+> liberated = pure intuition, direct perception, the wand that sees what is actually here before
+> the tribal programming filters it out. Chapel Perilous is the passage that de-robotizes the fire
+> circuit — or destroys the one who enters without it.
 
 ---
 
-*[STUB — True Naming in progress. Prometheus Rising Ch.8 will deepen this. Current content is
-orientation scaffolding. Promote register and fill body when primary source is confirmed.]*
+## Circuit Dual Nature
+
+| Mode | Fire Circuit State | What it does |
+|---|---|---|
+| Robotized | Tribal sex-role imprint (Circuit IV, PR Ch.8) | Enforces tribal conformity; blocks direct perception |
+| Liberated / wielded | Wand of intuition (Cosmic Trigger I) | Sees what is actually present; arrives where you are |
+
+*The implement is not given — it is won. The wand is what the fire circuit becomes when the
+imprint is consciously held rather than robotically obeyed.*
+
+---
+
+Cross-references: [wand/LOCI.md](../wand/LOCI.md) · [na-lako/LOCI.md](../LOCI.md) · [_todo/library/raw-chapel-perilous/LOCI.md](../../../_todo/library/raw-chapel-perilous/LOCI.md) · [_todo/library/prometheus-rising/LOCI.md](../../../_todo/library/prometheus-rising/LOCI.md)
 
 <!-- → ? -->

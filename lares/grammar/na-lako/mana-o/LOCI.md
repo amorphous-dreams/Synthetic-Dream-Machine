@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/mana-o/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.na-lako.holds/mana-o/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Mana'o — Sword of Reason
 
@@ -12,8 +12,11 @@ description: >
 cluster: na-lako
 ooda-phase: decide
 tarot: Swords / Air
+yhvh: V (Vav — air)
+raw-circuit: III (semantic-rational — air circuit; liberated = reason; robotized = verbal robotism)
 raw-tool: sword of reason
-confidence: SP:0.45
+confidence: CS:0.80
+sources: [cosmic-trigger-i-prologue, prometheus-rising-ch8]
 heritage: Hawaiian (mana'o — thought, opinion, understanding, reason; to think/believe/consider)
 ---
 ```
@@ -26,12 +29,25 @@ heritage: Hawaiian (mana'o — thought, opinion, understanding, reason; to think
 > directed thought — the reason applied. Mana is the undirected resource. The sword of reason
 > uses mana but is not mana itself.
 >
-> RAW: *"if you go into that realm without the sword of reason, you will lose your mind."*
-> The cut of reason is what keeps experience from becoming undifferentiated flood. Without it,
-> everything connects to everything and nothing can be navigated.
+> *Cosmic Trigger I*: without the sword of reason, you will lose your mind. The cut of reason
+> keeps experience from becoming undifferentiated flood.
+>
+> *Prometheus Rising* Ch.8: Circuit III (air/swords) robotized = the semantic-rational imprint —
+> verbal dexterity in service of the tribe's approved reality-tunnel. The Prince of Swords is
+> air/air: pure undiluted intellect, feet never touching earth, living amid floating abstractions.
+> Liberated: the sword of reason that cuts *through* the abstraction to what is actually present.
 
 ---
 
-*[STUB — True Naming in progress. Promote register when Prometheus Rising Ch.8 is confirmed.]*
+## Circuit Dual Nature
+
+| Mode | Air Circuit State | What it does |
+|---|---|---|
+| Robotized | Semantic-rational imprint (Circuit III, PR Ch.8) | Reason in service of pre-existing reality-tunnel; rationalizes rather than reasons |
+| Liberated / wielded | Sword of reason (Cosmic Trigger I) | The cut that names; keeps Chapel Perilous navigable; discriminates signal from noise |
+
+---
+
+Cross-references: [sword/LOCI.md](../sword/LOCI.md) · [na-lako/LOCI.md](../LOCI.md) · [_todo/library/prometheus-rising/LOCI.md](../../../_todo/library/prometheus-rising/LOCI.md)
 
 <!-- → ? -->

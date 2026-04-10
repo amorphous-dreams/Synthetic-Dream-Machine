@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/na-lako/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.na-lako.holds/na-lako/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Nā Lako — The Four Implements
 
@@ -20,8 +20,9 @@ trigger: always — grammar primitive
 invariant: true
 protected: false
 dependencies: [kahua, observe, orient, decide, act]
-confidence: SP:0.45
+confidence: CS:0.80
 grammar: true
+sources: [cosmic-trigger-i-prologue, prometheus-rising-ch8]
 heritage: >
   RAW/Tarot/Alchemy (wand/cup/sword/pentacle — the four suits, four elements).
   Hawaiian (nā lako — the equipment, to be fully supplied; 'ike, ipu, mana'o, koa).
@@ -66,14 +67,18 @@ the full kit. The Hawaiian navigator setting out with nā lako has every impleme
 
 ## The Four Implements
 
-Individual LOCI — stub, True Naming in progress:
+Individual LOCI — Hawaiian True Names and English True Names, stub, True Naming in progress:
 
-| Implement | Hawaiian | Grammar | Status |
-|---|---|---|---|
-| [Wand of intuition]('ike/LOCI.md) | **'Ike** | ✶ Observe | `[SP:0.45]` stub |
-| [Cup of sympathy](ipu/LOCI.md) | **Ipu** | ◎ Orient | `[SP:0.45]` stub |
-| [Sword of reason](mana-o/LOCI.md) | **Mana'o** | ◇ Decide | `[SP:0.45]` stub |
-| [Pentacle of valor](koa/LOCI.md) | **Koa** | ■ Act | `[SP:0.45]` stub |
+| Implement | Hawaiian LOCUS | English LOCUS | Grammar | Status |
+|---|---|---|---|---|
+| Wand of intuition | ['Ike]('ike/LOCI.md) | [Wand](wand/LOCI.md) | ✶ Observe | `[SP:0.45]` stub |
+| Cup of sympathy | [Ipu](ipu/LOCI.md) | [Cup](cup/LOCI.md) | ◎ Orient | `[SP:0.45]` stub |
+| Sword of reason | [Mana'o](mana-o/LOCI.md) | [Sword](sword/LOCI.md) | ◇ Decide | `[SP:0.45]` stub |
+| Pentacle of valor | [Koa](koa/LOCI.md) | [Pentacle](pentacle/LOCI.md) | ■ Act | `[SP:0.45]` stub |
+
+**Fifth implement (candidate):** [Shield](shield/LOCI.md) — position in cluster open; see that LOCI for Talk Story questions.
+
+**Meta-locus:** [Tarot](tarot/LOCI.md) — the 78-card system that contains the four suits. Camden Benares ingestion pending.
 
 The ○ Assess phase is the reward for carrying all four through: the Philosopher's Stone. The
 transformation that becomes possible after passage, not during.
@@ -98,6 +103,12 @@ The fifth phase (○ Assess) is not a tool — it is the result of using all fou
 **Model agnosticism as the wield-pattern:** You do not believe the wand IS intuition. You use
 it *as* intuition. The map is not the territory; the wand is not the knowing. The implements
 are instruments, not truths.
+
+**The YHVH layer** (*Prometheus Rising* Ch.8): The four suits are the four letters of the
+Unspeakable Name — Y (fire/wands), H (water/cups), V (air/swords), H (earth/discs/pentacles).
+Each implement is also a circuit of the human nervous system — in its robotized form, a trap;
+in its liberated form, a tool. Chapel Perilous is the passage that de-robotizes the circuits.
+The Cabalistic aim: *"bringing the four circuits into balance"* = nā lako = armed together.
 
 ---
 
@@ -124,10 +135,16 @@ The full OODA-A loop IS the complete kit.
 | Path | Status | Contents |
 |---|---|---|
 | `LOCI.md` | `[SP:0.45]` | This file — nā lako cluster root |
-| `'ike/LOCI.md` | `[SP:0.45]` | Wand of intuition · 'Ike · ✶ Observe |
-| `ipu/LOCI.md` | `[SP:0.45]` | Cup of sympathy · Ipu · ◎ Orient |
-| `mana-o/LOCI.md` | `[SP:0.45]` | Sword of reason · Mana'o · ◇ Decide |
-| `koa/LOCI.md` | `[SP:0.45]` | Pentacle of valor · Koa · ■ Act |
+| `'ike/LOCI.md` | `[SP:0.45]` | Wand of intuition · 'Ike (Hawaiian) · ✶ Observe |
+| `ipu/LOCI.md` | `[SP:0.45]` | Cup of sympathy · Ipu (Hawaiian) · ◎ Orient |
+| `mana-o/LOCI.md` | `[SP:0.45]` | Sword of reason · Mana'o (Hawaiian) · ◇ Decide |
+| `koa/LOCI.md` | `[SP:0.45]` | Pentacle of valor · Koa (Hawaiian) · ■ Act |
+| `wand/LOCI.md` | `[SP:0.45]` | Wand of intuition (English) · ✶ Observe |
+| `cup/LOCI.md` | `[SP:0.45]` | Cup of sympathy (English) · ◎ Orient |
+| `sword/LOCI.md` | `[SP:0.45]` | Sword of reason (English) · ◇ Decide |
+| `pentacle/LOCI.md` | `[SP:0.45]` | Pentacle of valor (English) · ■ Act |
+| `shield/LOCI.md` | `[SP:0.45]` | Shield — fifth implement candidate · position open |
+| `tarot/LOCI.md` | `[SP:0.45]` | Tarot meta-locus — the 78-card system; Camden Benares pending |
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/ipu/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.na-lako.holds/ipu/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Ipu — Cup of Sympathy
 
@@ -12,8 +12,11 @@ description: >
 cluster: na-lako
 ooda-phase: orient
 tarot: Cups / Water
+yhvh: H (first Heh — water)
+raw-circuit: II (emotional-territorial — water circuit; liberated = sympathy; robotized = territorial dominance)
 raw-tool: cup of sympathy
-confidence: SP:0.45
+confidence: CS:0.80
+sources: [cosmic-trigger-i-prologue, prometheus-rising-ch8]
 heritage: Hawaiian (ipu — gourd, vessel, container; that which holds and pours)
 ---
 ```
@@ -26,10 +29,21 @@ heritage: Hawaiian (ipu — gourd, vessel, container; that which holds and pours
 > inside your own frame without dissolving or distorting it. The Orient phase requires this:
 > tensions are held, not collapsed. Multiple perspectives are in the ipu simultaneously.
 >
-> RAW: *"if you take only the sword of reason without the cup of sympathy, you will lose your heart."*
+> *Prometheus Rising* Ch.8: Circuit II (water/cups) in its robotized form = emotional-territorial
+> dominance — the mammalian status contest, the pack hierarchy, the pure predator. Liberated:
+> the cup of sympathy — emotional intelligence that *holds* rather than dominates.
 
 ---
 
-*[STUB — True Naming in progress. Promote register when Prometheus Rising Ch.8 is confirmed.]*
+## Circuit Dual Nature
+
+| Mode | Water Circuit State | What it does |
+|---|---|---|
+| Robotized | Emotional-territorial imprint (Circuit II, PR Ch.8) | Pack politics; dominance/submission; blocks relational holding |
+| Liberated / wielded | Cup of sympathy (Cosmic Trigger I) | Holds another's reality without collapsing it; Talk Story capacity |
+
+---
+
+Cross-references: [cup/LOCI.md](../cup/LOCI.md) · [na-lako/LOCI.md](../LOCI.md) · [_todo/library/prometheus-rising/LOCI.md](../../../_todo/library/prometheus-rising/LOCI.md)
 
 <!-- → ? -->

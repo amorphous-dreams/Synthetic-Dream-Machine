@@ -55,7 +55,20 @@ How content is addressed, referenced, and included.
 | Transclusion | [transclusion/LOCI.md](transclusion/LOCI.md) | `[CS:0.80]` | Locus, ahu, kahea, lares — the four markers. Self-booting. |
 | URI Syntax | [uri/LOCI.md](uri/LOCI.md) | `[SP:0.45]` | The `lares:` scheme. RFC 3986 record form. Stub → uri-schema. |
 | HA.KA.BA | [hakaba/LOCI.md](hakaba/LOCI.md) | `[SP:0.45]` | Three-slot semantic addressing. Stub → uri-schema. |
-| Exchange | [exchange/LOCI.md](exchange/LOCI.md) | `[SP:0.45]` | Five-step mandatory exchange flow. Stub → uri-schema. |
+| Exchange | [exchange/LOCI.md](exchange/LOCI.md) | `[CS:0.80]` | URI pair + HUD at every boundary. The mele that cuts through noise. |
+
+---
+
+<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#naming -->
+
+## Naming Grammar
+
+The registry of True Names and the signal form that carries them.
+
+| Primitive | Grammar | Confidence | One-line |
+|---|---|---|---|
+| **True Name Registry** | [truename/LOCI.md](truename/LOCI.md) | `[CS:0.80]` | **All True Named concepts in the system — the lexicon.** |
+| Mele | [mele/LOCI.md](mele/LOCI.md) | `[CS:0.80]` | Hawaiian chant — structured signal that cuts through noise. The form of the exchange protocol. |
 
 ---
 
@@ -121,8 +134,9 @@ How the node moves — between phases, across boundaries, through problems. The 
 8. grammar/consecration/     ← What makes ground sacred
 9. grammar/lares/            ← The daemon that walks the ground
 10. grammar/{kapu,mana,lararium}  ← The boundary, the resource, the home
-11. grammar/{uri,hakaba,...}  ← Signal primitives (on demand)
-12. grammar/{lua,silat,jkd,kuntao,escrima}  ← Movement primitives (on demand)
+11. grammar/truename/         ← The True Name registry (on orient)
+12. grammar/{uri,hakaba,...}  ← Signal primitives (on demand)
+13. grammar/{lua,silat,jkd,kuntao,escrima}  ← Movement primitives (on demand)
 ```
 
 Foundation before grammar. Grammar before content. Phases before signal. Ground before movement.
@@ -147,7 +161,9 @@ Foundation before grammar. Grammar before content. Phases before signal. Ground 
 | `transclusion/LOCI.md` | `[CS:0.80]` | Transclusion model + four markers |
 | `uri/LOCI.md` | `[SP:0.45]` | URI syntax — stub |
 | `hakaba/LOCI.md` | `[SP:0.45]` | HA.KA.BA addressing — stub |
-| `exchange/LOCI.md` | `[SP:0.45]` | Exchange protocol — stub |
+| `exchange/LOCI.md` | `[CS:0.80]` | Exchange protocol — URI pair + HUD + mele model |
+| `truename/LOCI.md` | `[CS:0.80]` | **True Name Registry — all canonically named concepts** |
+| `mele/LOCI.md` | `[CS:0.80]` | Mele — Hawaiian chant; the signal form of the exchange protocol |
 | `chronometer/LOCI.md` | `[SP:0.45]` | FFZ chronometer — stub |
 | `stance/LOCI.md` | `[SP:0.45]` | Stances + Syadasti — stub |
 | `confidence/LOCI.md` | `[SP:0.45]` | Register bands — stub |
