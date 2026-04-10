@@ -97,6 +97,7 @@ This goes inline in the sprint task doc or REFINEMENT_LOG.md — not a separate 
 
 ## Source
 
+- `lares/talk_story/README.md` — **Canonical protocol spec** (source of truth for this skill)
 - `lares/AGENTS.md` — OODA-A loop definition, talk story as ◎ Orient
 - `lares/README.md` — Two-track model, sprint braid table S0–S5
 - `lares/scrum/ROADMAP.md` — On Fire section, current sprint state

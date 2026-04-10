@@ -175,6 +175,30 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 
 ---
 
+### S0-09 — Establish Narrative Track + Talk Story Protocol
+
+**Worker:** Operator + Ink-Clerk
+**Register target:** `[CS:0.82]`
+**Input:** OODA-A loop (lares/AGENTS.md), talk story skill spec, epic narrative docs
+**Acceptance criteria:**
+1. `talk-story` skill loadable in VS Code (SKILL.md present at `.github/skills/talk-story/`)
+2. Narrative track active: each sprint epic has an opening beat linking to story docs
+3. TALK_STORY process sprint closed — deliverables table complete
+4. ROADMAP.md epic link includes TALK_STORY with ✅ Complete status
+5. S0 task board (this doc) updated with S0-09
+
+**Deliverables:**
+- ✅ `lares/AGENTS.md` — OODA-A loop with talk story under ◎ Orient
+- ✅ `lares/README.md` — Two-track braid table (S0–S5)
+- ✅ `.github/skills/talk-story/SKILL.md` — VS Code loadable
+- ✅ `lares/scrum/epics/TALK_STORY/SPRINT_TALK_STORY_TASKS.md` — Pre-sprint orientation epic closed
+- ✅ `lares/scrum/ROADMAP.md` — TALK_STORY row wired into sprint link table
+- ✅ `lares/scrum/research/SKILL_PLATFORMS.md` — Platform research for skill deployment paths
+
+**Notes:** This task is retrospective — it documents the TALK_STORY pre-sprint work and formally closes it within the S0 task board. Narrative track is an ongoing concern; each sprint picks it up via the Two-Track Model in lares/README.md.
+
+---
+
 ### S0-08 — Operator Review Gate
 
 **Worker:** None — this is an operator task

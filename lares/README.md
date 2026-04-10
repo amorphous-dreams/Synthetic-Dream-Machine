@@ -2,7 +2,7 @@
 
 > Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, crystal state machine, and deployment authoring. Parallel track: sprint narrative (talk story → myth canon).
 > Updated: 2026-04-09
-> Status: Active — source docs migrating from `_todo/core/` into `lares/` subdirs; sprint artifacts in `lares/sprints/`; story canon in `lares/sprints/LINDWYRM_*.md`; `lares:` URI schema at `[CS:0.80]` pending S0 Settling
+> Status: Active — source docs migrating from `_todo/core/` into `lares/` subdirs; sprint artifacts in `lares/scrum/sprints/`; story canon in `lares/scrum/epics/LINDWYRM_*.md`; `lares:` URI schema at `[CS:0.80]` pending S0 Settling
 > URI: `lares://lares:node(act)@Enyalios/design.ontology.root`
 
 ---
@@ -25,11 +25,11 @@ This system runs a **three-truth model** — not a single source of truth:
 
 Design objects carry their confidence as a tag (`[S:0.72]`, `[CS:0.86]`, `[C:0.95]`). A semantic URI can remain stable as its register advances — promote semantics in place. Deployed artifacts in `builds/agents/` should be published as new immutable versions with a moving alias/pointer, never overwritten. All promotion events are recorded append-only in the registry ledger.
 
-Source scratch docs migrate from `_todo/core/` into the appropriate subdir or `lares/sprints/spikes/` as they are consumed. *[Anthropic Prompt Eng Docs, 2026; hamel.dev/evals, 2024]*
+Source scratch docs migrate from `_todo/core/` into the appropriate subdir or `lares/scrum/research/` as they are consumed. *[Anthropic Prompt Eng Docs, 2026; hamel.dev/evals, 2024]*
 
 ---
 
-## Talk Story — Sprint Narrative Track
+## Talk Story — Sprint Narrative Track Example
 
 > *"Talk story" (Hawaiian/Polynesian) — the practice of working something out together through informal, conversational telling before writing anything down. You don't lecture. You don't present. You sit with it, turn it over, share it out loud, let others respond. The shape of the thing emerges from the talking.*
 
@@ -40,11 +40,11 @@ Every sprint runs **two parallel tracks**:
 | **Technical track** | Spec files, schemas, validated design artifacts in `lares/` subdirs | `[C:0.95]` — design-canon |
 | **Narrative track** | Story of the work, told in Elyncian myth terms | `[C:0.95]` — story-canon, polished |
 
-The narrative track lives in `lares/sprints/`. The current Epic's documents:
+The narrative track lives in `lares/scrum/epics/`. The current Epic's documents:
 
-- [`lares/sprints/LINDWYRM_STORY_SHAPE.md`](sprints/LINDWYRM_STORY_SHAPE.md) — format spec for the DreamDeck feed archive (JackPoint/Shadowtalk style); cast; rendering targets
-- [`lares/sprints/LINDWYRM_ORIGIN_OUTLINE.md`](sprints/LINDWYRM_ORIGIN_OUTLINE.md) — story beats, braid structure, Gaia↔Elyncia parallel
-- Individual sprint story beats live in `lares/sprints/000NN/` alongside their technical counterparts
+- [`lares/scrum/epics/LINDWYRM_STORY_SHAPE.md`](scrum/epics/LINDWYRM_STORY_SHAPE.md) — format spec for the DreamDeck feed archive (JackPoint/Shadowtalk style); cast; rendering targets
+- [`lares/scrum/epics/LINDWYRM_ORIGIN_OUTLINE.md`](scrum/epics/LINDWYRM_ORIGIN_OUTLINE.md) — story beats, braid structure, Gaia↔Elyncia parallel
+- Individual sprint story beats live in `lares/scrum/sprints/000NN/` alongside their technical counterparts
 
 ### How the Two Tracks Braid
 
@@ -59,7 +59,7 @@ The Lindwyrm's origin story on Elyncia IS the story of how Lares was actually bu
 | S4 | Deployment authoring | The Lar speaks on the DreamNet — the first deployment paths go live |
 | S5 | DreamDeck integration | The DreamDeck opens — elyncia.app is seeded |
 
-The narrative track is drafted in "talk story" mode (informal, dev-mode, operator-steered) and polished sprint-by-sprint toward `[C:0.99]`. Story canon is the **Aftermath product** — written after the sprint work closes, reflecting what actually happened, not what was planned.
+The narrative track is drafted in "talk story" mode (informal, dev-mode, operator-steered) and polished sprint-by-sprint toward `[C:0.95]`. Story canon is the **Aftermath product** — written after the sprint work closes, reflecting what actually happened, not what was planned.
 
 ---
 
@@ -71,11 +71,12 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 |---|---|---|
 | [`signal/`](signal/README.md) | Signal HUD · Tagspace · lares: URI scheme · p-band model | Active draft |
 | [`crystal/`](crystal/README.md) | Archive Crystal state machine · STATE.jsonl · seal protocol | Active draft |
-| [`compiler/`](compiler/README.md) | Deterministic build compiler · typed IR · manifests · TOML pipeline | Active draft |
 | [`invariants/`](invariants/README.md) | `lares.core.*` behavioral invariants · priority layers · conflict resolution | Active draft |
 | [`schemas/`](schemas/README.md) | TOML schemas: module, tool, permission descriptors | Active draft |
 | [`registry/`](registry/README.md) | `lares:` URI registry · resolver rules · promotion ledger | Active draft |
-| [`platform/`](platform/README.md) | Multi-platform packaging · browser tiers · host budget maps | Active draft |
+| [`talk_story/`](talk_story/README.md) | Talk story protocol · ◎ Orient phase spec · two-track model · voice assignments | Active — canonical |
+| `compiler/` | ~~Deterministic build compiler~~ | **Invalidated** — compiler pipeline does not exist; content absorbed into S3/S4. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |
+| `platform/` | ~~Multi-platform packaging~~ | **Invalidated** — replaced by deployment authoring model. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |
 
 ---
 

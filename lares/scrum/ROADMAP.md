@@ -25,9 +25,10 @@
 - ✅ `lares/README.md` — Two-track braid table (S0–S5)
 - ✅ `lares/scrum/epics/` — All 6 epic READMEs with narrative beats
 - ✅ `lares/scrum/epics/LINDWYRM_*` — Story docs at epic root (multi-epic narrative)
-- ⏳ `.github/skills/talk-story/SKILL.md` — VS Code loadable (create next)
-- ⏳ `lares/scrum/epics/DEPLOY/SKILL_PLATFORMS.md` — Platform research for skill deployment
-- ⏳ `lares/scrum/sprints/00000/SPRINT_0_TASKS.md` — S0-09 task added
+- ✅ `.github/skills/talk-story/SKILL.md` — VS Code loadable
+- ✅ `lares/scrum/epics/TALK_STORY/` — Pre-sprint orientation epic (sandboxed outside sprint cycle)
+- ✅ `lares/scrum/research/SKILL_PLATFORMS.md` — Platform research for skill deployment
+- ✅ `lares/scrum/sprints/00000/SPRINT_0_TASKS.md` — S0-09 task added
 
 **Status:** `[CS:0.82]` — protocol established in AGENTS.md; SKILL.md pending
 
@@ -38,13 +39,13 @@
 | Sprint | Name | Status | Task Doc | Epic(s) |
 |---|---|---|---|---|
 | S0 | URI Schema Settlement | 🔄 In Progress | [00000/SPRINT_0_TASKS.md](sprints/00000/SPRINT_0_TASKS.md) | SIGNAL, CRYSTAL (stub) |
-| S1 | Crystal State Layer for MemPalace | 🔒 Locked (awaiting S0) | _to create_ | CRYSTAL |
-| S2 | Invariants + Trust + Signal HUD | 🔒 Locked | _to create_ | INVARIANTS, SIGNAL |
-| S3 | Registry + Schemas | 🔒 Locked | _to create_ | REGISTRY |
-| S4 | Deployment Authoring | 🔒 Locked | _to create_ | DEPLOY |
+| S1 | Crystal State Layer for MemPalace | 🔒 Locked (awaiting S0) | [00001/SPRINT_1_TASKS.md](sprints/00001/SPRINT_1_TASKS.md) | CRYSTAL |
+| S2 | Invariants + Trust + Signal HUD | 🔒 Locked | [00002/SPRINT_2_TASKS.md](sprints/00002/SPRINT_2_TASKS.md) | INVARIANTS, SIGNAL |
+| S3 | Registry + Schemas | 🔒 Locked | [00003/SPRINT_3_TASKS.md](sprints/00003/SPRINT_3_TASKS.md) | REGISTRY |
+| S4 | Deployment Authoring | 🔒 Locked | [00004/SPRINT_4_TASKS.md](sprints/00004/SPRINT_4_TASKS.md) | DEPLOY |
 | S5 | DreamDeck Integration | 🔒 Locked (seeded) | _to create_ | DREAMDECK |
 
-Epic READMEs: [`epics/SIGNAL/`](epics/SIGNAL/README.md) · [`epics/CRYSTAL/`](epics/CRYSTAL/README.md) · [`epics/INVARIANTS/`](epics/INVARIANTS/README.md) · [`epics/REGISTRY/`](epics/REGISTRY/README.md) · [`epics/DEPLOY/`](epics/DEPLOY/README.md) · [`epics/DREAMDECK/`](epics/DREAMDECK/README.md)
+Epic READMEs: [`epics/SIGNAL/`](epics/SIGNAL/README.md) · [`epics/CRYSTAL/`](epics/CRYSTAL/README.md) · [`epics/INVARIANTS/`](epics/INVARIANTS/README.md) · [`epics/REGISTRY/`](epics/REGISTRY/README.md) · [`epics/DEPLOY/`](epics/DEPLOY/README.md) · [`epics/DREAMDECK/`](epics/DREAMDECK/README.md) · [`epics/TALK_STORY/`](epics/TALK_STORY/SPRINT_TALK_STORY_TASKS.md) (sandbox)
 
 ---
 
