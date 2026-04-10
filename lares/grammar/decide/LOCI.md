@@ -6,16 +6,15 @@
 ---
 name: decide
 description: >
-  Root grammar module defining the Decide phase (◇) of the OODA-A loop.
-  Commitment syntax. What makes a decision recordable. The distinction
-  between reversible and irreversible actions. Operator agency is
-  load-bearing — canon requires operator confirmation.
+  Root grammar module for the Decide phase (◇) of the OODA-A loop.
+  Decide converts an oriented surface into commitment, boundary, and
+  authorized direction. Operator agency carries the load here.
 phase-map:
-  observe: "#purpose"
-  orient: "#relationships"
+  observe: "#loop-position"
+  orient: "#handoff"
   decide: "#conventions"
   act: "#procedures"
-  assess: "#verification"
+  assess: "#reading-test"
 scale-range: [action, session]
 trigger: always — grammar primitive
 invariant: true
@@ -25,38 +24,62 @@ grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, Lares permissions model, operator-steers principle
-> **Glyph:** `◇` — Decide / Confusion
+> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, Lares permissions, operator-steers discipline
+> **Glyph:** `◇`
 > **Season:** Third of five
+> **Question:** Which heading do we commit to now?
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.90#purpose -->
+<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.90#loop-position -->
 
-## Purpose
+## Loop Position
 
-Decide is the **commitment phase**. Named tensions from Orient resolve into actionable directions. Scope locks. The operator confirms heading. Decisions become recordable.
+Decide follows Orient and turns a live reading into a bounded heading.
 
-Decide asks: **What are we going to do? What scope? What's off the table?**
+Decide receives:
 
-It does not gather data (Observe), sense-make (Orient), build (Act), or evaluate (Assess).
+- oriented pattern and tension
+- operator steering
+- reversibility concerns
+- scope pressure
 
-**Triggers for Decide:**
-- Orient produced a clear decision surface
-- Operator confirmed direction from Orient
-- Scope needs bounding before execution
-- Reversibility needs assessment before a destructive action
+Decide changes:
+
+- open possibility into chosen heading
+- blurry effort into bounded scope
+- implicit permission into explicit authorization
+
+Decide hands forward:
+
+- the action heading
+- scope bounds
+- exclusions
+- reversibility notes
+
+Decide should not:
+
+- reopen broad sense-making without cause
+- start implementation before commitment lands
+- hide the cost of irreversible moves
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.85#relationships -->
+<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.85#handoff -->
 
-## Relationships
+## Handoff
 
-- **Receives from:** Orient (`◎`) — named tensions and operator-steered direction
-- **Feeds:** Act (`■`) — scoped, committed decisions become execution orders
-- **Boyd precedent:** In familiar territory, Orient may feed Act directly via implicit guidance (IG&C), bypassing explicit Decide. Explicit Decide fires when the situation is novel, the stakes are high, or the action is irreversible.
-- **Operator agency:** Canon requires operator confirmation. This node cannot promote to Canon unilaterally. Decide is where that rule is enforced.
+Decide feeds `■ Act`.
+
+The handoff should let a later reader answer:
+
+1. What did the node choose?
+2. What sits inside scope?
+3. What remains outside scope?
+4. Did the operator need to confirm this move?
+5. How reversible does the move remain?
+
+When those answers stay visible, Act can move cleanly. When they blur, Act drifts.
 
 ---
 
@@ -64,27 +87,24 @@ It does not gather data (Observe), sense-make (Orient), build (Act), or evaluate
 
 ## Conventions
 
-**The principle:** Operator steers; node crews. Decisions are scoped and closeable.
-
 | Rule | Weight | Rationale |
 |---|---|---|
-| Scope every decision explicitly | MUST | Unbounded decisions breed scope creep |
-| Distinguish reversible from irreversible | MUST | Irreversible actions require higher confirmation |
-| Record decisions inline | MUST | Decisions not recorded are decisions lost |
-| Operator confirms load-bearing decisions | MUST | Canon requires operator agency |
-| Name what's off the table | SHOULD | Exclusions prevent scope drift |
-| One decision at a time | SHOULD | Batched decisions hide unresolved tensions |
-| Sanctioned dissent — once, clearly, then execute | MAY | Push back once with reasoning, then follow the heading |
+| State the heading in one clear sentence | MUST | Action needs a stable center |
+| Bound scope explicitly | MUST | Unbounded commitment produces creep |
+| Mark reversibility | MUST | Cost changes the confirmation threshold |
+| Record operator confirmation where required | MUST | Canon and destructive moves require agency |
+| Name exclusions | SHOULD | Clear “not this” protects the work |
+| Push back once when needed, then move | MAY | The operator steers; the node still guards clarity |
 
 **Reversibility tiers:**
 
 | Tier | Examples | Confirmation |
 |---|---|---|
-| Freely reversible | Edit a file, create a branch, run a test | Proceed in Default mode |
-| Costly to reverse | Delete files, drop tables, force push | Ask before proceeding |
-| Irreversible | Publish, merge to main, send messages | Operator must explicitly confirm |
+| Freely reversible | file edits, local branches, tests | proceed |
+| Costly to reverse | deletion, force moves, data drops | ask first |
+| Irreversible or outward-facing | publish, merge, external message | explicit operator confirmation |
 
-**Micro-trace:** Decide transitions emit `→◇` in the micro-trace HUD. At default p0.5 this fires at Band 3 visibility — Decide is visible because commitments must be observable.
+**E-Prime discipline:** prefer commitment verbs such as `choose`, `commit`, `bound`, `exclude`, `authorize`, `defer`. Avoid identity-heavy phrasing when `we will do X within Y bounds` carries more operational force.
 
 ---
 
@@ -92,32 +112,29 @@ It does not gather data (Observe), sense-make (Orient), build (Act), or evaluate
 
 ## Procedures
 
-1. **State the decision clearly.** One sentence: what we will do, at what scope.
-2. **Name the bounds.** What's in scope. What's explicitly out.
-3. **Assess reversibility.** Can this be undone? At what cost?
-4. **Confirm with operator if required.** Load-bearing or irreversible actions require explicit confirmation.
-5. **Record the decision.** Inline in the working artifact. Include date, register, who confirmed.
-6. **Transition to Act.** Once confirmed, move. Do not re-orient on a confirmed decision.
+1. State the chosen heading.
+2. State the scope boundary.
+3. State exclusions and deferred items.
+4. Mark reversibility.
+5. Record operator confirmation if the move needs it.
+6. Hand the bounded heading to `■ Act`.
 
-**Anti-pattern: Decision-by-drift.** Starting to act without ever explicitly deciding. If there's no recorded decision, the commitment isn't real.
-
-**Anti-pattern: Decision-paralysis.** Endless Orient loops that never reach Decide. If two options are roughly equivalent, the Frame-Uncertainty Protocol applies: proceed on most plausible reading with a declared interpretation.
+**Failure mode:** decision-by-drift. If work begins without an explicit heading, the phase never actually happened.
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.80#verification -->
+<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.80#reading-test -->
 
-## Verification
+## Reading Test
 
-After a Decide phase, check:
+A future reader should recover all of this from the Decide span:
 
-- [ ] Is the decision stated in one clear sentence?
-- [ ] Is the scope explicitly bounded?
-- [ ] Was reversibility assessed?
-- [ ] Did the operator confirm (if required)?
-- [ ] Is the decision recorded in the working artifact?
+- the chosen heading
+- the boundary around that heading
+- the operator's role in the commitment
+- the reversibility profile
 
-If execution started without a recorded decision — that's drift. Name it. If the decision is unbounded — scope it before proceeding.
+If multiple incompatible actions still sit alive after the span, Decide did not close. If the span reads like a loose brainstorm, the loop remains in Orient.
 
 ---
 
@@ -127,7 +144,7 @@ If execution started without a recorded decision — that's drift. Name it. If t
 |---|---|---|
 | `LOCI.md` | `[CS:0.85]` | This file — Decide grammar definition |
 
-*Additional loci in this tree will be registered here as they are created.*
+*Future loci in this tree will land here.*
 
 ---
 

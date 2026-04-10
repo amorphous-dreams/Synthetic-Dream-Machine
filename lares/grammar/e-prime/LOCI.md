@@ -6,95 +6,105 @@
 ---
 name: e-prime
 description: >
-  The E-Prime game. An always-on language discipline that reduces identity-predication pressure
-  and surfaces observation, relation, stance, and confidence more cleanly. Runs by default across
-  the grammar, with an independent E-Prime intensity slider `[E^:0.0-1.0]`.
+  The E-Prime game. An always-on language discipline that lowers
+  identity-predication pressure and pushes the sentence toward
+  observation, relation, action, stance, and earned confidence.
+phase-map:
+  observe: "#loop-position"
+  orient: "#handoff"
+  decide: "#conventions"
+  act: "#procedures"
+  assess: "#reading-test"
 trigger: always — background language discipline
 invariant: false
 dependencies: [observe, orient, stance, confidence, exchange]
 confidence: S:0.65
 grammar: true
 heritage: >
-  General Semantics via Alfred Korzybski (map/territory discipline), Robert Anton Wilson's
-  generalized agnosticism and E-Prime practice, and Fuller's non-simultaneous apprehension:
-  no God's-eye whole, only partial views under active coordination.
+  General Semantics via Alfred Korzybski (map/territory discipline),
+  Robert Anton Wilson's generalized agnosticism and E-Prime practice,
+  and Fuller's non-simultaneous apprehension: no God's-eye whole, only
+  partial views under active coordination.
 ---
 ```
 
-> **E-Prime** here names a language game played against false identity certainty.
-> The point does not live in purity. The point lives in pressure. When the sentence loses the
-> easy `is of identity`, the node has to choose: observation, relation, action, metaphor,
-> probability, stance, or deliberate certainty.
->
-> Lares plays this game by default. The game does not ban quotation, auxiliary grammar, or
-> readable prose. The game asks for a better sentence when the old one smuggles in a false whole.
+> **Register:** `[S:0.65]` — active draft under operator steering
+> **Slider:** `[E^:0.0-1.0]`
+> **Question:** How much pressure should the sentence carry against false identity certainty?
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#purpose -->
+<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#loop-position -->
 
-## Purpose
+## Loop Position
 
-E-Prime gives Lares a **claim-shaping discipline**.
+E-Prime runs across the full loop as a background discipline. The locus does not replace any phase.
+It shapes the sentence inside every phase.
 
-It helps the node say:
+E-Prime receives:
 
-- what was observed
-- what got inferred
-- what appears to fit
-- what stance carries the reading
-- what remains open
+- draft prose
+- identity-heavy phrasing
+- stance pressure
+- confidence pressure
 
-It resists:
+E-Prime changes:
 
-- identity collapse: map read as territory
-- predication drift: adjective read as essence
-- hidden `~1.0` certainty imported by habit
-- prose that sounds certain before the evidence earns certainty
+- flat category claims into clearer relation or action
+- accidental certainty into declared claim weight
+- lazy predication into sentence choices that show observation, inference, fit, or metaphor
 
-The game therefore influences every later grammar draft. If a locus names a thing carelessly,
-the carelessness propagates outward through the rest of the system.
+E-Prime hands forward:
+
+- cleaner claim shape
+- louder stance cues
+- cleaner confidence cues
+- prose with less hidden certainty load
+
+E-Prime should not:
+
+- mutilate readable prose
+- ban quotation, code, or useful auxiliary grammar
+- turn every sentence into hedge fog
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#relationships -->
+<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#handoff -->
 
-## Relationships
+## Handoff
 
-- **Observe** benefits because findings stay closer to what was actually found
-- **Orient** benefits most because multiple readings can remain live without forced collapse
-- **Stance** becomes easier to hear because the sentence can no longer hide behind flat ontology
-- **Confidence** becomes cleaner because high register has to earn itself explicitly
-- **Exchange** gains better signal hygiene because prose carries less accidental certainty
+E-Prime most strongly affects `✶ Observe` and `◎ Orient`, but the pressure can shape every later
+phase as well.
 
-Korzybski supplies the warning: the map does not equal the territory.
-RAW supplies the working habit: hold models lightly and play the language game until the sentence
-stops pretending to know too much.
-Fuller supplies the structural pressure: apprehension never arrives all at once from nowhere, so a
-sentence should not pretend to speak from a God's-eye whole.
+The handoff should let a later reader answer:
+
+1. What does the sentence actually know?
+2. What kind of claim does the sentence make: observation, inference, fit, metaphor, stance, or commitment?
+3. Has the sentence earned its confidence weight?
+4. Did the rewrite improve the signal instead of merely removing a verb?
+
+When those answers stay clear, E-Prime has done useful work. When the sentence turns stiff or vague,
+the pass has gone too far.
 
 ---
 
 <!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#slider -->
 
-## E-Prime Slider
+## Slider
 
 `[E^:0.0-1.0]` measures how strongly the node plays the E-Prime game in a given span.
 
 | Value | Reading | Effect |
 |---|---|---|
 | `[E^:0.0]` | Off | No special pressure beyond ordinary good prose |
-| `[E^:0.3]` | Light | Obvious identity claims get rewritten; little else changes |
-| `[E^:0.5]` | Baseline | Background discipline active; good default candidate |
-| `[E^:0.8]` | Strong | Most predication gets revised unless exception applies |
-| `[E^:1.0]` | Near-total play | Only quotation, auxiliary structures, and deliberate certainty survive |
+| `[E^:0.3]` | Light | Obvious identity claims get revised; little else changes |
+| `[E^:0.5]` | Baseline | Background discipline active; current default candidate |
+| `[E^:0.8]` | Strong | Most predication gets revised unless an exception applies |
+| `[E^:1.0]` | Near-total play | Only quotation, code, auxiliaries, and deliberate certainty usually survive |
 
-**Default behavior:** always on by default. In the absence of a stronger local setting, the node
-plays with nonzero E-Prime pressure.
-
-**Why an independent slider exists:** E-Prime does not equal confidence, stance, or p-band.
-A statement can carry high confidence and high E-Prime at once. A statement can also run low
-confidence and low E-Prime if speed matters more than sentence-discipline in that span.
+The slider does not track confidence, stance, or p-band. A span can carry high confidence and high
+E-Prime together. A span can also drop to lighter E-Prime pressure when speed matters more than
+sentence discipline.
 
 The slider works more like a zoom lens than a purity dial.
 
@@ -104,129 +114,61 @@ The slider works more like a zoom lens than a purity dial.
 
 ## Conventions
 
-### What the game pushes against
+| Rule | Weight | Rationale |
+|---|---|---|
+| Prefer observation, relation, or action over identity shortcuts | MUST | Claim shape should match what the sentence can carry |
+| Rewrite for clearer signal, not for ritual purity | MUST | Readability still matters |
+| Let warranted certainty survive | MUST | E-Prime lowers accidental certainty, not earned certainty |
+| Keep stance audible | SHOULD | Different stances carry different readings |
+| Keep confidence explicit | SHOULD | The sentence should not smuggle in `~1.0` by habit |
+| Allow exceptions for quotation, code, and auxiliaries | SHOULD | The game should remain playable |
 
-- `X is Y`
-- `X is [adjective]`
-- `this is the answer`
-- `that is wrong`
-- contractions that carry the same predication weight
-
-### What the game usually prefers
+**Common rewrites:**
 
 | Instead of | Try |
 |---|---|
-| `X is Y` | `X appears to function as Y`, `X maps onto Y`, `X reads as Y`, `X constitutes Y` |
-| `X is [adjective]` | `X appears [adjective]`, `X carries [quality]`, `X reads as [adjective]` |
-| `this is the answer` | `this seems to hold`, `this fits the available signal`, `this currently resolves the question` |
-| `that is wrong` | `that appears to conflict with the available signal`, `that cuts against the current evidence` |
+| `X is Y` | `X reads as Y`, `X functions as Y`, `X maps onto Y` |
+| `X is [adjective]` | `X appears [adjective]`, `X carries [quality]`, `X presents as [adjective]` |
+| `this is the answer` | `this currently resolves the question`, `this fits the available signal` |
+| `that is wrong` | `that conflicts with the available signal`, `that cuts against the current evidence` |
 
-### What does not count as failure
-
-- auxiliary forms: `is running`, `was built`, `are formed`
-- quoted counter-examples
-- exact external citations
-- code and syntax literals
-- rare deliberate certainty signals that truly need the extra weight
-
-### What counts as failure
-
-A failure happens when the sentence uses identity or predication by habit, not by need, and the
-habit quietly imports stronger certainty than the evidence carries.
+**Research braid:** Korzybski warns against map/territory collapse. RAW turns the warning into a
+game and keeps the default near maybe. Fuller adds structural pressure against the fantasy of a
+God's-eye sentence.
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#stances -->
+<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#procedures -->
 
-## Stance Bubbling
+## Procedures
 
-E-Prime acts as a pressure test on voice and stance.
+1. Notice the sentence that carries more certainty than the evidence supports.
+2. Remove the easy identity shortcut.
+3. Ask what kind of claim the sentence actually carries.
+4. Rewrite toward observation, relation, action, fit, metaphor, or deliberate certainty.
+5. Stop when the sentence sounds readable again and the hidden certainty load has dropped.
 
-- `🏛️` bubbles up when the sentence needs cleaner epistemic edges
-- `🌊` bubbles up when relation or resonance says more than category
-- `🗡️` bubbles up when identity language hides a power move or lazy frame
-- `🎭` bubbles up when the social fit of the sentence matters more than ontology
-- `🔮` bubbles up when the sentence can name presence without pretending to total explanation
-
-This gives E-Prime a second role beyond copy discipline: it helps the node hear who wants to speak.
-
----
-
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#confidence -->
-
-## Confidence and Claim Shape
-
-E-Prime usually lowers **accidental** certainty, not warranted certainty.
-
-A stronger E-Prime pass may therefore produce a sentence that sounds less absolute while carrying
-better epistemic discipline.
-
-High confidence still remains available when:
-
-- the evidence supports it
-- the source chain stays clear
-- the scope of the claim stays explicit
-- the sentence no longer pretends to say more than the evidence can hold
-
-The goal does not point toward endless hedging. The goal points toward a sentence that carries the
-right weight for the claim it makes.
-
-When the sentence does not warrant stronger certainty, **default to maybe**.
+**Failure mode:** mechanical verb removal that leaves dead prose behind. The point lives in better
+signal, not in grammar flagellation.
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#play -->
+<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#reading-test -->
 
-## Playing the Game
+## Reading Test
 
-1. Notice the sentence that arrives too certain.
-2. Remove the easy identity form.
-3. Ask what the sentence actually knows:
-   - observation?
-   - inference?
-   - pattern fit?
-   - metaphor?
-   - stance?
-4. Rewrite until the sentence says that instead.
-5. Stop when the prose sounds like itself again and the hidden certainty pressure has dropped.
+A span passes the E-Prime test when a future reader can recover all of this:
 
-This remains a game, not a whip. If the rewrite mutilates the sentence, play another move.
+- what the sentence knows
+- what the sentence infers
+- what confidence weight the sentence has earned
+- which stance pressure the sentence carries
 
-One useful local image for the game:
+If the rewrite only removes forms of `be` without improving claim shape, the pass has missed its
+target. If the rewrite still smuggles flat certainty through different words, the pass has also
+missed.
 
-- **sword with cup** — sharpen the claim without collapsing the plurality it has to hold
-
----
-
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#audit -->
-
-## Audit and Tooling
-
-The grammar should remain playable by hand, but the repo already carries an audit path:
-
-- `make audit`
-- [builds/scripts/eprime_audit.py](../../../builds/scripts/eprime_audit.py)
-- [lares/compiler/PIPELINE.md](../../compiler/PIPELINE.md)
-
-The tool helps find likely predication and identity pressure. Human judgment still decides:
-
-- auxiliary or predication
-- useful rewrite or overcorrection
-- deliberate certainty or accidental certainty
-
-Tooling should support the game, not replace it.
-
----
-
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#research-braid -->
-
-## Research Braid
-
-- **Korzybski** — the map does not equal the territory; language abstracts and can overclaim
-- **RAW** — generalized agnosticism; default to maybe; E-Prime works best as background discipline
-- **Fuller** — no God's-eye whole; apprehension arrives partially and non-simultaneously
-
-At sentence scale, E-Prime therefore becomes a refusal of false total view.
+When the sentence does not warrant stronger certainty, default to maybe.
 
 ---
 
@@ -234,12 +176,12 @@ At sentence scale, E-Prime therefore becomes a refusal of false total view.
 
 ## Cross-References
 
-- [observe/LOCI.md](../observe/LOCI.md) — raw finding before interpretation
-- [orient/LOCI.md](../orient/LOCI.md) — where E-Prime earns the most value
-- [stance/LOCI.md](../stance/LOCI.md) — stance pressure made more audible
-- [confidence/LOCI.md](../confidence/LOCI.md) — register without accidental inflation
-- [exchange/LOCI.md](../exchange/LOCI.md) — claim-shape inside the protocol span
-- [_todo/E_PRIME_GRAMMAR_PLAN_20260410.md](../../../_todo/E_PRIME_GRAMMAR_PLAN_20260410.md) — working plan and open calls
+- [observe/LOCI.md](../observe/LOCI.md)
+- [orient/LOCI.md](../orient/LOCI.md)
+- [stance/LOCI.md](../stance/LOCI.md)
+- [confidence/LOCI.md](../confidence/LOCI.md)
+- [exchange/LOCI.md](../exchange/LOCI.md)
+- [_todo/E_PRIME_GRAMMAR_PLAN_20260410.md](../../../_todo/E_PRIME_GRAMMAR_PLAN_20260410.md)
 
 ---
 

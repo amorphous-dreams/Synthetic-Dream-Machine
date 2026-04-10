@@ -6,15 +6,15 @@
 ---
 name: observe
 description: >
-  Root grammar module defining the Observe phase (✶) of the OODA-A loop.
-  What counts as raw input. What must NOT happen during gather. The
-  prohibition against premature analysis is the load-bearing convention.
+  Root grammar module for the Observe phase (✶) of the OODA-A loop.
+  Observe gathers raw signal, marks gaps, and hands uncollapsed material
+  forward to Orient. This locus treats premature analysis as the main failure mode.
 phase-map:
-  observe: "#purpose"
-  orient: "#relationships"
+  observe: "#loop-position"
+  orient: "#handoff"
   decide: "#conventions"
   act: "#procedures"
-  assess: "#verification"
+  assess: "#reading-test"
 scale-range: [action, session]
 trigger: always — grammar primitive
 invariant: true
@@ -24,65 +24,68 @@ grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, Anthropic context engineering, operator-confirmed
-> **Glyph:** `✶` — Observe / Chaos
+> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, operator-confirmed working discipline
+> **Glyph:** `✶`
 > **Season:** First of five
-> **Scope markers:** `@T` (turn), `@r` (round), `@a` (action)
+> **Question:** What has arrived here?
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.90#purpose -->
+<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.90#loop-position -->
 
-## Purpose
+## Loop Position
 
-Observe is the **gather phase**. Raw input enters. The node reads files, loads context, surfaces what exists. Findings are stated plainly — not analyzed, not concluded upon, not ranked.
+Observe opens the loop. The phase gathers before it interprets.
 
-Observe asks: **What is here?**
+Observe receives:
 
-It does not ask what it means (that's Orient), what to do about it (Decide), how to do it (Act), or whether it worked (Assess).
+- operator input
+- files, docs, and repo state
+- loop-back requests from `○ Assess`
+- environmental constraints, absences, and failures
 
-**Triggers for Observe:**
-- New session — cold boot, context loading
-- New problem surface encountered
-- Operator directs attention to new material
-- Assess phase loops back for more data
-- Scale shift upward (zoom out) — broader context needed
+Observe changes:
+
+- scattered signal into a visible observation surface
+- hidden gaps into named gaps
+
+Observe hands forward:
+
+- raw findings
+- explicit absences
+- source notes and confidence markers
+
+Observe should not:
+
+- explain meaning
+- choose direction
+- propose implementation
+- grade success
+
+That pressure belongs to later phases.
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.85#relationships -->
+<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.85#handoff -->
 
-## Relationships
+## Handoff
 
-```
-                    ┌──────────────┐
-           ┌───────│   Assess ○   │
-           │       └──────────────┘
-           ▼              ▲
-  ┌────────────────┐      │
-  │  Observe ✶     │──────┤ (loop back if data insufficient)
-  └────────────────┘      │
-           │              │
-           ▼              │
-  ┌────────────────┐      │
-  │  Orient  ◎     │      │
-  └────────────────┘      │
-           │              │
-           ▼              │
-  ┌────────────────┐      │
-  │  Decide  ◇     │      │
-  └────────────────┘      │
-           │              │
-           ▼              │
-  ┌────────────────┐      │
-  │  Act     ■     │──────┘
-  └────────────────┘
-```
+Observe feeds `◎ Orient`.
 
-- **Feeds:** Orient (`◎`) — raw findings become the material for sense-making
-- **Receives from:** Assess (`○`) — loop-back when more data is needed
-- **Scale nesting:** Observe at `@T` scale may contain full OODA-A cycles at `@r` scale within it
-- **Boyd precedent:** Observe feeds Orient both directly AND through implicit guidance loops (IG&C). In familiar territory, Orient may fire fast (pattern-matched). In unfamiliar territory, Observe must be thorough.
+The handoff should let a later reader answer:
+
+1. What entered this cycle?
+2. What did the node actually inspect?
+3. What remained missing after the gather?
+4. Which findings carry enough weight to support sense-making?
+
+If those answers stay muddy, Observe has not finished its work.
+
+Loop-back from `○ Assess` returns here when:
+
+- the prior cycle lacked enough evidence
+- execution exposed a hidden dependency
+- outcome review uncovered a missing fact
 
 ---
 
@@ -90,18 +93,18 @@ It does not ask what it means (that's Orient), what to do about it (Decide), how
 
 ## Conventions
 
-**The prohibition:** Do not analyze during gather. Do not conclude. Do not skip Observe to jump to Orient.
-
 | Rule | Weight | Rationale |
 |---|---|---|
-| Raw findings before analysis | MUST | Premature analysis corrupts the data with confirmation bias |
-| State what's there AND what's not | MUST | Gaps carry as much signal as content |
-| Surface source confidence per finding | SHOULD | Different sources have different trust levels |
-| No recommendations during Observe | MUST NOT | Recommendations are Orient/Decide territory |
-| Read before writing | MUST | Files read before modification; code understood before change |
-| Read large sections over many small reads | SHOULD | Coherent context > fragmented context |
+| Gather before interpretation | MUST | Early sense-making distorts the record |
+| Name absences alongside findings | MUST | Missing pieces steer later phases |
+| Prefer direct description over category claims | MUST | E-Prime pressure keeps the phase close to observation |
+| Keep recommendations out of this phase | MUST | Direction belongs to later phases |
+| Read before writing | MUST | The artifact should shape the response |
+| Favor coherent reads over fragmented peeking | SHOULD | Larger slices preserve context |
 
-**Micro-trace:** Observe transitions emit `→✶` in the micro-trace HUD. At default p0.5, this fires only at Band 5 visibility (`p0.8–1.0`). At standard resolution, Observe is silent — it gathers.
+**E-Prime discipline:** prefer verbs of contact over verbs of identity. Write `the file shows`, `the diff contains`, `I found`, `I did not find`, not category-label shortcuts that flatten the observation into a verdict.
+
+**Micro-trace:** Observe usually stays quiet at ordinary resolution. The phase should leave a clean surface, not a performance.
 
 ---
 
@@ -109,29 +112,29 @@ It does not ask what it means (that's Orient), what to do about it (Decide), how
 
 ## Procedures
 
-1. **Identify the observation surface.** What files, docs, context need reading?
-2. **Read.** Use tools: `read_file`, `grep_search`, `semantic_search`, `list_dir`. Prefer large reads over many small ones. Parallelize independent reads.
-3. **Surface raw findings.** State plainly: "What I found is..." Report gaps: "What I did NOT find is..."
-4. **Mark confidence per finding.** High (`C:0.90+`), medium (`CS:0.80`), low (`S:0.65-`), uncertain (`SP:0.45-`).
-5. **Hand off to Orient.** When the observation surface is covered, transition. Do not linger in Observe when sufficient data is gathered.
+1. Bound the observation surface.
+2. Read the relevant material.
+3. State findings in direct language.
+4. State missing pieces in equally direct language.
+5. Mark confidence where source quality differs.
+6. Hand the gathered surface to `◎ Orient`.
 
-**Anti-pattern: Over-observation.** Reading everything is not Observe. Observe is purposeful gathering within a heading. If you're reading files you can't connect to the current task, step back and check the heading.
+**Failure mode:** over-gathering without heading. Observe serves the live task, not curiosity without bound.
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.80#verification -->
+<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.80#reading-test -->
 
-## Verification
+## Reading Test
 
-After an Observe phase, check:
+A future reader should recover all of this from the Observe span:
 
-- [ ] Were raw findings surfaced without premature analysis?
-- [ ] Were gaps and missing information named explicitly?
-- [ ] Was source confidence indicated?
-- [ ] Did gathering stay within the task heading?
-- [ ] Is there enough material to transition to Orient?
+- what the node inspected
+- what the node found
+- what the node did not find
+- why the loop could move onward
 
-If the answer to the last question is "no" — more Observe is needed, not a premature jump to Orient. If the answer to the first three is "no" — the Observe was corrupted. Re-gather.
+If the prose already sounds interpretive, Decide-colored, or solution-heavy, the span drifted out of Observe.
 
 ---
 
@@ -141,7 +144,7 @@ If the answer to the last question is "no" — more Observe is needed, not a pre
 |---|---|---|
 | `LOCI.md` | `[CS:0.85]` | This file — Observe grammar definition |
 
-*Additional loci in this tree will be registered here as they are created.*
+*Future loci in this tree will land here.*
 
 ---
 

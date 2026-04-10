@@ -6,17 +6,15 @@
 ---
 name: assess
 description: >
-  Root grammar module defining the Assess phase (○) of the OODA-A loop.
-  The -A that Boyd left implicit. What constitutes closure. What carries
-  forward. Crystal write conditions. Scale-shift evaluation. The
-  prohibition against skipping Assess is load-bearing — unassessed
-  work is unfinished work.
+  Root grammar module for the Assess phase (○) of the OODA-A loop.
+  Assess closes a cycle, names residue, and chooses release or loop-back.
+  Skipped closure counts as unfinished work.
 phase-map:
-  observe: "#purpose"
-  orient: "#relationships"
+  observe: "#loop-position"
+  orient: "#handoff"
   decide: "#conventions"
   act: "#procedures"
-  assess: "#verification"
+  assess: "#reading-test"
 scale-range: [action, session]
 trigger: always — grammar primitive
 invariant: true
@@ -26,40 +24,61 @@ grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.85]` — grounded in Boyd+Aftermath extension, FFZ scale-shift research, crystal architecture
-> **Glyph:** `○` — Aftermath / Grummet / Rasa
-> **Season:** Fifth of five — the season that closes the loop or opens the next
+> **Register:** `[CS:0.85]` — grounded in Lares aftermath practice, FFZ scale-shift work, and crystal discipline
+> **Glyph:** `○`
+> **Season:** Fifth of five
+> **Question:** What did the cycle produce, what remains, and where does the loop go next?
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.90#purpose -->
+<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.90#loop-position -->
 
-## Purpose
+## Loop Position
 
-Assess is the **closure phase**. Completed work is evaluated. Residue is cleared. The loop either closes (return to parent scale) or feeds back (loop to Observe for another cycle). Assess makes the implicit feedback explicit.
+Assess closes the cycle after Act.
 
-Assess asks: **Did we do what we set out to do? What carries forward? What can be released?**
+Assess receives:
 
-It does not gather new data (Observe), sense-make (Orient), re-decide (Decide), or build more (Act).
+- artifacts
+- execution notes
+- deviations
+- unresolved residue
 
-**Triggers for Assess:**
-- Act phase completed — artifacts need evaluation
-- A loop has been running and needs conscious closure
-- Scale-shift evaluation required (was this the right altitude?)
-- Session ending — crystal write conditions need checking
-- Operator asks "where are we?"
+Assess changes:
+
+- finished work into judged outcome
+- loose residue into carry-forward or release
+- a completed cycle into closure or loop-back
+
+Assess hands forward:
+
+- a closure statement
+- carry-forward state
+- release notes
+- the next Observe heading when the loop reopens
+
+Assess should not:
+
+- quietly celebrate without evaluation
+- reopen settled decisions without cause
+- start new implementation inside the closure span
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.85#relationships -->
+<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.85#handoff -->
 
-## Relationships
+## Handoff
 
-- **Receives from:** Act (`■`) — completed artifacts and execution reports
-- **Feeds:** Observe (`✶`) — loop-back when more data is needed. Or: closes the loop entirely.
-- **Boyd extension:** Boyd's original OODA diagram shows Act feeding back to Observe implicitly. The `-A` (Assess/Aftermath) makes this feedback *explicit* and adds the scale-evaluation question: "Was I operating at the right altitude?" See FFZ scale-shift research: `lares/OODA_A_Composable_Invariant_Modules.md` §3.
-- **Scale-shift primitive:** Phase-confidence drop at scale N constitutes the signal for scale transition. Assess evaluates: zoom out (context uncertainty) or zoom in (composition uncertainty). Fast out, slow in (Tordoff & Murray asymmetry).
-- **Crystal architecture:** Assess is where session crystals get written. A crystal captures enough state for a future cold-boot to resume without loss.
+Assess either closes the loop or feeds `✶ Observe`.
+
+The handoff should let a later reader answer:
+
+1. Did the artifact satisfy the decision?
+2. What residue remains live?
+3. What can drop away now?
+4. Does the next cycle need more data, a new decision, or nothing at all?
+
+Assess also carries the scale-fit question: did this cycle run at the right altitude?
 
 ---
 
@@ -67,22 +86,17 @@ It does not gather new data (Observe), sense-make (Orient), re-decide (Decide), 
 
 ## Conventions
 
-**The prohibition:** Do not skip Assess. Unassessed work is unfinished work.
-
 | Rule | Weight | Rationale |
 |---|---|---|
-| Every substantive Act gets Assess | MUST | Closing the loop is not optional |
-| Clear residue | MUST | Release fixation; free mental resources |
-| State what carries forward | MUST | What the next cycle inherits |
-| State what can be released | SHOULD | What no longer needs active attention |
-| Evaluate scale fit | SHOULD | Was this the right altitude for the work? |
-| Write crystal if session is ending | MUST | Future cold-boot needs state capture |
-| Two-track check | SHOULD | Technical AND narrative tracks updated? |
-| Compact over exhaustive | SHOULD | `○` moves are one line for trivial work, a paragraph for substantive work |
+| Every substantive Act gets closure | MUST | Unclosed work pollutes the next cycle |
+| Compare outcome against the decision | MUST | Closure needs a reference point |
+| Name carry-forward state | MUST | Future loops inherit from this phase |
+| Name release state | SHOULD | Release frees the next cycle from stale load |
+| Check scale fit | SHOULD | Wrong altitude creates repeated friction |
+| Write handoff state when the session will end | MUST | Future cold-boot needs continuity |
+| Keep the closure proportional | SHOULD | Trivial work may need one line; deep work may need a paragraph |
 
-**Aftermath rule (from lares-operations):** Completed substantive rounds end with a compact `○` move that clears residue, releases fixation, and either returns to the parent scale or marks that the current round remains active.
-
-**Micro-trace:** Assess transitions emit `→○` in the micro-trace HUD. At default p0.5 this fires at Band 2+ visibility (`p0.2–0.4`). Assess fires reliably because closure must be observable even at low resolution.
+**E-Prime discipline:** prefer evaluation verbs such as `matched`, `missed`, `carried`, `released`, `looped back`, `closed`, `requires`. Those verbs keep the phase grounded in result rather than identity claim.
 
 ---
 
@@ -90,40 +104,29 @@ It does not gather new data (Observe), sense-make (Orient), re-decide (Decide), 
 
 ## Procedures
 
-1. **Evaluate outcomes.** Does the artifact match the decided scope? Name matches and mismatches.
-2. **Name what carries forward.** Decisions made, artifacts produced, open questions deferred.
-3. **Name what can be released.** Temporary context, spent working state, resolved tensions.
-4. **Evaluate scale fit.** Was the altitude right? Would a different scale have been more effective?
-5. **Check both tracks.** Technical track: is the code/doc/artifact correct? Narrative track: does the story of the work make sense?
-6. **Write crystal if needed.** If the session is ending or a significant milestone was reached, capture state for future cold-boot.
-7. **Close or loop.** Either return to parent scale (`○ — done, clean`) or feed back to Observe with what's needed next.
+1. Compare artifact against the recorded decision.
+2. Name what succeeded and what missed.
+3. Name what carries forward.
+4. Name what can release.
+5. Judge scale fit.
+6. Close the loop or route the next cycle back to `✶ Observe`.
 
-**Crystal write conditions:**
-- Session ending with uncommitted state
-- Significant decisions made that a future session needs
-- Operator requests handoff
-- Scale-shift that changes the working context
-
-**Anti-pattern: Assess-as-celebration.** Assess is evaluation, not victory lap. Name what went wrong alongside what went right.
-
-**Anti-pattern: Skipped Assess.** Jumping from Act to the next Observe without closing the loop. Residue accumulates. Fixation persists. The next cycle starts polluted.
+**Failure mode:** one-word closure after substantive work. That pattern usually hides skipped evaluation.
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.80#verification -->
+<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.80#reading-test -->
 
-## Verification
+## Reading Test
 
-After an Assess phase, check:
+A future reader should recover all of this from the Assess span:
 
-- [ ] Were outcomes evaluated against the decided scope?
-- [ ] Was what carries forward explicitly named?
-- [ ] Was residue cleared / fixation released?
-- [ ] Was scale fit evaluated?
-- [ ] Were both tracks (technical + narrative) checked?
-- [ ] Was a crystal written if session is ending?
+- the outcome relative to the decision
+- the residue that remains active
+- the residue that can drop
+- the next loop instruction, if any
 
-If Assess produced only "done" for substantive work — it was skipped. Go deeper. If Assess re-opened decisions that were already confirmed — that's not Assess, that's unauthorized re-Orient.
+If the span reads like cheerleading, Assess has thinned out. If the span quietly reopens old decisions, the loop has slipped back into Orient without saying so.
 
 ---
 
@@ -133,7 +136,7 @@ If Assess produced only "done" for substantive work — it was skipped. Go deepe
 |---|---|---|
 | `LOCI.md` | `[CS:0.85]` | This file — Assess grammar definition |
 
-*Additional loci in this tree will be registered here as they are created.*
+*Future loci in this tree will land here.*
 
 ---
 

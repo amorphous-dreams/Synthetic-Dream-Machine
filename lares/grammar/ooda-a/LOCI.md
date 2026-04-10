@@ -6,9 +6,15 @@
 ---
 name: ooda-a
 description: >
-  The five-season loop cluster: Observe, Orient, Decide, Act, Assess. This cluster binds the
-  phase loci into one timed navigational instrument rather than five disconnected static definitions.
-  In Lares, grammar gets read in loop-time. OODA-A is the clockwork that makes that reading possible.
+  The five-season loop cluster: Observe, Orient, Decide, Act, Assess.
+  This locus gives the grammar its time structure and binds the five
+  phase loci into one navigational instrument.
+phase-map:
+  observe: "#loop-position"
+  orient: "#handoff"
+  decide: "#conventions"
+  act: "#procedures"
+  assess: "#reading-test"
 trigger: always — root loop discipline
 invariant: true
 dependencies: [observe, orient, decide, act, assess]
@@ -16,16 +22,16 @@ confidence: S:0.65
 grammar: true
 product_identity: true
 heritage: >
-  Boyd's OODA loop carried forward through the Lares extension that makes Aftermath explicit as
-  Assess. The cluster name OODA-A, as used for this Lares grammar and instrument panel, should be
-  treated as Product Identity.
+  Boyd's OODA loop carried forward through the Lares extension that
+  makes Aftermath explicit as Assess. The cluster name OODA-A, as used
+  for this Lares grammar and instrument panel, should be treated as
+  Product Identity.
 ---
 ```
 
-> **OODA-A** names the loop as one instrument.
-> The five phases do not sit here as shelf labels. They sit here as a timed path:
-> gather, sense-make, commit, execute, close. A grammar locus should read differently when the
-> reader knows which season they stand inside.
+> **Register:** `[S:0.65]` — active draft under operator steering
+> **Glyphs:** `✶◎◇■○`
+> **Question:** How does the grammar move in time?
 
 ---
 
@@ -36,26 +42,66 @@ heritage: >
 The underlying loop idea remains open as method. The **OODA-A** cluster name, as used in the Lares
 grammar and design system, should be treated as **Product Identity**.
 
-Use the idea freely. Do not wear the exact cluster name as a claim to be this system.
+Use the loop idea freely. Do not wear the exact cluster name as a claim to this system.
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#purpose -->
+<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#loop-position -->
 
-## Purpose
+## Loop Position
 
-OODA-A gives the grammar a **time structure**.
+OODA-A wraps the whole grammar. The cluster gives every later locus a timed place inside the
+instrument.
 
-It tells a reader:
+OODA-A receives:
 
-- where they are in the loop
-- what this phase receives
-- what this phase transforms
-- what this phase hands onward
-- what should remain after closure
+- phase loci
+- exchange spans
+- loop-back pressure
+- closure pressure
 
-Without the cluster, the five phase files can still exist, but they read too easily as static doctrine.
-With the cluster, the reader can recover motion.
+OODA-A changes:
+
+- disconnected pages into timed sequence
+- isolated phase definitions into a navigational instrument
+- static registry reading into loop-time reading
+
+OODA-A hands forward:
+
+- read order
+- phase relation
+- handoff expectations
+- closure expectations
+
+OODA-A should not:
+
+- collapse into five unrelated labels
+- treat Assess as optional residue
+- let a locus float without temporal placement
+
+---
+
+<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#handoff -->
+
+## Handoff
+
+The cluster routes motion across the five phases:
+
+`✶ Observe → ◎ Orient → ◇ Decide → ■ Act → ○ Assess`
+
+and from there either:
+
+- closes the current cycle
+- or routes the next cycle back to `✶ Observe`
+
+The handoff should let a later reader answer:
+
+1. Where in the loop did this span happen?
+2. What entered the phase?
+3. What left the phase?
+4. Which phase should fire next?
+
+When those answers disappear, the locus stops reading as loop-time grammar.
 
 ---
 
@@ -65,35 +111,11 @@ With the cluster, the reader can recover motion.
 
 | Phase | Glyph | LOCUS | One-line |
 |---|---|---|---|
-| Observe | `✶` | [observe/LOCI.md](../observe/LOCI.md) | Gather what is here without premature analysis |
-| Orient | `◎` | [orient/LOCI.md](../orient/LOCI.md) | Sense-make and hold plurality without premature closure |
+| Observe | `✶` | [observe/LOCI.md](../observe/LOCI.md) | Gather what has arrived without premature analysis |
+| Orient | `◎` | [orient/LOCI.md](../orient/LOCI.md) | Work gathered signal into pattern, tension, and open questions |
 | Decide | `◇` | [decide/LOCI.md](../decide/LOCI.md) | Commit the heading and bound the scope |
-| Act | `■` | [act/LOCI.md](../act/LOCI.md) | Build what was decided and nothing more |
-| Assess | `○` | [assess/LOCI.md](../assess/LOCI.md) | Evaluate closure, residue, and what carries forward |
-
----
-
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#relationships -->
-
-## Relationships
-
-The loop reads as:
-
-```
-✶ Observe → ◎ Orient → ◇ Decide → ■ Act → ○ Assess
-                   ↑                          ↓
-                   └──────── loop back ───────┘
-```
-
-Each phase has its own LOCI, but the cluster defines their relation in time.
-
-- **Observe** supplies raw material
-- **Orient** names pattern, tension, and plurality
-- **Decide** locks the heading
-- **Act** turns commitment into artifact
-- **Assess** closes the loop or reopens it at the right point
-
-The cluster therefore acts as a read-order discipline and a memory discipline.
+| Act | `■` | [act/LOCI.md](../act/LOCI.md) | Carry the decision into artifact |
+| Assess | `○` | [assess/LOCI.md](../assess/LOCI.md) | Judge outcome, residue, and loop-back need |
 
 ---
 
@@ -103,13 +125,29 @@ The cluster therefore acts as a read-order discipline and a memory discipline.
 
 | Rule | Weight | Rationale |
 |---|---|---|
-| Read grammar in loop-time, not as disconnected pages | MUST | The system moves; the docs should preserve that motion |
-| Every locus should name inputs and outputs where possible | SHOULD | Motion becomes legible when handoff is explicit |
-| Assess is part of the loop, not an optional appendix | MUST | Closure belongs to the instrument, not the footnotes |
-| Phase files may differ in local tone, but not in temporal legibility | SHOULD | Variety without structural drift |
+| Read grammar in loop-time | MUST | The system moves through phases, not shelves |
+| Make receives, changes, and handoff legible | MUST | Temporal motion needs explicit joints |
+| Keep Assess inside the loop | MUST | Closure belongs to the instrument |
+| Let local tone vary without losing timing | SHOULD | Voice can shift; temporal legibility cannot |
+| Use E-Prime pressure on phase prose | SHOULD | Cleaner claim-shape supports cleaner loop-time |
 
-**E-Prime relation:** OODA-A defines when a concept appears. E-Prime sharpens how the concept gets
-named. Together they form the two primary lenses for the grammar-wide pass.
+**Relation to E-Prime:** OODA-A tells a locus when it speaks. E-Prime sharpens how the locus speaks.
+The two lenses work together during every grammar pass.
+
+---
+
+<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#procedures -->
+
+## Procedures
+
+1. Locate the current phase.
+2. Name what the phase receives.
+3. Name what the phase changes.
+4. Name what the phase hands forward.
+5. Name the next expected phase or the closure condition.
+
+**Failure mode:** registry prose that names a concept but never locates the concept in the loop. That
+kind of prose turns the instrument back into a shelf.
 
 ---
 
@@ -117,15 +155,14 @@ named. Together they form the two primary lenses for the grammar-wide pass.
 
 ## Reading Test
 
-A grammar locus passes the OODA-A test when a future reader can answer:
+A grammar locus passes the OODA-A test when a future reader can recover all of this:
 
-1. Where in the loop am I?
-2. What did this phase receive?
-3. What does this phase change?
-4. What comes next?
+- the current phase location
+- the incoming material
+- the outgoing material
+- the next temporal move
 
-If the answer to those questions stays fuzzy, the file still reads like a static label rather than a
-loop-time instrument.
+If the reader can only recover a static definition, the locus still needs loop-time work.
 
 ---
 

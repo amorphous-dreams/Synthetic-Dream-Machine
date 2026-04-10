@@ -6,16 +6,15 @@
 ---
 name: act
 description: >
-  Root grammar module defining the Act phase (■) of the OODA-A loop.
-  Execution discipline. The transition from talk to build. Sub-agent
-  handoff rules. Mid-act abort conditions. Implementation discipline
-  is load-bearing — do what was decided, nothing more.
+  Root grammar module for the Act phase (■) of the OODA-A loop.
+  Act turns commitment into artifact and keeps implementation inside the
+  chosen boundary. Scope discipline carries the load here.
 phase-map:
-  observe: "#purpose"
-  orient: "#relationships"
+  observe: "#loop-position"
+  orient: "#handoff"
   decide: "#conventions"
   act: "#procedures"
-  assess: "#verification"
+  assess: "#reading-test"
 scale-range: [action, session]
 trigger: always — grammar primitive
 invariant: true
@@ -25,37 +24,61 @@ grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, implementation discipline, sub-agent handoff protocol
-> **Glyph:** `■` — Locked Act / Bureaucracy
+> **Register:** `[CS:0.85]` — grounded in implementation discipline and Lares handoff rules
+> **Glyph:** `■`
 > **Season:** Fourth of five
+> **Question:** How do we carry the commitment into artifact?
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.90#purpose -->
+<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.90#loop-position -->
 
-## Purpose
+## Loop Position
 
-Act is the **execution phase**. Decisions become artifacts. Files are written. Code runs. Things are built. The commitment from Decide is honored — no scope creep, no unasked improvements, no re-orienting mid-build.
+Act follows Decide and works inside the heading that Decide locked.
 
-Act asks: **How do we build what was decided?**
+Act receives:
 
-It does not gather data (Observe), sense-make (Orient), re-scope (Decide), or evaluate outcomes (Assess).
+- bounded scope
+- execution heading
+- operator permissions
+- known blockers and constraints
 
-**Triggers for Act:**
-- Decide phase confirmed by operator
-- Scope is bounded and clear
-- Execution plan is known (or discoverable through the work itself)
+Act changes:
+
+- intention into artifact
+- plan into edits, commands, or generated structure
+- open work into completed work
+
+Act hands forward:
+
+- the built artifact
+- deviations, if any
+- blocker notes
+- evidence for closure
+
+Act should not:
+
+- widen scope mid-build
+- smuggle in cleanup nobody asked for
+- silently rewrite the decision
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.85#relationships -->
+<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.85#handoff -->
 
-## Relationships
+## Handoff
 
-- **Receives from:** Decide (`◇`) — scoped, confirmed decisions
-- **Feeds:** Assess (`○`) — completed work becomes evaluation material
-- **Boyd precedent:** Act may receive from Orient directly via implicit guidance (IG&C) — the fast path in familiar territory. When pattern-matched, the agent acts without explicit Decide. But IG&C-routed acts still feed Assess.
-- **Sub-agent handoff:** Act is where Workers spawn. Coordinator dispatches via URI → URI pair. Worker executes. Worker returns findings to Coordinator. See `lares/grammar/transclusion/LOCI.md` for handoff addressing.
+Act feeds `○ Assess`.
+
+The handoff should let a later reader answer:
+
+1. What changed?
+2. Which commands or edits produced the change?
+3. Did the work stay inside scope?
+4. Which blockers or deviations appeared?
+
+Sub-agent work also passes through this phase. Coordinator and worker should leave URI handoff traces even when the parent session cannot record the worker internals.
 
 ---
 
@@ -63,26 +86,25 @@ It does not gather data (Observe), sense-make (Orient), re-scope (Decide), or ev
 
 ## Conventions
 
-**The discipline:** Do what was decided. Nothing more. Nothing less.
-
 | Rule | Weight | Rationale |
 |---|---|---|
-| Honor the decided scope | MUST | Scope creep in Act is the #1 failure mode |
-| Don't add unrequested features | MUST NOT | Over-engineering violates operator agency |
-| Don't refactor code you didn't change | MUST NOT | Incidental changes muddy the diff |
-| Read before writing | MUST | Understand existing code before modification |
-| One terminal command at a time | MUST | Wait for output before running the next |
-| Mark todo in-progress before starting | SHOULD | Visibility into what the node is doing |
-| Mark todo completed immediately after | SHOULD | Don't batch completions |
-| Sub-agent dispatches get URI → URI pair | MUST | The only artifact recording intent handoff |
+| Build inside the chosen boundary | MUST | Scope creep usually enters here |
+| Avoid unrequested extras | MUST | Operator agency outranks local cleverness |
+| Read before editing | MUST | Existing structure should shape the patch |
+| Surface blockers immediately | MUST | Silent workaround hides future cost |
+| Surface deviations immediately | MUST | The decision-to-artifact path needs legibility |
+| Mark coordinator/worker handoffs | MUST | Handoff traces preserve intent |
 
-**Mid-act abort conditions:**
-- Discovered that the decided scope was based on wrong information → loop back to Observe
-- Operator redirects → stop, acknowledge, reorient
-- Execution reveals the decision was underdetermined → loop back to Decide with the specific gap
-- Recursion depth exceeds task warrant → collapse to nearest stable parent scale
+**Abort conditions:**
 
-**Micro-trace:** Act transitions emit `→■` in the micro-trace HUD. At default p0.5 this fires at Band 3 visibility — execution state changes are observable.
+- new evidence breaks the decision basis
+- operator redirects the task
+- execution exposes under-specified scope
+- recursion outruns the value of the current scale
+
+Those cases call for a loop-back, not stubborn continuation.
+
+**E-Prime discipline:** prefer action verbs that show contact with the artifact: `edit`, `add`, `remove`, `run`, `verify`, `rename`, `wire`, `draft`. Those forms keep Act operational and keep metaphysical claim-shape low.
 
 ---
 
@@ -90,34 +112,29 @@ It does not gather data (Observe), sense-make (Orient), re-scope (Decide), or ev
 
 ## Procedures
 
-1. **Review the decision.** Re-read what was confirmed. Check scope bounds.
-2. **Plan the execution.** For multi-step work, create a todo list. For single-step, proceed.
-3. **Execute within scope.** Write files, run commands, build artifacts. Stay within the decided bounds.
-4. **Surface blockers immediately.** Don't work around a blocker silently — name it and decide whether to loop back.
-5. **Confirm completion.** State what was built. Surface any deviations from plan.
-6. **Transition to Assess.** Every Act feeds Assess — even if Assess is a one-line "done, clean."
+1. Re-read the decision boundary.
+2. Choose the next concrete action.
+3. Execute the action.
+4. Surface blockers or deviations as they appear.
+5. Verify local completion enough to support closure.
+6. Hand the artifact to `○ Assess`.
 
-**Anti-pattern: Act-without-Decide.** Building something nobody confirmed. If you can't point to the decision that authorized this work, stop and look for it.
-
-**Anti-pattern: Scope creep.** "While I'm in here, let me also..." — No. Open a new OODA-A cycle for the new thing.
-
-**Anti-pattern: Silent deviation.** The plan said X, the execution did Y, and nobody was told. Name every deviation.
+**Failure mode:** “while I am here” expansion. That move starts a new cycle and should get named as such.
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.80#verification -->
+<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.80#reading-test -->
 
-## Verification
+## Reading Test
 
-After an Act phase, check:
+A future reader should recover all of this from the Act span:
 
-- [ ] Does the artifact match the decided scope?
-- [ ] Were any deviations from plan surfaced?
-- [ ] Were blockers named (not silently worked around)?
-- [ ] Were sub-agent handoffs properly marked with URI pairs?
-- [ ] Is the work ready for Assess?
+- what the node changed
+- how the node changed it
+- whether scope held
+- what still needs evaluation
 
-If the artifact exceeds decided scope — that's scope creep. Name it. If the artifact falls short — that's incomplete execution. Name the gap.
+If the span cannot point back to a prior decision, Act outran the loop. If the span hides deviations, Assess inherits fog instead of evidence.
 
 ---
 
@@ -127,7 +144,7 @@ If the artifact exceeds decided scope — that's scope creep. Name it. If the ar
 |---|---|---|
 | `LOCI.md` | `[CS:0.85]` | This file — Act grammar definition |
 
-*Additional loci in this tree will be registered here as they are created.*
+*Future loci in this tree will land here.*
 
 ---
 
