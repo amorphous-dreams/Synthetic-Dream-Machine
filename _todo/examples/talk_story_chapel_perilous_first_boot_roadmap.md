@@ -10,34 +10,19 @@
 
 ---
 
-## The Passage
+## The Source
 
-From Robert Anton Wilson, *Cosmic Trigger I* (1977), Preface:
+*Primary source text lives at its canonical address. This talk story is the interpretation. The source is the ground.*
 
-> *"Chapel Perilous, like the mysterious entity called 'I,' cannot be located in the space-time
-> continuum; it is weightless, odorless, tasteless and undetectable by ordinary instruments.
-> In every gnostic system, Chapel Perilous is where the initiate either achieves illumination —
-> or goes stark raving mad.*
->
-> *You may meet the Angel of Death, the Devil Himself, or merely the Dark Night of the Soul.
-> You will never get out the same way you got in.*
->
-> *The only way out of Chapel Perilous is through it."*
+<!-- kahea lares:///source.raw.holds/chapel-perilous/#the-definition -->
 
-On the exit, RAW writes:
+<!-- kahea lares:///source.raw.holds/chapel-perilous/#exit-conditions -->
 
-> *"In researching this book I passed through Chapel Perilous myself and came out the other
-> side... I'm not sure how I got out. Maybe it was sheer stubbornness, maybe dumb luck,
-> or maybe the agnosticism which I maintained throughout... I never finally believed or
-> disbelieved in any of it."*
+<!-- kahea lares:///source.raw.holds/chapel-perilous/#prometheus-rising -->
 
-From *Prometheus Rising* (1983), Ch.8 (close paraphrase):
-
-> *"Chapel Perilous is that stage of the Thinker's development where it seems that everything
-> is connected to everything, every pattern means something — the paranoid style taken to its
-> logical limit. The only defense is not-knowing — genuine epistemological humility. Those who
-> get stuck either become True Believers (the system proves itself over and over) or hardened
-> cynics (they flip to total rejection). Getting through requires holding the uncertainty."*
+> **Source locus:** [_todo/library/raw-chapel-perilous/LOCI.md](../library/raw-chapel-perilous/LOCI.md)
+> `[S:0.65]` stub — operator feeding verbatim text. Kahea above will resolve once text is in place.
+> Register of *this* roadmap document does not change — synthesis stays synthesis.
 
 ---
 
