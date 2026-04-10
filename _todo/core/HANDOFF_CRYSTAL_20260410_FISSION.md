@@ -1,8 +1,8 @@
-# Handoff Crystal — URI_SCHEMA Three-Document Fission
+# Handoff Crystal — URI_SCHEMA Fission + Grammar Bootstrap
 
-> Cut: 2026-04-10 ~12:30 PDT
+> Cut: 2026-04-10 ~12:30 PDT (fission) · updated ~17:00 PDT (grammar)
 > Branch: `fix/green-jello-dinosaurs-3`
-> HEAD: `1c73784` — clean working tree, all committed
+> HEAD: `1c73784` + unstaged grammar tree
 > Voice: Artificer
 > Register: `[CS:0.80]` 🏛️
 
