@@ -174,14 +174,14 @@ excluded = ["lares/scrum/"]
 
 [[candidates]]
 source = "lares/talk_story/protocol.md"
-uri = "lares://core/design/talk_story/protocol?stances=++---&register=C:0.95&p=0.5#settle.1.0"
+uri = "lares:///talk.story.protocols/talk-story/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
 register = "C:0.95"
 register_numeric = 0.95
 hud_line = "⚡∞ | mode:deployed | p1.0 | stances:+++++ | register:[C:0.95] | build:20260409-a3f2c1e"
 
 [[candidates]]
 source = "lares/signal/README.md"
-uri = "lares://core/design/signal?stances=++---&register=C:0.95&p=0.5#settle.1.0"
+uri = "lares:///signal.active.holds/signal/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
 register = "C:0.95"
 register_numeric = 0.95
 ```

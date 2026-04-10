@@ -23,7 +23,7 @@
    - **Operator URI** — who sent the input, at what trust tier, in what cognitive phase, toward what HAKABA address.
    - **Node URI** — which coordinator voice responds, in what phase, toward what HAKABA address (what this node will *do*).
    - Both URIs **must use sigil form** (emoji glyphs for phase, scope prefix, and stance). See `_todo/URI_SCHEMA.md`.
-   - Example: `lares://telarus:operator(◎)@Enyalios:1/exchange.protocol.mandate?stance=🏛️&register=CS:0.80&p=0.5#🔍.1.1`
+   - Example: `lares://telarus:operator(◎)@Enyalios:1/exchange.protocol.mandate?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.1`
 
 2. **HUD Line** — One condensed status line immediately after the URI pair:
    ```

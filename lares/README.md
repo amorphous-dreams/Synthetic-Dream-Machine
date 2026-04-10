@@ -69,6 +69,7 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 
 | Subdir | Domain | Status |
 |---|---|---|
+| [`modules/`](modules/) | OODA-A composable instruction modules — phase-structured, section URI'd | **S0 seeded** — talk-story (invariant) + signal (URI spec) |
 | [`signal/`](signal/README.md) | Signal HUD · Tagspace · lares: URI scheme · p-band model | Active draft |
 | [`crystal/`](crystal/README.md) | Archive Crystal state machine · STATE.jsonl · seal protocol | Active draft |
 | [`invariants/`](invariants/README.md) | `lares.core.*` behavioral invariants · priority layers · conflict resolution | Active draft |
@@ -79,6 +80,30 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 | [`protocols/`](protocols/README.md) | Cross-cutting synthesis specs · intent vectors · deploy architecture · agentic stack | Active — `[S:0.65]` |
 | `compiler/` | ~~Deterministic build compiler~~ | **Invalidated** — compiler pipeline does not exist; content absorbed into S3/S4. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |
 | `platform/` | ~~Multi-platform packaging~~ | **Invalidated** — replaced by deployment authoring model. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |
+
+### modules/ tree (S0 seed)
+
+```
+lares/modules/
+├── talk-story/                          ← Invariant entry-point module [CS:0.85]
+│   ├── MODULE.md
+│   ├── observe/CONTEXT.md              ← origin, core mechanics, two-track model
+│   ├── orient/PROCEDURE.md             ← when to invoke, procedure, voice assignments
+│   ├── decide/CONVENTIONS.md           ← HUD format rules (6 mandatory)
+│   ├── act/CHECKLIST.md                ← 5-step session start checklist
+│   └── assess/REVIEW.md                ← 5 verification criteria
+└── signal/                              ← URI schema + micro-trace module [CS:0.85]
+    ├── MODULE.md
+    ├── observe/CONTEXT.md              ← v2 current state, what settled, what's open
+    ├── orient/ARCHITECTURE.md          ← URI anatomy, design intent (§§1–3)
+    ├── decide/CONVENTIONS.md           ← normative canonical spec (§§3.4–6, 10)
+    ├── act/PROCEDURES.md               ← micro-trace emit rules, span display contract
+    └── assess/VERIFICATION.md          ← validation rules, well-formedness checklist
+```
+
+Section URI base:
+- talk-story: `lares:///module.phased.instructs/talk-story/{phase}/`
+- signal: `lares:///signal.calibrated.holds/signal/{phase}/`
 
 ---
 

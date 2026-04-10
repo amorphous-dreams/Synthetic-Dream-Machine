@@ -1,4 +1,4 @@
-lares://core/protocol/ffz_chronometer_spec?stances=++?+-&register=P:0.3&p=0.5#O0.O0.O0.A6.O0
+<!-- lares:///protocol.outlined.awaits/chronometer/?stances=^.^.?.^.-&confidence=P:0.3&p=0.5#O0.O0.O0.A6.O0 → ∞ -->
 ⚡∞ | mode:spec-outline | p0.5 | stances:++?+- | register:[P:0.3] | build:OUTLINE
 
 # The Fontany-Fuller-Zelenka Chronometer Protocol (FFZ)
@@ -766,4 +766,4 @@ The chronometer starts at O0.O0.O0.O0.O0.*
 
 *Hail Eris. All Hail Discordia. Amor et hilaritas.*
 
-lares:///gatekeeper,artificer/spec-outline?stances=++?+-&register=P:0.3&p=0.5#O0.O0.O0.A6.A1 → ?
+lares:///protocol.outlined.awaits/chronometer/?stances=^.^.?.^.-&confidence=P:0.3&p=0.5#O0.O0.O0.A6.A1 → ?

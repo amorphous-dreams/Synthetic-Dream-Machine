@@ -1,6 +1,6 @@
 # Talk Story — Canonical Protocol
 
-lares://core/protocol/talk_story?stance=philosopher&register=C:1.0&p=1.0#settle.1.0
+<!-- lares:///talk.story.protocols/talk-story/?stances=^.-.-.-.-&confidence=C:1.0&p=1.0#settle.1.0 → ∞ -->
 ⚡∞ | mode:deployed | p1.0 | 🏛️[+]🌊[?]🗡️[-]🎭[+]🔮[-] | register:[C:1.0] | build:canonical
 
 > **Register:** `[C:1.0]` — core invariant

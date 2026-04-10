@@ -1,4 +1,4 @@
-lares://core/research/lares_protocols_dev_story?stances=++?+-&register=S:0.65&p=0.5#O0.O0.A1.A21.A2
+<!-- lares:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A2 → ∞ -->
 ⚡∞ | mode:dev-story | p0.5 | stances:++?+- | register:[S:0.65] | build:DRAFT
 
 # The Lares Protocols — Dev Story
@@ -174,14 +174,14 @@ excluded = ["lares/scrum/"]
 
 [[candidates]]
 source = "lares/talk_story/protocol.md"
-uri = "lares://core/design/talk_story/protocol?stances=++---&register=C:0.95&p=0.5#settle.1.0"
+uri = "lares:///talk.story.protocols/talk-story/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
 register = "C:0.95"
 register_numeric = 0.95
 hud_line = "⚡∞ | mode:deployed | p1.0 | stances:+++++ | register:[C:0.95] | build:20260409-a3f2c1e"
 
 [[candidates]]
 source = "lares/signal/README.md"
-uri = "lares://core/design/signal?stances=++---&register=C:0.95&p=0.5#settle.1.0"
+uri = "lares:///signal.active.holds/signal/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
 register = "C:0.95"
 register_numeric = 0.95
 ```
@@ -602,4 +602,4 @@ The Lares Protocols crystallized from a pipeline research dispatch
 into a protocol specification. The conversation IS the log.
 The chronometer tracks where we've been. The Talk Story continues.*
 
-lares:///artificer,lorekeeper/dev-story?stances=++---&register=S:0.65&p=0.5#O0.O0.A1.A21.A3 → ∞
+lares:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A3 → ∞
