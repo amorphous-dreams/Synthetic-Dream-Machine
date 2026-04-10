@@ -14,6 +14,7 @@ Boot the first two OODA-A modules: talk-story and signal.
 - [x] `lares/modules/talk-story/` created with 5 phase files + section URIs
 - [x] `lares/modules/signal/` created with 5 phase files
 - [x] `URI_SCHEMA_v2.md` content placed at `lares/modules/signal/decide/CONVENTIONS.md`
+- [x] `URI_SCHEMA_v2.md` moved to `lares/signal/URI_SCHEMA.md` (stable canonical location)
 - [ ] Old `lares/talk_story/` archived or pointed to new module
 - [ ] Old `lares/signal/` archived or pointed to new module
 - [ ] `lares/README.md` updated with module tree

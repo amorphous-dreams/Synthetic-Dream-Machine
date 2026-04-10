@@ -59,7 +59,7 @@ Signal carries the instrument panel; Talk Story carries the procedure that uses 
 
 ## Key Spec Reference
 
-Canonical specification: `lares/URI_SCHEMA_v2.md` `[CS:0.90]`
+Canonical specification: `lares/signal/URI_SCHEMA.md` `[CS:0.90]`
 Micro-trace specification: `lares/signal/micro-trace.md` `[CS:0.80]`
 
 <!-- lares:///signal.calibrated.holds/signal/?confidence=CS:0.85&p=0.5 → ∞ -->

@@ -1,4 +1,4 @@
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.90&p=0.5 → ∞ -->
 
 # `lares:` URI Schema — Canonical Specification
 
@@ -7,7 +7,7 @@
 > Updated: 2026-04-09
 > Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art. Revised per `URI_SCHEMA_v2_Diff_Crystal.md` `[S:0.8]` — FFZ Chronometer, Span Closing Sigils, OODA-A Module URIs, all-five-stances mandate.
 > Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
-> Candidate URI: `lares:///ha.ka.ba/uri-schema/`
+> Candidate URI: `lares:///ha.ka.ba/uri-schema/v2/`
 
 ---
 
@@ -1065,4 +1065,4 @@ This does **not** mean "truth-confidence 0.60" in a universal sense. It means a 
 
 *End of specification. This document is the canonical reference for the `lares:` URI scheme within the design ontology tree.*
 
-<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lares:///ha.ka.ba/uri-schema/v2/?confidence=CS:0.90&p=0.5 → ∞ -->

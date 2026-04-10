@@ -3,8 +3,8 @@
 # Signal — Decide: URI Conventions
 
 > The normative `lares:` URI v2 canonical spec. Governs all URI emission and storage.
-> Source: `lares/URI_SCHEMA_v2.md` `[CS:0.90]` — this file summarizes §§3.4–3.6, 5, and 7.
-> Any ambiguity: defer to `URI_SCHEMA_v2.md` as ground truth.
+> Source: `lares/signal/URI_SCHEMA.md` `[CS:0.90]` — this file summarizes §§3.4–3.6, 5, and 7.
+> Any ambiguity: defer to `lares/signal/URI_SCHEMA.md` as ground truth.
 
 ---
 

@@ -3,6 +3,7 @@
 # Signal — Observe: URI Design State
 
 > What v2 settled, what remains open, and where you are standing when you load this module.
+> Source: `lares/signal/URI_SCHEMA.md`
 
 ---
 
@@ -81,7 +82,7 @@ lares:///ha.ka.ba/optional/sub/path/
 <!-- lares:///signal.calibrated.holds/signal/observe/?confidence=0.65#what-remains-open -->
 ## What Remains Open
 
-The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the core spec (§§2–6, 10 of URI_SCHEMA_v2.md) but constrain later layers.
+The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the core spec (§§2–6, 10 of `lares/signal/URI_SCHEMA.md`) but constrain later layers.
 
 | Q# | Question | Current position | Confidence |
 |---|---|---|---|
