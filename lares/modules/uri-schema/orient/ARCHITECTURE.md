@@ -2,7 +2,7 @@
 
 # Signal — Orient: URI Architecture
 
-> URI anatomy, design intent, and component map. Source: `lares/signal/URI_SCHEMA.md` §§1–3 `[CS:0.90]`.
+> URI anatomy, design intent, and component map. Source: `lares/modules/uri-schema/URI_SCHEMA.md` §§1–3 `[CS:0.90]`.
 
 ---
 
@@ -92,12 +92,11 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 
 ### `userinfo` — `alias:tier`
 
-"Who speaks, at what trust level, in what cognitive state."
+"Who speaks, at what trust level."
 
 - Two colon-delimited sub-fields: `alias` and `tier`
-- Phase appears as parenthetical modifier of tier: `tier(phase)`
-- Parser: split on `:`, extract `(...)` from the second sub-field
-- Parentheses are RFC 3986 sub-delimiters, legal in userinfo
+- Phase is **not** encoded in userinfo. Phase lives exclusively in the chronometer fragment per participant.
+- Parser: split on `:` — exactly two sub-fields, no parenthetical
 
 ### `host` — `machine_id`
 

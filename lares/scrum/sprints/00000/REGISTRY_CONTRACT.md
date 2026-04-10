@@ -61,7 +61,7 @@ The promotion ledger is append-only. Each entry records a single promotion event
   "lares_uri": "lares:///signal/uri-schema",
   "promoted_from_register": "CS:0.85",
   "promoted_to_register": "C:0.95",
-  "design_source": "lares/signal/URI_SCHEMA.md",
+  "design_source": "lares/modules/uri-schema/URI_SCHEMA.md",
   "build_artifact": "builds/agents/signal/uri-schema-v1.md",
   "file_sha256": "sha256:abc123...",
   "semantic_sha256": null,

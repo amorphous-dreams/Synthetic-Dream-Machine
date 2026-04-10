@@ -61,7 +61,7 @@ This module carries the instrument panel; Talk Story carries the procedure that 
 
 ## Key Spec Reference
 
-Canonical specification: `lares/signal/URI_SCHEMA.md` `[CS:0.90]`
-Micro-trace specification: `lares/signal/micro-trace.md` `[CS:0.80]`
+Canonical specification: `lares/modules/uri-schema/URI_SCHEMA.md` `[CS:0.95]`
+Micro-trace specification: `lares/modules/micro-trace/` `[CS:0.80]`
 
 <!-- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->

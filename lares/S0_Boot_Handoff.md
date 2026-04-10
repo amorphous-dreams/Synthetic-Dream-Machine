@@ -351,7 +351,7 @@ HUD:    ✶  ◎  ◇  ■  ○
 
 ### Exchange URI Closing
 ```
-lares://alias:tier(aftermath)@host/ha.ka.ba/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O0.O0 → ?
+lares://alias:tier@host/ha.ka.ba/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O0.O0 → ?
 ```
 
 ---

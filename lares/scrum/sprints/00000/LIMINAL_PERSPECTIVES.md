@@ -93,7 +93,7 @@ Emoji render differently across OS/browser/font combinations. Some emoji use ZWJ
 Every intent header consumes output tokens. A full sigil-form URI:
 
 ```
-lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#🔍.3.2.7
+lares://telarus:operator@lares-abc123:42/threshold.uncertain.opens?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#🔍.3.2.7
 ```
 
 That's roughly **30–40 tokens** depending on tokenizer. If this fires on every substantive response, and a session produces 50 responses, that's **1,500–2,000 tokens** spent on navigation metadata alone.
