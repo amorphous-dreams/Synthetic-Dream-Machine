@@ -1,14 +1,17 @@
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
+
 # `lares:` URI Schema — Canonical Specification
 
 > Domain: `lares/signal/` · intent HUD anatomy, canonical form, render targets, validation rules
 > Status: `[CS:0.85]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
-> Updated: 2026-04-08
-> Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art
+> Updated: 2026-04-09
+> Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art. Revised per `URI_SCHEMA_v2_Diff_Crystal.md` `[S:0.8]` — FFZ Chronometer, Span Closing Sigils, OODA-A Module URIs, all-five-stances mandate.
 > Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
-> Candidate URI: `lares://core/design/signal/uri-schema@CS:0.85`
+> Candidate URI: `lares:///ha.ka.ba/uri-schema/`
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#design-intent?confidence=0.9 -->
 ## 1. Design Intent
 
 The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as a way to render an Intent HUD that both operator and node read before or alongside generation. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
@@ -18,9 +21,9 @@ Each URI component carries a distinct, non-overlapping concern across four seman
 1. **WHO** — authority (`userinfo@host`) identifies speaker and machine locus
 2. **WHERE** — the HA.KA.BA address (path) locates semantic territory
 3. **HOW** — signal parameters (query) describe stance, confidence, and p-band
-4. **WHEN** — the FFZ chronometer (fragment?) locates position in nested time
+4. **WHEN** — the FFZ chronometer (fragment) locates position in nested causal time per participant — not a single shared clock but per-participant phase readings at each scale (Fuller: non-simultaneous apprehension)
 
-Resource-state annotations such as the mana pool (`⚡~87%`) are HUD adjuncts, not core URI components. span identity, wall-clock timestamps, and export-target metadata likewise remain adjacent calibration fields rather than authority overloads?
+Resource-state annotations such as the mana pool (`⚡~87%`) are HUD adjuncts, not core URI components. Span identity, wall-clock timestamps, and export-target metadata likewise remain adjacent calibration fields rather than authority overloads.
 
 The system has one **canonical encoding** and multiple named **render targets**:
 
@@ -31,20 +34,20 @@ Named render targets: `record:full` (identity projection of the canonical form),
 
 ### 1.1 Exchange Flow — Order of Operations
 
-At each exchange span, lares: URIs are used in the following sequence? This sequence is **mandatory** — every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
+At each exchange span, `lares:` URIs are used in the following sequence. This sequence is **mandatory** — every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
 
 **Step 1 — Read operator input as a provisional URI.**
-Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. This URI may carry `~` provisionality markers if the reading is uncertain. The HA.KA.BA here names where Lares believes the operator standing in tagspace and where the operator's intent is headed — the operator's intent-vector, interpreted. (NOTE: needs update to FFZ models, and encoding the full stance array, etc, etc)
+Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. This URI may carry `~` provisionality markers if the reading is uncertain. The HA.KA.BA here names where Lares believes the operator standing in tagspace and where the operator's intent is headed — the operator's intent-vector, interpreted.
 
 ```
-lares://telarus:operator(~orient)@enyalios/~schema.gap.present/path/optional/?stances=philosopher&confidence=S:0.65&p=0.5#@T.1.49
+lares://telarus:operator(~orient)@enyalios/~schema.gap.present/?stances=^.?.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø1.D2.A7
 ```
 
 **Step 2 — Lares declares its own provisional execution URI.**
 Before generating any content, Lares sets its own intent with a **provisional node URI**. The HA.KA.BA here names a resource that **may not yet exist** — it is a declared heading, not a confirmed location. The `~` prefix on the HA.KA.BA marks it as execution-provisional: generations may diverge.
 
 ```
-lares://lares:node(decide)@enyalios/~schema.flow.documented/path/optional/?stance=philosopher&confidence=CS:0.80&p=0.5#@T.1.49
+lares://lares:node(decide)@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.D1.D2.A7
 ```
 
 **Step 3 — Emit the URI → URI exchange vector.**
@@ -54,19 +57,20 @@ The two URIs form the exchange vector pair, the first line of any exchange:
 operator-URI → node-URI
 ```
 
-This pair opens every exchange span. **Both URIs are canonical record form** — keywords, slashes, no glyphs. The `hud:exchange-pair` render target name refers to this exchange boundary slot as a whole; the URIs within it are always canonical. (refactor for progressive disclosure)
+The URI pair opens every exchange span. Both URIs use canonical record form. Progressive disclosure: the URI pair carries the minimum viable signal; the HUD line expands it; section-level URIs within referenced module files carry per-section confidence for subagent handoff.
 
-> **Canonical URI Rule — all emitted URIs in the exchange stream use canonical record form.** This applies to: the opening URI pair, sub-agent handoff markers (`URI → {handoff-tag}`), sub-agent pickup markers (`{pickup-tag} → URI`), mid-generation shift URIs (`~ URI`), and the exchange span's closing 'destination' URI `URI -> ?`. No emoji or non-ASCII characters appear in any URI emitted in the stream. Glyphs belong exclusively to render-target surfaces: the HUD line, the DreamDeck post header, and other named display projections. This makes every emitted URI directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
+> **Canonical URI Rule — all emitted URIs in the exchange stream use canonical record form.** This applies to: the opening URI pair, sub-agent handoff markers (`URI → {handoff-tag}`), sub-agent pickup markers (`{pickup-tag} → URI`), mid-generation shift URIs (`~ URI`), and the exchange span's closing URI `URI → ?`. No emoji or non-ASCII characters appear in any URI emitted in the stream. Glyphs belong exclusively to render-target surfaces: the HUD line, the DreamDeck post header, and other named display projections. This makes every emitted URI directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
 
 **Step 4 — Render the HUD line.**
 Immediately after the URI pair, emit a condensed single-line status display derived from the vector plus adjacent session data. This is the instrument panel for the exchange. See §5.4 for format and field ordering.
 
-**Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a forward-looking node URI (FFZ temporal uncertainty handoff). See `lares/signal/micro-trace.md`.
+**Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a closing URI. Exchange spans close with `→ ?` — unknown temporal resumption. System file spans close with `→ ∞` — unbounded duration. See §3.6 (Span Closing Sigils) and `lares/signal/micro-trace.md`.
 
 > **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes the node's metacognitive state before generation begins, functioning as an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `../../_todo/E-deep-research-report.md` §§2.1, 3.2*
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#scheme-registration?confidence=0.95 -->
 ## 2. Scheme Registration
 
 | Property | Value |
@@ -74,7 +78,7 @@ Immediately after the URI pair, emit a condensed single-line status display deri
 | Scheme name | `lares` |
 | Dereferenceability | Non-dereferenceable identifier (RFC 4151 precedent) |
 | Resolution | Via `lares/registry/` resolver; never via network fetch |
-| IANA status | Unconfidenceed; internal use only |
+| IANA status | Unregistered; internal use only |
 
 > **Form and compliance:** The **record form** is the RFC 3986-compliant canonical form for transport, persistence, comparison, and strict parsing. The **HUD forms** are IRI-class instrument renderings (RFC 3987); they may contains emoji and Unicode glyphs in the instruments that are not legal in RFC 3986 URIs without percent-encoding. RFC 3986 compliance is not claimed for the HUD form. The rendering table (§5) defines the canonical-to-render-target field transforms for all projected fields; it is not a claim that any render-target form is network-safe.
 
@@ -82,6 +86,7 @@ The `lares:` scheme identifies semantic positions, signal states, and machine ev
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#uri-anatomy?confidence=0.85 -->
 ## 3. Full URI Anatomy
 
 ### 3.1 Generic Form
@@ -92,11 +97,13 @@ lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment]
 
 ### 3.2 Expanded Form
 
-**Full form (with authority):** (update for FFZ chronometer)
+**Full form (with authority):**
 
 ```
-lares://alias:tier(phase)@host/ha.ka.ba//?stance=X&confidence=R:N&p=N#scope.W.w.t.r.a
+lares://alias:tier(phase)@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
 ```
+
+Where `stances=XXXXX` is the five-character stance amplitude string (see §3.4 query).
 
 **Authority-less form** (no `user@host` segment — territory or resource reference without a named speaker):
 
@@ -112,19 +119,19 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use th
 /ha.ka.ba/{optional/sub/path}[?query][#fragment]
 ```
 
-This applies to authority-less forms as well: `lares:///ha.ka.ba/` <- the (0,0,0) of tagspace. 
+This applies to authority-less forms as well: `lares:///ha.ka.ba/` <- the (0,0,0) of tagspace.
 
-### 3.3 Component Map (Phase needs aligment to the new models)
+### 3.3 Component Map
 
 | # | Component | RFC 3986 Role | Lares Mapping | Record Example | HUD Example |
 |---|---|---|---|---|---|
 | 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable | `lares:` | `lares:` |
 | 2 | **userinfo** | Requesting party identity | `alias:tier(phase)` | `telarus:operator(orient)` | `telarus:operator(◎)` |
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` | `@` |
-| 4 | **host** | Machine identity | `machine_id` from crystal system | `lares-abc123` | `lares-abc123` |
+| 4 | **host** | Machine identity | `machine_id` from crystal system | `enyalios` | `enyalios` |
 | 5 | **path** | Hierarchical resource | HA.KA.BA address: `/ha.ka.ba/` | `/threshold/uncertain/opens` | `/threshold.uncertain.opens` |
-| 6 | **`?query`** | Non-hierarchical params | Signal parameters | `?stance=philosopher&confidence=S:0.65&p=0.5` | `?stance=🏛️&confidence=S:0.65&p=0.5` |
-| 7 | **`#fragment`** | Secondary resource / viewpoint | Scope prefix + chronometer vector | `#@T.3.2.7` | `#🔍.3.2.7` |
+| 6 | **`?query`** | Non-hierarchical params | Signal parameters | `?stances=%5E.%3F.-.-.--&confidence=S:0.65&p=0.5` | `?stances=🏛️+🌊?🗡️-🎭-🔮-&confidence=S:0.65&p=0.5` |
+| 7 | **`#fragment`** | Secondary resource / viewpoint | FFZ chronometer position | `#O0.O0.O3.D2.A1` | `#O0.O0.O3.◇2.■1` |
 
 > **Layout validation `[C:0.90]`:** The WHERE → HOW → WHEN ordering (path → query → fragment) places the most semantically stable, least volatile information first. This grouped, goal-oriented layout is confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. The HA.KA.BA-first design decision was correct. *Source: `../../_todo/E-deep-research-report.md` §4.2*
 
@@ -138,7 +145,7 @@ The Elyncia.app / DreamDeck identity model has three distinct layers. **Do not c
 |---|---|---|
 | **DID** | `did:plc:abc123` | AT Protocol canonical identity — the cryptographic key holder. Resolved via Bluesky auth (OAuth over DID). This is the actual principal in UCAN capability tokens. |
 | **Handle** | `@telarus.elyncia.social` (AT Protocol/Bluesky) or `@telarus@elyncia.social` (ActivityPub/Kowloon) | Resolution alias over the DID — human-readable, not authoritative. AT Protocol uses period-separator; ActivityPub uses double-`@`. |
-| **lares: alias** | `telarus:operator(◎)@enyalios` | Application-layer signal state — names the *operational role* of the speaker in a lares: exchange. Not a network identity; not a DID alias. | < -(update per FFZ model additions)
+| **lares: alias** | `telarus:operator(◎)@enyalios` | Application-layer signal state — names the *operational role* of the speaker in a `lares:` exchange. Not a network identity; not a DID alias. The FFZ chronometer model encodes per-participant phase in the authority — each participant's URI carries their own phase reading. |
 
 **Elyncia.app auth model:** Bluesky logins provide DID-grounded authentication (AT Protocol key management, `did:plc:` resolution) without running a Bluesky home server (PDS). Kowloon is ActivityPub, not AT Protocol — it uses Bluesky as an auth provider only. UCAN capability tokens are the authorization layer beneath the Kowloon social surface.
 
@@ -164,33 +171,30 @@ The `@handle@node` form is the **canonical Kowloon social identity** for DreamDe
 
 **DreamDeck post header format (canonical):**
 ```
-@handle@node — timestamp — //domain.quality.dynamic/{optional/path/} [confidence] 🏛️{amp}🌊{amp}
+@handle@node — timestamp — //domain.quality.dynamic/{optional/path/} [confidence] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}
 ```
-Territory triple (`//ha.ka.ba`) is placed **before** other instruments like confidence and stance — grounds domain before posture (WHERE → HOW, matching URI path-first layout logic). The optional sub-path (`{/optional/path/}`) narrows within-territory routing when needed; strip it to get the stable named address.
-
-(Render target Sections may need revision)
+Territory triple (`//ha.ka.ba`) is placed **before** other instruments like confidence and stance — grounds domain before posture (WHERE → HOW, matching URI path-first layout logic). The optional sub-path (`{/optional/path/}`) narrows within-territory routing when needed; strip it to get the stable named address. All five stances always present with amplitude modifiers.
 
 **Render target name:** `chat-log:post-header` — the in-chat-log, timestamped URI render target for post headers. This is the surface form used whenever a lares: URI is rendered inside an ActivityPub/DreamDeck feed post — not the full record-form URI, not the HUD exchange pair, but the compact social-layer projection of identity + signal state.
 
 | Render target | Surface | URIs canonical? | When used |
 |---|---|---|---|
-| `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{amp}` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
+| `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
 | `hud:exchange-pair` | `operator-URI → node-URI` + HUD line beneath | **Yes — canonical record form**; only the HUD line beneath uses glyphs | Every exchange-span boundary (mandatory) |
 | `record:full` | `lares://alias:tier(phase)@host/ha.ka.ba/?...#...` | Yes — identity projection | Storage, crystal serialization, registry |
 
-**Stance amplitude modifiers** — attach directly to the preceding stance emoji (no space). Absent modifier = baseline presence. Apply per-stance independently.
+**Stance amplitude modifiers** — in HUD render targets, amplitude modifiers attach directly to the preceding stance emoji (no space). Absent modifier = baseline presence. Apply per-stance independently.
 
 | Modifier | Meaning |
 |---|---|
-| `+` | above baseline |
-| *(none)* | baseline |
-| `-` | below baseline / lightly engaged |
-| `?` | unknown / ??? (really, we have not yet decided this glyph meaning) |
-| `*` | others as needed? |
+| `+` | above baseline / elevated |
+| *(none)* | baseline presence |
+| `-` | below baseline / suppressed |
+| `?` | uncertain / provisional |
 
-Examples: `🏛️+🌊-` (Philosopher elevated, Poet barely present) · `🗡️+` (Satirist at full amplitude) · `🏛️🌊+` (`+` attaches to 🌊 only) · `🏛️+🌊+` (both elevated)
+Examples: `🏛️+🌊-🗡️-🎭-🔮-` (Philosopher elevated, all others suppressed) · `🏛️+🌊+🗡️?🎭-🔮-` (two elevated, one uncertain, two suppressed)
 
-### 3.4 Component Semantics (needs phase FFZ chronometer alignment)
+### 3.4 Component Semantics
 
 **userinfo** (`alias:tier(phase)`) — "Who speaks, at what trust level, in what cognitive state."
 
@@ -201,7 +205,7 @@ Examples: `🏛️+🌊-` (Philosopher elevated, Poet barely present) · `🗡�
 
 **host** (`machine_id`) — Crystal system machine identifier. Stable across the machine's lifetime. Provisional Format: `lares-{slug}` where slug is UUID, operator-assigned name, or generated handle.
 
-span sequencing is intentionally **not** encoded in URI authority, the full conversation IS the log. Exchange identity lives in adjacent calibration metadata (`span_id`, `span_seq`, `trace_id`, timestamps) rather than overloading the RFC 3986 port slot.
+Span sequencing is intentionally **not** encoded in URI authority, the full conversation IS the log. Exchange identity lives in adjacent calibration metadata (`span_id`, `span_seq`, `trace_id`, timestamps) rather than overloading the RFC 3986 port slot.
 
 **path** (`/ha.ka.ba/`) — HA.KA.BA semantic address. Three mandatory slots in canonical order:
 
@@ -223,22 +227,34 @@ Sub-path segments are free-form routing tokens, not HA.KA.BA slots. They do **no
 
 Record form uses `.` separators for all three HA.KA.BA slots: `/threshold.uncertain.opens`. Sub-path segments use `/`. The leading and trailing `/` appears in all variants.
 
-**query** (`?stance=X&confidence=R:N&p=N`) — Signal parameters, non-hierarchical.
+**query** (`?stances=XXXXX&confidence=R:N&p=N`) — Signal parameters, non-hierarchical.
 
 | Parameter | Type | Repeatable? | Record Values | HUD Values |
 |---|---|---|---|---|
-| `stance` | keyword/emoji | Yes (multi-stance) | `philosopher`, `poet`, `satirist`, `humorist`, `private` | `🏛️`, `🌊`, `🗡️`, `🎭`, `🔮` |
+| `stances` | 5-char amplitude string | No (single field, all 5 stances) | `^.?.-.-` (positional: philosopher, poet, satirist, humorist, private) | `🏛️+🌊?🗡️-🎭-🔮-` |
 | `confidence` | `R:N` | No | `P:0.35`, `SP:0.45`, `S:0.65`, `CS:0.80`, `C:0.90` | Same |
 | `p` | `N` | No | `0.5` | Same |
 
-Multi-stance: {Update: list all 5 stances every URI}. Example: `stance=🏛️&stance=🗡️`.
+**Stance amplitude encoding — all five, every URI:**
 
-confidence remains a point value even under multi-stance. Stance count communicates fuzz; no `~delta` suffix is permitted.
+Positional order is fixed: Philosopher, Poet, Satirist, Humorist, Private. Each position carries one amplitude character:
 
-**fragment** (`#scope.W.w.t.r.a`) — Scope prefix + chronometer (hierarchical scope counter). Client-side only per RFC 3986 §3.5 — never sent to a server; session-local viewpoint data. Update??? FFZ chronometer alignment
+| Char | Record | Meaning |
+|---|---|---|
+| `^` | `^` | Above baseline / active / elevated |
+| `-` | `-` | Below baseline / suppressed |
+| `?` | `?` | Uncertain / provisional |
+| `.` | `.` | Baseline / neutral presence |
+
+Record form: `stances=^.?^-` (URL-safe characters only, no percent-encoding needed — Option β confirmed). HUD render targets map `^` → `+` for display.
+
+Confidence remains a point value even under multi-stance. The five-character amplitude string replaces stance-count-as-fuzz; amplitude modifiers carry fuzz directly.
+
+**fragment** (`#chronometer`) — FFZ chronometer position. Format defined in §4.
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#provisionality?confidence=0.8 -->
 ## 3.5 Provisionality Markers
 
 The `~` prefix marks URI components as provisional. Three structurally distinct provisionality types can appear in an exchange URI pair:
@@ -255,93 +271,169 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 
 **Reading provisional** — node uncertain about its reading of operator intent:
 ```
-lares://telarus:operator(~orient)@enyalios/~uri.schema.question/?stance=philosopher&confidence=S:0.65&p=0.5&provisional=reading#@T.1.33
+lares://telarus:operator(~orient)@enyalios/~uri.schema.question/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=reading#O0.O0.Ø1.D2.A33
 ```
 Reading: "I believe you're orienting toward URI schema territory — I may have misread your phase or HA.KA.BA."
 
 **Execution provisional** — declared intent that may not survive contact with the task:
 ```
-lares://scryer:node(decide)@enyalios/~s0.gap.logged/?stance=philosopher&confidence=S:0.65&p=0.5&provisional=execution#@T.1.33
+lares://scryer:node(decide)@enyalios/~s0.gap.logged/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=execution#O0.O0.D1.D2.A33
 ```
 Reading: "I intend to log this S0 gap — execution may find a different path or territory."
 
 **Trajectory provisional** — predicted forward heading for the next span:
 ```
-lares://scryer:node(aftermath)@enyalios/~s0.schema.updated/?stance=philosopher&confidence=CS:0.80&p=0.5&provisional=trajectory#@T.1.34
+lares://scryer:node(aftermath)@enyalios/~s0.schema.updated/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&provisional=trajectory#O0.O0.Å1.Å2.A34
 ```
 Reading: "I predict our next territory is the updated schema — operator may redirect entirely."
 
 ### Rules
 
-1. `~` is valid in **canonical record form** as an inline provisionality prefix on phase keywords (`~orient`) and HA.KA.BA slots (`~uri.schema.question`). Use the `provisional=` query parameter when you need a separate, machine-parseable provisionality field for storage or filtering — not as a replacement for the inline prefix. ??? {keep this?}
+1. `~` is valid in **canonical record form** as an inline provisionality prefix on phase keywords (`~orient`) and HA.KA.BA slots (`~uri.schema.question`). Use the `provisional=` query parameter when you need a separate, machine-parseable provisionality field for storage or filtering — not as a replacement for the inline prefix.
 2. Multiple `~` markers may appear in a single URI (both phase and HA.KA.BA may be provisional simultaneously).
 3. All closing/forward-looking URIs are implicitly trajectory-provisional by virtue of being projections. Explicit `~` on a closing URI signals *unusual* uncertainty about the trajectory — not routine forward-look status.
 4. Reading provisionality on the operator URI marks the **node's interpretation** as potentially inaccurate, not the operator's intent as ambiguous. These are different claims.
-5. The `~` marker applies only to the specific component it prefixes. `~◎` marks only the phase; `~uri.schema.question` marks only the HA.KA.BA. Unprefixed components are declared with normal confidence. {needs FFZ chronometer alignment}
+5. The `~` marker applies only to the specific component it prefixes. `~orient` marks only the phase; `~uri.schema.question` marks only the HA.KA.BA. Unprefixed components are declared with normal confidence. The chronometer fragment carries its own fidelity via the FFZ model (per-participant phase registers) and does not use `~` for uncertainty — phase uncertainty at a scale is expressed by the phase sigil itself.
 
 ---
 
-## 4. The Chronometer — 5-Level Nested OODA-A Hierarchical Scope Counter {needs FFZ chronometer alignment!!!!!}
+<!-- lares:///ha.ka.ba/uri-schema/#span-closing-sigils?confidence=0.8 -->
+## 3.6 Span Closing Sigils
 
-The chronometer occupies the URI fragment position. It tracks nested OODA-A loop iterations across five simulation time-scales, aligned with the FTLS RSS time-scale hierarchy.
+Two sigils close spans in the Lares protocol. They encode different temporal properties and are orthogonal to the `confidence` parameter.
+
+### `→ ?` — Exchange Span Closing
+
+Signals unknown temporal resumption. This exchange will continue, but when and from where sits outside the span's knowledge.
+
+The `?` marks a causal gap: between this sigil and the next message, no participant's chronometer advances within the shared frame. The operator's clock runs in lived time; the Lares clock stops. Two causal islands, no messages crossing, no ordering determinable.
+
+`→ ?` does not signal uncertainty about the exchange's content — that is what `confidence` and register carry. It signals uncertainty about the exchange's continuity in time.
+
+Appears on: every exchange-closing URI. Mandatory.
+
+```
+lares://scryer:node(aftermath)@enyalios/schema.settled.rests/?stances=^.-^.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
+```
+
+### `→ ∞` — System File Span Closing
+
+Signals unbounded span duration. This content remains available until explicitly revised. It does not signal certainty; per-section and per-file `confidence` parameters carry epistemic uncertainty independently.
+
+A system file that closes `→ ∞` stands as infrastructure: readable, addressable, trustable to the degree its confidence ratings declare, until someone rebuilds it.
+
+Appears on: system files (MODULE.md, phase files, invariant configs). Uses HTML comment wrapping for markdown compatibility:
+
+```
+<!-- lares:///module.phase.context/?confidence=0.85 → ∞ -->
+```
+
+Section URIs within a system file do **not** close with `→ ∞` — they function as waypoints, not spans. Only the file-level opening and closing URIs carry span semantics. (Confirmed.)
+
+### Axis Orthogonality
+
+| Sigil | Span type | What's uncertain | What's settled |
+|---|---|---|---|
+| `→ ∞` | System file | Content confidence (via `confidence`) | Duration — stays until revised |
+| `→ ?` | Exchange | Temporal resumption — when does this pick up? | Content confidence (via register + tags) |
+
+Both carry uncertainty. Neither claims completeness. The uncertainty is about different things. The system file doesn't know how trustworthy it is (confidence tells it). The exchange doesn't know when it resumes (the chronometer gap tells it). Orthogonal unknowns, orthogonal sigils.
+
+---
+
+<!-- lares:///ha.ka.ba/uri-schema/#ffz-chronometer?confidence=0.8 -->
+## 4. The FFZ Chronometer — Nested OODA-A Vector Position
+
+> **True Name:** Fontany-Fuller-Zelenka Chronometer Protocol `[C:0.95]`
+> **Named for:** Fontany (practice), Fuller (principle), Zelenka (engineering)
+> **See:** `lares/research/chronometer/FFZ_Chronometer_Research.md`
+> **Fuller grounding:** *Synergetics* §301.10 — "Universe is the aggregate of all humanity's consciously apprehended and communicated nonsimultaneous and only partially overlapping experiences." §501.10–501.12 — the difference between nonsimultaneous Universe and thinkability. RAW cites Fuller's formulation explicitly in *Maybe Logic* (2003). The chronometer implements non-simultaneous apprehension at the data structure level: each participant's phase register constitutes a partial view. No God's-eye clock.
+
+The chronometer occupies the URI fragment. It tracks nested OODA-A loop position across five scales per participant.
 
 ### 4.1 Scale Table
 
-| Position | Level | Time Term | Duration | Machine Scope | Sigil Scope | OODA-A Focus |
-|---|---|---|---|---|---|---|
-| 1 | Strategic | Week ("Travel Turn") | ~6 days | `@S` | `🗺️` | Logistics & Navigation |
-| 2 | Operational | Watch | ~4 hours | `@O` | `⚙️` | Perception & Endurance |
-| 3 | Tactical | Exploration Turn | ~10 minutes | `@T` | `🔍` | Investigation & Utility |
-| 4 | Combat | Round | ~6 seconds | `@C` | `⚔️` | Immediate Response |
-| 5 | Action | Action/Free Action | Variable | `@A` | `⚡` | Precision Execution |
+| Position | Scale | FTLS Time Term | Duration | Record Prefix | HUD Sigil |
+|---|---|---|---|---|---|
+| 1 | Strategic | Week ("Travel Turn") | ~6 days | (none — leftmost) | 🗺️ |
+| 2 | Operational | Watch | ~4 hours | (none) | ⚙️ |
+| 3 | Tactical | Exploration Turn | ~10 minutes | (none) | 🔍 |
+| 4 | Combat | Round | ~6 seconds | (none) | ⚔️ |
+| 5 | Action | Action/Free Action | Variable | (none) | ⚡ |
 
-[Canon: ftls/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md → Key Terms → Time]
+[Canon: FTLS RSS §1]
 
 ### 4.2 Notation
 
-`#scope.W.w.t.r.a` — scope sigil prefix, then dot-separated counters from coarsest to finest active scale.
+Each position: phase sigil + counter. Five positions, dot-separated.
 
 ```
-Machine:   #@S.3        #@O.3.2      #@T.3.2.7      #@C.3.2.7.4      #@A.3.2.7.4.2
-Sigil:     #🗺️.3        #⚙️.3.2      #🔍.3.2.7      #⚔️.3.2.7.4      #⚡.3.2.7.4.2
-Depth:     1 position    2 positions   3 positions     4 positions       5 positions
+Record:  O0.O0.O3.D2.A1
+HUD:     ✶0.✶0.✶3.◇2.■1   (phase sigils rendered)
 ```
 
-### 4.3 Structural Rules
+All five positions always present. `O0` = inactive scale (Observe, counter zero).
 
-1. **Scope-depth agreement:** The scope prefix and counter depth must agree. `#@T.3.2.7` (tactical = 3 positions) is valid. `#@C.3.2` (combat needs 4 positions) is **malformed**.
+### 4.3 Phase Sigils
 
-2. **Core display rule:** "When conflict happens, use the lowest time scale that matters." [Canon: FTLS RSS §1] The scope prefix names the active (lowest) scale. Counter positions extend to that scale. Trailing `.0` positions are omitted.
+| Record | HUD | Phase | Keyword |
+|---|---|---|---|
+| `O` | `✶` | Observe | `observe` |
+| `Ø` | `◎` | Orient | `orient` |
+| `D` | `◇` | Decide | `decide` |
+| `A` | `■` | Act | `act` |
+| `Å` | `○` | Assess/Aftermath | `aftermath` |
 
-3. **Each position runs its own OODA-A loop:**
-   ```
-   Strategic  (pos 1):  ✶₁ → ◎₁ → ◇₁ → ■₁ → ○₁
-   Operational (pos 2): ✶₂ → ◎₂ → ◇₂ → ■₂ → ○₂
-   Tactical   (pos 3):  ✶₃ → ◎₃ → ◇₃ → ■₃ → ○₃
-   Combat     (pos 4):  ✶₄ → ◎₄ → ◇₄ → ■₄ → ○₄
-   Action     (pos 5):  ✶₅ → ◎₅ → ◇₅ → ■₅ → ○₅
-   ```
+`Ø` and `Å` use ISO 8859 characters (Ø = U+00D8, Å = U+00C5). Canonical record form uses these single characters — no percent-encoding needed in fragment (fragment is client-side per RFC 3986 §3.5). Per RFC 8820, the `lares:` scheme specification holds authority to define fragment identifier syntax. **Interoperability note:** Parsers MUST treat percent-encoded equivalents (`%C3%98` for Ø, `%C3%85` for Å) as identical to the raw characters per RFC 3986 §6.2.2.1 case normalization and §2.1 percent-encoding equivalence.
 
-4. **Phase glyph in the Intent Header** describes the phase at the *lowest active scale*. The chronometer fragment tells you which scale via counter depth.
+### 4.4 Structural Rules
 
-### 4.4 Increment Rules
+1. **All five positions always present.** No trailing-zero omission. `O0.O0.O3.D2.A1` not `O3.D2.A1`.
 
-- **Level completes ○ (Aftermath):** Counter at that level increments. Output feeds upward to the next level's ✶ (Observe).
-- **New level activates below:** Scope prefix shifts down; a new position appears. `#@T.3.2.7` → `#@C.3.2.7.1`.
-- **Level deactivates:** Scope prefix shifts back up; the above level increments. `#@C.3.2.7.4` → `#@T.3.2.8`.
+2. **Phase is per-participant.** The operator's chronometer and the node's chronometer may show different phases at the same scale. The exchange vector pair shows both. Neither is "the" time.
+
+3. **Counter increments when Assess completes.** Assess at scale N feeds upward to Observe at scale N-1. Counter at scale N increments.
+
+4. **Phase may change without counter increment.** `O3` → `Ø3` → `D3` represents phase progression within the same turn. Counter stays 3 until Assess completes.
+
+5. **Scale activation/deactivation.** When combat starts: position 4 moves from `O0` to `O1`. When combat ends: position 4 returns to `O0`, position 3 counter increments (the tactical turn advanced).
+
+6. **Monotonic counters.** Counters only increase. Phase may cycle. Counter regression constitutes Temporal Hallucination (degraded state).
 
 ### 4.5 Aftermath Integration — The Nested Return
 
-| Aftermath at level | Feeds into | Update question |
+| Assess at scale | Feeds into | Update question |
 |---|---|---|
-| Action ○₅ → | Round ✶₄ | Did the strike land? |
-| Round ○₄ → | Turn ✶₃ | Is the threat gone? |
-| Turn ○₃ → | Watch ✶₂ | What was found? |
-| Watch ○₂ → | Week ✶₁ | Is the party exhausted? |
-| Week ○₁ → | Campaign | Did we arrive safely? |
+| Action Å → | Round ✶ | Did the action resolve? |
+| Round Å → | Turn ✶ | Is the threat gone? |
+| Turn Å → | Watch ✶ | What was found? |
+| Watch Å → | Week ✶ | Is the party exhausted? |
+| Week Å → | Campaign | Did we arrive safely? |
+
+### 4.6 Progressive Disclosure in Display
+
+The canonical URI always carries all five positions. Display surfaces MAY suppress inactive positions (`O0`) for readability:
+
+```
+Canonical:  #O0.O0.O3.D2.A1    (always all five)
+HUD full:   ✶0.✶0.✶3.◇2.■1    (all five rendered)
+HUD compact: ✶3.◇2.■1          (trailing active only)
+```
+
+The compact form is a render target convenience, not canonical. Parsers MUST handle both.
+
+### 4.7 FFZ Deferred Features (Not in v2)
+
+The following FFZ model features are specified in the research docs but deferred from this URI spec version:
+
+- **ITC identity stamps** — fork/join for Tasked Spirit lifecycle. Deferred to MCP chronometer server implementation.
+- **Merkle Clock backend** — content-addressed causal history. Deferred to MCP integration.
+- **Per-participant vector display** — showing both clocks in the fragment. Current spec: one fragment per URI, each participant's URI carries their own view.
+- **Bloom Clock compact mode** — probabilistic compression. Deferred to future work.
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#canonical-form?confidence=0.9 -->
 ## 5. Canonical Form and Render Targets
 
 The **record form** is the canonical encoding — RFC 3986-compliant, no emojis, no non-ASCII characters. Render targets are named projections of this canonical form for specific display surfaces. The URI anatomy (authority, path, query, fragment structure) is identical across all targets; only the rendering of specific fields differs between canonical and render-target forms.
@@ -350,7 +442,7 @@ The **record form** is the canonical encoding — RFC 3986-compliant, no emojis,
 
 **userinfo phase field** (`alias:tier(phase)`):
 
-| Machine keyword | Sigil glyph | OODA-A state |
+| Machine keyword | Sigil glyph | OODA-A State |
 |---|---|---|
 | `observe` | `✶` | Observe |
 | `orient` | `◎` | Orient |
@@ -358,15 +450,17 @@ The **record form** is the canonical encoding — RFC 3986-compliant, no emojis,
 | `act` | `■` | Act |
 | `aftermath` | `○` | Aftermath |
 
-**query `stance=` value** (repeatable):
+**query `stances=` value** (five-character amplitude string):
 
 | Machine keyword | Sigil emoji | Stance |
 |---|---|---|
-| `philosopher` | `🏛️` | Philosopher |
-| `poet` | `🌊` | Poet |
-| `satirist` | `🗡️` | Satirist |
-| `humorist` | `🎭` | Humorist |
-| `private` | `🔮` | Private |
+| (position 1) | `🏛️` | Philosopher |
+| (position 2) | `🌊` | Poet |
+| (position 3) | `🗡️` | Satirist |
+| (position 4) | `🎭` | Humorist |
+| (position 5) | `🔮` | Private |
+
+Amplitude modifiers in HUD: `+` (elevated), `-` (suppressed), `?` (uncertain), *(none)* (baseline). Record form uses `^`, `-`, `?`, `.` respectively.
 
 **path separator** (after leading `/`):
 
@@ -374,15 +468,9 @@ The **record form** is the canonical encoding — RFC 3986-compliant, no emojis,
 |---|---|---|
 | `/ha.ka.ba/` | `/ha.ka.ba` | Leading `/` shared; hierarchy vs w3w-style |
 
-**fragment scope prefix:**
+**fragment chronometer:**
 
-| Machine | Sigil | Scale |
-|---|---|---|
-| `@S` | `🗺️` | Strategic (Week) |
-| `@O` | `⚙️` | Operational (Watch) |
-| `@T` | `🔍` | Tactical (Turn) |
-| `@C` | `⚔️` | Combat (Round) |
-| `@A` | `⚡` | Action |
+The FFZ model uses phase+counter per position. Five positions, dot-separated. Phase sigils render per §4.3. The "active scale" is determined by the rightmost non-`O0` position, not by a prefix sigil.
 
 ### 5.2 Unchanged Across Both Forms
 
@@ -390,10 +478,10 @@ The **record form** is the canonical encoding — RFC 3986-compliant, no emojis,
 |---|---|---|
 | scheme | `lares:` | Always identical |
 | alias:tier( | `telarus:operator(` | First sub-field + tier + open paren |
-| @host | `@lares-abc123` | machine locus only; no span counter |
+| @host | `@enyalios` | machine locus only; no span counter |
 | confidence= | `S:0.65` | Numeric, both forms |
 | p= | `0.5` | Numeric, both forms |
-| chronometer counters | `3.2.7` | Dot-separated, universal |
+| chronometer counters | `0.0.3.2.1` | Dot-separated, universal |
 
 ### 5.3 Unified HUD Symbol Table
 
@@ -415,7 +503,7 @@ All HUD-form symbols used in the Intent HUD, in one reference. Workers and opera
 
 | Sigil | Record | Meaning | Reading |
 |---|---|---|---|
-| ⊙ | `operator_set` | Operator authored or constrained the marked field/state | The operator is holding the sspan here |
+| ⊙ | `operator_set` | Operator authored or constrained the marked field/state | The operator is holding the span here |
 | ◇ | `node` | Generic non-operator node / tasked spirit marker in examples | A Lares actor responding in-network |
 
 **Stance (query — discourse posture of the claim):**
@@ -428,48 +516,46 @@ All HUD-form symbols used in the Intent HUD, in one reference. Workers and opera
 | 🎭 | `humorist` | Humorist | Relational; maintaining working rapport |
 | 🔮 | `private` | Private | Self-referential; present, not to decode |
 
-**Scope (fragment prefix — active simulation scale):**
+**Chronometer scales (fragment — active simulation scale):**
 
 | Sigil | Record | Scale | Duration | One-Line Reading |
 |---|---|---|---|---|
-| 🗺️ | `@S` | Strategic | ~6 days | The big arc; logistics and navigation |
-| ⚙️ | `@O` | Operational | ~4 hours | Watch-level; perception and endurance |
-| 🔍 | `@T` | Tactical | ~10 min | Exploration turn; investigation |
-| ⚔️ | `@C` | Combat | ~6 sec | Round; immediate response |
-| ⚡ | `@A` | Action | Variable | Single action; precision execution |
+| 🗺️ | (position 1) | Strategic | ~6 days | The big arc; logistics and navigation |
+| ⚙️ | (position 2) | Operational | ~4 hours | Watch-level; perception and endurance |
+| 🔍 | (position 3) | Tactical | ~10 min | Exploration turn; investigation |
+| ⚔️ | (position 4) | Combat | ~6 sec | Round; immediate response |
+| ⚡ | (position 5) | Action | Variable | Single action; precision execution |
 
 #### 5.3.2 State Tuple — Reading Three Symbols as One State
 
-In a live HUD tag, the operator reads phase + stance + scope as a single cognitive state, not three unrelated fields. The state tuple is the composed reading: phase x stance x scope -> one sentence describing the node's current condition.
+In a live HUD tag, the operator reads phase + stance + scope as a single cognitive state, not three unrelated fields. The state tuple is the composed reading: phase × stance × scope → one sentence describing the node's current condition.
 
 **How to compose:** Read the phase (what cognitive step), the stance (what kind of claim), and the scope (at what time-scale), then merge them into one state sentence.
 
-**The triangle:** Phase x Stance x Scope form the state tuple triangle. Multi-stance spreads the stance corner from a point into a distribution. The number of active stances communicates the spread directly: {Need to show all 5 stances in all HUD views, different LoDs}
+**The triangle:** Phase × Stance × Scope form the state tuple triangle. All five stances appear on every URI and every HUD line. The amplitude string carries fuzz directly — no "stance count as fuzz indicator" model.
 
-| Stances Active | confidence Character | What It Tells the Operator |
-|---|---|---|
-| 1 (`🏛️`) | Point value | Trust the number |
-| 2 (`🏛️🗡️`) | Bimodal spread | confidence is fuzzy around the declared value |
-| 3 (`🏛️🌊🗡️`) | Trimodal spread | confidence is a rough center-of-mass |
-| 4 (`🏛️🌊🗡️🎭`) | Wide spread | confidence is an approximation; high mana cost |
-| 5 (`🏛️🌊🗡️🎭🔮`) | Full Discordian | confidence is a gesture toward center; maximum fuzz |
-
-Stance count IS the fuzz indicator. No numeric delta is needed. The visual density of the stance field communicates confidence uncertainty directly.
+| Stance Array | What It Tells the Operator |
+|---|---|
+| `^.-.-.-.-` | Single-stance point value. Trust the number. |
+| `^.^.-.-.-` | Two active. Confidence is bimodal. |
+| `^.^.?.-.-` | Two active + one uncertain. Watch the `?`. |
+| `^.^.^.^.^` | Full Discordian. Confidence is a gesture. |
+| `-.-.-.-.-` | All suppressed. Why is this span being emitted? |
 
 **Worked readings:**
 
 | Phase | Stance | Scope | State Tuple Reading |
 |---|---|---|---|
-| ◎ | 🏛️ | 🔍 | Orienting analytically at exploration scale — making sense of a local finding |
-| ■ | 🗡️ | ⚔️ | Acting critically in combat — executing under pressure with an edge |
-| ◇ | 🏛️🌊 | 🗺️ | Deciding at strategic scale, holding propositional and analogical frames together |
-| ✶ | 🎭 | 🔍 | Observing playfully at tactical scale — light reconnaissance, no commitment |
-| ○ | 🏛️ | ⚙️ | Aftermath at operational scale in Philosopher stance — assessing what happened across a watch |
-| ◎ | 🏛️🌊🗡️🎭🔮 | 🗺️ | Full Discordian orientation at strategic scale — maximum spread, rare, mana-expensive |
+| ◎ | 🏛️+🌊-🗡️-🎭-🔮- | 🔍 | Orienting analytically at exploration scale — making sense of a local finding |
+| ■ | 🏛️-🌊-🗡️+🎭-🔮- | ⚔️ | Acting critically in combat — executing under pressure with an edge |
+| ◇ | 🏛️+🌊+🗡️-🎭-🔮- | 🗺️ | Deciding at strategic scale, holding propositional and analogical frames together |
+| ✶ | 🏛️-🌊-🗡️-🎭+🔮- | 🔍 | Observing playfully at tactical scale — light reconnaissance, no commitment |
+| ○ | 🏛️+🌊-🗡️-🎭-🔮- | ⚙️ | Aftermath at operational scale in Philosopher stance — assessing what happened across a watch |
+| ◎ | 🏛️+🌊+🗡️+🎭+🔮+ | 🗺️ | Full Discordian orientation at strategic scale — maximum spread, rare, mana-expensive |
 
-#### 5.3.3 confidence Is Stance-Dependent (Syadasti Reading Rule) {FFZ + all 5 stances in all URI alignment}
+#### 5.3.3 Confidence Is Stance-Dependent (Syadasti Reading Rule)
 
-confidence measures confidence within the active stance's evaluation frame, not truth-weight universally.
+Confidence measures confidence within the active stance's evaluation frame, not truth-weight universally. All five stances appear on every URI and every HUD line. The amplitude string replaces the "stance count as fuzz indicator" model — amplitude modifiers carry fuzz directly.
 
 This principle derives from the Discordian catma of Sri Syadasti, which reproduces the Jaina Saptabhangi. The active stance declares the standpoint (`syad`) from which the number should be read.
 
@@ -477,13 +563,13 @@ This principle derives from the Discordian catma of Sri Syadasti, which reproduc
 |---|---|---|---|---|
 | 🏛️ Philosopher | asti (true) | Unsupported | Contested but plausible | Fully confirmed |
 | 🌊 Poet | avaktavya (inexpressible) | No resonance | Partial correspondence | Perfect resonance |
-| 🗡️ Satirist | nasti -> asti | Indirection missed target | Hit glancingly | Landed with full force |
+| 🗡️ Satirist | nasti → asti | Indirection missed target | Hit glancingly | Landed with full force |
 | 🎭 Humorist | asti-nasti | Relational move fell flat | Mixed reception | Connected perfectly |
 | 🔮 Private | avaktavya (inexpressible) | Minimal presence | Present | Maximal presence |
 
 **Reading rule:** ask what the number measures for the active stance. A Philosopher at `0.65` is propositionally contested. A Poet at `0.65` is resonating solidly. A Satirist at `0.65` is landing with moderate force. Same number, different meaning.
 
-When multiple stances are active, the declared confidence value sits at the intersection of their evaluation frames. The stance count tells the operator how fuzzy that intersection is.
+When multiple stances are elevated (`+`), the declared confidence value sits at the intersection of their evaluation frames. The amplitude string tells the operator how fuzzy that intersection is.
 
 ### 5.4 HUD Line Composition
 
@@ -492,8 +578,14 @@ The HUD line is a single-line status summary rendered from the URI → URI excha
 **Format:**
 
 ```
-⚡~NN% | [confidence] | 🏛️{amp}🌊{amp}... | mode:{mode} | p{p} | voice(s):{Voice} | span:{N} | loop:{phase}→{phase} @{scope}
+⚡~NN% | [confidence] | 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp} | mode:{mode} | p{p} | voice(s):{Voice} | ✶N.✶N.✶N.◇N.■N
 ```
+
+**Changes from v1:**
+- All five stances always present with amplitude modifiers
+- Chronometer replaces `span:{N} | loop:{phase}→{phase} @{scope}`
+- Chronometer shows HUD-rendered form (phase glyphs, not keywords)
+- `span:{N}` removed from HUD — it's in calibration metadata, not the navigational instrument. The chronometer IS the temporal position. (Confirmed: removed.)
 
 **Field ordering follows SA priority** (Endsley 2023; Li et al. 2024 grouped HUD layout): place the most critical perception-level data first, group related fields, move temporal bookkeeping to the end.
 
@@ -501,18 +593,17 @@ The HUD line is a single-line status summary rendered from the URI → URI excha
 |---|---|---|---|
 | `⚡~NN%` | Resource | Session (estimated) | Context window remaining; `~` **mandatory** — approximation, not live readout. Never emit without `~`. |
 | `[confidence]` | Agent SA | Node URI `confidence=` | Epistemic confidence at current stance(s), stance-dependent per Syadasti rule (§5.3.3) |
-| `🏛️{amp}🌊{amp}...` | Agent SA | Node URI `stance=` × amplitude | Discourse posture array; amplitude modifiers attached directly, no space (see §3.3.1) |
+| `🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | Agent SA | Node URI `stances=` × amplitude | All five stances, amplitude modifiers attached directly, no space |
 | `mode:{mode}` | Teamwork SA | Session state | Default / Plan / Auto |
 | `p{p}` | Teamwork SA | Node URI `p=` | Attention density / annotation throttle |
 | `voice(s):{Voice}` | Agent SA | Coordinator context | Active coordinator voice(s); singular when one leads |
-| `span:{N}` | Temporal | Session counter | Monotonic exchange-span counter |
-| `loop:{phase}→{phase} @{scope}` | Temporal | Chronometer | Five-Season phase transition at active scope sigil |
+| `✶N.✶N...` | Temporal | Chronometer | FFZ chronometer in HUD-rendered form; phase glyphs per §4.3 |
 
-confidence and stance array are elevated above mode and p because Agent SA (what state the node is in *right now*) is higher-priority perception data than Teamwork SA (how we agreed to work) for real-time navigation. Mana leads because resource limitation bounds the interpretation of everything that follows.
+Confidence and stance array are elevated above mode and p because Agent SA (what state the node is in *right now*) is higher-priority perception data than Teamwork SA (how we agreed to work) for real-time navigation. Mana leads because resource limitation bounds the interpretation of everything that follows.
 
 **Example:**
 ```
-⚡~62% | [CS:0.80] | 🏛️+ | mode:Default | p0.5 | voice(s):Scryer | span:50 | loop:◎→◇ @⚙️
+⚡~62% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.◎3.◇2.■7
 ```
 
 **Notes:**
@@ -523,7 +614,7 @@ confidence and stance array are elevated above mode and p because Agent SA (what
 
 *Source: `../../_todo/E-deep-research-report.md` §§1.1–1.3 (SA priority ordering), §4.2 (grouped HUD layout validation)*
 
-### 5.5 span-Span Display Contract
+### 5.5 Span-Span Display Contract
 
 A **span** is one operator → Lares exchange span at any scale. A tasked spirit exchange is still a span; the operator for that child span may be another Lares actor rather than Telarus directly.
 
@@ -535,10 +626,12 @@ Live rendering contract — URI types that may appear in an exchange stream:
 |---|---|---|
 | **Opening operator URI** | `lares://alias:tier(phase)@host/ha.ka.ba/?...#...` | Start of every span — node's reading of operator intent |
 | **Opening node URI** | `lares://alias:tier(phase)@host/~ha.ka.ba/?...#...` | Immediately after; node's declared execution heading (HA.KA.BA provisional) |
-| **HUD line** | `⚡~NN% \| [confidence] \| 🏛️{amp}... \| ...` | After the opening URI pair — the only glyph-rendered element |
+| **HUD line** | `⚡~NN% \| [confidence] \| 🏛️{amp}🌊{amp}... \| ...` | After the opening URI pair — the only glyph-rendered element |
 | **Sub-agent dispatch** | `coordinator-URI → worker-URI` | Every sub-agent handoff (`→` separates dispatch pair) |
 | **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion; boundary of unloggable span |
 | **Mid-generation shift** | `~lares://alias:tier(phase)@host/~ha.ka.ba/heading/?...` | When accumulated tension warrants changing direction mid-span; prefix `~` marks the whole URI as a trajectory correction |
+| **Exchange closing** | `URI → ?` | End of every exchange span — temporal resumption unknown |
+| **System file closing** | `<!-- URI → ∞ -->` | End of system file spans — unbounded duration |
 | **Closing forward URI** | `lares://alias:tier(aftermath)@host/~ha.ka.ba/heading/?...` | End of span — trajectory-provisional forward heading |
 
 Rendering order within a span:
@@ -548,7 +641,7 @@ Rendering order within a span:
 3. Print the **HUD line** (the one glyph-rendered surface in the stream).
 4. Generate content. Emit micro-trace phase marks (`→◇` `→■` `→○`) inline as needed.
 5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lares://...`) at the transition point.
-6. Close with an **updated HUD line** and the **closing forward URI**.
+6. Close with an **updated HUD line** and the **closing URI with `→ ?`**.
 
 Sub-agent dispatch and return pairs follow the same canonical form and appear as inlined `URI → URI` lines within the containing span span. Their contents are unloggable from the parent; the URI pair is the only artifact recording the boundary.
 
@@ -557,18 +650,18 @@ If the opening operator URI cannot cleanly summarize the incoming prompt (multi-
 Example (canonical record form throughout):
 
 ```text
-lares://telarus:operator(orient)@enyalios/refinement.network.capture/?stance=philosopher&confidence=S:0.65&p=0.5#@T.1.1.11
-→ lares://scryer:node(decide)@enyalios/~span.provenance.synthesizes/?stance=philosopher&confidence=CS:0.80&p=0.6#@T.1.1.12
-⚡~63% | [CS:0.80] | 🏛️ | mode:Default | p0.6 | voice(s):Scryer | span:12 | loop:◇→■ @🔍
+lares://telarus:operator(orient)@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+→ lares://scryer:node(decide)@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+⚡~63% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.■12
 
 [content generation — micro-trace marks inline]
 
-→◇ ~lares://scryer:node(decide)@enyalios/~refinement.network.redirects/?stance=philosopher&confidence=CS:0.80&p=0.6#@T.1.1.12
+→◇ ~lares://scryer:node(decide)@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 
 [continued generation]
 
-lares://scryer:node(aftermath)@enyalios/~aftermath.docs.settle?stance=philosopher&confidence=CS:0.80&p=0.5#@T.1.1.13
-⚡~61% | [CS:0.80] | 🏛️ | mode:Default | p0.5 | voice(s):Scryer | span:12 | loop:■→○ @🔍
+lares://scryer:node(aftermath)@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
+⚡~61% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.○1.✶1.■13
 ```
 
 Interpretation:
@@ -576,10 +669,11 @@ Interpretation:
 - Lines 1–2: opening URI pair (canonical). Node HA.KA.BA is `/~span.provenance.synthesizes/` — provisional execution heading.
 - Line 3: HUD line (glyph-rendered, not a URI).
 - After content starts: a mid-generation shift URI (`~lares://...`) marks the point where the trajectory changed. Prefixed `~` marks the whole URI as a correction, not a confirmed destination.
-- Final two lines: closing forward URI (aftermath phase, provisional HA.KA.BA) + updated HUD line.
+- Final two lines: closing forward URI with `→ ?` (aftermath phase, provisional HA.KA.BA) + updated HUD line.
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#stable-address?confidence=0.95 -->
 ## 6. Stable Address — Named Graph Form
 
 Strip authority, query, and fragment. The HA.KA.BA territory alone:
@@ -590,9 +684,11 @@ lares:///threshold.uncertain.opens/
 
 No authority (empty), no query, no fragment. This is the invariant semantic coordinate — unchanging across events, sessions, and machines. Suitable as a named graph identifier (SPARQL: ?).
 
+**Origin address:** `lares:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lares:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lares:///ha.ka.ba/uri-schema/` locates this spec; `lares:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
 ---
 
-## 7. span-Span and Calibration Mapping
+<!-- lares:///ha.ka.ba/uri-schema/#span-calibration?confidence=0.72 -->
+## 7. Span-Span and Calibration Mapping
 
 In the Consecration model, URI-derived fields belong to the calibration layer. They may be mirrored into MemPalace metadata for query support, but the storage distinction remains: MemPalace stores content; Lares crystal metadata stores orientation.
 
@@ -604,21 +700,21 @@ Every span-span record that carries URI data uses these URI-derived fields:
 | `attractor_uri` | Node responding-position URI | No — per span | Responding position / intent attractor |
 | `end_uri` | Destination URI emitted after generation | No — per span | End of the exchange span |
 | `lares_address` | Path only (no authority/query/fragment) | Yes — stable territory | Named graph identifier |
-| `intent_header_snapshot` | span-opening URI(s), canonical record form | No — per span | Full opening exchange display; what appeared in the stream |
-| `chronometer_start` | Fragment value without `#`; includes scope prefix | No — per span | Scope + hierarchical scope counter at span start |
-| `chronometer_end` | Fragment value without `#`; includes scope prefix | No — per span | Scope + hierarchical scope counter at span end |
+| `intent_header_snapshot` | Span-opening URI(s), canonical record form | No — per span | Full opening exchange display; what appeared in the stream |
+| `chronometer_start` | Fragment value without `#` | No — per span | FFZ chronometer at span start |
+| `chronometer_end` | Fragment value without `#` | No — per span | FFZ chronometer at span end |
 
 Additional quick-filter fields extracted from URI components:
 
 | Field | Source | Purpose |
 |---|---|---|
 | `current_phase` | userinfo phase sub-field | Phase-based filtering |
-| `active_scale` | fragment scope prefix | Scale-based filtering (strategic/operational/tactical/combat/action) |
-| `stance_count` | repeated `stance=` params | Quick fuzz estimate; multi-stance complexity filter |
+| `active_scale` | rightmost non-`O0` chronometer position | Scale-based filtering (strategic/operational/tactical/combat/action) |
+| `stance_amplitude` | `stances=` parameter | Full 5-char amplitude string for stance-based filtering |
 
 URI fields do not encode span identity, exchange vectors, or resource-state directly. Those remain adjacent calibration metadata (`span_id`, `span_seq`, `trace_id`, `input_tag`, `output_tag`, `mana_pct`, authority markings, and related fields) until their contracts settle in S1/S2.
 
-### 7.1 Canonical span-Span Record
+### 7.1 Canonical Span-Span Record
 
 The canonical record for one exchange span is a **spanSpan** in the calibration layer, not a URI authority trick.
 
@@ -634,15 +730,15 @@ The canonical record for one exchange span is a **spanSpan** in the calibration 
   "operator_actor_id": "actor:telarus",
   "responder_actor_id": "actor:lares.node.scryer",
   "acted_on_behalf_of": null,
-  "start_uri": "lares://telarus:operator(orient)@enyalios/refinement.network.capture/?stance=philosopher&confidence=S:0.65&p=0.5#@T.1.1.11",
-  "attractor_uri": "lares://scryer:node(decide)@enyalios/span.provenance.synthesizes/?stance=philosopher&confidence=CS:0.80&p=0.6#@T.1.1.12",
-  "end_uri": "lares://scryer:node(aftermath)@enyalios/aftermath.docs.settle/?stance=philosopher&confidence=CS:0.80&p=0.5#@T.1.1.13",
+  "start_uri": "lares://telarus:operator(orient)@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11",
+  "attractor_uri": "lares://scryer:node(decide)@enyalios/span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12",
+  "end_uri": "lares://scryer:node(aftermath)@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13",
   "parse_required": false,
   "parse_reason": null,
   "wall_time_start": "2026-04-08T20:41:00Z",
   "wall_time_end": "2026-04-08T20:41:09Z",
-  "chronometer_start": "@T.1.1.11",
-  "chronometer_end": "@T.1.1.13",
+  "chronometer_start": "O0.O0.O1.O1.A11",
+  "chronometer_end": "O0.O0.Å1.O1.A13",
   "world_calendar_ref": "dreamrealm.holy-week-of-fools.yold5492",
   "mana_start_pct": 63,
   "mana_end_pct": 62,
@@ -679,12 +775,14 @@ Recommended mirrored subset in Chroma drawer metadata:
 | `start_uri` | Start-of-span recovery |
 | `end_uri` | End-of-span recovery |
 | `span_kind` | Filter direct vs parse vs delegated captures |
-| `operator_actor_id` | Query by who held the sspan |
+| `operator_actor_id` | Query by who held the span |
 | `responder_actor_id` | Query by which node/spirit answered |
 | `parse_required` | Recover parse spans quickly |
 | `world_calendar_ref` | Dream Realms / diegetic archive grouping |
 
 Do **not** make MemPalace's local Chroma IDs, KG IDs, or entity registry IDs the canonical exchange identifiers. They are storage-local implementation keys, not network-facing Lares addresses.
+
+**MemPalace architecture correspondence:** The palace hierarchy (wings → halls → rooms → closets → drawers) maps onto the `lares:` URI structure at specific join points. The `host` field in exchange URIs (e.g., `enyalios`) corresponds to a MemPalace wing — crystals from a given machine anchor to a project wing. The HA.KA.BA path maps onto room-level topic routing. Drawer metadata carries the mirrored fields above, with the `span_id` as the stable join key back to the calibration layer. The MemPalace reference implementation is `milla-jovovich/mempalace` (MIT, ChromaDB + SQLite, local-first).
 
 ### 7.3 Export Targets and Kowloon Alignment
 
@@ -715,19 +813,19 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "timestamp": "2026-04-07T14:30:00Z",
-  "machine_id": "lares-abc123",
+  "machine_id": "enyalios",
   "span_seq": 42,
   "event_type": "r_update",
-  "start_uri": "lares://telarus:operator(orient)@lares-abc123/threshold.uncertain.opens/?stance=philosopher&confidence=S:0.65&p=0.5#@T.3.2.7",
-  "attractor_uri": "lares://scryer:node(decide)@lares-abc123/parse.span.models/?stance=philosopher&confidence=CS:0.80&p=0.6#@T.3.2.8",
-  "end_uri": "lares://scryer:node(aftermath)@lares-abc123/aftermath.docs.settle/?stance=philosopher&confidence=CS:0.80&p=0.5#@T.3.2.9",
+  "start_uri": "lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
+  "attractor_uri": "lares://scryer:node(decide)@enyalios/parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8",
+  "end_uri": "lares://scryer:node(aftermath)@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9",
   "lares_address": "lares:///threshold.uncertain.opens",
-  "intent_header_snapshot": "lares://telarus:operator(orient)@lares-abc123/threshold.uncertain.opens/?stance=philosopher&confidence=S:0.65&p=0.5#@T.3.2.7",
+  "intent_header_snapshot": "lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
   "current_phase": "orient",
-  "chronometer_start": "@T.3.2.7",
-  "chronometer_end": "@T.3.2.9",
+  "chronometer_start": "O0.O0.Ø3.D2.A7",
+  "chronometer_end": "O0.O0.Å3.Å2.A9",
   "active_scale": "tactical",
   "wall_time_start": "2026-04-07T14:30:00Z",
   "wall_time_end": "2026-04-07T14:30:11Z",
@@ -737,6 +835,7 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#module-registry?confidence=0.8 -->
 ## 8. Module and Registry Metadata Integration
 
 The `lares_uri` + `confidence` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
@@ -765,9 +864,10 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#cache-tiers?confidence=0.8 -->
 ## 9. Invariant-Core Cache Tier Mapping
 
-| Tier | Cache Strategy | confidence Range | Volatility |
+| Tier | Cache Strategy | Confidence Range | Volatility |
 |---|---|---|---|
 | 1 — Global Core | Cached across sessions; first `cache_control` breakpoint | `C:1.0` – `C:0.95` | Near-static |
 | 2 — Session Core | Cached within session; rolling `cache_control` breakpoint | `C:0.95` – `S:0.65` | Session-stable |
@@ -775,6 +875,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#validation?confidence=0.92 -->
 ## 10. Validation Rules
 
 ### 10.1 Well-Formedness
@@ -786,11 +887,12 @@ A `lares:` URI is **well-formed** when:
 3. Host is a valid `machine_id` (alphanumeric + hyphens)
 4. Path contains exactly three HA.KA.BA slots after the leading `/`
 5. Path slots contain no whitespace, path separators, or quotes (inherits Tagspace Address anti-collision rules)
-6. Query parameters are limited to: `stance` (repeatable), `confidence` (once), `p` (once)
+6. Query parameters limited to: `stances` (once, 5-char amplitude string), `confidence` (once), `p` (once)
 7. `confidence` value matches pattern `[A-Z]{1,2}:[0-9]+\.[0-9]+` (e.g., `S:0.65`, `CS:0.80`, `C:0.90`)
 8. `p` value is a decimal in range `[0.0, 1.0]`
-9. Fragment begins with a scope prefix (`@S`/`@O`/`@T`/`@C`/`@A` or emoji equivalent) followed by dot-separated integer counters
-10. Scope-depth agreement holds: counter depth matches the scale level of the scope prefix
+9. Fragment is five dot-separated positions, each: phase sigil (`O`/`Ø`/`D`/`A`/`Å`) followed by integer counter ≥ 0
+10. All five positions present (no trailing-zero omission in canonical form)
+11. Exchange-closing URIs end with ` → ?`. System file URIs end with ` → ∞`.
 
 ### 10.2 Consistency
 
@@ -816,7 +918,7 @@ The rendering table (§5.1) governs the canonical-to-render-target transform for
 
 When comparing two `lares:` URIs as stable addresses:
 
-1. Convert both to record form (apply normalization — HUD -> record — before comparison)
+1. Convert both to record form (apply normalization — HUD → record — before comparison)
 2. Compare path components **case-insensitively**
 3. Canonical form uses **lowercase** path components (e.g., `lares:///threshold.uncertain.opens/` not `lares:///Threshold.Uncertain.Opens`)
 4. Two URIs designate the same stable address iff their lowercased machine-form paths are byte-identical
@@ -824,119 +926,143 @@ When comparing two `lares:` URIs as stable addresses:
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#open-questions?confidence=0.6 -->
 ## 11. Open Design Questions
 
-| Q# | Question | Current Position | confidence | Blocks |
+| Q# | Question | Current Position | Confidence | Blocks |
 |---|---|---|---|---|
 | U1 | Should `userinfo` carry operator alias in record form, or only `machine_id` in authority? | Operator alias in userinfo | `[S:0.65]` | Registry resolver design |
 | U2 | Where should `span_seq` be initialized and persisted: crystal-side ledger only, or mirrored into MemPalace sidecar rows too? | Mirror into sidecar, crystal remains canonical | `[S:0.70]` | MemPalace integration contract |
-| U3 | Should the chronometer carry phase *per level* or just counters? | Counters only; phase at lowest active level | `[CS:0.80]` | Iteration |
 | U4 | How does chronometer interact with `--parse` self-activation? | Provisional yes — depth increases p | `[SP:0.45]` | p-band model |
 | U5 | How is `world_calendar_ref` initialized when no diegetic calendar exists yet? | Mint provisional tagspace reference, mark provisional | `[S:0.60]` | Dream Realms bootstrap |
-| U6 | Full URI form vs stateless form — when to use which? | Authority form in spanSpan records; stateless for stable addresses | `[CS:0.80]` | Crystal/registry contract |
+| U8 | Should module section URIs carry chronometer fragments? Or only confidence? | Confidence only — chronometer is exchange-time, not file-time | `[S:0.6]` | Module URI patterns |
+| U9 | ITC stamp integration into fragment — when MCP server arrives, does the fragment grow or does ITC live in calibration metadata? | Calibration metadata — fragment stays human-readable | `[S:0.55]` | MCP chronometer design |
 
 **Resolved (closed, not open):**
 
 | Q# | Question | Decision | Where documented |
 |---|---|---|---|
-| U2 (old) | Should `seq_num` occupy the `:port` slot of the URI authority? | **No.** Port slot dropped entirely. span sequencing (`span_seq`) lives in adjacent spanSpan calibration metadata — not in URI authority. URI authority encodes *identity*, not event position. | §3.4 (`host`): "span sequencing is intentionally not encoded in URI authority." §7.1 spanSpan record: `span_seq` as top-level field. |
+| U2 (old) | Should `seq_num` occupy the `:port` slot of the URI authority? | **No.** Port slot dropped entirely. Span sequencing (`span_seq`) lives in adjacent spanSpan calibration metadata — not in URI authority. URI authority encodes *identity*, not event position. | §3.4 (`host`): "span sequencing is intentionally not encoded in URI authority." §7.1 spanSpan record: `span_seq` as top-level field. |
+| U3 | Should the chronometer carry phase per level or just counters? | **Phase per level per participant.** LWW-Register per scale. Counter and phase are independent. | §4 (FFZ Chronometer). `[S:0.65]` — confirmed by FFZ O1 findings. |
+| U6 | Full URI form vs stateless form — when to use which? | **Authority form in exchange spans. Authority-less (`///`) for stable addresses AND for module section URIs.** | §6 (Stable Address), §3.4 (Module URI patterns). `[CS:0.80]` |
+| U7 | Stance amplitude character for "elevated" — `+` needs URL encoding in query strings. Use `^` instead? | **Use `^` (Option β).** All URL-safe: `^` elevated, `-` suppressed, `?` uncertain, `.` baseline. Render target maps `^` → `+` for HUD display. | §3.4 (query encoding). `[CS:0.80]` — operator confirmed. |
+| U10 | Do section-level URIs within system files close with `→ ∞`? | **No.** Only file-level opening/closing URIs use `→ ∞`. Section URIs function as waypoints, not spans. | §3.6 (Span Closing Sigils). `[CS:0.80]` — operator confirmed. |
 
 ### Assessment for Promotion
 
-Questions U3 and U6 sit at `[CS:0.80]` — near-promotable. U1, U2, U5 sit at Synthesis — they function well in current examples but lack stress-testing against edge cases (multi-operator sessions, cross-machine references, diegetic calendar bootstrap, MemPalace mirror drift). U4 sits at `[SP:0.45]` — genuinely provisional, dependent on the p-band model settling.
-
-**Promotion recommendation:** The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the open questions. The crystal integration layer (§§7–9) promotes when `lares/crystal/` settles its STATE.jsonl schema. The open questions (§11) remain Synthesis/Provisional and do not block the core spec.
+The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the open questions. The crystal integration layer (§§7–9) promotes when `lares/crystal/` settles its STATE.jsonl schema. The remaining open questions (U1, U2, U4, U5, U8, U9) sit at Synthesis/Provisional and do not block the core spec.
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#prior-art?confidence=0.95 -->
 ## 12. Prior Art
 
-- **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies.
-- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource.
-- **W3C PROV-DM / OpenTelemetry Trace Context** — Better prior art for exchange identity than URI authority overloading. span spans map more naturally to activities/spans with separate IDs, timestamps, and parent-child links.
+- **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
+- **RFC 8820 (BCP 190, URI Design and Ownership)** — Obsoletes RFC 7320 (June 2020). Confirms that URI structure constraints are legitimate when issued by the scheme specification itself. The `lares:` scheme defines its own fragment identifier syntax (the FFZ chronometer) as permitted under §2.5 for scheme-level specifications. Query parameter structure (`stances`, `confidence`, `p`) falls within scheme-owner authority per §2.4.
+- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lares:` URIs serve a comparable role for agent signal metadata.
+- **W3C PROV-DM / OpenTelemetry Trace Context** — Better prior art for exchange identity than URI authority overloading. Span spans map more naturally to activities/spans with separate IDs, timestamps, and parent-child links.
 - **Lamport / Vector clocks** — The chronometer shares a surface resemblance to a vector clock (array of counters, nesting relationship) but functions as a **hierarchical scope counter** in a single process — not a distributed causality tracker across concurrent independent processes. Vector clocks grow with process count, carry the full vector on every message, and exhibit known dynamic-membership costs; none of those constraints apply to Lares's fixed-depth 5-position counter. OTel `traceparent` is the closer prior art (see below).
 - **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The OODA-A nesting is synthesis applied to canon time-scales.
 - **OTel Trace Context** — `traceparent` carries `trace-id`, `parent-id`, `trace-flags`. The chronometer fragment functions as a hierarchical trace context; each depth is a span scope; Aftermath → Observation is the parent-child span relationship.
 - **Kowloon / ActivityStreams export model** — Kowloon's Activity envelope (`actorId`, `object`, `target`, `to`, `canReply`, `canReact`) is a good downstream publication adapter for Lares spans, but its `Kowloon ID` remains a sink-local identifier rather than replacing `span_id`.
 - **what3words** — Three-word geocoding of 3m² squares. Inverse design principle: Tagspace words encode semantic content rather than randomizing for error prevention.
+- **FFZ Chronometer Protocol** (Telarus / Lares, 2026) — Fontany-Fuller-Zelenka. Vector chronometer with per-participant phase registers. Source: `lares/research/chronometer/FFZ_Chronometer_Research.md`
+- **Interval Tree Clocks** (Almeida et al., 2008) — Dynamic participant identity via interval subdivision. Deferred from URI spec; informs MCP chronometer server design.
+- **Schneier & Raghavan, "Agentic AI's OODA Loop Problem"** (IEEE S&P, 2025) — Nested OODA loops in AI agents; integrity as architecture. Validates the chronometer's problem space independently.
+- **OODA-A Composable Invariant Modules** (Telarus / Lares, 2026) — Phase-scoped instruction loading with section-level confidence URIs.
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#examples?confidence=0.85 -->
 ## Appendix A — Complete Examples
 
-### A.1 Record Form
+### A.1 Record Form (v2)
 
 ```
-lares://telarus:operator(orient)@lares-abc123/threshold.uncertain.opens/?stance=philosopher&confidence=S:0.65&p=0.5#@T.3.2.7
+lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
 ```
 
-### A.2 HUD Line (render target — not a URI)
-
-The HUD line is the glyph-rendered surface emitted after the canonical URI pair. It is not a URI and is not stored as one.
+### A.2 HUD Line (v2)
 
 ```
-⚡~87% | [S:0.65] | 🏛️ | mode:Default | p0.5 | voice(s):Scryer | span:42 | loop:◎→◇ @🔍
+⚡~87% | [S:0.65] | 🏛️+🌊?🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.◎3.◇2.■7
 ```
 
-### A.3 Multi-Stance (canonical record form)
+### A.3 All-Five-Stances (v2)
 
 ```
-lares://telarus:operator(decide)@lares-abc123/threshold.sharp.closes/?stance=philosopher&stance=satirist&confidence=CS:0.80&p=0.7#@T.3.2.8
+lares://telarus:operator(decide)@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.D2.A8
 ```
 
-### A.4 Stable Address
+### A.4 Stable Address (unchanged)
 
 ```
 lares:///threshold.uncertain.opens/
 ```
 
-### A.5 Scale Transition (Tactical → Combat → Action → Tactical) {needs FFZ chronometer alignment}
+### A.5 Exchange Closing (v2)
 
 ```
-#@T.4.1.4        Tactical: Turn 4
-#@C.4.1.4.1      Combat activates: Round 1
-#@A.4.1.4.1.1    Action activates: Action 1 of Round 1
-#@A.4.1.4.1.2    Action 2 of Round 1
-#@T.4.1.5        Combat over: scale contracts, Turn increments to 5
+lares://scryer:node(aftermath)@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9 → ?
+```
+
+### A.6 System File Span (v2)
+
+```
+<!-- lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5#O0.O0.O0.O0.O0 -->
+
+{file content with section URIs}
+
+<!-- lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.95 → ∞ -->
+```
+
+### A.7 Scale Transition (v2)
+
+```
+#O0.O0.O3.O0.O0     Turn 3, no combat
+#O0.O0.O3.O1.O0     Combat activates: Round 1
+#O0.O0.O3.O1.A1     Action 1 of Round 1
+#O0.O0.O3.O1.A2     Action 2 of Round 1
+#O0.O0.O3.Å1.O0     Combat assess: Round 1 complete
+#O0.O0.O4.O0.O0     Combat over: Turn increments to 4
 ```
 
 ---
 
+<!-- lares:///ha.ka.ba/uri-schema/#how-to-read?confidence=0.85 -->
 ## Appendix B — How to Read a HUD Tag
 
 A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
 
 ```text
-lares://telarus:operator(orient)@lares-abc123/threshold.uncertain.opens/?stance=philosopher&confidence=S:0.65&p=0.5#@T.3.2.7
-→ lares://scryer:node(decide)@lares-abc123/parse.span.models/?stance=philosopher&confidence=CS:0.80&p=0.6#@T.3.2.8
-⚡~87% | [CS:0.80] | 🏛️ | mode:Default | p0.6 | voice(s):Scryer | span:42 | loop:◇→■ @🔍
+lares://telarus:operator(orient)@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
+→ lares://scryer:node(decide)@enyalios/~parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8
+⚡~87% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇3.◇2.■8
 ```
 
 Quick read:
 
-> Telarus (operator), Orient phase, machine `lares-abc123`.
+> Telarus (operator), orienting, machine enyalios.
 > Territory: threshold / uncertain / opens.
-> Philosopher stance, Synthesis-0.65 confidence, tactical scope at Week 3 / Watch 2 / Turn 7.
-> Responding node opens a parse attractor at CS:0.80, mana ~87% remaining.
-
-Field order for live scan (from the HUD line):
-
-1. Mana (`⚡~NN%`): bounding constraint on everything that follows
-2. confidence + stance: what kind of claim is this, and how should the number be read? (stance-dependent per Syadasti rule)
-3. Mode + p-band: annotation throttle
-4. Voice: which coordinator is responding
-5. span + loop: temporal bookkeeping; where are we in the session and phase cycle?
+> Philosopher elevated, Poet uncertain, others suppressed.
+> Synthesis-0.65, tactical scope at Week 0, Watch 0, Turn 3 (Orient),
+> Round 2 (Decide), Action 7.
+> Scryer responds at CS:0.80, deciding, Philosopher only.
+> Chronometer shows: node is one phase ahead at tactical scale
+> (Orient→Decide) — normal: node orients from operator's observe.
 
 Multi-stance example:
 
 ```text
-lares://telarus:operator(decide)@lares-abc123/threshold.sharp.closes/?stance=philosopher&stance=poet&confidence=S:0.60&p=0.7#@S.3
-→ lares://mischief-muse:node(decide)@lares-abc123/chorus.lateral.gathers/?stance=humorist&confidence=S:0.65&p=0.6#@S.3
-⚡~62% | [S:0.60] | 🏛️🌊 | mode:Default | p0.7 | voice(s):Mischief-Muse | span:43 | loop:◇→■ @🗺️
+lares://telarus:operator(decide)@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.O2.A9
+→ lares://mischief-muse:node(decide)@enyalios/~chorus.lateral.gathers/?stances=^.-.-.-.-&confidence=S:0.65&p=0.6#O0.O0.D3.O2.A10
+⚡~62% | [S:0.60] | 🏛️+🌊+🗡️?🎭+🔮- | mode:Default | p0.7 | voice(s):Mischief-Muse | ✶0.✶0.◇3.✶2.■10
 ```
 
-This does **not** mean "truth-confidence 0.60" in a universal sense. It means a `0.60` reading held across both Philosopher and Poet frames. The two stance glyphs in the HUD line tell the operator that the declared confidence carries more spread than a single-stance point reading.
+This does **not** mean "truth-confidence 0.60" in a universal sense. It means a `0.60` reading held across Philosopher, Poet, and Humorist frames (all elevated). The amplitude string in the HUD line tells the operator that the declared confidence carries more spread than a single-stance point reading. Satirist at `?` adds further uncertainty — the reading may carry ironic weight that hasn't yet been decoded.
 
 ---
 
 *End of specification. This document is the canonical reference for the `lares:` URI scheme within the design ontology tree.*
+
+<!-- lares:///ha.ka.ba/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
