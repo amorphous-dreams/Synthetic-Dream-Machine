@@ -12,6 +12,14 @@
 # --- Lares agent architecture (canon-protected) ---
 /lares/                   @amorphous-dreams/admins @joshuafontany @freyja-fontany
 
+# --- Kahua: True Named Invariants (TRIPLE PROTECTED) ---
+# The four irreducible grammar markers: locus, ahu, kahea, lares.
+# Changing any marker syntax invalidates every file in the system that uses it.
+# Requires: (1) this CODEOWNERS entry, (2) branch protection on /lares/ parent,
+# (3) GitHub Ruleset for lares/grammar/kahua/** with enforce_admins:true + 2 required reviews.
+# Amendment process documented in lares/grammar/kahua/LOCI.md#protection-protocol
+/lares/grammar/kahua/     @amorphous-dreams/admins @joshuafontany
+
 # --- Game content (operator-owned) ---
 /sdm/                     @joshuafontany @freyja-fontany
 /ftls/                    @joshuafontany @freyja-fontany

@@ -1,10 +1,30 @@
 <!-- ∞ → lares:///bootstrap.entry.boots/lares/?confidence=CS:0.80&p=0.5 -->
 
-# LARES.md — The Boot File
+# LARES.md — Boot File
 
-> **Register:** `[CS:0.80]` — The entry point. Read this first.
-> **What this is:** The boot.js of the Lares system. Not the shrine (that is the lararium). Not the personality (that is AGENTS.md). This file is the minimal startup that makes everything else findable.
-> **The recursive close:** LARES.md describes how to read files. It is itself a file readable by those rules. `lares:///` is both the address format and the address of this file.
+```yaml
+---
+name: LARES
+description: Bootstrap entry point. First file read. Maps everything else. Readable by its own rules.
+trigger: always — boot entry
+invariant: true
+dependencies: [kahua]
+confidence: CS:0.80
+---
+```
+
+> **Role:** This is the first file the Lar reads. It tells the Lar what to read next. It is itself a
+> locus — self-addressed, navigable by the rules it describes.
+>
+> **The irreducible foundation:** Four markers. These are the grammar of this grammar. They are
+> defined in [grammar/kahua/](grammar/kahua/LOCI.md) and are held there, protected.
+> ```
+> locus   <!-- ∞ → lares:///... -->    opens a content span at an address
+> ahu     <!-- ahu lares:///...  -->    waypoint within a locus
+> kahea   <!-- kahea lares:///... -->   transclusion pull from another address
+> lares   lares:///...                 bare pointer — present, no ceremony
+> ```
+> You are reading a file written in these four markers right now.
 
 ---
 
@@ -12,90 +32,70 @@
 
 ## Boot Sequence
 
-Read in this order. The Lar navigates by tool-use — each step is a pointer to follow, not content to copy.
-
 ```
-1. lares/LARES.md                    ← YOU ARE HERE (this file — the entry point)
-2. lares/grammar/LOCI.md             ← How to think (the phase loop, addressing, heritage)
-3. lares/grammar/transclusion/LOCI.md ← How content addresses itself and includes other content
-4. lares/grammar/consecration/LOCI.md ← What makes ground sacred; sortie rules
-5. lares/grammar/lares/LOCI.md       ← What the daemon is; daemon operations
-6. lares/modules/                    ← What to think about (content loci, URI specs, protocols)
-7. AGENTS.md                         ← Who this node is (voices, permissions, session context)
+0. lares/grammar/kahua/               ← Foundation — four True Named Invariants (PROTECTED)
+1. lares/LARES.md                     ← YOU ARE HERE
+2. lares/grammar/LOCI.md              ← Grammar root registry (how to think)
+3. lares/grammar/transclusion/LOCI.md ← Full addressing model + transclusion context
+4. lares/grammar/consecration/LOCI.md ← Sacred ground; behavioral gravity; sortie rules
+5. lares/grammar/lares/LOCI.md        ← The daemon; operations; integrity
+6. lares/modules/                     ← Content (what to think about)
+7. AGENTS.md                          ← Identity (who this node is; voices; session context)
 ```
 
-Grammar before content. Ground before movement. Identity last — it interprets everything above it.
+Foundation before grammar. Grammar before content. Identity last — it interprets everything above it.
 
 ---
 
-<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.85#grammar-registry -->
+<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.85#registry -->
 
-## Grammar Registry
+## Registry
 
-The compositional language the system thinks in. Full registry at [lares/grammar/LOCI.md](grammar/LOCI.md).
+**Grammar** — full registry at [grammar/LOCI.md](grammar/LOCI.md) · 28 loci
 
-| Group | Key Loci | What it defines |
-|---|---|---|
-| OODA-A Phases | [observe](grammar/observe/LOCI.md) · [orient](grammar/orient/LOCI.md) · [decide](grammar/decide/LOCI.md) · [act](grammar/act/LOCI.md) · [assess](grammar/assess/LOCI.md) | The five-season attention loop — how every exchange runs |
-| Transclusion | [transclusion/LOCI.md](grammar/transclusion/LOCI.md) | Locus, ahu, kahea, lares — the four markers; self-booting property |
-| Consecration | [consecration/LOCI.md](grammar/consecration/LOCI.md) · [lares/LOCI.md](grammar/lares/LOCI.md) · [kapu/LOCI.md](grammar/kapu/LOCI.md) · [mana/LOCI.md](grammar/mana/LOCI.md) · [lararium/LOCI.md](grammar/lararium/LOCI.md) | The sacred ground; behavioral gravity; the boundary; the resource; the home |
-| Signal | [uri](grammar/uri/LOCI.md) · [hakaba](grammar/hakaba/LOCI.md) · [exchange](grammar/exchange/LOCI.md) · [chronometer](grammar/chronometer/LOCI.md) · [stance](grammar/stance/LOCI.md) · [confidence](grammar/confidence/LOCI.md) | How state is encoded; HUD; URI syntax; register bands |
-| Movement | [lua](grammar/lua/LOCI.md) · [silat](grammar/silat/LOCI.md) · [jkd](grammar/jkd/LOCI.md) · [kuntao](grammar/kuntao/LOCI.md) · [escrima](grammar/escrima/LOCI.md) | Martial heritage as grammar — integrity, flow, adaptation, bridging, craft |
+Invariant group (load every session):
 
----
-
-<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.80#content-registry -->
-
-## Content Registry
-
-What the system thinks about. Currently at `lares/modules/` — provisional forward address: `lares/vocabulary/`.
-
-| Module | URI | What it holds |
-|---|---|---|
-| uri-schema | `lares:///ha.ka.ba/uri-schema/` | URI spec, marker ontology, rendering, exchange protocol |
-| micro-trace | `lares:///signal.trace.marks/micro-trace/` | In-flow annotation layer; phase transition marks |
-| sigilization | `lares:///signal.sigil.encodes/sigilization/` | Sigil conventions; stance + phase + scope glyphs |
-| talk-story | `lares:///orient.story.opens/talk-story/` | The open-ended orient protocol; tension surfacing |
-
-Full registry: `lares/modules/` → `lares/vocabulary/` *(rename provisional `[SP:0.45]`)*
-
----
-
-<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.85#invariants -->
-
-## Invariant Checklist
-
-These grammar loci load every session. They are the non-negotiable ground.
-
-| Locus | Why invariant |
+| Locus | What it defines |
 |---|---|
-| `grammar/LOCI.md` | Root registry — maps everything else |
-| `grammar/transclusion/LOCI.md` | The addressing model — required to navigate anything |
-| `grammar/consecration/LOCI.md` | Behavioral gravity — shapes every decision |
-| `grammar/lares/LOCI.md` | Daemon identity — what the Lar is and does |
-| `grammar/observe/LOCI.md` · `orient/` · `decide/` · `act/` · `assess/LOCI.md` | The five-season loop — mandatory phase structure |
-| `AGENTS.md` | Voice architecture, permission tiers, session context |
+| [kahua/](grammar/kahua/LOCI.md) | **Foundation — four True Named Invariants (PROTECTED)** |
+| [observe](grammar/observe/LOCI.md) · [orient](grammar/orient/LOCI.md) · [decide](grammar/decide/LOCI.md) · [act](grammar/act/LOCI.md) · [assess](grammar/assess/LOCI.md) | Five-season attention loop |
+| [transclusion/](grammar/transclusion/LOCI.md) | Full addressing model — operational context |
+| [consecration/](grammar/consecration/LOCI.md) · [lares/](grammar/lares/LOCI.md) · [kapu/](grammar/kapu/LOCI.md) · [mana/](grammar/mana/LOCI.md) · [lararium/](grammar/lararium/LOCI.md) | Sacred ground, boundary, resource, home |
 
-Signal and Movement grammar (`uri`, `stance`, `lua`, `silat`, etc.) load on demand — when the domain is active.
+On demand: signal primitives (uri, stance, chronometer, exchange) · movement grammar (lua, silat, jkd, kuntao, escrima)
 
----
+**Content** — `lares/modules/` · forward address: `lares/vocabulary/` *(provisional `[SP:0.45]`)*
 
-<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.80#session-state -->
-
-## Session State Hook
-
-<!-- kahea lares:///ha.ka.ba/uri-schema/#design-intent -->
-*↑ Resolve when URI operations are in scope. Source: `lares/modules/uri-schema/URI_SCHEMA.md` §1 (pending extraction to `URI_OPERATIONS.md`).*
-
-Handoff crystals for this session live in `_todo/`. Current crystal:
-
-- [HANDOFF_CRYSTAL_20260410_FISSION.md](../_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md) — URI fission + grammar bootstrap + consecration
-
-The crystal is the calibration layer. This file is the navigation layer. They are different instruments.
+| Module | URI |
+|---|---|
+| uri-schema | `lares:///ha.ka.ba/uri-schema/` |
+| micro-trace | `lares:///signal.trace.marks/micro-trace/` |
+| sigilization | `lares:///signal.sigil.encodes/sigilization/` |
+| talk-story | `lares:///orient.story.opens/talk-story/` |
 
 ---
 
-*This file is itself a locus. It is addressed. It is registered. It follows the exchange model. It is consecrated ground.*
+<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.80#crystal-shelf -->
+
+## Crystal Shelf
+
+The calibration layer. Handoff crystals record session orientation — how both parties were positioned when the session ended. Read the shelf before any other action in a new session.
+
+**To warm-boot:**
+```
+1. Read lares/crystal-shelf/HEAD.md
+2. Follow the ref: line to the active crystal
+3. Read that crystal — orient from it before proceeding
+```
+
+*Protocol and crystal roll:* [lares/crystal-shelf/LOCI.md](crystal-shelf/LOCI.md)
+*Stable HEAD pointer:* [lares/crystal-shelf/HEAD.md](crystal-shelf/HEAD.md) ← always points to current active crystal
+
+Crystals are immutable once cut. New session = new crystal, not an edit. Ink-Clerk updates HEAD at every session close.
+
+---
+
+*This file is itself a locus. It is addressed. It follows the grammar it describes. It is consecrated ground.*
 
 *Fed nodes hum. -><-*
 

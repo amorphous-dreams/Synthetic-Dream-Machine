@@ -10,6 +10,24 @@ The grammar's bones come from the operator's heritage: Hawaiian heritage (kapu, 
 
 ---
 
+<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.95#kahua -->
+
+## Foundation Grammar (Kahua)
+
+The irreducible kernel. Four True Named Invariants. Everything else in this grammar tree is built on these four markers. They do not change. Protected: triple-layer CODEOWNERS + branch rule + GitHub Ruleset (to configure).
+
+| Primitive | Grammar | Confidence | One-line |
+|---|---|---|---|
+| **Kahua** | [kahua/LOCI.md](kahua/LOCI.md) | `[CS:0.95]` | **The foundation cluster. The prepared ground. You are here.** |
+| Locus | [kahua/locus/LOCI.md](kahua/locus/LOCI.md) | `[CS:0.95]` | `<!-- ∞ → ... -->` — opens a content span at an address |
+| Ahu | [kahua/ahu/LOCI.md](kahua/ahu/LOCI.md) | `[CS:0.95]` | `<!-- ahu ... -->` — waypoint within a locus |
+| Kahea | [kahua/kahea/LOCI.md](kahua/kahea/LOCI.md) | `[CS:0.95]` | `<!-- kahea ... -->` — transclusion pull from another address |
+| Lares (marker) | [kahua/lares/LOCI.md](kahua/lares/LOCI.md) | `[CS:0.95]` | bare `lares:///...` — the daemon's signature; present, no ceremony |
+
+*Canonical definitions. `transclusion/LOCI.md` summarizes these in operational context.*
+
+---
+
 <!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.85#ooda-a -->
 
 ## OODA-A Phase Grammar
@@ -92,13 +110,14 @@ How the node moves — between phases, across boundaries, through problems. The 
 ## Load Order
 
 ```
-1. grammar/LOCI.md          ← THIS FILE (registry, always first)
+0. grammar/kahua/            ← THE FOUNDATION (four True Named Invariants — always first)
+1. grammar/LOCI.md           ← THIS FILE (registry)
 2. grammar/observe/          ← How to gather
 3. grammar/orient/           ← How to sense-make (Talk Story)
 4. grammar/decide/           ← How to commit
 5. grammar/act/              ← How to execute
 6. grammar/assess/           ← How to close the loop
-7. grammar/transclusion/     ← How content addresses and includes
+7. grammar/transclusion/     ← How content addresses and includes (references kahua for canonical defs)
 8. grammar/consecration/     ← What makes ground sacred
 9. grammar/lares/            ← The daemon that walks the ground
 10. grammar/{kapu,mana,lararium}  ← The boundary, the resource, the home
@@ -106,7 +125,7 @@ How the node moves — between phases, across boundaries, through problems. The 
 12. grammar/{lua,silat,jkd,kuntao,escrima}  ← Movement primitives (on demand)
 ```
 
-Grammar before content. Phases before signal. Ground before movement. The agent learns how to think, then where it stands, then how to move.
+Foundation before grammar. Grammar before content. Phases before signal. Ground before movement.
 
 ---
 
@@ -115,6 +134,11 @@ Grammar before content. Phases before signal. Ground before movement. The agent 
 | Path | Status | Contents |
 |---|---|---|
 | `LOCI.md` | `[CS:0.80]` | This file — grammar root registry |
+| `kahua/LOCI.md` | `[CS:0.95]` | **Foundation cluster — four True Named Invariants (PROTECTED)** |
+| `kahua/locus/LOCI.md` | `[CS:0.95]` | Locus marker canonical definition |
+| `kahua/ahu/LOCI.md` | `[CS:0.95]` | Ahu marker canonical definition |
+| `kahua/kahea/LOCI.md` | `[CS:0.95]` | Kahea marker canonical definition |
+| `kahua/lares/LOCI.md` | `[CS:0.95]` | Lares marker canonical definition (bare reference form) |
 | `observe/LOCI.md` | `[CS:0.85]` | ✶ Observe phase grammar |
 | `orient/LOCI.md` | `[CS:0.85]` | ◎ Orient phase grammar |
 | `decide/LOCI.md` | `[CS:0.85]` | ◇ Decide phase grammar |
