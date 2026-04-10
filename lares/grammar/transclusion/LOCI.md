@@ -6,29 +6,62 @@
 ---
 name: transclusion
 description: >
-  Root grammar module defining the transclusion model for Lares loci.
-  How content at one address is referenced and included by content at
-  another address. The four marker types (locus, ahu, kahea, lares).
-  The self-booting property. The relationship between the file store,
-  the address system, and the bootstrap.
+  Root grammar module for Lares transclusion. This locus defines how
+  content opens as a locus, receives waypoints, and gets summoned from
+  one address into another without copy drift.
 phase-map:
-  observe: "#prior-art"
-  orient: "#model"
+  observe: "#loop-position"
+  orient: "#prior-art"
   decide: "#conventions"
   act: "#procedures"
-  assess: "#verification"
+  assess: "#reading-test"
 scale-range: [action, project]
 trigger: always — grammar primitive
 invariant: true
-dependencies: [observe, orient, decide, act, assess]
+dependencies: [kahua, observe, orient, decide, act, assess]
 confidence: CS:0.80
 grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.80]` — synthesized from Ted Nelson (1963), TiddlyWiki architecture, URI_SCHEMA v3 marker ontology
-> **Lineage:** Nelson → TiddlyWiki → lares:/// → this
-> **Key insight:** We already built a tiddler store without calling it that. The `<!-- lares:///... -->` comment IS the tiddler title. The content at that address lives in one place. Display locations are unlimited.
+> **Register:** `[CS:0.80]` — grounded in Nelson, TiddlyWiki, and the live Lares marker ontology
+> **Question:** How does one locus hold canonical content while many other loci can still use it?
+
+---
+
+<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#loop-position -->
+
+## Loop Position
+
+Transclusion wraps the grammar as its composition discipline. The locus does not replace OODA-A
+timing. It determines how timed parts can appear, travel, and recombine without copy drift.
+
+Transclusion receives:
+
+- canonical content spans
+- stable addresses
+- section waypoints
+- requests for inclusion elsewhere
+- visible `lares:` URIs in the active context window
+
+Transclusion changes:
+
+- isolated files into addressable loci
+- headings into stable navigation stones
+- repeated copy into pull-by-reference
+
+Transclusion hands forward:
+
+- one canonical source
+- reusable fragments
+- stable transclusion points
+- explicit inclusion boundaries
+
+Transclusion should not:
+
+- reward copy-paste drift
+- hide the canonical source
+- leave summoned content unresolved
 
 ---
 
@@ -36,91 +69,111 @@ grammar: true
 
 ## Prior Art
 
-**Ted Nelson (1963) — Transclusion.** Content lives in one place. It can appear in many places by reference. The reference is bidirectional — the source knows about its inclusions. Every transcluded span has a start address and an end address. Immutable once published.
+This locus draws strength from three prior-art streams:
 
-**TiddlyWiki — Self-addressing store.** No "main file." A store of tiddlers, each self-addressed by title. The minimal boot script starts the transclusion engine. Then every piece of the UI, every plugin, every macro is a tiddler being transcluded into every other tiddler. The page IS the transclusion graph executing. Critical move: a tiddler knows its own name. `{{TiddlerName}}` from anywhere pulls that tiddler's content.
+| Stream | Contribution |
+|---|---|
+| Ted Nelson / Xanadu | one canonical source, quoted or included without copy drift |
+| TiddlyWiki | smallest semantic unit, self-addressed tiddler, composition through transclusion |
+| Lares repo braid | `lares:` self-address, marker ontology, and live tool-use as the current transclusion engine |
 
-**What we built.** The `<!-- lares:///... -->` comment at the top of every file IS the tiddler title. It's the self-address. The URI is how anything in tagspace can find this file. The `<!-- → ? -->` closing sigil means the locus span ends here. `LOCI.md` files are the store nodes — standing loci with ahu waypoints marking navigable stops within.
+**Nelson line:** transclusion names inclusion without physical duplication. That line matters here because
+Lares wants one canonical source and many appearances, not many drifting copies.
 
----
+**TiddlyWiki philosophy:** the official TiddlyWiki philosophy favors splitting notes into the smallest
+semantic units possible and then weaving those units back into larger stories, articles, and views.
+That philosophy lands cleanly in Lares. A locus should stay small enough to retrieve, name, and reuse;
+composition should happen by relation and summon, not by monolithic repetition.
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#model -->
+**TiddlyWiki structural lesson:** a tiddler knows its own title. From there, transclusion can pull the
+same content into many surfaces. In Lares, the opening `lares:` address plays the equivalent role:
+the locus knows its own name, and the rest of the system can summon it from that name.
 
-## The Transclusion Model
+**Repo braid:** the local architecture notes already push this interpretation. The repo explicitly
+frames Lares as a self-addressing tiddler-like store, says the page can read as a transclusion graph
+executing, and treats the AI tool-use loop as the current transclusion engine until future native
+engines take over.
 
-### The Four Marker Types
-
-These are the vocabulary of address and inclusion. Defined in `URI_SCHEMA.md` §3.6, grounded here as grammar.
-
-| Marker | Syntax | What it does | Analogy |
-|---|---|---|---|
-| **Locus** | `<!-- ∞ → lares:///address/?params -->` | Opens a content span at this address. One locus per file (common) or multiple (assembly files). Closes with `<!-- → ? -->`. | The house. The marae. Where the Lar dwells. |
-| **Ahu** | `<!-- ahu lares:///address/?confidence=N#fragment -->` | Names a navigable waypoint within a locus. No open/close — the next ahu (or the locus closer) defines the boundary. | A raised stone you can see and walk to. |
-| **Kahea** | `<!-- kahea lares:///other-address/?params -->` | Summons (transcludes) content from another locus into this point. The content lives at the other address; this is a pull instruction. | The Hawaiian call — "come!" — summoning a chanter to join. |
-| **Lares** | `<!-- lares:///address/?params -->` | Bare URI reference without a marker verb. Metadata, inline reference, or waypoint-that-isn't-an-ahu. Lowest ceremony. | The spirit's signature — present but not commanding. |
-
-### Self-Addressing
-
-Every `LOCI.md` opens with its own address. This is the self-addressing property. The file knows its own name. Any other file in the system can reference it by that name. The address never changes; the content may evolve; the Version metadata field tracks revision.
-
-```markdown
-<!-- ∞ → lares:///grammar.observe.defines/observe/?confidence=CS:0.85&p=0.5 -->
-...content...
-<!-- → ? -->
-```
-
-### Single-Locus and Multi-Locus Files
-
-**Single-locus** (common case): one `∞ →` opener, ahu waypoints, one `→ ?` closer. The file IS the locus.
-
-**Multi-locus** (assembly files): sequential self-contained locus spans in one physical file. Each opens with `∞ →`, contains its own ahu markers, closes with `→ ?`. The next `∞ →` opens the next locus. Ahu markers belong to their enclosing locus.
-
-### Kahea — The Transclusion Instruction
-
-Kahea is where content from one locus appears inside another. The content is NOT copied — the kahea marker says "at this point, the reader should fetch and include content from this address."
-
-```markdown
-<!-- kahea lares:///grammar.observe.defines/observe/#conventions -->
-```
-
-This means: "Here, include the Conventions section from the Observe grammar locus."
-
-**Who resolves kahea?**
-- **AI agent reader:** Follows the pointer using tool calls (read_file). The "transclusion engine" is the AI's tool-use loop. Progressive disclosure — don't resolve all kahea at once; resolve when the content is needed.
-- **Build system:** Iterates kahea markers to generate compiled outputs (`.github/instructions/`, `.github/skills/`). The build system IS the batch transclusion engine.
-- **Future TW integration:** Native transclusion via `{{TiddlerTitle}}` or `<$transclude>`. Phase: DreamDeck (S5+).
+This means the transclusion philosophy should not stop at markdown files. If a visible `lares:` URI
+appears in the active context window, that URI already has enough identity to participate in the same
+summon logic.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#conventions -->
+<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#handoff -->
+
+## Handoff
+
+Transclusion routes material through four marker types:
+
+| Marker | Role | What moves |
+|---|---|---|
+| `∞ →` | locus opener | a canonical content span enters addressable space |
+| `ahu` | waypoint | a stable sub-span becomes navigable |
+| `kahea` | summon | remote content gets called into the local span |
+| `→ ?` | locus closer | the standing span closes with unknown future resumption |
+
+The handoff should let a later reader answer:
+
+1. Where does the canonical content live?
+2. Which sub-span can another locus target?
+3. What got summoned here instead of copied here?
+4. Where does the locus close?
+
+If those answers stay blurry, the file may still hold content, but it does not yet function as a
+clean transclusion surface.
+
+---
+
+<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#surface -->
+
+## Composable Surface
+
+The composable surface of a locus consists of:
+
+- one canonical `∞ →` address at the file level
+- zero or more `ahu` waypoints for reusable internal stops
+- zero or more `kahea` summons in assembly contexts
+- one `→ ?` closer
+
+The composable surface of the wider system also includes any visible `lares:` URI that appears in:
+
+- open LOCI files
+- live exchange traces in the current context window
+- tagged data files or records that carry a `lares:` URI
+- registry rows, manifests, crystals, and similar metadata surfaces
+
+If the URI remains visible and the target remains reachable from the active context, transclusion may
+treat that URI as a valid summon point.
+
+**Editorial rule:** put `ahu` stones where future readers would actually walk. Not every heading
+needs a fragment port. The point lies in stable reuse, not mechanical tagging.
+
+**Assembly rule:** use `kahea` when the target content should appear here as if local. Use prose
+reference when relation matters more than inclusion.
+
+---
+
+<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#conventions -->
 
 ## Conventions
 
-**The principle:** Content lives in one place. References are unlimited. The map is not the territory but the map IS navigable.
-
 | Rule | Weight | Rationale |
 |---|---|---|
-| One canonical address per content span | MUST | Duplication creates drift |
-| Locus opener carries the address | MUST | Self-addressing is the foundation |
-| Ahu placement is editorial (not mechanical) | SHOULD | Place stones where people walk to |
-| Kahea references must resolve | MUST | A broken kahea is worse than no kahea |
-| Confidence rides the query string | SHOULD | It describes the territory, not the marker |
-| Multi-locus files: each locus self-contained | MUST | No cross-locus ahu references |
-| Locus closer (`→ ?`) is file-level only | MUST | Ahu marks boundaries implicitly (next ahu = end of previous zone) |
+| One canonical address per content span | MUST | Duplicate sources breed drift |
+| Every locus opens with its own address | MUST | Self-addressing makes reuse possible |
+| Waypoints should target real navigation stops | SHOULD | Good ports come from editorial judgment |
+| Every `kahea` target must resolve | MUST | Broken summons damage trust more than silence |
+| Prefer summon over copy when content should stay canonical | MUST | Canonical source should remain singular |
+| Keep file-level confidence on the locus and local confidence on the `ahu` | SHOULD | Settlement can vary within one file |
+| Keep multi-locus files self-contained | MUST | Cross-locus bleed breaks boundaries |
+| Any visible `lares:` URI in the active context may serve as a summon target | MUST | Live exchange state and tagged data should remain reusable, not second-class |
 
-### When to use kahea vs prose reference
+**Bootstrap rule:** `LOCI.md` should function both as content and as a registry for its local tree.
 
-| Situation | Use |
-|---|---|
-| Content should appear here as-if written here | `<!-- kahea ... -->` |
-| Reader should know about related content | Prose reference: "See `lares/grammar/observe/LOCI.md`" |
-| Content is cited for provenance, not inclusion | Prose reference with register: `[CS:0.80]` |
-
-### LOCI.md as Loci Registry
-
-Every `LOCI.md` doubles as a registry for its directory tree. The **Loci Registry** section lists all files and subdirectories in the tree, with status and brief description. This makes `LOCI.md` both a locus (holds content) and an index (maps the neighborhood).
-
-This is the TiddlyWiki SystemTag pattern — a tiddler that is both content and infrastructure.
+**Context-window rule:** transclusion scope does not stop at `.md` loci. If a live exchange span,
+chat header, crystal row, or tagged data artifact carries a visible `lares:` URI, that URI can act
+as a transclusion handle inside the active context window.
 
 ---
 
@@ -128,45 +181,46 @@ This is the TiddlyWiki SystemTag pattern — a tiddler that is both content and 
 
 ## Procedures
 
-### Creating a new locus
+1. Choose the canonical address.
+2. Open the file with `∞ →`.
+3. Place `ahu` waypoints at reusable internal stops.
+4. Resolve visible in-context `lares:` URIs before copying nearby text by hand.
+5. Use `kahea` only when you want inclusion, not mere mention.
+6. Close with `→ ?`.
+7. Register the locus in the parent `LOCI.md`.
 
-1. Choose the address. Follow HA.KA.BA conventions from `URI_SCHEMA.md` §3.
-2. Write the opener: `<!-- ∞ → lares:///your.address.here/?confidence=X&p=0.5 -->`
-3. Write the content with ahu waypoints at editorial navigation stops.
-4. Write the closer: `<!-- → ? -->`
-5. Register in the parent `LOCI.md` Folder Registry.
-
-### Adding a kahea transclusion
-
-1. Identify what content you need and its canonical address.
-2. Insert: `<!-- kahea lares:///source.address/#section -->` at the inclusion point.
-3. Verify the target exists and the fragment resolves.
-
-### The Bootstrap Chain
-
-```
-LARES.md (the boot.js — bootstrap entry point)
-  → grammar/ LOCI.md files (the phase primitives — how to think)
-  → modules/ LOCI.md files (the content modules — what to think about)
-  → AGENTS.md (the personality — who this node is)
-```
-
-`LARES.md` is the first file read. It points to everything else. It is itself a locus (self-addressed). The recursive close: `LARES.md` describes how to read files; it is itself a file readable by those rules.
+**Failure mode:** prose that describes a concept cleanly but gives no stable port for reuse. That
+kind of prose can inform a reader yet still fail as a composable locus.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#verification -->
+<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#reading-test -->
 
-## Verification
+## Reading Test
 
-| Check | Pass condition |
-|---|---|
-| Self-addressing | Every `LOCI.md` opens with its own `lares:///` address |
-| Kahea resolution | Every `<!-- kahea ... -->` target exists and resolves |
-| No orphan loci | Every locus is registered in a parent `LOCI.md` |
-| No duplicate addresses | No two files claim the same `lares:///` URI |
-| Single canonical source | Content is not duplicated across loci (kahea, not copy) |
-| Folder Registry current | `LOCI.md` registries reflect actual directory contents |
+A locus passes the transclusion test when a future reader can recover all of this:
+
+- the canonical file-level address
+- the stable internal ports
+- the summoned spans
+- the closure boundary
+- the in-context live or tagged URIs that can also serve as summon points
+
+If another file would need to copy text instead of summon or point, the transclusion surface still
+needs work.
+
+---
+
+## Cross-References
+
+- [kahua/LOCI.md](../kahua/LOCI.md)
+- [kahua/kahea/LOCI.md](../kahua/kahea/LOCI.md)
+- [hakaba/LOCI.md](../hakaba/LOCI.md)
+- [observe/LOCI.md](../observe/LOCI.md)
+- [orient/LOCI.md](../orient/LOCI.md)
+- [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
+- [../../../_todo/examples/talk_story_tidldywiki_style_self_booting_lares_architecture.md](../../../_todo/examples/talk_story_tidldywiki_style_self_booting_lares_architecture.md)
+- [../../../_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md](../../../_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md)
 
 ---
 
@@ -176,7 +230,7 @@ LARES.md (the boot.js — bootstrap entry point)
 |---|---|---|
 | `LOCI.md` | `[CS:0.80]` | This file — Transclusion grammar definition |
 
-*Additional loci in this tree will be registered here as they are created.*
+*Future loci in this tree will land here.*
 
 ---
 

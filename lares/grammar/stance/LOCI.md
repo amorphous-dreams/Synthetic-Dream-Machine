@@ -1,40 +1,154 @@
-<!-- ∞ → lares:///grammar.stance.defines/stance/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.stance.defines/stance/?confidence=CS:0.80&p=0.5 -->
 
-# Grammar: Stances + Syadasti Reading Rule
+# Grammar: Stance + Syadasti Reading Rule
 
 ```yaml
 ---
 name: stance
 description: >
-  The five discourse stances and the Syadasti Reading Rule. Register
-  measures confidence WITHIN the active stance's evaluation frame —
-  not truth-weight universally. Multi-stance reading: stance count IS
-  the fuzz indicator.
+  The five discourse stances and the Syadasti Reading Rule. Stance
+  selects the evaluation frame that gives confidence its meaning.
+phase-map:
+  observe: "#loop-position"
+  orient: "#handoff"
+  decide: "#conventions"
+  act: "#procedures"
+  assess: "#reading-test"
 trigger: always — grammar primitive
 invariant: true
 dependencies: [confidence]
-confidence: SP:0.45
+confidence: CS:0.80
 grammar: true
 ---
 ```
 
-> **Register:** `[SP:0.45]` — stub. Syadasti discovery in `_todo/SYADASTI_READING_RULE.md`.
-> **Extraction source:** `lares/modules/uri-schema/URI_SCHEMA.md` §5.3.3, `_todo/SYADASTI_READING_RULE.md`
+> **Register:** `[CS:0.80]` — grounded in the live Syadasti discovery and current HUD practice
+> **Question:** Which evaluation frame gives this claim its meaning?
 
 ---
 
-<!-- ahu lares:///grammar.stance.defines/stance/#scope -->
+<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#loop-position -->
 
-## Scope
+## Loop Position
 
-This grammar defines:
-- The five stances: 🏛️ Philosopher, 🌊 Poet, 🗡️ Satirist, 🎭 Humorist, 🔮 Private
-- Amplitude encoding: `+` elevated, `-` suppressed, `?` uncertain, `.` baseline
-- The Syadasti Reading Rule: same register scale, different meaning per stance
-- Multi-stance: stance count IS the fuzz indicator (no numeric delta)
-- Stance amplitude modifiers in query string: `stances=🏛️.🌊.-.-.-`
+Stance shapes the HOW layer of the grammar. It does not tell the reader what a claim says. It tells
+the reader how to read the claim.
 
-<!-- kahea lares:///ha.ka.ba/uri-schema/#canonical-form -->
+Stance receives:
+
+- claim shape
+- evaluative pressure
+- live voice pressure
+- confidence tags
+
+Stance changes:
+
+- undifferentiated evaluation into framed evaluation
+- flat register reading into stance-specific meaning
+- hidden spread into visible spread
+
+Stance hands forward:
+
+- an active evaluation frame
+- amplitude pattern across the five stances
+- audible fuzz when more than one frame carries weight
+
+Stance should not:
+
+- pretend one frame covers all claims
+- flatten poetic, satiric, or private readings into proposition-only logic
+- hide spread when multiple stances stay active
+
+---
+
+<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#handoff -->
+
+## Handoff
+
+Stance hands directly into confidence interpretation.
+
+The handoff should let a later reader answer:
+
+1. Which stance leads this claim?
+2. Which other stances still carry pressure?
+3. What does the register measure within that frame?
+4. How much spread should the reader assume?
+
+If those answers stay unclear, confidence starts sounding universal when it only has local meaning.
+
+---
+
+<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#surface -->
+
+## Composable Surface
+
+| Stance | Sigil | Register Measures |
+|---|---|---|
+| Philosopher | `🏛️` | propositional truth-confidence |
+| Poet | `🌊` | analogical resonance-confidence |
+| Satirist | `🗡️` | targeting-confidence |
+| Humorist | `🎭` | relational appropriateness |
+| Private | `🔮` | nominal presence |
+
+**Amplitude surface:** every rendered URI should show all five positions in canonical order. Elevated,
+suppressed, baseline, or uncertain amplitude gives the reader the spread pattern without needing a
+second notation system.
+
+---
+
+<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#conventions -->
+
+## Conventions
+
+| Rule | Weight | Rationale |
+|---|---|---|
+| Read confidence within stance, not above stance | MUST | Syadasti carries the load here |
+| Keep all five stance positions available in canonical order | MUST | Composable parsing depends on stable order |
+| Let amplitude mark spread instead of adding a second fuzz channel | SHOULD | One visible system should do the work |
+| Surface multi-stance pressure when it materially changes reading | MUST | Hidden spread distorts the claim |
+| Keep stance tied to evaluation, not identity branding | SHOULD | Stance should read as frame, not costume |
+
+**Syadasti rule:** register measures confidence within the active stance's evaluation frame, not
+truth-weight universally.
+
+---
+
+<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#procedures -->
+
+## Procedures
+
+1. Ask what kind of evaluation the claim actually needs.
+2. Select the leading stance.
+3. Mark any meaningful secondary stance pressure.
+4. Carry the resulting amplitude pattern into the URI and HUD.
+5. Read confidence through that frame.
+
+**Failure mode:** using `🏛️` as a silent default for everything. That move erases the very distinction
+the system built the stance layer to preserve.
+
+---
+
+<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#reading-test -->
+
+## Reading Test
+
+A stance span passes when a future reader can recover all of this:
+
+- the leading evaluation frame
+- any meaningful secondary spread
+- the meaning of the register inside that frame
+- the reason that frame fits the claim
+
+If the reader still has to guess what `0.65` means here, stance has not yet done its work.
+
+---
+
+## Cross-References
+
+- [confidence/LOCI.md](../confidence/LOCI.md)
+- [e-prime/LOCI.md](../e-prime/LOCI.md)
+- [../../scrum/sprints/00000/SYADASTI_READING_RULE.md](../../scrum/sprints/00000/SYADASTI_READING_RULE.md)
+- [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
 
 ---
 
@@ -42,7 +156,9 @@ This grammar defines:
 
 | Path | Status | Contents |
 |---|---|---|
-| `LOCI.md` | `[SP:0.45]` | This file — stub, kahea to uri-schema + Syadasti |
+| `LOCI.md` | `[CS:0.80]` | This file — stance grammar and Syadasti reading rule |
+
+*Future loci in this tree will land here.*
 
 ---
 

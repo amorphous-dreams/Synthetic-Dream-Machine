@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.confidence.defines/confidence/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Confidence + Register Bands
 
@@ -6,41 +6,150 @@
 ---
 name: confidence
 description: >
-  The register band system. Five named zones from Canon (C:0.9) to
-  Provisional (P:0.30). Confidence is stance-dependent per the Syadasti
-  Reading Rule. Promotions and demotions. Canon requires operator agency.
+  The register band system from Canon to Provisional. Confidence tracks
+  declared claim weight through the active stance.
+phase-map:
+  observe: "#loop-position"
+  orient: "#handoff"
+  decide: "#conventions"
+  act: "#procedures"
+  assess: "#reading-test"
 trigger: always — grammar primitive
 invariant: true
 dependencies: [stance]
-confidence: SP:0.45
+confidence: CS:0.80
 grammar: true
 ---
 ```
 
-> **Register:** `[SP:0.45]` — stub. Full register spec in AGENTS.md and uri-schema.
-> **Extraction source:** `AGENTS.md` §Registers, `lares/modules/uri-schema/URI_SCHEMA.md` §5.3
+> **Register:** `[CS:0.80]` — grounded in live HUD practice and operator agency rules
+> **Question:** How much weight should this claim carry inside its active stance frame?
 
 ---
 
-<!-- ahu lares:///grammar.confidence.defines/confidence/#scope -->
+<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#loop-position -->
 
-## Scope
+## Loop Position
 
-This grammar defines:
-- The five register bands:
+Confidence shapes the HOW layer beside stance. It does not choose the evaluation frame. It declares
+how settled the claim reads within that frame.
+
+Confidence receives:
+
+- claim shape
+- evidence quality
+- source chain quality
+- stance frame
+
+Confidence changes:
+
+- hidden certainty into declared certainty
+- flat assertion into weighted assertion
+- promotion pressure into explicit review thresholds
+
+Confidence hands forward:
+
+- banded register tags
+- promotion or demotion cues
+- section-level settlement markers
+
+Confidence should not:
+
+- masquerade as universal truth-weight
+- outrun the evidence chain
+- silently promote itself into Canon
+
+---
+
+<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#handoff -->
+
+## Handoff
+
+Confidence hands directly into decision, registry, and citation behavior.
+
+The handoff should let a later reader answer:
+
+1. Which band does this claim carry?
+2. What does that band mean in the active stance?
+3. What would justify promotion or demotion?
+4. Does operator agency matter for the next threshold?
+
+If those answers stay vague, the tag becomes decoration instead of signal.
+
+---
+
+<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#surface -->
+
+## Composable Surface
 
 | Tag | Zone | Range |
 |---|---|---|
-| `[C:0.9]` | Canon | 0.85–0.95 |
-| `[CS:0.80]` | Canon/Synthesis | 0.75–0.85 |
+| `[C:0.90]` | Canon | 0.85–0.95 |
+| `[CS:0.80]` | Canon / Synthesis | 0.75–0.85 |
 | `[S:0.65]` | Synthesis | 0.50–0.75 |
-| `[SP:0.45]` | Synth/Provisional | 0.35–0.50 |
+| `[SP:0.45]` | Synthesis / Provisional | 0.35–0.50 |
 | `[P:0.30]` | Provisional | 0.20–0.35 |
 
-- Confidence as query parameter: `?confidence=CS:0.80`
-- Promotion rules: operator confirmation required for Canon
-- Demotion rules: when evidence contradicts, confidence drops
-- Per-section confidence on ahu waypoints
+**Section surface:** confidence can sit at file level, section level, or claim level, as long as the
+placement stays explicit and the source of the weight stays legible.
+
+---
+
+<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#conventions -->
+
+## Conventions
+
+| Rule | Weight | Rationale |
+|---|---|---|
+| Read the band through stance | MUST | Same number measures different things in different frames |
+| Match the band to the evidence chain | MUST | Weight should stay earned |
+| Keep promotion and demotion explicit | SHOULD | Quiet drift harms trust |
+| Require operator agency for Canon promotion | MUST | Canon should not self-appoint |
+| Keep local confidence attachable at the `ahu` level | SHOULD | Settlement can vary within one locus |
+
+**Promotion rule:** stronger evidence, clearer source chain, and operator confirmation carry
+claims upward into Canon bands.
+
+**Demotion rule:** contradiction, thin sourcing, or frame mismatch should pull the weight downward.
+
+---
+
+<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#procedures -->
+
+## Procedures
+
+1. Identify the active stance.
+2. Judge the evidence chain inside that frame.
+3. Select the narrowest honest band.
+4. Mark the band where the claim lives.
+5. Reassess when new evidence or contradiction arrives.
+
+**Failure mode:** ornamental confidence. A tag without a readable evidence basis adds noise instead of
+clarity.
+
+---
+
+<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#reading-test -->
+
+## Reading Test
+
+A confidence span passes when a future reader can recover all of this:
+
+- the declared band
+- the stance frame that gives the band meaning
+- the evidence basis for the tag
+- the threshold for promotion or demotion
+
+If the band could move wildly without changing the supporting reasons, the tag still lacks discipline.
+
+---
+
+## Cross-References
+
+- [stance/LOCI.md](../stance/LOCI.md)
+- [e-prime/LOCI.md](../e-prime/LOCI.md)
+- [../../scrum/sprints/00000/SYADASTI_READING_RULE.md](../../scrum/sprints/00000/SYADASTI_READING_RULE.md)
+- [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
 
 ---
 
@@ -48,7 +157,9 @@ This grammar defines:
 
 | Path | Status | Contents |
 |---|---|---|
-| `LOCI.md` | `[SP:0.45]` | This file — stub, kahea to AGENTS.md + uri-schema |
+| `LOCI.md` | `[CS:0.80]` | This file — confidence grammar and register bands |
+
+*Future loci in this tree will land here.*
 
 ---
 

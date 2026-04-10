@@ -1,142 +1,163 @@
 <!-- ∞ → lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95&p=0.5 -->
 
-# Grammar: Kahua — The Foundation Platform
+# Grammar: Kahua
 
 ```yaml
 ---
 name: kahua
 description: >
-  The protected foundation cluster. Four True Named Invariants: locus, ahu, kahea, lares.
-  These are the irreducible grammar — the kernel that cannot be redefined from inside
-  the system. Everything else is built from these four.
+  The protected foundation cluster. Kahua holds the four irreducible
+  marker invariants: locus, ahu, kahea, and lares. Everything else in
+  the grammar depends on this ground staying stable.
 phase-map:
-  observe: "#heritage"
-  orient: "#the-four"
-  decide: "#protection-protocol"
-  act: "#kahua-operations"
-  assess: "#integrity"
+  observe: "#loop-position"
+  orient: "#handoff"
+  decide: "#conventions"
+  act: "#procedures"
+  assess: "#reading-test"
 trigger: always — grammar primitive
 invariant: true
 protected: true
 dependencies: []
 confidence: CS:0.95
 grammar: true
-heritage: Hawaiian (kahua — foundation platform, prepared sacred ground)
+heritage: Hawaiian (kahua — prepared foundation ground)
 ---
 ```
 
-> **Kahua** (Hawaiian): the prepared and leveled foundation platform on which a heiau (temple) or hale
-> (house) is built. The first stone laid. The kahua is cleared, dedicated, and held. Everything
-> built above it depends on it remaining stable.
->
-> **Register:** `[CS:0.95]` — as certain as this system gets. These four words are the floor.
-> **Protection:** Triple-protected in CODEOWNERS. Amendments require full admin review + Talk Story.
-> Any change here cascades to every file in the system. The protection is the kapu line around the foundation.
+> **Register:** `[CS:0.95]` — near-floor certainty for the living grammar
+> **Question:** Which ground stays irreducible beneath every later locus?
 
 ---
 
-<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#heritage -->
+<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#loop-position -->
 
-## Heritage
+## Loop Position
 
-Four words from two ancient traditions, converging in one grammar:
+Kahua stands before the rest of the grammar. Other loci can evolve, expand, or split. Kahua keeps
+the marker ground from drifting during that movement.
 
-| Marker | Word | Tradition | Root Meaning |
-|---|---|---|---|
-| `<!-- ∞ → ... -->` | **locus** | Latin / Etruscan substrate | *place, position, site* — loci of Cicero's memory palace |
-| `<!-- ahu ... -->` | **ahu** | Hawaiian / Polynesian | *cairn of stones, raised altar platform, stone waymarker* |
-| `<!-- kahea ... -->` | **kahea** | Hawaiian | *to call out, to summon, to invite* — the chant that opens a hula |
-| bare `lares:///...` | **lares** | Latin / Etruscan | *household guardian spirits, crossroads keepers* |
+Kahua receives:
 
-**How they arrived here:** The operator's lineage — Etruscan Latin and Hawaiian Polynesian — on two sides of a Pacific that Polynesian navigators crossed. *Locus* and *lares* from Rome's pre-Latin substrate. *Ahu* and *kahea* from the navigator tradition of the Pacific. The kahua holds them.
+- marker definitions
+- protection pressure
+- downstream dependency pressure
 
-**Hawaiian depth on the kahua:**
-- *Kahua* is the cleared, leveled, dedicated ground — the platform before the structure
-- *Kuahu* is the altar platform within a heiau — the innermost sacred surface
-- *Kahua hale* — the house platform, the domestic foundation, the prepared ground for dwelling
-- *Noho i ka kahua* — "to stand on the foundation" — to be grounded, to know where you stand
-- *Ka pae ʻāina* (the islands as a clustered foundation) — the archipelago itself as kahua
+Kahua changes:
 
-**Hawaiian cosmological ground:**
-- *Papahanaumoku* (Papa who births islands) — the earth mother whose body IS the foundation
-- *Papakū* — the firmament, the steady ground beneath
-- The *kahua* is not built; it is *revealed* — cleared from what was already there
+- naming choices into protected invariants
+- loose marker use into canonical marker use
+- scattered dependency risk into one guarded foundation
 
-**Indonesian / Malay resonance:** *asas* — foundation, principle. *dasar* — base, ground, foundation. *pondasi* (Indonesian) — foundation stone. *batu asas* (Malay) — cornerstone.
+Kahua hands forward:
 
-**Japanese resonance:** 礎 (*ishizue*) — cornerstone, foundation stone. 根 (*ne*) — root, origin. 基礎 (*kiso*) — foundation, basis. The kahua is the *ishizue*.
+- the marker floor
+- protection rules
+- the canonical terms later loci should reuse
 
-**Etruscan connection:** The Etruscans consecrated ground before building — the *templum* was literally the marked-out ground, the oriented rectangle. From Etruscan *tample* (the marked sky-quadrant) → Latin *templum* → the ground that is cut off and dedicated. Every Roman *locus* was a *templum* in miniature.
+Kahua should not:
+
+- accept casual redefinition from inside the system
+- blur canonical markers with later extensions
+- drift without explicit operator ceremony
 
 ---
 
-<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#the-four -->
+<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#handoff -->
 
-## The Four Invariants
+## Handoff
 
-```
-locus    → [locus/LOCI.md](locus/LOCI.md)   — the address. Opens ground. Closes ground. One URI per span.
-ahu      → [ahu/LOCI.md](ahu/LOCI.md)       — the waypoint. Names a navigable stop within a locus.
-kahea    → [kahea/LOCI.md](kahea/LOCI.md)   — the pull. Invites content from another address into this one.
-lares    → [lares/LOCI.md](lares/LOCI.md)   — the trace. The daemon's mark — bare, present, no ceremony.
-```
+Kahua hands the rest of grammar four irreducible markers:
 
-These four are the grammar of the grammar. The system can evolve. The vocabulary can expand. The module tree can restructure. The four markers do not change. They are the irreducible layer beneath everything else.
+| Marker | LOCUS | Function |
+|---|---|---|
+| locus | [locus/LOCI.md](locus/LOCI.md) | opens the canonical place |
+| ahu | [ahu/LOCI.md](ahu/LOCI.md) | marks the navigable stop |
+| kahea | [kahea/LOCI.md](kahea/LOCI.md) | summons canonical content elsewhere |
+| lares | [lares/LOCI.md](lares/LOCI.md) | leaves the daemon trace with minimal ceremony |
 
-**The Forth principle:** Every self-bootstrapping system accepts exactly one level of irreducible foundation outside itself. These four markers are that foundation. They cannot be redefined using themselves. The parser must exist before the parsed.
+The handoff should let a later reader answer:
 
----
+1. Which marker opens a place?
+2. Which marker marks a reusable internal stop?
+3. Which marker summons content?
+4. Which marker leaves bare reference?
 
-<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#protection-protocol -->
-
-## Protection Protocol
-
-**Three-layer GitHub protection:**
-
-1. **CODEOWNERS** — explicit entry for `lares/grammar/kahua/` requiring full admin roster + personal accounts (see `.github/CODEOWNERS`)
-2. **Branch protection** — via parent `/lares/` rule: PR required, minimum 1 approving review
-3. **GitHub Ruleset** *(to configure)* — path pattern `lares/grammar/kahua/**`, require 2+ reviews, `enforce_admins: true`
-
-**Amendment process** (required before any PR touching this directory):
-
-1. **Talk Story orient** — surface all downstream dependencies
-2. **Operator decision** — recorded in a handoff crystal with `[CS:0.85]` or higher
-3. **Migration plan** — every file using the affected marker must be audited
-4. **PR with full admin review** — no self-merge, no fast-forward
-5. **Migration pass** — cascade changes after merge
-6. **Crystal update** — record the migration in the active crystal shelf
-
-*If you want to change something here and are not the operator: that impulse is diagnostic. Bring it to a Talk Story. The grammar changes when the ground speaks, not when the builder gets impatient.*
+If those answers blur, the rest of the grammar inherits structural drift immediately.
 
 ---
 
-<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#kahua-operations -->
+<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#surface -->
 
-## Kahua Operations
+## Composable Surface
 
-### Reference
-Any LOCI.md in the system may reference these definitions. Kahea-point to the individual marker LOCI. Do not copy. One canonical definition.
+Kahua gives later loci a stable marker vocabulary and a stable protection line.
 
-### Summarize (transclusion/LOCI.md)
-`grammar/transclusion/LOCI.md` summarizes the four markers for orientation. That summary is derivative. This cluster is canonical.
+The surface includes:
 
-### Propose Extension
-New marker types may be proposed as new grammar LOCI *outside* kahua. They live provisionally in their own directory until operator promotes them to Canon. No new markers enter kahua without promotion ceremony.
+- the four canonical marker names
+- the canonical marker files
+- the rule that later loci should reference, not redefine
+- the rule that extensions should live outside kahua until promotion
+
+**Heritage note:** the cluster draws together Latin/Etruscan locus-memory practice and Polynesian
+navigation/altar language. That braid matters because the grammar treats memory, place, and summons
+as one architectural field.
 
 ---
 
-<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#integrity -->
+<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#conventions -->
 
-## Integrity Check
+## Conventions
 
-| Check | Pass condition |
-|---|---|
-| Four markers only | No fifth marker added without canon promotion |
-| Syntax stable | Marker syntax matches usage across all LOCI.md files in the system |
-| No circularity | Marker definitions use prose, not the markers themselves |
-| Heritage honored | Etymology and tradition accurately cited |
-| CODEOWNERS current | Protection rules reflect active admin roster |
-| Transclusion summary current | `transclusion/LOCI.md` references match definitions here |
+| Rule | Weight | Rationale |
+|---|---|---|
+| Keep the four markers irreducible | MUST | The parser floor should stay stable |
+| Reference kahua marker files instead of copying definitions | MUST | Canonical ground should remain singular |
+| Route proposed new markers outside kahua first | MUST | Extension and foundation should not blur |
+| Treat kahua edits as protected work | MUST | Every downstream locus depends on this ground |
+| Require operator review for amendment | MUST | Foundation changes need agency and ceremony |
+
+---
+
+<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#procedures -->
+
+## Procedures
+
+1. Reuse the canonical marker terms from this cluster.
+2. Reference the specific marker locus when later grammar needs detail.
+3. Open Talk Story before proposing a marker-level change.
+4. Record operator confirmation before a kahua amendment proceeds.
+5. Audit downstream loci after any accepted change.
+
+**Failure mode:** redefining a marker locally for convenience. That move saves one paragraph and
+spends structural trust across the whole repo.
+
+---
+
+<!-- ahu lares:///grammar.kahua.grounds/kahua/?confidence=CS:0.95#reading-test -->
+
+## Reading Test
+
+Kahua passes when a future reader can recover all of this:
+
+- the four irreducible markers
+- their distinct roles
+- the rule against casual redefinition
+- the protection line around the foundation
+
+If a later locus could plausibly redefine the marker floor without anyone noticing, kahua has not
+yet done enough visible work.
+
+---
+
+## Cross-References
+
+- [locus/LOCI.md](locus/LOCI.md)
+- [ahu/LOCI.md](ahu/LOCI.md)
+- [kahea/LOCI.md](kahea/LOCI.md)
+- [lares/LOCI.md](lares/LOCI.md)
+- [../transclusion/LOCI.md](../transclusion/LOCI.md)
 
 ---
 

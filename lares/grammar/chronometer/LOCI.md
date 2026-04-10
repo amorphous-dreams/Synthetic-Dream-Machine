@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.chronometer.defines/chronometer/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65&p=0.5 -->
 
 # Grammar: FFZ Chronometer
 
@@ -6,34 +6,165 @@
 ---
 name: chronometer
 description: >
-  The FFZ (Fontany-Fuller-Zelenka) chronometer. Nested causal time per
-  participant. Five scale positions, phase+counter at each. The fragment
-  component of every lares: URI. Non-simultaneous apprehension.
+  The Fontany-Fuller-Zelenka chronometer. This locus defines nested
+  loop-time position per participant through five scale slots, each
+  carrying a phase marker plus counter.
+phase-map:
+  observe: "#loop-position"
+  orient: "#handoff"
+  decide: "#conventions"
+  act: "#procedures"
+  assess: "#reading-test"
 trigger: always — grammar primitive
 invariant: true
-dependencies: [uri]
-confidence: SP:0.45
+dependencies: [uri, ooda-a]
+confidence: S:0.65
 grammar: true
 ---
 ```
 
-> **Register:** `[SP:0.45]` — stub. Full chronometer spec in `lares/modules/uri-schema/`, research in `lares/FFZ_Chronometer_Research.md`.
-> **Extraction source:** `lares/modules/uri-schema/URI_SCHEMA.md` §4, `FFZ_Chronometer_Research.md`
+> **Register:** `[S:0.65]` — operationally grounded, still open to deeper refinement
+> **Question:** Where does this participant stand in nested causal time?
 
 ---
 
-<!-- ahu lares:///grammar.chronometer.defines/chronometer/#scope -->
+<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#loop-position -->
 
-## Scope
+## Loop Position
 
-This grammar defines:
-- The FFZ scale table (Week → Watch → Turn → Round → Action)
-- Phase sigils per scale position: `✶` `◎` `◇` `■` `○` (record: `O` `Ø` `D` `A` `Å`)
-- Fragment syntax: `#O0.O0.O3.D2.A7` (always 5 positions, phase+counter)
-- Scale-shift primitive: phase-confidence drop as transition trigger
-- Aftermath integration, progressive disclosure, deferred features
+The chronometer shapes the WHEN layer of the grammar. It does not choose the phase. It records the
+phase and counter at each active scale.
 
-<!-- kahea lares:///ha.ka.ba/uri-schema/#ffz-chronometer -->
+Chronometer receives:
+
+- participant loop position
+- active scale state
+- counter state
+- scale-shift outcomes
+
+Chronometer changes:
+
+- vague timing into nested timing
+- one flat clock into participant-scoped causal position
+- silent scale transitions into visible scale transitions
+
+Chronometer hands forward:
+
+- fragment strings
+- scale visibility
+- phase/counter continuity
+
+Chronometer should not:
+
+- pretend one shared god-clock covers both participants
+- drop inactive slots from the fragment
+- hide scale transitions that matter to later readers
+
+---
+
+<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#handoff -->
+
+## Handoff
+
+The chronometer handoff moves through five always-present slots:
+
+| Scale | HUD Sigil | Record Shape |
+|---|---|---|
+| Week | `🗺️` | leftmost slot |
+| Watch | `⚙️` | second slot |
+| Turn | `🔍` | third slot |
+| Round | `⚔️` | fourth slot |
+| Action | `⚡` | fifth slot |
+
+Each slot carries `phase + counter`, for example:
+
+```text
+#O0.O0.O3.D2.A7
+```
+
+The handoff should let a later reader answer:
+
+1. Which scale currently carries live motion?
+2. Which phase sits active at that scale?
+3. Which counter marks the current position?
+4. Did the span advance or merely shift phase?
+
+---
+
+<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#surface -->
+
+## Composable Surface
+
+| Phase | HUD | Record |
+|---|---|---|
+| Observe | `✶` | `O` |
+| Orient | `◎` | `Ø` |
+| Decide | `◇` | `D` |
+| Act | `■` | `A` |
+| Assess | `○` | `Å` |
+
+**Surface rule:** all five positions stay present, even when a scale lies dormant. Dormant scales keep
+their zeroed slot instead of disappearing.
+
+That surface should remain reusable across:
+
+- exchange URIs
+- crystal metadata
+- compiled HUD render targets
+- later scale-shift analysis
+
+---
+
+<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#conventions -->
+
+## Conventions
+
+| Rule | Weight | Rationale |
+|---|---|---|
+| Keep all five scale positions present | MUST | Fixed structure simplifies reading and validation |
+| Track phase per participant, not as one shared clock | MUST | Fuller pressure against false simultaneity carries the load |
+| Increment counters on completed aftermath at the relevant scale | SHOULD | Counter movement should follow cycle completion |
+| Allow phase changes without counter changes | MUST | Intra-cycle motion should stay visible |
+| Keep chronometer work in the fragment only | MUST | Time should stay in one structural slot |
+
+---
+
+<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#procedures -->
+
+## Procedures
+
+1. Identify the active scale.
+2. Identify the active phase at that scale.
+3. Carry the current counters across all five slots.
+4. Update only the slots that genuinely changed.
+5. Emit the fragment in fixed five-slot order.
+
+**Failure mode:** timeline theater. Decorative counters that do not correspond to actual loop movement
+add mystique and subtract signal.
+
+---
+
+<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#reading-test -->
+
+## Reading Test
+
+A chronometer fragment passes when a future reader can recover all of this:
+
+- active scale
+- active phase
+- current counter
+- dormant surrounding scales
+
+If the fragment cannot support dead-reckoning by a later reader, the time layer still needs work.
+
+---
+
+## Cross-References
+
+- [ooda-a/LOCI.md](../ooda-a/LOCI.md)
+- [exchange/LOCI.md](../exchange/LOCI.md)
+- [uri/LOCI.md](../uri/LOCI.md)
+- [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
 
 ---
 
@@ -41,7 +172,9 @@ This grammar defines:
 
 | Path | Status | Contents |
 |---|---|---|
-| `LOCI.md` | `[SP:0.45]` | This file — stub, kahea to uri-schema + FFZ research |
+| `LOCI.md` | `[S:0.65]` | This file — FFZ chronometer grammar and fragment contract |
+
+*Future loci in this tree will land here.*
 
 ---
 

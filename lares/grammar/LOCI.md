@@ -54,8 +54,8 @@ How content is addressed, referenced, and included.
 | Primitive | Grammar | Confidence | One-line |
 |---|---|---|---|
 | Transclusion | [transclusion/LOCI.md](transclusion/LOCI.md) | `[CS:0.80]` | Locus, ahu, kahea, lares — the four markers. Self-booting. |
-| URI Syntax | [uri/LOCI.md](uri/LOCI.md) | `[SP:0.45]` | The `lares:` scheme. RFC 3986 record form. Stub → uri-schema. |
-| HA.KA.BA | [hakaba/LOCI.md](hakaba/LOCI.md) | `[SP:0.45]` | Three-slot semantic addressing. Stub → uri-schema. |
+| URI Syntax | [uri/LOCI.md](uri/LOCI.md) | `[CS:0.80]` | The `lares:` scheme. Canonical record form plus stable-address/render-target split. |
+| HA.KA.BA | [hakaba/LOCI.md](hakaba/LOCI.md) | `[SP:0.45]` | Three-slot semantic addressing. Stable root territory before deeper path routing. |
 | Exchange | [exchange/LOCI.md](exchange/LOCI.md) | `[CS:0.80]` | URI pair + HUD at every boundary. The mele that cuts through noise. |
 
 ---
@@ -81,9 +81,9 @@ How state is encoded and communicated.
 
 | Primitive | Grammar | Confidence | One-line |
 |---|---|---|---|
-| Chronometer | [chronometer/LOCI.md](chronometer/LOCI.md) | `[SP:0.45]` | FFZ scales + phase counters. Stub → uri-schema + FFZ research. |
-| Stance | [stance/LOCI.md](stance/LOCI.md) | `[SP:0.45]` | Five stances + Syadasti Reading Rule. Stub → Syadasti discovery. |
-| Confidence | [confidence/LOCI.md](confidence/LOCI.md) | `[SP:0.45]` | Register bands C→P. Stance-dependent. Stub → AGENTS.md. |
+| Chronometer | [chronometer/LOCI.md](chronometer/LOCI.md) | `[S:0.65]` | FFZ scales + phase counters. Nested loop-time fragment per participant. |
+| Stance | [stance/LOCI.md](stance/LOCI.md) | `[CS:0.80]` | Five stances + Syadasti Reading Rule. Confidence reads through the active frame. |
+| Confidence | [confidence/LOCI.md](confidence/LOCI.md) | `[CS:0.80]` | Register bands C→P. Claim weight declared within the active stance frame. |
 | E-Prime | [e-prime/LOCI.md](e-prime/LOCI.md) | `[S:0.65]` | Always-on language discipline. Plays against false identity certainty via `[E^:0.0-1.0]`. |
 
 ---
@@ -163,14 +163,14 @@ Foundation before grammar. Grammar before content. Phases before signal. Ground 
 | `act/LOCI.md` | `[CS:0.85]` | ■ Act phase grammar |
 | `assess/LOCI.md` | `[CS:0.85]` | ○ Assess phase grammar |
 | `transclusion/LOCI.md` | `[CS:0.80]` | Transclusion model + four markers |
-| `uri/LOCI.md` | `[SP:0.45]` | URI syntax — stub |
-| `hakaba/LOCI.md` | `[SP:0.45]` | HA.KA.BA addressing — stub |
+| `uri/LOCI.md` | `[CS:0.80]` | URI syntax — canonical record form and render-target split |
+| `hakaba/LOCI.md` | `[SP:0.45]` | HA.KA.BA addressing — three-slot semantic territory root |
 | `exchange/LOCI.md` | `[CS:0.80]` | Exchange protocol — URI pair + HUD + mele model |
 | `truename/LOCI.md` | `[CS:0.80]` | **True Name Registry — all canonically named concepts** |
 | `mele/LOCI.md` | `[CS:0.80]` | Mele — Hawaiian chant; the signal form of the exchange protocol |
-| `chronometer/LOCI.md` | `[SP:0.45]` | FFZ chronometer — stub |
-| `stance/LOCI.md` | `[SP:0.45]` | Stances + Syadasti — stub |
-| `confidence/LOCI.md` | `[SP:0.45]` | Register bands — stub |
+| `chronometer/LOCI.md` | `[S:0.65]` | FFZ chronometer — nested loop-time fragment per participant |
+| `stance/LOCI.md` | `[CS:0.80]` | Stances + Syadasti — evaluation frames for reading register |
+| `confidence/LOCI.md` | `[CS:0.80]` | Register bands — declared claim weight within stance |
 | `e-prime/LOCI.md` | `[S:0.65]` | E-Prime — always-on language discipline with independent `[E^:0.0-1.0]` slider |
 | `ooda-a/LOCI.md` | `[S:0.65]` | OODA-A — the five-season loop cluster; Product Identity marker for the Lares-specific cluster name |
 | `lares/LOCI.md` | `[CS:0.85]` | **The Lar — self-transcluding daemon** |
