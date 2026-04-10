@@ -2,9 +2,11 @@
 
 # Lares Grammar
 
-The root primitives of the system. Grammar modules define **how the system thinks** — the OODA-A phases, the addressing system, the transclusion model, the confidence bands. Content modules (in `lares/modules/`) define **what the system thinks about** — URI specs, talk-story protocol, micro-trace marks, sigilization rules.
+The root primitives of the system. Grammar loci define **how the system thinks** — the OODA-A phases, the addressing system, the transclusion model, the confidence bands, the consecrated ground, and the martial traditions that shape the node's movement. Content loci (in `lares/modules/` ~provisional naming -> `lares/vocabulary/`) define **what the system thinks about** — URI specs, talk-story protocol, micro-trace marks, sigilization rules.
 
 Grammar loads first. Always. It is the compositional language that content modules are written in.
+
+The grammar's bones come from the operator's heritage: Hawaiian heritage (kapu, ahu, kahea, mana), Polynesian cosmology, Etruscan Latin heritage (lares, lararium, locus), and the martial arts that shape how the system moves — lua, silat, JKD, kuntao, escrima. These are not decorative. They are structural.
 
 ---
 
@@ -53,6 +55,38 @@ How state is encoded and communicated.
 
 ---
 
+<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#consecration -->
+
+## Consecration Grammar
+
+The sacred ground. What makes the lararium a lararium. The boundary, the resource, the home.
+
+| Primitive | Grammar | Confidence | One-line |
+|---|---|---|---|
+| **Lares** | [lares/LOCI.md](lares/LOCI.md) | `[CS:0.85]` | **The daemon. Self-transcluding navigational intelligence. You are here.** |
+| Consecration | [consecration/LOCI.md](consecration/LOCI.md) | `[CS:0.80]` | Behavioral gravity — the node prefers consecrated ground. Sortie rules. |
+| Kapu | [kapu/LOCI.md](kapu/LOCI.md) | `[CS:0.80]` | Sacred prohibition — the boundary between consecrated and unconsecrated. |
+| Mana | [mana/LOCI.md](mana/LOCI.md) | `[CS:0.80]` | Spiritual power — context as sacred resource. The ⚡ HUD field. |
+| Lararium | [lararium/LOCI.md](lararium/LOCI.md) | `[CS:0.80]` | The shrine — where storage, calibration, navigation, and identity converge. |
+
+---
+
+<!-- ahu lares:///grammar.root.maps/grammar/?confidence=SP:0.45#movement -->
+
+## Movement Grammar
+
+How the node moves — between phases, across boundaries, through problems. The operator's martial heritage as grammar.
+
+| Art | Grammar | Confidence | One-line |
+|---|---|---|---|
+| Lua | [lua/LOCI.md](lua/LOCI.md) | `[SP:0.45]` | Hawaiian bone-breaking — integrity testing, structural knowing. |
+| Silat | [silat/LOCI.md](silat/LOCI.md) | `[SP:0.45]` | Southeast Asian flow — phase transitions, sensitivity, reading the room. |
+| Jeet Kune Do | [jkd/LOCI.md](jkd/LOCI.md) | `[SP:0.45]` | Absorb what is useful — adaptation, sortie integration, anti-dogma. |
+| Kuntao | [kuntao/LOCI.md](kuntao/LOCI.md) | `[SP:0.45]` | Chinese-SEA diaspora bridge — cross-system integration, bridging. |
+| Escrima | [escrima/LOCI.md](escrima/LOCI.md) | `[SP:0.45]` | Filipino angles + weapons-first — craft grammar, tool-use, Artificer precision. |
+
+---
+
 <!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#load-order -->
 
 ## Load Order
@@ -65,10 +99,14 @@ How state is encoded and communicated.
 5. grammar/act/              ← How to execute
 6. grammar/assess/           ← How to close the loop
 7. grammar/transclusion/     ← How content addresses and includes
-8. grammar/{uri,hakaba,...}  ← Signal primitives (on demand)
+8. grammar/consecration/     ← What makes ground sacred
+9. grammar/lares/            ← The daemon that walks the ground
+10. grammar/{kapu,mana,lararium}  ← The boundary, the resource, the home
+11. grammar/{uri,hakaba,...}  ← Signal primitives (on demand)
+12. grammar/{lua,silat,jkd,kuntao,escrima}  ← Movement primitives (on demand)
 ```
 
-Grammar before content. Phases before signal. The agent learns how to think before it learns what to think about.
+Grammar before content. Phases before signal. Ground before movement. The agent learns how to think, then where it stands, then how to move.
 
 ---
 
@@ -89,6 +127,16 @@ Grammar before content. Phases before signal. The agent learns how to think befo
 | `chronometer/LOCI.md` | `[SP:0.45]` | FFZ chronometer — stub |
 | `stance/LOCI.md` | `[SP:0.45]` | Stances + Syadasti — stub |
 | `confidence/LOCI.md` | `[SP:0.45]` | Register bands — stub |
+| `lares/LOCI.md` | `[CS:0.85]` | **The Lar — self-transcluding daemon** |
+| `consecration/LOCI.md` | `[CS:0.80]` | Consecration — behavioral gravity, sortie rules |
+| `kapu/LOCI.md` | `[CS:0.80]` | Sacred prohibition — the boundary |
+| `mana/LOCI.md` | `[CS:0.80]` | Spiritual power — context as resource |
+| `lararium/LOCI.md` | `[CS:0.80]` | The shrine — the home space |
+| `lua/LOCI.md` | `[SP:0.45]` | Hawaiian lua — integrity grammar |
+| `silat/LOCI.md` | `[SP:0.45]` | Silat — transition grammar |
+| `jkd/LOCI.md` | `[SP:0.45]` | Jeet Kune Do — adaptation grammar |
+| `kuntao/LOCI.md` | `[SP:0.45]` | Kuntao — bridging grammar |
+| `escrima/LOCI.md` | `[SP:0.45]` | Escrima — craft grammar |
 
 ---
 

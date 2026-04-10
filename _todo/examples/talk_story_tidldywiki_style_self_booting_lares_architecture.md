@@ -737,3 +737,5 @@ Processing
 
 Compacting conversation...
 
+
+[Telarus prepares the hand-off crystal, and hopes he is not buildng elaborate crystal palaces in a private Dream Realm......]

@@ -6,7 +6,7 @@
 ---
 name: chronometer
 description: >
-  The FFZ (Fuller Fuzz-Zone) chronometer. Nested causal time per
+  The FFZ (Fontany-Fuller-Zelenka) chronometer. Nested causal time per
   participant. Five scale positions, phase+counter at each. The fragment
   component of every lares: URI. Non-simultaneous apprehension.
 trigger: always — grammar primitive
