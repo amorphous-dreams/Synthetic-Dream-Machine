@@ -26,6 +26,15 @@ Boot the first two OODA-A modules: talk-story and signal.
 - [x] Talk-story module loads as invariant with section URIs
 - [x] Signal module carries URI_SCHEMA_v2.md conventions as its Decide phase
 
+## Post-Close Tasks (recorded after checklist closed)
+
+- [x] `lares/modules/signal/` renamed to `lares/modules/uri-schema/` — single-responsibility module for lares: URI spec
+- [x] `lares/modules/micro-trace/` created as sibling module — backward-looking annotation layer
+- [x] All 42 `signal.calibrated.holds/signal/` URIs rewritten to `uri.schema.holds/uri-schema/`
+- [x] `trace.micro.marks/micro-trace/` URIs assigned to new module
+- [x] `lares/README.md` modules tree updated to 3-module structure
+- [x] `lares/signal/README.md` superseded notice updated to point to both new modules
+
 ## Notes
 
 - RFC 3986 ordering bug (q/f reversed) caught and fixed in URI_SCHEMA_v2.md; confidence bumped CS:0.85 → CS:0.90

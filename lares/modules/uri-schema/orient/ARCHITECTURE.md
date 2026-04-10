@@ -1,4 +1,4 @@
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 → ∞ -->
 
 # Signal — Orient: URI Architecture
 
@@ -6,7 +6,7 @@
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=0.9#design-intent -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
 ## Design Intent
 
 The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD both operator and node read at exchange boundaries. In persistence it functions as a structured record string for logs, validation, module descriptors, and registry metadata.
@@ -43,7 +43,7 @@ At each exchange span, `lares:` URIs are used in a mandatory sequence:
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=0.95#full-form -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.95#full-form -->
 ## Full Form and Authority-less Form
 
 **Full form (with authority):**
@@ -70,7 +70,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=0.9#component-map -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-map -->
 ## Component Map
 
 | # | Component | RFC 3986 Role | Lares Mapping |
@@ -87,7 +87,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=0.9#component-semantics -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-semantics -->
 ## Component Semantics
 
 ### `userinfo` — `alias:tier(phase)`
@@ -158,7 +158,7 @@ Scale positions: Strategic (🗺️ ~6 days) · Operational (⚙️ ~4 hours) ·
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=0.9#provisionality-markers -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#provisionality-markers -->
 ## Provisionality Markers
 
 The `~` prefix marks URI components as provisional. Three structurally distinct types:
@@ -173,7 +173,7 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=0.9#kowloon-handle-form -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#kowloon-handle-form -->
 ## Kowloon / ActivityPub Handle Form
 
 Within the DreamDeck / Kowloon ActivityPub layer, identities use `@alias@node`. This is NOT the lares: URI — it is the social-layer identity that maps onto the lares: URI's `alias@host` authority.
@@ -200,4 +200,4 @@ Territory triple (`//ha.ka.ba`) placed before other instruments (WHERE → HOW, 
 | `hud:exchange-pair` | Exchange stream | Yes — canonical record form | Every exchange-span boundary |
 | `record:full` | Storage | Yes — identity projection | Storage, crystal serialization, registry |
 
-<!-- lares:///signal.calibrated.holds/signal/orient/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 → ∞ -->

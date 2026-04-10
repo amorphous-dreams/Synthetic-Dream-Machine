@@ -1,14 +1,14 @@
-<!-- lares:///signal.calibrated.holds/signal/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-# Signal Module
+# URI Schema Module
 
 ```yaml
 ---
-name: signal
+name: uri-schema
 description: >
-  Signal HUD anatomy, lares: URI canonical form, render targets,
-  validation rules, and micro-trace phase annotation. The navigational
-  instrument layer for all Lares exchanges.
+  Canonical lares: URI v2 specification — anatomy, render targets,
+  validation rules, and well-formedness criteria. The ground truth
+  for all lares: URI construction and verification.
 phase-map:
   observe: observe/CONTEXT.md
   orient: orient/ARCHITECTURE.md
@@ -22,7 +22,7 @@ trigger: >
   debugging URI well-formedness.
 invariant: false
 dependencies: [talk-story]
-confidence: CS:0.85
+confidence: CS:0.90
 ---
 ```
 
@@ -62,4 +62,4 @@ Signal carries the instrument panel; Talk Story carries the procedure that uses 
 Canonical specification: `lares/signal/URI_SCHEMA.md` `[CS:0.90]`
 Micro-trace specification: `lares/signal/micro-trace.md` `[CS:0.80]`
 
-<!-- lares:///signal.calibrated.holds/signal/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->

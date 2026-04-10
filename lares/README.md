@@ -69,7 +69,7 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 
 | Subdir | Domain | Status |
 |---|---|---|
-| [`modules/`](modules/) | OODA-A composable instruction modules — phase-structured, section URI'd | **S0 seeded** — talk-story (invariant) + signal (URI spec) |
+| [`modules/`](modules/) | OODA-A composable instruction modules — phase-structured, section URI'd | **S0 seeded** — talk-story (invariant) + uri-schema (URI spec) + micro-trace (annotation layer) |
 | [`signal/`](signal/README.md) | Signal HUD · Tagspace · lares: URI scheme · p-band model | Active draft |
 | [`crystal/`](crystal/README.md) | Archive Crystal state machine · STATE.jsonl · seal protocol | Active draft |
 | [`invariants/`](invariants/README.md) | `lares.core.*` behavioral invariants · priority layers · conflict resolution | Active draft |
@@ -92,18 +92,26 @@ lares/modules/
 │   ├── decide/CONVENTIONS.md           ← HUD format rules (6 mandatory)
 │   ├── act/CHECKLIST.md                ← 5-step session start checklist
 │   └── assess/REVIEW.md                ← 5 verification criteria
-└── signal/                              ← URI schema + micro-trace module [CS:0.85]
+├── uri-schema/                          ← lares: URI canonical spec module [CS:0.90]
+│   ├── MODULE.md
+│   ├── observe/CONTEXT.md              ← v2 current state, what settled, what's open
+│   ├── orient/ARCHITECTURE.md          ← URI anatomy, design intent (§§1–3)
+│   ├── decide/CONVENTIONS.md           ← normative canonical spec (§§3.4–6, 10)
+│   ├── act/PROCEDURES.md               ← micro-trace emit rules, span display contract
+│   └── assess/VERIFICATION.md          ← validation rules, well-formedness checklist
+└── micro-trace/                         ← backward-looking annotation layer [CS:0.80]
     ├── MODULE.md
-    ├── observe/CONTEXT.md              ← v2 current state, what settled, what's open
-    ├── orient/ARCHITECTURE.md          ← URI anatomy, design intent (§§1–3)
-    ├── decide/CONVENTIONS.md           ← normative canonical spec (§§3.4–6, 10)
-    ├── act/PROCEDURES.md               ← micro-trace emit rules, span display contract
-    └── assess/VERIFICATION.md          ← validation rules, well-formedness checklist
+    ├── observe/CONTEXT.md              ← design intent, layer contrast, prior art
+    ├── orient/ARCHITECTURE.md          ← layer split rule, handoff protocol
+    ├── decide/CONVENTIONS.md           ← syntax, density bands (p-controlled)
+    ├── act/PROCEDURES.md               ← emit examples (3 cases)
+    └── assess/VERIFICATION.md          ← well-formedness checklist, common errors
 ```
 
 Section URI base:
 - talk-story: `lares:///module.phased.instructs/talk-story/{phase}/`
-- signal: `lares:///signal.calibrated.holds/signal/{phase}/`
+- uri-schema: `lares:///uri.schema.holds/uri-schema/{phase}/`
+- micro-trace: `lares:///trace.micro.marks/micro-trace/{phase}/`
 
 ---
 

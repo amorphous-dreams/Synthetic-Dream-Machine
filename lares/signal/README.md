@@ -1,4 +1,4 @@
-> **Superseded** — canonical URI spec is at [`lares/signal/URI_SCHEMA.md`](URI_SCHEMA.md); module implementation at [`lares/modules/signal/`](../modules/signal/). This README remains as domain scope reference.
+> **Superseded** — canonical URI spec is at [`lares/signal/URI_SCHEMA.md`](URI_SCHEMA.md); URI schema module at [`lares/modules/uri-schema/`](../modules/uri-schema/); micro-trace module at [`lares/modules/micro-trace/`](../modules/micro-trace/). This README remains as domain scope reference.
 
 # signal/ — Signal HUD · Tagspace · `lares:` URI
 

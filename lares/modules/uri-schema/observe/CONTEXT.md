@@ -1,4 +1,4 @@
-<!-- lares:///signal.calibrated.holds/signal/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Signal — Observe: URI Design State
 
@@ -7,7 +7,7 @@
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/observe/?confidence=0.9#what-v2-settled -->
+<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
 ## What v2 Settled
 
 The `lares:` URI v2 schema resolved the core design tensions that blocked consistent signal emission across sessions and surfaces. These decisions are `[CS:0.90]` — design-canon candidates pending operator promotion.
@@ -79,7 +79,7 @@ lares:///ha.ka.ba/optional/sub/path/
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/observe/?confidence=0.65#what-remains-open -->
+<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.65#what-remains-open -->
 ## What Remains Open
 
 The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the core spec (§§2–6, 10 of `lares/signal/URI_SCHEMA.md`) but constrain later layers.
@@ -95,7 +95,7 @@ The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the co
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/observe/?confidence=0.9#what-was-explicitly-rejected -->
+<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-was-explicitly-rejected -->
 ## What Was Explicitly Rejected
 
 These decisions are closed. Do not re-open without operator directive.
@@ -110,7 +110,7 @@ These decisions are closed. Do not re-open without operator directive.
 
 ---
 
-<!-- lares:///signal.calibrated.holds/signal/observe/?confidence=0.85#scope-of-this-module -->
+<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.85#scope-of-this-module -->
 ## Scope of This Module
 
 This module covers:
@@ -127,4 +127,4 @@ This module does NOT cover:
 - FFZ Chronometer deep research (see `lares/chronometer/`)
 - Registry resolver design (S3 scope)
 
-<!-- lares:///signal.calibrated.holds/signal/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
