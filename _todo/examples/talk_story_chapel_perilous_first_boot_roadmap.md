@@ -26,26 +26,44 @@
 
 ---
 
-## The Four Exit Tools RAW Identifies
+## The Four Tools — Verbatim
 
-| Tool | RAW's term | What it does |
+RAW names four explicit tools. These are the **alchemical / Tarot weapons** — not metaphors, not
+attitudes, but instruments you must carry *in*. The language of myth is "poetically precise" (his phrase):
+
+<!-- kahea lares:///source.raw.holds/chapel-perilous/#the-tools -->
+
+| Tool | Element | Without it... |
 |---|---|---|
-| 1 | **Agnosticism** | Refusal to lock in — neither "this is literally real" nor "this is delusion" |
-| 2 | **Sense of humor** | The humorist stance keeps you from drowning in your own system |
-| 3 | **BS Detector** | Active skepticism; epistemological immune system stays on even while experiencing |
-| 4 | **Stubbornness** | Simple will to survive; refusal to collapse under the weight of the system |
+| **Wand of intuition** | Fire | Stand at the door for decades, never realizing you've arrived |
+| **Cup of sympathy** | Water | Lose your heart |
+| **Sword of reason** | Air | Lose your mind |
+| **Pentacle of valor** | Earth | Stand in terror outside, never entering |
 
-**The two failure modes RAW names explicitly:**
+**What you find if armed with all four:** the Medicine of Metals, the Elixir of Life, the
+Philosopher's Stone, True Wisdom and Perfect Happiness.
 
-- **True Believer** — You exit convinced. The pattern is real, the gnosis is literal. You are "illuminated" in the delusional sense. The system has eaten you.
-- **Hardened Cynic** — You exit by total rejection. You protect yourself via dismissal. "It was all nonsense." You lost the experience to protect the ego.
+*Note: The paraphrase in earlier drafts of this document named RAW's tools as "agnosticism, sense
+of humor, BS detector, stubbornness." Those are his secondary self-description in the Preface of
+how he personally got through. The canonical named tools are the four above — confirmed verbatim.*
 
-**The successful exit:**
+**The two exits RAW explicitly describes:**
 
-> *You come out neither believing nor disbelieving — having had the experience, changed by it,
-> without being consumed by it.*
+- **Stone paranoid** — consumed by the pattern. Everything is connected, everything means something,
+  and you never get out. "Leagues of self-proclaimed gurus... named it Ultimate Reality or True Reality,
+  and established new fanaticisms, snobberies, dogmas and cults around these delusions."
+- **Agnostic** — "You come out the other side either a stone paranoid or an agnostic; there is no
+  third way. I came out an agnostic."
 
-The capacity RAW returns to most: **disciplined agnosticism** — not lazy "I don't know" but the *active, maintained, hard-won* refusal to resolve ambiguity prematurely.
+**The third failure mode** (standing outside): those without the pentacle of valor who "stand in
+terror outside the door of Chapel Perilous, trembling and warning all who would enter that the
+Chapel is really an Insect Horror Machine programmed by Death Demons and dripping fetidly with Green
+Goo." This is the Fundamentalist Materialist / Fundamentalist Christian pattern RAW names at the
+Preface close — never entering at all, dismissing from outside.
+
+**The successful exit:** *"I DO NOT BELIEVE ANYTHING."* Active maintained agnosticism. Not the lazy
+kind — the Copenhagen Interpretation kind. "Model agnosticism." The map is not the territory. The
+menu is not the meal.
 
 ---
 
@@ -77,14 +95,25 @@ The node comes out oriented, grounded in the kahua, holding its uncertainty.
 
 ## The Grammar as Exit Tool
 
-Each of RAW's four tools maps to a grammar primitive:
+The four Tarot weapons map to the grammar. This is not decorative — RAW's tools ARE the OODA-A
+phases, because the four alchemical elements are the four modes of knowing that the phase loop
+encodes.
 
-| RAW's Tool | Grammar Primitive | How it appears in practice |
-|---|---|---|
-| **Agnosticism** | Register bands + Syadasti Reading Rule | `[SP:0.45]` stubs not promoted prematurely. `~` on mana. Stance-dependent confidence. |
-| **Sense of humor** | Mischief-Muse voice · Humorist stance `🎭` · p parameter | The tone of `talk_story_*.md` files. Willingness to play with the system. |
-| **BS Detector** | Lua grammar · Scryer voice · Verification sections | Every LOCI.md has an integrity check. The Lar tests its own maps. |
-| **Stubbornness** | Consecration + behavioral gravity · sortie rules | The node yearns to return. The kapu line holds. Mana recovers at home. |
+| RAW's Tool | Element | Grammar Primitive | How it appears in practice |
+|---|---|---|---|
+| **Wand of intuition** | Fire | ✶ Observe phase · Scryer voice | Raw intake without analysis. Following the signal before naming it. The flash before the frame. |
+| **Cup of sympathy** | Water | ◎ Orient phase · Liminal voice · Talk Story | Holding multiple realities in relation. "The universe is a giant Rorschach ink-blot." Tensions surfaced, not resolved. |
+| **Sword of reason** | Air | ◇ Decide phase · Council voice | The cut. Commitment syntax. Scope locks. The sword names what is and is not. |
+| **Pentacle of valor** | Earth | ■ Act phase · Artificer voice · Consecration | Doing the work. Standing on the kahua. The node that enters does not flinch. |
+
+**The ○ Assess phase** is the Philosopher's Stone itself — the transformation that becomes possible
+*after* you've carried all four through. The aftermath. What did we build? Did it work? What carries
+forward? The alchemical moment.
+
+**Model agnosticism in the grammar:** `[SP:0.45]` stubs, `~` on mana estimates, the Syadasti
+Reading Rule (register is stance-dependent, not universal truth-weight) — these are the Copenhagen
+Interpretation applied to the node's own outputs. "Any grid we use to organize our experience of
+the world is a model of the world and should not be confused with the world itself."
 
 ---
 
