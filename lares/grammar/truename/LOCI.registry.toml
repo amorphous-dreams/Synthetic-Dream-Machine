@@ -1,0 +1,6 @@
+
+[lares]
+uri = "lares:///ha.ka.ba/grammar/detect-alignment"
+
+# True Name registry entries
+# Add new entries as [[truename]] tables below

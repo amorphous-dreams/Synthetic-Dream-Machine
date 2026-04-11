@@ -1,3 +1,7 @@
+
+<!-- Canonical registry: see LOCI.registry.toml for True Name registry data -->
+<!-- TOML registry: lares/grammar/truename/LOCI.registry.toml -->
+<!-- lares metadata wired: lares://grammar/truename/LOCI -->
 <!-- ∞ → lares:///grammar.truename.holds/truename/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: True Name Registry
@@ -38,9 +42,12 @@ heritage: >
 
 <!-- ahu lares:///grammar.truename.holds/truename/?confidence=CS:0.95#kahua-invariants -->
 
+
 ## The Kahua Invariants — Foundation True Names
 
 *Confidence: `[CS:0.95]`. Protected. Do not modify without operator Talk Story + crystal.*
+
+The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.toml). For convenience, the current named loci are listed below:
 
 | True Name | Language | LOCUS | Function |
 |---|---|---|---|

@@ -60,9 +60,26 @@ def check_eprime(text: str) -> float:
 
 def check_registry(loci_path: Path, registry_path: Path) -> float:
     """Check if the LOCI file is registered in the grammar registry."""
-    with registry_path.open('r', encoding='utf-8') as f:
-        content = f.read()
-    return 1.0 if loci_path.name in content else 0.0
+    # Canonical registry is truename/LOCI.md
+    truename_registry = registry_path.parent / 'truename' / 'LOCI.md'
+    # If this is the truename registry, always pass
+    if loci_path.resolve() == truename_registry.resolve():
+        return 1.0
+    # Otherwise, check if this file is referenced in truename/LOCI.md or has a pointer/sidecar
+    try:
+        with truename_registry.open('r', encoding='utf-8') as f:
+            content = f.read()
+        if loci_path.name in content or str(loci_path.relative_to(registry_path.parent)) in content:
+            return 1.0
+        # Check for sidecar pointer file
+        pointer = loci_path.parent / (loci_path.stem + '.pointer')
+        if pointer.exists():
+            with pointer.open('r', encoding='utf-8') as pf:
+                if 'lares:///' in pf.read():
+                    return 1.0
+    except Exception:
+        pass
+    return 0.0
 
 def check_ooda_sections(sections: Dict[str, str]) -> float:
     """Check for presence of OODA-A phase sections."""
@@ -293,7 +310,11 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95) -> None:
             elif k == 'kahea_resolution':
                 print("- Resolve or remove broken kahea summons.")
             elif k == 'registry':
-                print("- Register or assert the true name for this LOCI in grammar/LOCI.md (true-name registry).")
+                print("- This LOCI is not canonicalized. Options:")
+                print("    * Register in truename/LOCI.md (canonical registry)")
+                print("    * Create a pointer file (e.g., LOCI.pointer) with lares URI metadata")
+                print("    * Make this file a pointer to a canonical True Name registry")
+                print("    * Continue talk story and decide what to canonicalize")
             elif k == 'nested_ooda':
                 print("- Document nested OODA-A loops, parent/child references, and entry/exit conditions if present.")
 
