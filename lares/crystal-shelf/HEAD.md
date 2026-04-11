@@ -3,19 +3,19 @@
 # Crystal Shelf — HEAD
 
 ```
-ref: _todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md
+ref: _todo/core/HANDOFF_CRYSTAL_20260410_GRAMMAR_TOOLING.md
 ```
 
 ---
 
 | Field | Value |
 |---|---|
-| **Current crystal** | `_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md` |
-| **Cut** | 2026-04-10 ~18:30 PDT |
+| **Current crystal** | `_todo/core/HANDOFF_CRYSTAL_20260410_GRAMMAR_TOOLING.md` |
+| **Cut** | 2026-04-10 (after FISSION crystal) |
 | **Branch** | `fix/green-jello-dinosaurs-3` |
-| **Session topic** | URI fission + grammar bootstrap + consecration (Addendum 2) |
-| **HEAD updated by** | Ink-Clerk |
-| **Mana at cut** | `⚡ ~45%` |
+| **Session topic** | Grammar tooling: verification + alignment detection upgrade |
+| **HEAD updated by** | Artificer |
+| **Mana at cut** | `⚡ ~60%` |
 
 ---
 

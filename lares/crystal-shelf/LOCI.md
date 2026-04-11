@@ -82,7 +82,8 @@ The full history. Newest first.
 
 | Crystal | Cut | Session | Status |
 |---|---|---|---|
-| [HANDOFF_CRYSTAL_20260410_FISSION.md](../../_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md) | 2026-04-10 ~18:30 PDT | URI fission + grammar bootstrap + consecration | **HEAD** |
+| [HANDOFF_CRYSTAL_20260410_GRAMMAR_TOOLING.md](../../_todo/core/HANDOFF_CRYSTAL_20260410_GRAMMAR_TOOLING.md) | 2026-04-10 (after FISSION) | Grammar tooling: verification + alignment detection upgrade | **HEAD** |
+| [HANDOFF_CRYSTAL_20260410_FISSION.md](../../_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md) | 2026-04-10 ~18:30 PDT | URI fission + grammar bootstrap + consecration (Addendum 2) | archived |
 
 *Previous crystals referenced in `_todo/SESSION_CRYSTAL_20260408.md` — see that file for earlier session lineage.*
 
