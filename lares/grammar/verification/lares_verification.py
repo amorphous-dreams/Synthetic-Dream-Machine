@@ -8,6 +8,7 @@ Outputs a 0.0-1.0 score for each instrument and actionable operator options on f
 import re
 import os
 import yaml
+import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
@@ -129,79 +130,79 @@ def check_kahea_resolution(targets: List[str], loci_dir: Path) -> float:
 
 # --- Main verification ---
 def verify_loci(loci_path: str, registry_path: str) -> Dict[str, Any]:
-        # --- Modular deterministic checks for AI-agent readiness ---
-        def check_actionable_examples(sections, text):
-            # Look for 'example', 'story', 'case', or 'scenario' in headings or content
-            patterns = [r'example', r'story', r'case', r'scenario']
-            for heading, content in sections.items():
-                if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
-                    return 1.0
-            # Fallback: full-text
-            if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+    # --- Detect-alignment compliance check ---
+    # Call detect_alignment.py as a subprocess and parse result
+    detect_alignment_path = Path(__file__).parent.parent / 'detect-alignment' / 'detect_alignment.py'
+    try:
+        result = subprocess.run(['python3', str(detect_alignment_path), str(loci_path.parent)], capture_output=True, text=True)
+        if '[PASS]' in result.stdout:
+            detect_alignment_score = 1.0
+        else:
+            detect_alignment_score = 0.0
+    except Exception as e:
+        detect_alignment_score = 0.0
+
+    def check_actionable_examples(sections, text):
+        patterns = [r'example', r'story', r'case', r'scenario']
+        for heading, content in sections.items():
+            if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
                 return 1.0
-            return 0.0
+        if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+            return 1.0
+        return 0.0
 
-        def check_meta_reflection(sections, text):
-            patterns = [r'evolution', r'adapt', r'meta', r'reflect']
-            for heading, content in sections.items():
-                if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
-                    return 1.0
-            if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+    def check_meta_reflection(sections, text):
+        patterns = [r'evolution', r'adapt', r'meta', r'reflect']
+        for heading, content in sections.items():
+            if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
                 return 1.0
-            return 0.0
+        if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+            return 1.0
+        return 0.0
 
-        def check_ai_agent_guidance(sections, text):
-            patterns = [r'ai agent', r'agentic', r'automate', r'automated']
-            for heading, content in sections.items():
-                if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
-                    return 1.0
-            if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+    def check_ai_agent_guidance(sections, text):
+        patterns = [r'ai agent', r'agentic', r'automate', r'automated']
+        for heading, content in sections.items():
+            if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
                 return 1.0
-            return 0.0
+        if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+            return 1.0
+        return 0.0
 
-        def check_tension_texture(sections, text):
-            tension_patterns = [r'tension', r'ambiguity', r'drift']
-            texture_patterns = [r'operator texture', r'feels like', r'story', r'example']
-            tension = any(re.search(p, text, re.IGNORECASE) for p in tension_patterns)
-            texture = any(re.search(p, text, re.IGNORECASE) for p in texture_patterns)
-            return 1.0 if tension and texture else 0.5 if tension or texture else 0.0
+    def check_tension_texture(sections, text):
+        tension_patterns = [r'tension', r'ambiguity', r'drift']
+        texture_patterns = [r'operator texture', r'feels like', r'story', r'example']
+        tension = any(re.search(p, text, re.IGNORECASE) for p in tension_patterns)
+        texture = any(re.search(p, text, re.IGNORECASE) for p in texture_patterns)
+        return 1.0 if tension and texture else 0.5 if tension or texture else 0.0
 
-        def check_handoff_integrity(sections):
-            # For each phase, check that handoff questions reference previous/next phase
-            phases = ['Observe', 'Orient', 'Decide', 'Act', 'Assess']
-            score = 0
-            for i, phase in enumerate(phases):
-                handoff_heading = None
-                for h in sections:
-                    if phase.lower() in h.lower() and 'handoff' in h.lower():
-                        handoff_heading = h
-                        break
-                if handoff_heading:
-                    content = sections[handoff_heading]
-                    prev_ok = i == 0 or phases[i-1].lower() in content.lower()
-                    next_ok = i == len(phases)-1 or phases[i+1].lower() in content.lower()
-                    if prev_ok and next_ok:
-                        score += 1
-            return score / len(phases)
+    def check_handoff_integrity(sections):
+        phases = ['Observe', 'Orient', 'Decide', 'Act', 'Assess']
+        score = 0
+        for i, phase in enumerate(phases):
+            handoff_heading = None
+            for h in sections:
+                if phase.lower() in h.lower() and 'handoff' in h.lower():
+                    handoff_heading = h
+                    break
+            if handoff_heading:
+                content = sections[handoff_heading]
+                prev_ok = i == 0 or phases[i-1].lower() in content.lower()
+                next_ok = i == len(phases)-1 or phases[i+1].lower() in content.lower()
+                if prev_ok and next_ok:
+                    score += 1
+        return score / len(phases)
 
-        def check_antipatterns(sections):
-            # For each phase, check for a 'should not' list
-            phases = ['Observe', 'Orient', 'Decide', 'Act', 'Assess']
-            found = 0
-            for phase in phases:
-                for h, c in sections.items():
-                    if phase.lower() in h.lower() and 'should not' in c.lower():
-                        found += 1
-                        break
-            return found / len(phases)
+    def check_antipatterns(sections):
+        phases = ['Observe', 'Orient', 'Decide', 'Act', 'Assess']
+        found = 0
+        for phase in phases:
+            for h, c in sections.items():
+                if phase.lower() in h.lower() and 'should not' in c.lower():
+                    found += 1
+                    break
+        return found / len(phases)
 
-        # Run new checks
-        results['example'] = check_actionable_examples(sections, text)
-        results['meta_reflection'] = check_meta_reflection(sections, text)
-        results['ai_agent'] = check_ai_agent_guidance(sections, text)
-        results['tension_texture'] = check_tension_texture(sections, text)
-        results['handoff_integrity'] = check_handoff_integrity(sections)
-        results['antipatterns'] = check_antipatterns(sections)
     loci = Path(loci_path)
     registry = Path(registry_path)
     sections = extract_sections(loci)
@@ -213,6 +214,14 @@ def verify_loci(loci_path: str, registry_path: str) -> Dict[str, Any]:
     results['eprime'] = check_eprime(text)
     results['kahea_resolution'] = check_kahea_resolution(kahea_targets, loci.parent)
     results['registry'] = check_registry(loci, registry)
+    # Run new checks
+    results['example'] = check_actionable_examples(sections, text)
+    results['meta_reflection'] = check_meta_reflection(sections, text)
+    results['ai_agent'] = check_ai_agent_guidance(sections, text)
+    results['tension_texture'] = check_tension_texture(sections, text)
+    results['handoff_integrity'] = check_handoff_integrity(sections)
+    results['antipatterns'] = check_antipatterns(sections)
+    results['detect_alignment'] = detect_alignment_score
     # --- Sub-loop pattern: Nested OODA-A Loops ---
     # Look for explicit reference to parent/child OODA-A loops and entry/exit conditions
     nested_score = 0.0
@@ -265,6 +274,11 @@ def verify_loci(loci_path: str, registry_path: str) -> Dict[str, Any]:
 
 # --- Operator options ---
 def operator_report(results: Dict[str, float], threshold: float = 0.95) -> None:
+    if 'detect_alignment' in results:
+        status = 'PASS' if results['detect_alignment'] >= threshold else 'FAIL'
+        print(f"detect_alignment      : {results['detect_alignment']:.2f} [{status}]")
+        if results['detect_alignment'] < threshold:
+            print("- File is missing required lares URI wrappers. Run detect_alignment.py for remediation.")
     print("\nVerification Results:")
     for k, v in results.items():
         status = 'PASS' if v >= threshold else ('WARN' if v >= 0.7 else 'FAIL')
@@ -283,12 +297,30 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95) -> None:
             elif k == 'nested_ooda':
                 print("- Document nested OODA-A loops, parent/child references, and entry/exit conditions if present.")
 
+def batch_verify_loci(root_dir, registry_path, threshold=0.95):
+    batch_results = []
+    for loci_path in Path(root_dir).rglob('LOCI.md'):
+        res = verify_loci(str(loci_path), registry_path)
+        batch_results.append({'file': str(loci_path), 'results': res})
+    return batch_results
+
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Verify a Lares LOCI file for operational compliance. The registry is the true-name registry (grammar/LOCI.md).')
-    parser.add_argument('loci', help='Path to LOCI.md file')
+    import json
+    parser = argparse.ArgumentParser(description='Verify a Lares LOCI file or directory for operational compliance. The registry is the true-name registry (grammar/LOCI.md).')
+    parser.add_argument('loci', help='Path to LOCI.md file or directory')
     parser.add_argument('--registry', default='../../grammar/LOCI.md', help='Path to grammar registry')
     parser.add_argument('--threshold', type=float, default=0.95, help='Pass threshold (default 0.95)')
+    parser.add_argument('--batch', action='store_true', help='Recursively verify all LOCI.md files under a directory')
+    parser.add_argument('--report', type=str, default=None, help='Write full JSON batch report to file')
     args = parser.parse_args()
-    results = verify_loci(args.loci, args.registry)
-    operator_report(results, args.threshold)
+    if args.batch:
+        batch_results = batch_verify_loci(args.loci, args.registry, args.threshold)
+        if args.report:
+            with open(args.report, 'w', encoding='utf-8') as f:
+                json.dump(batch_results, f, indent=2)
+        print(json.dumps(batch_results, indent=2))
+        sys.exit(0)
+    else:
+        results = verify_loci(args.loci, args.registry)
+        operator_report(results, args.threshold)

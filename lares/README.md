@@ -1,3 +1,19 @@
+## Compliance Rules for /lares and /lares/grammar
+
+### URI Wrapper or Sidecar Metadata Required
+- Every file in `/lares` must begin and end with a URI wrapper comment (e.g., `<!-- ∞ → lares:///... -->` at the start, and a matching or closing marker at the end).
+- If a file does not contain its own URI wrappers, a sidecar file with the same base name and `.LOCI.md` extension must exist in the same directory, containing all required metadata (including URI, description, and registry info).
+
+### /lares/grammar Tree Strictness
+- All files in `/lares/grammar` must:
+    - Pass the `verify`/`verification` automated tests
+    - Contain explicit OODA-A structure, E-Prime compliance, kahea markers, registry references, and sub-loop pattern documentation
+    - Be testable and maintainable for AI agent consumption
+    - Have all metadata either in the file or in a `.LOCI.md` sidecar
+
+### Automated Enforcement
+- Use the [lares/grammar/verify/LOCI.md](lares/grammar/verify/LOCI.md) and [lares/grammar/verification/lares_verification.py](lares/grammar/verification/lares_verification.py) as the reference for all compliance and automated testing.
+- Non-compliant files should be flagged for operator review and must be brought into compliance before being used as core grammar loci.
 # Canonical Design Ontology Tree — `lares/`
 
 > Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, crystal state machine, and deployment authoring. Parallel track: sprint narrative (talk story → myth canon).
