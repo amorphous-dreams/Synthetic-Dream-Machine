@@ -176,7 +176,7 @@ heritage: >
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#identity -->
+<!-- ha.ka.ba:grammar.ooda-a.identity -->
 
 ## Product Identity Note
 
@@ -187,7 +187,7 @@ Use the loop idea freely. Do not wear the exact cluster name as a claim to this 
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#loop-position -->
+<!-- ha.ka.ba:grammar.ooda-a.loop-position -->
 
 ## Loop Position
 
@@ -222,7 +222,7 @@ OODA-A should not:
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#handoff -->
+<!-- ha.ka.ba:grammar.ooda-a.handoff -->
 
 ## Handoff
 
@@ -246,7 +246,7 @@ When those answers disappear, the locus stops reading as loop-time grammar.
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#members -->
+<!-- ha.ka.ba:grammar.ooda-a.members -->
 
 ## Members
 
@@ -260,7 +260,7 @@ When those answers disappear, the locus stops reading as loop-time grammar.
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#conventions -->
+<!-- ha.ka.ba:grammar.ooda-a.conventions -->
 
 ## Conventions
 
@@ -277,7 +277,7 @@ The two lenses work together during every grammar pass.
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#procedures -->
+<!-- ha.ka.ba:grammar.ooda-a.procedures-list -->
 
 ## Procedures
 
@@ -292,7 +292,7 @@ kind of prose turns the instrument back into a shelf.
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#reading-test -->
+<!-- ha.ka.ba:grammar.ooda-a.reading-test -->
 
 ## Reading Test
 
@@ -307,7 +307,7 @@ If the reader can only recover a static definition, the locus still needs loop-t
 
 ---
 
-<!-- ahu lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65#cross-references -->
+<!-- ha.ka.ba:grammar.ooda-a.cross-references -->
 
 ## Cross-References
 
@@ -321,11 +321,51 @@ If the reader can only recover a static definition, the locus still needs loop-t
 
 ---
 
+
+
 ## Loci Registry
 
-| Path | Status | Contents |
-|---|---|---|
-| `LOCI.md` | `[S:0.65]` | This file — OODA-A loop cluster; Product Identity marker for the Lares-specific cluster name |
+See [LOCI.registry.toml](./LOCI.registry.toml) for the canonical OODA-A registry, listing all phase loci, glyphs, and functions in TOML format. This registry follows the truename pattern and is the authoritative source for phase registration and handoff documentation.
+
+---
+
+## Example
+
+> Example: A session begins in Observe, gathers signals, moves to Orient to pattern-match, then Decides on a course, Acts to implement, and finally Assesses the outcome, looping back if residue remains.
+
+---
+
+## Tension & Texture
+
+OODA-A surfaces tensions between phases (e.g., analysis paralysis between Orient and Decide, or premature closure between Assess and Observe). Texture emerges from the rhythm of phase transitions and the clarity of handoffs.
+
+---
+
+
+## Handoff Integrity
+
+Handoff integrity is maintained by:
+- Explicit documentation of what each phase receives, changes, and hands forward
+- Entry and exit criteria for every phase, with clear handoff notes
+- Registry cross-references for all handoff points
+- Audit trails for phase transitions, ensuring no silent loss of context or intent
+- Example: When Act hands off to Assess, the closure statement and any residue must be explicitly named and registered
+
+---
+
+
+## Antipatterns
+
+- Skipping Assess and reopening Observe without closure (results in untracked residue)
+- Collapsing all phases into static definitions (shelf syndrome: loop loses time structure)
+- Failing to document handoff criteria, leading to ambiguous or lost transitions
+- Treating Assess as optional residue rather than a required closure (closure must be explicit)
+- Using generic or placeholder URIs in markers (must use canonical ha.ka.ba form)
+
+---
+## E-Prime Note
+
+OODA-A phase prose should minimize forms of "to be" to sharpen claim-shape and clarify temporal motion. E-Prime pressure helps avoid static, ambiguous, or passive constructions. Example: Instead of "The phase is complete," use "The phase closes with..." or "Assess hands forward...".
 
 ---
 

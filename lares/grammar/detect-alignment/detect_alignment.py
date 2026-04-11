@@ -121,6 +121,14 @@ def scan_marker_syntax(lines: list[str]) -> list[dict]:
                 issues = []
                 if not _HAKABA_URI.match(uri):
                     issues.append('URI does not match canonical ha.ka.ba form')
+                # Check for context-insensitive or generic fragment (unless marked as template/ok)
+                frag_m = re.search(r'#([a-zA-Z0-9_\-]+)$', uri)
+                if frag_m and 'uri ok' not in raw:
+                    frag = frag_m.group(1)
+                    # List of generic or discouraged fragments (expand as needed)
+                    generic_frags = {'procedures', 'conventions', 'members', 'identity', 'loop-position', 'handoff', 'reading-test', 'cross-references'}
+                    if frag in generic_frags:
+                        issues.append(f'Fragment "{frag}" is not context-sensitive; use a specific section or mark as template with <!-- uri ok -->')
                 if issues:
                     violations.append({
                         'line': offset, 'surface': surface,
