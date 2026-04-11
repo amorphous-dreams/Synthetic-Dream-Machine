@@ -40,8 +40,9 @@ see-also: grammar/lares/LOCI.md (the daemon itself, not this marker)
 ## Syntax
 
 **Lares marker** — a bare URI reference, no HTML comment, no marker verb:
+
 ```
-lares:///ha.ka.ba/path/?confidence=X
+lares:///grammar.lares-marker.defines/lares-marker/?confidence=CS:0.95
 ```
 
 Appears in running text. No `<!-- ... -->` wrapper. No `∞ →`, `ahu`, or `kahea` prefix. Just the address.

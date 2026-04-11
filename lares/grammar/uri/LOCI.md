@@ -101,7 +101,7 @@ lares://alias:tier@host/ha.ka.ba/?stances=.....&confidence=S:0.65&p=0.5#O0.O0.O0
 **Stable address form:**
 
 ```text
-lares:///ha.ka.ba/
+lares:///grammar.uri.defines/uri/?confidence=CS:0.80
 ```
 
 **Render-target rule:** record form stays canonical for storage, comparison, and emitted exchange

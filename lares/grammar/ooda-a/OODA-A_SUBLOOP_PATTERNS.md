@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///ha.ka.ba -->
+<!-- ∞ → lares:///grammar.ooda-a.patterns/OODA-A_SUBLOOP_PATTERNS/?confidence=CS:0.80 -->
 # OODA-A Sub-Loop Patterns & Enforcement
 
 This sidecar file enumerates enforceable sub-loop patterns and architectural invariants for the Lares OODA-A grammar standard. Reference this file from the main OODA-A locus for operator and agent compliance.

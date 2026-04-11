@@ -40,7 +40,7 @@ cluster: kahua
 
 **Ahu marker** — names a waypoint, carries its own address + fragment:
 ```
-<!-- ahu lares:///ha.ka.ba/path/?confidence=X#fragment-name -->
+<!-- ahu lares:///grammar.ahu.defines/ahu/?confidence=CS:0.95#fragment-name -->
 ```
 
 The fragment (`#fragment-name`) is what external references navigate to. The ahu marker establishes both:
