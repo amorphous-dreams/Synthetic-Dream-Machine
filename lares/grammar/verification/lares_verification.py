@@ -133,6 +133,58 @@ def check_ooda_sections(sections: Dict[str, str]) -> float:
         print("  ", r)
     return sum(phase_scores) / len(phase_scores) if phase_scores else 0.0
 
+# Canonical marker patterns
+# ahu:   <!-- ahu lares:///ha.ka.ba[/path][?params][#fragment] -->
+# kahea: <!-- kahea lares:///ha.ka.ba[/path][?params][#fragment] -->
+_AHU_MARKER    = re.compile(r'<!--\s*ahu\s+(lares:///\S+?)\s*-->')
+_KAHEA_MARKER  = re.compile(r'<!--\s*kahea\s+(lares:///\S+?)\s*-->')
+_HAKABA_PATH   = re.compile(
+    r'^lares:///[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]'  # ha.ka.ba
+    r'[^?#\s]*'                                                        # optional subpath
+    r'(?:\?[^#\s]*)?'                                                  # optional query
+    r'(?:#[a-zA-Z0-9_\-]+)?$'                                         # optional plain fragment
+)
+
+
+def _validate_marker_uris(text: str, pattern: re.Pattern) -> Tuple[int, int, List[str]]:
+    """Return (total, valid, list-of-bad-uris) for all markers matching pattern."""
+    total, valid, bad = 0, 0, []
+    for m in pattern.finditer(text):
+        uri = m.group(1)
+        total += 1
+        if _HAKABA_PATH.match(uri):
+            valid += 1
+        else:
+            bad.append(uri)
+    return total, valid, bad
+
+
+def check_ahu_syntax(text: str) -> Tuple[float, List[str]]:
+    """
+    Validate <!-- ahu lares:///... --> marker syntax.
+    Each ahu URI must have a canonical ha.ka.ba path.
+    Fragment must be a plain section name (not chronometer form — ahu is a bookmark).
+    Returns (score 0.0-1.0, list of bad URIs).
+    """
+    total, valid, bad = _validate_marker_uris(text, _AHU_MARKER)
+    if total == 0:
+        return 1.0, []  # no ahu markers = not applicable
+    return valid / total, bad
+
+
+def check_kahea_syntax(text: str) -> Tuple[float, List[str]]:
+    """
+    Validate <!-- kahea lares:///... --> transclusion marker syntax.
+    Each kahea URI must have a canonical ha.ka.ba path.
+    Fragment is optional (whole-locus pull is valid).
+    Returns (score 0.0-1.0, list of bad URIs).
+    """
+    total, valid, bad = _validate_marker_uris(text, _KAHEA_MARKER)
+    if total == 0:
+        return 1.0, []  # no kahea markers = not applicable
+    return valid / total, bad
+
+
 def check_kahea_resolution(targets: List[str], loci_dir: Path) -> float:
     """Check if kahea targets resolve to existing files."""
     if not targets:
@@ -147,7 +199,7 @@ def check_kahea_resolution(targets: List[str], loci_dir: Path) -> float:
     return resolved / len(targets)
 
 # --- Main verification ---
-def verify_loci(loci_path: str, registry_path: str) -> Dict[str, Any]:
+def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dict[str, str]]:
     # --- Detect-alignment compliance check ---
     # Call detect_alignment.py as a subprocess and parse result
     detect_alignment_path = Path(__file__).parent.parent / 'detect-alignment' / 'detect_alignment.py'
@@ -232,6 +284,18 @@ def verify_loci(loci_path: str, registry_path: str) -> Dict[str, Any]:
     results['eprime'] = check_eprime(text)
     results['kahea_resolution'] = check_kahea_resolution(kahea_targets, loci.parent)
     results['registry'] = check_registry(loci, registry)
+    ahu_score, ahu_bad = check_ahu_syntax(text)
+    results['ahu_syntax'] = ahu_score
+    results_detail['ahu_syntax'] = (
+        '[PASS] All ahu markers have canonical ha.ka.ba URIs' if ahu_score == 1.0
+        else f'[FAIL] {len(ahu_bad)} ahu marker(s) with malformed URI: {ahu_bad}'
+    )
+    kahea_score, kahea_bad = check_kahea_syntax(text)
+    results['kahea_syntax'] = kahea_score
+    results_detail['kahea_syntax'] = (
+        '[PASS] All kahea markers have canonical ha.ka.ba URIs' if kahea_score == 1.0
+        else f'[FAIL] {len(kahea_bad)} kahea marker(s) with malformed URI: {kahea_bad}'
+    )
     # Run new checks
     results['example'] = check_actionable_examples(sections, text)
     results['meta_reflection'] = check_meta_reflection(sections, text)
@@ -288,10 +352,11 @@ def verify_loci(loci_path: str, registry_path: str) -> Dict[str, Any]:
         results_detail['fast_path'] = '[WARN] Fast-path/short-circuit section found, but no explicit criteria/condition/trigger/bypass/skip/immediate logic detected'
     else:
         results_detail['fast_path'] = '[PASS] Fast-path/short-circuit pattern and logic found'
-    return results
+    return results, results_detail
 
 # --- Operator options ---
-def operator_report(results: Dict[str, float], threshold: float = 0.95) -> None:
+def operator_report(results: Dict[str, float], threshold: float = 0.95, detail: dict = None) -> None:
+    results_detail = detail or {}
     if 'detect_alignment' in results:
         status = 'PASS' if results['detect_alignment'] >= threshold else 'FAIL'
         print(f"detect_alignment      : {results['detect_alignment']:.2f} [{status}]")
@@ -318,11 +383,19 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95) -> None:
                 print("    * Continue talk story and decide what to canonicalize")
             elif k == 'nested_ooda':
                 print("- Document nested OODA-A loops, parent/child references, and entry/exit conditions if present.")
+            elif k == 'ahu_syntax':
+                print(f"- Fix ahu marker URIs: {results_detail.get('ahu_syntax', '')}")
+                print("  ahu form: <!-- ahu lares:///ha.ka.ba/path/?confidence=X#section-name -->")
+                print("  Note: ahu is a bookmark — fragment is a plain section name, NOT chronometer form.")
+            elif k == 'kahea_syntax':
+                print(f"- Fix kahea marker URIs: {results_detail.get('kahea_syntax', '')}")
+                print("  kahea form: <!-- kahea lares:///ha.ka.ba/path/ -->  (whole locus)")
+                print("  or:         <!-- kahea lares:///ha.ka.ba/path/#section-name -->  (section pull)")
 
 def batch_verify_loci(root_dir, registry_path, threshold=0.95):
     batch_results = []
     for loci_path in Path(root_dir).rglob('LOCI.md'):
-        res = verify_loci(str(loci_path), registry_path)
+        res, _ = verify_loci(str(loci_path), registry_path)
         batch_results.append({'file': str(loci_path), 'results': res})
     return batch_results
 
@@ -344,6 +417,6 @@ if __name__ == '__main__':
         print(json.dumps(batch_results, indent=2))
         sys.exit(0)
     else:
-        results = verify_loci(args.loci, args.registry)
-        operator_report(results, args.threshold)
+        results, detail = verify_loci(args.loci, args.registry)
+        operator_report(results, args.threshold, detail=detail)
 # → ?

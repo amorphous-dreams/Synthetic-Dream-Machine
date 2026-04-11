@@ -11,35 +11,47 @@ import sys
 import json
 from pathlib import Path
 
-# Operator stream URI emission surfaces:
-#   Markdown/HTML ahu markers:  <!-- ahu lares:///... -->
-#   Code ahu markers:           # ahu lares:///...   (Python/sh)
-#                               // ahu lares:///...  (JS/TS)
-#   Bare pointers in Markdown prose (not in backtick/code-fence spans)
-#   Bare pointers in comment lines of code files (not in string literals)
-# Both surfaces require stances= query param AND a chronometer fragment.
-AHU_MD_PATTERN     = re.compile(r'<!--\s*ahu\s+(lares:///[^\s>]+)\s*-->')
-AHU_HASH_PATTERN   = re.compile(r'^#\s+ahu\s+(lares:///\S+)')    # Python/sh comment
-AHU_SLASH_PATTERN  = re.compile(r'^//\s+ahu\s+(lares:///\S+)')   # JS/TS comment
-# Valid ha.ka.ba URI segment — must start with word chars (excludes regex/template fragments)
+# --- Marker grammar ---
+# Four kahua markers, each with distinct syntax rules:
+#
+#   locus   <!-- ∞ → lares:///ha.ka.ba[/path][?params] -->   opens a content span (file-level)
+#   ahu     <!-- ahu lares:///ha.ka.ba[/path][?params][#section] -->   bookmark/waypoint
+#   kahea   <!-- kahea lares:///ha.ka.ba[/path][?params][#section] --> transclusion pull
+#   lares   lares:///ha.ka.ba[/path][?params][#chrono]               bare daemon pointer
+#
+# Only bare lares:/// live pointers (daemon surface) require stances= + chronometer.
+# ahu and kahea markers require valid ha.ka.ba URI structure but NOT stances/chrono.
+
+# Canonical ha.ka.ba URI — three dot-separated word segments, optional subpath/query/fragment
+_HAKABA_URI = re.compile(
+    r'^lares:///[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-][^?#\s]*'
+    r'(?:\?[^#\s]*)?(?:#[a-zA-Z0-9_\-]+)?$'
+)
+AHU_MARKER_PATTERN   = re.compile(r'<!--\s*ahu\s+(lares:///[^\s>]+?)\s*-->')
+KAHEA_MARKER_PATTERN = re.compile(r'<!--\s*kahea\s+(lares:///[^\s>]+?)\s*-->')
+
+# Ahu skip pattern — ahu lines excluded from bare-pointer scanning
+AHU_SKIP_PATTERN   = re.compile(r'<!--\s*ahu\s+lares:///')
+
+# Bare pointer detection — valid ha.ka.ba structure required (excludes regex/template fragments)
 _VALID_URI = r'(lares:///[a-zA-Z0-9_][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_][^\s\'"<>`\])\}]*)'
-# Bare in Markdown: not inside backtick spans
+# Bare in Markdown: not inside backtick spans, not on ahu lines
 BARE_MD_PATTERN    = re.compile(r'(?<!`)' + _VALID_URI + r'(?!`)')
-# Bare in code: only on comment lines
+# Bare in code: only on comment lines (not string literals), not ahu lines
 BARE_HASH_PATTERN  = re.compile(r'^\s*#\s+' + _VALID_URI)
 BARE_SLASH_PATTERN = re.compile(r'^\s*//\s+' + _VALID_URI)
 CHRONOMETER_REGEX  = re.compile(r'^(O|Ø|D|A|Å)\d+(\.(O|Ø|D|A|Å)\d+){4}$')
 
-# Per-extension stream scanner config: (ahu_pattern, bare_pattern)
-_STREAM_PATTERNS: dict[str, tuple] = {
-    '.md':   (AHU_MD_PATTERN,    BARE_MD_PATTERN),
-    '.py':   (AHU_HASH_PATTERN,  BARE_HASH_PATTERN),
-    '.sh':   (AHU_HASH_PATTERN,  BARE_HASH_PATTERN),
-    '.js':   (AHU_SLASH_PATTERN, BARE_SLASH_PATTERN),
-    '.ts':   (AHU_SLASH_PATTERN, BARE_SLASH_PATTERN),
-    '.c':    (AHU_SLASH_PATTERN, BARE_SLASH_PATTERN),
-    '.cpp':  (AHU_SLASH_PATTERN, BARE_SLASH_PATTERN),
-    '.java': (AHU_SLASH_PATTERN, BARE_SLASH_PATTERN),
+# Per-extension bare-pointer pattern
+_BARE_PATTERNS: dict[str, re.Pattern] = {
+    '.md':   BARE_MD_PATTERN,
+    '.py':   BARE_HASH_PATTERN,
+    '.sh':   BARE_HASH_PATTERN,
+    '.js':   BARE_SLASH_PATTERN,
+    '.ts':   BARE_SLASH_PATTERN,
+    '.c':    BARE_SLASH_PATTERN,
+    '.cpp':  BARE_SLASH_PATTERN,
+    '.java': BARE_SLASH_PATTERN,
 }
 
 
@@ -56,29 +68,48 @@ def _uri_stream_issues(uri: str) -> list[str]:
     return issues
 
 
-def scan_stream_uris(lines: list[str], ext: str = '.md') -> list[dict]:
+def scan_marker_syntax(lines: list[str]) -> list[dict]:
     """
-    Scan file lines for operator-stream URI emission points (ahu markers and
-    bare lares:/// pointers) and return violations missing stances or chronometer.
-    Lines 1 and last are start/end wrappers — skipped.
-    Uses per-extension patterns so Python string literals are not matched.
+    Scan file body for ahu and kahea markers with malformed URIs.
+    Valid form requires a canonical ha.ka.ba path structure.
+    Fragment must be a plain section name (not chronometer — bookmarks use section anchors).
+    Returns list of violations with line, marker type, uri, and issues.
     """
-    ahu_pat, bare_pat = _STREAM_PATTERNS.get(ext, (AHU_MD_PATTERN, BARE_MD_PATTERN))
     violations = []
     body = lines[1:-1] if len(lines) > 2 else []
     for offset, line in enumerate(body, start=2):
         raw = line.rstrip('\n')
-        for m in ahu_pat.finditer(raw):
-            uri = m.group(1)
+        for pat, surface in ((AHU_MARKER_PATTERN, 'ahu'), (KAHEA_MARKER_PATTERN, 'kahea')):
+            for m in pat.finditer(raw):
+                uri = m.group(1)
+                issues = []
+                if not _HAKABA_URI.match(uri):
+                    issues.append('URI does not match canonical ha.ka.ba form')
+                if issues:
+                    violations.append({
+                        'line': offset, 'surface': surface,
+                        'uri': uri, 'issues': issues,
+                    })
+    return violations
+
+
+def scan_stream_uris(lines: list[str], ext: str = '.md') -> list[dict]:
+    """
+    Scan file body for bare lares:/// operator-stream pointers missing stances= or chronometer.
+    ahu markers are bookmarks — excluded. Lines 1 and last (wrappers) are skipped.
+    """
+    bare_pat = _BARE_PATTERNS.get(ext, BARE_MD_PATTERN)
+    violations = []
+    body = lines[1:-1] if len(lines) > 2 else []
+    for offset, line in enumerate(body, start=2):
+        raw = line.rstrip('\n')
+        if AHU_SKIP_PATTERN.search(raw):
+            continue
+        for m in bare_pat.finditer(raw):
+            uri = m.group(1).rstrip('.,;)')
             issues = _uri_stream_issues(uri)
             if issues:
-                violations.append({'line': offset, 'surface': 'ahu', 'uri': uri, 'issues': issues})
-        if not ahu_pat.search(raw):
-            for m in bare_pat.finditer(raw):
-                uri = m.group(1).rstrip('.,;)')
-                issues = _uri_stream_issues(uri)
-                if issues:
-                    violations.append({'line': offset, 'surface': 'bare', 'uri': uri, 'issues': issues})
+                violations.append({'line': offset, 'surface': 'bare', 'uri': uri, 'issues': issues})
     return violations
 
 
@@ -166,7 +197,7 @@ def fix_file(file_path: Path, lines: list[str], ext: str) -> bool:
     return True
 
 
-def scan_directory(target_dir, check_stream=False):
+def scan_directory(target_dir, check_stream=False, check_markers=False):
     failures = []
     SKIP_DIRS = {'__pycache__', '.git', 'node_modules'}
 
@@ -205,17 +236,20 @@ def scan_directory(target_dir, check_stream=False):
                 'lines': lines,
             })
         if check_stream:
-            violations = scan_stream_uris(lines, ext)
-            for v in violations:
+            for v in scan_stream_uris(lines, ext):
                 failures.append({
-                    'path': str(file_path),
-                    'type': ext,
+                    'path': str(file_path), 'type': ext,
                     'issue': 'STREAM_FIELDS',
-                    'line': v['line'],
-                    'surface': v['surface'],
-                    'uri': v['uri'],
-                    'issues': v['issues'],
-                    'lines': None,
+                    'line': v['line'], 'surface': v['surface'],
+                    'uri': v['uri'], 'issues': v['issues'], 'lines': None,
+                })
+        if check_markers:
+            for v in scan_marker_syntax(lines):
+                failures.append({
+                    'path': str(file_path), 'type': ext,
+                    'issue': 'MARKER_SYNTAX',
+                    'line': v['line'], 'surface': v['surface'],
+                    'uri': v['uri'], 'issues': v['issues'], 'lines': None,
                 })
     return failures
 
@@ -238,11 +272,11 @@ def prompt_operator(failures, as_json=False, do_fix=False):
                 'message': f"[DIR] MISSING LOCI.md file: {fail['path']}",
             }
             result['failures'].append(entry)
-        elif fail['issue'] == 'STREAM_FIELDS':
+        elif fail['issue'] in ('STREAM_FIELDS', 'MARKER_SYNTAX'):
             entry = {
                 'path': fail['path'],
                 'type': fail['type'],
-                'issue': 'STREAM_FIELDS',
+                'issue': fail['issue'],
                 'line': fail['line'],
                 'surface': fail['surface'],
                 'uri': fail['uri'],
@@ -307,10 +341,12 @@ def main():
     parser.add_argument('--report', type=str, default=None, help='Write full JSON batch report to file')
     parser.add_argument('--fix',    action='store_true', help='Auto-insert missing wrappers in-place')
     parser.add_argument('--stream', action='store_true',
-                        help='Also check ahu markers and bare lares:/// URIs for required stances= and chronometer fragment')
+                        help='Check bare lares:/// live pointers for required stances= and chronometer fragment')
+    parser.add_argument('--markers', action='store_true',
+                        help='Check ahu and kahea marker URIs for canonical ha.ka.ba structure')
     args = parser.parse_args()
 
-    failures = scan_directory(args.target_dir, check_stream=args.stream)
+    failures = scan_directory(args.target_dir, check_stream=args.stream, check_markers=args.markers)
     if failures:
         result = prompt_operator(failures, as_json=args.json, do_fix=args.fix)
         if args.report:
