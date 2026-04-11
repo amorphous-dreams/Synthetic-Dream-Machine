@@ -214,15 +214,27 @@ def check_uri_wrappers(file_path: Path) -> dict:
     uri       = extract_uri_from_wrapper(lines[0].strip()) if start_ok else None
     uri_valid = True
     uri_error = None
+    prompt = None
 
     if uri:
-        parse_uri = _load_parse_uri()
-        if parse_uri:
-            ok, msg = parse_uri.validate_lares_uri(f'lares:///{uri}')
-            if not ok:
-                uri_valid = False
-                uri_error = msg
-                start_ok  = False
+        # Check for template/placeholder URI
+        if _is_template_uri(f'lares:///{uri}'):
+            uri_valid = False
+            uri_error = f"Template or placeholder URI detected: lares:///{uri}"
+            prompt = (
+                f"This file uses a template or placeholder URI in its header (lares:///{uri}). "
+                f"Please synthesize a valid locus URI for this file based on its path and context, "
+                f"and update the header accordingly."
+            )
+            start_ok = False
+        else:
+            parse_uri = _load_parse_uri()
+            if parse_uri:
+                ok, msg = parse_uri.validate_lares_uri(f'lares:///{uri}')
+                if not ok:
+                    uri_valid = False
+                    uri_error = msg
+                    start_ok  = False
 
     fix: dict = {}
     if not start_ok:
@@ -239,6 +251,7 @@ def check_uri_wrappers(file_path: Path) -> dict:
         'uri': f'lares:///{uri}' if uri else None,
         'uri_valid': uri_valid,
         'uri_error': uri_error,
+        'prompt': prompt,
         'suggested_fix': fix,
         'lines': lines,
     }

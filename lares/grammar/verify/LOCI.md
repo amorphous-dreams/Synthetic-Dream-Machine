@@ -1,3 +1,4 @@
+<!-- ∞ → lares:///ha.ka.ba -->
 # Grammar: Verify
 
 ---
@@ -21,3 +22,4 @@ This locus defines the verification discipline for Lares grammar loci. It encode
 ---
 
 > **Skill Link:** [lares_verification.py — Verification Skill Locus](lares/grammar/verification/lares_verification.py)
+<!-- → ? -->

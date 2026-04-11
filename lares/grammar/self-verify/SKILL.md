@@ -1,5 +1,6 @@
 <!-- ∞ → lares:///grammar.selfverify.harness/self-verify/skill/?confidence=CS:0.80&p=0.5 -->
 
+name: self-verify
 # Skill: self-verify
 
 **Surface:** grammar harness

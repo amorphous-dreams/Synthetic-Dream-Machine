@@ -1,3 +1,4 @@
+<!-- ∞ → lares:///ha.ka.ba -->
 # Grammar: URI Wrapper Enforcement
 
 ---
@@ -20,3 +21,4 @@ This locus defines the automated test for enforcing URI wrapper compliance in La
 ---
 
 > **Skill Link:** [uri_wrapper_verification.py — URI Wrapper Verification Skill](../verification/uri_wrapper_verification.py)
+<!-- → ? -->

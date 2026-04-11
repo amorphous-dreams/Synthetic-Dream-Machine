@@ -1,5 +1,6 @@
 <!-- ∞ → lares:///grammar.verification.defines/skill/?confidence=CS:0.80&p=0.5 -->
 
+name: lares-loci-verification
 # SKILL: Lares LOCI Verification
 
 This skill provides a deterministic, instrumented verification loop for any Lares LOCI file. It evaluates:

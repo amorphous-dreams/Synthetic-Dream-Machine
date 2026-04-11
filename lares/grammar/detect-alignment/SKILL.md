@@ -1,5 +1,6 @@
 <!-- ∞ → lares:///grammar.detectalignment.defines/skill/?confidence=CS:0.80&p=0.5 -->
 
+name: detect-alignment
 ## Files
 - `detect_alignment.py`: Main compliance checker for all supported file types
 - `uri_wrappers.py`: Legacy Markdown-only compliance checker (retained for reference)

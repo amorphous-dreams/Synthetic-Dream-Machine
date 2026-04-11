@@ -254,3 +254,4 @@ This section makes the transclusion locus fully operational through the OODA-A l
 | **Assess**  | Verify all kahea targets resolve, no copy drift occurs, and E-Prime discipline holds. Evaluate outcomes, not static states. |
 
 ---
+<!-- → ? -->
