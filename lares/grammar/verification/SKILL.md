@@ -1,3 +1,5 @@
+<!-- ∞ → lares:///grammar.verification.defines/skill/?confidence=CS:0.80&p=0.5 -->
+
 # SKILL: Lares LOCI Verification
 
 This skill provides a deterministic, instrumented verification loop for any Lares LOCI file. It evaluates:
@@ -36,3 +38,5 @@ python lares/grammar/verification/lares_verification.py lares/grammar/transclusi
 
 **Author:** Lares Agent / Operator
 **Location:** lares/grammar/verification/SKILL.md
+
+<!-- → ? -->

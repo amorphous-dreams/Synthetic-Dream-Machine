@@ -1,3 +1,4 @@
+# ∞ → lares:///grammar.verification.defines/lares_verification/
 """
 lares_verification.py
 
@@ -345,3 +346,4 @@ if __name__ == '__main__':
     else:
         results = verify_loci(args.loci, args.registry)
         operator_report(results, args.threshold)
+# → ?

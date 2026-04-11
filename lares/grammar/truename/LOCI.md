@@ -1,8 +1,7 @@
-
+<!-- ∞ → lares:///grammar.truename.holds/truename/?confidence=CS:0.80&p=0.5 -->
 <!-- Canonical registry: see LOCI.registry.toml for True Name registry data -->
 <!-- TOML registry: lares/grammar/truename/LOCI.registry.toml -->
 <!-- lares metadata wired: lares://grammar/truename/LOCI -->
-<!-- ∞ → lares:///grammar.truename.holds/truename/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: True Name Registry
 

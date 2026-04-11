@@ -1,3 +1,4 @@
+# ∞ → lares:///grammar.parse-uri.defines/parse_uri/
 """
 parse_uri.py
 
@@ -25,7 +26,7 @@ LARES_URI_REGEX = re.compile(r'''
 ([a-zA-Z0-9_\-]+)\.([a-zA-Z0-9_\-]+)\.([a-zA-Z0-9_\-]+)   # ha.ka.ba path
 (?:/[^?#]*)?                                                  # optional subpath
 (?:\?([^#]+))?                                               # query (optional)
-(?:#(.+))?                                                    # fragment (optional)
+(?:\#(.+))?                                                   # fragment (optional)
 $
 ''', re.VERBOSE)
 
@@ -50,7 +51,7 @@ def validate_lares_uri(uri):
     m = LARES_URI_REGEX.match(uri)
     if not m:
         return False, 'URI does not match canonical lares: syntax.'
-    authority, host, ha, ka, ba, subpath, query, fragment = m.groups()
+    authority, host, ha, ka, ba, query, fragment = m.groups()
     # Path must have three slots
     if not (ha and ka and ba):
         return False, 'Path must have three HA.KA.BA slots.'
@@ -59,9 +60,7 @@ def validate_lares_uri(uri):
     if params:
         if set(params.keys()) - {'stances', 'confidence', 'p'}:
             return False, f'Unknown query parameters: {set(params.keys()) - {"stances", "confidence", "p"}}'
-        if 'stances' not in params:
-            return False, 'Missing stances parameter.'
-        if not STANCE_REGEX.match(f'stances={params["stances"]}'):
+        if 'stances' in params and not STANCE_REGEX.match(f'stances={params["stances"]}'):
             return False, 'Invalid stances encoding.'
         if 'confidence' in params and not CONFIDENCE_REGEX.match(f'confidence={params["confidence"]}'):
             return False, 'Invalid confidence encoding.'
@@ -72,6 +71,28 @@ def validate_lares_uri(uri):
         if not CHRONOMETER_REGEX.match(fragment):
             return False, 'Fragment must be five dot-separated phase sigils and counters.'
     return True, 'PASS'
+
+
+def validate_stream_uri(uri):
+    """
+    Validate a URI for use on the operator stream surface.
+    Requires all base canonical rules PLUS stances= query param AND a chronometer fragment.
+    """
+    ok, msg = validate_lares_uri(uri)
+    if not ok:
+        return False, msg
+    m = LARES_URI_REGEX.match(uri)
+    assert m is not None  # guaranteed by validate_lares_uri passing
+    _, _, _, _, _, query, fragment = m.groups()
+    params = parse_query(query)
+    if 'stances' not in params:
+        return False, 'Operator stream URI requires stances= query parameter.'
+    if not fragment:
+        return False, 'Operator stream URI requires a chronometer fragment (#O1.Ø2.D3.A4.Å5 form).'
+    if not CHRONOMETER_REGEX.match(fragment):
+        return False, 'Fragment must be five dot-separated phase sigils and counters.'
+    return True, 'PASS'
+
 
 def main():
     if len(sys.argv) < 2:
@@ -88,3 +109,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+# → ?
