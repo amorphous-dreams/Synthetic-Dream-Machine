@@ -9,29 +9,23 @@
 
 ### Loop Position
 receives:
-- phase loci
-- exchange spans
-- loop-back pressure
-- closure pressure
 changes:
-- disconnected pages into timed sequence
-- isolated phase definitions into a navigational instrument
-- static registry reading into loop-time reading
 hands forward:
-- read order
-- phase relation
-- handoff expectations
-- closure expectations
 should not:
-- collapse into five unrelated labels
-- treat Assess as optional residue
-- let a locus float without temporal placement
 
 ### Handoff
+
+This locus may serve as a parent loop for phase loci that themselves contain OODA-A sub-loops. Entry and exit conditions for nested loops must be explicit. Parent/child relationships are documented in the dependencies and phase-map. Entry occurs when a phase locus invokes its own OODA-A discipline; exit occurs when the nested loop hands control back to the parent via closure or explicit handoff.
+
 1. Where in the loop did this span happen?
-2. What entered the phase?
+
+OODA-A supports fast-path (short-circuit) transitions when a phase or operator identifies a condition that bypasses intermediate phases. Criteria for fast-path include:
+- Immediate operator override (trigger: operator)
+- Explicit bypass condition in phase logic (e.g., closure pressure, urgent handoff)
+- Loop-back triggers that skip to Assess or Observe
+These conditions must be documented in the phase locus or operator notes. Fast-path logic ensures the loop can adapt to urgent or exceptional circumstances without traversing all phases in sequence.
+
 3. What left the phase?
-4. Which phase should fire next?
 
 ## Orient
 
@@ -44,11 +38,13 @@ receives:
 changes:
 - raw material into candidate pattern
 - friction into named tension
-- ambiguity into explicit open questions
-hands forward:
-- a decision surface
-- competing readings
-- declared drift, mismatch, or surprise
+OODA-A supports fast-path (short-circuit) transitions when a phase or operator identifies a criteria, condition, or trigger that bypasses intermediate phases. Fast-path logic may be invoked by:
+- Immediate operator override (trigger: operator)
+- Explicit bypass condition in phase logic (e.g., closure pressure, urgent handoff)
+- Loop-back triggers that skip to Assess or Observe
+- Skip steps when immediate action is required
+
+These criteria and conditions must be documented in the phase locus or operator notes. Fast-path logic ensures the loop can adapt to urgent or exceptional circumstances without traversing all phases in sequence.
 should not:
 - gather a fresh corpus unless the loop genuinely needs more signal
 - lock scope
@@ -153,6 +149,7 @@ description: >
   The five-season loop cluster: Observe, Orient, Decide, Act, Assess.
   This locus gives the grammar its time structure and binds the five
   phase loci into one navigational instrument.
+  Suppports automated grammar checks.
 phase-map:
   observe: "#loop-position"
   orient: "#handoff"
@@ -162,7 +159,7 @@ phase-map:
 trigger: always — root loop discipline
 invariant: true
 dependencies: [observe, orient, decide, act, assess]
-confidence: S:0.65
+confidence: S:0.69
 grammar: true
 product_identity: true
 heritage: >

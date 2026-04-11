@@ -129,16 +129,138 @@ def check_kahea_resolution(targets: List[str], loci_dir: Path) -> float:
 
 # --- Main verification ---
 def verify_loci(loci_path: str, registry_path: str) -> Dict[str, Any]:
+        # --- Modular deterministic checks for AI-agent readiness ---
+        def check_actionable_examples(sections, text):
+            # Look for 'example', 'story', 'case', or 'scenario' in headings or content
+            patterns = [r'example', r'story', r'case', r'scenario']
+            for heading, content in sections.items():
+                if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
+                    return 1.0
+            # Fallback: full-text
+            if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+                return 1.0
+            return 0.0
+
+        def check_meta_reflection(sections, text):
+            patterns = [r'evolution', r'adapt', r'meta', r'reflect']
+            for heading, content in sections.items():
+                if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
+                    return 1.0
+            if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+                return 1.0
+            return 0.0
+
+        def check_ai_agent_guidance(sections, text):
+            patterns = [r'ai agent', r'agentic', r'automate', r'automated']
+            for heading, content in sections.items():
+                if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in patterns):
+                    return 1.0
+            if any(re.search(p, text, re.IGNORECASE) for p in patterns):
+                return 1.0
+            return 0.0
+
+        def check_tension_texture(sections, text):
+            tension_patterns = [r'tension', r'ambiguity', r'drift']
+            texture_patterns = [r'operator texture', r'feels like', r'story', r'example']
+            tension = any(re.search(p, text, re.IGNORECASE) for p in tension_patterns)
+            texture = any(re.search(p, text, re.IGNORECASE) for p in texture_patterns)
+            return 1.0 if tension and texture else 0.5 if tension or texture else 0.0
+
+        def check_handoff_integrity(sections):
+            # For each phase, check that handoff questions reference previous/next phase
+            phases = ['Observe', 'Orient', 'Decide', 'Act', 'Assess']
+            score = 0
+            for i, phase in enumerate(phases):
+                handoff_heading = None
+                for h in sections:
+                    if phase.lower() in h.lower() and 'handoff' in h.lower():
+                        handoff_heading = h
+                        break
+                if handoff_heading:
+                    content = sections[handoff_heading]
+                    prev_ok = i == 0 or phases[i-1].lower() in content.lower()
+                    next_ok = i == len(phases)-1 or phases[i+1].lower() in content.lower()
+                    if prev_ok and next_ok:
+                        score += 1
+            return score / len(phases)
+
+        def check_antipatterns(sections):
+            # For each phase, check for a 'should not' list
+            phases = ['Observe', 'Orient', 'Decide', 'Act', 'Assess']
+            found = 0
+            for phase in phases:
+                for h, c in sections.items():
+                    if phase.lower() in h.lower() and 'should not' in c.lower():
+                        found += 1
+                        break
+            return found / len(phases)
+
+        # Run new checks
+        results['example'] = check_actionable_examples(sections, text)
+        results['meta_reflection'] = check_meta_reflection(sections, text)
+        results['ai_agent'] = check_ai_agent_guidance(sections, text)
+        results['tension_texture'] = check_tension_texture(sections, text)
+        results['handoff_integrity'] = check_handoff_integrity(sections)
+        results['antipatterns'] = check_antipatterns(sections)
     loci = Path(loci_path)
     registry = Path(registry_path)
     sections = extract_sections(loci)
     text = loci.read_text(encoding='utf-8')
     kahea_targets = find_kahea_targets(loci)
     results = {}
+    results_detail = {}
     results['ooda_phases'] = check_ooda_sections(sections)
     results['eprime'] = check_eprime(text)
     results['kahea_resolution'] = check_kahea_resolution(kahea_targets, loci.parent)
     results['registry'] = check_registry(loci, registry)
+    # --- Sub-loop pattern: Nested OODA-A Loops ---
+    # Look for explicit reference to parent/child OODA-A loops and entry/exit conditions
+    nested_score = 0.0
+    nested_refs = re.findall(r'(nested OODA-A|parent loop|child loop|entry condition|exit condition)', text, re.I)
+    if nested_refs:
+        nested_score = 1.0
+    results['nested_ooda'] = nested_score
+    results_detail['nested_ooda'] = f"{'[PASS]' if nested_score == 1.0 else '[FAIL]'} Nested OODA-A loop pattern"
+    # 2. Fast-path/short-circuit pattern
+    # --- Fast-path/short-circuit pattern (Best Practices) ---
+    # Section-aware scan with full-text fallback, fuzzy matching, multiple pattern variants, precise feedback
+    fast_path_score = 0.0
+    fast_path_found = False
+    fast_path_section = None
+    # Accept multiple pattern variants
+    fast_path_patterns = [r'fast[- ]?path', r'short[- ]?circuit', r'shortcut', r'bypass']
+    logic_patterns = [r'criteria', r'condition', r'trigger', r'bypass', r'skip', r'immediate']
+    # Section-aware scan
+    for heading, content in sections.items():
+        if any(re.search(p, heading, re.IGNORECASE) or re.search(p, content, re.IGNORECASE) for p in fast_path_patterns):
+            fast_path_found = True
+            fast_path_section = content
+            break
+    # Fallback: full-text scan if not found in sections
+    if not fast_path_found:
+        for p in fast_path_patterns:
+            if re.search(p, text, re.IGNORECASE):
+                fast_path_found = True
+                fast_path_section = text
+                break
+    # Fuzzy logic: look for any logic pattern
+    logic_found = False
+    if fast_path_found:
+        for lp in logic_patterns:
+            if re.search(lp, fast_path_section, re.IGNORECASE):
+                logic_found = True
+                break
+        if logic_found:
+            fast_path_score = 1.0
+        else:
+            fast_path_score = 0.5
+    results['fast_path'] = fast_path_score
+    if not fast_path_found:
+        results_detail['fast_path'] = '[FAIL] Fast-path/short-circuit pattern not found (checked section headings, content, and full text)'
+    elif not logic_found:
+        results_detail['fast_path'] = '[WARN] Fast-path/short-circuit section found, but no explicit criteria/condition/trigger/bypass/skip/immediate logic detected'
+    else:
+        results_detail['fast_path'] = '[PASS] Fast-path/short-circuit pattern and logic found'
     return results
 
 # --- Operator options ---
@@ -158,6 +280,8 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95) -> None:
                 print("- Resolve or remove broken kahea summons.")
             elif k == 'registry':
                 print("- Register or assert the true name for this LOCI in grammar/LOCI.md (true-name registry).")
+            elif k == 'nested_ooda':
+                print("- Document nested OODA-A loops, parent/child references, and entry/exit conditions if present.")
 
 if __name__ == '__main__':
     import argparse
