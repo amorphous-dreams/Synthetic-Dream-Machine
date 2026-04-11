@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.parse-uri.defines/parse_uri/
+# ∞ → lares:///grammar.parseuri.defines/parse_uri/
 """
 parse_uri.py
 
@@ -19,14 +19,25 @@ import re
 import sys
 
 # Canonical regex for lares: URI (record form, authority optional)
+#
+# ha.ka.ba SINGLE-WORD constraint: each of the three path segments must be one
+# unbroken alphanumeric word — no hyphens, no underscores.
+# Rationale: ha, ka, ba carry distinct memetic roles (territory, kind, stance).
+# A hyphenated segment like "parse-uri" is two words collapsed — that obscures
+# which word holds the memetic weight.
+#
+# TODO(future-me): enforce memetic associations between segments — e.g., verify
+# that the ka segment is a recognised kind-word from the grammar registry, that
+# ha maps to a known territory, and that ba encodes a valid stance relationship.
+# This requires a live registry lookup and is intentionally deferred.
 LARES_URI_REGEX = re.compile(r'''
 ^lares://
-(?:([a-zA-Z0-9_\-]+:[a-zA-Z0-9_\-]+)@([a-zA-Z0-9_\-]+))? # authority (optional)
+(?:([a-zA-Z0-9]+:[a-zA-Z0-9]+)@([a-zA-Z0-9]+))?  # authority (optional)
 /
-([a-zA-Z0-9_\-]+)\.([a-zA-Z0-9_\-]+)\.([a-zA-Z0-9_\-]+)   # ha.ka.ba path
-(?:/[^?#]*)?                                                  # optional subpath
-(?:\?([^#]+))?                                               # query (optional)
-(?:\#(.+))?                                                   # fragment (optional)
+([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)    # ha.ka.ba — single words only
+(?:/[^?#]*)?                                         # optional subpath
+(?:\?([^#]+))?                                       # query (optional)
+(?:\#(.+))?                                          # fragment (optional)
 $
 ''', re.VERBOSE)
 

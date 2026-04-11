@@ -8,7 +8,6 @@ Outputs a 0.0-1.0 score for each instrument and actionable operator options on f
 """
 import re
 import os
-import yaml
 import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
@@ -20,7 +19,12 @@ def load_yaml_frontmatter(md_path: Path) -> Dict[str, Any]:
         content = f.read()
     match = re.match(r"---\n(.*?)---\n", content, re.DOTALL)
     if match:
-        return yaml.safe_load(match.group(1))
+        result: Dict[str, Any] = {}
+        for line in match.group(1).splitlines():
+            kv = re.match(r'^([a-zA-Z_][a-zA-Z0-9_]*):\s*(.*)', line)
+            if kv:
+                result[kv.group(1)] = kv.group(2).strip()
+        return result
     return {}
 
 def extract_sections(md_path: Path) -> Dict[str, str]:
@@ -204,7 +208,8 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
     # Call detect_alignment.py as a subprocess and parse result
     detect_alignment_path = Path(__file__).parent.parent / 'detect-alignment' / 'detect_alignment.py'
     try:
-        result = subprocess.run(['python3', str(detect_alignment_path), str(loci_path.parent)], capture_output=True, text=True)
+        loci_parent = str(Path(loci_path).parent)
+        result = subprocess.run(['python3', str(detect_alignment_path), loci_parent], capture_output=True, text=True)
         if '[PASS]' in result.stdout:
             detect_alignment_score = 1.0
         else:
@@ -336,7 +341,7 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
                 break
     # Fuzzy logic: look for any logic pattern
     logic_found = False
-    if fast_path_found:
+    if fast_path_found and isinstance(fast_path_section, str):
         for lp in logic_patterns:
             if re.search(lp, fast_path_section, re.IGNORECASE):
                 logic_found = True
@@ -355,8 +360,8 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
     return results, results_detail
 
 # --- Operator options ---
-def operator_report(results: Dict[str, float], threshold: float = 0.95, detail: dict = None) -> None:
-    results_detail = detail or {}
+def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=None) -> None:
+    results_detail = detail if isinstance(detail, dict) else {}
     if 'detect_alignment' in results:
         status = 'PASS' if results['detect_alignment'] >= threshold else 'FAIL'
         print(f"detect_alignment      : {results['detect_alignment']:.2f} [{status}]")
@@ -402,6 +407,7 @@ def batch_verify_loci(root_dir, registry_path, threshold=0.95):
 if __name__ == '__main__':
     import argparse
     import json
+    import sys
     parser = argparse.ArgumentParser(description='Verify a Lares LOCI file or directory for operational compliance. The registry is the true-name registry (grammar/LOCI.md).')
     parser.add_argument('loci', help='Path to LOCI.md file or directory')
     parser.add_argument('--registry', default='../../grammar/LOCI.md', help='Path to grammar registry')

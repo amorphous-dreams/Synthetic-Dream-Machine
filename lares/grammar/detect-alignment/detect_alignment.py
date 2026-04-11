@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.detect-alignment.defines/detect_alignment/
+# ∞ → lares:///grammar.detectalignment.defines/detect_alignment/
 """
 detect_alignment.py
 
@@ -22,9 +22,13 @@ from pathlib import Path
 # Only bare lares:/// live pointers (daemon surface) require stances= + chronometer.
 # ahu and kahea markers require valid ha.ka.ba URI structure but NOT stances/chrono.
 
-# Canonical ha.ka.ba URI — three dot-separated word segments, optional subpath/query/fragment
+# Canonical ha.ka.ba URI — three dot-separated SINGLE WORDS, optional subpath/query/fragment.
+# Each segment must be one unbroken alphanumeric word (no hyphens, no underscores).
+# "grammar.parse.defines" is valid; "grammar.parse-uri.defines" is not.
+# TODO(future-me): enforce memetic associations — ha=territory, ka=kind, ba=stance —
+# via a live registry lookup. Deferred until the grammar registry is queryable.
 _HAKABA_URI = re.compile(
-    r'^lares:///[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-][^?#\s]*'
+    r'^lares:///[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9][^?#\s]*'
     r'(?:\?[^#\s]*)?(?:#[a-zA-Z0-9_\-]+)?$'
 )
 AHU_MARKER_PATTERN   = re.compile(r'<!--\s*ahu\s+(lares:///[^\s>]+?)\s*-->')
@@ -33,8 +37,38 @@ KAHEA_MARKER_PATTERN = re.compile(r'<!--\s*kahea\s+(lares:///[^\s>]+?)\s*-->')
 # Ahu skip pattern — ahu lines excluded from bare-pointer scanning
 AHU_SKIP_PATTERN   = re.compile(r'<!--\s*ahu\s+lares:///')
 
+# Known URI templates and placeholder patterns — skipped in marker syntax checks
+# These appear in documentation, grammar specs, and code comments as illustrative examples.
+KNOWN_URI_TEMPLATES: frozenset[str] = frozenset({
+    'lares:///ha.ka.ba',
+    'lares:///...',
+    'lares:///PLACEHOLDER',
+    'lares:///TERRITORY/',
+    'lares:///foo/bar',
+    'lares:///foo/bar/',
+})
+# Bracket-notation doc examples: lares:///ha.ka.ba[/path][?params][#section]
+_TEMPLATE_BRACKET_RE = re.compile(r'^lares:///[^\s]*\[')
+
+
+_NO_DOT_SEGMENT_RE = re.compile(r'^lares:///[a-zA-Z0-9_\-]+[/?#]')
+
+
+def _is_template_uri(uri: str) -> bool:
+    """Return True if the URI looks like a placeholder/template, not a real pointer."""
+    if uri.rstrip('/') in KNOWN_URI_TEMPLATES or uri in KNOWN_URI_TEMPLATES:
+        return True
+    if _TEMPLATE_BRACKET_RE.match(uri):
+        return True
+    if '...' in uri:
+        return True
+    # Single-segment path with no dots — doc shorthand like lares:///path/ or lares:///path/#section
+    if _NO_DOT_SEGMENT_RE.match(uri):
+        return True
+    return False
+
 # Bare pointer detection — valid ha.ka.ba structure required (excludes regex/template fragments)
-_VALID_URI = r'(lares:///[a-zA-Z0-9_][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_][^\s\'"<>`\])\}]*)'
+_VALID_URI = r'(lares:///[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][^\s\'"<>`\])\}]*)'
 # Bare in Markdown: not inside backtick spans, not on ahu lines
 BARE_MD_PATTERN    = re.compile(r'(?<!`)' + _VALID_URI + r'(?!`)')
 # Bare in code: only on comment lines (not string literals), not ahu lines
@@ -82,6 +116,8 @@ def scan_marker_syntax(lines: list[str]) -> list[dict]:
         for pat, surface in ((AHU_MARKER_PATTERN, 'ahu'), (KAHEA_MARKER_PATTERN, 'kahea')):
             for m in pat.finditer(raw):
                 uri = m.group(1)
+                if _is_template_uri(uri):
+                    continue
                 issues = []
                 if not _HAKABA_URI.match(uri):
                     issues.append('URI does not match canonical ha.ka.ba form')

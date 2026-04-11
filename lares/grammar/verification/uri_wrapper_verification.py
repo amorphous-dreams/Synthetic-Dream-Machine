@@ -24,11 +24,43 @@ END_PATTERN        = re.compile(r'^<!--\s*→\s*\?\s*-->')
 AHU_MARKER_PATTERN   = re.compile(r'<!--\s*ahu\s+(lares:///[^\s>]+?)\s*-->')
 KAHEA_MARKER_PATTERN = re.compile(r'<!--\s*kahea\s+(lares:///[^\s>]+?)\s*-->')
 AHU_SKIP_PATTERN     = re.compile(r'<!--\s*ahu\s+lares:///')   # excludes ahu lines from bare scan
+
+# Known URI templates and placeholder patterns — skipped in marker syntax checks
+KNOWN_URI_TEMPLATES: frozenset[str] = frozenset({
+    'lares:///ha.ka.ba',
+    'lares:///...',
+    'lares:///PLACEHOLDER',
+    'lares:///TERRITORY/',
+    'lares:///foo/bar',
+    'lares:///foo/bar/',
+})
+_TEMPLATE_BRACKET_RE = re.compile(r'^lares:///[^\s]*\[')
+
+
+_NO_DOT_SEGMENT_RE = re.compile(r'^lares:///[a-zA-Z0-9_\-]+[/?#]')
+
+
+def _is_template_uri(uri: str) -> bool:
+    """Return True if the URI looks like a placeholder/template, not a real pointer."""
+    if uri.rstrip('/') in KNOWN_URI_TEMPLATES or uri in KNOWN_URI_TEMPLATES:
+        return True
+    if _TEMPLATE_BRACKET_RE.match(uri):
+        return True
+    if '...' in uri:
+        return True
+    # Single-segment path with no dots — doc shorthand like lares:///path/ or lares:///path/#section
+    if _NO_DOT_SEGMENT_RE.match(uri):
+        return True
+    return False
+# ha.ka.ba SINGLE-WORD constraint: each segment must be one unbroken alphanumeric word.
+# No hyphens, no underscores within a segment — "parse" not "parse-uri".
+# TODO(future-me): extend to validate that each word carries its correct memetic role
+# (ha=territory, ka=kind, ba=stance) against the grammar registry. Requires live lookup.
 _HAKABA_URI          = re.compile(
-    r'^lares:///[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-][^?#\s]*'
+    r'^lares:///[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9][^?#\s]*'
     r'(?:\?[^#\s]*)?(?:#[a-zA-Z0-9_\-]+)?$'
 )
-_VALID_URI         = r'(lares:///[a-zA-Z0-9_][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_][^\s\'"<>`\])\}]*)'
+_VALID_URI         = r'(lares:///[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][^\s\'"<>`\])\}]*)'
 BARE_MD_PATTERN    = re.compile(r'(?<!`)' + _VALID_URI + r'(?!`)')
 BARE_HASH_PATTERN  = re.compile(r'^\s*#\s+' + _VALID_URI)
 BARE_SLASH_PATTERN = re.compile(r'^\s*//\s+' + _VALID_URI)
@@ -115,6 +147,8 @@ def scan_marker_syntax(lines: list[str]) -> list[dict]:
         for pat, surface in ((AHU_MARKER_PATTERN, 'ahu'), (KAHEA_MARKER_PATTERN, 'kahea')):
             for m in pat.finditer(raw):
                 uri = m.group(1)
+                if _is_template_uri(uri):
+                    continue
                 if not _HAKABA_URI.match(uri):
                     violations.append({
                         'line': offset, 'surface': surface, 'uri': uri,
@@ -240,12 +274,53 @@ def fix_file(file_path: Path, result: dict) -> bool:
     return True
 
 
+def check_directory(dir_path: Path, fix: bool = False, stream: bool = False,
+                    markers: bool = False) -> list[dict]:
+    """Scan all supported files in dir_path recursively. Returns list of per-file result dicts."""
+    SKIP_DIRS = {'__pycache__', '.git', 'node_modules'}
+    results = []
+    for file_path in sorted(dir_path.rglob('*')):
+        if not file_path.is_file():
+            continue
+        if any(p in SKIP_DIRS for p in file_path.parts):
+            continue
+        if file_path.suffix.lower() not in _WRAPPER_PATTERNS:
+            continue
+        result = check_uri_wrappers(file_path)
+        fixed = False
+        if fix and not result['pass']:
+            fixed = fix_file(file_path, result)
+            if fixed:
+                result = check_uri_wrappers(file_path)
+        output = {k: v for k, v in result.items() if k != 'lines'}
+        output['path'] = str(file_path)
+        if fixed:
+            output['fixed'] = True
+        if stream:
+            sv = scan_stream_uris(result['lines'], file_path.suffix.lower())
+            output['stream_violations'] = sv
+            output['stream_pass'] = len(sv) == 0
+        if markers:
+            mv = scan_marker_syntax(result['lines'])
+            output['marker_violations'] = mv
+            output['markers_pass'] = len(mv) == 0
+        output['overall_pass'] = (
+            result['pass']
+            and (not stream  or output.get('stream_pass',  True))
+            and (not markers or output.get('markers_pass', True))
+        )
+        results.append(output)
+    return results
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(
         description='Verify (and optionally fix) URI wrapper compliance in a Lares grammar file.'
     )
-    parser.add_argument('file', help='Path to the file to verify')
+    parser.add_argument('file', nargs='?', help='Path to the file to verify')
+    parser.add_argument('--dir', type=str, default=None,
+                        help='Scan all supported files in a directory recursively')
     parser.add_argument('--json', action='store_true', help='Output structured JSON result')
     parser.add_argument('--fix',    action='store_true', help='Auto-insert/correct missing wrappers in-place')
     parser.add_argument('--stream', action='store_true',
@@ -253,6 +328,35 @@ def main():
     parser.add_argument('--markers', action='store_true',
                         help='Check ahu and kahea marker URIs for canonical ha.ka.ba structure')
     args = parser.parse_args()
+
+    # --- Directory batch mode ---
+    if args.dir:
+        dir_path = Path(args.dir)
+        if not dir_path.is_dir():
+            print(json.dumps({'pass': False, 'error': f'Not a directory: {dir_path}'}) if args.json
+                  else f'Not a directory: {dir_path}')
+            sys.exit(1)
+        results = check_directory(dir_path, fix=args.fix, stream=args.stream, markers=args.markers)
+        failures = [r for r in results if not r['overall_pass']]
+        if args.json:
+            print(json.dumps(results, indent=2))
+        else:
+            for r in results:
+                status = '[PASS]' if r['overall_pass'] else '[FAIL]'
+                print(f'{status} {r["path"]}')
+                if not r['pass']:
+                    if not r['start_ok']:
+                        print(f'  Start: MISSING/INVALID  →  {r["suggested_fix"].get("start", "").rstrip()}')
+                    if not r['end_ok']:
+                        print(f'  End:   MISSING/INVALID  →  {r["suggested_fix"].get("end", "")}')
+                for v in r.get('stream_violations', []):
+                    print(f'  STREAM line {v["line"]} [{v["surface"]}] {v["uri"]} — {", ".join(v["issues"])}')
+                for v in r.get('marker_violations', []):
+                    print(f'  MARKER line {v["line"]} [{v["surface"]}] {v["uri"]} — {", ".join(v["issues"])}')
+        sys.exit(0 if not failures else 2)
+
+    if not args.file:
+        parser.error('either a file argument or --dir is required')
 
     file_path = Path(args.file)
     if not file_path.exists():

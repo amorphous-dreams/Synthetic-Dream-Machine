@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.detect-alignment.defines/uri_wrappers/
+# ∞ → lares:///grammar.detectalignment.defines/uri_wrappers/
 """
 uri_wrappers.py
 
