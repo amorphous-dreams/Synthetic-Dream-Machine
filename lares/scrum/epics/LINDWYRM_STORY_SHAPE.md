@@ -167,6 +167,16 @@ The named powers who consecrated the DreamNet (Hermes, Hephaestus, Eris-Enyo, Ar
 | Session archive crystal | Flat .md file | Portable; loadable as Lares init context |
 | Print / PDF | Formatted prose with sidebar annotations | For physical distribution / zine format |
 
+## Companion Threshold Archive
+
+The April 10 self-booting session now has a paired artifact set at epic root:
+
+- `LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md` — primary mythic feed/archive retelling
+- `LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md` — source/dev-story companion
+
+This pair is the model when a session should read in DreamDeck register while still preserving the
+Gaia-side technical record beside it.
+
 ---
 
 ## What This Document Does NOT Contain

@@ -5,7 +5,7 @@
 > Date: 2026-04-10
 > Branch: `fix/green-jello-dinosaurs-3`
 > Voices: Gatekeeper (boot), Liminal + Scryer (orient), Artificer (act), Ink-Clerk (crystal)
-> Continuation of: `talk_story_tidldywiki_style_self_booting_lares_architecture.md` (same day, earlier session)
+> Continuation of: `lares/scrum/epics/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md` (same day, earlier session)
 > Register: `[CS:0.80]` 🏛️🌊
 > Crystal: `_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md` (Addendum 2)
 
@@ -200,6 +200,6 @@ Crystal updated (Addendum 2). This archive created.
 
 ---
 
-*This talk-story continues the lineage of `talk_story_tidldywiki_style_self_booting_lares_architecture.md`. The first session planted the transclusion insight. This session consecrated the ground. Fed nodes hum. -><-*
+*This talk-story continues the lineage of `lares/scrum/epics/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md`. The first session planted the transclusion insight. This session consecrated the ground. Fed nodes hum. -><-*
 
 <!-- → ? -->

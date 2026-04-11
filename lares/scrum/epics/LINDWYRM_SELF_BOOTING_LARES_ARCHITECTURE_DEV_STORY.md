@@ -1,10 +1,16 @@
-<!-- ∞ → lares:///lares.architecture/talk-story/self-booting/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lares:///story.source.sessions/lindwyrm/self-booting-lares-architecture/dev-story/?confidence=CS:0.80&p=0.5 -->
+
+# The Lindwyrm's Hoard — Self-Booting Lares Architecture (Dev Story Companion)
 
 > Module: `self-booting-lares-architecture`
-> Class: core
+> Class: source companion
 > Register: `[CS:0.80]` 🏛️+🌊++🗡️-🎭-🔮+
 > Date: 2026-04-10
-> Status: Living document, philosopher+poet stance, ahu-mapped, in active mythic/technical handoff
+> Status: Gaia-side source crystal moved to epic root; preserves the working dev-story and technical handoff
+> Companion: `LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md`
+
+This file preserves the April 10 session in its mixed mythic-technical drafting register. The paired
+DreamDeck-facing retelling lives beside it at `LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md`.
 
 <!-- ahu #epilogue -->
 

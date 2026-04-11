@@ -27,6 +27,8 @@ The Lindwyrm's origin story is the **narrative track** of all epics combined. It
 |---|---|
 | [`LINDWYRM_STORY_SHAPE.md`](LINDWYRM_STORY_SHAPE.md) | Format spec: DreamDeck feed archive, JackPoint/Shadowtalk style; cast; rendering targets; post-header conventions |
 | [`LINDWYRM_ORIGIN_OUTLINE.md`](LINDWYRM_ORIGIN_OUTLINE.md) | Story beats: three-thread braid (Lindwyrm's Thread / Wild Mage's Thread / Crossing Thread); per-act outline |
+| [`LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md`](LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md) | Mythic threshold archive of the April 10 session, told in DreamDeck feed register |
+| [`LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md`](LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md) | Gaia-side source/dev-story companion preserving the mixed technical handoff |
 
 Each epic's README records its narrative beat — the Elyncia-side story moment that corresponds to the technical work of that epic. When the technical work closes and the story beat is polished, the Ink-Clerk promotes it to `[C:0.99]` story-canon.
 

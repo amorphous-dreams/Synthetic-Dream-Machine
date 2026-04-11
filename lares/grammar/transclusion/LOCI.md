@@ -219,7 +219,7 @@ needs work.
 - [observe/LOCI.md](../observe/LOCI.md)
 - [orient/LOCI.md](../orient/LOCI.md)
 - [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)
-- [../../../_todo/examples/talk_story_tidldywiki_style_self_booting_lares_architecture.md](../../../_todo/examples/talk_story_tidldywiki_style_self_booting_lares_architecture.md)
+- [../../scrum/epics/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md](../../scrum/epics/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md)
 - [../../../_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md](../../../_todo/core/HANDOFF_CRYSTAL_20260410_FISSION.md)
 
 ---

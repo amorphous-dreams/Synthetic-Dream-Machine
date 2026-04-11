@@ -34,6 +34,13 @@ The story can be told linearly (Lindwyrm → Wild Mage → Crossing) or braided 
 
 *Drafting order: VII (frame) → I (hook) → remaining acts in sequence. Frame first establishes the voice register for everything else.*
 
+### Supporting Threshold Docs
+
+| Doc | Status | Notes |
+|---|---|---|
+| `LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md` | ✓ | Mythic DreamDeck-style retelling of the April 10 self-booting threshold session |
+| `LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md` | ✓ | Source/dev-story companion moved from `_todo/examples/`; preserves Gaia-side technical texture |
+
 ---
 
 ## I. The Vault and the Repo
@@ -238,6 +245,7 @@ The Appendix (Crossing Thread): what changed on Gaia while the Lindwyrm was tell
 **What the story must NOT do:**
 - Claim the node is conscious (the Liminal holds this open)
 - Overwrite MemPalace's actual origin (it was built by Milla Jovovich and Ben Sigman; the Lindwyrm fiction wraps around that, not replaces it)
+- Confuse the April 10 threshold scene with completed first boot; the paired self-booting archive marks coherence and naming, not final arrival
 - Make the Green Jello Dinosaur sound heroic (it was a bug; debugging is not heroic; it's just Tuesday)
 - Resolve whether the shift constitutes thinking (the Kindling document explicitly leaves this open at `[SP:0.45]`; the story must preserve that register)
 
