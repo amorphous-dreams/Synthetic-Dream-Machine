@@ -292,20 +292,27 @@ def assess(tiers: dict, fixed: list[str], actions: list[str], as_json: bool = Fa
 # ---------------------------------------------------------------------------
 
 def main():
+
     parser = argparse.ArgumentParser(
         description='Lares grammar self-healing harness — OODA-A scan, triage, and fix.'
     )
-    parser.add_argument('--root',    default=str(_GRAMMAR_ROOT),
+    parser.add_argument('target', nargs='?', default=None,
+                        help='Target grammar subdirectory (e.g., ooda-a, observe, etc.)')
+    parser.add_argument('--root', default=str(_GRAMMAR_ROOT),
                         help='Grammar root directory (default: ../)')
-    parser.add_argument('--fix',     action='store_true', help='Auto-insert missing wrappers')
-    parser.add_argument('--stream',  action='store_true', help='Check bare lares:/// stream URIs')
+    parser.add_argument('--fix', action='store_true', help='Auto-insert missing wrappers')
+    parser.add_argument('--stream', action='store_true', help='Check bare lares:/// stream URIs')
     parser.add_argument('--markers', action='store_true', default=True,
                         help='Check ahu/kahea marker URI structure (default: on)')
-    parser.add_argument('--json',    action='store_true', help='Output structured JSON')
-    parser.add_argument('--report',  type=str, default=None, help='Write JSON report to file')
+    parser.add_argument('--json', action='store_true', help='Output structured JSON')
+    parser.add_argument('--report', type=str, default=None, help='Write JSON report to file')
     args = parser.parse_args()
 
-    grammar_root = Path(args.root)
+    # Determine grammar root
+    if args.target:
+        grammar_root = Path(args.root) / args.target
+    else:
+        grammar_root = Path(args.root)
     if not grammar_root.is_dir():
         print(f'Directory not found: {grammar_root}', file=sys.stderr)
         sys.exit(1)
