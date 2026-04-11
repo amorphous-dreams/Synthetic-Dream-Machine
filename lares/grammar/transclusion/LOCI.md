@@ -232,6 +232,25 @@ needs work.
 
 *Future loci in this tree will land here.*
 
----
 
 <!-- → ? -->
+
+---
+
+<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#ooda-eprime-operationalization -->
+
+## OODA-A & E-Prime Operationalization
+
+This section makes the transclusion locus fully operational through the OODA-A loop and E-Prime discipline.
+
+### OODA-A Phase Mapping (E-Prime Compliant)
+
+| Phase   | Procedure (E-Prime discipline applied) |
+|---------|----------------------------------------|
+| **Observe** | Detect canonical content spans, stable addresses, waypoints, and visible `lares:` URIs in the active context. Describe what appears, not what "is". |
+| **Orient**  | Relate detected elements to prior art and current context. Suggest possible transclusion targets and paths. Use verbs like "suggests," "matches," "pulls toward." |
+| **Decide**  | Commit to a specific transclusion action (e.g., summon, waypoint, closure). Express commitment as action, not identity. Annotate confidence and stance. |
+| **Act**     | Perform the transclusion: insert `kahea` markers, resolve URIs, update registry. Use operational verbs ("summon," "register," "close"). |
+| **Assess**  | Verify all kahea targets resolve, no copy drift occurs, and E-Prime discipline holds. Evaluate outcomes, not static states. |
+
+---

@@ -2,6 +2,150 @@
 
 # Grammar: OODA-A
 
+---
+# OODA-A Phase Details
+
+## Observe
+
+### Loop Position
+receives:
+- phase loci
+- exchange spans
+- loop-back pressure
+- closure pressure
+changes:
+- disconnected pages into timed sequence
+- isolated phase definitions into a navigational instrument
+- static registry reading into loop-time reading
+hands forward:
+- read order
+- phase relation
+- handoff expectations
+- closure expectations
+should not:
+- collapse into five unrelated labels
+- treat Assess as optional residue
+- let a locus float without temporal placement
+
+### Handoff
+1. Where in the loop did this span happen?
+2. What entered the phase?
+3. What left the phase?
+4. Which phase should fire next?
+
+## Orient
+
+### Loop Position
+receives:
+- raw findings
+- named gaps
+- conflicting signals
+- stance pressure from the current reading frame
+changes:
+- raw material into candidate pattern
+- friction into named tension
+- ambiguity into explicit open questions
+hands forward:
+- a decision surface
+- competing readings
+- declared drift, mismatch, or surprise
+should not:
+- gather a fresh corpus unless the loop genuinely needs more signal
+- lock scope
+- start building
+- call the work complete
+
+### Handoff
+1. Which tensions matter here?
+2. Which readings compete?
+3. What still lacks operator steering?
+4. What decision shape has emerged?
+
+## Decide
+
+### Loop Position
+receives:
+- oriented pattern and tension
+- operator steering
+- reversibility concerns
+- scope pressure
+changes:
+- open possibility into chosen heading
+- blurry effort into bounded scope
+- implicit permission into explicit authorization
+hands forward:
+- the action heading
+- scope bounds
+- exclusions
+- reversibility notes
+should not:
+- reopen broad sense-making without cause
+- start implementation before commitment lands
+- hide the cost of irreversible moves
+
+### Handoff
+1. What did the node choose?
+2. What sits inside scope?
+3. What remains outside scope?
+4. Did the operator need to confirm this move?
+5. How reversible does the move remain?
+
+## Act
+
+### Loop Position
+receives:
+- bounded scope
+- execution heading
+- operator permissions
+- known blockers and constraints
+changes:
+- intention into artifact
+- plan into edits, commands, or generated structure
+- open work into completed work
+hands forward:
+- the built artifact
+- deviations, if any
+- blocker notes
+- evidence for closure
+should not:
+- widen scope mid-build
+- smuggle in cleanup nobody asked for
+- silently rewrite the decision
+
+### Handoff
+1. What changed?
+2. Which commands or edits produced the change?
+3. Did the work stay inside scope?
+4. Which blockers or deviations appeared?
+
+## Assess
+
+### Loop Position
+receives:
+- artifacts
+- execution notes
+- deviations
+- unresolved residue
+changes:
+- finished work into judged outcome
+- loose residue into carry-forward or release
+- a completed cycle into closure or loop-back
+hands forward:
+- a closure statement
+- carry-forward state
+- release notes
+- the next Observe heading when the loop reopens
+should not:
+- quietly celebrate without evaluation
+- reopen settled decisions without cause
+- start new implementation inside the closure span
+
+### Handoff
+1. Did the artifact satisfy the decision?
+2. What residue remains live?
+3. What can drop away now?
+4. Does the next cycle need more data, a new decision, or nothing at all?
+
 ```yaml
 ---
 name: ooda-a
