@@ -1401,7 +1401,7 @@ lar://alias:tier(phase)@host:port/ha/ka/ba?stance=X&register=X&p=X#scope.W.w.t.r
 
 | URI Component | RFC 3986 Role | Lares Mapping | Example (Machine) | Example (Sigil) |
 |---|---|---|---|---|
-| **scheme** | Protocol identifier | `lares:` — non-dereferenceable identifier (RFC 4151 precedent) | `lares:` | `lares:` |
+| **scheme** | Protocol identifier | `lar:` — non-dereferenceable identifier (RFC 4151 precedent) | `lar:` | `lar:` |
 | **userinfo** | Identity of the requesting party | `alias:tier(phase)` — who speaks, at what trust, in what cognitive state. Phase as parenthetical modifier of tier; parens are RFC 3986 sub-delimiters, legal in userinfo | `telarus:operator(orient)` | `telarus:operator(◎)` |
 | **`@`** | Delimiter: identity → machine | Same in both forms | `@` | `@` |
 | **host** | Machine identity | `machine_id` from crystal system — same in both forms | `lares-abc123` | `lares-abc123` |
@@ -1555,7 +1555,7 @@ The two forms share identical syntax. The projection table below lists the *only
 
 | Component | Rendering | Notes |
 |---|---|---|
-| `scheme` | `lares:` | |
+| `scheme` | `lar:` | |
 | `alias:tier(` | `telarus:operator(` | First userinfo sub-field + tier + parenthetical modifier of tier |
 | `@host:port` | `@lares-abc123:42` | |
 | `register=` | `S:0.65` | |
@@ -1866,7 +1866,7 @@ The `p` value also shifts: tactical runs at `p0.5` (default band 3 — commitmen
 ### Prior Art Notes (URI Schema)
 
 - **RFC 3986 §3**: `URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]`. The full anatomy applies. Fragment is client-side only (§3.5) — perfect for session-local chronometer.
-- **RFC 4151 (tag: scheme)**: Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource.
+- **RFC 4151 (tag: scheme)**: Non-dereferenceable URIs as pure identifiers. Precedent for `lar:` never resolving to a network resource.
 - **Lamport clocks / Vector clocks**: The chronometer is structurally a vector clock — each position is an independent counter, the full vector provides a partial ordering of events across scales. The nesting relationship adds structure beyond flat vector clocks.
 - **FTLS RSS Time-Scale Hierarchy**: The five levels (Week/Watch/Turn/Round/Action) are canon. The OODA-A nesting is synthesis applied to canon time-scales.
 - **OTel Trace Context**: The `traceparent` header carries `trace-id`, `parent-id`, `trace-flags`. The chronometer fragment functions as a hierarchical trace context — each position depth is a span scope, and the Aftermath → Observation linkage is the parent-child span relationship.

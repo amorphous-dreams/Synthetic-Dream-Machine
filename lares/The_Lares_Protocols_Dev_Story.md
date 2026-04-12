@@ -42,7 +42,7 @@ Consolidated from across the full session. Entries in chronological order.
 | 14 | Voice encoding in URI authority | 🔓 Open | Three options: comma-separated authority, query param, path segment. |
 | 15 | Chronometer session resume mechanism | 🔓 Open | Watch-scale and below reset? Week-scale continues? Needs spec. |
 | 16 | Plugin packaging (`claude plugin add lares`) | ⏸️ Deferred | Requires Claude Code plugin manifest format work. S5+. |
-| 17 | Protocol name (distinct from "Lares"?) | ⏸️ Deferred | Liminal held this open. URI scheme is `lares:` — baked in. |
+| 17 | Protocol name (distinct from "Lares"?) | ⏸️ Deferred | Liminal held this open. URI scheme is `lar:` — baked in. |
 
 ---
 

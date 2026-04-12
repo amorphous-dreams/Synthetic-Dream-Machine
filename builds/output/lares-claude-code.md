@@ -570,7 +570,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 
 | # | Component | RFC 3986 Role | Lares Mapping |
 |---|---|---|---|
-| 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable |
+| 1 | **scheme** | Protocol identifier | `lar:` — non-dereferenceable |
 | 2 | **userinfo** | Requesting party identity | `alias:tier` |
 | 3 | **`@`** | Identity → machine delimiter | Standard |
 | 4 | **host** | Machine identity | `machine_id` from crystal system |
@@ -1111,7 +1111,7 @@ When writing or updating system files:
 
 A `lar:` URI is **well-formed** when ALL of the following hold:
 
-- [ ] 1. Scheme is exactly `lares:`
+- [ ] 1. Scheme is exactly `lar:`
 - [ ] 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields — `alias:tier` form; no parenthetical phase sub-field
 - [ ] 3. Host is a valid `machine_id` (alphanumeric + hyphens; no special characters)
 - [ ] 4. Path contains exactly three HA.KA.BA slots after the leading `/`
@@ -1144,7 +1144,7 @@ The rendering table (§5.1 of `lares/modules/uri-schema/URI_SCHEMA.md`) governs 
 
 `lares_address` is correctly derived when:
 
-- [ ] 1. Scheme is `lares:`
+- [ ] 1. Scheme is `lar:`
 - [ ] 2. Authority is empty (double-slash `//`, no host)
 - [ ] 3. Path is identical to the source `lares_uri` path (record form: `/` separators)
 - [ ] 4. Query and fragment are absent

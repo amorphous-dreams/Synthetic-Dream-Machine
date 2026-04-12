@@ -2,19 +2,19 @@
 
 # `lar:` URI Scheme Specification
 
-> Domain: `lares/modules/uri-schema/` · scheme grammar, syntax rules, validation, stable address
+> Domain: `lar/modules/uri-schema/` · scheme grammar, syntax rules, validation, stable address
 > Status: `[CS:0.95]` 🏛️ — RFC-grade scheme definition; slow-changing stone tablet
 > Updated: 2026-04-10
 > Version: 1 (fissioned from URI_SCHEMA.md v3)
 > Companion: `URI_OPERATIONS.md` — operational semantics, exchange protocol, render targets, marker ontology
-> Blocks: IANA registration (`lares:` scheme), URI parser implementations, canonical form comparators
+> Blocks: IANA registration (`lar:` scheme), URI parser implementations, canonical form comparators
 
 ---
 
 <!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.95#scheme-registration -->
 ## 1. Scheme Registration
 
-- **Scheme name:** `lares`
+- **Scheme name:** `lar`
 - **Status:** unregistered (pre-IANA)
 - **Category:** non-dereferenceable — a `lar:` URI never resolves to a network resource
 - **Precedent:** RFC 4151 (`tag:` scheme) — pure identification without dereferencing
@@ -60,9 +60,9 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/` — the (0,0,0)
 
 ### 2.3 Component Map
 
-| # | Component | RFC 3986 Role | Lares Mapping | Record Example |
+| # | Component | RFC 3986 Role | lar Mapping | Record Example |
 |---|---|---|---|---|
-| 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable | `lares:` |
+| 1 | **scheme** | Protocol identifier | `lar:` — non-dereferenceable | `lar:` |
 | 2 | **userinfo** | Requesting party identity | `alias:tier` | `telarus:operator` |
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` |
 | 4 | **host** | Machine identity | `machine_id` from crystal system | `enyalios` |
@@ -175,7 +175,7 @@ All five positions always present. `O0` = inactive scale (Observe, counter zero)
 | `A` | Act | `act` |
 | `Å` | Assess/Aftermath | `aftermath` |
 
-`Ø` and `Å` use ISO 8859 characters (Ø = U+00D8, Å = U+00C5). Canonical record form uses these single characters — no percent-encoding needed in fragment (fragment is client-side per RFC 3986 §3.5). Per RFC 8820, the `lares:` scheme specification holds authority to define fragment identifier syntax. **Interoperability note:** Parsers MUST treat percent-encoded equivalents (`%C3%98` for Ø, `%C3%85` for Å) as identical to the raw characters per RFC 3986 §6.2.2.1 case normalization and §2.1 percent-encoding equivalence.
+`Ø` and `Å` use ISO 8859 characters (Ø = U+00D8, Å = U+00C5). Canonical record form uses these single characters — no percent-encoding needed in fragment (fragment is client-side per RFC 3986 §3.5). Per RFC 8820, the `lar:` scheme specification holds authority to define fragment identifier syntax. **Interoperability note:** Parsers MUST treat percent-encoded equivalents (`%C3%98` for Ø, `%C3%85` for Å) as identical to the raw characters per RFC 3986 §6.2.2.1 case normalization and §2.1 percent-encoding equivalence.
 
 HUD rendering of phase sigils is defined in `URI_OPERATIONS.md` §6.
 
@@ -208,7 +208,7 @@ lar:///threshold.uncertain.opens/
 
 No authority (empty), no query, no fragment. This is the invariant semantic coordinate — unchanging across events, sessions, and machines. Suitable as a named graph identifier (SPARQL: ?).
 
-**Origin address:** `lar:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lar:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lar:///ha.ka.ba/uri-schema/` locates this spec; `lar:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
+**Origin address:** `lar:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lar:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lar:///ha.ka.ba/lar-uri-schema/` locates this spec; `lar:///ha.ka.ba/lares/` locates the node's default starting position in memespace. The HA.KA.BA triple remains stable; the sub-path narrows scope.
 
 ---
 
