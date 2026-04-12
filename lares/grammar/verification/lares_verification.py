@@ -12,6 +12,9 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
+import glob
+import sys
+
 # --- Utility functions ---
 def load_yaml_frontmatter(md_path: Path) -> Dict[str, Any]:
     """Extract YAML frontmatter from a markdown file."""
@@ -278,6 +281,61 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
                     break
         return found / len(phases)
 
+
+    # --- LARES URI DEDUPE TEST ---
+    def collect_lares_uris(root_dir: str) -> List[Tuple[str, str, int]]:
+        """
+        Collect all canonical lares:/// URIs in all files under root_dir.
+        Returns a list of (base_uri, file_path, line_number).
+        Strips query and fragment from each URI.
+        Ignores placeholder/template URIs and filewrapper-only URIs.
+        Also collects exchange-turn URIs (operator/node URIs in exchange protocol).
+        """
+        uri_pattern = re.compile(r'lares:///[a-zA-Z0-9_./\\-]+')
+        # Exchange-turn pattern: look for lines with 'operator URI' or 'node URI' or 'forward URI' or 'closing node URI'
+        exchange_patterns = [re.compile(r'operator URI', re.I), re.compile(r'node URI', re.I), re.compile(r'forward URI', re.I), re.compile(r'closing node URI', re.I)]
+        results = []
+        for file_path in glob.glob(f"{root_dir}/**", recursive=True):
+            if not os.path.isfile(file_path):
+                continue
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    lines = list(f)
+                    for i, line in enumerate(lines, 1):
+                        # Standard lares:/// URIs
+                        for m in uri_pattern.finditer(line):
+                            uri = m.group(0)
+                            base_uri = re.split(r'[?#]', uri)[0]
+                            if any(x in base_uri for x in ['PLACEHOLDER', '...', 'TERRITORY']):
+                                continue
+                            if base_uri.count('.') < 2:
+                                continue
+                            results.append((base_uri, file_path, i))
+                        # Exchange-turn URIs: if line matches exchange pattern, scan for lares:/// in this and next 2 lines
+                        if any(p.search(line) for p in exchange_patterns):
+                            for j in range(i-1, min(i+2, len(lines))):
+                                for m in uri_pattern.finditer(lines[j]):
+                                    uri = m.group(0)
+                                    base_uri = re.split(r'[?#]', uri)[0]
+                                    if any(x in base_uri for x in ['PLACEHOLDER', '...', 'TERRITORY']):
+                                        continue
+                                    if base_uri.count('.') < 2:
+                                        continue
+                                    results.append((base_uri, file_path, j+1))
+            except Exception:
+                continue
+        return results
+
+    def dedupe_lares_uris(uri_tuples: List[Tuple[str, str, int]]):
+        """
+        Returns (is_unique, {base_uri: [(file, line), ...]})
+        """
+        uri_map = {}
+        for base_uri, file_path, line in uri_tuples:
+            uri_map.setdefault(base_uri, []).append((file_path, line))
+        dups = {k: v for k, v in uri_map.items() if len(v) > 1}
+        return (len(dups) == 0, dups)
+
     loci = Path(loci_path)
     registry = Path(registry_path)
     sections = extract_sections(loci)
@@ -357,6 +415,12 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
         results_detail['fast_path'] = '[WARN] Fast-path/short-circuit section found, but no explicit criteria/condition/trigger/bypass/skip/immediate logic detected'
     else:
         results_detail['fast_path'] = '[PASS] Fast-path/short-circuit pattern and logic found'
+    # --- LARES URI DEDUPE ---
+    lares_root = str(loci.parent.parent)  # up to lares/
+    uri_tuples = collect_lares_uris(lares_root)
+    is_unique, dups = dedupe_lares_uris(uri_tuples)
+    results['lares_uri_dedupe'] = 1.0 if is_unique else 0.0
+    results_detail['lares_uri_dedupe'] = dups
     return results, results_detail
 
 # --- Operator options ---
@@ -396,6 +460,19 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=N
                 print(f"- Fix kahea marker URIs: {results_detail.get('kahea_syntax', '')}")
                 print("  kahea form: <!-- kahea lares:///ha.ka.ba/path/ -->  (whole locus)")
                 print("  or:         <!-- kahea lares:///ha.ka.ba/path/#section-name -->  (section pull)")
+            elif k == 'lares_uri_dedupe':
+                dups = results_detail.get('lares_uri_dedupe', {})
+                if dups:
+                    print("\n[ASSESS PHASE PROMPT]")
+                    print("Duplicate lares:/// URIs detected:")
+                    for uri, locs in dups.items():
+                        print(f"- {uri} found in:")
+                        for file, line in locs:
+                            print(f"    - {file}:{line}")
+                    print("\nEach canonical lares:/// URI must be unique across the codebase. Please rename or consolidate these entries to ensure address uniqueness and prevent semantic drift.")
+                else:
+                    print("\n[ASSESS PHASE PROMPT]")
+                    print("All canonical lares:/// URIs are unique across the codebase. No action required. The address space is clean and ready for further assessment.")
 
 def batch_verify_loci(root_dir, registry_path, threshold=0.95):
     batch_results = []

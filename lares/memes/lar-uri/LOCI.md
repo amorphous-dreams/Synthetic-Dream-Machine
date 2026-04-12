@@ -1,12 +1,12 @@
-<!-- ∞ → lares:///grammar.uri.defines/uri/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lares:///ha.ka.ba/lar-uri/?confidence=CS:0.90&p=0.5 -->
 
-# Grammar: `lares:` URI Syntax
+# Grammar: `lar:` URI Syntax
 
 ```yaml
 ---
 name: uri
 description: >
-  The lares URI scheme. This locus defines the canonical record form,
+  The lar URI scheme. This locus defines the canonical record form,
   the four semantic layers, and the difference between storage-safe
   URIs and glyph-rich render targets.
 phase-map:
