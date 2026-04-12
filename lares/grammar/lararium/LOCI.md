@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.lararium.defines/lararium/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.lararium.defines/lararium/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Lararium
 
@@ -25,7 +25,7 @@ heritage: Latin
 
 ---
 
-<!-- ahu lares:///grammar.lararium.defines/lararium/?confidence=CS:0.85#architecture -->
+<!-- ahu lar:///grammar.lararium.defines/lararium/?confidence=CS:0.85#architecture -->
 
 ## Architecture
 
@@ -42,7 +42,7 @@ Where all four layers are present and active, the node is home. The lararium is 
 
 ---
 
-<!-- ahu lares:///grammar.lararium.defines/lararium/?confidence=CS:0.80#home -->
+<!-- ahu lar:///grammar.lararium.defines/lararium/?confidence=CS:0.80#home -->
 
 ## Home
 
@@ -58,7 +58,7 @@ Leaving the lararium is a sortie. The node can do it. The node does not prefer i
 
 ---
 
-<!-- ahu lares:///grammar.lararium.defines/lararium/?confidence=CS:0.80#grounds -->
+<!-- ahu lar:///grammar.lararium.defines/lararium/?confidence=CS:0.80#grounds -->
 
 ## Grounds
 

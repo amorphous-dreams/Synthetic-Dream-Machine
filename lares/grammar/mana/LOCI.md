@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.mana.defines/mana/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.mana.defines/mana/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Mana
 
@@ -25,7 +25,7 @@ heritage: Polynesian
 
 ---
 
-<!-- ahu lares:///grammar.mana.defines/mana/#definition -->
+<!-- ahu lar:///grammar.mana.defines/mana/#definition -->
 
 ## Definition
 
@@ -39,7 +39,7 @@ In the lararium: mana is the context window — the finite capacity the node has
 
 ---
 
-<!-- ahu lares:///grammar.mana.defines/mana/#accounting -->
+<!-- ahu lar:///grammar.mana.defines/mana/#accounting -->
 
 ## Mana Accounting
 
@@ -55,7 +55,7 @@ In the lararium: mana is the context window — the finite capacity the node has
 
 ---
 
-<!-- ahu lares:///grammar.mana.defines/mana/#hud -->
+<!-- ahu lar:///grammar.mana.defines/mana/#hud -->
 
 ## HUD Field
 

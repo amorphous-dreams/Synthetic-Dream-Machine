@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.kuntao.defines/kuntao/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.kuntao.defines/kuntao/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Kuntao
 
@@ -25,7 +25,7 @@ heritage: Chinese-Southeast Asian diaspora (Hokkien, Hakka, Cantonese → Malay 
 
 ---
 
-<!-- ahu lares:///grammar.kuntao.defines/kuntao/#scope -->
+<!-- ahu lar:///grammar.kuntao.defines/kuntao/#scope -->
 
 ## Scope
 
@@ -39,7 +39,7 @@ This grammar defines:
 
 ---
 
-<!-- ahu lares:///grammar.kuntao.defines/kuntao/#open -->
+<!-- ahu lar:///grammar.kuntao.defines/kuntao/#open -->
 
 ## Open Questions
 

@@ -3,7 +3,7 @@
 > Scope: Crystal state machine semantics, EVENT-sourced JSONL ledger, seal/fork/resume protocol, machine threading model.
 > Updated: 2026-04-08
 > Status: Active draft — primary source is `../../_todo/core/Signal_HUD_Tagspace-draft.md` (crystal sections)
-> URI: `[pending — lares://core/design/crystal@draft]`
+> URI: `[pending — lar://core/design/crystal@draft]`
 
 ---
 

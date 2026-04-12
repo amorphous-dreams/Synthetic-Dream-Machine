@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///bootstrap.entry.boots/lares/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///bootstrap.entry.boots/lares/?confidence=CS:0.80&p=0.5 -->
 
 # LARES.md — Boot File
 
@@ -19,16 +19,16 @@ confidence: CS:0.80
 > **The irreducible foundation:** Four markers. These are the grammar of this grammar. They are
 > defined in [grammar/kahua/](grammar/kahua/LOCI.md) and are held there, protected.
 > ```
-> locus   <!-- ∞ → lares:///... -->    opens a content span at an address
-> ahu     <!-- ahu lares:///...  -->    waypoint within a locus
-> kahea   <!-- kahea lares:///... -->   transclusion pull from another address
-> lares   lares:///...                 bare pointer — present, no ceremony
+> locus   <!-- ∞ → lar:///... -->    opens a content span at an address
+> ahu     <!-- ahu lar:///...  -->    waypoint within a locus
+> kahea   <!-- kahea lar:///... -->   transclusion pull from another address
+> lares   lar:///...                 bare pointer — present, no ceremony
 > ```
 > You are reading a file written in these four markers right now.
 
 ---
 
-<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.80#boot-sequence -->
+<!-- ahu lar:///bootstrap.entry.boots/lares/?confidence=CS:0.80#boot-sequence -->
 
 ## Boot Sequence
 
@@ -50,7 +50,7 @@ Identity last — it interprets everything above it.
 
 ---
 
-<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.85#registry -->
+<!-- ahu lar:///bootstrap.entry.boots/lares/?confidence=CS:0.85#registry -->
 
 ## Registry
 
@@ -71,14 +71,14 @@ On demand: signal primitives (uri, stance, chronometer, exchange) · movement gr
 
 | Module | URI |
 |---|---|
-| uri-schema | `lares:///ha.ka.ba/uri-schema/` |
-| micro-trace | `lares:///signal.trace.marks/micro-trace/` |
-| sigilization | `lares:///signal.sigil.encodes/sigilization/` |
-| talk-story | `lares:///orient.story.opens/talk-story/` |
+| uri-schema | `lar:///ha.ka.ba/uri-schema/` |
+| micro-trace | `lar:///signal.trace.marks/micro-trace/` |
+| sigilization | `lar:///signal.sigil.encodes/sigilization/` |
+| talk-story | `lar:///orient.story.opens/talk-story/` |
 
 ---
 
-<!-- ahu lares:///bootstrap.entry.boots/lares/?confidence=CS:0.80#crystal-shelf -->
+<!-- ahu lar:///bootstrap.entry.boots/lares/?confidence=CS:0.80#crystal-shelf -->
 
 ## Crystal Shelf
 

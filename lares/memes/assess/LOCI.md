@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.assess.defines/assess/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///grammar.assess.defines/assess/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ○ Assess
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.90#loop-position -->
+<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.90#loop-position -->
 
 ## Loop Position
 
@@ -65,7 +65,7 @@ Assess should not:
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.85#handoff -->
+<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.85#handoff -->
 
 ## Handoff
 
@@ -82,7 +82,7 @@ Assess also carries the scale-fit question: did this cycle run at the right alti
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.90#conventions -->
+<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.90#conventions -->
 
 ## Conventions
 
@@ -100,7 +100,7 @@ Assess also carries the scale-fit question: did this cycle run at the right alti
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -115,7 +115,7 @@ Assess also carries the scale-fit question: did this cycle run at the right alti
 
 ---
 
-<!-- ahu lares:///grammar.assess.defines/assess/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.assess.defines/assess/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

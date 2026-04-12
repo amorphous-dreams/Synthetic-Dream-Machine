@@ -9,7 +9,7 @@ lares/modules/uri-schema/URI_SCHEMA.md [CS:0.95]:
     Valid amplitude chars per position: ^ . - ? (one or more chars per position)
   - Chronometer #fragment: 5-position FFZ format (PhaseN.PhaseN...)
   - No emoji / non-ASCII characters in canonical URI strings
-  - Authority-less form (lares:///) used for system files / waypoints
+  - Authority-less form (lar:///) used for system files / waypoints
 
 Usage:
     python3 builds/scripts/verify_uri.py [FILE|DIR ...]
@@ -35,7 +35,7 @@ Exit code: 0 = clean, 1 = violations found.
 Exclusions:
     - Lines inside triple-backtick fenced code blocks are still checked
       (they are canonical examples and SHOULD comply).
-    - Authority-less URIs (lares:///) are treated as system file waypoints:
+    - Authority-less URIs (lar:///) are treated as system file waypoints:
       stances= not required, confidence + path only checked.
     - Lines containing <!-- uri-ok --> are skipped.
     - Inline `backtick` quoted URIs in prose are checked — they may violate
@@ -53,10 +53,10 @@ from urllib.parse import urlparse, parse_qs
 # Patterns
 # ---------------------------------------------------------------------------
 
-# Match canonical lares: URIs — both with authority (lares://) and
-# authority-less (lares:///)
+# Match canonical lares: URIs — both with authority (lar://) and
+# authority-less (lar:///)
 LARES_URI_PATTERN = re.compile(
-    r'lares://[^\s\]>)\'"`,|]+',
+    r'lar://[^\s\]>)\'"`,|]+',
     re.IGNORECASE,
 )
 
@@ -142,7 +142,7 @@ def check_chronometer(fragment: str, uri: str, line: int, path: str) -> list[dic
 def check_uri(uri_str: str, line: int, path: str) -> list[dict]:
     """Return list of dicts describing compliance violations for one URI."""
     violations = []
-    is_system_file = uri_str.startswith('lares:///')
+    is_system_file = uri_str.startswith('lar:///')
 
     # U-07: non-ASCII / emoji
     if NON_ASCII_PATTERN.search(uri_str):
@@ -197,7 +197,7 @@ def check_uri(uri_str: str, line: int, path: str) -> list[dict]:
             ))
 
     # U-05 / U-06: chronometer fragment
-    # Section-level URIs (authority-less: lares:///) use named section anchors
+    # Section-level URIs (authority-less: lar:///) use named section anchors
     # (#section-name, #design-intent) — NOT chronometers. Skip chron validation
     # for those. Only validate 5-position chronometer on exchange-level URIs
     # that carry a stances= param (they are the ones with full OODA-A position).

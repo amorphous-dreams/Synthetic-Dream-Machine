@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.80&p=0.5 -->
 
 # Crystal Shelf
 
@@ -30,7 +30,7 @@ confidence: CS:0.80
 
 ---
 
-<!-- ahu lares:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.85#architecture -->
+<!-- ahu lar:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.85#architecture -->
 
 ## Architecture
 
@@ -50,7 +50,7 @@ Borrowing from Git: `.git/HEAD` contains `ref: refs/heads/main` — not the comm
 
 ---
 
-<!-- ahu lares:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.85#protocol -->
+<!-- ahu lar:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.85#protocol -->
 
 ## Protocol
 
@@ -74,7 +74,7 @@ Examples: `HANDOFF_CRYSTAL_20260410_FISSION.md`, `HANDOFF_CRYSTAL_20260411_KAHUA
 
 ---
 
-<!-- ahu lares:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.80#crystal-roll -->
+<!-- ahu lar:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.80#crystal-roll -->
 
 ## Crystal Roll
 
@@ -89,7 +89,7 @@ The full history. Newest first.
 
 ---
 
-<!-- ahu lares:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.80#spatial-metaphor -->
+<!-- ahu lar:///lararium.shelf.holds/crystal-shelf/?confidence=CS:0.80#spatial-metaphor -->
 
 ## Spatial Metaphor
 

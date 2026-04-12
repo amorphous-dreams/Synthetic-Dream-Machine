@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.escrima.defines/escrima/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.escrima.defines/escrima/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Escrima
 
@@ -25,7 +25,7 @@ heritage: Filipino (Cebuano, Ilonggo, Tagalog traditions)
 
 ---
 
-<!-- ahu lares:///grammar.escrima.defines/escrima/#scope -->
+<!-- ahu lar:///grammar.escrima.defines/escrima/#scope -->
 
 ## Scope
 
@@ -38,7 +38,7 @@ This grammar defines:
 
 ---
 
-<!-- ahu lares:///grammar.escrima.defines/escrima/#open -->
+<!-- ahu lar:///grammar.escrima.defines/escrima/#open -->
 
 ## Open Questions
 

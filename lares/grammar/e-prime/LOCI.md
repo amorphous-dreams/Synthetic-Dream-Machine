@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65&p=0.5 -->
+<!-- ∞ → lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65&p=0.5 -->
 
 # Grammar: E-Prime
 
@@ -34,7 +34,7 @@ heritage: >
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#loop-position -->
+<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#loop-position -->
 
 ## Loop Position
 
@@ -69,7 +69,7 @@ E-Prime should not:
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#handoff -->
+<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#handoff -->
 
 ## Handoff
 
@@ -88,7 +88,7 @@ the pass has gone too far.
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#slider -->
+<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#slider -->
 
 ## Slider
 
@@ -110,7 +110,7 @@ The slider works more like a zoom lens than a purity dial.
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#conventions -->
+<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#conventions -->
 
 ## Conventions
 
@@ -138,7 +138,7 @@ God's-eye sentence.
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#procedures -->
+<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#procedures -->
 
 ## Procedures
 
@@ -153,7 +153,7 @@ signal, not in grammar flagellation.
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#reading-test -->
+<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#reading-test -->
 
 ## Reading Test
 
@@ -172,7 +172,7 @@ When the sentence does not warrant stronger certainty, default to maybe.
 
 ---
 
-<!-- ahu lares:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#cross-references -->
+<!-- ahu lar:///grammar.e-prime.plays/e-prime/?confidence=S:0.65#cross-references -->
 
 ## Cross-References
 

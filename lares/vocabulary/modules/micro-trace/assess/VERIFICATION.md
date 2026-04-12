@@ -1,9 +1,9 @@
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — Verification
 
 <!-- → ? -->
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#well-formedness -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#well-formedness -->
 ## Well-formedness Checklist
 
 For any governed response, verify:
@@ -16,7 +16,7 @@ For any governed response, verify:
 - [ ] 6. Parse layer and micro-trace layer do not substitute for each other
 
 <!-- → ? -->
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#common-errors -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#common-errors -->
 ## Common Errors
 
 | Error | Description | Fix |
@@ -28,7 +28,7 @@ For any governed response, verify:
 | Inline todo | Todo state change emitted inline | Move to debug log only |
 
 <!-- → ? -->
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#promotion-criteria -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#promotion-criteria -->
 ## Promotion Criteria
 
 `lares/signal/micro-trace.md` is currently `[CS:0.80]`. For promotion to `[C:0.95]`:

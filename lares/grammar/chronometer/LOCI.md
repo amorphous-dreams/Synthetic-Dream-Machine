@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65&p=0.5 -->
+<!-- ∞ → lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65&p=0.5 -->
 
 # Grammar: FFZ Chronometer
 
@@ -28,7 +28,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#loop-position -->
+<!-- ahu lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#loop-position -->
 
 ## Loop Position
 
@@ -62,7 +62,7 @@ Chronometer should not:
 
 ---
 
-<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#handoff -->
+<!-- ahu lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#handoff -->
 
 ## Handoff
 
@@ -91,7 +91,7 @@ The handoff should let a later reader answer:
 
 ---
 
-<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#surface -->
+<!-- ahu lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#surface -->
 
 ## Composable Surface
 
@@ -115,7 +115,7 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#conventions -->
+<!-- ahu lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#conventions -->
 
 ## Conventions
 
@@ -129,7 +129,7 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#procedures -->
+<!-- ahu lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#procedures -->
 
 ## Procedures
 
@@ -144,7 +144,7 @@ add mystique and subtract signal.
 
 ---
 
-<!-- ahu lares:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#reading-test -->
+<!-- ahu lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#reading-test -->
 
 ## Reading Test
 

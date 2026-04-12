@@ -12,7 +12,7 @@
 The governance infrastructure that makes `lares:` URIs stable, resolvable, and auditable:
 
 - `lares:` URI registry — the canonical list of assigned URIs and their current/historical resolution
-- Resolver rules — how a `lares://` URI maps to a live artifact or design document
+- Resolver rules — how a `lar://` URI maps to a live artifact or design document
 - Promotion ledger — append-only record of every promotion event (what, from where, under what evals, superseding what)
 - Content-addressed identity — SHA-256 `file_sha256` as primary; `version_label` as human alias
 - `semantic_sha256` — deferred to S3 (normalization spec + prototype run required before activation)

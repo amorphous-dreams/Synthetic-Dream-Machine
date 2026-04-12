@@ -3,7 +3,7 @@
 > Scope: Behavioral invariant definitions, priority layer table, trust model, register guard, frame gate, fail-closed policy.
 > Updated: 2026-04-08
 > Status: Draft — `A_deep-research-report.md` is primary source; not yet in TOML form
-> URI: `[pending — lares://core/design/invariants@draft]`
+> URI: `[pending — lar://core/design/invariants@draft]`
 
 ---
 

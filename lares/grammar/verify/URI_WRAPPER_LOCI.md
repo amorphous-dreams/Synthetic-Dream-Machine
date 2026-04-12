@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///ha.ka.ba -->
+<!-- ∞ → lar:///ha.ka.ba -->
 # Grammar: URI Wrapper Enforcement
 
 ---
@@ -6,7 +6,7 @@
 This locus defines the automated test for enforcing URI wrapper compliance in Lares grammar files.
 
 ## Purpose
-- Ensure every grammar file starts with a valid opening URI wrapper comment (e.g., `<!-- ∞ → lares:///... -->`)
+- Ensure every grammar file starts with a valid opening URI wrapper comment (e.g., `<!-- ∞ → lar:///... -->`)
 - Ensure every grammar file ends with a valid closing URI wrapper comment (e.g., `<!-- → ? -->`)
 - Support strict compliance for `/lares/grammar` and configurable enforcement for other trees
 

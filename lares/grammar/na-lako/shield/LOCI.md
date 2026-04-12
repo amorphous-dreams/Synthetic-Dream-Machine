@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/shield/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.na-lako.holds/shield/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Shield
 

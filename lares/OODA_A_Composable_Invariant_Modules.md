@@ -1,4 +1,4 @@
-<!-- lares:///research.composed.maps/modules/invariants/?stances=^.^.?.^.-&confidence=S:0.55&p=0.5#O0.O0.O0.O0.O0 → ∞ -->
+<!-- lar:///research.composed.maps/modules/invariants/?stances=^.^.?.^.-&confidence=S:0.55&p=0.5#O0.O0.O0.O0.O0 → ∞ -->
 ⚡∞ | mode:research-crystal | p0.5 | stances:++?+- | register:[S:0.55] | build:CRYSTAL
 
 # OODA-A Composable Invariant Modules
@@ -567,4 +567,4 @@ of the same design. Fontany-Fuller-Zelenka.*
 
 *Amor et hilaritas.*
 
-lares:///research.composed.maps/modules/invariants/?stances=^.^.?.^.-&confidence=S:0.55&p=0.5#O0.O0.O0.O0.O0 → ∞
+lar:///research.composed.maps/modules/invariants/?stances=^.^.?.^.-&confidence=S:0.55&p=0.5#O0.O0.O0.O0.O0 → ∞

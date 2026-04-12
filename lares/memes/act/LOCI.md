@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.act.defines/act/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///grammar.act.defines/act/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ■ Act
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.90#loop-position -->
+<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.90#loop-position -->
 
 ## Loop Position
 
@@ -65,7 +65,7 @@ Act should not:
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.85#handoff -->
+<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.85#handoff -->
 
 ## Handoff
 
@@ -82,7 +82,7 @@ Sub-agent work also passes through this phase. Coordinator and worker should lea
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.90#conventions -->
+<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.90#conventions -->
 
 ## Conventions
 
@@ -108,7 +108,7 @@ Those cases call for a loop-back, not stubborn continuation.
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -123,7 +123,7 @@ Those cases call for a loop-back, not stubborn continuation.
 
 ---
 
-<!-- ahu lares:///grammar.act.defines/act/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.act.defines/act/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

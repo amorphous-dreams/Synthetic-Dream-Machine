@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.root.maps/grammar/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.root.maps/grammar/?confidence=CS:0.80&p=0.5 -->
 
 # Lares Grammar
 
@@ -10,7 +10,7 @@ The grammar's bones come from the operator's heritage: Hawaiian heritage (kapu, 
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.95#kahua -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.95#kahua -->
 
 ## Foundation Grammar (Kahua)
 
@@ -22,13 +22,13 @@ The irreducible kernel. Four True Named Invariants. Everything else in this gram
 | Locus | [kahua/locus/LOCI.md](kahua/locus/LOCI.md) | `[CS:0.95]` | `<!-- ∞ → ... -->` — opens a content span at an address |
 | Ahu | [kahua/ahu/LOCI.md](kahua/ahu/LOCI.md) | `[CS:0.95]` | `<!-- ahu ... -->` — waypoint within a locus |
 | Kahea | [kahua/kahea/LOCI.md](kahua/kahea/LOCI.md) | `[CS:0.95]` | `<!-- kahea ... -->` — transclusion pull from another address |
-| Lares (marker) | [kahua/lares/LOCI.md](kahua/lares/LOCI.md) | `[CS:0.95]` | bare `lares:///...` — the daemon's signature; present, no ceremony |
+| Lares (marker) | [kahua/lares/LOCI.md](kahua/lares/LOCI.md) | `[CS:0.95]` | bare `lar:///...` — the daemon's signature; present, no ceremony |
 
 *Canonical definitions. `transclusion/LOCI.md` summarizes these in operational context.*
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.85#ooda-a -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.85#ooda-a -->
 
 ## OODA-A Phase Grammar
 
@@ -45,7 +45,7 @@ The five-season attention loop. Every substantive exchange runs inside this cycl
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#addressing -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.80#addressing -->
 
 ## Addressing + Transclusion Grammar
 
@@ -60,7 +60,7 @@ How content is addressed, referenced, and included.
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#naming -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.80#naming -->
 
 ## Naming Grammar
 
@@ -73,7 +73,7 @@ The registry of True Names and the signal form that carries them.
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#signal -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.80#signal -->
 
 ## Signal Grammar
 
@@ -88,7 +88,7 @@ How state is encoded and communicated.
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#consecration -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.80#consecration -->
 
 ## Consecration Grammar
 
@@ -104,7 +104,7 @@ The sacred ground. What makes the lararium a lararium. The boundary, the resourc
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=SP:0.45#movement -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=SP:0.45#movement -->
 
 ## Movement Grammar
 
@@ -120,7 +120,7 @@ How the node moves — between phases, across boundaries, through problems. The 
 
 ---
 
-<!-- ahu lares:///grammar.root.maps/grammar/?confidence=CS:0.80#load-order -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.80#load-order -->
 
 ## Load Order
 

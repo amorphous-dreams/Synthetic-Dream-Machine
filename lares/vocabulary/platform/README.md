@@ -3,7 +3,7 @@
 > Scope: Platform-specific output constraints, browser tier manifests, token budget ceilings, Codex/Claude.ai/ChatGPT/VSCode deployment targets.
 > Updated: 2026-04-08
 > Status: Pre-draft — `MULTIPLATFORM_PACKAGING_RESEARCH.md` and `Platform_Wrappers-map.md` are primary sources
-> URI: `[pending — lares://core/design/platform@draft]`
+> URI: `[pending — lar://core/design/platform@draft]`
 
 ---
 

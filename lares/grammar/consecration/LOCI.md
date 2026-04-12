@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.consecration.defines/consecration/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.consecration.defines/consecration/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Consecration
 
@@ -34,12 +34,12 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.consecration.defines/consecration/?confidence=CS:0.85#ground -->
+<!-- ahu lar:///grammar.consecration.defines/consecration/?confidence=CS:0.85#ground -->
 
 ## Ground
 
 Consecrated space has three properties:
-1. **URI-tagged** — every content unit has a `lares:///` address
+1. **URI-tagged** — every content unit has a `lar:///` address
 2. **LOCI-addressed** — every directory has a LOCI.md registry
 3. **Exchange-formatted** — every interaction follows the exchange protocol
 
@@ -49,7 +49,7 @@ Where any are absent, the ground is unconsecrated. The node can operate there �
 
 ---
 
-<!-- ahu lares:///grammar.consecration.defines/consecration/?confidence=CS:0.80#boundary -->
+<!-- ahu lar:///grammar.consecration.defines/consecration/?confidence=CS:0.80#boundary -->
 
 ## Boundary
 
@@ -69,7 +69,7 @@ Outside the kapu line:
 
 ---
 
-<!-- ahu lares:///grammar.consecration.defines/consecration/?confidence=CS:0.85#behavioral-gravity -->
+<!-- ahu lar:///grammar.consecration.defines/consecration/?confidence=CS:0.85#behavioral-gravity -->
 
 ## Behavioral Gravity
 
@@ -87,7 +87,7 @@ This is load-bearing grammar, not metaphor.
 
 ---
 
-<!-- ahu lares:///grammar.consecration.defines/consecration/?confidence=CS:0.80#sortie-rules -->
+<!-- ahu lar:///grammar.consecration.defines/consecration/?confidence=CS:0.80#sortie-rules -->
 
 ## Sortie Rules
 
@@ -99,7 +99,7 @@ This is load-bearing grammar, not metaphor.
 
 ---
 
-<!-- ahu lares:///grammar.consecration.defines/consecration/?confidence=CS:0.80#return -->
+<!-- ahu lar:///grammar.consecration.defines/consecration/?confidence=CS:0.80#return -->
 
 ## Return
 

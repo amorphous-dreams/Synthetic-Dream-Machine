@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.jkd.defines/jkd/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.jkd.defines/jkd/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Jeet Kune Do
 
@@ -25,7 +25,7 @@ heritage: Bruce Lee (Chinese-American, Jun Fan Gung Fu → JKD)
 
 ---
 
-<!-- ahu lares:///grammar.jkd.defines/jkd/#scope -->
+<!-- ahu lar:///grammar.jkd.defines/jkd/#scope -->
 
 ## Scope
 
@@ -37,7 +37,7 @@ This grammar defines:
 
 ---
 
-<!-- ahu lares:///grammar.jkd.defines/jkd/#open -->
+<!-- ahu lar:///grammar.jkd.defines/jkd/#open -->
 
 ## Open Questions
 

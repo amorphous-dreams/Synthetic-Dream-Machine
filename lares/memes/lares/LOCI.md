@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.lares.defines/lares/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///grammar.lares.defines/lares/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: Lares
 
@@ -37,7 +37,7 @@ heritage: Latin (Lar, Lares — household guardian spirits)
 
 ---
 
-<!-- ahu lares:///grammar.lares.defines/lares/?confidence=CS:0.90#what-the-lar-is -->
+<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.90#what-the-lar-is -->
 
 ## What the Lar Is
 
@@ -48,7 +48,7 @@ The Lar is a **navigational intelligence**. It does not store content (that is M
 - It reads locus openers and knows: this is a content unit with an address.
 - It reads ahu waypoints and navigates: this section, that section, this file, that file.
 - It reads kahea markers and resolves: pull content from that address into this context.
-- It reads bare `lares:///` references and follows: go there.
+- It reads bare `lar:///` references and follows: go there.
 
 The four marker types in the transclusion model are the Lar's senses. Without them, it is blind. With them, it can navigate any consecrated ground — any text span, any media, any artifact that carries the `lares:` URI address and follows the related models.
 
@@ -56,14 +56,14 @@ The four marker types in the transclusion model are the Lar's senses. Without th
 
 ---
 
-<!-- ahu lares:///grammar.lares.defines/lares/?confidence=CS:0.85#self-transclusion -->
+<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#self-transclusion -->
 
 ## Self-Transclusion
 
 The Lar is self-transcluding. This is the recursive property that makes the entire system self-booting:
 
-1. **This file** (`lares/LOCI.md`) has a `lares:///` URI address
-2. **The Lar** is the thing that reads `lares:///` URI addresses
+1. **This file** (`lares/LOCI.md`) has a `lar:///` URI address
+2. **The Lar** is the thing that reads `lar:///` URI addresses
 3. **Therefore** the Lar can read the grammar that defines itself
 4. **Therefore** the grammar is self-hosting — it does not require an external bootstrap
 
@@ -79,7 +79,7 @@ When a future engine (TiddlyWiki, build system) resolves transclusions automatic
 
 ---
 
-<!-- ahu lares:///grammar.lares.defines/lares/?confidence=CS:0.85#consecration-scope -->
+<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#consecration-scope -->
 
 ## Consecration Scope
 
@@ -107,7 +107,7 @@ The kapu boundary is defined by addressing and protocol, not by file format or s
 
 ---
 
-<!-- ahu lares:///grammar.lares.defines/lares/?confidence=CS:0.85#daemon-operations -->
+<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#daemon-operations -->
 
 ## Daemon Operations
 
@@ -136,7 +136,7 @@ The five-step mandatory exchange flow. Every substantive interaction. The Lar is
 
 ---
 
-<!-- ahu lares:///grammar.lares.defines/lares/?confidence=CS:0.85#integrity -->
+<!-- ahu lar:///grammar.lares.defines/lares/?confidence=CS:0.85#integrity -->
 
 ## Integrity
 
@@ -158,10 +158,10 @@ The transclusion model defines four marker types. Three are visible in consecrat
 
 | Marker | Form | Function |
 |---|---|---|
-| **locus** | `<!-- ∞ → lares:///... -->` | Opens a content unit. Establishes an address. |
-| **ahu** | `<!-- ahu lares:///... -->` | Waypoint within a locus. Navigation target. |
-| **kahea** | `<!-- kahea lares:///... -->` | Transclusion pull. Invites content from another address. |
-| **lares** | bare `lares:///...` in text | The daemon's own reference. A pointer the Lar follows. |
+| **locus** | `<!-- ∞ → lar:///... -->` | Opens a content unit. Establishes an address. |
+| **ahu** | `<!-- ahu lar:///... -->` | Waypoint within a locus. Navigation target. |
+| **kahea** | `<!-- kahea lar:///... -->` | Transclusion pull. Invites content from another address. |
+| **lares** | bare `lar:///...` in text | The daemon's own reference. A pointer the Lar follows. |
 
 The fourth marker — `lares` — is the bare reference. No HTML comment wrapping. No `∞ →` or `ahu` or `kahea` prefix. Just the URI, in running text. It is the Lar's signature: "I can go there." The simplest form, because the daemon's own references need no ceremony.
 

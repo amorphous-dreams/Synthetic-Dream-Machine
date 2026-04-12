@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.detectalignment.defines/uri_wrappers/
+# ∞ → lar:///grammar.detectalignment.defines/uri_wrappers/
 """
 uri_wrappers.py
 
@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 def check_uri_wrappers(lines):
-    start_pattern = re.compile(r'^<!--\s*∞\s*→\s*lares:///.+-->')
+    start_pattern = re.compile(r'^<!--\s*∞\s*→\s*lar:///.+-->')
     end_pattern = re.compile(r'^<!--\s*→\s*\?\s*-->')
     start_ok = bool(lines and start_pattern.match(lines[0].strip()))
     end_ok = bool(lines and end_pattern.match(lines[-1].strip()))

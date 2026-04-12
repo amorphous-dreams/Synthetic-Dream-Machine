@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 -->
 
 # Signal — Orient: URI Architecture
 
@@ -7,7 +7,7 @@
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
 ## Design Intent
 
 The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD both operator and node read at exchange boundaries. In persistence it functions as a structured record string for logs, validation, module descriptors, and registry metadata.
@@ -45,13 +45,13 @@ At each exchange span, `lares:` URIs are used in a mandatory sequence:
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/orient/?confidence=0.95#full-form -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.95#full-form -->
 ## Full Form and Authority-less Form
 
 **Full form (with authority):**
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
+lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string.
@@ -59,7 +59,7 @@ Where `stances=XXXXX` is the five-character stance amplitude string.
 **Authority-less form** (no `user@host` segment — territory or resource reference without a named speaker):
 
 ```
-lares:///ha.ka.ba/optional/path/[?query][#fragment]
+lar:///ha.ka.ba/optional/path/[?query][#fragment]
 ```
 
 Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use for stable named graph addresses, HA.KA.BA references, module section waypoints, and any URI where the speaker identity is not the point.
@@ -73,7 +73,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-map -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-map -->
 ## Component Map
 
 | # | Component | RFC 3986 Role | Lares Mapping |
@@ -91,7 +91,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-semantics -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-semantics -->
 ## Component Semantics
 
 ### `userinfo` — `alias:tier`
@@ -162,7 +162,7 @@ Scale positions: Strategic (🗺️ ~6 days) · Operational (⚙️ ~4 hours) ·
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#provisionality-markers -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#provisionality-markers -->
 ## Provisionality Markers
 
 The `~` prefix marks URI components as provisional. Three structurally distinct types:
@@ -178,7 +178,7 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#kowloon-handle-form -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#kowloon-handle-form -->
 ## Kowloon / ActivityPub Handle Form
 
 Within the DreamDeck / Kowloon ActivityPub layer, identities use `@alias@node`. This is NOT the lares: URI — it is the social-layer identity that maps onto the lares: URI's `alias@host` authority.

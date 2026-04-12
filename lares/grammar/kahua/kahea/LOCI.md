@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.kahea.defines/kahea/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///grammar.kahea.defines/kahea/?confidence=CS:0.95&p=0.5 -->
 
 # Grammar: Kahea
 
@@ -32,22 +32,22 @@ cluster: kahua
 
 ---
 
-<!-- ahu lares:///grammar.kahea.defines/kahea/?confidence=CS:0.95#syntax -->
+<!-- ahu lar:///grammar.kahea.defines/kahea/?confidence=CS:0.95#syntax -->
 
 ## Syntax
 
 **Kahea marker** — summons content from another address:
 ```
-<!-- kahea lares:///ha.ka.ba/other-path/#fragment -->
+<!-- kahea lar:///ha.ka.ba/other-path/#fragment -->
 ```
 
-The content at `lares:///ha.ka.ba/other-path/#fragment` is pulled into this document at the point of the kahea marker. The content is NOT copied — the kahea is the instruction; the transclusion engine resolves it.
+The content at `lar:///ha.ka.ba/other-path/#fragment` is pulled into this document at the point of the kahea marker. The content is NOT copied — the kahea is the instruction; the transclusion engine resolves it.
 
-**Fragment is optional:** `<!-- kahea lares:///path/ -->` pulls the entire locus. `<!-- kahea lares:///path/#section -->` pulls from that ahu to the next ahu (or locus closer).
+**Fragment is optional:** `<!-- kahea lar:///path/ -->` pulls the entire locus. `<!-- kahea lar:///path/#section -->` pulls from that ahu to the next ahu (or locus closer).
 
 ---
 
-<!-- ahu lares:///grammar.kahea.defines/kahea/?confidence=CS:0.95#semantics -->
+<!-- ahu lar:///grammar.kahea.defines/kahea/?confidence=CS:0.95#semantics -->
 
 ## Semantics
 
@@ -68,13 +68,13 @@ The content at `lares:///ha.ka.ba/other-path/#fragment` is pulled into this docu
 
 ---
 
-<!-- ahu lares:///grammar.kahea.defines/kahea/?confidence=CS:0.95#conventions -->
+<!-- ahu lar:///grammar.kahea.defines/kahea/?confidence=CS:0.95#conventions -->
 
 ## When to Use Kahea vs Prose Reference
 
 | Situation | Use |
 |---|---|
-| Content should appear here *as if written here* | `<!-- kahea lares:///... -->` |
+| Content should appear here *as if written here* | `<!-- kahea lar:///... -->` |
 | Reader should know about related content | Prose: "See `lares/grammar/observe/LOCI.md`" |
 | Citation for provenance, not inclusion | Prose with register: `[CS:0.80]` |
 | Content is in a stub or provisional state | Prose reference only — don't kahea a stub |
@@ -83,7 +83,7 @@ The content at `lares:///ha.ka.ba/other-path/#fragment` is pulled into this docu
 
 ---
 
-<!-- ahu lares:///grammar.kahea.defines/kahea/?confidence=CS:0.95#hula-resonance -->
+<!-- ahu lar:///grammar.kahea.defines/kahea/?confidence=CS:0.95#hula-resonance -->
 
 ## Hawaiian Depth — Kahea in Practice
 

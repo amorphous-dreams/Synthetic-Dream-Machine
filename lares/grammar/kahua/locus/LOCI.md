@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.locus.defines/locus/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///grammar.locus.defines/locus/?confidence=CS:0.95&p=0.5 -->
 
 # Grammar: Locus
 
@@ -6,7 +6,7 @@
 ---
 name: locus
 description: >
-  The locus marker. Opens a content span at a lares:/// address and closes it.
+  The locus marker. Opens a content span at a lar:/// address and closes it.
   First of the four True Named Invariants. The address-bearing place.
 trigger: always — grammar primitive
 invariant: true
@@ -27,13 +27,13 @@ cluster: kahua
 
 ---
 
-<!-- ahu lares:///grammar.locus.defines/locus/?confidence=CS:0.95#syntax -->
+<!-- ahu lar:///grammar.locus.defines/locus/?confidence=CS:0.95#syntax -->
 
 ## Syntax
 
 **Opener** — claims the address, opens the span:
 ```
-<!-- ∞ → lares:///ha.ka.ba/path/?confidence=X&p=0.5 -->
+<!-- ∞ → lar:///ha.ka.ba/path/?confidence=X&p=0.5 -->
 ```
 
 The sigil pair `∞ →`: infinity-arrow. The span is unbounded in time (a standing locus) and directed toward an address.
@@ -51,7 +51,7 @@ The sigil `→ ?`: directed-toward-unknown. The span ends here. What comes after
 
 ---
 
-<!-- ahu lares:///grammar.locus.defines/locus/?confidence=CS:0.95#semantics -->
+<!-- ahu lar:///grammar.locus.defines/locus/?confidence=CS:0.95#semantics -->
 
 ## Semantics
 
@@ -59,7 +59,7 @@ A locus simultaneously establishes:
 
 | Property | What it means |
 |---|---|
-| **Address** | The content is locatable at `lares:///ha.ka.ba/path/` |
+| **Address** | The content is locatable at `lar:///ha.ka.ba/path/` |
 | **Boundary** | Everything between opener and closer belongs to this locus |
 | **Registry obligation** | This locus must appear in a parent `LOCI.md` Loci Registry |
 | **Canonical status** | The content here is the single source; others kahea-reference, not copy |
@@ -68,7 +68,7 @@ A locus is NOT a transient exchange (those use HUD pair format). It is NOT a nav
 
 ---
 
-<!-- ahu lares:///grammar.locus.defines/locus/?confidence=CS:0.95#lineage -->
+<!-- ahu lar:///grammar.locus.defines/locus/?confidence=CS:0.95#lineage -->
 
 ## Hawaiian Resonance — Wahi Pana
 
@@ -79,7 +79,7 @@ A locus is NOT a transient exchange (those use HUD pair format). It is NOT a nav
 - *Inoa* — name; a Hawaiian place-name IS the story of what happened there
 - *Kuleana* — right, responsibility, authority over a place — the obligation that comes with addressing something
 
-**The locus as wahi pana:** When you open a locus with `<!-- ∞ → lares:///... -->`, you are naming a wahi pana — a place with a story, addressable by name, holding its contents for those who know to go there. The URI is the *inoa*. The content is the *mele* (chant) of that place.
+**The locus as wahi pana:** When you open a locus with `<!-- ∞ → lar:///... -->`, you are naming a wahi pana — a place with a story, addressable by name, holding its contents for those who know to go there. The URI is the *inoa*. The content is the *mele* (chant) of that place.
 
 **'Āina** (land, that which feeds): in Hawaiian thought, the land is not property — it is relationship. A locus is *'āina* in the same sense: the content is not owned, it is held in trust, feeding those who come to it.
 

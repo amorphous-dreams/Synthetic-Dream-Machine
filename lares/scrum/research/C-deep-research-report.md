@@ -7,7 +7,7 @@
 We define `lares:` URIs to unambiguously identify modules, prompts, and states. A formal grammar (roughly ABNF-like) is:
 
 ```
-lares_uri   = "lares://" hier-part [ "?" query ] [ "#" sha256 ]
+lares_uri   = "lar://" hier-part [ "?" query ] [ "#" sha256 ]
 hier-part   = tier "/" kind "/" name "@" version
 tier        = "canon" / "archive" / ("core" / "tool" / "permission" / ...)
 kind        = ALPHA *( ALPHA / "-" / "_" )
@@ -24,7 +24,7 @@ FLOAT       = DIGIT [ "." DIGIT* ]
 
 **Components:**
 
-- **Scheme**: `lares://`.
+- **Scheme**: `lar://`.
 - **Tier/Kind**: e.g. `canon/module`, `canon/tool`. `"canon"` tier indicates agentic canonical content.  
 - **Name and version**: A module name (e.g. `lares-identity`) and semantic version.  
 - **Query params**:
@@ -47,9 +47,9 @@ This ensures *identical content always yields the same digest*. If any bit chang
 
 **Examples:**  
 
-- `lares://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7...`  
-- `lares://core/faq@0.3.0?register=S:0.75&canon=4.5&scope=soft#sha256=a7c4b2...`  
-- `lares://archive/note/todo@0.0.1?register=P:0.0&canon=1.0&scope=advisory#sha256=abcd...`  
+- `lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7...`  
+- `lar://core/faq@0.3.0?register=S:0.75&canon=4.5&scope=soft#sha256=a7c4b2...`  
+- `lar://archive/note/todo@0.0.1?register=P:0.0&canon=1.0&scope=advisory#sha256=abcd...`  
 
 These URIs can be stamped anywhere we need to refer to a state or content chunk.
 
@@ -63,7 +63,7 @@ Here are examples of using the `lares_uri` field in TOML manifests:
 # Module descriptor example (lares-identity.module.toml)
 schema = "lares.module@1"
 module_id = "lares-identity"
-lares_uri = "lares://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
+lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
 title = "Agent Identity"
 description = "Core protocol and persona."
 class = "kernel"
@@ -77,7 +77,7 @@ phase = 0
 # Tool descriptor example (http_request.tool.toml)
 schema = "lares.tool@1"
 tool_id = "http_request"
-lares_uri = "lares://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
+lares_uri = "lar://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
 title = "HTTP Request"
 [register] label="C" value=1.0
 [canon] value=8.5 scope="soft"
@@ -91,7 +91,7 @@ type = "string"
 # Permission descriptor example (git-access.permission.toml)
 schema = "lares.permission@1"
 permission_id = "git-access"
-lares_uri = "lares://canon/permission/git-access@1.0.0?register=C:1.0&canon=9.0&scope=hard#sha256=c1e2d3..."
+lares_uri = "lar://canon/permission/git-access@1.0.0?register=C:1.0&canon=9.0&scope=hard#sha256=c1e2d3..."
 [register] label="C" value=1.0
 [canon] value=9.0 scope="hard"
 [claude_code.settings]
@@ -105,7 +105,7 @@ schema = "lares.registry@1"
 generated_by = "lares-compiler@1.0.0"
 generated_at = "2026-04-08T00:00:00Z"
 [[entry]]
-lares_uri = "lares://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
+lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
 path = "modules/lares-identity.module.toml"
 semantic_sha256 = "5f4dcc3b5aa7..."
 status = "canon"
@@ -119,10 +119,10 @@ target_id = "claude-code.vscode"
 emit_claude_md = ".claude/CLAUDE.generated.md"
 emit_rules_dir = ".claude/rules"
 [[load]]
-lares_uri = "lares://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b..."
+lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b..."
 required = true
 [[load]]
-lares_uri = "lares://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
+lares_uri = "lar://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
 required = false
 ```
 
@@ -142,14 +142,14 @@ All URIs include `register` (truth) and `canon` fields. The stamping syntax can 
 
 ```
 ; LAUNCH_INTENT
-# OperatorState = lares://core/user-query@0.1.0?register=CS:0.9&canon=5.0&scope=soft#sha256=1234abcd...
+# OperatorState = lar://core/user-query@0.1.0?register=CS:0.9&canon=5.0&scope=soft#sha256=1234abcd...
 @start_intent
 >> USER: Please calculate 2+2.
 @end
 
 ; ACTION_RESULT
-# OperatorState = lares://core/user-query@0.1.0?register=CS:0.9&canon=5.0&scope=soft#sha256=1234abcd...
-# AgentState    = lares://canon/module/lares-kernel@4.0.0?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b...
+# OperatorState = lar://core/user-query@0.1.0?register=CS:0.9&canon=5.0&scope=soft#sha256=1234abcd...
+# AgentState    = lar://canon/module/lares-kernel@4.0.0?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b...
 @complete
 >> AGENT: The result is 4.
 ```
@@ -163,11 +163,11 @@ All URIs include `register` (truth) and `canon` fields. The stamping syntax can 
 
 ```
 ; LAUNCH_INTENT
-# OperatorState = lares://core/unknown-query@0.0.0?register=SP:0.4&canon=2.0&scope=advisory#sha256=deadbeef...
+# OperatorState = lar://core/unknown-query@0.0.0?register=SP:0.4&canon=2.0&scope=advisory#sha256=deadbeef...
 > "Please open the mystery-file."
 @event=parse_start
 
-# AssistantState = lares://core/parse-error@0.0.1?register=SP:0.4&canon=2.0&scope=advisory#sha256=beefdead...
+# AssistantState = lar://core/parse-error@0.0.1?register=SP:0.4&canon=2.0&scope=advisory#sha256=beefdead...
 ```
 
 Here, the agent quotes the input (prefixed by `>`) and assigns a low-confidence URI to that segment. Then it emits an `AssistantState` URI capturing its interpretation. This gives an “inertia sigil” even under uncertainty. 
@@ -268,7 +268,7 @@ To migrate existing “Stuffed” archives:
        norm = normalize_content(data)  # trim, sort keys, etc.
        digest = sha256(norm)
        module_id = infer_id_from(path)
-       uri = f"lares://canon/module/{module_id}@0.0.1?register=C:1.0&canon=1.0&scope=advisory#sha256={digest}"
+       uri = f"lar://canon/module/{module_id}@0.0.1?register=C:1.0&canon=1.0&scope=advisory#sha256={digest}"
        toml = parse_toml(path)
        toml['lares_uri'] = uri
        write_toml(path, toml)
@@ -299,10 +299,10 @@ target = "claude-code.vscode"
 emit_claude_md = ".claude/CLAUDE.generated.md"
 emit_rules_dir = ".claude/rules"
 [[load]]
-lares_uri = "lares://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc..."
+lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc..."
 required = true
 [[load]]
-lares_uri = "lares://canon/module/lares-operations@2.0.0?register=C:1.0&canon=8.0&scope=soft#sha256=a7c4b2..."
+lares_uri = "lar://canon/module/lares-operations@2.0.0?register=C:1.0&canon=8.0&scope=soft#sha256=a7c4b2..."
 required = false
 ```
 
@@ -310,15 +310,15 @@ required = false
 
 ```
 ; LAUNCH_INTENT
-# OperatorState = lares://core/user-query@0.1.0?register=CS:0.85&canon=5.0&scope=soft#sha256=1234abcd...
-# AgentState    = lares://canon/module/lares-kernel@4.0.0?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b...
+# OperatorState = lar://core/user-query@0.1.0?register=CS:0.85&canon=5.0&scope=soft#sha256=1234abcd...
+# AgentState    = lar://canon/module/lares-kernel@4.0.0?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b...
 @start
 >> USER: Summarize the article on tokenization.
 @end
 
 ; GENERATION
-# OperatorState = lares://core/user-query@0.1.0?register=CS:0.85&canon=5.0&scope=soft#sha256=1234abcd...
-# AssistantState=lares://canon/module/lares-kernel@4.0.0?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b...
+# OperatorState = lar://core/user-query@0.1.0?register=CS:0.85&canon=5.0&scope=soft#sha256=1234abcd...
+# AssistantState=lar://canon/module/lares-kernel@4.0.0?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b...
 @complete
 >> AGENT: The article explains how text is broken into tokens...
 ```

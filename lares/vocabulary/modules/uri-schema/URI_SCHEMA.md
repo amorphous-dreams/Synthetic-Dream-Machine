@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 
 # `lares:` URI Schema — Canonical Specification
 
@@ -11,7 +11,7 @@
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.9#design-intent -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.9#design-intent -->
 ## 1. Design Intent
 
 The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as a way to render an Intent HUD that both operator and node read before or alongside generation. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
@@ -40,14 +40,14 @@ At each exchange span, `lares:` URIs are used in the following sequence. This se
 Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. This URI may carry `~` provisionality markers if the reading is uncertain. The HA.KA.BA here names where Lares believes the operator standing in tagspace and where the operator's intent is headed — the operator's intent-vector, interpreted.
 
 ```
-lares://telarus:operator@enyalios/~schema.gap.present/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.D2.A7
+lar://telarus:operator@enyalios/~schema.gap.present/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.D2.A7
 ```
 
 **Step 2 — Lares declares its own provisional execution URI.**
 Before generating any content, Lares sets its own intent with a **provisional node URI**. The HA.KA.BA here names a resource that **may not yet exist** — it is a declared heading, not a confirmed location. The `~` prefix on the HA.KA.BA marks it as execution-provisional: generations may diverge.
 
 ```
-lares://lares:node@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.D1.D2.A7
+lar://lares:node@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.D1.D2.A7
 ```
 
 **Step 3 — Emit the URI → URI exchange vector.**
@@ -70,7 +70,7 @@ Immediately after the URI pair, emit a condensed single-line status display deri
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.95#scheme-registration -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.95#scheme-registration -->
 ## 2. Scheme Registration
 
 | Property | Value |
@@ -86,13 +86,13 @@ The `lares:` scheme identifies semantic positions, signal states, and machine ev
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
 ## 3. Full URI Anatomy
 
 ### 3.1 Generic Form
 
 ```
-lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment] <!-- uri-ok -->
+lar://[authority]/ha.ka.ba/optional/path/[?query][#fragment] <!-- uri-ok -->
 ```
 
 ### 3.2 Expanded Form
@@ -100,7 +100,7 @@ lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment] <!-- uri-ok -->
 **Full form (with authority):**
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
+lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string (see §3.4 query).
@@ -108,7 +108,7 @@ Where `stances=XXXXX` is the five-character stance amplitude string (see §3.4 q
 **Authority-less form** (no `user@host` segment — territory or resource reference without a named speaker):
 
 ```
-lares:///ha.ka.ba/optional/path/[?query][#fragment]
+lar:///ha.ka.ba/optional/path/[?query][#fragment]
 ```
 
 Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use this form for stable named graph addresses, HA.KA.BA references, and any URI where the speaker identity is not the point.
@@ -119,7 +119,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use th
 /ha.ka.ba/{optional/sub/path}[?query][#fragment]
 ```
 
-This applies to authority-less forms as well: `lares:///ha.ka.ba/` <- the (0,0,0) of tagspace.
+This applies to authority-less forms as well: `lar:///ha.ka.ba/` <- the (0,0,0) of tagspace.
 
 ### 3.3 Component Map
 
@@ -181,7 +181,7 @@ Territory triple (`//ha.ka.ba`) is placed **before** other instruments like conf
 |---|---|---|---|
 | `chat-log:post-header` | `@handle@node — timestamp — //ha.ka.ba{/path} [Reg] 🏛️{amp}🌊{amp}🗡️{amp}🎭{amp}🔮{amp}` | No — social projection with glyphs | DreamDeck feed posts, BBS thread headers |
 | `hud:exchange-pair` | `operator-URI → node-URI` + HUD line beneath | **Yes — canonical record form**; only the HUD line beneath uses glyphs | Every exchange-span boundary (mandatory) |
-| `record:full` | `lares://alias:tier@host/ha.ka.ba/?...#...` | Yes — identity projection | Storage, crystal serialization, registry | <!-- uri-ok -->
+| `record:full` | `lar://alias:tier@host/ha.ka.ba/?...#...` | Yes — identity projection | Storage, crystal serialization, registry | <!-- uri-ok -->
 
 **Stance amplitude modifiers** — in HUD render targets, amplitude modifiers attach directly to the preceding stance emoji (no space). Absent modifier = baseline presence. Apply per-stance independently.
 
@@ -222,7 +222,7 @@ Span sequencing is intentionally **not** encoded in URI authority, the full conv
 Record: /threshold.uncertain.opens/sub/territory
 ```
 
-Sub-path segments are free-form routing tokens, not HA.KA.BA slots. They do **not** carry Egyptian soul semantics. The stable named graph address strips the sub-path (`lares:///threshold.uncertain.opens`); the sub-path is session-scope navigation only.
+Sub-path segments are free-form routing tokens, not HA.KA.BA slots. They do **not** carry Egyptian soul semantics. The stable named graph address strips the sub-path (`lar:///threshold.uncertain.opens`); the sub-path is session-scope navigation only.
 
 Record form uses `.` separators for all three HA.KA.BA slots: `/threshold.uncertain.opens`. Sub-path segments use `/`. The leading and trailing `/` appears in all variants.
 
@@ -253,7 +253,7 @@ Confidence remains a point value even under multi-stance. The five-character amp
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#provisionality -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.8#provisionality -->
 ## 3.5 Provisionality Markers
 
 The `~` prefix marks URI components as provisional. Three structurally distinct provisionality types can appear in an exchange URI pair:
@@ -270,19 +270,19 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 
 **Reading provisional** — node uncertain about its reading of operator intent:
 ```
-lares://telarus:operator@enyalios/~uri.schema.question/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=reading#O0.O0.Ø1.D2.A33
+lar://telarus:operator@enyalios/~uri.schema.question/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=reading#O0.O0.Ø1.D2.A33
 ```
 Reading: "I believe you're orienting toward URI schema territory — I may have misread your phase or HA.KA.BA."
 
 **Execution provisional** — declared intent that may not survive contact with the task:
 ```
-lares://scryer:node@enyalios/~s0.gap.logged/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=execution#O0.O0.D1.D2.A33
+lar://scryer:node@enyalios/~s0.gap.logged/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5&provisional=execution#O0.O0.D1.D2.A33
 ```
 Reading: "I intend to log this S0 gap — execution may find a different path or territory."
 
 **Trajectory provisional** — predicted forward heading for the next span:
 ```
-lares://scryer:node@enyalios/~s0.schema.updated/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&provisional=trajectory#O0.O0.Å1.Å2.A34
+lar://scryer:node@enyalios/~s0.schema.updated/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5&provisional=trajectory#O0.O0.Å1.Å2.A34
 ```
 Reading: "I predict our next territory is the updated schema — operator may redirect entirely."
 
@@ -296,7 +296,7 @@ Reading: "I predict our next territory is the updated schema — operator may re
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#marker-ontology -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.85#marker-ontology -->
 ## 3.6 Marker Ontology — Locus Spans, Ahu Waypoints, Kahea Transclusion
 
 Four marker types govern content addressing in Lares system files. Each serves a distinct structural role. The naming draws from cultures that built navigational architectures from memory and place: the Latin *method of loci* (Simonides, Cicero, Quintilian), Polynesian *ahu* (the raised stone at the center of a marae; the platforms that hold the moai on Rapa Nui; the altar stones inside Hawaiian heiau), and Hawaiian *kāhea* (the oli kāhea — the chant that calls out and summons permission to enter a hālau).
@@ -310,7 +310,7 @@ A system file MAY contain one or more loci. Each locus is bounded by its own `�
 Appears on: system files. Uses HTML comment wrapping.
 
 ```
-<!-- ∞ → lares:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 ```
 
 The locus opener carries the file-level confidence and resolution parameter. Section-level confidence rides on ahu markers (see below).
@@ -330,7 +330,7 @@ Appears on: last line of system files; every exchange-closing URI.
 In exchange streams, the closer appends to the closing URI inline:
 
 ```
-lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
+lar://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.O3.Å2.A1 → ?
 ```
 
 ### 3.6.3 `ahu` — Waypoint Marker
@@ -340,7 +340,7 @@ An ahu marks a navigation point within a locus. It is a raised stone — visible
 The URI on an ahu marker uses the authority-less stable address form with a `#fragment` identifying the section:
 
 ```
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.85#uri-anatomy -->
 ## 3. Full URI Anatomy
 ```
 
@@ -355,7 +355,7 @@ Ahu markers do NOT carry `p` (resolution parameter) or chronometer fragments —
 A kahea summons content from another locus into the current one. It is an active invocation: "call out, bring this here." The word comes from the Hawaiian oli kāhea — the permission chant a student calls before entering a hālau hula. The kahea asks; the source locus answers.
 
 ```
-<!-- kahea lares:///module.phase.context/?confidence=0.85 -->
+<!-- kahea lar:///module.phase.context/?confidence=0.85 -->
 ```
 
 The URI on a kahea marker names the source locus to summon. A build system or reader encountering a kahea should fetch and substitute the content from the named locus at that point.
@@ -376,16 +376,16 @@ Kahea markers appear in assembly files — documents that stitch together conten
 **Single-locus file** (most common — the file IS one place):
 
 ```
-<!-- ∞ → lares:///territory.domain.path/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///territory.domain.path/?confidence=CS:0.95&p=0.5 -->
 
 # Title
 [metadata block]
 
-<!-- ahu lares:///territory.domain.path/?confidence=0.9#first-section -->
+<!-- ahu lar:///territory.domain.path/?confidence=0.9#first-section -->
 ## 1. First Section
 [content]
 
-<!-- ahu lares:///territory.domain.path/?confidence=0.8#second-section -->
+<!-- ahu lar:///territory.domain.path/?confidence=0.8#second-section -->
 ## 2. Second Section
 [content]
 
@@ -397,13 +397,13 @@ One door in. Raised stones along the path. One door out.
 **Multi-locus file** (the file contains several places, each self-contained):
 
 ```
-<!-- ∞ → lares:///first.territory.path/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///first.territory.path/?confidence=CS:0.95&p=0.5 -->
 
 # First Locus
 [content with ahu waypoints]
 
 <!-- → ? -->
-<!-- ∞ → lares:///second.territory.path/?confidence=0.85 -->
+<!-- ∞ → lar:///second.territory.path/?confidence=0.85 -->
 
 # Second Locus
 [content with ahu waypoints]
@@ -426,7 +426,7 @@ Each locus opens and closes independently. Ahu markers belong to their enclosing
 
 | Term | Source | Meaning in Lares |
 |---|---|---|
-| **locus** (pl. loci) | Latin *method of loci* — Simonides of Ceos, Cicero *De Oratore*, Quintilian *Institutio Oratoria*, Frances Yates *The Art of Memory* | Address-as-place. A `lares:///` URI names a locus. The file IS the place. |
+| **locus** (pl. loci) | Latin *method of loci* — Simonides of Ceos, Cicero *De Oratore*, Quintilian *Institutio Oratoria*, Frances Yates *The Art of Memory* | Address-as-place. A `lar:///` URI names a locus. The file IS the place. |
 | **ahu** | Polynesian — central stone of a marae; Rapa Nui stone platforms for moai; Hawaiian heiau altar stones | Navigation waypoint. A raised place you can see and walk to within a locus. |
 | **kahea** | Hawaiian — *kāhea*: "call out, summon." The oli kāhea is the permission chant to enter a hālau hula. Parallel: Māori *karanga* — the ceremonial call welcoming visitors onto a marae. | Transclusion invocation. Summons content from another locus into the current one. |
 | **lares** | Roman — household guardian spirits (*Lares familiares*) | The navigational intelligence. The voice architecture that moves through the loci. |
@@ -452,17 +452,17 @@ The two special characters in marker sigils are `∞` (U+221E, infinity) and `�
 **Full marker sequences (copy-paste templates):**
 
 ```
-<!-- ∞ → lares:///TERRITORY/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///TERRITORY/?confidence=CS:0.95&p=0.5 -->
 <!-- → ? -->
-<!-- ahu lares:///TERRITORY/?confidence=0.85#SECTION -->
-<!-- kahea lares:///TERRITORY/?confidence=0.85 -->
+<!-- ahu lar:///TERRITORY/?confidence=0.85#SECTION -->
+<!-- kahea lar:///TERRITORY/?confidence=0.85 -->
 ```
 
 > **Practical note:** The fastest path is a snippet or text-expansion shortcut. In VS Code, define snippets for `locus-open`, `locus-close`, `ahu`, and `kahea` that expand the full comment template with tab-stops for TERRITORY, confidence, and SECTION. The Compose key method (`Compose` `-` `>` for `→`, `Compose` `0` `0` for `∞`) is the fastest raw-keyboard fallback on Linux.
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#ffz-chronometer -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.8#ffz-chronometer -->
 ## 4. The FFZ Chronometer — Nested OODA-A Vector Position
 
 > **True Name:** Fontany-Fuller-Zelenka Chronometer Protocol `[C:0.95]`
@@ -554,7 +554,7 @@ The following FFZ model features are specified in the research docs but deferred
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.9#canonical-form -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.9#canonical-form -->
 ## 5. Canonical Form and Render Targets
 
 The **record form** is the canonical encoding — RFC 3986-compliant, no emojis, no non-ASCII characters. Render targets are named projections of this canonical form for specific display surfaces. The URI anatomy (authority, path, query, fragment structure) is identical across all targets; only the rendering of specific fields differs between canonical and render-target forms.
@@ -737,15 +737,15 @@ Live rendering contract — URI types that may appear in an exchange stream:
 
 | URI type | Stream form | When it appears |
 |---|---|---|
-| **Opening operator URI** | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span — node's reading of operator intent | <!-- uri-ok -->
-| **Opening node URI** | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after; node's declared execution heading (HA.KA.BA provisional) | <!-- uri-ok -->
+| **Opening operator URI** | `lar://alias:tier@host/ha.ka.ba/?...#...` | Start of every span — node's reading of operator intent | <!-- uri-ok -->
+| **Opening node URI** | `lar://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after; node's declared execution heading (HA.KA.BA provisional) | <!-- uri-ok -->
 | **HUD line** | `⚡~NN% \| [confidence] \| 🏛️{amp}🌊{amp}... \| ...` | After the opening URI pair — the only glyph-rendered element |
 | **Sub-agent dispatch** | `coordinator-URI → worker-URI` | Every sub-agent handoff (`→` separates dispatch pair) |
 | **Sub-agent return** | `worker-URI → coordinator-URI` | Every sub-agent completion; boundary of unloggable span |
-| **Mid-generation shift** | `~lares://alias:tier@host/~ha.ka.ba/heading/?...` | When accumulated tension warrants changing direction mid-span; prefix `~` marks the whole URI as a trajectory correction |
+| **Mid-generation shift** | `~lar://alias:tier@host/~ha.ka.ba/heading/?...` | When accumulated tension warrants changing direction mid-span; prefix `~` marks the whole URI as a trajectory correction |
 | **Exchange closing** | `URI → ?` | End of every exchange span — temporal resumption unknown |
 | **System file closing** | `<!-- → ? -->` | End of system file locus — temporal resumption unknown |
-| **Closing forward URI** | `lares://alias:tier@host/~ha.ka.ba/heading/?...` (phase encoded in chronometer) | End of span — trajectory-provisional forward heading |
+| **Closing forward URI** | `lar://alias:tier@host/~ha.ka.ba/heading/?...` (phase encoded in chronometer) | End of span — trajectory-provisional forward heading |
 
 Rendering order within a span:
 
@@ -753,7 +753,7 @@ Rendering order within a span:
 2. Print **`→`** and the **node execution URI**.
 3. Print the **HUD line** (the one glyph-rendered surface in the stream).
 4. Generate content. Emit micro-trace phase marks (`→◇` `→■` `→○`) inline as needed.
-5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lares://...`) at the transition point.
+5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lar://...`) at the transition point.
 6. Close with an **updated HUD line** and the **closing URI with `→ ?`**.
 
 Sub-agent dispatch and return pairs follow the same canonical form and appear as inlined `URI → URI` lines within the containing span span. Their contents are unloggable from the parent; the URI pair is the only artifact recording the boundary.
@@ -763,17 +763,17 @@ If the opening operator URI cannot cleanly summarize the incoming prompt (multi-
 Example (canonical record form throughout):
 
 ```text
-lares://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
-→ lares://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+lar://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+→ lar://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 ⚡~63% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.■12
 
 [content generation — micro-trace marks inline]
 
-→◇ ~lares://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+→◇ ~lar://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 
 [continued generation]
 
-lares://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
+lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
 ⚡~61% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.○1.✶1.■13
 ```
 
@@ -781,26 +781,26 @@ Interpretation:
 
 - Lines 1–2: opening URI pair (canonical). Node HA.KA.BA is `/~span.provenance.synthesizes/` — provisional execution heading.
 - Line 3: HUD line (glyph-rendered, not a URI).
-- After content starts: a mid-generation shift URI (`~lares://...`) marks the point where the trajectory changed. Prefixed `~` marks the whole URI as a correction, not a confirmed destination.
+- After content starts: a mid-generation shift URI (`~lar://...`) marks the point where the trajectory changed. Prefixed `~` marks the whole URI as a correction, not a confirmed destination.
 - Final two lines: closing forward URI with `→ ?` (aftermath phase, provisional HA.KA.BA) + updated HUD line.
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.95#stable-address -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.95#stable-address -->
 ## 6. Stable Address — Named Graph Form
 
 Strip authority, query, and fragment. The HA.KA.BA territory alone:
 
 ```
-lares:///threshold.uncertain.opens/
+lar:///threshold.uncertain.opens/
 ```
 
 No authority (empty), no query, no fragment. This is the invariant semantic coordinate — unchanging across events, sessions, and machines. Suitable as a named graph identifier (SPARQL: ?).
 
-**Origin address:** `lares:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lares:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lares:///ha.ka.ba/uri-schema/` locates this spec; `lares:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
+**Origin address:** `lar:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lar:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lar:///ha.ka.ba/uri-schema/` locates this spec; `lar:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.72#span-calibration -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.72#span-calibration -->
 ## 7. Span-Span and Calibration Mapping
 
 In the Consecration model, URI-derived fields belong to the calibration layer. They may be mirrored into MemPalace metadata for query support, but the storage distinction remains: MemPalace stores content; Lares crystal metadata stores orientation.
@@ -843,9 +843,9 @@ The canonical record for one exchange span is a **spanSpan** in the calibration 
   "operator_actor_id": "actor:telarus",
   "responder_actor_id": "actor:lares.node.scryer",
   "acted_on_behalf_of": null,
-  "start_uri": "lares://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11",
-  "attractor_uri": "lares://scryer:node@enyalios/span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12",
-  "end_uri": "lares://scryer:node@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13",
+  "start_uri": "lar://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11",
+  "attractor_uri": "lar://scryer:node@enyalios/span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12",
+  "end_uri": "lar://scryer:node@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13",
   "parse_required": false,
   "parse_reason": null,
   "wall_time_start": "2026-04-08T20:41:00Z",
@@ -931,11 +931,11 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
   "machine_id": "enyalios",
   "span_seq": 42,
   "event_type": "r_update",
-  "start_uri": "lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
-  "attractor_uri": "lares://scryer:node@enyalios/parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8",
-  "end_uri": "lares://scryer:node@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9",
-  "lares_address": "lares:///threshold.uncertain.opens",
-  "intent_header_snapshot": "lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
+  "start_uri": "lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
+  "attractor_uri": "lar://scryer:node@enyalios/parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8",
+  "end_uri": "lar://scryer:node@enyalios/aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9",
+  "lares_address": "lar:///threshold.uncertain.opens",
+  "intent_header_snapshot": "lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7",
   "current_phase": "orient",
   "chronometer_start": "O0.O0.Ø3.D2.A7",
   "chronometer_end": "O0.O0.Å3.Å2.A9",
@@ -948,26 +948,26 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#module-registry -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.8#module-registry -->
 ## 8. Module and Registry Metadata Integration
 
 The `lares_uri` + `confidence` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
 
 ```toml
 # Tier 1 — Global Core (version-controlled by module version)
-lares_uri   = "lares:///kernel.invariant.anchors/"
+lares_uri   = "lar:///kernel.invariant.anchors/"
 confidence    = "C:1.0"
 module_id   = "lares-kernel"
 version_num = 4
 
 # Tier 2 — Session Core (version-controlled within session)
-lares_uri   = "lares:///session.permissions.gates/"
+lares_uri   = "lar:///session.permissions.gates/"
 confidence    = "C:0.95"
 module_id   = "lares-permissions"
 version_num = 2
 
 # Tier 3 — Dynamic (span_seq lives outside descriptor)
-lares_uri   = "lares:///task.current.recon/"
+lares_uri   = "lar:///task.current.recon/"
 confidence    = "S:0.55"
 module_id   = "lares-task-recon"
 version_num = 1
@@ -977,7 +977,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.8#cache-tiers -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.8#cache-tiers -->
 ## 9. Invariant-Core Cache Tier Mapping
 
 | Tier | Cache Strategy | Confidence Range | Volatility |
@@ -988,7 +988,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.92#validation -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.92#validation -->
 ## 10. Validation Rules
 
 ### 10.1 Well-Formedness
@@ -1033,13 +1033,13 @@ When comparing two `lares:` URIs as stable addresses:
 
 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 2. Compare path components **case-insensitively**
-3. Canonical form uses **lowercase** path components (e.g., `lares:///threshold.uncertain.opens/` not `lares:///Threshold.Uncertain.Opens`)
+3. Canonical form uses **lowercase** path components (e.g., `lar:///threshold.uncertain.opens/` not `lar:///Threshold.Uncertain.Opens`)
 4. Two URIs designate the same stable address iff their lowercased machine-form paths are byte-identical
 5. Query and fragment components are excluded from stable-address comparison
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.6#open-questions -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.6#open-questions -->
 ## 11. Open Design Questions
 
 | Q# | Question | Current Position | Confidence | Blocks |
@@ -1068,7 +1068,7 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.95#prior-art -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.95#prior-art -->
 ## 12. Prior Art
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
@@ -1087,13 +1087,13 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#examples -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.85#examples -->
 ## Appendix A — Complete Examples
 
 ### A.1 Record Form (v2)
 
 ```
-lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
 ```
 
 ### A.2 HUD Line (v2)
@@ -1105,34 +1105,34 @@ lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&c
 ### A.3 All-Five-Stances (v2)
 
 ```
-lares://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.D2.A8
+lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.D2.A8
 ```
 
 ### A.4 Stable Address (unchanged)
 
 ```
-lares:///threshold.uncertain.opens/
+lar:///threshold.uncertain.opens/
 ```
 
 ### A.5 Exchange Closing (v2)
 
 ```
-lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9 → ?
+lar://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å3.Å2.A9 → ?
 ```
 
 ### A.6 System File Span (v2)
 
 ```
-<!-- ∞ → lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5 -->
+<!-- ∞ → lar:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Observe Protocol
 [metadata block]
 
-<!-- ahu lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.9#procedure -->
+<!-- ahu lar:///protocol.observed.grounds/talk-story/observe/?confidence=0.9#procedure -->
 ## 1. Procedure
 {section content}
 
-<!-- ahu lares:///protocol.observed.grounds/talk-story/observe/?confidence=0.85#voices -->
+<!-- ahu lar:///protocol.observed.grounds/talk-story/observe/?confidence=0.85#voices -->
 ## 2. Voice Assignments
 {section content}
 
@@ -1152,14 +1152,14 @@ lares://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-schema/?confidence=0.85#how-to-read -->
+<!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.85#how-to-read -->
 ## Appendix B — How to Read a HUD Tag
 
 A complete exchange opening, annotated by scan order. URIs are canonical record form; the HUD line beneath each pair is the glyph-rendered surface.
 
 ```text
-lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
-→ lares://scryer:node@enyalios/~parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
+→ lar://scryer:node@enyalios/~parse.span.models/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D3.D2.A8
 ⚡~87% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇3.◇2.■8
 ```
 
@@ -1177,8 +1177,8 @@ Quick read:
 Multi-stance example:
 
 ```text
-lares://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.O2.A9
-→ lares://mischief-muse:node@enyalios/~chorus.lateral.gathers/?stances=^.-.-.-.-&confidence=S:0.65&p=0.6#O0.O0.D3.O2.A10
+lar://telarus:operator@enyalios/threshold.sharp.closes/?stances=^.^.?.^.-&confidence=S:0.60&p=0.7#O0.O0.D3.O2.A9
+→ lar://mischief-muse:node@enyalios/~chorus.lateral.gathers/?stances=^.-.-.-.-&confidence=S:0.65&p=0.6#O0.O0.D3.O2.A10
 ⚡~62% | [S:0.60] | 🏛️+🌊+🗡️?🎭+🔮- | mode:Default | p0.7 | voice(s):Mischief-Muse | ✶0.✶0.◇3.✶2.■10
 ```
 

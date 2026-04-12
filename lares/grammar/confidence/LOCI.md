@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.confidence.defines/confidence/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Confidence + Register Bands
 
@@ -27,7 +27,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#loop-position -->
+<!-- ahu lar:///grammar.confidence.defines/confidence/?confidence=CS:0.80#loop-position -->
 
 ## Loop Position
 
@@ -61,7 +61,7 @@ Confidence should not:
 
 ---
 
-<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#handoff -->
+<!-- ahu lar:///grammar.confidence.defines/confidence/?confidence=CS:0.80#handoff -->
 
 ## Handoff
 
@@ -78,7 +78,7 @@ If those answers stay vague, the tag becomes decoration instead of signal.
 
 ---
 
-<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#surface -->
+<!-- ahu lar:///grammar.confidence.defines/confidence/?confidence=CS:0.80#surface -->
 
 ## Composable Surface
 
@@ -95,7 +95,7 @@ placement stays explicit and the source of the weight stays legible.
 
 ---
 
-<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#conventions -->
+<!-- ahu lar:///grammar.confidence.defines/confidence/?confidence=CS:0.80#conventions -->
 
 ## Conventions
 
@@ -114,7 +114,7 @@ claims upward into Canon bands.
 
 ---
 
-<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.confidence.defines/confidence/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -129,7 +129,7 @@ clarity.
 
 ---
 
-<!-- ahu lares:///grammar.confidence.defines/confidence/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.confidence.defines/confidence/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

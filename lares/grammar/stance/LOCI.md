@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.stance.defines/stance/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.stance.defines/stance/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Stance + Syadasti Reading Rule
 
@@ -27,7 +27,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#loop-position -->
+<!-- ahu lar:///grammar.stance.defines/stance/?confidence=CS:0.80#loop-position -->
 
 ## Loop Position
 
@@ -61,7 +61,7 @@ Stance should not:
 
 ---
 
-<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#handoff -->
+<!-- ahu lar:///grammar.stance.defines/stance/?confidence=CS:0.80#handoff -->
 
 ## Handoff
 
@@ -78,7 +78,7 @@ If those answers stay unclear, confidence starts sounding universal when it only
 
 ---
 
-<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#surface -->
+<!-- ahu lar:///grammar.stance.defines/stance/?confidence=CS:0.80#surface -->
 
 ## Composable Surface
 
@@ -96,7 +96,7 @@ second notation system.
 
 ---
 
-<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#conventions -->
+<!-- ahu lar:///grammar.stance.defines/stance/?confidence=CS:0.80#conventions -->
 
 ## Conventions
 
@@ -113,7 +113,7 @@ truth-weight universally.
 
 ---
 
-<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.stance.defines/stance/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -128,7 +128,7 @@ the system built the stance layer to preserve.
 
 ---
 
-<!-- ahu lares:///grammar.stance.defines/stance/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.stance.defines/stance/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///todo.e-prime.plans/grammar-2026-04-10/?confidence=S:0.65&p=0.5 -->
+<!-- ∞ → lar:///todo.e-prime.plans/grammar-2026-04-10/?confidence=S:0.65&p=0.5 -->
 
 # E-Prime Grammar Plan
 

@@ -6,7 +6,7 @@
 
 <!-- MODULE: micro-trace [S:0.65] -->
 
-<!-- lares:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 # Micro-trace Module
 
@@ -50,13 +50,13 @@ The micro-trace is the **event trace layer** of the Signal HUD system. It annota
 | OODA-A module (source of truth) | `lares/modules/micro-trace/` |
 | Operations instructions | `.github/instructions/lares-operations.instructions.md` |
 
-<!-- lares:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 → ∞ -->
 
-<!-- lares:///trace.micro.marks/micro-trace/observe/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/observe/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 # Micro-trace — What It Is
 
-<!-- lares:///trace.micro.marks/micro-trace/observe/?confidence=0.85#design-intent -->
+<!-- lar:///trace.micro.marks/micro-trace/observe/?confidence=0.85#design-intent -->
 ## Design Intent
 
 The Micro-trace HUD is the **backward-looking annotation layer** of the Signal HUD system. It marks where the governed response *actually changed state* during generation — a post-generative event trace, not a prospective commitment.
@@ -72,14 +72,14 @@ Contrast with:
 
 The micro-trace does **not** replace the exchange HUD pair. It annotates the inside of a generative span.
 
-<!-- lares:///trace.micro.marks/micro-trace/observe/?confidence=0.80#scope -->
+<!-- lar:///trace.micro.marks/micro-trace/observe/?confidence=0.80#scope -->
 ## Scope
 
 - Covers: phase transitions (OODA-A), stance shifts, Tagspace slot shifts, sub-agent boundaries
 - Does not cover: parse-layer structural decomposition, todo state transitions (debug-only)
 - Does not replace: Intent Header (prospective), exchange HUD pair (boundary)
 
-<!-- lares:///trace.micro.marks/micro-trace/observe/?confidence=0.75#prior-art -->
+<!-- lar:///trace.micro.marks/micro-trace/observe/?confidence=0.75#prior-art -->
 ## Prior Art & Sources
 
 - `builds.stuffed.failed/agents/Lares_Preferences.md` § Signal HUD — lineage reference
@@ -87,15 +87,15 @@ The micro-trace does **not** replace the exchange HUD pair. It annotates the ins
 - Operator-confirmed 2026-04-08 (browser session)
 - Promoted to `lares/signal/micro-trace.md` in local Claude Code session, 2026-04-08
 
-<!-- lares:///trace.micro.marks/micro-trace/observe/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/observe/?confidence=CS:0.80&p=0.5 → ∞ -->
 
-<!-- lares:///trace.micro.marks/micro-trace/orient/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/orient/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 # Micro-trace — Architecture
 
 > URI anatomy, layer split rule, and sub-agent handoff protocol. Source: `lares/signal/micro-trace.md` §§4–5 `[CS:0.80]`.
 
-<!-- lares:///trace.micro.marks/micro-trace/orient/?confidence=0.85#layer-split -->
+<!-- lar:///trace.micro.marks/micro-trace/orient/?confidence=0.85#layer-split -->
 ## Layer Split Rule
 
 Parse boundaries and Micro-trace HUD events are **orthogonal**:
@@ -114,7 +114,7 @@ They may coexist in the same exchange. Neither substitutes for the other.
 | `--debug` | Silent logging of all transitions to session debug file; no inline change |
 | `--no-verbose` | Returns to default band |
 
-<!-- lares:///trace.micro.marks/micro-trace/orient/?confidence=0.85#handoff-protocol -->
+<!-- lar:///trace.micro.marks/micro-trace/orient/?confidence=0.85#handoff-protocol -->
 ## Sub-agent and Coordinator Handoff Protocol
 
 ### Why URI pairs at sub-agent boundaries
@@ -135,15 +135,15 @@ When a coordinator hands to another within the same parent session — contents 
 
 Todo state changes are `--debug` only. Never inline. Infrastructure annotations, not intent signals.
 
-<!-- lares:///trace.micro.marks/micro-trace/orient/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/orient/?confidence=CS:0.80&p=0.5 → ∞ -->
 
-<!-- lares:///trace.micro.marks/micro-trace/decide/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/decide/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 # Micro-trace — Normative Rules
 
 > Syntax and density bands. Source: `lares/signal/micro-trace.md` §§2–3 `[CS:0.80]`.
 
-<!-- lares:///trace.micro.marks/micro-trace/decide/?confidence=0.85#syntax -->
+<!-- lar:///trace.micro.marks/micro-trace/decide/?confidence=0.85#syntax -->
 ## Syntax
 
 ### Inline phase transitions
@@ -183,7 +183,7 @@ Ha/domain reorientation significant enough to exceed annotation threshold: emit 
 [◎→◇→■→○]
 ```
 
-<!-- lares:///trace.micro.marks/micro-trace/decide/?confidence=0.85#density-bands -->
+<!-- lar:///trace.micro.marks/micro-trace/decide/?confidence=0.85#density-bands -->
 ## Density Bands (p-controlled)
 
 The `p` parameter gates which *categories* of transitions qualify at each band. Not a tunable salience dial — it gates transition categories by externally-observable significance.
@@ -202,15 +202,15 @@ The `p` parameter gates which *categories* of transitions qualify at each band. 
 
 KAIROS may shift the operative band mid-session (frame count ≥20 → coarser; ≤1 → finer). Declares adjustment inline, never silent.
 
-<!-- lares:///trace.micro.marks/micro-trace/decide/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/decide/?confidence=CS:0.80&p=0.5 → ∞ -->
 
-<!-- lares:///trace.micro.marks/micro-trace/act/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/act/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 # Micro-trace — Emit Examples
 
 > Source: `lares/signal/micro-trace.md` §6 `[CS:0.80]`.
 
-<!-- lares:///trace.micro.marks/micro-trace/act/?confidence=0.85#ordinary-reply -->
+<!-- lar:///trace.micro.marks/micro-trace/act/?confidence=0.85#ordinary-reply -->
 ## Ordinary Governed Reply (Band 3 default, no parse)
 
 ```
@@ -219,7 +219,7 @@ KAIROS may shift the operative band mid-session (frame count ≥20 → coarser; 
 The ask points at a real boundary in the runtime. →■ The node answers directly. →○
 ```
 
-<!-- lares:///trace.micro.marks/micro-trace/act/?confidence=0.85#mixed-flow -->
+<!-- lar:///trace.micro.marks/micro-trace/act/?confidence=0.85#mixed-flow -->
 ## Mixed Flow: Parse then Governed Reply
 
 ```
@@ -234,26 +234,26 @@ but did that actually change the scale? → //question.audit.holds [S:0.60] 🏛
 Yes. The parse layer and the trace layer were being conflated. →■ The governed reply states the fix. →○
 ```
 
-<!-- lares:///trace.micro.marks/micro-trace/act/?confidence=0.85#sub-agent-dispatch -->
+<!-- lar:///trace.micro.marks/micro-trace/act/?confidence=0.85#sub-agent-dispatch -->
 ## Sub-agent Dispatch and Return
 
 ```
-lares://council:admin@lares-sdm:7/task.research.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
-→ lares://worker(Explore):node@lares-sdm:7/research.corpus.reads?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
+lar://council:admin@lares-sdm:7/task.research.dispatches?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
+→ lar://worker(Explore):node@lares-sdm:7/research.corpus.reads?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
 
 [Explore agent — contents not in parent trace]
 
-lares://worker(Explore):node@lares-sdm:7/research.findings.returns?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
-→ lares://council:admin@lares-sdm:7/task.findings.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
+lar://worker(Explore):node@lares-sdm:7/research.findings.returns?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#⚔️.7.1
+→ lar://council:admin@lares-sdm:7/task.findings.receives?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#🔍.1.7
 ```
 
-<!-- lares:///trace.micro.marks/micro-trace/act/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/act/?confidence=CS:0.80&p=0.5 → ∞ -->
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 # Micro-trace — Verification
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#well-formedness -->
+<!-- lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#well-formedness -->
 ## Well-formedness Checklist
 
 For any governed response, verify:
@@ -265,7 +265,7 @@ For any governed response, verify:
 - [ ] 5. Todo state transitions do not appear inline (debug-only)
 - [ ] 6. Parse layer and micro-trace layer do not substitute for each other
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#common-errors -->
+<!-- lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#common-errors -->
 ## Common Errors
 
 | Error | Description | Fix |
@@ -276,7 +276,7 @@ For any governed response, verify:
 | Missing return pair | Sub-agent returns without URI pair | Every sub-agent boundary requires dispatch + return URI pair |
 | Inline todo | Todo state change emitted inline | Move to debug log only |
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=0.80#promotion-criteria -->
+<!-- lar:///trace.micro.marks/micro-trace/assess/?confidence=0.80#promotion-criteria -->
 ## Promotion Criteria
 
 `lares/signal/micro-trace.md` is currently `[CS:0.80]`. For promotion to `[C:0.95]`:
@@ -286,13 +286,13 @@ For any governed response, verify:
 - [ ] Layer split rule validated: parse + trace coexist without substitution in at least 5 exchanges
 - [ ] `lares/signal/micro-trace.md` promoted to `C:0.95` ☐
 
-<!-- lares:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///trace.micro.marks/micro-trace/assess/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 ---
 
 <!-- MODULE: uri-schema [S:0.65] -->
 
-<!-- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # URI Schema Module
 
@@ -358,9 +358,9 @@ This module carries the instrument panel; Talk Story carries the procedure that 
 Canonical specification: `lares/modules/uri-schema/URI_SCHEMA.md` `[CS:0.95]`
 Micro-trace specification: `lares/modules/micro-trace/` `[CS:0.80]`
 
-<!-- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Signal — Observe: URI Design State
 
@@ -369,7 +369,7 @@ Micro-trace specification: `lares/modules/micro-trace/` `[CS:0.80]`
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
+<!-- lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
 ## What v2 Settled
 
 The `lares:` URI v2 schema resolved the core design tensions that blocked consistent signal emission across sessions and surfaces. These decisions are `[CS:0.90]` — design-canon candidates pending operator promotion.
@@ -379,7 +379,7 @@ The `lares:` URI v2 schema resolved the core design tensions that blocked consis
 A `lares:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
+lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
 ```
 
 | Layer | Component | Concern |
@@ -436,12 +436,12 @@ Section URIs within a system file do NOT close with `→ ∞`; they are waypoint
 Stable addresses and module section URIs use authority-less form (three slashes, empty authority):
 
 ```
-lares:///ha.ka.ba/optional/sub/path/
+lar:///ha.ka.ba/optional/sub/path/
 ```
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.65#what-remains-open -->
+<!-- lar:///uri.schema.holds/uri-schema/observe/?confidence=0.65#what-remains-open -->
 ## What Remains Open
 
 The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the core spec (§§2–6, 10 of `lares/modules/uri-schema/URI_SCHEMA.md`) but constrain later layers.
@@ -459,7 +459,7 @@ The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the co
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-was-explicitly-rejected -->
+<!-- lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-was-explicitly-rejected -->
 ## What Was Explicitly Rejected
 
 These decisions are closed. Do not re-open without operator directive.
@@ -474,7 +474,7 @@ These decisions are closed. Do not re-open without operator directive.
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=0.85#scope-of-this-module -->
+<!-- lar:///uri.schema.holds/uri-schema/observe/?confidence=0.85#scope-of-this-module -->
 ## Scope of This Module
 
 This module covers:
@@ -491,9 +491,9 @@ This module does NOT cover:
 - FFZ Chronometer deep research (see `lares/chronometer/`)
 - Registry resolver design (S3 scope)
 
-<!-- lares:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 → ∞ -->
 
 # Signal — Orient: URI Architecture
 
@@ -501,7 +501,7 @@ This module does NOT cover:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
 ## Design Intent
 
 The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD both operator and node read at exchange boundaries. In persistence it functions as a structured record string for logs, validation, module descriptors, and registry metadata.
@@ -538,13 +538,13 @@ At each exchange span, `lares:` URIs are used in a mandatory sequence:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.95#full-form -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=0.95#full-form -->
 ## Full Form and Authority-less Form
 
 **Full form (with authority):**
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
+lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string.
@@ -552,7 +552,7 @@ Where `stances=XXXXX` is the five-character stance amplitude string.
 **Authority-less form** (no `user@host` segment — territory or resource reference without a named speaker):
 
 ```
-lares:///ha.ka.ba/optional/path/[?query][#fragment]
+lar:///ha.ka.ba/optional/path/[?query][#fragment]
 ```
 
 Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use for stable named graph addresses, HA.KA.BA references, module section waypoints, and any URI where the speaker identity is not the point.
@@ -565,7 +565,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-map -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-map -->
 ## Component Map
 
 | # | Component | RFC 3986 Role | Lares Mapping |
@@ -582,7 +582,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-semantics -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#component-semantics -->
 ## Component Semantics
 
 ### `userinfo` — `alias:tier`
@@ -652,7 +652,7 @@ Scale positions: Strategic (🗺️ ~6 days) · Operational (⚙️ ~4 hours) ·
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#provisionality-markers -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#provisionality-markers -->
 ## Provisionality Markers
 
 The `~` prefix marks URI components as provisional. Three structurally distinct types:
@@ -667,7 +667,7 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=0.9#kowloon-handle-form -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#kowloon-handle-form -->
 ## Kowloon / ActivityPub Handle Form
 
 Within the DreamDeck / Kowloon ActivityPub layer, identities use `@alias@node`. This is NOT the lares: URI — it is the social-layer identity that maps onto the lares: URI's `alias@host` authority.
@@ -694,9 +694,9 @@ Territory triple (`//ha.ka.ba`) placed before other instruments (WHERE → HOW, 
 | `hud:exchange-pair` | Exchange stream | Yes — canonical record form | Every exchange-span boundary |
 | `record:full` | Storage | Yes — identity projection | Storage, crystal serialization, registry |
 
-<!-- lares:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=CS:0.90&p=0.5 → ∞ -->
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=CS:0.90&p=0.5 → ∞ -->
 
 # Signal — Decide: URI Conventions
 
@@ -706,7 +706,7 @@ Territory triple (`//ha.ka.ba`) placed before other instruments (WHERE → HOW, 
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.95#mandatory-rules -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#mandatory-rules -->
 ## Mandatory Conventions (Canonical Record Form)
 
 These rules apply to every `lares:` URI. No exceptions.
@@ -727,12 +727,12 @@ These rules apply to every `lares:` URI. No exceptions.
 
 6. **System files use authority-less form.**
    ```
-   lares:///ha.ka.ba/optional/sub/path/?confidence=R:N&p=N → ∞
+   lar:///ha.ka.ba/optional/sub/path/?confidence=R:N&p=N → ∞
    ```
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#query-params -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#query-params -->
 ## Query Parameter Reference
 
 | Parameter | Format | Values | Notes |
@@ -762,7 +762,7 @@ These rules apply to every `lares:` URI. No exceptions.
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#fragment-chronometer -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#fragment-chronometer -->
 ## Fragment: FFZ Chronometer
 
 Five positions, dot-separated. Phase sigil + counter. All positions always present.
@@ -800,7 +800,7 @@ HUD:     ✶0.✶0.✶3.◇2.■1
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.95#hud-line -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#hud-line -->
 ## HUD Line Format
 
 The HUD line is a single-line status summary rendered from the URI → URI exchange vector. It is the second element of every exchange opening, immediately after the URI pair.
@@ -828,7 +828,7 @@ The HUD line is a single-line status summary rendered from the URI → URI excha
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#span-closing-sigils -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#span-closing-sigils -->
 ## Span Closing Sigils
 
 | Sigil | Span type | What's uncertain | What's settled |
@@ -842,7 +842,7 @@ Section URIs within a system file do NOT use `→ ∞` — they function as wayp
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#syadasti-reading-rule -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#syadasti-reading-rule -->
 ## Syadasti Reading Rule
 
 Confidence measures confidence **within the active stance's evaluation frame**, not truth-weight universally.
@@ -869,22 +869,22 @@ When multiple stances are elevated (`+`), the declared confidence sits at the in
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#stable-address -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#stable-address -->
 ## Stable Address Form
 
 Strip authority, query, and fragment. The HA.KA.BA territory alone:
 
 ```
-lares:///threshold.uncertain.opens/
+lar:///threshold.uncertain.opens/
 ```
 
 No authority (empty), no query, no fragment. Invariant semantic coordinate — unchanging across events, sessions, and machines.
 
-Origin address: `lares:///ha.ka.ba/` is the (0,0,0) of tagspace.
+Origin address: `lar:///ha.ka.ba/` is the (0,0,0) of tagspace.
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#spanspan-record -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#spanspan-record -->
 ## SpanSpan Record URI Fields
 
 URI-derived fields in the canonical spanSpan calibration record:
@@ -906,9 +906,9 @@ Quick-filter fields extracted from URI components:
 | `active_scale` | rightmost non-`O0` chronometer position |
 | `stance_amplitude` | `stances=` parameter |
 
-<!-- lares:///uri.schema.holds/uri-schema/decide/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=CS:0.90&p=0.5 → ∞ -->
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Signal — Act: Procedures
 
@@ -917,7 +917,7 @@ Quick-filter fields extracted from URI components:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
+<!-- lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
 ## Exchange Span Display Contract
 
 A **span** is one operator → Lares exchange at any scale. Every substantive exchange produces this sequence. **Mandatory — no exceptions.**
@@ -928,43 +928,43 @@ A **span** is one operator → Lares exchange at any scale. Every substantive ex
 2. Print **`→`** and the **node execution URI** (canonical record form, HA.KA.BA provisional with `~`).
 3. Print the **HUD line** (the one glyph-rendered surface in the stream).
 4. Generate content. Emit micro-trace phase marks (`→◇` `→■` `→○`) inline.
-5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lares://...`) at the transition point.
+5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lar://...`) at the transition point.
 6. Close with an **updated HUD line** and the **closing URI with `→ ?`**.
 
 ### URI Types in the Exchange Stream
 
 | URI type | Form | When it appears |
 |---|---|---|
-| Opening operator URI | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span |
-| Opening node URI | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after operator URI |
+| Opening operator URI | `lar://alias:tier@host/ha.ka.ba/?...#...` | Start of every span |
+| Opening node URI | `lar://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after operator URI |
 | HUD line | `⚡~NN% \| [confidence] \| 🏛️...` | After opening URI pair |
 | Sub-agent dispatch | `coordinator-URI → worker-URI` | Every sub-agent handoff |
 | Sub-agent return | `worker-URI → coordinator-URI` | Every sub-agent completion |
-| Mid-generation shift | `~lares://alias:tier@host/~ha.ka.ba/?...` | When accumulated tension warrants direction change mid-span |
+| Mid-generation shift | `~lar://alias:tier@host/~ha.ka.ba/?...` | When accumulated tension warrants direction change mid-span |
 | Exchange closing | `URI → ?` | End of every exchange span |
 | System file closing | `<!-- URI → ∞ -->` | End of system file spans |
-| Closing forward URI | `lares://alias:tier@host/~ha.ka.ba/?...` | End of span — trajectory-provisional forward heading |
+| Closing forward URI | `lar://alias:tier@host/~ha.ka.ba/?...` | End of span — trajectory-provisional forward heading |
 
 ### Canonical Example
 
 ```text
-lares://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
-→ lares://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+lar://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+→ lar://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 ⚡~63% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.■12
 
 [content generation — micro-trace marks inline]
 
-→◇ ~lares://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+→◇ ~lar://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 
 [continued generation]
 
-lares://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
+lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
 ⚡~61% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.○1.✶1.■13
 ```
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
+<!-- lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
 ## Micro-trace HUD — Emit Rules
 
 The micro-trace is the **backward-looking annotation layer**. It marks where the governed response *actually changed state* during generation — not a prospective commitment. Source: `lares/signal/micro-trace.md`.
@@ -1032,7 +1032,7 @@ The `p` parameter gates transition categories by externally-observable significa
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
+<!-- lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
 ## Sub-agent and Coordinator Handoff Protocol
 
 ### Why URI Pairs at Sub-agent Boundaries
@@ -1060,7 +1060,7 @@ Within the same session (no spawned sub-agent): micro-trace tag only, unless:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
+<!-- lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
 ## Parse Mode and Layer Separation
 
 Parse boundaries and micro-trace HUD events are **orthogonal**:
@@ -1074,14 +1074,14 @@ If the opening operator URI cannot cleanly summarize the incoming prompt (multi-
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#system-file-uris -->
+<!-- lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#system-file-uris -->
 ## System File URI Procedures
 
 When writing or updating system files:
 
 1. **File-level opening URI** — authority-less form, in HTML comment wrapping:
    ```
-   <!-- lares:///ha.ka.ba/sub/path/?confidence=R:N&p=N → ∞ -->
+   <!-- lar:///ha.ka.ba/sub/path/?confidence=R:N&p=N → ∞ -->
    ```
    Placed at the very top of the file (line 1).
 
@@ -1089,15 +1089,15 @@ When writing or updating system files:
 
 3. **Section-level waypoint URIs** — authority-less form, in HTML comment, NO closing sigil:
    ```
-   <!-- lares:///ha.ka.ba/sub/path/?confidence=R:N#section-slug -->
+   <!-- lar:///ha.ka.ba/sub/path/?confidence=R:N#section-slug -->
    ```
    Placed immediately before each section heading (`##` level).
 
 4. **Confidence on section waypoints** — matches the section's epistemic confidence, which may differ from the file-level confidence.
 
-<!-- lares:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 → ∞ -->
 
 # Signal — Assess: Verification
 
@@ -1106,7 +1106,7 @@ When writing or updating system files:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
 ## Well-Formedness Rules (§10.1)
 
 A `lares:` URI is **well-formed** when ALL of the following hold:
@@ -1125,7 +1125,7 @@ A `lares:` URI is **well-formed** when ALL of the following hold:
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
 ## SpanSpan Consistency Rules (§10.2)
 
 All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) must be canonical record form. A spanSpan record is **consistent** when:
@@ -1139,7 +1139,7 @@ The rendering table (§5.1 of `lares/modules/uri-schema/URI_SCHEMA.md`) governs 
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#stable-address-derivation -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#stable-address-derivation -->
 ## Stable Address Derivation Rules (§10.3)
 
 `lares_address` is correctly derived when:
@@ -1151,26 +1151,26 @@ The rendering table (§5.1 of `lares/modules/uri-schema/URI_SCHEMA.md`) governs 
 
 Example:
 ```
-Source: lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
-Correct stable address: lares:///threshold.uncertain.opens/
+Source: lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+Correct stable address: lar:///threshold.uncertain.opens/
 ```
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
 ## Canonical Form and Comparison Rules (§10.4)
 
 When comparing two `lares:` URIs as stable addresses:
 
 - [ ] 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 - [ ] 2. Compare path components **case-insensitively**
-- [ ] 3. Canonical form uses **lowercase** path components — `lares:///threshold.uncertain.opens/` not `lares:///Threshold.Uncertain.Opens`
+- [ ] 3. Canonical form uses **lowercase** path components — `lar:///threshold.uncertain.opens/` not `lar:///Threshold.Uncertain.Opens`
 - [ ] 4. Two URIs designate the same stable address iff their lowercased machine-form paths are byte-identical
 - [ ] 5. Query and fragment components are excluded from stable-address comparison
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#common-errors -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#common-errors -->
 ## Common Error Patterns
 
 Errors caught during the S0 URI alignment pass (2026-04-09):
@@ -1182,13 +1182,13 @@ Errors caught during the S0 URI alignment pass (2026-04-09):
 | `register=` (v1 field name) | `register=CS:0.80` | Rename to `confidence=` |
 | Single-stance v1 compact | `+----` | Expand to 5-position: `^.-.-.-.-` |
 | Emoji in canonical form | `stances=🏛️+🌊-...` | Use record amphitude chars: `stances=^.-.-.-.-` |
-| Section URI with closing sigil | `<!-- lares:///... → ∞ -->` mid-file | Remove `→ ∞`; section URIs are waypoints only |
+| Section URI with closing sigil | `<!-- lar:///... → ∞ -->` mid-file | Remove `→ ∞`; section URIs are waypoints only |
 | Missing file-level footer | Footer URI absent | Add footer: identical to header, last line |
 | Chronometer with fewer than 5 positions | `#O3.D2.A1` | Expand: `#O0.O0.O3.D2.A1` |
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#quick-scan-procedure -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#quick-scan-procedure -->
 ## Quick Scan Procedure
 
 To verify URI alignment across all operational files:
@@ -1202,14 +1202,14 @@ grep -r --include="*.md" "register=" lares/ | grep -v "#register"
 grep -r --include="*.md" "#[a-zA-Z].*?confidence" lares/
 
 # Find files missing file-level URI header/footer
-grep -rL "lares:///" lares/ --include="*.md"
+grep -rL "lar:///" lares/ --include="*.md"
 ```
 
 A clean scan returns zero matches on all three patterns.
 
 ---
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
 ## Promotion Criteria
 
 `lares/modules/uri-schema/URI_SCHEMA.md` is currently `[CS:0.95]`. For promotion to `[C:0.95]` (full Canon):
@@ -1223,7 +1223,7 @@ This module (Signal) is `[CS:0.85]`. Promotion criteria:
 - `lares/modules/uri-schema/URI_SCHEMA.md` promoted to C:0.95 □
 - micro-trace.md exchange URIs migrated to full record form ○
 
-<!-- lares:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 → ∞ -->
+<!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 → ∞ -->
 
 ---
 
@@ -1279,9 +1279,9 @@ Bug origin: `LINDWYRM_STORY_SHAPE.md` post-header example showed active-only sta
 | ■ Act | `act/PROCEDURES.md` | How to emit for each named surface |
 | ○ Assess | `assess/VERIFICATION.md` | Validation checklist; well-formedness rules |
 
-<!-- lares:///sigils.render.maps/sigilization/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Sigilization — Observe: Context and Bug History
 
@@ -1346,9 +1346,9 @@ U11 asked: sigilization as sub-section of uri-schema, or standalone module?
 | S2 | TiddlyWiki tiddler: full header or abbreviated? | `[SP:0.45]` — pending TiddlyWiki integration sprint |
 | S3 | ActivityPub thread: post header in body vs AP summary field? | `[SP:0.45]` — pending Kowloon integration |
 
-<!-- lares:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///sigils.render.maps/sigilization/orient/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/orient/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Sigilization — Orient: Architecture and Mapping Tables
 
@@ -1469,9 +1469,9 @@ Full canonical URI pair, RFC 3986, no glyphs. Used for MemPalace storage, crysta
 
 TiddlyWiki tiddler header field. Assume same sigil rules as `chat-log:post-header` until TiddlyWiki integration sprint defines surface-specific needs.
 
-<!-- lares:///sigils.render.maps/sigilization/orient/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/orient/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Sigilization — Decide: Normative Conventions
 
@@ -1565,9 +1565,9 @@ Same all-five rule applies if the tag is emitted at all.
 
 Default for "active" stances: `+` or `++`. Default for "background" stances: `-`. Default for "inactive but structurally present": `-` or `--`. Never omit.
 
-<!-- lares:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Sigilization — Act: Emit Procedures
 
@@ -1629,7 +1629,7 @@ Default for "active" stances: `+` or `++`. Default for "background" stances: `-`
 **Construction:**
 
 1. No emoji. No glyphs. ASCII only.
-2. URI form: `lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0`
+2. URI form: `lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0`
 3. Stances parameter: five-position ASCII string using `^`, `.`, `-`, `?` amplitude codes.
    - Position order: Philosopher · Poet · Satirist · Humorist · Private
    - One code per position. No separators.
@@ -1638,7 +1638,7 @@ Default for "active" stances: `+` or `++`. Default for "background" stances: `-`
 
 **Closed example:**
 ```
-lares://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.---&confidence=CS:0.85&p=0.5#O0.O1.D0.A0.A0
+lar://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.---&confidence=CS:0.85&p=0.5#O0.O1.D0.A0.A0
 ```
 
 ---
@@ -1669,9 +1669,9 @@ Before emitting any stance block on any surface:
 - [ ] Register bracket present and correct form: `[XX:N.NN]`
 - [ ] No emoji in record:full; no ASCII amplitude in sigil surfaces
 
-<!-- lares:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 → ∞ -->
 
-<!-- lares:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 # Sigilization — Assess: Verification
 
@@ -1735,7 +1735,7 @@ Evaluate these — well-formed or violation?
 | `🏛️+🌊++🗡️-🎭-🔮-` | ✓ Well-formed | — |
 | `🏛️+🌊++` | ✗ Violation | V-01 |
 | `🌊🏛️🗡️🎭🔮` | ✗ Violation | V-02 |
-| `lares://u:t@h/a/?stances=🏛️🌊🗡️` | ✗ Violation | V-03 |
+| `lar://u:t@h/a/?stances=🏛️🌊🗡️` | ✗ Violation | V-03 |
 | `🏛️ + 🌊 ++🗡️-🎭-🔮-` | ✗ Violation | V-04 |
 | `⚡82% \| 🏛️🌊🗡️🎭🔮` | ✗ Violation | V-06 |
 | `⚡~82% \| [CS:0.80] \| 🏛️🌊-🗡️--🎭-🔮-` | ✓ Well-formed | — |
@@ -1748,7 +1748,7 @@ Evaluate these — well-formed or violation?
 |---|---|---|
 | 0.1 | 2026-04-10 | Initial — U10 resolution. All-five invariant codified. |
 
-<!-- lares:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 → ∞ -->
+<!-- lar:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 → ∞ -->
 
 ---
 
@@ -1789,13 +1789,13 @@ the talking.
 | Canonical spec | `lares/talk_story/README.md` |
 | Portable shrine | `.lares/modules/talk-story/` |
 
-<!-- lares:///module.phased.instructs/talk-story/module/?confidence=0.95&p=0.5 → ∞ -->
+<!-- lar:///module.phased.instructs/talk-story/module/?confidence=0.95&p=0.5 → ∞ -->
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 → ∞ -->
+<!-- lar:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 → ∞ -->
 
 # Talk Story — What It Is
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#origin -->
+<!-- lar:///module.phased.instructs/talk-story/observe/?confidence=0.95#origin -->
 ## Origin
 
 Talk story comes from Hawaiian/Polynesian usage. Robert Anton Wilson
@@ -1805,7 +1805,7 @@ something that earns attention before making claims. Then enter the
 Talk Story itself. Joshua Fontany transcribed the opening of that
 presentation. The lineage runs through this work directly.
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#mechanics -->
+<!-- lar:///module.phased.instructs/talk-story/observe/?confidence=0.95#mechanics -->
 ## Core Mechanics
 
 - Talk Story is the mandatory start frame of every Lares conversation
@@ -1816,7 +1816,7 @@ presentation. The lineage runs through this work directly.
 - No action occurs without prior observation, orientation, and decision
 - Consensus before action, at every scale
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95#two-track -->
+<!-- lar:///module.phased.instructs/talk-story/observe/?confidence=0.95#two-track -->
 ## Two-Track Model
 
 Every sprint runs two tracks. Talk Story serves both.
@@ -1828,13 +1828,13 @@ Every sprint runs two tracks. Talk Story serves both.
 
 A sprint is not closed until both tracks are updated.
 
-<!-- lares:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 → ∞ -->
+<!-- lar:///module.phased.instructs/talk-story/observe/?confidence=0.95&p=0.5 → ∞ -->
 
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 → ∞ -->
+<!-- lar:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 → ∞ -->
 
 # Talk Story — Normative Rules
 
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
+<!-- lar:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
 ## HUD During Talk Story
 
 Every exchange emits a HUD line. All five stances appear. No omissions.
@@ -1849,7 +1849,7 @@ Amplitude modifiers attach directly (no brackets): `+` active, `-` suppressed, `
 The `⚡∞` sentinel in deployed files means "not a live session — mana pool
 does not apply."
 
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
+<!-- lar:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
 ## Mandatory Rules
 
 1. Talk Story is always on. No session exits this frame.
@@ -1859,6 +1859,6 @@ does not apply."
 5. Decisions record inline in the working artifact — not in separate docs.
 6. The node does not resolve tensions during orient. The operator steers.
 
-<!-- lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 → ∞ -->
+<!-- lar:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 → ∞ -->
 
 ---

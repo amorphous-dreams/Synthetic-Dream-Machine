@@ -1,6 +1,6 @@
 
 [lares]
-uri = "lares:///ha.ka.ba/grammar/truename"
+uri = "lar:///ha.ka.ba/grammar/truename"
 
 # True Name registry entries
 
@@ -32,4 +32,4 @@ function = "<!-- kahea ... --> — transclusion pull; summoning content from ano
 name = "Lares (marker)"
 language = "Latin/Etruscan (*lares* — household spirits; guardian daemons of place)"
 locus = "../kahua/lares/LOCI.md"
-function = "bare lares:///... — the daemon's signature; present, no ceremony"
+function = "bare lar:///... — the daemon's signature; present, no ceremony"

@@ -17,7 +17,7 @@ Design workers in this subdirectory define how `lares:` URIs resolve and how the
 2. Read URI Schema section of `../../_todo/core/Signal_HUD_Tagspace-draft.md`.
 3. Read RFC 7595 notes in `../../_todo/core/A_deep-research-report.md`.
 4. Read `../../_todo/core/C-deep-research-report.md` for URI stamping protocol and TOML registry examples (complements A for registry design).
-4. Propose minimal resolver spec: what a `lares://` URI resolves to in practice (file path? crystal ref? nothing at runtime?).
+4. Propose minimal resolver spec: what a `lar://` URI resolves to in practice (file path? crystal ref? nothing at runtime?).
 6. Propose alias ledger format (TOML or JSONL, with operator aliases and machine IDs).
 7. Propose promotion ledger entry spec: what gets written when a design unit reaches `C:0.95`.
 8. Label all proposals `[Synthesis]` until schema settlement.

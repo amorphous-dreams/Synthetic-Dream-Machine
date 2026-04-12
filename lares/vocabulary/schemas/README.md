@@ -3,7 +3,7 @@
 > Scope: TOML schemas for module descriptors, tool descriptors, permission descriptors, registry manifest, bootloader config. Semantic digest model.
 > Updated: 2026-04-08
 > Status: Draft — `B_deep-research-report.md` is primary source
-> URI: `[pending — lares://core/design/schemas@draft]`
+> URI: `[pending — lar://core/design/schemas@draft]`
 
 ---
 

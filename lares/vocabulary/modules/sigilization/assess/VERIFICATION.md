@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///sigils.render.maps/sigilization/assess/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Assess: Verification
 
@@ -62,7 +62,7 @@ Evaluate these — well-formed or violation?
 | `🏛️+🌊++🗡️-🎭-🔮-` | ✓ Well-formed | — |
 | `🏛️+🌊++` | ✗ Violation | V-01 |
 | `🌊🏛️🗡️🎭🔮` | ✗ Violation | V-02 |
-| `lares://u:t@h/a/?stances=🏛️🌊🗡️` | ✗ Violation | V-03 | <!-- uri-ok -->
+| `lar://u:t@h/a/?stances=🏛️🌊🗡️` | ✗ Violation | V-03 | <!-- uri-ok -->
 | `🏛️ + 🌊 ++🗡️-🎭-🔮-` | ✗ Violation | V-04 |
 | `⚡82% \| 🏛️🌊🗡️🎭🔮` | ✗ Violation | V-06 |
 | `⚡~82% \| [CS:0.80] \| 🏛️🌊-🗡️--🎭-🔮-` | ✓ Well-formed | — |

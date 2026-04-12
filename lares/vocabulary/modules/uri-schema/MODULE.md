@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/?confidence=CS:0.90&p=0.5 -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/?confidence=CS:0.90&p=0.5 -->
 
 # URI Schema Module
 

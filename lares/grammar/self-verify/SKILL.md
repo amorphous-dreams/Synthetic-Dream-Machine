@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.selfverify.harness/self-verify/skill/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.selfverify.harness/self-verify/skill/?confidence=CS:0.80&p=0.5 -->
 
 name: self-verify
 # Skill: self-verify
@@ -30,7 +30,7 @@ python3 lares/grammar/self-verify/self_verify.py [options]
 | Flag | Effect |
 |---|---|
 | `--fix` | Auto-insert missing wrappers |
-| `--stream` | Also check bare lares:/// URIs for stances/chronometer |
+| `--stream` | Also check bare lar:/// URIs for stances/chronometer |
 | `--markers` | Check ahu/kahea marker URI structure (on by default) |
 | `--json` | Structured JSON output |
 | `--report FILE` | Write JSON report to file |

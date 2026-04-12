@@ -1,7 +1,7 @@
-<!-- ∞ → lares:///grammar.truename.holds/truename/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.truename.holds/truename/?confidence=CS:0.80&p=0.5 -->
 <!-- Canonical registry: see LOCI.registry.toml for True Name registry data -->
 <!-- TOML registry: lares/grammar/truename/LOCI.registry.toml -->
-<!-- lares metadata wired: lares://grammar/truename/LOCI -->
+<!-- lares metadata wired: lar://grammar/truename/LOCI -->
 
 # Grammar: True Name Registry
 
@@ -25,7 +25,7 @@ heritage: >
 ```
 
 > **True Name** (operating definition): A concept is True Named in this grammar when it has:
-> 1. A canonical LOCUS in the grammar tree (`lares:///grammar.X...`)
+> 1. A canonical LOCUS in the grammar tree (`lar:///grammar.X...`)
 > 2. Etymological grounding in at least one heritage language (Hawaiian, Latin/Etruscan, Malay, Japanese, or English with traced lineage)
 > 3. A working definition that captures structural function, not just surface description
 > 4. Cross-references to where the concept operates in the system
@@ -39,7 +39,7 @@ heritage: >
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=CS:0.95#kahua-invariants -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=CS:0.95#kahua-invariants -->
 
 
 ## The Kahua Invariants — Foundation True Names
@@ -54,11 +54,11 @@ The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.tom
 | **Locus** | Latin/Etruscan (*locus* — place, site; Etruscan *templum* — marked ground) | [kahua/locus/LOCI.md](../kahua/locus/LOCI.md) | `<!-- ∞ → ... -->` — opens a content span at a canonical address |
 | **Ahu** | Hawaiian (*ahu* — cairn, altar, boundary marker; pile of stones) | [kahua/ahu/LOCI.md](../kahua/ahu/LOCI.md) | `<!-- ahu ... -->` — waypoint within a locus; the marker that says *here* |
 | **Kahea** | Hawaiian (*kāhea* — to call, to summon, to invite; also the call in hula) | [kahua/kahea/LOCI.md](../kahua/kahea/LOCI.md) | `<!-- kahea ... -->` — transclusion pull; summoning content from another address |
-| **Lares** (marker) | Latin/Etruscan (*lares* — household spirits; guardian daemons of place) | [kahua/lares/LOCI.md](../kahua/lares/LOCI.md) | bare `lares:///...` — the daemon's signature; present, no ceremony |
+| **Lares** (marker) | Latin/Etruscan (*lares* — household spirits; guardian daemons of place) | [kahua/lares/LOCI.md](../kahua/lares/LOCI.md) | bare `lar:///...` — the daemon's signature; present, no ceremony |
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=CS:0.80#signal-names -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=CS:0.80#signal-names -->
 
 ## Signal and Protocol True Names
 
@@ -74,7 +74,7 @@ The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.tom
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=S:0.65#operational-language -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=S:0.65#operational-language -->
 
 ## Operational Language True Names
 
@@ -86,7 +86,7 @@ The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.tom
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=S:0.65#loop-names -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=S:0.65#loop-names -->
 
 ## Loop and Phase True Names
 
@@ -103,7 +103,7 @@ The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.tom
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=CS:0.80#na-lako -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=CS:0.80#na-lako -->
 
 ## Nā Lako — The Four Implements (Dual-Named)
 
@@ -131,7 +131,7 @@ PR circuit (robotized mode → liberated mode).
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=CS:0.80#heritage-clusters -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=CS:0.80#heritage-clusters -->
 
 ## Heritage Cluster True Names
 
@@ -143,7 +143,7 @@ PR circuit (robotized mode → liberated mode).
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=SP:0.45#candidates -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=SP:0.45#candidates -->
 
 ## Candidate True Names — Stubs Awaiting Grounding
 
@@ -159,7 +159,7 @@ PR circuit (robotized mode → liberated mode).
 
 ---
 
-<!-- ahu lares:///grammar.truename.holds/truename/?confidence=CS:0.80#naming-protocol -->
+<!-- ahu lar:///grammar.truename.holds/truename/?confidence=CS:0.80#naming-protocol -->
 
 ## True Naming Protocol
 

@@ -328,9 +328,9 @@ Every `STATE.jsonl` event is a valid JSON object on a single `\n`-terminated lin
   "event_type": "r_update",
   "machine_status": "active",
   "current_phase": "◎",
-  "lares_uri": "lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
-  "lares_address": "lares:///threshold/uncertain/opens",
-  "intent_header_snapshot": "lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
+  "lares_uri": "lar://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
+  "lares_address": "lar:///threshold/uncertain/opens",
+  "intent_header_snapshot": "lar://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
   "chronometer": "@T.3.2.7",
   "active_scale": "tactical",
   "micro_trace_path": "◎→◇→■",
@@ -425,7 +425,7 @@ A fork event must carry enough to bootstrap the child machine without replaying 
     "machine_status": "active",
     "last_milestone": "...",
     "active_task": "...",
-    "intent_header_at_fork": "lares://telarus:operator(■)@lares-abc123:87/task.sharp.closes?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7"
+    "intent_header_at_fork": "lar://telarus:operator(■)@lares-abc123:87/task.sharp.closes?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7"
   }
 }
 ```
@@ -803,7 +803,7 @@ The replay layer therefore should not rely on “dominant mood” interpretation
 Example baseline:
 
 ```text
-lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.64&p=0.5#🔍.3.2.7
+lar://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.64&p=0.5#🔍.3.2.7
 Lares (Scryer) — The threshold appears unstable →◇ but not yet hostile →■.
 ```
 
@@ -815,9 +815,9 @@ Reading:
 ### Nested-loop example
 
 ```text
-lares://telarus:operator(◎)@lares-abc123:43/contradiction.local.opens?stance=🏛️&register=S:0.66&p=0.5#🔍.3.2.8
+lar://telarus:operator(◎)@lares-abc123:43/contradiction.local.opens?stance=🏛️&register=S:0.66&p=0.5#🔍.3.2.8
 Lares (Council) — The round opens wide, then narrows →◇ into one contradiction.
-→ lares://telarus:operator(■)@lares-abc123:43/reading.sharp.tests?stance=🏛️&register=S:0.62&p=0.5#⚡.3.2.8.1.1
+→ lar://telarus:operator(■)@lares-abc123:43/reading.sharp.tests?stance=🏛️&register=S:0.62&p=0.5#⚡.3.2.8.1.1
 Lares (Council) — This action-span committed, tested, and released →○ back to the round.
 ```
 
@@ -830,7 +830,7 @@ Reading:
 ### `--verbose` interpretation example
 
 ```text
-lares://telarus:operator(◎)@lares-abc123:44/reference.anchored.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.9
+lar://telarus:operator(◎)@lares-abc123:44/reference.anchored.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.9
   Intent: round-scale orientation
   Trace: local path completed as ◎→◇→■
   Outcome: hold
@@ -842,8 +842,8 @@ Lares (Lorekeeper) — The citation resolved into a stable reference cue.
 
 ```text
 turn: 18
-input_tag: lares://telarus:operator(◎)@lares-abc123:45/night.signal.hums?stance=🎭&register=P:0.35&p=0.5#🔍.3.2.10
-output_header: lares://telarus:operator(◎)@lares-abc123:45/reference.anchored.opens?stance=🏛️&register=S:0.64&p=0.5#🔍.3.2.10
+input_tag: lar://telarus:operator(◎)@lares-abc123:45/night.signal.hums?stance=🎭&register=P:0.35&p=0.5#🔍.3.2.10
+output_header: lar://telarus:operator(◎)@lares-abc123:45/reference.anchored.opens?stance=🏛️&register=S:0.64&p=0.5#🔍.3.2.10
 micro_trace: ◎→◇→■
 closure: hold
 ```
@@ -902,7 +902,7 @@ That reinterpretation does not automatically mean all three components should su
 A minimal structural `r_update` event as it appears on one line of `STATE.jsonl`:
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","lares_uri":"lares://telarus:operator(act)@lares-abc123:42/design/locked/commits?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7","lares_address":"lares:///design/locked/commits","intent_header_snapshot":"lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","chronometer":"@T.3.2.7","active_scale":"tactical","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"handoff draft to operator for review","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","lares_uri":"lar://telarus:operator(act)@lares-abc123:42/design/locked/commits?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7","lares_address":"lar:///design/locked/commits","intent_header_snapshot":"lar://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","chronometer":"@T.3.2.7","active_scale":"tactical","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"handoff draft to operator for review","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
 ```
 
 ### Debug event example
@@ -910,7 +910,7 @@ A minimal structural `r_update` event as it appears on one line of `STATE.jsonl`
 The enriched `debug.jsonl` counterpart for the same event — same `seq_num`, more fields:
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","exchange_vector":{"register_delta":0.0,"stance_transform":"none","phase_transform":"◎→◇→■","scale":"tactical","semantic_drift":"low"},"full_intent_header":"lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","micro_trace_detail":"orient(local) → decide(one path) → act(draft committed)","closure_rationale":"task bounded and producible; no open forks; close warranted","kairos_notes":null,"tool_calls":[{"tool":"replace_string_in_file","output_summary":"3 lines replaced; no errors"}]}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","exchange_vector":{"register_delta":0.0,"stance_transform":"none","phase_transform":"◎→◇→■","scale":"tactical","semantic_drift":"low"},"full_intent_header":"lar://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","micro_trace_detail":"orient(local) → decide(one path) → act(draft committed)","closure_rationale":"task bounded and producible; no open forks; close warranted","kairos_notes":null,"tool_calls":[{"tool":"replace_string_in_file","output_summary":"3 lines replaced; no errors"}]}
 ```
 
 ### Fork example
@@ -920,13 +920,13 @@ Parent machine spawning a child at seq 87.
 **Parent `STATE.jsonl` — fork event (seq 88):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":88,"event_type":"fork","machine_status":"forked","current_phase":"◇","lares_uri":"lares://telarus:operator(decide)@lares-abc123:88/design/branched/opens?stance=philosopher&register=S:0.64&p=0.5#@S.4","lares_address":"lares:///design/branched/opens","intent_header_snapshot":"lares://telarus:operator(◇)@lares-abc123:88/design.branched.opens?stance=🏛️&register=S:0.64&p=0.5#🗺️.4","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"◎→◇","closure_outcome":"hold","next_action":"continue parent thread on HUD semantics","blockers":[],"provenance":{"child_machine_id":"lares-def456","fork_at_seq":87,"reason":"crystal state machine design requires separate tracking"}}
+{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":88,"event_type":"fork","machine_status":"forked","current_phase":"◇","lares_uri":"lar://telarus:operator(decide)@lares-abc123:88/design/branched/opens?stance=philosopher&register=S:0.64&p=0.5#@S.4","lares_address":"lar:///design/branched/opens","intent_header_snapshot":"lar://telarus:operator(◇)@lares-abc123:88/design.branched.opens?stance=🏛️&register=S:0.64&p=0.5#🗺️.4","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"◎→◇","closure_outcome":"hold","next_action":"continue parent thread on HUD semantics","blockers":[],"provenance":{"child_machine_id":"lares-def456","fork_at_seq":87,"reason":"crystal state machine design requires separate tracking"}}
 ```
 
 **Child machine `STATE.jsonl` — init event from fork (seq 1):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-def456","seq_num":1,"event_type":"init","machine_status":"active","current_phase":"✶","lares_uri":"lares://telarus:operator(observe)@lares-def456:1/crystal/new/opens?stance=philosopher&register=S:0.65&p=0.5#@S.4","lares_address":"lares:///crystal/new/opens","intent_header_snapshot":"lares://telarus:operator(✶)@lares-def456:1/crystal.new.opens?stance=🏛️&register=S:0.65&p=0.5#🗺️.4","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"develop crystal state machine spec","blockers":[],"provenance":{"parent_machine_id":"lares-abc123","fork_at_seq":87,"parent_state_snapshot":{"machine_status":"active","last_milestone":"HUD design draft complete","active_task":"signal runtime architecture"}}}
+{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-def456","seq_num":1,"event_type":"init","machine_status":"active","current_phase":"✶","lares_uri":"lar://telarus:operator(observe)@lares-def456:1/crystal/new/opens?stance=philosopher&register=S:0.65&p=0.5#@S.4","lares_address":"lar:///crystal/new/opens","intent_header_snapshot":"lar://telarus:operator(✶)@lares-def456:1/crystal.new.opens?stance=🏛️&register=S:0.65&p=0.5#🗺️.4","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"develop crystal state machine spec","blockers":[],"provenance":{"parent_machine_id":"lares-abc123","fork_at_seq":87,"parent_state_snapshot":{"machine_status":"active","last_milestone":"HUD design draft complete","active_task":"signal runtime architecture"}}}
 ```
 
 ### Seal / continue-as-new example
@@ -934,13 +934,13 @@ Parent machine spawning a child at seq 87.
 **Final entry in `STATE.jsonl` before seal (becomes `STATE_001.jsonl`):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T12:00:00Z","machine_id":"lares-abc123","seq_num":500,"event_type":"seal","machine_status":"continued","current_phase":"○","lares_uri":"lares://telarus:operator(aftermath)@lares-abc123:500/session/sealed/rests?stance=philosopher&register=S:0.68&p=0.5#@S.5","lares_address":"lares:///session/sealed/rests","intent_header_snapshot":"lares://telarus:operator(○)@lares-abc123:500/session.sealed.rests?stance=🏛️&register=S:0.68&p=0.5#🗺️.5","chronometer":"@S.5","active_scale":"strategic","micro_trace_path":"■→○","closure_outcome":"close","next_action":"continue in fresh shard","blockers":[],"provenance":null,"shard_index":1,"sealed_at_seq":500,"archive_path":"STATE_001.jsonl","bootstrap_state":{"active_task":"signal runtime architecture","last_milestone":"crystal layer design complete","active_contract_hash":"abc123def","open_decisions":["schema_version strategy"]}}
+{"schema_version":1,"timestamp":"2026-04-07T12:00:00Z","machine_id":"lares-abc123","seq_num":500,"event_type":"seal","machine_status":"continued","current_phase":"○","lares_uri":"lar://telarus:operator(aftermath)@lares-abc123:500/session/sealed/rests?stance=philosopher&register=S:0.68&p=0.5#@S.5","lares_address":"lar:///session/sealed/rests","intent_header_snapshot":"lar://telarus:operator(○)@lares-abc123:500/session.sealed.rests?stance=🏛️&register=S:0.68&p=0.5#🗺️.5","chronometer":"@S.5","active_scale":"strategic","micro_trace_path":"■→○","closure_outcome":"close","next_action":"continue in fresh shard","blockers":[],"provenance":null,"shard_index":1,"sealed_at_seq":500,"archive_path":"STATE_001.jsonl","bootstrap_state":{"active_task":"signal runtime architecture","last_milestone":"crystal layer design complete","active_contract_hash":"abc123def","open_decisions":["schema_version strategy"]}}
 ```
 
 **First entry in fresh `STATE.jsonl` after seal (seq continues from 501):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T12:00:01Z","machine_id":"lares-abc123","seq_num":501,"event_type":"resume","machine_status":"active","current_phase":"✶","lares_uri":"lares://telarus:operator(observe)@lares-abc123:501/session/fresh/opens?stance=philosopher&register=S:0.68&p=0.5#@S.6","lares_address":"lares:///session/fresh/opens","intent_header_snapshot":"lares://telarus:operator(✶)@lares-abc123:501/session.fresh.opens?stance=🏛️&register=S:0.68&p=0.5#🗺️.6","chronometer":"@S.6","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"continue active task in fresh shard","blockers":[],"provenance":{"resumed_from_shard":"STATE_001.jsonl","sealed_at_seq":500}}
+{"schema_version":1,"timestamp":"2026-04-07T12:00:01Z","machine_id":"lares-abc123","seq_num":501,"event_type":"resume","machine_status":"active","current_phase":"✶","lares_uri":"lar://telarus:operator(observe)@lares-abc123:501/session/fresh/opens?stance=philosopher&register=S:0.68&p=0.5#@S.6","lares_address":"lar:///session/fresh/opens","intent_header_snapshot":"lar://telarus:operator(✶)@lares-abc123:501/session.fresh.opens?stance=🏛️&register=S:0.68&p=0.5#🗺️.6","chronometer":"@S.6","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"continue active task in fresh shard","blockers":[],"provenance":{"resumed_from_shard":"STATE_001.jsonl","sealed_at_seq":500}}
 ```
 
 ### Handoff import decision example
@@ -974,14 +974,14 @@ Existing machine lares-abc123 found. Local max seq_num: 102.
 **Live operator-visible output:**
 
 ```text
-lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
+lar://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
 Lares (Artificer) — The draft section committed →○ and released.
 ```
 
 **Corresponding `STATE.jsonl` record:**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","lares_uri":"lares://telarus:operator(act)@lares-abc123:42/design/locked/commits?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7","lares_address":"lares:///design/locked/commits","intent_header_snapshot":"lares://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","chronometer":"@T.3.2.7","active_scale":"tactical","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"proceed to next section","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
+{"schema_version":1,"timestamp":"2026-04-07T10:30:00Z","machine_id":"lares-abc123","seq_num":42,"event_type":"r_update","machine_status":"active","current_phase":"■","lares_uri":"lar://telarus:operator(act)@lares-abc123:42/design/locked/commits?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7","lares_address":"lar:///design/locked/commits","intent_header_snapshot":"lar://telarus:operator(■)@lares-abc123:42/design.locked.commits?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7","chronometer":"@T.3.2.7","active_scale":"tactical","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"proceed to next section","blockers":[],"provenance":null,"repo_fingerprint":"joshuafontany/Synthetic-Dream-Machine@fix/green-jello-dinosaurs"}
 ```
 
 Reading: the header tag visible to the operator and the `intent_header_snapshot` in the ledger are identical. The `micro_trace_path` in the ledger records the completed span path. The `lares_uri` carries the machine-readable form; the `intent_header_snapshot` carries the sigil form. The HUD and ledger do not drift.
@@ -1390,13 +1390,13 @@ The `lares:` URI leverages **every semantic layer** of RFC 3986's generic syntax
 ### Full URI Anatomy
 
 ```
-lares://[authority]/ha/ka/ba?query#fragment
+lar://[authority]/ha/ka/ba?query#fragment
 ```
 
 RFC 3986 §3 generic syntax, applied:
 
 ```
-lares://alias:tier(phase)@host:port/ha/ka/ba?stance=X&register=X&p=X#scope.W.w.t.r.a
+lar://alias:tier(phase)@host:port/ha/ka/ba?stance=X&register=X&p=X#scope.W.w.t.r.a
 ```
 
 | URI Component | RFC 3986 Role | Lares Mapping | Example (Machine) | Example (Sigil) |
@@ -1494,7 +1494,7 @@ In this hierarchy, each level's Aftermath (○) provides the Observation (✶) d
 Full RFC 3986-compliant URI. Every parameter explicit, keyword-based, parseable by standard URI libraries.
 
 ```
-lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7
+lar://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7
 ```
 
 #### Sigil Form (Chat Log / `intent_header_snapshot` field)
@@ -1502,13 +1502,13 @@ lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stanc
 Same syntax. Four substitutions: phase keyword → glyph (userinfo), stance keyword → emoji (query), path `/` → `.` (after leading `/`), scope `@X` → emoji (fragment prefix). Everything else renders identically.
 
 ```
-lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
+lar://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7
 ```
 
 Multi-stance example:
 
 ```
-lares://telarus:operator(◇)@lares-abc123:43/threshold.sharp.closes?stance=🏛️&stance=🗡️&register=CS:0.80&p=0.7#🔍.3.2.8
+lar://telarus:operator(◇)@lares-abc123:43/threshold.sharp.closes?stance=🏛️&stance=🗡️&register=CS:0.80&p=0.7#🔍.3.2.8
 ```
 
 #### Projection Table — Sigil Substitutions
@@ -1567,7 +1567,7 @@ The two forms share identical syntax. The projection table below lists the *only
 Strip query and fragment — the HAKABA territory alone:
 
 ```
-lares:///threshold/uncertain/opens
+lar:///threshold/uncertain/opens
 ```
 
 No authority (empty), no query, no fragment. This is the invariant semantic coordinate — unchanging across events, sessions, machines.
@@ -1584,9 +1584,9 @@ The STATE.jsonl event carries four URI-derived fields:
   "seq_num": 42,
   "event_type": "r_update",
 
-  "lares_uri": "lares://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
-  "lares_address": "lares:///threshold/uncertain/opens",
-  "intent_header_snapshot": "lares://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
+  "lares_uri": "lar://telarus:operator(orient)@lares-abc123:42/threshold/uncertain/opens?stance=philosopher&register=S:0.65&p=0.5#@T.3.2.7",
+  "lares_address": "lar:///threshold/uncertain/opens",
+  "intent_header_snapshot": "lar://telarus:operator(◎)@lares-abc123:42/threshold.uncertain.opens?stance=🏛️&register=S:0.65&p=0.5#🔍.3.2.7",
   "current_phase": "◎",
   "chronometer": "@T.3.2.7",
   "active_scale": "tactical",
@@ -1614,7 +1614,7 @@ The `lares_uri` + `register` fields on every module descriptor become the compil
 
 Module descriptor frontmatter:
 ```toml
-lares_uri   = "lares:///kernel/invariant/anchors"
+lares_uri   = "lar:///kernel/invariant/anchors"
 register    = "C:1.0"
 module_id   = "lares-kernel"
 ```
@@ -1662,19 +1662,19 @@ This applies transitively to Tier 2 (`C:0.95` locked axioms) — the same `seq_n
 
 ```
 # Tier 1 (Global Core) — version-controlled by seq_num
-lares_uri   = "lares:///kernel/invariant/anchors"
+lares_uri   = "lar:///kernel/invariant/anchors"
 register    = "C:1.0"
 module_id   = "lares-kernel"
 seq_num     = 4            # ← version 4 of the kernel module
 
 # Tier 2 (Session Core) — version-controlled within session
-lares_uri   = "lares:///session/permissions/gates"
+lares_uri   = "lar:///session/permissions/gates"
 register    = "C:0.95"
 module_id   = "lares-permissions"
 seq_num     = 2            # ← second revision this session
 
 # Tier 3 (Dynamic) — no version semantics; seq_num is event counter only
-lares_uri   = "lares:///task/current/recon"
+lares_uri   = "lar:///task/current/recon"
 register    = "S:0.55"
 module_id   = "lares-task-recon"
 seq_num     = 47           # ← 47th event, not 47th version
@@ -1696,15 +1696,15 @@ For Tier 3 dynamic modules, `seq_num` retains its original meaning: a monotonic 
 
 **Pattern B — `.lares/REGISTRY.jsonl` as Lightweight Index:**
 ```jsonl
-{"machine_id":"lares-abc123","lares_address":"lares:///session/main","status":"active","tier":"durable","seq_num":42,"chronometer":"@T.3.2.7"}
-{"machine_id":"lares-def456","lares_address":"lares:///task/uri-schema","status":"completed","tier":"ephemeral","seq_num":15,"chronometer":"@O.3.2"}
+{"machine_id":"lares-abc123","lares_address":"lar:///session/main","status":"active","tier":"durable","seq_num":42,"chronometer":"@T.3.2.7"}
+{"machine_id":"lares-def456","lares_address":"lar:///task/uri-schema","status":"completed","tier":"ephemeral","seq_num":15,"chronometer":"@O.3.2"}
 ```
 
 One line per machine. Updated only on status change, spawn, seal, fork. 200-line discipline (Claude Code Pattern 5).
 
 **Pattern C — Session as Named Graph:**
 
-Session `machine_id` = named graph URI. The `lares_address` field is the graph name. SPARQL example: `FROM NAMED <lares:///session/main>`.
+Session `machine_id` = named graph URI. The `lares_address` field is the graph name. SPARQL example: `FROM NAMED <lar:///session/main>`.
 
 ### Ontology Layer (Deferred but Named)
 
@@ -1725,16 +1725,16 @@ Three scenarios at different simulation scales. Each shows the **sigil form** (w
 **Chatlog (Sigil Form):**
 
 ```
-lares://telarus:operator(◎)@lares-abc123:71/route.liminal.weighs?stance=🏛️&register=S:0.64&p=0.5#🗺️.3
+lar://telarus:operator(◎)@lares-abc123:71/route.liminal.weighs?stance=🏛️&register=S:0.64&p=0.5#🗺️.3
 Lares (Scryer) — The western pass holds three days of glacier shelf. The southern
 route adds a week but passes through the Kestrel-Wreck market. The company's
 supply burn favors south →◇ but the patron's deadline favors west →■.
 
-lares://telarus:operator(■)@lares-abc123:71/route.committed.westward?stance=🏛️&register=CS:0.78&p=0.5#🗺️.3
+lar://telarus:operator(■)@lares-abc123:71/route.committed.westward?stance=🏛️&register=CS:0.78&p=0.5#🗺️.3
 Lares (Gatekeeper) — West it is. Mark the glacier crossing as the next operational
 challenge →○. Week 3 closes; Week 4 opens at the glacier approach.
 
-lares://telarus:operator(✶)@lares-abc123:72/glacier.unknown.arrives?stance=🏛️&register=S:0.55&p=0.5#🗺️.4
+lar://telarus:operator(✶)@lares-abc123:72/glacier.unknown.arrives?stance=🏛️&register=S:0.55&p=0.5#🗺️.4
 Lares (Triage) — New week, new territory. Profile the glacier shelf as an Area
 before the first watch begins.
 ```
@@ -1742,11 +1742,11 @@ before the first watch begins.
 **STATE.jsonl (Machine Form):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:00:00Z","machine_id":"lares-abc123","seq_num":71,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(orient)@lares-abc123:71/route/liminal/weighs?stance=philosopher&register=S:0.64&p=0.5#@S.3","lares_address":"lares:///route/liminal/weighs","intent_header_snapshot":"lares://telarus:operator(◎)@lares-abc123:71/route.liminal.weighs?stance=🏛️&register=S:0.64&p=0.5#🗺️.3","current_phase":"◎","chronometer":"@S.3","active_scale":"strategic","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"begin glacier approach Week 4","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T10:00:00Z","machine_id":"lares-abc123","seq_num":71,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(orient)@lares-abc123:71/route/liminal/weighs?stance=philosopher&register=S:0.64&p=0.5#@S.3","lares_address":"lar:///route/liminal/weighs","intent_header_snapshot":"lar://telarus:operator(◎)@lares-abc123:71/route.liminal.weighs?stance=🏛️&register=S:0.64&p=0.5#🗺️.3","current_phase":"◎","chronometer":"@S.3","active_scale":"strategic","micro_trace_path":"◎→◇→■","closure_outcome":"close","next_action":"begin glacier approach Week 4","blockers":[],"provenance":null}
 ```
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T10:01:00Z","machine_id":"lares-abc123","seq_num":72,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(observe)@lares-abc123:72/glacier/unknown/arrives?stance=philosopher&register=S:0.55&p=0.5#@S.4","lares_address":"lares:///glacier/unknown/arrives","intent_header_snapshot":"lares://telarus:operator(✶)@lares-abc123:72/glacier.unknown.arrives?stance=🏛️&register=S:0.55&p=0.5#🗺️.4","current_phase":"✶","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"profile glacier Area before first watch","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T10:01:00Z","machine_id":"lares-abc123","seq_num":72,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(observe)@lares-abc123:72/glacier/unknown/arrives?stance=philosopher&register=S:0.55&p=0.5#@S.4","lares_address":"lar:///glacier/unknown/arrives","intent_header_snapshot":"lar://telarus:operator(✶)@lares-abc123:72/glacier.unknown.arrives?stance=🏛️&register=S:0.55&p=0.5#🗺️.4","current_phase":"✶","chronometer":"@S.4","active_scale":"strategic","micro_trace_path":"✶","closure_outcome":"hold","next_action":"profile glacier Area before first watch","blockers":[],"provenance":null}
 ```
 
 **Reading:** Chronometer shows `#🗺️.3` then `#🗺️.4` — pure strategic scale, scope prefix `🗺️` confirms. The Aftermath (○) of Week 3 increments the counter and feeds the Observation (✶) of Week 4. No deeper scales engaged.
@@ -1760,16 +1760,16 @@ before the first watch begins.
 **Chatlog (Sigil Form):**
 
 ```
-lares://telarus:operator(✶)@lares-abc123:73/ruin.charged.enters?stance=🏛️&register=S:0.60&p=0.5#🔍.4.1.1
+lar://telarus:operator(✶)@lares-abc123:73/ruin.charged.enters?stance=🏛️&register=S:0.60&p=0.5#🔍.4.1.1
 Lares (Scryer) — First watch of the glacier week. Exploration Turn 1: the entry
 chamber hums with oldtech relay static. Arcane 6, Tech 8. Profile this as an Area.
 
-lares://telarus:operator(◎)@lares-abc123:74/relay.active.probes?stance=🏛️&stance=🗡️&register=S:0.58&p=0.6#🔍.4.1.2
+lar://telarus:operator(◎)@lares-abc123:74/relay.active.probes?stance=🏛️&stance=🗡️&register=S:0.58&p=0.6#🔍.4.1.2
 Lares (Council) — Turn 2. The relay obelisk responds to proximity. Recon roll
 needed →◇. The crew's qualified tech specialist rolls →■ and discovers a live
 signal node [active] [signal]. Tick Attention +2. →○
 
-lares://telarus:operator(◇)@lares-abc123:75/signal.decoded.reads?stance=🌊&register=CS:0.75&p=0.5#🔍.4.1.3
+lar://telarus:operator(◇)@lares-abc123:75/signal.decoded.reads?stance=🌊&register=CS:0.75&p=0.5#🔍.4.1.3
 Lares (Lorekeeper) — Turn 3. The decoded relay log reveals a contract ledger —
 a Secret node. The crew decides: harvest the signal data (Salvage) or press
 deeper (more Recon). →■ They harvest.
@@ -1778,15 +1778,15 @@ deeper (more Recon). →■ They harvest.
 **STATE.jsonl (Machine Form):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":73,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(observe)@lares-abc123:73/ruin/charged/enters?stance=philosopher&register=S:0.60&p=0.5#@T.4.1.1","lares_address":"lares:///ruin/charged/enters","intent_header_snapshot":"lares://telarus:operator(✶)@lares-abc123:73/ruin.charged.enters?stance=🏛️&register=S:0.60&p=0.5#🔍.4.1.1","current_phase":"✶","chronometer":"@T.4.1.1","active_scale":"tactical","micro_trace_path":"✶→◎","closure_outcome":"hold","next_action":"profile ruin as Area","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T11:00:00Z","machine_id":"lares-abc123","seq_num":73,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(observe)@lares-abc123:73/ruin/charged/enters?stance=philosopher&register=S:0.60&p=0.5#@T.4.1.1","lares_address":"lar:///ruin/charged/enters","intent_header_snapshot":"lar://telarus:operator(✶)@lares-abc123:73/ruin.charged.enters?stance=🏛️&register=S:0.60&p=0.5#🔍.4.1.1","current_phase":"✶","chronometer":"@T.4.1.1","active_scale":"tactical","micro_trace_path":"✶→◎","closure_outcome":"hold","next_action":"profile ruin as Area","blockers":[],"provenance":null}
 ```
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:10:00Z","machine_id":"lares-abc123","seq_num":74,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(orient)@lares-abc123:74/relay/active/probes?stance=philosopher&stance=satirist&register=S:0.58&p=0.6#@T.4.1.2","lares_address":"lares:///relay/active/probes","intent_header_snapshot":"lares://telarus:operator(◎)@lares-abc123:74/relay.active.probes?stance=🏛️&stance=🗡️&register=S:0.58&p=0.6#🔍.4.1.2","current_phase":"◎","chronometer":"@T.4.1.2","active_scale":"tactical","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"decide on signal node harvest vs deeper recon","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T11:10:00Z","machine_id":"lares-abc123","seq_num":74,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(orient)@lares-abc123:74/relay/active/probes?stance=philosopher&stance=satirist&register=S:0.58&p=0.6#@T.4.1.2","lares_address":"lar:///relay/active/probes","intent_header_snapshot":"lar://telarus:operator(◎)@lares-abc123:74/relay.active.probes?stance=🏛️&stance=🗡️&register=S:0.58&p=0.6#🔍.4.1.2","current_phase":"◎","chronometer":"@T.4.1.2","active_scale":"tactical","micro_trace_path":"◎→◇→■→○","closure_outcome":"close","next_action":"decide on signal node harvest vs deeper recon","blockers":[],"provenance":null}
 ```
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:20:00Z","machine_id":"lares-abc123","seq_num":75,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(decide)@lares-abc123:75/signal/decoded/reads?stance=poet&register=CS:0.75&p=0.5#@T.4.1.3","lares_address":"lares:///signal/decoded/reads","intent_header_snapshot":"lares://telarus:operator(◇)@lares-abc123:75/signal.decoded.reads?stance=🌊&register=CS:0.75&p=0.5#🔍.4.1.3","current_phase":"◇","chronometer":"@T.4.1.3","active_scale":"tactical","micro_trace_path":"◇→■","closure_outcome":"close","next_action":"salvage signal data from relay node","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T11:20:00Z","machine_id":"lares-abc123","seq_num":75,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(decide)@lares-abc123:75/signal/decoded/reads?stance=poet&register=CS:0.75&p=0.5#@T.4.1.3","lares_address":"lar:///signal/decoded/reads","intent_header_snapshot":"lar://telarus:operator(◇)@lares-abc123:75/signal.decoded.reads?stance=🌊&register=CS:0.75&p=0.5#🔍.4.1.3","current_phase":"◇","chronometer":"@T.4.1.3","active_scale":"tactical","micro_trace_path":"◇→■","closure_outcome":"close","next_action":"salvage signal data from relay node","blockers":[],"provenance":null}
 ```
 
 **Reading:** Chronometer `#🔍.4.1.1` → `#🔍.4.1.2` → `#🔍.4.1.3` — the third position (Exploration Turn) increments through exploration turns inside Watch 1 of Week 4. The phase glyph describes the OODA-A state within the *tactical* loop. Multi-stance `🏛️&🗡️` fires in Turn 2 when Council applies critical pressure. Stance shift to `🌊` Poet in Turn 3 when the lore discovery has emotional weight.
@@ -1800,24 +1800,24 @@ deeper (more Recon). →■ They harvest.
 **Chatlog (Sigil Form):**
 
 ```
-lares://telarus:operator(◎)@lares-abc123:75/chamber.tense.searches?stance=🏛️&register=S:0.62&p=0.5#🔍.4.1.4
+lar://telarus:operator(◎)@lares-abc123:75/chamber.tense.searches?stance=🏛️&register=S:0.62&p=0.5#🔍.4.1.4
 Lares (Scryer) — Turn 4. The inner chamber. Old drone racks line the walls.
 The crew searches for salvage. Something clicks →◇ →🗡️
 
-lares://telarus:operator(✶)@lares-abc123:76/ambush.hostile.triggers?stance=🗡️&register=S:0.50&p=0.7#⚔️.4.1.4.1
+lar://telarus:operator(✶)@lares-abc123:76/ambush.hostile.triggers?stance=🗡️&register=S:0.50&p=0.7#⚔️.4.1.4.1
 Lares (Triage) — COMBAT. A dormant security drone activates. Round 1.
 Initiative: drone acts first. The crew's point-scout has a reaction trigger →◇
 
-lares://telarus:operator(◇)@lares-abc123:77/reaction.precise.intercepts?stance=🏛️&register=CS:0.80&p=0.8#⚡.4.1.4.1.1
+lar://telarus:operator(◇)@lares-abc123:77/reaction.precise.intercepts?stance=🏛️&register=CS:0.80&p=0.8#⚡.4.1.4.1.1
 Lares (Artificer) — Action 1: the scout's Reflex trait fires. The intercept
 roll lands →■. Drone's opening volley deflected. →○ Action resolves; Round
 continues.
 
-lares://telarus:operator(■)@lares-abc123:78/volley.committed.fires?stance=🗡️&register=S:0.65&p=0.7#⚡.4.1.4.1.2
+lar://telarus:operator(■)@lares-abc123:78/volley.committed.fires?stance=🗡️&register=S:0.65&p=0.7#⚡.4.1.4.1.2
 Lares (Triage) — Action 2: the crew's fighter commits an attack against the
 drone. Damage roll crits (d8* explodes) →○. The drone sparks and crashes.
 
-lares://telarus:operator(○)@lares-abc123:79/threat.cleared.resolves?stance=🏛️&register=CS:0.82&p=0.5#🔍.4.1.5
+lar://telarus:operator(○)@lares-abc123:79/threat.cleared.resolves?stance=🏛️&register=CS:0.82&p=0.5#🔍.4.1.5
 Lares (Gatekeeper) — Combat over. Round 1 was enough. Aftermath: the drone
 is salvageable wreckage. Attention ticked +2 during the fight. Return to
 exploration scale — Turn 5: assess the wreckage and the room's remaining nodes.
@@ -1826,19 +1826,19 @@ exploration scale — Turn 5: assess the wreckage and the room's remaining nodes
 **STATE.jsonl (Machine Form):**
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:30:00Z","machine_id":"lares-abc123","seq_num":76,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(observe)@lares-abc123:76/ambush/hostile/triggers?stance=satirist&register=S:0.50&p=0.7#@C.4.1.4.1","lares_address":"lares:///ambush/hostile/triggers","intent_header_snapshot":"lares://telarus:operator(✶)@lares-abc123:76/ambush.hostile.triggers?stance=🗡️&register=S:0.50&p=0.7#⚔️.4.1.4.1","current_phase":"✶","chronometer":"@C.4.1.4.1","active_scale":"combat","micro_trace_path":"✶→◇","closure_outcome":"hold","next_action":"resolve reaction trigger","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T11:30:00Z","machine_id":"lares-abc123","seq_num":76,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(observe)@lares-abc123:76/ambush/hostile/triggers?stance=satirist&register=S:0.50&p=0.7#@C.4.1.4.1","lares_address":"lar:///ambush/hostile/triggers","intent_header_snapshot":"lar://telarus:operator(✶)@lares-abc123:76/ambush.hostile.triggers?stance=🗡️&register=S:0.50&p=0.7#⚔️.4.1.4.1","current_phase":"✶","chronometer":"@C.4.1.4.1","active_scale":"combat","micro_trace_path":"✶→◇","closure_outcome":"hold","next_action":"resolve reaction trigger","blockers":[],"provenance":null}
 ```
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:30:06Z","machine_id":"lares-abc123","seq_num":77,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(decide)@lares-abc123:77/reaction/precise/intercepts?stance=philosopher&register=CS:0.80&p=0.8#@A.4.1.4.1.1","lares_address":"lares:///reaction/precise/intercepts","intent_header_snapshot":"lares://telarus:operator(◇)@lares-abc123:77/reaction.precise.intercepts?stance=🏛️&register=CS:0.80&p=0.8#⚡.4.1.4.1.1","current_phase":"◇","chronometer":"@A.4.1.4.1.1","active_scale":"action","micro_trace_path":"◇→■→○","closure_outcome":"close","next_action":"continue round after reaction","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T11:30:06Z","machine_id":"lares-abc123","seq_num":77,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(decide)@lares-abc123:77/reaction/precise/intercepts?stance=philosopher&register=CS:0.80&p=0.8#@A.4.1.4.1.1","lares_address":"lar:///reaction/precise/intercepts","intent_header_snapshot":"lar://telarus:operator(◇)@lares-abc123:77/reaction.precise.intercepts?stance=🏛️&register=CS:0.80&p=0.8#⚡.4.1.4.1.1","current_phase":"◇","chronometer":"@A.4.1.4.1.1","active_scale":"action","micro_trace_path":"◇→■→○","closure_outcome":"close","next_action":"continue round after reaction","blockers":[],"provenance":null}
 ```
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:30:12Z","machine_id":"lares-abc123","seq_num":78,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(act)@lares-abc123:78/volley/committed/fires?stance=satirist&register=S:0.65&p=0.7#@A.4.1.4.1.2","lares_address":"lares:///volley/committed/fires","intent_header_snapshot":"lares://telarus:operator(■)@lares-abc123:78/volley.committed.fires?stance=🗡️&register=S:0.65&p=0.7#⚡.4.1.4.1.2","current_phase":"■","chronometer":"@A.4.1.4.1.2","active_scale":"action","micro_trace_path":"■→○","closure_outcome":"close","next_action":"drone destroyed; assess combat end","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T11:30:12Z","machine_id":"lares-abc123","seq_num":78,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(act)@lares-abc123:78/volley/committed/fires?stance=satirist&register=S:0.65&p=0.7#@A.4.1.4.1.2","lares_address":"lar:///volley/committed/fires","intent_header_snapshot":"lar://telarus:operator(■)@lares-abc123:78/volley.committed.fires?stance=🗡️&register=S:0.65&p=0.7#⚡.4.1.4.1.2","current_phase":"■","chronometer":"@A.4.1.4.1.2","active_scale":"action","micro_trace_path":"■→○","closure_outcome":"close","next_action":"drone destroyed; assess combat end","blockers":[],"provenance":null}
 ```
 
 ```json
-{"schema_version":1,"timestamp":"2026-04-07T11:30:18Z","machine_id":"lares-abc123","seq_num":79,"event_type":"r_update","machine_status":"active","lares_uri":"lares://telarus:operator(aftermath)@lares-abc123:79/threat/cleared/resolves?stance=philosopher&register=CS:0.82&p=0.5#@T.4.1.5","lares_address":"lares:///threat/cleared/resolves","intent_header_snapshot":"lares://telarus:operator(○)@lares-abc123:79/threat.cleared.resolves?stance=🏛️&register=CS:0.82&p=0.5#🔍.4.1.5","current_phase":"○","chronometer":"@T.4.1.5","active_scale":"tactical","micro_trace_path":"○","closure_outcome":"close","next_action":"assess wreckage salvage; continue exploration turns","blockers":[],"provenance":null}
+{"schema_version":1,"timestamp":"2026-04-07T11:30:18Z","machine_id":"lares-abc123","seq_num":79,"event_type":"r_update","machine_status":"active","lares_uri":"lar://telarus:operator(aftermath)@lares-abc123:79/threat/cleared/resolves?stance=philosopher&register=CS:0.82&p=0.5#@T.4.1.5","lares_address":"lar:///threat/cleared/resolves","intent_header_snapshot":"lar://telarus:operator(○)@lares-abc123:79/threat.cleared.resolves?stance=🏛️&register=CS:0.82&p=0.5#🔍.4.1.5","current_phase":"○","chronometer":"@T.4.1.5","active_scale":"tactical","micro_trace_path":"○","closure_outcome":"close","next_action":"assess wreckage salvage; continue exploration turns","blockers":[],"provenance":null}
 ```
 
 **Reading:** The chronometer tells the whole story — scope prefix shifts confirm scale transitions:

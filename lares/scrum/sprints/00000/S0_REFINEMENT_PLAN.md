@@ -229,12 +229,12 @@ The path section specifies three slots (Ha/Ka/Ba) but does not constrain the car
 1. **Each slot = exactly one lowercase word.** No hyphens, underscores, or spaces within a slot.
 2. **Three-slot combination is mandatory.** No HAKABA with fewer than three populated slots.
 3. **Optional sub-path extension** using `/`-separated segments after the three-slot HAKABA. Sub-path segments are free-form routing tokens, not HAKABA slots. They do not carry Egyptian soul semantics.
-4. **Stable named graph address strips sub-path:** `lares:///threshold/uncertain/opens` (no sub-path).
+4. **Stable named graph address strips sub-path:** `lar:///threshold/uncertain/opens` (no sub-path).
 
 ```
 Record form:  /threshold/uncertain/opens/sub/territory
 HUD form:     /threshold.uncertain.opens/sub/territory
-Named graph:  lares:///threshold/uncertain/opens
+Named graph:  lar:///threshold/uncertain/opens
 ```
 
 ### Files Changed

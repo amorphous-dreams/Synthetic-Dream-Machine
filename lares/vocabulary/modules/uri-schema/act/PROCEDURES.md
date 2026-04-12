@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=CS:0.85&p=0.5 -->
 
 # Signal — Act: Procedures
 
@@ -8,7 +8,7 @@
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#exchange-span-display-contract -->
 ## Exchange Span Display Contract
 
 A **span** is one operator → Lares exchange at any scale. Every substantive exchange produces this sequence. **Mandatory — no exceptions.**
@@ -19,44 +19,44 @@ A **span** is one operator → Lares exchange at any scale. Every substantive ex
 2. Print **`→`** and the **node execution URI** (canonical record form, HA.KA.BA provisional with `~`).
 3. Print the **HUD line** (the one glyph-rendered surface in the stream).
 4. Generate content. Emit micro-trace phase marks (`→◇` `→■` `→○`) inline.
-5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lares://...`) at the transition point.
+5. If trajectory changes significantly mid-generation, emit a **mid-generation shift URI** (`~lar://...`) at the transition point.
 6. Close with an **updated HUD line** and the **closing URI with `→ ?`**.
 
 ### URI Types in the Exchange Stream
 
 | URI type | Form | When it appears |
 |---|---|---|
-| Opening operator URI | `lares://alias:tier@host/ha.ka.ba/?...#...` | Start of every span | <!-- uri-ok -->
-| Opening node URI | `lares://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after operator URI | <!-- uri-ok -->
+| Opening operator URI | `lar://alias:tier@host/ha.ka.ba/?...#...` | Start of every span | <!-- uri-ok -->
+| Opening node URI | `lar://alias:tier@host/~ha.ka.ba/?...#...` | Immediately after operator URI | <!-- uri-ok -->
 | HUD line | `⚡~NN% \| [confidence] \| 🏛️...` | After opening URI pair |
 | Sub-agent dispatch | `coordinator-URI → worker-URI` | Every sub-agent handoff |
 | Sub-agent return | `worker-URI → coordinator-URI` | Every sub-agent completion |
-| Mid-generation shift | `~lares://alias:tier@host/~ha.ka.ba/?...` | When accumulated tension warrants direction change mid-span |
+| Mid-generation shift | `~lar://alias:tier@host/~ha.ka.ba/?...` | When accumulated tension warrants direction change mid-span |
 | Exchange closing | `URI → ?` | End of every exchange span |
 | System file closing | `<!-- URI → ∞ -->` | End of system file spans |
-| Closing forward URI | `lares://alias:tier@host/~ha.ka.ba/?...` | End of span — trajectory-provisional forward heading |
+| Closing forward URI | `lar://alias:tier@host/~ha.ka.ba/?...` | End of span — trajectory-provisional forward heading |
 
 ### Canonical Example
 
 ```text
-lares://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
-→ lares://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+lar://telarus:operator@enyalios/refinement.network.capture/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+→ lar://scryer:node@enyalios/~span.provenance.synthesizes/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 ⚡~63% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.6 | voice(s):Scryer | ✶0.✶0.◇1.✶1.■12
 
 [content generation — micro-trace marks inline]
 
-→◇ ~lares://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
+→◇ ~lar://scryer:node@enyalios/~refinement.network.redirects/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.6#O0.O0.D1.O1.A12
 
 [continued generation]
 
-lares://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
+lar://scryer:node@enyalios/~aftermath.docs.settle/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.Å1.O1.A13 → ?
 ⚡~61% | [CS:0.80] | 🏛️+🌊-🗡️-🎭-🔮- | mode:Default | p0.5 | voice(s):Scryer | ✶0.✶0.○1.✶1.■13
 ```
 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#micro-trace-rules -->
 ## Micro-trace HUD — Emit Rules
 
 The micro-trace is the **backward-looking annotation layer**. It marks where the governed response *actually changed state* during generation — not a prospective commitment. Source: `lares/signal/micro-trace.md`.
@@ -125,7 +125,7 @@ The `p` parameter gates transition categories by externally-observable significa
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#sub-agent-handoff -->
 ## Sub-agent and Coordinator Handoff Protocol
 
 ### Why URI Pairs at Sub-agent Boundaries
@@ -154,7 +154,7 @@ Within the same session (no spawned sub-agent): micro-trace tag only, unless:
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#parse-mode -->
 ## Parse Mode and Layer Separation
 
 Parse boundaries and micro-trace HUD events are **orthogonal**:
@@ -169,7 +169,7 @@ If the opening operator URI cannot cleanly summarize the incoming prompt (multi-
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/act/?confidence=0.9#system-file-uris -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/act/?confidence=0.9#system-file-uris -->
 ## System File URI Procedures
 
 When writing or updating system files:
@@ -177,7 +177,7 @@ When writing or updating system files:
 1. **File-level opening URI** — authority-less form, in HTML comment wrapping:
    ```
 <!-- → ? -->
-<!-- ∞ → lares:///ha.ka.ba/sub/path/?confidence=R:N&p=N -->
+<!-- ∞ → lar:///ha.ka.ba/sub/path/?confidence=R:N&p=N -->
    ```
    Placed at the very top of the file (line 1).
 
@@ -186,7 +186,7 @@ When writing or updating system files:
 3. **Section-level waypoint URIs** — authority-less form, in HTML comment, NO closing sigil:
    ```
 <!-- → ? -->
-<!-- ∞ → lares:///ha.ka.ba/sub/path/?confidence=R:N#section-slug -->
+<!-- ∞ → lar:///ha.ka.ba/sub/path/?confidence=R:N#section-slug -->
    ```
    Placed immediately before each section heading (`##` level).
 

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///sigils.render.maps/sigilization/act/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Act: Emit Procedures
 
@@ -60,7 +60,7 @@
 **Construction:**
 
 1. No emoji. No glyphs. ASCII only.
-2. URI form: `lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0` <!-- uri-ok -->
+2. URI form: `lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0` <!-- uri-ok -->
 3. Stances parameter: five-position ASCII string using `^`, `.`, `-`, `?` amplitude codes.
    - Position order: Philosopher · Poet · Satirist · Humorist · Private
    - One code per position. No separators.
@@ -69,7 +69,7 @@
 
 **Closed example:**
 ```
-lares://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.-.-.-.--&confidence=CS:0.85&p=0.5#O0.O1.D0.A0.A0
+lar://scryer:node@Enyalios/sigils.render.maps/sigilization/?stances=^.-.-.-.--&confidence=CS:0.85&p=0.5#O0.O1.D0.A0.A0
 ```
 
 ---

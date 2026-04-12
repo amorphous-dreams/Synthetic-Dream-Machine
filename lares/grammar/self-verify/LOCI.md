@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80&p=0.5 -->
 
 # Self-Verify
 
@@ -18,7 +18,7 @@ dependencies: [detect-alignment, verification, parse-uri]
 
 ---
 
-<!-- ahu lares:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80#purpose -->
+<!-- ahu lar:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80#purpose -->
 
 ## Purpose
 
@@ -36,7 +36,7 @@ The self-verify harness holds one function: tell the operator exactly what to fi
 
 ---
 
-<!-- ahu lares:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80#tiers -->
+<!-- ahu lar:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80#tiers -->
 
 ## Tiers
 
@@ -49,7 +49,7 @@ The self-verify harness holds one function: tell the operator exactly what to fi
 
 ---
 
-<!-- ahu lares:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80#usage -->
+<!-- ahu lar:///grammar.selfverify.harness/self-verify/?confidence=CS:0.80#usage -->
 
 ## Usage
 

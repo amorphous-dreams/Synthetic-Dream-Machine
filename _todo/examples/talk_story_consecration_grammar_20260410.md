@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///talk-story.consecration.records/talk-story/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///talk-story.consecration.records/talk-story/?confidence=CS:0.80&p=0.5 -->
 
 # Talk Story: Consecration Grammar + Heritage Grounding
 

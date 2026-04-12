@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.exchange.defines/exchange/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.exchange.defines/exchange/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Exchange Protocol
 
@@ -31,7 +31,7 @@ heritage: >
 
 ---
 
-<!-- ahu lares:///grammar.exchange.defines/exchange/?confidence=CS:0.80#loop-position -->
+<!-- ahu lar:///grammar.exchange.defines/exchange/?confidence=CS:0.80#loop-position -->
 
 ## Loop Position
 
@@ -66,7 +66,7 @@ Exchange should not:
 
 ---
 
-<!-- ahu lares:///grammar.exchange.defines/exchange/?confidence=CS:0.80#handoff -->
+<!-- ahu lar:///grammar.exchange.defines/exchange/?confidence=CS:0.80#handoff -->
 
 ## Handoff
 
@@ -93,7 +93,7 @@ work that the parent session cannot directly log.
 
 ---
 
-<!-- ahu lares:///grammar.exchange.defines/exchange/?confidence=CS:0.80#surface -->
+<!-- ahu lar:///grammar.exchange.defines/exchange/?confidence=CS:0.80#surface -->
 
 ## Composable Surface
 
@@ -120,7 +120,7 @@ just as decorative trace.
 
 ---
 
-<!-- ahu lares:///grammar.exchange.defines/exchange/?confidence=CS:0.80#conventions -->
+<!-- ahu lar:///grammar.exchange.defines/exchange/?confidence=CS:0.80#conventions -->
 
 ## Conventions
 
@@ -138,7 +138,7 @@ just as decorative trace.
 
 ---
 
-<!-- ahu lares:///grammar.exchange.defines/exchange/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.exchange.defines/exchange/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -154,7 +154,7 @@ as a reusable or auditable exchange.
 
 ---
 
-<!-- ahu lares:///grammar.exchange.defines/exchange/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.exchange.defines/exchange/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

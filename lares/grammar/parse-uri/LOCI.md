@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.parseuri.defines/parse-uri/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.parseuri.defines/parse-uri/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: parse-uri Skill
 

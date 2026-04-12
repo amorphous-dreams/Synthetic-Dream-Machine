@@ -5,7 +5,7 @@
 > Scope: Operator-facing HUD annotation grammar, Tagspace semantic coordinate system, `lares:` URI scheme, p-band phase model.
 > Updated: 2026-04-08
 > Status: Active draft — primary source is `../../_todo/core/Signal_HUD_Tagspace-draft.md`; design canonicalization in progress
-> URI: `[pending — lares://core/design/signal@draft]`
+> URI: `[pending — lar://core/design/signal@draft]`
 
 ---
 
@@ -20,7 +20,7 @@ This reframing has design consequences:
 - Neither form is more "real" than the other. They serve different audiences of the same shared navigational state.
 - The HUD may actively reduce total token cost by preventing wrong-register generation (an empirical claim — see Open Decisions SHD-02).
 - Live operation is a **tick-span display**: operator-intent URI first, responding-position URI second, destination URI at the end of the exchange.
-- On non-operator responding URIs, the mana glyph moves to the far left of the line: `⚡62% lares://...`.
+- On non-operator responding URIs, the mana glyph moves to the far left of the line: `⚡62% lar://...`.
 
 The `lares:` prefix remains a non-dereferenceable private identifier (RFC 4151 precedent). The HUD framing belongs in prose and documentation; the spec's component-level RFC validation applies to the record (machine) form.
 

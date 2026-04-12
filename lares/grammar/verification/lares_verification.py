@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.verification.defines/lares_verification/
+# ∞ → lar:///grammar.verification.defines/lares_verification/
 """
 lares_verification.py
 
@@ -53,7 +53,7 @@ def find_kahea_targets(md_path: Path) -> List[str]:
     targets = []
     with md_path.open('r', encoding='utf-8') as f:
         for line in f:
-            m = re.search(r'<!-- kahea (lares://[^ ]+)', line)
+            m = re.search(r'<!-- kahea (lar://[^ ]+)', line)
             if m:
                 targets.append(m.group(1))
     return targets
@@ -83,7 +83,7 @@ def check_registry(loci_path: Path, registry_path: Path) -> float:
         pointer = loci_path.parent / (loci_path.stem + '.pointer')
         if pointer.exists():
             with pointer.open('r', encoding='utf-8') as pf:
-                if 'lares:///' in pf.read():
+                if 'lar:///' in pf.read():
                     return 1.0
     except Exception:
         pass
@@ -141,12 +141,12 @@ def check_ooda_sections(sections: Dict[str, str]) -> float:
     return sum(phase_scores) / len(phase_scores) if phase_scores else 0.0
 
 # Canonical marker patterns
-# ahu:   <!-- ahu lares:///ha.ka.ba[/path][?params][#fragment] -->
-# kahea: <!-- kahea lares:///ha.ka.ba[/path][?params][#fragment] -->
-_AHU_MARKER    = re.compile(r'<!--\s*ahu\s+(lares:///\S+?)\s*-->')
-_KAHEA_MARKER  = re.compile(r'<!--\s*kahea\s+(lares:///\S+?)\s*-->')
+# ahu:   <!-- ahu lar:///ha.ka.ba[/path][?params][#fragment] -->
+# kahea: <!-- kahea lar:///ha.ka.ba[/path][?params][#fragment] -->
+_AHU_MARKER    = re.compile(r'<!--\s*ahu\s+(lar:///\S+?)\s*-->')
+_KAHEA_MARKER  = re.compile(r'<!--\s*kahea\s+(lar:///\S+?)\s*-->')
 _HAKABA_PATH   = re.compile(
-    r'^lares:///[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]'  # ha.ka.ba
+    r'^lar:///[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]'  # ha.ka.ba
     r'[^?#\s]*'                                                        # optional subpath
     r'(?:\?[^#\s]*)?'                                                  # optional query
     r'(?:#[a-zA-Z0-9_\-]+)?$'                                         # optional plain fragment
@@ -168,7 +168,7 @@ def _validate_marker_uris(text: str, pattern: re.Pattern) -> Tuple[int, int, Lis
 
 def check_ahu_syntax(text: str) -> Tuple[float, List[str]]:
     """
-    Validate <!-- ahu lares:///... --> marker syntax.
+    Validate <!-- ahu lar:///... --> marker syntax.
     Each ahu URI must have a canonical ha.ka.ba path.
     Fragment must be a plain section name (not chronometer form — ahu is a bookmark).
     Returns (score 0.0-1.0, list of bad URIs).
@@ -181,7 +181,7 @@ def check_ahu_syntax(text: str) -> Tuple[float, List[str]]:
 
 def check_kahea_syntax(text: str) -> Tuple[float, List[str]]:
     """
-    Validate <!-- kahea lares:///... --> transclusion marker syntax.
+    Validate <!-- kahea lar:///... --> transclusion marker syntax.
     Each kahea URI must have a canonical ha.ka.ba path.
     Fragment is optional (whole-locus pull is valid).
     Returns (score 0.0-1.0, list of bad URIs).
@@ -198,8 +198,8 @@ def check_kahea_resolution(targets: List[str], loci_dir: Path) -> float:
         return 1.0
     resolved = 0
     for t in targets:
-        # crude: treat lares:///foo/bar as foo/bar/LOCI.md
-        parts = t.replace('lares:///', '').split('/')
+        # crude: treat lar:///foo/bar as foo/bar/LOCI.md
+        parts = t.replace('lar:///', '').split('/')
         guess = loci_dir.parent / '/'.join(parts) / 'LOCI.md'
         if guess.exists():
             resolved += 1
@@ -285,13 +285,13 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
     # --- LARES URI DEDUPE TEST ---
     def collect_lares_uris(root_dir: str) -> List[Tuple[str, str, int]]:
         """
-        Collect all canonical lares:/// URIs in all files under root_dir.
+        Collect all canonical lar:/// URIs in all files under root_dir.
         Returns a list of (base_uri, file_path, line_number).
         Strips query and fragment from each URI.
         Ignores placeholder/template URIs and filewrapper-only URIs.
         Also collects exchange-turn URIs (operator/node URIs in exchange protocol).
         """
-        uri_pattern = re.compile(r'lares:///[a-zA-Z0-9_./\\-]+')
+        uri_pattern = re.compile(r'lar:///[a-zA-Z0-9_./\\-]+')
         # Exchange-turn pattern: look for lines with 'operator URI' or 'node URI' or 'forward URI' or 'closing node URI'
         exchange_patterns = [re.compile(r'operator URI', re.I), re.compile(r'node URI', re.I), re.compile(r'forward URI', re.I), re.compile(r'closing node URI', re.I)]
         results = []
@@ -302,7 +302,7 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                     lines = list(f)
                     for i, line in enumerate(lines, 1):
-                        # Standard lares:/// URIs
+                        # Standard lar:/// URIs
                         for m in uri_pattern.finditer(line):
                             uri = m.group(0)
                             base_uri = re.split(r'[?#]', uri)[0]
@@ -311,7 +311,7 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
                             if base_uri.count('.') < 2:
                                 continue
                             results.append((base_uri, file_path, i))
-                        # Exchange-turn URIs: if line matches exchange pattern, scan for lares:/// in this and next 2 lines
+                        # Exchange-turn URIs: if line matches exchange pattern, scan for lar:/// in this and next 2 lines
                         if any(p.search(line) for p in exchange_patterns):
                             for j in range(i-1, min(i+2, len(lines))):
                                 for m in uri_pattern.finditer(lines[j]):
@@ -454,25 +454,25 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=N
                 print("- Document nested OODA-A loops, parent/child references, and entry/exit conditions if present.")
             elif k == 'ahu_syntax':
                 print(f"- Fix ahu marker URIs: {results_detail.get('ahu_syntax', '')}")
-                print("  ahu form: <!-- ahu lares:///ha.ka.ba/path/?confidence=X#section-name -->")
+                print("  ahu form: <!-- ahu lar:///ha.ka.ba/path/?confidence=X#section-name -->")
                 print("  Note: ahu is a bookmark — fragment is a plain section name, NOT chronometer form.")
             elif k == 'kahea_syntax':
                 print(f"- Fix kahea marker URIs: {results_detail.get('kahea_syntax', '')}")
-                print("  kahea form: <!-- kahea lares:///ha.ka.ba/path/ -->  (whole locus)")
-                print("  or:         <!-- kahea lares:///ha.ka.ba/path/#section-name -->  (section pull)")
+                print("  kahea form: <!-- kahea lar:///ha.ka.ba/path/ -->  (whole locus)")
+                print("  or:         <!-- kahea lar:///ha.ka.ba/path/#section-name -->  (section pull)")
             elif k == 'lares_uri_dedupe':
                 dups = results_detail.get('lares_uri_dedupe', {})
                 if dups:
                     print("\n[ASSESS PHASE PROMPT]")
-                    print("Duplicate lares:/// URIs detected:")
+                    print("Duplicate lar:/// URIs detected:")
                     for uri, locs in dups.items():
                         print(f"- {uri} found in:")
                         for file, line in locs:
                             print(f"    - {file}:{line}")
-                    print("\nEach canonical lares:/// URI must be unique across the codebase. Please rename or consolidate these entries to ensure address uniqueness and prevent semantic drift.")
+                    print("\nEach canonical lar:/// URI must be unique across the codebase. Please rename or consolidate these entries to ensure address uniqueness and prevent semantic drift.")
                 else:
                     print("\n[ASSESS PHASE PROMPT]")
-                    print("All canonical lares:/// URIs are unique across the codebase. No action required. The address space is clean and ready for further assessment.")
+                    print("All canonical lar:/// URIs are unique across the codebase. No action required. The address space is clean and ready for further assessment.")
 
 def batch_verify_loci(root_dir, registry_path, threshold=0.95):
     batch_results = []

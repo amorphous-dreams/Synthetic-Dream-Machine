@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.verification.defines/uri_wrapper_verification/
+# ∞ → lar:///grammar.verification.defines/uri_wrapper_verification/
 """
 uri_wrapper_verification.py
 
@@ -13,31 +13,31 @@ import os
 import importlib.util
 from pathlib import Path
 
-START_PATTERN      = re.compile(r'^<!--\s*∞\s*→\s*lares:///.+-->')
+START_PATTERN      = re.compile(r'^<!--\s*∞\s*→\s*lar:///.+-->')
 END_PATTERN        = re.compile(r'^<!--\s*→\s*\?\s*-->')
 
 # --- Marker grammar (four kahua surfaces) ---
-# locus   <!-- ∞ → lares:///ha.ka.ba[/path][?params] -->          file-level opener
-# ahu     <!-- ahu lares:///ha.ka.ba[/path][?params][#section] --> bookmark (no stances/chrono)
-# kahea   <!-- kahea lares:///ha.ka.ba[/path][?params][#section] --> transclusion pull
-# lares   lares:///ha.ka.ba[/path][?params][#chrono]               bare daemon pointer (needs stances+chrono)
-AHU_MARKER_PATTERN   = re.compile(r'<!--\s*ahu\s+(lares:///[^\s>]+?)\s*-->')
-KAHEA_MARKER_PATTERN = re.compile(r'<!--\s*kahea\s+(lares:///[^\s>]+?)\s*-->')
-AHU_SKIP_PATTERN     = re.compile(r'<!--\s*ahu\s+lares:///')   # excludes ahu lines from bare scan
+# locus   <!-- ∞ → lar:///ha.ka.ba[/path][?params] -->          file-level opener
+# ahu     <!-- ahu lar:///ha.ka.ba[/path][?params][#section] --> bookmark (no stances/chrono)
+# kahea   <!-- kahea lar:///ha.ka.ba[/path][?params][#section] --> transclusion pull
+# lares   lar:///ha.ka.ba[/path][?params][#chrono]               bare daemon pointer (needs stances+chrono)
+AHU_MARKER_PATTERN   = re.compile(r'<!--\s*ahu\s+(lar:///[^\s>]+?)\s*-->')
+KAHEA_MARKER_PATTERN = re.compile(r'<!--\s*kahea\s+(lar:///[^\s>]+?)\s*-->')
+AHU_SKIP_PATTERN     = re.compile(r'<!--\s*ahu\s+lar:///')   # excludes ahu lines from bare scan
 
 # Known URI templates and placeholder patterns — skipped in marker syntax checks
 KNOWN_URI_TEMPLATES: frozenset[str] = frozenset({
-    'lares:///ha.ka.ba',
-    'lares:///...',
-    'lares:///PLACEHOLDER',
-    'lares:///TERRITORY/',
-    'lares:///foo/bar',
-    'lares:///foo/bar/',
+    'lar:///ha.ka.ba',
+    'lar:///...',
+    'lar:///PLACEHOLDER',
+    'lar:///TERRITORY/',
+    'lar:///foo/bar',
+    'lar:///foo/bar/',
 })
-_TEMPLATE_BRACKET_RE = re.compile(r'^lares:///[^\s]*\[')
+_TEMPLATE_BRACKET_RE = re.compile(r'^lar:///[^\s]*\[')
 
 
-_NO_DOT_SEGMENT_RE = re.compile(r'^lares:///[a-zA-Z0-9_\-]+[/?#]')
+_NO_DOT_SEGMENT_RE = re.compile(r'^lar:///[a-zA-Z0-9_\-]+[/?#]')
 
 
 def _is_template_uri(uri: str) -> bool:
@@ -48,7 +48,7 @@ def _is_template_uri(uri: str) -> bool:
         return True
     if '...' in uri:
         return True
-    # Single-segment path with no dots — doc shorthand like lares:///path/ or lares:///path/#section
+    # Single-segment path with no dots — doc shorthand like lar:///path/ or lar:///path/#section
     if _NO_DOT_SEGMENT_RE.match(uri):
         return True
     return False
@@ -57,10 +57,10 @@ def _is_template_uri(uri: str) -> bool:
 # TODO(future-me): extend to validate that each word carries its correct memetic role
 # (ha=territory, ka=kind, ba=stance) against the grammar registry. Requires live lookup.
 _HAKABA_URI          = re.compile(
-    r'^lares:///[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9][^?#\s]*'
+    r'^lar:///[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9][^?#\s]*'
     r'(?:\?[^#\s]*)?(?:#[a-zA-Z0-9_\-]+)?$'
 )
-_VALID_URI         = r'(lares:///[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][^\s\'"<>`\])\}]*)'
+_VALID_URI         = r'(lar:///[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][^\s\'"<>`\])\}]*)'
 BARE_MD_PATTERN    = re.compile(r'(?<!`)' + _VALID_URI + r'(?!`)')
 BARE_HASH_PATTERN  = re.compile(r'^\s*#\s+' + _VALID_URI)
 BARE_SLASH_PATTERN = re.compile(r'^\s*//\s+' + _VALID_URI)
@@ -81,16 +81,16 @@ URI_PLACEHOLDER      = 'ha.ka.ba'
 
 # Per-extension wrapper patterns and canonical templates
 _WRAPPER_PATTERNS = {
-    '.md':   (re.compile(r'^<!--\s*∞\s*→\s*lares:///.+-->'),    re.compile(r'^<!--\s*→\s*\?\s*-->'),
-              '<!-- ∞ → lares:///PLACEHOLDER -->\n',             '<!-- → ? -->'),
-    '.py':   (re.compile(r'^#\s*∞\s*→\s*lares:///.+'),          re.compile(r'^#\s*→\s*\?\s*$'),
-              '# ∞ → lares:///PLACEHOLDER\n',                    '# → ?'),
-    '.sh':   (re.compile(r'^#\s*∞\s*→\s*lares:///.+'),          re.compile(r'^#\s*→\s*\?\s*$'),
-              '# ∞ → lares:///PLACEHOLDER\n',                    '# → ?'),
-    '.js':   (re.compile(r'^//\s*∞\s*→\s*lares:///.+'),         re.compile(r'^//\s*→\s*\?\s*$'),
-              '// ∞ → lares:///PLACEHOLDER\n',                   '// → ?'),
-    '.ts':   (re.compile(r'^//\s*∞\s*→\s*lares:///.+'),         re.compile(r'^//\s*→\s*\?\s*$'),
-              '// ∞ → lares:///PLACEHOLDER\n',                   '// → ?'),
+    '.md':   (re.compile(r'^<!--\s*∞\s*→\s*lar:///.+-->'),    re.compile(r'^<!--\s*→\s*\?\s*-->'),
+              '<!-- ∞ → lar:///PLACEHOLDER -->\n',             '<!-- → ? -->'),
+    '.py':   (re.compile(r'^#\s*∞\s*→\s*lar:///.+'),          re.compile(r'^#\s*→\s*\?\s*$'),
+              '# ∞ → lar:///PLACEHOLDER\n',                    '# → ?'),
+    '.sh':   (re.compile(r'^#\s*∞\s*→\s*lar:///.+'),          re.compile(r'^#\s*→\s*\?\s*$'),
+              '# ∞ → lar:///PLACEHOLDER\n',                    '# → ?'),
+    '.js':   (re.compile(r'^//\s*∞\s*→\s*lar:///.+'),         re.compile(r'^//\s*→\s*\?\s*$'),
+              '// ∞ → lar:///PLACEHOLDER\n',                   '// → ?'),
+    '.ts':   (re.compile(r'^//\s*∞\s*→\s*lar:///.+'),         re.compile(r'^//\s*→\s*\?\s*$'),
+              '// ∞ → lar:///PLACEHOLDER\n',                   '// → ?'),
 }
 _DEFAULT_WRAPPER = _WRAPPER_PATTERNS['.md']
 
@@ -124,7 +124,7 @@ def _load_parse_uri():
 
 
 def _uri_stream_issues(uri: str) -> list[str]:
-    """Return list of missing operator-stream fields for a lares:/// URI."""
+    """Return list of missing operator-stream fields for a lar:/// URI."""
     issues = []
     if not re.search(r'[?&]stances=', uri):
         issues.append('missing stances=')
@@ -159,7 +159,7 @@ def scan_marker_syntax(lines: list[str]) -> list[dict]:
 
 def scan_stream_uris(lines: list[str], ext: str = '.md') -> list[dict]:
     """
-    Scan file body for bare lares:/// operator-stream pointers missing stances= or chronometer.
+    Scan file body for bare lar:/// operator-stream pointers missing stances= or chronometer.
     ahu markers are bookmarks — excluded. Lines 1 and last (wrappers) are skipped.
     """
     bare_pat = _BARE_PATTERNS.get(ext, BARE_MD_PATTERN)
@@ -179,8 +179,8 @@ def scan_stream_uris(lines: list[str], ext: str = '.md') -> list[dict]:
 
 
 def extract_uri_from_wrapper(line: str) -> str | None:
-    """Extract the lares:/// path segment from a wrapper comment line."""
-    m = re.search(r'lares:///([^ >]+)', line)
+    """Extract the lar:/// path segment from a wrapper comment line."""
+    m = re.search(r'lar:///([^ >]+)', line)
     return m.group(1).rstrip() if m else None
 
 
@@ -218,11 +218,11 @@ def check_uri_wrappers(file_path: Path) -> dict:
 
     if uri:
         # Check for template/placeholder URI
-        if _is_template_uri(f'lares:///{uri}'):
+        if _is_template_uri(f'lar:///{uri}'):
             uri_valid = False
-            uri_error = f"Template or placeholder URI detected: lares:///{uri}"
+            uri_error = f"Template or placeholder URI detected: lar:///{uri}"
             prompt = (
-                f"This file uses a template or placeholder URI in its header (lares:///{uri}). "
+                f"This file uses a template or placeholder URI in its header (lar:///{uri}). "
                 f"Please synthesize a valid locus URI for this file based on its path and context, "
                 f"and update the header accordingly."
             )
@@ -230,7 +230,7 @@ def check_uri_wrappers(file_path: Path) -> dict:
         else:
             parse_uri = _load_parse_uri()
             if parse_uri:
-                ok, msg = parse_uri.validate_lares_uri(f'lares:///{uri}')
+                ok, msg = parse_uri.validate_lares_uri(f'lar:///{uri}')
                 if not ok:
                     uri_valid = False
                     uri_error = msg
@@ -248,7 +248,7 @@ def check_uri_wrappers(file_path: Path) -> dict:
         'pass': passed,
         'start_ok': start_ok,
         'end_ok': end_ok,
-        'uri': f'lares:///{uri}' if uri else None,
+        'uri': f'lar:///{uri}' if uri else None,
         'uri_valid': uri_valid,
         'uri_error': uri_error,
         'prompt': prompt,
@@ -337,7 +337,7 @@ def main():
     parser.add_argument('--json', action='store_true', help='Output structured JSON result')
     parser.add_argument('--fix',    action='store_true', help='Auto-insert/correct missing wrappers in-place')
     parser.add_argument('--stream', action='store_true',
-                        help='Check bare lares:/// live pointers for required stances= and chronometer fragment')
+                        help='Check bare lar:/// live pointers for required stances= and chronometer fragment')
     parser.add_argument('--markers', action='store_true',
                         help='Check ahu and kahea marker URIs for canonical ha.ka.ba structure')
     args = parser.parse_args()
@@ -438,7 +438,7 @@ def main():
                     for issue in v['issues']:
                         print(f'    — {issue}')
             else:
-                print('[STREAM PASS] All bare lares:/// pointers carry stances and chronometer.')
+                print('[STREAM PASS] All bare lar:/// pointers carry stances and chronometer.')
         if args.markers:
             if marker_violations:
                 print(f'[MARKERS FAIL] {len(marker_violations)} ahu/kahea marker(s) with malformed URI:')

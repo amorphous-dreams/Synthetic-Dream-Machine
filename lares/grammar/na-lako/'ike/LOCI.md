@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/'ike/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.na-lako.holds/'ike/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: 'Ike — Wand of Intuition
 

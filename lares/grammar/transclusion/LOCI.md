@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Transclusion
 
@@ -29,7 +29,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#loop-position -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#loop-position -->
 
 ## Loop Position
 
@@ -65,7 +65,7 @@ Transclusion should not:
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#prior-art -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#prior-art -->
 
 ## Prior Art
 
@@ -100,7 +100,7 @@ summon logic.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#handoff -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#handoff -->
 
 ## Handoff
 
@@ -125,7 +125,7 @@ clean transclusion surface.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#surface -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.85#surface -->
 
 ## Composable Surface
 
@@ -154,7 +154,7 @@ reference when relation matters more than inclusion.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#conventions -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#conventions -->
 
 ## Conventions
 
@@ -177,7 +177,7 @@ as a transclusion handle inside the active context window.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -194,7 +194,7 @@ kind of prose can inform a reader yet still fail as a composable locus.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 
@@ -237,7 +237,7 @@ needs work.
 
 ---
 
-<!-- ahu lares:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#ooda-eprime-operationalization -->
+<!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#ooda-eprime-operationalization -->
 
 ## OODA-A & E-Prime Operationalization
 

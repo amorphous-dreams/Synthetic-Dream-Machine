@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace Module
 

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.silat.defines/silat/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.silat.defines/silat/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Silat
 
@@ -24,7 +24,7 @@ heritage: Southeast Asian (Malay, Indonesian, Filipino, Bruneian)
 
 ---
 
-<!-- ahu lares:///grammar.silat.defines/silat/#scope -->
+<!-- ahu lar:///grammar.silat.defines/silat/#scope -->
 
 ## Scope
 
@@ -37,7 +37,7 @@ This grammar defines:
 
 ---
 
-<!-- ahu lares:///grammar.silat.defines/silat/#open -->
+<!-- ahu lar:///grammar.silat.defines/silat/#open -->
 
 ## Open Questions
 

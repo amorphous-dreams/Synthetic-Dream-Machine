@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///ha.ka.ba/lar-uri/?confidence=CS:0.90&p=0.5 -->
+<!-- ∞ → lar:///ha.ka.ba/lar-uri/?confidence=CS:0.90&p=0.5 -->
 
 # Grammar: `lar:` URI Syntax
 
@@ -28,7 +28,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.uri.defines/uri/?confidence=CS:0.80#loop-position -->
+<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#loop-position -->
 
 ## Loop Position
 
@@ -64,7 +64,7 @@ URI syntax should not:
 
 ---
 
-<!-- ahu lares:///grammar.uri.defines/uri/?confidence=CS:0.80#handoff -->
+<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#handoff -->
 
 ## Handoff
 
@@ -88,20 +88,20 @@ If those answers cannot come back out of the string, the URI still carries noise
 
 ---
 
-<!-- ahu lares:///grammar.uri.defines/uri/?confidence=CS:0.80#surface -->
+<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#surface -->
 
 ## Composable Surface
 
 **Canonical record form:**
 
 ```text
-lares://alias:tier@host/ha.ka.ba/?stances=.....&confidence=S:0.65&p=0.5#O0.O0.O0.O0.O0
+lar://alias:tier@host/ha.ka.ba/?stances=.....&confidence=S:0.65&p=0.5#O0.O0.O0.O0.O0
 ```
 
 **Stable address form:**
 
 ```text
-lares:///grammar.uri.defines/uri/?confidence=CS:0.80
+lar:///grammar.uri.defines/uri/?confidence=CS:0.80
 ```
 
 **Render-target rule:** record form stays canonical for storage, comparison, and emitted exchange
@@ -121,7 +121,7 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lares:///grammar.uri.defines/uri/?confidence=CS:0.80#conventions -->
+<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#conventions -->
 
 ## Conventions
 
@@ -137,7 +137,7 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lares:///grammar.uri.defines/uri/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -151,7 +151,7 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lares:///grammar.uri.defines/uri/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.uri.defines/uri/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

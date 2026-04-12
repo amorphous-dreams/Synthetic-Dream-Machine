@@ -3,7 +3,7 @@
 > Scope: Typed IR compiler, module graph assembly, combine scripts, verify scripts, prompt caching strategy.
 > Updated: 2026-04-08
 > Status: Active — `builds/scripts/` has working combine/verify scripts; architecture under refactor
-> URI: `[pending — lares://core/design/compiler@draft]`
+> URI: `[pending — lar://core/design/compiler@draft]`
 
 ---
 

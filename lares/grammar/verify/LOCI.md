@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///ha.ka.ba -->
+<!-- ∞ → lar:///ha.ka.ba -->
 # Grammar: Verify
 
 ---

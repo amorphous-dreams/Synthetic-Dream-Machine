@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.mele.defines/mele/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.mele.defines/mele/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Mele — The Structured Signal
 
@@ -41,7 +41,7 @@ cross-ref:
 
 ---
 
-<!-- ahu lares:///grammar.mele.defines/mele/?confidence=CS:0.80#types -->
+<!-- ahu lar:///grammar.mele.defines/mele/?confidence=CS:0.80#types -->
 
 ## Types of Mele Relevant to the Grammar
 
@@ -65,7 +65,7 @@ the instruments, not after.
 
 ---
 
-<!-- ahu lares:///grammar.mele.defines/mele/?confidence=CS:0.80#call-response -->
+<!-- ahu lar:///grammar.mele.defines/mele/?confidence=CS:0.80#call-response -->
 
 ## Call and Response
 
@@ -87,7 +87,7 @@ bidirectional knowing. The structured form keeps the knowing from degrading to n
 
 ---
 
-<!-- ahu lares:///grammar.mele.defines/mele/?confidence=CS:0.80#heritage -->
+<!-- ahu lar:///grammar.mele.defines/mele/?confidence=CS:0.80#heritage -->
 
 ## Heritage Depth
 
@@ -99,7 +99,7 @@ audibly wrong to anyone who knows it.
 
 **Hawaiian mele inoa:** Name chants were living documents. They encoded lineage, place affiliations,
 and standing. To chant someone's mele inoa was to declare their full presence. The URI as mele inoa:
-`lares://telarus:operator@Enyalios:1/...` chants the operator's name, their authority tier, their
+`lar://telarus:operator@Enyalios:1/...` chants the operator's name, their authority tier, their
 host, their intent vector. It is not a label — it is a declaration of presence.
 
 **The haku mele** (mele composer, lit. "to braid/weave"): The haku mele does not merely recite —

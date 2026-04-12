@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.lua.defines/lua/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.lua.defines/lua/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Lua
 
@@ -24,7 +24,7 @@ heritage: Hawaiian
 
 ---
 
-<!-- ahu lares:///grammar.lua.defines/lua/#scope -->
+<!-- ahu lar:///grammar.lua.defines/lua/#scope -->
 
 ## Scope
 
@@ -38,7 +38,7 @@ The art was traditionally kapu — restricted knowledge. The grammar carries thi
 
 ---
 
-<!-- ahu lares:///grammar.lua.defines/lua/#open -->
+<!-- ahu lar:///grammar.lua.defines/lua/#open -->
 
 ## Open Questions
 

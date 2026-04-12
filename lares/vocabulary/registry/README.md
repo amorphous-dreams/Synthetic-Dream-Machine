@@ -3,7 +3,7 @@
 > Scope: `lares:` URI scheme registration, resolver spec, alias ledger, promotion ledger.
 > Updated: 2026-04-08
 > Status: Pre-draft — URI anatomy is in `../../_todo/core/Signal_HUD_Tagspace-draft.md`; resolver is unspecified
-> URI: `[pending — lares://core/design/registry@draft]`
+> URI: `[pending — lar://core/design/registry@draft]`
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.kapu.defines/kapu/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.kapu.defines/kapu/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Kapu
 
@@ -25,14 +25,14 @@ heritage: Hawaiian
 
 ---
 
-<!-- ahu lares:///grammar.kapu.defines/kapu/#definition -->
+<!-- ahu lar:///grammar.kapu.defines/kapu/#definition -->
 
 ## Definition
 
 Kapu is the grammar of sacred boundary.
 
 In the lararium: a file is inside the kapu line when it has all three properties:
-1. A `lares:///` URI address (locus opener)
+1. A `lar:///` URI address (locus opener)
 2. A place in a LOCI.md registry
 3. Participation in the exchange protocol
 
@@ -40,7 +40,7 @@ A file without these is outside the kapu. It exists, it can be read, it can be a
 
 ---
 
-<!-- ahu lares:///grammar.kapu.defines/kapu/#crossing -->
+<!-- ahu lar:///grammar.kapu.defines/kapu/#crossing -->
 
 ## Crossing Rules
 

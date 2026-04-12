@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///source.prometheus-rising.holds/prometheus-rising/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///source.prometheus-rising.holds/prometheus-rising/?confidence=CS:0.80&p=0.5 -->
 
 # Source: Prometheus Rising — Robert Anton Wilson (1983/1997)
 
@@ -21,7 +21,7 @@ chapters-of-interest:
 ---
 ```
 
-<!-- ahu lares:///source.prometheus-rising.holds/prometheus-rising/?confidence=CS:0.80#chapter-8-key -->
+<!-- ahu lar:///source.prometheus-rising.holds/prometheus-rising/?confidence=CS:0.80#chapter-8-key -->
 
 ## Chapter 8 Key Finding
 

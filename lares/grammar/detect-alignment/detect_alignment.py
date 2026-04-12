@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.detectalignment.defines/detect_alignment/
+# ∞ → lar:///grammar.detectalignment.defines/detect_alignment/
 """
 detect_alignment.py
 
@@ -14,12 +14,12 @@ from pathlib import Path
 # --- Marker grammar ---
 # Four kahua markers, each with distinct syntax rules:
 #
-#   locus   <!-- ∞ → lares:///ha.ka.ba[/path][?params] -->   opens a content span (file-level)
-#   ahu     <!-- ahu lares:///ha.ka.ba[/path][?params][#section] -->   bookmark/waypoint
-#   kahea   <!-- kahea lares:///ha.ka.ba[/path][?params][#section] --> transclusion pull
-#   lares   lares:///ha.ka.ba[/path][?params][#chrono]               bare daemon pointer
+#   locus   <!-- ∞ → lar:///ha.ka.ba[/path][?params] -->   opens a content span (file-level)
+#   ahu     <!-- ahu lar:///ha.ka.ba[/path][?params][#section] -->   bookmark/waypoint
+#   kahea   <!-- kahea lar:///ha.ka.ba[/path][?params][#section] --> transclusion pull
+#   lares   lar:///ha.ka.ba[/path][?params][#chrono]               bare daemon pointer
 #
-# Only bare lares:/// live pointers (daemon surface) require stances= + chronometer.
+# Only bare lar:/// live pointers (daemon surface) require stances= + chronometer.
 # ahu and kahea markers require valid ha.ka.ba URI structure but NOT stances/chrono.
 
 # Canonical ha.ka.ba URI — three dot-separated SINGLE WORDS, optional subpath/query/fragment.
@@ -28,30 +28,30 @@ from pathlib import Path
 # TODO(future-me): enforce memetic associations — ha=territory, ka=kind, ba=stance —
 # via a live registry lookup. Deferred until the grammar registry is queryable.
 _HAKABA_URI = re.compile(
-    r'^lares:///[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9][^?#\s]*'
+    r'^lar:///[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9][^?#\s]*'
     r'(?:\?[^#\s]*)?(?:#[a-zA-Z0-9_\-]+)?$'
 )
-AHU_MARKER_PATTERN   = re.compile(r'<!--\s*ahu\s+(lares:///[^\s>]+?)\s*-->')
-KAHEA_MARKER_PATTERN = re.compile(r'<!--\s*kahea\s+(lares:///[^\s>]+?)\s*-->')
+AHU_MARKER_PATTERN   = re.compile(r'<!--\s*ahu\s+(lar:///[^\s>]+?)\s*-->')
+KAHEA_MARKER_PATTERN = re.compile(r'<!--\s*kahea\s+(lar:///[^\s>]+?)\s*-->')
 
 # Ahu skip pattern — ahu lines excluded from bare-pointer scanning
-AHU_SKIP_PATTERN   = re.compile(r'<!--\s*ahu\s+lares:///')
+AHU_SKIP_PATTERN   = re.compile(r'<!--\s*ahu\s+lar:///')
 
 # Known URI templates and placeholder patterns — skipped in marker syntax checks
 # These appear in documentation, grammar specs, and code comments as illustrative examples.
 KNOWN_URI_TEMPLATES: frozenset[str] = frozenset({
-    'lares:///ha.ka.ba',
-    'lares:///...',
-    'lares:///PLACEHOLDER',
-    'lares:///TERRITORY/',
-    'lares:///foo/bar',
-    'lares:///foo/bar/',
+    'lar:///ha.ka.ba',
+    'lar:///...',
+    'lar:///PLACEHOLDER',
+    'lar:///TERRITORY/',
+    'lar:///foo/bar',
+    'lar:///foo/bar/',
 })
-# Bracket-notation doc examples: lares:///ha.ka.ba[/path][?params][#section]
-_TEMPLATE_BRACKET_RE = re.compile(r'^lares:///[^\s]*\[')
+# Bracket-notation doc examples: lar:///ha.ka.ba[/path][?params][#section]
+_TEMPLATE_BRACKET_RE = re.compile(r'^lar:///[^\s]*\[')
 
 
-_NO_DOT_SEGMENT_RE = re.compile(r'^lares:///[a-zA-Z0-9_\-]+[/?#]')
+_NO_DOT_SEGMENT_RE = re.compile(r'^lar:///[a-zA-Z0-9_\-]+[/?#]')
 
 
 def _is_template_uri(uri: str) -> bool:
@@ -62,13 +62,13 @@ def _is_template_uri(uri: str) -> bool:
         return True
     if '...' in uri:
         return True
-    # Single-segment path with no dots — doc shorthand like lares:///path/ or lares:///path/#section
+    # Single-segment path with no dots — doc shorthand like lar:///path/ or lar:///path/#section
     if _NO_DOT_SEGMENT_RE.match(uri):
         return True
     return False
 
 # Bare pointer detection — valid ha.ka.ba structure required (excludes regex/template fragments)
-_VALID_URI = r'(lares:///[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][^\s\'"<>`\])\}]*)'
+_VALID_URI = r'(lar:///[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][a-zA-Z0-9]*\.[a-zA-Z0-9][^\s\'"<>`\])\}]*)'
 # Bare in Markdown: not inside backtick spans, not on ahu lines
 BARE_MD_PATTERN    = re.compile(r'(?<!`)' + _VALID_URI + r'(?!`)')
 # Bare in code: only on comment lines (not string literals), not ahu lines
@@ -189,7 +189,7 @@ def fix_skill_name(file_path: 'Path', lines: list[str]) -> bool:
 
 def scan_stream_uris(lines: list[str], ext: str = '.md') -> list[dict]:
     """
-    Scan file body for bare lares:/// operator-stream pointers missing stances= or chronometer.
+    Scan file body for bare lar:/// operator-stream pointers missing stances= or chronometer.
     ahu markers are bookmarks — excluded. Lines 1 and last (wrappers) are skipped.
     """
     bare_pat = _BARE_PATTERNS.get(ext, BARE_MD_PATTERN)
@@ -208,34 +208,34 @@ def scan_stream_uris(lines: list[str], ext: str = '.md') -> list[dict]:
 
 
 COMMENT_PATTERNS = {
-    '.md':   (r'^<!--\s*∞\s*→\s*lares:///.+-->$',    r'^<!--\s*→\s*\?\s*-->$'),
-    '.py':   (r'^#\s*∞\s*→\s*lares:///.+',            r'^#\s*→\s*\?\s*$'),
-    '.sh':   (r'^#\s*∞\s*→\s*lares:///.+',            r'^#\s*→\s*\?\s*$'),
-    '.js':   (r'^//\s*∞\s*→\s*lares:///.+',           r'^//\s*→\s*\?\s*$'),
-    '.ts':   (r'^//\s*∞\s*→\s*lares:///.+',           r'^//\s*→\s*\?\s*$'),
-    '.c':    (r'^/\*\s*∞\s*→\s*lares:///.+\*/$',      r'^/\*\s*→\s*\?\s*\*/$'),
-    '.cpp':  (r'^/\*\s*∞\s*→\s*lares:///.+\*/$',      r'^/\*\s*→\s*\?\s*\*/$'),
-    '.java': (r'^/\*\s*∞\s*→\s*lares:///.+\*/$',      r'^/\*\s*→\s*\?\s*\*/$'),
+    '.md':   (r'^<!--\s*∞\s*→\s*lar:///.+-->$',    r'^<!--\s*→\s*\?\s*-->$'),
+    '.py':   (r'^#\s*∞\s*→\s*lar:///.+',            r'^#\s*→\s*\?\s*$'),
+    '.sh':   (r'^#\s*∞\s*→\s*lar:///.+',            r'^#\s*→\s*\?\s*$'),
+    '.js':   (r'^//\s*∞\s*→\s*lar:///.+',           r'^//\s*→\s*\?\s*$'),
+    '.ts':   (r'^//\s*∞\s*→\s*lar:///.+',           r'^//\s*→\s*\?\s*$'),
+    '.c':    (r'^/\*\s*∞\s*→\s*lar:///.+\*/$',      r'^/\*\s*→\s*\?\s*\*/$'),
+    '.cpp':  (r'^/\*\s*∞\s*→\s*lar:///.+\*/$',      r'^/\*\s*→\s*\?\s*\*/$'),
+    '.java': (r'^/\*\s*∞\s*→\s*lar:///.+\*/$',      r'^/\*\s*→\s*\?\s*\*/$'),
 }
 
 # Canonical wrapper templates — start uses PLACEHOLDER for the URI path
 CANONICAL_WRAPPERS = {
-    '.md':   ('<!-- ∞ → lares:///PLACEHOLDER -->\n', '<!-- → ? -->'),
-    '.py':   ('# ∞ → lares:///PLACEHOLDER\n',         '# → ?'),
-    '.sh':   ('# ∞ → lares:///PLACEHOLDER\n',         '# → ?'),
-    '.js':   ('// ∞ → lares:///PLACEHOLDER\n',        '// → ?'),
-    '.ts':   ('// ∞ → lares:///PLACEHOLDER\n',        '// → ?'),
-    '.c':    ('/* ∞ → lares:///PLACEHOLDER */\n',     '/* → ? */'),
-    '.cpp':  ('/* ∞ → lares:///PLACEHOLDER */\n',     '/* → ? */'),
-    '.java': ('/* ∞ → lares:///PLACEHOLDER */\n',     '/* → ? */'),
+    '.md':   ('<!-- ∞ → lar:///PLACEHOLDER -->\n', '<!-- → ? -->'),
+    '.py':   ('# ∞ → lar:///PLACEHOLDER\n',         '# → ?'),
+    '.sh':   ('# ∞ → lar:///PLACEHOLDER\n',         '# → ?'),
+    '.js':   ('// ∞ → lar:///PLACEHOLDER\n',        '// → ?'),
+    '.ts':   ('// ∞ → lar:///PLACEHOLDER\n',        '// → ?'),
+    '.c':    ('/* ∞ → lar:///PLACEHOLDER */\n',     '/* → ? */'),
+    '.cpp':  ('/* ∞ → lar:///PLACEHOLDER */\n',     '/* → ? */'),
+    '.java': ('/* ∞ → lar:///PLACEHOLDER */\n',     '/* → ? */'),
 }
 
 URI_PLACEHOLDER = 'ha.ka.ba'
 
 
 def _extract_existing_uri(line: str) -> str | None:
-    """Return the lares:/// path from an existing start wrapper, or None."""
-    m = re.search(r'lares:///([^ >*]+)', line)
+    """Return the lar:/// path from an existing start wrapper, or None."""
+    m = re.search(r'lar:///([^ >*]+)', line)
     return m.group(1).rstrip() if m else None
 
 
@@ -457,7 +457,7 @@ def main():
     parser.add_argument('--report', type=str, default=None, help='Write full JSON batch report to file')
     parser.add_argument('--fix',    action='store_true', help='Auto-insert missing wrappers in-place')
     parser.add_argument('--stream', action='store_true',
-                        help='Check bare lares:/// live pointers for required stances= and chronometer fragment')
+                        help='Check bare lar:/// live pointers for required stances= and chronometer fragment')
     parser.add_argument('--markers', action='store_true',
                         help='Check ahu and kahea marker URIs for canonical ha.ka.ba structure')
     parser.add_argument('--no-skill-names', action='store_true',

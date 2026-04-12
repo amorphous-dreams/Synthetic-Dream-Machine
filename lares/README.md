@@ -1,7 +1,7 @@
 ## Compliance Rules for /lares and /lares/grammar
 
 ### URI Wrapper or Sidecar Metadata Required
-- Every file in `/lares` must begin and end with a URI wrapper comment (e.g., `<!-- ∞ → lares:///... -->` at the start, and a matching or closing marker at the end).
+- Every file in `/lares` must begin and end with a URI wrapper comment (e.g., `<!-- ∞ → lar:///... -->` at the start, and a matching or closing marker at the end).
 - If a file does not contain its own URI wrappers, a sidecar file with the same base name and `.LOCI.md` extension must exist in the same directory, containing all required metadata (including URI, description, and registry info).
 
 ### /lares/grammar Tree Strictness
@@ -19,7 +19,7 @@
 > Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, crystal state machine, and deployment authoring. Parallel track: sprint narrative (talk story → myth canon).
 > Updated: 2026-04-09
 > Status: Active — source docs migrating from `_todo/core/` into `lares/` subdirs; sprint artifacts in `lares/scrum/sprints/`; story canon in `lares/scrum/epics/LINDWYRM_*.md`; `lares:` URI schema at `[CS:0.80]` pending S0 Settling
-> URI: `lares://lares:node@Enyalios/design.ontology.root`
+> URI: `lar://lares:node@Enyalios/design.ontology.root`
 
 ---
 
@@ -125,9 +125,9 @@ lares/modules/
 ```
 
 Section URI base:
-- talk-story: `lares:///module.phased.instructs/talk-story/{phase}/`
-- uri-schema: `lares:///uri.schema.holds/uri-schema/{phase}/`
-- micro-trace: `lares:///trace.micro.marks/micro-trace/{phase}/`
+- talk-story: `lar:///module.phased.instructs/talk-story/{phase}/`
+- uri-schema: `lar:///uri.schema.holds/uri-schema/{phase}/`
+- micro-trace: `lar:///trace.micro.marks/micro-trace/{phase}/`
 
 ---
 

@@ -315,7 +315,7 @@ For `register=C:1.0` canon modules, the chronometer's vector clock serves a dual
 3. **Tier 2 (`C:0.95`) inherits the pattern** — session-scoped version tracking for permissions and profile modules.
 4. **Tier 3 (`< 0.50`) retains event-counter semantics** — `seq_num` counts events, not versions. The parser branches on `register >= C:0.95` to distinguish.
 
-This means the URI `lares:///kernel/invariant/anchors?register=C:1.0` with `seq_num=4` is semantically "kernel version 4" — directly queryable for version comparison across deployments, crystals, or handoff bundles.
+This means the URI `lar:///kernel/invariant/anchors?register=C:1.0` with `seq_num=4` is semantically "kernel version 4" — directly queryable for version comparison across deployments, crystals, or handoff bundles.
 
 ### Implications for Epic Structure
 

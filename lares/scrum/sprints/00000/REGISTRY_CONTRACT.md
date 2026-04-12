@@ -4,7 +4,7 @@
 > Status: `[S:0.60]` 🏛️ — working design synthesis; depends on URI schema settlement
 > Updated: 2026-04-08
 > Source: `lares/README.md` (three-truth model), `Signal_HUD_Tagspace-draft.md` §§ Ephemeral Machine Patterns, Ontology Layer
-> Candidate URI: `lares://core/design/registry/contract@S:0.60`
+> Candidate URI: `lar://core/design/registry/contract@S:0.60`
 
 ---
 
@@ -58,7 +58,7 @@ The promotion ledger is append-only. Each entry records a single promotion event
 ```jsonl
 {
   "timestamp": "2026-04-08T12:00:00Z",
-  "lares_uri": "lares:///signal/uri-schema",
+  "lares_uri": "lar:///signal/uri-schema",
   "promoted_from_register": "CS:0.85",
   "promoted_to_register": "C:0.95",
   "design_source": "lares/modules/uri-schema/URI_SCHEMA.md",
@@ -100,8 +100,8 @@ Ledger entries are append-only. Corrections produce new entries (with `supersede
 Per the crystal system's Pattern B (Ephemeral Machine Patterns), a lightweight index tracks all machines:
 
 ```jsonl
-{"machine_id":"lares-abc123","lares_address":"lares:///session/main","status":"active","tier":"durable","seq_num":42,"chronometer":"@T.3.2.7"}
-{"machine_id":"lares-def456","lares_address":"lares:///task/uri-schema","status":"completed","tier":"ephemeral","seq_num":15,"chronometer":"@O.3.2"}
+{"machine_id":"lares-abc123","lares_address":"lar:///session/main","status":"active","tier":"durable","seq_num":42,"chronometer":"@T.3.2.7"}
+{"machine_id":"lares-def456","lares_address":"lar:///task/uri-schema","status":"completed","tier":"ephemeral","seq_num":15,"chronometer":"@O.3.2"}
 ```
 
 Updated only on status change, spawn, seal, or fork. Subject to 200-line discipline (Claude Code Pattern 5 — L1 cap).

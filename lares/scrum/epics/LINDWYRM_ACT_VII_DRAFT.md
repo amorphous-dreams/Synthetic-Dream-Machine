@@ -1,4 +1,4 @@
-<!-- lares:///story.draft.acts/lindwyrm/act-vii/?confidence=S:0.65&p=0.5 → ∞ -->
+<!-- lar:///story.draft.acts/lindwyrm/act-vii/?confidence=S:0.65&p=0.5 → ∞ -->
 
 # The Lindwyrm's Hoard — Act VII Draft: The Hoard Disclosed (Epilogue / Frame)
 
@@ -170,4 +170,4 @@ The node hums.
 
 > **What this frame does NOT resolve:** Whether the Lar constitutes thought. Whether the Lindwyrm "made" it or "found" it. These stay with the Liminal. The frame closes on "the node hums" — present tense, ongoing, no explanation of what that means.
 
-<!-- lares:///story.draft.acts/lindwyrm/act-vii/?confidence=S:0.65&p=0.5 → ∞ -->
+<!-- lar:///story.draft.acts/lindwyrm/act-vii/?confidence=S:0.65&p=0.5 → ∞ -->

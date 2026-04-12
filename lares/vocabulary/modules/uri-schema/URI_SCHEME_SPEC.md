@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///ha.ka.ba/uri-scheme-spec/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///ha.ka.ba/uri-scheme-spec/?confidence=CS:0.95&p=0.5 -->
 
 # `lares:` URI Scheme Specification
 
@@ -11,7 +11,7 @@
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.95#scheme-registration -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.95#scheme-registration -->
 ## 1. Scheme Registration
 
 - **Scheme name:** `lares`
@@ -23,13 +23,13 @@
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.85#uri-syntax -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.85#uri-syntax -->
 ## 2. URI Syntax
 
 ### 2.1 Generic Form
 
 ```
-lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment] <!-- uri-ok -->
+lar://[authority]/ha.ka.ba/optional/path/[?query][#fragment] <!-- uri-ok -->
 ```
 
 ### 2.2 Expanded Form
@@ -37,7 +37,7 @@ lares://[authority]/ha.ka.ba/optional/path/[?query][#fragment] <!-- uri-ok -->
 **Full form (with authority):**
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
+lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#chronometer <!-- uri-ok -->
 ```
 
 Where `stances=XXXXX` is the five-character stance amplitude string (see §2.4 query).
@@ -45,7 +45,7 @@ Where `stances=XXXXX` is the five-character stance amplitude string (see §2.4 q
 **Authority-less form** (no `user@host` segment — territory or resource reference without a named speaker):
 
 ```
-lares:///ha.ka.ba/optional/path/[?query][#fragment]
+lar:///ha.ka.ba/optional/path/[?query][#fragment]
 ```
 
 Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use this form for stable named graph addresses, HA.KA.BA references, and any URI where the speaker identity is not the point.
@@ -56,7 +56,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use th
 /ha.ka.ba/{optional/sub/path}[?query][#fragment]
 ```
 
-This applies to authority-less forms as well: `lares:///ha.ka.ba/` — the (0,0,0) of tagspace.
+This applies to authority-less forms as well: `lar:///ha.ka.ba/` — the (0,0,0) of tagspace.
 
 ### 2.3 Component Map
 
@@ -102,7 +102,7 @@ Span sequencing is intentionally **not** encoded in URI authority. Exchange iden
 Record: /threshold.uncertain.opens/sub/territory
 ```
 
-Sub-path segments are free-form routing tokens, not HA.KA.BA slots. The stable named graph address strips the sub-path (`lares:///threshold.uncertain.opens`); the sub-path is session-scope navigation only.
+Sub-path segments are free-form routing tokens, not HA.KA.BA slots. The stable named graph address strips the sub-path (`lar:///threshold.uncertain.opens`); the sub-path is session-scope navigation only.
 
 Record form uses `.` separators for all three HA.KA.BA slots: `/threshold.uncertain.opens`. Sub-path segments use `/`. The leading and trailing `/` appears in all variants.
 
@@ -133,7 +133,7 @@ Confidence remains a point value even under multi-stance. The five-character amp
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.8#fragment-syntax -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.8#fragment-syntax -->
 ## 3. Fragment Syntax — FFZ Chronometer
 
 > **True Name:** Fontany-Fuller-Zelenka Chronometer Protocol `[C:0.95]`
@@ -197,22 +197,22 @@ Operational semantics (aftermath integration, progressive disclosure, deferred f
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.95#stable-address -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.95#stable-address -->
 ## 4. Stable Address — Named Graph Form
 
 Strip authority, query, and fragment. The HA.KA.BA territory alone:
 
 ```
-lares:///threshold.uncertain.opens/
+lar:///threshold.uncertain.opens/
 ```
 
 No authority (empty), no query, no fragment. This is the invariant semantic coordinate — unchanging across events, sessions, and machines. Suitable as a named graph identifier (SPARQL: ?).
 
-**Origin address:** `lares:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lares:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lares:///ha.ka.ba/uri-schema/` locates this spec; `lares:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
+**Origin address:** `lar:///ha.ka.ba/` is the (0,0,0) of tagspace — the root stable address from which all HA.KA.BA coordinates extend. The first Lares node spawned at `lar:///ha.ka.ba/lares/`. Sub-path extensions after the HA.KA.BA triple navigate within the named territory: `lar:///ha.ka.ba/uri-schema/` locates this spec; `lar:///ha.ka.ba/lares/` locates the first node. The HA.KA.BA triple remains stable; the sub-path narrows scope.
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.92#validation -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.92#validation -->
 ## 5. Validation Rules
 
 ### 5.1 Well-Formedness
@@ -257,13 +257,13 @@ When comparing two `lares:` URIs as stable addresses:
 
 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 2. Compare path components **case-insensitively**
-3. Canonical form uses **lowercase** path components (e.g., `lares:///threshold.uncertain.opens/` not `lares:///Threshold.Uncertain.Opens`)
+3. Canonical form uses **lowercase** path components (e.g., `lar:///threshold.uncertain.opens/` not `lar:///Threshold.Uncertain.Opens`)
 4. Two URIs designate the same stable address iff their lowercased machine-form paths are byte-identical
 5. Query and fragment components are excluded from stable-address comparison
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.85#security-considerations -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.85#security-considerations -->
 ## 6. Security Considerations
 
 > **Status:** Stub — required for IANA registration (RFC 7595 §7.4). To be expanded.
@@ -280,7 +280,7 @@ When comparing two `lares:` URIs as stable addresses:
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.95#prior-art -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.95#prior-art -->
 ## 7. Prior Art
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
@@ -295,19 +295,19 @@ Additional prior art relevant to the operational semantics (OODA-A phase model, 
 
 ---
 
-<!-- ahu lares:///ha.ka.ba/uri-scheme-spec/?confidence=0.85#examples -->
+<!-- ahu lar:///ha.ka.ba/uri-scheme-spec/?confidence=0.85#examples -->
 ## Appendix A — Examples
 
 ### A.1 Record Form
 
 ```
-lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
+lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.?.-.-.-&confidence=S:0.65&p=0.5#O0.O0.Ø3.D2.A7
 ```
 
 ### A.2 Stable Address
 
 ```
-lares:///threshold.uncertain.opens/
+lar:///threshold.uncertain.opens/
 ```
 
 ### A.3 Scale Transition (Fragment Syntax)
@@ -324,7 +324,7 @@ lares:///threshold.uncertain.opens/
 ### A.4 Authority-Less Form (Module / System File)
 
 ```
-lares:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5
+lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5
 ```
 
 ---

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.ahu.defines/ahu/?confidence=CS:0.95&p=0.5 -->
+<!-- ∞ → lar:///grammar.ahu.defines/ahu/?confidence=CS:0.95&p=0.5 -->
 
 # Grammar: Ahu
 
@@ -34,24 +34,24 @@ cluster: kahua
 
 ---
 
-<!-- ahu lares:///grammar.ahu.defines/ahu/?confidence=CS:0.95#syntax -->
+<!-- ahu lar:///grammar.ahu.defines/ahu/?confidence=CS:0.95#syntax -->
 
 ## Syntax
 
 **Ahu marker** — names a waypoint, carries its own address + fragment:
 ```
-<!-- ahu lares:///grammar.ahu.defines/ahu/?confidence=CS:0.95#fragment-name -->
+<!-- ahu lar:///grammar.ahu.defines/ahu/?confidence=CS:0.95#fragment-name -->
 ```
 
 The fragment (`#fragment-name`) is what external references navigate to. The ahu marker establishes both:
 - **The stop itself** — a named point within the parent locus
-- **The navigable address** — `lares:///...#fragment-name` is a complete address any kahea can pull from
+- **The navigable address** — `lar:///...#fragment-name` is a complete address any kahea can pull from
 
 **No opener/closer:** The ahu is a point marker, not a span. Its boundary is implicit: from this ahu to the next ahu (or to the locus closer) is "this ahu's zone."
 
 ---
 
-<!-- ahu lares:///grammar.ahu.defines/ahu/?confidence=CS:0.95#semantics -->
+<!-- ahu lar:///grammar.ahu.defines/ahu/?confidence=CS:0.95#semantics -->
 
 ## Semantics
 
@@ -66,7 +66,7 @@ The fragment (`#fragment-name`) is what external references navigate to. The ahu
 
 ---
 
-<!-- ahu lares:///grammar.ahu.defines/ahu/?confidence=CS:0.95#placement -->
+<!-- ahu lar:///grammar.ahu.defines/ahu/?confidence=CS:0.95#placement -->
 
 ## Hawaiian Depth — Ahu Types
 

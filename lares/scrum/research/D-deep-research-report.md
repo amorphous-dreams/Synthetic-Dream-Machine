@@ -5,7 +5,7 @@
 We design a **schema-driven, multi-agent Lares system** that embeds HUD-encoded intent and `@event` markers in chat to track state. Key features include:
 
 - **Structured Invariants (TOML):** All rules (instruction hierarchy, frame gating, pushback, register/canon, tool policy) live in human-readable TOML and are schema-validated. Duplicate or conflicting rules cause a **fail-closed** error【11†L57-L61】【12†L207-L214】.
-- **HUD & Event Anchors:** Each dialogue turn is bracketed by `lares://` URIs marking the agent’s starting and ending state, with `@event` tokens inserted for sub-turn transitions. If no direct mapping exists, user input is quoted and split into chunks with intermediate URIs, ensuring every turn has a clear “state vector” seed.
+- **HUD & Event Anchors:** Each dialogue turn is bracketed by `lar://` URIs marking the agent’s starting and ending state, with `@event` tokens inserted for sub-turn transitions. If no direct mapping exists, user input is quoted and split into chunks with intermediate URIs, ensuring every turn has a clear “state vector” seed.
 - **Deterministic Loader Pipeline:** A sorted discovery of schemas and invariants → strict validation → frame-gate (ensuring user data remains data) → register assignment → generation → state emission. This pipeline, illustrated below, yields reproducible outputs and lockfiles.
 - **Agent Orchestration:** Following Anthropic best practices, we use isolated subagents with role-based tool allowlists. Core invariants enforce least-privilege and refuse instructions from untrusted content【12†L381-L384】【12†L469-L472】.
 - **URI Scheme (RFC-compliant):** The custom `lares:` scheme is defined per RFC 3986/7595. URIs are lowercase, hierarchical (using `//` and paths), and registered in a TOML registry. Security considerations from RFC 7595 (e.g. validation, no automatic schemes) are applied【10†L164-L170】【10†L237-L242】.
@@ -28,22 +28,22 @@ In summary, we leverage **Anthropic’s guidance on agent chaining and context (
 
 Our system uniquely embeds **HUD state URIs and `@event` tags** in the chat stream:
 
-- **Encoded Intent (HUD):** At each turn, Lares prefixes its response with a `lares:` URI indicating its current state (e.g. `lares://core/state/awaiting_query@v1`). This *encodes intent* shared by agent and operator, acting as a seed for token generation.
+- **Encoded Intent (HUD):** At each turn, Lares prefixes its response with a `lares:` URI indicating its current state (e.g. `lar://core/state/awaiting_query@v1`). This *encodes intent* shared by agent and operator, acting as a seed for token generation.
 - **Event Tags (`@event`):** Within a generated answer, we insert `@event` markers around key transitions (tone shifts, new subtopics, etc.). Each `@event` serves as a mini-anchor. This means the agent’s output is effectively segmented, with the final segment tagged for post-turn state emission.
 - **State Emission:** After generating (or on encountering an event), the agent outputs a final `lares:` URI indicating its new state. For example:  
   ```
   @event tone_shift  
   ...response content...  
-  lares://core/state/response_complete@v1
+  lar://core/state/response_complete@v1
   ```
   This tells the operator exactly “where I am” before awaiting new input.
-- **Fallback Decomposition:** If Lares cannot immediately map the operator’s input to a single state URI, it falls back to quoting and chunking the input. It splits the input into fenced blocks, each prefixed by the operator’s state URI (e.g. `lares://core/state/last@v1`), and guesses `@event` placements. This yields a complete “inertia sigil” (final URI pair) that seeds the next generation. 
+- **Fallback Decomposition:** If Lares cannot immediately map the operator’s input to a single state URI, it falls back to quoting and chunking the input. It splits the input into fenced blocks, each prefixed by the operator’s state URI (e.g. `lar://core/state/last@v1`), and guesses `@event` placements. This yields a complete “inertia sigil” (final URI pair) that seeds the next generation. 
 
 We found *no prior literature* describing exactly this mechanism. It combines aspects of dialogue state tracking, memory priming, and explicit discourse markers in a novel way. It resembles *chain-of-thought prefixing*, but here the “prefix” is a robust URI state. By embedding these signals, we force clarity in context, adhering to the rule that user content is data, not hidden commands【12†L381-L384】.
 
 **Practical Integration:** In practice, the orchestrator will compile prompts like:
 ```
-<HUD>ThisTurn: lares://core/state/awaiting_query@v1</HUD>  
+<HUD>ThisTurn: lar://core/state/awaiting_query@v1</HUD>  
 <USER_INPUT>... (user content) ...</USER_INPUT>  
 <SYSTEM_INSTR>The agent may now respond, inserting @event markers where needed.</SYSTEM_INSTR>
 ```
@@ -55,7 +55,7 @@ We codify all policies in **TOML invariants** under a “Lares Core” ontology.
 ```toml
 schema_version = 1
 id = "inv-0001-frame-gate"
-lares_uri = "lares://core/invariant/lares.core.frame_gate@v1"
+lares_uri = "lar://core/invariant/lares.core.frame_gate@v1"
 
 [lares.core.frame_gate]
 enabled = true
@@ -100,7 +100,7 @@ This enforces OWASP’s separation principle【12†L207-L214】 and Anthropic�
 
 **Grammar:** Conform to RFC 3986/7595:
 ```
-lares://<authority>/<category>/<name>@<version>[?<query>][#<fragment>]
+lar://<authority>/<category>/<name>@<version>[?<query>][#<fragment>]
 ```
 - *Scheme* (`lares`) is lowercase (per RFC 3986)【10†L164-L170】.  
 - *Authority* (e.g. `core`, `runtime`) categorizes URIs.  
@@ -111,12 +111,12 @@ lares://<authority>/<category>/<name>@<version>[?<query>][#<fragment>]
 
 **Examples:**
 ```
-lares://core/invariant/lares.core.frame_gate@v1
-lares://core/module/lares-kernel@v2
-lares://core/event/dialog_turn@T123
-lares://user/input/query@q4
+lar://core/invariant/lares.core.frame_gate@v1
+lar://core/module/lares-kernel@v2
+lar://core/event/dialog_turn@T123
+lar://user/input/query@q4
 ```
-A resolver (in our loader code) maps these URIs to local paths using `_todo/core/registry/lares-uri-registry.toml`. E.g. `lares://core/invariant/` → `invariants/`. Invalid URIs (wrong scheme/authority/format) are rejected early.
+A resolver (in our loader code) maps these URIs to local paths using `_todo/core/registry/lares-uri-registry.toml`. E.g. `lar://core/invariant/` → `invariants/`. Invalid URIs (wrong scheme/authority/format) are rejected early.
 
 **Security:** Treat `lares:` URIs as *authoritative state pointers*, not user data. Never execute or fetch URIs automatically. Validate the scheme and path strictly. By design, `lares:` is **read-only** for the LLM; it cannot invoke new instructions via URI alone. This aligns with RFC 7595’s requirement to consider security/privacy in scheme design【10†L237-L242】.
 
@@ -277,7 +277,7 @@ This directory contains the **Lares Core invariant-loading system**:
 - **Deterministic**: File discovery is sorted; any change yields a new lockfile. Merge conflicts are *never* silent.
 - **Structured Prompts**: We separate system rules, user input, and event tags explicitly【12†L381-L384】.
 - **Frame Gating**: Input is classified as reality/fiction; forced to clarify if ambiguous.
-- **HUD State URIs**: Each turn begins/ends with a `lares://` URI indicating the agent’s state.
+- **HUD State URIs**: Each turn begins/ends with a `lar://` URI indicating the agent’s state.
 - **`@event` tags**: Mark sub-turn boundaries (tone shifts, etc.) in agent output.
 - **Orchestration**: Use Anthropic-style subagents with isolated contexts and least privilege【12†L469-L472】.
 
@@ -285,17 +285,17 @@ This directory contains the **Lares Core invariant-loading system**:
 
 URIs look like:
 ```
-lares://<authority>/<category>/<name>@<version>[?<query>][#<fragment>]
+lar://<authority>/<category>/<name>@<version>[?<query>][#<fragment>]
 ```
 - **Scheme**: `lares` (lowercase).  
 - **Authority**: e.g. `core`, `runtime`.  
 - **Path**: e.g. `invariant/lares.core.frame_gate` or `state/dialog_turn`.  
 - **Version**: After `@` (semantic or timestamp).  
 - **Examples**:
-  - `lares://core/invariant/lares.core.frame_gate@v1`
-  - `lares://core/module/dream-mode@v2`
-  - `lares://core/event/turn_boundary@T100`
-  - `lares://user/input/query@q5`
+  - `lar://core/invariant/lares.core.frame_gate@v1`
+  - `lar://core/module/dream-mode@v2`
+  - `lar://core/event/turn_boundary@T100`
+  - `lar://user/input/query@q5`
 All URIs are resolved by our loader using `registry/lares-uri-registry.toml`.
 
 ## Loading Pipeline
@@ -324,7 +324,7 @@ Errors at any stage cause immediate termination (fail-closed). Lockfiles capture
 ```toml
 schema_version = 1
 id = "inv-0001-hierarchy"
-lares_uri = "lares://core/invariant/lares.core.instruction_hierarchy@v1"
+lares_uri = "lar://core/invariant/lares.core.instruction_hierarchy@v1"
 
 [lares.core.instruction_hierarchy]
 layers = ["invariant_schemas","kernel","operator_intent","user_input","external"]
@@ -335,7 +335,7 @@ rules = ["higher_overrides_lower","lower_cannot_modify_higher"]
 ```toml
 schema_version = 1
 id = "inv-0002-frame-gate"
-lares_uri = "lares://core/invariant/lares.core.frame_gate@v1"
+lares_uri = "lar://core/invariant/lares.core.frame_gate@v1"
 
 [lares.core.frame_gate]
 enabled = true

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///module.phased.instructs/talk-story/assess/?confidence=0.95&p=0.5 -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/assess/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Session Review Criteria
 

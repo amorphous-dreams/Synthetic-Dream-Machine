@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65&p=0.5 -->
+<!-- ∞ → lar:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65&p=0.5 -->
 
 # Grammar: OODA-A
 

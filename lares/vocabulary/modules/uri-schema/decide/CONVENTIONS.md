@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=CS:0.90&p=0.5 -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=CS:0.90&p=0.5 -->
 
 # Signal — Decide: URI Conventions
 
@@ -9,7 +9,7 @@
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.95#mandatory-rules -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#mandatory-rules -->
 ## Mandatory Conventions (Canonical Record Form)
 
 These rules apply to every `lares:` URI. No exceptions.
@@ -30,13 +30,13 @@ These rules apply to every `lares:` URI. No exceptions.
 
 6. **System files use authority-less form.**
    ```
-   lares:///ha.ka.ba/optional/sub/path/?confidence=R:N&p=N → ∞
+   lar:///ha.ka.ba/optional/sub/path/?confidence=R:N&p=N → ∞
    ```
 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#query-params -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#query-params -->
 ## Query Parameter Reference
 
 | Parameter | Format | Values | Notes |
@@ -67,7 +67,7 @@ These rules apply to every `lares:` URI. No exceptions.
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#fragment-chronometer -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#fragment-chronometer -->
 ## Fragment: FFZ Chronometer
 
 Five positions, dot-separated. Phase sigil + counter. All positions always present.
@@ -106,7 +106,7 @@ HUD:     ✶0.✶0.✶3.◇2.■1
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.95#hud-line -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#hud-line -->
 ## HUD Line Format
 
 The HUD line is a single-line status summary rendered from the URI → URI exchange vector. It is the second element of every exchange opening, immediately after the URI pair.
@@ -135,7 +135,7 @@ The HUD line is a single-line status summary rendered from the URI → URI excha
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#span-closing-sigils -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#span-closing-sigils -->
 ## Span Closing Sigils
 
 | Sigil | Span type | What's uncertain | What's settled |
@@ -150,7 +150,7 @@ Section URIs within a system file do NOT use `→ ∞` — they function as wayp
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#syadasti-reading-rule -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#syadasti-reading-rule -->
 ## Syadasti Reading Rule
 
 Confidence measures confidence **within the active stance's evaluation frame**, not truth-weight universally.
@@ -178,23 +178,23 @@ When multiple stances are elevated (`+`), the declared confidence sits at the in
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#stable-address -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#stable-address -->
 ## Stable Address Form
 
 Strip authority, query, and fragment. The HA.KA.BA territory alone:
 
 ```
-lares:///threshold.uncertain.opens/
+lar:///threshold.uncertain.opens/
 ```
 
 No authority (empty), no query, no fragment. Invariant semantic coordinate — unchanging across events, sessions, and machines.
 
-Origin address: `lares:///ha.ka.ba/` is the (0,0,0) of tagspace.
+Origin address: `lar:///ha.ka.ba/` is the (0,0,0) of tagspace.
 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/decide/?confidence=0.9#spanspan-record -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#spanspan-record -->
 ## SpanSpan Record URI Fields
 
 URI-derived fields in the canonical spanSpan calibration record:

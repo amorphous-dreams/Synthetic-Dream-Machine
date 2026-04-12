@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.parseuri.defines/parse_uri/
+# ∞ → lar:///grammar.parseuri.defines/parse_uri/
 """
 parse_uri.py
 
@@ -31,7 +31,7 @@ import sys
 # ha maps to a known territory, and that ba encodes a valid stance relationship.
 # This requires a live registry lookup and is intentionally deferred.
 LARES_URI_REGEX = re.compile(r'''
-^lares://
+^lar://
 (?:([a-zA-Z0-9]+:[a-zA-Z0-9]+)@([a-zA-Z0-9]+))?  # authority (optional)
 /
 ([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)    # ha.ka.ba — single words only

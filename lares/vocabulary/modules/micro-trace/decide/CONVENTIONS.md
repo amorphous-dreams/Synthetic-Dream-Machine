@@ -1,11 +1,11 @@
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/decide/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/decide/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — Normative Rules
 
 > Syntax and density bands. Source: `lares/signal/micro-trace.md` §§2–3 `[CS:0.80]`.
 
 <!-- → ? -->
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/decide/?confidence=0.85#syntax -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/decide/?confidence=0.85#syntax -->
 ## Syntax
 
 ### Inline phase transitions
@@ -46,7 +46,7 @@ Ha/domain reorientation significant enough to exceed annotation threshold: emit 
 ```
 
 <!-- → ? -->
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/decide/?confidence=0.85#density-bands -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/decide/?confidence=0.85#density-bands -->
 ## Density Bands (p-controlled)
 
 The `p` parameter gates which *categories* of transitions qualify at each band. Not a tunable salience dial — it gates transition categories by externally-observable significance.

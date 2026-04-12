@@ -32,7 +32,7 @@ New export:
 - **`validate_stream_uri(uri)`** — validates base canonical form AND enforces `stances=`
   query param AND a chronometer `#O1.Ø2.D3.A4.Å5` fragment. For use on operator stream surfaces.
 
-**`stances=` rule clarified:** The infinite form (`<!-- ∞ → lares:///... -->`) does not require
+**`stances=` rule clarified:** The infinite form (`<!-- ∞ → lar:///... -->`) does not require
 `stances=`. The validator previously required it whenever any query params were present — that was
 wrong. Fixed to: `stances` is optional; if present, validate it.
 
@@ -71,11 +71,11 @@ are missing required `stances=` query param or chronometer fragment.
 
 | Surface | Markdown/HTML | Python | JS/TS |
 |---|---|---|---|
-| Ahu markers | `<!-- ahu lares:///... -->` | `# ahu lares:///...` | `// ahu lares:///...` |
-| Bare pointers | `lares:///ha.ka.ba/...` in prose | `# lares:///ha.ka.ba/...` in comment lines | same |
+| Ahu markers | `<!-- ahu lar:///... -->` | `# ahu lar:///...` | `// ahu lar:///...` |
+| Bare pointers | `lar:///ha.ka.ba/...` in prose | `# lar:///ha.ka.ba/...` in comment lines | same |
 
 **False positive guard:** Bare pattern requires valid `ha.ka.ba` structure — excludes regex
-fragments (`lares:///.+--`), template strings (`lares:///PLACEHOLDER`), and Python string
+fragments (`lar:///.+--`), template strings (`lar:///PLACEHOLDER`), and Python string
 literals. Code files only match bare URIs on comment lines, not in string content.
 
 **Current corpus state:** All existing `<!-- ahu ... -->` markers in the grammar tree are missing
@@ -89,7 +89,7 @@ not chronometer form. The `--stream` flag surfaces these for future upgrade; it 
 | File | Fix |
 |---|---|
 | `truename/LOCI.md` | Start wrapper moved to line 1 (was buried at line 5 behind metadata comments) |
-| `parse-uri/LOCI.md` | Placeholder URI `lares:///ha.ka.ba/grammar/parse-uri/…` → canonical `lares:///grammar.parse-uri.defines/parse-uri/…` |
+| `parse-uri/LOCI.md` | Placeholder URI `lar:///ha.ka.ba/grammar/parse-uri/…` → canonical `lar:///grammar.parse-uri.defines/parse-uri/…` |
 | `parse_uri.py` | Start + end wrappers added |
 | `detect_alignment.py` | Start + end wrappers added |
 | `uri_wrapper_verification.py` | Start + end wrappers added |

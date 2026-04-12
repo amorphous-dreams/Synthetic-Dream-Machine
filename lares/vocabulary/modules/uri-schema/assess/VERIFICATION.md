@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=CS:0.90&p=0.5 -->
 
 # Signal — Assess: Verification
 
@@ -8,7 +8,7 @@
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
 ## Well-Formedness Rules (§10.1)
 
 A `lares:` URI is **well-formed** when ALL of the following hold:
@@ -28,7 +28,7 @@ A `lares:` URI is **well-formed** when ALL of the following hold:
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
 ## SpanSpan Consistency Rules (§10.2)
 
 All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) must be canonical record form. A spanSpan record is **consistent** when:
@@ -43,7 +43,7 @@ The rendering table (§5.1 of `lares/modules/uri-schema/URI_SCHEMA.md`) governs 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#stable-address-derivation -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#stable-address-derivation -->
 ## Stable Address Derivation Rules (§10.3)
 
 `lares_address` is correctly derived when:
@@ -55,28 +55,28 @@ The rendering table (§5.1 of `lares/modules/uri-schema/URI_SCHEMA.md`) governs 
 
 Example:
 ```
-Source: lares://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
-Correct stable address: lares:///threshold.uncertain.opens/
+Source: lar://telarus:operator@enyalios/threshold.uncertain.opens/?stances=^.-.-.-.-&confidence=S:0.65&p=0.5#O0.O0.O1.O1.A11
+Correct stable address: lar:///threshold.uncertain.opens/
 ```
 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
 ## Canonical Form and Comparison Rules (§10.4)
 
 When comparing two `lares:` URIs as stable addresses:
 
 - [ ] 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 - [ ] 2. Compare path components **case-insensitively**
-- [ ] 3. Canonical form uses **lowercase** path components — `lares:///threshold.uncertain.opens/` not `lares:///Threshold.Uncertain.Opens`
+- [ ] 3. Canonical form uses **lowercase** path components — `lar:///threshold.uncertain.opens/` not `lar:///Threshold.Uncertain.Opens`
 - [ ] 4. Two URIs designate the same stable address iff their lowercased machine-form paths are byte-identical
 - [ ] 5. Query and fragment components are excluded from stable-address comparison
 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#common-errors -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#common-errors -->
 ## Common Error Patterns
 
 Errors caught during the S0 URI alignment pass (2026-04-09):
@@ -88,14 +88,14 @@ Errors caught during the S0 URI alignment pass (2026-04-09):
 | `register=` (v1 field name) | `register=CS:0.80` | Rename to `confidence=` |
 | Single-stance v1 compact | `+----` | Expand to 5-position: `^.-.-.-.-` |
 | Emoji in canonical form | `stances=🏛️+🌊-...` | Use record amphitude chars: `stances=^.-.-.-.-` |
-| Section URI with closing sigil | `<!-- lares:///... → ∞ -->` mid-file | Remove `→ ∞`; section URIs are waypoints only |
+| Section URI with closing sigil | `<!-- lar:///... → ∞ -->` mid-file | Remove `→ ∞`; section URIs are waypoints only |
 | Missing file-level footer | Footer URI absent | Add footer: identical to header, last line |
 | Chronometer with fewer than 5 positions | `#O3.D2.A1` | Expand: `#O0.O0.O3.D2.A1` |
 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#quick-scan-procedure -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#quick-scan-procedure -->
 ## Quick Scan Procedure
 
 To verify URI alignment across all operational files:
@@ -109,7 +109,7 @@ grep -r --include="*.md" "register=" lares/ | grep -v "#register"
 grep -r --include="*.md" "#[a-zA-Z].*?confidence" lares/
 
 # Find files missing file-level URI header/footer
-grep -rL "lares:///" lares/ --include="*.md"
+grep -rL "lar:///" lares/ --include="*.md"
 ```
 
 A clean scan returns zero matches on all three patterns.
@@ -117,7 +117,7 @@ A clean scan returns zero matches on all three patterns.
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.9#promotion-criteria -->
 ## Promotion Criteria
 
 `lares/modules/uri-schema/URI_SCHEMA.md` is currently `[CS:0.95]`. For promotion to `[C:0.95]` (full Canon):

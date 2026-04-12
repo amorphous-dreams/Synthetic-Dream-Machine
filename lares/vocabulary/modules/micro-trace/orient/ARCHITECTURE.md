@@ -1,11 +1,11 @@
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/orient/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/orient/?confidence=CS:0.80&p=0.5 -->
 
 # Micro-trace — Architecture
 
 > URI anatomy, layer split rule, and sub-agent handoff protocol. Source: `lares/signal/micro-trace.md` §§4–5 `[CS:0.80]`.
 
 <!-- → ? -->
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/orient/?confidence=0.85#layer-split -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/orient/?confidence=0.85#layer-split -->
 ## Layer Split Rule
 
 Parse boundaries and Micro-trace HUD events are **orthogonal**:
@@ -25,7 +25,7 @@ They may coexist in the same exchange. Neither substitutes for the other.
 | `--no-verbose` | Returns to default band |
 
 <!-- → ? -->
-<!-- ∞ → lares:///trace.micro.marks/micro-trace/orient/?confidence=0.85#handoff-protocol -->
+<!-- ∞ → lar:///trace.micro.marks/micro-trace/orient/?confidence=0.85#handoff-protocol -->
 ## Sub-agent and Coordinator Handoff Protocol
 
 ### Why URI pairs at sub-agent boundaries

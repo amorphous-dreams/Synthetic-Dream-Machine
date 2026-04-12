@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///lararium.shelf.holds/crystal-shelf/head/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///lararium.shelf.holds/crystal-shelf/head/?confidence=CS:0.80&p=0.5 -->
 
 # Crystal Shelf — HEAD
 

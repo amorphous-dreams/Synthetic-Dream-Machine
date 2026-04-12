@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.decide.defines/decide/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///grammar.decide.defines/decide/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ◇ Decide
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.90#loop-position -->
+<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.90#loop-position -->
 
 ## Loop Position
 
@@ -65,7 +65,7 @@ Decide should not:
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.85#handoff -->
+<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.85#handoff -->
 
 ## Handoff
 
@@ -83,7 +83,7 @@ When those answers stay visible, Act can move cleanly. When they blur, Act drift
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.90#conventions -->
+<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.90#conventions -->
 
 ## Conventions
 
@@ -108,7 +108,7 @@ When those answers stay visible, Act can move cleanly. When they blur, Act drift
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -123,7 +123,7 @@ When those answers stay visible, Act can move cleanly. When they blur, Act drift
 
 ---
 
-<!-- ahu lares:///grammar.decide.defines/decide/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.decide.defines/decide/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

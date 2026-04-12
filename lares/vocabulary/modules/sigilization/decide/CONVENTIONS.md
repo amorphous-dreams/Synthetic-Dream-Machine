@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///sigils.render.maps/sigilization/decide/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Decide: Normative Conventions
 

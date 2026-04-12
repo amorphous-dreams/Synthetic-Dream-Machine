@@ -1,4 +1,4 @@
-# ∞ → lares:///grammar.selfverify.harness/self_verify/
+# ∞ → lar:///grammar.selfverify.harness/self_verify/
 """
 self_verify.py
 
@@ -301,7 +301,7 @@ def main():
     parser.add_argument('--root', default=str(_GRAMMAR_ROOT),
                         help='Grammar root directory (default: ../)')
     parser.add_argument('--fix', action='store_true', help='Auto-insert missing wrappers')
-    parser.add_argument('--stream', action='store_true', help='Check bare lares:/// stream URIs')
+    parser.add_argument('--stream', action='store_true', help='Check bare lar:/// stream URIs')
     parser.add_argument('--markers', action='store_true', default=True,
                         help='Check ahu/kahea marker URI structure (default: on)')
     parser.add_argument('--json', action='store_true', help='Output structured JSON')

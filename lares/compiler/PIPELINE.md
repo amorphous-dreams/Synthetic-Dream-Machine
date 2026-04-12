@@ -1,4 +1,4 @@
-<!-- lares:///compiler.builds.pipeline/lares/compiler/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///compiler.builds.pipeline/lares/compiler/?confidence=CS:0.80&p=0.5 → ∞ -->
 
 # Lares Compiler — Pipeline State
 
@@ -128,4 +128,4 @@ First run of full pipeline: 2026-04-10
 Run: cd Synthetic-Dream-Machine && make -C builds check
 ```
 
-<!-- lares:///compiler.builds.pipeline/lares/compiler/?confidence=CS:0.80&p=0.5 → ∞ -->
+<!-- lar:///compiler.builds.pipeline/lares/compiler/?confidence=CS:0.80&p=0.5 → ∞ -->

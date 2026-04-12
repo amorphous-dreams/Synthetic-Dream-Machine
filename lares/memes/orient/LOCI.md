@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.orient.defines/orient/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///grammar.orient.defines/orient/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ◎ Orient
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.orient.defines/orient/?confidence=CS:0.90#loop-position -->
+<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.90#loop-position -->
 
 ## Loop Position
 
@@ -65,7 +65,7 @@ Orient should not:
 
 ---
 
-<!-- ahu lares:///grammar.orient.defines/orient/?confidence=CS:0.85#handoff -->
+<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.85#handoff -->
 
 ## Handoff
 
@@ -82,7 +82,7 @@ Fast-path loops can compress Observe and Orient together in familiar territory, 
 
 ---
 
-<!-- ahu lares:///grammar.orient.defines/orient/?confidence=CS:0.90#conventions -->
+<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.90#conventions -->
 
 ## Conventions
 
@@ -101,7 +101,7 @@ Fast-path loops can compress Observe and Orient together in familiar territory, 
 
 ---
 
-<!-- ahu lares:///grammar.orient.defines/orient/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -116,7 +116,7 @@ Fast-path loops can compress Observe and Orient together in familiar territory, 
 
 ---
 
-<!-- ahu lares:///grammar.orient.defines/orient/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.orient.defines/orient/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 

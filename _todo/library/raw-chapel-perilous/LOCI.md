@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///source.raw.holds/chapel-perilous/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80&p=0.5 -->
 
 # Robert Anton Wilson — Chapel Perilous (Primary Source)
 
@@ -37,7 +37,7 @@ note: >
 
 ---
 
-<!-- ahu lares:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#preface-framing -->
+<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#preface-framing -->
 
 ## I. Preface — Model Agnosticism and the Philosophical Ground
 
@@ -116,7 +116,7 @@ Alan Watts may have said it best of all: *"The universe is a giant Rorshach ink-
 
 ---
 
-<!-- ahu lares:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#failure-modes -->
+<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#failure-modes -->
 
 ## II. Preface — Failure Modes Named
 
@@ -149,7 +149,7 @@ to support my contention that when dogma enters the brain, all intellectual acti
 
 ---
 
-<!-- ahu lares:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#the-definition -->
+<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#the-definition -->
 
 ## III. Prologue — The Definition
 
@@ -177,7 +177,7 @@ Stone, True Wisdom and Perfect Happiness.
 
 ---
 
-<!-- ahu lares:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#the-tools -->
+<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#the-tools -->
 
 ## IV. Prologue — The Four Tools and Their Consequences
 
@@ -195,7 +195,7 @@ and ambiguous book. Chapel Perilous is tricky that way.
 
 ---
 
-<!-- ahu lares:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#exit-conditions -->
+<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=CS:0.80#exit-conditions -->
 
 ## V. Prologue — Exit Conditions and the Crossroads
 
@@ -222,7 +222,7 @@ traditional Zen saying sums it up:
 
 ---
 
-<!-- ahu lares:///source.raw.holds/chapel-perilous/?confidence=S:0.65#prometheus-rising -->
+<!-- ahu lar:///source.raw.holds/chapel-perilous/?confidence=S:0.65#prometheus-rising -->
 
 ## VI. Prometheus Rising Variant
 

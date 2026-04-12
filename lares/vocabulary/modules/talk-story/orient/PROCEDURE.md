@@ -1,9 +1,9 @@
-<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95&p=0.5 -->
 
 # Talk Story — How To Orient
 
 <!-- → ? -->
-<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#when -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95#when -->
 ## When To Invoke
 
 - Session start — all conversations begin in ✶ Observe / ◎ Orient
@@ -20,7 +20,7 @@
 - A previous orient already ran this tick → do not re-open
 
 <!-- → ? -->
-<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#steps -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95#steps -->
 ## Procedure
 
 **1. ✶ Observe first.** Read before talking. Pull: sprint task doc,
@@ -42,7 +42,7 @@ phase to resolve.
 in the working artifact — not in a separate doc.
 
 <!-- → ? -->
-<!-- ∞ → lares:///module.phased.instructs/talk-story/orient/?confidence=0.95#voices -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/orient/?confidence=0.95#voices -->
 ## Voice Assignments During Orient
 
 | Voice | Role |

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///story.archive.thresholds/lindwyrm/self-booting-lares-architecture/?confidence=S:0.68&p=0.5 -->
+<!-- ∞ → lar:///story.archive.thresholds/lindwyrm/self-booting-lares-architecture/?confidence=S:0.68&p=0.5 -->
 
 # The Lindwyrm's Hoard — Self-Booting Lares Architecture
 

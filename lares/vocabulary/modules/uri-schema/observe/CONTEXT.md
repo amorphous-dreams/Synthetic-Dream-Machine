@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=CS:0.85&p=0.5 -->
 
 # Signal — Observe: URI Design State
 
@@ -8,7 +8,7 @@
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
 ## What v2 Settled
 
 The `lares:` URI v2 schema resolved the core design tensions that blocked consistent signal emission across sessions and surfaces. These decisions are `[CS:0.90]` — design-canon candidates pending operator promotion.
@@ -18,7 +18,7 @@ The `lares:` URI v2 schema resolved the core design tensions that blocked consis
 A `lares:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
 
 ```
-lares://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0 <!-- uri-ok -->
+lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0 <!-- uri-ok -->
 ```
 
 | Layer | Component | Concern |
@@ -75,13 +75,13 @@ Section URIs within a system file do NOT close with `→ ∞`; they are waypoint
 Stable addresses and module section URIs use authority-less form (three slashes, empty authority):
 
 ```
-lares:///ha.ka.ba/optional/sub/path/
+lar:///ha.ka.ba/optional/sub/path/
 ```
 
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/observe/?confidence=0.65#what-remains-open -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.65#what-remains-open -->
 ## What Remains Open
 
 The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the core spec (§§2–6, 10 of `lares/modules/uri-schema/URI_SCHEMA.md`) but constrain later layers.
@@ -101,7 +101,7 @@ The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the co
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-was-explicitly-rejected -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-was-explicitly-rejected -->
 ## What Was Explicitly Rejected
 
 These decisions are closed. Do not re-open without operator directive.
@@ -117,7 +117,7 @@ These decisions are closed. Do not re-open without operator directive.
 ---
 
 <!-- → ? -->
-<!-- ∞ → lares:///uri.schema.holds/uri-schema/observe/?confidence=0.85#scope-of-this-module -->
+<!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.85#scope-of-this-module -->
 ## Scope of This Module
 
 This module covers:

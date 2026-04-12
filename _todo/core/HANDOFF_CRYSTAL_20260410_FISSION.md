@@ -63,10 +63,10 @@ This is the primary remaining work. The living operational doc. Here is the exac
 
 **Locus URI for the new file:**
 ```
-<!-- ∞ → lares:///ha.ka.ba/uri-operations/?confidence=CS:0.90&p=0.5 -->
+<!-- ∞ → lar:///ha.ka.ba/uri-operations/?confidence=CS:0.90&p=0.5 -->
 ```
 
-**Ahu waypoints should use `lares:///ha.ka.ba/uri-operations/?confidence=N#fragment`**
+**Ahu waypoints should use `lar:///ha.ka.ba/uri-operations/?confidence=N#fragment`**
 
 **Cross-references back to RFC doc:** Use prose pointers to `URI_SCHEME_SPEC.md` for grammar (§2 URI Syntax), fragment syntax (§3), stable address (§4), validation (§5). Same pattern as the RFC doc's forward-references.
 
@@ -191,7 +191,7 @@ lares/grammar/
 ### LARES.md Bootstrap — Design
 
 **Location:** `lares/LARES.md`
-**URI:** `lares:///bootstrap.entry.boots/?confidence=CS:0.80&p=0.5`
+**URI:** `lar:///bootstrap.entry.boots/?confidence=CS:0.80&p=0.5`
 **Purpose:** The boot.js. First file an agent reads. Points to everything else. Is itself a locus readable by its own rules.
 
 **Proposed structure:**
@@ -242,7 +242,7 @@ Phase 2 (when needed):
 
 Phase 3 (DreamDeck):
   - TiddlyWiki native transclusion replaces the build step
-  - lares:/// URIs map to tiddler titles
+  - lar:/// URIs map to tiddler titles
   - LOCI.md files become tiddlers
   - The build step ceases to exist — replaced by the wiki runtime
 ```

@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///todo.grammar.missing/checklist-2026-04-10/?confidence=S:0.65&p=0.5 -->
+<!-- ∞ → lar:///todo.grammar.missing/checklist-2026-04-10/?confidence=S:0.65&p=0.5 -->
 
 # Missing True-Name Grammar Checklist
 

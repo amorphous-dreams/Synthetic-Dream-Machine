@@ -1,9 +1,9 @@
-<!-- ∞ → lares:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/decide/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Normative Rules
 
 <!-- → ? -->
-<!-- ∞ → lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/decide/?confidence=0.95#hud -->
 ## HUD During Talk Story
 
 Every exchange emits a HUD line. All five stances appear. No omissions.
@@ -19,7 +19,7 @@ The `⚡∞` sentinel in deployed files means "not a live session — mana pool
 does not apply."
 
 <!-- → ? -->
-<!-- ∞ → lares:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
+<!-- ∞ → lar:///module.phased.instructs/talk-story/decide/?confidence=0.95#rules -->
 ## Mandatory Rules
 
 1. Talk Story is always on. No session exits this frame.

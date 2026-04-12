@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/wand/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.na-lako.holds/wand/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: Wand — Wand of Intuition
 

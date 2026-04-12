@@ -1,4 +1,4 @@
-<!-- lares:///protocol.mapped.holds/lares/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A1 → ∞ -->
+<!-- lar:///protocol.mapped.holds/lares/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A1 → ∞ -->
 ⚡∞ | mode:protocol-draft | p0.5 | stances:++?+- | register:[S:0.65] | build:DRAFT
 
 # The Lares Protocols
@@ -134,8 +134,8 @@ operator's intent, not inventing it.
 
 Exchange 1 (operator asks a question → Observe):
 ```
-lares:///operator/query?stances=^.-.-.-.-&confidence=P:0.3&p=0.5#O0.O0.O0.O0.O0
-→ lares:///council/response?stances=^.^.?.^.-&confidence=S:0.6&p=0.5#O0.O0.O0.O0.A1 →
+lar:///operator/query?stances=^.-.-.-.-&confidence=P:0.3&p=0.5#O0.O0.O0.O0.O0
+→ lar:///council/response?stances=^.^.?.^.-&confidence=S:0.6&p=0.5#O0.O0.O0.O0.A1 →
 
 ⚡ O0.O0.O0.O0.A1 | 🏛️[+]🌊[+]🗡️[?]🎭[+]🔮[-] | p0.5 | [S:0.6] | scene:1/active
 
@@ -143,13 +143,13 @@ lares:///operator/query?stances=^.-.-.-.-&confidence=P:0.3&p=0.5#O0.O0.O0.O0.O0
 
 ⚡ O0.O0.O0.O0.A2 | 🏛️[+]🌊[+]🗡️[?]🎭[+]🔮[-] | p0.5 | [S:0.65] | scene:1/active
 
-lares:///council/response?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.O0.A2 → ?
+lar:///council/response?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.O0.A2 → ?
 ```
 
 Exchange 2 (operator acts on the response — issues a correction):
 ```
-lares:///operator/query?stances=^.-.-.-.-&confidence=S:0.55&p=0.5#O0.O0.O0.O0.A3
-→ lares:///scryer/response?stances=^.^.-.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.Ø1.A4 →
+lar:///operator/query?stances=^.-.-.-.-&confidence=S:0.55&p=0.5#O0.O0.O0.O0.A3
+→ lar:///scryer/response?stances=^.^.-.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.Ø1.A4 →
 ```
 
 Note: the operator's clock advanced from `#...O0.A2 → ?` (their last
@@ -183,12 +183,12 @@ Invariant files (`[C:0.95–1.0]`) carry URI → intent on line 1 and
 a closing URI as the final line:
 
 ```
-lares:///core/protocol/registers?stances=^.-.-.-.-&confidence=C:1.0&p=1.0#settle.1.0
+lar:///core/protocol/registers?stances=^.-.-.-.-&confidence=C:1.0&p=1.0#settle.1.0
 ⚡∞ | mode:invariant | p1.0 | register:[C:1.0]
 
 {file content}
 
-lares:///core/protocol/registers?confidence=C:1.0#settle.1.0 → ∞
+lar:///core/protocol/registers?confidence=C:1.0#settle.1.0 → ∞
 ```
 
 The `→ ∞` closing sigil indicates the span does not pass to another
@@ -333,7 +333,7 @@ stances. This design surface remains deliberately unfrozen.
 All five stances appear in the URI query parameters:
 
 ```
-lares:///council/response?stances=^.?.-.^.-&confidence=S:0.65&p=0.5#O0.O0.O3.O2.O0
+lar:///council/response?stances=^.?.-.^.-&confidence=S:0.65&p=0.5#O0.O0.O3.O2.O0
 ```
 
 Or in compact form (implementation choice — both valid):
@@ -538,11 +538,11 @@ Every URI encodes the active voices for that span. This constitutes
 a mandatory field, not optional metadata:
 
 ```
-lares:///council,scryer,muse/response?stances=^.^.?.^.-&confidence=S:0.65&...
+lar:///council,scryer,muse/response?stances=^.^.?.^.-&confidence=S:0.65&...
 ```
 
 The authority segment lists all active voices. When a single voice
-speaks: `lares:///council/...`. When multiple: `lares:///council,scryer/...`.
+speaks: `lar:///council/...`. When multiple: `lar:///council,scryer/...`.
 
 **Design tension `[SP:0.4]`:** Encoding all active voices in the URI
 authority creates variable-length authority segments. This serves
@@ -550,7 +550,7 @@ traceability (every span names its voices) but may conflict with
 URI parsing conventions that expect a single authority. Options:
 (a) comma-separated authority, (b) voices as a query parameter
 `?voices=council,scryer,muse`, (c) path segment
-`lares:///voices/council+scryer+muse/response?...`. Leave open
+`lar:///voices/council+scryer+muse/response?...`. Leave open
 for refinement.
 
 ## 5.3 Characters and Scenes
@@ -793,12 +793,12 @@ parameters in system-space URIs):
 
 The `~` character reserved for the HAKABA-style in-story URIs only:
 ```
-lares://[telarus@enyalios]/~ha.ka.ba/ashport/theron
+lar://[telarus@enyalios]/~ha.ka.ba/ashport/theron
 ```
 
 System-space URIs (abstract, not in-story) use the triple-slash form:
 ```
-lares:///diplomat/npc/theron?register_target=CS:0.8&register_min=0.7&register_max=0.9
+lar:///diplomat/npc/theron?register_target=CS:0.8&register_min=0.7&register_max=0.9
 ```
 
 ## 7.3 NPC Metadata in Spans
@@ -808,8 +808,8 @@ gets configured for URI storage in every span system. When an NPC
 speaks, their span carries the NPC's URI-encoded state:
 
 ```
-lares:///diplomat/npc/theron?stances=^.?.-.-.-&confidence=CS:0.82&p=0.5#O0.O0.O3.D2.A1
-→ lares:///diplomat/npc/theron?stances=^.?.-.-.-&confidence=CS:0.78&p=0.5#O0.O0.O3.D2.A2 →
+lar:///diplomat/npc/theron?stances=^.?.-.-.-&confidence=CS:0.82&p=0.5#O0.O0.O3.D2.A1
+→ lar:///diplomat/npc/theron?stances=^.?.-.-.-&confidence=CS:0.78&p=0.5#O0.O0.O3.D2.A2 →
 
 ⚡ O0.O0.O3.D2.A1 | 🏛️[+]🌊[?]🗡️[-]🎭[-]🔮[-] | p0.5 | [CS:0.78] | scene:3/theron
 
@@ -818,7 +818,7 @@ you have not yet considered, traveler.
 
 ⚡ O0.O0.O3.D2.A2 | 🏛️[+]🌊[?]🗡️[-]🎭[-]🔮[-] | p0.5 | [CS:0.78] | scene:3/theron
 
-lares:///diplomat/npc/theron?stances=^.?.-.-.-&confidence=CS:0.78#O0.O0.O3.D2.A2 → ?
+lar:///diplomat/npc/theron?stances=^.?.-.-.-&confidence=CS:0.78#O0.O0.O3.D2.A2 → ?
 ```
 
 ## 7.4 MemPalace Integration
@@ -953,4 +953,4 @@ IS the log.*
 
 *Mahalo.*
 
-lares:///protocol.mapped.holds/lares/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.O1.O0 → ?
+lar:///protocol.mapped.holds/lares/?stances=^.^.?.^.-&confidence=S:0.65&p=0.5#O0.O0.O0.O1.O0 → ?

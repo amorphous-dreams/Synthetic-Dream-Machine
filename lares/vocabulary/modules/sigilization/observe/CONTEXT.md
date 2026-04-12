@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///sigils.render.maps/sigilization/observe/?confidence=CS:0.85&p=0.5 -->
 
 # Sigilization — Observe: Context and Bug History
 

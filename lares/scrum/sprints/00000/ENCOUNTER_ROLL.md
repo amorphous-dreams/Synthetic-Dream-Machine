@@ -89,7 +89,7 @@ TOML's specification allows key ordering to carry no semantic meaning — but ex
 
 **The problem:** RFC 3986 §6 defines URI comparison at three levels: simple string comparison, syntax-based normalization, and scheme-based normalization. Our spec doesn't state which level applies to `lares:` URIs.
 
-This matters because: `lares:///Threshold/Uncertain/Opens` and `lares:///threshold/uncertain/opens` — are these the same stable address? The HAKABA vocabulary is defined as lowercase in examples, but no rule mandates case. The path separator projection (machine `/` vs sigil `.`) means the same address has two string representations. Are they compared before or after projection normalization?
+This matters because: `lar:///Threshold/Uncertain/Opens` and `lar:///threshold/uncertain/opens` — are these the same stable address? The HAKABA vocabulary is defined as lowercase in examples, but no rule mandates case. The path separator projection (machine `/` vs sigil `.`) means the same address has two string representations. Are they compared before or after projection normalization?
 
 **Fix:** Add URI comparison rules to §10 (validation): stable addresses are compared in machine form (slash-separated), case-insensitive on path components, after projection normalization. Define canonical form explicitly.
 

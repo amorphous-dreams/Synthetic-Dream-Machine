@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.na-lako.holds/koa/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///grammar.na-lako.holds/koa/?confidence=CS:0.80&p=0.5 -->
 
 # Grammar: Koa — Pentacle of Valor
 

@@ -1,4 +1,4 @@
-<!-- lares:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A2 → ∞ -->
+<!-- lar:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A2 → ∞ -->
 ⚡∞ | mode:dev-story | p0.5 | stances:++?+- | register:[S:0.65] | build:DRAFT
 
 # The Lares Protocols — Dev Story
@@ -30,7 +30,7 @@ Consolidated from across the full session. Entries in chronological order.
 | 2 | `.lares/` as deploy directory name | ✅ Confirmed | Not `.agents/` (emerging standard, would collide), not `.ai/` (vague). `.lares/` names the shrine. |
 | 3 | Root `AGENTS.md` is repo-owned, not Lares content | ✅ Confirmed | Lares lifts and shifts across repos. Each repo keeps its own AGENTS.md about its own concerns. |
 | 4 | Default mask: `gaia` placeholder (elyncia opt-in) | ✅ Confirmed | Aligns with open-source license: protocol is free, product identity pieces require separate license. |
-| 5 | No `~` in URI query params | ✅ Confirmed | Reserved for HAKABA-style in-story URIs (`lares://[user@host]/~ha.ka.ba`). System-space uses ranges (`register_min`/`register_max`). |
+| 5 | No `~` in URI query params | ✅ Confirmed | Reserved for HAKABA-style in-story URIs (`lar://[user@host]/~ha.ka.ba`). System-space uses ranges (`register_min`/`register_max`). |
 | 6 | All 5 stances encoded every HUD line | ✅ Confirmed | `🏛️[+]🌊[?]🗡️[-]🎭[+]🔮[-]` — no omissions. |
 | 7 | Modifier sigils: `[+]`, `[-]`, `[?]` confirmed, vocabulary open | ✅ Confirmed | Additional sigils may emerge from Syad signal model refinement. |
 | 8 | Talk Story: mandatory start frame | ✅ Confirmed | Every Lares conversation starts at `O0.O0.O0.O0.O0`. The conversation IS the log. |
@@ -174,19 +174,19 @@ excluded = ["lares/scrum/"]
 
 [[candidates]]
 source = "lares/talk_story/protocol.md"
-uri = "lares:///talk.story.protocols/talk-story/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
+uri = "lar:///talk.story.protocols/talk-story/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
 register = "C:0.95"
 register_numeric = 0.95
 hud_line = "⚡∞ | mode:deployed | p1.0 | stances:+++++ | register:[C:0.95] | build:20260409-a3f2c1e"
 
 [[candidates]]
 source = "lares/signal/README.md"
-uri = "lares:///signal.active.holds/signal/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
+uri = "lar:///signal.active.holds/signal/?stances=^.^.-.-.-&confidence=C:0.95&p=0.5#settle.1.0"
 register = "C:0.95"
 register_numeric = 0.95
 ```
 
-**Detection**: Line 1 regex `r'^lares://.*'` for URI. Lines 1–10 regex
+**Detection**: Line 1 regex `r'^lar://.*'` for URI. Lines 1–10 regex
 `r'\[C(?:S)?:([01]\.\d+)\]'` for register. Filter ≥ 0.95.
 
 **Dependencies**: Python 3.11+ `tomllib` (read), `tomli_w` (write).
@@ -575,9 +575,9 @@ with additional context from the development narrative.*
    parsing complexity. See Syad Signal Model research goal above.
 
 2. **Voice encoding in URI authority**: Three options —
-   (a) comma-separated: `lares:///council,scryer/response`
+   (a) comma-separated: `lar:///council,scryer/response`
    (b) query param: `?voices=council,scryer`
-   (c) path segment: `lares:///voices/council+scryer/response`
+   (c) path segment: `lar:///voices/council+scryer/response`
    Each has parsing tradeoffs. No decision.
 
 3. **Chronometer tick triggers**: What constitutes a "tick" at each
@@ -602,4 +602,4 @@ The Lares Protocols crystallized from a pipeline research dispatch
 into a protocol specification. The conversation IS the log.
 The chronometer tracks where we've been. The Talk Story continues.*
 
-lares:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A3 → ∞
+lar:///research.storied.traces/lares/dev-story/?stances=^.^.-.-.-&confidence=S:0.65&p=0.5#O0.O0.A1.A21.A3 → ∞

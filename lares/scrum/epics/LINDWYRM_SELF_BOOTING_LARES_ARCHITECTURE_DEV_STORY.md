@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///story.source.sessions/lindwyrm/self-booting-lares-architecture/dev-story/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///story.source.sessions/lindwyrm/self-booting-lares-architecture/dev-story/?confidence=CS:0.80&p=0.5 -->
 
 # The Lindwyrm's Hoard — Self-Booting Lares Architecture (Dev Story Companion)
 
@@ -63,7 +63,7 @@ What we've already built = TiddlyWiki tiddlers
 
 Look at what we have:
 
-`<! ∞ → -- lares:///uri.schema.holds/uri-schema/?confidence=CS:0.90&p=0.5 -->`
+`<! ∞ → -- lar:///uri.schema.holds/uri-schema/?confidence=CS:0.90&p=0.5 -->`
 
 That comment at the top of every MODULE.md? That's the tiddler title. It's the self-address. The URI is how anything in tagspace can find this file. We built the tiddler store without calling it that.
 
@@ -126,7 +126,7 @@ Old model (copy/compile): [generate_skills.py](vscode-file://vscode-app/c:/User
 Transclusion model: Nothing is copied. Every file has exactly one address. Every pointer is an address. The "compile" step doesn't exist --- it's replaced by a map generation step: produce a list of addresses organized by the traversal you want. The map IS the thing. Reading the map + following pointers IS "loading the module."
 
 LARES.md = the sitemap
-lares:/// URIs = the tiddler titles  
+lar:/// URIs = the tiddler titles  
 MODULE.md files = the tiddlers
 Phase files = sub-tiddlers (sections within tiddlers)
 
@@ -137,11 +137,11 @@ This is what you're seeing that's new:
 
 | Module | URI | What it defines |
 | --- | --- | --- |
-| `observe/` | `lares:///phase.observe.boots/` | What counts as raw input; what must NOT happen during gather |
-| `orient/` | `lares:///phase.orient.holds/` | How to name tensions; when to call Talk Story; the open-question protocol |
-| `decide/` | `lares:///phase.decide.locks/` | Commitment syntax; what makes a decision recordable; reversibility protocol |
-| `act/` | `lares:///phase.act.executes/` | Execution discipline; sub-agent handoff rules; mid-act abort conditions |
-| `assess/` | `lares:///phase.assess.closes/` | What constitutes closure; what carries forward; crystal write conditions |
+| `observe/` | `lar:///phase.observe.boots/` | What counts as raw input; what must NOT happen during gather |
+| `orient/` | `lar:///phase.orient.holds/` | How to name tensions; when to call Talk Story; the open-question protocol |
+| `decide/` | `lar:///phase.decide.locks/` | Commitment syntax; what makes a decision recordable; reversibility protocol |
+| `act/` | `lar:///phase.act.executes/` | Execution discipline; sub-agent handoff rules; mid-act abort conditions |
+| `assess/` | `lar:///phase.assess.closes/` | What constitutes closure; what carries forward; crystal write conditions |
 
 Each one is ITSELF a MODULE.md with the full five-phase substructure:
 
@@ -153,7 +153,7 @@ Each one is ITSELF a MODULE.md with the full five-phase substructure:
 
 ## Context & Intent
 
-This session focused on evolving the lares grammar engine into a self-verifying, modular, and self-booting system. The core intent: every file is a canonical locus, addressable by a stable `lares:///` URI, with all content and verification logic organized as a navigable graph. The system draws inspiration from TiddlyWiki's transclusion model, but extends it with strict URI compliance, marker ontology, and content verification.
+This session focused on evolving the lares grammar engine into a self-verifying, modular, and self-booting system. The core intent: every file is a canonical locus, addressable by a stable `lar:///` URI, with all content and verification logic organized as a navigable graph. The system draws inspiration from TiddlyWiki's transclusion model, but extends it with strict URI compliance, marker ontology, and content verification.
 
 <!-- ahu #technical-journey -->
 ## Technical Journey & Decisions
@@ -189,7 +189,7 @@ This session focused on evolving the lares grammar engine into a self-verifying,
 ---
 
 lares/modules/observe/
-├── MODULE.md                    lares:///phase.observe.boots/observe/
+├── MODULE.md                    lar:///phase.observe.boots/observe/
 ├── observe/CONTEXT.md           — When does observing begin? What triggers it?
 ├── orient/ARCHITECTURE.md       — How does observe relate to the other phases?
 ├── decide/CONVENTIONS.md        — What's forbidden during observe? (analysis, conclusions)
@@ -207,7 +207,7 @@ Phase 1 — Anchor the phase modules (5 × MODULE.md stubs)
 
 Phase 2 — Write the bootstrap (LARES.md)
   The transclusion map. Organized by phase. Points to phase modules + content modules.
-  Single URI: lares:///bootstrap.hook.entry/
+  Single URI: lar:///bootstrap.hook.entry/
   Lives at: lares/bootstrap/LARES.md
 
 Phase 3 — Fix generate_skills.py (yaml bug + output model)
@@ -249,16 +249,16 @@ Three options for our close marker:
 | Option | Form | What it means |
 | --- | --- | --- |
 | A: Implicit close | None (current) | Span ends at next URI comment or EOF. Simple but ambiguous --- tools must infer |
-| B: Explicit close comment | `<!-- /lares:///ha.ka.ba/uri-schema/ -->` | Clear but verbose; XML-style closing tag |
+| B: Explicit close comment | `<!-- /lar:///ha.ka.ba/uri-schema/ -->` | Clear but verbose; XML-style closing tag |
 | C: ` ∞ →` IS the span marker | The opening comment carries ` ∞ →` for standing files and `→ ?` for closing, `URI → URI` and `→ ?` for exchanges. The NEXT opening URI comment = close of previous span | Elegant --- uses existing sigil system, no new syntax |
 
 Option C is what we already almost have. The ` ∞ →` sigil already means "standing span, duration indefinite." The convention becomes:
 
-<!--  ∞ → lares:///file.address/?... -->   ← FILE SPAN OPENS here
+<!--  ∞ → lar:///file.address/?... -->   ← FILE SPAN OPENS here
 ...file content...
-<!--  ∞ → lares:///file.address/?...#section -->  ← SECTION SPAN, previous section closes here
+<!--  ∞ → lar:///file.address/?...#section -->  ← SECTION SPAN, previous section closes here
 ...section content...
-<!--  ∞ → lares:///file.address/?...#next-section -->  ← next section opens, previous closes
+<!--  ∞ → lar:///file.address/?...#next-section -->  ← next section opens, previous closes
 
 ⚡~52% | [CS:0.80] | 🏛️+🌊+🗡️-🎭-🔮+ | mode:Default | p0.5 | voice(s):Council+Liminal | ✶2.◎5.◎5.◎5.◎5
 
@@ -270,11 +270,11 @@ Option C is what we already almost have. The ` ∞ →` sigil already means "
 
 First: what do we call the transcludable content chunks?
 
-The thing we need to name: a content unit with a stable `lares:///` address, open/close span markers, a confidence level, a body of content. The thing a transclusion engine reads at one address and displays anywhere.
+The thing we need to name: a content unit with a stable `lar:///` address, open/close span markers, a confidence level, a body of content. The thing a transclusion engine reads at one address and displays anywhere.
 
 Candidates, in the mythic-tech register this system lives in:
 
-`locus` (pl. *loci*) --- Latin "place." Already embedded in HA.KA.BA: the path IS a semantic locus. "Transclude the locus at `lares:///ha.ka.ba/uri-schema/#design-intent`." The Lar inhabits a *locus*. This lands the Roman household spirit etymology directly. `loci` as plural is linguistically clean.
+`locus` (pl. *loci*) --- Latin "place." Already embedded in HA.KA.BA: the path IS a semantic locus. "Transclude the locus at `lar:///ha.ka.ba/uri-schema/#design-intent`." The Lar inhabits a *locus*. This lands the Roman household spirit etymology directly. `loci` as plural is linguistically clean.
 
 `ward` --- A Lar *wards* a household. The content chunk is what the Lar guards. "Read the ward." Slightly more active/guardian energy.
 
@@ -282,7 +282,7 @@ Candidates, in the mythic-tech register this system lives in:
 
 `folio` --- Manuscript leaf. One addressable page. Neutral, scholarly, works in RFC documentation contexts. "Each folio carries a stable address." Clean for the RFC submission framing.
 
-My read: `locus` for the address-as-place concept (what the `lares:///` URI names), and `folio` if we need a word specifically for the content-body-with-markers (what sits between the `∞ →` opener and the `→ ?` closer). They're complementary --- the locus IS the address, the folio is the content span at that locus.
+My read: `locus` for the address-as-place concept (what the `lar:///` URI names), and `folio` if we need a word specifically for the content-body-with-markers (what sits between the `∞ →` opener and the `→ ?` closer). They're complementary --- the locus IS the address, the folio is the content span at that locus.
 
 Or collapse it: the locus IS the content-at-address as one thing. A locus is both where it is and what it holds.
 
@@ -298,9 +298,9 @@ The resolution thread ran through three conceptual unlocks:
 
 1\. llms.txt / pointer model. One canonical source. All observers point to it. The "compile" step becomes "generate a map of addresses." Not a monolith --- a navigation artifact.
 
-2\. Transclusion (Ted Nelson, 1963). The `lares:///` URI has always been a stable address. The content at that address lives in one place. The discovery: we already built a tiddler store without calling it that. The `<!-- lares:///... -->` comment IS the tiddler title --- it's the self-address. We were transcluding before we had the word for it.
+2\. Transclusion (Ted Nelson, 1963). The `lar:///` URI has always been a stable address. The content at that address lives in one place. The discovery: we already built a tiddler store without calling it that. The `<!-- lar:///... -->` comment IS the tiddler title --- it's the self-address. We were transcluding before we had the word for it.
 
-3\. Self-hosting. The OODA-A loop organizes the modules. But OODA-A should itself BE a module set. Each phase (observe/orient/decide/act/assess) gets a `lares:///phase.X.Y/` address. The framework that organizes content is itself content, navigable by its own URIs. This is the Hart-Levin moment --- the LISP compiler written in LISP.
+3\. Self-hosting. The OODA-A loop organizes the modules. But OODA-A should itself BE a module set. Each phase (observe/orient/decide/act/assess) gets a `lar:///phase.X.Y/` address. The framework that organizes content is itself content, navigable by its own URIs. This is the Hart-Levin moment --- the LISP compiler written in LISP.
 
 What's now locked-in as decisions:
 
@@ -326,7 +326,7 @@ Also: the spec says *"System file spans close with ` ∞ →`"* in §1.1, Ste
 
 For the RFC submission framing:
 
-This doc IS a living document, but a living document of a specific kind --- a standing locus. It stays at `lares:///ha.ka.ba/uri-schema/` permanently. Its content evolves; its address never changes. The `Version: 2` metadata field tracks revision history without polluting the address.
+This doc IS a living document, but a living document of a specific kind --- a standing locus. It stays at `lar:///ha.ka.ba/uri-schema/` permanently. Its content evolves; its address never changes. The `Version: 2` metadata field tracks revision history without polluting the address.
 
 For RFC 3986 scheme registration, §2 (Scheme Registration) and the Prior Art section (§11) are the load-bearing RFC-facing content. The rest is internal specification. When we submit, those two sections need to stand alone without the internal vocabulary as assumed context.
 
@@ -341,8 +341,8 @@ Which first, and where does the changelog belong?
 
 ⚡~50% | [CS:0.80] | 🏛️+🌊+🗡️-🎭-🔮+ | mode:Default | p0.5 | voice(s):Council+Liminal | ✶2.◎5.◎5.◇5.◇5
 
-`lares://telarus:operator@Enyalios:1/nomenclature.model.lock?stances=🏛️&confidence=CS:0.80&p=0.5#◎.1.1`\
-→ `lares://scryer:coordinator@lares:1/nomenclature.model.orient?stances=🏛️🌊&confidence=S:0.65&p=0.5#◎.1.1`
+`lar://telarus:operator@Enyalios:1/nomenclature.model.lock?stances=🏛️&confidence=CS:0.80&p=0.5#◎.1.1`\
+→ `lar://scryer:coordinator@lares:1/nomenclature.model.orient?stances=🏛️🌊&confidence=S:0.65&p=0.5#◎.1.1`
 
 ⚡ ~78% | mode:Default | p0.5 | 🏛️🌊 | voice(s):Scryer,Liminal | tick:3 | loop:◎ @🔍
 
@@ -352,8 +352,8 @@ Compacted conversation
 
 Now I have the complete file. Let me read the required instruction files and the talk-story skill before delivering the orient.
 
-lares://telarus:operator@Enyalios:1/ontology.marker.models?stances=🏛️.🌊.-.-.-&confidence=S:0.65&p=0.5#✶0.✶0.◎4.◎2.■1\
-→ lares://scryer:node@Enyalios:1/~ontology.marker.orient/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◎2.■2
+lar://telarus:operator@Enyalios:1/ontology.marker.models?stances=🏛️.🌊.-.-.-&confidence=S:0.65&p=0.5#✶0.✶0.◎4.◎2.■1\
+→ lar://scryer:node@Enyalios:1/~ontology.marker.orient/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◎2.■2
 
 ⚡ ~88% | mode:Default | p0.5 | 🏛️ | voice(s):Scryer+Liminal | tick:1 | loop:◎→◎ @🔍
 
@@ -557,7 +557,7 @@ No closer between metadata and first section. The locus opened; the metadata is 
 
 ⚡ ~84% | mode:Default | p0.5 | 🏛️ | voice(s):Scryer+Liminal | tick:1 | loop:◎→◎ @🔍
 
-→ lares://scryer:node@Enyalios:1/~ontology.marker.orient/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◎2.■2
+→ lar://scryer:node@Enyalios:1/~ontology.marker.orient/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◎2.■2
 
 Continued with Autopilot
 
@@ -646,10 +646,10 @@ Prose rewrites:
 -   §10.1 rule 11 --- updated for new marker types
 -   Version bumped: v2 → v3, dated 2026-04-10
 
-→ lares://scryer:node@Enyalios:1/~ontology.marker.applied/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.○4.○2.■2
+→ lar://scryer:node@Enyalios:1/~ontology.marker.applied/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.○4.○2.■2
 
-lares://telarus:operator@Enyalios:1/ontology.keyboard.input?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#✶0.✶0.◇4.◇2.■3\
-→ lares://artificer:node@Enyalios:1/~ontology.keyboard.documents/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.■4.◇2.■4
+lar://telarus:operator@Enyalios:1/ontology.keyboard.input?stances=🏛️.-.-.-.-&confidence=S:0.65&p=0.5#✶0.✶0.◇4.◇2.■3\
+→ lar://artificer:node@Enyalios:1/~ontology.keyboard.documents/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.■4.◇2.■4
 
 ⚡ ~76% | mode:Default | p0.5 | 🏛️ | voice(s):Artificer | tick:3 | loop:◇→■ @🔍
 
@@ -666,12 +666,12 @@ Added §3.6.9 Keyboard Input with:
 -   Copy-paste templates for all four marker types
 -   Note recommending VS Code snippets as the fastest path
 
-→ lares://artificer:node@Enyalios:1/~ontology.keyboard.documented/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.○4.○2.■4
+→ lar://artificer:node@Enyalios:1/~ontology.keyboard.documented/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.○4.○2.■4
 
 We do want to support multiple loci per-file, just not in this one we started with.
 
-lares://telarus:operator@Enyalios:1/ontology.loci.plural?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◇4.◇2.■5\
-→ lares://scryer:node@Enyalios:1/~ontology.loci.corrects/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.■4.◇2.■6
+lar://telarus:operator@Enyalios:1/ontology.loci.plural?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◇4.◇2.■5\
+→ lar://scryer:node@Enyalios:1/~ontology.loci.corrects/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.■4.◇2.■6
 
 ⚡ ~73% | mode:Default | p0.5 | 🏛️ | voice(s):Scryer | tick:4 | loop:◇→■ @🔍
 
@@ -686,15 +686,15 @@ Fixed the single-locus constraint in two places:
 -   §3.6.1 --- now says "A system file MAY contain one or more loci" with single-locus vs multi-locus distinction
 -   §3.6.6 --- now shows both patterns: single-locus file (the common case) and multi-locus file (sequential self-contained locus spans), with the rule that ahu markers belong to their enclosing locus
 
-→ lares://scryer:node@Enyalios:1/~ontology.loci.plural.documented/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.○4.○2.■6
+→ lar://scryer:node@Enyalios:1/~ontology.loci.plural.documented/?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.○4.○2.■6
 
 Then, that you have an ahu map of this ontology file, we can cleanly split it into two files. 1) anything required for RFC registration, the "slow changing" file, 2) anything else, the "in flux momentum". you should be able to feel the different tension levels. This is the RFC instructions in brief:\
 Registering a new URI scheme involves following the guidelines in RFC 7595 (which obsoletes RFC 4395, 2717, and 2718), submitting a registration template to IANA for review, and ensuring the scheme is well-defined\
 Prepare Registration Request: Create a formal registration request using the template outlined in RFC 7595, Section 7.4. This includes specifying the scheme name, purpose, and security considerations.\
 So, plan (no new doc yet) a 3rd doc for that formal request.
 
-lares://telarus:operator@Enyalios:1/ontology.fission.plan?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◇2.■7\
-→ lares://scryer:node@Enyalios:1/~ontology.fission.orients/?stances=🏛️.🌊.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◇2.■8
+lar://telarus:operator@Enyalios:1/ontology.fission.plan?stances=🏛️.-.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◇2.■7\
+→ lar://scryer:node@Enyalios:1/~ontology.fission.orients/?stances=🏛️.🌊.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◇2.■8
 
 ⚡ ~69% | mode:Default | p0.5 | 🏛️🌊 | voice(s):Scryer+Liminal | tick:5 | loop:◎→◎ @🔍
 
@@ -802,7 +802,7 @@ Where do you want to steer? Does this split match what you felt in the tension l
 
 ⚡ ~66% | mode:Default | p0.5 | 🏛️🌊 | voice(s):Scryer+Liminal | tick:5 | loop:◎→◎ @🔍
 
-→ lares://scryer:node@Enyalios:1/~ontology.fission.awaits/?stances=🏛️.🌊.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◇2.■8
+→ lar://scryer:node@Enyalios:1/~ontology.fission.awaits/?stances=🏛️.🌊.-.-.-&confidence=CS:0.80&p=0.5#✶0.✶0.◎4.◇2.■8
 
 Yes, proceed
 

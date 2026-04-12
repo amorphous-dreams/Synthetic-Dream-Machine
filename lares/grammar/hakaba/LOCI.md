@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45&p=0.5 -->
+<!-- ∞ → lar:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45&p=0.5 -->
 
 # Grammar: HA.KA.BA Semantic Addressing
 
@@ -28,7 +28,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#loop-position -->
+<!-- ahu lar:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#loop-position -->
 
 ## Loop Position
 
@@ -62,7 +62,7 @@ HA.KA.BA should not:
 
 ---
 
-<!-- ahu lares:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#handoff -->
+<!-- ahu lar:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#handoff -->
 
 ## Handoff
 
@@ -81,7 +81,7 @@ If the reader cannot separate those four layers, the address still carries noise
 
 ---
 
-<!-- ahu lares:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#surface -->
+<!-- ahu lar:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#surface -->
 
 ## Composable Surface
 
@@ -103,7 +103,7 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lares:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#conventions -->
+<!-- ahu lar:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#conventions -->
 
 ## Conventions
 
@@ -115,11 +115,11 @@ That surface should remain reusable across:
 | Keep stable address and session subpath conceptually separate | SHOULD | Reuse depends on clean stripping |
 | Avoid authority overload in the path | MUST | WHO belongs in authority, not in HAKABA |
 
-**Origin rule:** `lares:///ha.ka.ba/` names semantic zero, not production content.
+**Origin rule:** `lar:///ha.ka.ba/` names semantic zero, not production content.
 
 ---
 
-<!-- ahu lares:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#procedures -->
+<!-- ahu lar:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#procedures -->
 
 ## Procedures
 
@@ -134,7 +134,7 @@ That surface should remain reusable across:
 
 ---
 
-<!-- ahu lares:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#reading-test -->
+<!-- ahu lar:///grammar.hakaba.defines/hakaba/?confidence=SP:0.45#reading-test -->
 
 ## Reading Test
 

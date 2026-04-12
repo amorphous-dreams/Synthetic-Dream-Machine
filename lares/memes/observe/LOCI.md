@@ -1,4 +1,4 @@
-<!-- ∞ → lares:///grammar.observe.defines/observe/?confidence=CS:0.85&p=0.5 -->
+<!-- ∞ → lar:///grammar.observe.defines/observe/?confidence=CS:0.85&p=0.5 -->
 
 # Grammar: ✶ Observe
 
@@ -31,7 +31,7 @@ grammar: true
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.90#loop-position -->
+<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.90#loop-position -->
 
 ## Loop Position
 
@@ -66,7 +66,7 @@ That pressure belongs to later phases.
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.85#handoff -->
+<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.85#handoff -->
 
 ## Handoff
 
@@ -89,7 +89,7 @@ Loop-back from `○ Assess` returns here when:
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.90#conventions -->
+<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.90#conventions -->
 
 ## Conventions
 
@@ -108,7 +108,7 @@ Loop-back from `○ Assess` returns here when:
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.80#procedures -->
+<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.80#procedures -->
 
 ## Procedures
 
@@ -123,7 +123,7 @@ Loop-back from `○ Assess` returns here when:
 
 ---
 
-<!-- ahu lares:///grammar.observe.defines/observe/?confidence=CS:0.80#reading-test -->
+<!-- ahu lar:///grammar.observe.defines/observe/?confidence=CS:0.80#reading-test -->
 
 ## Reading Test
 
