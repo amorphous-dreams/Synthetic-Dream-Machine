@@ -230,7 +230,7 @@ def check_uri_wrappers(file_path: Path) -> dict:
         else:
             parse_uri = _load_parse_uri()
             if parse_uri:
-                ok, msg = parse_uri.validate_lares_uri(f'lar:///{uri}')
+                ok, msg = parse_uri.validate_lar_uri(f'lar:///{uri}')
                 if not ok:
                     uri_valid = False
                     uri_error = msg

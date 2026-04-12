@@ -125,7 +125,7 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 **Register target:** `[CS:0.85]`
 **Input:** URI_SCHEMA.md §7, Signal_HUD_Tagspace-draft.md Crystal Event Model
 **Acceptance criteria:**
-1. The four URI-derived fields (`lares_uri`, `lares_address`, `intent_header_snapshot`, `chronometer`) are derivable from the full URI without ambiguity
+1. The four URI-derived fields (`lar_uri`, `lares_address`, `intent_header_snapshot`, `chronometer`) are derivable from the full URI without ambiguity
 2. Quick-filter fields (`current_phase`, `active_scale`) are derivable from the URI without requiring the full event context
 3. The example event in §7.1 is consistent with the STATE.jsonl event schema in the draft (all field names match, types match)
 4. No field in the crystal event model references URI data that isn't captured in these four + two fields
@@ -235,7 +235,7 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 | Downstream Sprint | What Sprint 0 Unblocks |
 |---|---|
 | `crystal/` STATE.jsonl finalization | Crystal field mapping contract (§7) — crystal team can finalize field names and types |
-| `compiler/` module descriptors | Module descriptor `lares_uri` field spec (§8) — compiler team can type the TOML schema |
+| `compiler/` module descriptors | Module descriptor `lar_uri` field spec (§8) — compiler team can type the TOML schema |
 | `registry/` full design | Registry contract stub — registry team has the promotion ledger schema and resolver algorithm |
 | `signal/` p-band model | URI validated independently of p-band — p-band sprint can proceed on its own timeline |
 | `platform/` budget maps | Cache tier mapping (§9) confirmed — platform team can map tiers to host budgets |

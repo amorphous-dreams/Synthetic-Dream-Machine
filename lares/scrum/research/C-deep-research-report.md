@@ -2,12 +2,12 @@
 
 **Executive Summary:** We design a **canonical `lar:` URI schema** and **stamping protocol** to anchor agent state and intent in conversations. Every message (user or agent) is decorated with a _start-URI_ and _end-URI_ carrying a `register` (confidence) and `canon` (priority) score. These URIs serve as cache anchors and state tags.  We define an ABNF-like grammar for `lar:` URIs, explain how to canonicalize and hash content, and show TOML manifest examples. We detail where to insert URIs and `@event` markers in the interaction (including quoting user input when confidence <1.0). Cache-safety rules ensure Anthropic’s prefix cache hits (block exactness and breakpoints). A migration checklist and sample scripts demonstrate stamping existing files. Finally, we give a test plan, sample bootloader, example stamped conversation, register/canon band tables, and a mermaid flowchart of the pipeline. The design relies on Anthropic/Claude documentation (memory/prompt-caching) and industry standards (TOML v1.0 spec, OpenTelemetry spans, event-sourcing patterns).
 
-## 1. lares: URI Specification
+## 1. lar: URI Specification
 
 We define `lar:` URIs to unambiguously identify modules, prompts, and states. A formal grammar (roughly ABNF-like) is:
 
 ```
-lares_uri   = "lar://" hier-part [ "?" query ] [ "#" sha256 ]
+lar_uri   = "lar://" hier-part [ "?" query ] [ "#" sha256 ]
 hier-part   = tier "/" kind "/" name "@" version
 tier        = "canon" / "archive" / ("core" / "tool" / "permission" / ...)
 kind        = ALPHA *( ALPHA / "-" / "_" )
@@ -57,13 +57,13 @@ These URIs can be stamped anywhere we need to refer to a state or content chunk.
 
 ## 2. TOML Manifest Snippets
 
-Here are examples of using the `lares_uri` field in TOML manifests:
+Here are examples of using the `lar_uri` field in TOML manifests:
 
 ```toml
 # Module descriptor example (lares-identity.module.toml)
 schema = "lares.module@1"
 module_id = "lares-identity"
-lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
+lar_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
 title = "Agent Identity"
 description = "Core protocol and persona."
 class = "kernel"
@@ -77,7 +77,7 @@ phase = 0
 # Tool descriptor example (http_request.tool.toml)
 schema = "lares.tool@1"
 tool_id = "http_request"
-lares_uri = "lar://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
+lar_uri = "lar://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
 title = "HTTP Request"
 [register] label="C" value=1.0
 [canon] value=8.5 scope="soft"
@@ -91,7 +91,7 @@ type = "string"
 # Permission descriptor example (git-access.permission.toml)
 schema = "lares.permission@1"
 permission_id = "git-access"
-lares_uri = "lar://canon/permission/git-access@1.0.0?register=C:1.0&canon=9.0&scope=hard#sha256=c1e2d3..."
+lar_uri = "lar://canon/permission/git-access@1.0.0?register=C:1.0&canon=9.0&scope=hard#sha256=c1e2d3..."
 [register] label="C" value=1.0
 [canon] value=9.0 scope="hard"
 [claude_code.settings]
@@ -105,7 +105,7 @@ schema = "lares.registry@1"
 generated_by = "lares-compiler@1.0.0"
 generated_at = "2026-04-08T00:00:00Z"
 [[entry]]
-lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
+lar_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b5aa7..."
 path = "modules/lares-identity.module.toml"
 semantic_sha256 = "5f4dcc3b5aa7..."
 status = "canon"
@@ -119,14 +119,14 @@ target_id = "claude-code.vscode"
 emit_claude_md = ".claude/CLAUDE.generated.md"
 emit_rules_dir = ".claude/rules"
 [[load]]
-lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b..."
+lar_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc3b..."
 required = true
 [[load]]
-lares_uri = "lar://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
+lar_uri = "lar://canon/tool/http_request@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=a7c4b2..."
 required = false
 ```
 
-Each manifest includes a fixed `lares_uri` field (often at the top) so tools and modules can reference each other by stable ID.
+Each manifest includes a fixed `lar_uri` field (often at the top) so tools and modules can reference each other by stable ID.
 
 ---
 
@@ -256,10 +256,10 @@ In short, the loader must emit **stable, re-usable URIs and prompt segments** at
 To migrate existing “Stuffed” archives:
 
 1. **Inventory**: List all files (old prompts, modules). Compute SHA-256 of their content (as if they were final). Record original path, size, and hash in a table (e.g. `_todo/migrations/archive_inventory.toml`).
-2. **Stamping:** For each module/file, generate its `lares_uri`:  
+2. **Stamping:** For each module/file, generate its `lar_uri`:  
    - Choose an ID (from mapping or derive from filename).  
    - Calculate semantic SHA after normalization.  
-   - Insert (or create) the `lares_uri` field in the TOML manifest.  
+   - Insert (or create) the `lar_uri` field in the TOML manifest.  
 3. **Pseudocode Example:** 
 
    ```python
@@ -270,7 +270,7 @@ To migrate existing “Stuffed” archives:
        module_id = infer_id_from(path)
        uri = f"lar://canon/module/{module_id}@0.0.1?register=C:1.0&canon=1.0&scope=advisory#sha256={digest}"
        toml = parse_toml(path)
-       toml['lares_uri'] = uri
+       toml['lar_uri'] = uri
        write_toml(path, toml)
    ```
 
@@ -299,10 +299,10 @@ target = "claude-code.vscode"
 emit_claude_md = ".claude/CLAUDE.generated.md"
 emit_rules_dir = ".claude/rules"
 [[load]]
-lares_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc..."
+lar_uri = "lar://canon/module/lares-identity@2.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=5f4dcc..."
 required = true
 [[load]]
-lares_uri = "lar://canon/module/lares-operations@2.0.0?register=C:1.0&canon=8.0&scope=soft#sha256=a7c4b2..."
+lar_uri = "lar://canon/module/lares-operations@2.0.0?register=C:1.0&canon=8.0&scope=soft#sha256=a7c4b2..."
 required = false
 ```
 

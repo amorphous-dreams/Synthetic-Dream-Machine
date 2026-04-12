@@ -2,12 +2,12 @@
 
 # `lar:` URI Schema — Canonical Specification
 
-> Domain: `lares/modules/uri-schema/` · intent HUD anatomy, canonical form, render targets, validation rules
+> Domain: `lar/modules/uri-schema/` · intent HUD anatomy, canonical form, render targets, validation rules
 > Status: `[CS:0.95]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
 > Updated: 2026-04-10
 > Version: 3 (revised per ahu/kahea marker ontology — locus spans, ahu waypoints, kahea transclusion; cultural nomenclature locked 2026-04-10)
 > Source: Extracted from `_todo/core/Signal_HUD_Tagspace-draft.md` §§ Full URI Anatomy, Chronometer, Display Split, Crystal Schema Field Mapping, Prior Art.
-> Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lares_uri`
+> Blocks: `lares/registry/` URI assignment; `lares/crystal/` STATE.jsonl field contract; deployment and schema descriptors that carry `lar_uri`
 
 ---
 
@@ -47,7 +47,7 @@ lar://telarus:operator@enyalios/~schema.gap.present/?stances=^.?.-.-.-&confidenc
 Before generating any content, Lares sets its own intent with a **provisional node URI**. The HA.KA.BA here names a resource that **may not yet exist** — it is a declared heading, not a confirmed location. The `~` prefix on the HA.KA.BA marks it as execution-provisional: generations may diverge.
 
 ```
-lar://lares:node@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.D1.D2.A7
+lar://lar:node@enyalios/~schema.flow.documented/?stances=^.-.-.-.-&confidence=CS:0.80&p=0.5#O0.O0.D1.D2.A7
 ```
 
 **Step 3 — Emit the URI → URI exchange vector.**
@@ -75,14 +75,14 @@ Immediately after the URI pair, emit a condensed single-line status display deri
 
 | Property | Value |
 |---|---|
-| Scheme name | `lares` |
+| Scheme name | `lar` |
 | Dereferenceability | Non-dereferenceable identifier (RFC 4151 precedent) |
 | Resolution | Via `lares/registry/` resolver; never via network fetch |
 | IANA status | Unregistered; internal use only |
 
 > **Form and compliance:** The **record form** is the RFC 3986-compliant canonical form for transport, persistence, comparison, and strict parsing. The **HUD forms** are IRI-class instrument renderings (RFC 3987); they may contains emoji and Unicode glyphs in the instruments that are not legal in RFC 3986 URIs without percent-encoding. RFC 3986 compliance is not claimed for the HUD form. The rendering table (§5) defines the canonical-to-render-target field transforms for all projected fields; it is not a claim that any render-target form is network-safe.
 
-The `lares:` scheme identifies semantic positions, signal states, and machine events within the Lares agent architecture. It does not resolve to a network resource. URI consumers (crystal replay tools, debug log parsers, registry resolvers) treat it as an opaque structured identifier parsed according to this specification.
+The `lar:` scheme identifies semantic positions, signal states, and machine events within the Lares agent architecture. It does not resolve to a network resource. URI consumers (crystal replay tools, debug log parsers, registry resolvers) treat it as an opaque structured identifier parsed according to this specification.
 
 ---
 
@@ -125,7 +125,7 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/` <- the (0,0,0) 
 
 | # | Component | RFC 3986 Role | Lares Mapping | Record Example | HUD Example |
 |---|---|---|---|---|---|
-| 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable | `lares:` | `lares:` |
+| 1 | **scheme** | Protocol identifier | `lar:` — non-dereferenceable | `lar:` | `lar:` |
 | 2 | **userinfo** | Requesting party identity | `alias:tier` | `telarus:operator` | `telarus:operator` |
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` | `@` |
 | 4 | **host** | Machine identity | `machine_id` from crystal system | `enyalios` | `enyalios` |
@@ -145,11 +145,11 @@ The Elyncia.app / DreamDeck identity model has three distinct layers. **Do not c
 |---|---|---|
 | **DID** | `did:plc:abc123` | AT Protocol canonical identity — the cryptographic key holder. Resolved via Bluesky auth (OAuth over DID). This is the actual principal in UCAN capability tokens. |
 | **Handle** | `@telarus.elyncia.social` (AT Protocol/Bluesky) or `@telarus@elyncia.social` (ActivityPub/Kowloon) | Resolution alias over the DID — human-readable, not authoritative. AT Protocol uses period-separator; ActivityPub uses double-`@`. |
-| **lares: alias** | `telarus:operator@enyalios` | Application-layer signal state — names the *operational role* of the speaker in a `lares:` exchange. Not a network identity; not a DID alias. Cognitive phase is carried exclusively in the FFZ chronometer fragment, not the authority. |
+| **lar: alias** | `telarus:operator@enyalios` | Application-layer signal state — names the *operational role* of the speaker in a `lar:` exchange. Not a network identity; not a DID alias. Cognitive phase is carried exclusively in the FFZ chronometer fragment, not the authority. |
 
 **Elyncia.app auth model:** Bluesky logins provide DID-grounded authentication (AT Protocol key management, `did:plc:` resolution) without running a Bluesky home server (PDS). Kowloon is ActivityPub, not AT Protocol — it uses Bluesky as an auth provider only. UCAN capability tokens are the authorization layer beneath the Kowloon social surface.
 
-**Why lares: alias has no leading `@`:** The handle (`@telarus@elyncia.social`) is already a resolution alias over the DID. The lares: `alias` field is a third distinct thing — it tags the operational role in the signal exchange. Adding `@` to lares: aliases would conflate social-handle layer with application-signal layer. The DID is what proves identity; the handle addresses the DID holder; the lares: alias names the role. Three separate layers, three separate forms.
+**Why lar: alias has no leading `@`:** The handle (`@telarus@elyncia.social`) is already a resolution alias over the DID. The lar: `alias` field is a third distinct thing — it tags the operational role in the signal exchange. Adding `@` to lar: aliases would conflate social-handle layer with application-signal layer. The DID is what proves identity; the handle addresses the DID holder; the lar: alias names the role. Three separate layers, three separate forms.
 
 #### Handle Form
 
@@ -159,9 +159,9 @@ Within the DreamDeck / Kowloon ActivityPub layer, identities use the canonical A
 @alias@node
 ```
 
-This is **not** the lares: URI — it is the social-layer identity that maps *onto* the lares: URI's `alias@host` authority. The correspondence:
+This is **not** the lar: URI — it is the social-layer identity that maps *onto* the lar: URI's `alias@host` authority. The correspondence:
 
-| ActivityPub handle | lares: URI authority component | Underlying DID layer |
+| ActivityPub handle | lar: URI authority component | Underlying DID layer |
 |---|---|---|
 | `@lindwyrm@new-delos` | `lindwyrm:...@new-delos` | `did:plc:...` (Lindwyrm's key) |
 | `@telarus@~crossroads` | `telarus:operator@enyalios` | `did:plc:...` (Telarus's key) |
@@ -175,7 +175,7 @@ The `@handle@node` form is the **canonical Kowloon social identity** for DreamDe
 ```
 Territory triple (`//ha.ka.ba`) is placed **before** other instruments like confidence and stance — grounds domain before posture (WHERE → HOW, matching URI path-first layout logic). The optional sub-path (`{/optional/path/}`) narrows within-territory routing when needed; strip it to get the stable named address. All five stances always present with amplitude modifiers.
 
-**Render target name:** `chat-log:post-header` — the in-chat-log, timestamped URI render target for post headers. This is the surface form used whenever a lares: URI is rendered inside an ActivityPub/DreamDeck feed post — not the full record-form URI, not the HUD exchange pair, but the compact social-layer projection of identity + signal state.
+**Render target name:** `chat-log:post-header` — the in-chat-log, timestamped URI render target for post headers. This is the surface form used whenever a lar: URI is rendered inside an ActivityPub/DreamDeck feed post — not the full record-form URI, not the HUD exchange pair, but the compact social-layer projection of identity + signal state.
 
 | Render target | Surface | URIs canonical? | When used |
 |---|---|---|---|
@@ -505,7 +505,7 @@ All five positions always present. `O0` = inactive scale (Observe, counter zero)
 | `A` | `■` | Act | `act` |
 | `Å` | `○` | Assess/Aftermath | `aftermath` |
 
-`Ø` and `Å` use ISO 8859 characters (Ø = U+00D8, Å = U+00C5). Canonical record form uses these single characters — no percent-encoding needed in fragment (fragment is client-side per RFC 3986 §3.5). Per RFC 8820, the `lares:` scheme specification holds authority to define fragment identifier syntax. **Interoperability note:** Parsers MUST treat percent-encoded equivalents (`%C3%98` for Ø, `%C3%85` for Å) as identical to the raw characters per RFC 3986 §6.2.2.1 case normalization and §2.1 percent-encoding equivalence.
+`Ø` and `Å` use ISO 8859 characters (Ø = U+00D8, Å = U+00C5). Canonical record form uses these single characters — no percent-encoding needed in fragment (fragment is client-side per RFC 3986 §3.5). Per RFC 8820, the `lar:` scheme specification holds authority to define fragment identifier syntax. **Interoperability note:** Parsers MUST treat percent-encoded equivalents (`%C3%98` for Ø, `%C3%85` for Å) as identical to the raw characters per RFC 3986 §6.2.2.1 case normalization and §2.1 percent-encoding equivalence.
 
 ### 4.4 Structural Rules
 
@@ -589,7 +589,7 @@ The FFZ model uses phase+counter per position. Five positions, dot-separated. Ph
 
 | Component | Rendering | Notes |
 |---|---|---|
-| scheme | `lares:` | Always identical |
+| scheme | `lar:` | Always identical |
 | alias:tier | `telarus:operator` | Identity and trust tier (no phase parenthetical) |
 | @host | `@enyalios` | machine locus only; no span counter |
 | confidence= | `S:0.65` | Numeric, both forms |
@@ -723,7 +723,7 @@ Confidence and stance array are elevated above mode and p because Agent SA (what
 
 1. The canonical `lar:` URI ends at the fragment. The HUD line is a separate, adjacent artifact — not URI grammar.
 2. `⚡~NN%` is the **declared estimate** of context window remaining as a navigational resource. The node estimates from visible context (~4 chars/token, 200k token window). Starts at ~100% and counts down.
-3. Mana is a HUD element, not a URI parameter. Do not serialize into `lares_uri` or registry identity fields until S2 settles the resource-state contract.
+3. Mana is a HUD element, not a URI parameter. Do not serialize into `lar_uri` or registry identity fields until S2 settles the resource-state contract.
 
 *Source: `../../_todo/E-deep-research-report.md` §§1.1–1.3 (SA priority ordering), §4.2 (grouped HUD layout validation)*
 
@@ -904,7 +904,7 @@ Kowloon is a downstream publication surface for some span-span captures, not the
 Alignment points with Kowloon prior art:
 
 - Kowloon Activities already model `actorId`, `object`, `target`, `to`, `canReply`, and `canReact`, which cleanly host publication envelopes for exported Lares spans.
-- Kowloon IDs (`type:dbid@domain`) should remain **Kowloon-native** IDs. They do not replace `span_id` or `lares_uri`.
+- Kowloon IDs (`type:dbid@domain`) should remain **Kowloon-native** IDs. They do not replace `span_id` or `lar_uri`.
 - A published transcript span can export as:
   - a Kowloon `Create -> Post` for conversational thread slices
   - a `Create -> Page` for fuller archival or transcript views
@@ -951,23 +951,23 @@ This keeps the ontology stable across multiple sinks: MemPalace, Kowloon feeds, 
 <!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.8#module-registry -->
 ## 8. Module and Registry Metadata Integration
 
-The `lares_uri` + `confidence` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
+The `lar_uri` + `confidence` fields on module descriptors, registry records, and future boot metadata provide load-order and identity context. No compiler pipeline is implied by this section; the schema only defines how URI metadata travels with higher-level descriptors.
 
 ```toml
 # Tier 1 — Global Core (version-controlled by module version)
-lares_uri   = "lar:///kernel.invariant.anchors/"
+lar_uri   = "lar:///kernel.invariant.anchors/"
 confidence    = "C:1.0"
 module_id   = "lares-kernel"
 version_num = 4
 
 # Tier 2 — Session Core (version-controlled within session)
-lares_uri   = "lar:///session.permissions.gates/"
+lar_uri   = "lar:///session.permissions.gates/"
 confidence    = "C:0.95"
 module_id   = "lares-permissions"
 version_num = 2
 
 # Tier 3 — Dynamic (span_seq lives outside descriptor)
-lares_uri   = "lar:///task.current.recon/"
+lar_uri   = "lar:///task.current.recon/"
 confidence    = "S:0.55"
 module_id   = "lares-task-recon"
 version_num = 1
@@ -995,7 +995,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 A `lar:` URI is **well-formed** when:
 
-1. Scheme is exactly `lares:`
+1. Scheme is exactly `lar:`
 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields (`alias:tier`); no parenthetical phase sub-field
 3. Host is a valid `machine_id` (alphanumeric + hyphens)
 4. Path contains exactly three HA.KA.BA slots after the leading `/`
@@ -1020,11 +1020,11 @@ The rendering table (§5.1) governs the canonical-to-render-target transform for
 
 ### 10.3 Stable Address Derivation
 
-`lares_address` is correctly derived from `lares_uri` when:
+`lares_address` is correctly derived from `lar_uri` when:
 
-1. Scheme is `lares:`
+1. Scheme is `lar:`
 2. Authority is empty (double-slash, no host)
-3. Path is identical to the `lares_uri` path (record form: `/` separators)
+3. Path is identical to the `lar_uri` path (record form: `/` separators)
 4. Query and fragment are absent
 
 ### 10.4 Canonical Form and Comparison
@@ -1071,9 +1071,9 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 <!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.95#prior-art -->
 ## 12. Prior Art
 
-- **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
-- **RFC 8820 (BCP 190, URI Design and Ownership)** — Obsoletes RFC 7320 (June 2020). Confirms that URI structure constraints are legitimate when issued by the scheme specification itself. The `lares:` scheme defines its own fragment identifier syntax (the FFZ chronometer) as permitted under §2.5 for scheme-level specifications. Query parameter structure (`stances`, `confidence`, `p`) falls within scheme-owner authority per §2.4.
-- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lar:` URIs serve a comparable role for agent signal metadata.
+- **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lar:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
+- **RFC 8820 (BCP 190, URI Design and Ownership)** — Obsoletes RFC 7320 (June 2020). Confirms that URI structure constraints are legitimate when issued by the scheme specification itself. The `lar:` scheme defines its own fragment identifier syntax (the FFZ chronometer) as permitted under §2.5 for scheme-level specifications. Query parameter structure (`stances`, `confidence`, `p`) falls within scheme-owner authority per §2.4.
+- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lar:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lar:` URIs serve a comparable role for agent signal metadata.
 - **W3C PROV-DM / OpenTelemetry Trace Context** — Better prior art for exchange identity than URI authority overloading. Span spans map more naturally to activities/spans with separate IDs, timestamps, and parent-child links.
 - **Lamport / Vector clocks** — The chronometer shares a surface resemblance to a vector clock (array of counters, nesting relationship) but functions as a **hierarchical scope counter** in a single process — not a distributed causality tracker across concurrent independent processes. Vector clocks grow with process count, carry the full vector on every message, and exhibit known dynamic-membership costs; none of those constraints apply to Lares's fixed-depth 5-position counter. OTel `traceparent` is the closer prior art (see below).
 - **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The OODA-A nesting is synthesis applied to canon time-scales.

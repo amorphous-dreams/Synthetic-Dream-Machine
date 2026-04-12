@@ -121,7 +121,7 @@ These decisions are closed. Do not re-open without operator directive.
 ## Scope of This Module
 
 This module covers:
-- lares: URI canonical form and render targets
+- lar: URI canonical form and render targets
 - HUD line composition and field ordering
 - Micro-trace inline annotation layer
 - Span display contract (what appears in stream, in what order)

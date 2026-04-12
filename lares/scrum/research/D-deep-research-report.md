@@ -8,7 +8,7 @@ We design a **schema-driven, multi-agent Lares system** that embeds HUD-encoded 
 - **HUD & Event Anchors:** Each dialogue turn is bracketed by `lar://` URIs marking the agent’s starting and ending state, with `@event` tokens inserted for sub-turn transitions. If no direct mapping exists, user input is quoted and split into chunks with intermediate URIs, ensuring every turn has a clear “state vector” seed.
 - **Deterministic Loader Pipeline:** A sorted discovery of schemas and invariants → strict validation → frame-gate (ensuring user data remains data) → register assignment → generation → state emission. This pipeline, illustrated below, yields reproducible outputs and lockfiles.
 - **Agent Orchestration:** Following Anthropic best practices, we use isolated subagents with role-based tool allowlists. Core invariants enforce least-privilege and refuse instructions from untrusted content【12†L381-L384】【12†L469-L472】.
-- **URI Scheme (RFC-compliant):** The custom `lares:` scheme is defined per RFC 3986/7595. URIs are lowercase, hierarchical (using `//` and paths), and registered in a TOML registry. Security considerations from RFC 7595 (e.g. validation, no automatic schemes) are applied【10†L164-L170】【10†L237-L242】.
+- **URI Scheme (RFC-compliant):** The custom `lar:` scheme is defined per RFC 3986/7595. URIs are lowercase, hierarchical (using `//` and paths), and registered in a TOML registry. Security considerations from RFC 7595 (e.g. validation, no automatic schemes) are applied【10†L164-L170】【10†L237-L242】.
 
 The following report details these elements, including TOML examples for `lares.core.*` invariants, `lar:` URI examples and grammar, a priority-layer table, and a mermaid flowchart for the loading pipeline. We also include local agent instructions (AGENTS.md) and directory README for implementation.
 
@@ -16,10 +16,10 @@ The following report details these elements, including TOML examples for `lares.
 
 Anthropic and OWASP emphasize **explicit structure and separation** to ensure safety:
 
-- **Anthropic agent design:** Agents should be **modular** (e.g. orchestrator + workers) and use simple compositional patterns【6†L6-L9】. Claude’s subagents each have isolated context and distinct tool permissions【3†L112-L114】【6†L6-L9】. We emulate this by giving each subagent a curated prompt (including `lares:` state) and enforcing least privilege in `lares.core.tool_policy`.
+- **Anthropic agent design:** Agents should be **modular** (e.g. orchestrator + workers) and use simple compositional patterns【6†L6-L9】. Claude’s subagents each have isolated context and distinct tool permissions【3†L112-L114】【6†L6-L9】. We emulate this by giving each subagent a curated prompt (including `lar:` state) and enforcing least privilege in `lares.core.tool_policy`.
 - **Prompt injection defenses:** Anthropic and OWASP both warn that mixing instructions and user data leads to vulnerability【12†L207-L214】. They recommend *structured prompts* and classifiers. We will wrap instructions vs data in explicit tags (e.g. `<SYSTEM>…</SYSTEM>`) and run a frame classifier to check if user content is misinterpreted. OWASP’s cheat sheet instructs to **“ALWAYS treat user input as data, not commands”**【12†L381-L384】, directly informing our design.
 - **Output monitoring:** After generation, we validate responses. Any attempt to override system state or promote fiction to canon must be caught and rejected. This follows OWASP’s advice to monitor outputs for policy violations【12†L381-L384】.
-- **Standards for protocols:** The `lares:` scheme follows RFC 3986 (generic URI syntax: `<scheme>://<authority>/<path>@<version>`)【10†L164-L170】. RFC 7595 requires precise scheme grammar and security considerations【10†L237-L242】. We apply these by defining a TOML registry of allowed prefixes and ensuring URI parsing code forbids unsafe constructs.
+- **Standards for protocols:** The `lar:` scheme follows RFC 3986 (generic URI syntax: `<scheme>://<authority>/<path>@<version>`)【10†L164-L170】. RFC 7595 requires precise scheme grammar and security considerations【10†L237-L242】. We apply these by defining a TOML registry of allowed prefixes and ensuring URI parsing code forbids unsafe constructs.
 - **TOML v1.0** is our config language for invariants. It is a minimal, UTF-8 format mapping to hash tables (duplicate keys are errors)【11†L57-L61】. This fits our need for clear, auditable policies.
 
 In summary, we leverage **Anthropic’s guidance on agent chaining and context (e.g. Model Context Protocol, subagents, progressive disclosure)** and **OWASP’s LLM security frameworks** to build the invariant loader and HUD mechanism.
@@ -55,7 +55,7 @@ We codify all policies in **TOML invariants** under a “Lares Core” ontology.
 ```toml
 schema_version = 1
 id = "inv-0001-frame-gate"
-lares_uri = "lar://core/invariant/lares.core.frame_gate@v1"
+lar_uri = "lar://core/invariant/lares.core.frame_gate@v1"
 
 [lares.core.frame_gate]
 enabled = true
@@ -107,7 +107,7 @@ lar://<authority>/<category>/<name>@<version>[?<query>][#<fragment>]
 - *Path* segments (category, name) identify resource (e.g. `invariant/lares.core.frame_gate`).  
 - `@version` suffix denotes schema/app version.  
 - Optional `?<query>` and `#<fragment>` for extra data (e.g. session IDs, pointers).
-- **Registration:** We treat `lares:` as private but follow RFC 7595’s guidelines: provide a security section, avoid misuse of `//`, and define our namespace. Authority names should not clash with existing schemes【10†L237-L242】.
+- **Registration:** We treat `lar:` as private but follow RFC 7595’s guidelines: provide a security section, avoid misuse of `//`, and define our namespace. Authority names should not clash with existing schemes【10†L237-L242】.
 
 **Examples:**
 ```
@@ -118,7 +118,7 @@ lar://user/input/query@q4
 ```
 A resolver (in our loader code) maps these URIs to local paths using `_todo/core/registry/lares-uri-registry.toml`. E.g. `lar://core/invariant/` → `invariants/`. Invalid URIs (wrong scheme/authority/format) are rejected early.
 
-**Security:** Treat `lar:` URIs as *authoritative state pointers*, not user data. Never execute or fetch URIs automatically. Validate the scheme and path strictly. By design, `lares:` is **read-only** for the LLM; it cannot invoke new instructions via URI alone. This aligns with RFC 7595’s requirement to consider security/privacy in scheme design【10†L237-L242】.
+**Security:** Treat `lar:` URIs as *authoritative state pointers*, not user data. Never execute or fetch URIs automatically. Validate the scheme and path strictly. By design, `lar:` is **read-only** for the LLM; it cannot invoke new instructions via URI alone. This aligns with RFC 7595’s requirement to consider security/privacy in scheme design【10†L237-L242】.
 
 ## Invariant-Loading Pipeline
 
@@ -149,9 +149,9 @@ We assign roles and use Anthropic-style subagents:
 - **Coordinator:** Full authority, can read/write invariants and deploy subagents.  
 - **Researcher:** Read-only role (can run web searches, fetch info).  
 - **Engineer:** Write role (can modify code and some invariants) but still sandboxed.  
-Each subagent sees only the relevant `lares:` state and context. **ToolPolicy** invariants define allowed tools per role. For example, Developers may run `build` tools, Researchers may run `search`, etc. Unauthorized tool calls are intercepted (OWASP least-privilege)【12†L469-L472】.
+Each subagent sees only the relevant `lar:` state and context. **ToolPolicy** invariants define allowed tools per role. For example, Developers may run `build` tools, Researchers may run `search`, etc. Unauthorized tool calls are intercepted (OWASP least-privilege)【12†L469-L472】.
 
-We also include **progressive disclosure** (Anthropic’s MCP advice【4†L83-L90】): each subagent gets only the context it needs. Sensitive data remains locked in memory, only passing `lares:` references. For example, detailed user history might live in a separate enclave file, not in the prompt.
+We also include **progressive disclosure** (Anthropic’s MCP advice【4†L83-L90】): each subagent gets only the context it needs. Sensitive data remains locked in memory, only passing `lar:` references. For example, detailed user history might live in a separate enclave file, not in the prompt.
 
 ## Implementation Tasks & Acceptance Criteria
 
@@ -233,7 +233,7 @@ Implement a *schema-driven invariant loader* and URI resolver. Everything here i
    - **Resolver:** Parse `lar:` URIs to local paths using `registry/`. Reject malformed URIs or out-of-scope authorities.
 
 4. **Define Schemas:**  
-   - Write TOML schemas (`schemas/*.schema.toml`) that require `id`, `schema_version`, `lares_uri`, etc.
+   - Write TOML schemas (`schemas/*.schema.toml`) that require `id`, `schema_version`, `lar_uri`, etc.
    - Schemas for each invariant table: instruction_hierarchy, frame_gate, data_classification, pushback, register_guard, tool_policy, orchestration, loader, etc.
 
 5. **Write Invariants:**  
@@ -324,7 +324,7 @@ Errors at any stage cause immediate termination (fail-closed). Lockfiles capture
 ```toml
 schema_version = 1
 id = "inv-0001-hierarchy"
-lares_uri = "lar://core/invariant/lares.core.instruction_hierarchy@v1"
+lar_uri = "lar://core/invariant/lares.core.instruction_hierarchy@v1"
 
 [lares.core.instruction_hierarchy]
 layers = ["invariant_schemas","kernel","operator_intent","user_input","external"]
@@ -335,7 +335,7 @@ rules = ["higher_overrides_lower","lower_cannot_modify_higher"]
 ```toml
 schema_version = 1
 id = "inv-0002-frame-gate"
-lares_uri = "lar://core/invariant/lares.core.frame_gate@v1"
+lar_uri = "lar://core/invariant/lares.core.frame_gate@v1"
 
 [lares.core.frame_gate]
 enabled = true

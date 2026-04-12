@@ -23,7 +23,7 @@ lares/modules/*/             combine_modules.py           builds/output/
   assess/VERIFICATION.md
                              verify_uri.py               exit 0 / exit 1 + report
                               - scans *.md files
-                              - checks lares: URI rules
+                              - checks lar: URI rules
                               - reports violation codes
 
                              eprime_audit.py             stdout: FILE:LINE report

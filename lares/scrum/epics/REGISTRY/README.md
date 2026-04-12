@@ -16,7 +16,7 @@ The governance infrastructure that makes `lar:` URIs stable, resolvable, and aud
 - Promotion ledger — append-only record of every promotion event (what, from where, under what evals, superseding what)
 - Content-addressed identity — SHA-256 `file_sha256` as primary; `version_label` as human alias
 - `semantic_sha256` — deferred to S3 (normalization spec + prototype run required before activation)
-- Module descriptor format — `lares_uri`, `register`, `module_id`, `version_num`, content type, dependencies, target paths
+- Module descriptor format — `lar_uri`, `register`, `module_id`, `version_num`, content type, dependencies, target paths
 - `lar:` URI assignment workflow — how new URIs are minted, who can mint them, what evidence is required
 
 ## Key Source

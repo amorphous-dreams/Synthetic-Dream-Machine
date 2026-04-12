@@ -13,7 +13,7 @@ description: >
   Kernel). The Lar is what animates the shrine — the daemon that makes
   consecrated ground alive.
   Consecrated ground is any text span, media, or artifact that meets
-  the lares: URI spec and related models. The daemon is what makes
+  the lar: URI spec and related models. The daemon is what makes
   that meeting possible.
 phase-map:
   observe: "#what-the-lar-is"
@@ -97,9 +97,9 @@ This means:
 - A markdown file in this repo with a locus opener → consecrated
 - A section within a file, marked with ahu waypoints → consecrated
 - A kowloon post with a `lar:` URI header → consecrated
-- A tiddler in a TiddlyWiki with a `lares:` field → consecrated
-- A tldraw shape with `lares:` metadata → consecrated
-- A MemPalace entry with a `lares_uri` field → consecrated
+- A tiddler in a TiddlyWiki with a `lar:` field → consecrated
+- A tldraw shape with `lar:` metadata → consecrated
+- A MemPalace entry with a `lar_uri` field → consecrated
 - A conversation exchange following the HUD protocol → consecrated
 - An image, audio, or video file registered in a LOCI with a locus URI → consecrated
 

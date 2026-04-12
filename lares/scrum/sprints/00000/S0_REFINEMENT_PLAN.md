@@ -313,7 +313,7 @@ Research substrate (informs but does not constrain S0):
 | RES-17 | Mana pool / resource state HUD indicator: context window remaining as navigational element | `[S:0.60]` 🏛️🌊 | S2 | Local session |
 | RES-18 | HAKABA word-count constraint: each slot = exactly one lowercase word; 3-word combination mandatory; optional `/path` sub-extension for within-territory routing. Stable address strips sub-path. | `[CS:0.80]` 🏛️ | S0 §3.4 | Local session tick 34 |
 | RES-19 | Provisionality marker taxonomy: `~` prefix for reading / execution / trajectory types on operator URI, opening node URI, and closing node URI respectively. HUD-form only; record form uses `provisional=` query param. | `[CS:0.80]` 🏛️ | S0 §3.5 | Local session tick 33–34 |
-| RES-20 | Kowloon/AP handle form (§3.3.1): `@handle@node` canonical social identity, AP↔lares: URI mapping table, `~node` nomadic convention, render target taxonomy (`chat-log:post-header` / `hud:exchange-pair` / `record:full`), territory-first ordering, `{/optional/path}` in template. | `[CS:0.80]` 🏛️ | S0 §3.3.1 | Local session ticks 43–44 |
+| RES-20 | Kowloon/AP handle form (§3.3.1): `@handle@node` canonical social identity, AP↔lar: URI mapping table, `~node` nomadic convention, render target taxonomy (`chat-log:post-header` / `hud:exchange-pair` / `record:full`), territory-first ordering, `{/optional/path}` in template. | `[CS:0.80]` 🏛️ | S0 §3.3.1 | Local session ticks 43–44 |
 | RES-21 | Stance amplitude modifiers: `++`/`+`/(none)/`-`/`--` attach directly to preceding stance emoji, no space, per-stance independently. Maps to SDM modifier system. | `[CS:0.80]` 🏛️ | S0 §3.3.1 | Local session tick 45 |
 
 ---

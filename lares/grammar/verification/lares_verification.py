@@ -283,7 +283,7 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
 
 
     # --- LAR URI DEDUPE TEST ---
-    def collect_lares_uris(root_dir: str) -> List[Tuple[str, str, int]]:
+    def collect_lar_uris(root_dir: str) -> List[Tuple[str, str, int]]:
         """
         Collect all canonical lar:/// URIs in all files under root_dir.
         Returns a list of (base_uri, file_path, line_number).
@@ -326,7 +326,7 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
                 continue
         return results
 
-    def dedupe_lares_uris(uri_tuples: List[Tuple[str, str, int]]):
+    def dedupe_lar_uris(uri_tuples: List[Tuple[str, str, int]]):
         """
         Returns (is_unique, {base_uri: [(file, line), ...]})
         """
@@ -417,10 +417,10 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
         results_detail['fast_path'] = '[PASS] Fast-path/short-circuit pattern and logic found'
     # --- LAR URI DEDUPE ---
     lares_root = str(loci.parent.parent)  # up to lares/
-    uri_tuples = collect_lares_uris(lares_root)
-    is_unique, dups = dedupe_lares_uris(uri_tuples)
-    results['lares_uri_dedupe'] = 1.0 if is_unique else 0.0
-    results_detail['lares_uri_dedupe'] = dups
+    uri_tuples = collect_lar_uris(lares_root)
+    is_unique, dups = dedupe_lar_uris(uri_tuples)
+    results['lar_uri_dedupe'] = 1.0 if is_unique else 0.0
+    results_detail['lar_uri_dedupe'] = dups
     return results, results_detail
 
 # --- Operator options ---
@@ -460,8 +460,8 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=N
                 print(f"- Fix kahea marker URIs: {results_detail.get('kahea_syntax', '')}")
                 print("  kahea form: <!-- kahea lar:///ha.ka.ba/path/ -->  (whole locus)")
                 print("  or:         <!-- kahea lar:///ha.ka.ba/path/#section-name -->  (section pull)")
-            elif k == 'lares_uri_dedupe':
-                dups = results_detail.get('lares_uri_dedupe', {})
+            elif k == 'lar_uri_dedupe':
+                dups = results_detail.get('lar_uri_dedupe', {})
                 if dups:
                     print("\n[ASSESS PHASE PROMPT]")
                     print("Duplicate lar:/// URIs detected:")

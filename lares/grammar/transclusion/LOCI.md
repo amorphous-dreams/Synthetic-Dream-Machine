@@ -75,7 +75,7 @@ This locus draws strength from three prior-art streams:
 |---|---|
 | Ted Nelson / Xanadu | one canonical source, quoted or included without copy drift |
 | TiddlyWiki | smallest semantic unit, self-addressed tiddler, composition through transclusion |
-| Lares repo braid | `lares:` self-address, marker ontology, and live tool-use as the current transclusion engine |
+| Lares repo braid | `lar:` self-address, marker ontology, and live tool-use as the current transclusion engine |
 
 **Nelson line:** transclusion names inclusion without physical duplication. That line matters here because
 Lares wants one canonical source and many appearances, not many drifting copies.
@@ -86,7 +86,7 @@ That philosophy lands cleanly in Lares. A locus should stay small enough to retr
 composition should happen by relation and summon, not by monolithic repetition.
 
 **TiddlyWiki structural lesson:** a tiddler knows its own title. From there, transclusion can pull the
-same content into many surfaces. In Lares, the opening `lares:` address plays the equivalent role:
+same content into many surfaces. In Lares, the opening `lar:` address plays the equivalent role:
 the locus knows its own name, and the rest of the system can summon it from that name.
 
 **Repo braid:** the local architecture notes already push this interpretation. The repo explicitly

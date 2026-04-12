@@ -145,7 +145,7 @@ separate task.
 ## Session Context
 
 - **Branch:** `fix/green-jello-dinosaurs-3`
-- **Last commit:** `ec129fe` — "Add deterministic parser and validator for lares: URIs…"
+- **Last commit:** `ec129fe` — "Add deterministic parser and validator for lar: URIs…"
 - **Tools self-pass:** Both `detect_alignment.py` and `uri_wrapper_verification.py` now pass
   their own wrapper and stream checks against themselves and their directories.
 - **parse-uri/ directory:** PASS on all checks.

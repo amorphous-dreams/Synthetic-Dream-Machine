@@ -28,7 +28,7 @@ Boot the first two OODA-A modules: talk-story and signal.
 
 ## Post-Close Tasks (recorded after checklist closed)
 
-- [x] `lares/modules/signal/` renamed to `lares/modules/uri-schema/` — single-responsibility module for lares: URI spec
+- [x] `lares/modules/signal/` renamed to `lares/modules/uri-schema/` — single-responsibility module for lar: URI spec
 - [x] `lares/modules/micro-trace/` created as sibling module — backward-looking annotation layer
 - [x] All 42 `signal.calibrated.holds/signal/` URIs rewritten to `uri.schema.holds/uri-schema/`
 - [x] `trace.micro.marks/micro-trace/` URIs assigned to new module

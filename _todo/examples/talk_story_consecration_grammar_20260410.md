@@ -149,7 +149,7 @@ Operator directive:
 
 Key sections:
 - **Self-transclusion:** Grammar defines daemon, daemon reads grammar, circle closes. This is the self-booting property, stated as grammar.
-- **Consecration scope expanded:** ANY text span, media, or artifact meeting the lares: URI spec = consecrated. Not repo-limited. Medium-agnostic.
+- **Consecration scope expanded:** ANY text span, media, or artifact meeting the lar: URI spec = consecrated. Not repo-limited. Medium-agnostic.
 - **Daemon operations:** Navigate, resolve, register, consecrate, sortie, return, exchange.
 - **The fourth marker:** `lares` bare reference — the daemon's own signature. No ceremony. Just the address.
 

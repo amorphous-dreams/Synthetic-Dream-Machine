@@ -86,7 +86,7 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 | Subdir | Domain | Status |
 |---|---|---|
 | [`modules/`](modules/) | OODA-A composable instruction modules — phase-structured, section URI'd | **S0 seeded** — talk-story (invariant) + uri-schema (URI spec) + micro-trace (annotation layer) |
-| [`signal/`](signal/README.md) | Signal HUD · Tagspace · lares: URI scheme · p-band model | Active draft |
+| [`signal/`](signal/README.md) | Signal HUD · Tagspace · lar: URI scheme · p-band model | Active draft |
 | [`crystal/`](crystal/README.md) | Archive Crystal state machine · STATE.jsonl · seal protocol | Active draft |
 | [`invariants/`](invariants/README.md) | `lares.core.*` behavioral invariants · priority layers · conflict resolution | Active draft |
 | [`schemas/`](schemas/README.md) | TOML schemas: module, tool, permission descriptors | Active draft |
@@ -108,7 +108,7 @@ lares/modules/
 │   ├── decide/CONVENTIONS.md           ← HUD format rules (6 mandatory)
 │   ├── act/CHECKLIST.md                ← 5-step session start checklist
 │   └── assess/REVIEW.md                ← 5 verification criteria
-├── uri-schema/                          ← lares: URI canonical spec module [CS:0.90]
+├── uri-schema/                          ← lar: URI canonical spec module [CS:0.90]
 │   ├── MODULE.md
 │   ├── observe/CONTEXT.md              ← v2 current state, what settled, what's open
 │   ├── orient/ARCHITECTURE.md          ← URI anatomy, design intent (§§1–3)

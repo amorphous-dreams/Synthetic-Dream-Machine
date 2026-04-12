@@ -130,7 +130,7 @@ schema = "lares.module@1"
 
 # Stable identity
 module_id = "lares-kernel"
-lares_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=__SEMANTIC_SHA256__"
+lar_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=__SEMANTIC_SHA256__"
 
 title = "Lares Kernel"
 description = "Invariant identity + gates + minimal runtime operating rules."
@@ -187,7 +187,7 @@ File: `tools/<tool_id>.tool.toml`
 schema = "lares.tool@1"
 
 tool_id = "web_search"
-lares_uri = "lar://canon/tool/web_search@1.0.0?register=C:1.0&canon=9.0&scope=hard#sha256=__SEMANTIC_SHA256__"
+lar_uri = "lar://canon/tool/web_search@1.0.0?register=C:1.0&canon=9.0&scope=hard#sha256=__SEMANTIC_SHA256__"
 
 title = "Web Search Tool"
 description = "External web search integration; used only when permitted."
@@ -227,7 +227,7 @@ File: `permissions/<perm_id>.permission.toml`
 schema = "lares.permission@1"
 
 permission_id = "repo-safe-default"
-lares_uri = "lar://canon/permission/repo-safe-default@1.0.0?register=C:1.0&canon=9.5&scope=hard#sha256=__SEMANTIC_SHA256__"
+lar_uri = "lar://canon/permission/repo-safe-default@1.0.0?register=C:1.0&canon=9.5&scope=hard#sha256=__SEMANTIC_SHA256__"
 
 title = "Workspace Trust Gate + Safe Defaults"
 description = "Deny sensitive file reads; require confirmation for dangerous actions."
@@ -268,9 +268,9 @@ schema = "lares.registry@1"
 generated_by = "lares-compiler@0.1.0"
 generated_at = "2026-04-07T00:00:00Z"
 
-# Determinism rule: entries sorted lexicographically by lares_uri.
+# Determinism rule: entries sorted lexicographically by lar_uri.
 [[entry]]
-lares_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=abc..."
+lar_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=abc..."
 kind = "module"
 descriptor_path = "modules/lares-kernel.module.toml"
 source_path = "sources/kernel/Lares_Kernel.md"
@@ -297,16 +297,16 @@ emit_agents_dir = ".claude/agents"
 
 # The invariant core: canon hard modules only
 [[load]]
-lares_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=..."
+lar_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=..."
 required = true
 
 [[load]]
-lares_uri = "lar://canon/module/lares-epistemology@1.0.0?register=C:1.0&canon=9.6&scope=hard#sha256=..."
+lar_uri = "lar://canon/module/lares-epistemology@1.0.0?register=C:1.0&canon=9.6&scope=hard#sha256=..."
 required = true
 
 # Optional scoped modules (emit to .claude/rules with paths frontmatter)
 [[load]]
-lares_uri = "lar://canon/module/lares-vscode-ops@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=..."
+lar_uri = "lar://canon/module/lares-vscode-ops@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=..."
 required = false
 emit_as_rule = true
 rule_paths = ["_todo/**", "builds/**"]
@@ -393,7 +393,7 @@ A practical emitter pattern:
 Create a deterministic, repeatable migration that does not accidentally promote archive material into runtime canon:
 
 - Inventory the “Stuffed” tree and old notes into a TOML inventory (file digests, inferred class, inferred register/canon defaults).
-- Generate a mapping table (old path → new `module_id` + `lares_uri`).
+- Generate a mapping table (old path → new `module_id` + `lar_uri`).
 - Extract candidate modules into a clean source tree:
   - whole-file extraction if the file already functions as a module
   - heuristic extraction only to bootstrap candidates, never as runtime dependency
@@ -437,8 +437,8 @@ def migrate_stuffed_archive(archive_root: str, out_root: str):
     mapping = []
     for item in inventory:
         module_id = propose_module_id(item)
-        lares_uri = propose_lares_uri(item, module_id)
-        mapping.append({"old_path": item["path"], "module_id": module_id, "lares_uri": lares_uri})
+        lar_uri = propose_lar_uri(item, module_id)
+        mapping.append({"old_path": item["path"], "module_id": module_id, "lar_uri": lar_uri})
 
     write_toml(out_root + "/migrations/stuffed_map.toml", mapping_sorted(mapping))
 
@@ -497,27 +497,27 @@ emit_agents_dir = ".claude/agents"
 
 # Stable invariant core (canon hard)
 [[load]]
-lares_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=0b7c..."
+lar_uri = "lar://canon/module/lares-kernel@4.0.1?register=C:1.0&canon=10.0&scope=hard#sha256=0b7c..."
 required = true
 
 [[load]]
-lares_uri = "lar://canon/module/lares-permissions@1.0.0?register=C:1.0&canon=9.7&scope=hard#sha256=31aa..."
+lar_uri = "lar://canon/module/lares-permissions@1.0.0?register=C:1.0&canon=9.7&scope=hard#sha256=31aa..."
 required = true
 
 [[load]]
-lares_uri = "lar://canon/module/lares-epistemology@1.0.0?register=C:1.0&canon=9.6&scope=hard#sha256=98bd..."
+lar_uri = "lar://canon/module/lares-epistemology@1.0.0?register=C:1.0&canon=9.6&scope=hard#sha256=98bd..."
 required = true
 
 # Scoped modules as rules (path-scoped; lazy-load)
 [[load]]
-lares_uri = "lar://canon/module/lares-vscode-ops@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=12ef..."
+lar_uri = "lar://canon/module/lares-vscode-ops@1.0.0?register=C:1.0&canon=8.5&scope=soft#sha256=12ef..."
 required = false
 emit_as_rule = true
 rule_paths = ["_todo/**", "builds/**"]
 
 # Archive material never auto-loaded
 [[load]]
-lares_uri = "lar://archive/note/old-monoprompt@0.0.0?register=S:0.65&canon=2.0&scope=advisory#sha256=fe12..."
+lar_uri = "lar://archive/note/old-monoprompt@0.0.0?register=S:0.65&canon=2.0&scope=advisory#sha256=fe12..."
 required = false
 emit_as_rule = false
 ```
@@ -643,7 +643,7 @@ It is **not** the implementation target. Do not patch it forward.
 
 Any migration work must output:
 - an inventory report (files, digests, inferred classes)
-- a mapping file (old path → new module_id / lares_uri)
+- a mapping file (old path → new module_id / lar_uri)
 - extracted candidate modules as Markdown + TOML descriptors
 - a “promotion queue” list: what still needs human review before becoming Canon
 

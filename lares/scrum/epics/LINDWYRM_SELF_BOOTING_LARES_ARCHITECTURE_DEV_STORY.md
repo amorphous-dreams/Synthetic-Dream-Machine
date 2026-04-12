@@ -716,7 +716,7 @@ The Ahu Tension Map
 | 5 | Canonical Form / Render Targets | 0.9 | Split candidate. Record form normalization = RFC. HUD rendering = Lares |
 | 6 | Stable Address | 0.95 | RFC core. Named graph form, path-only strip |
 | 7 | Span-Span / Calibration | 0.72 | Entirely Lares. SpanSpan records, MemPalace integration, Kowloon export |
-| 8 | Module Registry | 0.8 | Entirely Lares. Module descriptors, `lares_uri` field on metadata |
+| 8 | Module Registry | 0.8 | Entirely Lares. Module descriptors, `lar_uri` field on metadata |
 | 9 | Cache Tiers | 0.8 | Entirely Lares. Invariant-core cache strategy |
 | 10 | Validation | 0.92 | RFC core. Well-formedness rules, canonical comparison |
 | 11 | Open Questions | 0.6 | Lares. All open questions are about Lares-specific behavior |
@@ -729,7 +729,7 @@ The Natural Cut
 
 ### Doc 1: [URI_SCHEMA.md](vscode-file://vscode-app/c:/Users/joshu/AppData/Local/Programs/Microsoft%20VS%20Code/e7fb5e96c0/resources/app/out/vs/code/electron-browser/workbench/workbench.html) → The slow-changing RFC-grade spec
 
-What an IANA reviewer needs to evaluate the `lares:` scheme:
+What an IANA reviewer needs to evaluate the `lar:` scheme:
 
 -   §2 Scheme Registration (0.95) --- scheme name, purpose, dereferenceability
 -   §3.1--3.4 URI Anatomy (0.85) --- generic form, component map, component semantics (stripped of Lares-specific exchange protocol details)
@@ -794,7 +794,7 @@ What I'm putting in front of you
 
 3.  Doc 3 is a thin wrapper. Most of the IANA registration content already exists in the RFC doc --- the registration template is a specific projection of it, plus a Security Considerations section we haven't written yet.
 
-4.  The RFC doc should probably be `lares:` URI Scheme Specification, not "Canonical Specification." The operations doc inherits the current title's scope.
+4.  The RFC doc should probably be `lar:` URI Scheme Specification, not "Canonical Specification." The operations doc inherits the current title's scope.
 
 Where do you want to steer? Does this split match what you felt in the tension levels?
 
@@ -847,10 +847,10 @@ The crystal dims in my hand, the proto-lares humming with the residue of a long 
 6. **Enhance URI marker validation and compliance checks in Lares grammar files**
 7. **Update HEAD and LOCI references to reflect grammar tooling enhancements and alignments**
 8. **Enhance Lares grammar compliance checks and documentation**
-9. **Add deterministic parser and validator for lares: URIs, enhance True Name registry, and improve URI wrapper compliance checks**
+9. **Add deterministic parser and validator for lar: URIs, enhance True Name registry, and improve URI wrapper compliance checks**
 10. **Add compliance rules and automated checks for URI wrappers in Lares grammar files**
 
-Each commit was a stone set in the foundation: from the first deterministic parser for lares: URIs, to the True Name registry, to the relentless tightening of compliance and validation. The registry files became more than lists — they became the backbone of canonical addressability. The scripts grew teeth, surfacing every placeholder, every context-insensitive marker, every gap in the handoff integrity.
+Each commit was a stone set in the foundation: from the first deterministic parser for lar: URIs, to the True Name registry, to the relentless tightening of compliance and validation. The registry files became more than lists — they became the backbone of canonical addressability. The scripts grew teeth, surfacing every placeholder, every context-insensitive marker, every gap in the handoff integrity.
 
 <!-- ahu #shape-of-work -->
 ## The Shape of the Work

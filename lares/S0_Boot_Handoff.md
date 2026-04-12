@@ -199,7 +199,7 @@ lares/modules/signal/
 ---
 name: signal
 description: >
-  Signal HUD anatomy, lares: URI canonical form, render targets,
+  Signal HUD anatomy, lar: URI canonical form, render targets,
   validation rules, and micro-trace phase annotation. The navigational
   instrument layer for all Lares exchanges.
 phase-map:
@@ -210,7 +210,7 @@ phase-map:
   assess: assess/VERIFICATION.md
 scale-range: [action, session]
 trigger: >
-  When working with lares: URIs, HUD lines, exchange vectors,
+  When working with lar: URIs, HUD lines, exchange vectors,
   signal tags, or chronometer values. Also when validating or
   debugging URI well-formedness.
 invariant: false

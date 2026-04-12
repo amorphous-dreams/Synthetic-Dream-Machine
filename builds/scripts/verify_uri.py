@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""URI compliance validator for lares: URIs in Lares module files.
+"""URI compliance validator for lar: URIs in Lares module files.
 
-Validates canonical lares: URIs against the v2 spec defined in
+Validates canonical lar: URIs against the v2 spec defined in
 lares/modules/uri-schema/URI_SCHEMA.md [CS:0.95]:
 
   - RFC 3986 order: ?query before #fragment (never reversed)
@@ -53,9 +53,9 @@ from urllib.parse import urlparse, parse_qs
 # Patterns
 # ---------------------------------------------------------------------------
 
-# Match canonical lares: URIs — both with authority (lar://) and
+# Match canonical lar: URIs — both with authority (lar://) and
 # authority-less (lar:///)
-LARES_URI_PATTERN = re.compile(
+lar_uri_PATTERN = re.compile(
     r'lar://[^\s\]>)\'"`,|]+',
     re.IGNORECASE,
 )
@@ -216,7 +216,7 @@ def check_uri(uri_str: str, line: int, path: str) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def scan_file(path: Path) -> list[dict]:
-    """Scan one file for lares: URI violations. Returns list of violation dicts."""
+    """Scan one file for lar: URI violations. Returns list of violation dicts."""
     all_violations = []
     try:
         text = path.read_text(encoding='utf-8')
@@ -228,7 +228,7 @@ def scan_file(path: Path) -> list[dict]:
         # Skip lines with skip marker
         if URI_OK_MARKER in line:
             continue
-        for match in LARES_URI_PATTERN.finditer(line):
+        for match in lar_uri_PATTERN.finditer(line):
             uri = match.group(0)
             # Strip common trailing punctuation that may be captured
             uri = uri.rstrip('.,;:!?\'")')

@@ -55,7 +55,7 @@ This is the primary remaining work. The living operational doc. Here is the exac
 | §6 Canonical Form + Render | old §5 | 557-788 | Rendering table (5.1), unchanged fields (5.2), unified HUD symbol table (5.3), Syadasti reading rule (5.3.3), HUD line composition (5.4), span-span display contract (5.5) |
 | §7 Kowloon / ActivityPub | old §3.3.1 | 153-248 | Identity stack, handle form, DreamDeck post header, render targets, stance amplitude modifiers |
 | §8 Span-Span + Calibration | old §7 | 803-950 | URI-derived fields, canonical spanSpan record, MemPalace integration, export targets, example event |
-| §9 Module Registry | old §8 | 951-979 | Module descriptors with lares_uri + confidence |
+| §9 Module Registry | old §8 | 951-979 | Module descriptors with lar_uri + confidence |
 | §10 Cache Tiers | old §9 | 980-990 | Invariant-core cache tier mapping |
 | §11 Prior Art (Operational) | old §12 (subset) | 1071-1089 | OODA-A references, OTel trace context, Kowloon/ActivityStreams, FFZ protocol, Schneier & Raghavan |
 | §12 Open Questions | old §11 | 1042-1070 | U1-U9 open, resolved U2/U3/U6/U7/U10/U11, assessment for promotion |
@@ -97,7 +97,7 @@ Operator hasn't decided yet.
 
 - **Branch:** `fix/green-jello-dinosaurs-3`
 - **HEAD:** `1c73784` (clean)
-- **Four ontology terms locked:** locus, ahu, kahea, lares (see `/memories/session/ontology-decisions-20260410.md`)
+- **Four ontology terms locked:** locus, ahu, kahea, lar (see `/memories/session/ontology-decisions-20260410.md`)
 - **URI_SCHEMA.md:** v3, 1191 lines, 16 ahu waypoints, multi-locus support
 - **URI_SCHEME_SPEC.md:** 334 lines, committed
 - **URI_OPERATIONS.md:** not yet created — this is the primary remaining work

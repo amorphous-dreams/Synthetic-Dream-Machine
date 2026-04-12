@@ -50,9 +50,9 @@ The answer is the cockpit HUD: a standardized visual display that both parties r
 - **Machine form** → **Flight Data Recorder (FDR) form** or simply **record form**
 - **Sigil form** → **HUD form** or **instrument form**
 - The system as a whole → **Intent HUD** (not URI scheme)
-- The `lares:` prefix → protocol identifier for the Intent HUD encoding, not a resource locator
+- The `lar:` prefix → protocol identifier for the Intent HUD encoding, not a resource locator
 
-The `lares:` prefix can remain RFC 4151 non-dereferenceable — that's correct. But the spec should stop calling the HUD form a "projection" of the record form. They're co-primary encodings of the same navigational state.
+The `lar:` prefix can remain RFC 4151 non-dereferenceable — that's correct. But the spec should stop calling the HUD form a "projection" of the record form. They're co-primary encodings of the same navigational state.
 
 ---
 

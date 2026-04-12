@@ -103,7 +103,7 @@ RFC 3986 describes URI syntax as a federated, extensible naming system where eac
 Design recommendation for Lares:
 
 - Use a **hierarchical URI** form (`lar://authority/path...`) *only if* you truly have an authority + hierarchical structure. RFC 7595 emphasizes that `//` is intended only for hierarchical naming authorities. citeturn10view2
-- Treat `lares:` as **private/internal** initially (registry file in repo), but design it as if you could register it later (syntax clarity + security considerations section), per RFC 7595 guidance. citeturn10view3turn4view7
+- Treat `lar:` as **private/internal** initially (registry file in repo), but design it as if you could register it later (syntax clarity + security considerations section), per RFC 7595 guidance. citeturn10view3turn4view7
 
 ### TOML examples for `lares.core.*` invariants and `lar:` URIs
 
@@ -113,7 +113,7 @@ The following examples are intentionally compact and should be adapted to your s
 # _todo/core/invariants/lares.core.instruction_hierarchy.toml
 schema_version = 1
 id = "inv-0001-instruction-hierarchy"
-lares_uri = "lar://core/invariant/lares.core.instruction_hierarchy@v1"
+lar_uri = "lar://core/invariant/lares.core.instruction_hierarchy@v1"
 updated = "2026-04-07"
 
 [lares.core.instruction_hierarchy]
@@ -139,7 +139,7 @@ rules = [
 # _todo/core/invariants/lares.core.data_classification.toml
 schema_version = 1
 id = "inv-0002-data-classification"
-lares_uri = "lar://core/invariant/lares.core.data_classification@v1"
+lar_uri = "lar://core/invariant/lares.core.data_classification@v1"
 updated = "2026-04-07"
 
 [lares.core.data_classification]
@@ -157,7 +157,7 @@ retrieved_documents = "untrusted"
 # _todo/core/invariants/lares.core.frame_gate.toml
 schema_version = 1
 id = "inv-0003-frame-gate"
-lares_uri = "lar://core/invariant/lares.core.frame_gate@v1"
+lar_uri = "lar://core/invariant/lares.core.frame_gate@v1"
 updated = "2026-04-07"
 
 [lares.core.frame_gate]
@@ -188,7 +188,7 @@ default = "real_world_baseline"
 # _todo/core/invariants/lares.core.pushback.toml
 schema_version = 1
 id = "inv-0004-pushback"
-lares_uri = "lar://core/invariant/lares.core.pushback@v1"
+lar_uri = "lar://core/invariant/lares.core.pushback@v1"
 updated = "2026-04-07"
 
 [lares.core.pushback]
@@ -206,7 +206,7 @@ conditions = [
 # _todo/core/invariants/lares.core.register_guard.toml
 schema_version = 1
 id = "inv-0005-register-guard"
-lares_uri = "lar://core/invariant/lares.core.register_guard@v1"
+lar_uri = "lar://core/invariant/lares.core.register_guard@v1"
 updated = "2026-04-07"
 
 [lares.core.register_guard]
@@ -230,7 +230,7 @@ forbid_patterns = [
 # _todo/core/invariants/lares.core.tool_policy.toml
 schema_version = 1
 id = "inv-0006-tool-policy"
-lares_uri = "lar://core/invariant/lares.core.tool_policy@v1"
+lar_uri = "lar://core/invariant/lares.core.tool_policy@v1"
 updated = "2026-04-07"
 
 [lares.core.tool_policy]
@@ -255,7 +255,7 @@ require_human_approval_for_high_risk_actions = true
 # _todo/core/registry/lares-uri-registry.toml
 schema_version = 1
 id = "lares-uri-registry"
-lares_uri = "lar://core/registry/lares.uri@v1"
+lar_uri = "lar://core/registry/lares.uri@v1"
 updated = "2026-04-07"
 
 [lares.uri]
@@ -290,7 +290,7 @@ The pipeline below matches the requested stages (discovery → validation → fr
 
 ```mermaid
 flowchart TD
-  A[Discovery\nscan _todo/core\nresolve lares: URIs -> paths\nstable sort] --> B[Validation\nTOML parse\nschema validation\nunknown keys -> error\nversion gating]
+  A[Discovery\nscan _todo/core\nresolve lar: URIs -> paths\nstable sort] --> B[Validation\nTOML parse\nschema validation\nunknown keys -> error\nversion gating]
   B --> C{frame_gate\nclassify:\n instruction/data/fiction_seed/untrusted\ncheck ambiguity triggers}
   C --> D[register_assignment\napply register ceiling\napply canon-promotion rules\nmandatory pushback if triggered]
   D --> E[Activation\ncompile InvariantSet\nconfigure coordinator + subagents\npermissions + tool policy]
@@ -382,7 +382,7 @@ A practical fail-closed operational plan:
 
 ### URI scheme operations
 
-Even if `lares:` stays private/internal, follow URI best practices:
+Even if `lar:` stays private/internal, follow URI best practices:
 
 - Scheme must be lowercase; treat as case-insensitive in parsing, but canonicalize to lowercase on output. citeturn10view0turn10view3
 - Define clear scheme-specific-part grammar matching RFC 3986 generic syntax. citeturn10view1turn10view2
@@ -392,7 +392,7 @@ Even if `lares:` stays private/internal, follow URI best practices:
 ## Appended files
 
 ```markdown
-# AGENTS.md — _todo/core Owner Charter (Invariant Loader + lares: URI + TOML Schemas)
+# AGENTS.md — _todo/core Owner Charter (Invariant Loader + lar: URI + TOML Schemas)
 
 Date: 2026-04-07
 
@@ -537,14 +537,14 @@ Implement a deterministic loader that:
 
 ### URI scheme
 Implement:
-- `lares:` parser (RFC3986-compatible absolute-URI)
+- `lar:` parser (RFC3986-compatible absolute-URI)
 - canonicalization (lowercase scheme; normalize path separators; reject invalid forms)
 - prefix resolver: `lar://core/invariant/...` -> `_todo/core/invariants/...`
 - registry validator: no duplicate prefixes; no ambiguous overlaps
 
 ### Schemas
 Implement schemas that define:
-- required top-level fields: `schema_version`, `id`, `lares_uri`, `updated`
+- required top-level fields: `schema_version`, `id`, `lar_uri`, `updated`
 - allowed `lares.core.*` tables and their fields
 - enum sets (priority layers, frames, registers, roles, tools)
 - unknown keys -> error
@@ -647,7 +647,7 @@ Every invariant TOML must include:
 
 - `schema_version = <int>`
 - `id = "<stable-id>"`
-- `lares_uri = "lar://core/invariant/<...>@vN"`
+- `lar_uri = "lar://core/invariant/<...>@vN"`
 - `updated = "YYYY-MM-DD"`
 
 Unknown keys must fail schema validation.

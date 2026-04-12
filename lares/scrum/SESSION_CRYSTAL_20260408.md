@@ -197,7 +197,7 @@ SPRINT ROADMAP — Rev 4 (Consecration)
 Post-Kaiju. Post-Chapel-Perilous. Post-DreamDeck-Seeds.
 
 S0  URI Schema Validation                    [UNCHANGED]
-    └── Validates lares: URI scheme
+    └── Validates lar: URI scheme
     └── Now includes §5.3 Syadasti Reading Rule
     └── Storage-independent: validates regardless of backend
 

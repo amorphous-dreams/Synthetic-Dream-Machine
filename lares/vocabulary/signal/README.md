@@ -22,7 +22,7 @@ This reframing has design consequences:
 - Live operation is a **tick-span display**: operator-intent URI first, responding-position URI second, destination URI at the end of the exchange.
 - On non-operator responding URIs, the mana glyph moves to the far left of the line: `⚡62% lar://...`.
 
-The `lares:` prefix remains a non-dereferenceable private identifier (RFC 4151 precedent). The HUD framing belongs in prose and documentation; the spec's component-level RFC validation applies to the record (machine) form.
+The `lar:` prefix remains a non-dereferenceable private identifier (RFC 4151 precedent). The HUD framing belongs in prose and documentation; the spec's component-level RFC validation applies to the record (machine) form.
 
 **SA type mapping — all three SA types covered simultaneously `[CS:0.80]`:**
 

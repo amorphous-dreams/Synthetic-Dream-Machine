@@ -54,7 +54,7 @@ How content is addressed, referenced, and included.
 | Primitive | Grammar | Confidence | One-line |
 |---|---|---|---|
 | Transclusion | [transclusion/LOCI.md](transclusion/LOCI.md) | `[CS:0.80]` | Locus, ahu, kahea, lares — the four markers. Self-booting. |
-| URI Syntax | [uri/LOCI.md](uri/LOCI.md) | `[CS:0.80]` | The `lares:` scheme. Canonical record form plus stable-address/render-target split. |
+| URI Syntax | [uri/LOCI.md](uri/LOCI.md) | `[CS:0.80]` | The `lar:` scheme. Canonical record form plus stable-address/render-target split. |
 | HA.KA.BA | [hakaba/LOCI.md](hakaba/LOCI.md) | `[SP:0.45]` | Three-slot semantic addressing. Stable root territory before deeper path routing. |
 | Exchange | [exchange/LOCI.md](exchange/LOCI.md) | `[CS:0.80]` | URI pair + HUD at every boundary. The mele that cuts through noise. |
 

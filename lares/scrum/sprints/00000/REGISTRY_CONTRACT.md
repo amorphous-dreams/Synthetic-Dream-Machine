@@ -58,7 +58,7 @@ The promotion ledger is append-only. Each entry records a single promotion event
 ```jsonl
 {
   "timestamp": "2026-04-08T12:00:00Z",
-  "lares_uri": "lar:///signal/uri-schema",
+  "lar_uri": "lar:///signal/uri-schema",
   "promoted_from_register": "CS:0.85",
   "promoted_to_register": "C:0.95",
   "design_source": "lares/modules/uri-schema/URI_SCHEMA.md",
@@ -77,7 +77,7 @@ The promotion ledger is append-only. Each entry records a single promotion event
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `timestamp` | ISO-8601 | Yes | When the promotion occurred |
-| `lares_uri` | Stable address | Yes | The semantic key being promoted |
+| `lar_uri` | Stable address | Yes | The semantic key being promoted |
 | `promoted_from_register` | Register tag | Yes | Register before promotion |
 | `promoted_to_register` | Register tag | Yes | Register after promotion |
 | `design_source` | File path | Yes | Where the design content lives |

@@ -78,7 +78,7 @@ Three slashes: scheme + `//` (empty authority) + path beginning with `/`. Use fo
 
 | # | Component | RFC 3986 Role | Lares Mapping |
 |---|---|---|---|
-| 1 | **scheme** | Protocol identifier | `lares:` — non-dereferenceable |
+| 1 | **scheme** | Protocol identifier | `lar:` — non-dereferenceable |
 | 2 | **userinfo** | Requesting party identity | `alias:tier` |
 | 3 | **`@`** | Identity → machine delimiter | Standard |
 | 4 | **host** | Machine identity | `machine_id` from crystal system |
@@ -181,7 +181,7 @@ These are orthogonal. A URI may carry multiple `~` markers on different componen
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#kowloon-handle-form -->
 ## Kowloon / ActivityPub Handle Form
 
-Within the DreamDeck / Kowloon ActivityPub layer, identities use `@alias@node`. This is NOT the lares: URI — it is the social-layer identity that maps onto the lares: URI's `alias@host` authority.
+Within the DreamDeck / Kowloon ActivityPub layer, identities use `@alias@node`. This is NOT the lar: URI — it is the social-layer identity that maps onto the lar: URI's `alias@host` authority.
 
 **Identity Stack — do not conflate layers:**
 
@@ -189,7 +189,7 @@ Within the DreamDeck / Kowloon ActivityPub layer, identities use `@alias@node`. 
 |---|---|---|
 | **DID** | `did:plc:abc123` | AT Protocol canonical identity — cryptographic key holder |
 | **Handle** | `@telarus.elyncia.social` | Resolution alias over the DID — human-readable, not authoritative |
-| **lares: alias** | `telarus:operator@enyalios` | Application-layer signal state — names the operational role |
+| **lar uri alias** | `telarus:operator@enyalios` | Application-layer signal state — names the operational role |
 
 **DreamDeck post header format (canonical):**
 

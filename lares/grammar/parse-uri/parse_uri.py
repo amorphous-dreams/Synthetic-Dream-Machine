@@ -2,7 +2,7 @@
 """
 parse_uri.py
 
-Deterministic parser and validator for lares: URIs, enforcing canonical grammar as defined in:
+Deterministic parser and validator for lar: URIs, enforcing canonical grammar as defined in:
 - lares/grammar/uri/LOCI.md
 - lares/modules/uri-schema/URI_SCHEMA.md
 - lares/modules/uri-schema/URI_SCHEME_SPEC.md
@@ -18,7 +18,7 @@ This script is intended for use in CI, agent, and batch verification.
 import re
 import sys
 
-# Canonical regex for lares: URI (record form, authority optional)
+# Canonical regex for lar: URI (record form, authority optional)
 #
 # ha.ka.ba SINGLE-WORD constraint: each of the three path segments must be one
 # unbroken alphanumeric word — no hyphens, no underscores.
@@ -30,7 +30,7 @@ import sys
 # that the ka segment is a recognised kind-word from the grammar registry, that
 # ha maps to a known territory, and that ba encodes a valid stance relationship.
 # This requires a live registry lookup and is intentionally deferred.
-LARES_URI_REGEX = re.compile(r'''
+lar_uri_REGEX = re.compile(r'''
 ^lar://
 (?:([a-zA-Z0-9]+:[a-zA-Z0-9]+)@([a-zA-Z0-9]+))?  # authority (optional)
 /
@@ -58,10 +58,10 @@ def parse_query(query):
         params[k] = v
     return params
 
-def validate_lares_uri(uri):
-    m = LARES_URI_REGEX.match(uri)
+def validate_lar_uri(uri):
+    m = lar_uri_REGEX.match(uri)
     if not m:
-        return False, 'URI does not match canonical lares: syntax.'
+        return False, 'URI does not match canonical lar: syntax.'
     authority, host, ha, ka, ba, query, fragment = m.groups()
     # Path must have three slots
     if not (ha and ka and ba):
@@ -89,11 +89,11 @@ def validate_stream_uri(uri):
     Validate a URI for use on the operator stream surface.
     Requires all base canonical rules PLUS stances= query param AND a chronometer fragment.
     """
-    ok, msg = validate_lares_uri(uri)
+    ok, msg = validate_lar_uri(uri)
     if not ok:
         return False, msg
-    m = LARES_URI_REGEX.match(uri)
-    assert m is not None  # guaranteed by validate_lares_uri passing
+    m = lar_uri_REGEX.match(uri)
+    assert m is not None  # guaranteed by validate_lar_uri passing
     _, _, _, _, _, query, fragment = m.groups()
     params = parse_query(query)
     if 'stances' not in params:
@@ -110,7 +110,7 @@ def main():
         print('Usage: python parse_uri.py <uri>')
         sys.exit(1)
     uri = sys.argv[1]
-    ok, msg = validate_lares_uri(uri)
+    ok, msg = validate_lar_uri(uri)
     if ok:
         print(f'[PASS] {uri}')
         sys.exit(0)

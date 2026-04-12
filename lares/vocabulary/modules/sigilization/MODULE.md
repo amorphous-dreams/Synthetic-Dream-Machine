@@ -4,7 +4,7 @@
 ---
 name: sigilization
 description: >
-  Render rules for the lares: URI v2 schema. Maps canonical record form
+  Render rules for the lar: URI v2 schema. Maps canonical record form
   (RFC 3986, ASCII-only) to named display surfaces (HUD line, DreamDeck
   post header, TiddlyWiki tiddler, storage record). Governs which glyphs
   appear on which surfaces and enforces the all-five-stances invariant
@@ -17,7 +17,7 @@ phase-map:
   assess: assess/VERIFICATION.md
 scale-range: [action, session]
 trigger: >
-  When emitting any lares: URI to a display surface. When writing
+  When emitting any lar: URI to a display surface. When writing
   DreamDeck post headers, HUD lines, TiddlyWiki tiddlers, or any
   render target that requires sigil-form output. When validating
   whether output matches surface rules.

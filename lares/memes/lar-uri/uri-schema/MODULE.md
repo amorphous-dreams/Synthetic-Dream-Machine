@@ -6,9 +6,9 @@
 ---
 name: uri-schema
 description: >
-  Canonical lares: URI v2 specification — anatomy, render targets,
+  Canonical lar: URI v2 specification — anatomy, render targets,
   validation rules, and well-formedness criteria. The ground truth
-  for all lares: URI construction and verification.
+  for all lar: URI construction and verification.
   NOTE: This module carries two concerns — (1) URI grammar (what the
   fields mean, what values go where) and (2) exchange span protocol
   (when to emit, what sequence). The grammar concern is stable [C:0.95];
@@ -23,7 +23,7 @@ phase-map:
 flat-spec: URI_SCHEMA.md
 scale-range: [action, session]
 trigger: >
-  When working with lares: URIs, HUD lines, exchange vectors,
+  When working with lar: URIs, HUD lines, exchange vectors,
   signal tags, or chronometer values. Also when validating or
   debugging URI well-formedness.
 invariant: false

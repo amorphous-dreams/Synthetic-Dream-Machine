@@ -339,7 +339,7 @@ Priority layer table (INV-02): `invariant_schemas` → `system_invariants` → `
 
 ### S3 — Schemas (from C-report, `[CS:0.82]`)
 
-Working TOML manifests for all 5 schema types: `lares.module@1`, `lares.tool@1`, `lares.permission@1`, `lares.registry@1`, `lares.boot@1`. Dual-digest model: `file_sha256` (raw bytes) vs `semantic_sha256` (normalized canonical form — mark `[SP:0.45]` until tested). Cache-safety: stable fields first in TOML (`lares_uri`, `module_id`, `register`, `canon`), volatile fields last.
+Working TOML manifests for all 5 schema types: `lares.module@1`, `lares.tool@1`, `lares.permission@1`, `lares.registry@1`, `lares.boot@1`. Dual-digest model: `file_sha256` (raw bytes) vs `semantic_sha256` (normalized canonical form — mark `[SP:0.45]` until tested). Cache-safety: stable fields first in TOML (`lar_uri`, `module_id`, `register`, `canon`), volatile fields last.
 
 ### Reconciliation Tasks
 

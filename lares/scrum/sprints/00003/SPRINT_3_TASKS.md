@@ -43,7 +43,7 @@ End-to-end example using URI_SCHEMA.md promotion as the concrete case:
 ### 3. MODULE_SCHEMA.md `[C:0.95]`
 
 Module descriptor spec:
-- Fields: `lares_uri`, `register`, `module_id`, `version_num`, content type, dependencies, target paths
+- Fields: `lar_uri`, `register`, `module_id`, `version_num`, content type, dependencies, target paths
 - Version semantics keyed to module content, not runtime exchange counters (from URI_SCHEMA.md §8)
 - Simplified deployment model: source → copy to target path; no compiler stage
 - **TiddlyWiki tiddler-compatible export format** — schema exports usable as TW tiddlers (feeds DECK-04)
@@ -97,7 +97,7 @@ Working TOML manifests for all 5 schema types exist — workers start from these
 - `file_sha256` (raw bytes) — straightforward
 - `semantic_sha256` (normalized canonical form: UTF-8, LF, trim whitespace, sort TOML keys alphabetically, remove comments, then SHA-256) — **mark `[SP:0.45]` until tested**. Cannot finalize without a prototype normalization run.
 
-**Cache-safety rules (C-report §6):** Static blocks must not contain timestamps, session tokens, or per-call-varying content. The `lar:` URI hash = content address = cache-invalidation signal. Put stable fields first in TOML (`lares_uri`, `module_id`, `register`, `canon`), volatile last (`description`, `notes`).
+**Cache-safety rules (C-report §6):** Static blocks must not contain timestamps, session tokens, or per-call-varying content. The `lar:` URI hash = content address = cache-invalidation signal. Put stable fields first in TOML (`lar_uri`, `module_id`, `register`, `canon`), volatile last (`description`, `notes`).
 
 ### REC-01 carry-in
 
