@@ -2,8 +2,8 @@
 """
 detect_alignment.py
 
-Batch scanner for lares URI wrapper and consecration alignment in Lares grammar and code files.
-Scans all Markdown, code, and text files in a target directory for required start/end lares URI wrappers.
+Batch scanner for lar URI wrapper and consecration alignment in Lares grammar and code files.
+Scans all Markdown, code, and text files in a target directory for required start/end lar URI wrappers.
 Prompts the operator with a summary of failures and options for next steps.
 """
 import re
@@ -477,14 +477,14 @@ def main():
                 json.dump(result, f, indent=2)
         sys.exit(2)
     else:
-        pass_result = {'status': 'PASS', 'message': 'All files have valid lares URI wrappers and LOCI.md files.'}
+        pass_result = {'status': 'PASS', 'message': 'All files have valid lar URI wrappers and LOCI.md files.'}
         if args.report:
             with open(args.report, 'w', encoding='utf-8') as f:
                 json.dump(pass_result, f, indent=2)
         if args.json:
             print(json.dumps(pass_result, indent=2))
         else:
-            print('[PASS] All files have valid lares URI wrappers and LOCI.md files.')
+            print('[PASS] All files have valid lar URI wrappers and LOCI.md files.')
         sys.exit(0)
 
 

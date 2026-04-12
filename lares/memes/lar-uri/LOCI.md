@@ -4,7 +4,7 @@
 
 ```yaml
 ---
-name: uri
+name: lar uri
 description: >
   The lar URI scheme. This locus defines the canonical record form,
   the four semantic layers, and the difference between storage-safe

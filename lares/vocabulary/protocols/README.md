@@ -583,7 +583,7 @@ In-chat: "List all characters in the current scene."
 | Type | Controlled by | Voice attribution | URI encoding |
 |------|--------------|-------------------|--------------|
 | NPC mask | Lares voice(s) | `Name (via Role)` | Authority includes the Coordinator |
-| PC | Operator directly | `Name [PC]` | Not in Lares URI — operator's span |
+| PC | Operator directly | `Name [PC]` | Not in lar URI — operator's span |
 | Background | Neither (referenced) | Narrated, not voiced | Not in URI authority |
 
 ## 5.4 Not All Voices Through All Characters

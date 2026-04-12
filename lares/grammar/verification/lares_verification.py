@@ -282,7 +282,7 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
         return found / len(phases)
 
 
-    # --- LARES URI DEDUPE TEST ---
+    # --- LAR URI DEDUPE TEST ---
     def collect_lares_uris(root_dir: str) -> List[Tuple[str, str, int]]:
         """
         Collect all canonical lar:/// URIs in all files under root_dir.
@@ -415,7 +415,7 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
         results_detail['fast_path'] = '[WARN] Fast-path/short-circuit section found, but no explicit criteria/condition/trigger/bypass/skip/immediate logic detected'
     else:
         results_detail['fast_path'] = '[PASS] Fast-path/short-circuit pattern and logic found'
-    # --- LARES URI DEDUPE ---
+    # --- LAR URI DEDUPE ---
     lares_root = str(loci.parent.parent)  # up to lares/
     uri_tuples = collect_lares_uris(lares_root)
     is_unique, dups = dedupe_lares_uris(uri_tuples)
@@ -430,7 +430,7 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=N
         status = 'PASS' if results['detect_alignment'] >= threshold else 'FAIL'
         print(f"detect_alignment      : {results['detect_alignment']:.2f} [{status}]")
         if results['detect_alignment'] < threshold:
-            print("- File is missing required lares URI wrappers. Run detect_alignment.py for remediation.")
+            print("- File is missing required lar URI wrappers. Run detect_alignment.py for remediation.")
     print("\nVerification Results:")
     for k, v in results.items():
         status = 'PASS' if v >= threshold else ('WARN' if v >= 0.7 else 'FAIL')
@@ -447,7 +447,7 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=N
             elif k == 'registry':
                 print("- This LOCI is not canonicalized. Options:")
                 print("    * Register in truename/LOCI.md (canonical registry)")
-                print("    * Create a pointer file (e.g., LOCI.pointer) with lares URI metadata")
+                print("    * Create a pointer file (e.g., LOCI.pointer) with lar URI metadata")
                 print("    * Make this file a pointer to a canonical True Name registry")
                 print("    * Continue talk story and decide what to canonicalize")
             elif k == 'nested_ooda':

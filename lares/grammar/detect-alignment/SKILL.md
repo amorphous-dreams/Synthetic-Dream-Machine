@@ -8,7 +8,7 @@ name: detect-alignment
 # detect-alignment Skill
 
 ## Purpose
-Batch compliance checker for lares URI wrapper and consecration alignment in Lares grammar and code files. Ensures all Markdown and supported code files have required start/end lares URI wrappers.
+Batch compliance checker for lar URI wrapper and consecration alignment in Lares grammar and code files. Ensures all Markdown and supported code files have required start/end lar URI wrappers.
 
 ## Supported File Types
 
@@ -18,7 +18,7 @@ python detect_alignment.py <target_dir>
 ```
 
 ## What it does
-- Checks all files in <target_dir> for required start/end lares URI wrappers
+- Checks all files in <target_dir> for required start/end lar URI wrappers
 
 ## Wrapper Patterns
 
