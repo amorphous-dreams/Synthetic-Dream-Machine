@@ -54,7 +54,7 @@ URI syntax hands forward:
 - stable address form
 - render-target source material
 - validation surfaces
-- transclusion handles for any visible in-context `lares:` URI
+- transclusion handles for any visible in-context `lar:` URI
 
 URI syntax should not:
 
@@ -108,7 +108,7 @@ lar:///grammar.uri.defines/uri/?confidence=CS:0.80
 URIs. Render targets may add glyphs, abbreviations, or HUD projections, but they do not replace the
 canonical string.
 
-**Addressability rule:** any visible canonical `lares:` URI in the active context window can function
+**Addressability rule:** any visible canonical `lar:` URI in the active context window can function
 as a transclusion handle, even when it appears inside a live exchange, chat trace, crystal row, or
 tagged data artifact instead of a dedicated `LOCI.md` file.
 
@@ -179,7 +179,7 @@ If a human can admire the surface but a parser cannot trust the structure, the U
 
 | Path | Status | Contents |
 |---|---|---|
-| `LOCI.md` | `[CS:0.80]` | This file — `lares:` URI grammar and canonical form |
+| `LOCI.md` | `[CS:0.80]` | This file — `lar:` URI grammar and canonical form |
 
 *Future loci in this tree will land here.*
 

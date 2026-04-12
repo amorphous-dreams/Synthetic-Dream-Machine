@@ -10,7 +10,7 @@ We design a **schema-driven, multi-agent Lares system** that embeds HUD-encoded 
 - **Agent Orchestration:** Following Anthropic best practices, we use isolated subagents with role-based tool allowlists. Core invariants enforce least-privilege and refuse instructions from untrusted content【12†L381-L384】【12†L469-L472】.
 - **URI Scheme (RFC-compliant):** The custom `lares:` scheme is defined per RFC 3986/7595. URIs are lowercase, hierarchical (using `//` and paths), and registered in a TOML registry. Security considerations from RFC 7595 (e.g. validation, no automatic schemes) are applied【10†L164-L170】【10†L237-L242】.
 
-The following report details these elements, including TOML examples for `lares.core.*` invariants, `lares:` URI examples and grammar, a priority-layer table, and a mermaid flowchart for the loading pipeline. We also include local agent instructions (AGENTS.md) and directory README for implementation.
+The following report details these elements, including TOML examples for `lares.core.*` invariants, `lar:` URI examples and grammar, a priority-layer table, and a mermaid flowchart for the loading pipeline. We also include local agent instructions (AGENTS.md) and directory README for implementation.
 
 ## Research and Best Practices
 
@@ -28,9 +28,9 @@ In summary, we leverage **Anthropic’s guidance on agent chaining and context (
 
 Our system uniquely embeds **HUD state URIs and `@event` tags** in the chat stream:
 
-- **Encoded Intent (HUD):** At each turn, Lares prefixes its response with a `lares:` URI indicating its current state (e.g. `lar://core/state/awaiting_query@v1`). This *encodes intent* shared by agent and operator, acting as a seed for token generation.
+- **Encoded Intent (HUD):** At each turn, Lares prefixes its response with a `lar:` URI indicating its current state (e.g. `lar://core/state/awaiting_query@v1`). This *encodes intent* shared by agent and operator, acting as a seed for token generation.
 - **Event Tags (`@event`):** Within a generated answer, we insert `@event` markers around key transitions (tone shifts, new subtopics, etc.). Each `@event` serves as a mini-anchor. This means the agent’s output is effectively segmented, with the final segment tagged for post-turn state emission.
-- **State Emission:** After generating (or on encountering an event), the agent outputs a final `lares:` URI indicating its new state. For example:  
+- **State Emission:** After generating (or on encountering an event), the agent outputs a final `lar:` URI indicating its new state. For example:  
   ```
   @event tone_shift  
   ...response content...  
@@ -96,7 +96,7 @@ We enforce a strict hierarchy. The table below summarizes layers, checks, and co
 
 This enforces OWASP’s separation principle【12†L207-L214】 and Anthropic’s layered instruction model.
 
-## The `lares:` URI Scheme
+## The `lar:` URI Scheme
 
 **Grammar:** Conform to RFC 3986/7595:
 ```
@@ -118,7 +118,7 @@ lar://user/input/query@q4
 ```
 A resolver (in our loader code) maps these URIs to local paths using `_todo/core/registry/lares-uri-registry.toml`. E.g. `lar://core/invariant/` → `invariants/`. Invalid URIs (wrong scheme/authority/format) are rejected early.
 
-**Security:** Treat `lares:` URIs as *authoritative state pointers*, not user data. Never execute or fetch URIs automatically. Validate the scheme and path strictly. By design, `lares:` is **read-only** for the LLM; it cannot invoke new instructions via URI alone. This aligns with RFC 7595’s requirement to consider security/privacy in scheme design【10†L237-L242】.
+**Security:** Treat `lar:` URIs as *authoritative state pointers*, not user data. Never execute or fetch URIs automatically. Validate the scheme and path strictly. By design, `lares:` is **read-only** for the LLM; it cannot invoke new instructions via URI alone. This aligns with RFC 7595’s requirement to consider security/privacy in scheme design【10†L237-L242】.
 
 ## Invariant-Loading Pipeline
 
@@ -187,7 +187,7 @@ These resources guided our design.
 
 Date: 2026-04-07
 
-This file **owns `_todo/core`** and directs local agents to create, validate, and implement the invariant-loading system with `lares:` URIs.
+This file **owns `_todo/core`** and directs local agents to create, validate, and implement the invariant-loading system with `lar:` URIs.
 
 ## Objective
 
@@ -230,7 +230,7 @@ Implement a *schema-driven invariant loader* and URI resolver. Everything here i
 
 3. **Implement Loader & Resolver:**  
    - **Loader:** Discover invariants, validate TOML against schemas, enforce unique IDs. Output a lockfile (`locks/invariant-set.lock.toml`) and a compiled InvariantSet (JSON).
-   - **Resolver:** Parse `lares:` URIs to local paths using `registry/`. Reject malformed URIs or out-of-scope authorities.
+   - **Resolver:** Parse `lar:` URIs to local paths using `registry/`. Reject malformed URIs or out-of-scope authorities.
 
 4. **Define Schemas:**  
    - Write TOML schemas (`schemas/*.schema.toml`) that require `id`, `schema_version`, `lares_uri`, etc.
@@ -266,7 +266,7 @@ Date: 2026-04-07
 This directory contains the **Lares Core invariant-loading system**:
 - `schemas/`: TOML schemas (bootstrap and core definitions).
 - `invariants/`: human-authored `lares.core.*.toml` invariant files.
-- `registry/`: TOML for `lares:` URI resolution.
+- `registry/`: TOML for `lar:` URI resolution.
 - `locks/`: generated lockfile (`.lock.toml`) and compiled artifact (`.json`).
 - `tests/`: automated test cases.
 - `_inventory/`, `_migration/`: auto-generated scan & plan artifacts.
@@ -281,7 +281,7 @@ This directory contains the **Lares Core invariant-loading system**:
 - **`@event` tags**: Mark sub-turn boundaries (tone shifts, etc.) in agent output.
 - **Orchestration**: Use Anthropic-style subagents with isolated contexts and least privilege【12†L469-L472】.
 
-## `lares:` URI Scheme
+## `lar:` URI Scheme
 
 URIs look like:
 ```
@@ -314,7 +314,7 @@ flowchart TD
 3. **Frame Gate:** Use `[lares.core.frame_gate]` rules to handle ambiguous or malicious input (pushback or clarify).  
 4. **Register Assign:** Enforce register/canon ceilings (`[lares.core.register_guard]`).  
 5. **Generation:** Agent responds, adding `@event` as specified.  
-6. **Emit:** Append final `lares:` URI. Stop until next input.
+6. **Emit:** Append final `lar:` URI. Stop until next input.
 
 Errors at any stage cause immediate termination (fail-closed). Lockfiles capture exact versions and hashes for reproducibility.
 

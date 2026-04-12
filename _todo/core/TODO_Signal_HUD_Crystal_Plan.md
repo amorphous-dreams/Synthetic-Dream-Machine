@@ -321,7 +321,7 @@ This means the URI `lar:///kernel/invariant/anchors?register=C:1.0` with `seq_nu
 
 - **Epic 1 (Kernel Bootstrap):** The layered cache mapping validates the existing register-priority sort in the Invariant-Core Loading Sequence. No structural changes needed — the `combine_agents.py` module resolution already sorts by register when composing platform payloads.
 - **Epic 5 (Archive Crystals):** The `seq_num`-as-version insight affects AE-18 (STATE.jsonl schema v1). Canon module events (`C:1.0`, `C:0.95`) need explicit `version_semantics: true` or equivalent flag so the parser knows `seq_num` means "version N" rather than "event N." This is a new Open Decision → **Q17**.
-- **Parser implementation:** The `lares:` URI parser must expose `register` as a first-class field because cache-tier routing depends on it. Parsing `?register=C:1.0` and comparing numerically (≥ 0.95 → version semantics, < 0.50 → trimmable) is a core parser responsibility.
+- **Parser implementation:** The `lar:` URI parser must expose `register` as a first-class field because cache-tier routing depends on it. Parsing `?register=C:1.0` and comparing numerically (≥ 0.95 → version semantics, < 0.50 → trimmable) is a core parser responsibility.
 - **Init Kernel loader:** Bootstrap loads `C:1.0` modules first (already specified). The cache-mapping research confirms this is the same shape as Anthropic's system-parameter breakpoint — the loader *is* the invariant core, and the register sort *is* the cache tier assignment.
 
 ### New Open Decision

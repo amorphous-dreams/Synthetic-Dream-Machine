@@ -2,7 +2,7 @@
 
 # Signal — Assess: Verification
 
-> Validation rules, well-formedness checklist, and comparison rules for `lares:` URIs.
+> Validation rules, well-formedness checklist, and comparison rules for `lar:` URIs.
 > Source: `lares/modules/uri-schema/URI_SCHEMA.md` §10 `[CS:0.90]`.
 
 ---
@@ -11,7 +11,7 @@
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
 ## Well-Formedness Rules (§10.1)
 
-A `lares:` URI is **well-formed** when ALL of the following hold:
+A `lar:` URI is **well-formed** when ALL of the following hold:
 
 - [ ] 1. Scheme is exactly `lares:`
 - [ ] 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields — `alias:tier` form; no parenthetical phase sub-field
@@ -31,7 +31,7 @@ A `lares:` URI is **well-formed** when ALL of the following hold:
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
 ## SpanSpan Consistency Rules (§10.2)
 
-All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) must be canonical record form. A spanSpan record is **consistent** when:
+All `lar:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) must be canonical record form. A spanSpan record is **consistent** when:
 
 - [ ] 1. All URI fields are RFC 3986-compliant canonical form (no emoji, no non-ASCII)
 - [ ] 2. `current_phase` matches the phase keyword at the rightmost non-`O0` position in the fragment of `start_uri` (chronometer, not userinfo)
@@ -65,7 +65,7 @@ Correct stable address: lar:///threshold.uncertain.opens/
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
 ## Canonical Form and Comparison Rules (§10.4)
 
-When comparing two `lares:` URIs as stable addresses:
+When comparing two `lar:` URIs as stable addresses:
 
 - [ ] 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 - [ ] 2. Compare path components **case-insensitively**

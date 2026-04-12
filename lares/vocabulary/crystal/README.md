@@ -24,7 +24,7 @@
 ## Does Not Belong Here
 
 - HUD rendering / Intent Header grammar → `../signal/`
-- `lares:` URI resolver / registry → `../registry/`
+- `lar:` URI resolver / registry → `../registry/`
 - TOML schemas for modules/tools → `../schemas/`
 - Platform-specific crystal storage constraints → `../platform/`
 

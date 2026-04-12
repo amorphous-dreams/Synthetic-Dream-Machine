@@ -9,7 +9,7 @@
 
 ## What Sigilization Is
 
-The `lares:` URI v2 canonical form is RFC 3986 compliant: URL-safe ASCII, no emoji, no non-ASCII characters. This makes it stable for storage, comparison, and transport.
+The `lar:` URI v2 canonical form is RFC 3986 compliant: URL-safe ASCII, no emoji, no non-ASCII characters. This makes it stable for storage, comparison, and transport.
 
 Display surfaces — HUD lines, DreamDeck feed post headers, TiddlyWiki tiddlers — use glyphs: phase sigils (✶ ◎ ◇ ■ ○), stance emoji (🏛️ 🌊 🗡️ 🎭 🔮), amplitude modifiers (+ ++ - --). These are the *sigil forms* of the underlying ASCII record.
 

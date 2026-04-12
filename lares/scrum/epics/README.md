@@ -10,10 +10,10 @@
 
 | Epic | Folder | Backlog Prefix | Domain |
 |---|---|---|---|
-| Signal / HUD | [`SIGNAL/`](SIGNAL/README.md) | `SIG-*` | HUD annotation grammar, `lares:` URI, p-band model, micro-trace, tagspace |
+| Signal / HUD | [`SIGNAL/`](SIGNAL/README.md) | `SIG-*` | HUD annotation grammar, `lar:` URI, p-band model, micro-trace, tagspace |
 | Crystal State Machine | [`CRYSTAL/`](CRYSTAL/README.md) | `CRY-*` | STATE.jsonl schema, MemPalace state layer, seal/fork/resume, tick-span |
 | Invariants & Trust | [`INVARIANTS/`](INVARIANTS/README.md) | `INV-*` | `lares.core.*` behavioral invariants, trust model, register guard, priority layers |
-| Registry | [`REGISTRY/`](REGISTRY/README.md) | `REG-*` | `lares:` URI registry, resolver rules, promotion ledger, content-addressed identity |
+| Registry | [`REGISTRY/`](REGISTRY/README.md) | `REG-*` | `lar:` URI registry, resolver rules, promotion ledger, content-addressed identity |
 | Deployment Authoring | [`DEPLOY/`](DEPLOY/README.md) | `DEP-*` | Seven deployment paths, CLAUDE.md, SKILL.md, copilot-instructions, Kowloon/MemPalace adapters |
 | DreamDeck Integration | [`DREAMDECK/`](DREAMDECK/README.md) | `DECK-*` | elyncia.app prototype, tldraw canvas, Kowloon feeds, TiddlyWiki sidebar, Bluesky/AT Protocol |
 

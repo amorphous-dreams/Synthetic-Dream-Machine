@@ -12,7 +12,7 @@ A sigil emission is **well-formed** if and only if:
 
 1. **Five stances present.** Every rendered stance block (on any sigil surface) contains exactly five stance emoji, in the canonical order: 🏛️ 🌊 🗡️ 🎭 🔮.
 
-2. **No emoji in record form.** Canonical `lares:` URIs contain zero stance emoji. ASCII amplitude codes only.
+2. **No emoji in record form.** Canonical `lar:` URIs contain zero stance emoji. ASCII amplitude codes only.
 
 3. **No ASCII in sigil surfaces.** Rendered HUD lines and post headers contain zero ASCII amplitude codes (no `^`, `.`, `--` in stance context). Emoji with modifiers only.
 

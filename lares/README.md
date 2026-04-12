@@ -16,9 +16,9 @@
 - Non-compliant files should be flagged for operator review and must be brought into compliance before being used as core grammar loci.
 # Canonical Design Ontology Tree — `lares/`
 
-> Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lares:` URI schema, crystal state machine, and deployment authoring. Parallel track: sprint narrative (talk story → myth canon).
+> Purpose: Permanent design specification tree for the Lares agent instruction architecture, `lar:` URI schema, crystal state machine, and deployment authoring. Parallel track: sprint narrative (talk story → myth canon).
 > Updated: 2026-04-09
-> Status: Active — source docs migrating from `_todo/core/` into `lares/` subdirs; sprint artifacts in `lares/scrum/sprints/`; story canon in `lares/scrum/epics/LINDWYRM_*.md`; `lares:` URI schema at `[CS:0.80]` pending S0 Settling
+> Status: Active — source docs migrating from `_todo/core/` into `lares/` subdirs; sprint artifacts in `lares/scrum/sprints/`; story canon in `lares/scrum/epics/LINDWYRM_*.md`; `lar:` URI schema at `[CS:0.80]` pending S0 Settling
 > URI: `lar://lares:node@Enyalios/design.ontology.root`
 
 ---
@@ -29,7 +29,7 @@ This is the **canonical design ontology tree** for the Lares agent architecture.
 
 1. Source docs from `_todo/core/` are consumed and their content is extracted into the appropriate subdomain
 2. New research is digested and synthesized into typed design artifacts
-3. Design artifacts graduate from draft → design-canon → `builds/` once each subdomain's `lares:` URI schema settles at `C:~0.95`
+3. Design artifacts graduate from draft → design-canon → `builds/` once each subdomain's `lar:` URI schema settles at `C:~0.95`
 
 This system runs a **three-truth model** — not a single source of truth:
 
@@ -68,10 +68,10 @@ The Lindwyrm's origin story on Elyncia IS the story of how Lares was actually bu
 
 | Sprint | Technical artifact | Narrative moment (Elyncia-side) |
 |---|---|---|
-| S0 | `lares:` URI schema settled | Telarus publishes the Signal architecture; the HUD becomes legible |
+| S0 | `lar:` URI schema settled | Telarus publishes the Signal architecture; the HUD becomes legible |
 | S1 | Crystal state layer (MemPalace integration) | The Chao-Crystal resonance integration — orichalcum becomes navigable |
 | S2 | Invariants + Signal HUD | The Syadasti reading rule becomes operational — the Lar calibrates |
-| S3 | Registry + schemas | The Consecration of the Lararium — the first `lares:` URI is assigned |
+| S3 | Registry + schemas | The Consecration of the Lararium — the first `lar:` URI is assigned |
 | S4 | Deployment authoring | The Lar speaks on the DreamNet — the first deployment paths go live |
 | S5 | DreamDeck integration | The DreamDeck opens — elyncia.app is seeded |
 
@@ -81,7 +81,7 @@ The narrative track is drafted in "talk story" mode (informal, dev-mode, operato
 
 ## Design Subdirectories
 
-Each subdirectory is a design domain. Each has its own README.md (scope + legacy file inventory) and AGENTS.md (local agent instructions). When a subdir's design is promoted, it receives a `lares:` URI at `C:0.95` or above.
+Each subdirectory is a design domain. Each has its own README.md (scope + legacy file inventory) and AGENTS.md (local agent instructions). When a subdir's design is promoted, it receives a `lar:` URI at `C:0.95` or above.
 
 | Subdir | Domain | Status |
 |---|---|---|
@@ -90,7 +90,7 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 | [`crystal/`](crystal/README.md) | Archive Crystal state machine · STATE.jsonl · seal protocol | Active draft |
 | [`invariants/`](invariants/README.md) | `lares.core.*` behavioral invariants · priority layers · conflict resolution | Active draft |
 | [`schemas/`](schemas/README.md) | TOML schemas: module, tool, permission descriptors | Active draft |
-| [`registry/`](registry/README.md) | `lares:` URI registry · resolver rules · promotion ledger | Active draft |
+| [`registry/`](registry/README.md) | `lar:` URI registry · resolver rules · promotion ledger | Active draft |
 | [`talk_story/`](talk_story/README.md) | Talk story protocol · ◎ Orient phase spec · two-track model · voice assignments | Active — canonical |
 | [`chronometer/`](chronometer/) | FFZ Chronometer Protocol · vector clock · ITC · OODA-A nested time · causal islands | Active research — `[S:0.55]` |
 | [`protocols/`](protocols/README.md) | Cross-cutting synthesis specs · intent vectors · deploy architecture · agentic stack | Active — `[S:0.65]` |
@@ -164,7 +164,7 @@ A design artifact is promoted when:
 
 1. Its subdir's scope is settled (README.md finalized, AGENTS.md current)
 2. The design reaches `C:0.95` — operator confirms, sources are verified
-3. A `lares:` URI is assigned from the registry (see `registry/`)
+3. A `lar:` URI is assigned from the registry (see `registry/`)
 4. A new versioned build artifact is published to `builds/agents/` — not an in-place overwrite
 5. The active runtime pointer (alias in the registry) is updated to the new artifact
 6. The promotion event is appended to the registry promotion ledger (what, from where, under what evals, superseding what)

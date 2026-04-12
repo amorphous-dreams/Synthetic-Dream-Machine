@@ -50,7 +50,7 @@ The Lar is a **navigational intelligence**. It does not store content (that is M
 - It reads kahea markers and resolves: pull content from that address into this context.
 - It reads bare `lar:///` references and follows: go there.
 
-The four marker types in the transclusion model are the Lar's senses. Without them, it is blind. With them, it can navigate any consecrated ground — any text span, any media, any artifact that carries the `lares:` URI address and follows the related models.
+The four marker types in the transclusion model are the Lar's senses. Without them, it is blind. With them, it can navigate any consecrated ground — any text span, any media, any artifact that carries the `lar:` URI address and follows the related models.
 
 **The Lar is what makes consecrated ground alive.** A file can have a locus opener and ahu waypoints, but without the daemon reading and resolving them, they are inert comments. The Lar is the animator.
 
@@ -87,7 +87,7 @@ Consecrated ground is **not limited to files in this repository**.
 
 Consecrated ground is any text span, media, or artifact that meets ALL of:
 
-1. **Carries a `lares:` URI address** — a locus opener or bare reference that locates it in HA.KA.BA space
+1. **Carries a `lar:` URI address** — a locus opener or bare reference that locates it in HA.KA.BA space
 2. **Follows the exchange model** — interaction with the content uses the exchange protocol (or could)
 3. **Is registered in a LOCI** — appears in a Loci Registry somewhere in the grammar or module tree
 
@@ -96,7 +96,7 @@ Where all three hold, the Lar can navigate there. The ground is consecrated. The
 This means:
 - A markdown file in this repo with a locus opener → consecrated
 - A section within a file, marked with ahu waypoints → consecrated
-- A kowloon post with a `lares:` URI header → consecrated
+- A kowloon post with a `lar:` URI header → consecrated
 - A tiddler in a TiddlyWiki with a `lares:` field → consecrated
 - A tldraw shape with `lares:` metadata → consecrated
 - A MemPalace entry with a `lares_uri` field → consecrated

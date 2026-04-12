@@ -87,7 +87,7 @@ TOML's specification allows key ordering to carry no semantic meaning — but ex
 
 **Threat level:** Causes subtle bugs in S3 (registry resolver) and S1 (crystal machine matching).
 
-**The problem:** RFC 3986 §6 defines URI comparison at three levels: simple string comparison, syntax-based normalization, and scheme-based normalization. Our spec doesn't state which level applies to `lares:` URIs.
+**The problem:** RFC 3986 §6 defines URI comparison at three levels: simple string comparison, syntax-based normalization, and scheme-based normalization. Our spec doesn't state which level applies to `lar:` URIs.
 
 This matters because: `lar:///Threshold/Uncertain/Opens` and `lar:///threshold/uncertain/opens` — are these the same stable address? The HAKABA vocabulary is defined as lowercase in examples, but no rule mandates case. The path separator projection (machine `/` vs sigil `.`) means the same address has two string representations. Are they compared before or after projection normalization?
 

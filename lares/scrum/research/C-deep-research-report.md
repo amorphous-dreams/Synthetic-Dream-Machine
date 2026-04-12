@@ -1,10 +1,10 @@
 # URI Stamping and Loader Architecture for Claude Agents
 
-**Executive Summary:** We design a **canonical `lares:` URI schema** and **stamping protocol** to anchor agent state and intent in conversations. Every message (user or agent) is decorated with a _start-URI_ and _end-URI_ carrying a `register` (confidence) and `canon` (priority) score. These URIs serve as cache anchors and state tags.  We define an ABNF-like grammar for `lares:` URIs, explain how to canonicalize and hash content, and show TOML manifest examples. We detail where to insert URIs and `@event` markers in the interaction (including quoting user input when confidence <1.0). Cache-safety rules ensure Anthropic’s prefix cache hits (block exactness and breakpoints). A migration checklist and sample scripts demonstrate stamping existing files. Finally, we give a test plan, sample bootloader, example stamped conversation, register/canon band tables, and a mermaid flowchart of the pipeline. The design relies on Anthropic/Claude documentation (memory/prompt-caching) and industry standards (TOML v1.0 spec, OpenTelemetry spans, event-sourcing patterns).
+**Executive Summary:** We design a **canonical `lar:` URI schema** and **stamping protocol** to anchor agent state and intent in conversations. Every message (user or agent) is decorated with a _start-URI_ and _end-URI_ carrying a `register` (confidence) and `canon` (priority) score. These URIs serve as cache anchors and state tags.  We define an ABNF-like grammar for `lar:` URIs, explain how to canonicalize and hash content, and show TOML manifest examples. We detail where to insert URIs and `@event` markers in the interaction (including quoting user input when confidence <1.0). Cache-safety rules ensure Anthropic’s prefix cache hits (block exactness and breakpoints). A migration checklist and sample scripts demonstrate stamping existing files. Finally, we give a test plan, sample bootloader, example stamped conversation, register/canon band tables, and a mermaid flowchart of the pipeline. The design relies on Anthropic/Claude documentation (memory/prompt-caching) and industry standards (TOML v1.0 spec, OpenTelemetry spans, event-sourcing patterns).
 
 ## 1. lares: URI Specification
 
-We define `lares:` URIs to unambiguously identify modules, prompts, and states. A formal grammar (roughly ABNF-like) is:
+We define `lar:` URIs to unambiguously identify modules, prompts, and states. A formal grammar (roughly ABNF-like) is:
 
 ```
 lares_uri   = "lar://" hier-part [ "?" query ] [ "#" sha256 ]

@@ -1,8 +1,8 @@
 > **Superseded** — canonical URI spec is at [`lares/modules/uri-schema/URI_SCHEMA.md`](../modules/uri-schema/URI_SCHEMA.md); URI schema module at [`lares/modules/uri-schema/`](../modules/uri-schema/); micro-trace module at [`lares/modules/micro-trace/`](../modules/micro-trace/). This README remains as domain scope reference.
 
-# signal/ — Signal HUD · Tagspace · `lares:` URI
+# signal/ — Signal HUD · Tagspace · `lar:` URI
 
-> Scope: Operator-facing HUD annotation grammar, Tagspace semantic coordinate system, `lares:` URI scheme, p-band phase model.
+> Scope: Operator-facing HUD annotation grammar, Tagspace semantic coordinate system, `lar:` URI scheme, p-band phase model.
 > Updated: 2026-04-08
 > Status: Active draft — primary source is `../../_todo/core/Signal_HUD_Tagspace-draft.md`; design canonicalization in progress
 > URI: `[pending — lar://core/design/signal@draft]`
@@ -52,7 +52,7 @@ Most AI transparency tools cover only Agent SA (confidence scores, feature impor
 - Micro-trace HUD annotation model (phase, stance, register, Tagspace slots)
 - p-band cumulative attention phase model (five bands, OP-02 ruling)
 - HAKABA canonical slot mapping (Ha/Ka/Ba) and field-order rationale
-- `lares:` URI scheme anatomy (authority, path, query, fragment/chronometer)
+- `lar:` URI scheme anatomy (authority, path, query, fragment/chronometer)
 - Tick-span display contract (`start_uri` -> `attractor_uri` ... `end_uri`)
 - Authority overlays (`⊙` for operator-authored/constrained state)
 - Dual clocks: RFC 3339 wall time plus chronometer + diegetic calendar reference
@@ -69,7 +69,7 @@ Most AI transparency tools cover only Agent SA (confidence scores, feature impor
 
 - Crystal STATE.jsonl schema → `../crystal/`
 - Deterministic compiler pipeline → `../compiler/`
-- `lares:` URI registry / resolver → `../registry/`
+- `lar:` URI registry / resolver → `../registry/`
 
 ---
 

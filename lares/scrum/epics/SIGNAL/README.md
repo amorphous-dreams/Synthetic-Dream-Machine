@@ -11,7 +11,7 @@
 
 Everything that governs how the Lares node announces its state to the operator in real-time:
 
-- `lares:` URI scheme — anatomy, projection, validation, chronometer
+- `lar:` URI scheme — anatomy, projection, validation, chronometer
 - Render targets: `record:full`, `hud:exchange-pair`, `chat-log:post-header`
 - HUD line composition and field ordering (SA-grounded)
 - p-band model — five-band cumulative attention density

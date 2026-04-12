@@ -4,7 +4,7 @@
 
 **Date:** 2026-04-07 (America/Los_Angeles)
 
-This report designs an **invariant-loading architecture** for a multi-agent Lares system that uses **TOML-authored “Lares Core” invariants** (`lares.core.*`) and a custom **`lares:` URI scheme** to reference invariants, schemas, and modules consistently across build pipelines and host adapters.
+This report designs an **invariant-loading architecture** for a multi-agent Lares system that uses **TOML-authored “Lares Core” invariants** (`lares.core.*`) and a custom **`lar:` URI scheme** to reference invariants, schemas, and modules consistently across build pipelines and host adapters.
 
 The architecture responds to two convergent realities:
 
@@ -16,7 +16,7 @@ The proposed fix: treat High Priority rules as **schema-validated invariants** t
 
 Two appended artifacts are included:
 
-- **`AGENTS.md`** to “own” `_todo/core` and direct local agents to inventory the directory, detect conflicts, and implement loaders, schemas, and `lares:` URI registration/resolution.
+- **`AGENTS.md`** to “own” `_todo/core` and direct local agents to inventory the directory, detect conflicts, and implement loaders, schemas, and `lar:` URI registration/resolution.
 - **`README.md`** for `_todo/core` explaining architecture, file formats, deterministic loading patterns, testing, and deployment.
 
 ## Source-grounded best practices to bake into invariants
@@ -78,7 +78,7 @@ The table below defines the **operational authority boundary** and the **require
 
 This aligns with Anthropic’s browser prompt-injection framing (“every webpage… potential vector”) and mitigations (scan untrusted content, adjust behavior, red-team). citeturn5view2
 
-## TOML-based Lares Core ontology and `lares:` URI scheme design
+## TOML-based Lares Core ontology and `lar:` URI scheme design
 
 ### Why TOML fits invariant authoring
 
@@ -96,7 +96,7 @@ Implement a two-stage “root of trust”:
 
 This is consistent with Anthropic’s emphasis on *simple patterns plus measurable gates* and with OWASP’s advice to implement structured separation and output monitoring as part of an end-to-end pipeline. citeturn6view0turn12view1turn12view3
 
-### `lares:` URI scheme: standards-aligned guidance
+### `lar:` URI scheme: standards-aligned guidance
 
 RFC 3986 describes URI syntax as a federated, extensible naming system where each URI begins with a scheme name and the scheme’s specification may further restrict syntax/semantics; scheme names are case-insensitive but canonical form is lowercase. citeturn10view0turn10view1 RFC 7595 requires that scheme definitions specify scheme-specific-part syntax compatible with generic URI syntax, warns against improper `//` usage, and requires clear security/privacy considerations in scheme definitions; scheme name registrations must be lowercase. citeturn10view2turn10view3 The IANA URI Schemes registry is the global scheme namespace reference; for public registration, you must avoid collisions and follow registry processes. citeturn4view7turn2search1
 
@@ -105,7 +105,7 @@ Design recommendation for Lares:
 - Use a **hierarchical URI** form (`lar://authority/path...`) *only if* you truly have an authority + hierarchical structure. RFC 7595 emphasizes that `//` is intended only for hierarchical naming authorities. citeturn10view2
 - Treat `lares:` as **private/internal** initially (registry file in repo), but design it as if you could register it later (syntax clarity + security considerations section), per RFC 7595 guidance. citeturn10view3turn4view7
 
-### TOML examples for `lares.core.*` invariants and `lares:` URIs
+### TOML examples for `lares.core.*` invariants and `lar:` URIs
 
 The following examples are intentionally compact and should be adapted to your schema set.
 
@@ -270,7 +270,7 @@ canonical_authority = "core"
 "lar://core/lock/"      = "_todo/core/locks/"
 ```
 
-Example `lares:` URIs:
+Example `lar:` URIs:
 
 ```text
 lar://core/invariant/lares.core.frame_gate@v1
@@ -402,7 +402,7 @@ It defines the work charter for local agents (human + AI) to:
 - inventory existing `_todo/core` contents (unknown/legacy allowed)
 - detect conflicts and contradictions
 - design and implement a deterministic, schema-validated invariant-loading pipeline
-- implement the `lares:` URI scheme (parser + normalizer + resolver + registry)
+- implement the `lar:` URI scheme (parser + normalizer + resolver + registry)
 - define TOML schemas and TOML invariants for `lares.core.*`
 - produce a migration plan from legacy documents to the canonical invariant layout
 
@@ -529,7 +529,7 @@ _todo/core/
 Implement a deterministic loader that:
 - discovers invariants and schemas in stable order
 - validates with schema-first approach
-- resolves `lares:` URIs using `registry/lares-uri-registry.toml`
+- resolves `lar:` URIs using `registry/lares-uri-registry.toml`
 - produces:
   - a lockfile with sha256 hashes + resolved file paths
   - a compiled `InvariantSet` artifact (JSON recommended for canonical wire format)
@@ -582,7 +582,7 @@ Date: 2026-04-07
 This directory defines the **Lares Core invariant system**:
 - TOML-authored invariants (`lares.core.*`)
 - TOML-authored schemas (schema-first “root of trust”)
-- `lares:` URI registry + resolver rules
+- `lar:` URI registry + resolver rules
 - deterministic loader rules, conflict handling, lockfiles, and compiled artifacts
 - testing and deployment steps
 
@@ -635,7 +635,7 @@ If any step fails, CI fails closed.
 
 - `schemas/` — TOML schemas (root of trust)
 - `invariants/` — TOML invariants (`lares.core.*`)
-- `registry/` — `lares:` URI registry (prefix resolvers)
+- `registry/` — `lar:` URI registry (prefix resolvers)
 - `locks/` — generated lockfile + compiled artifact
 - `tests/` — golden tests, invalid cases, determinism tests
 - `_inventory/` — generated inventory of any legacy `_todo/core` contents
@@ -652,7 +652,7 @@ Every invariant TOML must include:
 
 Unknown keys must fail schema validation.
 
-## `lares:` URI scheme
+## `lar:` URI scheme
 
 Examples:
 

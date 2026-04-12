@@ -1,6 +1,6 @@
 # AGENTS.md — `signal/` subdir
 
-> Scope: Signal HUD, Tagspace, `lares:` URI, p-band model design
+> Scope: Signal HUD, Tagspace, `lar:` URI, p-band model design
 > Parent: `../_todo/core/AGENTS.md`
 
 ---
@@ -21,7 +21,7 @@ Design workers in this subdirectory extract, refine, and canonicalize the HUD la
 3. Label all outputs: `[Provisional]`, `[Synthesis]`, `[Canon/Synthesis]`, or `[Canon]`.
 4. Propose structure for Intent Header grammar docs → `signal/hud/`.
 5. Propose Tagspace coordinate reference doc.
-6. Propose `lares:` URI field anatomy spec (do not duplicate registry work — point to `../registry/`).
+6. Propose `lar:` URI field anatomy spec (do not duplicate registry work — point to `../registry/`).
 7. Do not resolve Q6 (closure rendering) without a Council + operator call.
 
 ---

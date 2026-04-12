@@ -1,4 +1,4 @@
-# AGENTS.md — Sprint 0: `lares:` URI Schema Settlement
+# AGENTS.md — Sprint 0: `lar:` URI Schema Settlement
 
 > Scope: Agent instructions for Workers executing Sprint 0 tasks
 > Parent: `lares/signal/AGENTS.md`
@@ -9,7 +9,7 @@
 
 ## Role
 
-Workers in this sprint validate, stress-test, and refine the `lares:` URI schema specification (`URI_SCHEMA.md`) to design-canon readiness (`[C:0.95]`).
+Workers in this sprint validate, stress-test, and refine the `lar:` URI schema specification (`URI_SCHEMA.md`) to design-canon readiness (`[C:0.95]`).
 
 Workers here are **validators and analysts**, not authors. The spec content has been extracted from the architecture draft. The sprint's job is to confirm it holds under pressure, flag what doesn't, and produce the evidence the operator needs to promote.
 

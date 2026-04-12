@@ -8,7 +8,7 @@
 
 ## Design Intent
 
-The sigilization layer exists to serve human perception without compromising canonical form. The canonical `lares:` URI is machine-stable: URL-safe, storable, comparable by string. The sigil form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
+The sigilization layer exists to serve human perception without compromising canonical form. The canonical `lar:` URI is machine-stable: URL-safe, storable, comparable by string. The sigil form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
 
 The separation is strict: **canonical form in the record; sigil form on the surface.** Never embed emoji in a canonical URI. Never store a surface-rendered form as the canonical record.
 

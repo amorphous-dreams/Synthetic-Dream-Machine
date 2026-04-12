@@ -36,7 +36,7 @@ confidence: CS:0.85
 
 ## What This Module Provides
 
-Sigilization is the render layer between canonical `lares:` URI record form and human-readable display surfaces. The canonical form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to glyphs — phase sigils, stance emoji, amplitude modifiers — according to surface-specific rules.
+Sigilization is the render layer between canonical `lar:` URI record form and human-readable display surfaces. The canonical form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to glyphs — phase sigils, stance emoji, amplitude modifiers — according to surface-specific rules.
 
 This module owns:
 - The surface registry (what surfaces exist, what they render)

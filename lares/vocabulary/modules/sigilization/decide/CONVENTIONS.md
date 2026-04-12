@@ -28,7 +28,7 @@ No render target may show fewer than five stance emoji. Amplitude determines vis
 
 **Rule 3: Stance order is fixed.** Philosopher · Poet · Satirist · Humorist · Private. Always this sequence. Never reordered.
 
-**Rule 4: Canonical form and sigil form are strictly separated.** Emoji do not appear in canonical `lares:` URIs. ASCII amplitude characters (`^`, `-`, `?`, `.`) do not appear in rendered sigil strings.
+**Rule 4: Canonical form and sigil form are strictly separated.** Emoji do not appear in canonical `lar:` URIs. ASCII amplitude characters (`^`, `-`, `?`, `.`) do not appear in rendered sigil strings.
 
 **Rule 5: For non-Lares-connected posts and users, the HUD tag may be omitted entirely.** "Omit" means drop the full stance+register block — not reduce it to fewer stances. Partial emission is never correct.
 

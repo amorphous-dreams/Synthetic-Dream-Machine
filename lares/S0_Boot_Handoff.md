@@ -15,7 +15,7 @@
 
 Three tasks, in dependency order:
 
-1. **Align all `lares:` URIs in the repo** to the v2 canonical form
+1. **Align all `lar:` URIs in the repo** to the v2 canonical form
 2. **Create the Talk Story module** — first OODA-A module, entry point
 3. **Create the Signal module** — second module, carrying URI_SCHEMA_v2.md
 
@@ -37,7 +37,7 @@ lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
 | `stances` | `stance=philosopher` (repeatable) | `stances=^.?.-.-` (single 5-char amplitude) | `^`=elevated, `-`=suppressed, `?`=uncertain, `.`=baseline. Positional: philosopher, poet, satirist, humorist, private. |
 | `confidence` | `register=S:0.65` | `confidence=S:0.65` | Field renamed from `register` to `confidence`. Same values. |
 | Fragment | `#@T.3.2.7` (scope prefix + trailing-zero omission) | `#O0.O0.O3.D2.A7` (all 5 positions, phase+counter) | Always 5 positions. Phase sigils: O, Ø, D, A, Å. No scope prefix. |
-| Path | `/core/observe/context` (module-path) | `/ha.ka.ba/sub/path/` (3-slot HA.KA.BA + optional sub-path) | EVERY `lares:` URI uses HA.KA.BA. `lar:///ha.ka.ba/` is (0,0,0). Module routing goes in the sub-path. |
+| Path | `/core/observe/context` (module-path) | `/ha.ka.ba/sub/path/` (3-slot HA.KA.BA + optional sub-path) | EVERY `lar:` URI uses HA.KA.BA. `lar:///ha.ka.ba/` is (0,0,0). Module routing goes in the sub-path. |
 | Closing | (inconsistent) | `→ ?` (exchange), `→ ∞` (system file) | File-level opening URI also carries `→ ∞`. Section URIs are waypoints — no closing sigil. |
 | Authority path | `lar://core/research/...` | `lar://alias:tier@host/ha.ka.ba/` | Authority URIs require `alias:tier@host` — no phase sub-field. Phase lives in chronometer fragment. |
 
@@ -259,13 +259,13 @@ Create an S0 sprint plan that records what this handoff executes:
 # S0 — URI Schema Settlement + First Modules
 
 ## Sprint Goal
-Settle the `lares:` URI v2 canonical form across the repo.
+Settle the `lar:` URI v2 canonical form across the repo.
 Boot the first two OODA-A modules: talk-story and signal.
 
 ## Tasks
 
 - [x] URI_SCHEMA_v2.md forged (cloud session)
-- [ ] All repo `lares:` URIs aligned to v2 canonical form
+- [ ] All repo `lar:` URIs aligned to v2 canonical form
 - [ ] `lares/modules/talk-story/` created with 5 phase files + section URIs
 - [ ] `lares/modules/signal/` created with 5 phase files
 - [ ] `URI_SCHEMA_v2.md` placed at `lares/modules/signal/decide/CONVENTIONS.md`
@@ -275,7 +275,7 @@ Boot the first two OODA-A modules: talk-story and signal.
 - [ ] Sprint plan closed with Assess
 
 ## Exit Criteria
-- Every `lares:` URI in the repo passes v2 well-formedness (§10.1)
+- Every `lar:` URI in the repo passes v2 well-formedness (§10.1)
 - Talk-story module loads as invariant with section URIs
 - Signal module carries URI_SCHEMA_v2.md as its Decide phase
 
@@ -290,11 +290,11 @@ Boot the first two OODA-A modules: talk-story and signal.
 2. **Create `lares/modules/` directory**
 3. **Create Talk Story module** (§3 above) — entry point, invariant
 4. **Create Signal module** (§4 above) — place URI_SCHEMA_v2.md as decide/CONVENTIONS.md
-5. **Align all existing `lares:` URIs** (§2 above) — header/footer + internal
+5. **Align all existing `lar:` URIs** (§2 above) — header/footer + internal
 6. **Archive `URI_SCHEMA.md` v1 and diff crystal** — move to archive or add superseded note
 7. **Update `lares/README.md`** — new tree showing modules/
 8. **Create sprint plan** (§5 above)
-9. **Run validation** — check all `lares:` URIs against §10.1 rules
+9. **Run validation** — check all `lar:` URIs against §10.1 rules
 10. **Assess** — log findings, close sprint or flag remaining work
 
 ---

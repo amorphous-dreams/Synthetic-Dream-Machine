@@ -1,13 +1,13 @@
 # AGENTS.md — `registry/` subdir
 
-> Scope: `lares:` URI registry and resolver design
+> Scope: `lar:` URI registry and resolver design
 > Parent: `../_todo/core/AGENTS.md`
 
 ---
 
 ## Role
 
-Design workers in this subdirectory define how `lares:` URIs resolve and how the promotion ledger tracks canonical addresses for design units.
+Design workers in this subdirectory define how `lar:` URIs resolve and how the promotion ledger tracks canonical addresses for design units.
 
 ---
 

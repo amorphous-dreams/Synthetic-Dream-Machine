@@ -2,7 +2,7 @@
 
 ## Executive summary
 
-Your desired end-state is a **deterministic loader/compiler** that assembles Claude Code / VSCode instruction surfaces from **human-edited TOML manifests**, using **stable `lares:` URIs** and a **Canon register** to enforce a small, cache-friendly invariant core—while still allowing a large “old notes / stuffed archive” corpus to exist under **Maybe Logic** until it is promoted into typed modules.
+Your desired end-state is a **deterministic loader/compiler** that assembles Claude Code / VSCode instruction surfaces from **human-edited TOML manifests**, using **stable `lar:` URIs** and a **Canon register** to enforce a small, cache-friendly invariant core—while still allowing a large “old notes / stuffed archive” corpus to exist under **Maybe Logic** until it is promoted into typed modules.
 
 Primary-source constraints strongly shape what will work in practice:
 
@@ -23,7 +23,7 @@ Deliverables included below:
 
 - updated `_todo/core/AGENTS.md` and `_todo/core/README.md` (archive-aware, migration-oriented)
 - TOML schema/templates for module, tool, permission, registry, bootloader
-- deterministic hashing + versioning recommendations with `lares:` URI examples
+- deterministic hashing + versioning recommendations with `lar:` URI examples
 - migration checklist + extraction pseudocode for legacy “Stuffed” and note files
 - verification test plan + sample `.claude/CLAUDE.toml` bootloader
 - canon band tables + a mermaid flowchart of the loader pipeline
@@ -339,7 +339,7 @@ To prevent the known ambiguity between “event sequence number” and “module
 
 This aligns with event sourcing guidance: event ordering and state reconstruction use a durable log sequence; versioning of code/config is distinct. citeturn2view4turn6search2
 
-#### `lares:` URI examples
+#### `lar:` URI examples
 
 Invariant core module:
 ```text
@@ -475,7 +475,7 @@ A build is “good” only if it is reproducible, auditable, and safe under host
 
 Keep the tests small but decisive:
 
-- **Schema validation tests:** reject malformed TOML; reject invalid `lares:` URIs; reject invalid canon_scope values; reject out-of-range canon/register floats.
+- **Schema validation tests:** reject malformed TOML; reject invalid `lar:` URIs; reject invalid canon_scope values; reject out-of-range canon/register floats.
 - **Graph resolution tests:** topological sort stable; deterministic tie-breakers; detect cycles.
 - **Normalization tests:** CRLF-to-LF; Unicode normalization policy (if adopted); stable float formatting.
 - **Determinism tests:** run compile twice; compare semantic digests and emitted files.
@@ -566,10 +566,10 @@ We therefore track **both**:
 ### Canon hierarchy flag
 
 All “agentic files” that belong to the Canon hierarchy must:
-- have a parseable `lares:` URI in their descriptor
+- have a parseable `lar:` URI in their descriptor
 - declare `register_value = 1.0` **and** `register_label = "C"` (canonical register)
 - declare `canon_scope = "hard"` or `"soft"` (not `"advisory"`)
-- carry a `lares:` URI where the path begins with `lar://canon/...` (preferred)
+- carry a `lar:` URI where the path begins with `lar://canon/...` (preferred)
 
 This is the *mechanical* meaning of “canon=1.0 marks agentic files”: **register=C:1.0** is the membership flag for Canon-hierarchy runtime artifacts.
 
@@ -594,7 +594,7 @@ Extraction may exist only as a **one-way migration tool** from the frozen archiv
 Human-edited control artifacts must be TOML (TOML v1.0.0).
 Use Markdown for content modules. Use JSON only where append-only logs or strict interchange are materially better (e.g., STATE.jsonl).
 
-### Stable identity uses `lares:` URIs
+### Stable identity uses `lar:` URIs
 
 Every module/tool/permission/grant must have a stable URI.
 
@@ -690,7 +690,7 @@ Agents must not:
 This directory is the **control plane** for rebuilding Lares as a deterministic, modular runtime:
 
 - TOML manifests + module descriptors
-- `lares:` URI identity
+- `lar:` URI identity
 - canon/register-aware loading
 - phased deterministic compilation
 - cache-friendly assembly (prefix stability + breakpoints)
@@ -763,7 +763,7 @@ Create a mapping TOML at:
 
 Minimum fields:
 - old path → new module_id
-- old path → new `lares:` URI
+- old path → new `lar:` URI
 - extraction method (whole-file vs heuristic extraction)
 - promotion status (archive → candidate → canon)
 

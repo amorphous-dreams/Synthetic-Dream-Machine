@@ -51,7 +51,7 @@ myth layer enriches from within; it never gates entry.
 
 ### 1.4 URIs Carry Confidence
 
-Every section break in a module file MAY carry a `lares:` URI encoding
+Every section break in a module file MAY carry a `lar:` URI encoding
 its phase identity, confidence rating, and semantic position. These URIs
 function as handoff metadata: when a subagent picks up a module section,
 the URI tells it where this content sits epistemically — not just what
@@ -199,7 +199,7 @@ per-section confidence and phase identity layer.
 ```
 
 Encoded as an HTML comment — invisible to markdown renderers, invisible
-to tools that don't understand `lares:` URIs, load-bearing for tools
+to tools that don't understand `lar:` URIs, load-bearing for tools
 that do.
 
 ### 3.2 Full Module File with Section URIs — Example

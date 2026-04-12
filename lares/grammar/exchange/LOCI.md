@@ -115,7 +115,7 @@ That surface should remain stable enough for:
 - future compiled render targets
 - transclusion from the live context window
 
-Any visible `lares:` URI inside a live exchange span should count as a reusable summon point, not
+Any visible `lar:` URI inside a live exchange span should count as a reusable summon point, not
 just as decorative trace.
 
 ---

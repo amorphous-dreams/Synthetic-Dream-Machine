@@ -10,7 +10,7 @@
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
 ## Design Intent
 
-The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD both operator and node read at exchange boundaries. In persistence it functions as a structured record string for logs, validation, module descriptors, and registry metadata.
+The `lar:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD both operator and node read at exchange boundaries. In persistence it functions as a structured record string for logs, validation, module descriptors, and registry metadata.
 
 Each URI component carries a distinct, non-overlapping concern across four semantic layers:
 
@@ -28,7 +28,7 @@ Named render targets: `record:full`, `hud:exchange-pair`, `chat-log:post-header`
 
 ### Exchange Flow — Order of Operations
 
-At each exchange span, `lares:` URIs are used in a mandatory sequence:
+At each exchange span, `lar:` URIs are used in a mandatory sequence:
 
 1. **Read operator input as a provisional URI** — Lares reads the prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. Constructs a provisional operator URI. May carry `~` markers if reading is uncertain.
 

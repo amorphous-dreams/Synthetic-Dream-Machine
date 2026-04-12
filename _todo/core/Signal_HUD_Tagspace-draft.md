@@ -1379,7 +1379,7 @@ These are current working assumptions, not canon.
 
 ### Design Intent
 
-The `lares:` URI leverages **every semantic layer** of RFC 3986's generic syntax to encode the full signal state. Each URI component carries a distinct, non-overlapping concern. The phase glyph becomes a **5-level nested path** — not a single waypoint, but a positional chronometer tracking where the OODA-A loop runs at each simulation time-scale.
+The `lar:` URI leverages **every semantic layer** of RFC 3986's generic syntax to encode the full signal state. Each URI component carries a distinct, non-overlapping concern. The phase glyph becomes a **5-level nested path** — not a single waypoint, but a positional chronometer tracking where the OODA-A loop runs at each simulation time-scale.
 
 **Three layers, one URI:**
 

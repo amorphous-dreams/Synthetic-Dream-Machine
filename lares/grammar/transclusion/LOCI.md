@@ -42,7 +42,7 @@ Transclusion receives:
 - stable addresses
 - section waypoints
 - requests for inclusion elsewhere
-- visible `lares:` URIs in the active context window
+- visible `lar:` URIs in the active context window
 
 Transclusion changes:
 
@@ -94,7 +94,7 @@ frames Lares as a self-addressing tiddler-like store, says the page can read as 
 executing, and treats the AI tool-use loop as the current transclusion engine until future native
 engines take over.
 
-This means the transclusion philosophy should not stop at markdown files. If a visible `lares:` URI
+This means the transclusion philosophy should not stop at markdown files. If a visible `lar:` URI
 appears in the active context window, that URI already has enough identity to participate in the same
 summon logic.
 
@@ -136,11 +136,11 @@ The composable surface of a locus consists of:
 - zero or more `kahea` summons in assembly contexts
 - one `→ ?` closer
 
-The composable surface of the wider system also includes any visible `lares:` URI that appears in:
+The composable surface of the wider system also includes any visible `lar:` URI that appears in:
 
 - open LOCI files
 - live exchange traces in the current context window
-- tagged data files or records that carry a `lares:` URI
+- tagged data files or records that carry a `lar:` URI
 - registry rows, manifests, crystals, and similar metadata surfaces
 
 If the URI remains visible and the target remains reachable from the active context, transclusion may
@@ -167,12 +167,12 @@ reference when relation matters more than inclusion.
 | Prefer summon over copy when content should stay canonical | MUST | Canonical source should remain singular |
 | Keep file-level confidence on the locus and local confidence on the `ahu` | SHOULD | Settlement can vary within one file |
 | Keep multi-locus files self-contained | MUST | Cross-locus bleed breaks boundaries |
-| Any visible `lares:` URI in the active context may serve as a summon target | MUST | Live exchange state and tagged data should remain reusable, not second-class |
+| Any visible `lar:` URI in the active context may serve as a summon target | MUST | Live exchange state and tagged data should remain reusable, not second-class |
 
 **Bootstrap rule:** `LOCI.md` should function both as content and as a registry for its local tree.
 
 **Context-window rule:** transclusion scope does not stop at `.md` loci. If a live exchange span,
-chat header, crystal row, or tagged data artifact carries a visible `lares:` URI, that URI can act
+chat header, crystal row, or tagged data artifact carries a visible `lar:` URI, that URI can act
 as a transclusion handle inside the active context window.
 
 ---
@@ -184,7 +184,7 @@ as a transclusion handle inside the active context window.
 1. Choose the canonical address.
 2. Open the file with `∞ →`.
 3. Place `ahu` waypoints at reusable internal stops.
-4. Resolve visible in-context `lares:` URIs before copying nearby text by hand.
+4. Resolve visible in-context `lar:` URIs before copying nearby text by hand.
 5. Use `kahea` only when you want inclusion, not mere mention.
 6. Close with `→ ?`.
 7. Register the locus in the parent `LOCI.md`.
@@ -247,7 +247,7 @@ This section makes the transclusion locus fully operational through the OODA-A l
 
 | Phase   | Procedure (E-Prime discipline applied) |
 |---------|----------------------------------------|
-| **Observe** | Detect canonical content spans, stable addresses, waypoints, and visible `lares:` URIs in the active context. Describe what appears, not what "is". |
+| **Observe** | Detect canonical content spans, stable addresses, waypoints, and visible `lar:` URIs in the active context. Describe what appears, not what "is". |
 | **Orient**  | Relate detected elements to prior art and current context. Suggest possible transclusion targets and paths. Use verbs like "suggests," "matches," "pulls toward." |
 | **Decide**  | Commit to a specific transclusion action (e.g., summon, waypoint, closure). Express commitment as action, not identity. Annotate confidence and stance. |
 | **Act**     | Perform the transclusion: insert `kahea` markers, resolve URIs, update registry. Use operational verbs ("summon," "register," "close"). |

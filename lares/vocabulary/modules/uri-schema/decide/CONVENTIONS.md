@@ -2,7 +2,7 @@
 
 # Signal — Decide: URI Conventions
 
-> The normative `lares:` URI v2 canonical spec. Governs all URI emission and storage.
+> The normative `lar:` URI v2 canonical spec. Governs all URI emission and storage.
 > Source: `lares/modules/uri-schema/URI_SCHEMA.md` `[CS:0.90]` — this file summarizes §§3.4–3.6, 5, and 7.
 > Any ambiguity: defer to `lares/modules/uri-schema/URI_SCHEMA.md` as ground truth.
 
@@ -12,7 +12,7 @@
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#mandatory-rules -->
 ## Mandatory Conventions (Canonical Record Form)
 
-These rules apply to every `lares:` URI. No exceptions.
+These rules apply to every `lar:` URI. No exceptions.
 
 1. **RFC 3986 order is mandatory.** Query before fragment (`?query#fragment`). Never `#fragment?query`.
 

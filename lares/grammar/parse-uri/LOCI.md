@@ -2,7 +2,7 @@
 
 # Grammar: parse-uri Skill
 
-This locus defines the deterministic parser and validator for canonical `lares:` URIs.
+This locus defines the deterministic parser and validator for canonical `lar:` URIs.
 
 - Enforces all canonical and supplemental grammar rules
 - Used by wrapper, registry, and batch verification tools

@@ -159,7 +159,7 @@ Two source docs in `_todo/core/` existed but were unrouted:
 | `_todo/core/C-deep-research-report.md` | URI Stamping and Loader Architecture for Claude Agents | 382 | S1 (crystal URI event fields), S3 (TOML manifest + cache-safety rules) |
 | `_todo/core/D-deep-research-report.md` | Invariant-Loading Architecture for Lares Multi-Agent System | 361 | S2 (invariants — companion to A), S3 (fail-closed loader as design constraint) |
 
-C covers: ABNF-like `lares:` URI grammar, cache-safety rules (prefix cache breakpoints), TOML manifest examples, stamping protocol, bootloader, and test plan. Directly useful for S3 registry/schema design and for validating the URI schema promoted in S0.
+C covers: ABNF-like `lar:` URI grammar, cache-safety rules (prefix cache breakpoints), TOML manifest examples, stamping protocol, bootloader, and test plan. Directly useful for S3 registry/schema design and for validating the URI schema promoted in S0.
 
 D covers: structured TOML invariants, HUD event anchors, fail-closed loader pipeline, multi-agent orchestration under Anthropic/OWASP guidance, priority layer table. Companion to A for S2 invariants work — adds OWASP prompt-injection framing A lacks.
 

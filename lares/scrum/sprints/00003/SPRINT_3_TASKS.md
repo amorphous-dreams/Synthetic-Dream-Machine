@@ -97,7 +97,7 @@ Working TOML manifests for all 5 schema types exist — workers start from these
 - `file_sha256` (raw bytes) — straightforward
 - `semantic_sha256` (normalized canonical form: UTF-8, LF, trim whitespace, sort TOML keys alphabetically, remove comments, then SHA-256) — **mark `[SP:0.45]` until tested**. Cannot finalize without a prototype normalization run.
 
-**Cache-safety rules (C-report §6):** Static blocks must not contain timestamps, session tokens, or per-call-varying content. The `lares:` URI hash = content address = cache-invalidation signal. Put stable fields first in TOML (`lares_uri`, `module_id`, `register`, `canon`), volatile last (`description`, `notes`).
+**Cache-safety rules (C-report §6):** Static blocks must not contain timestamps, session tokens, or per-call-varying content. The `lar:` URI hash = content address = cache-invalidation signal. Put stable fields first in TOML (`lares_uri`, `module_id`, `register`, `canon`), volatile last (`description`, `notes`).
 
 ### REC-01 carry-in
 

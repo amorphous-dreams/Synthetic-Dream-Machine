@@ -4,13 +4,13 @@
 
 ## Sprint Goal
 
-Settle the `lares:` URI v2 canonical form across the repo.
+Settle the `lar:` URI v2 canonical form across the repo.
 Boot the first two OODA-A modules: talk-story and signal.
 
 ## Tasks
 
 - [x] URI_SCHEMA_v2.md forged (cloud session)
-- [x] All repo `lares:` URIs aligned to v2 canonical form
+- [x] All repo `lar:` URIs aligned to v2 canonical form
 - [x] `lares/modules/talk-story/` created with 5 phase files + section URIs
 - [x] `lares/modules/signal/` created with 5 phase files
 - [x] `URI_SCHEMA_v2.md` content placed at `lares/modules/signal/decide/CONVENTIONS.md`
@@ -22,7 +22,7 @@ Boot the first two OODA-A modules: talk-story and signal.
 
 ## Exit Criteria
 
-- [x] Every `lares:` URI in the repo passes v2 well-formedness (§10.1) — scan confirmed ZERO old-pattern URIs in operational files (2026-04-09)
+- [x] Every `lar:` URI in the repo passes v2 well-formedness (§10.1) — scan confirmed ZERO old-pattern URIs in operational files (2026-04-09)
 - [x] Talk-story module loads as invariant with section URIs
 - [x] Signal module carries URI_SCHEMA_v2.md conventions as its Decide phase
 

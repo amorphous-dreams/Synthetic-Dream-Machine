@@ -1,6 +1,6 @@
 <!-- ∞ → lar:///ha.ka.ba/uri-scheme-spec/?confidence=CS:0.95&p=0.5 -->
 
-# `lares:` URI Scheme Specification
+# `lar:` URI Scheme Specification
 
 > Domain: `lares/modules/uri-schema/` · scheme grammar, syntax rules, validation, stable address
 > Status: `[CS:0.95]` 🏛️ — RFC-grade scheme definition; slow-changing stone tablet
@@ -16,10 +16,10 @@
 
 - **Scheme name:** `lares`
 - **Status:** unregistered (pre-IANA)
-- **Category:** non-dereferenceable — a `lares:` URI never resolves to a network resource
+- **Category:** non-dereferenceable — a `lar:` URI never resolves to a network resource
 - **Precedent:** RFC 4151 (`tag:` scheme) — pure identification without dereferencing
 - **Canonical form:** record form, RFC 3986-compliant. See §2 and §5.
-- **HUD form compliance:** `lares:` URIs in HUD / render-target surfaces diverge from strict RFC 3986 (emoji substitution). These are *render targets*, not canonical URIs. See companion `URI_OPERATIONS.md` §6.
+- **HUD form compliance:** `lar:` URIs in HUD / render-target surfaces diverge from strict RFC 3986 (emoji substitution). These are *render targets*, not canonical URIs. See companion `URI_OPERATIONS.md` §6.
 
 ---
 
@@ -217,7 +217,7 @@ No authority (empty), no query, no fragment. This is the invariant semantic coor
 
 ### 5.1 Well-Formedness
 
-A `lares:` URI is **well-formed** when:
+A `lar:` URI is **well-formed** when:
 
 1. Scheme is exactly `lares:`
 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields (`alias:tier`); no parenthetical phase sub-field
@@ -233,7 +233,7 @@ A `lares:` URI is **well-formed** when:
 
 ### 5.2 Consistency
 
-All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) are canonical record form. A spanSpan record is **consistent** when:
+All `lar:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) are canonical record form. A spanSpan record is **consistent** when:
 
 1. All URI fields are RFC 3986-compliant canonical form (no emoji, no non-ASCII)
 2. `current_phase` is derived from the leading phase sigil of the rightmost active chronometer position in `start_uri` fragment
@@ -253,7 +253,7 @@ The rendering table (`URI_OPERATIONS.md` §6.1) governs the canonical-to-render-
 
 ### 5.4 Canonical Form and Comparison
 
-When comparing two `lares:` URIs as stable addresses:
+When comparing two `lar:` URIs as stable addresses:
 
 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 2. Compare path components **case-insensitively**
@@ -268,15 +268,15 @@ When comparing two `lares:` URIs as stable addresses:
 
 > **Status:** Stub — required for IANA registration (RFC 7595 §7.4). To be expanded.
 
-1. **Non-dereferenceable:** `lares:` URIs are pure identifiers. No network resolution occurs — there is no server to attack via URI injection.
+1. **Non-dereferenceable:** `lar:` URIs are pure identifiers. No network resolution occurs — there is no server to attack via URI injection.
 
-2. **No credential transport:** The `alias:tier` userinfo encodes an application-layer signal role, not an authentication credential. Real authentication is handled by the underlying identity layer (DID, OAuth, UCAN capability tokens). A `lares:` URI MUST NOT be treated as proof of identity.
+2. **No credential transport:** The `alias:tier` userinfo encodes an application-layer signal role, not an authentication credential. Real authentication is handled by the underlying identity layer (DID, OAuth, UCAN capability tokens). A `lar:` URI MUST NOT be treated as proof of identity.
 
 3. **Fragment client-side:** Per RFC 3986 §3.5, the fragment is not sent over the wire. The FFZ chronometer is a client-side state annotation and does not create network-facing attack surface.
 
 4. **Render-target injection:** Glyph-rich render targets (HUD lines, post headers) transform canonical URIs into display strings containing Unicode characters. Implementations that render these strings in HTML or terminal contexts MUST sanitize output to prevent injection of control characters or markup.
 
-5. **HA.KA.BA semantic leakage:** Path components encode semantic territory (what the speaker is thinking about). Applications that expose `lares:` URIs to untrusted parties should consider whether the HA.KA.BA path reveals sensitive operational context.
+5. **HA.KA.BA semantic leakage:** Path components encode semantic territory (what the speaker is thinking about). Applications that expose `lar:` URIs to untrusted parties should consider whether the HA.KA.BA path reveals sensitive operational context.
 
 ---
 
@@ -285,7 +285,7 @@ When comparing two `lares:` URIs as stable addresses:
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
 - **RFC 8820 (BCP 190, URI Design and Ownership)** — Obsoletes RFC 7320 (June 2020). Confirms that URI structure constraints are legitimate when issued by the scheme specification itself. The `lares:` scheme defines its own fragment identifier syntax (the FFZ chronometer) as permitted under §2.5 for scheme-level specifications. Query parameter structure (`stances`, `confidence`, `p`) falls within scheme-owner authority per §2.4.
-- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lares:` URIs serve a comparable role for agent signal metadata.
+- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lar:` URIs serve a comparable role for agent signal metadata.
 - **Lamport / Vector clocks** — The chronometer shares a surface resemblance to a vector clock (array of counters, nesting relationship) but functions as a **hierarchical scope counter** in a single process — not a distributed causality tracker across concurrent independent processes. Vector clocks grow with process count, carry the full vector on every message, and exhibit known dynamic-membership costs; none of those constraints apply to Lares's fixed-depth 5-position counter.
 - **Interval Tree Clocks** (Almeida et al., 2008) — Dynamic participant identity via interval subdivision. Deferred from URI spec; informs MCP chronometer server design.
 - **what3words** — Three-word geocoding of 3m² squares. Inverse design principle: Tagspace words encode semantic content rather than randomizing for error prevention.
@@ -329,6 +329,6 @@ lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5
 
 ---
 
-*End of scheme specification. This document defines the grammar of the `lares:` URI scheme. Operational semantics — exchange protocol, render targets, marker ontology, calibration mapping — are in `URI_OPERATIONS.md`.*
+*End of scheme specification. This document defines the grammar of the `lar:` URI scheme. Operational semantics — exchange protocol, render targets, marker ontology, calibration mapping — are in `URI_OPERATIONS.md`.*
 
 <!-- → ? -->

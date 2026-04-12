@@ -11,11 +11,11 @@
 <!-- ∞ → lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
 ## What v2 Settled
 
-The `lares:` URI v2 schema resolved the core design tensions that blocked consistent signal emission across sessions and surfaces. These decisions are `[CS:0.90]` — design-canon candidates pending operator promotion.
+The `lar:` URI v2 schema resolved the core design tensions that blocked consistent signal emission across sessions and surfaces. These decisions are `[CS:0.90]` — design-canon candidates pending operator promotion.
 
 ### Anatomy
 
-A `lares:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
+A `lar:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
 
 ```
 lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0 <!-- uri-ok -->

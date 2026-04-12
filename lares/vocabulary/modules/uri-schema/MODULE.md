@@ -39,7 +39,7 @@ delegated-to:
 
 This module defines the navigational instrument layer for all Lares exchanges. It specifies:
 
-- The canonical `lares:` URI v2 schema and its component semantics
+- The canonical `lar:` URI v2 schema and its component semantics
 - Render targets: how canonical URIs project onto display surfaces (HUD line, post header, record form)
 - Exchange span display contract: what URIs appear, in what order, at what scope
 - Validation rules for URI well-formedness and span consistency

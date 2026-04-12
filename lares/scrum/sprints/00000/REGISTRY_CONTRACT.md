@@ -1,4 +1,4 @@
-# Registry Contract — `lares:` URI Resolution & Promotion Ledger
+# Registry Contract — `lar:` URI Resolution & Promotion Ledger
 
 > Domain: `lares/registry/`
 > Status: `[S:0.60]` 🏛️ — working design synthesis; depends on URI schema settlement
@@ -18,7 +18,7 @@ The registry serves as the **historical/governance truth** layer in the three-tr
 | Deployment truth | `builds/agents/` | Published, versioned, rollback-ready |
 | **Governance truth** | **`registry/`** | What got promoted, from where, under what evals |
 
-The registry holds two artifacts: a **resolver** that maps `lares:` URIs to design objects and deployed builds, and a **promotion ledger** that records every promotion event append-only.
+The registry holds two artifacts: a **resolver** that maps `lar:` URIs to design objects and deployed builds, and a **promotion ledger** that records every promotion event append-only.
 
 ---
 
@@ -26,7 +26,7 @@ The registry holds two artifacts: a **resolver** that maps `lares:` URIs to desi
 
 ### 2.1 Resolution Algorithm
 
-Given a `lares:` URI, the resolver returns the **current active artifact** by:
+Given a `lar:` URI, the resolver returns the **current active artifact** by:
 
 1. Parse the URI per the URI Schema spec (§3 Component Map)
 2. Extract the path (HAKABA address) as the semantic key

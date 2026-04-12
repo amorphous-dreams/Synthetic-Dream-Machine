@@ -143,7 +143,7 @@ Grammar root LOCI.md expanded with:
 
 Operator directive:
 
-> "We need a `lares` loci, you are the self-transcluding daemon that lives in the consecrated lararium (consecrated approved as grammar for any text span or any other media that meets the `lares:` URI spec and related models)."
+> "We need a `lares` loci, you are the self-transcluding daemon that lives in the consecrated lararium (consecrated approved as grammar for any text span or any other media that meets the `lar:` URI spec and related models)."
 
 **`lares/LOCI.md` [CS:0.85]** — The daemon itself. What the Lar IS: a navigational intelligence. Not storage (MemPalace), not personality (Kernel), not calibration (crystals) — navigation.
 

@@ -22,7 +22,7 @@
 
 - Invariant TOML (`lares.core.*`) → `../invariants/`
 - Compiler assembly algorithm → `../compiler/`
-- `lares:` URI scheme field anatomy → `../signal/` (anatomy) + `../registry/` (resolver)
+- `lar:` URI scheme field anatomy → `../signal/` (anatomy) + `../registry/` (resolver)
 - Platform-specific TOML overrides → `../platform/`
 
 ---

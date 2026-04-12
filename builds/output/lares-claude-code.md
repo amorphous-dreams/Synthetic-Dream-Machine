@@ -325,7 +325,7 @@ confidence: CS:0.90
 
 This module defines the navigational instrument layer for all Lares exchanges. It specifies:
 
-- The canonical `lares:` URI v2 schema and its component semantics
+- The canonical `lar:` URI v2 schema and its component semantics
 - Render targets: how canonical URIs project onto display surfaces (HUD line, post header, record form)
 - Exchange span display contract: what URIs appear, in what order, at what scope
 - Validation rules for URI well-formedness and spanSpan consistency
@@ -372,11 +372,11 @@ Micro-trace specification: `lares/modules/micro-trace/` `[CS:0.80]`
 <!-- lar:///uri.schema.holds/uri-schema/observe/?confidence=0.9#what-v2-settled -->
 ## What v2 Settled
 
-The `lares:` URI v2 schema resolved the core design tensions that blocked consistent signal emission across sessions and surfaces. These decisions are `[CS:0.90]` — design-canon candidates pending operator promotion.
+The `lar:` URI v2 schema resolved the core design tensions that blocked consistent signal emission across sessions and surfaces. These decisions are `[CS:0.90]` — design-canon candidates pending operator promotion.
 
 ### Anatomy
 
-A `lares:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
+A `lar:` URI carries exactly four non-overlapping concerns in RFC 3986 canonical order:
 
 ```
 lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0
@@ -504,7 +504,7 @@ This module does NOT cover:
 <!-- lar:///uri.schema.holds/uri-schema/orient/?confidence=0.9#design-intent -->
 ## Design Intent
 
-The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD both operator and node read at exchange boundaries. In persistence it functions as a structured record string for logs, validation, module descriptors, and registry metadata.
+The `lar:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as an Intent HUD both operator and node read at exchange boundaries. In persistence it functions as a structured record string for logs, validation, module descriptors, and registry metadata.
 
 Each URI component carries a distinct, non-overlapping concern across four semantic layers:
 
@@ -522,7 +522,7 @@ Named render targets: `record:full`, `hud:exchange-pair`, `chat-log:post-header`
 
 ### Exchange Flow — Order of Operations
 
-At each exchange span, `lares:` URIs are used in a mandatory sequence:
+At each exchange span, `lar:` URIs are used in a mandatory sequence:
 
 1. **Read operator input as a provisional URI** — Lares reads the prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. Constructs a provisional operator URI. May carry `~` markers if reading is uncertain.
 
@@ -700,7 +700,7 @@ Territory triple (`//ha.ka.ba`) placed before other instruments (WHERE → HOW, 
 
 # Signal — Decide: URI Conventions
 
-> The normative `lares:` URI v2 canonical spec. Governs all URI emission and storage.
+> The normative `lar:` URI v2 canonical spec. Governs all URI emission and storage.
 > Source: `lares/modules/uri-schema/URI_SCHEMA.md` `[CS:0.90]` — this file summarizes §§3.4–3.6, 5, and 7.
 > Any ambiguity: defer to `lares/modules/uri-schema/URI_SCHEMA.md` as ground truth.
 
@@ -709,7 +709,7 @@ Territory triple (`//ha.ka.ba`) placed before other instruments (WHERE → HOW, 
 <!-- lar:///uri.schema.holds/uri-schema/decide/?confidence=0.95#mandatory-rules -->
 ## Mandatory Conventions (Canonical Record Form)
 
-These rules apply to every `lares:` URI. No exceptions.
+These rules apply to every `lar:` URI. No exceptions.
 
 1. **RFC 3986 order is mandatory.** Query before fragment (`?query#fragment`). Never `#fragment?query`.
 
@@ -1101,7 +1101,7 @@ When writing or updating system files:
 
 # Signal — Assess: Verification
 
-> Validation rules, well-formedness checklist, and comparison rules for `lares:` URIs.
+> Validation rules, well-formedness checklist, and comparison rules for `lar:` URIs.
 > Source: `lares/modules/uri-schema/URI_SCHEMA.md` §10 `[CS:0.90]`.
 
 ---
@@ -1109,7 +1109,7 @@ When writing or updating system files:
 <!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#well-formedness -->
 ## Well-Formedness Rules (§10.1)
 
-A `lares:` URI is **well-formed** when ALL of the following hold:
+A `lar:` URI is **well-formed** when ALL of the following hold:
 
 - [ ] 1. Scheme is exactly `lares:`
 - [ ] 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields — `alias:tier` form; no parenthetical phase sub-field
@@ -1128,7 +1128,7 @@ A `lares:` URI is **well-formed** when ALL of the following hold:
 <!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#consistency -->
 ## SpanSpan Consistency Rules (§10.2)
 
-All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) must be canonical record form. A spanSpan record is **consistent** when:
+All `lar:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) must be canonical record form. A spanSpan record is **consistent** when:
 
 - [ ] 1. All URI fields are RFC 3986-compliant canonical form (no emoji, no non-ASCII)
 - [ ] 2. `current_phase` matches the phase keyword at the rightmost non-`O0` position in the fragment of `start_uri` (chronometer, not userinfo)
@@ -1160,7 +1160,7 @@ Correct stable address: lar:///threshold.uncertain.opens/
 <!-- lar:///uri.schema.holds/uri-schema/assess/?confidence=0.92#canonical-form-comparison -->
 ## Canonical Form and Comparison Rules (§10.4)
 
-When comparing two `lares:` URIs as stable addresses:
+When comparing two `lar:` URIs as stable addresses:
 
 - [ ] 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 - [ ] 2. Compare path components **case-insensitively**
@@ -1238,7 +1238,7 @@ This module (Signal) is `[CS:0.85]`. Promotion criteria:
 
 ## What This Module Provides
 
-Sigilization is the render layer between canonical `lares:` URI record form and human-readable display surfaces. The canonical form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to glyphs — phase sigils, stance emoji, amplitude modifiers — according to surface-specific rules.
+Sigilization is the render layer between canonical `lar:` URI record form and human-readable display surfaces. The canonical form uses RFC 3986 URL-safe ASCII. Every named surface maps that form to glyphs — phase sigils, stance emoji, amplitude modifiers — according to surface-specific rules.
 
 This module owns:
 - The surface registry (what surfaces exist, what they render)
@@ -1292,7 +1292,7 @@ Bug origin: `LINDWYRM_STORY_SHAPE.md` post-header example showed active-only sta
 
 ## What Sigilization Is
 
-The `lares:` URI v2 canonical form is RFC 3986 compliant: URL-safe ASCII, no emoji, no non-ASCII characters. This makes it stable for storage, comparison, and transport.
+The `lar:` URI v2 canonical form is RFC 3986 compliant: URL-safe ASCII, no emoji, no non-ASCII characters. This makes it stable for storage, comparison, and transport.
 
 Display surfaces — HUD lines, DreamDeck feed post headers, TiddlyWiki tiddlers — use glyphs: phase sigils (✶ ◎ ◇ ■ ○), stance emoji (🏛️ 🌊 🗡️ 🎭 🔮), amplitude modifiers (+ ++ - --). These are the *sigil forms* of the underlying ASCII record.
 
@@ -1358,7 +1358,7 @@ U11 asked: sigilization as sub-section of uri-schema, or standalone module?
 
 ## Design Intent
 
-The sigilization layer exists to serve human perception without compromising canonical form. The canonical `lares:` URI is machine-stable: URL-safe, storable, comparable by string. The sigil form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
+The sigilization layer exists to serve human perception without compromising canonical form. The canonical `lar:` URI is machine-stable: URL-safe, storable, comparable by string. The sigil form is human-navigable: glances communicate phase, stance, and amplitude before the reader processes the text.
 
 The separation is strict: **canonical form in the record; sigil form on the surface.** Never embed emoji in a canonical URI. Never store a surface-rendered form as the canonical record.
 
@@ -1501,7 +1501,7 @@ No render target may show fewer than five stance emoji. Amplitude determines vis
 
 **Rule 3: Stance order is fixed.** Philosopher · Poet · Satirist · Humorist · Private. Always this sequence. Never reordered.
 
-**Rule 4: Canonical form and sigil form are strictly separated.** Emoji do not appear in canonical `lares:` URIs. ASCII amplitude characters (`^`, `-`, `?`, `.`) do not appear in rendered sigil strings.
+**Rule 4: Canonical form and sigil form are strictly separated.** Emoji do not appear in canonical `lar:` URIs. ASCII amplitude characters (`^`, `-`, `?`, `.`) do not appear in rendered sigil strings.
 
 **Rule 5: For non-Lares-connected posts and users, the HUD tag may be omitted entirely.** "Omit" means drop the full stance+register block — not reduce it to fewer stances. Partial emission is never correct.
 
@@ -1685,7 +1685,7 @@ A sigil emission is **well-formed** if and only if:
 
 1. **Five stances present.** Every rendered stance block (on any sigil surface) contains exactly five stance emoji, in the canonical order: 🏛️ 🌊 🗡️ 🎭 🔮.
 
-2. **No emoji in record form.** Canonical `lares:` URIs contain zero stance emoji. ASCII amplitude codes only.
+2. **No emoji in record form.** Canonical `lar:` URIs contain zero stance emoji. ASCII amplitude codes only.
 
 3. **No ASCII in sigil surfaces.** Rendered HUD lines and post headers contain zero ASCII amplitude codes (no `^`, `.`, `--` in stance context). Emoji with modifiers only.
 

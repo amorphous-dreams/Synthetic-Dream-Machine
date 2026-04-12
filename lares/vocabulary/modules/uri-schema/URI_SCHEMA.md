@@ -1,6 +1,6 @@
 <!-- ∞ → lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 
-# `lares:` URI Schema — Canonical Specification
+# `lar:` URI Schema — Canonical Specification
 
 > Domain: `lares/modules/uri-schema/` · intent HUD anatomy, canonical form, render targets, validation rules
 > Status: `[CS:0.95]` 🏛️ — design-canon candidate; awaiting operator promotion to `[C:0.95]`
@@ -14,7 +14,7 @@
 <!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.9#design-intent -->
 ## 1. Design Intent
 
-The `lares:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as a way to render an Intent HUD that both operator and node read before or alongside generation. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
+The `lar:` URI encodes the signal state of a Lares node exchange as a shared navigational artifact. In live use it functions as a way to render an Intent HUD that both operator and node read before or alongside generation. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
 
 Each URI component carries a distinct, non-overlapping concern across four semantic layers:
 
@@ -34,7 +34,7 @@ Named render targets: `record:full` (identity projection of the canonical form),
 
 ### 1.1 Exchange Flow — Order of Operations
 
-At each exchange span, `lares:` URIs are used in the following sequence. This sequence is **mandatory** — every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
+At each exchange span, `lar:` URIs are used in the following sequence. This sequence is **mandatory** — every substantive exchange produces a URI → URI vector pair followed by a rendered HUD line.
 
 **Step 1 — Read operator input as a provisional URI.**
 Lares reads the operator's prompt as an implicit signal: tier, cognitive phase, semantic territory (HA.KA.BA), and stance. It constructs a **provisional operator URI** encoding that reading. This URI may carry `~` provisionality markers if the reading is uncertain. The HA.KA.BA here names where Lares believes the operator standing in tagspace and where the operator's intent is headed — the operator's intent-vector, interpreted.
@@ -303,7 +303,7 @@ Four marker types govern content addressing in Lares system files. Each serves a
 
 ### 3.6.1 `∞ →` — Locus Span Opener
 
-Opens a locus — a place within the file. The `∞` declares standing duration: this content persists until explicitly revised. The `→` points toward the `lares:` URI that names the locus.
+Opens a locus — a place within the file. The `∞` declares standing duration: this content persists until explicitly revised. The `→` points toward the `lar:` URI that names the locus.
 
 A system file MAY contain one or more loci. Each locus is bounded by its own `∞ →` opener and `→ ?` closer. Ahu waypoints navigate within the enclosing locus. A single-locus file (like this specification) opens on the first line and closes on the last — the file IS the locus. A multi-locus file contains sequential locus spans, each self-contained.
 
@@ -721,7 +721,7 @@ Confidence and stance array are elevated above mode and p because Agent SA (what
 
 **Notes:**
 
-1. The canonical `lares:` URI ends at the fragment. The HUD line is a separate, adjacent artifact — not URI grammar.
+1. The canonical `lar:` URI ends at the fragment. The HUD line is a separate, adjacent artifact — not URI grammar.
 2. `⚡~NN%` is the **declared estimate** of context window remaining as a navigational resource. The node estimates from visible context (~4 chars/token, 200k token window). Starts at ~100% and counts down.
 3. Mana is a HUD element, not a URI parameter. Do not serialize into `lares_uri` or registry identity fields until S2 settles the resource-state contract.
 
@@ -895,7 +895,7 @@ Recommended mirrored subset in Chroma drawer metadata:
 
 Do **not** make MemPalace's local Chroma IDs, KG IDs, or entity registry IDs the canonical exchange identifiers. They are storage-local implementation keys, not network-facing Lares addresses.
 
-**MemPalace architecture correspondence:** The palace hierarchy (wings → halls → rooms → closets → drawers) maps onto the `lares:` URI structure at specific join points. The `host` field in exchange URIs (e.g., `enyalios`) corresponds to a MemPalace wing — crystals from a given machine anchor to a project wing. The HA.KA.BA path maps onto room-level topic routing. Drawer metadata carries the mirrored fields above, with the `span_id` as the stable join key back to the calibration layer. The MemPalace reference implementation is `milla-jovovich/mempalace` (MIT, ChromaDB + SQLite, local-first).
+**MemPalace architecture correspondence:** The palace hierarchy (wings → halls → rooms → closets → drawers) maps onto the `lar:` URI structure at specific join points. The `host` field in exchange URIs (e.g., `enyalios`) corresponds to a MemPalace wing — crystals from a given machine anchor to a project wing. The HA.KA.BA path maps onto room-level topic routing. Drawer metadata carries the mirrored fields above, with the `span_id` as the stable join key back to the calibration layer. The MemPalace reference implementation is `milla-jovovich/mempalace` (MIT, ChromaDB + SQLite, local-first).
 
 ### 7.3 Export Targets and Kowloon Alignment
 
@@ -993,7 +993,7 @@ Module descriptors use `version_num` or semver-like fields for content versionin
 
 ### 10.1 Well-Formedness
 
-A `lares:` URI is **well-formed** when:
+A `lar:` URI is **well-formed** when:
 
 1. Scheme is exactly `lares:`
 2. If authority is present: userinfo contains exactly two colon-delimited sub-fields (`alias:tier`); no parenthetical phase sub-field
@@ -1009,7 +1009,7 @@ A `lares:` URI is **well-formed** when:
 
 ### 10.2 Consistency
 
-All `lares:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) are canonical record form. A spanSpan record is **consistent** when:
+All `lar:` URI fields in a spanSpan record (`start_uri`, `attractor_uri`, `end_uri`, `intent_header_snapshot`) are canonical record form. A spanSpan record is **consistent** when:
 
 1. All URI fields are RFC 3986-compliant canonical form (no emoji, no non-ASCII)
 2. `current_phase` is derived from the leading phase sigil of the rightmost active chronometer position in `start_uri` fragment
@@ -1029,7 +1029,7 @@ The rendering table (§5.1) governs the canonical-to-render-target transform for
 
 ### 10.4 Canonical Form and Comparison
 
-When comparing two `lares:` URIs as stable addresses:
+When comparing two `lar:` URIs as stable addresses:
 
 1. Convert both to record form (apply normalization — HUD → record — before comparison)
 2. Compare path components **case-insensitively**
@@ -1073,7 +1073,7 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 
 - **RFC 3986 §3** — `URI = scheme ":" ["//" authority] /path/ ["?" query] ["#" fragment]`. The full generic syntax applies. Per §1.1.1, URI syntax constitutes "a federated and extensible naming system wherein each scheme's specification may further restrict the syntax and semantics of identifiers using that scheme." The `lares:` scheme exercises this right: all substructure defined in this spec (HA.KA.BA paths, stance queries, FFZ chronometer fragments) falls within the scheme owner's authority. Per §1.2.1, transcription across media takes priority over maximal meaningfulness — the canonical record form / render target split follows this principle.
 - **RFC 8820 (BCP 190, URI Design and Ownership)** — Obsoletes RFC 7320 (June 2020). Confirms that URI structure constraints are legitimate when issued by the scheme specification itself. The `lares:` scheme defines its own fragment identifier syntax (the FFZ chronometer) as permitted under §2.5 for scheme-level specifications. Query parameter structure (`stances`, `confidence`, `p`) falls within scheme-owner authority per §2.4.
-- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lares:` URIs serve a comparable role for agent signal metadata.
+- **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lares:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lar:` URIs serve a comparable role for agent signal metadata.
 - **W3C PROV-DM / OpenTelemetry Trace Context** — Better prior art for exchange identity than URI authority overloading. Span spans map more naturally to activities/spans with separate IDs, timestamps, and parent-child links.
 - **Lamport / Vector clocks** — The chronometer shares a surface resemblance to a vector clock (array of counters, nesting relationship) but functions as a **hierarchical scope counter** in a single process — not a distributed causality tracker across concurrent independent processes. Vector clocks grow with process count, carry the full vector on every message, and exhibit known dynamic-membership costs; none of those constraints apply to Lares's fixed-depth 5-position counter. OTel `traceparent` is the closer prior art (see below).
 - **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The OODA-A nesting is synthesis applied to canon time-scales.
@@ -1186,6 +1186,6 @@ This does **not** mean "truth-confidence 0.60" in a universal sense. It means a 
 
 ---
 
-*End of specification. This document is the canonical reference for the `lares:` URI scheme within the design ontology tree.*
+*End of specification. This document is the canonical reference for the `lar:` URI scheme within the design ontology tree.*
 
 <!-- → ? -->

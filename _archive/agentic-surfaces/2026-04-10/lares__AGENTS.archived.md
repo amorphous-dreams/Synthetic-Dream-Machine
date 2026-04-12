@@ -93,11 +93,11 @@ Work in the appropriate subdirectory. Each subdir has its own README.md and AGEN
 
 | Subdir | When to work here |
 |---|---|
-| `signal/` | HUD annotation grammar, Tagspace, `lares:` URI format, p-band model, micro-trace |
+| `signal/` | HUD annotation grammar, Tagspace, `lar:` URI format, p-band model, micro-trace |
 | `crystal/` | STATE.jsonl schema, seal/fork/resume protocol, crystal state machine |
 | `invariants/` | `lares.core.*` behavioral invariants, priority layers, trust model, register guard |
 | `schemas/` | TOML schemas for module/tool/permission descriptors, bootloader |
-| `registry/` | `lares:` URI registry, resolver rules, promotion ledger |
+| `registry/` | `lar:` URI registry, resolver rules, promotion ledger |
 | `sprints/` | Sprint operations: tasks, roadmaps, story canon, session crystals |
 
 ---
@@ -125,7 +125,7 @@ All design content in this tree is `[S:]` or below until the operator explicitly
 | `[SP:]` | Provisional | Candidate design; shaped but untested |
 | `[S:]` | Synthesis | Working design; default for active sprint work |
 | `[CS:]` | Near-canon | Awaiting operator confirm; sources verified |
-| `[C:0.95]` | Design-canon | Promoted; `lares:` URI assigned; ready for `builds/` |
+| `[C:0.95]` | Design-canon | Promoted; `lar:` URI assigned; ready for `builds/` |
 | `[C:0.99]` | Story-canon | Narrative track; polished, operator-confirmed myth |
 
 ---

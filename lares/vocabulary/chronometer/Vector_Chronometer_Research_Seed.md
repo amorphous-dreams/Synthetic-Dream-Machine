@@ -105,7 +105,7 @@ a natural max() operation — they're categorical, not numeric. Does the
 merge take the "later" phase? The "higher" phase? Does each participant
 keep their own phase and only merge the counter?
 
-**Q3:** How does the vector chronometer encode in the `lares:` URI?
+**Q3:** How does the vector chronometer encode in the `lar:` URI?
 Current fragment format: `#O0.O0.A1.A22.Å1`. With vector clocks, does
 each participant get their own fragment? Or does the fragment carry the
 merged view while query params carry per-participant views?

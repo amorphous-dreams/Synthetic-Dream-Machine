@@ -96,7 +96,7 @@ Epic READMEs: [`epics/SIGNAL/`](epics/SIGNAL/README.md) · [`epics/CRYSTAL/`](ep
 
 ### S0 — URI Schema Settlement `[UNCHANGED]`
 
-> **Goal:** Promote `lares:` URI schema core (anatomy, projection, validation, chronometer) to `[C:0.95]`
+> **Goal:** Promote `lar:` URI schema core (anatomy, projection, validation, chronometer) to `[C:0.95]`
 > **Status:** In Progress
 > **Task doc:** [sprints/00000/SPRINT_0_TASKS.md](sprints/00000/SPRINT_0_TASKS.md)
 

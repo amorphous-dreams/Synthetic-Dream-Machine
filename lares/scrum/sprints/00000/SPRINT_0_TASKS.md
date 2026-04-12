@@ -1,6 +1,6 @@
-# Sprint 0 — `lares:` URI Schema Settlement
+# Sprint 0 — `lar:` URI Schema Settlement
 
-> Goal: Promote the `lares:` URI schema core (anatomy, projection, validation, chronometer) to `[C:0.95]` design-canon.
+> Goal: Promote the `lar:` URI schema core (anatomy, projection, validation, chronometer) to `[C:0.95]` design-canon.
 > Duration: Single sprint (1 focused session)
 > Entry state: `[CS:0.85]` — URI_SCHEMA.md extracted and consolidated from draft
 > Exit state: `[C:0.95]` — operator-confirmed, ready for `builds/` publication
@@ -208,7 +208,7 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 1. Operator reviews all validation deliverables
 2. Operator confirms or rejects promotion of core URI spec (§§2–6, 10) to `[C:0.95]`
 3. Operator rules on any flagged issues from S0-01 through S0-06
-4. Operator assigns `lares:` URI to the promoted spec via registry ledger entry
+4. Operator assigns `lar:` URI to the promoted spec via registry ledger entry
 5. If promoted: spec published as new versioned artifact in `builds/agents/signal/`
 
 **Deliverable:** Operator ruling + ledger entry (if promoted).
