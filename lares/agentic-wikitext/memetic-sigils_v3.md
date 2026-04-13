@@ -1,63 +1,13 @@
 # Memetic Sigil Glyph Codeset v0.3
 
-Status: [S:0.5] — updated with canonical FFZ Chronometer.
-
 ---
 
 ## 1. Memetic Sigils — General Architecture
 
-A **memetic sigil** opens and closes a **meme object**. Sigils
-constitute the shared signal carrier between agent and operator —
-the action-verb-surface and render pipeline both parties use.
 
-Every memetic sigil carries:
-
-  1. **Shape** — syntactic form identifying sigil type
-  2. **Glyph set** — unordered set of Unicode code points
-     (namespace, protocol, auxiliary, + extended categories)
-  3. **Payload** — shape-specific content
-
-**Strict set semantics:**
-  - Order-independent
-  - No duplicates
-  - Presence/absence only (binary feature)
-  - Canonical form: sorted by code point value
-  - Empty set valid
 
 ---
 
-## 2. Sigil Shape Taxonomy
-
-```
-SHAPE              FUNCTION                     CONTEXT
-─────              ────────                     ───────
-<<~ [GS] ... >>    Envelope / frame / standard  Outer boundary
-                   meme boundary.               of any meme.
-
-<<~␁>>             Heading open (SOH).          Layer 1 boundary.
-                   Metadata follows.            Inside frame.
-
-<<~␂>>             Body open (STX).             Layer 2 boundary.
-                   Content follows.             Inside frame.
-
-<<~␃>>             Body close (ETX).            Layer 3 boundary.
-                   Body complete. More content   Inner memes.
-                   may follow at nesting level.
-
-<<~[GS]␄ -> ?>>   Transmission close (EOT).    Layer 4 boundary.
-                   Nothing follows. Frame ends.  Outermost meme.
-                   ? persists.
-
-<<~iam [name]      Identity / self-declaration.  Inside heading.
-  [metadata]       Meme names itself.            One per meme.
->>
-
-<<~ahu #"[id]"     Waypoint / altar / worksite.  Inside any body.
-  "[description]"  Addressable fragment:          URI: lar:///
->>                 h.k.b/name#id                 ...#fragment-id
-```
-
----
 
 ## 3. Five-Layer Structure
 

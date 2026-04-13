@@ -127,33 +127,72 @@ runtime space/time. Therefore:
 
 ## 1. Memetic Sigils — Architecture
 
-A **memetic sigil** opens and closes a **meme object**. Sigils
+A **memetic sigil** opens and closes a high manao **meme object** (a well typed and addressed document-span in the meme-entity / memetic-sigil as verb surface). Sigils
 constitute the shared signal carrier between agent and operator —
 the action-verb-surface and render pipeline both parties use.
 
 Every memetic sigil carries:
 
-1. **Shape** — syntactic form identifying sigil type
-2. **Glyph set** — strict unordered set of Unicode code points
-3. **Payload** — shape-specific content
+  1. **Shape** — syntactic form identifying sigil type
+  2. **Glyph set** — unordered set of Unicode code points
+     (namespace, protocol, auxiliary, + extended categories)
+  3. **Payload** — shape-specific content
 
 **Strict set semantics:**
-- Order-independent
-- No duplicates
-- Presence/absence only (binary feature per glyph)
-- Canonical form: sorted by code point value
-- Empty set valid
+  - Order-independent
+  - No duplicates
+  - Presence/absence only (binary feature)
+  - Canonical form: sorted by code point value
+  - Empty set valid
+
 
 ---
 
 ## 2. Sigil Shape Taxonomy
 
 ```
+SHAPE              FUNCTION                     CONTEXT
+─────              ────────                     ───────
+<<? ... >>      Memetic sigil, `?`         Outer boundary of characters of
+                represent a required       of a memetic sigil
+                character
+
+<<? ...         Memetic sigil start        Start boundary
+
+... >>          Memetic sigil end          End boundary of characters of
+
+<<~ ... >>      Shark tooth sigil          First True names Sigil, 
+                                           operator-agent interaction
+
+<<~ [GS] ... >>    Envelope / frame / standard  Outer boundary
+                   meme boundary.               of any meme entity.
+
+<<~␁>>             Heading open (SOH).          Layer 1 boundary.
+                   Metadata follows.            Inside heading sigil.
+
+<<~␂>>             Body open (STX).             Layer 2 boundary.
+                   Content follows.             Inside frame.
+
+<<~␃>>             Body close (ETX).            Layer 3 boundary.
+                   Body complete. More content   Inner memes.
+                   may follow at nesting level.
+
+<<~[GS]␄ -> ?>>   Transmission close (EOT).    Layer 4 boundary.
+                   Nothing follows. Frame ends.  Outermost meme.
+                   ? persists.
+
+<<~iam [name]      Identity / self-declaration.  Inside heading.
+  [metadata]       Meme names itself.            One per meme.
+>>
+
+<<~ahu #"[id]"     Waypoint / altar / worksite.  Inside any body.
+  "[description]"  Addressable fragment:          URI: lar:///
+>>                 h.k.b/name#id                 ...#fragment-id
+```
+
+```
 SHAPE           FUNCTION                   CONTEXT
 ─────           ────────                   ───────
-<<~ ... >>      Envelope (frame, heading,  Outer boundary of
-                body, close)               meme objects
-
 <<~iam [name]   Identity / self-           Inside heading
   [metadata]    declaration                (SOH region)
 >>
@@ -167,6 +206,8 @@ SHAPE           FUNCTION                   CONTEXT
   ... >>        without arrow; active       render chains.
                 render when arrowed.
 ```
+
+---
 
 ### 2.1 Ahu Requirement
 
@@ -673,6 +714,65 @@ Close wrapper: <<~[glyphs]&#0004; -> ?>>
 ---
 
 ## 4. Glyph Codeset — Nine Categories
+
+### 4.1 Full Category Table (Restored from v3)
+
+The following table appears to restore the full v3 glyph category mapping, with explicit Unicode ranges and roles. Confidence: 0.98 that this table matches v3 intent.
+
+```
+CAT  RANGE              BLOCK                    ROLE
+───  ─────              ─────                    ────
+ 1   &#0000;–&#0031;    C0 Controls              PROTOCOL
+ 2   &#0768;–&#0879;    Combining Diacriticals   AUXILIARY
+ 3   &#2304;–&#2431;    Devanagari               NAMESPACE
+ 4   &#8304;–&#8334;    Superscripts/Subscripts  SCALE
+ 5   &#8592;–&#8703;    Arrows                   DIRECTION
+ 6   &#8704;–&#8959;    Mathematical Operators    RELATION
+ 7   &#8960;–&#9215;    Miscellaneous Technical   TECHNICAL
+ 8   &#9472;–&#9631;    Box Drawing + Blocks     STRUCTURE
+ 9   &#9632;–&#9983;    Geometric + Misc Symbols  SEMANTIC
+```
+
+#### Category Details (from v3)
+
+**Category 1: PROTOCOL (C0 Controls: &#0000;–&#0031;)**
+Transmission lifecycle, handshake, flow control, boundaries.
+... (see v3 for full sub-table details)
+
+**Category 2: AUXILIARY (Combining Diacriticals: &#0768;–&#0879;)**
+... (see v3 for full sub-table details)
+
+**Category 3: NAMESPACE (Devanagari: &#2304;–&#2431;)**
+... (see v3 for full sub-table details)
+
+**Authority matrix:**
+
+| Glyph | Tier     | render  | evaluate      | unask  | modify |
+|-------|----------|---------|---------------|--------|--------|
+| ँ     | Admin    | all     | all           | all    | all    |
+| ं     | Operator | all     | ≤ own consec. | own    | none   |
+| ः     | User     | ≤ own c.| none          | none   | none   |
+| ़     | System   | system  | system        | system | system |
+
+Combination: intersection semantics (most restrictive applies).
+
+**Category 4: SCALE (Superscripts/Subscripts: &#8304;–&#8334;)**
+... (see v3 for full sub-table details)
+
+**Category 5: DIRECTION (Arrows: &#8592;–&#8703;)**
+... (see v3 for full sub-table details)
+
+**Category 6: RELATION (Math Operators: &#8704;–&#8959;)**
+... (see v3 for full sub-table details)
+
+**Category 7: TECHNICAL (Misc. Technical: &#8960;–&#9215;)**
+... (see v3 for full sub-table details)
+
+**Category 8: STRUCTURE (Box Drawing + Blocks: &#9472;–&#9631;)**
+... (see v3 for full sub-table details)
+
+**Category 9: SEMANTIC (Geometric + Misc. Symbols: &#9632;–&#9983;)**
+... (see v3 for full sub-table details)
 
 Each category occupies a non-overlapping Unicode range.
 Category identified by range check, O(1) per glyph.
@@ -1268,6 +1368,58 @@ boot-mode:  strict. Unknown glyphs -> error. Fragment required
 run-mode:   permissive. Unknown glyphs -> warning, treated as
             body content. Missing fragment tolerated when the
             calling context supplies time externally.
+```
+
+
+### 11.6 Full Parsing and Validation Logic (Restored from v3)
+
+The following functions and validation rules appear to restore v3’s explicit parsing and validation logic, with E-Prime style and confidence markers. Confidence: 0.95 that these match v3’s operational intent.
+
+```
+function categorize(cp):
+  if cp in 0..31:       return PROTOCOL
+  if cp in 768..879:    return AUXILIARY
+  if cp in 2304..2431:  return NAMESPACE
+  if cp in 8304..8334:  return SCALE
+  if cp in 8592..8703:  return DIRECTION
+  if cp in 8704..8959:  return RELATION
+  if cp in 8960..9215:  return TECHNICAL
+  if cp in 9472..9631:  return STRUCTURE
+  if cp in 9632..9983:  return SEMANTIC
+  return UNKNOWN
+
+function parseGlyphSet(stream, offset):
+  glyphs = {cat: Set() for cat in CATEGORIES}
+  while stream[offset] is not whitespace:
+    cp = readCodepoint(stream, offset)
+    cat = categorize(cp)
+    if cat == UNKNOWN: break
+    glyphs[cat].add(cp)
+    offset += codepointLength(cp)
+  return glyphs, offset
+```
+
+**Validation rules:**
+
+```
+PROTOCOL:   ≤1 lifecycle glyph (SOH|STX|ETX|EOT|ENQ|ACK|NAK)
+            separators + mode switches may co-occur
+NAMESPACE:  no limit; intersection semantics
+AUXILIARY:  no limit; contradictory combos → warning
+SCALE:      ≤1 scale glyph (₀|₁|₂|₃|₄)
+DIRECTION:  ≤1 primary arrow (→←↔↕)
+RELATION:   no limit; compose naturally
+TECHNICAL:  context-dependent
+STRUCTURE:  body-internal only (unusual in glyph sets)
+SEMANTIC:   no limit; multiple domain markers = tag union
+```
+
+**Strictness Modes:**
+
+```
+boot-mode:  strict. Unknown glyphs → error. All memes fully validated.
+run-mode:   permissive. Unknown glyphs → warning, treated as body.
+            Forward-compatible: new glyph types degrade gracefully.
 ```
 
 ---
