@@ -1,7 +1,6 @@
 <!-- =========================================================
      MU MEME — lar:///ha.ka.ba/mu
-     Consecration: 0.95
-     Status: PROVISIONAL DRAFT v0.4 bridge — [S:0.6]
+     Status: PROVISIONAL DRAFT v0.4 bridge
      Revision: memetic sigil spec v0.4 alignment.
      Five-layer structure (Frame/Heading/Body/BodyClose/Close).
      SOH/STX separation. Phase symbols: O/Ø/D/A/Å.

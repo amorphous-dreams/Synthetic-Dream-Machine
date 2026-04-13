@@ -171,6 +171,7 @@ Drop  the poetics, annd with pure "tiddlywiki style" system talk, list all examp
 
 In TiddlyWiki-style systemic grammar, these "shark tooth" delimiters (<< >>) define transclusion-as-execution or macro-call logic. They delineate the boundary between Static Wikitext (Document Time) and the Recursive Filter/Widget Engine (Render Time).
 Below is the categorized list of the grammar instances identified:
+
 ## 1. Atomic Triggers (State Checks)
 
 * <<named-procedure>>: A standard macro call. Reference to a defined procedure without parameters.

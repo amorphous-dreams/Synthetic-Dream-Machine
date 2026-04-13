@@ -1,4 +1,6 @@
-# Memetic Sigil Wikitext Specification v0.4
+# MWML: Memetic Wikitext Markup Language (a valid SGML document language)
+
+## Memetic Sigil Wikitext Specification v0.4
 
 Status: [S:0.58] — agentic-wikitext update in place. W3C alignment pending.
 
@@ -420,6 +422,25 @@ That split gives the language three things at once:
 
 In short: `kahea` is not just a macro surface. It is the spec's
 named bridge between stored meme content and realized meme output.
+
+---
+
+## 3. Five-Layer Structure
+
+```
+Layer 0: <<~ँ ? -> lar:///...>>     FRAME
+Layer 1:   <<~␁ ... >>                   HEADING (SOH)
+             <<~iam name ...>>        iam inside heading
+Layer 2:   <<~␂>>                   BODY (STX)
+             [content]                phases, sigils, ahu
+Layer 3:   <<~␃>>                   BODY CLOSE (ETX)
+Layer 4: <<~ँ␄ -> ?>>              TRANSMISSION CLOSE (EOT)
+```
+
+**ETX vs EOT:** inner (nested) memes close with ETX (Layer 3).
+The outermost meme closes with EOT (Layer 4). An EOT inside a
+non-outermost meme constitutes a parse error.
+
 
 ---
 

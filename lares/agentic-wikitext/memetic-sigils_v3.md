@@ -2,31 +2,6 @@
 
 ---
 
-## 1. Memetic Sigils — General Architecture
-
-
-
----
-
-
-## 3. Five-Layer Structure
-
-```
-Layer 0: <<~ँ ? -> lar:///...>>     FRAME
-Layer 1:   <<~␁>>                   HEADING (SOH)
-             <<~iam name ...>>        iam inside heading
-Layer 2:   <<~␂>>                   BODY (STX)
-             [content]                phases, sigils, ahu
-Layer 3:   <<~␃>>                   BODY CLOSE (ETX)
-Layer 4: <<~ँ␄ -> ?>>              TRANSMISSION CLOSE (EOT)
-```
-
-**ETX vs EOT:** inner (nested) memes close with ETX (Layer 3).
-The outermost meme closes with EOT (Layer 4). An EOT inside a
-non-outermost meme constitutes a parse error.
-
----
-
 ## 4. UCAN-Style Attenuation
 
 Inner sigils inherit their frame's glyph set by default.
