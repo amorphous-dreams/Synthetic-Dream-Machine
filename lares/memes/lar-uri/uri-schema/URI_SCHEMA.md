@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 
 # `lar:` URI Schema — Canonical Specification
 
@@ -64,7 +64,7 @@ The URI pair opens every exchange span. Both URIs use canonical record form. Pro
 **Step 4 — Render the HUD line.**
 Immediately after the URI pair, emit a condensed single-line status display derived from the vector plus adjacent session data. This is the instrument panel for the exchange. See §5.4 for format and field ordering.
 
-**Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a closing URI with `→ ?` — unknown temporal resumption. System files open with `∞ →` (locus span opener) and close with `→ ?`. Within a system file, `ahu` markers name navigable waypoints; `kahea` markers summon content from other loci. See §3.6 (Marker Ontology) and `lares/signal/micro-trace.md`.
+**Step 5 — Generate content.** Micro-trace HUD annotations (`→◇`, `→■`, `→○`) appear inline during generation to mark phase transitions. The exchange closes with an updated HUD line and a closing URI with `→ ?` — unknown temporal resumption. System files open with `? ->` (locus span opener) and close with `→ ?`. Within a system file, `ahu` markers name navigable waypoints; `kahea` markers summon content from other loci. See §3.6 (Marker Ontology) and `lares/signal/micro-trace.md`.
 
 > **SA grounding:** Step 2 is prospective AI transparency — what the node *will* do, not what it did (Endsley 2023). The HUD line externalizes the node's metacognitive state before generation begins, functioning as an externalized metacognitive scaffold (Ji-An et al., 2025; Wang et al., 2023). *Source: `../../_todo/E-deep-research-report.md` §§2.1, 3.2*
 
@@ -301,16 +301,16 @@ Reading: "I predict our next territory is the updated schema — operator may re
 
 Four marker types govern content addressing in Lares system files. Each serves a distinct structural role. The naming draws from cultures that built navigational architectures from memory and place: the Latin *method of loci* (Simonides, Cicero, Quintilian), Polynesian *ahu* (the raised stone at the center of a marae; the platforms that hold the moai on Rapa Nui; the altar stones inside Hawaiian heiau), and Hawaiian *kāhea* (the oli kāhea — the chant that calls out and summons permission to enter a hālau).
 
-### 3.6.1 `∞ →` — Locus Span Opener
+### 3.6.1 `? ->` — MWML Span Opener
 
-Opens a locus — a place within the file. The `∞` declares standing duration: this content persists until explicitly revised. The `→` points toward the `lar:` URI that names the locus.
+Opens a locus meme — an idea-place within the file. The `?` declares standing uncertainy: this srever as a "new object" notation. The `→` points toward the `lar:` URI that names the locus.
 
-A system file MAY contain one or more loci. Each locus is bounded by its own `∞ →` opener and `→ ?` closer. Ahu waypoints navigate within the enclosing locus. A single-locus file (like this specification) opens on the first line and closes on the last — the file IS the locus. A multi-locus file contains sequential locus spans, each self-contained.
+A system file MAY contain one or more loci. Each locus is bounded by its own `? ->` opener and `→ ?` closer. Ahu waypoints navigate within the enclosing locus. A single-locus file (like this specification) opens on the first line and closes on the last — the file IS the locus. A multi-locus file contains sequential locus spans, each self-contained.
 
 Appears on: system files. Uses HTML comment wrapping.
 
 ```
-<!-- ∞ → lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///ha.ka.ba/uri-schema/?confidence=CS:0.95&p=0.5 -->
 ```
 
 The locus opener carries the file-level confidence and resolution parameter. Section-level confidence rides on ahu markers (see below).
@@ -366,7 +366,7 @@ Kahea markers appear in assembly files — documents that stitch together conten
 
 | Marker | Sigil | Role | Span semantics | Closer needed |
 |---|---|---|---|---|
-| Locus opener | `∞ →` | Opens the file-as-place | Yes — bounds the locus | Yes — `→ ?` at file end |
+| Locus opener | `? ->` | Opens the file-as-place | Yes — bounds the locus | Yes — `→ ?` at file end |
 | Locus closer | `→ ?` | Closes the locus; marks temporal gap | Yes — ends the locus | N/A |
 | Ahu | `ahu` | Navigation waypoint within a locus | No — next ahu defines boundary | No |
 | Kahea | `kahea` | Transclusion invocation from another locus | No — inline substitution point | No |
@@ -376,7 +376,7 @@ Kahea markers appear in assembly files — documents that stitch together conten
 **Single-locus file** (most common — the file IS one place):
 
 ```
-<!-- ∞ → lar:///territory.domain.path/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///territory.domain.path/?confidence=CS:0.95&p=0.5 -->
 
 # Title
 [metadata block]
@@ -397,13 +397,13 @@ One door in. Raised stones along the path. One door out.
 **Multi-locus file** (the file contains several places, each self-contained):
 
 ```
-<!-- ∞ → lar:///first.territory.path/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///first.territory.path/?confidence=CS:0.95&p=0.5 -->
 
 # First Locus
 [content with ahu waypoints]
 
 <!-- → ? -->
-<!-- ∞ → lar:///second.territory.path/?confidence=0.85 -->
+<!-- ? -> lar:///second.territory.path/?confidence=0.85 -->
 
 # Second Locus
 [content with ahu waypoints]
@@ -417,7 +417,7 @@ Each locus opens and closes independently. Ahu markers belong to their enclosing
 
 | Marker | What's uncertain | What's settled |
 |---|---|---|
-| `∞ →` locus | Content confidence (via `confidence`) | Duration — stands until revised |
+| `? ->` locus | Content confidence (via `confidence`) | Duration — stands until revised |
 | `→ ?` closer | Temporal resumption — when does this pick up? | Content confidence (via register) |
 | `ahu` waypoint | Territory confidence (via `confidence` on the ahu) | Address — the stone doesn't move |
 | `kahea` transclusion | Source content (may change independently) | The invocation — what to summon |
@@ -433,32 +433,32 @@ Each locus opens and closes independently. Ahu markers belong to their enclosing
 
 ### 3.6.9 Keyboard Input
 
-The two special characters in marker sigils are `∞` (U+221E, infinity) and `→` (U+2192, rightwards arrow). Everything else — `ahu`, `kahea`, `?`, `<!--`, `-->` — is plain ASCII.
+The two special characters in marker sigils are `?` (U+221E, infinity) and `→` (U+2192, rightwards arrow). Everything else — `ahu`, `kahea`, `?`, `<!--`, `-->` — is plain ASCII.
 
 **Linux (GTK / VS Code):**
 
 | Character | Ctrl+Shift+U method | Compose key method |
 |---|---|---|
-| `∞` | `Ctrl+Shift+U`, type `221e`, press `Enter` or `Space` | `Compose` `0` `0` |
+| `?` | `Ctrl+Shift+U`, type `221e`, press `Enter` or `Space` | `Compose` `0` `0` |
 | `→` | `Ctrl+Shift+U`, type `2192`, press `Enter` or `Space` | `Compose` `-` `>` |
 
 **macOS:**
 
 | Character | Method |
 |---|---|
-| `∞` | `Option+5` |
+| `?` | `Option+5` |
 | `→` | `Option+→` (Option + right arrow key) |
 
 **Full marker sequences (copy-paste templates):**
 
 ```
-<!-- ∞ → lar:///TERRITORY/?confidence=CS:0.95&p=0.5 -->
+<!-- ? -> lar:///TERRITORY/?confidence=CS:0.95&p=0.5 -->
 <!-- → ? -->
 <!-- ahu lar:///TERRITORY/?confidence=0.85#SECTION -->
 <!-- kahea lar:///TERRITORY/?confidence=0.85 -->
 ```
 
-> **Practical note:** The fastest path is a snippet or text-expansion shortcut. In VS Code, define snippets for `locus-open`, `locus-close`, `ahu`, and `kahea` that expand the full comment template with tab-stops for TERRITORY, confidence, and SECTION. The Compose key method (`Compose` `-` `>` for `→`, `Compose` `0` `0` for `∞`) is the fastest raw-keyboard fallback on Linux.
+> **Practical note:** The fastest path is a snippet or text-expansion shortcut. In VS Code, define snippets for `locus-open`, `locus-close`, `ahu`, and `kahea` that expand the full comment template with tab-stops for TERRITORY, confidence, and SECTION. The Compose key method (`Compose` `-` `>` for `→`, `Compose` `0` `0` for `?`) is the fastest raw-keyboard fallback on Linux.
 
 ---
 
@@ -1005,7 +1005,7 @@ A `lar:` URI is **well-formed** when:
 8. `p` value is a decimal in range `[0.0, 1.0]`
 9. Fragment is five dot-separated positions, each: phase sigil (`O`/`Ø`/`D`/`A`/`Å`) followed by integer counter ≥ 0
 10. All five positions present (no trailing-zero omission in canonical form)
-11. Exchange-closing URIs end with ` → ?`. System file locus openers use `∞ →`; system file closers use `→ ?`. Section-level markers within system files use `ahu` (waypoint) or `kahea` (transclusion) — not span sigils.
+11. Exchange-closing URIs end with ` → ?`. System file locus openers use `? ->`; system file closers use `→ ?`. Section-level markers within system files use `ahu` (waypoint) or `kahea` (transclusion) — not span sigils.
 
 ### 10.2 Consistency
 
@@ -1059,7 +1059,7 @@ When comparing two `lar:` URIs as stable addresses:
 | U3 | Should the chronometer carry phase per level or just counters? | **Phase per level per participant.** LWW-Register per scale. Counter and phase are independent. | §4 (FFZ Chronometer). `[S:0.65]` — confirmed by FFZ O1 findings. |
 | U6 | Full URI form vs stateless form — when to use which? | **Authority form in exchange spans. Authority-less (`///`) for stable addresses AND for module section URIs.** | §6 (Stable Address), §3.4 (Module URI patterns). `[CS:0.80]` |
 | U7 | Stance amplitude character for "elevated" — `+` needs URL encoding in query strings. Use `^` instead? | **Use `^` (Option β).** All URL-safe: `^` elevated, `-` suppressed, `?` uncertain, `.` baseline. Render target maps `^` → `+` for HUD display. | §3.4 (query encoding). `[CS:0.80]` — operator confirmed. |
-| U10 | Do section-level URIs within system files close with `→ ∞`? | **No.** Section URIs are `ahu` waypoints — navigation markers within a locus, not spans. They carry no closer. Only the file-level `∞ →` opener and `→ ?` closer carry span semantics. | §3.6 (Marker Ontology). `[CS:0.80]` — operator confirmed. Ahu/kahea nomenclature locked 2026-04-10. |
+| U10 | Do section-level URIs within system files close with `→ ?`? | **No.** Section URIs are `ahu` waypoints — navigation markers within a locus, not spans. They carry no closer. Only the file-level `? ->` opener and `→ ?` closer carry span semantics. | §3.6 (Marker Ontology). `[CS:0.80]` — operator confirmed. Ahu/kahea nomenclature locked 2026-04-10. |
 | U11 | Should OODA-A phase appear in userinfo `alias:tier(phase)@host`? | **No.** Phase removed from userinfo (2026-04-09). Chronometer fragment is the sole phase encoding per participant. Userinfo is now `alias:tier` only — two sub-fields, no parenthetical. Rationale: phase-in-userinfo broke URI identity stability (same speaker, different phase = different URI = wrong). | §3.4 (userinfo semantics), §4 (chronometer). `[CS:0.95]` — operator confirmed. |
 
 ### Assessment for Promotion
@@ -1123,7 +1123,7 @@ lar://scryer:node@enyalios/schema.settled.rests/?stances=^.-.-.-.-&confidence=CS
 ### A.6 System File Span (v2)
 
 ```
-<!-- ∞ → lar:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5 -->
+<!-- ? -> lar:///protocol.observed.grounds/talk-story/observe/?confidence=0.95&p=0.5 -->
 
 # Talk Story — Observe Protocol
 [metadata block]
