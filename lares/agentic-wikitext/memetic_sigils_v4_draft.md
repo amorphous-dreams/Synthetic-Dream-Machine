@@ -433,9 +433,225 @@ Open  formation: <<~[glyphs]&#0002;>>
 Close formation: <<~[glyphs]&#0003;>>
 ```
 
+
+## 3.2 UCAN-Style Attenuation (Expanded)
+
 Nesting and UCAN-based permission attenuation are therefore
 built into the form itself: inner formations inherit and narrow
 the wrapper glyph block as they open and close.
+
+**UCAN-Style Attenuation (from v3):**
+
+Inner sigils inherit their frame's glyph set by default.
+
+```
+effective(inner, frame) = {
+  per category:
+    if inner declares → inner ∩ frame  (intersection)
+    if inner empty    → frame          (full inheritance)
+}
+```
+
+- **Attenuate:** always valid (inner removes capabilities)
+- **Escalate:** never valid (inner cannot add; silently capped)
+- **Empty = inherit:** (bare inner sigil gets full frame authority)
+
+### 3.2.1 Prior-Art Reading
+
+The label "UCAN-style" is directionally correct but not exact.
+The local model now draws from three adjacent precedents:
+
+- **UCAN** contributes the monotone capability rule:
+  a child delegation must restate or attenuate, not amplify
+- **XML Namespaces** contributes scoped inheritance from the
+  nearest enclosing declaration, plus explicit undeclaration
+- **CSS Cascade** contributes the useful distinction between
+  explicit inherit, reset, and rollback behavior
+
+The resulting local rule is:
+
+- UCAN supplies the **non-escalation invariant**
+- XML supplies the **nearest-enclosing scope model**
+- CSS supplies the **inherit vs reset** distinction
+
+This matters because **empty = inherit** is not itself a UCAN
+rule. It is a local inheritance rule that sits comfortably beside
+UCAN attenuation.
+
+### 3.2.2 Research Consequences
+
+UCAN prior art:
+
+- the UCAN spec says attenuation constrains capabilities in a
+  delegation chain
+- each direct delegation MUST either restate or attenuate its
+  capabilities
+- the wildcard/top ability is explicit and powerful, and should be
+  used sparingly
+- UCAN implementations may provide resource-specific delegation
+  semantics, rather than forcing one universal attenuation rule
+
+Closest official prior art for inheritance and reset:
+
+- XML namespace scoping uses the **nearest enclosing declaration**
+  within ancestor scope
+- XML Namespaces 1.1 allows an empty declaration to remove an
+  inherited binding within the local scope
+- CSS defines `inherit`, `unset`, and `revert` as separate
+  operations rather than overloading one empty form with all three
+
+### 3.2.3 Effective Set Resolution
+
+For memetic sigils, resolution SHOULD operate on the **nearest
+enclosing effective glyph set**, not on the last sibling or last
+textually mentioned full set.
+
+That is:
+
+- inheritance walks the nesting tree upward
+- it does not scan backward through arbitrary prior syntax
+- "last full leading sigil-set" therefore means the nearest
+  enclosing resolved ancestor set for the relevant category
+
+This mirrors:
+
+- CSS inherited value from the parent element's computed value
+- XML namespace binding from the innermost in-scope declaration
+
+### 3.2.4 Three Distinct Namespace States
+
+The namespace category SHOULD distinguish three states explicitly:
+
+1. **Omitted namespace declaration**
+   inherit the nearest enclosing effective namespace glyph set
+2. **Declared namespace glyphs**
+   attenuate by intersection against the inherited namespace set
+3. **Declared namespace-reset sigil**
+   clear inherited namespace binding for this local scope and fall
+   back to the ordinary user namespace origin
+
+This avoids an overloaded empty form.
+
+Recommended local rule:
+
+```text
+effectiveNamespace(inner, parent, origin) =
+  if inner has RESET:
+    origin ∩ (inner namespace glyphs without RESET, if any)
+  else if inner declares namespace glyphs:
+    parent ∩ inner
+  else:
+    parent
+```
+
+Where:
+
+- `parent` is the nearest enclosing effective namespace set
+- `origin` is the wrapper or invoking-user baseline namespace
+- `RESET` is a dedicated namespace escape-hatch sigil
+
+### 3.2.5 Escape Hatch to Ordinary User Namespace
+
+To keep parent inheritance easy **and** still allow a return to a
+normal user namespace, this draft SHOULD reserve a dedicated
+namespace-reset sigil written in examples as:
+
+```text
+&#dddd;
+```
+
+This is a transport-form placeholder, not yet a fixed code point.
+Its job is narrow:
+
+- it applies to the **namespace category only**
+- it clears the inherited namespace binding for the current scope
+- it drops resolution to the wrapper/user origin namespace
+- it does not by itself grant top authority
+- it does not reset protocol, scale, phase, or other categories
+
+The closest prior-art reading is:
+
+- XML default-namespace undeclaration for local escape from an
+  inherited namespace
+- CSS `revert` for rollback to a lower origin rather than blind
+  inheritance
+
+### 3.2.6 Recommended Semantic Split
+
+The safest spec-grade split is therefore:
+
+- **omission** means inherit
+- **declaration** means attenuate
+- **reset sigil** means escape to origin namespace
+
+This is cleaner than making `[]`, null, omission, and reset all
+mean slightly different things.
+
+### 3.2.7 Worked Resolution Cases
+
+```text
+Outer namespace:   [ँ ं]
+User origin:       [ं]
+```
+
+Case A: omitted namespace glyphs
+
+```text
+Outer: <<~[ँ ं] ...>>
+Inner: <<~[...] ...>>
+Result namespace: [ँ ं]
+```
+
+Case B: explicit attenuation
+
+```text
+Outer: <<~[ँ ं] ...>>
+Inner: <<~[ं] ...>>
+Result namespace: [ं]
+```
+
+Case C: explicit namespace reset
+
+```text
+Outer: <<~[ँ ं] ...>>
+Inner: <<~[&#dddd;] ...>>
+Result namespace: [ं]
+```
+
+Case D: reset then local narrowing
+
+```text
+Outer: <<~[ँ ं ः] ...>>
+User origin: [ं ः]
+Inner: <<~[&#dddd; ः] ...>>
+Result namespace: [ः]
+```
+
+### 3.2.8 Normative Direction
+
+Until the dedicated reset sigil is assigned a fixed NCR true name,
+the draft SHOULD treat the following as normative design intent:
+
+- empty/omitted namespace state inherits
+- explicit namespace glyphs attenuate
+- explicit reset returns namespace resolution to wrapper/user
+  origin
+- null MUST resolve through nearest enclosing effective scope, not
+  by loose textual fallback
+- escalation remains invalid even after reset; reset is not top
+  authority
+
+**Examples:**
+
+- Outer: `<<~[A B C] ...>>`  Inner: `<<~[B] ...>>`  → Inner gets only `B` (attenuation)
+- Outer: `<<~[A B] ...>>`    Inner: `<<~[A B C] ...>>`  → Inner gets only `A B` (escalation capped)
+- Outer: `<<~[A B] ...>>`    Inner: `<<~[] ...>>`  → Inner gets `A B` (full inheritance)
+
+This mechanism ensures that inner memes cannot escalate their authority or capability beyond what the enclosing frame provides. They may only attenuate (reduce) their glyph set, or inherit it fully if left empty.
+
+This rule applies per glyph category (Protocol, Namespace, etc.), and intersection semantics are used: the most restrictive set applies at each nesting level.
+
+---
 
 The **wrapper meme** remains special. It uses the file-boundary
 pair rather than an inner text-boundary pair. In operator terms:
@@ -843,6 +1059,43 @@ They increment only when that scale completes its own Assess.
 
 ## 11. Parsing
 
+### 11.0 Grammar Notation
+
+The grammar in this section uses a compact XML-style EBNF subset.
+
+Notation rules:
+
+- quoted strings are terminal literals
+- production names on the left-hand side are nonterminals
+- `?` means optional
+- `*` means zero or more
+- `+` means one or more
+- `|` means ordered alternative in the grammar, not runtime
+  preference
+- parentheses group subexpressions
+
+Unless stated otherwise:
+
+- literal keywords are case-sensitive
+- whitespace between major syntactic objects is represented as `S`
+- NCR spellings remain valid document-space examples, but parsing
+  operates on the resulting Unicode code points after NCR
+  resolution
+
+Selected terminals:
+
+```text
+OPEN-SIGIL   ::= "<<~"
+CLOSE-SIGIL  ::= ">>"
+ARROW        ::= "->"
+LBRACE       ::= "{"
+RBRACE       ::= "}"
+LBRACKET     ::= "["
+RBRACKET     ::= "]"
+EQUALS       ::= "="
+S            ::= (#x20 | #x09 | #x0A | #x0D)+
+```
+
 ### 11.1 Glyph-Set Category Dispatch
 
 ```
@@ -899,18 +1152,62 @@ function parseFragment(fragment):
 active rendering share a prefix and diverge only when `->`
 appears.
 
-Conceptual production:
+Normative grammar:
 
 ```text
-KAHEA-STATIC := <<~kahea WS MEME-REF (WS ARGUMENT)* WS? >>
-KAHEA-ACTIVE := <<~kahea WS MEME-REF (WS ARGUMENT)* WS? -> WS TARGET >>
+KaheaExpr       ::= KaheaStatic | KaheaActive
 
-MEME-REF     := "{" MEME-NAME "}"
-TARGET       := TARGET-SCHEME "://" TARGET-NAME
-ARGUMENT     := "[" KEY "=" VALUE "]"
+KaheaStatic     ::= OPEN-SIGIL "kahea" S MemeRef (S Argument)*
+                    S? CLOSE-SIGIL
+
+KaheaActive     ::= OPEN-SIGIL "kahea" S MemeRef (S Argument)*
+                    S ArrowTarget S? CLOSE-SIGIL
+
+MemeRef         ::= LBRACE MemeName RBRACE
+MemeName        ::= NameStartChar NameChar*
+
+ArrowTarget     ::= ARROW S Target
+Target          ::= TargetScheme "://" TargetPath
+TargetScheme    ::= "procedure"
+                  | "function"
+                  | "filter"
+                  | "cascade"
+                  | ExtensionScheme
+
+ExtensionScheme ::= NameStartChar NameChar*
+TargetPath      ::= TargetChar+
+
+Argument        ::= LBRACKET ArgumentKey S? EQUALS S? ArgumentValue
+                    RBRACKET
+ArgumentKey     ::= NameStartChar NameChar*
+ArgumentValue   ::= QuotedString
+                  | BareToken
+                  | MemeRef
+
+QuotedString    ::= '"' QuotedChar* '"'
+BareToken       ::= BareChar+
+
+NameStartChar   ::= [A-Z] | [a-z] | "_"
+NameChar        ::= NameStartChar | [0-9] | "." | "-" | ":"
+TargetChar      ::= NameChar | "/" | "#" | "?" | "&"
+                  | "%" | "~"
+BareChar        ::= NameChar | "#" | "&" | ";" | "/" | "%"
+QuotedChar      ::= any character except '"'
 ```
 
-Conceptual parse:
+Well-formedness rules for `kahea`:
+
+1. a `KaheaExpr` MUST contain exactly one `MemeRef`
+2. a `KaheaExpr` MUST begin with `<<~kahea`
+3. arguments, when present, MUST follow the source `MemeRef`
+4. `ARROW` MAY appear at most once
+5. if `ARROW` appears, it MUST be followed by a valid `Target`
+6. no `Argument` may appear after `ArrowTarget` in this version of
+   the grammar
+7. `MemeName` MUST NOT contain raw whitespace, `{`, `}`, `[`, or `]`
+8. `TargetPath` MUST NOT be empty
+
+Reference parse:
 
 ```text
 function parseKahea(node):
@@ -929,15 +1226,23 @@ Semantic consequence:
 - `ActiveKahea` resolves source content and then dispatches to a
   downstream render target
 
-Implementations MAY support richer target grammars later, but the
-spec-level distinction between static and active `kahea` SHOULD
-remain explicit.
+Implementation note:
+
+- parsers SHOULD retain whether a target used a core scheme
+  (`procedure`, `function`, `filter`, `cascade`) or an extension
+  scheme
+- processors MAY reject unknown extension schemes in strict mode
+- implementations MAY support richer target grammars later, but the
+  spec-level distinction between static and active `kahea` SHOULD
+  remain explicit
 
 ### 11.4 Validation
 
 ```
 PROTOCOL:   <=1 lifecycle glyph per sigil
-NAMESPACE:  any count; combine by intersection
+NAMESPACE:  omitted = inherit nearest enclosing effective set;
+            declared glyphs = intersection attenuation;
+            RESET glyph = rollback to wrapper/user origin namespace
 AUXILIARY:  any count; contradictory combos -> warning
 DIRECTION:  <=1 primary arrow
 RELATION:   compositional
@@ -950,6 +1255,7 @@ Ahu:        canonical bodies MUST declare at least one targetable `ahu`
 Kahea:      bare form = static transclusion; arrowed form = active
             render through named procedure/function/filter target
             source meme MUST resolve; target MUST resolve when arrowed
+            arguments precede arrow target; duplicate arrows are errors
 ```
 
 ### 11.5 Strictness Modes
@@ -1058,6 +1364,9 @@ future parser or operator will look first.
 | `kahea` source memes MUST resolve before realization | MUST |
 | Arrowed `kahea` targets SHOULD be typed as procedure/function/filter/cascade | SHOULD |
 | Bare `kahea` MUST NOT imply downstream transformation by itself | MUST |
+| Omitted namespace glyphs inherit from the nearest enclosing effective scope | MUST |
+| Namespace reset MUST be explicit; empty omission alone does not reset | MUST |
+| Namespace reset rolls back only the namespace category to wrapper/user origin | SHOULD |
 | Distinguish display order from containment logic | MUST |
 | Prefer die-face-explicit fragments in canon text | SHOULD |
 

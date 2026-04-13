@@ -5,7 +5,7 @@ for reviewer-facing hardening on 2026-04-12.
 Scope: TiddlyWiki lineage, W3C syntax and document-model
 discipline, IETF normative style, schema authority boundaries,
 and agent protocol expectations most relevant to
-`memetic_sigils_v4_partial.md`.
+`memetic_sigils_v4_draft.md`.
 
 ---
 
@@ -205,6 +205,72 @@ Research consequence:
   composition**
 - the best local analogue for `kahea` is not generic macro text
   substitution; it is TiddlyWiki's addressed transclusion surface
+
+### 4.1.1 TiddlyWiki defines grammar operationally, not as one closed EBNF
+
+This is an important precision point.
+
+TiddlyWiki does define its language explicitly, but not primarily
+by publishing one monolithic formal grammar file in the style of
+XML, RDF, or PROV-N.
+
+Instead, the official parser and developer documentation define
+WikiText through an operational grammar model:
+
+- the first stage of processing is a parser that transforms text
+  into a parse-tree
+- the core provides a **recursive descent WikiText parser**
+- that parser loads its individual rules from separate
+  `module-type: wikirule` modules
+- wikirule modules are explicitly typed as `pragma`, `block`, or
+  `inline`
+- each rule module encapsulates the logic of an individual parsing
+  rule
+- rule modules provide matching and parse behavior through methods
+  such as `findNextMatch()` and `parse()`
+
+The public WikiText docs describe the same language from the user
+side through parser modes:
+
+- the parser has three modes: `pragma`, `block`, and `inline`
+- different punctuation is recognized depending on the current
+  mode
+- the parser transitions between these modes based on the text it
+  encounters
+- transclusion, macro calls, widgets, and HTML tags can affect the
+  active parse mode
+
+Research consequence:
+
+- TiddlyWiki's "grammar" is real, but it is **modular,
+  mode-sensitive, and parser-defined**
+- the language is specified by the interaction of parsing rules,
+  not just by a static symbol table
+- this is a very strong precedent for memetic sigils because your
+  draft also has mode-like distinctions, layered constructs,
+  callable objects, and a document-space to runtime-space lowering
+
+The right lineage statement is therefore slightly sharper than the
+earlier draft:
+
+> Memetic Sigil Wikitext inherits not only TiddlyWiki's
+> transclusion features, but also its style of language
+> definition: a parseable text surface described through explicit
+> parser phases, rule classes, and structural lowering into a
+> runtime-interpretable tree.
+
+What should not be claimed:
+
+- do not say TiddlyWiki already gives you a complete reviewer-ready
+  formal grammar in the W3C sense
+- do not say TiddlyWiki has no explicit grammar
+
+The accurate middle statement is:
+
+- TiddlyWiki defines WikiText **explicitly and operationally**
+  through parser architecture, parser modes, and rule modules
+- memetic sigils can honestly claim that lineage while still
+  needing a more formal reviewer-facing grammar of its own in `v5`
 
 ### 4.2 Templates are context-sensitive masks
 
@@ -545,6 +611,71 @@ Research consequence:
 - borrow W3C for structure and review method
 - do not claim W3C authority for local symbolic semantics
 
+### 5.7 Formal Grammar Notation: XML-style EBNF fits best
+
+There is now enough precedent to make a confident notation
+recommendation.
+
+PROV-N is especially useful here because it is not merely a data
+model document. It is a W3C notation spec for a human-readable,
+machine-parseable syntax. The Recommendation states that:
+
+- PROV-N is "defined through a formal grammar amenable to be used
+  with parser generators"
+- compliance can explicitly distinguish normative productions from
+  informative convenience files
+- the grammar is specified using a subset of EBNF as defined in
+  XML notation
+
+RDF 1.2 N-Triples shows the same family resemblance from another
+angle:
+
+- the specification uses XML-defined EBNF
+- it pairs grammar productions with parsing and conformance
+  sections
+- it also publishes a separate text version of the grammar
+
+RFC 5234 ABNF remains important, but its center of gravity is
+different:
+
+- ABNF is excellent for network protocols, byte-oriented lexical
+  formats, and compact Internet-syntax descriptions
+- ABNF rule naming, repetition, alternatives, and value ranges are
+  ideal when the main problem is transport syntax
+- ABNF is not the most natural match for a visibly nested,
+  transclusive document language whose review audience is already
+  primed by W3C grammar culture
+
+Research consequence:
+
+- the main memetic sigil language spec should use **XML-style
+  EBNF** for its document grammar
+- if a later profile needs stricter transport-level tokenization,
+  line framing, or low-level interchange constraints, an **ABNF
+  appendix or side artifact** may still be useful
+- but ABNF should not displace EBNF as the primary reader-facing
+  grammar notation
+
+Specific recommendation for `v5`:
+
+1. declare a `Grammar Notation` subsection near the front of the
+   language definition
+2. state that the grammar uses a subset of XML-style EBNF
+3. mark productions in the main spec as normative
+4. if a standalone grammar file is shipped, state whether it is
+   normative or merely a convenience export
+5. add a short terminal-literal table for critical sigil strings
+   and NCR-sensitive delimiter characters
+
+This choice has the highest Manaʻoʻiʻo for reviewer-facing work
+because it aligns:
+
+- with W3C notation practice
+- with document-language readability
+- with parser-generator friendliness
+- with your existing need to distinguish syntax, processing model,
+  and runtime semantics rather than collapsing them into one layer
+
 ---
 
 ## 6. Fragment Semantics and Representation Model
@@ -790,7 +921,7 @@ Recommended local rule:
 Minimum:
 
 1. `memetic_sigils_v5.md`
-2. `memetic_sigils_grammar.ebnf` or `.abnf`
+2. `memetic_sigils_grammar.ebnf`
 3. `memetic_sigils_examples.md`
 4. `memetic_sigils_metadata_examples.toml`
 
@@ -799,6 +930,8 @@ Optional but high value:
 5. machine validator or linter
 6. implementation conformance checklist
 7. fragment grammar appendix
+8. transport-profile `.abnf` if later needed for low-level
+   interchange or protocol framing
 
 ---
 
@@ -1069,15 +1202,19 @@ They are designed to survive reviewer scrutiny.
 Primary source takeaways used in this rebuild:
 
 - TiddlyWiki transclusion, template masking, widget lowering,
-  recursion errors, hard/soft transclusions, cascades, filters,
-  named run prefixes, procedures, and functions:
+  recursion errors, parser architecture, parser modes, rule
+  modules, hard/soft transclusions, cascades, filters, named run
+  prefixes, procedures, and functions:
   https://tiddlywiki.com/static/Transclusion.html
   https://tiddlywiki.com/static/Transclusion%2520in%2520WikiText.html
   https://tiddlywiki.com/static/Transclusion%2520Basic%2520Usage.html
   https://tiddlywiki.com/static/Transclusion%2520with%2520Templates.html
   https://tiddlywiki.com/static/Hard%2520and%2520Soft%2520Transclusions.html
+  https://tiddlywiki.com/static/WikiText%2520Parser%2520Modes.html
+  https://tiddlywiki.com/static/WikiText%2520parser%2520mode%2520transitions.html
   https://tiddlywiki.com/dev/static/Transclusion%2520and%2520TextReference.html
   https://tiddlywiki.com/dev/static/Parser.html
+  https://tiddlywiki.com/dev/static/WikiRuleModules.html
   https://tiddlywiki.com/dev/static/Widgets.html
   https://tiddlywiki.com/static/Cascades.html
   https://tiddlywiki.com/static/View%2520Template%2520Title%2520Cascade.html
@@ -1100,6 +1237,16 @@ Primary source takeaways used in this rebuild:
 - XML 1.0 gives the design goals and well-formedness/fatal-error
   model:
   https://www.w3.org/TR/xml/
+
+- PROV-N gives a W3C precedent for a human-readable notation spec
+  with normative productions, XML-style EBNF, and a media-type
+  section:
+  https://www.w3.org/TR/prov-n/
+
+- RDF 1.2 N-Triples gives a current W3C precedent for pairing
+  XML-style EBNF with conformance, parsing, and a separate grammar
+  text artifact:
+  https://www.w3.org/TR/rdf12-n-triples/
 
 - Namespaces in XML gives the URI-bound expanded-name model:
   https://www.w3.org/TR/xml-names/
@@ -1124,6 +1271,11 @@ Primary source takeaways used in this rebuild:
 - RFC 8174 gives the modern uppercase-only rule for normative
   keywords:
   https://www.rfc-editor.org/rfc/rfc8174
+
+- RFC 5234 gives the ABNF baseline for transport-oriented syntax
+  specifications and is most useful here as a secondary grammar
+  model, not the primary notation:
+  https://www.rfc-editor.org/rfc/rfc5234
 
 - JSON-RPC 2.0 gives compact protocol-object and error-structure
   discipline:
