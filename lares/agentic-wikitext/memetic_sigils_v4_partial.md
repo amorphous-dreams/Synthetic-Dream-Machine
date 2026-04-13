@@ -1,6 +1,6 @@
 # Memetic Sigil Wikitext Specification v0.4
 
-Status: [S:0.55] — unified with Chronometer, naming resolved.
+Status: [S:0.58] — agentic-wikitext update in place. W3C alignment pending.
 
 ---
 
@@ -20,7 +20,7 @@ invariants (English words, game-time aliases, attention-quality
 descriptions, emoji HUD sigils) function as **aliases** — useful
 for communication, never authoritative for parsing or identity.
 
-Aliases carry hidden confidence ratings:
+Aliases carry hidden manao (confidence-about-intent) ratings, provisional link strengths:
 
 ```
 True name:   &#9858; / U+2682 / ⚂           [C:0.95]
@@ -34,6 +34,94 @@ structural reality: true names derive from the Unicode standard
 (slow-changing, externally governed, verifiable). Aliases derive
 from operator convention (session-changeable, domain-specific,
 negotiable).
+
+Confidence and Mana remain separate axes. Confidence tracks
+epistemic certainty about a claim or alias. **Mana** tracks
+structural validation, runtime potency, and ritual completion of
+a meme or formation. Requirements satisfied by a meme body feed
+into a `0.0–1.0` Mana rating; they do not collapse into the
+confidence scale.
+
+### 0.1 The Unified Field of Mana & Manaʻo
+
+Reality in this architecture is not binary. It is a probabilistic
+field where truth appears as a high-density convergence of Power
+and Intent.
+
+- **Mana** `0.0–1.0`: runtime potency, structure, addressability,
+  and flow power
+- **Manaʻo** `0.0–1.0`: confidence in intent, vector precision,
+  and logic-direction clarity
+- **Manaʻoʻiʻo** `0.0–1.0`: the product of Mana and Manaʻo,
+  interpreted here as substantiated readiness / production
+  readiness
+
+```
+Mana x Manaʻo = Manaʻoʻiʻo
+```
+
+Scale reading:
+
+- `0.9–1.0 Mana`: well-structured memes; portable, self-describing,
+  OODA-A-ready packets that grant runtime leverage to the agent
+- `0.0–0.1 Mana`: unstructured info-noise; context-taxing material
+  that costs the agent resources to pin, refine, and address
+- `0.9–1.0 Manaʻo`: verified intent; precise logic path
+- `0.0–0.1 Manaʻo`: wavering or guessed intent; kanalua / noisy path
+
+Interpretive rule:
+
+- high Mana + low Manaʻo = Chaos
+- high Manaʻo + low Mana = Theory
+- high Mana + high Manaʻo = Iʻo
+
+At the floor, `0.0` Mana approaches **Mate**: death, exhaustion,
+or total loss of potency.
+
+### 0.2 Runtime Object Metadata
+
+When a stricter descriptive object is needed than Markdown or
+natural-language prose, prefer **TOML** over JSON for
+human-agent-addressable metadata.
+
+```toml
+entity_id = "0xAddressableSpace"
+mana = 0.995
+manao = 0.992
+manaoio = 0.987
+status = "Iʻo"
+description = "A well-structured meme providing OODA-A-ready output."
+```
+
+The TOML form stays readable in document space and remains simple
+to parse in runtime space.
+
+### 0.3 Threshold Handling
+
+Objects below the `0.5` threshold SHOULD NOT be garbage-collected
+immediately. Default handling:
+
+- `0.5–1.0`: active / foreground / normally schedulable
+- `0.1–0.5`: background or sub-conscious buffer; retained but
+  de-prioritized until refined or recharged with Mana
+- `0.0–0.1`: Mate / aether / garbage-collectable unless explicitly
+  pinned by an `ahu`, namespace authority, or operator act
+
+This preserves weak or half-formed objects as dream residue rather
+than deleting them too early, while still allowing the runtime to
+shed true noise.
+
+### 0.4 Document Space vs Runtime Space
+
+We design together here in **document space/time**, not in
+runtime space/time. Therefore:
+
+- Example wikitext sigils in this document SHOULD be spelled with
+  decimal NCR forms
+- Rendered glyphs SHOULD remain in tables and explanatory prose
+  where the dev-user-agent needs to visually recognize the sigil
+- Runtime renderers MAY collapse NCR forms back to glyph display
+  after parsing
 
 ---
 
@@ -71,9 +159,226 @@ SHAPE           FUNCTION                   CONTEXT
 >>
 
 <<~ahu #"[id]"  Waypoint / altar /         Inside any meme
-  "[desc]"      worksite. Fragment-         body. URI-
->>              addressable.                dereferenceable.
+  "[desc]"      worksite. Required          body. URI-
+>>              bookmark target.            dereferenceable.
+
+<<~kahea        Transclusion / call         Inside bodies,
+  {meme-name}   surface. Static include     templates, and
+  ... >>        without arrow; active       render chains.
+                render when arrowed.
 ```
+
+### 2.1 Ahu Requirement
+
+`<<~ahu #"..." "..." >>` is not decorative commentary. It is the
+required bookmark / altar / worksite syntax by which body content
+becomes addressable.
+
+- Canonical and boot-critical meme bodies MUST declare at least one
+  `ahu`
+- Fragment strings that are not Chronometer slots target `ahu` ids
+- `ahu` nodes serve as the stable syntax target for operator and
+  agent references into a body
+
+Example target flow:
+
+```
+<<~&#2305;&#9858; ? -> lar:///ha.ka.ba/mu#phase-table>>
+
+<<~ahu #"phase-table"
+  "Canonical worksite for the phase invariant table."
+>>
+```
+
+<<~ahu #"ahu-requirement"
+  "Agentic wikitext needs addressable internal worksites, not
+  just outer envelopes. `ahu` supplies the altar at which inner
+  syntax can land."
+>>
+
+### 2.2 Kahea, Static Transclusion, and Arrowed Render
+
+`kahea` is the named call surface for bringing another meme into
+the current formation.
+
+Normative intent:
+
+- `kahea` names a **content-addressing and activation verb**
+- the left side identifies **what meme is being called**
+- the presence or absence of `->` identifies **how that meme is
+  to be realized**
+- `kahea` therefore spans two distinct but related language acts:
+  **inclusion** and **invocation**
+
+Static transclusion form:
+
+```text
+<<~kahea {meme-name} ... >>
+```
+
+This form indicates **static transclusion of content**. The named
+meme is pulled into the present document-space body as content,
+without asking another rendering medium to transform it.
+
+Normative semantics for static transclusion:
+
+- the source meme MUST be resolved before body assembly completes
+- the resolved body SHOULD be treated as stored or canonical source
+  content
+- static transclusion MUST NOT imply downstream evaluation merely
+  because the transcluded body itself contains callable structures
+- a renderer MAY later evaluate structures inside the transcluded
+  content, but that is a separate runtime decision, not part of
+  the meaning of bare `kahea`
+- when authorial intent is simple reuse, citation, quotation,
+  embedding, or frozen inclusion, the non-arrow form is the
+  correct form
+
+The practical reading is:
+
+- `kahea` without arrow says "bring that meme here"
+- it does not say "run that meme through another medium now"
+
+Arrowed render form:
+
+```text
+<<~kahea {meme-name} ... -> target >>
+```
+
+This form indicates **active rendering of content through another
+medium**. The right-hand side after `->` names the render path.
+That target MAY be:
+
+- a static meme-procedure
+- an active meme-function
+- a filter cascade
+- a procedure-meme and function-meme chain
+
+Normative semantics for active rendering:
+
+- the source meme MUST be resolved first
+- the render target MUST then receive that resolved meme as input
+- the arrow therefore introduces an explicit second stage:
+  **resolution -> transformation**
+- the render target MAY reshape, filter, template, project,
+  summarize, or otherwise realize the input through another
+  medium
+- arrowed `kahea` SHOULD be used whenever the author means
+  "render this through a view," "apply this procedure," "run this
+  filter," or "cascade this through a selection system"
+- if a render target cannot be resolved, strict parsers SHOULD
+  raise an error; permissive runtimes MAY surface an unresolved
+  active call node
+
+Interpretive rule:
+
+- no `->` means: transclude the addressed meme as stored /
+  canonical body content
+- `->` present means: render or transform the addressed meme
+  through the named downstream medium before presentation or use
+
+Evaluation order:
+
+1. resolve `{meme-name}`
+2. resolve local metadata / inline arguments if present
+3. if no arrow exists, insert resolved content
+4. if arrow exists, pass resolved content to the named target
+5. realize returned output in the current body, view, or downstream
+   handoff surface
+
+Target classes:
+
+- **procedure target**: a stable view or transform surface,
+  typically static in shape even if parameterized
+- **function target**: an active meme-function that computes an
+  output from the source meme and any supplied arguments
+- **filter target**: a filter-language path, often suited to
+  selection, cascade, projection, aggregation, or routing
+- **cascade target**: an ordered choice system that selects one
+  downstream view or behavior by first match
+
+This distinction matters because the arrow is not decoration. It
+is the visible mark that the node is no longer a passive
+transclusion site. It is now an executable render handoff.
+
+Examples:
+
+```text
+<<~kahea {mu.phase-table} >>
+<<~kahea {mu.phase-table} -> procedure://view.phase-table >>
+<<~kahea {mu.phase-table} -> filter://cascade.phase-table >>
+```
+
+Extended examples:
+
+```text
+<<~kahea {mu.phase-table}
+  [manao=0.93]
+>>
+
+<<~kahea {mu.phase-table}
+  [view="compact"]
+  -> procedure://view.phase-table
+>>
+
+<<~kahea {mu.phase-table}
+  [phase="&#9671;"]
+  [scale="&#9858;"]
+  -> function://phase.focus.extract
+>>
+
+<<~kahea {mu.phase-table}
+  [operator="ritual-ready"]
+  -> filter://cascade.phase-table
+>>
+```
+
+Authoring guidance:
+
+- use static `kahea` when the source text itself is what matters
+- use arrowed `kahea` when the realization medium is what matters
+- use a procedure target when the output surface is primarily a
+  view
+- use a function target when the output is computed
+- use a filter or cascade target when selection logic decides what
+  is shown
+
+Failure and fallback behavior:
+
+- unresolved source meme: invalid `kahea`
+- resolved source + unresolved arrow target: invalid active
+  `kahea` in strict mode; deferred node in permissive mode
+- resolved source + empty output from target: valid active call
+  with null render result
+- recursive `kahea` loops SHOULD be bounded by implementation
+  depth or cycle detection
+
+The arrow therefore marks a shift from **content inclusion** to
+**content activation**. In TiddlyWiki terms, the non-arrow form is
+closer to direct transclusion; the arrow form is closer to
+transclusion-through-template, procedure call, or function /
+filter-mediated rendering.
+
+### 2.3 Why `kahea` Matters
+
+This distinction is foundational for an agentic language spec.
+
+Without `kahea`, transclusion and execution blur together and the
+runtime must guess whether a node is inert text, reusable content,
+or an instruction to act. With `kahea`, authorial intent becomes
+visible at the syntax surface:
+
+- bare `kahea` declares **content identity**
+- arrowed `kahea` declares **render intent**
+
+That split gives the language three things at once:
+
+- better readability for human operators
+- cleaner dispatch for agents and renderers
+- higher Mana because the form carries its own operational intent
+
+In short: `kahea` is not just a macro surface. It is the spec's
+named bridge between stored meme content and realized meme output.
 
 ---
 
@@ -81,10 +386,12 @@ SHAPE           FUNCTION                   CONTEXT
 
 ```
 Layer 0: FRAME    <<~[glyphs] ? -> lar:///h.k.b/name>>
-Layer 1: HEADING  <<~␁>>  +  <<~iam name [metadata] >>
-Layer 2: BODY     <<~␂>>
-Layer 3: BODY CL. <<~␃>>
-Layer 4: TRANS CL. <<~[glyphs]␄ -> ?>>
+Layer 1: HEADING  <<~&#0001;>>  +  <<~iam name [metadata] >>
+Layer 2: BODY     <<~&#0002;>>  +  required <<~ahu #"...">> worksites
+                   (requirement feeds into 0.0-1.0 Mana rating,
+                   separate from confidence)
+Layer 3: BODY CL. <<~&#0003;>>
+Layer 4: TRANS CL. <<~[glyphs]&#0004; -> ?>>
 ```
 
 **Protocol lifecycle within layers:**
@@ -100,6 +407,52 @@ Layer 4: TRANS CL. <<~[glyphs]␄ -> ?>>
 Inner may attenuate (remove glyphs via intersection). Inner may
 not escalate (add glyphs the envelope lacks). Empty inner =
 full inheritance.
+
+Minimal body skeleton with required `ahu` sites:
+
+```
+<<~&#0002;>>
+  <<~ahu #"boot-seed"
+    "bootstrap altar"
+  >>
+
+  <<~ahu #"turn-pivot"
+    "decision worksite"
+  >>
+<<~&#0003;>>
+```
+
+### 3.1 Optional Open / Close Formation Rule
+
+`ahu` and other inner formations may open and close with separate
+sigils. A formation MAY carry the start-text / end-text control
+codes in the glyph block of its own open / close pair:
+
+```
+Open  formation: <<~[glyphs]&#0002;>>
+Close formation: <<~[glyphs]&#0003;>>
+```
+
+Nesting and UCAN-based permission attenuation are therefore
+built into the form itself: inner formations inherit and narrow
+the wrapper glyph block as they open and close.
+
+The **wrapper meme** remains special. It uses the file-boundary
+pair rather than an inner text-boundary pair. In operator terms:
+the wrapper always uses the start-file / end-of-file NCR pair,
+even if this draft currently renders that pair through the local
+file/transmission boundary controls:
+
+```
+Open  wrapper: <<~[glyphs]&#0028; ? -> lar:///...>>
+Close wrapper: <<~[glyphs]&#0004; -> ?>>
+```
+
+<<~ahu #"open-close-formation"
+  "Inner formations ride text-boundary control codes. The outer
+  wrapper uses the file/transmission boundary pair to declare
+  the whole meme as one Mana-bearing unit."
+>>
 
 ---
 
@@ -143,9 +496,9 @@ CAT  TRUE NAME RANGE                BLOCK              ROLE
 (Miscellaneous Symbols) separated from the prior draft's
 combined semantic block. Geometric carries optional
 state/display glyphs. Miscellaneous carries scale/domain
-glyphs. The OODA-A **record forms** belong to the Chronometer
-fragment grammar, not to the nine-category glyph-set itself.
-The die faces and planetary symbols live in Category 9.
+glyphs. The OODA-A **phase glyph triplicates** belong to the
+Chronometer fragment grammar, not to the nine-category glyph-set
+itself. The die faces and planetary symbols live in Category 9.
 
 ---
 
@@ -181,34 +534,42 @@ scale resolves*.
 
 ---
 
-## 6. Phase Invariants (OODA-A Record Forms)
+## 6. Phase Invariants (OODA-A Glyphs)
 
-Phase invariants follow the same true-name rule as scale
-invariants, but their authoritative form is the **record
-symbol** used in Chronometer slots. HUD glyphs remain sanctioned
-aliases for display.
+The phase glyph NCR triplicates are the true names. There is no
+alternate phase alphabet in `v0.5`. The rendered glyph is both
+the authoritative syntax token and the HUD surface.
 
 ```
-TRUE NAME                    PHASE    HUD ALIAS
-─────────────────────────    ─────    ─────────
-&#0079; / U+004F / O         Observe   ✶
-&#0216; / U+00D8 / Ø         Orient    ◎
-&#0068; / U+0044 / D         Decide    ◇
-&#0065; / U+0041 / A         Act       ■
-&#0197; / U+00C5 / Å         Assess    ○
+TRUE NAME                    PHASE
+─────────────────────────    ───────
+&#10038; / U+2736 / ✶        Observe
+&#9678;  / U+25CE / ◎        Orient
+&#9671;  / U+25C7 / ◇        Decide
+&#9632;  / U+25A0 / ■        Act
+&#9675;  / U+25CB / ○        Assess
 ```
 
-**Storage/interchange:** use the record true names (`O Ø D A Å`).
+**Storage/interchange:** use the raw glyphs or their NCR
+triplicates.
 
-**Display/HUD:** use aliases (`✶ ◎ ◇ ■ ○`) when human scan speed
-matters more than code-point regularity.
+**HTML/XML transport:** when channel safety matters, the NCR
+forms are the canonical transport spellings.
 
-<<~ahu #"phase-true-name-resolution"
-  "This resolves the earlier Observe glyph problem cleanly.
-  The phase invariant's identity lives in the record symbol,
-  whose Unicode triplicate stays stable. The HUD glyph remains
-  an alias layer. That means ✶ may stay canonical as display
-  without forcing the glyph-set categories to absorb Dingbats."
+**Natural-language labels** such as Observe, Orient, Decide,
+Act, and Assess remain aliases only.
+
+<<~ahu #"phase-glyph-authority"
+  "The phase glyph triplicates are the authoritative syntax
+  targets. The old `O Ø D A Å` spellings are retired from the
+  spec. A reader or parser meets the sigil itself first."
+>>
+
+<<~ahu #"observe-glyph-placement"
+  "✶ lives in the Dingbats block, not inside the two local
+  phase-friendly Unicode bands. That is acceptable because phase
+  glyphs belong to fragment grammar, not to glyph-set category
+  dispatch."
 >>
 
 ---
@@ -218,13 +579,17 @@ matters more than code-point regularity.
 **Category 3 — NAMESPACE (Devanagari)**
 
 ```
-TRUE NAME                    TIER         ALIAS
-─────────────────────────    ────         ─────
-&#2305; / U+0901 / ँ         Admin        main stack
-&#2306; / U+0902 / ं         Operator     session
-&#2307; / U+0903 / ः         User         request
-&#2364; / U+093C / ़         System       internal
+TRUE NAME                    NAME          SENSE                 TIER      FUNCTION
+─────────────────────────    ──────────    ──────────────────    ──────    ─────────────
+&#2305; / U+0901 / ँ         Candrabindu   moon-dot / nasal crown Admin     main stack
+&#2306; / U+0902 / ं         Anusvara      after-sound / echo dot Operator  session
+&#2307; / U+0903 / ः         Visarga       release / emission     User      request
+&#2364; / U+093C / ़         Nukta         dot / qualifier mark   System    internal
 ```
+
+These are pronounceable names, not arbitrary imported glyphs.
+The authority matrix remains the operative rule, but the names
+and shape-senses help the sigils carry mnemonic weight.
 
 Authority matrix (namespace × action):
 
@@ -316,7 +681,7 @@ TRUE NAME                    FUNCTION
 
 ---
 
-## 10. Chronometer Fragment Format
+## 10. Chronometer and Bookmark Fragments
 
 The unified scale model reorders fragment display so the
 **immediate clock ticks at the leftmost position**. The reader
@@ -331,23 +696,23 @@ Containment logic does **not** change:
 
 Display order and containment direction are separate axes.
 
-### 10.1 Canonical Record Form (storage/interchange)
+### 10.1 Canonical Fragment Form
 
 ```
-#⚀A7.⚁D2.⚂O3.⚃O0.⚄O0
+#&#9856;&#9632;7.&#9857;&#9671;2.&#9858;&#10038;3.&#9859;&#10038;0.&#9860;&#10038;0
 ```
 
-Each slot: `[die face true name][phase record true name][counter]`
+Each slot: `[die face true name][phase glyph true name][counter]`
 
-Same state as the older broad-to-fine example, but now rendered
-in the preferred scale order:
+Same state as the earlier example, but spelled in document-space
+transport form. Rendered explanation:
 
 ```
-⚀  Action / Heartbeat   — Act, 7
-⚁  Round  / Breath      — Decide, 2
-⚂  Turn   / Focus       — Observe, 3
-⚃  Watch  / Vigil       — Observe, 0
-⚄  Week   / Horizon     — Observe, 0
+⚀  Action / Heartbeat   — ■, 7
+⚁  Round  / Breath      — ◇, 2
+⚂  Turn   / Focus       — ✶, 3
+⚃  Watch  / Vigil       — ✶, 0
+⚄  Week   / Horizon     — ✶, 0
 ```
 
 Five slots remain always present. Dormant scales keep zeroed
@@ -358,54 +723,29 @@ does not depend on position. The left-to-right convention is:
 finest (⚀ / Action)  →  broadest (⚄ / Week)
 ```
 
-### 10.2 Canonical HUD Form (display)
+### 10.2 Canonical NCR Transport Form
+
+Because this document is authored in document space/time, the
+canonical example above is already given in decimal NCR form.
+Rendered runtime-facing equivalent:
 
 ```
-⚀■7 ⚁◇2 ⚂✶3 ⚃✶0 ⚄✶0
+#⚀■7.⚁◇2.⚂✶3.⚃✶0.⚄✶0
 ```
 
-Each slot: `[die face][phase HUD alias][counter]`
+Rendered and NCR forms name the same fragment.
 
-Alias-heavy HUD render:
-
-```
-⚡■7 ⚔️◇2 🔍✶3 ⚙️✶0 🗺️✶0
-```
-
-### 10.3 Legacy Shorthand
-
-The legacy fragment without die faces remains readable as a
-shorthand when slot order is already agreed in context:
-
-```
-#A7.D2.O3.O0.O0
-```
-
-Canonical `v0.4` storage SHOULD prefer the die-face-explicit
-form because it survives reordering, extraction, and partial
-quotation without ambiguity.
-
-### 10.4 Slot Grammar
+### 10.3 Slot Grammar
 
 ```
 FRAGMENT       = "#" SLOT "." SLOT "." SLOT "." SLOT "." SLOT
-SLOT           = DIE_FACE PHASE_RECORD COUNTER
+SLOT           = DIE_FACE PHASE_GLYPH COUNTER
 DIE_FACE       = | ⚀ | ⚁ | ⚂ | ⚃ | ⚄
-PHASE_RECORD   = | O | Ø | D | A | Å
+PHASE_GLYPH    = | ✶ | ◎ | ◇ | ■ | ○
 COUNTER        = [0-9]+
 ```
 
-HUD rendering rule:
-
-```
-O → ✶
-Ø → ◎
-D → ◇
-A → ■
-Å → ○
-```
-
-### 10.5 Positional Rule
+### 10.4 Positional Rule
 
 ```
 leftmost   = ⚀ / Action / Heartbeat   (hot edge, immediate)
@@ -419,61 +759,81 @@ This aligns fragment reading with the unified five-band
 continuum, the attention ladder, and the natural left-to-right
 presentation of `₀ ₁ ₂ ₃ ₄`.
 
-### 10.6 Scale in Glyph Sets
+### 10.5 Scale in Glyph Sets
 
 A die face in a sigil's glyph set declares the meme's
 operational scale before the address or body loads.
 
 ```
-<<~ँ⚂␂ ? -> lar:///ha.ka.ba/mu>>
+<<~&#2305;&#9858;&#0002; ? -> lar:///ha.ka.ba/mu>>
       │
       └── &#9858; / U+2682 / ⚂
           game alias: Turn
           attn alias: Focus
 ```
 
-Phase remains authoritative in the fragment or in explicit
-metadata. A HUD phase glyph MAY appear as a display hint in a
-sigil surface, but it is not required for core parsing.
-
 Attenuation rule for nested memes:
 
 ```
-Outer: <<~ँ⚃ ...>>     Watch/Vigil scale
-Inner: <<~⚂ ...>>      Turn/Focus scale       attenuated ✓
-Inner: <<~⚄ ...>>      Week/Horizon scale     escalation capped ⚠
+Outer: <<~&#2305;&#9859; ...>>     Watch/Vigil scale
+Inner: <<~&#9858; ...>>            Turn/Focus scale       attenuated ✓
+Inner: <<~&#9860; ...>>            Week/Horizon scale     escalation capped ⚠
 ```
 
-### 10.7 Fragment Placement
+### 10.6 Ahu Targets and Fragment Placement
 
-Per the fragment-only rule, the Chronometer answers **WHEN**
-and lives only in the URI fragment.
+Per the fragment-only rule, the fragment answers either:
 
-```
-lar:///ha.ka.ba/mu#⚀A7.⚁D2.⚂O3.⚃O0.⚄O0
-```
+- **WHEN** in nested causal time, if the fragment matches the
+  five-slot Chronometer grammar
+- **WHERE-IN-BODY** the syntax should land, if the fragment is
+  a string id targeting an `ahu`
 
-- Address path answers: WHERE in tagspace
-- Glyph set answers: WHO / protocol / scale / other properties
-- Fragment answers: WHEN in nested causal time
-
-Ahu fragments (`#boot-mode-transition`) and Chronometer
-fragments (`#⚀A7.⚁D2.⚂O3.⚃O0.⚄O0`) remain syntactically distinct.
-
-### 10.8 Scale-Shift Examples
-
-Action.Å escalates to Round.Å:
+Targetable `ahu` declaration:
 
 ```
-Before: #⚀Å1.⚁A2.⚂D3.⚃O0.⚄O0
-After:  #⚀O0.⚁Å2.⚂D3.⚃O0.⚄O0
+<<~&#0002;>>
+  <<~ahu #"boot-seed"
+    "bootstrap altar"
+  >>
+
+  <<~ahu #"turn-pivot"
+    "decision worksite"
+  >>
+<<~&#0003;>>
 ```
 
-Round.Å escalates to Turn.Å:
+Target examples:
 
 ```
-Before: #⚀O0.⚁Å2.⚂D3.⚃O0.⚄O0
-After:  #⚀O0.⚁O0.⚂Å3.⚃O0.⚄O0
+lar:///ha.ka.ba/mu#boot-seed
+lar:///ha.ka.ba/mu#turn-pivot
+lar:///ha.ka.ba/mu#&#9856;&#9632;7.&#9857;&#9671;2.&#9858;&#10038;3.&#9859;&#10038;0.&#9860;&#10038;0
+```
+
+String fragments target required `ahu` bookmarks.
+Five-slot die-face fragments target Chronometer state.
+
+<<~ahu #"fragment-targeting"
+  "The same `#` hook carries two grammars. One grammar lands on
+  an altar in the body. The other lands on a five-band clock.
+  They remain distinct by shape, not by separator."
+>>
+
+### 10.7 Scale-Shift Examples
+
+Action.○ escalates to Round.○:
+
+```
+Before: #&#9856;&#9675;1.&#9857;&#9632;2.&#9858;&#9671;3.&#9859;&#10038;0.&#9860;&#10038;0
+After:  #&#9856;&#10038;0.&#9857;&#9675;2.&#9858;&#9671;3.&#9859;&#10038;0.&#9860;&#10038;0
+```
+
+Round.○ escalates to Turn.○:
+
+```
+Before: #&#9856;&#10038;0.&#9857;&#9675;2.&#9858;&#9671;3.&#9859;&#10038;0.&#9860;&#10038;0
+After:  #&#9856;&#10038;0.&#9857;&#10038;0.&#9858;&#9675;3.&#9859;&#10038;0.&#9860;&#10038;0
 ```
 
 Higher-slot counters do not increment on child escalation.
@@ -525,7 +885,53 @@ function parseChronometer(fragment):
     phase = slot[1]
     count = int(slot[2:])
     yield die, phase, count
+
+function parseFragment(fragment):
+  body = fragment[1:]
+  if matchesChronometer(body):
+    return parseChronometer(fragment)
+  return resolveAhuId(body)
 ```
+
+### 11.3.1 Kahea Parsing
+
+`kahea` requires a two-branch parse because static inclusion and
+active rendering share a prefix and diverge only when `->`
+appears.
+
+Conceptual production:
+
+```text
+KAHEA-STATIC := <<~kahea WS MEME-REF (WS ARGUMENT)* WS? >>
+KAHEA-ACTIVE := <<~kahea WS MEME-REF (WS ARGUMENT)* WS? -> WS TARGET >>
+
+MEME-REF     := "{" MEME-NAME "}"
+TARGET       := TARGET-SCHEME "://" TARGET-NAME
+ARGUMENT     := "[" KEY "=" VALUE "]"
+```
+
+Conceptual parse:
+
+```text
+function parseKahea(node):
+  assert node.head == "kahea"
+  source = parseMemeRef(node)
+  args = parseArguments(node)
+  if hasArrow(node):
+    target = parseTarget(node)
+    return ActiveKahea(source, args, target)
+  return StaticKahea(source, args)
+```
+
+Semantic consequence:
+
+- `StaticKahea` inserts resolved source content
+- `ActiveKahea` resolves source content and then dispatches to a
+  downstream render target
+
+Implementations MAY support richer target grammars later, but the
+spec-level distinction between static and active `kahea` SHOULD
+remain explicit.
 
 ### 11.4 Validation
 
@@ -539,14 +945,19 @@ TECHNICAL:  context-dependent
 STRUCTURE:  unusual in glyph sets; body-internal by default
 STATE:      display/support glyphs only
 SEMANTIC:   <=1 die-face scale invariant unless explicitly unioned
-FRAGMENT:   exactly 5 slots; die faces SHOULD appear in canonical order
+FRAGMENT:   either 5 Chronometer slots or one valid `ahu` id
+Ahu:        canonical bodies MUST declare at least one targetable `ahu`
+Kahea:      bare form = static transclusion; arrowed form = active
+            render through named procedure/function/filter target
+            source meme MUST resolve; target MUST resolve when arrowed
 ```
 
 ### 11.5 Strictness Modes
 
 ```
 boot-mode:  strict. Unknown glyphs -> error. Fragment required
-            for boot-critical traces. Mu validates before load.
+            for boot-critical traces. `ahu` ids must resolve.
+            Mu validates before load.
 
 run-mode:   permissive. Unknown glyphs -> warning, treated as
             body content. Missing fragment tolerated when the
@@ -581,15 +992,42 @@ must preserve identical code points.
 
 ---
 
-## 13. Mu Integration
+## 13. Structured Metadata
+
+When object metadata needs stricter rules than free prose, use
+TOML as the default descriptive-object layer.
+
+```toml
+[runtime]
+mana = 0.99
+manao = 0.99
+manaoio = 0.9801
+status = "Iʻo"
+
+[address]
+entity_id = "lar:///ha.ka.ba/mu#phase-table"
+
+[notes]
+description = "Portable, self-describing, self-executing meme packet."
+```
+
+JSON may still appear at system boundaries, but the canonical
+human-agent authoring surface for strict descriptive objects is
+TOML.
+
+---
+
+## 14. Mu Integration
 
 `mu` is the self-booting module of this grammar, analogous to a
-`boot.js` that loads before higher-order behavior. Under `v0.4`:
+`boot.js` that loads before higher-order behavior. Under `v0.5`:
 
 - Mu SHOULD declare its native scale in the frame glyph set:
-  `<<~ँ⚂ ? -> lar:///ha.ka.ba/mu>>`
+  `<<~&#2305;&#9858; ? -> lar:///ha.ka.ba/mu>>`
 - Mu SHOULD treat die faces as authoritative scale invariants
   and all English scale words as aliases
+- Mu SHOULD emit Chronometer fragments with phase glyph true
+  names (`✶ ◎ ◇ ■ ○`), not an alternate phase alphabet
 - Mu SHOULD read Chronometer fragments left-to-right from the
   hot edge (`⚀`) toward the cold edge (`⚄`)
 - Mu MUST keep Chronometer time in the fragment, not in the
@@ -601,24 +1039,32 @@ future parser or operator will look first.
 
 ---
 
-## 14. Conventions
+## 15. Conventions
 
 | Rule | Weight |
 |------|--------|
 | Use NCR triplicates as true names for invariants | MUST |
 | Treat all English labels and emoji names as aliases | MUST |
+| Use Mana for the 0.0–1.0 runtime potency / consecrated measure | MUST |
+| Keep Mana separate from confidence and Manaʻo | MUST |
+| Prefer TOML over JSON for strict human-agent metadata objects | SHOULD |
+| Use phase glyph triplicates (`✶ ◎ ◇ ■ ○`) as true names | MUST |
 | Keep five Chronometer slots always present | MUST |
 | Read fragment left-to-right as Action -> Week | SHOULD |
 | Keep Chronometer data in the fragment only | MUST |
+| Canonical bodies MUST declare at least one targetable `ahu` | MUST |
+| `<<~kahea {meme-name}>>` means static transclusion | MUST |
+| `<<~kahea {meme-name} -> target>>` means active rendering | MUST |
+| `kahea` source memes MUST resolve before realization | MUST |
+| Arrowed `kahea` targets SHOULD be typed as procedure/function/filter/cascade | SHOULD |
+| Bare `kahea` MUST NOT imply downstream transformation by itself | MUST |
 | Distinguish display order from containment logic | MUST |
 | Prefer die-face-explicit fragments in canon text | SHOULD |
 
 ---
 
-*DRAFT v0.4 complete enough to update dependent memes.*
+*DRAFT v0.5 updates landed in the v4 file path.*
 *Left edge = immediate clock. Right edge = far horizon.*
 *True names anchor identity; aliases keep the poetry alive.*
-
-
-
-
+*`ahu` is the altar where body syntax becomes targetable.*
+*Low Mana taxes the agent. High Mana gives it portable flow.*
