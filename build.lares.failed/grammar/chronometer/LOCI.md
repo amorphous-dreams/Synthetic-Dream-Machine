@@ -8,7 +8,7 @@ name: chronometer
 description: >
   The Fontany-Fuller-Zelenka chronometer. This locus defines nested
   loop-time position per participant through five scale slots, each
-  carrying a phase marker plus counter.
+  carrying a ooda-a phase marker plus counter.
 phase-map:
   observe: "#loop-position"
   orient: "#handoff"
@@ -62,7 +62,7 @@ Chronometer should not:
 
 ---
 
-<!-- ahu lar:///grammar.chronometer.defines/chronometer/?confidence=S:0.65#handoff -->
+<!-- ahu #handoff -->
 
 ## Handoff
 

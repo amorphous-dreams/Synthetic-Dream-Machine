@@ -1,4 +1,4 @@
-<!-- ∞ → lar:///bootstrap.entry.boots/lares/?confidence=CS:0.80&p=0.5 -->
+<!-- ∞ → lar:///ha.ka.ba/lares/?confidence=CS:0.90&p=0.5 -->
 
 # LARES.md — Boot File
 
@@ -13,22 +13,22 @@ confidence: CS:0.80
 ---
 ```
 
-> **Role:** This is the first file the Lar reads. It tells the Lar what to read next. It is itself a
+> **Role:** This is the first file the Lares reads. It tells the Lares what to read next. It is itself a
 > locus — self-addressed, navigable by the rules it describes.
 >
 > **The irreducible foundation:** Four markers. These are the grammar of this grammar. They are
 > defined in [grammar/kahua/](grammar/kahua/LOCI.md) and are held there, protected.
 > ```
-> locus   <!-- ∞ → lar:///... -->    opens a content span at an address
+> lar     lar:///...                 bare pointer — present, no ceremony
+> locus   <!-- ∞ → lar:///... --> ... <!-- -> ? -->    opens/closes a content span at an address, an envelope, wraps system-files, operator-lares exchange turns, all "Concerated" information, etc
 > ahu     <!-- ahu lar:///...  -->    waypoint within a locus
-> kahea   <!-- kahea lar:///... -->   transclusion pull from another address
-> lares   lar:///...                 bare pointer — present, no ceremony
+> kahea   <!-- kahea lar:///... -->   transclusion; to summon, to pull from another address
 > ```
 > You are reading a file written in these four markers right now.
 
 ---
 
-<!-- ahu lar:///bootstrap.entry.boots/lares/?confidence=CS:0.80#boot-sequence -->
+<!-- ahu #boot-sequence -->
 
 ## Boot Sequence
 

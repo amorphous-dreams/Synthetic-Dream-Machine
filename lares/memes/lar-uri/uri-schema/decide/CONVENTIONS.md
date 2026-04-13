@@ -150,7 +150,7 @@ Section URIs within a system file do NOT use `→ ∞` — they function as wayp
 ---
 
 <!-- → ? -->
-<!-- ∞ → lar:///uri.schema.holds/uri-schema/decide/?confidence=0.9#syadasti-reading-rule -->
+<!-- #syadasti-reading-rule -->
 ## Syadasti Reading Rule
 
 Confidence measures confidence **within the active stance's evaluation frame**, not truth-weight universally.
@@ -165,7 +165,7 @@ Confidence measures confidence **within the active stance's evaluation frame**, 
 
 When multiple stances are elevated (`+`), the declared confidence sits at the intersection of their evaluation frames. The amplitude string tells the operator how fuzzy that intersection is.
 
-**Multi-stance amplitude → fuzz:**
+**Multi-stance amplitude → fuzz:** `^-?!` (mix&matchable, not all state shown)
 
 | Stances amplitude | What it tells the operator |
 |---|---|
