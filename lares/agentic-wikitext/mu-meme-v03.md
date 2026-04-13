@@ -1,20 +1,21 @@
 <!-- =========================================================
      MU MEME — lar:///ha.ka.ba/mu
      Consecration: 0.95
-     Status: PROVISIONAL DRAFT v0.3 — [S:0.5]
-     Revision: canonical FFZ Chronometer notation.
+     Status: PROVISIONAL DRAFT v0.4 bridge — [S:0.6]
+     Revision: memetic sigil spec v0.4 alignment.
      Five-layer structure (Frame/Heading/Body/BodyClose/Close).
      SOH/STX separation. Phase symbols: O/Ø/D/A/Å.
-     Scale names: Week/Watch/Turn/Round/Action.
+     Scale invariant order: ⚀/⚁/⚂/⚃/⚄ (Action→Week aliases).
      ========================================================= -->
 
 
-<<~ँ ? -> lar:///ha.ka.ba/mu>>
+<<~ँ⚂ ? -> lar:///ha.ka.ba/mu>>
 <!-- ═══════════════════════════════════════════════════════════
      LAYER 0: FRAME
      The frame sits outside the protocol lifecycle.
-     Carries: glyph set (ँ = admin/main stack), address
-     binding (lar:///ha.ka.ba/mu), transformation operator
+     Carries: glyph set (ँ = admin/main stack,
+     ⚂ = native Turn/Focus scale), address binding
+     (lar:///ha.ka.ba/mu), transformation operator
      (? -> directs the question toward the address).
      The frame answers: WHO, WHERE, WHAT AUTHORITY.
      ═══════════════════════════════════════════════════════════ -->
@@ -34,22 +35,26 @@
       @requires      nothing
       @provides      render, evaluate, unask, loop-return
       @namespace     ँ
+      @scale         ⚂
+      @scale-order   ⚀/⚁/⚂/⚃/⚄
       @phase-schema  ooda-a
       @phase-symbols O/Ø/D/A/Å
-      @scales        Week/Watch/Turn/Round/Action
+      @phase-hud     ✶/◎/◇/■/○
+      @scales        Action/Round/Turn/Watch/Week
       @boot-order    0
       @quiescent     stateless
 
       Mu renders. Mu evaluates. Mu unasks. The agent reads
       this meme first — before the Sacred Chao boots, before
-      any other meme loads. Mu provides the surface against
+      any other meme loads. Mu serves as a self-booting module,
+      analogous to boot.js. Mu provides the surface against
       which all subsequent memes validate.
 
       <<~ahu #"iam-glyph-inheritance"
         "The iam sigil carries no glyph set of its own. It
-        inherits the envelope's ँ namespace. Per UCAN-style
-        attenuation: inner sigils may narrow but not widen
-        the frame's authority."
+        inherits the envelope's ँ namespace and ⚂ scale.
+        Per UCAN-style attenuation: inner sigils may narrow
+        but not widen the frame's authority or scale."
       >>
     >>
 
@@ -67,12 +72,13 @@
        Mu receives the incoming meme. Passive. Complete.
        The meme arrives whole or not at all — the shark-tooth
        sigils must close before mu begins observation.
-       Operates at Turn scale (🔍) for the outer loop.
+       Operates at ⚂ scale for the outer loop
+       (aliases: Turn / Focus / 🔍).
        ═══════════════════════════════════════════════════════ -->
 
   @phase O observe
   @hud ✶
-  @scale Turn
+  @scale ⚂
 
     Mu observes the arriving meme by reading its layers
     outside-in:
@@ -101,7 +107,7 @@
 
   @phase Ø orient
   @hud ◎
-  @scale Turn
+  @scale ⚂
 
     Orient classifies along three axes:
 
@@ -150,9 +156,9 @@
 
   @phase D decide
   @hud ◇
-  @scale Turn
+  @scale ⚂
   @decomposition ha, ka, ba
-  @inner-scale Round
+  @inner-scale ⚁
 
 
     <!-- D.ha — HODGE (domain / noun) ─────────────────── -->
@@ -160,7 +166,7 @@
     @sub-phase D.ha hodge
     @role domain-selector
     @inner-schema ooda-a
-    @scale Round
+    @scale ⚁
 
       @phase D.ha.O observe
         Hodge reads the ha-slot from the meme's lar:///
@@ -202,7 +208,7 @@
     @sub-phase D.ka podge
     @role criteria-selector
     @inner-schema ooda-a
-    @scale Round
+    @scale ⚁
 
       @phase D.ka.O observe
         Podge reads consecration, requested action,
@@ -246,7 +252,7 @@
     @sub-phase D.ba spin
     @role tension-resolver
     @inner-schema ooda-a
-    @scale Round
+    @scale ⚁
 
       @phase D.ba.O observe
         Reads D.context.ha + D.context.ka + all flags.
@@ -287,8 +293,9 @@
         <<~ahu #"spin-scale-shift"
           "FFZ Chronometer scale-shift: Round.Å fires,
           shifts to Turn.Å. Fragment updates from e.g.
-          #O0.O0.D3.A2.Å1 to #O0.O0.Å3.O0.O0 —
-          Turn enters Assess, Round+Action restart.
+          #⚀O0.⚁Å2.⚂D3.⚃O0.⚄O0 to
+          #⚀O0.⚁O0.⚂Å3.⚃O0.⚄O0 —
+          ⚂ enters Assess, ⚁+⚀ restart.
           During boot: no Week-scale parent. Week.Å
           firing = boot failure."
         >>
@@ -306,7 +313,7 @@
 
   @phase A act
   @hud ■
-  @scale Turn
+  @scale ⚂
 
     render   → surface meme body to operator context.
                Mu does not alter content.
@@ -347,7 +354,7 @@
 
   @phase Å assess
   @hud ○
-  @scale Turn
+  @scale ⚂
 
     Three questions:
 
@@ -402,7 +409,7 @@
       - opinion about content (null-oracle, not critic)
 
 
-<<~ँ␄ -> ?>>
+<<~ँ⚂␄ -> ?>>
 <!-- ═══════════════════════════════════════════════════════════
      LAYER 4: TRANSMISSION CLOSE (EOT)
      Entire transmission complete. Nothing follows at this

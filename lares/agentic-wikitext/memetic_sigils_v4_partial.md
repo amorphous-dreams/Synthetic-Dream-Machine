@@ -141,11 +141,11 @@ CAT  TRUE NAME RANGE                BLOCK              ROLE
 
 **Note:** Category 8 (Geometric Shapes) and Category 9
 (Miscellaneous Symbols) separated from the prior draft's
-combined Category 8. The split reflects functional distinction:
-Geometric carries *state/phase glyphs*, Miscellaneous carries
-*scale/domain glyphs*. The OODA-A phase glyphs live in
-Category 8. The die faces and planetary symbols live in
-Category 9.
+combined semantic block. Geometric carries optional
+state/display glyphs. Miscellaneous carries scale/domain
+glyphs. The OODA-A **record forms** belong to the Chronometer
+fragment grammar, not to the nine-category glyph-set itself.
+The die faces and planetary symbols live in Category 9.
 
 ---
 
@@ -181,32 +181,34 @@ scale resolves*.
 
 ---
 
-## 6. Phase Invariants (OODA-A Glyphs)
+## 6. Phase Invariants (OODA-A Record Forms)
 
-**Category 8 — STATE (Geometric Shapes) and Category 9**
+Phase invariants follow the same true-name rule as scale
+invariants, but their authoritative form is the **record
+symbol** used in Chronometer slots. HUD glyphs remain sanctioned
+aliases for display.
 
 ```
-TRUE NAME                    PHASE    RECORD   HUD
-─────────────────────────    ─────    ──────   ───
-&#9782; / U+2636 / ✶         Observe   O       ✶
-&#9678; / U+25CE / ◎         Orient    Ø       ◎
-&#9671; / U+25C7 / ◇         Decide    D       ◇
-&#9632; / U+25A0 / ■         Act       A       ■
-&#9675; / U+25CB / ○         Assess    Å       ○
+TRUE NAME                    PHASE    HUD ALIAS
+─────────────────────────    ─────    ─────────
+&#0079; / U+004F / O         Observe   ✶
+&#0216; / U+00D8 / Ø         Orient    ◎
+&#0068; / U+0044 / D         Decide    ◇
+&#0065; / U+0041 / A         Act       ■
+&#0197; / U+00C5 / Å         Assess    ○
 ```
 
-<<~ahu #"star-codepoint"
-  "✶ renders as U+2736 (Six Pointed Black Star) in the
-  Dingbats block, not in Misc. Symbols. Need to verify the
-  operator's canonical codepoint. If ✶ sits at U+2736
-  (&#10038;), it falls outside Category 9's range. Alternative:
-  use ✦ U+2726 (&#10022;, Black Four Pointed Star, also
-  Dingbats) or ★ U+2605 (&#9733;, Black Star, Misc. Symbols
-  = within Category 9). The operator's spec shows ✶ as the
-  HUD glyph — confirming its exact codepoint determines
-  whether it sits inside or outside the nine-category system.
-  If outside, it constitutes a Category 10 glyph or an
-  exception. Awaiting operator ruling."
+**Storage/interchange:** use the record true names (`O Ø D A Å`).
+
+**Display/HUD:** use aliases (`✶ ◎ ◇ ■ ○`) when human scan speed
+matters more than code-point regularity.
+
+<<~ahu #"phase-true-name-resolution"
+  "This resolves the earlier Observe glyph problem cleanly.
+  The phase invariant's identity lives in the record symbol,
+  whose Unicode triplicate stays stable. The HUD glyph remains
+  an alias layer. That means ✶ may stay canonical as display
+  without forcing the glyph-set categories to absorb Dingbats."
 >>
 
 ---
@@ -316,40 +318,306 @@ TRUE NAME                    FUNCTION
 
 ## 10. Chronometer Fragment Format
 
-### 10.1 Record Form (storage/interchange)
+The unified scale model reorders fragment display so the
+**immediate clock ticks at the leftmost position**. The reader
+encounters the hot edge first and then fans outward into broader
+context.
+
+Containment logic does **not** change:
 
 ```
-#⚄O0.⚃O0.⚂O3.⚁D2.⚀A7
+⚄ contains ⚃ contains ⚂ contains ⚁ contains ⚀
 ```
 
-Each slot: `[die face true name][phase record char][counter]`
+Display order and containment direction are separate axes.
 
-Five slots, always present. Dormant scales keep zeroed
-counters. Die face makes each slot self-identifying —
-order-independent parsing possible. Fixed left-to-right
-convention: broadest (⚄) → finest (⚀).
-
-### 10.2 HUD Form (display)
+### 10.1 Canonical Record Form (storage/interchange)
 
 ```
-⚄✶0 ⚃✶0 ⚂✶3 ⚁◇2 ⚀■7
+#⚀A7.⚁D2.⚂O3.⚃O0.⚄O0
 ```
 
-Each slot: `[die face][phase HUD glyph][counter]`
+Each slot: `[die face true name][phase record true name][counter]`
 
-### 10.3 Slot Grammar
+Same state as the older broad-to-fine example, but now rendered
+in the preferred scale order:
 
 ```
-SLOT   		= DIE_FACE & PHASE COUNTER
-DIE_FACE 	= | ⚀ | ⚁ | ⚂ | ⚃ | ⚄
-PHASE  		= | ✶ | ◎ | ◇ | ■ | ○        (HUD)
-COUNTER = [0-9]+
+⚀  Action / Heartbeat   — Act, 7
+⚁  Round  / Breath      — Decide, 2
+⚂  Turn   / Focus       — Observe, 3
+⚃  Watch  / Vigil       — Observe, 0
+⚄  Week   / Horizon     — Observe, 0
 ```
 
-### 10.4 Scale + Phase in Glyph Set
+Five slots remain always present. Dormant scales keep zeroed
+counters. Die faces make slots self-identifying, so parsing
+does not depend on position. The left-to-right convention is:
 
-A die face and/or phase glyph in a sigil's glyph set declares
-Claude's response was interrupted
+```
+finest (⚀ / Action)  →  broadest (⚄ / Week)
+```
+
+### 10.2 Canonical HUD Form (display)
+
+```
+⚀■7 ⚁◇2 ⚂✶3 ⚃✶0 ⚄✶0
+```
+
+Each slot: `[die face][phase HUD alias][counter]`
+
+Alias-heavy HUD render:
+
+```
+⚡■7 ⚔️◇2 🔍✶3 ⚙️✶0 🗺️✶0
+```
+
+### 10.3 Legacy Shorthand
+
+The legacy fragment without die faces remains readable as a
+shorthand when slot order is already agreed in context:
+
+```
+#A7.D2.O3.O0.O0
+```
+
+Canonical `v0.4` storage SHOULD prefer the die-face-explicit
+form because it survives reordering, extraction, and partial
+quotation without ambiguity.
+
+### 10.4 Slot Grammar
+
+```
+FRAGMENT       = "#" SLOT "." SLOT "." SLOT "." SLOT "." SLOT
+SLOT           = DIE_FACE PHASE_RECORD COUNTER
+DIE_FACE       = | ⚀ | ⚁ | ⚂ | ⚃ | ⚄
+PHASE_RECORD   = | O | Ø | D | A | Å
+COUNTER        = [0-9]+
+```
+
+HUD rendering rule:
+
+```
+O → ✶
+Ø → ◎
+D → ◇
+A → ■
+Å → ○
+```
+
+### 10.5 Positional Rule
+
+```
+leftmost   = ⚀ / Action / Heartbeat   (hot edge, immediate)
+2nd        = ⚁ / Round  / Breath
+3rd        = ⚂ / Turn   / Focus
+4th        = ⚃ / Watch  / Vigil
+rightmost  = ⚄ / Week   / Horizon     (cold edge, far context)
+```
+
+This aligns fragment reading with the unified five-band
+continuum, the attention ladder, and the natural left-to-right
+presentation of `₀ ₁ ₂ ₃ ₄`.
+
+### 10.6 Scale in Glyph Sets
+
+A die face in a sigil's glyph set declares the meme's
+operational scale before the address or body loads.
+
+```
+<<~ँ⚂␂ ? -> lar:///ha.ka.ba/mu>>
+      │
+      └── &#9858; / U+2682 / ⚂
+          game alias: Turn
+          attn alias: Focus
+```
+
+Phase remains authoritative in the fragment or in explicit
+metadata. A HUD phase glyph MAY appear as a display hint in a
+sigil surface, but it is not required for core parsing.
+
+Attenuation rule for nested memes:
+
+```
+Outer: <<~ँ⚃ ...>>     Watch/Vigil scale
+Inner: <<~⚂ ...>>      Turn/Focus scale       attenuated ✓
+Inner: <<~⚄ ...>>      Week/Horizon scale     escalation capped ⚠
+```
+
+### 10.7 Fragment Placement
+
+Per the fragment-only rule, the Chronometer answers **WHEN**
+and lives only in the URI fragment.
+
+```
+lar:///ha.ka.ba/mu#⚀A7.⚁D2.⚂O3.⚃O0.⚄O0
+```
+
+- Address path answers: WHERE in tagspace
+- Glyph set answers: WHO / protocol / scale / other properties
+- Fragment answers: WHEN in nested causal time
+
+Ahu fragments (`#boot-mode-transition`) and Chronometer
+fragments (`#⚀A7.⚁D2.⚂O3.⚃O0.⚄O0`) remain syntactically distinct.
+
+### 10.8 Scale-Shift Examples
+
+Action.Å escalates to Round.Å:
+
+```
+Before: #⚀Å1.⚁A2.⚂D3.⚃O0.⚄O0
+After:  #⚀O0.⚁Å2.⚂D3.⚃O0.⚄O0
+```
+
+Round.Å escalates to Turn.Å:
+
+```
+Before: #⚀O0.⚁Å2.⚂D3.⚃O0.⚄O0
+After:  #⚀O0.⚁O0.⚂Å3.⚃O0.⚄O0
+```
+
+Higher-slot counters do not increment on child escalation.
+They increment only when that scale completes its own Assess.
+
+---
+
+## 11. Parsing
+
+### 11.1 Glyph-Set Category Dispatch
+
+```
+function categorize(cp):
+  if cp in 0..31:       return PROTOCOL
+  if cp in 768..879:    return AUXILIARY
+  if cp in 2304..2431:  return NAMESPACE
+  if cp in 8592..8703:  return DIRECTION
+  if cp in 8704..8959:  return RELATION
+  if cp in 8960..9215:  return TECHNICAL
+  if cp in 9472..9631:  return STRUCTURE
+  if cp in 9632..9727:  return STATE
+  if cp in 9728..9983:  return SEMANTIC
+  return UNKNOWN
+```
+
+### 11.2 Glyph-Set Extraction
+
+```
+function parseGlyphSet(stream, offset):
+  glyphs = {cat: Set() for cat in CATEGORIES}
+  while stream[offset] is not whitespace:
+    cp = readCodepoint(stream, offset)
+    cat = categorize(cp)
+    if cat == UNKNOWN: break
+    glyphs[cat].add(cp)
+    offset += codepointLength(cp)
+  return glyphs, offset
+```
+
+### 11.3 Fragment Parsing
+
+```
+function parseChronometer(fragment):
+  assert fragment[0] == "#"
+  slots = fragment[1:].split(".")
+  assert len(slots) == 5
+  for slot in slots:
+    die   = slot[0]
+    phase = slot[1]
+    count = int(slot[2:])
+    yield die, phase, count
+```
+
+### 11.4 Validation
+
+```
+PROTOCOL:   <=1 lifecycle glyph per sigil
+NAMESPACE:  any count; combine by intersection
+AUXILIARY:  any count; contradictory combos -> warning
+DIRECTION:  <=1 primary arrow
+RELATION:   compositional
+TECHNICAL:  context-dependent
+STRUCTURE:  unusual in glyph sets; body-internal by default
+STATE:      display/support glyphs only
+SEMANTIC:   <=1 die-face scale invariant unless explicitly unioned
+FRAGMENT:   exactly 5 slots; die faces SHOULD appear in canonical order
+```
+
+### 11.5 Strictness Modes
+
+```
+boot-mode:  strict. Unknown glyphs -> error. Fragment required
+            for boot-critical traces. Mu validates before load.
+
+run-mode:   permissive. Unknown glyphs -> warning, treated as
+            body content. Missing fragment tolerated when the
+            calling context supplies time externally.
+```
+
+---
+
+## 12. Encoding Layers
+
+```
+LAYER        REPRESENTATION          CONTEXT
+─────        ──────────────          ───────
+Storage      Raw Unicode bytes       binary storage, internal
+Interchange  HTML NCRs (`&#x;`)      XML/HTML, transport, canon
+Display      Rendered glyphs         HUD, docs, operator scan
+```
+
+The same invariant may appear in all three layers:
+
+```
+&#9858; / U+2682 / ⚂
+```
+
+Round-trip fidelity requirement:
+
+```
+Storage -> Interchange -> Storage
+```
+
+must preserve identical code points.
+
+---
+
+## 13. Mu Integration
+
+`mu` is the self-booting module of this grammar, analogous to a
+`boot.js` that loads before higher-order behavior. Under `v0.4`:
+
+- Mu SHOULD declare its native scale in the frame glyph set:
+  `<<~ँ⚂ ? -> lar:///ha.ka.ba/mu>>`
+- Mu SHOULD treat die faces as authoritative scale invariants
+  and all English scale words as aliases
+- Mu SHOULD read Chronometer fragments left-to-right from the
+  hot edge (`⚀`) toward the cold edge (`⚄`)
+- Mu MUST keep Chronometer time in the fragment, not in the
+  address path
+
+The self-booting sequence becomes easier to scan under the new
+order because the immediate decision edge appears first, where a
+future parser or operator will look first.
+
+---
+
+## 14. Conventions
+
+| Rule | Weight |
+|------|--------|
+| Use NCR triplicates as true names for invariants | MUST |
+| Treat all English labels and emoji names as aliases | MUST |
+| Keep five Chronometer slots always present | MUST |
+| Read fragment left-to-right as Action -> Week | SHOULD |
+| Keep Chronometer data in the fragment only | MUST |
+| Distinguish display order from containment logic | MUST |
+| Prefer die-face-explicit fragments in canon text | SHOULD |
+
+---
+
+*DRAFT v0.4 complete enough to update dependent memes.*
+*Left edge = immediate clock. Right edge = far horizon.*
+*True names anchor identity; aliases keep the poetry alive.*
 
 
 
