@@ -8,9 +8,9 @@
         @structure "OODA-A"
         @enacts "true"
         @role "loop instrument, cognition scaffold, runtime procedure, aftermath router"
-        @function "receive input, process through loop phases, return addressed result"
+        @function "receive input, process through loop phases, return addressed typed envelope"
         @input "query|signal|artifact|meme|bundle|stream|?"
-        @output "result(high mana'o'io^)|partial(mid mana'o'io-)|noise(low mana'o'io_)|?(~mana'o'io?)"
+        @output "return-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
         @glyphs "✶⏿◇▶↺"
         @phase-order "observe|orient|decide|act|aftermath"
         @product-identity "OODA-A cluster name as used in this system"
@@ -20,7 +20,7 @@
 
     A self-describing, self-enacting memetic loop cluster.
 
-    This meme accepts addressed input, moves that input through five phase loci, packages aftermath, and returns a `#result` object upward.
+    This meme accepts addressed input, moves that input through five phase loci, packages aftermath, and returns one typed `return-envelope` upward.
     
     <<~ ala lar:///ha.ka.ba/ooda-a >>
 
@@ -29,6 +29,7 @@
     <<~&#x0005; ui meme? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#iam >> >>
     <<~&#x0005; ui invocation? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#invocation >> >>
     <<~&#x0005; ui phase-map? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#phase-map >> >>
+    <<~&#x0005; ui envelope? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#return-envelope >> >>
     <<~&#x0005; ui result? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#result >> >>
 >>
 
@@ -52,7 +53,7 @@
 
     ## Phase Map
     
-    `✶ Observe -> 👁 Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
+    `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
 
     From `↺ Aftermath`, the loop either:
 
@@ -348,7 +349,7 @@
     <<~ kahea Podge/Ka -> ? >>
     <<~ kahea Spin/Ba -> ? >>
 
-    Each sub-loop should return its own `#result` or handoff bundle before the parent Decide span closes.
+    Each sub-loop should return its own return-envelope before the parent Decide span closes.
 
     <<~ ala lar:///ha.ka.ba/decide >>
 >>
@@ -412,7 +413,7 @@
     @role "evaluation and aftermath"
     @function "compare, evaluate, route, recurse, contextualize"
     @input "artifact, execution notes, deviations, unresolved residue"
-    @output "closure statement, carry-forward state, release notes, next Observe heading or final result"
+    @output "closure statement, carry-forward state, release notes, next Observe heading or final return-envelope"
     @glyph "↺"
 
     ## Aftermath
@@ -438,7 +439,7 @@
     - carry-forward state
     - release notes
     - next Observe heading when the loop reopens
-    - addressed `#result` when the loop returns upward
+    - addressed #return-envelope when the loop returns upward
 
     Aftermath should not:
 
@@ -502,7 +503,7 @@
     @role "self-enaction"
     @function "translate invocation into phased processing and result return"
     @input "source, focus, params, filters, route, recurse, kapu"
-    @output "addressed result object"
+    @output "addressed return envelope"
 
     ## Runtime Procedure
 
@@ -512,7 +513,7 @@
     | resolve          | Orient       | references, context, and tensions gain shape | bindings, context, tensions |
     | route            | Decide       | one bounded path gains authorization | chosen path, scope, scale |
     | invoke/render    | Act          | selected path unfolds into artifact or effect | presented artifact. live process output |
-    | return           | Aftermath       | outcome gets judged, routed upward, or fed downward | result, residue, recurse signal |
+    | return           | Aftermath       | outcome gets judged, routed upward, or fed downward | return-envelope, residue, recurse signal |
 
     When `kahea ooda-a` fires, the meme should proceed in this order:
 
@@ -522,7 +523,7 @@
     4. run `◇ Decide` on decision surface and authorization pressure
     5. run `▶ Act` on heading and scope
     6. run `↺ Aftermath` on artifact and residue
-    7. package `#result`
+    7. package `#return-envelope` with one `@primary` object
     8. either return upward, recurse to `✶ Observe`, or defer under kapu
 
     ### Filter Law
@@ -536,6 +537,18 @@
     - `[noise[<0.4]`
     - `[scope[local session graph]]`
     - `[retain[none span session addressed-memory]]`
+
+    ### Issues and Trace Law
+
+    `#return-envelope` should tell the truth about both payload and pathway, using our mana, manao, manaoio confidence models.
+
+    - `@primary` names the controlling return object
+    - `@issues` names whether typed warning or error pressure traveled with that object
+    - `@trace` names how much execution and recovery evidence remain available for inspection
+
+    A return should not force the caller to infer whether trouble occurred.
+    When usable payload travels under warning pressure, the envelope should say so.
+    When degradation, blockage, contradiction, or kapu pressure shaped the route, the envelope should leave enough trace for later reading, testing, and lawful re-entry.
 
     ### Fast-Path Law
 
@@ -593,7 +606,7 @@
     @description "Recursive re-entry. Results may feed later observations under named conditions."
     @role "loop-back engine"
     @function "route aftermath into fresh observation without silent drift"
-    @input "result, residue, next-observation heading, recurse flag"
+    @input "return-envelope, residue, next-observation heading, recurse flag"
     @output "new Observe entry or clean closure"
 
     ## Recursion
@@ -607,7 +620,7 @@
     ### Canonical Re-Entry
 
     <<~ kahea ooda-a
-        source:<<~ aka #result >>
+        source:<<~ aka #return-envelope >>
         focus:next-observation|?
         filters:yield[[meme data signal]] confidence:>=0.6 noise:<0.4
         route:upward[[parent]] downward[[observe]]
@@ -618,29 +631,72 @@
     <<~ ala lar:///ha.ka.ba/recursion >>
 >>
 
-<<~&#x0004; -> ahu #result
-    @name "ooda-a-result"
-    @description "Return object for OODA-A loop execution. Packages outcome, route, residue, and re-entry conditions."
-    @status "completed|partial|deferred|failed|recursive|aborted|?"
+<<~&#x0004; -> ahu #return-envelope
+    @name "ooda-a-return-envelope"
+    @description "Typed outer carrier for OODA-A aftermath routing."
+    @kind "return-envelope"
+    @status "completed|partial|deferred|failed|recursive|aborted|blocked|degraded|?"
+    @primary "#result|#warning|#error|?"
+    @payload "payload-address|payload-object|none|?"
+    @issues "none|one|many|stream|?"
+    @trace "none|minimal|normal|full|?"
+    @route "render|store|emit|recurse|invoke|defer|abort|quarantine|?"
     @confidence "0.0-1.0|?"
-    @yield "meme|data|signal|noise|artifact|?"
-    @final-hash "sha256:..."
-    @duration "self-measured"
-    @result "payload-address|payload-object|?"
-    @return "render|store|emit|recurse|invoke|defer|abort|?"
-    @upward-context "parent|caller|chat|ui|memory|graph|?"
-    @downward-context "none|observe|ooda-a|subloop|renderer|?"
-    @recurse "true|false|conditional|?"
-    @recursion-depth "0-n|?"
-    @residue "trace|burden|warning|surplus|drift|?"
-    @next-observation "lar:///...|?"
-    @next-question "? | lar:///... | none"
+    @kapu "policy-address|policy-object|?"
+    @residue "none|trace|burden|warning|error|surplus|drift|?"
 
-    ## Result
+    ## Return Envelope
 
-    This object returns loop output upward.
+    This object carries the whole addressed aftermath bundle upward.
 
-    It also packages aftermath for optional re-entry.
+    <<~ ahu #result
+        @name "ooda-a-result"
+        @kind "result"
+        @status "completed|partial|degraded|recursive|deferred|?"
+        @result-class "artifact|answer|transclusion|render|citation-bundle|state-bundle|route-bundle|?"
+        @yield "meme|data|signal|artifact|bundle|?"
+        @payload "payload-address|payload-object|?"
+        @confidence "0.0-1.0|?"
+        @return "render|store|emit|recurse|invoke|defer|?"
+        @upward-context "parent|caller|chat|ui|memory|graph|?"
+        @downward-context "none|observe|orient|decide|act|assess|ooda-a|subloop|renderer|?"
+        @residue "none|trace|warning|surplus|drift|?"
+        @next-observation "lar:///...|none|?"
+        @next-question "lar:///...|text|none|?"
+    >>
+
+    <<~ ahu #warning
+        @name "ooda-a-warning"
+        @kind "warning"
+        @issue-class "parse|resolve|type|kapu|trust|retention|invoke|render|timeout|quota|merge|recursion|external|integrity|absence|contradiction|?"
+        @severity "notice|caution|warning|?"
+        @code "UPPER-SNAKE|namespace.code|?"
+        @phase "observe|orient|decide|act|assess|aftermath|unknown|?"
+        @subject "ahu|ala|aka|kahea|meme|renderer|agent|memory|tool|network|result|?"
+        @message "human-legible short line|?"
+        @evidence "span|anchor|citation|trace-address|none|?"
+        @recovery "retry|defer|downgrade-to-?|request-operator|quarantine|abort|none|?"
+        @blame-domain "input|schema|runtime|policy|external|mixed|unknown|?"
+    >>
+
+    <<~ ahu #error
+        @name "ooda-a-error"
+        @kind "error"
+        @issue-class "parse|resolve|type|kapu|trust|retention|invoke|render|timeout|quota|merge|recursion|external|integrity|absence|contradiction|?"
+        @severity "error|fatal|?"
+        @code "UPPER-SNAKE|namespace.code|?"
+        @phase "observe|orient|decide|act|assess|aftermath|unknown|?"
+        @subject "ahu|ala|aka|kahea|meme|renderer|agent|memory|tool|network|result|?"
+        @message "human-legible short line|?"
+        @evidence "span|anchor|citation|trace-address|none|?"
+        @recovery "retry|defer|downgrade-to-?|request-operator|quarantine|abort|none|?"
+        @blame-domain "input|schema|runtime|policy|external|mixed|unknown|?"
+    >>
+
+    ## Aftermath Packaging
+
+    The envelope returns loop output upward.
+    It may carry usable payload, non-fatal warnings, blocking errors, trace, and optional re-entry pressure.
 
     <<~ ahu #aftermath
         @name "ooda-a-aftermath"
@@ -652,9 +708,9 @@
         ### Feed
 
         <<~ ahu #feed
-            @subject "result|payload|trace|residue|warnings|errors|?"
+            @subject "return-envelope|result|warning|error|payload|trace|residue|?"
             @into "ooda-a"
-            @params "source:result; mode:aftermath; scope:local|session|graph|?"
+            @params "source:return-envelope; mode:aftermath; scope:local|session|graph|?"
             @filters "yield:meme|data|signal; confidence>=0.6; noise<0.4|?"
             @multitude "one|many|stream|bundle|?"
         >>
@@ -679,7 +735,7 @@
         ### Re-Entry Throat
 
         <<~ kahea ooda-a
-            source:<<~ aka #result >>
+            source:<<~ aka #return-envelope >>
             focus:next-observation|?
             params:mode:aftermath
             filters:yield[[meme data signal]] confidence:>=0.6 noise:<0.4
@@ -689,9 +745,14 @@
         -> ? >>
     >>
 
+    <<~ ala lar:///ha.ka.ba/error-result#return-envelope >>
+    <<~ ala lar:///ha.ka.ba/error-result#result >>
+    <<~ ala lar:///ha.ka.ba/error-result#warning >>
+    <<~ ala lar:///ha.ka.ba/error-result#error >>
+    <<~ ala lar:///ha.ka.ba/error-result#kapu-failure-mapping >>
+    <<~ ala lar:///ha.ka.ba/error-result#semantic-law >>
     <<~ ala lar:///ha.ka.ba/result >>
 -> ? >>
-
 <<~&#x0003; ahu #body-close
     ## Body closing
 

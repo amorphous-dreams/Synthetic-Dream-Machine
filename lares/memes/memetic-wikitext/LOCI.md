@@ -132,7 +132,7 @@
     <<~ kahea Stream? -> ? >>
     <<~ kahea Tokens? -> ? >>
     <<~ kahea Patterns? -> ? >>
-<<~\ ahu #observe >>
+<<~/ ahu #observe >>
 
 <<~ ahu #orient
     @name "memetic-wikitext-orient"
