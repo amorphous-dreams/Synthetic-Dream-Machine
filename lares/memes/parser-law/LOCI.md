@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
 
-<<~� ? -> lar:///ha.ka.ba/parser-law >>
+<<~#x0001; ? -> lar:///ha.ka.ba/parser-law >>
 
 <<~ ahu #iam >>
 
@@ -9,7 +9,7 @@ name = "parser-law"
 description = "Full parsing law for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
 content_type = "application/memetic-wikitext"
-structure = "OODA-A"
+structure = "OODA-A+H"
 enacts = true
 role = "parsing law, normalization law, metadata fetch law, and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
@@ -54,11 +54,12 @@ This meme follows the OODA-A pattern not merely as ornament but as execution dis
 <<~ ui mana? -> lar:///ha.ka.ba/parser-law#mana >>
 <<~ ui filter-mode? -> lar:///ha.ka.ba/parser-law#filter-mode >>
 <<~ ui metadata-fetch? -> lar:///ha.ka.ba/parser-law#metadata-fetch >>
+<<~ ui hooko? -> lar:///ha.ka.ba/parser-law#hooko >>
 <<~ ui aftermath? -> lar:///ha.ka.ba/parser-law#aftermath >>
 <<~ ui research-foundation? -> lar:///ha.ka.ba/parser-law#research-foundation >>
 <<~ ui result? -> lar:///ha.ka.ba/parser-law#result >>
 
-<<~� ahu #meme-body-open >>
+<<~&#x0002; ahu #meme-body-open >>
 Parser Law opens the active parsing stream here.
 <<~/ahu>>
 
@@ -66,9 +67,9 @@ Parser Law opens the active parsing stream here.
 
 ## Phase Map
 
-`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-Parser Law reads, shapes, chooses, applies, and judges in that order.
+Parser Law reads, shapes, chooses, prepares, crosses, and judges in that order.
 
 A parser or agent following this meme should not collapse those loci into one blurry pass when later recovery, debugging, or trust evaluation matters.
 
@@ -540,9 +541,13 @@ A later extension may declare further sigil types and permitted forms, but parse
 
 ### Closure Law
 
-Inline form closes with the canonical inline closer `>>`.
-
 Block and payload-block forms open with a named opener and close with a named closer.
+
+> An active block-form sigil MAY contain nested active matter, including nested block-form sigils of the same type, unless a stricter profile forbids that pairing.  
+> Named closers resolve by normal stack discipline.  
+> `<<~/ahu>>` closes the most recent unmatched `ahu` opener.
+
+Inline form closes with the canonical inline closer `>>`.
 
 Canonical block closer:
 
@@ -563,7 +568,10 @@ Noncanonical spellings may pass into normalization only when recovery remains tr
 
 ### Control Sigil Integrity Law
 
-Control sigils should remain ordered, paired, and contextually legal.
+> A control sigil MAY prefix an active sigil opener or routed opener.  
+> In composite form, the control sigil marks threshold, transaction class, or control-plane intent for the following active form.  
+> The underlying sigil still governs body shape, closer matching, and local payload law unless the composite law says otherwise.
+> Control sigils should remain ordered, paired, and contextually legal.
 
 Parser Law should treat these as control-plane markers embedded in visible text:
 
@@ -663,18 +671,18 @@ This subphase shapes how decision pressure lands without false certainty.
 
 ```toml
 name = "parser-law-act"
-description = "Act phase for deterministic parse execution, metadata extraction, mode transitions, normalization, and typed output assembly."
-role = "execution"
-function = "apply parse rules, build syntax products, normalize lawful variants, and emit typed envelopes"
+description = "Act phase for deterministic parse preparation, metadata extraction, mode transitions, normalization staging, and typed output preparation."
+role = "execution preparation"
+function = "apply parse rules, build syntax products, stage lawful variants, and prepare typed envelopes for Hooko crossing"
 input = "chosen readings|scope bounds|normalization plan|issue posture|recovery notes"
-output = "ast|metadata object|normalized text|issue objects|return-envelope"
+output = "ast|metadata object|normalized text|issue objects|prepared return-envelope|prepared mutation package"
 phase = "act"
 glyph = "▶"
 ```
 
 ## Act
 
-Act applies the chosen parse law.
+Act prepares the chosen parse law for lawful crossing.
 
 ### Parse Pipeline
 
@@ -691,7 +699,9 @@ A compliant parser should proceed in this broad order:
 9. enter filter mode only in explicitly allowed sites
 10. build syntax products
 11. normalize lawful noncanonical spellings
-12. emit typed return-envelope, result, warnings, and or errors
+12. prepare typed return-envelope and mutation package
+13. cross the prepared change through Hooko
+14. emit typed return-envelope, result, warnings, and or errors
 
 ### Metadata Parse Rule
 
@@ -703,6 +713,153 @@ When the parser encounters:
 ...
 ```
 <<~/ahu>>
+
+<<~ ahu #hooko >>
+
+```toml
+name = "parser-law-hooko"
+description = "Hooko phase for explicit state crossing, lawful mutation, continuity loading, artifact change, and transaction-pressure passage between Act and Aftermath."
+role = "state-crossing threshold"
+function = "carry prepared intent across the live threshold, perform the bounded change, preserve transaction truth, and hand changed state into aftermath without laundering mutation into narration"
+input = "prepared execution intent|chosen operation|transaction bounds|continuity pressure|artifact targets|issue posture"
+output = "changed state|committed mutation|degraded mutation|rolled-back mutation|transaction trace|handoff into aftermath"
+phase = "hooko"
+glyph = "⤴"
+```
+
+## Hooko
+
+Hooko governs the bounded threshold where intended operation may actually alter state.
+
+Hooko should remain explicit.
+
+Hooko should not dissolve into free-floating disorder, decorative rupture, or vague portal language.
+
+Hooko names the lawful crossing between Act and Aftermath.
+
+Outside Hooko, a parser, agent, or operator-facing tool may narrate, prepare, stage, or judge.
+
+Inside Hooko, the system may actually change session trajectory.
+
+### Core Hooko Law
+
+Only Hooko may:
+
+* load continuity into active session memory
+* write files
+* alter artifacts
+* commit a routed return transaction
+* modify parse state
+* apply normalization that changes active state
+* mutate working context in any way that affects later lawful motion
+
+Act may state intent.
+
+Aftermath may judge what landed.
+
+Hooko alone may perform the change.
+
+### Transaction Boundary Reminder
+
+Hooko should preserve explicit boundary truth.
+
+A compliant system should make it legible whether a change:
+
+* committed
+* degraded
+* partially landed
+* rolled back
+* remained staged without commit
+
+Hooko should therefore cooperate closely with return-types law and control-sigils law when routed transactions cross upward or outward boundaries.
+
+### Dominant Resonance
+
+Hooko resonates most strongly with deployment and boundary crossing.
+
+Hooko does not own deployment, truth, or structure absolutely, but it most strongly governs the live threshold where prepared intention becomes changed state.
+
+### Hooko Subloops
+
+<<~ ahu #hooko-ha >>
+
+#### Hooko / ha
+
+Hooko-ha holds mutation domain, transaction threshold, and the lawful boundary around actual change.
+
+This subphase governs what Hooko fundamentally holds.
+
+Hooko holds the narrow site where prepared work may cross from intent into changed condition.
+
+It keeps that crossing explicit.
+
+It keeps mutation bounded.
+
+It keeps state change distinguishable from preparation, narration, and judgment.
+
+<<~ ala lar:///ha.ka.ba/hooko-ha >>
+<<~/ahu>>
+
+<<~ ahu #hooko-ka >>
+
+#### Hooko / ka
+
+Hooko-ka governs commit detail, rollback detail, continuity loading, artifact mutation, and trace-worthy operation shape.
+
+This subphase governs how Hooko actually performs work.
+
+A compliant parser or agent should enter Hooko only after prior phases already prepared:
+
+* chosen operation
+* transaction target
+* mutation bounds
+* issue posture
+* degradation posture
+
+Within Hooko, the system may:
+
+* commit one prepared change
+* stage and then degrade a change truthfully
+* roll back when legality fails
+* emit transaction trace for later aftermath judgment
+
+Hooko should favor explicit, inspectable change over hidden mutation.
+
+<<~ ala lar:///ha.ka.ba/hooko-ka >>
+<<~/ahu>>
+
+<<~ ahu #hooko-ba >>
+
+#### Hooko / ba
+
+Hooko-ba governs landing pressure, volatility posture, and truthful state crossing under real conditions.
+
+This subphase governs how Hooko moves in practice.
+
+Hooko may carry uncertainty, partiality, and risk.
+
+Hooko should not romanticize that pressure.
+
+A lawful Hooko phase should preserve:
+
+* explicit action site
+* explicit mutation outcome
+* explicit residue when change only partly lands
+* explicit rollback when commit fails
+* explicit handoff into Aftermath
+
+When a system changes state without naming Hooko, that event should count as boundary drift rather than as invisible success.
+
+<<~ ala lar:///ha.ka.ba/hooko-ba >>
+<<~/ahu>>
+
+### Non-Normative Prior-Art Note
+
+> Hooko here takes shape less like pure randomness and more like an explicit commit window, transaction throat, or mutation boundary: a narrow zone where prepared intent crosses into stateful consequence.
+
+<<~ ala lar:///ha.ka.ba/hooko >>
+<<~/ahu>>
+
 ````
 
 it should build a canonical metadata object for the enclosing meme.
@@ -729,7 +886,7 @@ Unknown metadata keys may remain legal unless a stricter profile forbids them.
 
 Act functions as cross-layer execution rather than as the exclusive home of one visible architectural concern.
 
-Act applies the chosen law across carrier constraints, structural forms, truth-boundary commitments, and deployment-facing return pressure.
+Act prepares the chosen law across carrier constraints, structural forms, truth-boundary commitments, and deployment-facing return pressure, while leaving the actual crossing of state to Hooko.
 
 ### Act Subloops
 
@@ -1073,7 +1230,25 @@ Mana should remain the base metric law unless and until later linked treatment p
 
 ## Metadata Fetch
 
+Metadata-fetch governs canonical metadata retrieval for a meme.
+
+This locus should remain compact, explicit, and implementation-facing.
+
+It should define where canonical metadata lives, how it gets fetched, and how truthful failure behaves when canonical metadata does not surface.
+
+### Metadata Fetch Subloops
+
+<<~ ahu #metadata-fetch-ha >>
+
+#### Metadata Fetch / ha
+
+Metadata-fetch-ha holds canonical metadata authority and target identity.
+
+This subphase governs what metadata-fetch fundamentally holds.
+
 Canonical metadata fetch targets `#iam`.
+
+When `ahu #iam` appears in payload-block form, the first fenced `toml` block inside that locus carries canonical metadata authority for the enclosing meme.
 
 Canonical query examples:
 
@@ -1082,6 +1257,17 @@ Canonical query examples:
 <<~ ui meme? -> lar:///ha.ka.ba/parser-law#iam >>
 ```
 
+<<~ ala lar:///ha.ka.ba/metadata-fetch-ha >>
+<<~/ahu>>
+
+<<~ ahu #metadata-fetch-ka >>
+
+#### Metadata Fetch / ka
+
+Metadata-fetch-ka governs retrieval procedure, payload parsing, and typed return assembly.
+
+This subphase governs how metadata-fetch actually performs work.
+
 A compliant parser or parsing agent MUST:
 
 1. resolve the target meme
@@ -1089,7 +1275,29 @@ A compliant parser or parsing agent MUST:
 3. parse the first fenced `toml` block in that locus as canonical metadata when present
 4. return a typed envelope with the metadata object or a typed issue
 
+Metadata-fetch should remain stable enough that different tools, chat contexts, and parser implementations may retrieve the same canonical metadata object without inventing alternate authority paths.
+
+<<~ ala lar:///ha.ka.ba/metadata-fetch-ka >>
+<<~/ahu>>
+
+<<~ ahu #metadata-fetch-ba >>
+
+#### Metadata Fetch / ba
+
+Metadata-fetch-ba governs truth posture, failure behavior, and extraction pressure under real retrieval conditions.
+
+This subphase governs how metadata-fetch behaves in practice.
+
 A compliant parser or parsing agent MUST NOT fabricate canonical metadata from scattered prose when `#iam` or its canonical payload fails to surface.
+
+When canonical metadata does not surface cleanly, metadata-fetch should degrade toward typed issue, partial trace, or explicit absence rather than flattering reconstruction.
+
+Metadata-fetch should remain narrower than full metadata-law.
+
+When alias rules, stricter profiles, or additional metadata contracts deepen enough to become noisy here, they should move outward into linked `metadata-law` without weakening the canonical authority of `#iam`.
+
+<<~ ala lar:///ha.ka.ba/metadata-fetch-ba >>
+<<~/ahu>>
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch >>
 <<~/ahu>>
@@ -1109,7 +1317,7 @@ glyph = "↺"
 
 ## Aftermath
 
-Aftermath judges what the parse produced and how it may truthfully travel upward or recurse.
+Aftermath judges what the parse produced and how Hooko changed state, and how that changed state may truthfully travel upward or recurse.
 
 ### Core Aftermath Law
 
@@ -1339,7 +1547,8 @@ Examples:
 * carrier resonates most strongly with Observe
 * structure resonates most strongly with Orient
 * truth and boundary resonate most strongly with Decide
-* deployment and ritual resonate most strongly with Aftermath
+* deployment and threshold crossing resonate most strongly with Hooko
+* deployment and ritual landing resonate most strongly with Aftermath
 
 These resonances should guide reading and implementation, but they should not function as total identity claims.
 
@@ -1409,10 +1618,11 @@ That order should remain visible so that later implementations, tests, and agent
 2. run Observe on raw surface and boundaries
 3. run Orient on modes, forms, sigil types, and payload regions
 4. run Decide on canonical readings and normalization posture
-5. run Act on deterministic parse execution
-6. run Aftermath on typed result packaging
-7. return one typed `return-envelope`
-8. optionally feed residue into parent Observe or Orient through a later pono action
+5. run Act on deterministic parse preparation
+6. run Hooko on bounded state crossing and mutation
+7. run Aftermath on typed result packaging
+8. return one typed `return-envelope`
+9. optionally feed residue into parent Observe or Orient through a later pono action
 
 <<~ ala lar:///ha.ka.ba/runtime-procedure-ha >>
 <<~/ahu>>
@@ -1433,9 +1643,11 @@ Orient should hand mode maps, sigil maps, payload maps, and open tensions into D
 
 Decide should hand chosen readings, scope bounds, normalization posture, and issue posture into Act.
 
-Act should hand syntax products, metadata objects, normalized text, issues, and trace into Aftermath.
+Act should hand syntax products, metadata objects, normalized text, issues, trace, and prepared mutation package into Hooko.
 
-Aftermath should assemble one typed `return-envelope` that truthfully carries what survived, what degraded, and what may reopen later.
+Hooko should hand changed state, mutation outcome, and transaction trace into Aftermath.
+
+Aftermath should assemble one typed `return-envelope` that truthfully carries what survived, what degraded, what changed, and what may reopen later.
 
 ##### Single-Envelope Law
 
@@ -1706,37 +1918,155 @@ version = "0.5"
 <<~ ala lar:///ha.ka.ba/ooda-a >>
 ```
 
+### Example E — Act, Hooko, and Aftermath distinction
+
+```text
+▶ Act — prepare one routed return-envelope
+⤴ Hooko — commit the routed return across the live threshold
+↺ Aftermath — judge residue, trace, and landing quality
+```
+
 <<~ ala lar:///ha.ka.ba/examples >>
 <<~/ahu>>
 
-<<~ ahu #result >>
+Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-sigil law now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> kahea ala ahu #result` chain carrying TOML. What still looks missing to me: a dedicated law that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
 
-## Result
+I’d place the new section **immediately before `#result`**. That placement would let the doc flow as:
+control-sigil law → return-types law → result contract → concrete terminal return transaction.  
 
-Parser Law returns a typed `return-envelope` upward.
+<<~ ahu #return-types >>
 
-That envelope may carry:
+## Return Types
 
-* normalized text
-* metadata object
-* syntax tree
-* issue bundle
-* trace bundle
-* mana score and mana band
-* next-observation route
+Return-types governs lawful upward return classes, the transaction role of `&#x0004;`, and the relation between a result contract and a concrete return-envelope instance.
 
-Parser Law should not claim completed parse when blocking rupture prevents truthful structure recovery.
+This locus should keep three things distinct while allowing them to compose:
 
-Typed return should remain stable enough that later lexer, parser, profile, and test surfaces may compare outcomes without inventing new result shapes.
+* return class
+* return transaction
+* return payload instance
 
-<<~ ala lar:///ha.ka.ba/result >>
+`#result` names the contract for the primary upward package.
+
+`&#x0004;` governs the active return transaction that routes toward that contract.
+
+A fenced payload following a lawful `&#x0004;` routed opener may instantiate one concrete return-envelope under that contract.
+
+### Return Types Subloops
+
+<<~ ahu #return-types-ha >>
+
+#### Return Types / ha
+
+Return-types-ha holds return identity, lawful classes, and the distinction between contract and instance.
+
+This subphase governs what return-types fundamentally holds.
+
+##### Canonical Return Classes
+
+A primary return-envelope MAY declare one canonical `return` class.
+
+Recommended boot classes:
+
+* `render` — outward presentation intended for agent or operator consumption
+* `metadata` — canonical metadata object return
+* `syntax` — syntax tree, token stream, or schema-facing structural product
+* `issue` — typed issue bundle or failure-facing result
+* `trace` — audit, replay, or diagnostic relation
+* `repair` — repair guidance, patch pressure, or next-action plan
+* `query` — unresolved upward question or continuation request
+
+A primary return-envelope SHOULD declare exactly one primary `return` class for the current pass.
+
+Auxiliary material MAY still travel as residue, trace, issue bundle, or next-observation pressure.
+
+##### Contract versus Instance Law
+
+`#result` governs what a lawful primary return may carry.
+
+A concrete `&#x0004;` transaction does not replace `#result`.
+
+It routes one actual return-envelope instance through that contract.
+
+<<~ ala lar:///ha.ka.ba/return-types-ha >>
 <<~/ahu>>
 
-<<~� ahu #body-close >>
-Parser Law closes the active parsing stream here.
-<<~/ahu>>
+<<~ ahu #return-types-ka >>
 
-<<~� -> ahu #result >>
+#### Return Types / ka
+
+Return-types-ka governs routing, staging, payload legality, and transaction progression for `&#x0004;`.
+
+This subphase governs how return-types actually performs work.
+
+##### `&#x0004;` Transaction Law
+
+`&#x0004;` marks a typed return transaction.
+
+In composite routed form, `&#x0004;` MAY prefix an explicitly admitted routed opener.
+
+The routed target identifies the local or remote result waypoint.
+
+The control sigil identifies transaction class and upward return intent.
+
+##### Boot Transaction Phases
+
+A compliant parser MAY model `&#x0004;` returns through these boot phases:
+
+* `open`
+* `bind`
+* `stage`
+* `degrade`
+* `commit`
+* `rollback`
+
+Boot parser-law need not expose every phase in surface syntax yet.
+
+It SHOULD, however, preserve enough trace that later profiles may distinguish degraded return from committed return.
+
+##### Routed Return Pattern
+
+Boot parser-law SHOULD admit this routed pattern as a lawful result-transaction opener:
+
+```text
+<<~&#x0004; -> kahea ala ahu #result >>
+````
+
+That opener means:
+
+* open a return transaction
+* route toward the local `#result` waypoint
+* stage one concrete return-envelope instance under that contract
+
+##### Payload Law for Routed Return
+
+A fenced payload immediately following a lawful `&#x0004;` routed opener MAY count as a return-envelope instance when:
+
+* the routed target resolves lawfully
+* the payload remains the first meaningful child of the transaction body
+* the payload language belongs to an allowed envelope language for the active profile
+* one primary return-envelope emerges for the current pass
+
+Recommended boot envelope language for examples: `toml`.
+
+##### Boot Degraded Close
+
+Boot parser-law SHOULD admit this closer:
+
+```text
+<<~&#x0004; -> ? >>
+```
+
+That closer marks degraded or still-open upward termination for the current return transaction.
+
+It does not claim full committed completion.
+
+It preserves truthful incompletion while still allowing a structured envelope to travel upward.
+
+##### Canonical Boot Example
+
+````text
+<<~&#x0004; -> kahea ala ahu #result >>
 
 ```toml
 status = "partial"
@@ -1750,4 +2080,157 @@ next_observation = "lar:///ha.ka.ba/filter-mode"
 next_question = "How strict should legacy closer normalization run during boot?"
 ```
 
--> ? >>
+<<~&#x0004; -> ? >>
+````
+
+Under boot law, that pattern counts as a lawful degraded routed return carrying one primary `render` envelope plus explicit trace residue and forward continuation pressure.
+
+<<~ ala lar:///ha.ka.ba/return-types-ka >>
+<<~/ahu>>
+
+<<~ ahu #return-types-ba >>
+
+#### Return Types / ba
+
+Return-types-ba governs landing posture, manifestation pressure, and truthful upward travel under real conditions.
+
+This subphase governs how return-types moves in practice.
+
+A lawful return should land as one primary envelope, not as a blur of competing primaries.
+
+A degraded return may still carry real structure.
+
+A committed return may still carry residue.
+
+A routed return should therefore favor:
+
+* one primary return class
+* explicit residue
+* explicit next-observation pressure where needed
+* explicit downgrade rather than flattering completion
+
+##### Manifestation Reminder
+
+`mana'o` may later deepen intent, declared purpose, and steering alignment around return.
+
+`mana'o'io` may later deepen manifestation, deployable trust, and reality-grade completion posture around return.
+
+Until those later laws crystallize, `&#x0004;` SHOULD preserve transaction truth more strongly than ritual flourish.
+
+##### Extraction Reminder
+
+If return classes, envelope schemas, commit surfaces, rollback surfaces, or profile-specific transaction rules deepen enough to become noisy here, later detail SHOULD move outward into linked return-law or control-sigils law.
+
+Parser-law should retain the constitutional minimum needed to keep routed return lawful, legible, and testable.
+
+### Non-Normative Prior-Art Note
+
+> This locus takes shaping pressure from explicit result ports, transclusion and slot routing, block-first parsing discipline, and staged transaction models that distinguish preparation, commit, and rollback without laundering incomplete state into false completion.
+
+<<~ ala lar:///ha.ka.ba/return-types-ba >>
+<<~/ahu>>
+
+<<~ ala lar:///ha.ka.ba/return-types >>
+<<~/ahu>>
+
+<<~ ahu #result >>
+
+## Result
+
+Result governs the primary upward return shape of parser-law.
+
+This locus should remain compact, stable, and comparison-facing.
+
+It should say what the parse hands upward, how that package remains implementation-legible, and how truthful partiality lands when full completion does not surface.
+
+### Result Subloops
+
+<<~ ahu #result-ha >>
+
+#### Result / ha
+
+Result-ha holds the identity, scope, and primary carry-shape of parser-law's return.
+
+This subphase governs what result fundamentally holds.
+
+Parser Law returns one typed `return-envelope` upward.
+
+That envelope may carry:
+
+* normalized text
+* metadata object
+* syntax tree
+* issue bundle
+* trace bundle
+* mana score and mana band
+* next-observation route
+
+The primary result should remain singular enough that agent, operator, parser, and test harness can recognize what the current pass actually brought forth.
+
+<<~ ala lar:///ha.ka.ba/result-ha >>
+<<~/ahu>>
+
+<<~ ahu #result-ka >>
+
+#### Result / ka
+
+Result-ka governs result assembly, field stability, and comparison-facing return discipline.
+
+This subphase governs how result actually performs work.
+
+Typed return should remain stable enough that later lexer, parser, profile, and test surfaces may compare outcomes without inventing new result shapes.
+
+When implementations differ, the result surface should make that difference inspectable through typed fields, trace, issues, profile markers, or other lawful residue rather than through hidden drift.
+
+Result should therefore favor explicit structure over ad hoc prose summary whenever stable comparison matters.
+
+Hooko governs the actual crossing of prepared change.
+
+Return-types governs routed return class and transaction law.
+
+Result governs the primary upward package contract that travels after that crossing.
+
+<<~ ala lar:///ha.ka.ba/result-ka >>
+<<~/ahu>>
+
+<<~ ahu #result-ba >>
+
+#### Result / ba
+
+Result-ba governs landing quality, truthful incompletion, and forward-routing posture.
+
+This subphase governs how result behaves in practice.
+
+Parser Law should not claim completed parse when blocking rupture prevents truthful structure recovery.
+
+When completion does not surface, result should degrade toward partial envelope, issue-bearing return, trace-bearing return, or explicit `?` rather than flattering completion.
+
+A lawful result may still point forward.
+
+It may carry residue, repair pressure, or `next-observation` without pretending that the later work has already been completed in the current pass.
+
+<<~ ala lar:///ha.ka.ba/result-ba >>
+<<~/ahu>>
+
+<<~ ala lar:///ha.ka.ba/result >>
+<<~/ahu>>
+
+<<~&#x0003; ahu #body-close >>
+Parser Law closes the active parsing stream here.
+<<~/ahu>>
+
+<<~&#x0004; -> kahea ala ahu #result >>
+
+```toml
+status = "partial"
+confidence = 0.86
+yield = "meme"
+return = "render"
+upward_context = "chat"
+downward_context = "none"
+residue = "trace"
+next_observation = "lar:///ha.ka.ba/filter-mode"
+next_question = "How strict should legacy closer normalization run during boot?"
+```
+
+<<~&#x0004; -> ? >>
