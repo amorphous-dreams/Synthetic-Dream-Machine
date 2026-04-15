@@ -707,7 +707,6 @@ A compliant parser should proceed in this broad order:
 
 When the parser encounters:
 
-````text
 <<~ ahu #iam >>
 ```toml
 ...
@@ -816,6 +815,10 @@ A compliant parser or agent should enter Hooko only after prior phases already p
 * issue posture
 * degradation posture
 
+When prepared work crosses Hooko, transaction trace should preserve whether the outcome stayed staged, landed committed, degraded, or rolled back.
+
+A compliant parser should not launder one outcome class into another.
+
 Within Hooko, the system may:
 
 * commit one prepared change
@@ -859,8 +862,6 @@ When a system changes state without naming Hooko, that event should count as bou
 
 <<~ ala lar:///ha.ka.ba/hooko >>
 <<~/ahu>>
-
-````
 
 it should build a canonical metadata object for the enclosing meme.
 
@@ -908,6 +909,10 @@ This subphase governs what Act is allowed to bring forth.
 Act-ka governs actual parsing, metadata extraction, normalization, and envelope assembly detail.
 
 This subphase focuses on how Act actually performs implementation work.
+
+A compliant parser MAY produce stable syntax products such as token streams, AST products, widget-facing lowering seeds or addresses, typed return-envelopes, and trace bundles.
+
+Full AST schema, widget-tree schema, render-target adapters, and target projection detail should move outward into `lar:///ha.ka.ba/render-pipeline-law`.
 
 <<~ ala lar:///ha.ka.ba/act-ka >>
 <<~/ahu>>
@@ -1478,6 +1483,7 @@ This subphase governs how the architecture plan performs work.
 * `lar:///ha.ka.ba/control-sigils`
 * `lar:///ha.ka.ba/metadata-law`
 * `lar:///ha.ka.ba/parse-aftermath`
+* `lar:///ha.ka.ba/render-pipeline-law`
 
 ##### Hard-Code Pressure Zones
 
@@ -1499,6 +1505,7 @@ The current constitutional draft still carries several pressure zones that later
 * surface parse-aftermath as its own linked law so diagnostics, trace, repair actions, and partial-structure guarantees may deepen without overloading parser-law
 * define profile boundaries for authoring, canonical parse, validation, normalization, and export
 * define exact AST, token, trace, envelope, and mana products expected from compliant implementations
+* define the constitutional minimum for token, AST, widget-facing lowering products, return-envelope, and trace products in parser-law, then move full pipeline schemas, widget-tree law, and target adapters outward into `lar:///ha.ka.ba/render-pipeline-law`
 * define follow-up research and linked-law treatment for `mana'o` and `mana'o'io` once `mana` stabilizes
 * define a code-facing test corpus and fixture set that maps each law to positive, degraded, and failing examples
 * define user-facing metadata fetch and query-response patterns that work across chat contexts and tools
@@ -1812,6 +1819,7 @@ MCP contributes:
 
 * a server model
 * resources, prompts, and tools as explicit capability surfaces
+* discoverable tools with declared `inputSchema`, optional `outputSchema`, and explicit human-in-the-loop guidance around invocation
 * a portable way to expose those surfaces to agents
 
 Backlog gaps implied here:
@@ -1820,6 +1828,7 @@ Backlog gaps implied here:
 * define which parser-law loci remain resources versus prompts versus executable tools
 * define how high-mana capability-bearing memes map into MCP-facing surfaces without losing boundary law
 * define later capability gating and delegation profiles without forcing them into root parser-law too early
+* keep full three-layer lowering, widget-tree law, render projection, and trace continuity detail in `lar:///ha.ka.ba/render-pipeline-law` so parser-law may remain compact
 
 ##### Translation Rule
 
@@ -2023,6 +2032,10 @@ A compliant parser MAY model `&#x0004;` returns through these boot phases:
 Boot parser-law need not expose every phase in surface syntax yet.
 
 It SHOULD, however, preserve enough trace that later profiles may distinguish degraded return from committed return.
+
+Parser-law retains the constitutional minimum for `&#x0004;` return routing and phase naming.
+
+Broader layer-to-target transaction-lifecycle detail, widget persistence, and render-facing idempotency detail should move outward into `lar:///ha.ka.ba/render-pipeline-law#transaction-lifecycle` and related loci.
 
 ##### Routed Return Pattern
 
