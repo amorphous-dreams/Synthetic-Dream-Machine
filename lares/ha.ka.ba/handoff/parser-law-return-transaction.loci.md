@@ -54,7 +54,7 @@ The hand-off stream opens here.
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-The next agent should read this hand-off through the same OODA-HA+H (with Hooko) discipline now embedded in parser-law.
+The next agent should read this hand-off through the same OODA-HA (with Hooko) discipline now embedded in parser-law.
 <<~ ala lar:///ha.ka.ba/phase-map >>
 <<~/ahu>>
 
