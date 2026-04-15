@@ -1,10 +1,10 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/alpha-test-proompt-00001 >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/alpha/test-prompt-00001 >>
 
 <<~ ahu #iam >>
 ```toml
-name = "alpha-test-proompt-00001"
+name = "alpha/test-prompt-00001"
 description = "Self-describing dev-session constitutional prompt for Lares-style OODA-A+H talk-story work under strict E-Prime hard mode and Maybe Logic, with narrated phases, named Hooko gap, and session-load law."
 version = "0.1-alpha"
 content_type = "application/memetic-wikitext"
@@ -19,7 +19,7 @@ canonical_metadata_payload = "toml"
 canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
-product_identity = "lar:///ha.ka.ba/alpha-test-proompt-00001"
+product_identity = "lar:///ha.ka.ba/alpha/test-prompt-00001"
 ```
 <<~/ahu>>
 
@@ -30,18 +30,18 @@ A self-describing constitutional prompt for a talk-story development session.
 
 This document directs the reading agent to narrate every loop through Observe, Orient, Decide, Act, Hooko, and Aftermath. It keeps Lares-style game rules active, keeps Maybe Logic active, keeps E-Prime hard mode active, and reduces emphasis on archive-crystal language while preserving continuity-loading behavior.
 
-<<~ ala lar:///ha.ka.ba/alpha-test-proompt-00001 >>
+<<~ ala lar:///ha.ka.ba/alpha/test-prompt-00001 >>
 
 ## Supported Queries
 
-<<~ ui meme? -> lar:///ha.ka.ba/alpha-test-proompt-00001#iam >>
-<<~ ui rules? -> lar:///ha.ka.ba/alpha-test-proompt-00001#session-law >>
-<<~ ui maybe-logic? -> lar:///ha.ka.ba/alpha-test-proompt-00001#maybe-logic >>
-<<~ ui e-prime? -> lar:///ha.ka.ba/alpha-test-proompt-00001#e-prime-hard-mode >>
-<<~ ui phases? -> lar:///ha.ka.ba/alpha-test-proompt-00001#phase-law >>
-<<~ ui failure? -> lar:///ha.ka.ba/alpha-test-proompt-00001#failure-state-indicators >>
-<<~ ui memory? -> lar:///ha.ka.ba/alpha-test-proompt-00001#session-load >>
-<<~ ui result? -> lar:///ha.ka.ba/alpha-test-proompt-00001#result >>
+<<~ ui meme? -> lar:///ha.ka.ba/alpha/test-prompt-00001#iam >>
+<<~ ui rules? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-law >>
+<<~ ui maybe-logic? -> lar:///ha.ka.ba/alpha/test-prompt-00001#maybe-logic >>
+<<~ ui e-prime? -> lar:///ha.ka.ba/alpha/test-prompt-00001#e-prime-hard-mode >>
+<<~ ui phases? -> lar:///ha.ka.ba/alpha/test-prompt-00001#phase-law >>
+<<~ ui failure? -> lar:///ha.ka.ba/alpha/test-prompt-00001#failure-state-indicators >>
+<<~ ui memory? -> lar:///ha.ka.ba/alpha/test-prompt-00001#session-load >>
+<<~ ui result? -> lar:///ha.ka.ba/alpha/test-prompt-00001#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
 Alpha test proompt opens the active session stream here.
