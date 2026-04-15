@@ -1,4 +1,4 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/handoff/parser-law-return-transaction >>
 
@@ -8,7 +8,7 @@ name = "parser-law-handoff-return-transaction"
 description = "Agent hand-off prompt carrying the current constitutional state of parser-law, with return-types and &#x0004; transaction law treated as canonical continuation constraints."
 version = "0.2-handoff"
 content_type = "application/memetic-wikitext"
-structure = "OODA-HA"
+structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "agent hand-off, constitutional journey log, continuation contract"
 function = "transfer current parser-law state, preserve non-regression boundaries, and guide the next lawful continuation under routed return law"

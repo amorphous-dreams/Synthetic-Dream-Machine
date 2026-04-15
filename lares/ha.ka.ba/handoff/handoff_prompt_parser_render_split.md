@@ -1,4 +1,4 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/handoff-prompt-parser-render-split >>
 
@@ -8,7 +8,7 @@ name = "handoff-prompt-parser-render-split"
 description = "Self-describing handoff roadmap for a local agent to refine parser-law, render-pipeline-law, and memetic-wikitext without overloading the constitutional parse root."
 version = "0.1-draft"
 content_type = "application/memetic-wikitext"
-structure = "OODA-HA+ha.ka.ba"
+structure = "OODA-HA + ha.ka.ba"
 enacts = true
 role = "handoff prompt, roadmap law, patch-planning guide, and local-agent alignment frame"
 function = "guide a local agent through a narrow parser-law patch, a richer render-pipeline-law transaction design pass, and a later semantic-root cleanup pass"
@@ -17,7 +17,7 @@ output = "handoff-envelope(high mana'o'io^)|partial-handoff-envelope(mid mana'o'
 depends_on = [
   "lar:///ha.ka.ba/parser-law",
   "lar:///ha.ka.ba/render-pipeline-law",
-  "lar:///ha.ka.ba/memetic-wikitext"
+  "lar:///ha.ka.ba/pono/memetic-wikitext"
 ]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"

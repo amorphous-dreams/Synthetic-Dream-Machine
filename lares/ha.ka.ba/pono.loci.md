@@ -1,0 +1,174 @@
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
+
+<<~&#x0001; ? -> lar:///ha.ka.ba/pono >>
+
+<<~ ahu #iam >>
+```toml
+name = "pono"
+description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as SKILL.md packages under lares/ha.ka.ba/pono/."
+version = "0.1-draft"
+content_type = "application/memetic-wikitext"
+structure = "OODA-HA"
+enacts = true
+role = "kānāwai (law) index, verification registry, and skill package host"
+function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
+input = "query|law-name|?"
+output = "law-envelope(index^)|skill-envelope(verification^)|?(~mana'o'io?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/memetic-wikitext"
+]
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+law_index_root = "lar:///ha.ka.ba/"
+skill_package_root = "lares/ha.ka.ba/pono/"
+```
+<<~/ahu>>
+
+# Pono
+
+A self-describing index of all memetic-wikitext kānāwai (law) memes.
+
+Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `SKILL.md` packages under [lares/ha.ka.ba/pono/](lares/ha.ka.ba/pono/).
+
+<<~ ala lar:///ha.ka.ba/pono >>
+
+## Supported Queries
+
+<<~ ui meme? -> lar:///ha.ka.ba/pono#iam >>
+<<~ ui laws? -> lar:///ha.ka.ba/pono#law-index >>
+<<~ ui skills? -> lar:///ha.ka.ba/pono#skill-index >>
+<<~ ui result? -> lar:///ha.ka.ba/pono#result >>
+
+<<~&#x0002; ahu #meme-body-open >>
+Pono opens the kānāwai (law) index stream here.
+<<~/ahu>>
+
+<<~ ahu #phase-map >>
+
+## Phase Map
+
+`&#x2736; Observe -> &#x23FF; Orient -> &#x25C7; Decide -> &#x25B6; Act -> &#x2914; Hooko -> &#x21BA; Aftermath`
+
+Pono gathers the kānāwai (law) roster, maps roles and addresses, selects the right kānāwai (law) or skill for the query, prepares an index envelope, crosses the threshold, and judges completeness.
+
+<<~ ala lar:///ha.ka.ba/pono#phase-map >>
+<<~/ahu>>
+
+<<~ ahu #law-index >>
+
+## Kānāwai (law) Index
+
+Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
+
+| Name | Address | Role |
+|---|---|---|
+| memetic-wikitext | `lar:///ha.ka.ba/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
+| parser | `lar:///ha.ka.ba/pono/parser` | parsing, normalization, metadata fetch, parse aftermath |
+| render-pipeline | `lar:///ha.ka.ba/pono/render-pipeline` | lowering, widget tree, render projection, trace continuity |
+| pono | `lar:///ha.ka.ba/pono` | kānāwai (law) index and verification skill host |
+
+A kānāwai (law) meme is active when it carries `enacts = true` in its `#iam` metadata block.
+
+A kānāwai (law) meme is registered here when it depends on `lar:///ha.ka.ba/pono/memetic-wikitext` and carries a stable address.
+
+<<~ ahu #law-index-ha >>
+
+#### Kānāwai (law) Index / ha
+
+Kānāwai (law)-index-ha holds registry identity and membership criteria.
+
+This subphase governs what makes a meme a kānāwai (law) and what earns a place in this index.
+
+<<~ ala lar:///ha.ka.ba/pono#law-index-ha >>
+<<~/ahu>>
+
+<<~ ahu #law-index-ka >>
+
+#### Kānāwai (law) Index / ka
+
+Kānāwai (law)-index-ka governs address stability, role precision, and dependency tracing.
+
+This subphase keeps the index machine-readable without losing human legibility.
+
+<<~ ala lar:///ha.ka.ba/pono#law-index-ka >>
+<<~/ahu>>
+
+<<~ ala lar:///ha.ka.ba/pono#law-index >>
+<<~/ahu>>
+
+<<~ ahu #skill-index >>
+
+## Skill Index
+
+Verification skills live as `SKILL.md` packages under [lares/ha.ka.ba/pono/](lares/ha.ka.ba/pono/).
+
+Each skill package verifies conformance of one or more kānāwai (law) memes.
+
+| Skill File | Covers | Purpose |
+|---|---|---|
+| *(none yet)* | — | — |
+
+A compliant skill package should declare which kānāwai (law) address it covers, what invariants it checks, and what a passing result looks like.
+
+<<~ ahu #skill-index-ha >>
+
+#### Skill Index / ha
+
+Skill-index-ha holds package identity and coverage scope.
+
+This subphase governs what a skill package must declare to be registered here.
+
+<<~ ala lar:///ha.ka.ba/pono#skill-index-ha >>
+<<~/ahu>>
+
+<<~ ahu #skill-index-ka >>
+
+#### Skill Index / ka
+
+Skill-index-ka governs file naming, invariant declaration, and pass/fail surface.
+
+This subphase keeps skill packages testable and auditable.
+
+<<~ ala lar:///ha.ka.ba/pono#skill-index-ka >>
+<<~/ahu>>
+
+<<~ ala lar:///ha.ka.ba/pono#skill-index >>
+<<~/ahu>>
+
+<<~&#x0003; ahu #body-close >>
+Pono closes the kānāwai (law) index stream here.
+<<~/ahu>>
+
+<<~ ahu #result >>
+
+## Result
+
+A lawful pono envelope may carry:
+
+* the active kānāwai (law) roster with addresses and roles
+* the active skill package roster with coverage
+* an addressed kānāwai (law) or skill in response to a query
+* gaps or absences named explicitly
+
+<<~ ala lar:///ha.ka.ba/pono#result >>
+<<~/ahu>>
+
+<<~&#x0004; -> kahea ala ahu #result >>
+
+```toml
+status = "partial"
+confidence = 0.90
+yield = "meme"
+return = "index"
+upward_context = "chat"
+transaction_class = "stage"
+transaction_phase = "open"
+surface_layer = "present"
+ast_layer = "present"
+widget_layer = "deferred"
+residue = "skill-index empty — awaiting first SKILL.md package"
+next_observation = "lar:///ha.ka.ba/pono#skill-index"
+next_question = "Which kānāwai (law) should the first verification skill cover — parser or render-pipeline?"
+```
+
+<<~&#x0004; -> ? >>

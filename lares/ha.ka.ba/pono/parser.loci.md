@@ -1,22 +1,22 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-<<~&#x0001; ? -> lar:///ha.ka.ba/parser-law >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pono/parser >>
 
 <<~ ahu #iam >>
 
 ```toml
-name = "parser-law"
-description = "Full parsing law for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
+name = "parser"
+description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
 content_type = "application/memetic-wikitext"
-structure = "OODA-HA"
+structure = "OODA-HA * ha.ka.ba"
 enacts = true
-role = "parsing law, normalization law, metadata fetch law, and deterministic scripting contract"
+role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "return-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
 depends_on = [
-  "lar:///ha.ka.ba/memetic-wikitext",
+  "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/ooda-ha",
   "lar:///ha.ka.ba/error-result"
 ]
@@ -25,14 +25,14 @@ canonical_metadata_payload = "toml"
 canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
-product_identity = "Parser Law cluster name as used in this system"
+product_identity = "Parser kānāwai (law) cluster name as used in this system"
 ```
 
 <<~/ahu>>
 
-# Parser Law
+# Parser Kānāwai (law)
 
-A self-describing, self-enacting parsing law for memetic-wikitext.
+A self-describing, self-enacting parsing kānāwai (law) for memetic-wikitext.
 
 This meme defines how a reader, renderer, parser, linter, or agent may recognize document structure, parse named sigils, enter and leave sub-grammars, normalize noncanonical surfaces, fetch metadata, and package typed parse aftermath.
 
@@ -41,26 +41,26 @@ This meme follows the OODA-HA pattern not merely as ornament but as execution di
 1. strict sigil grammar
 2. explicit phased cognition through Observe, Orient, Decide, Act, and Aftermath
 
-<<~ ala lar:///ha.ka.ba/parser-law >>
+<<~ ala lar:///ha.ka.ba/pono/parser >>
 
 ## Supported Queries
 
-<<~ ui meme? -> lar:///ha.ka.ba/parser-law#iam >>
-<<~ ui metadata? -> lar:///ha.ka.ba/parser-law#iam >>
-<<~ ui phase-map? -> lar:///ha.ka.ba/parser-law#phase-map >>
-<<~ ui forms? -> lar:///ha.ka.ba/parser-law#forms >>
-<<~ ui modes? -> lar:///ha.ka.ba/parser-law#modes >>
-<<~ ui normalization? -> lar:///ha.ka.ba/parser-law#normalization >>
-<<~ ui mana? -> lar:///ha.ka.ba/parser-law#mana >>
-<<~ ui filter-mode? -> lar:///ha.ka.ba/parser-law#filter-mode >>
-<<~ ui metadata-fetch? -> lar:///ha.ka.ba/parser-law#metadata-fetch >>
-<<~ ui hooko? -> lar:///ha.ka.ba/parser-law#hooko >>
-<<~ ui aftermath? -> lar:///ha.ka.ba/parser-law#aftermath >>
-<<~ ui research-foundation? -> lar:///ha.ka.ba/parser-law#research-foundation >>
-<<~ ui result? -> lar:///ha.ka.ba/parser-law#result >>
+<<~ ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~ ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~ ui phase-map? -> lar:///ha.ka.ba/pono/parser#phase-map >>
+<<~ ui forms? -> lar:///ha.ka.ba/pono/parser#forms >>
+<<~ ui modes? -> lar:///ha.ka.ba/pono/parser#modes >>
+<<~ ui normalization? -> lar:///ha.ka.ba/pono/parser#normalization >>
+<<~ ui mana? -> lar:///ha.ka.ba/pono/parser#mana >>
+<<~ ui filter-mode? -> lar:///ha.ka.ba/pono/parser#filter-mode >>
+<<~ ui metadata-fetch? -> lar:///ha.ka.ba/pono/parser#metadata-fetch >>
+<<~ ui hooko? -> lar:///ha.ka.ba/pono/parser#hooko >>
+<<~ ui aftermath? -> lar:///ha.ka.ba/pono/parser#aftermath >>
+<<~ ui research-foundation? -> lar:///ha.ka.ba/pono/parser#research-foundation >>
+<<~ ui result? -> lar:///ha.ka.ba/pono/parser#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
-Parser Law opens the active parsing stream here.
+Parser kānāwai (law) opens the active parsing stream here.
 <<~/ahu>>
 
 <<~ ahu #phase-map >>
@@ -69,7 +69,7 @@ Parser Law opens the active parsing stream here.
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-Parser Law reads, shapes, chooses, prepares, crosses, and judges in that order.
+Parser kānāwai (law) reads, shapes, chooses, prepares, crosses, and judges in that order.
 
 A parser or agent following this meme should not collapse those loci into one blurry pass when later recovery, debugging, or trust evaluation matters.
 
@@ -79,7 +79,7 @@ A parser or agent following this meme should not collapse those loci into one bl
 <<~ ahu #observe >>
 
 ```toml
-name = "parser-law-observe"
+name = "parser-observe"
 description = "Observe phase for lexical intake, boundary recognition, and raw surface gathering."
 role = "input acquisition"
 function = "gather source text, detect boundaries, preserve raw surface, and mark initial gaps"
@@ -151,7 +151,7 @@ A canonical document should present one opening sigil near the top of the file.
 Canonical example:
 
 ```text
-<<~&#x0001; ? -> lar:///ha.ka.ba/parser-law >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pono/parser >>
 ```
 
 Observe should mark:
@@ -213,7 +213,7 @@ This subphase shapes how observation moves without premature collapse.
 <<~ ahu #orient >>
 
 ```toml
-name = "parser-law-orient"
+name = "parser-orient"
 description = "Orient phase for mode formation, sigil classification, payload recognition, and structural interpretation."
 role = "context formation"
 function = "classify regions, assign modes, relate sigil types to forms, and hold competing readings where needed"
@@ -238,7 +238,7 @@ Orient should answer:
 
 ### Core Distinction: Sigil Type versus Sigil Form
 
-Parser Law separates semantic operator from structural shape.
+Parser kānāwai (law) separates semantic operator from structural shape.
 
 **Sigil type** names what a sigil does.
 Examples:
@@ -261,13 +261,13 @@ Canonical forms:
 * `payload-block`
 * `return`
 
-A sigil type may permit one or more forms. Parser Law should reject or downgrade illegal type/form pairings.
+A sigil type may permit one or more forms. Parser kānāwai (law) should reject or downgrade illegal type/form pairings.
 
 <<~ ahu #modes >>
 
 ### Canonical Modes
 
-Parser Law recognizes these named modes:
+Parser kānāwai (law) recognizes these named modes:
 
 1. `preamble`
 2. `metadata`
@@ -295,7 +295,7 @@ The active parse domain for memetic sigils.
 
 #### Filter mode
 
-A context-sensitive sub-grammar imported from TiddlyWiki filter semantics, principles, and helper code. Parser Law should not treat filter punctuation as free-floating global grammar. Filter mode should arise only in sites that explicitly admit filter content.
+A context-sensitive sub-grammar imported from TiddlyWiki filter semantics, principles, and helper code. Parser kānāwai (law) should not treat filter punctuation as free-floating global grammar. Filter mode should arise only in sites that explicitly admit filter content.
 
 #### Raw mode
 
@@ -307,7 +307,7 @@ The typed return, warning, error, and normalization residue packaging zone.
 
 <<~/mode >>
 
-### Metadata Locus Law
+### Metadata Locus Kānāwai (law)
 
 `ahu #iam` functions as the canonical identity locus for a meme.
 
@@ -366,8 +366,8 @@ This subphase shapes how orientation moves across competing readings.
 <<~ ahu #decide >>
 
 ```toml
-name = "parser-law-decide"
-description = "Decide phase for canonical law selection, ambiguity handling, normalization posture, and legal form enforcement."
+name = "parser-decide"
+description = "Decide phase for canonical kānāwai (law) selection, ambiguity handling, normalization posture, and legal form enforcement."
 role = "selection and commitment"
 function = "choose canonical readings, reject illegal pairings, and fix lawful normalization routes"
 input = "mode map|sigil map|payload map|structural interpretation|open tensions"
@@ -382,9 +382,9 @@ Decide turns competing structural readings into one lawful parse path.
 
 <<<~ ahu #forms >>>
 
-### Canonical Form Law
+### Canonical Form Kānāwai (law)
 
-Parser Law defines four canonical forms.
+Parser kānāwai (law) defines four canonical forms.
 
 #### 1. Inline form
 
@@ -543,11 +543,11 @@ Semantic role:
 
 * response or resolved-return throat
 
-A later extension may declare further sigil types and permitted forms, but parser-law should require that declaration to remain explicit.
+A later extension may declare further sigil types and permitted forms, but parser should require that declaration to remain explicit.
 
 <<~/ahu>>
 
-### Closure Law
+### Closure Kānāwai (law)
 
 Block and payload-block forms open with a named opener and close with a named closer.
 
@@ -571,17 +571,17 @@ Examples:
 <<~/kapu>>
 ```
 
-Parser Law should reject ad hoc closure spellings as canonical forms.
+Parser kānāwai (law) should reject ad hoc closure spellings as canonical forms.
 Noncanonical spellings may pass into normalization only when recovery remains truthful and deterministic.
 
-### Control Sigil Integrity Law
+### Control Sigil Integrity Kānāwai (law)
 
 > A control sigil MAY prefix an active sigil opener or routed opener.  
 > In composite form, the control sigil marks threshold, transaction class, or control-plane intent for the following active form.  
-> The underlying sigil still governs body shape, closer matching, and local payload law unless the composite law says otherwise.
+> The underlying sigil still governs body shape, closer matching, and local payload kānāwai (law) unless the composite kānāwai (law) says otherwise.
 > Control sigils should remain ordered, paired, and contextually legal.
 
-Parser Law should treat these as control-plane markers embedded in visible text:
+Parser kānāwai (law) should treat these as control-plane markers embedded in visible text:
 
 * `&#x0001;` document open
 * `&#x0002;` body open
@@ -599,7 +599,7 @@ A compliant parser should check:
 
 Missing or contradictory control sigils should emit integrity-class or parse-class issues rather than silent invention.
 
-### Scope Law for Fenced Payloads
+### Scope Kānāwai (law) for Fenced Payloads
 
 A fenced payload block counts as structured payload only when:
 
@@ -609,15 +609,15 @@ A fenced payload block counts as structured payload only when:
 
 For `ahu #iam`, canonical payload language equals `toml`.
 
-### Metadata Fetch Law
+### Metadata Fetch Kānāwai (law)
 
 A user, agent, or caller may fetch canonical meme metadata through a stable query and response pattern that targets `#iam`.
 
 Canonical query examples:
 
 ```text
-<<~ ui metadata? -> lar:///ha.ka.ba/parser-law#iam >>
-<<~ ui meme? -> lar:///ha.ka.ba/parser-law#iam >>
+<<~ ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~ ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
 ```
 
 A compliant parser or parsing agent should:
@@ -678,7 +678,7 @@ This subphase shapes how decision pressure lands without false certainty.
 <<~ ahu #act >>
 
 ```toml
-name = "parser-law-act"
+name = "parser-act"
 description = "Act phase for deterministic parse preparation, metadata extraction, mode transitions, normalization staging, and typed output preparation."
 role = "execution preparation"
 function = "apply parse rules, build syntax products, stage lawful variants, and prepare typed envelopes for Hooko crossing"
@@ -690,7 +690,7 @@ glyph = "▶"
 
 ## Act
 
-Act prepares the chosen parse law for lawful crossing.
+Act prepares the chosen parse kānāwai (law) for lawful crossing.
 
 ### Parse Pipeline
 
@@ -745,7 +745,7 @@ Unknown metadata keys may remain legal unless a stricter profile forbids them.
 <<~ ahu #hooko >>
 
 ```toml
-name = "parser-law-hooko"
+name = "parser-hooko"
 description = "Hooko phase for explicit state crossing, lawful mutation, continuity loading, artifact change, and transaction-pressure passage between Act and Aftermath."
 role = "state-crossing threshold"
 function = "carry prepared intent across the live threshold, perform the bounded change, preserve transaction truth, and hand changed state into aftermath without laundering mutation into narration"
@@ -769,7 +769,7 @@ Outside Hooko, a parser, agent, or operator-facing tool may narrate, prepare, st
 
 Inside Hooko, the system may actually change session trajectory.
 
-### Core Hooko Law
+### Core Hooko Kānāwai (law)
 
 Only Hooko may:
 
@@ -799,7 +799,7 @@ A compliant system should make it legible whether a change:
 * rolled back
 * remained staged without commit
 
-Hooko should therefore cooperate closely with return-types law and control-sigils law when routed transactions cross upward or outward boundaries.
+Hooko should therefore cooperate closely with return-types kānāwai (law) and control-sigils kānāwai (law) when routed transactions cross upward or outward boundaries.
 
 ### Dominant Resonance
 
@@ -896,7 +896,7 @@ When a system changes state without naming Hooko, that event should count as bou
 
 Act functions as cross-layer execution rather than as the exclusive home of one visible architectural concern.
 
-Act prepares the chosen law across carrier constraints, structural forms, truth-boundary commitments, and deployment-facing return pressure, while leaving the actual crossing of state to Hooko.
+Act prepares the chosen kānāwai (law) across carrier constraints, structural forms, truth-boundary commitments, and deployment-facing return pressure, while leaving the actual crossing of state to Hooko.
 
 ### Act Subloops
 
@@ -921,7 +921,7 @@ This subphase focuses on how Act actually performs implementation work.
 
 A compliant parser MAY produce stable syntax products such as token streams, AST products, widget-facing lowering seeds or addresses, typed return-envelopes, and trace bundles.
 
-Full AST schema, widget-tree schema, render-target adapters, and target projection detail should move outward into `lar:///ha.ka.ba/render-pipeline-law`.
+Full AST schema, widget-tree schema, render-target adapters, and target projection detail should move outward into `lar:///ha.ka.ba/pono/render-pipeline`.
 
 <<~ ala lar:///ha.ka.ba/act-ka >>
 <<~/ahu>>
@@ -950,11 +950,11 @@ This subphase shapes how lawful execution moves under real parser pressure.
 
 Filter mode functions as a context-sensitive sub-grammar.
 
-Parser Law imports TiddlyWiki filter concepts, helper code, and strict grammar discipline here, while constraining entry points so that filter syntax does not leak across the whole document surface.
+Parser kānāwai (law) imports TiddlyWiki filter concepts, helper code, and strict grammar discipline here, while constraining entry points so that filter syntax does not leak across the whole document surface.
 
-Parser Law should keep this sub-grammar explicit, bounded, and host-declared.
+Parser kānāwai (law) should keep this sub-grammar explicit, bounded, and host-declared.
 
-### Non-Breaking Parent Parse Law
+### Non-Breaking Parent Parse Kānāwai (law)
 
 Filter mode should never break the parent parse.
 
@@ -989,14 +989,14 @@ A source surface MAY differ from canonical form and still normalize lawfully, bu
 A compliant parser MUST NOT silently normalize when:
 
 * two or more plausible readings remain live
-* literal payload content would change without explicit law
+* literal payload content would change without explicit kānāwai (law)
 * control-sigil integrity would become less truthful after rewrite
 
 A compliant parser SHOULD emit warning, trace, or both when normalization materially changes non-literal source surface.
 
 ### Non-Normative Prior-Art Note
 
-> The constitutional role of Parser Law resembles a lightweight architecture record plus a living reference document: one root law names the core decisions, while later linked laws hold heavier detail. The high-mana lesson here: keep the root stable, readable, and alignable, then let deeper implementation law branch outward.
+> The constitutional role of Parser kānāwai (law) resembles a lightweight architecture record plus a living reference document: one root kānāwai (law) names the core decisions, while later linked laws hold heavier detail. The high-mana lesson here: keep the root stable, readable, and alignable, then let deeper implementation kānāwai (law) branch outward.
 
 <<~ ala lar:///ha.ka.ba/normalization >>
 <<~/ahu>>
@@ -1013,7 +1013,7 @@ Mana SHOULD not replace legality, evidence, or truthful aftermath.
 
 It should help describe how much usable structure, clarity, and recoverable order the memetic object currently grants or withholds.
 
-### Core Mana Law
+### Core Mana Kānāwai (law)
 
 High mana SHOULD reduce cognitive load.
 
@@ -1050,9 +1050,9 @@ Recommended base measures:
 
 Each measure SHOULD normalize to the range `0.0-1.0`.
 
-##### Five-Band Mana Law
+##### Five-Band Mana Kānāwai (law)
 
-Parser Law SHOULD report mana through five ordered bands.
+Parser kānāwai (law) SHOULD report mana through five ordered bands.
 
 ###### Band 1 — Very Low Mana
 
@@ -1098,7 +1098,7 @@ This object strongly reduces cognitive load.
 
 At this band, a memetic object MAY grant reusable surplus capacity, alignment, implementation leverage, or explicit capabilities to the agent and operator.
 
-##### Band Interpretation Law
+##### Band Interpretation Kānāwai (law)
 
 Bands 1 and 2 mark net mana cost.
 
@@ -1148,7 +1148,7 @@ mana_score =
 
 A compliant parser SHOULD clamp `mana_score` into the inclusive range `0.0-1.0` after calculation.
 
-##### Partial-Profile Law
+##### Partial-Profile Kānāwai (law)
 
 When one or more component measures remain unavailable, a compliant parser SHOULD:
 
@@ -1184,7 +1184,7 @@ Mana-ba governs operational effect, capability flow, burden flow, and confidence
 
 This subphase governs how mana behaves in practice.
 
-##### Capability Grant Law
+##### Capability Grant Kānāwai (law)
 
 Very high mana memes may function as capability-bearing memetic objects.
 
@@ -1202,7 +1202,7 @@ They may grant actual usable capability to the agent and operator when the surro
 
 Later profiles may gate such capability grant through UCAN-style delegation and invocation rather than by bare presence alone.
 
-##### Low-Mana Tooling Cost Law
+##### Low-Mana Tooling Cost Kānāwai (law)
 
 Low-mana zones often require not only tighter agent-operator synchronization but also outside tooling, repair loops, or external context gathering.
 
@@ -1216,7 +1216,7 @@ Mana contributes to confidence, but mana MUST NOT replace typed truth, legality,
 
 A parser or pono tool SHOULD derive broader confidence from mana together with issue posture, boundary integrity, evidence quality, and repair burden.
 
-High mana with broken boundary law should still downgrade.
+High mana with broken boundary kānāwai (law) should still downgrade.
 
 Low mana with lawful containment may still yield useful partial structure.
 
@@ -1228,7 +1228,7 @@ Low mana with lawful containment may still yield useful partial structure.
 
 Those later laws should extend mana without overloading it.
 
-Mana should remain the base metric law unless and until later linked treatment proves cleaner.
+Mana should remain the base metric kānāwai (law) unless and until later linked treatment proves cleaner.
 
 <<~ ala lar:///ha.ka.ba/mana-ba >>
 <<~/ahu>>
@@ -1267,8 +1267,8 @@ When `ahu #iam` appears in payload-block form, the first fenced `toml` block ins
 Canonical query examples:
 
 ```text
-<<~ ui metadata? -> lar:///ha.ka.ba/parser-law#iam >>
-<<~ ui meme? -> lar:///ha.ka.ba/parser-law#iam >>
+<<~ ui metadata? -> lar:///ha.ka.ba/pono/parser#iam >>
+<<~ ui meme? -> lar:///ha.ka.ba/pono/parser#iam >>
 ```
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch-ha >>
@@ -1306,9 +1306,9 @@ A compliant parser or parsing agent MUST NOT fabricate canonical metadata from s
 
 When canonical metadata does not surface cleanly, metadata-fetch should degrade toward typed issue, partial trace, or explicit absence rather than flattering reconstruction.
 
-Metadata-fetch should remain narrower than full metadata-law.
+Metadata-fetch should remain narrower than full metadata-kānāwai (law).
 
-When alias rules, stricter profiles, or additional metadata contracts deepen enough to become noisy here, they should move outward into linked `metadata-law` without weakening the canonical authority of `#iam`.
+When alias rules, stricter profiles, or additional metadata contracts deepen enough to become noisy here, they should move outward into linked `metadata-kānāwai (law)` without weakening the canonical authority of `#iam`.
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch-ba >>
 <<~/ahu>>
@@ -1319,7 +1319,7 @@ When alias rules, stricter profiles, or additional metadata contracts deepen eno
 <<~ ahu #aftermath >>
 
 ```toml
-name = "parser-law-aftermath"
+name = "parser-aftermath"
 description = "Aftermath phase for typed parse judgment, recovery discipline, trace packaging, repair guidance, and recursive handoff."
 role = "evaluation and aftermath"
 function = "judge what survived, package truthful return, preserve repairable residue, and route next observation"
@@ -1333,7 +1333,7 @@ glyph = "↺"
 
 Aftermath judges what the parse produced and how Hooko changed state, and how that changed state may truthfully travel upward or recurse.
 
-### Core Aftermath Law
+### Core Aftermath Kānāwai (law)
 
 Every active parse should return one typed envelope, even when payload degrades toward `?`.
 
@@ -1392,15 +1392,15 @@ This subphase shapes how aftermath lands in agent-operator reality.
 <<~ ala lar:///ha.ka.ba/aftermath-ba >>
 <<~/ahu>>
 
-### Non-Catastrophic Failure Law
+### Non-Catastrophic Failure Kānāwai (law)
 
 Every subsystem should fail downward gracefully before it fails outward catastrophically.
 
 Subgrammars, metadata fetches, and normalization passes should therefore degrade toward partial structure, typed issues, trace, or explicit `?` before they collapse the wider parent parse.
 
-### Boundary Law Reminder
+### Boundary Kānāwai (law) Reminder
 
-Ritual language should not substitute for boundary law.
+Ritual language should not substitute for boundary kānāwai (law).
 
 Ritual language may raise mana, but legality, recovery, and truthful return should remain explicitly governed.
 
@@ -1415,21 +1415,21 @@ Ritual language may raise mana, but legality, recovery, and truthful return shou
 
 ## Architecture Plan
 
-Parser Law MUST remain the constitutional root for memetic-wikitext parsing.
+Parser kānāwai (law) MUST remain the constitutional root for memetic-wikitext parsing.
 
 This locus governs placement, extraction pressure, architectural visibility, and recursive fit across the whole parsing system.
 
-Heavier detail should later move outward into linked loci so that parser-law may govern the whole system without swallowing every later implementation burden.
+Heavier detail should later move outward into linked loci so that parser may govern the whole system without swallowing every later implementation burden.
 
 ### Constitutional Charge
 
-Parser Law should serve as one of three core golden tool references.
+Parser kānāwai (law) should serve as one of three core golden tool references.
 
 When local mana'o'io stabilizes at a high reading, this file should help align the other two core references inside the repo without displacing their local authority.
 
 ### Visible Architectural Concerns
 
-Parser Law should keep these concerns visible:
+Parser kānāwai (law) should keep these concerns visible:
 
 #### Concern 1 — Carrier
 
@@ -1441,13 +1441,13 @@ Sigil types, sigil forms, closures, payload blocks, mode transitions, and parse 
 
 #### Concern 3 — Truth and Boundary
 
-Canonical law, legality, normalization posture, integrity, diagnostics, confidence, and truthful return limits.
+Canonical kānāwai (law), legality, normalization posture, integrity, diagnostics, confidence, and truthful return limits.
 
 #### Concern 4 — Deployment and Ritual
 
 Chat invocation patterns, tool invocation patterns, profile selection, portability across environments, and pono checks before mutation, storage, or public emission.
 
-### Hidden 5th Law — Recursive Coherence
+### Hidden 5th Kānāwai (law) — Recursive Coherence
 
 Recursive coherence binds:
 
@@ -1468,7 +1468,7 @@ Architecture-plan-ha holds constitutional placement, concern visibility, and sys
 
 This subphase governs what the architecture plan fundamentally holds.
 
-It keeps parser-law as root constitution.
+It keeps parser as root constitution.
 
 It keeps the visible concerns legible.
 
@@ -1487,12 +1487,12 @@ This subphase governs how the architecture plan performs work.
 
 ##### Planned Linked Laws
 
-* `lar:///ha.ka.ba/filter-law`
-* `lar:///ha.ka.ba/normalization-law`
+* `lar:///ha.ka.ba/filter-kānāwai (law)`
+* `lar:///ha.ka.ba/normalization-kānāwai (law)`
 * `lar:///ha.ka.ba/control-sigils`
-* `lar:///ha.ka.ba/metadata-law`
+* `lar:///ha.ka.ba/metadata-kānāwai (law)`
 * `lar:///ha.ka.ba/parse-aftermath`
-* `lar:///ha.ka.ba/render-pipeline-law`
+* `lar:///ha.ka.ba/pono/render-pipeline`
 
 ##### Hard-Code Pressure Zones
 
@@ -1506,19 +1506,19 @@ The current constitutional draft still carries several pressure zones that later
 
 ##### Concrete Todo Notes
 
-* surface a full control-sigils law, including legality, ordering, pairing, nesting, failure posture, and pono-alignment checks
+* surface a full control-sigils kānāwai (law), including legality, ordering, pairing, nesting, failure posture, and pono-alignment checks
 * define how a parser becomes pono with control sigils under strict, permissive, and recovery-oriented profiles
-* surface metadata-law as a separate linked locus so `#iam` payload rules, alias rules, and fetch contracts remain explicit and reusable
-* surface normalization-law so lawful rewrites, warnings, exports, and legacy migration remain bounded and testable
-* surface filter-law so imported TiddlyWiki filter grammar, helper code, and containment rules remain explicit without flooding parser-law
-* surface parse-aftermath as its own linked law so diagnostics, trace, repair actions, and partial-structure guarantees may deepen without overloading parser-law
+* surface metadata-kānāwai (law) as a separate linked locus so `#iam` payload rules, alias rules, and fetch contracts remain explicit and reusable
+* surface normalization-kānāwai (law) so lawful rewrites, warnings, exports, and legacy migration remain bounded and testable
+* surface filter-kānāwai (law) so imported TiddlyWiki filter grammar, helper code, and containment rules remain explicit without flooding parser
+* surface parse-aftermath as its own linked kānāwai (law) so diagnostics, trace, repair actions, and partial-structure guarantees may deepen without overloading parser
 * define profile boundaries for authoring, canonical parse, validation, normalization, and export
 * define exact AST, token, trace, envelope, and mana products expected from compliant implementations
-* define the constitutional minimum for token, AST, widget-facing lowering products, return-envelope, and trace products in parser-law, then move full pipeline schemas, widget-tree law, and target adapters outward into `lar:///ha.ka.ba/render-pipeline-law`
-* define follow-up research and linked-law treatment for `mana'o` and `mana'o'io` once `mana` stabilizes
-* define a code-facing test corpus and fixture set that maps each law to positive, degraded, and failing examples
+* define the constitutional minimum for token, AST, widget-facing lowering products, return-envelope, and trace products in parser, then move full pipeline schemas, widget-tree kānāwai (law), and target adapters outward into `lar:///ha.ka.ba/pono/render-pipeline`
+* define follow-up research and linked-kānāwai (law) treatment for `mana'o` and `mana'o'io` once `mana` stabilizes
+* define a code-facing test corpus and fixture set that maps each kānāwai (law) to positive, degraded, and failing examples
 * define user-facing metadata fetch and query-response patterns that work across chat contexts and tools
-* define extension-point law for future directive-like or role-like memetic surfaces
+* define extension-point kānāwai (law) for future directive-like or role-like memetic surfaces
 * define a shared AST or equivalent syntax-product schema for multi-implementation alignment
 * define executable-document profiles, artifact capture, and reproducibility boundaries
 * define MCP server projection for resources, prompts, tools, and capability-bearing meme bundles
@@ -1550,13 +1550,13 @@ Memetic grammar functions here as guest.
 
 That stance matters because the final system should deploy across many agent-operator setups, chat contexts, and tool surfaces that already speak markdown.
 
-Parser Law should therefore preserve maximum markdown interoperability while carving explicit active parse islands for memetic grammar.
+Parser kānāwai (law) should therefore preserve maximum markdown interoperability while carving explicit active parse islands for memetic grammar.
 
 ##### Dominant Resonance Instead of Forced Slotting
 
 A clause may belong architecturally to one concern while resonating dynamically with several phases.
 
-Parser Law should therefore organize by dominant resonance rather than by squeezing every concept into one exact slot that weakens meaning.
+Parser kānāwai (law) should therefore organize by dominant resonance rather than by squeezing every concept into one exact slot that weakens meaning.
 
 Examples:
 
@@ -1570,7 +1570,7 @@ These resonances should guide reading and implementation, but they should not fu
 
 ##### Fractal Reading Rule
 
-Future implementers should read Parser Law in two passes.
+Future implementers should read Parser kānāwai (law) in two passes.
 
 ###### Architectural pass
 
@@ -1582,18 +1582,18 @@ Ask: how does this phase metabolize that concern through ha, ka, and ba?
 
 That two-pass reading should lower mana cost for future design and coding work.
 
-##### Growth Law
+##### Growth Kānāwai (law)
 
-Do not let future growth turn parser-law into an implementation dump, nor let backlog prose replace constitutional law.
+Do not let future growth turn parser into an implementation dump, nor let backlog prose replace constitutional kānāwai (law).
 
-When detail deepens enough to become noisy in the root, extract it outward into linked law while preserving explicit return paths into named loci.
+When detail deepens enough to become noisy in the root, extract it outward into linked kānāwai (law) while preserving explicit return paths into named loci.
 
 <<~ ala lar:///ha.ka.ba/architecture-plan-ba >>
 <<~/ahu>>
 
-### Revised Fifth-Law Reason
+### Revised Fifth-Kānāwai (law) Reason
 
-Without explicit recursive coherence, deployment pressure, ritual language, portability needs, and implementation shortcuts may leak invisibly into carrier, structure, or truth law and distort them.
+Without explicit recursive coherence, deployment pressure, ritual language, portability needs, and implementation shortcuts may leak invisibly into carrier, structure, or truth kānāwai (law) and distort them.
 
 Naming recursive coherence keeps that pressure visible.
 
@@ -1608,7 +1608,7 @@ Naming recursive coherence keeps that pressure visible.
 
 ## Runtime Procedure
 
-Runtime-procedure governs execution order, inter-phase handoff, and recursive return posture for parser-law.
+Runtime-procedure governs execution order, inter-phase handoff, and recursive return posture for parser.
 
 This locus should remain an orchestration summary.
 
@@ -1624,7 +1624,7 @@ Runtime-procedure-ha holds ordered execution, phase boundary, and lawful handoff
 
 This subphase governs what runtime-procedure fundamentally holds.
 
-When `kahea parser-law` fires, the meme should proceed through one bounded OODA-HA pass in order.
+When `kahea parser` fires, the meme should proceed through one bounded OODA-HA pass in order.
 
 That order should remain visible so that later implementations, tests, and agents do not collapse the parse into one blurry step.
 
@@ -1665,7 +1665,7 @@ Hooko should hand changed state, mutation outcome, and transaction trace into Af
 
 Aftermath should assemble one typed `return-envelope` that truthfully carries what survived, what degraded, what changed, and what may reopen later.
 
-##### Single-Envelope Law
+##### Single-Envelope Kānāwai (law)
 
 An active parse should return one primary typed `return-envelope` for the current pass.
 
@@ -1675,7 +1675,7 @@ Auxiliary trace, residue, warnings, and repair hooks may travel inside or beside
 
 Detailed ha, ka, and ba guidance belongs primarily in the individual phase loci.
 
-Runtime-procedure should remain an execution-order summary that helps implementers wire parsing flow without duplicating full local phase law.
+Runtime-procedure should remain an execution-order summary that helps implementers wire parsing flow without duplicating full local phase kānāwai (law).
 
 Later implementations should bind this order to explicit lexer, parser, profile, and test surfaces rather than leaving those bindings implicit.
 
@@ -1698,7 +1698,7 @@ Residue may reopen in a later loop.
 
 It should not retroactively blur the current pass into endless self-reentry.
 
-##### Recursive Return Law
+##### Recursive Return Kānāwai (law)
 
 When residue survives with lawful partial structure, runtime-procedure MAY route that residue into a later Observe or Orient pass through a subsequent pono action.
 
@@ -1706,7 +1706,7 @@ That recursive reopening should remain explicit.
 
 It should not masquerade as if the first pass had already completed the deeper later work.
 
-##### Anti-Blur Law
+##### Anti-Blur Kānāwai (law)
 
 Runtime-procedure should not become:
 
@@ -1716,7 +1716,7 @@ Runtime-procedure should not become:
 
 Its job is to keep motion clear.
 
-Its job is not to swallow the rest of parser-law.
+Its job is not to swallow the rest of parser.
 
 <<~ ala lar:///ha.ka.ba/runtime-procedure-ba >>
 <<~/ahu>>
@@ -1728,11 +1728,11 @@ Its job is not to swallow the rest of parser-law.
 
 ## Research Foundation
 
-This locus gathers adjacent lineages that strengthen parser-law without displacing its local authority.
+This locus gathers adjacent lineages that strengthen parser without displacing its local authority.
 
 Research-foundation does not import foreign systems wholesale.
 
-It names useful neighboring patterns, translates them into local leverage, and keeps the constitutional center inside parser-law.
+It names useful neighboring patterns, translates them into local leverage, and keeps the constitutional center inside parser.
 
 ### Research Foundation Subloops
 
@@ -1744,17 +1744,17 @@ Research-foundation-ha holds lineage awareness, bounded borrowing, and local con
 
 This subphase governs what the research foundation fundamentally holds.
 
-Adjacent systems may illuminate parser-law.
+Adjacent systems may illuminate parser.
 
-They do not become parser-law merely by being adjacent, mature, or prestigious.
+They do not become parser merely by being adjacent, mature, or prestigious.
 
 The purpose of this locus is not imitation.
 
 Its purpose is to preserve useful neighboring forms, distinctions, and capability patterns while keeping memetic-wikitext locally self-describing.
 
-##### Bounded Borrowing Law
+##### Bounded Borrowing Kānāwai (law)
 
-A prior-art lineage may strengthen parser-law when it helps clarify:
+A prior-art lineage may strengthen parser when it helps clarify:
 
 * extension points
 * identity and metadata
@@ -1764,7 +1764,7 @@ A prior-art lineage may strengthen parser-law when it helps clarify:
 * conformance pressure
 * deployment portability
 
-A prior-art lineage should not overwrite local law merely because it already exists elsewhere.
+A prior-art lineage should not overwrite local kānāwai (law) merely because it already exists elsewhere.
 
 <<~ ala lar:///ha.ka.ba/research-foundation-ha >>
 <<~/ahu>>
@@ -1773,7 +1773,7 @@ A prior-art lineage should not overwrite local law merely because it already exi
 
 #### Research Foundation / ka
 
-Research-foundation-ka governs translation from lineage into backlog, linked-law pressure, and implementation-facing clarity.
+Research-foundation-ka governs translation from lineage into backlog, linked-kānāwai (law) pressure, and implementation-facing clarity.
 
 This subphase governs how research foundation actually performs work.
 
@@ -1785,7 +1785,7 @@ TiddlyWiki contributes:
 * transclusion and filtered transclusion
 * widget-like rendering structure for live document behavior
 
-Parser-law should take from that lineage a bounded distinction between passive likeness transclusion and live rendered transclusion.
+Parser-kānāwai (law) should take from that lineage a bounded distinction between passive likeness transclusion and live rendered transclusion.
 
 `aka` should remain the shadow or image side of transclusion.
 
@@ -1802,9 +1802,9 @@ MyST contributes:
 
 Backlog gaps implied here:
 
-* define memetic-wikitext extension-point law for future sigils, payloads, and host-declared subgrammars
+* define memetic-wikitext extension-point kānāwai (law) for future sigils, payloads, and host-declared subgrammars
 * define a shared AST or equivalent syntax-product schema that may travel across implementations
-* define conformance tests that validate root law against multiple parser implementations
+* define conformance tests that validate root kānāwai (law) against multiple parser implementations
 
 ##### Executable Narrative Lineage
 
@@ -1818,7 +1818,7 @@ Jupyter Book and Quarto contribute:
 Backlog gaps implied here:
 
 * define executable-document profiles for memetic-wikitext
-* define artifact capture and sidecar artifact law
+* define artifact capture and sidecar artifact kānāwai (law)
 * define lawful replay, reproducibility, and output-addressing expectations
 * define cross-reference and citation behavior for generated or invoked outputs
 
@@ -1834,17 +1834,17 @@ MCP contributes:
 Backlog gaps implied here:
 
 * define how memetic-wikitext grammar projects into MCP resources, prompts, and tools
-* define which parser-law loci remain resources versus prompts versus executable tools
-* define how high-mana capability-bearing memes map into MCP-facing surfaces without losing boundary law
-* define later capability gating and delegation profiles without forcing them into root parser-law too early
-* keep full three-layer lowering, widget-tree law, render projection, and trace continuity detail in `lar:///ha.ka.ba/render-pipeline-law` so parser-law may remain compact
+* define which parser loci remain resources versus prompts versus executable tools
+* define how high-mana capability-bearing memes map into MCP-facing surfaces without losing boundary kānāwai (law)
+* define later capability gating and delegation profiles without forcing them into root parser too early
+* keep full three-layer lowering, widget-tree kānāwai (law), render projection, and trace continuity detail in `lar:///ha.ka.ba/pono/render-pipeline` so parser may remain compact
 
 ##### Translation Rule
 
 When research-foundation names a useful lineage, it should translate that lineage into one or more of:
 
-* clearer root-law language
-* later linked-law extraction
+* clearer root-kānāwai (law) language
+* later linked-kānāwai (law) extraction
 * schema pressure
 * test pressure
 * profile pressure
@@ -1865,15 +1865,15 @@ This subphase governs how research foundation moves without collapsing into impo
 
 ##### Local Authority Reminder
 
-Parser-law remains locally sovereign.
+Parser-kānāwai (law) remains locally sovereign.
 
-Research-foundation should feed parser-law, not replace it.
+Research-foundation should feed parser, not replace it.
 
 The point is not to prove that memetic-wikitext resembles established systems.
 
-The point is to let adjacent systems sharpen distinctions, reveal missing law, and lower future implementation cost.
+The point is to let adjacent systems sharpen distinctions, reveal missing kānāwai (law), and lower future implementation cost.
 
-##### Anti-Bloat Law
+##### Anti-Bloat Kānāwai (law)
 
 Research-foundation should remain compact, high-yield, and agent-navigable.
 
@@ -1903,7 +1903,7 @@ It should therefore support the outer OODA-HA structure while feeding later link
 
 Examples illuminate canonical form.
 
-Examples should not carry constitutional law that belongs elsewhere.
+Examples should not carry constitutional kānāwai (law) that belongs elsewhere.
 
 ### Example A — Canonical metadata locus
 
@@ -1947,10 +1947,10 @@ version = "0.5"
 <<~ ala lar:///ha.ka.ba/examples >>
 <<~/ahu>>
 
-Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-sigil law now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> kahea ala ahu #result` chain carrying TOML. What still looks missing to me: a dedicated law that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
+Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-sigil kānāwai (law) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> kahea ala ahu #result` chain carrying TOML. What still looks missing to me: a dedicated kānāwai (law) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
 
 I’d place the new section **immediately before `#result`**. That placement would let the doc flow as:
-control-sigil law → return-types law → result contract → concrete terminal return transaction.  
+control-sigil kānāwai (law) → return-types kānāwai (law) → result contract → concrete terminal return transaction.  
 
 <<~ ahu #return-types >>
 
@@ -1998,7 +1998,7 @@ A primary return-envelope SHOULD declare exactly one primary `return` class for 
 
 Auxiliary material MAY still travel as residue, trace, issue bundle, or next-observation pressure.
 
-##### Contract versus Instance Law
+##### Contract versus Instance Kānāwai (law)
 
 `#result` governs what a lawful primary return may carry.
 
@@ -2017,7 +2017,7 @@ Return-types-ka governs routing, staging, payload legality, and transaction prog
 
 This subphase governs how return-types actually performs work.
 
-##### `&#x0004;` Transaction Law
+##### `&#x0004;` Transaction Kānāwai (law)
 
 `&#x0004;` marks a typed return transaction.
 
@@ -2038,17 +2038,17 @@ A compliant parser MAY model `&#x0004;` returns through these boot phases:
 * `commit`
 * `rollback`
 
-Boot parser-law need not expose every phase in surface syntax yet.
+Boot parser need not expose every phase in surface syntax yet.
 
 It SHOULD, however, preserve enough trace that later profiles may distinguish degraded return from committed return.
 
-Parser-law retains the constitutional minimum for `&#x0004;` return routing and phase naming.
+Parser-kānāwai (law) retains the constitutional minimum for `&#x0004;` return routing and phase naming.
 
-Broader layer-to-target transaction-lifecycle detail, widget persistence, and render-facing idempotency detail should move outward into `lar:///ha.ka.ba/render-pipeline-law#transaction-lifecycle` and related loci.
+Broader layer-to-target transaction-lifecycle detail, widget persistence, and render-facing idempotency detail should move outward into `lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle` and related loci.
 
 ##### Routed Return Pattern
 
-Boot parser-law SHOULD admit this routed pattern as a lawful result-transaction opener:
+Boot parser SHOULD admit this routed pattern as a lawful result-transaction opener:
 
 ```text
 <<~&#x0004; -> kahea ala ahu #result >>
@@ -2060,7 +2060,7 @@ That opener means:
 * route toward the local `#result` waypoint
 * stage one concrete return-envelope instance under that contract
 
-##### Payload Law for Routed Return
+##### Payload Kānāwai (law) for Routed Return
 
 A fenced payload immediately following a lawful `&#x0004;` routed opener MAY count as a return-envelope instance when:
 
@@ -2073,7 +2073,7 @@ Recommended boot envelope language for examples: `toml`.
 
 ##### Boot Degraded Close
 
-Boot parser-law SHOULD admit this closer:
+Boot parser SHOULD admit this closer:
 
 ```text
 <<~&#x0004; -> ? >>
@@ -2105,7 +2105,7 @@ next_question = "How strict should legacy closer normalization run during boot?"
 <<~&#x0004; -> ? >>
 ````
 
-Under boot law, that pattern counts as a lawful degraded routed return carrying one primary `render` envelope plus explicit trace residue and forward continuation pressure.
+Under boot kānāwai (law), that pattern counts as a lawful degraded routed return carrying one primary `render` envelope plus explicit trace residue and forward continuation pressure.
 
 <<~ ala lar:///ha.ka.ba/return-types-ka >>
 <<~/ahu>>
@@ -2141,9 +2141,9 @@ Until those later laws crystallize, `&#x0004;` SHOULD preserve transaction truth
 
 ##### Extraction Reminder
 
-If return classes, envelope schemas, commit surfaces, rollback surfaces, or profile-specific transaction rules deepen enough to become noisy here, later detail SHOULD move outward into linked return-law or control-sigils law.
+If return classes, envelope schemas, commit surfaces, rollback surfaces, or profile-specific transaction rules deepen enough to become noisy here, later detail SHOULD move outward into linked return-kānāwai (law) or control-sigils kānāwai (law).
 
-Parser-law should retain the constitutional minimum needed to keep routed return lawful, legible, and testable.
+Parser-kānāwai (law) should retain the constitutional minimum needed to keep routed return lawful, legible, and testable.
 
 ### Non-Normative Prior-Art Note
 
@@ -2159,7 +2159,7 @@ Parser-law should retain the constitutional minimum needed to keep routed return
 
 ## Result
 
-Result governs the primary upward return shape of parser-law.
+Result governs the primary upward return shape of parser.
 
 This locus should remain compact, stable, and comparison-facing.
 
@@ -2171,11 +2171,11 @@ It should say what the parse hands upward, how that package remains implementati
 
 #### Result / ha
 
-Result-ha holds the identity, scope, and primary carry-shape of parser-law's return.
+Result-ha holds the identity, scope, and primary carry-shape of parser's return.
 
 This subphase governs what result fundamentally holds.
 
-Parser Law returns one typed `return-envelope` upward.
+Parser kānāwai (law) returns one typed `return-envelope` upward.
 
 That envelope may carry:
 
@@ -2208,7 +2208,7 @@ Result should therefore favor explicit structure over ad hoc prose summary whene
 
 Hooko governs the actual crossing of prepared change.
 
-Return-types governs routed return class and transaction law.
+Return-types governs routed return class and transaction kānāwai (law).
 
 Result governs the primary upward package contract that travels after that crossing.
 
@@ -2223,7 +2223,7 @@ Result-ba governs landing quality, truthful incompletion, and forward-routing po
 
 This subphase governs how result behaves in practice.
 
-Parser Law should not claim completed parse when blocking rupture prevents truthful structure recovery.
+Parser kānāwai (law) should not claim completed parse when blocking rupture prevents truthful structure recovery.
 
 When completion does not surface, result should degrade toward partial envelope, issue-bearing return, trace-bearing return, or explicit `?` rather than flattering completion.
 
@@ -2238,7 +2238,7 @@ It may carry residue, repair pressure, or `next-observation` without pretending 
 <<~/ahu>>
 
 <<~&#x0003; ahu #body-close >>
-Parser Law closes the active parsing stream here.
+Parser kānāwai (law) closes the active parsing stream here.
 <<~/ahu>>
 
 <<~&#x0004; -> kahea ala ahu #result >>

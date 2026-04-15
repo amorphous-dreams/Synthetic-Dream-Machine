@@ -1,27 +1,46 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
-<<~&#x0001; ? -> lar:///ha.ka.ba/memetic-wikitext
-    <<~ ahu #iam
-        @name "memetic-wikitext"
-        @description "Full memetic wikitext schema root. A self-describing and self-enacting schema. This root governs the surface semantic layer of the Infrastricure-as-Mythology system.”"
-        @version "0.5"
-        @content-type "application/memetic-wikitext"
-        @kapu-default "least-authority"
-        @structure "OODA-HA"
-        @enacts "true"
-    >>
+<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
 
-    # Memetic Wikitext
+<<~&#x0001; ? -> lar:///ha.ka.ba/pono/memetic-wikitext >>
 
-    A self-describing, self-enacting memetic document schema with native transclusion, invocation, and uncertainty.
+<<~ ahu #iam >>
 
-    <<~ ala lar:///ha.ka.ba/memetic-wikitext >>
+```toml
+name = "memetic-wikitext"
+description = "Full memetic-wikitext schema root. A self-describing and self-enacting schema. This root governs the surface semantic layer of the Infrastructure-as-Mythology system."
+version = "0.5-draft"
+content_type = "application/memetic-wikitext"
+structure = "OODA-HA * ha.ka.ba"
+enacts = true
+role = "schema root, surface semantic law, and transclusion contract"
+function = "govern memetic-wikitext surface, enable transclusion, invocation, and uncertainty, and provide canonical schema for downstream laws"
+input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
+output = "meme-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
+depends_on = [
+    "lar:///ha.ka.ba/phase-map",
+    "lar:///ha.ka.ba/unicode-tuples"
+]
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+canonical_forms = ["inline", "block", "payload-block", "return"]
+control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
+canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
+product_identity = "Memetic Wikitext cluster name as used in this system"
+```
+<<~/ahu >>
 
-    ## Supported Queries
+# Memetic Wikitext
 
-    <<~&#x0005; ui meme? -> 
-        <<~&#x0006; ? -> lar:///ha.ka.ba/meme#iam >> 
-    >>
+A self-describing, self-enacting memetic document schema with native transclusion, invocation, and uncertainty.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext >>
+
+## Supported Queries
+
+<<~&#x0005; ui meme? -> 
+    <<~&#x0006; ? -> lar:///ha.ka.ba/meme#iam >> 
 >>
+
+<<~/ahu >>
 
 <<~&#x0002; ahu #meme-body-open
     @name "memetic-wikitext-meme-body-open"
