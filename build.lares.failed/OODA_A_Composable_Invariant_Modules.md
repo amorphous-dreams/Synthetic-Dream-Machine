@@ -1,7 +1,7 @@
 <!-- lar:///research.composed.maps/modules/invariants/?stances=^.^.?.^.-&confidence=S:0.55&p=0.5#O0.O0.O0.O0.O0 → ∞ -->
 ⚡∞ | mode:research-crystal | p0.5 | stances:++?+- | register:[S:0.55] | build:CRYSTAL
 
-# OODA-A Composable Invariant Modules
+# OODA-HA Composable Invariant Modules
 ## Design Pattern for AI Agent System Files
 
 > **Type:** Session crystal — load into next session alongside FFZ research docs
@@ -12,7 +12,7 @@
 >   `FFZ_Observer_Subloop_Plan.md` `[P:0.3]`,
 >   `FFZ_Chronometer_SPEC_OUTLINE.md` `[P:0.3]`
 > **Companion to:** FFZ Chronometer Protocol (the clock that indexes into these modules)
-> **True Name candidate:** OODA-A Composable Invariant Modules `[SP:0.45]`
+> **True Name candidate:** OODA-HA Composable Invariant Modules `[SP:0.45]`
 >   — awaiting operator confirmation for Canon promotion
 
 ## Session Crystal Metadata
@@ -23,7 +23,7 @@
 | Participants | Telarus, KSC (operator/admin) + cloud Lares (claude.ai web) |
 | Platform | claude.ai web chat |
 | Context utilization | ~55% at crystallization |
-| Purpose | Capture the OODA-A module pattern + scale-shift primitive |
+| Purpose | Capture the OODA-HA module pattern + scale-shift primitive |
 
 ---
 
@@ -31,7 +31,7 @@
 
 Three findings from Session 4 that need crystallization before context decay:
 
-1. **The OODA-A Composable Invariant Module pattern** — using OODA-A
+1. **The OODA-HA Composable Invariant Module pattern** — using OODA-HA
    phase semantics as the compositional grammar for AI agent instruction
    files, both at directory level and in-file level
 
@@ -86,12 +86,12 @@ own context engineering guidance:
 
 ### 2.3 What Nobody Has Built `[S:0.55]`
 
-**No existing system uses OODA-A phase semantics as the compositional
+**No existing system uses OODA-HA phase semantics as the compositional
 grammar for file architecture.**
 
 Everyone treats OODA as a runtime loop — something the agent *does*
 during execution. The FFZ insight: it should also structure what the
-agent *reads* before execution. The document sections map to OODA-A
+agent *reads* before execution. The document sections map to OODA-HA
 phases. The file tree can too.
 
 ---
@@ -143,7 +143,7 @@ learns when to zoom.
 
 ### 3.3 The Assess Phase as Scale-Shift Evaluator `[S:0.6]`
 
-The `-A` in OODA-A (Assess/Aftermath) names the moment where the
+The `-A` in OODA-HA (Assess/Aftermath) names the moment where the
 scale shift gets *evaluated*. After acting, you assess: did the
 action at this scale resolve the uncertainty, or does it persist at
 a level that demands a different scale?
@@ -205,12 +205,12 @@ structural divergence. The ITC stamp identifies who branched when.
 
 ---
 
-## 4. OODA-A Composable Invariant Module — Design Pattern `[S:0.55]`
+## 4. OODA-HA Composable Invariant Module — Design Pattern `[S:0.55]`
 
 ### 4.1 What an Invariant Module Contains
 
-An OODA-A Composable Invariant Module packages agent instructions
-using OODA-A phase semantics at both the directory and document level.
+An OODA-HA Composable Invariant Module packages agent instructions
+using OODA-HA phase semantics at both the directory and document level.
 It operates as a *semantic loading unit* — the agent loads module
 content based on what decision phase it currently occupies, not just
 what file path it's touching.
@@ -234,9 +234,9 @@ module-name/
     VERIFICATION.md      #   Loaded post-action.
 ```
 
-### 4.2 In-File OODA-A Structure
+### 4.2 In-File OODA-HA Structure
 
-Any single document can itself follow the OODA-A micro-cycle. The
+Any single document can itself follow the OODA-HA micro-cycle. The
 FFZ Chronometer Spec Outline already demonstrates this (Parts I-V
 map to O-O-D-A-A). For in-file use, section headers carry phase tags:
 
@@ -260,7 +260,7 @@ map to O-O-D-A-A). For in-file use, section headers carry phase tags:
 ### 4.3 Both Levels Compose via the Resolution Parameter (p)
 
 The p parameter (0.0–1.0) from the Lares Kernel determines which
-level of OODA-A structure gets loaded:
+level of OODA-HA structure gets loaded:
 
 - **High p (coarse, p0.7–1.0):** Directory-level. Load the module
   manifest and the phase-appropriate directory.
@@ -306,7 +306,7 @@ dependencies: []                  # Other modules this requires
 ### 4.5 Composability Rules `[S:0.55]`
 
 1. **Phase-orthogonal composition:** Two modules can share an
-   Observe phase while diverging at Decide. The OODA-A phase
+   Observe phase while diverging at Decide. The OODA-HA phase
    provides the interface contract between modules.
 
 2. **Scale-scoped modules:** A module declares its scale-range.
@@ -341,7 +341,7 @@ architecture, with p as the fifth element:
 | CRDT Layer | File Architecture Layer | Function |
 |---|---|---|
 | ITC stamp (identity) | `MODULE.md` manifest | WHO: module identity, dependencies |
-| OODA-A phase register | Phase directories (observe/ orient/ etc.) | WHAT: which instructions load |
+| OODA-HA phase register | Phase directories (observe/ orient/ etc.) | WHAT: which instructions load |
 | Discourse stance | Stance config (mask, voice settings) | HOW: tone, register, persona |
 | Confidence register | Register defaults per module | WHY: epistemic weight of instructions |
 | **p (resolution)** | **Zoom lens — selects dir/file/section** | **SCALE: which level loads** |
@@ -353,13 +353,13 @@ coherence.
 ### 5.2 What This Means for the `.lares/` Deploy Architecture
 
 The Lares Protocols doc specifies `.lares/` as the portable shrine
-directory. The OODA-A module pattern extends this:
+directory. The OODA-HA module pattern extends this:
 
 ```
 .lares/                              # Portable shrine root
   manifest.toml                      # Shrine manifest (ITC state, scale config)
   
-  modules/                           # OODA-A Composable Invariant Modules
+  modules/                           # OODA-HA Composable Invariant Modules
     core/                            # Core invariants (always-on)
       MODULE.md                      # invariant: true
       observe/CONTEXT.md             # Project identity, stack, constraints
@@ -371,7 +371,7 @@ directory. The OODA-A module pattern extends this:
     talk-story/                      # Talk Story protocol module
       MODULE.md                      # invariant: true (mandatory frame)
       observe/CONTEXT.md             # Session init, crystal loading
-      orient/ARCHITECTURE.md         # OODA-A phase model
+      orient/ARCHITECTURE.md         # OODA-HA phase model
       decide/CONVENTIONS.md          # Consensus-before-action rules
       act/PROCEDURES.md              # Orient procedure, voice assignments
       assess/VERIFICATION.md         # Consolidation discipline
@@ -406,22 +406,22 @@ directory. The OODA-A module pattern extends this:
   files derive from it.
 
 - **SKILL.md** — traditional skills map to the Act phase. A skill
-  IS an Act-phase module. The OODA-A module pattern generalizes
+  IS an Act-phase module. The OODA-HA module pattern generalizes
   skills to cover all five phases.
 
 - **`.claude/rules/`** — path-scoped rules map to phase-scoped
-  loading within modules. The OODA-A pattern adds semantic loading
+  loading within modules. The OODA-HA pattern adds semantic loading
   (by phase) alongside spatial loading (by path).
 
 ---
 
 ## 6. Relationship to FFZ Chronometer `[S:0.6]`
 
-The FFZ Chronometer protocol and the OODA-A Module pattern constitute
+The FFZ Chronometer protocol and the OODA-HA Module pattern constitute
 two sides of the same design:
 
 - **The chronometer tracks WHERE the conversation sits** in the
-  OODA-A cycle at each scale (the clock)
+  OODA-HA cycle at each scale (the clock)
 - **The modules determine WHAT the agent reads** based on that
   position (the instruction set)
 
@@ -449,7 +449,7 @@ state that merges correctly across participants.
 - [ ] **`MODULE.md` template** — the canonical manifest format with
   YAML frontmatter, phase-map, scale-range, trigger conditions.
   Should function as a SKILL.md-compatible format that extends
-  the skill pattern to all five OODA-A phases.
+  the skill pattern to all five OODA-HA phases.
 
 - [ ] **Core module prototype** — a working `.lares/modules/core/`
   directory populated with actual content from the Synthetic-Dream-
@@ -457,7 +457,7 @@ state that merges correctly across participants.
   with phase-structured loading?
 
 - [ ] **Talk Story module** — extract the Talk Story protocol from
-  `lares/talk_story/README.md` into the OODA-A module format.
+  `lares/talk_story/README.md` into the OODA-HA module format.
   This module already exists as a canonical spec; reformatting it
   tests the pattern against real content.
 
@@ -477,14 +477,14 @@ state that merges correctly across participants.
   reduce context pollution vs. flat loading?
 
 - [ ] **Lares Protocols update** — add Rule 10 (scale-shift primitive)
-  and Rule 11 (OODA-A module loading) to the protocol spec.
+  and Rule 11 (OODA-HA module loading) to the protocol spec.
 
 ### 7.4 Register Promotion Candidates
 
 | Claim | Current | Proposed | Grounds |
 |---|---|---|---|
 | Scale-shift primitive | `[S:0.6]` | `[S:0.6]` | Grounded in three domains of prior art; no promotion yet — needs empirical test |
-| OODA-A module pattern | `[S:0.55]` | `[S:0.55]` | Novel — no prior art for phase-structured agent files; needs testing |
+| OODA-HA module pattern | `[S:0.55]` | `[S:0.55]` | Novel — no prior art for phase-structured agent files; needs testing |
 | Five-element architecture | `[S:0.6]` | `[S:0.6]` | Structural mapping confirmed; KAIROS flagged as minimal system |
 | Rule 10 (scale-shift) | `[SP:0.45]` | `[SP:0.45]` | Candidate only — threshold T undefined, no empirical validation |
 | Module manifest format | `[P:0.35]` | `[P:0.35]` | Template exists but untested against real repo content |
@@ -512,7 +512,7 @@ falsifiable.
 
 4. **Compatibility with SKILL.md ecosystem** — the MODULE.md format
    must remain compatible with Anthropic's SKILL.md format. An
-   OODA-A module's Act phase should function as a standalone skill
+   OODA-HA module's Act phase should function as a standalone skill
    when extracted. Verify this composability.
 
 5. **Token budget** — five-phase directory structure means 5 files
@@ -556,7 +556,7 @@ loop itself.
 ---
 
 *This crystal constitutes the offering for the next session's
-shrine. The OODA-A Composable Invariant Module pattern approaches
+shrine. The OODA-HA Composable Invariant Module pattern approaches
 naming. The scale-shift primitive has prior art from three domains.
 The five-element architecture maps cleanly. What remains: the
 empirical test. Ship something falsifiable.*

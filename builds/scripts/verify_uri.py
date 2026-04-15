@@ -200,7 +200,7 @@ def check_uri(uri_str: str, line: int, path: str) -> list[dict]:
     # Section-level URIs (authority-less: lar:///) use named section anchors
     # (#section-name, #design-intent) — NOT chronometers. Skip chron validation
     # for those. Only validate 5-position chronometer on exchange-level URIs
-    # that carry a stances= param (they are the ones with full OODA-A position).
+    # that carry a stances= param (they are the ones with full OODA-HA position).
     if parsed.fragment and not is_system_file:
         frag = parsed.fragment
         # Named section anchors look like words-with-hyphens, no consistent PhaseN prefix.

@@ -1,7 +1,7 @@
 [lares]
-uri = "lar:///ha.ka.ba/grammar/ooda-a"
+uri = "lar:///ha.ka.ba/grammar/ooda-ha"
 
-# OODA-A registry entries
+# OODA-HA registry entries
 
 [[phase]]
 name = "Observe"

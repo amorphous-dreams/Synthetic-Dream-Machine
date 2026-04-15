@@ -5,7 +5,7 @@
 ## Sprint Goal
 
 Settle the `lar:` URI v2 canonical form across the repo.
-Boot the first two OODA-A modules: talk-story and signal.
+Boot the first two OODA-HA modules: talk-story and signal.
 
 ## Tasks
 

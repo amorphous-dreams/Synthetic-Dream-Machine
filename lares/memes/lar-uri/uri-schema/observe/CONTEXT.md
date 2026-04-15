@@ -26,7 +26,7 @@ lar://alias:tier@host/ha.ka.ba/?stances=XXXXX&confidence=R:N&p=N#O0.O0.O0.O0.O0 
 | WHO | `userinfo@host` | Speaker identity and machine locus |
 | WHERE | `/ha.ka.ba/subpath/` | Semantic territory (HA.KA.BA address) |
 | HOW | `?stances=...&confidence=...&p=...` | Signal parameters: posture, certitude, resolution |
-| WHEN | `#O0.O0.O0.O0.O0` | FFZ chronometer: per-participant OODA-A position at each scale |
+| WHEN | `#O0.O0.O0.O0.O0` | FFZ chronometer: per-participant OODA-HA position at each scale |
 
 ### The Fragment Bug (Fixed)
 
@@ -95,7 +95,7 @@ The following questions are `[SP:0.45]` – `[S:0.65]`. They do not block the co
 | U8 | Module section URIs: carry chronometer fragments or just confidence? | Confidence only | S:0.60 |
 | U9 | ITC stamps in fragment when MCP server arrives? | Calibration metadata — fragment stays human-readable | S:0.55 |
 | U10 | `chat-log:post-header` render target: all five stances, or active stances only? | **CLOSED 2026-04-10.** Resolution: all five stances always. Consistency with HUD invariant; amplitude provides readability gradation. Active stances use `+`/`++`; suppressed stances use `-`/`--`. Normative rule codified in `lares/modules/sigilization/decide/CONVENTIONS.md`. All story draft post headers corrected. | CS:0.85 |
-| U11 | URI sigilization: sub-section of uri-schema module, or separate module? | **CLOSED 2026-04-10.** Resolution: standalone module `lares/modules/sigilization/`. Created 2026-04-10 with full OODA-A phase files. Rationale: surface count (5 targets), update rate decoupling, dependency direction (sigilization depends on uri-schema, not reverse). | CS:0.85 |
+| U11 | URI sigilization: sub-section of uri-schema module, or separate module? | **CLOSED 2026-04-10.** Resolution: standalone module `lares/modules/sigilization/`. Created 2026-04-10 with full OODA-HA phase files. Rationale: surface count (5 targets), update rate decoupling, dependency direction (sigilization depends on uri-schema, not reverse). | CS:0.85 |
 | U12 | Grammar vs protocol: should the exchange span display contract (when to emit URIs, what sequence, the ordering rules) split to a separate `exchange-protocol` module? | **Open 2026-04-10.** uri-schema carries two concerns: (1) URI grammar — field semantics, value constraints, RFC 3986 ordering [C:0.95 stable]; (2) exchange span protocol — emission choreography, display contract, sub-agent handoff ordering [CS:0.80 may evolve]. Protocol concern may grow as sub-agent dispatch patterns expand (S2+). Options: A) extract `exchange-protocol` module (clean boundary, more indirection); B) rename uri-schema to `signal-protocol` and own both explicitly; C) keep as-is with dual-concern acknowledgment (current position, filed in MODULE.md). Operator steers on timing. Not a blocker for S0. | SP:0.45 |
 
 ---

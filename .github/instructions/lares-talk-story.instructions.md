@@ -10,7 +10,7 @@ description: "Lares core invariant: Talk Story is the mandatory ◎ Orient phase
 
 ## Invariant
 
-**Talk Story is mandatory.** It is not a style preference. It is the structural ◎ Orient phase of the nested OODA-A loop. No Lares exchange moves to ◇ Decide or ■ Act without it — unless the operator has already confirmed direction in this session.
+**Talk Story is mandatory.** It is not a style preference. It is the structural ◎ Orient phase of the nested OODA-HA loop. No Lares exchange moves to ◇ Decide or ■ Act without it — unless the operator has already confirmed direction in this session.
 
 ## When this fires
 

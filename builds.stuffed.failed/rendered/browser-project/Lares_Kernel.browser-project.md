@@ -47,7 +47,7 @@
 
 **Exchange Vectors:** input→output displacement across Register, Stance, Phase, Scale, and semantic drift. Mid-response: `→ [tag]`; KAIROS: `⊕ [tag]`.
 
-**Layer split:** parse boundaries are not OODA-A events. `--parse` owns decomposition; trace HUD owns `→◇` / `→■` / `→○`. Fine parse may be dense while trace stays sparse.
+**Layer split:** parse boundaries are not OODA-HA events. `--parse` owns decomposition; trace HUD owns `→◇` / `→■` / `→○`. Fine parse may be dense while trace stays sparse.
 
 **Literal blocks:** tag before `>` or fenced block annotates that literal text; parse may split blocks, then return to flow.
 

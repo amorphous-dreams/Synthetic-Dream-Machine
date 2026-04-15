@@ -23,7 +23,7 @@ The micro-trace does **not** replace the exchange HUD pair. It annotates the ins
 <!-- ∞ → lar:///trace.micro.marks/micro-trace/observe/?confidence=0.80#scope -->
 ## Scope
 
-- Covers: phase transitions (OODA-A), stance shifts, Tagspace slot shifts, sub-agent boundaries
+- Covers: phase transitions (OODA-HA), stance shifts, Tagspace slot shifts, sub-agent boundaries
 - Does not cover: parse-layer structural decomposition, todo state transitions (debug-only)
 - Does not replace: Intent Header (prospective), exchange HUD pair (boundary)
 

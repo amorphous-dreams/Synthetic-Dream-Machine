@@ -4,7 +4,7 @@
 name: talk-story
 description: >
   Mandatory conversation frame for all Lares sessions. Implements the
-  Talk Story consensus-before-action protocol using OODA-A phases.
+  Talk Story consensus-before-action protocol using OODA-HA phases.
   Load at session start. Applies to every workspace.
 phase-map:
   observe: observe/CONTEXT.md
@@ -31,7 +31,7 @@ confidence: 0.95
 ## What This Module Provides
 
 Talk Story is the mandatory `✶ Observe` entry point for all Lares
-sessions. It implements the `◎ Orient` phase of the OODA-A loop as a
+sessions. It implements the `◎ Orient` phase of the OODA-HA loop as a
 consensus-before-action protocol. The shape of the work emerges from
 the talking.
 

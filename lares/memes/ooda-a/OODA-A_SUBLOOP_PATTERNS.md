@@ -1,12 +1,12 @@
-<!-- ∞ → lar:///grammar.ooda-a.patterns/OODA-A_SUBLOOP_PATTERNS/?confidence=CS:0.80 -->
-# OODA-A Sub-Loop Patterns & Enforcement
+<!-- ∞ → lar:///grammar.ooda-ha.patterns/ooda-ha_SUBLOOP_PATTERNS/?confidence=CS:0.80 -->
+# OODA-HA Sub-Loop Patterns & Enforcement
 
-This sidecar file enumerates enforceable sub-loop patterns and architectural invariants for the Lares OODA-A grammar standard. Reference this file from the main OODA-A locus for operator and agent compliance.
+This sidecar file enumerates enforceable sub-loop patterns and architectural invariants for the Lares OODA-HA grammar standard. Reference this file from the main OODA-HA locus for operator and agent compliance.
 
 ---
 
-## 1. Nested OODA-A Loops
-- **Pattern:** Any locus or agent may instantiate its own OODA-A loop, nested within a parent loop (e.g., session loop containing action loops).
+## 1. Nested OODA-HA Loops
+- **Pattern:** Any locus or agent may instantiate its own OODA-HA loop, nested within a parent loop (e.g., session loop containing action loops).
 - **Enforcement:**
   - Each nested loop must explicitly reference its parent.
   - Entry and exit conditions must be documented.
@@ -23,7 +23,7 @@ This sidecar file enumerates enforceable sub-loop patterns and architectural inv
   - Every locus must document its loop-back conditions and triggers for returning to an earlier phase.
 
 ## 4. Multi-Agent/Parallel Loops
-- **Pattern:** Multiple agents or sub-systems may run OODA-A loops in parallel, coordinating at defined handoff points.
+- **Pattern:** Multiple agents or sub-systems may run OODA-HA loops in parallel, coordinating at defined handoff points.
 - **Enforcement:**
   - Parallel loops must document their synchronization and handoff protocols.
 
@@ -40,11 +40,11 @@ This sidecar file enumerates enforceable sub-loop patterns and architectural inv
 ---
 
 ## Usage
-- Reference this file from the main OODA-A locus.
+- Reference this file from the main OODA-HA locus.
 - Use as a checklist for agent, operator, or code review.
 - Extend with new patterns as the architecture evolves.
 
 ---
 
-**Location:** lares/grammar/ooda-a/OODA-A_SUBLOOP_PATTERNS.md
+**Location:** lares/grammar/ooda-ha/ooda-ha_SUBLOOP_PATTERNS.md
 <!-- → ? -->

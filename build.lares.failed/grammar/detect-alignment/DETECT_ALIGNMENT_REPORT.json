@@ -21,12 +21,12 @@
       "message": "lares/grammar/transclusion/LOCI.md (.md) | Start: OK | End: MISSING"
     },
     {
-      "path": "lares/grammar/ooda-a/OODA-A_SUBLOOP_PATTERNS.md",
+      "path": "lares/grammar/ooda-ha/ooda-ha_SUBLOOP_PATTERNS.md",
       "type": ".md",
       "issue": "WRAPPER",
       "start_ok": false,
       "end_ok": false,
-      "message": "lares/grammar/ooda-a/OODA-A_SUBLOOP_PATTERNS.md (.md) | Start: MISSING | End: MISSING"
+      "message": "lares/grammar/ooda-ha/ooda-ha_SUBLOOP_PATTERNS.md (.md) | Start: MISSING | End: MISSING"
     },
     {
       "path": "lares/grammar/detect-alignment/SKILL.md",

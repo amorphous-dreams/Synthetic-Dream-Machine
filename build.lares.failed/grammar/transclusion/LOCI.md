@@ -33,7 +33,7 @@ grammar: true
 
 ## Loop Position
 
-Transclusion wraps the grammar as its composition discipline. The locus does not replace OODA-A
+Transclusion wraps the grammar as its composition discipline. The locus does not replace OODA-HA
 timing. It determines how timed parts can appear, travel, and recombine without copy drift.
 
 Transclusion receives:
@@ -239,11 +239,11 @@ needs work.
 
 <!-- ahu lar:///grammar.transclusion.defines/transclusion/?confidence=CS:0.80#ooda-eprime-operationalization -->
 
-## OODA-A & E-Prime Operationalization
+## OODA-HA & E-Prime Operationalization
 
-This section makes the transclusion locus fully operational through the OODA-A loop and E-Prime discipline.
+This section makes the transclusion locus fully operational through the OODA-HA loop and E-Prime discipline.
 
-### OODA-A Phase Mapping (E-Prime Compliant)
+### OODA-HA Phase Mapping (E-Prime Compliant)
 
 | Phase   | Procedure (E-Prime discipline applied) |
 |---------|----------------------------------------|

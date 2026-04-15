@@ -5,9 +5,9 @@
         @description "Typed return, warning, and error ontology for memetic-wikitext enactment."
         @version "0.6-draft"
         @content-type "application/memetic-wikitext"
-        @structure "OODA-A"
+        @structure "OODA-HA"
         @enacts "true"
-        @depends-on "lar:///ha.ka.ba/memetic-wikitext|lar:///ha.ka.ba/ooda-a|lar:///ha.ka.ba/kapu"
+        @depends-on "lar:///ha.ka.ba/memetic-wikitext|lar:///ha.ka.ba/ooda-ha|lar:///ha.ka.ba/kapu"
         @supersedes "lar:///ha.ka.ba/result?"
         @focus "typed aftermath law, runtime return envelope, issue taxonomy"
     >>
@@ -106,7 +106,7 @@
     - `@confidence "0.0-1.0|?"`
     - `@return "render|store|emit|recurse|invoke|defer|?"`
     - `@upward-context "parent|caller|chat|ui|memory|graph|?"`
-    - `@downward-context "none|observe|orient|decide|act|assess|ooda-a|subloop|renderer|?"`
+    - `@downward-context "none|observe|orient|decide|act|assess|ooda-ha|subloop|renderer|?"`
     - `@residue "none|trace|warning|surplus|drift|?"`
     - `@next-observation "lar:///...|none|?"`
     - `@next-question "lar:///...|text|none|?"`
@@ -496,7 +496,7 @@
 
 <<~ ahu #integration-notes
     @name "memetic-wikitext-integration-notes"
-    @description "Patch notes for folding typed ontology into the current root and OODA-A shards."
+    @description "Patch notes for folding typed ontology into the current root and OODA-HA shards."
     @role "integration bridge"
     @function "show where the meme plugs into existing fields"
 
@@ -521,7 +521,7 @@
     @confidence "0.0-1.0|?"
     @return "render|store|emit|recurse|invoke|defer|?"
     @upward-context "parent|caller|chat|ui|memory|graph|?"
-    @downward-context "none|observe|orient|decide|act|assess|ooda-a|subloop|renderer|?"
+    @downward-context "none|observe|orient|decide|act|assess|ooda-ha|subloop|renderer|?"
     @residue "none|trace|warning|surplus|drift|?"
     @next-observation "lar:///...|none|?"
     @next-question "lar:///...|text|none|?"

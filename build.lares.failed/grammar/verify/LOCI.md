@@ -7,7 +7,7 @@ This locus defines the verification discipline for Lares grammar loci. It encode
 
 ## Purpose
 - Ensure all grammar loci are testable, robust, and maintainable
-- Enforce OODA-A, E-Prime, kahea, registry, and sub-loop pattern compliance
+- Enforce OODA-HA, E-Prime, kahea, registry, and sub-loop pattern compliance
 - Support iterative, automated improvement for AI agents and operators
 
 ## Verification Skill

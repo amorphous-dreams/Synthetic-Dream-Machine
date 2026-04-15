@@ -1,7 +1,7 @@
 <!-- lar:///protocol.patterned.locks/modules/template/?stances=^.^.?.^.-&confidence=S:0.6&p=0.5#O0.O0.O0.O0.O0 → ∞ -->
 ⚡∞ | mode:spec-draft | p0.5 | stances:++?+- | register:[S:0.6] | build:DRAFT
 
-# OODA-A Module Template & URI Patterns
+# OODA-HA Module Template & URI Patterns
 ## Locked-In Design for `.lares/` Module Architecture
 
 > **Type:** Spec draft — decision-ready for operator confirmation
@@ -20,7 +20,7 @@
 | Participants | Telarus, KSC (operator/admin) + cloud Lares (claude.ai web) |
 | Platform | claude.ai web chat |
 | Context utilization | ~45% at crystallization |
-| Research inputs | Landscape scan of OODA-agent ecosystem, AGENTS.md conventions, SKILL.md format, Anthropic context engineering guidance |
+| Research inputs | Landscape scan of ooda-hagent ecosystem, AGENTS.md conventions, SKILL.md format, Anthropic context engineering guidance |
 
 ---
 
@@ -297,7 +297,7 @@ lar:///module.phased.instructs/module-name/phase/?param=value&param=value#sectio
 |-----------|---------|---------|
 | `///` | System-space URI (no authority/host) | Always triple-slash for module content |
 | `module-name` | Module directory name | `core`, `talk-story`, `scale-shift` |
-| `phase` | OODA-A phase | `observe`, `orient`, `decide`, `act`, `assess` |
+| `phase` | OODA-HA phase | `observe`, `orient`, `decide`, `act`, `assess` |
 | `filename` | File within phase directory (without `.md`) | `context`, `architecture`, `conventions` |
 | `#section` | Section anchor within file | `#stack`, `#constraints`, `#active-work` |
 | `?confidence=` | Confidence rating (0.0–1.0) | `?confidence=0.85` |

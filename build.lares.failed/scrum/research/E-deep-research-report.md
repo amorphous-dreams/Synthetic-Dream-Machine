@@ -53,7 +53,7 @@ Endsley (2023) identifies three distinct SA types required for effective HAT:
 | Taskwork SA | Chronometer (`#🔍.3.2.7`) | Temporal position — where we are in nested scope |
 | Agent SA | Register (`[S:0.65]`) | Epistemic confidence — how sure the node is |
 | Agent SA | Stance (`🏛️`) | Discourse posture — what kind of claim this is |
-| Agent SA | Phase (`◎`) | Cognitive state — what OODA-A phase the node occupies |
+| Agent SA | Phase (`◎`) | Cognitive state — what OODA-HA phase the node occupies |
 | Teamwork SA | p-band (`p0.5`) | Attention density — how much annotation to expect |
 | Teamwork SA | Input reading (dual-tag) | Bidirectional calibration — how the node read the operator's input |
 

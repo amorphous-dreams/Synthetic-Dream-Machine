@@ -7,7 +7,7 @@ status: green
 model: gpt-5
 date_promoted: 2026-04-07
 notes: >
-  Pins the clean separation between parse boundaries and OODA-A trace. The parse
+  Pins the clean separation between parse boundaries and OODA-HA trace. The parse
   block stays annotation-only, and the later governed reply uses sparse event
   markers without pretending to expose morpheme boundaries.
 ---

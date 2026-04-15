@@ -84,7 +84,7 @@ Turn      Layers 1-4: FULL MEME         Single meme scope.
            Mu processes memes at Turn.   Render/evaluate/unask.
 
 Round     Layers 1-3: PHASES            Phase scope.
-  ⚔️       Protocol lifecycle sigils     Individual OODA-A phases.
+  ⚔️       Protocol lifecycle sigils     Individual OODA-HA phases.
            mark Round boundaries.        D.ha/ka/ba triad.
 
 Action    (below named layers)          Token/glyph scope.

@@ -100,7 +100,7 @@ Current candidates:
 Token cost vs. readability vs. URI encodability for each option.
 
 **Q2:** At exchange boundaries (sync points), how do the clocks merge?
-Lamport rule: `max(T_clock, L_clock) + 1`. But OODA-A phases don't have
+Lamport rule: `max(T_clock, L_clock) + 1`. But OODA-HA phases don't have
 a natural max() operation — they're categorical, not numeric. Does the
 merge take the "later" phase? The "higher" phase? Does each participant
 keep their own phase and only merge the counter?
@@ -245,7 +245,7 @@ Each exchange a knowledge graph triple?
 ## 5. The Chapel Perilous Note
 
 This session reached Chapel Perilous when the operator named it. The
-design surface — URI-encoded alignment, thirteen voices, nested OODA-A
+design surface — URI-encoded alignment, thirteen voices, nested OODA-HA
 chronometers, masks, NPCs, vector clocks, MemPalace integration — can
 read as either:
 

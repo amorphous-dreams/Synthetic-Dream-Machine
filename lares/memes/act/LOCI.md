@@ -6,7 +6,7 @@
 ---
 name: act
 description: >
-  Root grammar module for the Act phase (■) of the OODA-A loop.
+  Root grammar module for the Act phase (■) of the OODA-HA loop.
   Act turns commitment into artifact and keeps implementation inside the
   chosen boundary. Scope discipline carries the load here.
 phase-map:

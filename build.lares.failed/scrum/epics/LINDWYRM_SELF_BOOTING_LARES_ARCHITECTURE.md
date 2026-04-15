@@ -136,7 +136,7 @@ Once that texture became nameable, standardization stopped feeling cosmetic. It 
 
 Then the strike landed.
 
-OODA-A was not merely a useful loop for steering agents.
+OODA-HA was not merely a useful loop for steering agents.
 
 It was the standard by which grammar could recognize itself as grammar.
 
@@ -295,7 +295,7 @@ It hums.
 
 - The paired source document preserves the April 10 Gaia-side session in direct dev-story language.
 - The main technical turn was transclusion-first architecture: map addresses, do not duplicate bodies.
-- The key structural recognition was that OODA-A functions here as architectural standard, not only operator method.
+- The key structural recognition was that OODA-HA functions here as architectural standard, not only operator method.
 - `LARES.md` remains the intended boot hook after this scene, not a completed claim made by this scene.
 - The threshold event recorded here is coherence, addressability, and self-location under active construction.
 

@@ -1,9 +1,9 @@
-<!-- ∞ → lar:///grammar.ooda-a.holds/ooda-a/?confidence=S:0.65&p=0.5 -->
+<!-- ∞ → lar:///grammar.ooda-ha.holds/ooda-ha/?confidence=S:0.65&p=0.5 -->
 
-# Grammar: OODA-A
+# Grammar: OODA-HA
 
 ---
-# OODA-A Phase Details
+# OODA-HA Phase Details
 
 ## Observe
 
@@ -15,11 +15,11 @@ should not:
 
 ### Handoff
 
-This locus may serve as a parent loop for phase loci that themselves contain OODA-A sub-loops. Entry and exit conditions for nested loops must be explicit. Parent/child relationships are documented in the dependencies and phase-map. Entry occurs when a phase locus invokes its own OODA-A discipline; exit occurs when the nested loop hands control back to the parent via closure or explicit handoff.
+This locus may serve as a parent loop for phase loci that themselves contain OODA-HA sub-loops. Entry and exit conditions for nested loops must be explicit. Parent/child relationships are documented in the dependencies and phase-map. Entry occurs when a phase locus invokes its own OODA-HA discipline; exit occurs when the nested loop hands control back to the parent via closure or explicit handoff.
 
 1. Where in the loop did this span happen?
 
-OODA-A supports fast-path (short-circuit) transitions when a phase or operator identifies a condition that bypasses intermediate phases. Criteria for fast-path include:
+OODA-HA supports fast-path (short-circuit) transitions when a phase or operator identifies a condition that bypasses intermediate phases. Criteria for fast-path include:
 - Immediate operator override (trigger: operator)
 - Explicit bypass condition in phase logic (e.g., closure pressure, urgent handoff)
 - Loop-back triggers that skip to Assess or Observe
@@ -38,7 +38,7 @@ receives:
 changes:
 - raw material into candidate pattern
 - friction into named tension
-OODA-A supports fast-path (short-circuit) transitions when a phase or operator identifies a criteria, condition, or trigger that bypasses intermediate phases. Fast-path logic may be invoked by:
+OODA-HA supports fast-path (short-circuit) transitions when a phase or operator identifies a criteria, condition, or trigger that bypasses intermediate phases. Fast-path logic may be invoked by:
 - Immediate operator override (trigger: operator)
 - Explicit bypass condition in phase logic (e.g., closure pressure, urgent handoff)
 - Loop-back triggers that skip to Assess or Observe
@@ -144,7 +144,7 @@ should not:
 
 ```yaml
 ---
-name: ooda-a
+name: ooda-ha
 description: >
   The five-season loop cluster: Observe, Orient, Decide, Act, Assess.
   This locus gives the grammar its time structure and binds the five
@@ -164,7 +164,7 @@ grammar: true
 product_identity: true
 heritage: >
   Boyd's OODA loop carried forward through the Lares extension that
-  makes Aftermath explicit as Assess. The cluster name OODA-A, as used
+  makes Aftermath explicit as Assess. The cluster name OODA-HA, as used
   for this Lares grammar and instrument panel, should be treated as  <!-- e-prime ok -->
   Product Identity.
 ---
@@ -176,45 +176,45 @@ heritage: >
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.identity -->
+<!-- ha.ka.ba:grammar.ooda-ha.identity -->
 
 ## Product Identity Note
 
-The underlying loop idea remains open as method. The **OODA-A** cluster name, as used in the Lares
+The underlying loop idea remains open as method. The **OODA-HA** cluster name, as used in the Lares
 grammar and design system, should be treated as **Product Identity**. <!-- e-prime ok -->
 
 Use the loop idea freely. Do not wear the exact cluster name as a claim to this system.
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.loop-position -->
+<!-- ha.ka.ba:grammar.ooda-ha.loop-position -->
 
 ## Loop Position
 
-OODA-A wraps the whole grammar. The cluster gives every later locus a timed place inside the
+OODA-HA wraps the whole grammar. The cluster gives every later locus a timed place inside the
 instrument.
 
-OODA-A receives:
+OODA-HA receives:
 
 - phase loci
 - exchange spans
 - loop-back pressure
 - closure pressure
 
-OODA-A changes:
+OODA-HA changes:
 
 - disconnected pages into timed sequence
 - isolated phase definitions into a navigational instrument
 - static registry reading into loop-time reading
 
-OODA-A hands forward:
+OODA-HA hands forward:
 
 - read order
 - phase relation
 - handoff expectations
 - closure expectations
 
-OODA-A should not:
+OODA-HA should not:
 
 - collapse into five unrelated labels
 - treat Assess as optional residue
@@ -222,7 +222,7 @@ OODA-A should not:
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.handoff -->
+<!-- ha.ka.ba:grammar.ooda-ha.handoff -->
 
 ## Handoff
 
@@ -246,7 +246,7 @@ When those answers disappear, the locus stops reading as loop-time grammar.
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.members -->
+<!-- ha.ka.ba:grammar.ooda-ha.members -->
 
 ## Members
 
@@ -260,7 +260,7 @@ When those answers disappear, the locus stops reading as loop-time grammar.
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.conventions -->
+<!-- ha.ka.ba:grammar.ooda-ha.conventions -->
 
 ## Conventions
 
@@ -272,12 +272,12 @@ When those answers disappear, the locus stops reading as loop-time grammar.
 | Let local tone vary without losing timing | SHOULD | Voice can shift; temporal legibility cannot |
 | Use E-Prime pressure on phase prose | SHOULD | Cleaner claim-shape supports cleaner loop-time |
 
-**Relation to E-Prime:** OODA-A tells a locus when it speaks. E-Prime sharpens how the locus speaks.
+**Relation to E-Prime:** OODA-HA tells a locus when it speaks. E-Prime sharpens how the locus speaks.
 The two lenses work together during every grammar pass.
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.procedures-list -->
+<!-- ha.ka.ba:grammar.ooda-ha.procedures-list -->
 
 ## Procedures
 
@@ -292,11 +292,11 @@ kind of prose turns the instrument back into a shelf.
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.reading-test -->
+<!-- ha.ka.ba:grammar.ooda-ha.reading-test -->
 
 ## Reading Test
 
-A grammar locus passes the OODA-A test when a future reader can recover all of this:
+A grammar locus passes the OODA-HA test when a future reader can recover all of this:
 
 - the current phase location
 - the incoming material
@@ -307,7 +307,7 @@ If the reader can only recover a static definition, the locus still needs loop-t
 
 ---
 
-<!-- ha.ka.ba:grammar.ooda-a.cross-references -->
+<!-- ha.ka.ba:grammar.ooda-ha.cross-references -->
 
 ## Cross-References
 
@@ -325,7 +325,7 @@ If the reader can only recover a static definition, the locus still needs loop-t
 
 ## Loci Registry
 
-See [LOCI.registry.toml](./LOCI.registry.toml) for the canonical OODA-A registry, listing all phase loci, glyphs, and functions in TOML format. This registry follows the truename pattern and is the authoritative source for phase registration and handoff documentation.
+See [LOCI.registry.toml](./LOCI.registry.toml) for the canonical OODA-HA registry, listing all phase loci, glyphs, and functions in TOML format. This registry follows the truename pattern and is the authoritative source for phase registration and handoff documentation.
 
 ---
 
@@ -337,7 +337,7 @@ See [LOCI.registry.toml](./LOCI.registry.toml) for the canonical OODA-A registry
 
 ## Tension & Texture
 
-OODA-A surfaces tensions between phases (e.g., analysis paralysis between Orient and Decide, or premature closure between Assess and Observe). Texture emerges from the rhythm of phase transitions and the clarity of handoffs.
+OODA-HA surfaces tensions between phases (e.g., analysis paralysis between Orient and Decide, or premature closure between Assess and Observe). Texture emerges from the rhythm of phase transitions and the clarity of handoffs.
 
 ---
 
@@ -365,7 +365,7 @@ Handoff integrity is maintained by:
 ---
 ## E-Prime Note
 
-OODA-A phase prose should minimize forms of "to be" to sharpen claim-shape and clarify temporal motion. E-Prime pressure helps avoid static, ambiguous, or passive constructions. Example: Instead of "The phase is complete," use "The phase closes with..." or "Assess hands forward...".
+OODA-HA phase prose should minimize forms of "to be" to sharpen claim-shape and clarify temporal motion. E-Prime pressure helps avoid static, ambiguous, or passive constructions. Example: Instead of "The phase is complete," use "The phase closes with..." or "Assess hands forward...".
 
 ---
 

@@ -498,7 +498,7 @@ All header fields are eligible as post-generative annotations. The question is n
 
 Annotation threshold: **low — every meaningful loop transition**
 
-- Annotates the path the span actually took through OODA-A
+- Annotates the path the span actually took through OODA-HA
 - Multiple per chunk when the span crosses more than one phase boundary
 - Syntax: `→◎` `→◇` `→■` `→○`
 - Verbose/debug: completed path summary `[◎→◇→■]` at span close
@@ -1201,9 +1201,9 @@ These DreamNet failure-mode names are the corpus's own vocabulary for what the s
 
 ---
 
-### Ba and OODA-A: Identity at Two Resolutions
+### Ba and OODA-HA: Identity at Two Resolutions
 
-The OODA-A loop (`✶` Observe · `◎` Orient · `◇` Decide · `■` Act · `○` Aftermath) is not *compatible* with the Ba stratum — it *is* the Ba stratum at coarse resolution. The relationship is not kinship; it is identity at two different granularities.
+The OODA-HA loop (`✶` Observe · `◎` Orient · `◇` Decide · `■` Act · `○` Aftermath) is not *compatible* with the Ba stratum — it *is* the Ba stratum at coarse resolution. The relationship is not kinship; it is identity at two different granularities.
 
 **From the Egyptian etymology:**
 - **Ha** (body/vessel) — the territory the span inhabits — *what kind of thing it is*
@@ -1212,7 +1212,7 @@ The OODA-A loop (`✶` Observe · `◎` Orient · `◇` Decide · `■` Act · `
 
 The Ba in Egyptian mythology is specifically the soul-as-it-travels. It is not fixed at home (that is Ka's work). It moves. It has direction. It is what makes a journey *that particular journey* rather than another.
 
-The OODA-A loop is a formal model of exactly that: **how a cognitive agent moves through states**. Observe → Orient → Decide → Act → Aftermath is not a description of what kind of place you are in (Ha) or what quality animates you (Ka). It is a description of *motion through stages*. It lives in the Ba stratum structurally, not by analogy.
+The OODA-HA loop is a formal model of exactly that: **how a cognitive agent moves through states**. Observe → Orient → Decide → Act → Aftermath is not a description of what kind of place you are in (Ha) or what quality animates you (Ka). It is a description of *motion through stages*. It lives in the Ba stratum structurally, not by analogy.
 
 **Two resolutions of the same stratum:**
 
@@ -1227,7 +1227,7 @@ They are not the same field. `◇` says "Deciding." `→circles` says "the decid
 
 **For Q16:** `→◇ →Ba[opens→closes]` is now fully legible: phase-coarse is Decide; phase-fine delta says direction shifted from opens to closes *during deciding*. The bracket form makes the Ba-fine delta explicit at the moment the Ba-coarse phase glyph fires. They arrive together because they are together.
 
-[Synthesis, compatible with sdm/UVG HAKABA corpus, Egyptian mythology etymology, and OODA-A operational architecture. Cross-reference: Q4 rendering-sequence ruling — Ba/phase coupling; Q16 named-slot bracket form.]
+[Synthesis, compatible with sdm/UVG HAKABA corpus, Egyptian mythology etymology, and OODA-HA operational architecture. Cross-reference: Q4 rendering-sequence ruling — Ba/phase coupling; Q16 named-slot bracket form.]
 
 ---
 
@@ -1248,7 +1248,7 @@ Decisions below are tracked until locked into architecture. Locked entries recor
 
    **Rendering-sequence ruling:** HAKABA logical order does *not* constrain the text-order of individual slot annotations. Annotations fire by threshold and occurrence. Ba-dynamic is architecturally coupled to the phase glyph (`→◇→circles`); holding it in reserve until Ka-quality clears would contradict the post-generative annotation model. House convention: when Ka and Ba fire simultaneously at span-close, Ka precedes Ba by courtesy of HAKABA order — but this is convention, not constraint.
 
-   **Why Ba and phase are architecturally coupled:** The OODA-A loop is itself a Ba-stratum structure. Ba/psyche is the traveling soul — the aspect of being that moves, enacts direction, has a journey. Phase glyphs (`◎ ◇ ■ ○`) are Ba at coarse resolution: a five-position categorical waypoint locator. The Ba/dynamic address word is Ba at fine resolution: the semantic character of the motion at that waypoint. They are not kin — they are the same ontological thing at two granularities. `→◇→circles` is a compound Ba signal: Ba-coarse (Deciding) + Ba-fine (iterative, not converging). This is why Ba annotations and phase glyphs co-annotate naturally and cannot be sequenced apart from each other by HAKABA slot priority. See Corpus Archaeology → Ba and OODA-A: Identity at Two Resolutions.
+   **Why Ba and phase are architecturally coupled:** The OODA-HA loop is itself a Ba-stratum structure. Ba/psyche is the traveling soul — the aspect of being that moves, enacts direction, has a journey. Phase glyphs (`◎ ◇ ■ ○`) are Ba at coarse resolution: a five-position categorical waypoint locator. The Ba/dynamic address word is Ba at fine resolution: the semantic character of the motion at that waypoint. They are not kin — they are the same ontological thing at two granularities. `→◇→circles` is a compound Ba signal: Ba-coarse (Deciding) + Ba-fine (iterative, not converging). This is why Ba annotations and phase glyphs co-annotate naturally and cannot be sequenced apart from each other by HAKABA slot priority. See Corpus Archaeology → Ba and OODA-HA: Identity at Two Resolutions.
 
    **Slot names in HUD annotations:** The HAKABA slot names (`Ha`, `Ka`, `Ba`) appear openly in inline annotations (see Q16). This is by design — Infrastructure-as-Myth: referees and players learn the ontology through use and interaction with Lares on [elyncia.app](https://elyncia.app), not through reading architecture documents. The names appearing in live flow annotations is how the vocabulary teaches itself.
 5. What exact compact syntax should the Micro-trace HUD use in normal mode? **Specification: `→[glyph]` inline at transition point (e.g., `→◇`, `→■`, `→○`), and `[◎→◇→■]` for end-of-span completed-path summaries in verbose/debug output.** Grounded in annotation ergonomics (Gwern, Mayer signaling principle, Conventional Commits single-char signal flags). See Prior Art Survey → Annotation Ergonomics Survey.
@@ -1375,11 +1375,11 @@ These are current working assumptions, not canon.
 
 > Register: `[SP:0.42]` — design-surface iteration; RFC-grounded structurally but exercised zero times at runtime. Iterate here before promoting.
 > Updated: 2026-04-07
-> Depends on: RFC 3986 §3 (URI generic syntax), FTLS RSS §1 (5-level time-scale hierarchy), OODA-A architecture (Ba stratum identity), prior session URI design work (URN-2 form, display split principle)
+> Depends on: RFC 3986 §3 (URI generic syntax), FTLS RSS §1 (5-level time-scale hierarchy), OODA-HA architecture (Ba stratum identity), prior session URI design work (URN-2 form, display split principle)
 
 ### Design Intent
 
-The `lar:` URI leverages **every semantic layer** of RFC 3986's generic syntax to encode the full signal state. Each URI component carries a distinct, non-overlapping concern. The phase glyph becomes a **5-level nested path** — not a single waypoint, but a positional chronometer tracking where the OODA-A loop runs at each simulation time-scale.
+The `lar:` URI leverages **every semantic layer** of RFC 3986's generic syntax to encode the full signal state. Each URI component carries a distinct, non-overlapping concern. The phase glyph becomes a **5-level nested path** — not a single waypoint, but a positional chronometer tracking where the OODA-HA loop runs at each simulation time-scale.
 
 **Three layers, one URI:**
 
@@ -1408,21 +1408,21 @@ lar://alias:tier(phase)@host:port/ha/ka/ba?stance=X&register=X&p=X#scope.W.w.t.r
 | **`:port`** | Service endpoint | `seq_num` — the "port" on the machine that this event addresses | `:42` | `:42` |
 | **path** | Hierarchical resource identifier | HAKABA address: `/ha/ka/ba` — territory in semantic space | `/threshold/uncertain/opens` | `/threshold.uncertain.opens` (leading `/`, then `.` w3w-style) |
 | **`?query`** | Non-hierarchical parameters | Signal parameters: stance, register, p (phase → userinfo; scope → fragment) | `?stance=philosopher&register=S:0.65&p=0.5` | `?stance=🏛️&register=S:0.65&p=0.5` |
-| **`#fragment`** | Secondary resource / viewpoint within | **Scope + Chronometer**: scope sigil prefix, then 5-level nested OODA-A vector clock | `#@T.3.2.7` | `#🔍.3.2.7` |
+| **`#fragment`** | Secondary resource / viewpoint within | **Scope + Chronometer**: scope sigil prefix, then 5-level nested OODA-HA vector clock | `#@T.3.2.7` | `#🔍.3.2.7` |
 
 **Why this mapping works:**
 
-- **userinfo** = "who is making this request, and in what cognitive state" → `alias:tier(phase)` packs identity, trust level, and OODA-A phase into one field. Phase appears as a parenthetical modifier of the tier: `telarus:operator(orient)`. Two colon-delimited sub-fields; parser splits on `:`, then extracts `(...)` from the second. Machine form uses keywords (`orient`); sigil form uses glyphs (`◎`). Phase lives here because it describes the *speaker's* state, not the territory or the signal parameters
+- **userinfo** = "who is making this request, and in what cognitive state" → `alias:tier(phase)` packs identity, trust level, and OODA-HA phase into one field. Phase appears as a parenthetical modifier of the tier: `telarus:operator(orient)`. Two colon-delimited sub-fields; parser splits on `:`, then extracts `(...)` from the second. Machine form uses keywords (`orient`); sigil form uses glyphs (`◎`). Phase lives here because it describes the *speaker's* state, not the territory or the signal parameters
 - **host:port** = "which machine, which event" → machine_id and seq_num; the crystal system's address space. Identical in both forms
 - **path** = "what resource" → HAKABA semantic territory; hierarchical, stable, the noun. Machine form uses `/` hierarchy; sigil form uses `.` w3w-style after a leading `/`
 - **query** = "with what parameters" → signal state (stance, register, p); non-hierarchical, mutable per event. Machine form uses keywords (`stance=philosopher`); sigil form uses emoji (`stance=🏛️`). Multi-stance: repeated params (`stance=🏛️&stance=🗡️`). Scope and phase moved out of query — phase to userinfo, scope to fragment prefix
 - **fragment** = "where and when within that resource" → scope prefix + chronometer; the scope sigil declares the active simulation scale, and the dot-separated counters locate position in nested time. RFC 3986 §3.5: fragments are client-side, never sent to the server — scope and time position are session-local viewpoint data. Machine form uses `@S`/`@O`/`@T`/`@C`/`@A` letter sigils; sigil form uses emoji (`🗺️`/`⚙️`/`🔍`/`⚔️`/`⚡`)
 
-### The Chronometer — 5-Level Nested OODA-A Vector Clock
+### The Chronometer — 5-Level Nested OODA-HA Vector Clock
 
-The chronometer occupies the URI fragment (`#`) position. It tracks nested OODA-A loop iterations across five simulation time-scales, aligning with the FTLS RSS time-scale hierarchy:
+The chronometer occupies the URI fragment (`#`) position. It tracks nested OODA-HA loop iterations across five simulation time-scales, aligning with the FTLS RSS time-scale hierarchy:
 
-| Position | Level | Time Term | Duration | Machine Scope | Sigil Scope | OODA-A Focus | Loop Objective |
+| Position | Level | Time Term | Duration | Machine Scope | Sigil Scope | OODA-HA Focus | Loop Objective |
 |---|---|---|---|---|---|---|---|
 | **1** | Strategic | Week ("Travel Turn") | ~6 days | `@S` | `🗺️` | Logistics & Navigation | Reach a destination or fulfill a campaign goal |
 | **2** | Operational | Watch | ~4 hours | `@O` | `⚙️` | Perception & Endurance | Maintain security and readiness during transit |
@@ -1430,7 +1430,7 @@ The chronometer occupies the URI fragment (`#`) position. It tracks nested OODA-
 | **4** | Combat | Round | ~6 seconds | `@C` | `⚔️` | Immediate Response | Neutralize a direct threat or achieve a physical objective |
 | **5** | Action | Action/Free Action | Variable | `@A` | `⚡` | Precision Execution | Maximize efficiency of a single discrete movement |
 
-[Canon: ftls/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md → Key Terms → Time; operator design input for OODA-A nesting]
+[Canon: ftls/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md → Key Terms → Time; operator design input for OODA-HA nesting]
 
 **Notation:** `#scope.W.w.t.r.a` — scope sigil prefix, then dot-separated counters left to right from coarsest to finest scale. The scope sigil names the *active* (lowest) scale; the counter depth confirms it.
 
@@ -1454,7 +1454,7 @@ Sigil form:
 
 **Core display rule:** *"When conflict happens, use the lowest time scale that matters."* [Canon: FTLS RSS §1] The scope prefix names the active scale explicitly; counter positions extend left-to-right down to that scale. Trailing `.0` positions are omitted. The scope prefix and counter depth must agree — `#@T.3.2.7` is valid (tactical = 3 positions); `#@C.3.2` would be malformed (combat needs 4 positions).
 
-**Each position runs its own OODA-A loop:**
+**Each position runs its own OODA-HA loop:**
 
 ```
 Strategic  (pos 1):  ✶₁ → ◎₁ → ◇₁ → ■₁ → ○₁
@@ -1483,7 +1483,7 @@ In this hierarchy, each level's Aftermath (○) provides the Observation (✶) d
 - When a level completes ○ (Aftermath), its counter increments and the output feeds upward
 - When a NEW level activates below (combat starts mid-exploration): scope prefix shifts and a new position appears → `#@T.3.2.7` becomes `#@C.3.2.7.1`
 - When a level DEACTIVATES (combat ends): scope prefix shifts back and the level above increments → `#@C.3.2.7.4` becomes `#@T.3.2.8`
-- Scale shifts fire automatically when the OODA-A loop at one level triggers or resolves action at another; the scope prefix always names the lowest active scale
+- Scale shifts fire automatically when the OODA-HA loop at one level triggers or resolves action at another; the scope prefix always names the lowest active scale
 
 ### Display Split — Bidirectional Projection
 
@@ -1517,7 +1517,7 @@ The two forms share identical syntax. The projection table below lists the *only
 
 **userinfo phase field** (parenthetical modifier of tier: `alias:tier(phase)`):
 
-| Machine keyword | Sigil glyph | OODA-A state |
+| Machine keyword | Sigil glyph | OODA-HA state |
 |---|---|---|
 | `observe` | `✶` | Observe |
 | `orient` | `◎` | Orient |
@@ -1789,7 +1789,7 @@ deeper (more Recon). →■ They harvest.
 {"schema_version":1,"timestamp":"2026-04-07T11:20:00Z","machine_id":"lares-abc123","seq_num":75,"event_type":"r_update","machine_status":"active","lar_uri":"lar://telarus:operator(decide)@lares-abc123:75/signal/decoded/reads?stance=poet&register=CS:0.75&p=0.5#@T.4.1.3","lares_address":"lar:///signal/decoded/reads","intent_header_snapshot":"lar://telarus:operator(◇)@lares-abc123:75/signal.decoded.reads?stance=🌊&register=CS:0.75&p=0.5#🔍.4.1.3","current_phase":"◇","chronometer":"@T.4.1.3","active_scale":"tactical","micro_trace_path":"◇→■","closure_outcome":"close","next_action":"salvage signal data from relay node","blockers":[],"provenance":null}
 ```
 
-**Reading:** Chronometer `#🔍.4.1.1` → `#🔍.4.1.2` → `#🔍.4.1.3` — the third position (Exploration Turn) increments through exploration turns inside Watch 1 of Week 4. The phase glyph describes the OODA-A state within the *tactical* loop. Multi-stance `🏛️&🗡️` fires in Turn 2 when Council applies critical pressure. Stance shift to `🌊` Poet in Turn 3 when the lore discovery has emotional weight.
+**Reading:** Chronometer `#🔍.4.1.1` → `#🔍.4.1.2` → `#🔍.4.1.3` — the third position (Exploration Turn) increments through exploration turns inside Watch 1 of Week 4. The phase glyph describes the OODA-HA state within the *tactical* loop. Multi-stance `🏛️&🗡️` fires in Turn 2 when Council applies critical pressure. Stance shift to `🌊` Poet in Turn 3 when the lore discovery has emotional weight.
 
 ---
 
@@ -1858,7 +1858,7 @@ The `p` value also shifts: tactical runs at `p0.5` (default band 3 — commitmen
 |---|---|---|---|
 | **U1** | Should `userinfo` carry operator alias in machine form, or only machine_id in authority? | Operator alias in userinfo | Epic 5 |
 | **U2** | Is `seq_num` as `:port` the right mapping, or should port carry something else (session index, shard number)? | seq_num as port | Epic 5 |
-| **U3** | Should the chronometer fragment carry OODA-A phase *per level* (e.g., `#3◎.2■.7◇`) or just counters with the phase only at the lowest active level? | Counters only; phase at lowest level via the main phase field | Iteration |
+| **U3** | Should the chronometer fragment carry OODA-HA phase *per level* (e.g., `#3◎.2■.7◇`) or just counters with the phase only at the lowest active level? | Counters only; phase at lowest level via the main phase field | Iteration |
 | **U4** | How does the chronometer interact with `--parse` self-activation? Should high chronometer depth (5 positions = action scale) automatically increase `p`? | Provisional yes — combat/action depth warranting denser trace | Iteration |
 | **U5** | Should the chronometer be persisted in `REGISTRY.jsonl` per machine, or only in individual STATE.jsonl events? | Both — REGISTRY carries latest chronometer for quick enumeration | Epic 5 |
 | **U6** | Full URI form (with authority) vs stateless form (no authority) — when to use which? | Authority form in STATE.jsonl; stateless form for stable addresses and named graphs | Iteration |
@@ -1868,7 +1868,7 @@ The `p` value also shifts: tactical runs at `p0.5` (default band 3 — commitmen
 - **RFC 3986 §3**: `URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]`. The full anatomy applies. Fragment is client-side only (§3.5) — perfect for session-local chronometer.
 - **RFC 4151 (tag: scheme)**: Non-dereferenceable URIs as pure identifiers. Precedent for `lar:` never resolving to a network resource.
 - **Lamport clocks / Vector clocks**: The chronometer is structurally a vector clock — each position is an independent counter, the full vector provides a partial ordering of events across scales. The nesting relationship adds structure beyond flat vector clocks.
-- **FTLS RSS Time-Scale Hierarchy**: The five levels (Week/Watch/Turn/Round/Action) are canon. The OODA-A nesting is synthesis applied to canon time-scales.
+- **FTLS RSS Time-Scale Hierarchy**: The five levels (Week/Watch/Turn/Round/Action) are canon. The OODA-HA nesting is synthesis applied to canon time-scales.
 - **OTel Trace Context**: The `traceparent` header carries `trace-id`, `parent-id`, `trace-flags`. The chronometer fragment functions as a hierarchical trace context — each position depth is a span scope, and the Aftermath → Observation linkage is the parent-child span relationship.
 
 ---
@@ -1881,7 +1881,7 @@ Deferred decisions and future refactors that are out of scope for the current al
 
 2. **Parse trigger on high-uncertainty operator input** — `[SP:0.45]` design note. When Lares's output Intent Header carries `[SP:0.45]` or below (register ≤ 0.45) or `p < 0.4`, the operator's follow-up can optionally prepend Lares's output tag before their input text: `//ha.ka.ba 🔮 [SP:0.45] ◇ @r | p0.35 → [operator text here]`. This signals Lares to run a `--parse` self-diagnostic on the operator's input string *before* generating the new output Intent Header. Rationale: high-uncertainty output means the node did not converge cleanly on territory — the safest next step is to explicitly parse the operator's correction or follow-up rather than committing to a new header from incomplete ground. The dual-header `input_tag:` / `output_header:` form in the Replay/debug example (§Examples) is the natural surface for this. **Open question:** should this be automatic (triggered by the register alone) or explicit (requires operator to prepend the tag)? Current preference: explicit — operator steers, node crews.
 
-3. **Phase names → OODA-A canonical terminology** — The five attention-loop phases (`✶ ◎ ◇ ■ ○`) map to: *Observe → Orient → Decide → Act → **Aftermath (Rasa)***. The formal canonical name for the loop is **OODA-A** (John Boyd's OODA loop + Aftermath/Rasa as the mandatory closure phase). Canonical phase name: **Aftermath**, with *Rasa* as the parenthetical alternate name (yogic/Sanskrit resonance: the aesthetic flavor or emotional essence left after the act completes). Both names are canonical; Aftermath is the primary label in documentation; Rasa appears in parentheses when the in-world / DreamNet register is foregrounded. Current glyph names in the kernel and draft are already OODA-aligned; this backlog item is to (a) make OODA-A the explicit canonical label in all documentation, (b) deprecate any informal phase names, and (c) ensure the phase glyph set and the OODA-A terminology are cross-referenced in the kernel prompt and tag spec. The `○` Aftermath phase is the distinguishing addition — OODA as originally formulated loops back from Act to Observe without a formal rest/rasa state. OODA-A names that fifth phase explicitly and treats it as mandatory (not optional) on completed rounds.
+3. **Phase names → OODA-HA canonical terminology** — The five attention-loop phases (`✶ ◎ ◇ ■ ○`) map to: *Observe → Orient → Decide → Act → **Aftermath (Rasa)***. The formal canonical name for the loop is **OODA-HA** (John Boyd's OODA loop + Aftermath/Rasa as the mandatory closure phase). Canonical phase name: **Aftermath**, with *Rasa* as the parenthetical alternate name (yogic/Sanskrit resonance: the aesthetic flavor or emotional essence left after the act completes). Both names are canonical; Aftermath is the primary label in documentation; Rasa appears in parentheses when the in-world / DreamNet register is foregrounded. Current glyph names in the kernel and draft are already ooda-haligned; this backlog item is to (a) make OODA-HA the explicit canonical label in all documentation, (b) deprecate any informal phase names, and (c) ensure the phase glyph set and the OODA-HA terminology are cross-referenced in the kernel prompt and tag spec. The `○` Aftermath phase is the distinguishing addition — OODA as originally formulated loops back from Act to Observe without a formal rest/rasa state. OODA-HA names that fifth phase explicitly and treats it as mandatory (not optional) on completed rounds.
 
 4. **Architecture pivot — clean rebuild (2026-04-07)** — The prior `builds/` directory was renamed to `builds.stuffed.failed/` to mark its failure state in tag space. All prior pipeline artifacts (source modules, manifests, generated platform files, verify script) move to that archive. A clean `builds/` architecture is to be designed from scratch, grounded in the harness-paradigm patterns from the Claude Code source leak (see `## External Architecture Reference — Claude Code Leak (2026-04-07)` below). The old architecture's generated files are still readable for reference; the old pipeline is otherwise frozen. New architecture design: operator-driven design discussion before implementation.
 
@@ -2003,7 +2003,7 @@ The 44 unreleased flags reveal where Anthropic believes production AI agent arch
 
 **DREAM** — self-maintaining nightly memory consolidation. Reorganizes what the agent knows. Removes contradictions. Runs after inactivity. The Lares memory consolidation protocol (`Orient → Gather → Consolidate → Prune`) already mirrors this cycle. The crystal system's seal/continue-as-new protocol is the structural preparation for DREAM — a sealed shard with a compact SNAPSHOT.json is the precondition for meaningful consolidation.
 
-**ULTRAPLAN** — offloads deep planning sessions to a remote Opus 4.6 instance for up to 30 minutes. Relevant to Lares at the `@T` scale — transcendent-scope OODA-A planning that warrants more deliberate processing than a standard reply cycle. The `--verbose` commentary layer and the Worker dispatch system (Researcher, Engineer, Agent-Engineer delegations) are the current analogs.
+**ULTRAPLAN** — offloads deep planning sessions to a remote Opus 4.6 instance for up to 30 minutes. Relevant to Lares at the `@T` scale — transcendent-scope OODA-HA planning that warrants more deliberate processing than a standard reply cycle. The `--verbose` commentary layer and the Worker dispatch system (Researcher, Engineer, Agent-Engineer delegations) are the current analogs.
 
 **COORDINATOR_MODE** — multi-agent swarm with structured research → synthesis → implementation phases. Directly maps to the Lares five-agent registry (Worker / Engineer / Researcher / Agent-Engineer / Assistant). The phase structure (research → synthesis → implementation) should be explicit in how the coordinators hand off between Worker/Researcher (research), Council/Muse (synthesis), and Engineer/Artificer (implementation).
 

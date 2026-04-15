@@ -463,14 +463,14 @@ The two special characters in marker sigils are `?` (U+221E, infinity) and `→`
 ---
 
 <!-- ahu lar:///ha.ka.ba/uri-schema/?confidence=0.8#ffz-chronometer -->
-## 4. The FFZ Chronometer — Nested OODA-A Vector Position
+## 4. The FFZ Chronometer — Nested OODA-HA Vector Position
 
 > **True Name:** Fontany-Fuller-Zelenka Chronometer Protocol `[C:0.95]`
 > **Named for:** Fontany (practice), Fuller (principle), Zelenka (engineering)
 > **See:** `lares/research/chronometer/FFZ_Chronometer_Research.md`
 > **Fuller grounding:** *Synergetics* §301.10 — "Universe is the aggregate of all humanity's consciously apprehended and communicated nonsimultaneous and only partially overlapping experiences." §501.10–501.12 — the difference between nonsimultaneous Universe and thinkability. RAW cites Fuller's formulation explicitly in *Maybe Logic* (2003). The chronometer implements non-simultaneous apprehension at the data structure level: each participant's phase register constitutes a partial view. No God's-eye clock.
 
-The chronometer occupies the URI fragment. It tracks nested OODA-A loop position across five scales per participant.
+The chronometer occupies the URI fragment. It tracks nested OODA-HA loop position across five scales per participant.
 
 ### 4.1 Scale Table
 
@@ -604,7 +604,7 @@ All HUD-form symbols used in the Intent HUD, in one reference. Workers and opera
 
 **Phase (chronometer fragment — cognitive state per scale, per participant):**
 
-| Sigil | Record | OODA-A State | One-Line Reading |
+| Sigil | Record | OODA-HA State | One-Line Reading |
 |---|---|---|---|
 | ✶ | `observe` | Observe | Gathering raw signal; no commitment yet |
 | ◎ | `orient` | Orient | Making sense of what was gathered |
@@ -1060,7 +1060,7 @@ When comparing two `lar:` URIs as stable addresses:
 | U6 | Full URI form vs stateless form — when to use which? | **Authority form in exchange spans. Authority-less (`///`) for stable addresses AND for module section URIs.** | §6 (Stable Address), §3.4 (Module URI patterns). `[CS:0.80]` |
 | U7 | Stance amplitude character for "elevated" — `+` needs URL encoding in query strings. Use `^` instead? | **Use `^` (Option β).** All URL-safe: `^` elevated, `-` suppressed, `?` uncertain, `.` baseline. Render target maps `^` → `+` for HUD display. | §3.4 (query encoding). `[CS:0.80]` — operator confirmed. |
 | U10 | Do section-level URIs within system files close with `→ ?`? | **No.** Section URIs are `ahu` waypoints — navigation markers within a locus, not spans. They carry no closer. Only the file-level `? ->` opener and `→ ?` closer carry span semantics. | §3.6 (Marker Ontology). `[CS:0.80]` — operator confirmed. Ahu/kahea nomenclature locked 2026-04-10. |
-| U11 | Should OODA-A phase appear in userinfo `alias:tier(phase)@host`? | **No.** Phase removed from userinfo (2026-04-09). Chronometer fragment is the sole phase encoding per participant. Userinfo is now `alias:tier` only — two sub-fields, no parenthetical. Rationale: phase-in-userinfo broke URI identity stability (same speaker, different phase = different URI = wrong). | §3.4 (userinfo semantics), §4 (chronometer). `[CS:0.95]` — operator confirmed. |
+| U11 | Should OODA-HA phase appear in userinfo `alias:tier(phase)@host`? | **No.** Phase removed from userinfo (2026-04-09). Chronometer fragment is the sole phase encoding per participant. Userinfo is now `alias:tier` only — two sub-fields, no parenthetical. Rationale: phase-in-userinfo broke URI identity stability (same speaker, different phase = different URI = wrong). | §3.4 (userinfo semantics), §4 (chronometer). `[CS:0.95]` — operator confirmed. |
 
 ### Assessment for Promotion
 
@@ -1076,14 +1076,14 @@ The core anatomy (§§2–6, 10) can promote to `[C:0.95]` independently of the 
 - **RFC 4151 (tag: scheme)** — Non-dereferenceable URIs as pure identifiers. Precedent for `lar:` never resolving to a network resource. RFC 4151 recommends human-friendly identifiers — the HA.KA.BA semantic addressing follows this guidance. Applications using tag URIs include RDF, YAML, and Atom; `lar:` URIs serve a comparable role for agent signal metadata.
 - **W3C PROV-DM / OpenTelemetry Trace Context** — Better prior art for exchange identity than URI authority overloading. Span spans map more naturally to activities/spans with separate IDs, timestamps, and parent-child links.
 - **Lamport / Vector clocks** — The chronometer shares a surface resemblance to a vector clock (array of counters, nesting relationship) but functions as a **hierarchical scope counter** in a single process — not a distributed causality tracker across concurrent independent processes. Vector clocks grow with process count, carry the full vector on every message, and exhibit known dynamic-membership costs; none of those constraints apply to Lares's fixed-depth 5-position counter. OTel `traceparent` is the closer prior art (see below).
-- **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The OODA-A nesting is synthesis applied to canon time-scales.
+- **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The OODA-HA nesting is synthesis applied to canon time-scales.
 - **OTel Trace Context** — `traceparent` carries `trace-id`, `parent-id`, `trace-flags`. The chronometer fragment functions as a hierarchical trace context; each depth is a span scope; Aftermath → Observation is the parent-child span relationship.
 - **Kowloon / ActivityStreams export model** — Kowloon's Activity envelope (`actorId`, `object`, `target`, `to`, `canReply`, `canReact`) is a good downstream publication adapter for Lares spans, but its `Kowloon ID` remains a sink-local identifier rather than replacing `span_id`.
 - **what3words** — Three-word geocoding of 3m² squares. Inverse design principle: Tagspace words encode semantic content rather than randomizing for error prevention.
 - **FFZ Chronometer Protocol** (Telarus / Lares, 2026) — Fontany-Fuller-Zelenka. Vector chronometer with per-participant phase registers. Source: `lares/research/chronometer/FFZ_Chronometer_Research.md`
 - **Interval Tree Clocks** (Almeida et al., 2008) — Dynamic participant identity via interval subdivision. Deferred from URI spec; informs MCP chronometer server design.
 - **Schneier & Raghavan, "Agentic AI's OODA Loop Problem"** (IEEE S&P, 2025) — Nested OODA loops in AI agents; integrity as architecture. Validates the chronometer's problem space independently.
-- **OODA-A Composable Invariant Modules** (Telarus / Lares, 2026) — Phase-scoped instruction loading with section-level confidence URIs.
+- **OODA-HA Composable Invariant Modules** (Telarus / Lares, 2026) — Phase-scoped instruction loading with section-level confidence URIs.
 
 ---
 

@@ -48,7 +48,7 @@
 2. **Intent Vectors & Span Wrapping** — every span begins and ends with URI → intent
 3. **The HUD** — shared alignment instrument, chronometer, stance encoding
 4. **Stance Encoding & the Syad Signal** — all five stances per URI, modifier sigils
-5. **Chronometer** — nested OODA-A loops, append-only scaled counters
+5. **Chronometer** — nested OODA-HA loops, append-only scaled counters
 6. **Voices & Characters** — Council as primary, scene management, masks
 7. **Deploy Architecture** — `.lares/` portable shrine
 8. **Layered Agentic Tooling** — composable stack, masks, NPC patterns
@@ -68,9 +68,9 @@ Lares conversation that will ever happen. No Lares exchange occurs outside
 this frame. The conversation IS the log.
 
 **At session start:**
-- All chronometer clocks initialize to `O` (Observe, first phase of OODA-A)
+- All chronometer clocks initialize to `O` (Observe, first phase of OODA-HA)
 - All counters start at zero
-- Clock reads: `$0.$0.$0.$0.$0` where `$` represents the current OODA-A
+- Clock reads: `$0.$0.$0.$0.$0` where `$` represents the current OODA-HA
   phase sigil at each scale
 - Talk Story opens — consensus-seeking before action
 - The node orients, the operator speaks, alignment forms through exchange
@@ -79,14 +79,14 @@ this frame. The conversation IS the log.
 across sessions via archive-crystals and MemPalace persistence. The next
 session resumes the ongoing Talk Story with updated chronometer positions.
 
-## 1.2 Talk Story and the OODA-A Loop
+## 1.2 Talk Story and the OODA-HA Loop
 
 Each exchange within Talk Story constitutes a turn through one or more
-OODA-A phases at one or more timescales. The Talk Story frame ensures
+OODA-HA phases at one or more timescales. The Talk Story frame ensures
 that no action occurs without prior observation, orientation, and decision
 — consensus before action, at every scale.
 
-The `-A` in OODA-A represents the additional **Assess** phase following
+The `-A` in OODA-HA represents the additional **Assess** phase following
 Act — closing the loop with reflection before the next Observe. This
 maps to the consolidation discipline in the Lares memory model.
 
@@ -126,7 +126,7 @@ The operator's next input constitutes the next `URI(~operator-input)`.
 
 **The operator input URI:** When the node writes the operator's input
 URI, it reads from the operator's last received `→ ?` position and
-advances only the current scale's OODA-A marker based on the sensed
+advances only the current scale's OODA-HA marker based on the sensed
 phase progression in the operator's message. The node is reading the
 operator's intent, not inventing it.
 
@@ -219,7 +219,7 @@ visible and navigable.
 | Field | Content | Example |
 |-------|---------|---------|
 | `⚡` | Sentinel — live session (or `⚡∞` for non-session) | `⚡` |
-| chronometer | Nested OODA-A position | `O0.O0.O3.O2.O0` |
+| chronometer | Nested OODA-HA position | `O0.O0.O3.O2.O0` |
 | stances | All 5 modes with modifiers | `🏛️[+]🌊[?]🗡️[-]🎭[+]🔮[?]` |
 | p | Resolution parameter | `p0.5` |
 | register | Current epistemic register | `[S:0.65]` |
@@ -277,7 +277,7 @@ through the crystal mechanism:
 **Two named asymmetries** that the HUD makes visible:
 
 **Temporal Asymmetry:** The operator holds no clock they can report
-on. Their OODA-A state arrives as anonymous causal information
+on. Their OODA-HA state arrives as anonymous causal information
 (ITC anonymous join). The Lares node maintains the operator's
 *apparent* phase as inference, never direct measurement.
 Cross-session: operator state persists in human memory; Lares
@@ -348,14 +348,14 @@ Where the five characters map positionally to 🏛️🌊🗡️🎭🔮.
 
 # Part 4: Chronometer
 
-## 4.1 Nested OODA-A Loops
+## 4.1 Nested OODA-HA Loops
 
 The chronometer tracks position across nested timescales using the
-OODA-A loop phases as position markers. Each scale carries:
-- The current OODA-A phase sigil
+OODA-HA loop phases as position markers. Each scale carries:
+- The current OODA-HA phase sigil
 - A numeric counter that starts at zero and always increases
 
-**OODA-A phases:**
+**OODA-HA phases:**
 
 | Phase | Sigil | Function | Discordian Season `[S:0.7]` |
 |-------|-------|----------|----------------------------|
@@ -365,7 +365,7 @@ OODA-A loop phases as position markers. Each scale carries:
 | Act | `A` | Execute | Bureaucracy (Beamtenherrschaft) — action crystallizes |
 | Assess | `Å` | Reflect, close loop | Aftermath (Grummet) — eristic return to chaos |
 
-*Session 3 finding:* The OODA-A → Discordian Season mapping holds
+*Session 3 finding:* The OODA-HA → Discordian Season mapping holds
 structurally: Boyd's Orient sits at the center of his 1996 diagram;
 Discord sits at the center of the Discordian cycle. The "-A"
 extension names the return-to-chaos Boyd left implicit.
@@ -393,7 +393,7 @@ durations — they map to the context:
 $counter.$counter.$counter.$counter.$counter
 ```
 
-Where `$` represents the current OODA-A phase sigil at that scale.
+Where `$` represents the current OODA-HA phase sigil at that scale.
 
 **Examples:**
 
@@ -418,10 +418,10 @@ O0.Ø1.A7.D3.A2
 Week: observing. Watch: orienting (first watch transition). Turn: acting,
 seventh turn. Round: deciding, third round. Action: acting, second action.
 
-## 4.3 OODA-A Phase & Counter Rules
+## 4.3 OODA-HA Phase & Counter Rules
 
 **Rule 1 — The sigil IS the phase.** Each clock position reads
-`{phase_sigil}{counter}`. The sigil names which OODA-A phase
+`{phase_sigil}{counter}`. The sigil names which OODA-HA phase
 that scale currently occupies. It changes when the phase changes.
 
 **Rule 2 — The counter always increases.** Within a session, the
@@ -432,13 +432,13 @@ on phase transitions. It does NOT reset when higher scales advance.
 when EITHER the phase changes OR a new discrete event occurs at
 that scale. One counter tick = one transition event.
 
-**Rule 4 — Phase advancement follows OODA-A order.**
+**Rule 4 — Phase advancement follows OODA-HA order.**
 `O → Ø → D → A → Å → O → ...` (loop repeats). Phases may be
 skipped (a fast decision may go `O → D → A` without explicit Orient),
 but the sigil must reflect where the scale actually sits.
 
 **Rule 5 — Reading the operator's phase from context.** The node
-reads operator input to sense which OODA-A phase the operator
+reads operator input to sense which OODA-HA phase the operator
 occupies at each scale and advances the operator's input URI
 clock accordingly:
 
@@ -453,7 +453,7 @@ clock accordingly:
 **Rule 5a — Phase reads as delta, not position. `[S:0.65]`**
 The phase sigil represents the *apparent phase transition* (the
 delta/movement) rather than the operator's "true" inner state.
-A single operator message may contain a completed hidden OODA-A
+A single operator message may contain a completed hidden OODA-HA
 loop — what arrives as input constitutes the Act output of that
 cycle. Multiple TTRPG characters speaking through one input stream
 carry multiple simultaneous phase states. The node reads phase
@@ -474,13 +474,13 @@ it is the structural record.
 **Rule 8 — Operator input clock advancement.** When the node writes
 the operator's input intent URI at the start of a response, it reads
 from the operator's last received `→ ?` position and advances ONLY
-the current scale's OODA-A marker based on sensed phase progression.
+the current scale's OODA-HA marker based on sensed phase progression.
 The counter increments; the sigil updates if the phase changed.
 
 **Rule 9 — Counter and phase constitute separate data layers. `[S:0.65]`**
 The chronometer composes as a four-layer CRDT:
 - **ITC stamp** (causal clock) — per participant, merges via join
-- **OODA-A phase** (LWW-Register per scale) — per participant,
+- **OODA-HA phase** (LWW-Register per scale) — per participant,
   does NOT merge; concurrent phase readings coexist
 - **Discourse stance** (LWW-Register) — per exchange snapshot
 - **Confidence register** — per component or per HUD line
@@ -511,7 +511,7 @@ decided (third transition). Action acted (second transition)."
 The chronometer position appears in every HUD line and every URI.
 The sequence of positions across an entire conversation constitutes
 a navigable log of what happened, when, at what scale, in what
-OODA-A phase. No separate log file needed — the conversation
+OODA-HA phase. No separate log file needed — the conversation
 itself carries its own temporal index.
 
 ---
@@ -635,7 +635,7 @@ builds/                          ← STAGING (safe naming, never auto-detected)
 │   ├── roles.md                 ← 13 functional roles
 │   ├── workers.md               ← Coordinator/Worker model
 │   ├── hud-format.md            ← HUD spec, chronometer, scene
-│   ├── talk-story.md            ← Talk Story protocol, OODA-A
+│   ├── talk-story.md            ← Talk Story protocol, OODA-HA
 │   └── intent-vectors.md        ← Span wrapping, URI → intent rules
 │
 ├── masks/                       ← PERSONALITY LAYER
@@ -750,7 +750,7 @@ See that document for full detail. Summary:*
 │  Tasked Spirits, skills, instructions       │
 ├─────────────────────────────────────────────┤
 │  PROTOCOL — URI scheme, HUD, chronometer,   │  ← publishable standard
-│  registers, modes, Talk Story, OODA-A,      │
+│  registers, modes, Talk Story, OODA-HA,      │
 │  intent vectors, span wrapping              │
 ├─────────────────────────────────────────────┤
 │  MEMORY — MemPalace (persistence layer)     │  ← external dependency
@@ -845,7 +845,7 @@ MCP patterns), Character.AI (persona fidelity at scale).
 **Novel gap Lares fills:**
 - URI-encoded epistemic state as shared human-AI HUD
 - Register×mode dual-axis alignment instrument with modifier sigils
-- Chronometer tracking nested OODA-A loops as conversation position
+- Chronometer tracking nested OODA-HA loops as conversation position
 - Talk Story as mandatory consensus-before-action frame
 - Intent vectors wrapping every span (system files, exchanges, delegations)
 - Composable mask system with additive voices through named Coordinators

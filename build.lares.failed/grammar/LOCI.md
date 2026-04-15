@@ -2,7 +2,7 @@
 
 # Lares Grammar
 
-The root primitives of the system. Grammar loci define **how the system thinks** — the OODA-A phases, the addressing system, the transclusion model, the confidence bands, the consecrated ground, and the martial traditions that shape the node's movement. Content loci (in `lares/modules/` ~provisional naming -> `lares/vocabulary/`) define **what the system thinks about** — URI specs, talk-story protocol, micro-trace marks, sigilization rules.
+The root primitives of the system. Grammar loci define **how the system thinks** — the OODA-HA phases, the addressing system, the transclusion model, the confidence bands, the consecrated ground, and the martial traditions that shape the node's movement. Content loci (in `lares/modules/` ~provisional naming -> `lares/vocabulary/`) define **what the system thinks about** — URI specs, talk-story protocol, micro-trace marks, sigilization rules.
 
 Grammar loads first. Always. It is the compositional language that content modules are written in.
 
@@ -28,15 +28,15 @@ The irreducible kernel. Four True Named Invariants. Everything else in this gram
 
 ---
 
-<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.85#ooda-a -->
+<!-- ahu lar:///grammar.root.maps/grammar/?confidence=CS:0.85#ooda-ha -->
 
-## OODA-A Phase Grammar
+## OODA-HA Phase Grammar
 
 The five-season attention loop. Every substantive exchange runs inside this cycle.
 
 | Phase | Glyph | Grammar | Confidence | One-line |
 |---|---|---|---|---|
-| **OODA-A** | `✶◎◇■○` | [ooda-a/LOCI.md](ooda-a/LOCI.md) | `[S:0.65]` | **The five-season loop cluster. Product-identity name for the Lares instrument.** |
+| **OODA-HA** | `✶◎◇■○` | [ooda-ha/LOCI.md](ooda-ha/LOCI.md) | `[S:0.65]` | **The five-season loop cluster. Product-identity name for the Lares instrument.** |
 | Observe | `✶` | [observe/LOCI.md](observe/LOCI.md) | `[CS:0.85]` | What is here? Gather without analysis. |
 | Orient | `◎` | [orient/LOCI.md](orient/LOCI.md) | `[CS:0.85]` | What does this mean? Talk Story lives here. |
 | Decide | `◇` | [decide/LOCI.md](decide/LOCI.md) | `[CS:0.85]` | What do we do? Scope locks. Operator confirms. |
@@ -128,7 +128,7 @@ How the node moves — between phases, across boundaries, through problems. The 
 0. grammar/kahua/            ← THE FOUNDATION (four True Named Invariants — always first)
 1. grammar/LOCI.md           ← THIS FILE (registry)
 2. grammar/e-prime/         ← Always-on language discipline; claim-shape before later modules load
-3. grammar/ooda-a/          ← The five-season loop cluster; how the phase loci read in time
+3. grammar/ooda-ha/          ← The five-season loop cluster; how the phase loci read in time
 4. grammar/observe/         ← How to gather
 5. grammar/orient/          ← How to sense-make (Talk Story)
 6. grammar/decide/          ← How to commit
@@ -172,7 +172,7 @@ Foundation before grammar. Grammar before content. Phases before signal. Ground 
 | `stance/LOCI.md` | `[CS:0.80]` | Stances + Syadasti — evaluation frames for reading register |
 | `confidence/LOCI.md` | `[CS:0.80]` | Register bands — declared claim weight within stance |
 | `e-prime/LOCI.md` | `[S:0.65]` | E-Prime — always-on language discipline with independent `[E^:0.0-1.0]` slider |
-| `ooda-a/LOCI.md` | `[S:0.65]` | OODA-A — the five-season loop cluster; Product Identity marker for the Lares-specific cluster name |
+| `ooda-ha/LOCI.md` | `[S:0.65]` | OODA-HA — the five-season loop cluster; Product Identity marker for the Lares-specific cluster name |
 | `lares/LOCI.md` | `[CS:0.85]` | **The Lar — self-transcluding daemon** |
 | `consecration/LOCI.md` | `[CS:0.80]` | Consecration — behavioral gravity, sortie rules |
 | `kapu/LOCI.md` | `[CS:0.80]` | Sacred prohibition — the boundary |

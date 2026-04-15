@@ -35,7 +35,7 @@ The TALK_STORY epic is the operator's workbench for the talk story protocol and 
 
 | Item | Location |
 |---|---|
-| OODA-A loop as operating protocol | [`lares/AGENTS.md`](../../../AGENTS.md) |
+| OODA-HA loop as operating protocol | [`lares/AGENTS.md`](../../../AGENTS.md) |
 | Talk story defined as ◎ Orient phase | [`lares/AGENTS.md`](../../../AGENTS.md) |
 | Two-track model (Technical + Narrative) | [`lares/README.md`](../../../README.md) |
 | Talk story SKILL.md (VS Code loadable) | [`.github/skills/talk-story/SKILL.md`](../../../../.github/skills/talk-story/SKILL.md) |

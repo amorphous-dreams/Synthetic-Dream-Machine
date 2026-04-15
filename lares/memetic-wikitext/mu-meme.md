@@ -46,7 +46,7 @@
       @namespace     U+0901   <!-- ँ | U+0901 | DEVANAGARI SIGN CANDRABINDU -->
       @scale         U+2682   <!-- ⚂ | U+2682 | CIRCLED IDEOGRAPH THREE -->
       @scale-order   U+2680/U+2681/U+2682/U+2683/U+2684   <!-- ⚀/⚁/⚂/⚃/⚄ | U+2680/U+2681/U+2682/U+2683/U+2684 | DIE FACE-1, DIE FACE-2, CIRCLED IDEOGRAPH THREE, DIE FACE-4, DIE FACE-5 -->
-      @phase-schema  ooda-a
+      @phase-schema  ooda-ha
       @phase-symbols U+2736/U+25CB/U+25C6/U+25A0/U+25CB   <!-- ✶/◎/◇/■/○ | U+2736/U+25CB/U+25C6/U+25A0/U+25CB | SIXTEEN POINTED ASTERISK, WHITE CIRCLE, BLACK DIAMOND, BLACK SQUARE, WHITE CIRCLE -->
       @scales        Action/Round/Turn/Watch/Week
       @boot-order    0
@@ -70,7 +70,7 @@
   <<~␂>>
   <!-- ═════════════════════════════════════════════════════
        LAYER 2: BODY (STX)
-       Operational content. OODA-A phases. Inner sigils.
+       Operational content. OODA-HA phases. Inner sigils.
        The body answers: WHAT IT DOES.
        ═════════════════════════════════════════════════════ -->
 
@@ -158,7 +158,7 @@
   <!-- ═══════════════════════════════════════════════════════
        D — DECIDE (◇)
        Decomposes into ha/ka/ba triad.
-       Each sub-decision runs its own inner OODA-A loop
+       Each sub-decision runs its own inner OODA-HA loop
        at Round scale (⚔️).
        ═══════════════════════════════════════════════════════ -->
 
@@ -173,7 +173,7 @@
 
     @sub-phase D.ha hodge
     @role domain-selector
-    @inner-schema ooda-a
+    @inner-schema ooda-ha
     @scale U+2681   <!-- ⚁ | U+2681 | DIE FACE-2 -->
 
       @phase D.ha.O observe
@@ -215,7 +215,7 @@
 
     @sub-phase D.ka podge
     @role criteria-selector
-    @inner-schema ooda-a
+    @inner-schema ooda-ha
     @scale U+2681   <!-- ⚁ | U+2681 | DIE FACE-2 -->
 
       @phase D.ka.O observe
@@ -259,7 +259,7 @@
 
     @sub-phase D.ba spin
     @role tension-resolver
-    @inner-schema ooda-a
+    @inner-schema ooda-ha
     @scale U+2681   <!-- ⚁ | U+2681 | DIE FACE-2 -->
 
       @phase D.ba.O observe

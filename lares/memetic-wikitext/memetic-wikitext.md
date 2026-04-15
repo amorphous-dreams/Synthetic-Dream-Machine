@@ -6,7 +6,7 @@
         @version "1.0"
         @content-type "application/memetic-wikitext"
         @self "true"
-        @structure "OODA-A"
+        @structure "OODA-HA"
         @enacts "true"
         @description "A self-describing, self-enacting memetic document schema with native transclusion, invocation, and uncertainty."
     >>
@@ -18,8 +18,8 @@
 <<~ ahu #body-open "Body opening" "Begins the active semantic stream." >>
 <<~&#x0002; "OPEN-STREAM" >>
 
-    <<~ ahu #ooda-a "OODA-A Procedure" "Defines the canonical execution and interpretation flow." >>
-    <<~ ? -> PROCEDURE/OODA-A >>
+    <<~ ahu #ooda-ha "OODA-HA Procedure" "Defines the canonical execution and interpretation flow." >>
+    <<~ ? -> PROCEDURE/OODA-HA >>
 
         <<~ ahu #observe "Observe phase" "A worksite for intake and perception of raw symbols and signals." >>
         <<~ ? -> PHASE/1/OBSERVE 
@@ -153,12 +153,12 @@
         <<~ kahea Result -> ? >>
       <<~ /ASSESS >>
 
-    <<~ /OODA-A >>
+    <<~ /OODA-HA >>
 
 
     <<~ ahu #recursion "Recursive re-entry" "Outputs feed future observations." >>
     <<~ PROCEDURE/RECURSION >>
-      <<~ kahea OODA-A -> OODA-A >>
+      <<~ kahea OODA-HA -> OODA-HA >>
       <<~ kahea memetic-wikitext -> memetic-wikitext >>
       [Each execution becomes new observation.]
     <<~ /RECURSION >>

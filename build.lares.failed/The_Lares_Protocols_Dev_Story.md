@@ -37,7 +37,7 @@ Consolidated from across the full session. Entries in chronological order.
 | 9 | Intent vectors wrap every span | ✅ Confirmed | System files, exchanges, subagent delegations. URI→intent at start and end. |
 | 10 | Core 13 voices always available, masks additive | ✅ Confirmed | Masks add voices ON TOP. Never replace. |
 | 11 | HUD prints twice per exchange | ✅ Confirmed | After paired intent vectors at start, before closing intent vector at end. |
-| 12 | Operator input URI reads from their last `→ ?` position | ✅ Confirmed | Only current scale's OODA-A marker updated based on sensed phase. |
+| 12 | Operator input URI reads from their last `→ ?` position | ✅ Confirmed | Only current scale's OODA-HA marker updated based on sensed phase. |
 | 13 | Compact stance URI encoding saves tokens | 🔓 Open | `stances=+?-+-` vs. full `stance=philosopher[+]&stance=poet[?]&...`. Both valid. |
 | 14 | Voice encoding in URI authority | 🔓 Open | Three options: comma-separated authority, query param, path segment. |
 | 15 | Chronometer session resume mechanism | 🔓 Open | Watch-scale and below reset? Week-scale continues? Needs spec. |
@@ -458,7 +458,7 @@ deploy-browser:
 
 - URI-encoded epistemic state as shared human-AI HUD
 - Register×mode dual-axis alignment with modifier sigils
-- Chronometer tracking nested OODA-A loops as conversation position
+- Chronometer tracking nested OODA-HA loops as conversation position
 - Talk Story as mandatory consensus-before-action frame
 - Intent vectors wrapping every span
 - Composable mask system with additive voices through Coordinators
@@ -473,7 +473,7 @@ deploy-browser:
 ### Chronometer Drift & Temporal Hallucination `[P:0.30]`
 
 **The problem:** The chronometer demands the model maintain a monotonically
-increasing counter across 20+ turns while simultaneously tracking OODA-A
+increasing counter across 20+ turns while simultaneously tracking OODA-HA
 phase transitions at five nested scales. If the model loses track, the
 clock produces false readings — temporal hallucination. The conversation
 claims to be at `A15` when it should be at `A12`. Or the phase sigil
@@ -501,7 +501,7 @@ action-scale counter may have advanced 3 positions beyond actual.
 extension) could serve as the authoritative clock — the model queries
 it for the current position rather than maintaining the counter
 internally. This moves clock integrity from "model discipline" to
-"infrastructure guarantee." The model still reads OODA-A phases
+"infrastructure guarantee." The model still reads OODA-HA phases
 from context, but the counter comes from the MCP server.
 
 **Possible architecture:**

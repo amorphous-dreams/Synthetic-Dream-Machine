@@ -9,7 +9,7 @@
     @content-type "application/memetic-wikitext"
     @boot "true"
     @requires "memetic-wikitext"
-    @requires "OODA-A"
+    @requires "OODA-HA"
     @mode "minimal"
   >>
 >>

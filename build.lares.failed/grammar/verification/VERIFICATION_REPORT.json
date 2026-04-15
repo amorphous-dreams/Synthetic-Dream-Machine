@@ -216,7 +216,7 @@
     }
   },
   {
-    "file": "lares/grammar/ooda-a/LOCI.md",
+    "file": "lares/grammar/ooda-ha/LOCI.md",
     "results": {
       "ooda_phases": 1.0,
       "eprime": 0.9310344827586207,

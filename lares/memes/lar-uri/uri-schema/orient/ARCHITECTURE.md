@@ -147,7 +147,7 @@ Record form uses URL-safe characters only (`^`, `-`, `?`, `.`). HUD render targe
 
 ### `fragment` — `#chronometer`
 
-FFZ chronometer position. Five OODA-A scale positions, dot-separated. Format: `O0.O0.O3.D2.A1`.
+FFZ chronometer position. Five OODA-HA scale positions, dot-separated. Format: `O0.O0.O3.D2.A1`.
 
 | Phase | Record | HUD | Meaning |
 |---|---|---|---|

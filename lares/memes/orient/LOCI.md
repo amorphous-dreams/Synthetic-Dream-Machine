@@ -6,7 +6,7 @@
 ---
 name: orient
 description: >
-  Root grammar module for the Orient phase (◎) of the OODA-A loop.
+  Root grammar module for the Orient phase (◎) of the OODA-HA loop.
   Orient works the gathered material into pattern, tension, and candidate
   readings without forcing closure. Talk Story lives here.
 phase-map:
@@ -24,7 +24,7 @@ grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, Talk Story, Syadasti reading
+> **Register:** `[CS:0.85]` — grounded in Boyd OODA-HA, Talk Story, Syadasti reading
 > **Glyph:** `◎`
 > **Season:** Second of five
 > **Question:** What pattern and tension rise from the gathered surface?

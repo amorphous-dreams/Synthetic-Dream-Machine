@@ -31,7 +31,7 @@ Story docs: `lares/sprints/LINDWYRM_STORY_SHAPE.md` (format spec) and `lares/spr
 
 ---
 
-## The OODA-A Loop for `lares/sprints/`
+## The OODA-HA Loop for `lares/sprints/`
 
 Every sprint, every tick, every worker dispatch runs the full five-phase loop. **This is the operating protocol.**
 

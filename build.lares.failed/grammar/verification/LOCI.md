@@ -7,7 +7,7 @@
 name: verification
 description: >
   Generalized verification locus for Lares grammar files. Provides deterministic,
-  instrumented scoring for OODA-A phase testability, E-Prime compliance, kahea resolution,
+  instrumented scoring for OODA-HA phase testability, E-Prime compliance, kahea resolution,
   registry status, and pipeline reference. Operator options are presented for any failure.
 phase-map:
   observe: "#overview"
@@ -33,7 +33,7 @@ grammar: true
 
 This locus defines the verification skill for Lares grammar files (LOCI). It enables deterministic,
 scored, and actionable verification of any LOCI file for:
-- OODA-A phase testability
+- OODA-HA phase testability
 - E-Prime compliance
 - Kahea marker resolution
 - Registry status
@@ -59,7 +59,7 @@ scored, and actionable verification of any LOCI file for:
 
 ## Instruments
 
-- **ooda_phases**: Score for presence and clarity of OODA-A phase procedures.
+- **ooda_phases**: Score for presence and clarity of OODA-HA phase procedures.
 - **eprime**: Score for E-Prime discipline in operational language.
 - **kahea_resolution**: Score for all kahea summons resolving.
 - **registry**: Score for registration in grammar/LOCI.md.

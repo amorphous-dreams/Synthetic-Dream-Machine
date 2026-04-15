@@ -4,7 +4,7 @@
     @version "1.0"
     @content-type "application/memetic-wikitext"
     @self "true"
-    @structure "OODA-A"
+    @structure "OODA-HA"
   >>
 >>
 

@@ -8,7 +8,7 @@ name: self-verify
 description: >
   Grammar self-healing harness. Casts detect_alignment and uri_wrapper_verification
   across the full lares/grammar tree, runs lares_verification on all LOCI.md files,
-  then surfaces a tiered OODA-A report with actionable next steps.
+  then surfaces a tiered OODA-HA report with actionable next steps.
 layer: grammar
 trigger: operator-invoked — run before commits, after large grammar edits, or when alignment drift is suspected
 confidence: CS:0.80
@@ -24,7 +24,7 @@ dependencies: [detect-alignment, verification, parse-uri]
 
 The self-verify harness holds one function: tell the operator exactly what to fix and in what order. It does not interpret content. It does not rewrite docs. It scans, aggregates, tiers, and reports.
 
-**The OODA-A loop:**
+**The OODA-HA loop:**
 
 | Phase | What self_verify.py does |
 |---|---|

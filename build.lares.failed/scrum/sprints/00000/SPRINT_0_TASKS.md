@@ -179,7 +179,7 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 
 **Worker:** Operator + Ink-Clerk
 **Register target:** `[CS:0.82]`
-**Input:** OODA-A loop (lares/AGENTS.md), talk story skill spec, epic narrative docs
+**Input:** OODA-HA loop (lares/AGENTS.md), talk story skill spec, epic narrative docs
 **Acceptance criteria:**
 1. `talk-story` skill loadable in VS Code (SKILL.md present at `.github/skills/talk-story/`)
 2. Narrative track active: each sprint epic has an opening beat linking to story docs
@@ -188,7 +188,7 @@ REGISTRY_CONTRACT.md      ← depends on URI_SCHEMA.md core
 5. S0 task board (this doc) updated with S0-09
 
 **Deliverables:**
-- ✅ `lares/AGENTS.md` — OODA-A loop with talk story under ◎ Orient
+- ✅ `lares/AGENTS.md` — OODA-HA loop with talk story under ◎ Orient
 - ✅ `lares/README.md` — Two-track braid table (S0–S5)
 - ✅ `.github/skills/talk-story/SKILL.md` — VS Code loadable
 - ✅ `lares/scrum/epics/TALK_STORY/SPRINT_TALK_STORY_TASKS.md` — Pre-sprint orientation epic closed

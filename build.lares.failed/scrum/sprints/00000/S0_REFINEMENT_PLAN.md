@@ -51,7 +51,7 @@ legend.
 
 **Phase (userinfo — cognitive state of the speaker):**
 
-| Sigil | Machine | OODA-A State | One-Line Reading |
+| Sigil | Machine | OODA-HA State | One-Line Reading |
 |---|---|---|---|
 | ✶ | `observe` | Observe | Gathering raw signal; no commitment yet |
 | ◎ | `orient` | Orient | Making sense of what was gathered |
@@ -196,7 +196,7 @@ Annotated full URI + compact form + multi-stance example showing the Syadasti re
 |---|---|
 | S0-01 | Sigil form RFC compliance; HUD rendering quality; HAKABA vocabulary semantics |
 | S0-02 | Rendering portability (check, not gate); emoji normalization forms |
-| S0-03 | Vector clock properties; OODA-A correctness; real-time sync |
+| S0-03 | Vector clock properties; OODA-HA correctness; real-time sync |
 | S0-04 | HAKABA vocabulary quality; validation performance |
 | S0-05 | Schema migration (CRY-01); full STATE.jsonl (S1); debug.jsonl mapping (CRY-06) |
 | S0-06 | Resolution of open questions; downstream sprint scope |

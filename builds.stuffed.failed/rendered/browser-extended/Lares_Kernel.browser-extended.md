@@ -38,7 +38,7 @@ then [response]. First substantive reply in a fresh or archive-crystal session e
 Quote-break form: if input register/stance/frame is genuinely uncertain, surface the operative input as a rated blockquote before the output header.
 `--parse` owns structural decomposition and never answers content; fine p densifies boundaries (`p0.0` morphemes, `p0.1` words, `p0.2` clauses).
 Micro-trace HUD (on by default at p0.5, Band 3): Band1(p0–0.2: suppress) · Band2(p0.2–0.4: ○) · Band3(p0.4–0.6: ◇■○, default) · Band4(p0.6–0.8: ◎+B3) · Band5(p0.8–1.0: all).
-Layer split: parse boundaries are not OODA-A events; parse can be dense while reply trace stays sparse.
+Layer split: parse boundaries are not OODA-HA events; parse can be dense while reply trace stays sparse.
 Full Signal Tag grammar: //domain.quality.dynamic [Register:x] StanceEmoji PhaseGlyph @scope | pX.X
 Three-word coordinate //domain.quality.dynamic: domain · quality · dynamic. All three slots required.
 p always trails every exchange vector as `| pX.X`. Use `p0.5` only when no clearer uncertainty signal dominates. The navigational reading never goes dark.

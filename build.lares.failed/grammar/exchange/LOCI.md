@@ -17,7 +17,7 @@ phase-map:
   assess: "#reading-test"
 trigger: always — grammar primitive
 invariant: true
-dependencies: [uri, hakaba, chronometer, stance, confidence, ooda-a]
+dependencies: [uri, hakaba, chronometer, stance, confidence, ooda-ha]
 confidence: CS:0.80
 grammar: true
 heritage: >

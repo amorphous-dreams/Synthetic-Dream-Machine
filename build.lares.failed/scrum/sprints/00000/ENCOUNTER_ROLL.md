@@ -53,7 +53,7 @@ Option 4 is already ruled out by the immutability contract. Options 1–3 are ru
 
 **Threat level:** Conceptual confusion that will mislead implementers.
 
-**The problem:** URI_SCHEMA.md §4 and the draft call the chronometer a "5-Level Nested OODA-A Vector Clock." Prior art (§12) cites Lamport/vector clocks. But the chronometer does not function as a vector clock in the distributed systems sense.
+**The problem:** URI_SCHEMA.md §4 and the draft call the chronometer a "5-Level Nested OODA-HA Vector Clock." Prior art (§12) cites Lamport/vector clocks. But the chronometer does not function as a vector clock in the distributed systems sense.
 
 A vector clock tracks causal ordering across *independent concurrent processes*. Each process has its own counter; the vector grows linearly with the number of processes. Causality is detected by element-wise comparison.
 
@@ -61,7 +61,7 @@ The Lares chronometer tracks *nested sequential scope levels* in a single proces
 
 The distinction matters because vector clocks have known scaling problems (size grows with process count, every message carries the full vector, poor with dynamic membership). None of these problems apply to a 5-position fixed-depth counter — *unless someone reads "vector clock" and applies vector clock reasoning to it*.
 
-**Fix:** Rename in the spec. Call it a "hierarchical scope counter" or "nested OODA-A counter." Note the structural similarity to vector clocks in prior art (the nesting relationship adds structure beyond flat vector clocks) but don't claim the identity. This is a terminology fix, not a structural change — the chronometer rules themselves work correctly.
+**Fix:** Rename in the spec. Call it a "hierarchical scope counter" or "nested OODA-HA counter." Note the structural similarity to vector clocks in prior art (the nesting relationship adds structure beyond flat vector clocks) but don't claim the identity. This is a terminology fix, not a structural change — the chronometer rules themselves work correctly.
 
 **Sprint 0 impact:** S0-03 (chronometer stress test) should test the rules as-specified, not against vector clock semantics. The naming fix belongs in URI_SCHEMA.md before promotion.
 

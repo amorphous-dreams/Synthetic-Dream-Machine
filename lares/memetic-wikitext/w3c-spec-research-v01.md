@@ -1016,7 +1016,7 @@ Research consequence:
 
 ---
 
-## 10. OODA, OODA-A, and Historical Precision
+## 10. OODA, OODA-HA, and Historical Precision
 
 Status: [I:0.88] [S:0.91] [R:0.80]
 
@@ -1025,7 +1025,7 @@ This remains an honesty seam rather than a W3C seam.
 The safest reviewer-facing position is:
 
 - Boyd's canonical loop is OODA
-- the local runtime extension is OODA-A
+- the local runtime extension is OODA-HA
 - Assess is a local addition for post-action evaluation and
   checkpointing
 
@@ -1039,7 +1039,7 @@ Why this matters:
 Recommended wording:
 
 > This specification uses Boyd's OODA cycle as a historical root
-> and defines OODA-A as a local extension for agentic runtimes.
+> and defines OODA-HA as a local extension for agentic runtimes.
 > The Assess phase is not attributed to Boyd; it is added here to
 > make explicit the feedback, validation, and scale-shift behavior
 > required by tool-using, stateful systems.

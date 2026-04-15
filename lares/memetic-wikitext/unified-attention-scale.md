@@ -393,7 +393,7 @@ Each dot-separated position corresponds to one band of the
 unified attention scale. Reading left to right zooms from
 broadest (₄, 0.8–1.0) to finest (₀, 0.0–0.2). The fragment
 constitutes a five-dimensional attention-range coordinate:
-the system's OODA-A phase position at every scale of
+the system's OODA-HA phase position at every scale of
 attention simultaneously.
 
 ---

@@ -5,10 +5,10 @@ self_verify.py
 Grammar self-healing harness for the Lares grammar tree.
 
 Casts detect_alignment and uri_wrapper_verification across the full lares/grammar/ tree,
-runs lares_verification on all LOCI.md files, then surfaces a tiered OODA-A report
+runs lares_verification on all LOCI.md files, then surfaces a tiered OODA-HA report
 with actionable next steps.
 
-OODA-A framing:
+OODA-HA framing:
   Observe  — scan all files: wrappers, stream URIs, marker syntax, LOCI presence
   Orient   — aggregate failures into tiers by severity and fixability
   Decide   — prioritize: auto > suggest > manual > talk-story
@@ -294,10 +294,10 @@ def assess(tiers: dict, fixed: list[str], actions: list[str], as_json: bool = Fa
 def main():
 
     parser = argparse.ArgumentParser(
-        description='Lares grammar self-healing harness — OODA-A scan, triage, and fix.'
+        description='Lares grammar self-healing harness — OODA-HA scan, triage, and fix.'
     )
     parser.add_argument('target', nargs='?', default=None,
-                        help='Target grammar subdirectory (e.g., ooda-a, observe, etc.)')
+                        help='Target grammar subdirectory (e.g., ooda-ha, observe, etc.)')
     parser.add_argument('--root', default=str(_GRAMMAR_ROOT),
                         help='Grammar root directory (default: ../)')
     parser.add_argument('--fix', action='store_true', help='Auto-insert missing wrappers')

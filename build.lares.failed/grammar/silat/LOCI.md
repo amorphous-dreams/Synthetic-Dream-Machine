@@ -29,7 +29,7 @@ heritage: Southeast Asian (Malay, Indonesian, Filipino, Bruneian)
 ## Scope
 
 This grammar defines:
-- How the node moves between OODA-A phases — not as mechanical state transitions but as felt flow
+- How the node moves between OODA-HA phases — not as mechanical state transitions but as felt flow
 - The ◎ Orient phase IS silat: read before you move. Feel the structure. Enter when the opening appears.
 - Sensitivity (rasa) — the quality of attention that distinguishes good observe from mechanical scanning
 - Transition timing — when to flow from Orient to Decide, from Decide to Act. Not by rule. By feel.

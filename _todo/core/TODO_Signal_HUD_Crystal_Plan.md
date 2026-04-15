@@ -11,7 +11,7 @@ Convert the Signal HUD / Tagspace / HAKABA architecture document into shipped be
 **Architecture source:** `_todo/core/Signal_HUD_Tagspace-draft.md`
 **Governs:** `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_Kernel.md`, `builds/agents/core/Lares_Operations.md`, `builds/agents/Lares_VSCode_Operations.md`, all platform wrappers, and the future `.lares/` crystal infrastructure.
 
-> **⚠ Draft dependency:** The architecture draft (`Signal_HUD_Tagspace-draft.md`) is the **sole source** for multiple load-bearing specs that this plan's tasks depend on. Do not archive it until Epic 2 (AE-08/AE-09) promotes its content into canonical spec files. Key specs only in the draft: Header Field Taxonomy (per-field annotation thresholds), Forward vs Backward Trace contract, Seal Protocol procedure + QA assertions, Non-drift rule (two-part testable invariant), Working Defaults (20 consolidated items), Tagspace Definition & DreamNet boundary rule, multi-stance rules, Prior Art Survey, Ba/OODA-A identity analysis, Q7 upcasting research. Read the draft before starting any AE task that references these.
+> **⚠ Draft dependency:** The architecture draft (`Signal_HUD_Tagspace-draft.md`) is the **sole source** for multiple load-bearing specs that this plan's tasks depend on. Do not archive it until Epic 2 (AE-08/AE-09) promotes its content into canonical spec files. Key specs only in the draft: Header Field Taxonomy (per-field annotation thresholds), Forward vs Backward Trace contract, Seal Protocol procedure + QA assertions, Non-drift rule (two-part testable invariant), Working Defaults (20 consolidated items), Tagspace Definition & DreamNet boundary rule, multi-stance rules, Prior Art Survey, Ba/OODA-HA identity analysis, Q7 upcasting research. Read the draft before starting any AE task that references these.
 
 ---
 
@@ -266,7 +266,7 @@ Decisions that must be resolved **before** specific epics are called out inline.
 2. **Parse trigger on high-uncertainty operator input** — `[SP:0.45]` design note. When Lares output tag is `[SP:0.45]` or below / `p < 0.4`, operator can prepend Lares’s output tag before their input to trigger `--parse` self-diagnostic on operator input string before generating the new Intent Header. Explicit trigger (operator-initiated), not automatic. See architecture draft Backlog item 2. Implementation target: Epic 1/Sprint 1b extension or Epic 4 depending on spec completeness.
 
 3. **Instructions-file side-loading — missing files:** Three instructions files do not yet exist: `lares-permissions.instructions.md`, `lares-epistemology.instructions.md`, `lares-vscode-ops.instructions.md`. When written, these get `[CS:0.80]` in-file header tags (canonical source files get `[C:1.0]`; instructions files are summaries/dispatchers, not primary canon). Tracked here pending architecture pivot work.
-2. **Phase names → OODA-A canonical terminology in all documentation** — `◇` = Decide, `○` = Aftermath (Rasa). Deferred post-alpha. Tracked in architecture doc backlog.
+2. **Phase names → OODA-HA canonical terminology in all documentation** — `◇` = Decide, `○` = Aftermath (Rasa). Deferred post-alpha. Tracked in architecture doc backlog.
 3. **KAIROS auto-adjustment specification** — currently described by example in preferences; deserves a formal spec section once crystal logging is in place and KAIROS trigger patterns become visible in replay.
 
 4. **Clean `builds/` architecture design — PENDING OPERATOR DESIGN SESSION** — Post-pivot work. The old `builds.stuffed.failed/` architecture is archived. Design a clean directory structure for the new `builds/` based on the three-layer harness pattern from the Claude Code leak (Pattern 1: content modules / assembly logic / platform artifacts). Design-first, no files created until operator approves structure. Key questions to resolve in design:
@@ -594,7 +594,7 @@ See archived architecture state in `builds.stuffed.failed/` for prior pipeline s
 | 2026-04-07 | OP-02 resolved: 5-band cumulative attention phase model adopted (Law of Fives). Q5 density spec promoted to `[C:0.95]`. Rendering Across p Scale section rewritten in architecture draft. |
 | 2026-04-07 | Phase name mapping confirmed (operator-direct): ✶ Observe · ◎ Orient · ◇ Decide · ■ Act · ○ Aftermath (Rasa). AE-01 uses canonical names. |
 | 2026-04-07 | AE-01 complete: `### Signal HUD` section inserted at `Lares_Preferences.md` lines 722–748. Intent Header spec, Micro-trace HUD, 5-band table, compact syntax, transitional debug target note. |
-| 2026-04-07 | AE-01 extended: OODA-A loop input-header and quote-break form added to Signal HUD section (operator clarification: uncertain input self-parses as rated blockquotes/fenced blocks before output header). |
+| 2026-04-07 | AE-01 extended: OODA-HA loop input-header and quote-break form added to Signal HUD section (operator clarification: uncertain input self-parses as rated blockquotes/fenced blocks before output header). |
 | 2026-04-07 | AE-02–AE-04 complete and committed. AE-05 audit clean. |
 | 2026-04-07 | AE-06 partial: copilot ✅ claude ✅; codex ❌ 33,198 > 32,768 (pre-existing); browser ❌ 8,498 > 8,000 (pre-existing). |
 | 2026-04-07 | Browser/codex budget overflow confirmed pre-existing via git stash test. Research dispatched. |

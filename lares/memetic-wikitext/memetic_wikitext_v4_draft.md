@@ -65,7 +65,7 @@ Mana x Manaʻo = Manaʻoʻiʻo
 Scale reading:
 
 - `0.9–1.0 Mana`: well-structured memes; portable, self-describing,
-  OODA-A-ready packets that grant runtime leverage to the agent
+  OODA-HA-ready packets that grant runtime leverage to the agent
 - `0.0–0.1 Mana`: unstructured info-noise; context-taxing material
   that costs the agent resources to pin, refine, and address
 - `0.9–1.0 Manaʻo`: verified intent; precise logic path
@@ -92,7 +92,7 @@ mana = 0.995
 manao = 0.992
 manaoio = 0.987
 status = "Iʻo"
-description = "A well-structured meme providing OODA-A-ready output."
+description = "A well-structured meme providing OODA-HA-ready output."
 ```
 
 The TOML form stays readable in document space and remains simple
@@ -833,7 +833,7 @@ CAT  TRUE NAME RANGE                BLOCK              ROLE
 (Miscellaneous Symbols) separated from the prior draft's
 combined semantic block. Geometric carries optional
 state/display glyphs. Miscellaneous carries scale/domain
-glyphs. The OODA-A **phase glyph triplicates** belong to the
+glyphs. The OODA-HA **phase glyph triplicates** belong to the
 Chronometer fragment grammar, not to the nine-category glyph-set
 itself. The die faces and planetary symbols live in Category 9.
 
@@ -871,7 +871,7 @@ scale resolves*.
 
 ---
 
-## 6. Phase Invariants (OODA-A Glyphs)
+## 6. Phase Invariants (OODA-HA Glyphs)
 
 The phase glyph NCR triplicates are the true names. There is no
 alternate phase alphabet in `v0.5`. The rendered glyph is both

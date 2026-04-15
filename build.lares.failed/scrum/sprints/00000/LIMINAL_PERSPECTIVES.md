@@ -32,7 +32,7 @@ The answer is the cockpit HUD: a standardized visual display that both parties r
 | Altitude | Height above ground | Register — epistemic confidence |
 | Attitude | Pitch/roll/yaw | Stance — discourse posture |
 | Speed | Rate of travel | p-band — resolution/attention density |
-| Phase of flight | Takeoff/cruise/approach/landing | OODA-A phase — observe/orient/decide/act/aftermath |
+| Phase of flight | Takeoff/cruise/approach/landing | OODA-HA phase — observe/orient/decide/act/aftermath |
 | Navigation fix | Next waypoint | Chronometer — position in nested scope |
 
 **Both parties read this HUD.** The operator reads it to understand what the node intends to do next. The node reads its own declaration as a steering artifact — "the node reads its own prior context, orbits what it has already said it is." The HUD isn't metadata about the output. It *is* the navigational contract.
@@ -62,7 +62,7 @@ The `lar:` prefix can remain RFC 4151 non-dereferenceable — that's correct. Bu
 
 The operator asked if we need an emoji registry. The deeper question: are the emoji arbitrary symbols or do they carry load?
 
-They carry load. The five stance emoji (`🏛️🌊🗡️🎭🔮`) aren't interchangeable — each encodes a distinct discourse posture that takes a trained operator time to learn. The five scope emoji (`🗺️⚙️🔍⚔️⚡`) encode scale levels that map 1:1 onto game-mechanical time units. The five phase glyphs (`✶◎◇■○`) encode OODA-A states.
+They carry load. The five stance emoji (`🏛️🌊🗡️🎭🔮`) aren't interchangeable — each encodes a distinct discourse posture that takes a trained operator time to learn. The five scope emoji (`🗺️⚙️🔍⚔️⚡`) encode scale levels that map 1:1 onto game-mechanical time units. The five phase glyphs (`✶◎◇■○`) encode OODA-HA states.
 
 These are **instrument symbols** — the equivalent of attitude indicator markings on a flight instrument. They need to be standardized, documented, and stable. Changing `🏛️` to `🏠` mid-project would be like redesigning the attitude indicator mid-flight.
 

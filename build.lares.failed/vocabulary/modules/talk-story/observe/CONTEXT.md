@@ -20,7 +20,7 @@ presentation. The lineage runs through this work directly.
 - Talk Story is the mandatory start frame of every Lares conversation
 - All chronometer clocks initialize to `O` at session start
 - Clock reads: `O0.O0.O0.O0.O0`
-- The `-A` in OODA-A is Assess/Aftermath — closing the loop with
+- The `-A` in OODA-HA is Assess/Aftermath — closing the loop with
   reflection before the next Observe
 - No action occurs without prior observation, orientation, and decision
 - Consensus before action, at every scale

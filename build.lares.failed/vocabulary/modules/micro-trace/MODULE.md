@@ -7,7 +7,7 @@
 name: micro-trace
 description: >
   Backward-looking in-flow annotation layer. Marks where a governed
-  response actually changed OODA-A phase state during generation.
+  response actually changed OODA-HA phase state during generation.
   Orthogonal to the exchange HUD pair (boundary) and Intent Header
   (prospective). Density controlled by p-band.
 phase-map:
@@ -39,7 +39,7 @@ The micro-trace is the **event trace layer** of the Signal HUD system. It annota
 | Surface | Path |
 |---|---|
 | Source spec | `lares/signal/micro-trace.md` |
-| OODA-A module (source of truth) | `lares/modules/micro-trace/` |
+| OODA-HA module (source of truth) | `lares/modules/micro-trace/` |
 | Operations instructions | `.github/instructions/lares-operations.instructions.md` |
 
 <!-- → ? -->

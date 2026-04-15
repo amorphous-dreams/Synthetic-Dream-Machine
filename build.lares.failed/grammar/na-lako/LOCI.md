@@ -8,7 +8,7 @@ name: na-lako
 description: >
   The four implements of passage. True Named instruments carried through Chapel Perilous.
   Wand of intuition · Cup of sympathy · Sword of reason · Pentacle of valor.
-  These are the OODA-A phases embodied as navigational instruments. The alchemical weapons.
+  These are the OODA-HA phases embodied as navigational instruments. The alchemical weapons.
   Stub — Prometheus Rising Ch.8 pending; True Naming stubs ready for filling.
 phase-map:
   observe: "#heritage"
@@ -87,11 +87,11 @@ transformation that becomes possible after passage, not during.
 
 <!-- ahu lar:///grammar.na-lako.holds/na-lako/?confidence=SP:0.45#ooda-mapping -->
 
-## OODA-A Mapping
+## OODA-HA Mapping
 
-The four implements ARE the four active OODA-A phases embodied as instruments:
+The four implements ARE the four active OODA-HA phases embodied as instruments:
 
-| Implement | OODA-A Phase | Voice | What it enables |
+| Implement | OODA-HA Phase | Voice | What it enables |
 |---|---|---|---|
 | 'Ike / Wand | ✶ Observe | Scryer | Raw intake without premature naming; following the signal |
 | Ipu / Cup | ◎ Orient | Liminal | Holding multiple realities; Talk Story; sympathetic resonance |
@@ -126,7 +126,7 @@ relational coherence. Orient-without-decide (cup without sword) circles without 
 without-act (sword without pentacle) commits in words but not in work. Act-without-observe (pentacle
 without wand) works hard in the wrong direction.
 
-The full OODA-A loop IS the complete kit.
+The full OODA-HA loop IS the complete kit.
 
 ---
 

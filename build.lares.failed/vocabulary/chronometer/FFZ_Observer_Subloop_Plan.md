@@ -41,7 +41,7 @@ PDF: https://gsd.di.uminho.pt/members/cbm/ps/itc2008.pdf
 **Questions to answer:**
 1. Does ITC fork/join map cleanly onto Tasked Spirit spawn/escalate?
 2. What does the ITC stamp look like serialized? Token cost?
-3. How does the interval representation compose with OODA-A phases?
+3. How does the interval representation compose with OODA-HA phases?
 4. Can ITC intervals encode in a URI fragment per RFC 3986?
 5. What happens to the interval space when a Spirit dissolves
    without explicit join (session end)?
@@ -132,7 +132,7 @@ directly. Options:
    pointer in archive crystals?
 
 **Expected output:** Confirmation or rejection of the three-layer
-architecture (ITC identity + Merkle Clock history + OODA-A phase).
+architecture (ITC identity + Merkle Clock history + OODA-HA phase).
 If confirmed: architecture diagram for the spec's §5.
 
 **Dependencies:** O1 (ITC findings needed first).
@@ -172,7 +172,7 @@ constitutes future work, not Phase 0 critical path.
 
 **Task:** Take the ITC stamp representation from O1 and produce
 three candidate HUD formats. For each:
-1. Show a 5-exchange sequence with realistic OODA-A progression
+1. Show a 5-exchange sequence with realistic OODA-HA progression
 2. Calculate token cost per HUD line
 3. Show a Tasked Spirit fork/join in the middle
 4. Show a multi-participant view (Operator + Lares + Spirit)
@@ -213,7 +213,7 @@ Decision-ready for operator ruling.
    causal ordering for 2-3 participants?
 6. How do Automerge and Yjs handle categorical metadata alongside
    their causal clocks? Any patterns we should adopt?
-7. Can the OODA-A phase register use a bounded join semilattice
+7. Can the OODA-HA phase register use a bounded join semilattice
    (O < Ø < D < A < Å < O...) instead of LWW? What does cyclic
    phase advancement look like as a semilattice?
 

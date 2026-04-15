@@ -1,6 +1,6 @@
 
 
-# INSTRUCTION: For each todo item below, explicitly reference and apply the OODA-A Loop for v3 → v4 Migration (Maybe-Logic Style) at the end of this file. Each migration step should document its Observe, Orient, Decide, Act, and Assess phases, and state confidence/uncertainty in E-Prime style. Avoid "is" and "has"; prefer "appears to", "seems to", "presents as", etc.
+# INSTRUCTION: For each todo item below, explicitly reference and apply the OODA-HA Loop for v3 → v4 Migration (Maybe-Logic Style) at the end of this file. Each migration step should document its Observe, Orient, Decide, Act, and Assess phases, and state confidence/uncertainty in E-Prime style. Avoid "is" and "has"; prefer "appears to", "seems to", "presents as", etc.
 
 
 ## v3 to v4 Memetic Sigils Migration TODO
@@ -22,7 +22,7 @@ This file appears to track items from memetic-sigils_v3.md that do not clearly p
 
 - [ ] Ambiguous/summary only (v4 seems to cover in summary, but details appear missing)
 
-OODA-A Loop for UCAN-Style Attenuation Migration:
+OODA-HA Loop for UCAN-Style Attenuation Migration:
 
 **Observe:**
 v3 presents an explicit section with rules, code, and examples for attenuation, escalation, and inheritance. v4 appears to mention "UCAN attenuation" in Layer 3 and "Attenuation rule for nested memes," but the formal code and detailed logic seem less explicit. This appears as a summary rather than a full migration. Confidence: 0.85 that v4 omits some v3 detail.
@@ -39,7 +39,7 @@ Pending operator confirmation, prepare a draft migration of v3's attenuation log
 **Assess:**
 Once added, review whether v4 now appears to serve both implementers and conceptual readers. Note any remaining ambiguity or new tensions. Carry forward any residue to the next Observe phase. Confidence: 0.7 that this will resolve the main gap, but open to further refinement.
 
-## OODA-A Loop for v3 → v4 Migration (Maybe-Logic Style)
+## OODA-HA Loop for v3 → v4 Migration (Maybe-Logic Style)
 
 ### Observe
 - Gather all v3 and v4 artifacts, notes, and migration gaps.

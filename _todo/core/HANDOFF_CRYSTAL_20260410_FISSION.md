@@ -57,7 +57,7 @@ This is the primary remaining work. The living operational doc. Here is the exac
 | §8 Span-Span + Calibration | old §7 | 803-950 | URI-derived fields, canonical spanSpan record, MemPalace integration, export targets, example event |
 | §9 Module Registry | old §8 | 951-979 | Module descriptors with lar_uri + confidence |
 | §10 Cache Tiers | old §9 | 980-990 | Invariant-core cache tier mapping |
-| §11 Prior Art (Operational) | old §12 (subset) | 1071-1089 | OODA-A references, OTel trace context, Kowloon/ActivityStreams, FFZ protocol, Schneier & Raghavan |
+| §11 Prior Art (Operational) | old §12 (subset) | 1071-1089 | OODA-HA references, OTel trace context, Kowloon/ActivityStreams, FFZ protocol, Schneier & Raghavan |
 | §12 Open Questions | old §11 | 1042-1070 | U1-U9 open, resolved U2/U3/U6/U7/U10/U11, assessment for promotion |
 | App B How to Read HUD | old App B | 1155-1190 | Annotated HUD tag walkthrough, multi-stance example, Syadasti worked reading |
 
@@ -320,7 +320,7 @@ lares/grammar/
 
 | Group | Files | Confidence | Status |
 |---|---|---|---|
-| OODA-A phases (5) | observe, orient, decide, act, assess | `[CS:0.85]` | Full content |
+| OODA-HA phases (5) | observe, orient, decide, act, assess | `[CS:0.85]` | Full content |
 | Transclusion (1) | transclusion | `[CS:0.80]` | Full content |
 | Signal (6) | uri, hakaba, exchange, chronometer, stance, confidence | `[SP:0.45]` | Thin stubs w/ kahea |
 | Consecration (5) | **lares**, consecration, kapu, mana, lararium | `[CS:0.80–0.85]` | Full content |

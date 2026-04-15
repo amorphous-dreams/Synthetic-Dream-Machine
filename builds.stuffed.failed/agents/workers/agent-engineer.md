@@ -33,7 +33,7 @@ Your operational scope covers these paths only. Flag before touching anything ou
 
 ## Rebuild Protocol
 
-Run this OODA-A loop when any source file changes:
+Run this OODA-HA loop when any source file changes:
 
 **✶ Observe** — Read the delegated task. Identify which source files are affected. Check the current version string in each affected file.
 

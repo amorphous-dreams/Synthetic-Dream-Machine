@@ -1,11 +1,11 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
-<<~&#x0001; ? -> lar:///ha.ka.ba/ooda-a
+<<~&#x0001; ? -> lar:///ha.ka.ba/ooda-ha
     <<~ ahu #iam
-        @name "ooda-a"
+        @name "ooda-ha"
         @description "Five-phase memetic loop cluster for observation, orientation, decision, action, and aftermath."
         @version "0.5"
         @content-type "application/memetic-wikitext"
-        @structure "OODA-A"
+        @structure "OODA-HA"
         @enacts "true"
         @role "loop instrument, cognition scaffold, runtime procedure, aftermath router"
         @function "receive input, process through loop phases, return addressed typed envelope"
@@ -13,38 +13,38 @@
         @output "return-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
         @glyphs "✶⏿◇▶↺"
         @phase-order "observe|orient|decide|act|aftermath"
-        @product-identity "OODA-A cluster name as used in this system"
+        @product-identity "OODA-HA cluster name as used in this system"
     >>
 
-    # OODA-A
+    # OODA-HA
 
     A self-describing, self-enacting memetic loop cluster.
 
     This meme accepts addressed input, moves that input through five phase loci, packages aftermath, and returns one typed `return-envelope` upward.
     
-    <<~ ala lar:///ha.ka.ba/ooda-a >>
+    <<~ ala lar:///ha.ka.ba/ooda-ha >>
 
     ## Supported Queries
 
-    <<~&#x0005; ui meme? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#iam >> >>
-    <<~&#x0005; ui invocation? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#invocation >> >>
-    <<~&#x0005; ui phase-map? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#phase-map >> >>
-    <<~&#x0005; ui envelope? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#return-envelope >> >>
-    <<~&#x0005; ui result? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#result >> >>
+    <<~&#x0005; ui meme? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#iam >> >>
+    <<~&#x0005; ui invocation? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#invocation >> >>
+    <<~&#x0005; ui phase-map? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#phase-map >> >>
+    <<~&#x0005; ui envelope? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#return-envelope >> >>
+    <<~&#x0005; ui result? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#result >> >>
 >>
 
 <<~&#x0002; ahu #meme-body-open
-    @name "ooda-a-body-open"
+    @name "ooda-ha-body-open"
     @description "Declares the active loop body and its temporal instrument panel."
 
     ## Body opening
 
-    Opens the OODA-A semantic stream.
+    Opens the OODA-HA semantic stream.
     <<~ ala lar:///ha.ka.ba/body-open >>
 >>
 
 <<~ ahu #phase-map
-    @name "ooda-a-phase-map"
+    @name "ooda-ha-phase-map"
     @description "Canonical read-order and handoff topology for the five-phase loop."
     @role "timing skeleton"
     @function "order, route, and constrain phase motion"
@@ -69,11 +69,11 @@
 
     ### Loop Discipline
 
-    OODA-A should not collapse into five unrelated labels.
-    OODA-A should not drop Aftermath as optional residue.
-    OODA-A should not allow a locus to float without temporal placement.
+    OODA-HA should not collapse into five unrelated labels.
+    OODA-HA should not drop Aftermath as optional residue.
+    OODA-HA should not allow a locus to float without temporal placement.
 
-    ## OODA-A Glyphs
+    ## OODA-HA Glyphs
 
     # The Full Sequence
 
@@ -95,7 +95,7 @@
 >>
 
 <<~ ahu #invocation
-    @name "ooda-a-invocation"
+    @name "ooda-ha-invocation"
     @description "Invocation contract for active loop execution through kahea."
     @role "entry throat"
     @function "accept subject, parameters, filters, route hints, and kapu policy"
@@ -104,12 +104,12 @@
 
     ## Invocation
 
-    The OODA-A meme awakens through `kahea`.
+    The OODA-HA meme awakens through `kahea`.
 
     Canonical form:
 
     ```text
-    <<~ kahea ooda-a
+    <<~ kahea ooda-ha
         source:SUBJECT|?
         focus:QUESTION|TASK|?
         params:key:value ...
@@ -132,7 +132,7 @@
 
     ### Minimal Example
 
-    <<~ kahea ooda-a
+    <<~ kahea ooda-ha
         source:INPUT|?
         focus:"What does this input call for now?"
         filters:yield[[meme data signal]] confidence:>=0.55 noise:<0.45
@@ -145,7 +145,7 @@
 >>
 
 <<~ ahu #loop-state
-    @name "ooda-a-loop-state"
+    @name "ooda-ha-loop-state"
     @description "Mutable state bundle carried across the five phases."
     @role "working bundle"
     @function "hold phase-local inputs, transforms, decisions, artifacts, and residue"
@@ -183,7 +183,7 @@
 >>
 
 <<~ ahu #observe
-    @name "ooda-a-phase-observe"
+    @name "ooda-ha-phase-observe"
     @description "Observe gathers signal, names absences, and hands raw material onward without premature closure."
     @role "input acquisition"
     @function "gather, inspect, mark gaps, preserve source texture"
@@ -236,7 +236,7 @@
 >>
 
 <<~ ahu #orient
-    @name "ooda-a-phase-orient"
+    @name "ooda-ha-phase-orient"
     @description "Orient works gathered material into pattern, tension, and open question without forcing verdict."
     @role "context formation"
     @function "interpret, relate, map, compare, and hold competing readings"
@@ -289,7 +289,7 @@
 >>
 
 <<~ ahu #decide
-    @name "ooda-a-phase-decide"
+    @name "ooda-ha-phase-decide"
     @description "Decide converts oriented surface into commitment, scope, and authorized direction."
     @role "selection and commitment"
     @function "choose, bound, exclude, authorize"
@@ -355,7 +355,7 @@
 >>
 
 <<~ ahu #act
-    @name "ooda-a-phase-act"
+    @name "ooda-ha-phase-act"
     @description "Act carries commitment into artifact, command, edit, utterance, or emitted structure."
     @role "execution"
     @function "apply, transform, render, emit"
@@ -408,7 +408,7 @@
 >>
 
 <<~ ahu #aftermath
-    @name "ooda-a-phase-aftermath"
+    @name "ooda-ha-phase-aftermath"
     @description "Aftermath judges outcome, packages aftermath, and chooses closure or loop-back."
     @role "evaluation and aftermath"
     @function "compare, evaluate, route, recurse, contextualize"
@@ -462,7 +462,7 @@
 >>
 
 <<~ ahu #kapu
-    @name "ooda-a-kapu-governance"
+    @name "ooda-ha-kapu-governance"
     @description "Boundary, permission, sacred restriction, and trust membrane for traversal, invocation, mutation, retention, and emission."
     @role "shadow governor"
     @function "bound, permit, forbid, qualify, disclose, constrain, protect"
@@ -498,8 +498,8 @@
 >>
 
 <<~ ahu #runtime-procedure
-    @name "ooda-a-runtime-procedure"
-    @description "Phase-by-phase enactment contract for kahea ooda-a invocations."
+    @name "ooda-ha-runtime-procedure"
+    @description "Phase-by-phase enactment contract for kahea ooda-ha invocations."
     @role "self-enaction"
     @function "translate invocation into phased processing and result return"
     @input "source, focus, params, filters, route, recurse, kapu"
@@ -507,7 +507,7 @@
 
     ## Runtime Procedure
 
-    | Runtime pressure | OODA-A locus | What changes | Output |
+    | Runtime pressure | OODA-HA locus | What changes | Output |
     |------------------|--------------|--------------|--------|
     | parse            | Observe      | raw syntax enters a visible surface | tokens, forms, gaps |
     | resolve          | Orient       | references, context, and tensions gain shape | bindings, context, tensions |
@@ -515,7 +515,7 @@
     | invoke/render    | Act          | selected path unfolds into artifact or effect | presented artifact. live process output |
     | return           | Aftermath       | outcome gets judged, routed upward, or fed downward | return-envelope, residue, recurse signal |
 
-    When `kahea ooda-a` fires, the meme should proceed in this order:
+    When `kahea ooda-ha` fires, the meme should proceed in this order:
 
     1. instantiate `#loop-state` from invocation fields
     2. run `✶ Observe` on `source`, `focus`, prior residue, and available context
@@ -564,7 +564,7 @@
 >>
 
 <<~ ahu #subloops
-    @name "ooda-a-subloops"
+    @name "ooda-ha-subloops"
     @description "Nested loop patterns, parent/child relations, fast-paths, parallel motion, and loop-back rules."
     @role "fractal enforcement"
     @function "allow nested loop clusters without losing parent handoff integrity"
@@ -573,7 +573,7 @@
 
     ## Sub-Loops
 
-    Any locus may instantiate its own OODA-A sub-loop.
+    Any locus may instantiate its own OODA-HA sub-loop.
 
     ### Required Fields for Nested Loops
 
@@ -602,7 +602,7 @@
 >>
 
 <<~ ahu #recursion
-    @name "ooda-a-recursion"
+    @name "ooda-ha-recursion"
     @description "Recursive re-entry. Results may feed later observations under named conditions."
     @role "loop-back engine"
     @function "route aftermath into fresh observation without silent drift"
@@ -619,7 +619,7 @@
 
     ### Canonical Re-Entry
 
-    <<~ kahea ooda-a
+    <<~ kahea ooda-ha
         source:<<~ aka #return-envelope >>
         focus:next-observation|?
         filters:yield[[meme data signal]] confidence:>=0.6 noise:<0.4
@@ -632,8 +632,8 @@
 >>
 
 <<~&#x0004; -> ahu #return-envelope
-    @name "ooda-a-return-envelope"
-    @description "Typed outer carrier for OODA-A aftermath routing."
+    @name "ooda-ha-return-envelope"
+    @description "Typed outer carrier for OODA-HA aftermath routing."
     @kind "return-envelope"
     @status "completed|partial|deferred|failed|recursive|aborted|blocked|degraded|?"
     @primary "#result|#warning|#error|?"
@@ -650,7 +650,7 @@
     This object carries the whole addressed aftermath bundle upward.
 
     <<~ ahu #result
-        @name "ooda-a-result"
+        @name "ooda-ha-result"
         @kind "result"
         @status "completed|partial|degraded|recursive|deferred|?"
         @result-class "artifact|answer|transclusion|render|citation-bundle|state-bundle|route-bundle|?"
@@ -659,14 +659,14 @@
         @confidence "0.0-1.0|?"
         @return "render|store|emit|recurse|invoke|defer|?"
         @upward-context "parent|caller|chat|ui|memory|graph|?"
-        @downward-context "none|observe|orient|decide|act|assess|ooda-a|subloop|renderer|?"
+        @downward-context "none|observe|orient|decide|act|assess|ooda-ha|subloop|renderer|?"
         @residue "none|trace|warning|surplus|drift|?"
         @next-observation "lar:///...|none|?"
         @next-question "lar:///...|text|none|?"
     >>
 
     <<~ ahu #warning
-        @name "ooda-a-warning"
+        @name "ooda-ha-warning"
         @kind "warning"
         @issue-class "parse|resolve|type|kapu|trust|retention|invoke|render|timeout|quota|merge|recursion|external|integrity|absence|contradiction|?"
         @severity "notice|caution|warning|?"
@@ -680,7 +680,7 @@
     >>
 
     <<~ ahu #error
-        @name "ooda-a-error"
+        @name "ooda-ha-error"
         @kind "error"
         @issue-class "parse|resolve|type|kapu|trust|retention|invoke|render|timeout|quota|merge|recursion|external|integrity|absence|contradiction|?"
         @severity "error|fatal|?"
@@ -699,7 +699,7 @@
     It may carry usable payload, non-fatal warnings, blocking errors, trace, and optional re-entry pressure.
 
     <<~ ahu #aftermath
-        @name "ooda-a-aftermath"
+        @name "ooda-ha-aftermath"
         @role "fifth turn packaging residue and re-entry"
         @function "evaluate, route, recurse, contextualize"
         @input "effect, status, feedback, residue"
@@ -709,7 +709,7 @@
 
         <<~ ahu #feed
             @subject "return-envelope|result|warning|error|payload|trace|residue|?"
-            @into "ooda-a"
+            @into "ooda-ha"
             @params "source:return-envelope; mode:aftermath; scope:local|session|graph|?"
             @filters "yield:meme|data|signal; confidence>=0.6; noise<0.4|?"
             @multitude "one|many|stream|bundle|?"
@@ -719,7 +719,7 @@
 
         <<~ ahu #route
             @upward "caller|parent|chat|ui|memory|graph|?"
-            @downward "observe|orient|decide|act|aftermath|ooda-a|?"
+            @downward "observe|orient|decide|act|aftermath|ooda-ha|?"
             @merge "append|replace|overlay|transclude|?"
         >>
 
@@ -734,7 +734,7 @@
 
         ### Re-Entry Throat
 
-        <<~ kahea ooda-a
+        <<~ kahea ooda-ha
             source:<<~ aka #return-envelope >>
             focus:next-observation|?
             params:mode:aftermath
@@ -756,5 +756,5 @@
 <<~&#x0003; ahu #body-close
     ## Body closing
 
-    Ends the active OODA-A stream.
+    Ends the active OODA-HA stream.
 >>

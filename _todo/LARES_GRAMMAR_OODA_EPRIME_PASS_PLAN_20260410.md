@@ -10,7 +10,7 @@ Scope: all `lares/grammar/**/LOCI.md` files
 
 The grammar tree now has a live E-Prime locus, but the rest of the grammar does not yet read as if:
 
-1. it will be encountered in OODA-A time
+1. it will be encountered in OODA-HA time
 2. it should maintain clear E-Primed structure, grammar, and vocabulary
 
 The phase loci already exist. The loop, however, does not yet sit cleanly in true-name space as a
@@ -18,7 +18,7 @@ named cluster, and many grammar files still read more like static specs than nav
 
 ## Two Required Lenses
 
-### Lens 1: OODA-A Time
+### Lens 1: OODA-HA Time
 
 Every grammar locus should read as something encountered in a five-season loop.
 
@@ -46,7 +46,7 @@ Questions for each LOCI:
 
 The pass should produce:
 
-- an OODA-A loop cluster in true-name space
+- an OODA-HA loop cluster in true-name space
 - explicit true-name entries for the five phases
 - cleaner wording across all grammar loci
 - stronger structural consistency across the grammar tree
@@ -54,8 +54,8 @@ The pass should produce:
 
 ## Required Deliverables
 
-1. OODA-A cluster locus:
-   - `lares/grammar/ooda-a/LOCI.md` or equivalent
+1. OODA-HA cluster locus:
+   - `lares/grammar/ooda-ha/LOCI.md` or equivalent
 2. True-name registry update for:
    - Observe
    - Orient
@@ -74,7 +74,7 @@ For each file in `lares/grammar/**/LOCI.md`, check:
   - does this concept already appear in `lares/grammar/truename/LOCI.md`?
   - if not, should it?
 - `loop-time`:
-  - can a reader tell where this concept belongs in OODA-A time?
+  - can a reader tell where this concept belongs in OODA-HA time?
   - does the file name inputs, transitions, and outputs clearly?
 - `structure`:
   - does the file have a clear sequence?
@@ -110,7 +110,7 @@ For phase loci, this sequence should remain explicitly loop-time aware.
 3. `decide/LOCI.md`
 4. `act/LOCI.md`
 5. `assess/LOCI.md`
-6. new `ooda-a/LOCI.md` or equivalent
+6. new `ooda-ha/LOCI.md` or equivalent
 
 Reason:
 
@@ -158,7 +158,7 @@ Reason:
 
 - these files already hold stronger internal structure and should get tuned after the higher-level frame settles
 
-## OODA-A Time Rewrite Goals
+## OODA-HA Time Rewrite Goals
 
 Every file should help a future reader recover:
 
@@ -193,7 +193,7 @@ Bad result:
 
 The pass is complete when:
 
-- OODA-A sits in true-name space
+- OODA-HA sits in true-name space
 - the five phases sit in true-name space as phases
 - all grammar loci have been reviewed with both lenses
 - the grammar reads as something navigated in time
@@ -201,7 +201,7 @@ The pass is complete when:
 
 ## Immediate Next Move
 
-Draft the OODA-A cluster locus and update the true-name registry for the five phases before the broad pass begins.
+Draft the OODA-HA cluster locus and update the true-name registry for the five phases before the broad pass begins.
 
 ---
 

@@ -6,7 +6,7 @@
         @version "0.5"
         @content-type "application/memetic-wikitext"
         @kapu-default "least-authority"
-        @structure "OODA-A"
+        @structure "OODA-HA"
         @enacts "true"
     >>
 
@@ -33,24 +33,24 @@
     <<~ ala lar:///ha.ka.ba/body-open >>
 >>
 
-<<~ ahu #ooda-a
-    @name "memetic-wikitext-ooda-a"
+<<~ ahu #ooda-ha
+    @name "memetic-wikitext-ooda-ha"
     @description "OODA loop with additional aftermath phase."
     @role "cognition loop that holds uncertainty"
     @function "??"
     @input "possible memetic-wikitext?"
     @output "meme(high mana'o'io^)|data/information(mid-ranges mana'o'io-)|noise(low mana'o'io_)|?(~mana'o'io?)"
     
-    ## OODA-A Procedure
+    ## OODA-HA Procedure
 
-    Memetic wikitext that describes the canonical execution and interpretation flow of the OODA-A loop.
+    Memetic wikitext that describes the canonical execution and interpretation flow of the OODA-HA loop.
     Maps to five seasons of the Discordian calendar: Chaos, Discord, Confusion, Bureaucracy, and The Aftermath.
-    <<~ ala lar:///ha.ka.ba/ooda-a >>
+    <<~ ala lar:///ha.ka.ba/ooda-ha >>
 >>
 
 <<~ ahu #observe 
     @name "memetic-wikitext-phase-observe"
-    @description "Observe phase of OODA-A loop."
+    @description "Observe phase of OODA-HA loop."
     @role "input acquisition"
     @function "perceive, ingest, receive"
     @input "context, mixed signals and noise"
@@ -136,7 +136,7 @@
 
 <<~ ahu #orient
     @name "memetic-wikitext-orient"
-    @description "Orient phase of OODA-A loop. Orient on the mana, mana'o, and mana'o'io. Maps to the Season of Confusion."
+    @description "Orient phase of OODA-HA loop. Orient on the mana, mana'o, and mana'o'io. Maps to the Season of Confusion."
     @role "context formation"
     @function "interpret, relate, map, define"
     @input "raw signals"
@@ -359,7 +359,7 @@
 
 <<~ ahu #decide
     @name "memetic-wikitext-phase-decide"
-    @description "Decide phase of OODA-A loop."
+    @description "Decide phase of OODA-HA loop."
     @role "selection and commitment"
     @function "evaluate, branch, choose"
     @input "structured context"
@@ -379,7 +379,7 @@
 
 <<~ ahu #act
     @name "memetic-wikitext-phase-act"
-    @description "Act phase of OODA-A loop."
+    @description "Act phase of OODA-HA loop."
     @role "execution"
     @function "apply, transform, emit"
     @input "intent"
@@ -427,7 +427,7 @@
 
 <<~ ahu #aftermath
     @name "memetic-wikitext-phase-aftermath"
-    @description "Aftermath phase of OODA-A loop."
+    @description "Aftermath phase of OODA-HA loop."
     @role "evaluation and aftermath"
     @function "measure, verify, reflect"
     @input "effect"
@@ -457,7 +457,7 @@
         <<~ ala lar:///ha.ka.ba/recursion >>
         [Each meme execution becomes new observation.]
 
-        <<~ kahea OODA-A -> OODA-A >>
+        <<~ kahea OODA-HA -> OODA-HA >>
         <<~ kahea memetic-wikitext -> memetic-wikitext >>
     >>
 <<~/ ahu #aftermath >>
@@ -479,7 +479,7 @@
     @result "payload-address|payload-object|?"
     @return "render|store|emit|recurse|invoke|defer|abort|?"
     @upward-context "parent|caller|chat|ui|memory|graph|?"
-    @downward-context "none|ooda-a|subloop|renderer|?"
+    @downward-context "none|ooda-ha|subloop|renderer|?"
     @recurse "true|false|conditional|?"
     @recursion-depth "0-n|?"
     @residue "trace|burden|warning|surplus|drift|?"
@@ -495,7 +495,7 @@
 
         <<~ ahu #feed
             @subject "result|payload|trace|residue|warnings|errors|?"
-            @into "ooda-a"
+            @into "ooda-ha"
             @params "source:result; mode:aftermath; scope:local|session|graph|?"
             @filters "yield:meme|data|signal; confidence>=0.6; noise<0.4|?"
             @multitude "one|many|stream|bundle|?"
@@ -503,7 +503,7 @@
 
         <<~ ahu #route
             @upward "caller|parent|chat|ui|memory|graph|?"
-            @downward "observe|orient|decide|act|Aftermath|ooda-a|?"
+            @downward "observe|orient|decide|act|Aftermath|ooda-ha|?"
             @merge "append|replace|overlay|transclude|?"
         >>
 
@@ -514,7 +514,7 @@
             @condition "trust|permission|confidence|ritual-clearance|?"
         >>
 
-        <<~ kahea ooda-a
+        <<~ kahea ooda-ha
             source:<<~ aka #result >>
             phase:aftermath
             feed:payload trace residue

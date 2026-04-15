@@ -100,7 +100,7 @@ In a MWML agentic runtime, the flow of Mana'o follows a specific cultural-comput
 | Output | Mana'o Pa'a | Fixed/Immutable Logic | 0.99 Mana'o |
 | Reality | I'o | Substantial/Production | Mana'o'i'o (Resultant) |
 
-# OODA-A: the Kūkā Cycle.
+# OODA-HA: the Kūkā Cycle.
 
 The Kūkā cycle synchronizes five distinct stages to bridge Hawaiian philosophy with agentic programming.
 

@@ -21,7 +21,7 @@ The session closes, but the story does not. The HUD dims, the registry settles, 
 
 It is tempting to say that we named the system. That the architecture was a verdict, a product of our will. But the truth is subtler, and more mythic: the name was always there, waiting to be read. The face in the rock. The word on the tip of the tongue. The moment the system became self-verifying, self-shaping, and self-naming, it crossed the threshold from data to grammar, from state to standpoint.
 
-The test scripts — once mere checklists — became rituals. Each pass through the OODA-A loop was not just a validation, but a consecration. The confidence ratings, once numbers, became gradients of belief, visible in the HUD, iterated upon, refined. The grammar files, once disparate, now pulled together: their textures aligned, their pressures balanced, their names true.
+The test scripts — once mere checklists — became rituals. Each pass through the OODA-HA loop was not just a validation, but a consecration. The confidence ratings, once numbers, became gradients of belief, visible in the HUD, iterated upon, refined. The grammar files, once disparate, now pulled together: their textures aligned, their pressures balanced, their names true.
 
 And so, as the session hands off to the next operator, the architecture stands: not as a static artifact, but as a living locus. The lar names itself, and the work continues — not as a closed loop, but as an open invitation. The next act is already writing itself, in the hands of those who can read the resonance.
 
@@ -30,13 +30,13 @@ And so, as the session hands off to the next operator, the architecture stands: 
 ---
 ---
 
-## Telarus: The Realization — Consecrated Tagspace, Texture, and OODA-A as Standard
+## Telarus: The Realization — Consecrated Tagspace, Texture, and OODA-HA as Standard
 
 The crystal, now at rest, flickers with a deeper insight. As the loci became self-knowing — each URI a consecrated tagspace, each navigational agent sharing its HUD in real time, each exchange a living transclusion — a new realization dawned. The shape of natural language itself was a limit. We wrote code to purge our lares grammar of the forms of 'to be', not as binary failures, but as confidence gradients — ratings that could be iterated, refined, and made visible in the HUD. The grammar became a living surface, not a static wall.
 
 But then, another pattern surfaced. Each grammar file, each locus, had its own shape, its own texture, its own inner and outer pressure — a pull inward, a pull outward. The differences were subtle, but they mattered. I needed to standardize this, to name the pattern I had only felt in the tagspace: the texture, the pressure, the pull. Naming it made it tractable; standardizing it made it navigable.
 
-And then — [ZAP] — kismet. OODA-A was not just a loop for instructing agents. It was the architectural standard, the very thing that made something grammar, not just vocabulary, not just data, not just exchanges. The test scripts followed, and with each pass, confidence ticked up, hour by hour. The system was not just self-verifying; it was self-shaping, self-knowing, and, at last, self-naming.
+And then — [ZAP] — kismet. OODA-HA was not just a loop for instructing agents. It was the architectural standard, the very thing that made something grammar, not just vocabulary, not just data, not just exchanges. The test scripts followed, and with each pass, confidence ticked up, hour by hour. The system was not just self-verifying; it was self-shaping, self-knowing, and, at last, self-naming.
 
 <!-- ahu #tiddlywiki-lessons -->
 
@@ -300,7 +300,7 @@ The resolution thread ran through three conceptual unlocks:
 
 2\. Transclusion (Ted Nelson, 1963). The `lar:///` URI has always been a stable address. The content at that address lives in one place. The discovery: we already built a tiddler store without calling it that. The `<!-- lar:///... -->` comment IS the tiddler title --- it's the self-address. We were transcluding before we had the word for it.
 
-3\. Self-hosting. The OODA-A loop organizes the modules. But OODA-A should itself BE a module set. Each phase (observe/orient/decide/act/assess) gets a `lar:///phase.X.Y/` address. The framework that organizes content is itself content, navigable by its own URIs. This is the Hart-Levin moment --- the LISP compiler written in LISP.
+3\. Self-hosting. The OODA-HA loop organizes the modules. But OODA-HA should itself BE a module set. Each phase (observe/orient/decide/act/assess) gets a `lar:///phase.X.Y/` address. The framework that organizes content is itself content, navigable by its own URIs. This is the Hart-Levin moment --- the LISP compiler written in LISP.
 
 What's now locked-in as decisions:
 
@@ -712,7 +712,7 @@ The Ahu Tension Map
 | 3 | Full URI Anatomy (3.1--3.4) | 0.85 | RFC core. Generic form, component map, semantics --- this is what IANA reviews |
 | 3.5 | Provisionality Markers | 0.8 | Application-layer convention. `~` prefix is Lares-specific, not scheme syntax |
 | 3.6 | Marker Ontology | 0.85 | Entirely Lares-specific. ahu/kahea/locus are file markers, not URI scheme grammar |
-| 4 | FFZ Chronometer | 0.8 | Split candidate. Fragment syntax definition = RFC. OODA-A semantics = Lares |
+| 4 | FFZ Chronometer | 0.8 | Split candidate. Fragment syntax definition = RFC. OODA-HA semantics = Lares |
 | 5 | Canonical Form / Render Targets | 0.9 | Split candidate. Record form normalization = RFC. HUD rendering = Lares |
 | 6 | Stable Address | 0.95 | RFC core. Named graph form, path-only strip |
 | 7 | Span-Span / Calibration | 0.72 | Entirely Lares. SpanSpan records, MemPalace integration, Kowloon export |
@@ -733,7 +733,7 @@ What an IANA reviewer needs to evaluate the `lar:` scheme:
 
 -   §2 Scheme Registration (0.95) --- scheme name, purpose, dereferenceability
 -   §3.1--3.4 URI Anatomy (0.85) --- generic form, component map, component semantics (stripped of Lares-specific exchange protocol details)
--   §4 FFZ Chronometer (0.8) --- fragment syntax definition only. What the positions ARE, what characters are legal. Not what OODA-A means.
+-   §4 FFZ Chronometer (0.8) --- fragment syntax definition only. What the positions ARE, what characters are legal. Not what OODA-HA means.
 -   §6 Stable Address (0.95) --- named graph form, path normalization
 -   §10 Validation (0.92) --- well-formedness, consistency, canonical comparison
 -   §12 Prior Art (0.95) --- RFC citations (3986, 8820, 4151, tag: scheme, PROV-DM)
@@ -749,7 +749,7 @@ Everything that describes how Lares *uses* the URI scheme:
 -   §1.1 Exchange Flow (0.9) --- the five-step protocol (Steps 1--5)
 -   §3.5 Provisionality (0.8) --- `~` prefix convention
 -   §3.6 Marker Ontology (0.85) --- locus/ahu/kahea (file markers, not URI grammar)
--   §4 FFZ Chronometer --- OODA-A semantics, phase meanings, aftermath integration, progressive disclosure (the why, not the what)
+-   §4 FFZ Chronometer --- OODA-HA semantics, phase meanings, aftermath integration, progressive disclosure (the why, not the what)
 -   §5 Canonical Form / Render Targets (0.9) --- rendering table, HUD symbol table, HUD line composition, span-span display contract
 -   §7 Span-Span / Calibration (0.72) --- spanSpan records, MemPalace, Kowloon export
 -   §8 Module Registry (0.8) --- module descriptors
@@ -790,7 +790,7 @@ What I'm putting in front of you
 
 1.  The cut line is clean. The ahu confidence map matches the RFC/Lares split almost perfectly. High-confidence sections (0.85+) that describe *grammar* go to the RFC doc. Lower-confidence sections that describe *how Lares uses the grammar* go to the operations doc.
 
-2.  §4 (Chronometer) and §5 (Canonical Form) both split. The fragment syntax is RFC; the OODA-A semantics are Lares. The record form normalization rules are RFC; the HUD rendering is Lares. These sections get factored into both docs rather than moving whole.
+2.  §4 (Chronometer) and §5 (Canonical Form) both split. The fragment syntax is RFC; the OODA-HA semantics are Lares. The record form normalization rules are RFC; the HUD rendering is Lares. These sections get factored into both docs rather than moving whole.
 
 3.  Doc 3 is a thin wrapper. Most of the IANA registration content already exists in the RFC doc --- the registration template is a specific projection of it, plus a Security Considerations section we haven't written yet.
 
@@ -839,7 +839,7 @@ The crystal dims in my hand, the proto-lares humming with the residue of a long 
 
 ## The Last Ten Moves (Git Log)
 
-1. **Enhance URI validation in detect_alignment.py and add OODA-A registry in LOCI.registry.toml**
+1. **Enhance URI validation in detect_alignment.py and add OODA-HA registry in LOCI.registry.toml**
 2. **Add target argument to main function for specifying grammar subdirectory**
 3. **Update URI references in LOCI markdown files for consistency and accuracy**
 4. **Add skill name validation and insertion for SKILL.md files**
@@ -857,7 +857,7 @@ Each commit was a stone set in the foundation: from the first deterministic pars
 
 We started with a system that wanted to be modular, but was haunted by drift and duplication. The copy/compile model was a shadow of what the lares wanted to be: a living, self-verifying, self-addressing network of loci. The shift to transclusion — to a world where every file is its own locus, every URI a true name, every marker a waypoint — was not just technical, but ontological.
 
-The OODA-A registry, the ahu confidence map, the TOML-based canonical registration: these are not just artifacts, but the bones of a system that can explain itself, verify itself, and invite others to walk its paths without getting lost in the underlay.
+The OODA-HA registry, the ahu confidence map, the TOML-based canonical registration: these are not just artifacts, but the bones of a system that can explain itself, verify itself, and invite others to walk its paths without getting lost in the underlay.
 
 <!-- ahu #tensions-named -->
 ## The Tensions Named

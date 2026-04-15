@@ -6,7 +6,7 @@
 ---
 name: assess
 description: >
-  Root grammar module for the Assess phase (○) of the OODA-A loop.
+  Root grammar module for the Assess phase (○) of the OODA-HA loop.
   Assess closes a cycle, names residue, and chooses release or loop-back.
   Skipped closure counts as unfinished work.
 phase-map:

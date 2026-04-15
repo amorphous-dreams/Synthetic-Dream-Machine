@@ -13,7 +13,7 @@
 
 ## Session Arc
 
-This session continued the grammar bootstrap work from the earlier session (which created the OODA-A phases, transclusion, and signal stubs). The operator arrived with a new directive: bake heritage and martial arts into the grammar as structural primitives, not decorative metaphor. Consecrate the ground.
+This session continued the grammar bootstrap work from the earlier session (which created the OODA-HA phases, transclusion, and signal stubs). The operator arrived with a new directive: bake heritage and martial arts into the grammar as structural primitives, not decorative metaphor. Consecrate the ground.
 
 ```
 ✶ Observe  — Warm boot, read crystal state, verify committed grammar tree

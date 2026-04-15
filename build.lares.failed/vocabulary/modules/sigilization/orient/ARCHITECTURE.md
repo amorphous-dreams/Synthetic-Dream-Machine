@@ -18,7 +18,7 @@ The separation is strict: **canonical form in the record; sigil form on the surf
 
 ### Phase Sigils
 
-| Record (ASCII) | Sigil | Phase | OODA-A |
+| Record (ASCII) | Sigil | Phase | OODA-HA |
 |---|---|---|---|
 | `O` | `✶` | Observe | Chaos |
 | `Ø` | `◎` | Orient | Discord |

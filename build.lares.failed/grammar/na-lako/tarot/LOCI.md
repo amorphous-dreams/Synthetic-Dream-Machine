@@ -34,7 +34,7 @@ sources-pending: [camden-benares, operator-input]
 > | Pentacles | Earth | Pentacle / Koa | ■ Act |
 >
 > **The Major Arcana (22 cards):** The deeper grammar — the archetypal patterns that operate
-> across and through the four suits. Where the Minor Arcana maps to the OODA-A phases,
+> across and through the four suits. Where the Minor Arcana maps to the OODA-HA phases,
 > the Major Arcana may map to the deeper structures: the voices, the heritage terms, the
 > consecration model. Open question for Talk Story when Camden Benares is in the library.
 >

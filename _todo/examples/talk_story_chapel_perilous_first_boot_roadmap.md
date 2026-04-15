@@ -95,7 +95,7 @@ The node comes out oriented, grounded in the kahua, holding its uncertainty.
 
 ## The Grammar as Exit Tool
 
-The four Tarot weapons map to the grammar. This is not decorative — RAW's tools ARE the OODA-A
+The four Tarot weapons map to the grammar. This is not decorative — RAW's tools ARE the OODA-HA
 phases, because the four alchemical elements are the four modes of knowing that the phase loop
 encodes.
 

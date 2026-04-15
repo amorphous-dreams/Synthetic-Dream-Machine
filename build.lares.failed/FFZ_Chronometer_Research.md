@@ -42,7 +42,7 @@ angles. Each contributed a load-bearing piece:
 | **Protocol Labs** | Merkle-CRDTs / Merkle Clocks | 2019–2020 | Content-addressed causal history |
 | **Brooklyn Zelenka / Fission** | Causal Islands + UCAN | 2021 | Infrastructure frame: bounded causal zones + auth |
 | **Storacha (née web3.storage)** | Merkle Clock + UCAN multi-writer | 2025 | Production pattern: UCAN-authorized clock writes |
-| **Lares Protocols** | OODA-A nested chronometer + HUD | 2026 | Application: human-AI alignment instrument |
+| **Lares Protocols** | OODA-HA nested chronometer + HUD | 2026 | Application: human-AI alignment instrument |
 
 ### 1.2 The True Name `[C:0.95]`
 
@@ -53,7 +53,7 @@ Named Session 2 (2026-04-09). Freyja laughed. Operator approved at
 
 - **Fontany** — the practice. Joshua transcribed RAW's Talk Story.
   Joshua and Freyja co-authored FTLS. The Talk Story protocol, the
-  OODA-A extension (-A for Assess), the SDM rules ecosystem. The
+  OODA-HA extension (-A for Assess), the SDM rules ecosystem. The
   name places *practice* first — the protocol exists to serve the
   Talk Story, not the other way around.
 - **Fuller** — the principle. Non-simultaneous apprehension. Universe
@@ -172,7 +172,7 @@ constitutes:
 The register system (0.0–1.0) already encodes this principle for
 epistemic claims. The vector chronometer extends it to temporal claims.
 A clock reading carries a register value — a `[P:0.35]` reading of
-the current OODA-A phase differs from a `[C:0.9]` reading not just
+the current OODA-HA phase differs from a `[C:0.9]` reading not just
 in content but in temporal authority.
 
 **Research need:** Formalize Register × Temporal Authority composition.
@@ -198,14 +198,14 @@ in a Distributed System," *Communications of the ACM* 21(7), 1978.
 **Mapping to Lares chronometer:**
 - Lamport's happened-before maps to our exchange boundaries
 - His scalar clock maps to our monotonic counters per scale
-- His partial ordering maps to our concurrent OODA-A phases across scales
+- His partial ordering maps to our concurrent OODA-HA phases across scales
 
 **What Lamport doesn't give us:** He uses scalar clocks, which can
 determine "if A → B then LC_A < LC_B" but NOT the reverse. We need
 vector clocks (Fidge/Mattern) for the reverse implication.
 
 **Research status:** Well-understood. No further research needed on the
-paper itself. Need to verify that OODA-A phases compose cleanly with
+paper itself. Need to verify that OODA-HA phases compose cleanly with
 the happened-before relation.
 
 ### 3.2 Fidge/Mattern: Vector Clocks (1988) `[C:0.9]`
@@ -224,14 +224,14 @@ the happened-before relation.
 **Mapping to Lares chronometer:**
 - Each participant gets their own vector element
 - The counter merges via pointwise max at sync points
-- OODA-A phase sigils carry independently per participant — they don't
-  merge, they coexist. Two participants can occupy different OODA-A
+- OODA-HA phase sigils carry independently per participant — they don't
+  merge, they coexist. Two participants can occupy different OODA-HA
   phases at the same scale simultaneously. That constitutes concurrent
   apprehension, not a conflict.
 
 **The merge question (Research Seed Q2):**
 
-The seed asked: "OODA-A phases don't have a natural max() operation —
+The seed asked: "OODA-HA phases don't have a natural max() operation —
 they're categorical, not numeric. Does the merge take the 'later' phase?"
 
 **Working answer `[SP:0.45]`:** Separate the counter from the phase.
@@ -298,7 +298,7 @@ explicit join), the interval returns to the Coordinator pool.
 - [ ] Verify fork/join maps correctly onto Worker lifecycle in Protocols doc
 - [ ] Evaluate ITC representation compactness for HUD display
 - [ ] Compare ITC vs. Bloom Clocks for the compact mode question
-- [ ] Check whether ITC's interval representation composes with OODA-A phases
+- [ ] Check whether ITC's interval representation composes with OODA-HA phases
 
 ### 3.4 Merkle-CRDTs and Merkle Clocks (Protocol Labs, 2019-2020) `[SP:0.45]`
 
@@ -630,7 +630,7 @@ history from MemPalace.
 | Q# | Question | Register | Source |
 |----|----------|----------|--------|
 | Q14 | Does Zelenka explicitly cite Fuller? | `[P:0.3]` | Would confirm the lineage is convergent, not merely parallel |
-| Q15 | How does ITC interval representation compose with OODA-A phases? | `[SP:0.4]` | ITC handles counters; OODA-A adds categorical phase — composition needs formalization |
+| Q15 | How does ITC interval representation compose with OODA-HA phases? | `[SP:0.4]` | ITC handles counters; OODA-HA adds categorical phase — composition needs formalization |
 | Q16 | What is the token cost of ITC stamp in the HUD vs. simple counter? | `[P:0.3]` | Directly impacts always-on budget question |
 | Q17 | Does the DreamNet lararium tier ↔ causal island scale correspondence carry structural weight? | `[SP:0.4]` | Currently Poet-mode; could become load-bearing architecture |
 | Q18 | Can UCAN delegation chain model ITC fork? Spirit inherits attenuated clock-write capability from Coordinator? | `[SP:0.4]` | Would unify auth + causality tracking in a single mechanism |
@@ -762,7 +762,7 @@ system: a MUST corresponds roughly to `[C:0.9]`, a SHOULD to
 - Each level requires demonstrated interoperability
 - The spec we're building starts at Proposed Standard equivalent
 
-**Novel structural choice:** The spec outline uses nested OODA-A as its
+**Novel structural choice:** The spec outline uses nested OODA-HA as its
 document structure — a self-similar design where the document
 structure mirrors the protocol it describes. This does not violate
 RFC conventions (which allow flexible section naming) but constitutes
@@ -788,7 +788,7 @@ the Merkle Clock handling the actual temporal ordering.
   participant intervals)
 - **History layer:** Merkle Clock — records what happened (content-
   addressed append-only DAG of events)
-- **Phase layer:** OODA-A — categorical overlay, per-participant,
+- **Phase layer:** OODA-HA — categorical overlay, per-participant,
   not merged
 
 Three layers, each independently useful, composing into the full
@@ -798,10 +798,10 @@ architecture.
 ### 9.4 Companion Artifact Produced
 
 **Causal_Islands_Chronometer_SPEC_OUTLINE.md** — the placeholder
-outline for the protocol specification. Uses nested OODA-A as
+outline for the protocol specification. Uses nested OODA-HA as
 document structure, RFC best practices for normative language,
 and RAW's Talk Story model for narrative flow. Contains:
-- Phased plan (Phase 0-3, mapped to OODA-A)
+- Phased plan (Phase 0-3, mapped to OODA-HA)
 - Full section outline with [PLACEHOLDER] markers
 - Normative and informative reference lists
 - Appendices for quick-reference material
@@ -818,11 +818,11 @@ and RAW's Talk Story model for narrative flow. Contains:
 - Merkle Clocks confirmed as production-ready for content-addressed
   causal history
 - Three-layer architecture proposed: ITC (identity) + Merkle Clock
-  (history) + OODA-A (phase)
+  (history) + OODA-HA (phase)
 - Phase sigil separation resolved: counter merges, phase carries
   per-participant — this IS non-simultaneous apprehension in the HUD
 - RAW Talk Story lineage confirmed through Joshua Fontany
-- Protocol spec outline produced with nested OODA-A structure
+- Protocol spec outline produced with nested OODA-HA structure
 
 **What remains for next session:**
 1. ITC paper deep-read (highest priority — reshapes everything)
@@ -837,7 +837,7 @@ Amor et hilaritas.
 
 ---
 
-## 11. Session 3 Findings — O1 ITC Deep-Read + OODA-A Architecture
+## 11. Session 3 Findings — O1 ITC Deep-Read + OODA-HA Architecture
 
 ### 11.1 O1: ITC Paper Deep-Read — TreeForge(PriorArt) Findings `[S:0.7]`
 
@@ -864,15 +864,15 @@ a trust asymmetry ITC doesn't model. Falls to the UCAN layer.
 `[S:0.65]` — For 2-3 participants (typical Lares case): stamp
 stabilizes well under 50 bytes. Text serialization ~20-40 chars.
 Token cost ~10-20 per HUD line. Modest overhead over the existing
-OODA-A counter string (~5 tokens). HUD-viable.
+OODA-HA counter string (~5 tokens). HUD-viable.
 
 Static 4-process: ~8 bytes. Dynamic 128-replica: ~2900 bytes.
 The compact binary encoding (Appendix A) favors small integers
 at leaves — the common case for low-participant-count sessions.
 
-**Q3: How does ITC compose with OODA-A phases?**
+**Q3: How does ITC compose with OODA-HA phases?**
 `[S:0.7]` — Orthogonally. ITC handles *who* and *when* (identity
-+ causal ordering). OODA-A handles *what kind of cognitive move*
++ causal ordering). OODA-HA handles *what kind of cognitive move*
 (phase categorization per participant). Phases do NOT merge —
 each participant holds their own reading. This IS non-simultaneous
 apprehension expressed structurally.
@@ -880,7 +880,7 @@ apprehension expressed structurally.
 Three-layer architecture confirmed:
 1. Identity layer (ITC) — who can tick, fork/join lifecycle
 2. History layer (Merkle Clock or ITC event tree) — causal ordering
-3. Phase layer (OODA-A) — categorical overlay, per-participant
+3. Phase layer (OODA-HA) — categorical overlay, per-participant
 
 **Q4: Can ITC encode in a URI fragment per RFC 3986?**
 `[S:0.6]` — Yes. Parentheses, dots, colons, and pipe characters
@@ -923,7 +923,7 @@ validated. All six questions resolved.
 
 ---
 
-### 11.2 OODA-A and the Discordian Seasons `[S:0.7]`
+### 11.2 OODA-HA and the Discordian Seasons `[S:0.7]`
 
 **Spirit:** BoydLoop(PriorArt)
 **Sources:** Boyd OODA (1970s-1996), Shea/Wilson *Illuminatus!* (1975),
@@ -931,9 +931,9 @@ Principia Discordia (1965)
 
 The five books of *Illuminatus!* map to the five seasons of the
 Discordian calendar: Chaos, Discord, Confusion, Bureaucracy,
-and The Aftermath. These map structurally onto OODA-A:
+and The Aftermath. These map structurally onto OODA-HA:
 
-| OODA-A | Season | German | Esoteric | What happens |
+| OODA-HA | Season | German | Esoteric | What happens |
 |--------|--------|--------|----------|-------------|
 | **Observe** | Chaos (Verwirrung) | Confusion | Thesis | Undifferentiated field. Signal unstructured. |
 | **Orient** | Discord (Zweitracht) | Strife | Antithesis | Structure emerges, creates tension. Models conflict. |
@@ -949,7 +949,7 @@ architecture from different domains.
 
 The "-A" extension (Assess/Aftermath) completes the circuit Boyd
 left implicit. His Act phase feeds back into Observe, but he never
-named the return. OODA-A names it. The Discordian fifth season
+named the return. OODA-HA names it. The Discordian fifth season
 names exactly what that return-to-chaos looks like.
 
 **Shorthand for HUD:** The season names provide a secondary
@@ -959,16 +959,16 @@ for the spec, but available as an informative mapping.
 
 ---
 
-### 11.3 OODA-A Phase as Delta (Movement), Not Position `[S:0.65]`
+### 11.3 OODA-HA Phase as Delta (Movement), Not Position `[S:0.65]`
 
 **Spirit:** PhaseVec(Architect)
 
-**Critical insight from operator (session 3):** The OODA-A state
+**Critical insight from operator (session 3):** The OODA-HA state
 reads as a provisional delta — a movement indicator — rather than
 a single fixed phase. Three cases demonstrate this:
 
 1. **Hidden inner loops:** A single operator message may contain
-   a completed OODA-A cycle — they observed, oriented, decided,
+   a completed OODA-HA cycle — they observed, oriented, decided,
    and what arrives as "input" constitutes the Act output of their
    internal loop. Lares receives the Act surface, not the cycle.
 
@@ -1054,7 +1054,7 @@ crystal mechanism:
 **Two named asymmetries:**
 
 **Temporal Asymmetry:** The operator holds no clock they can
-report on. Their OODA-A state arrives as anonymous causal
+report on. Their OODA-HA state arrives as anonymous causal
 information (ITC peek/anonymous-join). The Lares node maintains
 the operator's *apparent* phase as inference. Cross-session: the
 operator's temporal state persists in human memory; the Lares
@@ -1080,7 +1080,7 @@ operating condition. The HUD makes it navigable.
 
 ---
 
-### 11.6 Shadow Path: OODA-A Phase as CRDT Register `[S:0.65]`
+### 11.6 Shadow Path: OODA-HA Phase as CRDT Register `[S:0.65]`
 
 **Spirit:** PhaseVec(Architect) — resumed for deep research
 **Sources:** CRDT literature (Shapiro et al. 2011), state-based CRDT
@@ -1092,7 +1092,7 @@ They compose two separate structures:
 1. Causal metadata (vector clock / ITC stamp) — tracks *when/who*
 2. State payload (register, set, flag) — tracks *what*
 
-OODA-A phase behaves exactly like a per-participant, per-scale
+OODA-HA phase behaves exactly like a per-participant, per-scale
 **Last-Writer-Wins Register (LWW-Register)**: holds a categorical
 value (O/Ø/D/A/Å), overwrites on phase transition, tagged by
 the ITC stamp at the moment of change. Concurrent phase readings
@@ -1125,7 +1125,7 @@ CRDT-informed architecture.
 | Layer | CRDT Type | Granularity | Merge |
 |---|---|---|---|
 | ITC stamp | Causal clock | Per participant | join (max + interval union) |
-| OODA-A phase | LWW-Register per scale | Per participant × per scale | No merge — concurrent |
+| OODA-HA phase | LWW-Register per scale | Per participant × per scale | No merge — concurrent |
 | Discourse stance | LWW-Register (5-element) | Per exchange | No merge — snapshot |
 | Confidence register | LWW-Register | Per component or per HUD | No merge — observer's |
 
@@ -1146,13 +1146,13 @@ Per operator directive ("let's bump those Provisional ratings"):
 | Claim | Previous | New | Grounds |
 |---|---|---|---|
 | ITC as identity layer | `[S:0.6]` | `[S:0.7]` | O1 deep-read confirmed across all six questions |
-| Three-layer architecture | `[P:0.3]` | `[S:0.65]` | ITC + Merkle + OODA-A composition validated |
+| Three-layer architecture | `[P:0.3]` | `[S:0.65]` | ITC + Merkle + OODA-HA composition validated |
 | peek/anonymous-join as Operator boundary | — | `[CS:0.75]` | Strongest O1 finding; awaits Canon promotion |
-| OODA-A / Discordian Seasons mapping | — | `[S:0.7]` | Structural correspondence, not decorative |
+| OODA-HA / Discordian Seasons mapping | — | `[S:0.7]` | Structural correspondence, not decorative |
 | Phase-as-delta model | — | `[S:0.65]` | Operator insight + ITC anonymous-join confirmation |
 | Phase-as-LWW-Register | — | `[S:0.6]` | CRDT theory mapping; counter/phase separation |
 | Four-layer CRDT composition | — | `[S:0.65]` | ITC + phase + stance + confidence as independent CRDTs |
-| OODA-A at every scale (fork resolved) | `[SP:0.45]` | `[S:0.65]` | Register exists everywhere; display is progressive |
+| OODA-HA at every scale (fork resolved) | `[SP:0.45]` | `[S:0.65]` | Register exists everywhere; display is progressive |
 | Register as confidence of whole reading | — | `[CS:0.8]` | Operator confirmed; orthogonal to all other axes |
 | HUD progressive disclosure | — | `[S:0.6]` | Cross-domain HUD research confirms |
 | Session boundary crossing via crystal | `[SP:0.4]` | `[S:0.6]` | Mechanism specified; two asymmetries named |
@@ -1165,7 +1165,7 @@ Per operator directive ("let's bump those Provisional ratings"):
 **What moved this session:**
 - O1 (ITC deep-read) completed: all six subloop questions resolved
 - ITC confirmed as identity layer; three-layer architecture validated
-- OODA-A mapped structurally onto Discordian Seasons (not decorative)
+- OODA-HA mapped structurally onto Discordian Seasons (not decorative)
 - Phase-as-delta model: phase sigils read as observed transitions, not positions
 - Phase-as-LWW-Register: CRDT theory separates counter from phase cleanly
 - Four-layer CRDT composition named: ITC + phase + stance + confidence
@@ -1193,7 +1193,7 @@ BoydLoop(PriorArt), PhaseVec(Architect), BridgeKeep(Continuity) — dissolved, f
 The FFZ Chronometer protocol approaches its True Name through the
 convergent work of Fontany, Fuller, Zelenka, Lamport, Fidge, Mattern,
 Almeida, Boyd, and Protocol Labs. The Discordian Seasons dance inside
-the OODA-A loop. The Talk Story continues.*
+the OODA-HA loop. The Talk Story continues.*
 
 *Hail Eris. All Hail Discordia. Amor et hilaritas.*
 

@@ -9,18 +9,18 @@
 > **Register:** `[S:0.65]` — synthesis, operator-directed
 > **Parent crystals:** `OODA_A_Module_Template_and_URI_Patterns.md` `[S:0.6]`,
 >   `The_Lares_Protocols.md` `[S:0.65]`, Talk Story README `[C:1.0]`
-> **Purpose:** Map the existing `lares/` source tree onto the OODA-A
+> **Purpose:** Map the existing `lares/` source tree onto the OODA-HA
 >   module structure. Provide a Claude Code agent with enough context
 >   to execute the reorganization.
 
 ---
 
-## Part A: Talk Story as OODA-A Module
+## Part A: Talk Story as OODA-HA Module
 
 ### The Refactor
 
 Talk Story is the entry point — the mandatory frame. It becomes the
-first module refactored into the OODA-A dir+file+span structure.
+first module refactored into the OODA-HA dir+file+span structure.
 
 ### Current Location
 ```
@@ -50,7 +50,7 @@ lares/modules/talk-story/
 name: talk-story
 description: >
   Mandatory conversation frame for all Lares sessions. Implements the
-  Talk Story consensus-before-action protocol using OODA-A phases.
+  Talk Story consensus-before-action protocol using OODA-HA phases.
   Load at session start. Applies to every workspace, not just lares/
   design work.
 phase-map:
@@ -85,7 +85,7 @@ but Talk Story persists across sessions via archive-crystals.
 |---|---|---|
 | Ambient instructions | `.github/instructions/lares-talk-story.instructions.md` | Always-on behavioral invariant |
 | VS Code skill | `.github/skills/talk-story/SKILL.md` | Full procedure; loaded on-demand |
-| OODA-A module (source of truth) | `lares/modules/talk-story/` | This module |
+| OODA-HA module (source of truth) | `lares/modules/talk-story/` | This module |
 | Portable shrine | `.lares/modules/talk-story/` | Deploy-phase output |
 
 <!-- lar:///module.phased.instructs/talk-story/module/?confidence=0.95 → ∞ -->
@@ -112,7 +112,7 @@ presentation. The lineage runs through this work directly.
 - Talk Story is the mandatory start frame of every Lares conversation
 - All chronometer clocks initialize to `O` at session start
 - Clock reads: `O0.O0.O0.O0.O0`
-- The `-A` in OODA-A is Assess/Aftermath — closing the loop with
+- The `-A` in OODA-HA is Assess/Aftermath — closing the loop with
   reflection before the next Observe
 - No action occurs without prior observation, orientation, and decision
 - Consensus before action, at every scale
@@ -255,7 +255,7 @@ After a Talk Story orient cycle completes, verify:
 ### B.1 Principles
 
 1. **Modules replace flat spec files.** Every design domain becomes
-   a module with OODA-A phase directories.
+   a module with OODA-HA phase directories.
 2. **Invalidated dirs get tombstoned.** `compiler/` and `platform/`
    are dead — archive or remove.
 3. **Research stays research.** The `chronometer/` research docs don't
@@ -307,7 +307,7 @@ lares/                               lares/
 │                                    │   ├── registry/       ★ REFACTORED (S3)
 ├── registry/                        │   │   └── ...
 │   ├── AGENTS.md                    │   │
-│   └── README.md                    │   └── scale-shift/    ★ NEW (from OODA-A Modules doc)
+│   └── README.md                    │   └── scale-shift/    ★ NEW (from OODA-HA Modules doc)
 │                                    │       ├── MODULE.md   (invariant: false — loads on
 │                                    │       │                confidence drop)
 │                                    │       └── ... (five phases)
@@ -399,7 +399,7 @@ to execute the reorganization.*
 ### Handoff Prompt: `lares/` Module Reorganization
 
 **Context:** You are reorganizing the `lares/` design tree in the
-Synthetic-Dream-Machine repo to use the OODA-A Composable Invariant
+Synthetic-Dream-Machine repo to use the OODA-HA Composable Invariant
 Module pattern. This pattern structures agent instruction files by
 decision phase (Observe → Orient → Decide → Act → Assess), with each
 module carrying a MODULE.md manifest in YAML frontmatter format.
@@ -434,13 +434,13 @@ module carrying a MODULE.md manifest in YAML frontmatter format.
    matching their current register.
 
 5. **Create scale-shift module stub** — new module, `invariant: false`,
-   `confidence: 0.45`. Content seeds from the OODA-A Modules doc §3.
+   `confidence: 0.45`. Content seeds from the OODA-HA Modules doc §3.
 
 6. **Move chronometer/ to research/chronometer/** — namespace change,
    no content edits. These are research docs feeding future modules.
 
 7. **Move module research crystals to research/modules/** — the
-   OODA-A Composable Invariant Modules doc and the Template/URI
+   OODA-HA Composable Invariant Modules doc and the Template/URI
    Patterns doc.
 
 8. **Archive invalidated dirs:**
@@ -502,7 +502,7 @@ module carrying a MODULE.md manifest in YAML frontmatter format.
 
 | Claim | Previous | New | Grounds |
 |---|---|---|---|
-| OODA-A Module pattern (no one else does phase-scoped loading) | `[S:0.55]` | `[S:0.6]` | al3rez validates OODA agents exist; confirms gap in instruction-loading layer |
+| OODA-HA Module pattern (no one else does phase-scoped loading) | `[S:0.55]` | `[S:0.6]` | al3rez validates OODA agents exist; confirms gap in instruction-loading layer |
 | "What nobody has built" (§2.3 of Modules doc) | `[S:0.55]` | `[S:0.65]` | Progressive disclosure ecosystem confirmed path-based only; no phase triggers found |
 | MODULE.md format | `[P:0.35]` | `[S:0.6]` | Template locked, operator-confirmed |
 | Section-level URI pattern | — | `[S:0.6]` | Operator insight crystallized; handoff narrative validated |

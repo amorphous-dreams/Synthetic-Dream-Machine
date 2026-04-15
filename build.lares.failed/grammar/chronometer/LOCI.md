@@ -8,7 +8,7 @@ name: chronometer
 description: >
   The Fontany-Fuller-Zelenka chronometer. This locus defines nested
   loop-time position per participant through five scale slots, each
-  carrying a ooda-a phase marker plus counter.
+  carrying a ooda-ha phase marker plus counter.
 phase-map:
   observe: "#loop-position"
   orient: "#handoff"
@@ -17,7 +17,7 @@ phase-map:
   assess: "#reading-test"
 trigger: always — grammar primitive
 invariant: true
-dependencies: [uri, ooda-a]
+dependencies: [uri, ooda-ha]
 confidence: S:0.65
 grammar: true
 ---
@@ -161,7 +161,7 @@ If the fragment cannot support dead-reckoning by a later reader, the time layer 
 
 ## Cross-References
 
-- [ooda-a/LOCI.md](../ooda-a/LOCI.md)
+- [ooda-ha/LOCI.md](../ooda-ha/LOCI.md)
 - [exchange/LOCI.md](../exchange/LOCI.md)
 - [uri/LOCI.md](../uri/LOCI.md)
 - [../../modules/uri-schema/URI_SCHEMA.md](../../modules/uri-schema/URI_SCHEMA.md)

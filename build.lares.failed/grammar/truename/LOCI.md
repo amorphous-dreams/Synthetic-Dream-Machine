@@ -94,7 +94,7 @@ The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.tom
 
 | True Name | Language | LOCUS | Function |
 |---|---|---|---|
-| **OODA-A** | English acronym lineage (Observe, Orient, Decide, Act, Assess) | [ooda-a/LOCI.md](../ooda-a/LOCI.md) | The five-season loop cluster; the timed instrument that lets grammar read in motion rather than as static pages |
+| **OODA-HA** | English acronym lineage (Observe, Orient, Decide, Act, Assess) | [ooda-ha/LOCI.md](../ooda-ha/LOCI.md) | The five-season loop cluster; the timed instrument that lets grammar read in motion rather than as static pages |
 | **Observe** | English operational verb (*observe* — attend, notice, watch) | [observe/LOCI.md](../observe/LOCI.md) | The gather phase; receives raw input without premature analysis |
 | **Orient** | English operational verb with navigational resonance (*orient* — find bearing, relate to direction) | [orient/LOCI.md](../orient/LOCI.md) | The sense-making phase; names pattern, tension, and plurality |
 | **Decide** | English operational verb (*decide* — cut off, settle, resolve) | [decide/LOCI.md](../decide/LOCI.md) | The commitment phase; locks heading and scope |
@@ -109,7 +109,7 @@ The canonical registry is maintained in [LOCI.registry.toml](./LOCI.registry.tom
 
 *Confidence: `[CS:0.80]` — both primary sources confirmed (Cosmic Trigger I + Prometheus Rising Ch.8).*
 
-Each implement carries two True Names — Hawaiian and English — that map to the same OODA-A phase.
+Each implement carries two True Names — Hawaiian and English — that map to the same OODA-HA phase.
 Both names are canonical; neither is primary over the other. Each also has a YHVH letter and a
 PR circuit (robotized mode → liberated mode).
 

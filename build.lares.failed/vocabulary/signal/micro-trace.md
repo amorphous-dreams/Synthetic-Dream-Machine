@@ -93,7 +93,7 @@ Parse boundaries and Micro-trace HUD events are **orthogonal**:
 - `--parse` owns structural decomposition of input text
 - Micro-trace HUD marks where the governed *response* changed state
 
-They may coexist in the same exchange. Neither substitutes for the other. If a response claims morpheme-scale visibility, that must appear in the parse layer. If a response claims OODA-A event trace, that must appear as event markers.
+They may coexist in the same exchange. Neither substitutes for the other. If a response claims morpheme-scale visibility, that must appear in the parse layer. If a response claims OODA-HA event trace, that must appear as event markers.
 
 ### Flag behavior
 

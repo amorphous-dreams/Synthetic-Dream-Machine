@@ -101,7 +101,7 @@ These map directly onto the Lares operating modes:
 
 ### The Authority Problem
 
-Currently, every HUD tag is authored by the node. The node self-assesses its register, selects its stance(s), identifies its OODA-A phase, and declares all of this before generating. This is CMD mode — the autopilot files the flight plan.
+Currently, every HUD tag is authored by the node. The node self-assesses its register, selects its stance(s), identifies its OODA-HA phase, and declares all of this before generating. This is CMD mode — the autopilot files the flight plan.
 
 But the operator can already influence the state tuple through Input Signal Reading — the node reads the operator's input register and calibrates accordingly. That's passive influence, not active control.
 

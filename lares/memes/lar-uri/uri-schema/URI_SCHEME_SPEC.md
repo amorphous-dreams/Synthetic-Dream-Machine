@@ -141,7 +141,7 @@ Confidence remains a point value even under multi-stance. The five-character amp
 > **See:** `lares/research/chronometer/FFZ_Chronometer_Research.md`
 > **Fuller grounding:** *Synergetics* §301.10 — "Universe is the aggregate of all humanity's consciously apprehended and communicated nonsimultaneous and only partially overlapping experiences." §501.10–501.12 — the difference between nonsimultaneous Universe and thinkability. RAW cites Fuller's formulation explicitly in *Maybe Logic* (2003). The chronometer implements non-simultaneous apprehension at the data structure level: each participant's phase register constitutes a partial view. No God's-eye clock.
 
-The chronometer occupies the URI fragment. It tracks nested OODA-A loop position across five scales per participant.
+The chronometer occupies the URI fragment. It tracks nested OODA-HA loop position across five scales per participant.
 
 ### 3.1 Scale Table
 
@@ -291,7 +291,7 @@ When comparing two `lar:` URIs as stable addresses:
 - **what3words** — Three-word geocoding of 3m² squares. Inverse design principle: Tagspace words encode semantic content rather than randomizing for error prevention.
 - **FTLS RSS Time-Scale Hierarchy** — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The fragment's five-position structure derives from this hierarchy. See §3.1 Scale Table.
 
-Additional prior art relevant to the operational semantics (OODA-A phase model, OTel trace context, Kowloon export, FFZ protocol) is documented in `URI_OPERATIONS.md` §11.
+Additional prior art relevant to the operational semantics (OODA-HA phase model, OTel trace context, Kowloon export, FFZ protocol) is documented in `URI_OPERATIONS.md` §11.
 
 ---
 

@@ -11,7 +11,7 @@
 > **Date:** 2026-04-09
 > **Named:** 2026-04-09, Session 2 — Freyja laughed
 > **Authors:** Telarus, KSC (Amorphous Dreams Cabal) + Lares (cloud instance)
-> **Lineage:** Fontany (Talk Story, OODA-A, practice) →
+> **Lineage:** Fontany (Talk Story, OODA-HA, practice) →
 >   Fuller (non-simultaneous apprehension, principle) →
 >   Zelenka (causal islands, UCAN, engineering) →
 >   with: Lamport (1978), Fidge/Mattern (1988), Boyd (1987),
@@ -32,11 +32,11 @@ Protocol, Talk Story is the mandatory `Start → *(unbounded)` frame
 of every Lares conversation. The spec itself participates in Talk
 Story — consensus before action, at every scale.
 
-The document structure follows the nested OODA-A model that the
-protocol itself describes. Each major section maps to an OODA-A
+The document structure follows the nested OODA-HA model that the
+protocol itself describes. Each major section maps to an OODA-HA
 phase at the document scale:
 
-| Section | OODA-A Phase | Function |
+| Section | OODA-HA Phase | Function |
 |---------|-------------|----------|
 | Part I | **Observe** | What exists — prior art, problem space, definitions |
 | Part II | **Orient** | How it fits — architectural frame, design principles |
@@ -44,7 +44,7 @@ phase at the document scale:
 | Part IV | **Act** | How to build it — implementation guidance |
 | Part V | **Assess** | How to verify — conformance, testing, future work |
 
-The OODA-A structure is recursive: each Part contains sections that
+The OODA-HA structure is recursive: each Part contains sections that
 themselves follow an observe-orient-decide-act-assess micro-cycle
 where natural. The document reads both as a linear spec and as a
 map of its own reasoning process.
@@ -73,7 +73,7 @@ it, here's how to test it, here's what remains open).
 # PHASED PLAN — From Outline to Spec
 
 ## Phase 0: Research Completion (Current)
-**OODA-A: Observe**
+**OODA-HA: Observe**
 
 - [ ] Deep-read ITC paper (Almeida 2008) — fork/join/event mapping
 - [ ] Watch Zelenka ElixirConf 2021 keynote — confirm Fuller citation
@@ -87,7 +87,7 @@ doc resolved or re-scoped. ITC confirmed or rejected as the clock
 mechanism. HUD format candidate selected.
 
 ## Phase 1: Architectural Draft
-**OODA-A: Orient**
+**OODA-HA: Orient**
 
 Fill Parts I and II of this outline. Establish:
 - Formal problem statement
@@ -101,10 +101,10 @@ Fill Parts I and II of this outline. Establish:
 architecture without reading the Lares Kernel or Protocols doc.
 
 ## Phase 2: Normative Specification
-**OODA-A: Decide**
+**OODA-HA: Decide**
 
 Fill Part III. The load-bearing section. Specifies:
-- Clock data structures (ITC stamps, OODA-A phase overlay)
+- Clock data structures (ITC stamps, OODA-HA phase overlay)
 - HUD format (exact syntax, ABNF grammar)
 - URI encoding (fragment format, query parameters)
 - Exchange protocol (span wrapping, sync semantics)
@@ -116,7 +116,7 @@ Fill Part III. The load-bearing section. Specifies:
 from this section alone. Every MUST/SHOULD/MAY is defensible.
 
 ## Phase 3: Implementation & Conformance
-**OODA-A: Act + Assess**
+**OODA-HA: Act + Assess**
 
 Fill Parts IV and V. Provides:
 - MCP tool interface specification
@@ -137,7 +137,7 @@ testable. Ready for community review.
 
 [PLACEHOLDER — 200 words max. Concise overview of the Causal Islands
 Chronometer: a vector clock protocol for tracking causal ordering and
-OODA-A phase position in human-AI collaborative exchanges, grounded
+OODA-HA phase position in human-AI collaborative exchanges, grounded
 in Fuller's non-simultaneous apprehension and Zelenka's causal islands
 framework, using Interval Tree Clocks for dynamic participant sets
 and Merkle Clocks for content-addressed causal history.]
@@ -150,7 +150,7 @@ and Merkle Clocks for content-addressed causal history.]
 
 # Part I: Observe — Problem Space & Prior Art
 
-> *OODA-A document phase: Observe. Gather signal.*
+> *OODA-HA document phase: Observe. Gather signal.*
 > *Talk Story phase: The come-on.*
 
 ## 1. Introduction
@@ -208,14 +208,14 @@ model as the mandatory frame — consensus before action.]
 #### 2.1.4 Boyd: OODA Loop and the Discordian Seasons
 
 [PLACEHOLDER — Observe-Orient-Decide-Act as the phase vocabulary.
-The Lares extension to OODA-A (adding Assess). Why OODA-A rather
+The Lares extension to OODA-HA (adding Assess). Why OODA-HA rather
 than arbitrary phase labels: it names what actually happens in
 collaborative exchanges.
 
-SESSION 3 FINDING `[S:0.7]`: The five OODA-A phases map structurally
+SESSION 3 FINDING `[S:0.7]`: The five OODA-HA phases map structurally
 onto the five Discordian Seasons from the Illuminatus! trilogy:
 
-| OODA-A | Season | Esoteric | Function |
+| OODA-HA | Season | Esoteric | Function |
 |--------|--------|----------|----------|
 | Observe | Chaos (Verwirrung) | Thesis | Undifferentiated signal field |
 | Orient | Discord (Zweitracht) | Antithesis | Models conflict; tension emerges |
@@ -230,7 +230,7 @@ implicit. The correspondence appears structural, not decorative.
 
 SESSION 3 FINDING `[S:0.65]`: Phase reads as delta (observed
 transition), not position (fixed state). A single operator message
-may contain a completed hidden OODA-A loop. The phase sigil
+may contain a completed hidden OODA-HA loop. The phase sigil
 represents the node's inference about phase movement direction,
 never a direct measurement of the operator's internal state.]
 
@@ -280,7 +280,7 @@ Alphabetical. Examples:]
 - **Causal Island** — a bounded region within which events can be
   causally ordered by a single participant's clock.
 - **Chronometer** — the composite clock instrument tracking position
-  across nested OODA-A scales for all participants.
+  across nested OODA-HA scales for all participants.
 - **Exchange Boundary** — the point at which two participants' clocks
   synchronize; the message crossing between causal islands.
 - **HUD** — Heads-Up Display; the shared instrument panel printed
@@ -288,7 +288,7 @@ Alphabetical. Examples:]
 - **Participant** — any entity maintaining its own clock element:
   an operator, a Lares node, or a Tasked Spirit.
 - **Scale** — one of five nested temporal levels (week, watch, turn,
-  round, action) at which OODA-A phases are tracked.
+  round, action) at which OODA-HA phases are tracked.
 - **Stamp** — an ITC stamp; a pair (id, event) encoding a
   participant's causal identity and accumulated events.
 - **Sync Point** — see Exchange Boundary.
@@ -299,7 +299,7 @@ Alphabetical. Examples:]
 
 # Part II: Orient — Architecture & Principles
 
-> *OODA-A document phase: Orient. Map the territory.*
+> *OODA-HA document phase: Orient. Map the territory.*
 > *Talk Story phase: Entering the story proper.*
 
 ## 4. Design Principles
@@ -349,17 +349,17 @@ elements, HUD projection, URI encoding, MCP server (optional).]
 [PLACEHOLDER — Each participant holds an ITC stamp (id, event).
 The stamp encodes causal identity and accumulated events.]
 
-#### 5.2.2 OODA-A Phase Overlay
+#### 5.2.2 OODA-HA Phase Overlay
 
 [PLACEHOLDER — On top of the ITC event counter, each participant
-carries a categorical OODA-A phase sigil per scale. The phase does
+carries a categorical OODA-HA phase sigil per scale. The phase does
 not merge — it carries per-participant at sync points.]
 
 #### 5.2.3 Nested Scales
 
 [PLACEHOLDER — Five default scales: week, watch, turn, round, action.
 Scales are contextual, not fixed-duration. Each carries an independent
-OODA-A phase and counter.]
+OODA-HA phase and counter.]
 
 ### 5.3 Four-Layer CRDT Composition `[S:0.65]`
 
@@ -369,7 +369,7 @@ CRDT — four independent layers:
 | Layer | CRDT Type | Granularity | Merge Rule |
 |---|---|---|---|
 | ITC stamp | Causal clock | Per participant | join (pointwise max + interval union) |
-| OODA-A phase | LWW-Register per scale | Per participant × per scale | No merge — concurrent |
+| OODA-HA phase | LWW-Register per scale | Per participant × per scale | No merge — concurrent |
 | Discourse stance | LWW-Register (5-element) | Per exchange | No merge — snapshot |
 | Confidence register | LWW-Register | Per component or HUD line | No merge — observer's |
 
@@ -396,7 +396,7 @@ operations to Lares operational concepts.]
 
 # Part III: Decide — Normative Specification
 
-> *OODA-A document phase: Decide. Select course.*
+> *OODA-HA document phase: Decide. Select course.*
 > *Talk Story phase: The claims — testable, falsifiable.*
 
 ## 6. Clock Data Structures
@@ -407,11 +407,11 @@ operations to Lares operational concepts.]
 MUST include id component and event component. Representation
 format (tree, serialized, compact). ABNF grammar.]
 
-### 6.2 OODA-A Phase Representation
+### 6.2 OODA-HA Phase Representation
 
 [PLACEHOLDER — The five phase sigils: O, Ø, D, A, Å. Formal
 definition of phase advancement rules. Phase MUST advance in
-OODA-A order (may skip). Phase MUST NOT regress within a scale.]
+OODA-HA order (may skip). Phase MUST NOT regress within a scale.]
 
 ### 6.3 Scale Representation
 
@@ -468,7 +468,7 @@ multi-participant. Token cost considerations.]
 
 SESSION 3 FINDING: Phase sigils represent observed transitions
 (deltas), not fixed positions. A single operator input may contain
-a completed hidden OODA-A loop. The HUD reads phase from the
+a completed hidden OODA-HA loop. The HUD reads phase from the
 message surface — an inference, not a measurement.
 
 Notation candidates under evaluation:
@@ -580,7 +580,7 @@ validated position.]
 
 # Part IV: Act — Implementation Guidance
 
-> *OODA-A document phase: Act. Execute.*
+> *OODA-HA document phase: Act. Execute.*
 > *Talk Story phase: Building the thing.*
 
 ## 12. MCP Chronometer Server
@@ -648,7 +648,7 @@ challenges. Crystal-based resume.]
 
 # Part V: Assess — Conformance & Future Work
 
-> *OODA-A document phase: Assess. Reflect, close loop.*
+> *OODA-HA document phase: Assess. Reflect, close loop.*
 > *Talk Story phase: Did we build the right thing?*
 
 ## 15. Conformance
@@ -662,7 +662,7 @@ are normative. Which are informational.]
 
 [PLACEHOLDER — Categories of conformance tests:
 - Counter monotonicity across N exchanges
-- Phase advancement follows OODA-A order
+- Phase advancement follows OODA-HA order
 - HUD prints exactly twice per exchange
 - URI fragment encodes valid chronometer position
 - Span wrapping covers every span type
@@ -698,7 +698,7 @@ non-Lares systems.]
 ### 17.4 Formal Verification
 
 [PLACEHOLDER — TLA+ or similar specification of the chronometer
-invariants. Mechanized proof that ITC + OODA-A composition
+invariants. Mechanized proof that ITC + OODA-HA composition
 preserves causal ordering.]
 
 ## 18. Acknowledgments
@@ -739,9 +739,9 @@ Joshua Fontany (FTLS, Talk Story transcription), Freyja Fontany
   Dreams Cabal, 2026.
 - [SDM] Rejec, L., "Synthetic Dream Machine", Exalted Funeral, 2020.
 
-## Appendix A: OODA-A Phase Reference
+## Appendix A: OODA-HA Phase Reference
 
-[PLACEHOLDER — Quick-reference table of OODA-A phases, sigils,
+[PLACEHOLDER — Quick-reference table of OODA-HA phases, sigils,
 signal patterns, and scale mappings.]
 
 ## Appendix B: HUD Format Quick Reference

@@ -3,7 +3,7 @@
 lares_verification.py
 
 A generalized verification tool for Lares LOCI files.
-Evaluates OODA-A phase testability, E-Prime compliance, kahea resolution, registry status, and pipeline references.
+Evaluates OODA-HA phase testability, E-Prime compliance, kahea resolution, registry status, and pipeline references.
 Outputs a 0.0-1.0 score for each instrument and actionable operator options on failure.
 """
 import re
@@ -90,7 +90,7 @@ def check_registry(loci_path: Path, registry_path: Path) -> float:
     return 0.0
 
 def check_ooda_sections(sections: Dict[str, str]) -> float:
-    """Check for presence of OODA-A phase sections."""
+    """Check for presence of OODA-HA phase sections."""
     # Dynamically detect all Loop Position and Handoff sections for any grammar loci
     phase_scores = []
     phase_reports = []
@@ -135,7 +135,7 @@ def check_ooda_sections(sections: Dict[str, str]) -> float:
                 report += f" | Handoff questions: {len(questions) if questions else 0}/4"
             phase_reports.append(report)
     # Print detailed report
-    print("\nOODA-A Phase Details:")
+    print("\nooda-ha Phase Details:")
     for r in phase_reports:
         print("  ", r)
     return sum(phase_scores) / len(phase_scores) if phase_scores else 0.0
@@ -367,14 +367,14 @@ def verify_loci(loci_path: str, registry_path: str) -> Tuple[Dict[str, Any], Dic
     results['handoff_integrity'] = check_handoff_integrity(sections)
     results['antipatterns'] = check_antipatterns(sections)
     results['detect_alignment'] = detect_alignment_score
-    # --- Sub-loop pattern: Nested OODA-A Loops ---
-    # Look for explicit reference to parent/child OODA-A loops and entry/exit conditions
+    # --- Sub-loop pattern: Nested OODA-HA Loops ---
+    # Look for explicit reference to parent/child OODA-HA loops and entry/exit conditions
     nested_score = 0.0
-    nested_refs = re.findall(r'(nested OODA-A|parent loop|child loop|entry condition|exit condition)', text, re.I)
+    nested_refs = re.findall(r'(nested OODA-HA|parent loop|child loop|entry condition|exit condition)', text, re.I)
     if nested_refs:
         nested_score = 1.0
     results['nested_ooda'] = nested_score
-    results_detail['nested_ooda'] = f"{'[PASS]' if nested_score == 1.0 else '[FAIL]'} Nested OODA-A loop pattern"
+    results_detail['nested_ooda'] = f"{'[PASS]' if nested_score == 1.0 else '[FAIL]'} Nested OODA-HA loop pattern"
     # 2. Fast-path/short-circuit pattern
     # --- Fast-path/short-circuit pattern (Best Practices) ---
     # Section-aware scan with full-text fallback, fuzzy matching, multiple pattern variants, precise feedback
@@ -439,7 +439,7 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=N
     for k, v in results.items():
         if v < threshold:
             if k == 'ooda_phases':
-                print("- Add or clarify OODA-A phase sections for testability.")
+                print("- Add or clarify OODA-HA phase sections for testability.")
             elif k == 'eprime':
                 print("- Rewrite operational language to conform to E-Prime discipline.")
             elif k == 'kahea_resolution':
@@ -451,7 +451,7 @@ def operator_report(results: Dict[str, float], threshold: float = 0.95, detail=N
                 print("    * Make this file a pointer to a canonical True Name registry")
                 print("    * Continue talk story and decide what to canonicalize")
             elif k == 'nested_ooda':
-                print("- Document nested OODA-A loops, parent/child references, and entry/exit conditions if present.")
+                print("- Document nested OODA-HA loops, parent/child references, and entry/exit conditions if present.")
             elif k == 'ahu_syntax':
                 print(f"- Fix ahu marker URIs: {results_detail.get('ahu_syntax', '')}")
                 print("  ahu form: <!-- ahu lar:///ha.ka.ba/path/?confidence=X#section-name -->")

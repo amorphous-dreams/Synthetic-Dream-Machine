@@ -8,7 +8,7 @@ name = "parser-law-handoff-return-transaction"
 description = "Agent hand-off prompt carrying the current constitutional state of parser-law, with return-types and &#x0004; transaction law treated as canonical continuation constraints."
 version = "0.2-handoff"
 content_type = "application/memetic-wikitext"
-structure = "OODA-A"
+structure = "OODA-HA"
 enacts = true
 role = "agent hand-off, constitutional journey log, continuation contract"
 function = "transfer current parser-law state, preserve non-regression boundaries, and guide the next lawful continuation under routed return law"
@@ -54,7 +54,7 @@ The hand-off stream opens here.
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-The next agent should read this hand-off through the same OODA-A+H (with Hooko) discipline now embedded in parser-law.
+The next agent should read this hand-off through the same OODA-HA+H (with Hooko) discipline now embedded in parser-law.
 <<~ ala lar:///ha.ka.ba/phase-map >>
 <<~/ahu>>
 
@@ -74,7 +74,7 @@ The current parser-law draft already carries these constitutional gains:
 * markdown as carrier, memetic grammar as guest
 * `#iam` as canonical metadata locus
 * fenced `toml` payload inside `ahu #iam`
-* explicit OODA-A outer structure
+* explicit OODA-HA outer structure
 * explicit `ha / ka / ba` subphase anchors for all five phases
 * measurable `mana` with explicit components, bands, and reporting shape
 * `metadata-fetch` with its own local subloops
@@ -330,7 +330,7 @@ role = "operational continuation contract for the next agent"
 When continuing from this hand-off, the next agent should work in this order:
 
 1. read the latest parser-law draft in full
-2. preserve current OODA-A shell and named phase-local subloops
+2. preserve current OODA-HA shell and named phase-local subloops
 3. splice or preserve `#return-types` immediately before `#result`
 4. treat `#return-types` as constitutional law, not as optional appendix
 5. preserve the terminal `&#x0004; -> kahea ala ahu #result` chain as canonical boot example

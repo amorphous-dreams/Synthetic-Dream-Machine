@@ -14,14 +14,14 @@
 **Why it's on fire:** The talk story method is the working protocol that makes everything else sustainable. It's not a nice-to-have — it's the Orient phase vehicle. Without it the node operates in pure execution mode and misses the lateral connections that give Lares its character. The narrative track is what keeps the technical work legible across sessions.
 
 **What it means:**
-- Talk story IS the ◎ Orient phase that drives a nested OODA-A loop workflow: informal, operator-steered, shape-emerges-from-the-talking
+- Talk story IS the ◎ Orient phase that drives a nested OODA-HA loop workflow: informal, operator-steered, shape-emerges-from-the-talking
 - Every sprint has TWO tracks: Technical (`[C:0.95]`) + Narrative (`[C:0.95]` story-canon)
 - A sprint closes ONLY when both tracks are updated
 - Talk story protocol has been promoted to a loadable SKILL.md
 - Sprint 0 has a new task: S0-09 (Narrative Track + Talk Story Protocol)
 
 **Deliverables in flight:**
-- ✅ `lares/AGENTS.md` — OODA-A loop with talk story under ◎ Orient
+- ✅ `lares/AGENTS.md` — OODA-HA loop with talk story under ◎ Orient
 - ✅ `lares/README.md` — Two-track braid table (S0–S5)
 - ✅ `lares/scrum/epics/` — All 6 epic READMEs with narrative beats
 - ✅ `lares/scrum/epics/LINDWYRM_*` — Story docs at epic root (multi-epic narrative)

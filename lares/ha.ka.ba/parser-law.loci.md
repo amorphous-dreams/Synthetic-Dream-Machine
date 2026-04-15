@@ -1,6 +1,6 @@
 <!-- !DOCTYPE = lar:///ha.ka.ba/memetic-wikitext -->
 
-<<~#x0001; ? -> lar:///ha.ka.ba/parser-law >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/parser-law >>
 
 <<~ ahu #iam >>
 
@@ -17,7 +17,7 @@ input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "return-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
 depends_on = [
   "lar:///ha.ka.ba/memetic-wikitext",
-  "lar:///ha.ka.ba/ooda-a",
+  "lar:///ha.ka.ba/ooda-ha",
   "lar:///ha.ka.ba/error-result"
 ]
 canonical_metadata_locus = "#iam"
@@ -36,7 +36,7 @@ A self-describing, self-enacting parsing law for memetic-wikitext.
 
 This meme defines how a reader, renderer, parser, linter, or agent may recognize document structure, parse named sigils, enter and leave sub-grammars, normalize noncanonical surfaces, fetch metadata, and package typed parse aftermath.
 
-This meme follows the OODA-A pattern not merely as ornament but as execution discipline. High mana'o'io emerges here from two bindings held together at once:
+This meme follows the OODA-HA pattern not merely as ornament but as execution discipline. High mana'o'io emerges here from two bindings held together at once:
 
 1. strict sigil grammar
 2. explicit phased cognition through Observe, Orient, Decide, Act, and Aftermath
@@ -263,6 +263,8 @@ Canonical forms:
 
 A sigil type may permit one or more forms. Parser Law should reject or downgrade illegal type/form pairings.
 
+<<~ ahu #modes >>
+
 ### Canonical Modes
 
 Parser Law recognizes these named modes:
@@ -302,6 +304,8 @@ A literal zone where active sigils and filter punctuation should not execute.
 #### Aftermath mode
 
 The typed return, warning, error, and normalization residue packaging zone.
+
+<<~/mode >>
 
 ### Metadata Locus Law
 
@@ -376,6 +380,8 @@ glyph = "◇"
 
 Decide turns competing structural readings into one lawful parse path.
 
+<<<~ ahu #forms >>>
+
 ### Canonical Form Law
 
 Parser Law defines four canonical forms.
@@ -387,7 +393,7 @@ Single active sigil with no body.
 Canonical example:
 
 ```text
-<<~ ala lar:///ha.ka.ba/ooda-a >>
+<<~ ala lar:///ha.ka.ba/ooda-ha >>
 ```
 
 #### 2. Block form
@@ -411,7 +417,7 @@ Canonical example:
 ````text
 <<~ ahu #iam >>
 ```toml
-name = "ooda-a"
+name = "ooda-ha"
 version = "0.5"
 ```
 ...optional prose...
@@ -425,7 +431,7 @@ A sigil form that explicitly routes payload or query pressure toward a target or
 Canonical example:
 
 ```text
-<<~&#x0005; ui metadata? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-a#iam >> >>
+<<~&#x0005; ui metadata? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#iam >> >>
 ```
 
 ### Sigil Type/Form Table
@@ -538,6 +544,8 @@ Semantic role:
 * response or resolved-return throat
 
 A later extension may declare further sigil types and permitted forms, but parser-law should require that declaration to remain explicit.
+
+<<~/ahu>>
 
 ### Closure Law
 
@@ -711,6 +719,27 @@ When the parser encounters:
 ```toml
 ...
 ```
+
+it should build a canonical metadata object for the enclosing meme.
+
+That object may populate:
+
+* name
+* description
+* version
+* content_type
+* structure
+* enacts
+* role
+* function
+* input
+* output
+* depends_on
+* product_identity
+* later declared fields
+
+Unknown metadata keys may remain legal unless a stricter profile forbids them.
+
 <<~/ahu>>
 
 <<~ ahu #hooko >>
@@ -862,26 +891,6 @@ When a system changes state without naming Hooko, that event should count as bou
 
 <<~ ala lar:///ha.ka.ba/hooko >>
 <<~/ahu>>
-
-it should build a canonical metadata object for the enclosing meme.
-
-That object may populate:
-
-* name
-* description
-* version
-* content_type
-* structure
-* enacts
-* role
-* function
-* input
-* output
-* depends_on
-* product_identity
-* later declared fields
-
-Unknown metadata keys may remain legal unless a stricter profile forbids them.
 
 ### Dominant Resonance
 
@@ -1442,7 +1451,7 @@ Chat invocation patterns, tool invocation patterns, profile selection, portabili
 
 Recursive coherence binds:
 
-* the outer OODA-A loop
+* the outer OODA-HA loop
 * the inner ha, ka, and ba subloops inside each phase
 * the visible architectural concerns
 * the portability of the system across agent-operator setups
@@ -1615,7 +1624,7 @@ Runtime-procedure-ha holds ordered execution, phase boundary, and lawful handoff
 
 This subphase governs what runtime-procedure fundamentally holds.
 
-When `kahea parser-law` fires, the meme should proceed through one bounded OODA-A pass in order.
+When `kahea parser-law` fires, the meme should proceed through one bounded OODA-HA pass in order.
 
 That order should remain visible so that later implementations, tests, and agents do not collapse the parse into one blurry step.
 
@@ -1876,7 +1885,7 @@ When prior-art detail deepens enough to become noisy, move it outward into linke
 
 This research foundation should remain navigable by an agent.
 
-It should therefore support the outer OODA-A structure while feeding later linked laws, backlog sketches, and implementation planning.
+It should therefore support the outer OODA-HA structure while feeding later linked laws, backlog sketches, and implementation planning.
 
 ##### Non-Normative Prior-Art Note
 
@@ -1901,7 +1910,7 @@ Examples should not carry constitutional law that belongs elsewhere.
 ````markdown
 <<~ ahu #iam >>
 ```toml
-name = "ooda-a"
+name = "ooda-ha"
 version = "0.5"
 ```
 <<~/ahu>>
@@ -1910,7 +1919,7 @@ version = "0.5"
 ### Example B — Canonical metadata fetch
 
 ```text
-<<~ ui metadata? -> lar:///ha.ka.ba/ooda-a#iam >>
+<<~ ui metadata? -> lar:///ha.ka.ba/ooda-ha#iam >>
 ```
 
 ### Example C — Canonical block form
@@ -1924,7 +1933,7 @@ version = "0.5"
 ### Example D — Canonical inline form
 
 ```text
-<<~ ala lar:///ha.ka.ba/ooda-a >>
+<<~ ala lar:///ha.ka.ba/ooda-ha >>
 ```
 
 ### Example E — Act, Hooko, and Aftermath distinction

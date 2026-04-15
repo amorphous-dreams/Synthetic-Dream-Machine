@@ -16,7 +16,7 @@
 Three tasks, in dependency order:
 
 1. **Align all `lar:` URIs in the repo** to the v2 canonical form
-2. **Create the Talk Story module** — first OODA-A module, entry point
+2. **Create the Talk Story module** — first OODA-HA module, entry point
 3. **Create the Signal module** — second module, carrying URI_SCHEMA_v2.md
 
 Each task has a checklist. Execute sequentially. Consensus before action.
@@ -118,7 +118,7 @@ lares/modules/talk-story/
 name: talk-story
 description: >
   Mandatory conversation frame for all Lares sessions. Implements the
-  Talk Story consensus-before-action protocol using OODA-A phases.
+  Talk Story consensus-before-action protocol using OODA-HA phases.
   Load at session start. Applies to every workspace.
 phase-map:
   observe: observe/CONTEXT.md
@@ -260,7 +260,7 @@ Create an S0 sprint plan that records what this handoff executes:
 
 ## Sprint Goal
 Settle the `lar:` URI v2 canonical form across the repo.
-Boot the first two OODA-A modules: talk-story and signal.
+Boot the first two OODA-HA modules: talk-story and signal.
 
 ## Tasks
 

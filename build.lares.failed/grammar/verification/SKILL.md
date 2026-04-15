@@ -5,7 +5,7 @@ name: lares-loci-verification
 
 This skill provides a deterministic, instrumented verification loop for any Lares LOCI file. It evaluates:
 
-- OODA-A phase testability (clear, testable procedures for each phase)
+- OODA-HA phase testability (clear, testable procedures for each phase)
 - E-Prime compliance (operational language avoids identity-predication)
 - Kahea marker resolution (all summons resolve)
 - Registry status (registered in grammar/LOCI.md)

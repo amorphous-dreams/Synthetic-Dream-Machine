@@ -131,7 +131,7 @@ Or combining both systems:
 Each slot: `[die face][HUD phase glyph][counter]`
 
 This may constitute the cleanest form. The die face identifies
-scale. The phase glyph identifies OODA-A position. The counter
+scale. The phase glyph identifies OODA-HA position. The counter
 identifies pass number. No emoji needed — the die faces and
 phase glyphs carry enough visual distinction.
 
@@ -190,7 +190,7 @@ Binary:│ 2¹=2   │ 2²=4   │ 2³=8   │ 2⁴=16  │ 2⁵=32  │
 Lines: │monogram│ digram  │ trigram │tetragram│pentagram│
        │        │         │         │(geomncy)│(chronom)│
 
-OODA-A:│one atom│one react│one proc.│one epis.│one strat│
+OODA-HA:│one atom│one react│one proc.│one epis.│one strat│
        │decision│cycle    │cycle    │arc      │arc      │
 
 Meme:  │sub-lyr │S1 phase│S2 meme │S3 clustr│S4 system│
@@ -347,7 +347,7 @@ One (✶) sits in Miscellaneous Symbols (also Category 8).
 All five fall within Category 8's range.
 
 A phase glyph in a sigil's glyph set declares the meme's
-OODA-A phase:
+OODA-HA phase:
 
 ```
 <<~ँ⚂◇␂ ? -> lar:///ha.ka.ba/mu/D>>

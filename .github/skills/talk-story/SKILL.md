@@ -1,13 +1,13 @@
 ---
 name: talk-story
-description: 'Use when orienting on sprint work in the Lares design tree (lares/**). Use when the shape of a problem needs to emerge from conversation before decisions lock. Use when a source doc carries load-bearing design that needs joint processing. Executes the ◎ Orient phase of the OODA-A loop: naming tensions, floating open questions, asking what matches and what does not. DO NOT USE when the operator has already confirmed direction (◇ Decide phase) or when tasked spirits are executing (■ Act phase). DO NOT USE for single-step lookup tasks with no orient ambiguity.'
+description: 'Use when orienting on sprint work in the Lares design tree (lares/**). Use when the shape of a problem needs to emerge from conversation before decisions lock. Use when a source doc carries load-bearing design that needs joint processing. Executes the ◎ Orient phase of the OODA-HA loop: naming tensions, floating open questions, asking what matches and what does not. DO NOT USE when the operator has already confirmed direction (◇ Decide phase) or when tasked spirits are executing (■ Act phase). DO NOT USE for single-step lookup tasks with no orient ambiguity.'
 ---
 
 # Talk Story
 
 > *"Talk story" — Hawaiian/Polynesian for working something out together through informal, conversational telling before writing anything down. You don't lecture. You sit with it, turn it over, share it out loud. The shape of the thing emerges from the talking.*
 
-Talk story IS the ◎ Orient phase of a a nested OODA-A loop workflow. It is not a report. It is not a presentation. It is a telling.
+Talk story IS the ◎ Orient phase of a a nested OODA-HA loop workflow. It is not a report. It is not a presentation. It is a telling.
 
 ---
 
@@ -98,7 +98,7 @@ This goes inline in the sprint task doc or REFINEMENT_LOG.md — not a separate 
 ## Source
 
 - `lares/talk_story/README.md` — **Canonical protocol spec** (source of truth for this skill)
-- `lares/AGENTS.md` — OODA-A loop definition, talk story as ◎ Orient
+- `lares/AGENTS.md` — OODA-HA loop definition, talk story as ◎ Orient
 - `lares/README.md` — Two-track model, sprint braid table S0–S5
 - `lares/scrum/ROADMAP.md` — On Fire section, current sprint state
 - `lares/scrum/epics/` — Epic READMEs with narrative beats per epic

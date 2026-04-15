@@ -256,7 +256,7 @@ The operator identified a gap in the HUD model: **the context window IS a mana p
 
 The HUD currently tracks:
 - Epistemic state (Register × Stance)
-- Cognitive phase (OODA-A)
+- Cognitive phase (OODA-HA)
 - Temporal position (Scope × Chronometer)
 - Resolution density (p value)
 - Authority (who holds the stick — S2 scope)

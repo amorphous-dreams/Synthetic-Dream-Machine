@@ -92,13 +92,13 @@ Open naming call:
 - whether earned names like `Ink-Clerk`, `Mischief-Muse`, `Tide-Caller`, and `Breach-Watch`
   get their own loci or remain aliases/ahu sections inside the role loci
 
-### 2. OODA-A Loop
+### 2. OODA-HA Loop
 
 Missing as true-name grammar:
 
-- the OODA-A loop as a named cluster
+- the OODA-HA loop as a named cluster
 - explicit truename registry entries for the five phases as phases
-- a clear statement that these loci are read in OODA-A time, not just stored as static definitions
+- a clear statement that these loci are read in OODA-HA time, not just stored as static definitions
 
 Already present but incomplete:
 
@@ -110,7 +110,7 @@ Already present but incomplete:
 
 What is missing:
 
-- cluster locus such as `lares/grammar/ooda-a/LOCI.md` or `lares/grammar/loop/LOCI.md`
+- cluster locus such as `lares/grammar/ooda-ha/LOCI.md` or `lares/grammar/loop/LOCI.md`
 - truename registry entries for:
   - Observe
   - Orient
@@ -206,7 +206,7 @@ Action needed:
 
 - promote stub loci with real definitions
 - reduce overload on `exchange` by moving named sub-concepts into their own grammar files
-- wire the five OODA-A phases into true-name space as phases, not only as grammar files
+- wire the five OODA-HA phases into true-name space as phases, not only as grammar files
 
 ## Recommended Build Order
 
@@ -219,7 +219,7 @@ Start with the cross-cutting language discipline:
 Then create the umbrella files:
 
 2. `voices/LOCI.md`
-3. `ooda-a/LOCI.md` or `loop/LOCI.md`
+3. `ooda-ha/LOCI.md` or `loop/LOCI.md`
 4. `mask/LOCI.md`
 5. `hud/LOCI.md`
 
@@ -231,11 +231,11 @@ Goal:
 - define dependencies
 - prevent the individual loci from drifting into separate ontologies
 
-### Phase 2: OODA-A True-Name Wiring
+### Phase 2: OODA-HA True-Name Wiring
 
 Create or wire:
 
-1. `ooda-a/LOCI.md` or `loop/LOCI.md`
+1. `ooda-ha/LOCI.md` or `loop/LOCI.md`
 2. truename entries for `Observe`
 3. truename entries for `Orient`
 4. truename entries for `Decide`
@@ -336,7 +336,7 @@ Likely mapping:
 4. What should the true name for `p` be: `resolution`, `p-band`, or something else?
 5. Does `mask` cover NPC character overlays completely, or should `character` become first-class immediately?
 6. What default resting value should `[E^]` take when no stronger local pressure is declared?
-7. What should the cluster name be for the five-season loop: `ooda-a`, `loop`, or something more specific?
+7. What should the cluster name be for the five-season loop: `ooda-ha`, `loop`, or something more specific?
 
 ## Definition of Done
 
@@ -355,14 +355,14 @@ Recommended next three artifacts:
 
 1. `lares/grammar/e-prime/LOCI.md`
 2. `lares/grammar/voices/LOCI.md`
-3. `lares/grammar/ooda-a/LOCI.md` or `lares/grammar/loop/LOCI.md`
+3. `lares/grammar/ooda-ha/LOCI.md` or `lares/grammar/loop/LOCI.md`
 4. `lares/grammar/mask/LOCI.md`
 
 Recommended next four if HUD should stay in the opening burst:
 
 1. `lares/grammar/e-prime/LOCI.md`
 2. `lares/grammar/voices/LOCI.md`
-3. `lares/grammar/ooda-a/LOCI.md` or `lares/grammar/loop/LOCI.md`
+3. `lares/grammar/ooda-ha/LOCI.md` or `lares/grammar/loop/LOCI.md`
 4. `lares/grammar/mask/LOCI.md`
 5. `lares/grammar/hud/LOCI.md`
 

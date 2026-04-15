@@ -7,7 +7,7 @@
 ### /lares/grammar Tree Strictness
 - All files in `/lares/grammar` must:
     - Pass the `verify`/`verification` automated tests
-    - Contain explicit OODA-A structure, E-Prime compliance, kahea markers, registry references, and sub-loop pattern documentation
+    - Contain explicit OODA-HA structure, E-Prime compliance, kahea markers, registry references, and sub-loop pattern documentation
     - Be testable and maintainable for AI agent consumption
     - Have all metadata either in the file or in a `.LOCI.md` sidecar
 
@@ -85,14 +85,14 @@ Each subdirectory is a design domain. Each has its own README.md (scope + legacy
 
 | Subdir | Domain | Status |
 |---|---|---|
-| [`modules/`](modules/) | OODA-A composable instruction modules — phase-structured, section URI'd | **S0 seeded** — talk-story (invariant) + uri-schema (URI spec) + micro-trace (annotation layer) |
+| [`modules/`](modules/) | OODA-HA composable instruction modules — phase-structured, section URI'd | **S0 seeded** — talk-story (invariant) + uri-schema (URI spec) + micro-trace (annotation layer) |
 | [`signal/`](signal/README.md) | Signal HUD · Tagspace · lar: URI scheme · p-band model | Active draft |
 | [`crystal/`](crystal/README.md) | Archive Crystal state machine · STATE.jsonl · seal protocol | Active draft |
 | [`invariants/`](invariants/README.md) | `lares.core.*` behavioral invariants · priority layers · conflict resolution | Active draft |
 | [`schemas/`](schemas/README.md) | TOML schemas: module, tool, permission descriptors | Active draft |
 | [`registry/`](registry/README.md) | `lar:` URI registry · resolver rules · promotion ledger | Active draft |
 | [`talk_story/`](talk_story/README.md) | Talk story protocol · ◎ Orient phase spec · two-track model · voice assignments | Active — canonical |
-| [`chronometer/`](chronometer/) | FFZ Chronometer Protocol · vector clock · ITC · OODA-A nested time · causal islands | Active research — `[S:0.55]` |
+| [`chronometer/`](chronometer/) | FFZ Chronometer Protocol · vector clock · ITC · OODA-HA nested time · causal islands | Active research — `[S:0.55]` |
 | [`protocols/`](protocols/README.md) | Cross-cutting synthesis specs · intent vectors · deploy architecture · agentic stack | Active — `[S:0.65]` |
 | `compiler/` | ~~Deterministic build compiler~~ | **Invalidated** — compiler pipeline does not exist; content absorbed into S3/S4. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |
 | `platform/` | ~~Multi-platform packaging~~ | **Invalidated** — replaced by deployment authoring model. See [ROADMAP.md](scrum/ROADMAP.md) §What Changed. |

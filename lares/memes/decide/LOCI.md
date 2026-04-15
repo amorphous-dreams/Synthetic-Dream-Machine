@@ -6,7 +6,7 @@
 ---
 name: decide
 description: >
-  Root grammar module for the Decide phase (◇) of the OODA-A loop.
+  Root grammar module for the Decide phase (◇) of the OODA-HA loop.
   Decide converts an oriented surface into commitment, boundary, and
   authorized direction. Operator agency carries the load here.
 phase-map:
@@ -24,7 +24,7 @@ grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, Lares permissions, operator-steers discipline
+> **Register:** `[CS:0.85]` — grounded in Boyd OODA-HA, Lares permissions, operator-steers discipline
 > **Glyph:** `◇`
 > **Season:** Third of five
 > **Question:** Which heading do we commit to now?

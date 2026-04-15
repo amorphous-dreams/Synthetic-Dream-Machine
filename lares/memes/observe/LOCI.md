@@ -6,7 +6,7 @@
 ---
 name: observe
 description: >
-  Root grammar module for the Observe phase (✶) of the OODA-A loop.
+  Root grammar module for the Observe phase (✶) of the OODA-HA loop.
   Observe gathers raw signal, marks gaps, and hands uncollapsed material
   forward to Orient. This locus treats premature analysis as the main failure mode.
 phase-map:
@@ -24,7 +24,7 @@ grammar: true
 ---
 ```
 
-> **Register:** `[CS:0.85]` — grounded in Boyd OODA-A, operator-confirmed working discipline
+> **Register:** `[CS:0.85]` — grounded in Boyd OODA-HA, operator-confirmed working discipline
 > **Glyph:** `✶`
 > **Season:** First of five
 > **Question:** What has arrived here?
