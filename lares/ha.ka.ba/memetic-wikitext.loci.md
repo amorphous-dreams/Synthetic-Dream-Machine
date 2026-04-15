@@ -2,7 +2,7 @@
 <<~&#x0001; ? -> lar:///ha.ka.ba/memetic-wikitext
     <<~ ahu #iam
         @name "memetic-wikitext"
-        @description "Full memetic wikitext schema root. A self-describing and self-enacting schema."
+        @description "Full memetic wikitext schema root. A self-describing and self-enacting schema. This root governs the surface semantic layer of the Infrastricure-as-Mythology system.”"
         @version "0.5"
         @content-type "application/memetic-wikitext"
         @kapu-default "least-authority"
