@@ -4,7 +4,7 @@
         @name "ooda-ha"
         @description "Five-phase memetic loop cluster for observation, orientation, decision, action, and aftermath."
         @version "0.5"
-        @content-type "application/memetic-wikitext"
+        @content-type "text/x-memetic-wikitext"
         @structure "OODA-HA"
         @enacts "true"
         @role "loop instrument, cognition scaffold, runtime procedure, aftermath router"

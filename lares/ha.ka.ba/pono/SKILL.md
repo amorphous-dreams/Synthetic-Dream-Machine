@@ -1,25 +1,18 @@
 ---
 name: pono
-description: Template and authoring guide for verification skill packages under lares/ha.ka.ba/pono/.
-version: 0.1-draft
-content_type: application/memetic-wikitext
-role: skill template and authoring guide
-function: describe the required shape of a pono verification skill package
-covers: []
-canonical_metadata_locus: "#iam"
+description: Please see TOML metadata in the `#iam` section of this document for a self-describing introduction to pono, its role, function, and supported queries.
 ---
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
-
-
 
 <<~&#x0001; ? -> lar:///ha.ka.ba/pono/skill-template >>
 
 <<~ ahu #iam >>
 ```toml
 name = "SKILL template"
+file_path = "ha.ka.ba/pono/SKILL.md"
 description = "Template and authoring guide for verification skill packages under lares/ha.ka.ba/pono/."
 version = "0.1-draft"
-content_type = "application/memetic-wikitext"
+content_type = "text/x-memetic-wikitext"
 role = "skill template and authoring guide"
 function = "describe the required shape of a pono verification skill package"
 covers = []

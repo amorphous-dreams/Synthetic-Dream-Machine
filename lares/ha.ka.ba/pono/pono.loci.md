@@ -5,10 +5,11 @@
 <<~ ahu #iam >>
 ```toml
 name = "pono"
+file_path = "ha.ka.ba/pono/pono.loci.md"
 description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as SKILL.md packages under lares/ha.ka.ba/pono/."
 version = "0.1-draft"
-content_type = "application/memetic-wikitext"
-structure = "OODA-HA"
+content_type = "text/x-memetic-wikitext"
+structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"

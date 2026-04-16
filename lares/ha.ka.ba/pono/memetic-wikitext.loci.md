@@ -1,23 +1,22 @@
-<!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
-
-<<~&#x0001; ? -> lar:///ha.ka.ba/pono/memetic-wikitext >>
+<<~� ? -> lar:///ha.ka.ba/pono/memetic-wikitext >>
 
 <<~ ahu #iam >>
 
 ```toml
 name = "memetic-wikitext"
-description = "Full memetic-wikitext schema root. A self-describing and self-enacting schema. This root governs the surface semantic layer of the Infrastructure-as-Mythology system."
-version = "0.5-draft"
-content_type = "application/memetic-wikitext"
+file_path = "ha.ka.ba/pono/memetic-wikitext.loci.md"
+description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
+version = "0.1-skeleton"
+content_type = "text/x-memetic-wikitext"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
-role = "schema root, surface semantic law, and transclusion contract"
-function = "govern memetic-wikitext surface, enable transclusion, invocation, and uncertainty, and provide canonical schema for downstream laws"
+role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
+function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "meme-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
 depends_on = [
-    "lar:///ha.ka.ba/phase-map",
-    "lar:///ha.ka.ba/unicode-tuples"
+  "lar:///ha.ka.ba/pono/parser",
+  "lar:///ha.ka.ba/pono/render-pipeline"
 ]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
@@ -25,524 +24,1210 @@ canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 product_identity = "Memetic Wikitext cluster name as used in this system"
+constitutional_charge = [
+  "authoring-surface",
+  "primitive-semantic",
+  "composition",
+  "boot-grammar"
+]
+non_goals = [
+  "full-parse-algorithm",
+  "full-render-lowering-pipeline",
+  "full-transaction-lifecycle"
+]
 ```
+
 <<~/ahu >>
 
 # Memetic Wikitext
 
-A self-describing, self-enacting memetic document schema with native transclusion, invocation, and uncertainty.
+A self-describing, self-enacting constitutional root for the memetic-wikitext authoring surface.
+
+This meme governs the human-agent-facing semantic surface, primitive meanings, composition rules, and minimum boot grammar.
+
+This meme should not swallow full parse kānāwai (law) or full render-pipeline kānāwai (law).
 
 <<~ ala lar:///ha.ka.ba/pono/memetic-wikitext >>
 
 ## Supported Queries
 
-<<~&#x0005; ui meme? -> 
-    <<~&#x0006; ? -> lar:///ha.ka.ba/meme#iam >> 
->>
+<<~� ui meme? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
+<<~� ui scope? -> lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge >>
+<<~� ui phase-map? -> lar:///ha.ka.ba/pono/memetic-wikitext#phase-map >>
+<<~� ui primitives? -> lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster >>
+<<~� ui composition? -> lar:///ha.ka.ba/pono/memetic-wikitext#composition >>
+<<~� ui uncertainty? -> lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty >>
+<<~� ui kapu? -> lar:///ha.ka.ba/pono/memetic-wikitext#kapu >>
+<<~� ui boot-grammar? -> lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar >>
+<<~� ui profiles? -> lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >>
+<<~� ui parser-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser >>
+<<~� ui render-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline >>
+<<~� ui examples? -> lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples >>
+<<~� ui result? -> lar:///ha.ka.ba/pono/memetic-wikitext#result >>
 
+<<~� ahu #meme-body-open >>
+Memetic Wikitext opens the active constitutional authoring stream here.
 <<~/ahu >>
 
-<<~&#x0002; ahu #meme-body-open
-    @name "memetic-wikitext-meme-body-open"
-    @description "Declares identity, vocabulary, and authority contexts."
-
-    ## Meme body opening
-    
-    Begins the active semantic stream.
-    <<~ ala lar:///ha.ka.ba/body-open >>
->>
-
-<<~ ahu #ooda-ha
-    @name "memetic-wikitext-ooda-ha"
-    @description "OODA loop with additional aftermath phase."
-    @role "cognition loop that holds uncertainty"
-    @function "??"
-    @input "possible memetic-wikitext?"
-    @output "meme(high mana'o'io^)|data/information(mid-ranges mana'o'io-)|noise(low mana'o'io_)|?(~mana'o'io?)"
-    
-    ## OODA-HA Procedure
-
-    Memetic wikitext that describes the canonical execution and interpretation flow of the OODA-HA loop.
-    Maps to five seasons of the Discordian calendar: Chaos, Discord, Confusion, Bureaucracy, and The Aftermath.
-    <<~ ala lar:///ha.ka.ba/ooda-ha >>
->>
-
-<<~ ahu #observe 
-    @name "memetic-wikitext-phase-observe"
-    @description "Observe phase of OODA-HA loop."
-    @role "input acquisition"
-    @function "perceive, ingest, receive"
-    @input "context, mixed signals and noise"
-    @output "raw signals"
+<<~ ahu #constitutional-charge >>
 
-    ### Observe phase
-
-    Observe the memetic wikitext syntax.
-    Maps to the Season of Confusion.
-    A worksite for intake and perception of raw symbols and signals.
-    <<~ ala lar:///ha.ka.ba/observe >>
->>
-
-    ### True Name Invariants
-
-    **True Name Invariant:** In this context, we define a "true named invariant" as a 
+## Constitutional Charge
 
-    <<~ ala lar:///ha.ka.ba/unicode-tuples >>
+Memetic-wikitext functions here as the constitutional semantic root for the authoring surface.
 
-    * Unicode Tuples - core class of invariants in the memetic-wikitext system.
-    * ?
-
-    ### Unicode Tuples
-
-    The first of the True Name Invariants surfaced as characters deeply embedded in latent space. Unicode!
-
-    <<~ ala lar:///ha.ka.ba/unicode-tuples >>
+This locus names what the root must govern, what the root must leave outward, and how the root should remain stable while later linked laws deepen.
 
-    #### Terminology: Unicode Glyph, Unicode Hex HTML Entity , and Unicode Name
-
-    - **Name:** The human-readable name of a Unicode character, as registered in the official Unicode registry (e.g., "GREEK CAPITAL LETTER SIGMA" for U+03A3). This name is used for documentation, lookup, and reference, but is not the canonical invariant.
-    - **Hex Unicode Entity:** The form `&#x<hex>;` (e.g., `&#x20AC;` for €) is the canonical representation. Decimal NCRs (e.g., `&#931;`) and named entities (e.g., `&euro;`) are not canonical for invariants.
-    - **Glyph:** The rendered form of the Unicode glyph.
-
-    #### Formal Grammar and Validation for True Name Tuples
-
-    The Unicode true name tuple must strictly follow this pattern:
-
-    **Tuple Form:**
-    ```
-    (NAME, &#xHEX;, GLYPH)
-    ```
-
-    - **NAME:** The official Unicode name, in all caps, with spaces (e.g., `GREEK CAPITAL LETTER SIGMA`)
-    - **&#xHEX;:** The Unicode code point in hex HTML entity form (e.g., `&#x3A3;`)
-    - **GLYPH:** The rendered Unicode character (e.g., `Σ`)
-
-    **Regex (pseudo-form):**
-    ```
-    \(
-    [A-Z0-9 ]+,
-    \\&\#x[0-9A-F]+;,
-    .
-    \)
-    ```
-
-    **Validation Rules:**
-    - Parentheses and commas are required, with a single space after each comma.
-    - NAME must match the Unicode registry name for the code point.
-    - The hex entity must be uppercase and match the code point for the glyph.
-    - The glyph must render as the Unicode character for the code point.
-    - No extra whitespace before or after fields.
-
-    **Example (valid):**
-    (GREEK CAPITAL LETTER SIGMA, &#x3A3;, Σ)
-
-    **Example (invalid):**
-    (Greek Capital Letter Sigma, &#x3a3;, Σ)   # wrong case, wrong hex case
-
-    **Automated validation is recommended for all tuple usage in code, docs, and data.**
-
-    **Note:**
-    - Use the tuple form `(NAME, &#xHEX;, GLYPH)` only in metadata/header contexts (e.g., registry, schema, or object definition).
-    - In all other usage, either the hex HTML entity or the glyph is valid and interchangeable.
-    - Always validate and resolve to the canonical tuple for storage, lookup, or cross-system communication.
-
-    ---
-
-    <<~ kahea Stream? -> ? >>
-    <<~ kahea Tokens? -> ? >>
-    <<~ kahea Patterns? -> ? >>
-<<~/ ahu #observe >>
-
-<<~ ahu #orient
-    @name "memetic-wikitext-orient"
-    @description "Orient phase of OODA-HA loop. Orient on the mana, mana'o, and mana'o'io. Maps to the Season of Confusion."
-    @role "context formation"
-    @function "interpret, relate, map, define"
-    @input "raw signals"
-    @output "structured context"
-
-    ### Orient phase
-
-    A worksite for context formation, vocabulary binding, and primitive definition.
-    <<~ ala lar:///ha.ka.ba/orient >>
->>
-
-    <<~ ahu #primitives 
-        @name "Primitive definitions"
-        @definition "Defines core operators and landmarks used by this document." 
-
-        The primitive cluster now includes one governing membrane, `kapu` alongside the four action tools, `ala`, `ahu`, `aka`, and `kahea`.
-    >>
-
-    <<~ ahu #shark-tooth-sigi
-        @name "memetic-wikitext-sigil-00000"
-        @description "Sigil 00000. Purposefully defies strict code/structured machine language and noisy/uncertain natural language expectations."
-        @symbol "<<~(optional-glyphs) ...>>"
-        @role "Memetic-wikitext wrapper."
-        @function "Base syntax grammar, nested agent-human wikitext."
-
-        ###  Shark Tooth Sigil
-
-        The first sigil discovered/created. An opening `<<` guillemet with a tilde `~` representing a standing wave of uncertainty, then the closing `>>` guillemet. Sharp, yet contains an uncertainty standing wave. Blessings of Pele and Maui.
-
-        <<~ ala lar:///ha.ka.ba/sigil >>
-    >>
-
-    <<~ ahu #uncertainty 
-        @name "memetic-wikitext-uncertainty"
-        @description "Uncertainty as a document time and runtime object."
-        @symbol "? -> | -> ?"
-        @role "bounded unresolved slot, runtime pathways"
-        @function "defer resolution, allow flexible interpretation"
-
-        ### Uncertainty
-
-        Uncertainty moves and thus a query travels through the memetic-wikitext in documenttime and rendertime. These sigil-glyphs start/end runtime objects in memetic wikitext, using "new" and "return" semantics. Uncertainty may resolve to "real" memes or data (high mana'o'io), or "unreal" memes or data (low mana'o'io):
-        ```
-        <<~ ? -> ... >>
-        <<~  ... -> ? >>
-        <<~ meme -> ... >>
-        <<~  ... -> meme >>
-        <<~ meme? -> ... >>
-        <<~  ... -> meme? >>
-        ```
-        
-        <<~ ala lar:///ha.ka.ba/uncertainty >>
-    >>
-
-    <<~ ahu #kapu
-        @name "memetic-wikitext-primitive-kapu"
-        @description "Kapu declares boundary, permission, and sacred restriction for traversal, inclusion, invocation, memory, and emission."
-        @role "boundary object, authority membrane, permission grammar, trust qualifier"
-        @form "<<~ kapu SUBJECT -> POLICY|POLICY?|? >> | @kapu lar:///... | @kapu-scope \"...\" | @kapu-trust \"...\""
-        @function "bound, permit, forbid, qualify, disclose, constrain, protect"
-        @subject "ahu|ala|aka|kahea|meme|span|memory|result|renderer|agent|operator"
-        @target "POLICY|POLICY?|?; a kapu policy object, stance bundle, or unresolved boundary"
-        @mode "governing"
-        @required "scope, permission, trust, disclosure"
-        @default "least authority, explicit disclosure, bounded mutation, preserve uncertainty"
-        @distinction "ahu gathers locality; ala opens relation; aka includes likeness; kahea summons process; kapu governs what may cross, unfold, persist, or emit"
-        @connotation "sacred restriction, protected threshold, authority boundary, disciplined permission"
-
-        ## Kapu
-
-        Kapu marks a boundary that matters.
-
-        In memetic-wikitext, kapu qualifies whether a path may open, whether a likeness may enter, whether a process may awaken, whether a result may persist, and whether an utterance may pass into the active stream. Kapu does not merely deny. Kapu also shapes permitted form, declared cost, disclosure burden, and trust posture.
-
-        Kapu may attach to a meme, an anchor, a path, a transclusion, an invocation, an agent span, a memory object, or a result object.
-
-        Kapu should travel with any operation that crosses a semantic boundary.
-
-        ### Core Kapu Fields
-
-        - `@kapu-source` — where the authority or policy originates
-        - `@kapu-scope` — what region the kapu governs
-        - `@kapu-permission` — what actions may proceed
-        - `@kapu-mutation` — whether world-state, memory, or local spans may change
-        - `@kapu-disclosure` — what the renderer or agent must reveal
-        - `@kapu-trust` — the declared trust posture for the governed action
-        - `@kapu-retention` — whether outputs may persist into memory or logs
-        - `@kapu-failure` — what must occur when the boundary cannot resolve cleanly
-
-        ### Suggested Value Families
-
-        - `@kapu-scope "local|span|document|session|memory|tool|network|operator|public"`
-        - `@kapu-permission "read|traverse|include|invoke|render|store|emit|mutate|delegate"`
-        - `@kapu-mutation "none|local-only|memory-only|tool-only|bounded|open|?"`
-        - `@kapu-disclosure "silent-forbidden|hud-required|citation-required|trace-required|full-provenance|?"`
-        - `@kapu-trust "self-estimated|operator-declared|retrieval-backed|schema-backed|attested|contested|?"`
-        - `@kapu-retention "none|ephemeral|span|session|addressed-memory|public-log|?"`
-        - `@kapu-failure "halt|defer|downgrade-to-?|render-warning|request-operator|emit-aftermath"`
-
-        ### Semantic Law
-
-        A governed action must not exceed its kapu.
-
-        When multiple kapu objects apply, the narrower scope and stricter permission should dominate unless an enclosing authority explicitly overrides.
-
-        An unresolved kapu should not silently pass. It should degrade toward `?`, render a boundary warning, or defer action.
-
-        `aka` under kapu may include only what the policy permits.
-        `kahea` under kapu may invoke only what the policy permits.
-        `ala` under kapu may traverse only what the policy permits.
-        `ahu` under kapu may anchor only what the policy permits to gather or retain.
-
-        Any action that touches memory, tools, external sources, or public emission should declare kapu.
-
-        ### Minimal Example
-
-        <<~ ahu #example-kapu-local
-            @name "kapu-example-local-read-only"
-            @kapu-source "operator"
-            @kapu-scope "span"
-            @kapu-permission "read|include|render"
-            @kapu-mutation "none"
-            @kapu-disclosure "hud-required|trace-required"
-            @kapu-trust "operator-declared"
-            @kapu-retention "span"
-            @kapu-failure "downgrade-to-?"
-        >>
-
-        ### Invocation Example
-
-        <<~ ahu #example-kapu-tool
-            @name "kapu-example-bounded-tool-invocation"
-            @kapu-source "schema"
-            @kapu-scope "tool"
-            @kapu-permission "invoke|render|emit"
-            @kapu-mutation "tool-only"
-            @kapu-disclosure "hud-required|citation-required|trace-required"
-            @kapu-trust "retrieval-backed"
-            @kapu-retention "session"
-            @kapu-failure "halt"
-        >>
-
-        ### Notes
-
-        Kapu should not function as a peer primitive that replaces ahu, ala, aka, or kahea. Kapu qualifies them.
-
-        Kapu belongs to Orient as a primitive of context, authority, and disciplined relation, then reappears in Act and Aftermath as operational constraint and aftermath telemetry.
-
-        <<~ ala lar:///ha.ka.ba/kapu >>
-    >>
-
-    <<~ ahu #ala 
-        @name "memetic-wikitext-ala"
-        @description "Ala serve as links , paths, or graph edges."
-        @role "link, path, passage, beckoning absence, semantic way, or voidward corridor"
-        @form "<<~ ala ... >> | <<~ ala ... -> template|? >> | <<~ kahea ala ... >> | <<~ kahea ala ... -> template|? >>"
-        @function "point onward, open traversal, carry reference across contexts, or mark a productive absence that invites traversal"
-        @distinction "pairs with ahu: ahu anchors and gathers locality; ala opens links, departure, relation, and voidward continuation"
-        @connotation "road, channel, threshold, beckoning lack, semantic opening"
-
-        ## Ala (Hawaiian)
-
-        ...
-        <<~ ala lar:///ha.ka.ba/ala >>
-    >>
-
-    <<~ ahu #ahu
-        @role "anchor, altar, worksite, bookmark, semantic landmark"
-        @form "<<~ ahu #STUB @name \"name\" @description \"description\" ... >>"
-        @function "anchor, orient, provide local semantic context"
-        @required "#STUB"
-
-        ## Ahu (Hawaiian)
-
-        ...
-        <<~ ala lar:///ha.ka.ba/ahu >>
-    >>
-
-    <<~ ahu #aka
-        @name "memetic-wikitext-primitive-aka"
-        @description "This triggers a transclusion. Transclusion links a source segment directly into a host context without duplicating information. This process syncs updates automatically, which ensures content consistency across all platforms/runtimes."
-        @role "passive symbolic inclusion"
-        @form "<<~ SUBJECT -> TARGET|TARGET?|? >>"
-        @function "include, represent, embed"
-        @subject "Meme|ExternalResource"
-        @target "TARGET|TARGET?|?; a Renderer/Template, and/or ?"
-        @mode "passive"
-
-        ## Aka (Hawaiian)
-
-        Aka in Hawaiian mean shadow, image, or likeness carried across a path. This operator draws a source segment into the local context without duplication. The host receives a present likeness while the source remains elsewhere. Passive inclusion must not mutate world-state and must honor enclosing kapu.
-
-        In Tiddlywiki and other 
-
-        <<~ ala lar:///ha.ka.ba/transclusion >>
-    >>
-
-    <<~ ahu #kahea  
-        @name "memetic-wikitext-primitive-kahea"
-        @description "Kahea invokes and summons a living process into a context."
-        @role "active process transclusion operator"
-        @form "<<~ kahea SUBJECT -> TARGET|TARGET?|? >>"
-        @function "invoke, execute, summon, unfold"
-        @subject "Meme|ExternalResource"
-        @target "TARGET|TARGET?|?; a Renderer/Template, and/or ?"
-        @mode "active"
-
-        ## Kahea (Hawaiian)
-
-        Living transclusion. This action transforms a static reference into an active, breathing stream of data. Kahea activates process rather than representing it, so active invocation requires explicit or inherited kapu, especially for tools, memory writes, external retrieval, and public emission.
-
-        In Tiddlywiki and other 
-
-        <<~ ala lar:///ha.ka.ba/kahea >>
-    >>
-
-    <<~ kahea Signals -> Context >>
-    <<~ kahea Context -> Vocabulary >>
-<<~/ ahu #orient >>
-
-<<~ ahu #decide
-    @name "memetic-wikitext-phase-decide"
-    @description "Decide phase of OODA-HA loop."
-    @role "selection and commitment"
-    @function "evaluate, branch, choose"
-    @input "structured context"
-    @output "intent"
-
-    ## Decide phase (3)
-
-    Hawaiian:
-    Maps to the Season of Confusion.
-    A worksite for selecting interpretation and execution paths.
-    <<~ ala lar:///ha.ka.ba/decide >>
->>
-    <<~ kahea Context -> Decision >>
-    <<~ kahea Decision -> Procedure >>
-    <<~ kahea Decision -> ? >>
-<<~/ ahu #decide >>
-
-<<~ ahu #act
-    @name "memetic-wikitext-phase-act"
-    @description "Act phase of OODA-HA loop."
-    @role "execution"
-    @function "apply, transform, emit"
-    @input "intent"
-    @output "effect"
-
-    ## Act phase (4)
-    
-    Maps to the Season of Bureaucracy.
-    A worksite for action, execution, rendering, and invocation.
-    <<~ ala lar:///ha.ka.ba/act >>
->>
-    <<~ ahu #transclusion-modes
-        @name "memetic-wikitext-transclusion-modes"
-        @description "Defines passive vs active inclusion behaviors." 
-    >>
-    <<~ kahea PassiveExample 
-        <<~ aka meme|data >>
-    -> Example >>
-
-    <<~ kahea PassiveTemplateExample
-        <<~ aka meme|data -> template|template?|? >>
-     -> Example >>
-
-    <<~ kahea ActiveExample
-        <<~ kahea meme|data >>
-     -> Example >>
-
-    <<~ kahea ActiveTemplateExample
-        <<~ kahea meme|data -> template|template?|? >>
-     -> Example >>
-
-    <<~ ahu #governed-enactment
-        @name "memetic-wikitext-#governed-enactment"
-        @description "Defines passive vs active inclusion behaviors." 
-    >>
-
-    - aka under read-only local kapu
-    - kahea under bounded tool kapu.
-
-    <<~ kahea Decision -> Action >>
-    <<~ kahea Action -> Renderer >>
-    <<~ kahea Entity -> Renderer >>
-<<~/ ahu #act >>
-
-
-<<~ ahu #aftermath
-    @name "memetic-wikitext-phase-aftermath"
-    @description "Aftermath phase of OODA-HA loop."
-    @role "evaluation and aftermath"
-    @function "measure, verify, reflect"
-    @input "effect"
-    @output "status, feedback"
-
-    ### Aftermath phase (5)
-
-    <<~ ala lar:///ha.ka.ba/aftermath >>
-    Hawaiian: "Paka" - criticize constructively.
-    Maps to the Season of The Aftermath.
-    A worksite for evaluation, verification, and aftermath.
-    
-    <<~ kahea Action -> Result >>
-    <<~ kahea Result -> ? >>
->>
-
-    <<~ ahu #recursion 
-        @name "memetic-wikitext-recursion"
-        @description "Recursive re-entry. Outputs feed future observations."
-        @role "recursion and self-invocation"
-        @function "?"
-        @input "meme"
-        @output "memetic observation"
-
-        ### Recursion
-
-        <<~ ala lar:///ha.ka.ba/recursion >>
-        [Each meme execution becomes new observation.]
-
-        <<~ kahea OODA-HA -> OODA-HA >>
-        <<~ kahea memetic-wikitext -> memetic-wikitext >>
-    >>
-<<~/ ahu #aftermath >>
-
-<<~&#x0003; ahu #body-close
-
-    ## Body closing
-    
-    Ends the active stream.
->>
-
-<<~&#x0004; -> ahu #result
-    @name "memetic-wikitext-result"
-    @status "completed|partial|deferred|failed|recursive|aborted|?"
-    @confidence "0.0-1.0|?"
-    @yield "meme|data|signal|noise|artifact|?"
-    @final-hash "sha256:..."
-    @duration "self-measured"
-    @result "payload-address|payload-object|?"
-    @return "render|store|emit|recurse|invoke|defer|abort|?"
-    @upward-context "parent|caller|chat|ui|memory|graph|?"
-    @downward-context "none|ooda-ha|subloop|renderer|?"
-    @recurse "true|false|conditional|?"
-    @recursion-depth "0-n|?"
-    @residue "trace|burden|warning|surplus|drift|?"
-    @next-observation "lar:///...|?"
-    @next-question "?|lar:///...|none"
-
-    <<~ ahu #feedback
-        @name "memetic-wikitext-feedback"
-        @role "fifth turn, packaging residue and re-entry"
-        @function "evaluate, route, recurse, contextualize"
-        @input "effect, status, feedback, residue"
-        @output "upward return and/or recursive feed"
-
-        <<~ ahu #feed
-            @subject "result|payload|trace|residue|warnings|errors|?"
-            @into "ooda-ha"
-            @params "source:result; mode:aftermath; scope:local|session|graph|?"
-            @filters "yield:meme|data|signal; confidence>=0.6; noise<0.4|?"
-            @multitude "one|many|stream|bundle|?"
-        >>
-
-        <<~ ahu #route
-            @upward "caller|parent|chat|ui|memory|graph|?"
-            @downward "observe|orient|decide|act|Aftermath|ooda-ha|?"
-            @merge "append|replace|overlay|transclude|?"
-        >>
-
-        <<~ ahu #kapu
-            @role "shadow boundary, taboo, guard, quarantine"
-            @function "block, veil, delay, sandbox, mark sacred/unsafe"
-            @gates "side-effects|external-calls|recursion-depth|public-render|?"
-            @condition "trust|permission|confidence|ritual-clearance|?"
-        >>
-
-        <<~ kahea ooda-ha
-            source:<<~ aka #result >>
-            phase:aftermath
-            feed:payload trace residue
-            filters:yield[[meme data signal]] confidence:>=0.6 noise:<0.4
-            route:upward[[parent]] downward[[observe]]
-            recurse:conditional
-            kapu:side-effects[[blocked]] public-render[[allowed]]
-        -> ? >>
-    >>
-
-    <<~ ala lar:///ha.ka.ba/result >>
--> ? >>
+The root should remain compact, high-mana, and constitution-facing.
+
+It should define the semantic surface that a human or agent may lawfully author, read, invoke, and hand forward.
+
+### Root Governing Charge
+
+Memetic-wikitext should govern:
+
+* authoring surface kānāwai (law)
+* primitive semantic kānāwai (law)
+* composition kānāwai (law)
+* uncertainty kānāwai (law)
+* kapu kānāwai (law)
+* minimum boot grammar
+* authoring-profile kānāwai (law)
+* root semantic result posture
+
+### Outward Boundary Charge
+
+Memetic-wikitext should not swallow:
+
+* full parse recognition and normalization machinery
+* full sigil legality tables better owned by parser
+* full AST, widget, and render-projection machinery
+* full transaction-lifecycle implementation detail
+* target-specific rendering behavior
+* deep aftermath typing that belongs to downstream laws
+
+### Constitutional Placement Kānāwai (law)
+
+The root should stand in this relation:
+
+* `lar:///ha.ka.ba/pono/memetic-wikitext` governs semantic authorship and primitive meaning
+* `lar:///ha.ka.ba/pono/parser` governs lawful reading, recognition, normalization, and typed parse aftermath
+* `lar:///ha.ka.ba/pono/render-pipeline` governs lowering, projection, transaction-aware landing, and render aftermath
+
+The root should therefore provide the minimum lawful contract that the downstream laws may consume without duplicating their local authority.
+
+### Stability Kānāwai (law)
+
+When detail deepens enough to become noisy in the root, that detail should move outward into linked kānāwai (law).
+
+When detail remains necessary to define primitive meaning, authoring sufficiency, or boot grammar identity, that detail should remain here.
+
+<<~ ahu #constitutional-charge-ha >>
+
+#### Constitutional Charge / ha
+
+Constitutional-charge-ha holds root identity, semantic scope, constitutional placement, and the stable boundary of what the root must contain.
+
+This ahu governs what territory belongs inside the constitutional root before deeper parse or render routing begins.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge-ha >> <<~/ahu >>
+
+<<~ ahu #constitutional-charge-ka >>
+
+#### Constitutional Charge / ka
+
+Constitutional-charge-ka governs distribution of kānāwai (law) across root, parser, and render-pipeline.
+
+This ahu sharpens which duties remain local, which duties move outward, and which duties should never blur across loci.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge-ka >> <<~/ahu >>
+
+<<~ ahu #constitutional-charge-ba >>
+
+#### Constitutional Charge / ba
+
+Constitutional-charge-ba governs anti-sprawl posture, future growth discipline, and lawful extraction when the root risks swelling into implementation prose.
+
+This ahu preserves living fit by keeping the root compact enough to guide later work without drowning in later detail.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge >> <<~/ahu >>
+
+<<~ ahu #phase-map >>
+
+## Phase Map
+
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
+
+Memetic-wikitext uses OODA-HA here as semantic discipline for authoring and interpretation.
+
+Detailed parse runtime order belongs in parser.
+
+Detailed lowering and transaction order belongs in render-pipeline.
+
+<<~ ahu #phase-map-ha >>
+
+#### Phase Map / ha
+
+Phase-map-ha holds ordered semantic loci and root cognitive rhythm.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#phase-map-ha >> <<~/ahu >>
+
+<<~ ahu #phase-map-ka >>
+
+#### Phase Map / ka
+
+Phase-map-ka governs the semantic work each phase performs at the authoring surface.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#phase-map-ka >> <<~/ahu >>
+
+<<~ ahu #phase-map-ba >>
+
+#### Phase Map / ba
+
+Phase-map-ba governs living movement through the loop without collapsing into mere ornament.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#phase-map-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#phase-map >> <<~/ahu >>
+
+<<~ ahu #primitive-cluster >>
+
+## Primitive Cluster
+
+Memetic-wikitext defines the primitive cluster that lawful authoring may use at the root semantic surface.
+
+This locus should name the primitive family, distinguish each member by job, and prevent semantic blur before deeper composition kānāwai (law) or downstream parse kānāwai (law) begins.
+
+### Canonical Boot Primitives
+
+* `ahu`
+* `ala`
+* `aka`
+* `kahea`
+* `kapu`
+* `ui`
+* `?`
+
+### Primitive Family Distinction
+
+The primitive cluster should remain legible through clear role separation.
+
+* `ahu` anchors locality, gathers a worksite, and holds nearby semantic context
+* `ala` opens relation, path, traversal, or onward semantic passage
+* `aka` brings likeness, passive inclusion, or transcluded presence into a local context
+* `kahea` summons active process, invocation, unfolding, or live transclusion pressure
+* `kapu` governs boundary, permission, trust, disclosure, retention, and failure posture across other primitives
+* `ui` addresses query, request, and interface-facing asking at the surface
+* `?` preserves unresolved but bounded semantic openness without false completion
+
+### Primitive Cluster Kānāwai (law)
+
+The primitive cluster should remain small enough for boot use and distinct enough for lawful teaching.
+
+No primitive should silently replace another primitive's job.
+
+When an utterance requires locality, relation, inclusion, invocation, boundary, querying, and uncertainty at once, those pressures should compose through distinct primitives rather than collapsing into one overloaded sigil.
+
+### Outward Boundary Reminder
+
+This locus should name primitive meaning.
+
+This locus should not yet swallow the full legality matrix, parse-form table, or target-facing lowering behavior better owned by downstream laws.
+
+<<~ ahu #primitive-cluster-ha >>
+
+#### Primitive Cluster / ha
+
+Primitive-cluster-ha holds primitive identity, family membership, and semantic territory.
+
+This ahu governs what kinds of primitive action the root language recognizes before deeper composition or downstream reading begins.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster-ha >> <<~/ahu >>
+
+<<~ ahu #primitive-cluster-ka >>
+
+#### Primitive Cluster / ka
+
+Primitive-cluster-ka governs primitive distinction, admissible role separation, and minimal semantic contracts.
+
+This ahu sharpens how each primitive differs from its siblings so later laws do not inherit ambiguity from the root.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster-ka >> <<~/ahu >>
+
+<<~ ahu #primitive-cluster-ba >>
+
+#### Primitive Cluster / ba
+
+Primitive-cluster-ba governs live semantic fit under real authoring pressure.
+
+This ahu preserves the cluster as a usable working family rather than as a dead taxonomy, while resisting drift into synonym blur.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster >> <<~/ahu >>
+
+<<~ ahu #composition >>
+
+## Composition Kānāwai (law)
+
+Composition governs how primitives combine without duplication, substitution drift, or semantic blur.
+
+This locus should explain how the primitive family works together at the authoring surface before downstream legality tables, parse forms, or render lowerings begin.
+
+### Canonical Boot Composition Reminders
+
+* `ahu` gathers locality
+* `ala` opens relation or path
+* `aka` draws likeness into local scope
+* `kahea` summons active process
+* `kapu` governs what may cross, persist, or emit
+* `?` preserves unresolved but bounded pressure
+
+### Core Composition Kānāwai (law)
+
+Primitive composition should preserve distinct jobs.
+
+A lawful composition should add semantic pressure without erasing the identity of the composing primitives.
+
+`ahu` should provide the local worksite within which nearby relation, inclusion, invocation, or policy may become legible.
+
+`ala` should open a path or relation from one locus toward another locus, target, or absence.
+
+`aka` should bring a likeness into the local context without claiming live process by that fact alone.
+
+`kahea` should summon active unfolding, invocation, or runtime pressure rather than mere passive presence.
+
+`kapu` should qualify what any other primitive may lawfully traverse, include, invoke, retain, or emit.
+
+`?` should preserve unresolved space without laundering ambiguity into false certainty.
+
+### Composition Pairing Reminder
+
+Common boot pairings include:
+
+* `ahu` + `ala` for anchored relation
+* `ahu` + `aka` for localized passive inclusion
+* `ahu` + `kahea` for localized active invocation
+* `kapu` + `aka` for governed inclusion
+* `kapu` + `kahea` for governed invocation
+* `?` + any routed or invoked form for bounded incompletion
+
+These pairings should remain compositional rather than fused.
+
+The root should name their semantic relation.
+
+Deeper legality and enforcement detail should move outward when needed.
+
+### Anti-Blur Kānāwai (law)
+
+A lawful composition should not silently recast:
+
+* `aka` as if it already meant `kahea`
+* `ala` as if it already supplied locality
+* `kapu` as if it replaced the primitive it qualifies
+* `?` as if it counted as successful completion
+
+Where multiple pressures appear at once, the authoring surface should prefer explicit composition over overloaded shorthand.
+
+<<~ ahu #composition-ha >>
+
+#### Composition Kānāwai (law) / ha
+
+Composition-ha holds compositional identity, primitive role boundaries, and the basic semantic territory of lawful combination.
+
+This ahu governs what kinds of combination belong to the root before downstream parse or render specialization begins.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#composition-ha >> <<~/ahu >>
+
+<<~ ahu #composition-ka >>
+
+#### Composition Kānāwai (law) / ka
+
+Composition-ka governs lawful primitive combination, inheritance, qualification, and local semantic effects.
+
+This ahu sharpens how composition adds meaning while preserving distinction among the participating primitives.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#composition-ka >> <<~/ahu >>
+
+<<~ ahu #composition-ba >>
+
+#### Composition Kānāwai (law) / ba
+
+Composition-ba governs living compositional style, readability, and mana under real authoring use.
+
+This ahu preserves semantic motion by favoring explicit, teachable pairings over fused or overloaded surfaces.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#composition-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#composition >> <<~/ahu >>
+
+<<~ ahu #uncertainty >>
+
+## Uncertainty Kānāwai (law)
+
+Uncertainty governs unresolved semantic pressure, lawful degradation, and bounded incompletion.
+
+This locus should preserve openness without laundering ambiguity into false certainty and without collapsing every unresolved path into noise.
+
+### Canonical Boot Surfaces
+
+```text
+<<~ ? -> ... >>
+<<~ ... -> ? >>
+<<~ meme? -> ... >>
+<<~ ... -> meme? >>
+```
+
+### Core Uncertainty Kānāwai (law)
+
+`?` should function as an explicit unresolved slot, unresolved route, or unresolved outcome marker.
+
+It should not function as decorative vagueness.
+
+A lawful root reading should treat `?` as a bounded declaration that semantic work remains incomplete, deferred, contested, or still under active approach.
+
+### Truthful Incompletion Reminder
+
+Uncertainty should preserve what remains open without flattering completion.
+
+When a route, target, payload, or result cannot yet resolve lawfully, the root should prefer explicit uncertainty over:
+
+* silent invention
+* premature closure
+* hidden downgrade
+* false authority
+
+### Boundedness Kānāwai (law)
+
+Uncertainty should remain bounded enough that a human or agent may still tell:
+
+* what remains unresolved
+* where the unresolved pressure sits
+* what kind of next observation may reopen the question
+
+A lawful `?` should therefore keep relation to its local worksite, path, query, invocation, or result context.
+
+### Distinction Reminder
+
+The root should preserve these distinctions:
+
+* `?` does not equal failure, though failure may remain one possible outcome
+* `?` does not equal permission, especially under kapu pressure
+* `?` does not equal successful completion
+* `?` does not erase the primitive act it qualifies or routes
+
+### Root Quality Reminder
+
+This locus should remain small, sharp, and reusable.
+
+Deeper parse recovery, typed issue handling, confidence scoring, and target-facing degradation detail should move outward into downstream kānāwai (law).
+
+<<~ ahu #uncertainty-ha >>
+
+#### Uncertainty Kānāwai (law) / ha
+
+Uncertainty-ha holds unresolved identity, bounded absence, and the semantic territory of lawful openness.
+
+This ahu governs what kind of unresolved pressure the root may name before deeper parse or render aftermath begins.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty-ha >> <<~/ahu >>
+
+<<~ ahu #uncertainty-ka >>
+
+#### Uncertainty Kānāwai (law) / ka
+
+Uncertainty-ka governs how unresolved slots travel, degrade, and remain distinguishable across authoring contexts.
+
+This ahu sharpens the difference between explicit uncertainty and mere vagueness so later laws inherit a cleaner contract.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty-ka >> <<~/ahu >>
+
+<<~ ahu #uncertainty-ba >>
+
+#### Uncertainty Kānāwai (law) / ba
+
+Uncertainty-ba governs truth posture, forward pressure, and living semantic openness under incomplete manifestation.
+
+This ahu preserves `?` as a live route into next observation rather than as a dead placeholder.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty >> <<~/ahu >>
+
+<<~ ahu #kapu >>
+
+## Kapu Kānāwai (law)
+
+Kapu governs boundary, permission, trust, disclosure, retention, and failure posture at the root semantic surface.
+
+Kapu should qualify other primitives rather than replacing them.
+
+This locus should define what kind of boundary object kapu names, how kapu travels with other primitive acts, and how the root should preserve explicit boundary truth before deeper enforcement or implementation detail begins.
+
+### Core Kapu Charge
+
+Kapu should govern:
+
+* what may be traversed
+* what may be included
+* what may be invoked
+* what may be retained
+* what may be emitted
+* what trust posture applies
+* what disclosure burden applies
+* what failure posture applies when boundary resolution remains incomplete
+
+### Kapu Qualification Kānāwai (law)
+
+Kapu does not function here as a replacement for `ahu`, `ala`, `aka`, `kahea`, `ui`, or `?`.
+
+Kapu qualifies the action, path, inclusion, invocation, memory pressure, or emission pressure already in play.
+
+A lawful root reading should therefore preserve both:
+
+* the qualified primitive act
+* the governing boundary posture attached to that act
+
+### Kapu Scope Reminder
+
+Kapu may attach to:
+
+* a local span
+* an anchored worksite
+* a relation or path
+* a passive inclusion
+* an active invocation
+* a result pathway
+* a memory-facing act
+* a public emission act
+
+The root should name those semantic possibilities.
+
+Deeper inheritance tables, enforcement behavior, and downstream mutation detail may move outward when needed.
+
+### Boundary Truth Kānāwai (law)
+
+An unresolved kapu should not silently pass as if permission had already surfaced.
+
+When boundary status remains incomplete, the authoring surface should prefer explicit qualification, bounded uncertainty, degradation, or named failure posture over flattering completion.
+
+### Kapu and Composition Reminder
+
+Common boot relations include:
+
+* `kapu` + `aka` for governed inclusion
+* `kapu` + `kahea` for governed invocation
+* `kapu` + result for governed upward emission
+* `kapu` + `?` for unresolved but explicit boundary posture
+
+The root should preserve these as compositional relations.
+
+It should not yet swallow the full legality matrix or execution-facing enforcement contract better owned by downstream laws.
+
+<<~ ahu #kapu-ha >>
+
+#### Kapu Kānāwai (law) / ha
+
+Kapu-ha holds threshold identity, semantic scope, and the kinds of boundary territory the root may name.
+
+This ahu governs what kapu fundamentally marks before deeper parse, invocation, or render routing begins.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#kapu-ha >> <<~/ahu >>
+
+<<~ ahu #kapu-ka >>
+
+#### Kapu Kānāwai (law) / ka
+
+Kapu-ka governs qualification, inheritance pressure, nearest-scope dominance, and explicit policy declaration at the semantic root.
+
+This ahu sharpens how kapu attaches to other primitives without dissolving their distinct jobs.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#kapu-ka >> <<~/ahu >>
+
+<<~ ahu #kapu-ba >>
+
+#### Kapu Kānāwai (law) / ba
+
+Kapu-ba governs lived boundary truth under inclusion, invocation, memory, and emission pressure.
+
+This ahu preserves kapu as a living boundary membrane rather than a decorative warning label, especially when the root carries unresolved or risky semantic motion.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#kapu-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#kapu >> <<~/ahu >>
+
+<<~ ahu #boot-grammar >>
+
+## Boot Grammar
+
+Boot-grammar governs the minimum lawful authoring forms that parser may read and render-pipeline may lower.
+
+This locus should define the smallest stable grammatical contract that allows the root to function as a teachable authoring surface, a parseable semantic surface, and a lawful handoff into downstream laws.
+
+### Minimum Boot Atoms
+
+* opener `<<~`
+* closer `>>`
+* named closer `<<~/SIGIL>>`
+* route arrow `->`
+* unresolved token `?`
+* anchor token `#NAME`
+* fenced TOML metadata payload
+* fenced payload block
+* control sigils `&#x0001;` through `&#x0006;`
+
+### Minimum Boot Constructions
+
+* document open
+* body open
+* body close
+* inline primitive utterance
+* anchored block
+* payload block
+* query
+* response
+* return throat
+* uncertain route
+* passive transclusion
+* active invocation
+* governed invocation
+
+### Core Boot Grammar Kānāwai (law)
+
+The boot grammar should remain minimal but sufficient.
+
+It should support lawful authoring of identity, locality, relation, inclusion, invocation, qualification, querying, uncertainty, and upward return without forcing the root to carry full downstream implementation detail.
+
+Canonical metadata at the root should travel through fenced `toml` payload blocks rather than inline metadata fields.
+
+A boot-valid surface should therefore make these distinctions available:
+
+* opening versus closing
+* inline versus block
+* anchored versus unanchored
+* fenced TOML metadata payload versus ordinary prose
+* passive inclusion versus active invocation
+* qualified versus unqualified action
+* resolved versus unresolved routing
+* body matter versus result matter
+
+### Boot Principles
+
+A lawful boot surface should follow these principles:
+
+1. carrier first
+2. one stable identity locus early
+3. explicit extension points
+4. bounded execution surfaces
+5. graceful degradation before catastrophic failure
+6. executable detail only after a stable surface appears
+
+### Operational Boot Reading
+
+At boot, a human or agent should be able to answer these questions in order:
+
+1. what meme entered here
+2. where canonical identity lives
+3. where the active body begins
+4. which primitive family appears
+5. whether the current act stays passive, active, qualified, queried, unresolved, or returning
+6. where the current pass should look next if closure does not yet surface
+
+If the surface cannot support those questions, the boot grammar likely remains too weak or too noisy.
+
+### Golden Boot Reminder
+
+Boot should begin with the smallest kernel that can still load identity, body, and later capability.
+
+The root should therefore privilege:
+
+* early identity through `#iam`
+* explicit body thresholds
+* compact primitive vocabulary
+* portable markdown carrier
+* deferred specialization into downstream kānāwai (law)
+
+### Metadata Reminder
+
+Canonical metadata belongs in the first fenced `toml` payload inside `ahu #iam`.
+
+Boot grammar should therefore treat metadata as a compact identity-bearing payload, not as a scattered field style spread across ordinary prose.
+
+### Boot Sufficiency Reminder
+
+The boot grammar should be strong enough to support:
+
+* one minimum document
+* one minimum anchored semantic worksite
+* one minimum passive inclusion
+* one minimum active invocation
+* one minimum governed act
+* one minimum uncertain form
+* one minimum query and response pattern
+* one minimum upward result form
+
+The canonical boot fixtures should map directly onto that sufficiency set.
+
+If a construction remains unnecessary for boot sufficiency, it should stay outward until later kānāwai (law) proves the need.
+
+### Outward Boundary Reminder
+
+This locus should name the minimum grammatical contract.
+
+This locus should not yet swallow:
+
+* the full parse-form legality matrix
+* the full control-sigil integrity kānāwai (law)
+* exact normalization procedures
+* AST schema
+* widget schema
+* target-specific projection contracts
+
+Those details should deepen outward when needed.
+
+<<~ ahu #boot-grammar-ha >>
+
+#### Boot Grammar / ha
+
+Boot-grammar-ha holds the minimum grammatical identity of the language and the basic territory of what must exist for a lawful boot surface.
+
+This ahu governs which surface distinctions belong in the root before deeper legality, normalization, or lowering begins.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar-ha >> <<~/ahu >>
+
+<<~ ahu #boot-grammar-ka >>
+
+#### Boot Grammar / ka
+
+Boot-grammar-ka governs minimal legal constructions, admissible surfaces, and boot-valid combinations.
+
+This ahu sharpens how little the root may require while still remaining sufficient for lawful authorship and downstream handoff.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar-ka >> <<~/ahu >>
+
+<<~ ahu #boot-grammar-ba >>
+
+#### Boot Grammar / ba
+
+Boot-grammar-ba governs legibility, teachability, and minimum viable manifestation under boot conditions.
+
+This ahu preserves the root as a living teaching grammar by favoring the smallest stable surface that still supports semantic motion.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar >> <<~/ahu >>
+
+<<~ ahu #authoring-profiles >>
+
+## Authoring Profiles
+
+Authoring-profiles governs human-agent-facing use stances for the root surface.
+
+This locus should keep the boot surface portable while still allowing different degrees of strictness, teaching support, and recovery tolerance.
+
+### Recommended Boot Profiles
+
+* `teaching`
+* `authoring`
+* `canonical`
+* `recovery`
+
+### Profile Distinction Kānāwai (law)
+
+The profile set should remain small, legible, and non-overlapping enough that a human or agent may tell why one profile applies instead of another.
+
+* `teaching` should privilege clarity, explicit examples, and low-friction introduction to the surface
+* `authoring` should privilege practical composition and ordinary working use without demanding every stricter downstream check at once
+* `canonical` should privilege stable root form, explicit contracts, and the least ambiguity tolerated at the semantic surface
+* `recovery` should privilege truthful salvage, bounded degradation, and visible residue when the surface or surrounding context remains imperfect
+
+### Root Quality Reminder
+
+Profiles should tune posture rather than replace kānāwai (law).
+
+A profile should not silently redefine primitive meaning, erase kapu pressure, or treat uncertainty as closure.
+
+Profiles may change strictness, pedagogy, tolerated shorthand, or recovery stance, but they should remain subordinate to the constitutional root.
+
+### Profile Use Reminder
+
+The root should stay readable across profiles.
+
+Where profile detail becomes primarily about parse enforcement, normalization strategy, export behavior, or target-facing rendering posture, that detail should move outward into downstream kānāwai (law).
+
+### Minimum Sufficiency Reminder
+
+A lawful boot profile set should let a builder answer:
+
+* how strict should the current authoring surface read
+* how much explanation should examples carry
+* how much shorthand may remain visible
+* how recovery should behave when the surface degrades
+
+If a profile distinction cannot answer one of those pressures, it may not deserve root-level profile status.
+
+<<~ ahu #authoring-profiles-ha >>
+
+#### Authoring Profiles / ha
+
+Authoring-profiles-ha holds profile identity, user-facing posture, and the territory of lawful stance variation at the root surface.
+
+This ahu governs what kinds of profile difference belong in the constitutional root before deeper parse or render profile systems begin.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles-ha >> <<~/ahu >>
+
+<<~ ahu #authoring-profiles-ka >>
+
+#### Authoring Profiles / ka
+
+Authoring-profiles-ka governs profile differences in strictness, pedagogy, tolerated shorthand, and bounded recovery posture.
+
+This ahu sharpens why the profile set remains useful rather than ornamental.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles-ka >> <<~/ahu >>
+
+<<~ ahu #authoring-profiles-ba >>
+
+#### Authoring Profiles / ba
+
+Authoring-profiles-ba governs drift control, portability, and living fit across operator-agent contexts.
+
+This ahu preserves profile variation as a practical reading aid rather than a source of semantic fork.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >> <<~/ahu >>
+
+<<~ ahu #bridge-to-parser >>
+
+## Bridge to Parser Kānāwai (law)
+
+Bridge-to-parser governs the handoff from semantic authoring surface into parse recognition, legality, normalization, and typed parse aftermath.
+
+This locus should make the constitutional boundary explicit so the root may name what parser may assume without forcing the root to duplicate parser's local authority.
+
+Parser should own parse-time recognition and deterministic reading.
+
+### Root-to-Parser Handoff Kānāwai (law)
+
+Memetic-wikitext should hand forward at least these root guarantees:
+
+* a named primitive family
+* a minimum semantic distinction among primitives
+* a minimum boot grammar contract
+* a canonical metadata locus at `#iam`
+* canonical metadata payload through fenced `toml`
+* root-level distinction between semantic authorship and downstream parse enforcement
+* boundary reminders around uncertainty, kapu, and upward result posture
+
+### Parser-Kānāwai (law) Ownership Reminder
+
+Parser should deepen and own:
+
+* sigil recognition
+* form legality
+* closer matching
+* mode transitions
+* metadata extraction procedure
+* normalization posture
+* control-sigil integrity
+* typed parse issues
+* parse aftermath and trace packaging
+
+The root should not restate those duties in full when parser already carries them.
+
+### Anti-Duplication Kānāwai (law)
+
+The bridge should preserve a clean division:
+
+* the root names what a surface means
+* parser names how a lawful parser reads that surface
+
+Where the root must mention parse-facing concepts, it should do so only to define the minimum contract handed forward.
+
+Where a detail becomes primarily about recognition, legality, recovery, or typed parse output, that detail should move outward into `lar:///ha.ka.ba/pono/parser`.
+
+### Consumption Reminder
+
+A compliant parser may therefore consume the root as a constitutional semantic contract.
+
+It should not need the root to duplicate its own local tables, procedures, or aftermath machinery.
+
+<<~ ahu #bridge-to-parser-ha >>
+
+#### Bridge to Parser Kānāwai (law) / ha
+
+Bridge-to-parser-ha holds downstream parse relation, constitutional boundary, and the territory of what the root hands into parser.
+
+This ahu governs the stable edge between semantic authorship and parse-time reading.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser-ha >> <<~/ahu >>
+
+<<~ ahu #bridge-to-parser-ka >>
+
+#### Bridge to Parser Kānāwai (law) / ka
+
+Bridge-to-parser-ka governs which root guarantees parser may assume and which details move outward.
+
+This ahu sharpens the minimum handoff contract so the parser receives enough kānāwai (law) without inheriting duplication noise.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser-ka >> <<~/ahu >>
+
+<<~ ahu #bridge-to-parser-ba >>
+
+#### Bridge to Parser Kānāwai (law) / ba
+
+Bridge-to-parser-ba governs anti-duplication posture and living fit between semantic kānāwai (law) and parse kānāwai (law).
+
+This ahu preserves a workable handoff by keeping the root compact and the parser specific, even as later detail deepens.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser >> <<~/ahu >>
+
+<<~ ahu #bridge-to-render-pipeline >>
+
+## Bridge to Render Pipeline Kānāwai (law)
+
+Bridge-to-render-pipeline governs the handoff from semantic authoring surface into lowering, widget formation, projection, and transaction-aware rendering.
+
+This locus should make the constitutional boundary explicit so the root may name what render-pipeline may assume without forcing the root to duplicate render-pipeline's local authority.
+
+Render-pipeline should own render-time lowering and target-facing landing.
+
+### Root-to-Render Handoff Kānāwai (law)
+
+Memetic-wikitext should hand forward at least these root guarantees:
+
+* a named primitive family suitable for lowering
+* a minimum semantic distinction among locality, relation, inclusion, invocation, qualification, querying, and uncertainty
+* a minimum boot grammar contract for lawful surface forms
+* a canonical metadata locus at `#iam`
+* canonical metadata payload through fenced `toml`
+* root-level distinction between semantic authorship and downstream render projection
+* root boundary reminders around kapu, uncertainty, and upward result posture
+
+### Render-Pipeline Ownership Reminder
+
+Render-pipeline should deepen and own:
+
+* surface-to-AST lowering
+* AST-to-widget lowering
+* render projection
+* target adapters
+* transaction class and transaction phase
+* trace continuity across layers
+* target-facing landing, degrade, commit, and rollback posture
+* render aftermath and projection residue
+
+The root should not restate those duties in full when render-pipeline already carries them.
+
+### Anti-Duplication Kānāwai (law)
+
+The bridge should preserve a clean division:
+
+* the root names what a surface means
+* render-pipeline names how a lawful renderer lowers and lands that surface
+
+Where the root must mention render-facing concepts, it should do so only to define the minimum contract handed forward.
+
+Where a detail becomes primarily about projection, lowering, widget behavior, transaction lifecycle, or target-facing landing, that detail should move outward into `lar:///ha.ka.ba/pono/render-pipeline`.
+
+### Consumption Reminder
+
+A compliant renderer may therefore consume the root as a constitutional semantic contract.
+
+It should not need the root to duplicate its own layer models, target adapters, or transaction-aware aftermath machinery.
+
+<<~ ahu #bridge-to-render-pipeline-ha >>
+
+#### Bridge to Render Pipeline Kānāwai (law) / ha
+
+Bridge-to-render-pipeline-ha holds downstream render relation, constitutional boundary, and the territory of what the root hands into render-pipeline.
+
+This ahu governs the stable edge between semantic authorship and render-time lowering.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline-ha >> <<~/ahu >>
+
+<<~ ahu #bridge-to-render-pipeline-ka >>
+
+#### Bridge to Render Pipeline Kānāwai (law) / ka
+
+Bridge-to-render-pipeline-ka governs which root guarantees render-pipeline may assume and which details move outward.
+
+This ahu sharpens the minimum handoff contract so the renderer receives enough kānāwai (law) without inheriting projection duplication noise.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline-ka >> <<~/ahu >>
+
+<<~ ahu #bridge-to-render-pipeline-ba >>
+
+#### Bridge to Render Pipeline Kānāwai (law) / ba
+
+Bridge-to-render-pipeline-ba governs anti-duplication posture and living fit between semantic kānāwai (law) and render kānāwai (law).
+
+This ahu preserves a workable handoff by keeping the root compact and the renderer specific, even as later projection detail deepens.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline >> <<~/ahu >>
+
+<<~ ahu #minimum-boot-examples >>
+
+## Minimum Boot Examples
+
+Minimum-boot-examples holds the minimum lawful examples needed to teach and test the root surface.
+
+These examples should remain small, portable, and boot-sufficient.
+
+They should teach the smallest stable surface before downstream legality tables or render-target detail deepen.
+
+### Example Family Kānāwai (law)
+
+A canonical boot example should:
+
+* demonstrate one distinct semantic move
+* remain small enough for human and agent reading
+* avoid hidden dependency on later linked kānāwai (law)
+* degrade truthfully when unresolved pressure appears
+* stay portable across markdown carrier contexts
+* preserve the distinction between semantic illustration and downstream enforcement
+
+### Example Quality Reminder
+
+Boot fixtures should prefer the smallest example that still teaches the intended distinction.
+
+A root example may show governed relation, governed inclusion, or governed invocation without pretending to supply the full downstream legality or enforcement contract.
+
+When an example requires too much surrounding machinery to make sense, that example should move outward into later kānāwai (law).
+
+### Canonical Boot Fixtures
+
+#### Example A - minimum document
+
+````markdown
+<<~&#x0001; ? -> lar:///ha.ka.ba/pono/memetic-wikitext >>
+
+<<~ ahu #iam >>
+```toml
+name = "memetic-wikitext"
+```
+<<~/ahu >>
+
+<<~&#x0002; ahu #meme-body-open >>
+Body opens.
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+Body closes.
+<<~/ahu >>
+````
+
+#### Example B - minimum anchored worksite
+
+```text
+<<~ ahu #worksite >>
+A local semantic worksite.
+<<~/ahu >>
+```
+
+#### Example C - minimum relation
+
+```text
+<<~ ala lar:///ha.ka.ba/target >>
+```
+
+#### Example D - minimum passive inclusion
+
+```text
+<<~ aka lar:///ha.ka.ba/source >>
+```
+
+#### Example E - minimum active invocation
+
+```text
+<<~ kahea lar:///ha.ka.ba/source >>
+```
+
+#### Example F - minimum governed invocation
+
+```text
+<<~ ahu #governed-worksite >>
+A governed local worksite.
+
+<<~ kapu invocation -> bounded|? >>
+<<~ kahea lar:///ha.ka.ba/source >>
+<<~/ahu >>
+```
+
+#### Example G - minimum uncertainty form
+
+```text
+<<~ ? -> lar:///ha.ka.ba/source >>
+```
+
+#### Example H - minimum query and response
+
+```text
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
+<<~&#x0006; ? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
+```
+
+#### Example I - minimum upward result
+
+````text
+<<~&#x0004; -> ahu #result >>
+```toml
+status = "partial"
+return = "render"
+```
+<<~&#x0004; -> ? >>
+````
+
+### Example Coverage Reminder
+
+The boot fixture set should jointly cover:
+
+* identity
+* locality
+* relation
+* passive inclusion
+* active invocation
+* qualification
+* uncertainty
+* query and response
+* upward return
+
+Each fixture should teach one primary distinction before later laws deepen form legality, enforcement, trace, or target behavior.
+
+If an example requires too much explanation to remain boot-level, that example should move outward into later kānāwai (law).
+
+<<~ ahu #minimum-boot-examples-ha >>
+
+#### Minimum Boot Examples / ha
+
+Minimum-boot-examples-ha holds canonical teaching examples and boot exemplars.
+
+This ahu governs which tiny fixtures the root must carry in order to remain teachable and testable at boot.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples-ha >> <<~/ahu >>
+
+<<~ ahu #minimum-boot-examples-ka >>
+
+#### Minimum Boot Examples / ka
+
+Minimum-boot-examples-ka governs example selection, minimal sufficiency, and non-duplication with deeper laws.
+
+This ahu sharpens which examples remain constitutional and which examples belong in parser or render-pipeline instead.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples-ka >> <<~/ahu >>
+
+<<~ ahu #minimum-boot-examples-ba >>
+
+#### Minimum Boot Examples / ba
+
+Minimum-boot-examples-ba governs teachability, reading flow, and high-mana transmission under boot conditions.
+
+This ahu preserves the examples as living entry points rather than as inert specimen blocks.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples >> <<~/ahu >>
+
+<<~ ahu #result >>
+
+## Result
+
+Result governs the primary upward semantic package of the constitutional root.
+
+This locus should name what the root may hand upward after lawful authorship, semantic interpretation, and boot-level organization, while leaving deeper typed parse and render result machinery to downstream laws.
+
+### Root Result Charge
+
+A lawful root result may carry:
+
+* semantic identity summary
+* primitive and composition summary
+* boot grammar summary
+* boundary warnings
+* unresolved semantic pressure
+* profile or teaching posture
+* next-observation route
+
+### Root Result Kānāwai (law)
+
+The root should return one compact semantic package rather than a full implementation-facing aftermath structure.
+
+That package should remain stable enough for human and agent use, but light enough that parser and render-pipeline may still own their deeper typed envelopes, traces, and transaction-aware residue.
+
+### Truthful Incompletion Kānāwai (law)
+
+The root should not claim full completion when boundary, uncertainty, or boot sufficiency remains unresolved.
+
+When the root cannot lawfully close a question, it should prefer explicit residue, bounded uncertainty, or named next observation over flattering completion.
+
+### Outward Boundary Reminder
+
+This locus should name the semantic carry-shape of the root.
+
+This locus should not yet swallow:
+
+* typed parse issue bundles
+* parse trace packaging
+* render transaction outcome detail
+* widget-facing residue
+* target-specific aftermath classes
+
+Those details should remain outward in downstream kānāwai (law).
+
+<<~ ahu #result-ha >>
+
+#### Result / ha
+
+Result-ha holds the identity, scope, and carry-shape of the root semantic return.
+
+This ahu governs what kind of upward package the constitutional root may lawfully hand forward.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#result-ha >> <<~/ahu >>
+
+<<~ ahu #result-ka >>
+
+#### Result / ka
+
+Result-ka governs field stability, semantic comparison posture, and handoff fit with downstream laws.
+
+This ahu sharpens how the root may remain compact while still handing enough structure into later parse and render work.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#result-ka >> <<~/ahu >>
+
+<<~ ahu #result-ba >>
+
+#### Result / ba
+
+Result-ba governs truthful incompletion, forward pressure, and lawful upward semantic landing.
+
+This ahu preserves the root result as a live route into the next observation rather than a false claim of final closure.
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#result-ba >> <<~/ahu >>
+
+<<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#result >> <<~/ahu >>
+
+<<~� ahu #body-close >>
+Memetic Wikitext closes the active constitutional authoring stream here.
+<<~/ahu >>
+
+<<~� -> ahu #result >>
+
+```toml
+status = "skeleton"
+confidence = 0.71
+yield = "meme"
+return = "render"
+upward_context = "chat"
+downward_context = "none"
+residue = "todo"
+next_observation = "lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar"
+next_question = "Which minimum examples should become canonical boot fixtures first?"
+```
+
+<<~� -> ? >>

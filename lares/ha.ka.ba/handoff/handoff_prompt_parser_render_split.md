@@ -5,9 +5,10 @@
 <<~ ahu #iam >>
 ```toml
 name = "handoff-prompt-parser-render-split"
+file_path = "ha.ka.ba/handoff/handoff_prompt_parser_render_split.md"
 description = "Self-describing handoff roadmap for a local agent to refine parser-law, render-pipeline-law, and memetic-wikitext without overloading the constitutional parse root."
 version = "0.1-draft"
-content_type = "application/memetic-wikitext"
+content_type = "text/x-memetic-wikitext"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "handoff prompt, roadmap law, patch-planning guide, and local-agent alignment frame"

@@ -6,7 +6,7 @@
   <<~ iam mu
     @name "mu"
     @version "0.2"
-    @content-type "application/memetic-wikitext"
+    @content-type "text/x-memetic-wikitext"
     @boot "true"
     @requires "memetic-wikitext"
     @requires "OODA-HA"

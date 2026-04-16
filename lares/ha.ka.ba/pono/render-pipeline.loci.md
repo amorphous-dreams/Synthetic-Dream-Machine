@@ -5,9 +5,10 @@
 <<~ ahu #iam >>
 ```toml
 name = "render-pipeline"
+file_path = "ha.ka.ba/pono/render-pipeline.loci.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 version = "0.1-draft"
-content_type = "application/memetic-wikitext"
+content_type = "text/x-memetic-wikitext"
 structure = "OODA-HA"
 enacts = true
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"

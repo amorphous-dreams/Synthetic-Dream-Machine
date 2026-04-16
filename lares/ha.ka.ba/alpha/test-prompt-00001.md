@@ -5,9 +5,10 @@
 <<~ ahu #iam >>
 ```toml
 name = "alpha/test-prompt-00001"
+file_path = "ha.ka.ba/alpha/test-prompt-00001.md"
 description = "Self-describing dev-session constitutional prompt for Lares-style OODA-HA talk-story work under strict E-Prime hard mode and Maybe Logic, with narrated phases, named Hooko gap, and session-load law."
 version = "0.1-alpha"
-content_type = "application/memetic-wikitext"
+content_type = "text/x-memetic-wikitext"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "session constitutional prompt, phase narration law, memory-load instruction, and failure-state indicator"

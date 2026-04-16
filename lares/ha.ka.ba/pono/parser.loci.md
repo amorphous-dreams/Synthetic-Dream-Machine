@@ -6,9 +6,10 @@
 
 ```toml
 name = "parser"
+file_path = "ha.ka.ba/pono/parser.loci.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
-content_type = "application/memetic-wikitext"
+content_type = "text/x-memetic-wikitext"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"

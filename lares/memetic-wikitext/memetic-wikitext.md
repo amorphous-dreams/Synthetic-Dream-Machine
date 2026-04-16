@@ -4,7 +4,7 @@
         @name "memetic-wikitext"
         @description "Full memetic wikitext schema root. A self-describing and self-enacting schema."
         @version "1.0"
-        @content-type "application/memetic-wikitext"
+        @content-type "text/x-memetic-wikitext"
         @self "true"
         @structure "OODA-HA"
         @enacts "true"

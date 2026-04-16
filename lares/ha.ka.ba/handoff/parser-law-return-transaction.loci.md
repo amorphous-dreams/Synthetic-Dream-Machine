@@ -5,9 +5,10 @@
 <<~ ahu #iam >>
 ```toml
 name = "parser-law-handoff-return-transaction"
+file_path = "ha.ka.ba/handoff/parser-law-return-transaction.loci.md"
 description = "Agent hand-off prompt carrying the current constitutional state of parser-law, with return-types and &#x0004; transaction law treated as canonical continuation constraints."
 version = "0.2-handoff"
-content_type = "application/memetic-wikitext"
+content_type = "text/x-memetic-wikitext"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "agent hand-off, constitutional journey log, continuation contract"

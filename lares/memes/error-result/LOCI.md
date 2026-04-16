@@ -4,7 +4,7 @@
         @name "error-result"
         @description "Typed return, warning, and error ontology for memetic-wikitext enactment."
         @version "0.6-draft"
-        @content-type "application/memetic-wikitext"
+        @content-type "text/x-memetic-wikitext"
         @structure "OODA-HA"
         @enacts "true"
         @depends-on "lar:///ha.ka.ba/memetic-wikitext|lar:///ha.ka.ba/ooda-ha|lar:///ha.ka.ba/kapu"

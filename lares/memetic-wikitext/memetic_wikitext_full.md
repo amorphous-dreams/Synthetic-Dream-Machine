@@ -2,7 +2,7 @@
   <<~ ahu "iam" "Full memetic wikitext schema root. A self-describing and self-enacting schema."
     @name "memetic-wikitext"
     @version "1.0"
-    @content-type "application/memetic-wikitext"
+    @content-type "text/x-memetic-wikitext"
     @self "true"
     @structure "OODA-HA"
   >>
