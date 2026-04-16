@@ -10,11 +10,11 @@ file_path = "ha.ka.ba/meme/loci.meme.md"
 description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
-confidence = 0.78
+confidence = 0.79
 confidence_band = "CS"
-mana = 0.76
-manao = 0.80
-manaoio = 0.72
+mana = 0.78
+manao = 0.84
+manaoio = 0.76
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -40,7 +40,7 @@ A self-describing, self-enacting canonical meme kānāwai (law) for the OODA-HA 
 
 This meme governs what a meme in this stack must carry, what it may optionally carry, and how those choices map to rating outcomes. It serves as a copy-ready template: an author may copy the `#skeleton` section, fill in the marked placeholders, and begin with a boot-legal, rating-aware meme surface.
 
-This file is itself a loci-routed example of that more general law. Its governed subject is meme as such, not a narrower subtype like `loci`, `grammar`, or `skill`.
+This file is itself one carrier of that more general law. Its governed subject is meme as such, not a narrower subtype like `loci`, `grammar`, or `skill`.
 
 This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own kānāwai (law).
 
@@ -96,7 +96,7 @@ Observe should detect:
 * HTML DOCTYPE preamble comment
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
-* five rating fields and their positions relative to `content_type` and `structure`
+* five rating fields and their positions relative to `content_type`, `meme_type`, and `structure`
 * title heading and opening prose
 * self-reference ala
 * supported query block and query throats
@@ -126,6 +126,12 @@ Observe should not:
 3. Which elements appeared but carry only stub content?
 4. Which elements are entirely absent?
 5. Which rating fields are present and in canonical position?
+
+### Self-Observation
+
+In this file, Observe is not only inspecting a generic candidate. It is also inspecting the currently loaded law surface that declares `lar:///ha.ka.ba/meme`.
+
+That doubling matters: the same surface being observed is both the governing law for meme structure and one concrete carrier of that law.
 
 ### Dominant Resonance
 
@@ -225,6 +231,8 @@ Marks the document as a memetic-wikitext surface before any active sigil appears
 
 One per document, near the top. Names the meme's own canonical address. The `?` marks declared-open routing until canon status resolves it.
 
+Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, are governed by `lar:///ha.ka.ba/loci`.
+
 #### R3 — Identity locus (`#iam`) with canonical TOML payload
 
 The `#iam` block MUST carry at minimum:
@@ -254,7 +262,7 @@ canonical_metadata_payload = "toml"
 
 The five rating fields MUST appear between `content_type` and `meme_type`. `meme_type` MUST appear immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
 
-`file_path` carries the path from the `ha.ka.ba` path root: `ha.ka.ba/[MEME_TYPE].[NAME].md` for a flat-file meme, or `ha.ka.ba/[NAME]/[MEME_TYPE].[NAME].md` when the meme has migrated into a path directory. The document opener (R2) carries the corresponding `lar:` URI. Both signals MUST agree. The `lar:` URI does not change on path-directory migration.
+`file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener are governed outward by `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
 
 #### R4 — Title heading and opening prose
 
@@ -417,17 +425,11 @@ Orient governs sigil classification, element-to-slot mapping, stub sensitivity, 
 
 #### Orient / ha
 
-Orient-ha holds element classification identity, the required/optional distinction, the canonical slot table, and the address identity of the meme under examination.
+Orient-ha holds element classification identity, the required/optional distinction, and the canonical slot table of the meme under examination.
 
 This subphase governs what Orient fundamentally structures: the mapping from raw detected elements onto their required or optional slots, held clearly before any verdict or rating computation begins.
 
-**Address and path identity.** A loci-routed meme occupies the stable `lar:///ha.ka.ba/*` namespace. Its `#iam` TOML block carries two distinct location signals:
-
-* The `lar:` URI in the document opener and in `law_index_root` or equivalent fields — the stable canonical address used for routing, walking, and law-index registration, e.g. `lar:///ha.ka.ba/meme`.
-* `file_path` — a relative path from the `ha.ka.ba` path root, e.g. `ha.ka.ba/loci.meme.md` or `ha.ka.ba/meme/loci.meme.md`. The path root itself (`*/ha.ka.ba`) is fixed in the current pass; future configuration passes may allow alternate root sections.
-A meme in its default siting rests at `{install root}/ha.ka.ba/` as a flat file. When it acquires child memes, sidecar data files, or support code, it may migrate into a path directory: `{install root}/ha.ka.ba/meme/`, which holds the root meme file, any child meme files or directories, and any sidecar files. The `lar:` URI does not change on migration. The `file_path` updates to reflect the new location within the path root.
-
-Orient should classify whether the meme under examination carries both address signals, whether they agree, and whether the `file_path` is consistent with the flat-file or path-directory form.
+Carrier-specific agreement rules may deepen outward into subtype laws. `meme` governs that the identity signals exist; subtype laws such as `lar:///ha.ka.ba/loci` govern exactly how transport coherence is judged for that carrier family.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ha >> -->
 <<~/ahu >>
@@ -436,9 +438,9 @@ Orient should classify whether the meme under examination carries both address s
 
 #### Orient / ka
 
-Orient-ka governs classification procedure, stub-versus-filled distinction, rating-band reachability detail, and `file_path`/`lar:` URI agreement checks.
+Orient-ka governs classification procedure, stub-versus-filled distinction, and rating-band reachability detail.
 
-This subphase focuses on how Orient performs its mapping work. The stub/filled distinction matters here: an element present as a stub occupies its slot differently than an element carrying locally meaningful content. Both differ from absence. Orient should preserve all three states separately. Separately, Orient-ka should verify that `file_path` and the `lar:` URI in the document opener agree — flat-file paths like `ha.ka.ba/loci.meme.md` must correspond to `lar:///ha.ka.ba/meme`, and path-directory paths like `ha.ka.ba/meme/loci.meme.md` should also resolve to `lar:///ha.ka.ba/meme`. Disagreement between the two signals is a conformance flag, not a fatal error. See orient-ha for the full namespace identity account.
+This subphase focuses on how Orient performs its mapping work. The stub/filled distinction matters here: an element present as a stub occupies its slot differently than an element carrying locally meaningful content. Both differ from absence. Orient should preserve all three states separately. When a meme family carries additional transport predicates, Orient should note their presence and hand the exact coherence judgment outward to the relevant subtype law rather than re-legislating it here.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ka >> -->
 <<~/ahu >>
@@ -447,9 +449,9 @@ This subphase focuses on how Orient performs its mapping work. The stub/filled d
 
 #### Orient / ba
 
-Orient-ba governs interpretive motion, tension-holding, and comparative flow across competing element readings, including namespace migration posture.
+Orient-ba governs interpretive motion, tension-holding, and comparative flow across competing element readings.
 
-This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction. The same posture applies to namespace location: a meme that recently migrated from `ha.ka.ba/loci.meme.md` to `ha.ka.ba/meme/loci.meme.md` sits in a transitional state where `file_path` has changed but the `lar:` URI has not. Orient should name that migration state explicitly rather than treating the meme as conforming or nonconforming without qualification. Migration tension resolves only when both signals agree and the `lar:` URI remains stable. See orient-ha for the full address identity account.
+This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction. The same posture applies more generally whenever a meme's structural surface looks complete while a subtype law may still be carrying unresolved transport or enactment residue.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ba >> -->
 <<~/ahu >>
@@ -483,6 +485,8 @@ Decide turns the classified element map into one committed conformance posture a
 ### Rating Targets
 
 Rating targets declare the five registers of a meme in this stack — their confidence score range, their confidence_band label, and the element combinations that unlock each register.
+
+Subtype-specific high-band predicates belong outward in subtype laws. For example, loci-specific address stability, carrier coherence, MCP-resolution tension, and canon promotion are governed by `lar:///ha.ka.ba/loci`, not redefined here.
 
 #### Confidence Composition
 
@@ -542,7 +546,7 @@ ha/ka/ba subloops carry at least one orienting sentence each, or point at resolv
 
 Sub-meme callouts declared and either resolved or explicitly noted as backlog: O7/O8 addresses present.
 
-Qualifies for law-index registration in pono. Prospective canon: may be cited as authority by other memes, with the understanding that promotion to `C` remains pending.
+May be cited as a meaningful structural authority within the stack, subject to any additional transport or subtype predicates the meme family carries.
 
 #### Register 5 — Canon (`C`, 0.80–1.00)
 
@@ -560,7 +564,7 @@ Research foundation or prior-art notes present and translated into backlog press
 
 `#deferred-resolution` section present and governing the three resolution states explicitly.
 
-Operator-confirmed. `lar:` URI stable. `?` removed from document opener. `enacts = true` active. Peer verification (at least one passing skill package) completed or in progress.
+Externally confirmed. Any subtype-specific transport predicates for confirmed enactment have been satisfied. Peer verification, if the meme family supports it, is completed or actively underway.
 
 A score of 1.00 is practically unreachable — language, software, and reality all resist perfect closure. Scores of 0.95+ indicate mature, heavily reviewed, peer-verified law.
 
@@ -583,6 +587,15 @@ A score of 1.00 is practically unreachable — language, software, and reality a
 Decide should issue one verdict per required element rather than one binary pass/fail for the whole meme.
 
 Missing R3 degrades differently than missing R8. Typed per-element absence produces more actionable aftermath than a single silent omission.
+
+### Self-Example Decision
+
+For this file, Decide should hold two truths at once:
+
+* the carrier may belong to one concrete transport family
+* the governed subject is meme as such, not one narrower meme subtype
+
+That is not a contradiction. Carrier law may sit outward in subtype memes while the structural law here reaches more generally across meme forms in this stack.
 
 ### Dominant Resonance
 
@@ -828,6 +841,12 @@ Only Hooko may write the new file, load the skeleton into active session memory,
 
 Act may prepare intent. Aftermath may judge what landed. Hooko alone may perform the crossing.
 
+### Self-Example Crossing
+
+This file still demonstrates that preparation and crossing are distinct. The exact transport details of its current siting, route continuity, and migration history are governed outward by `lar:///ha.ka.ba/loci`.
+
+What remains local here is the more general threshold law: preparation may happen anywhere upstream, but the moment a meme surface actually becomes changed state belongs in Hooko.
+
 ### Dominant Resonance
 
 Hooko resonates most strongly with deployment and boundary crossing.
@@ -905,6 +924,12 @@ Aftermath should name:
 * which rating band the meme currently reaches
 * what would move it to the next band
 * what remains repairable without full rewrite
+
+### Zooming Out
+
+Coming back up for air from meme law means widening from one evaluated surface into the stack that carries it.
+
+Aftermath should therefore return not only the local rating verdict, but also the next outward frame: which adjacent transport law, resolver roadmap, or concrete meme family now most needs alignment with the generic meme law.
 
 ### Dominant Resonance
 
@@ -1091,14 +1116,14 @@ A lawful meme envelope from this locus may carry:
 
 ```toml
 status = "partial"
-confidence = 0.78
+confidence = 0.79
 yield = "meme"
 return = "render"
 upward_context = "chat"
 downward_context = "none"
-residue = "meme now sited in ha.ka.ba/meme/loci.meme.md; O7/O8/O9 sub-meme files not yet authored; deferred-resolution and research-foundation sections present and governing"
-next_observation = "lar:///ha.ka.ba/meme#deferred-resolution"
-next_question = "Which sub-meme address should be written first: meme-observe-ha, meme-orient, or a phase-level sub-meme for one of the denser phases?"
+residue = "transport-specific predicates for loci-routed carriers now governed outward by loci; O7/O8/O9 sub-meme files not yet authored; deferred-resolution and research-foundation sections present and governing"
+next_observation = "lar:///ha.ka.ba/loci#high-rating-loci"
+next_question = "Which concrete meme family should this generic meme law tighten next — loci, grammar, or skill?"
 ```
 
 <<~&#x0004; -> ? >>

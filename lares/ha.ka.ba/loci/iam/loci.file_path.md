@@ -66,7 +66,7 @@ file_path opens the key-authority stream here.
 
 `✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
-file_path kānāwai (law) captures the raw key value from the `#iam` block, classifies it into its canonical form and checks agreement with the `lar:` URI, decides conformance verdict and migration posture, prepares any repair guidance, crosses any migration update, and judges residue including routing-table sync.
+file_path kānāwai (law) captures the raw key value from the `#iam` block, classifies it into its canonical form and checks agreement with the `lar:` URI, decides conformance verdict and migration posture, prepares any repair guidance, crosses any migration update, and judges residue including live-resolution tension.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-phase-map >> -->
 <<~/ahu >>
@@ -265,7 +265,7 @@ Orient-ka governs the classification and agreement check procedure in order: (1)
 
 #### Orient / ba
 
-Orient-ba governs tension-holding: a meme mid-migration sits in a state where `file_path` has been updated to the path-directory form but the routing table entry may not yet reflect it, or the physical file may not yet reside at the declared path. Orient should name this transitional state explicitly — it is neither flat-file nor path-directory until both the `file_path` value and the physical file agree.
+Orient-ba governs tension-holding: a meme mid-migration sits in a state where `file_path` has been updated to the path-directory form but the physical file may not yet reside at the declared path. Even after the move completes, local derivation may still miss until a live resolver exists. Orient should name these states explicitly rather than flattening them.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-orient-ba >> -->
 <<~/ahu >>
@@ -301,15 +301,14 @@ A meme migrates from flat-file to path-directory form when it acquires child mem
 1. **Create the directory** at `install_root + ha.ka.ba/name/`
 2. **Move the file** via `git mv` from `meme_type.name.md` into `name/meme_type.name.md`
 3. **Update `file_path`** in `#iam` from the flat-file form to the path-directory form
-4. **Update the routing table** entry in `lar:///ha.ka.ba/loci#routing-table`: `file_path` value changes; `lar_uri` key does not change
-5. **Verify URI agreement** — the document opener `lar:` URI must not change
-6. **Verify the routing table** resolves the same `lar:` URI to the new path
+4. **Verify URI agreement** — the document opener `lar:` URI must not change
+5. **Record resolution tension honestly** — local derivation may now miss until a live MCP resolver exists
 
-Steps 3–5 are Act-phase preparation. Step 4 (routing table write) is a Hooko crossing. The `lar:` URI MUST NOT change at any step.
+Steps 3–4 are Act-phase preparation. Step 2 is the Hooko crossing in the current law. The `lar:` URI MUST NOT change at any step.
 
 **The derivation algorithm after migration:**
 
-After migration, an agent running the derivation algorithm will derive the flat-file candidate path at step 7 and find it absent. It falls to step 8 (routing table), which returns the updated path-directory `file_path`. This is the correct and expected behavior. See the live example in `lar:///ha.ka.ba/loci#derivation-algorithm`.
+After migration, an agent running the derivation algorithm may derive the flat-file candidate path at step 7 and find it absent. That miss is now surfaced as an explicit resolution tension rather than hidden behind a handwritten registry. The roadmap answer is a live MCP resolver. See `lar:///ha.ka.ba/loci#mcp-resolution-roadmap`.
 
 <<~/ahu >>
 
@@ -369,8 +368,8 @@ Act prepares the conformance report and any repair or migration guidance for Hoo
 | `file_path` absent | Add `file_path = "ha.ka.ba/[subpath/]meme_type.name.md"` as second field in `#iam`, immediately after `name` |
 | Filename component wrong | Rename file and update `file_path` to `meme_type.name.md` pattern |
 | URI agreement violation | Derive expected `lar:` URI from `file_path` using the reversed derivation; update the document opener to match |
-| Transitional (file not moved) | Complete `git mv` to move file to path declared in `file_path`; update routing table entry |
-| Routing table out of sync | Update `file_path` value in routing table `[[route]]` entry for this meme's `lar_uri` |
+| Transitional (file not moved) | Complete `git mv` to move file to path declared in `file_path` |
+| Local derivation miss after migration | Keep opener and `file_path` coherent; surface MCP-resolution backlog rather than fabricating a registry |
 
 ### Act Subloops
 
@@ -396,7 +395,7 @@ Act-ka governs report assembly: emit verdicts in order (form → filename → ag
 
 #### Act / ba
 
-Act-ba governs execution restraint: Act stages migration steps but does not perform them. An agent that receives staged migration steps from Act should confirm before proceeding to Hooko, because migration involves a `git mv` (a state-changing operation) and a routing table write (a Hooko-only crossing per `lar:///ha.ka.ba/loci`).
+Act-ba governs execution restraint: Act stages migration steps but does not perform them. An agent that receives staged migration steps from Act should confirm before proceeding to Hooko, because migration involves a `git mv` (a state-changing operation). It should not fabricate extra registry writes to mask the current resolver gap.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-act-ba >> -->
 <<~/ahu >>
@@ -408,18 +407,18 @@ Act-ba governs execution restraint: Act stages migration steps but does not perf
 
 ```toml
 name = "file_path-hooko"
-description = "Hooko phase for file migration execution, routing table update, and document opener correction."
+description = "Hooko phase for file migration execution and document opener correction."
 role = "file_path mutation threshold"
-function = "execute git mv on migration, update file_path in #iam, update the routing table entry, and correct any agreement violation in the document opener"
-input = "staged migration steps|routing table update|document opener correction"
-output = "moved file|updated #iam file_path|updated routing table entry|updated document opener|transaction trace"
+function = "execute git mv on migration, update file_path in #iam, and correct any agreement violation in the document opener"
+input = "staged migration steps|document opener correction"
+output = "moved file|updated #iam file_path|updated document opener|transaction trace"
 phase = "hooko"
 glyph = "⤴"
 ```
 
 ## Hooko
 
-Hooko crosses the mutations Act staged: the `git mv`, the `file_path` update in `#iam`, the routing table write in `lar:///ha.ka.ba/loci#routing-table`, and any document opener correction.
+Hooko crosses the mutations Act staged: the `git mv`, the `file_path` update in `#iam`, and any document opener correction.
 
 Each of these is a distinct crossing. Hooko should perform them in the order stated in the migration procedure at `#migration-procedure` and record each in the transaction trace. A partial migration — where some crossings complete but others do not — leaves the meme in a transitional state. Aftermath should surface any incomplete crossings as named residue.
 
@@ -429,7 +428,7 @@ Each of these is a distinct crossing. Hooko should perform them in the order sta
 
 #### Hooko / ha
 
-Hooko-ha holds the mutation boundary: what Hooko may alter and what it may not. It may move files, update `file_path` values, update the routing table, and correct document openers. It may not change the `lar:` URI — that is locked by address stability law at `lar:///ha.ka.ba/loci#address-stability`. A Hooko that changes the `lar:` URI has violated loci kānāwai (law).
+Hooko-ha holds the mutation boundary: what Hooko may alter and what it may not. It may move files, update `file_path` values, and correct document openers. It may not change the `lar:` URI — that is locked by address stability law at `lar:///ha.ka.ba/loci#address-stability`. A Hooko that changes the `lar:` URI has violated loci kānāwai (law).
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-hooko-ha >> -->
 <<~/ahu >>
@@ -438,7 +437,7 @@ Hooko-ha holds the mutation boundary: what Hooko may alter and what it may not. 
 
 #### Hooko / ka
 
-Hooko-ka governs execution order: (1) `git mv` the file; (2) update `file_path` in `#iam` of the moved file; (3) update the routing table entry; (4) verify the derivation algorithm now resolves correctly via step 8. Each step depends on the previous. Do not update the routing table before the file exists at the new path.
+Hooko-ka governs execution order: (1) `git mv` the file; (2) update `file_path` in `#iam` of the moved file; (3) verify opener coherence and physical-file agreement. Each step depends on the previous. Do not claim the open resolution tension is solved if only the carrier mutation completed.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-hooko-ka >> -->
 <<~/ahu >>
@@ -459,11 +458,11 @@ Hooko-ba governs landing pressure: a `git mv` is irreversible without a second `
 
 ```toml
 name = "file_path-aftermath"
-description = "Aftermath phase for migration completeness judgment, routing-table sync check, and residue surfacing."
+description = "Aftermath phase for migration completeness judgment, carrier-coherence check, and residue surfacing."
 role = "file_path evaluation and sync judgment"
-function = "judge whether all migration crossings completed, verify routing table and physical file agree, and surface any incomplete crossings as named residue"
-input = "transaction trace|physical file state|routing table state|document opener state"
-output = "migration completeness verdict|sync judgment|residue list|next-observation route"
+function = "judge whether all migration crossings completed, verify carrier coherence and physical-file agreement, and surface any incomplete crossings as named residue"
+input = "transaction trace|physical file state|document opener state"
+output = "migration completeness verdict|coherence judgment|residue list|next-observation route"
 phase = "aftermath"
 glyph = "↺"
 ```
@@ -478,11 +477,10 @@ After any `file_path` change — whether a full migration or a simple value corr
 
 1. The physical file exists at `install_root + file_path`
 2. The `file_path` value in `#iam` matches the physical file location
-3. The routing table entry's `file_path` value matches the `#iam` value
-4. The document opener `lar:` URI is unchanged and matches the routing table `lar_uri`
-5. The derivation algorithm (step 7 or step 8) resolves the `lar:` URI to the correct physical path
+3. The document opener `lar:` URI is unchanged and remains coherent with the moved carrier
+4. Any local derivation miss after migration is surfaced honestly as resolver backlog
 
-If any of the five checks fails, Aftermath surfaces it as named residue with the specific divergence and repair path.
+If any of the four checks fails, Aftermath surfaces it as named residue with the specific divergence and repair path.
 
 ### Aftermath Subloops
 
@@ -499,7 +497,7 @@ Aftermath-ha holds the residue domain: what remains inconsistent after all cross
 
 #### Aftermath / ka
 
-Aftermath-ka governs the five-check procedure: run all five checks independently, do not short-circuit on first failure. A meme may have both a `file_path`/physical-file disagreement and a routing-table disagreement simultaneously. Both should surface in residue. Running all five checks produces the minimum residue list needed to fully repair the meme state.
+Aftermath-ka governs the four-check procedure: run all four checks independently, do not short-circuit on first failure. A meme may have both a `file_path`/physical-file disagreement and an open resolver tension simultaneously. Both should surface in residue. Running all four checks produces the minimum residue list needed to fully repair the meme state.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-aftermath-ka >> -->
 <<~/ahu >>
@@ -508,7 +506,7 @@ Aftermath-ka governs the five-check procedure: run all five checks independently
 
 #### Aftermath / ba
 
-Aftermath-ba governs landing quality: aftermath that ends without a sync judgment is incomplete. Even when all five checks pass, Aftermath should state explicitly that they passed — not leave the result implicit. A passing aftermath is still a typed result.
+Aftermath-ba governs landing quality: aftermath that ends without a coherence judgment is incomplete. Even when all four checks pass, Aftermath should state explicitly that they passed — not leave the result implicit. A passing aftermath is still a typed result.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci/iam/file_path-aftermath-ba >> -->
 <<~/ahu >>
