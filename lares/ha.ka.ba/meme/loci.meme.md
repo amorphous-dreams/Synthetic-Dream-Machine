@@ -6,20 +6,20 @@
 
 ```toml
 name = "meme"
-file_path = "ha.ka.ba/loci.meme.md"
-description = "Canonical skeleton meme for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
+file_path = "ha.ka.ba/meme/loci.meme.md"
+description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
-confidence = 0.72
+confidence = 0.78
 confidence_band = "CS"
-mana = 0.70
-manao = 0.78
-manaoio = 0.65
+mana = 0.76
+manao = 0.80
+manaoio = 0.72
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
-role = "canonical skeleton meme, template authority, and rating-target kānāwai (law)"
-function = "define the required and optional structure of a loci meme, serve as a copy-ready skeleton, and govern which elements unlock which rating bands"
+role = "canonical meme kānāwai (law), template authority, and rating-target authority"
+function = "define the required and optional structure of a meme in this stack, serve as a copy-ready skeleton, and govern which element combinations unlock which rating bands"
 input = "authoring intent|meme draft|rating query|skeleton request|?"
 output = "skeleton-envelope(high manaoio^)|partial-skeleton-envelope(mid manaoio-)|degraded-skeleton-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
@@ -29,16 +29,18 @@ depends_on = [
 ]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
-product_identity = "Canonical meme skeleton and rating-target kānāwai (law)"
+product_identity = "Canonical meme kānāwai (law) and rating-target authority"
 ```
 
 <<~/ahu >>
 
 # Meme
 
-A self-describing, self-enacting canonical skeleton for a loci meme in the OODA-HA * ha.ka.ba pattern.
+A self-describing, self-enacting canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern.
 
-This meme governs what a loci meme must carry, what it may optionally carry, and how those choices map to rating outcomes. It serves as a copy-ready template: an author may copy the `#skeleton` section, fill in the marked placeholders, and begin with a boot-legal, rating-aware meme surface.
+This meme governs what a meme in this stack must carry, what it may optionally carry, and how those choices map to rating outcomes. It serves as a copy-ready template: an author may copy the `#skeleton` section, fill in the marked placeholders, and begin with a boot-legal, rating-aware meme surface.
+
+This file is itself a loci-routed example of that more general law. Its governed subject is meme as such, not a narrower subtype like `loci`, `grammar`, or `skill`.
 
 This meme does not govern parse recognition, render lowering, or transaction lifecycle. Those belong to their own kānāwai (law).
 
@@ -76,10 +78,10 @@ A reader, tool, or agent following this meme should not collapse those phases in
 
 ```toml
 name = "meme-observe"
-description = "Observe phase for surface gathering, element detection, and raw presence marking across a loci meme candidate."
+description = "Observe phase for surface gathering, element detection, and raw presence marking across a meme candidate."
 role = "element intake"
 function = "gather the authored surface, detect required and optional element sites, preserve raw form, and mark initial absences"
-input = "loci meme candidate|skeleton request|rating query|?"
+input = "meme candidate|skeleton request|rating query|?"
 output = "raw surface|element presence map|absence map|candidate boundaries|confidence markers"
 phase = "observe"
 glyph = "✶"
@@ -205,7 +207,7 @@ Orient should answer:
 
 Required elements are those whose absence directly degrades `mana`, `structural_validity`, or `manaoio` below the mid band.
 
-A boot-legal loci meme MUST carry all nine.
+A boot-legal meme MUST carry all nine.
 
 #### R1 — HTML DOCTYPE preamble comment
 
@@ -238,6 +240,7 @@ confidence_band = "?"
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
+meme_type = "..."
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "..."
@@ -249,9 +252,9 @@ canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 ```
 
-The five rating fields MUST appear between `content_type` and `structure`. Absence of any rating field degrades `payload_integrity`.
+The five rating fields MUST appear between `content_type` and `meme_type`. `meme_type` MUST appear immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
 
-`file_path` carries the path from the `ha.ka.ba` path root: `ha.ka.ba/[NAME].loci.md` for a flat-file meme, or `ha.ka.ba/[NAME]/[NAME].loci.md` (or similar) when the meme has migrated into a path directory. The document opener (R2) carries the corresponding `lar:` URI. Both signals MUST agree. The `lar:` URI does not change on path-directory migration.
+`file_path` carries the path from the `ha.ka.ba` path root: `ha.ka.ba/[MEME_TYPE].[NAME].md` for a flat-file meme, or `ha.ka.ba/[NAME]/[MEME_TYPE].[NAME].md` when the meme has migrated into a path directory. The document opener (R2) carries the corresponding `lar:` URI. Both signals MUST agree. The `lar:` URI does not change on path-directory migration.
 
 #### R4 — Title heading and opening prose
 
@@ -414,15 +417,14 @@ Orient governs sigil classification, element-to-slot mapping, stub sensitivity, 
 
 #### Orient / ha
 
-Orient-ha holds element classification identity, the required/optional distinction, the canonical slot table, and the loci namespace identity of the meme under examination.
+Orient-ha holds element classification identity, the required/optional distinction, the canonical slot table, and the address identity of the meme under examination.
 
 This subphase governs what Orient fundamentally structures: the mapping from raw detected elements onto their required or optional slots, held clearly before any verdict or rating computation begins.
 
-**Loci namespace and path identity.** A loci-rated meme occupies the stable `lar:///ha.ka.ba/*/` namespace. Its `#iam` TOML block carries two distinct location signals:
+**Address and path identity.** A loci-routed meme occupies the stable `lar:///ha.ka.ba/*` namespace. Its `#iam` TOML block carries two distinct location signals:
 
-* `file_path` — a relative path from the `ha.ka.ba` path root, e.g. `ha.ka.ba/meme.loci.md`. The path root itself (`*/ha.ka.ba`) is fixed in the current pass; future configuration passes may allow alternate root sections.
 * The `lar:` URI in the document opener and in `law_index_root` or equivalent fields — the stable canonical address used for routing, walking, and law-index registration, e.g. `lar:///ha.ka.ba/meme`.
-
+* `file_path` — a relative path from the `ha.ka.ba` path root, e.g. `ha.ka.ba/loci.meme.md` or `ha.ka.ba/meme/loci.meme.md`. The path root itself (`*/ha.ka.ba`) is fixed in the current pass; future configuration passes may allow alternate root sections.
 A meme in its default siting rests at `{install root}/ha.ka.ba/` as a flat file. When it acquires child memes, sidecar data files, or support code, it may migrate into a path directory: `{install root}/ha.ka.ba/meme/`, which holds the root meme file, any child meme files or directories, and any sidecar files. The `lar:` URI does not change on migration. The `file_path` updates to reflect the new location within the path root.
 
 Orient should classify whether the meme under examination carries both address signals, whether they agree, and whether the `file_path` is consistent with the flat-file or path-directory form.
@@ -436,7 +438,7 @@ Orient should classify whether the meme under examination carries both address s
 
 Orient-ka governs classification procedure, stub-versus-filled distinction, rating-band reachability detail, and `file_path`/`lar:` URI agreement checks.
 
-This subphase focuses on how Orient performs its mapping work. The stub/filled distinction matters here: an element present as a stub occupies its slot differently than an element carrying locally meaningful content. Both differ from absence. Orient should preserve all three states separately. Separately, Orient-ka should verify that `file_path` and the `lar:` URI in the document opener agree — flat-file paths like `ha.ka.ba/meme.loci.md` must correspond to `lar:///ha.ka.ba/meme`, and path-directory paths like `ha.ka.ba/meme/index.loci.md` should also resolve to `lar:///ha.ka.ba/meme`. Disagreement between the two signals is a conformance flag, not a fatal error. See orient-ha for the full namespace identity account.
+This subphase focuses on how Orient performs its mapping work. The stub/filled distinction matters here: an element present as a stub occupies its slot differently than an element carrying locally meaningful content. Both differ from absence. Orient should preserve all three states separately. Separately, Orient-ka should verify that `file_path` and the `lar:` URI in the document opener agree — flat-file paths like `ha.ka.ba/loci.meme.md` must correspond to `lar:///ha.ka.ba/meme`, and path-directory paths like `ha.ka.ba/meme/loci.meme.md` should also resolve to `lar:///ha.ka.ba/meme`. Disagreement between the two signals is a conformance flag, not a fatal error. See orient-ha for the full namespace identity account.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ka >> -->
 <<~/ahu >>
@@ -447,7 +449,7 @@ This subphase focuses on how Orient performs its mapping work. The stub/filled d
 
 Orient-ba governs interpretive motion, tension-holding, and comparative flow across competing element readings, including namespace migration posture.
 
-This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction. The same posture applies to namespace location: a meme that recently migrated from `ha.ka.ba/meme.loci.md` to `ha.ka.ba/meme/meme.loci.md` sits in a transitional state where `file_path` has changed but the `lar:` URI has not. Orient should name that migration state explicitly rather than treating the meme as conforming or nonconforming without qualification. Migration tension resolves only when both signals agree and the `lar:` URI remains stable. See orient-ha for the full loci namespace account.
+This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction. The same posture applies to namespace location: a meme that recently migrated from `ha.ka.ba/loci.meme.md` to `ha.ka.ba/meme/loci.meme.md` sits in a transitional state where `file_path` has changed but the `lar:` URI has not. Orient should name that migration state explicitly rather than treating the meme as conforming or nonconforming without qualification. Migration tension resolves only when both signals agree and the `lar:` URI remains stable. See orient-ha for the full address identity account.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ba >> -->
 <<~/ahu >>
@@ -480,7 +482,7 @@ Decide turns the classified element map into one committed conformance posture a
 
 ### Rating Targets
 
-Rating targets declare the five registers of a loci meme — their confidence score range, their confidence_band label, and the element combinations that unlock each register.
+Rating targets declare the five registers of a meme in this stack — their confidence score range, their confidence_band label, and the element combinations that unlock each register.
 
 #### Confidence Composition
 
@@ -651,7 +653,7 @@ Act prepares the skeleton product and return envelope for lawful crossing.
 
 ### Skeleton
 
-The canonical copy-ready skeleton for a new loci meme.
+The canonical copy-ready skeleton for a new meme in this stack.
 
 Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete optional sections you choose to defer. Set `enacts = false` and `confidence = 0.10`.
 
@@ -664,7 +666,7 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 
 ```toml
 name = "[NAME]"
-file_path = "ha.ka.ba/[NAME].loci.md"
+file_path = "ha.ka.ba/[MEME_TYPE].[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
 content_type = "text/x-memetic-wikitext"
@@ -673,6 +675,7 @@ confidence_band = "P"
 mana = 0.10
 manao = 0.10
 manaoio = 0.10
+meme_type = "[MEME_TYPE]"
 structure = "OODA-HA * ha.ka.ba"
 enacts = false
 role = "[role]"
@@ -1088,12 +1091,12 @@ A lawful meme envelope from this locus may carry:
 
 ```toml
 status = "partial"
-confidence = 0.72
+confidence = 0.78
 yield = "meme"
 return = "render"
 upward_context = "chat"
 downward_context = "none"
-residue = "O7/O8/O9 sub-meme files not yet authored; deferred-resolution and research-foundation sections present and governing"
+residue = "meme now sited in ha.ka.ba/meme/loci.meme.md; O7/O8/O9 sub-meme files not yet authored; deferred-resolution and research-foundation sections present and governing"
 next_observation = "lar:///ha.ka.ba/meme#deferred-resolution"
 next_question = "Which sub-meme address should be written first: meme-observe-ha, meme-orient, or a phase-level sub-meme for one of the denser phases?"
 ```

@@ -913,7 +913,7 @@ A low `manaoio` meme reads as a sketch, a stub, or a declared intent that has no
 
 ### Field Ordering Kānāwai (law)
 
-In canonical `#iam` TOML, the five rating fields SHOULD appear between `content_type` and `structure` in this order:
+In canonical `#iam` TOML, the five rating fields SHOULD appear between `content_type` and `meme_type`, with `meme_type` immediately before `structure`, in this order:
 
 ```toml
 content_type = "..."
@@ -922,6 +922,7 @@ confidence_band = "?"
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
+meme_type = "..."
 structure = "..."
 ```
 

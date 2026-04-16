@@ -182,6 +182,7 @@ ha.ka.ba/[optional/subpath/]name/meme_type.name.md
 Examples:
 ```
 ha.ka.ba/loci/loci.loci.md
+ha.ka.ba/meme/loci.meme.md
 ha.ka.ba/pono/parser/loci.parser.md   ← (future, if parser migrates)
 ```
 

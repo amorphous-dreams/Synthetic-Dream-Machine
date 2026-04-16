@@ -10,11 +10,11 @@ file_path = "ha.ka.ba/loci/loci.loci.md"
 description = "Routing kānāwai (law) for resolving lar: URIs to repository file paths. Declares the derivation algorithm, meme-type prefix table, authoritative routing table, address stability criteria, and canon promotion rules for all memes in this system."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
-confidence = 0.70
+confidence = 0.79
 confidence_band = "CS"
-mana = 0.68
-manao = 0.74
-manaoio = 0.62
+mana = 0.76
+manao = 0.81
+manaoio = 0.74
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -43,6 +43,8 @@ A self-describing routing authority for all `lar:` URIs in this system.
 Loci declares the algorithm an agent uses to resolve a `lar:` URI to a file path without inference, the meme-type prefix table that makes the file naming convention explicit, the authoritative routing table for all currently registered memes, the conditions that make an address stable, and the canon promotion stages a meme passes through from open routing to confirmed canon.
 
 This meme does not govern parse recognition, render lowering, or conformance verification. Those belong to their own kānāwai (law). Loci governs only routing — the traversal from a `lar:` URI to a real file in the repository.
+
+This file is itself a high-confidence path-directory example of a `loci` meme_type meme. Its own migration from flat-file siting to `ha.ka.ba/loci/loci.loci.md` is part of the law it describes.
 
 <<~ ala lar:///ha.ka.ba/loci >>
 
@@ -189,7 +191,7 @@ Given: lar_uri (string), meme_type (string | unknown)
 6. Derive candidate file_path:
      If subpath is empty:
        candidate = path_root + "/" + prefix + name + ".md"
-       e.g. "ha.ka.ba/loci.meme.md"
+       e.g. "ha.ka.ba/loci.meme.md"   (pre-migration candidate for `lar:///ha.ka.ba/meme`)
      Else:
        candidate = path_root + "/" + subpath + "/" + prefix + name + ".md"
        e.g. "ha.ka.ba/pono/loci.parser.md"
@@ -213,6 +215,8 @@ Given: lar_uri (string), meme_type (string | unknown)
 An agent that always knows the `meme_type` of the target can skip step 8 when step 7 succeeds. An agent that does not know the `meme_type` MUST use step 8 (table lookup) as its primary resolution path rather than guessing a prefix.
 
 **Live example — this meme.** `lar:///ha.ka.ba/loci` with `meme_type = "loci"` derives the flat-file candidate `lares/ha.ka.ba/loci.loci.md` at step 7. That file no longer exists — this meme has migrated into its path-directory at `lares/ha.ka.ba/loci/loci.loci.md`. Step 7 misses; step 8 (routing table) finds `file_path = "ha.ka.ba/loci/loci.loci.md"` and resolves correctly. The `lar:` URI did not change on migration. This is the pattern.
+
+**Live example — the meme law.** `lar:///ha.ka.ba/meme` with `meme_type = "loci"` still derives the historical flat-file candidate `lares/ha.ka.ba/loci.meme.md` at step 7. That file now lives at `lares/ha.ka.ba/meme/loci.meme.md`, so step 7 misses. Step 8 (routing table) returns `file_path = "ha.ka.ba/meme/loci.meme.md"`. The address stays `lar:///ha.ka.ba/meme`; only the siting changes.
 
 <<~/ahu >>
 
@@ -402,7 +406,7 @@ meme_type = "loci"
 
 [[route]]
 lar_uri = "lar:///ha.ka.ba/meme"
-file_path = "ha.ka.ba/loci.meme.md"
+file_path = "ha.ka.ba/meme/loci.meme.md"
 meme_type = "loci"
 
 [[route]]
@@ -447,7 +451,7 @@ meme_type = "grammar"
 |---|---|---|
 | `lar:///ha.ka.ba/loci` | `ha.ka.ba/loci/loci.loci.md` | `loci` |
 | `lar:///ha.ka.ba/loci/iam/file_path` | `ha.ka.ba/loci/iam/loci.file_path.md` | `loci` |
-| `lar:///ha.ka.ba/meme` | `ha.ka.ba/loci.meme.md` | `loci` |
+| `lar:///ha.ka.ba/meme` | `ha.ka.ba/meme/loci.meme.md` | `loci` |
 | `lar:///ha.ka.ba/pono` | `ha.ka.ba/pono/loci.pono.md` | `loci` |
 | `lar:///ha.ka.ba/pono/memetic-wikitext` | `ha.ka.ba/pono/loci.memetic-wikitext.md` | `loci` |
 | `lar:///ha.ka.ba/pono/parser` | `ha.ka.ba/pono/loci.parser.md` | `loci` |
@@ -632,14 +636,14 @@ A lawful loci envelope from this meme may carry:
 
 ```toml
 status = "partial"
-confidence = 0.70
+confidence = 0.79
 yield = "loci"
 return = "render"
 upward_context = "chat"
 downward_context = "none"
-residue = "sub-meme files (loci-observe-ha, loci-orient, etc.) not yet authored; registry sync between routing table and pono law-index should be verified after pono update"
+residue = "routing table now tracks meme at ha.ka.ba/meme/loci.meme.md; sub-meme files (loci-observe-ha, loci-orient, etc.) not yet authored; registry sync between routing table and pono law-index should be verified after pono update"
 next_observation = "lar:///ha.ka.ba/loci#routing-table"
-next_question = "When a new meme is registered, what is the minimal update set — routing table entry only, or also pono law-index and loci.meme.md skill-index?"
+next_question = "When a new meme is registered or migrated, what is the minimal update set — routing table entry only, or also pono law-index and verification surfaces?"
 ```
 
 <<~&#x0004; -> ? >>

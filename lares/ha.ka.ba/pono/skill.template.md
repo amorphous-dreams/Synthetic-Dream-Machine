@@ -156,7 +156,7 @@ Every skill declares its invariants in `#iam` as a TOML string array. Invariants
 ```toml
 invariants = [
   "R1: HTML DOCTYPE preamble comment present on line 1",
-  "R3: #iam block carries all five rating fields between content_type and structure",
+  "R3: #iam block carries all five rating fields between content_type and meme_type",
   "R3: five rating fields appear in canonical order: confidence, confidence_band, mana, manao, manaoio",
   "R3: meme_type field present after manaoio and before structure",
   "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
@@ -248,7 +248,7 @@ def check_r1(lines: list[str]) -> InvariantResult:
     )
 
 def check_r3_rating_fields(content: str) -> InvariantResult:
-    """R3: five rating fields present in canonical order between content_type and structure."""
+    """R3: five rating fields present in canonical order between content_type and meme_type."""
     required = ["confidence", "confidence_band", "mana", "manao", "manaoio"]
     # Extract #iam TOML block
     m = re.search(r'<<~ ahu #iam >>.*?```toml(.*?)```', content, re.DOTALL)
@@ -264,7 +264,7 @@ def check_r3_rating_fields(content: str) -> InvariantResult:
         return InvariantResult(
             "R3-ratings", "fail",
             observed=f"missing fields: {missing}",
-            repair=f"Add {missing} between content_type and structure in #iam TOML"
+            repair=f"Add {missing} between content_type and meme_type in #iam TOML"
         )
     # Check ordering
     keys = list(data.keys())
@@ -274,7 +274,7 @@ def check_r3_rating_fields(content: str) -> InvariantResult:
     if cluster[:5] != required:
         return InvariantResult(
             "R3-ratings", "fail",
-            observed=f"rating field order between content_type and structure: {cluster[:5]}",
+            observed=f"rating field order between content_type and meme_type: {cluster[:5]}",
             repair=f"Reorder to: {required}"
         )
     return InvariantResult("R3-ratings", "pass", observed=f"fields present in canonical order")
@@ -337,7 +337,7 @@ if __name__ == "__main__":
 **Invocation from skill body (agent-native):**
 
 ```bash
-python3 lares/ha.ka.ba/pono/scripts/skill_check.py lares/ha.ka.ba/loci.meme.md
+python3 lares/ha.ka.ba/pono/scripts/skill_check.py lares/ha.ka.ba/meme/loci.meme.md
 ```
 
 **Library choices:**
@@ -557,7 +557,7 @@ upward_context = "chat"
 downward_context = "none"
 residue = "pre-MCP scripts not yet written; no skill.*.md package exists yet; post-MCP MCP server not yet implemented"
 next_observation = "lar:///ha.ka.ba/pono/skill-template#invariant-declaration"
-next_question = "Which law should the first skill package cover — loci.parser.md or loci.meme.md?"
+next_question = "Which law should the first skill package cover — loci.parser.md or meme/loci.meme.md?"
 ```
 
 <<~&#x0004; -> ? >>
