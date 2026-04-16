@@ -480,19 +480,55 @@ Decide turns the classified element map into one committed conformance posture a
 
 ### Rating Targets
 
-Rating targets name which element combinations unlock which mana and confidence bands.
+Rating targets declare the five registers of a loci meme — their confidence score range, their confidence_band label, and the element combinations that unlock each register.
 
-#### Mid Band (mana 0.40–0.59 / confidence `[S]`)
+#### Confidence Composition
 
-All nine required elements (R1–R9) present.
+`confidence` is the holistic summary rating. It tracks the center of gravity of the three structural fields — `mana`, `manao`, and `manaoio` — adjusted by an editorial factor from operator and agent judgment:
 
-Phase map present with glyph line.
+```
+confidence ≈ center_of_gravity(mana, manao, manaoio) ± editorial_factor
+```
 
-ha/ka/ba subloops may appear as declared stubs pointing at declared addresses.
+The editorial factor is real and bounded (±0.10 maximum). It reflects: how deeply a human operator has reviewed the meme, how much trust an agent has accrued in the meme's practical behavior, and whether peer verification (a passing skill package) has confirmed conformance. It is not unlimited — a meme whose three structural fields average 0.40 cannot reach a confidence of 0.80 through editorial enthusiasm alone.
 
-This describes a skeleton meme: boot-legal, structurally complete, content-thin.
+All ratings are provisional. A rating of 1.00 remains rare in language, software, and reality. Every score carries implicit uncertainty. High scores reflect stability of judgment, not certainty of truth.
 
-#### High Band (mana 0.60–0.79 / confidence `[CS]`)
+#### The Law of 5s Rubric
+
+All ratings in this system — `confidence`, `mana`, `manao`, `manaoio` — are graded on a 0.0–1.0 rubric with five registers of equal width (0.20 per register):
+
+| Register | Score range | `confidence_band` | Character |
+|---|---|---|---|
+| 1 | 0.00 – 0.19 | `P` | Provisional — barely emerged, most required elements absent |
+| 2 | 0.20 – 0.39 | `PS` | Provisional-Skeleton — authoring underway, not yet boot-legal |
+| 3 | 0.40 – 0.59 | `S` | Skeleton — boot-legal (R1–R9 present), content-thin |
+| 4 | 0.60 – 0.79 | `CS` | Candidate-Stable — content meaningful, nearing law quality |
+| 5 | 0.80 – 1.00 | `C` | Canon — operator-confirmed, substantive, address stable |
+
+The `confidence_band` label applies to the `confidence` score only. The three structural fields (`mana`, `manao`, `manaoio`) are scored on the same 0.0–1.0 rubric but do not carry their own band label — they feed into `confidence` via the composition rule above.
+
+#### Register 1 — Provisional (`P`, 0.00–0.19)
+
+The meme has barely emerged. Most or all required elements (R1–R9) are absent. May carry only a DOCTYPE comment and a title. Not boot-legal. Cannot be walked by the routing system without manual intervention.
+
+A `P`-band meme signals: authoring has begun but nothing can be relied upon yet. No law statements may cite a `P`-band meme as authority.
+
+#### Register 2 — Provisional-Skeleton (`PS`, 0.20–0.39)
+
+Some required elements are present but the full nine are not. May carry an `#iam` block but missing rating fields, phase map, or result locus. Authoring is underway; the author intends to complete it. Not boot-legal.
+
+A `PS`-band meme signals: structure is forming. Law statements may reference it only as declared backlog.
+
+#### Register 3 — Skeleton (`S`, 0.40–0.59)
+
+All nine required elements (R1–R9) present. Boot-legal. Structurally complete. Content-thin.
+
+Phase map present with glyph line. Phase sections may be one-sentence stubs or glyph-only. ha/ka/ba subloops may be absent or declared-unresolved HTML comments. The skeleton block (if applicable) is copy-ready at this register.
+
+This is the template minimum — the floor from which rating improvement requires real content.
+
+#### Register 4 — Candidate-Stable (`CS`, 0.60–0.79)
 
 All required elements present and locally meaningful.
 
@@ -504,7 +540,9 @@ ha/ka/ba subloops carry at least one orienting sentence each, or point at resolv
 
 Sub-meme callouts declared and either resolved or explicitly noted as backlog: O7/O8 addresses present.
 
-#### Very High Band (mana 0.80–1.00 / confidence `[C]`)
+Qualifies for law-index registration in pono. Prospective canon: may be cited as authority by other memes, with the understanding that promotion to `C` remains pending.
+
+#### Register 5 — Canon (`C`, 0.80–1.00)
 
 All required elements present and locally substantive.
 
@@ -520,7 +558,9 @@ Research foundation or prior-art notes present and translated into backlog press
 
 `#deferred-resolution` section present and governing the three resolution states explicitly.
 
-Operator-confirmed. `lar:` URI stable. `enacts = true` active.
+Operator-confirmed. `lar:` URI stable. `?` removed from document opener. `enacts = true` active. Peer verification (at least one passing skill package) completed or in progress.
+
+A score of 1.00 is practically unreachable — language, software, and reality all resist perfect closure. Scores of 0.95+ indicate mature, heavily reviewed, peer-verified law.
 
 #### Sub-meme Resolution Impact Table
 

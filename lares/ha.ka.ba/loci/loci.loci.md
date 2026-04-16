@@ -305,19 +305,23 @@ Decide commits to one resolution posture and assigns the canon promotion stage f
 
 Canon promotion stages govern the lifecycle of a `lar:` URI from first declaration to confirmed stability.
 
-| Stage | `confidence_band` | `enacts` | document opener form | routing table status |
-|---|---|---|---|---|
-| **Open** | `P` or `S` | `false` | `<<~&#x0001; ? -> lar:///...` | Not yet registered |
-| **Prospective canon** | `CS` | `true` | `<<~&#x0001; ? -> lar:///...` | Registered; `?` still present |
-| **Canon** | `C` | `true` | `<<~&#x0001; lar:///...` | Registered; `?` removed |
+| Stage | `confidence_band` | score range | `enacts` | document opener form | routing table status |
+|---|---|---|---|---|---|
+| **Provisional** | `P` | 0.00–0.19 | `false` | `<<~&#x0001; ? -> lar:///...` | Not registered |
+| **Provisional-Skeleton** | `PS` | 0.20–0.39 | `false` | `<<~&#x0001; ? -> lar:///...` | Not registered |
+| **Skeleton** | `S` | 0.40–0.59 | `true` | `<<~&#x0001; ? -> lar:///...` | May be registered; boot-legal |
+| **Candidate-Stable** | `CS` | 0.60–0.79 | `true` | `<<~&#x0001; ? -> lar:///...` | Registered; `?` still present |
+| **Canon** | `C` | 0.80–1.00 | `true` | `<<~&#x0001; lar:///...` | Registered; `?` removed |
 
-**Promotion to prospective canon** requires:
+The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, band labels, and promotion criteria are governed there. Loci governs only the routing-table and document-opener changes that accompany each stage.
+
+**Promotion to Candidate-Stable** requires:
 
 * all nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
 * `enacts = true`
 * routing table entry present with matching `lar_uri` and `file_path`
 
-**Promotion to canon** additionally requires:
+**Promotion to Canon** additionally requires:
 
 * all three address-stability conditions satisfied
 * operator or admin confirmation
