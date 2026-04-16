@@ -5,16 +5,22 @@
 <<~ ahu #iam >>
 ```toml
 name = "x-tiddlywiki-filter"
-file_path = "ha.ka.ba/grammars/x-tiddlywiki-filter.md"
+file_path = "ha.ka.ba/grammars/grammar.x-tiddlywiki-filter.md"
 description = "Registered imported function sigil grammar for TiddlyWiki-style filter work under explicit hana admission."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
+confidence = 0.48
+confidence_band = "S"
+mana = 0.44
+manao = 0.52
+manaoio = 0.36
+meme_type = "grammar"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
 function = "define the admitted x-tiddlywiki-filter guest family, its host-facing priming contract, its sigil-centric term shifts, and its minimum lawful use through hana"
 input = "hana worksite|guest grammar query|filter body|artifact|bundle|stream|?"
-output = "grammar-envelope(high mana'o'io^)|partial-grammar-envelope(mid mana'o'io-)|degraded-grammar-envelope(low mana'o'io_)|?(~mana'o'io?)"
+output = "grammar-envelope(high manaoio^)|partial-grammar-envelope(mid manaoio-)|degraded-grammar-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/guest-grammar",
   "lar:///ha.ka.ba/pono/memetic-wikitext",

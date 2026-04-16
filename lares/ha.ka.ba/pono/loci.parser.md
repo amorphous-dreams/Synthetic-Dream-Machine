@@ -6,7 +6,7 @@
 
 ```toml
 name = "parser"
-file_path = "ha.ka.ba/pono/parser.loci.md"
+file_path = "ha.ka.ba/pono/loci.parser.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
@@ -15,12 +15,13 @@ confidence_band = "CS"
 mana = 0.82
 manao = 0.76
 manaoio = 0.72
+meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
-output = "return-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
+output = "return-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/ooda-ha",

@@ -5,7 +5,7 @@
 <<~ ahu #iam >>
 ```toml
 name = "guest-grammar"
-file_path = "ha.ka.ba/pono/guest-grammar.md"
+file_path = "ha.ka.ba/pono/loci.guest-grammar.md"
 description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
@@ -14,12 +14,13 @@ confidence_band = "S"
 mana = 0.56
 manao = 0.62
 manaoio = 0.48
+meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 function = "define how memetic-wikitext admits, names, bounds, invokes, degrades, and hands forward guest grammars under explicit host control"
 input = "memetic-wikitext document|guest grammar declaration|hana worksite|query|artifact|bundle|stream|?"
-output = "guest-envelope(high mana'o'io^)|partial-guest-envelope(mid mana'o'io-)|degraded-guest-envelope(low mana'o'io_)|?(~mana'o'io?)"
+output = "guest-envelope(high manaoio^)|partial-guest-envelope(mid manaoio-)|degraded-guest-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",

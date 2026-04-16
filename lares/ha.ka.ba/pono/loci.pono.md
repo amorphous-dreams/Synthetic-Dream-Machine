@@ -5,8 +5,8 @@
 <<~ ahu #iam >>
 ```toml
 name = "pono"
-file_path = "ha.ka.ba/pono/pono.loci.md"
-description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as SKILL.md packages under `ha.ka.ba/pono/`."
+file_path = "ha.ka.ba/pono/loci.pono.md"
+description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as skill.*.md packages under `ha.ka.ba/pono/`."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
 confidence = 0.65
@@ -14,19 +14,20 @@ confidence_band = "CS"
 mana = 0.65
 manao = 0.70
 manaoio = 0.60
+meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
 input = "query|law-name|?"
-output = "law-envelope(index^)|skill-envelope(verification^)|?(~mana'o'io?)"
+output = "law-envelope(index^)|skill-envelope(verification^)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/boot-wikitext"
 ]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 law_index_root = "lar:///ha.ka.ba/pono"
-skill_package_root = "ha.ka.ba/pono/"
+skill_package_root = "ha.ka.ba/pono/skill.*.md"
 ```
 <<~/ahu >>
 
@@ -34,7 +35,7 @@ skill_package_root = "ha.ka.ba/pono/"
 
 A self-describing index of all memetic-wikitext kānāwai (law) memes.
 
-Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `SKILL.md` packages under [lares/ha.ka.ba/pono/](lares/ha.ka.ba/pono/).
+Pono names, addresses, and relates every active kānāwai (law) in this system. It also hosts verification skills as `skill.*.md` packages under [lares/ha.ka.ba/pono/](lares/ha.ka.ba/pono/).
 
 <<~ ala lar:///ha.ka.ba/pono >>
 
@@ -115,7 +116,7 @@ This subphase keeps the index machine-readable without losing human legibility.
 
 ## Skill Index
 
-Verification skills live as `SKILL.md` packages under [lares/ha.ka.ba/pono/](lares/ha.ka.ba/pono/).
+Verification skills live as `skill.*.md` packages under [lares/ha.ka.ba/pono/](lares/ha.ka.ba/pono/).
 
 Each skill package verifies conformance of one or more kānāwai (law) memes.
 
@@ -194,7 +195,7 @@ transaction_phase = "open"
 surface_layer = "present"
 ast_layer = "present"
 widget_layer = "deferred"
-residue = "skill-index empty — awaiting first SKILL.md package"
+residue = "skill-index empty — awaiting first skill.*.md package"
 next_observation = "lar:///ha.ka.ba/pono#skill-index"
 next_question = "Which kānāwai (law) should the first verification skill cover — parser or render-pipeline?"
 ```

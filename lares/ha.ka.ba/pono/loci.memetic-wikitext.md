@@ -4,7 +4,7 @@
 
 ```toml
 name = "memetic-wikitext"
-file_path = "ha.ka.ba/pono/memetic-wikitext.loci.md"
+file_path = "ha.ka.ba/pono/loci.memetic-wikitext.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
 version = "0.1-skeleton"
 content_type = "text/x-memetic-wikitext"
@@ -13,12 +13,13 @@ confidence_band = "S"
 mana = 0.54
 manao = 0.62
 manaoio = 0.42
+meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
-output = "meme-envelope(high mana'o'io^)|partial-envelope(mid mana'o'io-)|degraded-envelope(low mana'o'io_)|?(~mana'o'io?)"
+output = "meme-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"

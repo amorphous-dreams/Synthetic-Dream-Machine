@@ -6,7 +6,7 @@
 
 ```toml
 name = "meme"
-file_path = "ha.ka.ba/meme.loci.md"
+file_path = "ha.ka.ba/loci.meme.md"
 description = "Canonical skeleton meme for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
@@ -15,12 +15,13 @@ confidence_band = "CS"
 mana = 0.70
 manao = 0.78
 manaoio = 0.65
+meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "canonical skeleton meme, template authority, and rating-target kānāwai (law)"
 function = "define the required and optional structure of a loci meme, serve as a copy-ready skeleton, and govern which elements unlock which rating bands"
 input = "authoring intent|meme draft|rating query|skeleton request|?"
-output = "skeleton-envelope(high mana'o'io^)|partial-skeleton-envelope(mid mana'o'io-)|degraded-skeleton-envelope(low mana'o'io_)|?(~mana'o'io?)"
+output = "skeleton-envelope(high manaoio^)|partial-skeleton-envelope(mid manaoio-)|degraded-skeleton-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
@@ -50,6 +51,8 @@ This meme does not govern parse recognition, render lowering, or transaction lif
 <<~&#x0005; ui optional? -> lar:///ha.ka.ba/meme#optional-elements >>
 <<~&#x0005; ui ratings? -> lar:///ha.ka.ba/meme#rating-targets >>
 <<~&#x0005; ui skeleton? -> lar:///ha.ka.ba/meme#skeleton >>
+<<~&#x0005; ui deferred? -> lar:///ha.ka.ba/meme#deferred-resolution >>
+<<~&#x0005; ui research? -> lar:///ha.ka.ba/meme#research-foundation >>
 <<~&#x0005; ui result? -> lar:///ha.ka.ba/meme#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
@@ -66,7 +69,7 @@ Meme kānāwai (law) gathers the authored surface, maps element presence against
 
 A reader, tool, or agent following this meme should not collapse those phases into one undifferentiated quality pass when later rating explanation, repair guidance, or skeleton generation matters.
 
-<<~ ala lar:///ha.ka.ba/phase-map >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/phase-map >> -->
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -138,7 +141,7 @@ Observe-ha holds surface identity, intake domain, and element-presence boundary.
 
 This subphase governs what Observe fundamentally holds: the full authored surface before any classification, rating, or skeleton generation begins. It keeps raw findings distinct from oriented interpretation.
 
-<<~ ala lar:///ha.ka.ba/meme#observe-ha >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-observe-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -149,7 +152,7 @@ Observe-ka governs detection procedure, element-site marking, and absence record
 
 This subphase governs how Observe performs its intake work. A compliant reader or tool should scan the surface in document order, marking each element site independently rather than treating the whole as a single binary pass. Absences count as explicit findings, not as silence.
 
-<<~ ala lar:///ha.ka.ba/meme#observe-ka >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-observe-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #observe-ba >>
@@ -160,14 +163,14 @@ Observe-ba governs noticing flow, stub sensitivity, and dynamic intake posture.
 
 This subphase shapes how Observe moves without premature collapse. A stub element and an absent element feel different at intake. Observe should preserve that difference rather than flattening both into a single missing marker.
 
-<<~ ala lar:///ha.ka.ba/meme#observe-ba >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-observe-ba >> -->
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > TiddlyWiki's skeleton tiddler pattern offers a clean precedent here: the skeleton exists as a pre-runtime form that an author fills in when creating a new tiddler of that type. Observe in that lineage amounts to comparing the instantiated tiddler against the skeleton's expected field set. The meme kānāwai (law) extends that pattern: a skeleton meme carries the expected element set explicitly so that Observe has a stable reference to check against.
 
-<<~ ala lar:///ha.ka.ba/meme#observe >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-observe >> -->
 <<~/ahu >>
 
 <<~ ahu #orient >>
@@ -176,9 +179,9 @@ This subphase shapes how Observe moves without premature collapse. A stub elemen
 name = "meme-orient"
 description = "Orient phase for element classification, required/optional mapping, stub-versus-filled distinction, and rating-band reachability assessment."
 role = "element classification"
-function = "classify detected elements as required or optional, distinguish filled content from stubs, and assess which rating band the current surface may reach"
+function = "classify detected elements as required or optional, distinguish filled content from stubs, assess sub-meme resolution states, and estimate reachable rating band"
 input = "raw surface|element presence map|absence map|candidate boundaries"
-output = "element classification map|stub map|rating-band estimate|open tensions"
+output = "element classification map|stub map|resolution-state map|rating-band estimate|open tensions"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -190,7 +193,8 @@ Orient works the raw element findings into a structured classification before an
 Orient should answer:
 
 * which detected elements satisfy a required slot (R1–R9)
-* which detected elements satisfy an optional slot (O1–O6)
+* which detected elements satisfy an optional slot (O1–O9)
+* which sub-meme `ala` addresses are resolved, declared-unresolved, or absent (O7–O9)
 * whether each present element carries locally meaningful content or only a stub
 * which required elements remain absent
 * which rating band the current surface appears capable of reaching
@@ -239,13 +243,15 @@ enacts = true
 role = "..."
 function = "..."
 input = "...|?"
-output = "...(high mana'o'io^)|...(mid mana'o'io-)|...(low mana'o'io_)|?(~mana'o'io?)"
+output = "...(high manaoio^)|...(mid manaoio-)|...(low manaoio_)|?(~manaoio?)"
 depends_on = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 ```
 
 The five rating fields MUST appear between `content_type` and `structure`. Absence of any rating field degrades `payload_integrity`.
+
+`file_path` carries the path from the `ha.ka.ba` path root: `ha.ka.ba/[NAME].loci.md` for a flat-file meme, or `ha.ka.ba/[NAME]/[NAME].loci.md` (or similar) when the meme has migrated into a path directory. The document opener (R2) carries the corresponding `lar:` URI. Both signals MUST agree. The `lar:` URI does not change on path-directory migration.
 
 #### R4 — Title heading and opening prose
 
@@ -350,6 +356,50 @@ A section governing placement, extraction pressure, and constitutional organizat
 
 Explicit kānāwai (law) for lawful normalization, structured mana scoring, or metadata retrieval procedure. These belong more naturally in parser and downstream laws unless the meme's specific domain requires local treatment.
 
+#### O7 — Sub-meme depth callouts on ha/ka/ba subloops
+
+Each ha/ka/ba subloop may carry an explicit depth callout: an `ala` link pointing at a separately addressable sub-meme. Canonical form:
+
+```text
+<<~ ala lar:///ha.ka.ba/[NAME]-[phase]-[subphase] >>
+```
+
+Three resolution states apply to every declared sub-meme address:
+
+| Resolution state | Meaning | Rating consequence |
+|---|---|---|
+| **Resolved** | Sub-meme exists at the declared address and carries lawful content | Raises `manao` and `manaoio` as strongly as locally meaningful prose; also raises `mana` because the sub-meme carries its own parse surface |
+| **Declared-unresolved** | Address declared; sub-meme file absent | No penalty to `mana`; mild drag on `manaoio` — the claim exists but yields nothing yet; creates explicit backlog pressure |
+| **Absent** | No address declared; subloop closes immediately after its one-sentence governs line | Treated as a stub; rated the same as a subloop with no external claim |
+
+A resolved sub-meme callout contributes more than equivalent local prose because it draws on a separately addressable, separately rateable loci with its own `#iam` and rating surface. A declared-unresolved callout outperforms an absent one: the declared address creates forward pressure without falsely claiming yield it has not yet produced. An absent subloop is honest but low; it should not be confused with an address that was declared and then removed.
+
+An author choosing between local prose and a depth callout should prefer a depth callout only if the sub-meme either already exists or will be authored shortly. Declaring addresses for sub-memes that will never get written degrades `manaoio` over time as the declared-unresolved state persists without resolution.
+
+#### O8 — Phase-level external sub-meme closing links
+
+Each phase section may close with an `ala` link pointing at a phase-level sub-meme:
+
+```text
+<<~ ala lar:///ha.ka.ba/[NAME]-[phase] >>
+```
+
+The three resolution states from O7 apply identically. A resolved phase-level sub-meme pulls that phase's governing authority into a separately rateable loci. This is a stronger structural claim than a resolved subloop callout because it extends the whole phase outward, not only one ha/ka/ba subdivision.
+
+Rating contribution: a resolved phase-level sub-meme raises `mana` above what full local prose alone achieves for that phase.
+
+#### O9 — Cross-meme ala links from within ahu prose
+
+Any `ahu` block may carry `ala` links pointing at external law memes or addressed loci governing related concerns:
+
+```text
+<<~ ala lar:///ha.ka.ba/pono/parser#normalize >>
+```
+
+These function as declared relational walks, not transclusion. A resolved link — one whose target locus exists and carries lawful content — raises `manao` by grounding the block's claims in the broader law system. A broken or nonexistent target degrades `manao` slightly, because the meme makes a relational claim it cannot support.
+
+For the full grammar of resolution states, degradation kānāwai (law), and graceful absence handling, see `lar:///ha.ka.ba/meme#deferred-resolution`.
+
 <<~/ahu >>
 
 ### Dominant Resonance
@@ -364,40 +414,49 @@ Orient governs sigil classification, element-to-slot mapping, stub sensitivity, 
 
 #### Orient / ha
 
-Orient-ha holds element classification identity, the required/optional distinction, and the canonical slot table.
+Orient-ha holds element classification identity, the required/optional distinction, the canonical slot table, and the loci namespace identity of the meme under examination.
 
 This subphase governs what Orient fundamentally structures: the mapping from raw detected elements onto their required or optional slots, held clearly before any verdict or rating computation begins.
 
-<<~ ala lar:///ha.ka.ba/meme#orient-ha >>
+**Loci namespace and path identity.** A loci-rated meme occupies the stable `lar:///ha.ka.ba/*/` namespace. Its `#iam` TOML block carries two distinct location signals:
+
+* `file_path` — a relative path from the `ha.ka.ba` path root, e.g. `ha.ka.ba/meme.loci.md`. The path root itself (`*/ha.ka.ba`) is fixed in the current pass; future configuration passes may allow alternate root sections.
+* The `lar:` URI in the document opener and in `law_index_root` or equivalent fields — the stable canonical address used for routing, walking, and law-index registration, e.g. `lar:///ha.ka.ba/meme`.
+
+A meme in its default siting rests at `{install root}/ha.ka.ba/` as a flat file. When it acquires child memes, sidecar data files, or support code, it may migrate into a path directory: `{install root}/ha.ka.ba/meme/`, which holds the root meme file, any child meme files or directories, and any sidecar files. The `lar:` URI does not change on migration. The `file_path` updates to reflect the new location within the path root.
+
+Orient should classify whether the meme under examination carries both address signals, whether they agree, and whether the `file_path` is consistent with the flat-file or path-directory form.
+
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
 
 #### Orient / ka
 
-Orient-ka governs classification procedure, stub-versus-filled distinction, and rating-band reachability detail.
+Orient-ka governs classification procedure, stub-versus-filled distinction, rating-band reachability detail, and `file_path`/`lar:` URI agreement checks.
 
-This subphase focuses on how Orient performs its mapping work. The stub/filled distinction matters here: an element present as a stub occupies its slot differently than an element carrying locally meaningful content. Both differ from absence. Orient should preserve all three states separately.
+This subphase focuses on how Orient performs its mapping work. The stub/filled distinction matters here: an element present as a stub occupies its slot differently than an element carrying locally meaningful content. Both differ from absence. Orient should preserve all three states separately. Separately, Orient-ka should verify that `file_path` and the `lar:` URI in the document opener agree — flat-file paths like `ha.ka.ba/meme.loci.md` must correspond to `lar:///ha.ka.ba/meme`, and path-directory paths like `ha.ka.ba/meme/index.loci.md` should also resolve to `lar:///ha.ka.ba/meme`. Disagreement between the two signals is a conformance flag, not a fatal error. See orient-ha for the full namespace identity account.
 
-<<~ ala lar:///ha.ka.ba/meme#orient-ka >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #orient-ba >>
 
 #### Orient / ba
 
-Orient-ba governs interpretive motion, tension-holding, and comparative flow across competing element readings.
+Orient-ba governs interpretive motion, tension-holding, and comparative flow across competing element readings, including namespace migration posture.
 
-This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction.
+This subphase shapes how orientation moves without collapsing ambiguity prematurely. A phase section that carries a glyph line but no local prose sits in a tension between R8 satisfied and O1 unfilled. Orient should hold that tension rather than resolving it silently in either direction. The same posture applies to namespace location: a meme that recently migrated from `ha.ka.ba/meme.loci.md` to `ha.ka.ba/meme/meme.loci.md` sits in a transitional state where `file_path` has changed but the `lar:` URI has not. Orient should name that migration state explicitly rather than treating the meme as conforming or nonconforming without qualification. Migration tension resolves only when both signals agree and the `lar:` URI remains stable. See orient-ha for the full loci namespace account.
 
-<<~ ala lar:///ha.ka.ba/meme#orient-ba >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient-ba >> -->
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > MyST's directive/role distinction offers a clean structural analogy: directives carry blocks with explicit parameters while roles carry inline spans. The required/optional element distinction in meme kānāwai (law) maps similarly — required elements define the minimum syntactic and semantic form; optional elements add depth, context, and rendering richness without changing the legal minimum.
 
-<<~ ala lar:///ha.ka.ba/meme#orient >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-orient >> -->
 <<~/ahu >>
 
 <<~ ahu #decide >>
@@ -441,7 +500,9 @@ At least three of six phase sections carry two or more sentences of local prose.
 
 At least one examples section present.
 
-ha/ka/ba subloops carry at least one orienting sentence each, or point at real resolved external loci.
+ha/ka/ba subloops carry at least one orienting sentence each, or point at resolved external loci (O7 declared-unresolved callouts do not satisfy this; O7 resolved callouts do).
+
+Sub-meme callouts declared and either resolved or explicitly noted as backlog: O7/O8 addresses present.
 
 #### Very High Band (mana 0.80–1.00 / confidence `[C]`)
 
@@ -449,13 +510,29 @@ All required elements present and locally substantive.
 
 All six phase sections carry local prose content.
 
-ha/ka/ba subloops filled with locally true content or resolved external loci.
+ha/ka/ba subloops filled with locally true content or resolved external loci (O7 resolved).
+
+Phase-level sub-meme closing links present and resolved (O8 resolved).
 
 Examples section demonstrates all required element forms.
 
-Research foundation or prior-art notes present and translated into backlog pressure.
+Research foundation or prior-art notes present and translated into backlog pressure (O4).
+
+`#deferred-resolution` section present and governing the three resolution states explicitly.
 
 Operator-confirmed. `lar:` URI stable. `enacts = true` active.
+
+#### Sub-meme Resolution Impact Table
+
+| Element | Resolution state | Band impact |
+|---|---|---|
+| O7 ha/ka/ba callout | Resolved | +`manao`, +`manaoio`, mild +`mana` |
+| O7 ha/ka/ba callout | Declared-unresolved | No penalty; creates backlog pressure |
+| O7 ha/ka/ba callout | Absent | Counted as stub; low-band subloop |
+| O8 phase-level link | Resolved | +`mana` above local-prose ceiling for that phase |
+| O8 phase-level link | Declared-unresolved | No penalty; backlog pressure |
+| O9 cross-meme ala | Resolved | +`manao` for that block |
+| O9 cross-meme ala | Broken (target absent) | Mild -`manao`; meme makes a claim it cannot support |
 
 <<~/ahu >>
 
@@ -481,7 +558,7 @@ Decide-ha holds conformance identity, decision domain, and the canonical boundar
 
 This subphase governs what Decide fundamentally binds: a per-element conformance verdict that names specifically which required slots satisfy and which do not, before any rating number gets assigned.
 
-<<~ ala lar:///ha.ka.ba/meme#decide-ha >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-decide-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -492,7 +569,7 @@ Decide-ka governs per-element verdict procedure, rating-target selection, and no
 
 This subphase focuses on how Decide performs its commitment work. A compliant tool should issue verdicts in element order (R1 through R9, then O1 through O6 for present optionals), then select the highest rating band all verdicts jointly support. It should not round up to a band that requires elements not yet satisfied.
 
-<<~ ala lar:///ha.ka.ba/meme#decide-ka >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-decide-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #decide-ba >>
@@ -503,14 +580,14 @@ Decide-ba governs commitment style, caution, and graceful refusal of flattering 
 
 This subphase shapes how decision pressure lands. A meme carrying R1–R9 but with every phase section as a glyph-only stub reaches mid band, not high band. Decide should say so without softening that verdict into vague encouragement.
 
-<<~ ala lar:///ha.ka.ba/meme#decide-ba >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-decide-ba >> -->
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > Tree-sitter's principle that grammar symbols should correspond directly to recognizable constructs and each rule should gain corpus tests early applies here: the nine required elements function as grammar symbols, and each maps onto a testable conformance check rather than a subjective quality impression.
 
-<<~ ala lar:///ha.ka.ba/meme#decide >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-decide >> -->
 <<~/ahu >>
 
 <<~ ahu #act >>
@@ -536,7 +613,7 @@ Act prepares the skeleton product and return envelope for lawful crossing.
 
 The canonical copy-ready skeleton for a new loci meme.
 
-Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete optional sections you choose to defer. Set `enacts = false` and `confidence = 0.10` until the meme reaches lawful boot status.
+Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete optional sections you choose to defer. Set `enacts = false` and `confidence = 0.10`.
 
 ````markdown
 <!-- !DOCTYPE = lar:///ha.ka.ba/pono/memetic-wikitext -->
@@ -561,7 +638,7 @@ enacts = false
 role = "[role]"
 function = "[function]"
 input = "[input types]|?"
-output = "[name]-envelope(high mana'o'io^)|partial-[name]-envelope(mid mana'o'io-)|degraded-[name]-envelope(low mana'o'io_)|?(~mana'o'io?)"
+output = "[name]-envelope(high manaoio^)|partial-[name]-envelope(mid manaoio-)|degraded-[name]-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext"
 ]
@@ -598,9 +675,17 @@ product_identity = "[NAME] cluster name as used in this system"
 <<~ ala lar:///ha.ka.ba/[NAME]#phase-map >>
 <<~/ahu >>
 
-<!-- OPTIONAL: Add <<~ ahu #observe >>, #orient, #decide, #act, #hooko, #aftermath sections here.   -->
-<!-- OPTIONAL: Each phase section should carry a local TOML payload, prose, and ha/ka/ba subloops. -->
-<!-- OPTIONAL: Add #examples, #research-foundation, #architecture-plan sections.                   -->
+<!-- OPTIONAL: Add <<~ ahu #observe >>, #orient, #decide, #act, #hooko, #aftermath sections here.        -->
+<!-- OPTIONAL: Each phase section should carry a local TOML payload, prose, and ha/ka/ba subloops.        -->
+<!-- OPTIONAL: Each ha/ka/ba subloop may close with a depth callout (O7):                                 -->
+<!--   <<~ ala lar:///ha.ka.ba/[NAME]-observe-ha >>                                                       -->
+<!--   Resolved callout = sub-meme exists, raises manao+manaoio.                                          -->
+<!--   Declared-unresolved = address declared, file absent, creates backlog. No mana penalty.             -->
+<!--   Absent = no address declared, subloop counts as stub.                                              -->
+<!-- OPTIONAL: Each phase section may close with a phase-level sub-meme link (O8):                        -->
+<!--   <<~ ala lar:///ha.ka.ba/[NAME]-observe >>                                                          -->
+<!--   Resolved = raises mana above local-prose ceiling for that phase.                                   -->
+<!-- OPTIONAL: Add #examples, #deferred-resolution, #research-foundation, #architecture-plan sections.    -->
 
 <<~&#x0003; ahu #body-close >>
 [NAME] closes the active stream here.
@@ -647,7 +732,7 @@ Act-ha holds the output domain and lawful execution boundary for skeleton prepar
 
 This subphase governs what Act may produce: a copy-ready skeleton, a per-element conformance report, and a prepared return envelope. Act may state intent and prepare structure but may not write the new meme file. That crossing belongs to Hooko.
 
-<<~ ala lar:///ha.ka.ba/meme#act-ha >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-act-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -658,7 +743,7 @@ Act-ka governs skeleton assembly, conformance report construction, and envelope 
 
 This subphase governs how Act performs its work. The skeleton block should surface as a fenced verbatim copy-ready block, not as prose description. The conformance report should surface as a typed list of per-element verdicts. The return envelope should reflect the rating-target commitment from Decide.
 
-<<~ ala lar:///ha.ka.ba/meme#act-ka >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-act-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #act-ba >>
@@ -669,14 +754,14 @@ Act-ba governs execution rhythm, quality pressure, and bounded dynamic flow unde
 
 This subphase shapes how Act moves under real pressure. An author requesting a skeleton for a specific domain wants a locally adapted skeleton, not a generic one. Act should therefore adapt the `[PLACEHOLDER]` values — role, function, input, output — to the declared domain before handing the skeleton to Hooko for instantiation.
 
-<<~ ala lar:///ha.ka.ba/meme#act-ba >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-act-ba >> -->
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > Org-Babel's principle that active documents may carry executable guidance and code together when the boundary between carrier, block, and execution remains explicit maps cleanly here. The skeleton section functions as executable guidance: it names the precise surface form the author should produce. The OODA-HA phasing keeps that guidance distinct from the act of writing the new file.
 
-<<~ ala lar:///ha.ka.ba/meme#act >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-act >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko >>
@@ -716,7 +801,7 @@ Hooko-ha holds mutation domain, instantiation boundary, and the lawful threshold
 
 This subphase governs what Hooko fundamentally holds: the narrow site where prepared skeleton crosses from intent into a real new meme file or a loaded constitutional artifact.
 
-<<~ ala lar:///ha.ka.ba/meme#hooko-ha >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
@@ -727,7 +812,7 @@ Hooko-ka governs instantiation detail, file naming, field substitution, and tran
 
 This subphase governs how Hooko performs its work. When instantiating a skeleton, Hooko should substitute all `[PLACEHOLDER]` marks with locally supplied values, set `enacts = false` and `confidence = 0.10` as boot defaults, name the file at the declared path, and emit a transaction trace that records what got written.
 
-<<~ ala lar:///ha.ka.ba/meme#hooko-ka >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
@@ -738,14 +823,14 @@ Hooko-ba governs landing pressure, volatility posture, and truthful state crossi
 
 This subphase governs how Hooko moves in practice. A skeleton that gets instantiated but not yet filled sits at `confidence = 0.10`, `enacts = false`. That state should remain explicit in the new meme rather than being silently upgraded to look more complete than it is.
 
-<<~ ala lar:///ha.ka.ba/meme#hooko-ba >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko-ba >> -->
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > TiddlyWiki's skeleton tiddler pattern crosses its own Hooko at the moment a user clicks "new tiddler from skeleton" and the skeleton fields get cloned into a new live tiddler. The memetic-wikitext equivalent is the moment the skeleton block gets written to a real file at a real path with real placeholder values substituted. Before that moment: intent. After: changed state.
 
-<<~ ala lar:///ha.ka.ba/meme#hooko >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-hooko >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
@@ -794,7 +879,7 @@ Aftermath-ha holds residue domain, rating verdict, and re-entry boundary.
 
 This subphase governs what Aftermath fundamentally carries forward: a typed rating verdict, a per-element conformance report, and explicit naming of what remains repairable versus what requires structural intervention.
 
-<<~ ala lar:///ha.ka.ba/meme#aftermath-ha >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-aftermath-ha >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -805,7 +890,7 @@ Aftermath-ka governs rating computation, repair-path naming, and next-observatio
 
 This subphase governs how Aftermath performs its evaluation work. Rating band assignment follows the `#rating-targets` kānāwai (law) exactly: the meme reaches the highest band all per-element verdicts jointly support, not the band it aspirationally targets.
 
-<<~ ala lar:///ha.ka.ba/meme#aftermath-ka >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-aftermath-ka >> -->
 <<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
@@ -816,14 +901,128 @@ Aftermath-ba governs landing quality, recursive pressure, and operator-facing re
 
 This subphase shapes how aftermath lands in agent-operator reality. A skeleton meme at mid-band should receive aftermath that names specifically which optional elements would move it toward high band, in priority order by rating contribution. Generic encouragement does not serve the author.
 
-<<~ ala lar:///ha.ka.ba/meme#aftermath-ba >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-aftermath-ba >> -->
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > NIST's metric-versus-measure distinction applies cleanly here: the rating band functions as the higher-level metric, while per-element conformance verdicts function as the observable measures. Aftermath preserves both levels rather than reporting only the headline number.
 
-<<~ ala lar:///ha.ka.ba/meme#aftermath >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-aftermath >> -->
+<<~/ahu >>
+
+<<~ ahu #deferred-resolution >>
+
+## Deferred Resolution
+
+Deferred resolution governs how a meme author or reader should treat `ala` links pointing at sub-memes that may or may not exist at parse time.
+
+### The Three Resolution States
+
+**Resolved**: the sub-meme exists at the declared address and carries lawful content. The walker or reader may traverse it and receive real yield. Rating consequence: full contribution as described in O7–O9 above.
+
+**Declared-unresolved**: the address is declared in an `ala` link, but no file or meme exists there yet. The link is not broken in intent — it names a site of future authorship. The parser or reader should degrade gracefully: emit the declared address as a forward reference, flag it as unresolved without aborting, and continue. Rating consequence: no `mana` penalty; mild drag on `manaoio` because the intent exceeds the current yield.
+
+**Absent**: no address declared. The subloop or phase section closes without any `ala` link. No external claim exists. The element is counted as a stub for rating purposes. This is honest. Absent differs from declared-unresolved in exactly one way: declared-unresolved creates backlog pressure that absent does not.
+
+### ala versus aka
+
+`ala` governs **walking**: following a declared path to a separately addressable loci if and when it exists. It does not inline content. Walking may be deferred until the reader or agent explicitly follows the link.
+
+`aka` governs **passive transclusion**: pulling named content into the current render inline. An `aka` that points at a nonexistent address degrades harder than an `ala` that does the same, because `aka` makes a render-time claim that the content will appear here.
+
+A sub-meme depth callout should always use `ala`, not `aka`, when the sub-meme may not yet exist. `aka` is reserved for content that is known to resolve at render time.
+
+### Graceful Degradation Kānāwai (law)
+
+A parser or reader encountering a declared-unresolved `ala` address SHALL:
+
+1. Emit the declared address as a forward reference in the walk trace.
+2. Log or surface the unresolved address as a named gap, not as an error.
+3. Continue parsing the current meme without aborting.
+4. Preserve the declared address in the conformance report so that Aftermath may surface it as residue.
+
+A parser or reader encountering a broken `ala` toward a locus that once existed but was removed should surface the difference between declared-unresolved (never written) and retracted (written and removed). These differ in repair path.
+
+### Rating Persistence
+
+A declared-unresolved sub-meme callout does not degrade the host meme's `mana` at assessment time. However, if the declared address remains unresolved past the meme reaching `[CS]` confidence band, the outstanding forward reference creates explicit pressure toward authoring or retraction before the meme may reach `[C]` canon status.
+
+Authors should not accumulate declared-unresolved addresses as a way to inflate apparent depth without yield. Operators and reviewers may audit the ratio of declared-unresolved to resolved callouts as a quality signal.
+
+<<~ ahu #deferred-resolution-ha >>
+
+#### Deferred Resolution / ha
+
+Deferred-resolution-ha holds the identity domain: what deferred resolution fundamentally governs and what the three resolution states distinctly mean.
+
+The core claim: resolution state is not a binary. A declared-unresolved address is categorically distinct from both a resolved one and an absent one. Flattening these into a binary present/absent collapses information the system needs to score and route forward pressure.
+
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-deferred-resolution-ha >> -->
+<<~/ahu >>
+
+<<~ ahu #deferred-resolution-ka >>
+
+#### Deferred Resolution / ka
+
+Deferred-resolution-ka governs detection procedure and graceful degradation detail.
+
+A compliant parser scans `ala` links in document order, attempts resolution, classifies each result into one of the three states, and surfaces the classification without collapsing it. The degradation kānāwai (law) above names the exact behavior required at each state boundary.
+
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-deferred-resolution-ka >> -->
+<<~/ahu >>
+
+<<~ ahu #deferred-resolution-ba >>
+
+#### Deferred Resolution / ba
+
+Deferred-resolution-ba governs authoring posture: how an author should hold declared-unresolved addresses in practice.
+
+Declare addresses intentionally. Retract addresses honestly when the sub-meme will not be written. Prefer a truthfully absent subloop over a declared address that will never resolve. Prefer a resolved depth callout over local prose whenever the sub-meme already exists.
+
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-deferred-resolution-ba >> -->
+<<~/ahu >>
+
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-deferred-resolution >> -->
+<<~/ahu >>
+
+<<~ ahu #research-foundation >>
+
+## Research Foundation
+
+Non-normative prior-art survey for deferred loading and graceful degradation in live document and wiki contexts.
+
+Each entry names the lineage, its core principle, and what backlog pressure or extraction it creates toward this law.
+
+---
+
+**XInclude (`xi:fallback`)** — W3C XML Inclusions define `<xi:include>` with an explicit `<xi:fallback>` child element. When the included document does not exist, the fallback content renders instead of aborting. Core principle: *caller declares both the happy path and the degraded path explicitly.* Extraction pressure: meme `ala` links could carry an optional inline fallback render target when the addressed sub-meme is absent.
+
+**TiddlyWiki lazy loading and missing-tiddler indicator** — TiddlyWiki separates tiddler existence from tiddler content availability. A reference to a missing tiddler renders as a distinctively styled link (conventionally red or dashed) rather than as an error. Core principle: *broken references are a first-class display state, not a fault condition.* Extraction pressure: declared-unresolved `ala` addresses should surface with a distinct visual or textual marker in rendered output so authors can see gaps without reading raw source.
+
+**CommonMark link reference degradation** — A CommonMark link reference definition that is referenced but not defined renders the full bracket text as literal. The document does not abort; the reference degrades gracefully. Core principle: *the absence of a definition is a recoverable parse state.* Extraction pressure: declared-unresolved sub-meme addresses should produce a parseable, quotable surface (the address itself) rather than nothing.
+
+**HTML `loading="lazy"` and Intersection Observer** — Browsers defer image and iframe fetch until the element nears the viewport. Core principle: *load on demand, not on parse.* Extraction pressure: sub-meme content might be walked on agent demand rather than at initial parse, reducing load for large meme graphs. The three resolution states apply equally whether loading eagerly or lazily.
+
+**Service Worker stale-while-revalidate** — A Service Worker may serve stale cached content immediately while fetching a fresh version in the background. Core principle: *availability and freshness are separable concerns; stale is better than absent.* Extraction pressure: a cached prior rendering of a sub-meme may serve as declared-unresolved fallback content while the current sub-meme is reauthored or refetched.
+
+**Org-mode `#+INCLUDE`** — Org-mode's include directive fails hard when the target file is absent (export errors). Its absence of graceful degradation is the negative prior art here: it shows why a law governing the three resolution states is necessary rather than relying on include-or-abort semantics.
+
+**Quarto cross-references** — Quarto's `@ref` cross-reference syntax produces a broken-reference warning with the raw label string rendered in the document rather than aborting the build. Core principle: *cross-references degrade to their own declared label rather than producing silence.* Extraction pressure: the declared address itself is a valid degraded rendering.
+
+**Roam Research block references** — Roam's block reference system (`((block-uid))`) renders a live transclusion when the block exists and a broken reference indicator when it does not. Users can see which references are unresolved without editing raw source. Core principle: *the reference graph is a live first-class artifact, not just a navigation convenience.* Extraction pressure: the memetic-wikitext `ala` / `aka` walk graph should be inspectable as a first-class product of the meme store, with resolution states queryable.
+
+**ESM dynamic `import()`** — JavaScript's dynamic import returns a Promise that rejects if the module does not exist at resolution time. Core principle: *deferred resolution surfaces at call time, not at parse time.* Extraction pressure: `ala` walking can follow the same pattern — the walk is attempted at agent-traversal time, and the three resolution states are determined then, not during initial document parse.
+
+### Backlog from Research Foundation
+
+* Define a standard rendered marker for declared-unresolved `ala` addresses (extracts from TiddlyWiki missing-tiddler pattern).
+* Define an optional inline fallback block for `ala` addresses, analogous to `xi:fallback` (future grammar addition).
+* Specify that the meme-store walk graph should be inspectable as a queryable artifact (extracts from Roam Research principle).
+* Specify that sub-meme walking occurs at agent-traversal time, not initial parse (extracts from ESM dynamic import pattern).
+* Add explicit kānāwai (law) to guest-grammar for how hana guest grammars should handle deferred resolution within guest work.
+
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/meme-research-foundation >> -->
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
@@ -837,7 +1036,7 @@ Meme closes the canonical skeleton stream here.
 A lawful meme envelope from this locus may carry:
 
 * the required element set (R1–R9) with per-element conformance verdicts
-* the optional element set (O1–O6) with rating-contribution table
+* the optional element set (O1–O9) with rating-contribution table and resolution-state impact
 * the rating-target table for the requested band
 * the skeleton block ready for author copy and placeholder fill
 * repair guidance naming which elements would move the meme to the next rating band
@@ -854,9 +1053,9 @@ yield = "meme"
 return = "render"
 upward_context = "chat"
 downward_context = "none"
-residue = "trace"
-next_observation = "lar:///ha.ka.ba/loci"
-next_question = "Which required elements should the first pono verification skill check?"
+residue = "O7/O8/O9 sub-meme files not yet authored; deferred-resolution and research-foundation sections present and governing"
+next_observation = "lar:///ha.ka.ba/meme#deferred-resolution"
+next_question = "Which sub-meme address should be written first: meme-observe-ha, meme-orient, or a phase-level sub-meme for one of the denser phases?"
 ```
 
 <<~&#x0004; -> ? >>

@@ -8,8 +8,8 @@ description: Please see TOML metadata in the `#iam` section of this document for
 
 <<~ ahu #iam >>
 ```toml
-name = "SKILL template"
-file_path = "ha.ka.ba/pono/SKILL.md"
+name = "skill.template"
+file_path = "ha.ka.ba/pono/skill.template.md"
 description = "Template and authoring guide for verification skill packages under lares/ha.ka.ba/pono/."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
@@ -18,7 +18,8 @@ confidence_band = "PS"
 mana = 0.34
 manao = 0.42
 manaoio = 0.22
-structure = "SKILL.md meme"
+meme_type = "skill"
+structure = "SKILL.md * OODA-HA * ha.ka.ba"
 role = "skill template and authoring guide"
 function = "describe the required shape of a pono verification skill package"
 covers = []

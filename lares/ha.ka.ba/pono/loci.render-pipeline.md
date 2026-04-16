@@ -5,7 +5,7 @@
 <<~ ahu #iam >>
 ```toml
 name = "render-pipeline"
-file_path = "ha.ka.ba/pono/render-pipeline.loci.md"
+file_path = "ha.ka.ba/pono/loci.render-pipeline.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
@@ -14,12 +14,13 @@ confidence_band = "CS"
 mana = 0.78
 manao = 0.74
 manaoio = 0.68
+meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
 function = "lower memetic-wikitext from human-agent-friendly sigil script into AST and widget structures, preserve lawful invariants, and project results into chat and other render targets"
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
-output = "render-envelope(high mana'o'io^)|partial-render-envelope(mid mana'o'io-)|degraded-render-envelope(low mana'o'io_)|?(~mana'o'io?)"
+output = "render-envelope(high manaoio^)|partial-render-envelope(mid manaoio-)|degraded-render-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser"
