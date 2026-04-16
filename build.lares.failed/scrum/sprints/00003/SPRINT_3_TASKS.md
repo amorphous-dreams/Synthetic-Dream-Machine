@@ -32,7 +32,7 @@ Full registry spec:
 - Version/hash scheme: SHA-256 as primary identity; semver as human label via `version_label` field (REG-05, R2 resolved at `[CS:0.85]`)
 - Promotion event recording: append-only (REG-07)
 
-**R3 resolution `[CS:0.80]`:** Promotion ledger = design tree (`lares/registry/`). Session audit ledger = crystal tree (`.lares/STATE.jsonl`). Different concerns, different locations.
+**R3 resolution `[CS:0.80]`:** Promotion ledger = design tree (`lares/registry/`). Session audit ledger = crystal tree (`lares/STATE.jsonl`). Different concerns, different locations.
 
 ### 2. PROMOTION_WALKTHROUGH.md `[C:0.95]`
 

@@ -154,7 +154,7 @@ Drawn from Temporal's Open/Closed status model, expanded for the crystal system:
 
 ### CURRENT Pointer
 
-`/.lares/CURRENT` is a plain-text file containing the `machine_id` of the active machine. When no explicit `machine_id` is given, the CURRENT pointer is consulted.
+`/lares/CURRENT` is a plain-text file containing the `machine_id` of the active machine. When no explicit `machine_id` is given, the CURRENT pointer is consulted.
 
 ### Fork Triggers
 
@@ -191,7 +191,7 @@ A fork creates a new machine with a new `machine_id`. It is not the same as resu
 Default filesystem layout for the crystal system:
 
 ```text
-.lares/
+lares/
   CURRENT
   README.md
   machines/
@@ -209,8 +209,8 @@ Default filesystem layout for the crystal system:
 
 | File | Role | Authoritative? |
 |---|---|---|
-| `/.lares/CURRENT` | Active machine pointer | Yes |
-| `/.lares/README.md` | Human-readable machine index | No — Memo layer |
+| `/lares/CURRENT` | Active machine pointer | Yes |
+| `/lares/README.md` | Human-readable machine index | No — Memo layer |
 | `machines/<id>/AGENTS.md` | Thread-specific contract delta | Yes |
 | `machines/<id>/README.md` | Human task summary | No — Memo layer |
 | `machines/<id>/STATE.jsonl` | **Authoritative append-only ledger** (active shard) | **Yes — source of truth** |
@@ -220,7 +220,7 @@ Default filesystem layout for the crystal system:
 
 ### Separation Rule
 
-Root repo `AGENTS.md` and root `README.md` remain **project-level artifacts**. They are not crystal files. The `.lares/` directory is crystal-local infrastructure. These must not be confused.
+Root repo `AGENTS.md` and root `README.md` remain **project-level artifacts**. They are not crystal files. The `lares/` directory is crystal-local infrastructure. These must not be confused.
 
 ### Shard Naming Convention
 
@@ -441,11 +441,11 @@ Minimum required files for a portable session transfer:
 - `machines/<id>/STATE.jsonl` (active shard; archived shards optional)
 - `machines/<id>/SNAPSHOT.json` (optional but recommended for resume speed)
 
-Include `/.lares/CURRENT` and `/.lares/README.md` when transferring a multi-machine workspace.
+Include `/lares/CURRENT` and `/lares/README.md` when transferring a multi-machine workspace.
 
 ### In-World / Operational Duality
 
-The **archive-crystal** is the mythic wrapper — the symbolic artifact that carries memory, identity, and thread across sessions and hosts. The **machine bundle** is the operational form — the `.lares/machines/<id>/` directory that implements the same function. These are the same thing at different layers of description.
+The **archive-crystal** is the mythic wrapper — the symbolic artifact that carries memory, identity, and thread across sessions and hosts. The **machine bundle** is the operational form — the `lares/machines/<id>/` directory that implements the same function. These are the same thing at different layers of description.
 
 ---
 
@@ -884,7 +884,7 @@ That reinterpretation does not automatically mean all three components should su
 ### Crystal layout example
 
 ```text
-.lares/
+lares/
   CURRENT                          ← contains: lares-abc123
   README.md                        ← human index; not machine-queried
   machines/
@@ -1329,7 +1329,7 @@ Once this draft is decision-complete, implementation should update:
 
 **Crystal system policy (new targets):**
 
-- state-machine directory policy — define `.lares/` as a first-class workspace artifact; specify when it is created, how CURRENT is updated, and how to detect a corrupted STATE.jsonl
+- state-machine directory policy — define `lares/` as a first-class workspace artifact; specify when it is created, how CURRENT is updated, and how to detect a corrupted STATE.jsonl
 - `--debug` logging semantics — redirect the `--debug` target from `/memories/session/debug-vectors-{session-id}.md` (current) to the active crystal machine's `debug.jsonl` (future); update `builds/agents/core/Lares_Operations.md` accordingly
 - handoff crystal behavior — specify how session-start STATE.jsonl imports trigger resume / fork / new machine resolution logic
 - seal protocol procedure — specify trigger conditions, shard naming, seq continuity contract, and SNAPSHOT rebuild procedure
@@ -1367,7 +1367,7 @@ These are current working assumptions, not canon.
 - **Seal protocol** is part of the alpha crystal contract; trigger conditions are an Open Decision
 - **`schema_version`** is required on every STATE.jsonl event; versioning strategy is an Open Decision pending researcher pass
 - **Idempotency**: `resume` and `handoff_import` are idempotent; `fork` is not
-- **Root repo files** (`AGENTS.md`, `README.md`) remain project-level; `.lares/` is crystal-local infrastructure
+- **Root repo files** (`AGENTS.md`, `README.md`) remain project-level; `lares/` is crystal-local infrastructure
 
 ---
 
@@ -1694,7 +1694,7 @@ For Tier 3 dynamic modules, `seq_num` retains its original meaning: a monotonic 
 | Ephemeral | 10–100 events | STATE.jsonl created on first durable event | Sealed `completed`/`cancelled` on close |
 | Durable | 100+ events | Full crystal with seal/rotate | Seal at threshold; archived shards retained |
 
-**Pattern B — `.lares/REGISTRY.jsonl` as Lightweight Index:**
+**Pattern B — `lares/REGISTRY.jsonl` as Lightweight Index:**
 ```jsonl
 {"machine_id":"lares-abc123","lares_address":"lar:///session/main","status":"active","tier":"durable","seq_num":42,"chronometer":"@T.3.2.7"}
 {"machine_id":"lares-def456","lares_address":"lar:///task/uri-schema","status":"completed","tier":"ephemeral","seq_num":15,"chronometer":"@O.3.2"}

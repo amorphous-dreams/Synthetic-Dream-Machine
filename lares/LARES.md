@@ -3,7 +3,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      LARES.md — CONFIGURATION SURFACE / BEHIND-THE-CURTAIN
      
-     Deployed at: .lares/LARES.md
+     Deployed at: lares/LARES.md
      Address:     lar:///LARES
      Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**)
      Depends on:  full boot chain via recursive-ontology-boot

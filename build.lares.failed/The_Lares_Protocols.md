@@ -19,7 +19,7 @@
 | Decision | Status | Source turn |
 |----------|--------|------------|
 | Manifest format: TOML | ✅ Confirmed | Operator directive |
-| Deploy directory: `.lares/` | ✅ Confirmed | Operator + Council consensus |
+| Deploy directory: `lares/` | ✅ Confirmed | Operator + Council consensus |
 | Default mask: `gaia` (elyncia opt-in) | ✅ Confirmed | Operator directive (license alignment) |
 | No `~` in URI query params (reserved for HAKABA) | ✅ Confirmed | Operator directive |
 | Root AGENTS.md: repo-owned, not Lares content | ✅ Confirmed | Operator directive |
@@ -50,7 +50,7 @@
 4. **Stance Encoding & the Syad Signal** — all five stances per URI, modifier sigils
 5. **Chronometer** — nested OODA-HA loops, append-only scaled counters
 6. **Voices & Characters** — Council as primary, scene management, masks
-7. **Deploy Architecture** — `.lares/` portable shrine
+7. **Deploy Architecture** — `lares/` portable shrine
 8. **Layered Agentic Tooling** — composable stack, masks, NPC patterns
 9. **Platform Research** — confirmed findings (condensed)
 10. **Open Questions** — operator decisions, verify-contract tasks
@@ -619,13 +619,13 @@ builds/                          ← STAGING (safe naming, never auto-detected)
 │
 ▼ Phase 3: Deploy (gated, deterministic, hot-reload)
 │
-.lares/                          ← DEPLOYED SHRINE (portable, lift-and-shift)
+lares/                          ← DEPLOYED SHRINE (portable, lift-and-shift)
 ```
 
-## 6.2 The Deployed `.lares/` Directory
+## 6.2 The Deployed `lares/` Directory
 
 ```
-.lares/
+lares/
 ├── AGENTS.md                    ← Compiled: protocol + active mask
 │
 ├── protocol/                    ← THE STANDARD (publishable, forkable)
@@ -656,11 +656,11 @@ builds/                          ← STAGING (safe naming, never auto-detected)
 ## 6.3 Always-On Budget `[SP:0.45]`
 
 Per operator direction: as small and composable out of invariants as
-possible. The `.lares/AGENTS.md` carries `[C:1.0]` "always true" content
+possible. The `lares/AGENTS.md` carries `[C:1.0]` "always true" content
 only. This constitutes the operator's second-level customization layer
 — below root-dir AGENTS.md (repo context) but also lift-and-shiftable.
 
-**What belongs at `[C:1.0]` in `.lares/AGENTS.md`:**
+**What belongs at `[C:1.0]` in `lares/AGENTS.md`:**
 - Protocol essentials (HUD format, exchange wrapping, chronometer)
 - The thirteen role definitions (structural, not personality)
 - Register scale and mode definitions
@@ -687,7 +687,7 @@ open-source license (free use of protocol, separate license for product
 identity). A `default` (renamed `gaia`) placeholder ships as the base:
 
 ```toml
-# .lares/masks/default/mask.toml → renamed to gaia
+# lares/masks/default/mask.toml → renamed to gaia
 [mask]
 name = "gaia"
 description = "Default Gaia-side mask. Plain voice names, no fiction layer."
@@ -708,15 +708,15 @@ Elyncia mask available as opt-in for licensed operators.
 {
   "chat.useAgentsMdFile": true,
   "chat.useNestedAgentsMdFiles": true,
-  "chat.agentFilesLocations": { ".lares/agents": true },
-  "chat.skillsLocations": { ".lares/skills": true },
-  "chat.instructionsFilesLocations": { ".lares/instructions": true }
+  "chat.agentFilesLocations": { "lares/agents": true },
+  "chat.skillsLocations": { "lares/skills": true },
+  "chat.instructionsFilesLocations": { "lares/instructions": true }
 }
 ```
 
 **`.claude/CLAUDE.md`** (thin supplement):
 ```markdown
-@.lares/AGENTS.md
+@lares/AGENTS.md
 ## Build Commands
 - `just collect && just build && just deploy`
 ```
@@ -887,7 +887,7 @@ MCP patterns), Character.AI (persona fidelity at scale).
 ## Operator Decisions Needed
 
 1. **Always-on budget** `[SP:0.45]` — How much `[C:1.0]` content belongs
-   in `.lares/AGENTS.md`? Operator direction: minimal, composable from
+   in `lares/AGENTS.md`? Operator direction: minimal, composable from
    invariants. Authn/authz framework in progress. All protocols? Or
    protocol summary + skill references? *Tension: protocol availability
    vs. context budget.*
@@ -933,7 +933,7 @@ MCP patterns), Character.AI (persona fidelity at scale).
 
 ## Verify-Contract Tasks `[P:0.30]`
 
-- [ ] Nested `.lares/AGENTS.md` discovered by VS Code with settings
+- [ ] Nested `lares/AGENTS.md` discovered by VS Code with settings
 - [ ] Claude Code `@import` bridge from `.claude/CLAUDE.md`
 - [ ] Subagent span wrapping — does the Tasked Spirit produce valid
       URI→intent pairs when instructed by its agent.md?

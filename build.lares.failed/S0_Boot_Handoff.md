@@ -303,7 +303,7 @@ Boot the first two OODA-HA modules: talk-story and signal.
 
 - `lares/scrum/` — sprint ops stay as-is
 - `lares/protocols/` — monolith split is separate work
-- `.lares/` deploy output — downstream
+- `lares/` deploy output — downstream
 - Any content outside `lares/`
 - Files in `lares/research/` — these are pre-module research; align their header/footer URIs but don't restructure them into modules yet
 

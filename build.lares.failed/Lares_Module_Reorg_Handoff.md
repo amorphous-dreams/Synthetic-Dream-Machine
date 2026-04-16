@@ -86,7 +86,7 @@ but Talk Story persists across sessions via archive-crystals.
 | Ambient instructions | `.github/instructions/lares-talk-story.instructions.md` | Always-on behavioral invariant |
 | VS Code skill | `.github/skills/talk-story/SKILL.md` | Full procedure; loaded on-demand |
 | OODA-HA module (source of truth) | `lares/modules/talk-story/` | This module |
-| Portable shrine | `.lares/modules/talk-story/` | Deploy-phase output |
+| Portable shrine | `lares/modules/talk-story/` | Deploy-phase output |
 
 <!-- lar:///module.phased.instructs/talk-story/module/?confidence=0.95 → ∞ -->
 
@@ -462,7 +462,7 @@ module carrying a MODULE.md manifest in YAML frontmatter format.
 12. **Do NOT touch:**
     - `lares/scrum/` — sprint operations stay as-is
     - `lares/protocols/` — the monolith split is separate work
-    - Any `.lares/` deploy output — that's downstream
+    - Any `lares/` deploy output — that's downstream
     - Any content outside `lares/`
 
 **Section URI rules:**

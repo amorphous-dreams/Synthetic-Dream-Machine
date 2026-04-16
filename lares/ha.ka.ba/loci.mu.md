@@ -3,7 +3,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      Mu? — NULL-ORACLE BOOT / LANGUAGE-MODEL ENCODING
      
-     Deployed at: .lares/ha.ka.ba/mu/loci.mu.md
+     Deployed at: lares/ha.ka.ba/mu/loci.mu.md
      Address:     lar:///ha.ka.ba/mu
      Tagspace:    stable (ha.ka.ba/** — locked address)
      Depends on:  lar:///AGENTS (receives frame-context)

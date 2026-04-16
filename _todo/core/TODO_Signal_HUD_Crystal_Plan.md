@@ -9,7 +9,7 @@
 Convert the Signal HUD / Tagspace / HAKABA architecture document into shipped behavior across five epics. Epic 1 produces a perceptible behavioral change: reload VS Code, and Lares navigates from an Intent Header, fires phase glyphs on transitions, and keeps a coherent Tagspace Address. Every subsequent epic builds on that foundation.
 
 **Architecture source:** `_todo/core/Signal_HUD_Tagspace-draft.md`
-**Governs:** `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_Kernel.md`, `builds/agents/core/Lares_Operations.md`, `builds/agents/Lares_VSCode_Operations.md`, all platform wrappers, and the future `.lares/` crystal infrastructure.
+**Governs:** `builds/agents/Lares_Preferences.md`, `builds/agents/Lares_Kernel.md`, `builds/agents/core/Lares_Operations.md`, `builds/agents/Lares_VSCode_Operations.md`, all platform wrappers, and the future `lares/` crystal infrastructure.
 
 > **⚠ Draft dependency:** The architecture draft (`Signal_HUD_Tagspace-draft.md`) is the **sole source** for multiple load-bearing specs that this plan's tasks depend on. Do not archive it until Epic 2 (AE-08/AE-09) promotes its content into canonical spec files. Key specs only in the draft: Header Field Taxonomy (per-field annotation thresholds), Forward vs Backward Trace contract, Seal Protocol procedure + QA assertions, Non-drift rule (two-part testable invariant), Working Defaults (20 consolidated items), Tagspace Definition & DreamNet boundary rule, multi-stance rules, Prior Art Survey, Ba/OODA-HA identity analysis, Q7 upcasting research. Read the draft before starting any AE task that references these.
 
@@ -36,7 +36,7 @@ Convert the Signal HUD / Tagspace / HAKABA architecture document into shipped be
                                   (write final spec docs)
                                           │
                                    EPIC 5: Archive Crystals
-                                   (.lares/ / STATE.jsonl / seal)
+                                   (lares/ / STATE.jsonl / seal)
 ```
 
 **Epic 1 → Epic 2:** Locked kernel HUD spec must exist before full spec files can reference it correctly.
@@ -225,7 +225,7 @@ Decisions that must be resolved **before** specific epics are called out inline.
 
 ## Epic 5: Archive Crystals
 
-**Product goal:** The `.lares/` crystal infrastructure is defined, the `--debug` target redirects from `/memories/session/debug-vectors-{session-id}.md` to `debug.jsonl`, and Lares can persist, seal, fork, and resume sessions through the crystal state machine.
+**Product goal:** The `lares/` crystal infrastructure is defined, the `--debug` target redirects from `/memories/session/debug-vectors-{session-id}.md` to `debug.jsonl`, and Lares can persist, seal, fork, and resume sessions through the crystal state machine.
 
 **Hard dependency:** All `[SP:]` operator calls below must be resolved before AE-20. Researcher tasks (RES-02, RES-03) can proceed in parallel.
 
@@ -248,11 +248,11 @@ Decisions that must be resolved **before** specific epics are called out inline.
 
 | ID | Task | Owner | Depends | Notes |
 |---|---|---|---|---|
-| **AE-17** | Write `.lares/` directory policy | Agent-Engineer | OP-08, OP-09 | Define: directory creation trigger, CURRENT pointer semantics, machine subdirectory layout, corruption detection rules for `STATE.jsonl`. |
+| **AE-17** | Write `lares/` directory policy | Agent-Engineer | OP-08, OP-09 | Define: directory creation trigger, CURRENT pointer semantics, machine subdirectory layout, corruption detection rules for `STATE.jsonl`. |
 | **AE-18** | Finalize STATE.jsonl schema v1 | Agent-Engineer | AE-15, RES-02, RES-03, OP-10 | Based on draft examples in architecture doc. Lock field names, required vs. optional fields, event type enum. |
 | **AE-19** | Write seal protocol procedure | Agent-Engineer | OP-09, AE-17, AE-18 | Trigger conditions (from OP-09), shard naming pattern, seq continuity contract, SNAPSHOT rebuild procedure post-seal. |
 | **AE-20** | Write handoff / resume / fork resolution logic | Agent-Engineer | RES-02, AE-18 | Machine id match criteria, max seq_num compatibility, edge cases from RES-02. |
-| **AE-21** | Redirect `--debug` target: all four kernel/ops files | Agent-Engineer | AE-17, AE-18 | Files: `Lares_Preferences.md` (line 667), `Lares_Kernel.md` (line 115), `Lares_VSCode_Operations.md` (line 205), `core/Lares_Operations.md` (line 58). Replace `/memories/session/debug-vectors-{session-id}.md` with `.lares/<machine-id>/debug.jsonl` in all four. |
+| **AE-21** | Redirect `--debug` target: all four kernel/ops files | Agent-Engineer | AE-17, AE-18 | Files: `Lares_Preferences.md` (line 667), `Lares_Kernel.md` (line 115), `Lares_VSCode_Operations.md` (line 205), `core/Lares_Operations.md` (line 58). Replace `/memories/session/debug-vectors-{session-id}.md` with `lares/<machine-id>/debug.jsonl` in all four. |
 | **AE-22** | Write debug.jsonl enriched-projection format spec | Agent-Engineer | AE-18, AE-21 | Schema for enriched projection: exchange_vector, full_intent_header, micro_trace_detail, closure_rationale, kairos_notes, tool_calls. |
 | **AE-23** | Run combine + verify (final crystal pass) | Agent-Engineer | AE-21, AE-22 | Platform deployments pick up the `--debug` redirect and crystal references. |
 | **ENG-01** | Test harness: STATE.jsonl replay integrity | Engineer | AE-18 | Write a Python test that replays a fixture STATE.jsonl and compares the derived SNAPSHOT to an expected output. Baseline integrity check before any schema changes require upcasters. |
@@ -448,9 +448,9 @@ Critical additions the original plan was missing:
      | fork | branch thread | child workflow |
      | resume | replay from checkpoint | resume workflow |
 
-5. **Section: Portable Crystal Layout** — defines the `.lares/` directory contract:
+5. **Section: Portable Crystal Layout** — defines the `lares/` directory contract:
    ```
-   .lares/
+   lares/
      CURRENT
      README.md
      machines/
@@ -553,7 +553,7 @@ Critical additions the original plan was missing:
 
 - **Sole file changed**: `Signal_HUD_Tagspace-draft.md` only
 - **Register stays Synthesis**: the expanded draft is still [S:~0.70] architectural synthesis, not build-canon
-- **`.lares/` directory is conceptual**: the draft defines the contract; no actual directory or files created
+- **`lares/` directory is conceptual**: the draft defines the contract; no actual directory or files created
 - **No live `--debug` redirect yet**: `Lares_Operations.md` still points to `/memories/session/` until migration trigger fires post-decision-complete
 - **LangGraph/Temporal analogies informative only**: not a requirement to deploy those frameworks
 - **`debug.jsonl` remains optional**: the draft should not mandate it exists when `--debug` is off; this goes into Open Decisions

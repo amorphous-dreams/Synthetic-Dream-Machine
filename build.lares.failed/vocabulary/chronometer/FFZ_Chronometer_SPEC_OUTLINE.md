@@ -633,7 +633,7 @@ Bloom Clock consideration for probabilistic compression.]
 ### 14.1 Claude Code
 
 [PLACEHOLDER — CLAUDE.md integration. Subagent clock inheritance.
-.lares/ deployment.]
+lares/ deployment.]
 
 ### 14.2 VS Code / GitHub Copilot
 

@@ -114,7 +114,7 @@ Updated only on status change, spawn, seal, or fork. Subject to 200-line discipl
 |---|---|---|---|
 | R1 | Ledger file format — JSONL vs structured markdown? | `[S:0.65]` | JSONL aligns with STATE.jsonl conventions |
 | R2 | Build version scheme — content hash vs semver vs both? | `[SP:0.45]` | Content hash preferred for integrity; semver for human readability |
-| R3 | Ledger location — `lares/registry/LEDGER.jsonl` vs `.lares/PROMOTION_LEDGER.jsonl`? | `[S:0.55]` | Design tree vs crystal tree; different audiences |
+| R3 | Ledger location — `lares/registry/LEDGER.jsonl` vs `lares/PROMOTION_LEDGER.jsonl`? | `[S:0.55]` | Design tree vs crystal tree; different audiences |
 | R4 | Should the resolver be a runtime tool or a design-time reference? | `[S:0.60]` | Alpha: design-time reference; future: runtime resolver |
 | R5 | When is `semantic_sha256` ready to promote from deferred to required? | `[SP:0.45]` | Requires: normalization spec written, prototype run executed on at least one real artifact, two independent tools produce identical hash. Until then, `null` in all ledger entries (use `file_sha256` for integrity). |
 

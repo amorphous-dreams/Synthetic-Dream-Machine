@@ -810,7 +810,7 @@ but did that actually change the scale? → //question.audit.holds [S:0.60] 🏛
 Yes. The parse layer and the trace layer were being conflated. →■ The governed reply states the fix cleanly without pretending its event markers are parse boundaries. →○
 ```
 
-> **`--debug` log target (transitional):** The exchange vector log currently writes to `/memories/session/debug-vectors-{session-id}.md` (documented above in the Debug switch section). This target will redirect to `.lares/<machine-id>/debug.jsonl` once Archive Crystals (Epic 5) ships. Both targets are structurally equivalent in content. Do not remove the current target reference until the redirect lands.
+> **`--debug` log target (transitional):** The exchange vector log currently writes to `/memories/session/debug-vectors-{session-id}.md` (documented above in the Debug switch section). This target will redirect to `lares/<machine-id>/debug.jsonl` once Archive Crystals (Epic 5) ships. Both targets are structurally equivalent in content. Do not remove the current target reference until the redirect lands.
 
 ---
 

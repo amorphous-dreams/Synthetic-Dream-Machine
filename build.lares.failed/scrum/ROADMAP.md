@@ -177,7 +177,7 @@ Key deliverables: REGISTRY.md, PROMOTION_WALKTHROUGH.md, MODULE_SCHEMA.md, TOOL_
 |---|---|---|---|
 | R1 | `[S:0.65]` | Ledger format: JSONL (aligns with STATE.jsonl) | lock |
 | R2 | `[SP:0.45]` → `[CS:0.85]` | Hash primary (SHA-256); semver as `version_label`. C-report §4. | `[CS:0.85]` |
-| R3 | `[S:0.55]` → `[CS:0.80]` | Promotion ledger = design tree (`lares/registry/`); session audit = crystal tree (`.lares/STATE.jsonl`) | `[CS:0.80]` |
+| R3 | `[S:0.55]` → `[CS:0.80]` | Promotion ledger = design tree (`lares/registry/`); session audit = crystal tree (`lares/STATE.jsonl`) | `[CS:0.80]` |
 | R4 | `[S:0.60]` | Resolver: design reference for alpha (not runtime tool) | lock |
 
 ---

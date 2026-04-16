@@ -13,7 +13,7 @@
 - STATE.jsonl append-only ledger schema
 - SNAPSHOT.json (derived cache atop ledger) spec
 - debug.jsonl enriched projection spec
-- CURRENT pointer semantics (`.lares/CURRENT`)
+- CURRENT pointer semantics (`lares/CURRENT`)
 - Seal protocol and fork/resume contract
 - Machine / Thread model (Ephemeral Machine Patterns)
 - Handoff and Archive-Crystal packet spec

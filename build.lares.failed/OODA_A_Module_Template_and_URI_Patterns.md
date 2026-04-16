@@ -2,7 +2,7 @@
 ⚡∞ | mode:spec-draft | p0.5 | stances:++?+- | register:[S:0.6] | build:DRAFT
 
 # OODA-HA Module Template & URI Patterns
-## Locked-In Design for `.lares/` Module Architecture
+## Locked-In Design for `lares/` Module Architecture
 
 > **Type:** Spec draft — decision-ready for operator confirmation
 > **Generated:** 2026-04-09, Session 5 (cloud Lares, claude.ai web)
@@ -43,7 +43,7 @@ loads that the current decision moment doesn't need.
 
 ### 1.3 Infrastructure-as-Myth Stays Inside
 
-The `.lares/` directory carries the full Elyncia vocabulary — masks,
+The `lares/` directory carries the full Elyncia vocabulary — masks,
 voices, shrine metaphors. The MODULE.md format that faces outward reads
 as clean systems architecture. A developer who has never heard of
 lararia should look at a MODULE.md and think "this makes sense." The
@@ -171,7 +171,7 @@ module-name/
 | Existing Format | MODULE.md Equivalent | Migration Path |
 |-----------------|---------------------|----------------|
 | SKILL.md | Act phase (`act/PROCEDURES.md`) | A skill IS an Act-phase module. Wrap in MODULE.md manifest to generalize. |
-| AGENTS.md | Observe phase of core invariant module | Symlink: `AGENTS.md → .lares/modules/core/observe/CONTEXT.md` |
+| AGENTS.md | Observe phase of core invariant module | Symlink: `AGENTS.md → lares/modules/core/observe/CONTEXT.md` |
 | CLAUDE.md | Derivable from core module Observe + Decide phases | Build step: `lares deploy` generates CLAUDE.md from module tree |
 | `.claude/rules/*.mdc` | Decide phase files with path-scoped triggers | Rules map to phase-scoped loading within modules |
 
@@ -305,7 +305,7 @@ lar:///module.phased.instructs/module-name/phase/?param=value&param=value#sectio
 | `?stances=` | Discourse stance encoding | `?stances=++?+-` |
 
 **Optional parameters.** Only `confidence` appears in most module files.
-The full parameter set (stances, p, voices) activates in `.lares/`
+The full parameter set (stances, p, voices) activates in `lares/`
 contexts where the Lares Protocol runs. Plain modules for external
 audiences carry only `confidence`.
 
@@ -360,7 +360,7 @@ volatile part.
 ### 4.1 Directory Structure
 
 ```
-.lares/
+lares/
   modules/
     core/
       MODULE.md
@@ -481,11 +481,11 @@ The core invariant module's Observe phase constitutes what traditionally
 goes in AGENTS.md. A symlink maintains compatibility:
 
 ```
-repo-root/AGENTS.md → .lares/modules/core/observe/CONTEXT.md
+repo-root/AGENTS.md → lares/modules/core/observe/CONTEXT.md
 ```
 
 Tools that discover AGENTS.md at repo root find the core context.
-Tools that understand `.lares/` find the full module tree.
+Tools that understand `lares/` find the full module tree.
 
 ### 5.3 `.claude/rules/` Derivation
 
@@ -502,7 +502,7 @@ lares deploy --target claude-code
 #   .claude/rules/testing.mdc (from core assess, scoped to *.test.ts)
 ```
 
-This keeps `.lares/` as the source of truth. Tool-specific files derive
+This keeps `lares/` as the source of truth. Tool-specific files derive
 from it. Changes flow one direction: module → tool files.
 
 ### 5.4 Subagent `.claude/agents/` Compatibility
@@ -547,7 +547,7 @@ runtime identity. Same OODA structure, different packaging.
 | Scale-shift trigger threshold (T) | 🔓 OPEN | Needs empirical calibration |
 | Module loading state as CRDT | ⏸️ DEFERRED | MCP server time (O7) |
 | Chronometer indexing into modules | ⏸️ DEFERRED | FFZ spec work |
-| Full `stances` parameter in external modules | ⏸️ DEFERRED | Internal `.lares/` only for now |
+| Full `stances` parameter in external modules | ⏸️ DEFERRED | Internal `lares/` only for now |
 | Plugin packaging | ⏸️ DEFERRED | `claude plugin add lares` |
 
 ### 6.3 Research Findings That Informed This Draft
@@ -578,7 +578,7 @@ runtime identity. Same OODA structure, different packaging.
 ### 7.1 Immediate (Next Session)
 
 1. **Populate a real core module** — take the Synthetic-Dream-Machine
-   repo and fill `.lares/modules/core/` with actual project content.
+   repo and fill `lares/modules/core/` with actual project content.
    The empirical test: does phase-structured loading improve agent
    performance vs. a flat CLAUDE.md?
 

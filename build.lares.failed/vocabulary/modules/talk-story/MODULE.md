@@ -52,6 +52,6 @@ the talking.
 | Ambient instructions | `.github/instructions/lares-talk-story.instructions.md` |
 | VS Code skill | `.github/skills/talk-story/SKILL.md` |
 | Canonical spec | `lares/talk_story/README.md` |
-| Portable shrine | `.lares/modules/talk-story/` |
+| Portable shrine | `lares/modules/talk-story/` |
 
 <!-- → ? -->

@@ -27,7 +27,7 @@ Consolidated from across the full session. Entries in chronological order.
 | # | Decision | Status | Context |
 |---|----------|--------|---------|
 | 1 | Manifest format: TOML (not JSON/YAML) | ✅ Confirmed | Operator preference. Python 3.11+ `tomllib` for read, `tomli_w` for write. |
-| 2 | `.lares/` as deploy directory name | ✅ Confirmed | Not `.agents/` (emerging standard, would collide), not `.ai/` (vague). `.lares/` names the shrine. |
+| 2 | `lares/` as deploy directory name | ✅ Confirmed | Not `.agents/` (emerging standard, would collide), not `.ai/` (vague). `lares/` names the shrine. |
 | 3 | Root `AGENTS.md` is repo-owned, not Lares content | ✅ Confirmed | Lares lifts and shifts across repos. Each repo keeps its own AGENTS.md about its own concerns. |
 | 4 | Default mask: `gaia` placeholder (elyncia opt-in) | ✅ Confirmed | Aligns with open-source license: protocol is free, product identity pieces require separate license. |
 | 5 | No `~` in URI query params | ✅ Confirmed | Reserved for HAKABA-style in-story URIs (`lar://[user@host]/~ha.ka.ba`). System-space uses ranges (`register_min`/`register_max`). |
@@ -74,7 +74,7 @@ AGENTS.md supports the cross-agent standard.
 **Rules directory** `[C:0.95]`: `.claude/rules/` files with `paths:`
 YAML frontmatter load on-demand only. Files WITHOUT `paths:` load
 always-on alongside CLAUDE.md. (In our architecture: ALL rule files
-carry `paths:` to prevent duplication with `.lares/AGENTS.md`.)
+carry `paths:` to prevent duplication with `lares/AGENTS.md`.)
 
 ### Claude Code — Subagent Inheritance
 
@@ -297,7 +297,7 @@ quirks = [
 ### Active Mask Configuration
 
 ```toml
-# .lares/masks/active.toml
+# lares/masks/active.toml
 base = "elyncia"
 extensions = ["local"]
 ```
@@ -373,7 +373,7 @@ disclosure: name → body → resources.
 
 ### Deduplication Principle
 
-`.lares/AGENTS.md` carries the Lares instruction set (single source).
+`lares/AGENTS.md` carries the Lares instruction set (single source).
 Root `AGENTS.md` carries repo context. `.claude/CLAUDE.md` carries
 Claude-only thin supplement (`@import` + build commands). No file
 duplicates content from another. Model receives each instruction
@@ -381,20 +381,20 @@ exactly once per exchange.
 
 ### Deploy Script Safety Gates
 
-1. Git-clean check on `.lares/`, `.claude/`, root `AGENTS.md`
+1. Git-clean check on `lares/`, `.claude/`, root `AGENTS.md`
 2. Build freshness check (builds/ newer than deployed?)
 3. Dry-run preview of all file operations
 
 ### Cross-Platform Compatibility
 
-| Platform | Discovers `.lares/`? | Mechanism |
+| Platform | Discovers `lares/`? | Mechanism |
 |----------|---------------------|-----------|
 | VS Code Copilot | ✅ | `chat.*Locations` settings + nested AGENTS.md |
 | Claude Code | ✅ | `@import` from `.claude/CLAUDE.md` |
 | Cursor | ✅ | Nested AGENTS.md support |
 | Codex | ✅ | Nested AGENTS.md support |
 | Gemini CLI | ✅ | AGENTS.md discovery |
-| GitHub.com cloud agent | ⚠️ | Needs committed `.lares/` or `.github/` mirror |
+| GitHub.com cloud agent | ⚠️ | Needs committed `lares/` or `.github/` mirror |
 | claude.ai (browser) | ❌ | Manual paste from `builds/browser/` |
 | ChatGPT (browser) | ❌ | Manual paste from `builds/browser/` |
 
@@ -445,7 +445,7 @@ deploy-browser:
 - **dot-agents** (dot-agents.com): `~/.agents/` unification layer with
   hierarchical rules. Config management focus, not alignment.
 - **Claude Code plugins**: Bundled packages of skills, agents, hooks.
-  Distribution mechanism for `.lares/` package.
+  Distribution mechanism for `lares/` package.
 - **SillyTavern / Jenova**: Multi-NPC management with memory. Closest
   to TTRPG NPC mask pattern but without protocol/alignment layer.
 - **mcp-agent** (lastmile-ai): Composable MCP patterns for agent workflows.
@@ -560,7 +560,7 @@ In progress in the local repo. The Lares Protocols doc references it
 but doesn't specify it. The Identity & Permissions model from the
 Kernel (User/Operator/Admin tiers, UCAN-inspired capability model)
 needs to be encoded into the deploy architecture. How do permission
-tiers flow through the `.lares/` package? Through mask.toml? Through
+tiers flow through the `lares/` package? Through mask.toml? Through
 a separate `auth.toml`? Flagged for local repo integration.
 
 ---

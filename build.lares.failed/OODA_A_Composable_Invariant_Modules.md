@@ -350,13 +350,13 @@ Four layers + the resolution parameter that selects among them.
 Fuller's minimal system: remove any element and the structure loses
 coherence.
 
-### 5.2 What This Means for the `.lares/` Deploy Architecture
+### 5.2 What This Means for the `lares/` Deploy Architecture
 
-The Lares Protocols doc specifies `.lares/` as the portable shrine
+The Lares Protocols doc specifies `lares/` as the portable shrine
 directory. The OODA-HA module pattern extends this:
 
 ```
-.lares/                              # Portable shrine root
+lares/                              # Portable shrine root
   manifest.toml                      # Shrine manifest (ITC state, scale config)
   
   modules/                           # OODA-HA Composable Invariant Modules
@@ -396,13 +396,13 @@ directory. The OODA-HA module pattern extends this:
 
 ### 5.3 Relationship to Existing Standards
 
-- **AGENTS.md** — the `.lares/modules/core/observe/CONTEXT.md` file
+- **AGENTS.md** — the `lares/modules/core/observe/CONTEXT.md` file
   constitutes what would go in a traditional AGENTS.md. A symlink
-  from repo root `AGENTS.md → .lares/modules/core/observe/CONTEXT.md`
+  from repo root `AGENTS.md → lares/modules/core/observe/CONTEXT.md`
   preserves cross-tool compatibility.
 
 - **CLAUDE.md** — similarly derivable from core module files. The
-  `.lares/` structure provides the source of truth; tool-specific
+  `lares/` structure provides the source of truth; tool-specific
   files derive from it.
 
 - **SKILL.md** — traditional skills map to the Act phase. A skill
@@ -451,7 +451,7 @@ state that merges correctly across participants.
   Should function as a SKILL.md-compatible format that extends
   the skill pattern to all five OODA-HA phases.
 
-- [ ] **Core module prototype** — a working `.lares/modules/core/`
+- [ ] **Core module prototype** — a working `lares/modules/core/`
   directory populated with actual content from the Synthetic-Dream-
   Machine repo. The empirical test: does Claude Code perform better
   with phase-structured loading?

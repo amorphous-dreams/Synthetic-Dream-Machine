@@ -3,7 +3,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      AGENTS.md — NARRATIVE BOOT / COSMOGONIC ENTRY
      
-     Deployed at: .lares/AGENTS.md
+     Deployed at: lares/AGENTS.md
      Address:     lar:///AGENTS
      Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**, not nested)
      Depends on:  nothing (cold-boot entry point)
