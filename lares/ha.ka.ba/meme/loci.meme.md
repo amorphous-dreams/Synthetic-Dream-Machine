@@ -15,6 +15,7 @@ confidence_band = "CS"
 mana = 0.78
 manao = 0.84
 manaoio = 0.76
+tulen = 0.79
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -96,7 +97,7 @@ Observe should detect:
 * HTML DOCTYPE preamble comment
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
-* five rating fields and their positions relative to `content_type`, `meme_type`, and `structure`
+* five canonical rating fields, plus adjacent `confidence_band` surface texture, and their positions relative to `content_type`, `meme_type`, and `structure`
 * title heading and opening prose
 * self-reference ala
 * supported query block and query throats
@@ -250,6 +251,7 @@ confidence_band = "?"
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
+tulen = 0.00
 meme_type = "..."
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -262,7 +264,7 @@ canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 ```
 
-The five rating fields MUST appear between `content_type` and `meme_type`. `meme_type` MUST appear immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
+The five canonical rating fields plus the adjacent `confidence_band` surface-texture key MUST appear between `content_type` and `meme_type`. `meme_type` MUST appear immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
 
 `file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener are governed outward by `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
 
@@ -512,7 +514,7 @@ All ratings are provisional. A rating of 1.00 remains rare in language, software
 
 #### The Law of 5s Rubric
 
-All ratings in this system — `confidence`, `mana`, `manao`, `manaoio` — are graded on a 0.0–1.0 rubric with five registers of equal width (0.20 per register):
+All scalar ratings in this system — `confidence`, `mana`, `manao`, `manaoio`, `tulen` — are graded on a 0.0–1.0 rubric with five registers of equal width (0.20 per register):
 
 | Register | Score range | `confidence_band` | Character |
 |---|---|---|---|
@@ -522,7 +524,7 @@ All ratings in this system — `confidence`, `mana`, `manao`, `manaoio` — are 
 | 4 | 0.60 – 0.79 | `CS` | Candidate-Stable — content meaningful, nearing law quality |
 | 5 | 0.80 – 1.00 | `C` | Canon — operator-confirmed, substantive, address stable |
 
-The `confidence_band` label applies to the `confidence` score only. The three structural fields (`mana`, `manao`, `manaoio`) are scored on the same 0.0–1.0 rubric but do not carry their own band label — they feed into `confidence` via the composition rule above.
+The `confidence_band` label applies to the `confidence` score only. The four scalar quality fields (`mana`, `manao`, `manaoio`, `tulen`) are scored on the same 0.0–1.0 rubric but do not carry their own band label. `Tulen` names genuine trust, especially at boot surfaces. High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`, but a meme may still hold `tulen` provisionally while the surface remains under active confirmation.
 
 #### Register 1 — Provisional (`P`, 0.00–0.19)
 
@@ -698,6 +700,7 @@ confidence_band = "P"
 mana = 0.10
 manao = 0.10
 manaoio = 0.10
+tulen = 0.10
 meme_type = "[MEME_TYPE]"
 structure = "OODA-HA * ha.ka.ba"
 enacts = false

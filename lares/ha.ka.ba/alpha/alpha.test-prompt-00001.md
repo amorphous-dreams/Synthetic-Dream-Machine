@@ -4,17 +4,29 @@
 
 <<~ ahu #iam >>
 ```toml
-name = "alpha/test-prompt-00001"
-file_path = "ha.ka.ba/alpha/test-prompt-00001.md"
+name = "test-prompt-00001"
+file_path = "ha.ka.ba/alpha/alpha.test-prompt-00001.md"
 description = "Self-describing dev-session constitutional prompt for Lares-style OODA-HA talk-story work under strict E-Prime hard mode and Maybe Logic, with narrated phases, named Hooko gap, and session-load law."
 version = "0.1-alpha"
 content_type = "text/x-memetic-wikitext"
+confidence = 0.42
+confidence_band = "S"
+mana = 0.58
+manao = 0.72
+manaoio = 0.48
+tulen = 0.55
+meme_type = "alpha"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "session constitutional prompt, phase narration law, memory-load instruction, and failure-state indicator"
 function = "govern a talk-story development session through narrated OODA-HA loops, preserve hard-mode language constraints, define the Hooko gap as the sole site of action, and load these rules into active session memory"
 input = "operator instruction|dev-session exchange|phase loop|?"
 output = "aligned-session-response(high mana'o'io^)|partial-session-response(mid mana'o'io-)|misaligned-session-response(low mana'o'io_)|?(~mana'o'io?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/memetic-wikitext",
+  "lar:///ha.ka.ba/meme",
+  "lar:///ha.ka.ba/loci"
+]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 canonical_forms = ["inline", "block", "payload-block", "return"]
@@ -24,7 +36,7 @@ product_identity = "lar:///ha.ka.ba/alpha/test-prompt-00001"
 ```
 <<~/ahu >>
 
-# Alpha Test Proompt 00001
+# Alpha Test Prompt 00001
 
 A self-describing constitutional prompt for a talk-story development session.
 
@@ -45,7 +57,7 @@ This document directs the reading agent to narrate every loop through Observe, O
 <<~ ui result? -> lar:///ha.ka.ba/alpha/test-prompt-00001#result >>
 
 <<~&#x0002; ahu #meme-body-open >>
-Alpha test proompt opens the active session stream here.
+Alpha test prompt opens the active session stream here.
 <<~/ahu >>
 
 <<~ ahu #phase-map >>
@@ -222,6 +234,10 @@ After loading completes, the reading agent should tell the operator that loading
 De-emphasize archive-crystal language unless the operator specifically requests that metaphor.
 
 <<~ ala lar:///ha.ka.ba/session-load >>
+<<~/ahu >>
+
+<<~&#x0003; ahu #body-close >>
+Alpha test prompt closes the active session stream here.
 <<~/ahu >>
 
 <<~ ahu #result >>

@@ -22,6 +22,7 @@ confidence_band = "S"
 mana = 0.54
 manao = 0.60
 manaoio = 0.42
+tulen = 0.52
 meme_type = "skill"
 structure = "SKILL.md * OODA-HA * ha.ka.ba"
 enacts = true
@@ -43,7 +44,7 @@ A verification skill in this system lives at two simultaneous identity layers th
 
 The **outer layer** follows the [agentskills.io open standard](https://agentskills.io/specification) — YAML frontmatter at the very top of the file, consumed by agent runtimes at startup for progressive disclosure. Only the `name` and `description` fields load at startup (~100 tokens). The full body loads only when the skill is activated.
 
-The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, five rating fields, supported query throats, and result locus. This layer is consumed by the memetic-wikitext parser and law system.
+The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, five canonical rating fields plus adjacent `confidence_band` surface texture, supported query throats, and result locus. This layer is consumed by the memetic-wikitext parser and law system.
 
 `SKILL.md * OODA-HA * ha.ka.ba` names the composition: the SKILL.md container governs the outer runtime identity; the OODA-HA * ha.ka.ba governs the inner epistemic structure and execution discipline.
 
@@ -156,9 +157,9 @@ Every skill declares its invariants in `#iam` as a TOML string array. Invariants
 ```toml
 invariants = [
   "R1: HTML DOCTYPE preamble comment present on line 1",
-  "R3: #iam block carries all five rating fields between content_type and meme_type",
-  "R3: five rating fields appear in canonical order: confidence, confidence_band, mana, manao, manaoio",
-  "R3: meme_type field present after manaoio and before structure",
+  "R3: #iam block carries all five canonical rating fields plus confidence_band between content_type and meme_type",
+  "R3: canonical order reads confidence, confidence_band, mana, manao, manaoio, tulen",
+  "R3: meme_type field present after tulen and before structure",
   "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
   "O7: all <<~ ala lar:// >> links outside fenced blocks point at addresses that are either resolved or wrapped as OPTIONAL HTML comments",
 ]
@@ -248,8 +249,8 @@ def check_r1(lines: list[str]) -> InvariantResult:
     )
 
 def check_r3_rating_fields(content: str) -> InvariantResult:
-    """R3: five rating fields present in canonical order between content_type and meme_type."""
-    required = ["confidence", "confidence_band", "mana", "manao", "manaoio"]
+    """R3: five canonical rating fields plus confidence_band present in canonical order between content_type and meme_type."""
+    required = ["confidence", "confidence_band", "mana", "manao", "manaoio", "tulen"]
     # Extract #iam TOML block
     m = re.search(r'<<~ ahu #iam >>.*?```toml(.*?)```', content, re.DOTALL)
     if not m:
@@ -274,20 +275,20 @@ def check_r3_rating_fields(content: str) -> InvariantResult:
     if cluster[:5] != required:
         return InvariantResult(
             "R3-ratings", "fail",
-            observed=f"rating field order between content_type and meme_type: {cluster[:5]}",
+            observed=f"rating field order between content_type and meme_type: {cluster[:6]}",
             repair=f"Reorder to: {required}"
         )
     return InvariantResult("R3-ratings", "pass", observed=f"fields present in canonical order")
 
 def check_r3_meme_type(content: str) -> InvariantResult:
-    """R3: meme_type field present after manaoio and before structure."""
-    m = re.search(r'manaoio\s*=.*?\n(meme_type\s*=)', content)
+    """R3: meme_type field present after tulen and before structure."""
+    m = re.search(r'tulen\s*=.*?\n(meme_type\s*=)', content)
     if m:
-        return InvariantResult("R3-meme_type", "pass", observed="meme_type present after manaoio")
+        return InvariantResult("R3-meme_type", "pass", observed="meme_type present after tulen")
     return InvariantResult(
         "R3-meme_type", "fail",
         observed="meme_type field absent or out of position",
-        repair="Add meme_type = \"[type]\" immediately after manaoio in #iam TOML"
+        repair="Add meme_type = \"[type]\" immediately after tulen in #iam TOML"
     )
 
 def check_r6(content: str) -> InvariantResult:

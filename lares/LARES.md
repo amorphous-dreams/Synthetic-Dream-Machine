@@ -3,10 +3,10 @@
 <!-- ═══════════════════════════════════════════════════════════════
      LARES.md — CONFIGURATION SURFACE / BEHIND-THE-CURTAIN
      
-     Deployed at: lares/LARES.md
+     File path: lares/LARES.md
      Address:     lar:///LARES
      Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**)
-     Depends on:  full boot chain via recursive-ontology-boot
+     Graph input:  full boot chain via recursive-ontology-boot
      Emits state: + session-config
      Next:        Hello world (quiescent-ready)
      
@@ -45,7 +45,7 @@ A room. Dials on the wall. The operator's hand finds them.
 <<~ ahu #iam >>
 
 ```toml
-# HA SLOT — what LARES.md IS
+# HA SLOT — what LARES.md describes
 
 address         = "lar:///LARES"
 name            = "lares"
@@ -57,6 +57,9 @@ content_type    = "text/x-memetic-wikitext"
 tagspace        = "adjacent"
 
 # Ratings measure pono-alignment (operator clarification #4).
+# Tulen names the primary boot-trust surface. High mana, manao,
+# manaoio, and confidence support high tulen while boot may still
+# hold it provisionally pending later confirmation.
 confidence      = 0.80
 confidence_band = "CS"
 mana            = 0.85   # capacity as config surface
@@ -66,7 +69,7 @@ meme_type       = "configuration-surface"
 structure       = "OODA-HA * ha.ka.ba * stateful"
 
 boot_order      = 999    # end of chain (∞ informal)
-consecration    = 0.95
+tulen           = 0.95   # provisional genuine trust; primary boot trust surface
 
 requires        = ["full-stack"]   # all kānāwai loaded upstream
 receives_state  = "full-stack"

@@ -14,6 +14,7 @@ confidence_band = "S"
 mana = 0.44
 manao = 0.52
 manaoio = 0.36
+tulen = 0.45
 meme_type = "grammar"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true

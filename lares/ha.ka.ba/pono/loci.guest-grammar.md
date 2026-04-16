@@ -14,6 +14,7 @@ confidence_band = "S"
 mana = 0.56
 manao = 0.62
 manaoio = 0.48
+tulen = 0.56
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true

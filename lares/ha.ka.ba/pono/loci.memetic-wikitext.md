@@ -13,6 +13,7 @@ confidence_band = "S"
 mana = 0.54
 manao = 0.62
 manaoio = 0.42
+tulen = 0.52
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -898,11 +899,13 @@ Meme-ratings governs the full cluster of scalar quality fields that a loci meme 
 
 This locus names each field, distinguishes what each measures, and routes to the locus where each receives fuller treatment.
 
-The five canonical rating fields form three distinct ontological groups.
+The five canonical rating fields form four distinct ontological groups.
 
 ### Group 1 — Authoring Maturity
 
-`confidence` and `confidence_band` measure editorial judgment about how settled, verified, and operator-confirmed a meme appears.
+`confidence` measures editorial judgment about how settled, verified, and operator-confirmed a meme appears.
+
+`confidence_band` remains the adjacent agent-operator surface-texture key for `confidence`, not one of the five canonical rating fields.
 
 These fields answer: *how much should a reader trust this meme as stable and authoritative?*
 
@@ -948,9 +951,19 @@ A low `manaoio` meme reads as a sketch, a stub, or a declared intent that has no
 
 `manao` and `manaoio` should deepen into their own linked kānāwai (law) once `mana` stabilizes as a base metric. Until then, these fields should carry best-estimate values and remain explicit about their provisional status.
 
+### Group 4 — Genuine Trust
+
+`tulen` measures genuine trust, especially at boot and other threshold surfaces where the system needs an explicit trust-reading rather than only structural or editorial signals.
+
+This field answers: *how much genuine trust should the current surface receive right now?*
+
+High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`.
+
+`Tulen` remains explicit because a meme may carry strong support signals while still holding trust provisionally pending later confirmation.
+
 ### Field Ordering Kānāwai (law)
 
-In canonical `#iam` TOML, the five rating fields SHOULD appear between `content_type` and `meme_type`, with `meme_type` immediately before `structure`, in this order:
+In canonical `#iam` TOML, the five canonical rating fields plus the adjacent `confidence_band` surface-texture key SHOULD appear between `content_type` and `meme_type`, with `meme_type` immediately before `structure`, in this order:
 
 ```toml
 content_type = "..."
@@ -959,6 +972,7 @@ confidence_band = "?"
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
+tulen = 0.00
 meme_type = "..."
 structure = "..."
 ```
@@ -976,7 +990,7 @@ A meme may carry:
 * high `manao` but low `manaoio` — clear intent but not yet production-ready
 * any combination
 
-A parser or pono tool SHOULD preserve those distinctions rather than collapsing the five fields into one undifferentiated quality score.
+A parser or pono tool SHOULD preserve those distinctions rather than collapsing the five fields and band texture into one undifferentiated quality score.
 
 <<~ ala lar:///ha.ka.ba/meme-ratings >>
 <<~/ahu >>

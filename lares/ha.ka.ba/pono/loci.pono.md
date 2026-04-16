@@ -14,6 +14,7 @@ confidence_band = "CS"
 mana = 0.65
 manao = 0.70
 manaoio = 0.60
+tulen = 0.65
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -80,7 +81,7 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 
 The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
 
-A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry all five canonical rating fields in `#iam` — `confidence`, `confidence_band`, `mana`, `manao`, and `manaoio` — placed between `content_type` and `meme_type`, with `meme_type` immediately before `structure`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution. See `lar:///ha.ka.ba/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of all five rating fields, and `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
+A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry all five canonical rating fields in `#iam` — `confidence`, `mana`, `manao`, `manaoio`, and `tulen` — plus the adjacent `confidence_band` agent-operator surface-texture key, all placed between `content_type` and `meme_type`, with `meme_type` immediately before `structure`. They reach prospective-canon status (`[CS]`) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). The loci kānāwai (law) governs `lar:` URI routing derivation, carrier coherence, address stability, canon promotion, and the research roadmap toward live MCP-backed resolution. See `lar:///ha.ka.ba/loci#derivation-algorithm` for the current local path-derivation procedure and `lar:///ha.ka.ba/loci#mcp-resolution-roadmap` for the open resolver roadmap. See `lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings` for the full ontological account of the five canonical rating fields plus `confidence_band` surface texture, and `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
 
 A kānāwai (law) meme is active when it carries `enacts = true` in its `#iam` metadata block.
 

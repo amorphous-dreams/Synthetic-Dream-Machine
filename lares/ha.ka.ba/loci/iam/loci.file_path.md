@@ -15,6 +15,7 @@ confidence_band = "CS"
 mana = 0.60
 manao = 0.68
 manaoio = 0.52
+tulen = 0.60
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -44,7 +45,7 @@ A kānāwai (law) for a single `#iam` TOML key.
 
 `file_path` carries the path from the `ha.ka.ba` path root to the meme's file on disk, relative to `install_root`. It is the second field in every `#iam` block, immediately after `name`. It exists in two canonical forms — flat-file and path-directory — and must agree with the `lar:` URI declared in the document opener.
 
-This meme does not govern the `name` key, the five rating fields, or the routing derivation algorithm. Those belong to their own kānāwai (law). This meme governs only `file_path`.
+This meme does not govern the `name` key, the five canonical rating fields, or the adjacent `confidence_band` surface-texture key. Those belong to their own kānāwai (law). This meme governs only `file_path`.
 
 <<~ ala lar:///ha.ka.ba/loci/iam/file_path >>
 
@@ -168,6 +169,7 @@ Examples:
 ha.ka.ba/loci.meme.md
 ha.ka.ba/pono/loci.parser.md
 ha.ka.ba/grammars/grammar.x-tiddlywiki-filter.md
+ha.ka.ba/alpha/alpha.test-prompt-00001.md
 ha.ka.ba/pono/skill.template.md
 ```
 
@@ -196,6 +198,8 @@ In both forms, the filename component MUST follow the pattern `meme_type.name.md
 - extension is always `.md`
 
 A filename like `loci.file_path.md` is correct for `meme_type = "loci"` and `name = "file_path"`.
+
+A filename like `alpha.test-prompt-00001.md` is correct for `meme_type = "alpha"` and `name = "test-prompt-00001"`.
 
 <<~/ahu >>
 
@@ -544,7 +548,7 @@ upward_context = "chat"
 downward_context = "none"
 residue = "sub-meme files (file_path-observe-ha, file_path-orient, etc.) not yet authored; loci/iam/ namespace established but only file_path registered so far"
 next_observation = "lar:///ha.ka.ba/loci/iam/file_path#file-path-forms"
-next_question = "Which #iam key should the next loci/iam/ sub-meme govern — name, meme_type, or one of the five rating fields?"
+next_question = "Which #iam key should the next loci/iam/ sub-meme govern — name, meme_type, or one of the five canonical rating fields?"
 ```
 
 <<~&#x0004; -> ? >>

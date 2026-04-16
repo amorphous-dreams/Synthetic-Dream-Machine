@@ -15,6 +15,7 @@ confidence_band = "CS"
 mana = 0.74
 manao = 0.84
 manaoio = 0.66
+tulen = 0.76
 meme_type = "loci"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
@@ -228,8 +229,9 @@ An agent that always knows the `meme_type` of the target can use this algorithm 
 |---|---|---|---|
 | `lar:///ha.ka.ba/loci` | `lares/ha.ka.ba/loci.loci.md` | derivation miss | this meme is path-directory-sited |
 | `lar:///ha.ka.ba/meme` | `lares/ha.ka.ba/loci.meme.md` | derivation miss | generic meme law is path-directory-sited |
+| `lar:///ha.ka.ba/alpha/test-prompt-00001` | `lares/ha.ka.ba/alpha/alpha.test-prompt-00001.md` | resolved | alpha carriers currently resolve as ordinary flat-file carriers under `ha.ka.ba/alpha/` |
 
-Both examples show the current tension plainly: derivation alone is insufficient after migration. That tension is not hidden by a local registry anymore. It is named directly and deferred toward future live resolution work.
+These examples show the current routing state plainly: derivation alone is insufficient after migration for path-directory-sited loci carriers, while ordinary flat-file carriers still resolve locally.
 
 <<~/ahu >>
 
@@ -242,6 +244,7 @@ The prefix table is the fix for the inference gap. Before this table was declare
 | `meme_type` value | file prefix | example file | example lar: URI |
 |---|---|---|---|
 | `loci` | `loci.` | `loci.parser.md` | `lar:///ha.ka.ba/pono/parser` |
+| `alpha` | `alpha.` | `alpha.test-prompt-00001.md` | `lar:///ha.ka.ba/alpha/test-prompt-00001` |
 | `grammar` | `grammar.` | `grammar.x-tiddlywiki-filter.md` | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` |
 | `skill` | `skill.` | `skill.template.md` | `lar:///ha.ka.ba/pono/skill-template` |
 
