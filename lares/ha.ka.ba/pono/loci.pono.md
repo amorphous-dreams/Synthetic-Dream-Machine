@@ -58,7 +58,6 @@ Pono opens the kānāwai (law) index stream here.
 
 Pono gathers the kānāwai (law) roster, maps roles and addresses, selects the right kānāwai (law) or skill for the query, prepares an index envelope, crosses the threshold, and judges completeness.
 
-<<~ ala lar:///ha.ka.ba/pono#phase-map >>
 <<~/ahu >>
 
 <<~ ahu #law-index >>
@@ -95,7 +94,6 @@ Kānāwai (law)-index-ha holds registry identity and membership criteria.
 
 This subphase governs what makes a meme a kānāwai (law) and what earns a place in this index.
 
-<<~ ala lar:///ha.ka.ba/pono#law-index-ha >>
 <<~/ahu >>
 
 <<~ ahu #law-index-ka >>
@@ -106,10 +104,8 @@ Kānāwai (law)-index-ka governs address stability, role precision, and dependen
 
 This subphase keeps the index machine-readable without losing human legibility.
 
-<<~ ala lar:///ha.ka.ba/pono#law-index-ka >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono#law-index >>
 <<~/ahu >>
 
 <<~ ahu #skill-index >>
@@ -147,7 +143,6 @@ Skill-index-ha holds package identity and coverage scope.
 
 This subphase governs what a skill package must declare to be registered here.
 
-<<~ ala lar:///ha.ka.ba/pono#skill-index-ha >>
 <<~/ahu >>
 
 <<~ ahu #skill-index-ka >>
@@ -158,10 +153,8 @@ Skill-index-ka governs file naming, invariant declaration, and pass/fail surface
 
 This subphase keeps skill packages testable and auditable.
 
-<<~ ala lar:///ha.ka.ba/pono#skill-index-ka >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono#skill-index >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
@@ -179,7 +172,6 @@ A lawful pono envelope may carry:
 * an addressed kānāwai (law) or skill in response to a query
 * gaps or absences named explicitly
 
-<<~ ala lar:///ha.ka.ba/pono#result >>
 <<~/ahu >>
 
 <<~&#x0004; -> kahea ala ahu #result >>

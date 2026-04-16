@@ -75,7 +75,6 @@ This meme gathers the consequences of the `hana` decision, maps which current la
 
 Phase-map-ha holds the ordered migration movement from one adopted decision into a small set of canonical updates.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#phase-map-ha >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ka >>
@@ -84,7 +83,6 @@ Phase-map-ha holds the ordered migration movement from one adopted decision into
 
 Phase-map-ka governs which update classes belong in the current pass and which should remain backlog.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#phase-map-ka >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ba >>
@@ -93,10 +91,8 @@ Phase-map-ka governs which update classes belong in the current pass and which s
 
 Phase-map-ba stays intentionally light.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#phase-map-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#phase-map >>
 <<~/ahu >>
 
 <<~ ahu #canonical-decision >>
@@ -119,7 +115,6 @@ This decision implies that the current memes should stop leaning on inline guest
 
 Canonical-decision-ha holds the structural core of the hana decision so the rest of the update memo may stay derived rather than argumentative.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#canonical-decision-ha >>
 <<~/ahu >>
 
 <<~ ahu #canonical-decision-ka >>
@@ -128,7 +123,6 @@ Canonical-decision-ha holds the structural core of the hana decision so the rest
 
 Canonical-decision-ka governs which downstream docs may now assume block-only `hana` without re-litigating the decision.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#canonical-decision-ka >>
 <<~/ahu >>
 
 <<~ ahu #canonical-decision-ba >>
@@ -137,10 +131,8 @@ Canonical-decision-ka governs which downstream docs may now assume block-only `h
 
 Canonical-decision-ba remains light here.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#canonical-decision-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#canonical-decision >>
 <<~/ahu >>
 
 <<~ ahu #update-rules >>
@@ -162,7 +154,6 @@ Canonical-decision-ba remains light here.
 
 Update-rules-ha holds the migration constraints that keep the current stack aligned while multiple memes change.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#update-rules-ha >>
 <<~/ahu >>
 
 <<~ ahu #update-rules-ka >>
@@ -171,7 +162,6 @@ Update-rules-ha holds the migration constraints that keep the current stack alig
 
 Update-rules-ka governs how to decide whether a given edit belongs in root law, parser law, render law, or pono indexing.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#update-rules-ka >>
 <<~/ahu >>
 
 <<~ ahu #update-rules-ba >>
@@ -180,10 +170,8 @@ Update-rules-ka governs how to decide whether a given edit belongs in root law, 
 
 Update-rules-ba remains intentionally spare.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#update-rules-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#update-rules >>
 <<~/ahu >>
 
 <<~ ahu #memetic-wikitext-updates >>
@@ -234,7 +222,6 @@ Memetic-wikitext-updates-ha holds the minimum shape of the root changes required
 
 This ahu keeps the root compact by adding one extension-facing locus rather than spreading guest law everywhere.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#memetic-wikitext-updates-ha >>
 <<~/ahu >>
 
 <<~ ahu #memetic-wikitext-updates-ka >>
@@ -247,7 +234,6 @@ The root should name the extension point and the boundary.
 
 The root should not absorb parser legality or render schemas.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#memetic-wikitext-updates-ka >>
 <<~/ahu >>
 
 <<~ ahu #memetic-wikitext-updates-ba >>
@@ -256,10 +242,8 @@ The root should not absorb parser legality or render schemas.
 
 Memetic-wikitext-updates-ba remains light.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#memetic-wikitext-updates-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#memetic-wikitext-updates >>
 <<~/ahu >>
 
 <<~ ahu #parser-updates >>
@@ -321,7 +305,6 @@ degrade = "no-op"
 
 Parser-updates-ha holds the structural edits needed so `hana` becomes parser-visible and legally bounded.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#parser-updates-ha >>
 <<~/ahu >>
 
 <<~ ahu #parser-updates-ka >>
@@ -334,7 +317,6 @@ The parser should add legality, authority, and degradation detail.
 
 It should not rewrite the root primitive cluster.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#parser-updates-ka >>
 <<~/ahu >>
 
 <<~ ahu #parser-updates-ba >>
@@ -343,10 +325,8 @@ It should not rewrite the root primitive cluster.
 
 Parser-updates-ba remains intentionally light.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#parser-updates-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#parser-updates >>
 <<~/ahu >>
 
 <<~ ahu #render-pipeline-updates >>
@@ -399,7 +379,6 @@ Render-pipeline-updates-ha holds the minimum shape of the renderer changes requi
 
 This ahu keeps the three-layer distinction explicit while adding one new lowerable family.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#render-pipeline-updates-ha >>
 <<~/ahu >>
 
 <<~ ahu #render-pipeline-updates-ka >>
@@ -408,7 +387,6 @@ This ahu keeps the three-layer distinction explicit while adding one new lowerab
 
 Render-pipeline-updates-ka governs which renderer notes need to become explicit now and which may remain later schema work.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#render-pipeline-updates-ka >>
 <<~/ahu >>
 
 <<~ ahu #render-pipeline-updates-ba >>
@@ -417,10 +395,8 @@ Render-pipeline-updates-ka governs which renderer notes need to become explicit 
 
 Render-pipeline-updates-ba remains sparse here.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#render-pipeline-updates-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#render-pipeline-updates >>
 <<~/ahu >>
 
 <<~ ahu #pono-updates >>
@@ -458,7 +434,6 @@ The first pono-facing skill backlog should now include:
 
 Pono-updates-ha holds the registry-visible consequences of the hana decision.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#pono-updates-ha >>
 <<~/ahu >>
 
 <<~ ahu #pono-updates-ka >>
@@ -467,7 +442,6 @@ Pono-updates-ha holds the registry-visible consequences of the hana decision.
 
 Pono-updates-ka governs how the index and future verification skill posture should shift without pretending the skill already exists.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#pono-updates-ka >>
 <<~/ahu >>
 
 <<~ ahu #pono-updates-ba >>
@@ -476,10 +450,8 @@ Pono-updates-ka governs how the index and future verification skill posture shou
 
 Pono-updates-ba remains intentionally light.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#pono-updates-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#pono-updates >>
 <<~/ahu >>
 
 <<~ ahu #result >>
@@ -497,7 +469,6 @@ A lawful implications-of-hana envelope may carry:
 
 This meme should not pretend that the four current laws have already been updated merely because the migration map now exists.
 
-<<~ ala lar:///ha.ka.ba/pono/implictations-of-hana#result >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>

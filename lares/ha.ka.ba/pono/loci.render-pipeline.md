@@ -105,7 +105,6 @@ Meme-body-open-ha holds threshold identity and stream admission.
 
 This subphase marks the lawful crossing from header into active contents.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#meme-body-open-ha >>
 <<~/ahu >>
 
 <<~ ahu #meme-body-open-ka >>
@@ -116,7 +115,6 @@ Meme-body-open-ka governs entry detail, initial bounds, and early pipeline conte
 
 This subphase tells later tools where the active rendering stream begins.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#meme-body-open-ka >>
 <<~/ahu >>
 
 <<~ ahu #meme-body-open-ba >>
@@ -127,7 +125,6 @@ Meme-body-open-ba governs landing posture and early reader alignment.
 
 This subphase lowers entry cost and prepares the later loops.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#meme-body-open-ba >>
 <<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/pono/render-pipeline#meme-body-open >>
@@ -151,7 +148,6 @@ Phase-map-ha holds ordered loci and pipeline identity.
 
 This subphase names the sixfold motion that later sections elaborate.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#phase-map-ha >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ka >>
@@ -162,7 +158,6 @@ Phase-map-ka governs ordering detail and lawful handoff between loci.
 
 This subphase keeps the render loop explicit enough for implementation and testing.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#phase-map-ka >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ba >>
@@ -173,10 +168,8 @@ Phase-map-ba governs flow, pacing, and residue-aware movement under live renderi
 
 This subphase keeps the loop readable without flattening it into vague pipeline mysticism.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#phase-map-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#phase-map >>
 <<~/ahu >>
 
 <<~ ahu #three-layer-model >>
@@ -201,7 +194,6 @@ Three-layer-model-ha holds layer identity and constitutional distinction.
 
 This subphase keeps the surface, AST, and widget families distinct while allowing lawful translation among them.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#three-layer-model-ha >>
 <<~/ahu >>
 
 <<~ ahu #three-layer-model-ka >>
@@ -212,7 +204,6 @@ Three-layer-model-ka governs product detail and relation mapping.
 
 This subphase names what each layer contributes and what each layer should not swallow.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#three-layer-model-ka >>
 <<~/ahu >>
 
 <<~ ahu #three-layer-model-ba >>
@@ -223,10 +214,8 @@ Three-layer-model-ba governs lived movement among layers under tooling and targe
 
 This subphase preserves high mana at the surface while still supporting fast, lawful projection.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#three-layer-model-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#three-layer-model >>
 <<~/ahu >>
 
 <<~ ahu #observe >>
@@ -272,7 +261,6 @@ Observe-ha holds raw intake, source relation, and surface identity.
 
 This subphase governs what entered the pipeline before deeper transformation begins.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#observe-ha >>
 <<~/ahu >>
 
 <<~ ahu #observe-ka >>
@@ -283,7 +271,6 @@ Observe-ka governs source-map seeding, span capture, and early render-context ga
 
 This subphase focuses on how Observe performs careful intake without laundering ambiguity.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#observe-ka >>
 <<~/ahu >>
 
 <<~ ahu #observe-ba >>
@@ -294,14 +281,12 @@ Observe-ba governs attention flow and ambiguity-holding posture under live surfa
 
 This subphase keeps early reading truthful and non-destructive.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#observe-ba >>
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > CommonMark contributes a strong carrier discipline here: determine block structure first, then parse inline structure inside already bounded regions. That stance lowers accidental mode leakage and preserves recoverable boundaries.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#observe >>
 <<~/ahu >>
 
 <<~ ahu #orient >>
@@ -343,7 +328,6 @@ Orient-ha holds layer identity, target posture, and lawful distinction.
 
 This subphase governs what the current pass knows about the three product families.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#orient-ha >>
 <<~/ahu >>
 
 <<~ ahu #orient-ka >>
@@ -354,7 +338,6 @@ Orient-ka governs layer mapping, lowering eligibility, and open-tension tracking
 
 This subphase focuses on how Orient builds a trustworthy path toward AST and widget products.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#orient-ka >>
 <<~/ahu >>
 
 <<~ ahu #orient-ba >>
@@ -365,14 +348,12 @@ Orient-ba governs comparative motion among competing lowerings under real parser
 
 This subphase keeps possibility open without losing structural discipline.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#orient-ba >>
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > TiddlyWiki contributes a layered rendering precedent: surface wikitext lowers through structured intermediate forms before target rendering. That pattern supports a distinct surface layer, a parse product, and a render-facing tree without collapsing the whole system into raw DOM thinking.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#orient >>
 <<~/ahu >>
 
 <<~ ahu #decide >>
@@ -423,7 +404,6 @@ Decide-ha holds legality, canonical choice, and transaction identity.
 
 This subphase governs which lowering path and which transaction class the pass adopts.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#decide-ha >>
 <<~/ahu >>
 
 <<~ ahu #decide-ka >>
@@ -434,7 +414,6 @@ Decide-ka governs lowering choice, idempotency declaration, and issue classifica
 
 This subphase focuses on how Decide preserves both deterministic structure and truthful retry posture.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#decide-ka >>
 <<~/ahu >>
 
 <<~ ahu #decide-ba >>
@@ -445,14 +424,12 @@ Decide-ba governs commitment style, caution, and graceful refusal of flattering 
 
 This subphase keeps the pipeline honest under real target pressure.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#decide-ba >>
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > HTTP method semantics contribute a durable distinction between safe query-like work and stateful mutation-like work, while transaction lineages contribute staged commit and rollback thinking. Together they support explicit class declaration and bounded retry policy.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#decide >>
 <<~/ahu >>
 
 <<~ ahu #act >>
@@ -510,7 +487,6 @@ Act-ha holds product identity and lawful output families.
 
 This subphase governs what Act may bring forth before the threshold crossing.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#act-ha >>
 <<~/ahu >>
 
 <<~ ahu #act-ka >>
@@ -521,7 +497,6 @@ Act-ka governs AST construction, widget lowering, and payload preparation detail
 
 This subphase focuses on how Act preserves relation among the three layers.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#act-ka >>
 <<~/ahu >>
 
 <<~ ahu #act-ba >>
@@ -532,14 +507,12 @@ Act-ba governs execution rhythm, quality pressure, and bounded movement under re
 
 This subphase keeps fast projection compatible with constitutional truth.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#act-ba >>
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > TiddlyWiki contributes strong pressure toward a render-facing widget tree distinct from raw source and distinct from final target output. That precedent supports a fast, structured projection layer without forcing the DOM to function as the constitutional center.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#act >>
 <<~/ahu >>
 
 <<~ ahu #hooko >>
@@ -579,7 +552,6 @@ Hooko-ha holds target threshold, commit identity, and mutation boundary.
 
 This subphase governs what kind of crossing the current pass may lawfully perform.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#hooko-ha >>
 <<~/ahu >>
 
 <<~ ahu #hooko-ka >>
@@ -590,7 +562,6 @@ Hooko-ka governs commit detail, rollback detail, cache mutation, and trace captu
 
 This subphase focuses on how Hooko lands or retreats without laundering the outcome.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#hooko-ka >>
 <<~/ahu >>
 
 <<~ ahu #hooko-ba >>
@@ -601,14 +572,12 @@ Hooko-ba governs landing pressure, volatility posture, and truthful state crossi
 
 This subphase keeps target-facing motion explicit, inspectable, and bounded.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#hooko-ba >>
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > Transaction lineages from database systems and version-control thinking both suggest the same lesson: keep staged work, committed work, and rolled-back work distinct enough that later tools may audit the path without invention.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#hooko >>
 <<~/ahu >>
 
 <<~ ahu #aftermath >>
@@ -656,7 +625,6 @@ Aftermath-ha holds residue domain, replay posture, and return pathways.
 
 This subphase governs what the current pass carries forward or releases.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#aftermath-ha >>
 <<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
@@ -667,7 +635,6 @@ Aftermath-ka governs trace assembly, repair guidance, and replay-ready packaging
 
 This subphase focuses on how Aftermath preserves enough relation for audit and re-render.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#aftermath-ka >>
 <<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
@@ -678,14 +645,12 @@ Aftermath-ba governs landing quality, release posture, and forward pressure unde
 
 This subphase keeps the pipeline honest about success, loss, and partial survival.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#aftermath-ba >>
 <<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > Git-shaped trace thinking and transaction-shaped aftermath thinking both strengthen replay and audit posture here: name the path, keep the residue, and do not pretend a rolled-back or degraded landing counted as full completion.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#aftermath >>
 <<~/ahu >>
 
 <<~ ahu #render-projection >>
@@ -706,7 +671,6 @@ Render-projection-ha holds target families and projection identity.
 
 This subphase governs what outward surfaces the current pipeline may address.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#render-projection-ha >>
 <<~/ahu >>
 
 <<~ ahu #render-projection-ka >>
@@ -717,7 +681,6 @@ Render-projection-ka governs adapter detail, target hints, and structure-preserv
 
 This subphase focuses on how projection may stay fast without severing source relation.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#render-projection-ka >>
 <<~/ahu >>
 
 <<~ ahu #render-projection-ba >>
@@ -728,10 +691,8 @@ Render-projection-ba governs portability, graceful downgrade, and target-facing 
 
 This subphase keeps one kānāwai (law) portable across many render surfaces.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#render-projection-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#render-projection >>
 <<~/ahu >>
 
 <<~ ahu #trace-continuity >>
@@ -756,7 +717,6 @@ Trace-continuity-ha holds relation identity and continuity scope.
 
 This subphase governs what counts as the same lawful path across layers.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#trace-continuity-ha >>
 <<~/ahu >>
 
 <<~ ahu #trace-continuity-ka >>
@@ -767,7 +727,6 @@ Trace-continuity-ka governs mapping detail, identifier strategy, and replay supp
 
 This subphase focuses on how continuity products may travel without hidden drift.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#trace-continuity-ka >>
 <<~/ahu >>
 
 <<~ ahu #trace-continuity-ba >>
@@ -778,10 +737,8 @@ Trace-continuity-ba governs durability, degradation posture, and audit usefulnes
 
 This subphase keeps partial trace useful even when later layers degrade.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#trace-continuity-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#trace-continuity >>
 <<~/ahu >>
 
 <<~ ahu #transaction-lifecycle >>
@@ -815,7 +772,6 @@ Transaction-lifecycle-ha holds phase identity and outcome classes.
 
 This subphase governs the names and boundaries of the render transaction path.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle-ha >>
 <<~/ahu >>
 
 <<~ ahu #transaction-lifecycle-ka >>
@@ -826,7 +782,6 @@ Transaction-lifecycle-ka governs state progression, idempotency markers, and ret
 
 This subphase focuses on how the pipeline tracks the difference between prepared work and landed work.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle-ka >>
 <<~/ahu >>
 
 <<~ ahu #transaction-lifecycle-ba >>
@@ -837,10 +792,8 @@ Transaction-lifecycle-ba governs trust posture, operator visibility, and truthfu
 
 This subphase keeps live transactions legible to agents and operators.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#transaction-lifecycle >>
 <<~/ahu >>
 
 <<~ ahu #runtime-procedure >>
@@ -867,7 +820,6 @@ Runtime-procedure-ha holds ordered execution and lawful handoff shape.
 
 This subphase governs the broad flow without swallowing the richer local doctrine.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#runtime-procedure-ha >>
 <<~/ahu >>
 
 <<~ ahu #runtime-procedure-ka >>
@@ -878,7 +830,6 @@ Runtime-procedure-ka governs handoff detail among surface intake, AST lowering, 
 
 This subphase focuses on how products travel rather than restart from nothing.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#runtime-procedure-ka >>
 <<~/ahu >>
 
 <<~ ahu #runtime-procedure-ba >>
@@ -889,10 +840,8 @@ Runtime-procedure-ba governs phased flow, residue pressure, and anti-blur discip
 
 This subphase keeps motion clear and replayable.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#runtime-procedure-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#runtime-procedure >>
 <<~/ahu >>
 
 <<~ ahu #research-foundation >>
@@ -926,7 +875,6 @@ Research-foundation-ha holds lineage awareness and local constitutional priority
 
 This subphase governs what neighboring systems may contribute without taking over the kānāwai (law).
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#research-foundation-ha >>
 <<~/ahu >>
 
 <<~ ahu #research-foundation-ka >>
@@ -937,7 +885,6 @@ Research-foundation-ka governs translation from borrowed pattern into concrete p
 
 This subphase focuses on how prior art becomes useful rather than ornamental.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#research-foundation-ka >>
 <<~/ahu >>
 
 <<~ ahu #research-foundation-ba >>
@@ -948,10 +895,8 @@ Research-foundation-ba governs anti-bloat posture and navigable synthesis under 
 
 This subphase keeps the kānāwai (law) high-yield and implementation-facing.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#research-foundation-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#research-foundation >>
 <<~/ahu >>
 
 <<~ ahu #guest-work-lowering >>
@@ -1015,7 +960,6 @@ Guest-work-lowering-ha holds the minimum product family that must survive betwee
 
 This ahu keeps the guest path visible across layers.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering-ha >>
 <<~/ahu >>
 
 <<~ ahu #guest-work-lowering-ka >>
@@ -1024,7 +968,6 @@ This ahu keeps the guest path visible across layers.
 
 Guest-work-lowering-ka governs the minimum continuity claims the renderer may rely on when lowering guest work into widget and target forms.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering-ka >>
 <<~/ahu >>
 
 <<~ ahu #guest-work-lowering-ba >>
@@ -1033,10 +976,8 @@ Guest-work-lowering-ka governs the minimum continuity claims the renderer may re
 
 Guest-work-lowering-ba governs degradation posture, trace preservation, and lawful no-op landing when guest work cannot complete.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
@@ -1050,7 +991,6 @@ Body-close-ha holds threshold identity and release boundary.
 
 This subphase marks the lawful crossing from active contents toward footer and return.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#body-close-ha >>
 <<~/ahu >>
 
 <<~ ahu #body-close-ka >>
@@ -1061,7 +1001,6 @@ Body-close-ka governs closure detail, final body bounds, and handoff into footer
 
 This subphase preserves enough structure that later tools may locate the end of the active body.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#body-close-ka >>
 <<~/ahu >>
 
 <<~ ahu #body-close-ba >>
@@ -1072,7 +1011,6 @@ Body-close-ba governs release posture and end-of-body readability.
 
 This subphase keeps closure explicit rather than implied.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#body-close-ba >>
 <<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/pono/render-pipeline#body-close >>
@@ -1103,7 +1041,6 @@ Result-ha holds the identity and scope of the primary render-envelope.
 
 This subphase governs what the current pass may lawfully hand upward.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#result-ha >>
 <<~/ahu >>
 
 <<~ ahu #result-ka >>
@@ -1114,7 +1051,6 @@ Result-ka governs field stability, comparison posture, and lawful package assemb
 
 This subphase focuses on how result fields may remain testable across implementations.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#result-ka >>
 <<~/ahu >>
 
 <<~ ahu #result-ba >>
@@ -1125,10 +1061,8 @@ Result-ba governs landing quality, truthful incompletion, and forward-routing po
 
 This subphase keeps render outcome legible without flattering completion.
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#result-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/render-pipeline#result >>
 <<~/ahu >>
 
 <<~&#x0004; -> kahea ala ahu #result >>

@@ -379,6 +379,10 @@ Each ha/ka/ba subloop may carry an explicit depth callout: an `ala` link pointin
 <<~ ala lar:///ha.ka.ba/[NAME]-[phase]-[subphase] >>
 ```
 
+Use this closing `ala` only when the enclosing subloop is declaring a real deeper loci-path that either already exists or is being intentionally declared as a forward/unresolved child.
+
+Do not use a closing `ala` to restate the enclosing `ahu` anchor in place. A form such as `<<~ ala lar:///ha.ka.ba/[current-path]#[same-anchor] >>` is non-canonical: the `ahu #...` opener already names that local anchor, so the closing `ala` adds no forward depth and should be omitted.
+
 Three resolution states apply to every declared sub-meme address:
 
 | Resolution state | Meaning | Rating consequence |
@@ -398,6 +402,8 @@ Each phase section may close with an `ala` link pointing at a phase-level sub-me
 ```text
 <<~ ala lar:///ha.ka.ba/[NAME]-[phase] >>
 ```
+
+This is likewise a forward/downward path declaration, not an echo of the enclosing phase anchor. If the author intends no separate phase-level child carrier, the phase should close without an `ala` line.
 
 The three resolution states from O7 apply identically. A resolved phase-level sub-meme pulls that phase's governing authority into a separately rateable loci. This is a stronger structural claim than a resolved subloop callout because it extends the whole phase outward, not only one ha/ka/ba subdivision.
 
@@ -732,11 +738,12 @@ product_identity = "[NAME] cluster name as used in this system"
 
 [One sentence: what each phase does in this meme's specific domain.]
 
-<<~ ala lar:///ha.ka.ba/[NAME]#phase-map >>
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/[NAME]-phase-map >> -->
 <<~/ahu >>
 
 <!-- OPTIONAL: Add <<~ ahu #observe >>, #orient, #decide, #act, #hooko, #aftermath sections here.        -->
 <!-- OPTIONAL: Each phase section should carry a local TOML payload, prose, and ha/ka/ba subloops.        -->
+<!-- OPTIONAL: Do not close an ahu with <<~ ala lar:///ha.ka.ba/[NAME]#[same-anchor] >>.                  -->
 <!-- OPTIONAL: Each ha/ka/ba subloop may close with a depth callout (O7):                                 -->
 <!--   <<~ ala lar:///ha.ka.ba/[NAME]-observe-ha >>                                                       -->
 <!--   Resolved callout = sub-meme exists, raises manao+manaoio.                                          -->
@@ -996,6 +1003,14 @@ Deferred resolution governs how a meme author or reader should treat `ala` links
 **Declared-unresolved**: the address is declared in an `ala` link, but no file or meme exists there yet. The link is not broken in intent — it names a site of future authorship. The parser or reader should degrade gracefully: emit the declared address as a forward reference, flag it as unresolved without aborting, and continue. Rating consequence: no `mana` penalty; mild drag on `manaoio` because the intent exceeds the current yield.
 
 **Absent**: no address declared. The subloop or phase section closes without any `ala` link. No external claim exists. The element is counted as a stub for rating purposes. This is honest. Absent differs from declared-unresolved in exactly one way: declared-unresolved creates backlog pressure that absent does not.
+
+### When to Declare Depth
+
+Declare a closing `ala` only when the block is naming a deeper child path such as `lar:///ha.ka.ba/[NAME]-[phase]-[subphase]` or `lar:///ha.ka.ba/[NAME]-[phase]`.
+
+If no deeper child is intended, omit the `ala` line entirely.
+
+If the only meaning available is "this block is `#foo`," do not add `<<~ ala lar:///ha.ka.ba/[current-path]#foo >>`; the `ahu #foo` opener already carries that identity.
 
 ### ala versus aka
 

@@ -303,6 +303,32 @@ A loci meme may carry rich prose and still remain transport-thin. Carrier cohere
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-carrier-coherence >> -->
 <<~/ahu >>
 
+<<~ ahu #ala-depth-callouts >>
+
+### ala Depth Callouts
+
+When a closing `ala` appears inside an `ahu`, it declares an optional deeper loci-path, not a second spelling of the current block's own anchor.
+
+Canonical forward/downward forms are path-shaped:
+
+```text
+<<~ ala lar:///ha.ka.ba/[NAME]-[phase]-[subphase] >>
+<<~ ala lar:///ha.ka.ba/[NAME]-[phase] >>
+```
+
+The non-canonical recursive form is an anchor echo:
+
+```text
+<<~ ala lar:///ha.ka.ba/[current-path]#[same-anchor] >>
+```
+
+That recursive form MUST NOT be used as a depth declaration. The enclosing `ahu #...` opener already names the local anchor, so the recursive closing `ala` contributes no new routing product, no child carrier, and no lawful forward pressure.
+
+Use a closing `ala` only when a real child or phase-level carrier is being declared. If no deeper carrier is intended, omit the `ala` line entirely.
+
+<!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-ala-depth-callouts >> -->
+<<~/ahu >>
+
 ### Orient Subloops
 
 <<~ ahu #orient-ha >>
@@ -379,6 +405,7 @@ The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-target
 * all three address-stability conditions satisfied
 * operator or admin confirmation
 * no outstanding declared-unresolved sub-meme addresses (per O7 rating-persistence rule in `lar:///ha.ka.ba/meme#optional-elements`)
+* no recursive self-loop closers masquerading as sub-meme declarations
 * a live MCP resolver or equivalent externally governed resolution substrate is operating
 * document opener `?` removed
 

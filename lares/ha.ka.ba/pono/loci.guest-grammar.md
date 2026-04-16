@@ -81,7 +81,6 @@ Phase-map-ha holds the ordered loci for guest admission and the lawful movement 
 
 This subphase keeps admission explicit and staged instead of blurry.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#phase-map-ha >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ka >>
@@ -90,7 +89,6 @@ This subphase keeps admission explicit and staged instead of blurry.
 
 Phase-map-ka governs the minimum handoff sequence among host declaration, parser entry, render lowering, and verification backlog.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#phase-map-ka >>
 <<~/ahu >>
 
 <<~ ahu #phase-map-ba >>
@@ -101,10 +99,8 @@ Phase-map-ba remains intentionally light here.
 
 This subphase keeps the law portable while later practice deepens.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#phase-map-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#phase-map >>
 <<~/ahu >>
 
 <<~ ahu #constitutional-charge >>
@@ -153,7 +149,6 @@ Constitutional-charge-ha holds the identity of guest-grammar law and the territo
 
 This ahu keeps admission law small, explicit, and teachable.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#constitutional-charge-ha >>
 <<~/ahu >>
 
 <<~ ahu #constitutional-charge-ka >>
@@ -162,7 +157,6 @@ This ahu keeps admission law small, explicit, and teachable.
 
 Constitutional-charge-ka governs the distribution of duties across memetic-wikitext, guest-grammar, parser, render-pipeline, and pono.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#constitutional-charge-ka >>
 <<~/ahu >>
 
 <<~ ahu #constitutional-charge-ba >>
@@ -173,10 +167,8 @@ Constitutional-charge-ba remains light in this draft.
 
 This ahu preserves anti-sprawl posture while the linked laws deepen later.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#constitutional-charge-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#constitutional-charge >>
 <<~/ahu >>
 
 <<~ ahu #admission-contract >>
@@ -221,7 +213,6 @@ Admission-contract-ha holds the core legal shape of guest admission.
 
 This ahu names what must become explicit before any guest grammar may count as lawfully admitted.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#admission-contract-ha >>
 <<~/ahu >>
 
 <<~ ahu #admission-contract-ka >>
@@ -230,7 +221,6 @@ This ahu names what must become explicit before any guest grammar may count as l
 
 Admission-contract-ka governs the minimum machine-facing checks a parser may assume on a guest keyword `hana` sigil..
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#admission-contract-ka >>
 <<~/ahu >>
 
 <<~ ahu #admission-contract-ba >>
@@ -241,10 +231,8 @@ Admission-contract-ba remains intentionally spare.
 
 This ahu keeps the contract readable while later execution behavior deepens outward.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#admission-contract-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#admission-contract >>
 <<~/ahu >>
 
 <<~ ahu #hana-pattern >>
@@ -299,7 +287,6 @@ Hana-pattern-ha holds the structural identity of `hana` as a block-only guest-wo
 
 This ahu keeps invocation, priming, and body matter distinct.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#hana-pattern-ha >>
 <<~/ahu >>
 
 <<~ ahu #hana-pattern-ka >>
@@ -308,7 +295,6 @@ This ahu keeps invocation, priming, and body matter distinct.
 
 Hana-pattern-ka governs payload authority, closer expectations, and the minimum machine-facing rule that guest instruction content begins after the priming block.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#hana-pattern-ka >>
 <<~/ahu >>
 
 <<~ ahu #hana-pattern-ba >>
@@ -319,10 +305,8 @@ Hana-pattern-ba remains light here.
 
 This ahu preserves authoring calm while later executable profiles deepen.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#hana-pattern-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#hana-pattern >>
 <<~/ahu >>
 
 <<~ ahu #ownership-map >>
@@ -374,7 +358,6 @@ Ownership-map-ha holds the constitutional division of labor across the linked la
 
 This ahu prevents the root from swallowing parser or render responsibility.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#ownership-map-ha >>
 <<~/ahu >>
 
 <<~ ahu #ownership-map-ka >>
@@ -383,7 +366,6 @@ This ahu prevents the root from swallowing parser or render responsibility.
 
 Ownership-map-ka governs the handoff assumptions an implementer may treat as already decided when wiring the first parser and renderer.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#ownership-map-ka >>
 <<~/ahu >>
 
 <<~ ahu #ownership-map-ba >>
@@ -394,10 +376,8 @@ Ownership-map-ba remains minimal.
 
 This ahu keeps the chart legible while the operational consequences deepen elsewhere.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#ownership-map-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#ownership-map >>
 <<~/ahu >>
 
 <<~ ahu #degradation >>
@@ -424,7 +404,6 @@ Degradation-ha holds the minimum truthful fallback contract for guest work.
 
 This ahu keeps failure bounded and inspectable.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#degradation-ha >>
 <<~/ahu >>
 
 <<~ ahu #degradation-ka >>
@@ -433,7 +412,6 @@ This ahu keeps failure bounded and inspectable.
 
 Degradation-ka governs the minimum output posture a parser and renderer may preserve when the guest body fails, degrades, or remains partial.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#degradation-ka >>
 <<~/ahu >>
 
 <<~ ahu #degradation-ba >>
@@ -444,10 +422,8 @@ Degradation-ba remains spare in this draft.
 
 This ahu keeps the fallback readable and portable.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#degradation-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#degradation >>
 <<~/ahu >>
 
 <<~ ahu #lowering-handoff >>
@@ -473,7 +449,6 @@ Lowering-handoff-ha holds the minimum product family that must survive between a
 
 This ahu keeps the guest path visible across layers.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#lowering-handoff-ha >>
 <<~/ahu >>
 
 <<~ ahu #lowering-handoff-ka >>
@@ -482,7 +457,6 @@ This ahu keeps the guest path visible across layers.
 
 Lowering-handoff-ka governs the minimum continuity claims the renderer may rely on when lowering guest work into widget and target forms.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#lowering-handoff-ka >>
 <<~/ahu >>
 
 <<~ ahu #lowering-handoff-ba >>
@@ -493,10 +467,8 @@ Lowering-handoff-ba remains light here.
 
 This ahu keeps the law ahead of implementation without pretending full schema completeness.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#lowering-handoff-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#lowering-handoff >>
 <<~/ahu >>
 
 <<~ ahu #fixture-seeds >>
@@ -518,7 +490,6 @@ The first fixture family should include:
 
 Fixture-seeds-ha holds the minimum conformance family needed before guest admission claims harden into routine practice.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#fixture-seeds-ha >>
 <<~/ahu >>
 
 <<~ ahu #fixture-seeds-ka >>
@@ -527,7 +498,6 @@ Fixture-seeds-ha holds the minimum conformance family needed before guest admiss
 
 Fixture-seeds-ka governs the first grouping of positive, degraded, and failing examples for parser and pono.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#fixture-seeds-ka >>
 <<~/ahu >>
 
 <<~ ahu #fixture-seeds-ba >>
@@ -536,10 +506,8 @@ Fixture-seeds-ka governs the first grouping of positive, degraded, and failing e
 
 Fixture-seeds-ba stays intentionally light.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#fixture-seeds-ba >>
 <<~/ahu >>
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#fixture-seeds >>
 <<~/ahu >>
 
 <<~ ahu #result >>
@@ -557,7 +525,6 @@ A lawful guest-grammar envelope may carry:
 
 This meme should not claim full imported-grammar completeness when only the host admission contract has stabilized.
 
-<<~ ala lar:///ha.ka.ba/pono/guest-grammar#result >>
 <<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
