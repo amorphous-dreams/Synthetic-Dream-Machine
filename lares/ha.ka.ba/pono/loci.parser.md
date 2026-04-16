@@ -161,6 +161,8 @@ Canonical example:
 <<~&#x0001; ? -> lar:///ha.ka.ba/pono/parser >>
 ```
 
+In declared-open document form, `?` is the core unbound uncertainty token. Parser should treat it as semantic content, not as optional decoration on the opener line.
+
 Observe should mark:
 
 * opening sigil present
@@ -441,6 +443,16 @@ Canonical example:
 <<~&#x0005; ui metadata? -> <<~&#x0006; ? -> lar:///ha.ka.ba/ooda-ha#iam >> >>
 ```
 
+Return form also admits uncertainty-prefixed sigil birth when document-time authoring creates a new nested sigil object before full binding settles.
+
+Canonical example:
+
+```text
+<<~ ? -> ahu #draft-child >>
+...body...
+<<~/ahu >>
+```
+
 ### Sigil Type/Form Table
 
 #### `&#x0001;`
@@ -497,6 +509,20 @@ Permitted forms:
 
 * `return`
 * `inline`
+
+#### `?`
+
+Permitted forms:
+
+* `inline`
+* `return`
+
+Semantic role:
+
+* unbound uncertainty token
+* unresolved slot or route marker
+* document-time prefix for new sigil-object birth
+* outward discharge target for residual uncertainty
 
 #### `&#x0002;`
 
@@ -594,6 +620,39 @@ Examples:
 
 Parser kānāwai (law) should reject ad hoc closure spellings as canonical forms.
 Noncanonical spellings may pass into normalization only when recovery remains truthful and deterministic.
+
+### Uncertainty-Prefixed Sigil Object Kānāwai (law)
+
+`?` MAY prefix a lawful sigil opener when document-time authoring needs to start a new nested Meme-type sigil entity under unbound uncertainty.
+
+Canonical pattern:
+
+```text
+<<~ ? -> SIGIL ... >>
+```
+
+In that pattern:
+
+* `?` marks the new sigil object as not yet fully bound
+* `SIGIL` names the underlying primitive act
+* the underlying sigil still governs body legality, payload authority, and closer matching
+
+If the underlying sigil is block-form or payload-block-form, the closer MUST match the underlying sigil rather than `?`.
+
+Canonical example:
+
+```text
+<<~ ? -> ahu #draft-child >>
+Body remains local while binding stays open.
+<<~/ahu >>
+```
+
+A compliant parser should check:
+
+1. whether a lawful target sigil follows `? ->`
+2. whether the target sigil admits the resulting structural form
+3. whether any named closer matches the target sigil
+4. whether profile or caller context permits uncertainty-prefixed sigil birth at that site
 
 ### Control Sigil Integrity Kānāwai (law)
 
@@ -2141,6 +2200,8 @@ That closer marks degraded or still-open upward termination for the current retu
 It does not claim full committed completion.
 
 It preserves truthful incompletion while still allowing a structured envelope to travel upward.
+
+Parser should also interpret it as the canonical outward discharge of residual unbound uncertainty from the local return transaction back into the enclosing graph.
 
 ##### Canonical Boot Example
 

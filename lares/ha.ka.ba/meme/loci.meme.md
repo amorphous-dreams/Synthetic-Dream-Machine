@@ -231,6 +231,8 @@ Marks the document as a memetic-wikitext surface before any active sigil appears
 
 One per document, near the top. Names the meme's own canonical address. The `?` marks declared-open routing until canon status resolves it.
 
+That `?` is not decorative. It is the meme's document-time admission that unbound uncertainty still flows through the address graph while the carrier has not yet earned confirmed canon.
+
 Transport-specific opener semantics, including how `?` behaves for loci-routed carriers, are governed by `lar:///ha.ka.ba/loci`.
 
 #### R3 — Identity locus (`#iam`) with canonical TOML payload
@@ -334,6 +336,8 @@ next_question = "..."
 ```
 
 Both the return throat and the degraded close MUST appear. The degraded close preserves truthful incompletion.
+
+For configured memes, that footer is also the canonical outward handoff of residual uncertainty: the meme returns what it knows in the envelope, then passes the still-unbound pressure back outward through `-> ?` rather than hiding it.
 
 <<~/ahu >>
 

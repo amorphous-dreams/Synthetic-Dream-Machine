@@ -96,7 +96,7 @@ Observe should detect:
 
 * the full `lar:` URI string to resolve, exactly as presented
 * whether the request context includes a known `meme_type` for the target
-* the document opener form of the target (if the target meme is already in memory): `<<~&#x0001; ? -> ...` (declared-open) or `<<~&#x0001; lar:///...` (confirmed canon)
+* the document opener form of the target (if the target meme is already in memory): `<<~&#x0001; ? -> ...` (declared-open, with unbound uncertainty still flowing through the address graph) or `<<~&#x0001; lar:///...` (confirmed canon)
 * the target meme's `file_path` value, if the surface is already in memory
 * whether this is a first-time routing request or a re-resolution of a previously declared-unresolved address
 
@@ -262,7 +262,13 @@ A `lar:` URI is stable when all three conditions hold simultaneously:
 
 A stable `lar:` URI is **immutable**. It MUST NOT change even if the meme file migrates to a path-directory layout. On migration, `file_path` in `#iam` updates while the address named in the opener remains the same.
 
-The `?` form in the document opener (`<<~&#x0001; ? -> lar:///...`) marks declared-open routing: the URI is declared but address stability has not yet been confirmed. The `?` should remain until all three conditions above hold.
+The `?` form in the document opener (`<<~&#x0001; ? -> lar:///...`) marks declared-open routing: the URI is declared but address stability has not yet been confirmed.
+
+Here `?` should be read as the graph's unbound uncertainty token at document time, not as filler punctuation.
+
+The `?` should remain until all three conditions above hold.
+
+That opener law is distinct from the meme footer law: even after opener `?` is eventually removed at canon, a lawful meme may still discharge residual uncertainty outward through its footer `... -> ? >>`.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-address-stability >> -->
 <<~/ahu >>

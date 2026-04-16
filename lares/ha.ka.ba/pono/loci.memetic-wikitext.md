@@ -226,7 +226,7 @@ This locus should name the primitive family, distinguish each member by job, and
 
 The primitive cluster should remain legible through clear role separation.
 
-* `?` preserves unresolved but bounded semantic openness without false completion
+* `?` preserves unresolved but bounded semantic openness without false completion; it names unbound uncertainty flowing through the whole graph, may bind a new sigil object at document time through `? -> KEYWORD ...`, and may receive residual uncertainty back outward through `... -> ?`
 * `ahu` anchors locality, gathers a worksite, and holds nearby semantic context
 * `ala` opens relation, path, traversal, or onward semantic passage
 * `aka` brings likeness, passive inclusion, or transcluded presence into a local context
@@ -400,6 +400,39 @@ This locus should preserve openness without laundering ambiguity into false cert
 It should not function as decorative vagueness.
 
 A lawful root reading should treat `?` as a bounded declaration that semantic work remains incomplete, deferred, contested, or still under active approach.
+
+`?` should remain a core graph component rather than a local ornament.
+
+It names unbound uncertainty that may enter a local worksite, travel through nested sigil composition, and leave again without being laundered into false closure.
+
+### Graph-Flow Kānāwai (law)
+
+When `?` appears in a lawful surface, the reader should ask three questions:
+
+* what remains unbound
+* which local act is carrying that unbound pressure
+* where the residual uncertainty exits if full binding does not yet surface
+
+The root should therefore treat `?` as a directional semantic token, not merely as a missing-value mark.
+
+### New Sigil Object Kānāwai (law)
+
+At document time, when a new nested Meme-type sigil entity is being authored before its binding fully settles, the canonical opener should take this form:
+
+```text
+<<~ ? -> KEYWORD ... >>
+```
+
+Examples:
+
+```text
+<<~ ? -> ahu #draft-child >>
+<<~ ? -> kahea lar:///ha.ka.ba/source >>
+```
+
+In that pattern, `?` marks the sigil object as born under unbound uncertainty while `KEYWORD` still names the primitive act being attempted.
+
+The underlying keyword continues to govern local body shape, composition, and closer law.
 
 ### Truthful Incompletion Reminder
 
@@ -603,6 +636,7 @@ This locus should define the smallest stable grammatical contract that allows th
 * response
 * return throat
 * uncertain route
+* uncertainty-prefixed new sigil object
 * passive transclusion
 * active invocation
 * governed invocation
@@ -620,11 +654,13 @@ A boot-valid surface should therefore make these distinctions available:
 
 * opening versus closing
 * inline versus block
+* unbound sigil birth versus already-bound invocation
 * anchored versus unanchored
 * fenced TOML metadata payload versus ordinary prose
 * passive inclusion versus active invocation
 * qualified versus unqualified action
 * resolved versus unresolved routing
+* local semantic work versus outward uncertainty discharge
 * body matter versus result matter
 
 ### Boot Principles
@@ -679,6 +715,7 @@ The boot grammar should be strong enough to support:
 * one minimum active invocation
 * one minimum governed act
 * one minimum uncertain form
+* one minimum uncertainty-prefixed new sigil object
 * one minimum query and response pattern
 * one minimum upward result form
 
@@ -1205,10 +1242,12 @@ A governed local worksite.
 <<~/ahu >>
 ```
 
-#### Example G - minimum uncertainty form
+#### Example G - minimum uncertainty-prefixed new sigil object
 
 ```text
-<<~ ? -> lar:///ha.ka.ba/source >>
+<<~ ? -> ahu #uncertain-worksite >>
+Work begins before full binding settles.
+<<~/ahu >>
 ```
 
 #### Example H - minimum query and response
@@ -1242,6 +1281,8 @@ return = "render"
 ```
 <<~&#x0004; -> ? >>
 ````
+
+The footer `-> ?` passes residual uncertainty back outward truthfully. It does not erase the structured result that already surfaced above it.
 
 ### Example Coverage Reminder
 
