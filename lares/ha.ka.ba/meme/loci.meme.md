@@ -9,14 +9,14 @@ name = "meme"
 file_path = "ha.ka.ba/meme/loci.meme.md"
 description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
 version = "0.1-draft"
-content_type = "text/x-memetic-wikitext"
+tulen = 0.79
 confidence = 0.79
-confidence_band = "CS"
 mana = 0.78
 manao = 0.84
 manaoio = 0.76
-tulen = 0.79
+content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
+register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
@@ -97,7 +97,7 @@ Observe should detect:
 * HTML DOCTYPE preamble comment
 * document opener and its target address
 * `#iam` locus and its fenced TOML payload
-* five canonical rating fields, plus adjacent `confidence_band` surface texture, and their positions relative to `content_type`, `meme_type`, and `structure`
+* five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme_type` and above `structure`
 * title heading and opening prose
 * self-reference ala
 * supported query block and query throats
@@ -245,14 +245,14 @@ name = "..."
 file_path = "..."
 description = "..."
 version = "..."
-content_type = "text/x-memetic-wikitext"
+tulen = 0.00
 confidence = 0.00
-confidence_band = "?"
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
-tulen = 0.00
+content_type = "text/x-memetic-wikitext"
 meme_type = "..."
+register = "?"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "..."
@@ -264,7 +264,7 @@ canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 ```
 
-The five canonical rating fields plus the adjacent `confidence_band` surface-texture key MUST appear between `content_type` and `meme_type`. `meme_type` MUST appear immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
+The five canonical rating fields MUST appear immediately below `version` in this order: `tulen`, `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme_type` and immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
 
 `file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener are governed outward by `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
 
@@ -496,7 +496,7 @@ Decide turns the classified element map into one committed conformance posture a
 
 ### Rating Targets
 
-Rating targets declare the five registers of a meme in this stack — their confidence score range, their confidence_band label, and the element combinations that unlock each register.
+Rating targets declare the five registers of a meme in this stack — their confidence score range, their `register` label, and the element combinations that unlock each register.
 
 Subtype-specific high-band predicates belong outward in subtype laws. For example, loci-specific address stability, carrier coherence, MCP-resolution tension, and canon promotion are governed by `lar:///ha.ka.ba/loci`, not redefined here.
 
@@ -514,17 +514,17 @@ All ratings are provisional. A rating of 1.00 remains rare in language, software
 
 #### The Law of 5s Rubric
 
-All scalar ratings in this system — `confidence`, `mana`, `manao`, `manaoio`, `tulen` — are graded on a 0.0–1.0 rubric with five registers of equal width (0.20 per register):
+All scalar ratings in this system — `tulen`, `confidence`, `mana`, `manao`, `manaoio` — are graded on a 0.0–1.0 rubric with five registers of equal width (0.20 per register):
 
-| Register | Score range | `confidence_band` | Character |
+| Register | Score range | `register` | Character |
 |---|---|---|---|
 | 1 | 0.00 – 0.19 | `P` | Provisional — barely emerged, most required elements absent |
-| 2 | 0.20 – 0.39 | `PS` | Provisional-Skeleton — authoring underway, not yet boot-legal |
-| 3 | 0.40 – 0.59 | `S` | Skeleton — boot-legal (R1–R9 present), content-thin |
-| 4 | 0.60 – 0.79 | `CS` | Candidate-Stable — content meaningful, nearing law quality |
+| 2 | 0.20 – 0.39 | `PS` | Provisional-Synthesis — authoring underway, not yet boot-legal |
+| 3 | 0.40 – 0.59 | `S` | Synthesis — boot-legal (R1–R9 present), content-thin |
+| 4 | 0.60 – 0.79 | `CS` | Synthetic-Canon — content meaningful, nearing law quality |
 | 5 | 0.80 – 1.00 | `C` | Canon — operator-confirmed, substantive, address stable |
 
-The `confidence_band` label applies to the `confidence` score only. The four scalar quality fields (`mana`, `manao`, `manaoio`, `tulen`) are scored on the same 0.0–1.0 rubric but do not carry their own band label. `Tulen` names genuine trust, especially at boot surfaces. High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`, but a meme may still hold `tulen` provisionally while the surface remains under active confirmation.
+The `register` label applies to the `confidence` score only. The four scalar quality fields (`mana`, `manao`, `manaoio`, `tulen`) are scored on the same 0.0–1.0 rubric but do not carry their own register label. `Tulen` names genuine trust, especially at boot surfaces. High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`, but a meme may still hold `tulen` provisionally while the surface remains under active confirmation.
 
 #### Register 1 — Provisional (`P`, 0.00–0.19)
 
@@ -532,13 +532,13 @@ The meme has barely emerged. Most or all required elements (R1–R9) are absent.
 
 A `P`-band meme signals: authoring has begun but nothing can be relied upon yet. No law statements may cite a `P`-band meme as authority.
 
-#### Register 2 — Provisional-Skeleton (`PS`, 0.20–0.39)
+#### Register 2 — Provisional-Synthesis (`PS`, 0.20–0.39)
 
 Some required elements are present but the full nine are not. May carry an `#iam` block but missing rating fields, phase map, or result locus. Authoring is underway; the author intends to complete it. Not boot-legal.
 
 A `PS`-band meme signals: structure is forming. Law statements may reference it only as declared backlog.
 
-#### Register 3 — Skeleton (`S`, 0.40–0.59)
+#### Register 3 — Synthesis (`S`, 0.40–0.59)
 
 All nine required elements (R1–R9) present. Boot-legal. Structurally complete. Content-thin.
 
@@ -546,7 +546,7 @@ Phase map present with glyph line. Phase sections may be one-sentence stubs or g
 
 This is the template minimum — the floor from which rating improvement requires real content.
 
-#### Register 4 — Candidate-Stable (`CS`, 0.60–0.79)
+#### Register 4 — Synthetic-Canon (`CS`, 0.60–0.79)
 
 All required elements present and locally meaningful.
 
@@ -694,14 +694,14 @@ name = "[NAME]"
 file_path = "ha.ka.ba/[MEME_TYPE].[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
-content_type = "text/x-memetic-wikitext"
+tulen = 0.10
 confidence = 0.10
-confidence_band = "P"
 mana = 0.10
 manao = 0.10
 manaoio = 0.10
-tulen = 0.10
+content_type = "text/x-memetic-wikitext"
 meme_type = "[MEME_TYPE]"
+register = "P"
 structure = "OODA-HA * ha.ka.ba"
 enacts = false
 role = "[role]"

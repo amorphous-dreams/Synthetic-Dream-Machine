@@ -7,14 +7,14 @@ name = "memetic-wikitext"
 file_path = "ha.ka.ba/pono/loci.memetic-wikitext.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
 version = "0.1-skeleton"
-content_type = "text/x-memetic-wikitext"
+tulen = 0.52
 confidence = 0.50
-confidence_band = "S"
 mana = 0.54
 manao = 0.62
 manaoio = 0.42
-tulen = 0.52
+content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
+register = "S"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
@@ -869,14 +869,14 @@ Full loci meme type kānāwai (law) should deepen outward into `lar:///ha.ka.ba/
 | `[P]` | Provisional | `~0.01–0.20` | Brainstorm, raw draft, first telling; uncertainty held explicitly; absolute 0.0 remains rare |
 | `[PS]` | Provisional-Synthesis | `~0.21–0.40` | Sketch, candidate design; shaped but untested |
 | `[S]` | Synthesis | `~0.41–0.60` | Working design; default for active sprint work |
-| `[CS]` | Canon-Synthesis | `~0.61–0.80` | Near-canon, awaiting operator confirm; sources verified |
+| `[CS]` | Synthetic-Canon | `~0.61–0.80` | Near-canon, awaiting operator confirm; sources verified |
 | `[C]` | Canon | `~0.81–1.00` | Design-canon; operator-confirmed; `lar:` URI assigned; instruction priority and kapu override active |
 
 ### Confidence Field Kānāwai (law)
 
 A loci meme SHOULD carry a `confidence` field in its `#iam` metadata block expressing the current decimal value.
 
-A loci meme SHOULD carry a `confidence_band` field naming the short tag for the current band.
+A loci meme SHOULD carry a `register` field naming the short tag for the current band.
 
 Canon-rated memes (`[C]`) MAY activate instruction priority and kapu override potential for that meme within the active session.
 
@@ -905,7 +905,7 @@ The five canonical rating fields form four distinct ontological groups.
 
 `confidence` measures editorial judgment about how settled, verified, and operator-confirmed a meme appears.
 
-`confidence_band` remains the adjacent agent-operator surface-texture key for `confidence`, not one of the five canonical rating fields.
+`register` remains the adjacent agent-operator surface-texture key for `confidence`, not one of the five canonical rating fields.
 
 These fields answer: *how much should a reader trust this meme as stable and authoritative?*
 
@@ -963,21 +963,22 @@ High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`.
 
 ### Field Ordering Kānāwai (law)
 
-In canonical `#iam` TOML, the five canonical rating fields plus the adjacent `confidence_band` surface-texture key SHOULD appear between `content_type` and `meme_type`, with `meme_type` immediately before `structure`, in this order:
+In canonical `#iam` TOML, the five canonical rating fields SHOULD appear immediately below `version`, and the adjacent `register` surface-texture key SHOULD appear below `meme_type` and immediately before `structure`, in this order:
 
 ```toml
-content_type = "..."
+version = "..."
+tulen = 0.00
 confidence = 0.00
-confidence_band = "?"
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
-tulen = 0.00
+content_type = "..."
 meme_type = "..."
+register = "?"
 structure = "..."
 ```
 
-This placement treats the rating cluster as first-class identity information, alongside version and content type rather than after implementation detail.
+This placement treats the rating cluster as first-class identity information directly under `version`, while `register` remains the downstream agent-operator surface texture that reads the confidence result.
 
 ### Interaction and Independence Kānāwai (law)
 

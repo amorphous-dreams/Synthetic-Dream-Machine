@@ -16,14 +16,14 @@ name = "skill.template"
 file_path = "ha.ka.ba/pono/skill.template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha.ka.ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
 version = "0.1-draft"
-content_type = "text/x-memetic-wikitext"
+tulen = 0.52
 confidence = 0.52
-confidence_band = "S"
 mana = 0.54
 manao = 0.60
 manaoio = 0.42
-tulen = 0.52
+content_type = "text/x-memetic-wikitext"
 meme_type = "skill"
+register = "S"
 structure = "SKILL.md * OODA-HA * ha.ka.ba"
 enacts = true
 role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
@@ -44,7 +44,7 @@ A verification skill in this system lives at two simultaneous identity layers th
 
 The **outer layer** follows the [agentskills.io open standard](https://agentskills.io/specification) — YAML frontmatter at the very top of the file, consumed by agent runtimes at startup for progressive disclosure. Only the `name` and `description` fields load at startup (~100 tokens). The full body loads only when the skill is activated.
 
-The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, five canonical rating fields plus adjacent `confidence_band` surface texture, supported query throats, and result locus. This layer is consumed by the memetic-wikitext parser and law system.
+The **inner layer** follows the memetic-wikitext standard — TOML `#iam` block, OODA-HA * ha.ka.ba phase structure, five canonical rating fields grouped below `version` in the order `tulen`, `confidence`, `mana`, `manao`, `manaoio`, plus adjacent `register` surface texture below `meme_type` and above `structure`, supported query throats, and result locus. This layer is consumed by the memetic-wikitext parser and law system.
 
 `SKILL.md * OODA-HA * ha.ka.ba` names the composition: the SKILL.md container governs the outer runtime identity; the OODA-HA * ha.ka.ba governs the inner epistemic structure and execution discipline.
 
@@ -157,9 +157,9 @@ Every skill declares its invariants in `#iam` as a TOML string array. Invariants
 ```toml
 invariants = [
   "R1: HTML DOCTYPE preamble comment present on line 1",
-  "R3: #iam block carries all five canonical rating fields plus confidence_band between content_type and meme_type",
-  "R3: canonical order reads confidence, confidence_band, mana, manao, manaoio, tulen",
-  "R3: meme_type field present after tulen and before structure",
+  "R3: #iam block carries all five canonical rating fields immediately below version",
+  "R3: canonical order reads tulen, confidence, mana, manao, manaoio",
+  "R3: register field present after meme_type and before structure",
   "R6: at least one <<~STX; ui ...? -> ...#... >> query throat present",
   "O7: all <<~ ala lar:// >> links outside fenced blocks point at addresses that are either resolved or wrapped as OPTIONAL HTML comments",
 ]
@@ -249,8 +249,8 @@ def check_r1(lines: list[str]) -> InvariantResult:
     )
 
 def check_r3_rating_fields(content: str) -> InvariantResult:
-    """R3: five canonical rating fields plus confidence_band present in canonical order between content_type and meme_type."""
-    required = ["confidence", "confidence_band", "mana", "manao", "manaoio", "tulen"]
+    """R3: five canonical rating fields present in canonical order immediately below version."""
+    required = ["tulen", "confidence", "mana", "manao", "manaoio"]
     # Extract #iam TOML block
     m = re.search(r'<<~ ahu #iam >>.*?```toml(.*?)```', content, re.DOTALL)
     if not m:
@@ -265,30 +265,30 @@ def check_r3_rating_fields(content: str) -> InvariantResult:
         return InvariantResult(
             "R3-ratings", "fail",
             observed=f"missing fields: {missing}",
-            repair=f"Add {missing} between content_type and meme_type in #iam TOML"
+            repair=f"Add {missing} immediately below version in #iam TOML"
         )
     # Check ordering
     keys = list(data.keys())
-    ct_idx = keys.index("content_type") if "content_type" in keys else -1
-    st_idx = keys.index("structure") if "structure" in keys else len(keys)
-    cluster = keys[ct_idx+1:st_idx]
-    if cluster[:5] != required:
+    version_idx = keys.index("version") if "version" in keys else -1
+    content_idx = keys.index("content_type") if "content_type" in keys else len(keys)
+    cluster = keys[version_idx+1:content_idx]
+    if cluster != required:
         return InvariantResult(
             "R3-ratings", "fail",
-            observed=f"rating field order between content_type and meme_type: {cluster[:6]}",
+            observed=f"rating field order below version: {cluster}",
             repair=f"Reorder to: {required}"
         )
     return InvariantResult("R3-ratings", "pass", observed=f"fields present in canonical order")
 
-def check_r3_meme_type(content: str) -> InvariantResult:
-    """R3: meme_type field present after tulen and before structure."""
-    m = re.search(r'tulen\s*=.*?\n(meme_type\s*=)', content)
+def check_r3_register(content: str) -> InvariantResult:
+    """R3: register field present after meme_type and before structure."""
+    m = re.search(r'meme_type\s*=.*?\n(register\s*=).*?\nstructure\s*=', content)
     if m:
-        return InvariantResult("R3-meme_type", "pass", observed="meme_type present after tulen")
+        return InvariantResult("R3-register", "pass", observed="register present after meme_type")
     return InvariantResult(
-        "R3-meme_type", "fail",
-        observed="meme_type field absent or out of position",
-        repair="Add meme_type = \"[type]\" immediately after tulen in #iam TOML"
+        "R3-register", "fail",
+        observed="register field absent or out of position",
+        repair="Add register = \"[label]\" immediately after meme_type and before structure in #iam TOML"
     )
 
 def check_r6(content: str) -> InvariantResult:
@@ -302,7 +302,7 @@ def check_r6(content: str) -> InvariantResult:
         repair="Add at least one <<~STX; ui meme? -> lar:///ha.ka.ba/NAME#iam >> query throat"
     )
 
-CHECKS = [check_r1, check_r3_rating_fields, check_r3_meme_type, check_r6]
+CHECKS = [check_r1, check_r3_rating_fields, check_r3_register, check_r6]
 
 def run(target: Path) -> list[InvariantResult]:
     content = target.read_text(encoding="utf-8")

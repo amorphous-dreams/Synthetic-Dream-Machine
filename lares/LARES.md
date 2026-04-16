@@ -52,7 +52,6 @@ name            = "lares"
 file_path       = "LARES.md"
 description     = "Configuration surface. Where the agent-operator pair customizes catma, Maybe Logic, Stances, and Masks over Voices. End of the boot chain; beginning of the session's real work."
 version         = "0.1-alpha"
-content_type    = "text/x-memetic-wikitext"
 
 tagspace        = "adjacent"
 
@@ -60,16 +59,17 @@ tagspace        = "adjacent"
 # Tulen names the primary boot-trust surface. High mana, manao,
 # manaoio, and confidence support high tulen while boot may still
 # hold it provisionally pending later confirmation.
+tulen           = 0.95   # provisional genuine trust; primary boot trust surface
 confidence      = 0.80
-confidence_band = "CS"
 mana            = 0.85   # capacity as config surface
 manao           = 0.75   # meaning of config blocks as declared
 manaoio         = 0.70   # truthfulness — does edit propagate?
+content_type    = "text/x-memetic-wikitext"
 meme_type       = "configuration-surface"
+register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * stateful"
 
 boot_order      = 999    # end of chain (∞ informal)
-tulen           = 0.95   # provisional genuine trust; primary boot trust surface
 
 requires        = ["full-stack"]   # all kānāwai loaded upstream
 receives_state  = "full-stack"

@@ -9,14 +9,14 @@ name = "loci"
 file_path = "ha.ka.ba/loci/loci.loci.md"
 description = "Routing kānāwai (law) for resolving lar: URIs to repository file paths. Declares the derivation algorithm, meme-type prefix table, carrier coherence predicates, address stability criteria, canon promotion rules, and the MCP-resolution research roadmap for all memes in this system."
 version = "0.1-draft"
-content_type = "text/x-memetic-wikitext"
+tulen = 0.76
 confidence = 0.74
-confidence_band = "CS"
 mana = 0.74
 manao = 0.84
 manaoio = 0.66
-tulen = 0.76
+content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
+register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "routing kānāwai (law), carrier coherence authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
@@ -260,7 +260,7 @@ When a new `meme_type` is introduced, an entry MUST be added to this table befor
 A `lar:` URI is stable when all three conditions hold simultaneously:
 
 1. `enacts = true` in the meme's `#iam` block
-2. `confidence_band` is `CS` or `C`
+2. `register` is `CS` or `C`
 3. The `lar:` URI in the document opener (R2) remains coherent with the meme's declared carrier identity and does not drift during migration or promotion
 
 A stable `lar:` URI is **immutable**. It MUST NOT change even if the meme file migrates to a path-directory layout. On migration, `file_path` in `#iam` updates while the address named in the opener remains the same.
@@ -387,17 +387,17 @@ Decide commits to one resolution posture and assigns the canon promotion stage f
 
 Canon promotion stages govern the lifecycle of a `lar:` URI from first declaration to confirmed stability.
 
-| Stage | `confidence_band` | score range | `enacts` | document opener form | resolution posture |
+| Stage | `register` | score range | `enacts` | document opener form | resolution posture |
 |---|---|---|---|---|---|
 | **Provisional** | `P` | 0.00–0.19 | `false` | `<<~&#x0001; ? -> lar:///...` | no trustworthy local resolution yet |
-| **Provisional-Skeleton** | `PS` | 0.20–0.39 | `false` | `<<~&#x0001; ? -> lar:///...` | derivation intent declared |
-| **Skeleton** | `S` | 0.40–0.59 | `true` | `<<~&#x0001; ? -> lar:///...` | locally classifiable; resolution may still be open |
-| **Candidate-Stable** | `CS` | 0.60–0.79 | `true` | `<<~&#x0001; ? -> lar:///...` | carrier coherent; unresolved MCP tension still possible |
+| **Provisional-Synthesis** | `PS` | 0.20–0.39 | `false` | `<<~&#x0001; ? -> lar:///...` | derivation intent declared |
+| **Synthesis** | `S` | 0.40–0.59 | `true` | `<<~&#x0001; ? -> lar:///...` | locally classifiable; resolution may still be open |
+| **Synthetic-Canon** | `CS` | 0.60–0.79 | `true` | `<<~&#x0001; ? -> lar:///...` | carrier coherent; unresolved MCP tension still possible |
 | **Canon** | `C` | 0.80–1.00 | `true` | `<<~&#x0001; lar:///...` | externally confirmed resolution substrate present |
 
-The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, band labels, and promotion criteria are governed there. Loci governs only the carrier and document-opener changes that accompany each stage.
+The full five-register rubric is declared in `lar:///ha.ka.ba/meme#rating-targets`. Confidence scores, register labels, and promotion criteria are governed there. Loci governs only the carrier and document-opener changes that accompany each stage.
 
-**Promotion to Candidate-Stable** requires:
+**Promotion to Synthetic-Canon** requires:
 
 * all nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
 * `enacts = true`

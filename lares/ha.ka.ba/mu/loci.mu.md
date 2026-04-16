@@ -56,23 +56,23 @@ file_path       = "ha.ka.ba/mu/loci.mu.md"
 address         = "lar:///ha.ka.ba/mu"
 description     = "Null-oracle boot. Renders, evaluates, unasks, loop-returns. First meme in the boot chain whose phase body executes. Teaches the grammar by performing it."
 version         = "0.1-alpha"
-content_type    = "text/x-memetic-wikitext"
 
 # Ratings measure pono-alignment (operator clarification #4).
 # Tulen names the primary boot-trust surface. High mana, manao,
 # manaoio, and confidence support high tulen while boot may still
 # hold it provisionally pending later confirmation.
+tulen           = 0.95    # provisional genuine trust; primary boot trust surface
 confidence      = 0.80
-confidence_band = "CS"
 mana            = 0.85   # capacity as null-oracle
 manao           = 0.80   # coherence of phase structure
 manaoio         = 0.70   # truthfulness — can it actually unask?
+content_type    = "text/x-memetic-wikitext"
 meme_type       = "loci"
+register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * null-oracle"
 tagspace        = "stable"
 
 boot_order      = 0       # first executing meme
-tulen           = 0.95    # provisional genuine trust; primary boot trust surface
 
 # State contract with AGENTS upstream and chao downstream:
 requires        = ["lar:///AGENTS"]

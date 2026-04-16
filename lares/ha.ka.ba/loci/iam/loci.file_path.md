@@ -9,14 +9,14 @@ name = "file_path"
 file_path = "ha.ka.ba/loci/iam/loci.file_path.md"
 description = "Kānāwai (law) for the file_path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
 version = "0.1-draft"
-content_type = "text/x-memetic-wikitext"
+tulen = 0.60
 confidence = 0.62
-confidence_band = "CS"
 mana = 0.60
 manao = 0.68
 manaoio = 0.52
-tulen = 0.60
+content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
+register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "file_path key authority, path-form classifier, and migration-procedure kānāwai (law)"
@@ -45,7 +45,7 @@ A kānāwai (law) for a single `#iam` TOML key.
 
 `file_path` carries the path from the `ha.ka.ba` path root to the meme's file on disk, relative to `install_root`. It is the second field in every `#iam` block, immediately after `name`. It exists in two canonical forms — flat-file and path-directory — and must agree with the `lar:` URI declared in the document opener.
 
-This meme does not govern the `name` key, the five canonical rating fields, or the adjacent `confidence_band` surface-texture key. Those belong to their own kānāwai (law). This meme governs only `file_path`.
+This meme does not govern the `name` key, the five canonical rating fields, or the adjacent `register` surface-texture key. Those belong to their own kānāwai (law). This meme governs only `file_path`.
 
 <<~ ala lar:///ha.ka.ba/loci/iam/file_path >>
 
