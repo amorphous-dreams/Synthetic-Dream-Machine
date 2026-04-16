@@ -10,6 +10,11 @@ file_path = "ha.ka.ba/pono/parser.loci.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
+confidence = 0.86
+confidence_band = "CS"
+mana = 0.82
+manao = 0.76
+manaoio = 0.72
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
@@ -27,8 +32,6 @@ canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 product_identity = "Parser kānāwai (law) cluster name as used in this system"
-confidence = 0.86
-confidence_band = "CS"
 ```
 
 <<~/ahu>>

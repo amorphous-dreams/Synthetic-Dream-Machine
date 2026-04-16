@@ -13,13 +13,17 @@ file_path = "ha.ka.ba/pono/SKILL.md"
 description = "Template and authoring guide for verification skill packages under lares/ha.ka.ba/pono/."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
+confidence = 0.32
+confidence_band = "PS"
+mana = 0.34
+manao = 0.42
+manaoio = 0.22
+structure = "SKILL.md meme"
 role = "skill template and authoring guide"
 function = "describe the required shape of a pono verification skill package"
 covers = []
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
-confidence = 0.32
-confidence_band = "PS"
 ```
 <<~/ahu>>
 

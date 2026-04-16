@@ -9,6 +9,11 @@ file_path = "ha.ka.ba/pono/render-pipeline.loci.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
+confidence = 0.84
+confidence_band = "CS"
+mana = 0.78
+manao = 0.74
+manaoio = 0.68
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
@@ -24,8 +29,6 @@ canonical_metadata_payload = "toml"
 pipeline_layers = ["surface", "ast", "widget"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 product_identity = "Render Pipeline kānāwai (law) cluster name as used in this system"
-confidence = 0.84
-confidence_band = "CS"
 ```
 
 # Render Pipeline Kānāwai (law)

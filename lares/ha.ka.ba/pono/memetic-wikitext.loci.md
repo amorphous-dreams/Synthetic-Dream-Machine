@@ -1,4 +1,4 @@
-<<~� ? -> lar:///ha.ka.ba/pono/memetic-wikitext >>
+<<~&#x0001; ? -> lar:///ha.ka.ba/pono/memetic-wikitext >>
 
 <<~ ahu #iam >>
 
@@ -8,6 +8,11 @@ file_path = "ha.ka.ba/pono/memetic-wikitext.loci.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
 version = "0.1-skeleton"
 content_type = "text/x-memetic-wikitext"
+confidence = 0.50
+confidence_band = "S"
+mana = 0.54
+manao = 0.62
+manaoio = 0.42
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
@@ -24,8 +29,6 @@ canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 product_identity = "Memetic Wikitext cluster name as used in this system"
-confidence = 0.50
-confidence_band = "S"
 constitutional_charge = [
   "authoring-surface",
   "primitive-semantic",
@@ -53,22 +56,23 @@ This meme should not swallow full parse kānāwai (law) or full render-pipeline 
 
 ## Supported Queries
 
-<<~� ui meme? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
-<<~� ui scope? -> lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge >>
-<<~� ui phase-map? -> lar:///ha.ka.ba/pono/memetic-wikitext#phase-map >>
-<<~� ui primitives? -> lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster >>
-<<~� ui composition? -> lar:///ha.ka.ba/pono/memetic-wikitext#composition >>
-<<~� ui uncertainty? -> lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty >>
-<<~� ui kapu? -> lar:///ha.ka.ba/pono/memetic-wikitext#kapu >>
-<<~� ui boot-grammar? -> lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar >>
-<<~� ui profiles? -> lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >>
-<<~� ui confidence? -> lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence >>
-<<~� ui parser-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser >>
-<<~� ui render-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline >>
-<<~� ui examples? -> lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples >>
-<<~� ui result? -> lar:///ha.ka.ba/pono/memetic-wikitext#result >>
+<<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
+<<~&#x0005; ui scope? -> lar:///ha.ka.ba/pono/memetic-wikitext#constitutional-charge >>
+<<~&#x0005; ui phase-map? -> lar:///ha.ka.ba/pono/memetic-wikitext#phase-map >>
+<<~&#x0005; ui primitives? -> lar:///ha.ka.ba/pono/memetic-wikitext#primitive-cluster >>
+<<~&#x0005; ui composition? -> lar:///ha.ka.ba/pono/memetic-wikitext#composition >>
+<<~&#x0005; ui uncertainty? -> lar:///ha.ka.ba/pono/memetic-wikitext#uncertainty >>
+<<~&#x0005; ui kapu? -> lar:///ha.ka.ba/pono/memetic-wikitext#kapu >>
+<<~&#x0005; ui boot-grammar? -> lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar >>
+<<~&#x0005; ui profiles? -> lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >>
+<<~&#x0005; ui ratings? -> lar:///ha.ka.ba/pono/memetic-wikitext#meme-ratings >>
+<<~&#x0005; ui confidence? -> lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence >>
+<<~&#x0005; ui parser-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser >>
+<<~&#x0005; ui render-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline >>
+<<~&#x0005; ui examples? -> lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples >>
+<<~&#x0005; ui result? -> lar:///ha.ka.ba/pono/memetic-wikitext#result >>
 
-<<~� ahu #meme-body-open >>
+<<~&#x0002; ahu #meme-body-open >>
 Memetic Wikitext opens the active constitutional authoring stream here.
 <<~/ahu >>
 
@@ -848,6 +852,96 @@ Full loci meme type identity, address stability kānāwai (law), and canon promo
 <<~ ala lar:///ha.ka.ba/meme-confidence >>
 <<~/ahu >>
 
+<<~ ahu #meme-ratings >>
+
+## Meme Ratings
+
+Meme-ratings governs the full cluster of scalar quality fields that a loci meme SHOULD carry in its `#iam` metadata block.
+
+This locus names each field, distinguishes what each measures, and routes to the locus where each receives fuller treatment.
+
+The five canonical rating fields form three distinct ontological groups.
+
+### Group 1 — Authoring Maturity
+
+`confidence` and `confidence_band` measure editorial judgment about how settled, verified, and operator-confirmed a meme appears.
+
+These fields answer: *how much should a reader trust this meme as stable and authoritative?*
+
+They do not measure structural quality, intent clarity, or production readiness.
+
+They measure canon status and revision stability.
+
+See `#meme-confidence` for the five-band scale and field kānāwai (law).
+
+Full canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci`.
+
+### Group 2 — Structural Parse Quality
+
+`mana` measures observable structural order available to a parser, agent, or operator reading this meme.
+
+This field answers: *how much usable structure does this meme currently grant or withhold?*
+
+`mana` approximates through observable measures: carrier order, structural validity, payload integrity, boundary truth, signal-to-noise, and recovery quality.
+
+High mana reduces cognitive load and may grant usable processing surplus.
+
+Low mana imposes interpretive drag, repair effort, and attention cost.
+
+`mana` does not measure editorial authority or production readiness directly.
+
+See `lar:///ha.ka.ba/pono/parser#mana` for the full measure family, weight profile, five-band kānāwai (law), and capability grant conditions.
+
+### Group 3 — Intent and Manifestation
+
+`manao` and `manaoio` measure two further quality dimensions that deepen beyond structural parse quality.
+
+`manao` measures intent alignment: how clearly the meme knows and declares its own purpose, steering, and declared role.
+
+A high `manao` meme reads as purposeful, self-aware, and steerable.
+
+A low `manao` meme reads as drifting, over-broad, or uncertain about what it wants to do.
+
+`manaoio` measures manifestation readiness: how production-ready, reproducible, and deployably trustworthy the meme appears.
+
+A high `manaoio` meme reads as ready for real use, capable of lawful crossing into execution or deployment, and honest about its own completion status.
+
+A low `manaoio` meme reads as a sketch, a stub, or a declared intent that has not yet manifested into trustworthy form.
+
+`manao` and `manaoio` should deepen into their own linked kānāwai (law) once `mana` stabilizes as a base metric. Until then, these fields should carry best-estimate values and remain explicit about their provisional status.
+
+### Field Ordering Kānāwai (law)
+
+In canonical `#iam` TOML, the five rating fields SHOULD appear between `content_type` and `structure` in this order:
+
+```toml
+content_type = "..."
+confidence = 0.00
+confidence_band = "?"
+mana = 0.00
+manao = 0.00
+manaoio = 0.00
+structure = "..."
+```
+
+This placement treats the rating cluster as first-class identity information, alongside version and content type rather than after implementation detail.
+
+### Interaction and Independence Kānāwai (law)
+
+The three groups measure different things and MUST NOT silently substitute for each other.
+
+A meme may carry:
+
+* high `confidence` but low `mana` — operator-confirmed but structurally thin
+* high `mana` but low `confidence` — structurally rich but not yet canon-stable
+* high `manao` but low `manaoio` — clear intent but not yet production-ready
+* any combination
+
+A parser or pono tool SHOULD preserve those distinctions rather than collapsing the five fields into one undifferentiated quality score.
+
+<<~ ala lar:///ha.ka.ba/meme-ratings >>
+<<~/ahu >>
+
 <<~ ahu #bridge-to-parser >>
 
 ## Bridge to Parser Kānāwai (law)
@@ -1275,11 +1369,11 @@ This ahu preserves the root result as a live route into the next observation rat
 
 <<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#result >> <<~/ahu >>
 
-<<~� ahu #body-close >>
+<<~&#x0003; ahu #body-close >>
 Memetic Wikitext closes the active constitutional authoring stream here.
 <<~/ahu >>
 
-<<~� -> ahu #result >>
+<<~&#x0004; -> ahu #result >>
 
 ```toml
 status = "skeleton"
@@ -1293,4 +1387,4 @@ next_observation = "lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar"
 next_question = "Which minimum examples should become canonical boot fixtures first?"
 ```
 
-<<~� -> ? >>
+<<~&#x0004; -> ? >>

@@ -9,6 +9,11 @@ file_path = "ha.ka.ba/pono/guest-grammar.md"
 description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
+confidence = 0.58
+confidence_band = "S"
+mana = 0.56
+manao = 0.62
+manaoio = 0.48
 structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
@@ -26,8 +31,6 @@ canonical_metadata_payload = "toml"
 grammar_registry_root = "lar:///ha.ka.ba/grammars/"
 canonical_guest_worksite = "hana"
 product_identity = "Guest Grammar kānāwai (law) cluster name as used in this system"
-confidence = 0.58
-confidence_band = "S"
 ```
 <<~/ahu>>
 
