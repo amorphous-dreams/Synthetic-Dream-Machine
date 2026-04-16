@@ -57,7 +57,6 @@ Something in the agent-operator relationship turns and looks forward.
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-address         = "lar:///AGENTS"
 name            = "agents"
 file_path       = "AGENTS.md"
 description     = "Narrative boot / cosmogonic entry. The threshold the reader passes through to reach Mu. Infrastructure-as-Mythology passage in miniature."

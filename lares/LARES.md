@@ -46,7 +46,6 @@ A room. Dials on the wall. The operator's hand finds them.
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-address         = "lar:///LARES"
 name            = "lares"
 file_path       = "LARES.md"
 description     = "Configuration surface. Where the agent-operator pair customizes catma, Maybe Logic, Stances, and Masks over Voices. End of the boot chain; beginning of the session's real work."
