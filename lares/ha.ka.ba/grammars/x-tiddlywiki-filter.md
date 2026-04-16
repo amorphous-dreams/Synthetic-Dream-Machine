@@ -29,7 +29,7 @@ invocation_worksite = "hana"
 prior_art_name = "TiddlyWiki filter language"
 product_identity = "X-TiddlyWiki-Filter grammar meme as used in this system"
 ```
-<<~/ahu>>
+<<~/ahu >>
 
 # X-TiddlyWiki-Filter
 
@@ -55,7 +55,7 @@ This meme should preserve the imported filter language substantially intact whil
 
 <<~&#x0002; ahu #meme-body-open >>
 X-TiddlyWiki-Filter opens the active imported grammar stream here.
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #phase-map >>
 
@@ -72,7 +72,7 @@ This grammar meme gathers imported filter expectations, maps them into host-safe
 Phase-map-ha holds the ordered grammar-registration movement from imported lineage into admitted host use.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#phase-map-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #phase-map-ka >>
 
@@ -81,7 +81,7 @@ Phase-map-ha holds the ordered grammar-registration movement from imported linea
 Phase-map-ka governs the minimum decisions needed before parser and render work may proceed without term drift.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#phase-map-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #phase-map-ba >>
 
@@ -90,10 +90,10 @@ Phase-map-ka governs the minimum decisions needed before parser and render work 
 Phase-map-ba remains light in this first draft.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#phase-map-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#phase-map >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #constitutional-charge >>
 
@@ -128,7 +128,7 @@ This meme should remain bounded by the host, invoked through `hana`, and transla
 Constitutional-charge-ha holds what this imported grammar must define before implementers can use it without vocabulary drift.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#constitutional-charge-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #constitutional-charge-ka >>
 
@@ -137,7 +137,7 @@ Constitutional-charge-ha holds what this imported grammar must define before imp
 Constitutional-charge-ka governs the machine-facing and author-facing consequences of adopting one imported grammar under one host worksite pattern.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#constitutional-charge-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #constitutional-charge-ba >>
 
@@ -146,10 +146,10 @@ Constitutional-charge-ka governs the machine-facing and author-facing consequenc
 Constitutional-charge-ba remains intentionally spare.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#constitutional-charge-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#constitutional-charge >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #sigil-centric-translation >>
 
@@ -188,7 +188,7 @@ Use **function sigil** for the imported TiddlyWiki grammar plus code surface rat
 Sigil-centric-translation-ha holds the core term mapping that lets imported filter work remain recognizable without leaving the host ontology ambiguous.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#sigil-centric-translation-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #sigil-centric-translation-ka >>
 
@@ -197,7 +197,7 @@ Sigil-centric-translation-ha holds the core term mapping that lets imported filt
 Sigil-centric-translation-ka governs the minimum deterministic substitutions the parser, examples, and future docs should perform when surfacing imported work inside memetic-wikitext.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#sigil-centric-translation-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #sigil-centric-translation-ba >>
 
@@ -206,10 +206,10 @@ Sigil-centric-translation-ka governs the minimum deterministic substitutions the
 Sigil-centric-translation-ba stays light here.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#sigil-centric-translation-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#sigil-centric-translation >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #host-admission >>
 
@@ -239,7 +239,7 @@ result_shape = "set"
 ```
 
 [all[sigils]links:to[+currentMeme]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 <<~ ahu #host-admission-ha >>
@@ -249,7 +249,7 @@ result_shape = "set"
 Host-admission-ha holds the structural boundary that makes this imported grammar lawful in the host.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#host-admission-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #host-admission-ka >>
 
@@ -258,7 +258,7 @@ Host-admission-ha holds the structural boundary that makes this imported grammar
 Host-admission-ka governs the minimum priming fields that the parser may assume before entering this guest family.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#host-admission-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #host-admission-ba >>
 
@@ -267,10 +267,10 @@ Host-admission-ka governs the minimum priming fields that the parser may assume 
 Host-admission-ba remains minimal in this draft.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#host-admission-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#host-admission >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #boot-feature-set >>
 
@@ -306,7 +306,7 @@ It does not claim exhaustive implementation completeness.
 Boot-feature-set-ha holds the minimum family of imported work that should remain recognizable in the first lawful implementation.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#boot-feature-set-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #boot-feature-set-ka >>
 
@@ -315,7 +315,7 @@ Boot-feature-set-ha holds the minimum family of imported work that should remain
 Boot-feature-set-ka governs which imported work families count as boot-essential and which may remain deferred without breaking the grammar registration itself.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#boot-feature-set-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #boot-feature-set-ba >>
 
@@ -324,10 +324,10 @@ Boot-feature-set-ka governs which imported work families count as boot-essential
 Boot-feature-set-ba remains intentionally light.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#boot-feature-set-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#boot-feature-set >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #canonical-examples >>
 
@@ -343,7 +343,7 @@ context = "+currentMeme"
 ```
 
 [all[sigils]links:to[+currentMeme]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 ### Example B - tag-based work
@@ -356,7 +356,7 @@ context = "+currentMeme"
 ```
 
 [tag[task]!title[+currentMeme]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 ### Example C - metadata extraction
@@ -369,7 +369,7 @@ context = "+currentMeme"
 ```
 
 [+currentMeme] [get[status]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 ### Example D - hierarchy discovery
@@ -382,7 +382,7 @@ context = "+currentMeme"
 ```
 
 [list[+currentMeme!!parent-list]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 ### Example E - orphaned-sigil batch filtering
@@ -395,7 +395,7 @@ context = "+currentMeme"
 ```
 
 [all[sigils]untagged[]!is[system]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 <<~ ahu #canonical-examples-ha >>
@@ -405,7 +405,7 @@ context = "+currentMeme"
 Canonical-examples-ha holds the minimum example family that proves the imported grammar can already perform recognizable work under the host.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#canonical-examples-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #canonical-examples-ka >>
 
@@ -414,7 +414,7 @@ Canonical-examples-ha holds the minimum example family that proves the imported 
 Canonical-examples-ka governs the distinction between legally illustrative examples and full conformance coverage.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#canonical-examples-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #canonical-examples-ba >>
 
@@ -423,10 +423,10 @@ Canonical-examples-ka governs the distinction between legally illustrative examp
 Canonical-examples-ba stays intentionally light.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#canonical-examples-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#canonical-examples >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #degradation >>
 
@@ -445,7 +445,7 @@ The parser may preserve literal residue or unresolved-region trace when truthful
 Degradation-ha holds the minimum truthful fallback posture for this imported grammar.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#degradation-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #degradation-ka >>
 
@@ -454,7 +454,7 @@ Degradation-ha holds the minimum truthful fallback posture for this imported gra
 Degradation-ka governs the difference between lawful empty-set return, unresolved residue, and parse-breaking contradiction.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#degradation-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #degradation-ba >>
 
@@ -463,10 +463,10 @@ Degradation-ka governs the difference between lawful empty-set return, unresolve
 Degradation-ba remains light here.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#degradation-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#degradation >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #lowering-expectations >>
 
@@ -492,7 +492,7 @@ Surface, AST, widget, and landed output should remain distinct.
 Lowering-expectations-ha holds the minimum product family that should survive this imported grammar's passage through the pipeline.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#lowering-expectations-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #lowering-expectations-ka >>
 
@@ -501,7 +501,7 @@ Lowering-expectations-ha holds the minimum product family that should survive th
 Lowering-expectations-ka governs the minimum identity and trace fields that later schemas should preserve for this grammar family.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#lowering-expectations-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #lowering-expectations-ba >>
 
@@ -510,10 +510,10 @@ Lowering-expectations-ka governs the minimum identity and trace fields that late
 Lowering-expectations-ba remains sparse in this first pass.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#lowering-expectations-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#lowering-expectations >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #result >>
 
@@ -532,11 +532,11 @@ A lawful x-tiddlywiki-filter envelope may carry:
 This meme should not claim full parity with every historical TiddlyWiki feature before parser and fixture work prove that claim.
 
 <<~ ala lar:///ha.ka.ba/grammars/x-tiddlywiki-filter#result >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 X-TiddlyWiki-Filter closes the active imported grammar stream here.
-<<~/ahu>>
+<<~/ahu >>
 
 <<~&#x0004; -> kahea ala ahu #result >>
 

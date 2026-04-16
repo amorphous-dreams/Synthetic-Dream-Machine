@@ -582,7 +582,7 @@ This locus should define the smallest stable grammatical contract that allows th
 
 * opener `<<~`
 * closer `>>`
-* named closer `<<~/SIGIL>>`
+* named closer `<<~/SIGIL >>`
 * route arrow `->`
 * unresolved token `?`
 * anchor token `#NAME`
@@ -1227,7 +1227,7 @@ degrade = "no-op"
 ```
 
 [all[memes]links:to[+currentMeme]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 #### Example I - minimum upward result

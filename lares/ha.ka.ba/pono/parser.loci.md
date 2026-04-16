@@ -34,7 +34,7 @@ canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "a
 product_identity = "Parser kānāwai (law) cluster name as used in this system"
 ```
 
-<<~/ahu>>
+<<~/ahu >>
 
 # Parser Kānāwai (law)
 
@@ -67,7 +67,7 @@ This meme follows the OODA-HA pattern not merely as ornament but as execution di
 
 <<~&#x0002; ahu #meme-body-open >>
 Parser kānāwai (law) opens the active parsing stream here.
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #phase-map >>
 
@@ -80,7 +80,7 @@ Parser kānāwai (law) reads, shapes, chooses, prepares, crosses, and judges in 
 A parser or agent following this meme should not collapse those loci into one blurry pass when later recovery, debugging, or trust evaluation matters.
 
 <<~ ala lar:///ha.ka.ba/phase-map >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #observe >>
 
@@ -185,7 +185,7 @@ Observe-ha holds source boundary, intake domain, and visible carrier shape.
 This subphase governs what Observe fundamentally holds before deeper interpretation.
 
 <<~ ala lar:///ha.ka.ba/observe-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #observe-ka >>
 
@@ -196,7 +196,7 @@ Observe-ka governs lexical intake, preservation detail, and trace-ready capture.
 This subphase focuses on how Observe actually performs intake work.
 
 <<~ ala lar:///ha.ka.ba/observe-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #observe-ba >>
 
@@ -207,14 +207,14 @@ Observe-ba governs noticing flow, ambiguity sensitivity, and dynamic intake post
 This subphase shapes how observation moves without premature collapse.
 
 <<~ ala lar:///ha.ka.ba/observe-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > CommonMark suggests a high-mana carrier discipline here: determine block structure first, then parse inline structure inside already-bounded regions. That pattern supports the carrier-first stance and reduces accidental mode leakage.
 
 <<~ ala lar:///ha.ka.ba/observe >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #orient >>
 
@@ -338,7 +338,7 @@ Orient-ha holds structural domain, relation shape, and parse-form holding patter
 This subphase governs what Orient fundamentally structures.
 
 <<~ ala lar:///ha.ka.ba/orient-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #orient-ka >>
 
@@ -349,7 +349,7 @@ Orient-ka governs classification, grouping, and mapping detail.
 This subphase focuses on how Orient actually performs contextual shaping.
 
 <<~ ala lar:///ha.ka.ba/orient-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #orient-ba >>
 
@@ -360,14 +360,14 @@ Orient-ba governs interpretive motion, tension-holding, and comparative flow.
 This subphase shapes how orientation moves across competing readings.
 
 <<~ ala lar:///ha.ka.ba/orient-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > TiddlyWiki offers a strong living-wikitext precedent for this locus: transclusion, filtered transclusion, and field-oriented identity all show how active document structure can remain user-facing without collapsing into pure code. The lesson here: keep powerful subgrammars explicit and bounded.
 
 <<~ ala lar:///ha.ka.ba/orient >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #decide >>
 
@@ -411,7 +411,7 @@ Canonical example:
 ```text
 <<~ ahu #phase-map >>
 ...body...
-<<~/ahu>>
+<<~/ahu >>
 ```
 
 #### 3. Payload-block form
@@ -427,7 +427,7 @@ name = "ooda-ha"
 version = "0.5"
 ```
 ...optional prose...
-<<~/ahu>>
+<<~/ahu >>
 ````
 
 #### 4. Return form
@@ -561,11 +561,11 @@ Semantic role:
 * invitation-to-work primitive
 * bounded worksite for active work, data or code processing, or guest-grammar entry
 * local priming payload authority when first meaningful child carries fenced `toml`
-* canonical closer `<<~/hana>>`
+* canonical closer `<<~/hana >>`
 
 A later extension may declare further sigil types and permitted forms, but parser should require that declaration to remain explicit.
 
-<<~/ahu>>
+<<~/ahu >>
 
 ### Closure Kānāwai (law)
 
@@ -573,22 +573,22 @@ Block and payload-block forms open with a named opener and close with a named cl
 
 > An active block-form sigil MAY contain nested active matter, including nested block-form sigils of the same type, unless a stricter profile forbids that pairing.  
 > Named closers resolve by normal stack discipline.  
-> `<<~/ahu>>` closes the most recent unmatched `ahu` opener.
+> `<<~/ahu >>` closes the most recent unmatched `ahu` opener.
 
 Inline form closes with the canonical inline closer `>>`.
 
 Canonical block closer:
 
 ```text
-<<~/SIGIL-TYPE>>
+<<~/SIGIL-TYPE >>
 ```
 
 Examples:
 
 ```text
-<<~/ahu>>
-<<~/kahea>>
-<<~/kapu>>
+<<~/ahu >>
+<<~/kahea >>
+<<~/kapu >>
 ```
 
 Parser kānāwai (law) should reject ad hoc closure spellings as canonical forms.
@@ -664,7 +664,7 @@ Decide-ha holds legality domain, decision shape, and canonical boundary.
 This subphase governs what Decide fundamentally binds.
 
 <<~ ala lar:///ha.ka.ba/decide-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #decide-ka >>
 
@@ -675,7 +675,7 @@ Decide-ka governs rule selection, issue classification, and normalization detail
 This subphase focuses on how Decide actually performs lawful choice.
 
 <<~ ala lar:///ha.ka.ba/decide-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #decide-ba >>
 
@@ -686,14 +686,14 @@ Decide-ba governs commitment style, confidence, caution, and graceful refusal of
 This subphase shapes how decision pressure lands without false certainty.
 
 <<~ ala lar:///ha.ka.ba/decide-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > Tree-sitter suggests a useful grammar principle here: grammar symbols should correspond directly to recognizable constructs, and each rule should gain corpus tests early. Org-Babel suggests a parallel execution principle: active documents can carry executable guidance and code together when the boundary between carrier, block, and execution remains explicit.
 
 <<~ ala lar:///ha.ka.ba/decide >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #act >>
 
@@ -760,7 +760,7 @@ That object may populate:
 
 Unknown metadata keys may remain legal unless a stricter profile forbids them.
 
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #hooko >>
 
@@ -846,7 +846,7 @@ It keeps mutation bounded.
 It keeps state change distinguishable from preparation, narration, and judgment.
 
 <<~ ala lar:///ha.ka.ba/hooko-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #hooko-ka >>
 
@@ -878,7 +878,7 @@ Within Hooko, the system may:
 Hooko should favor explicit, inspectable change over hidden mutation.
 
 <<~ ala lar:///ha.ka.ba/hooko-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #hooko-ba >>
 
@@ -903,14 +903,14 @@ A lawful Hooko phase should preserve:
 When a system changes state without naming Hooko, that event should count as boundary drift rather than as invisible success.
 
 <<~ ala lar:///ha.ka.ba/hooko-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > Hooko here takes shape less like pure randomness and more like an explicit commit window, transaction throat, or mutation boundary: a narrow zone where prepared intent crosses into stateful consequence.
 
 <<~ ala lar:///ha.ka.ba/hooko >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Dominant Resonance
 
@@ -929,7 +929,7 @@ Act-ha holds output domain, syntax-product shape, and lawful execution boundary.
 This subphase governs what Act is allowed to bring forth.
 
 <<~ ala lar:///ha.ka.ba/act-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #act-ka >>
 
@@ -944,7 +944,7 @@ A compliant parser MAY produce stable syntax products such as token streams, AST
 Full AST schema, widget-tree schema, render-target adapters, and target projection detail should move outward into `lar:///ha.ka.ba/pono/render-pipeline`.
 
 <<~ ala lar:///ha.ka.ba/act-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #act-ba >>
 
@@ -955,14 +955,14 @@ Act-ba governs execution rhythm, quality pressure, and bounded dynamic flow unde
 This subphase shapes how lawful execution moves under real parser pressure.
 
 <<~ ala lar:///ha.ka.ba/act-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Non-Normative Prior-Art Note
 
 > TiddlyWiki also offers a useful rendering precedent here: widget trees provide a user-facing structure that can render live transclusion behavior, not merely static inclusion. That pattern maps well to `kahea` as a live transclusion surface, while `aka` remains closer to shadow, image, or passive likeness transclusion.
 
 <<~ ala lar:///ha.ka.ba/act >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #filter-mode >>
 
@@ -993,7 +993,7 @@ degrade = "no-op"
 ```
 
 [+currentMeme] [get[status]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 ### Non-Breaking Parent Parse Kānāwai (law)
@@ -1018,7 +1018,7 @@ Filter mode primarily belongs to the structural concern while remaining governed
 > NIST's metric-versus-measure distinction gives a clean software-facing analogy here: mana functions as the higher-level metric, while carrier order, structural validity, and related components function as the observable measures. Cognitive-load principles reinforce the upper-band claim that better structure gives attention back.
 
 <<~ ala lar:///ha.ka.ba/filter-mode >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #normalization >>
 
@@ -1041,7 +1041,7 @@ A compliant parser SHOULD emit warning, trace, or both when normalization materi
 > The constitutional role of Parser kānāwai (law) resembles a lightweight architecture record plus a living reference document: one root kānāwai (law) names the core decisions, while later linked laws hold heavier detail. The high-mana lesson here: keep the root stable, readable, and alignable, then let deeper implementation kānāwai (law) branch outward.
 
 <<~ ala lar:///ha.ka.ba/normalization >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #mana >>
 
@@ -1151,7 +1151,7 @@ Bands 4 and 5 mark net mana grant.
 A parser or pono tool SHOULD preserve that direction clearly in any user-facing report.
 
 <<~ ala lar:///ha.ka.ba/mana-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #mana-ka >>
 
@@ -1216,7 +1216,7 @@ Mana procedure should remain stable enough that multiple implementations may com
 If active profiles diverge, the profile difference SHOULD surface explicitly rather than hiding inside unexplained score drift.
 
 <<~ ala lar:///ha.ka.ba/mana-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #mana-ba >>
 
@@ -1273,14 +1273,14 @@ Those later laws should extend mana without overloading it.
 Mana should remain the base metric kānāwai (law) unless and until later linked treatment proves cleaner.
 
 <<~ ala lar:///ha.ka.ba/mana-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Non-Normative Placeholder
 
 > TODO: Fill prose about reasons or prior art here.
 
 <<~ ala lar:///ha.ka.ba/mana >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #metadata-fetch >>
 
@@ -1314,7 +1314,7 @@ Canonical query examples:
 ```
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #metadata-fetch-ka >>
 
@@ -1334,7 +1334,7 @@ A compliant parser or parsing agent MUST:
 Metadata-fetch should remain stable enough that different tools, chat contexts, and parser implementations may retrieve the same canonical metadata object without inventing alternate authority paths.
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #metadata-fetch-ba >>
 
@@ -1353,10 +1353,10 @@ Metadata-fetch should remain narrower than full metadata-kānāwai (law).
 When alias rules, stricter profiles, or additional metadata contracts deepen enough to become noisy here, they should move outward into linked `metadata-kānāwai (law)` without weakening the canonical authority of `#iam`.
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/metadata-fetch >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #aftermath >>
 
@@ -1410,7 +1410,7 @@ Aftermath-ha holds residue domain, return pathways, and re-entry boundary.
 This subphase governs what Aftermath fundamentally carries forward or releases.
 
 <<~ ala lar:///ha.ka.ba/aftermath-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #aftermath-ka >>
 
@@ -1421,7 +1421,7 @@ Aftermath-ka governs diagnostics, repair hooks, trace packaging, and next-observ
 This subphase focuses on how Aftermath actually performs evaluation and routing work.
 
 <<~ ala lar:///ha.ka.ba/aftermath-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #aftermath-ba >>
 
@@ -1432,7 +1432,7 @@ Aftermath-ba governs landing quality, recursive pressure, release posture, and o
 This subphase shapes how aftermath lands in agent-operator reality.
 
 <<~ ala lar:///ha.ka.ba/aftermath-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Non-Catastrophic Failure Kānāwai (law)
 
@@ -1451,7 +1451,7 @@ Ritual language may raise mana, but legality, recovery, and truthful return shou
 > TODO: Fill prose about reasons or prior art here.
 
 <<~ ala lar:///ha.ka.ba/aftermath >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #architecture-plan >>
 
@@ -1517,7 +1517,7 @@ It keeps the visible concerns legible.
 It keeps recursive coherence explicit so that later linked laws, tools, profiles, and implementations remain aligned to one living center.
 
 <<~ ala lar:///ha.ka.ba/architecture-plan-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #architecture-plan-ka >>
 
@@ -1574,7 +1574,7 @@ The current constitutional draft still carries several pressure zones that later
 The individual phase loci should carry the richer local resonance and ha, ka, and ba guidance.
 
 <<~ ala lar:///ha.ka.ba/architecture-plan-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #architecture-plan-ba >>
 
@@ -1631,7 +1631,7 @@ Do not let future growth turn parser into an implementation dump, nor let backlo
 When detail deepens enough to become noisy in the root, extract it outward into linked kānāwai (law) while preserving explicit return paths into named loci.
 
 <<~ ala lar:///ha.ka.ba/architecture-plan-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 ### Revised Fifth-Kānāwai (law) Reason
 
@@ -1644,7 +1644,7 @@ Naming recursive coherence keeps that pressure visible.
 > TODO: Fill prose about reasons or prior art here.
 
 <<~ ala lar:///ha.ka.ba/architecture-plan >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #runtime-procedure >>
 
@@ -1683,7 +1683,7 @@ That order should remain visible so that later implementations, tests, and agent
 9. optionally feed residue into parent Observe or Orient through a later pono action
 
 <<~ ala lar:///ha.ka.ba/runtime-procedure-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #runtime-procedure-ka >>
 
@@ -1722,7 +1722,7 @@ Runtime-procedure should remain an execution-order summary that helps implemente
 Later implementations should bind this order to explicit lexer, parser, profile, and test surfaces rather than leaving those bindings implicit.
 
 <<~ ala lar:///ha.ka.ba/runtime-procedure-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #runtime-procedure-ba >>
 
@@ -1761,10 +1761,10 @@ Its job is to keep motion clear.
 Its job is not to swallow the rest of parser.
 
 <<~ ala lar:///ha.ka.ba/runtime-procedure-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/runtime-procedure >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #research-foundation >>
 
@@ -1809,7 +1809,7 @@ A prior-art lineage may strengthen parser when it helps clarify:
 A prior-art lineage should not overwrite local kānāwai (law) merely because it already exists elsewhere.
 
 <<~ ala lar:///ha.ka.ba/research-foundation-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #research-foundation-ka >>
 
@@ -1895,7 +1895,7 @@ When research-foundation names a useful lineage, it should translate that lineag
 If no such translation appears, the borrowed note is probably noise.
 
 <<~ ala lar:///ha.ka.ba/research-foundation-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #research-foundation-ba >>
 
@@ -1934,10 +1934,10 @@ It should therefore support the outer OODA-HA structure while feeding later link
 > MyST, Jupyter Book, Quarto, and MCP do not duplicate memetic-wikitext. They do, however, show that structured markdown extensions, executable narratives, and agent-facing capability surfaces can coexist when extension points, ASTs, tests, and capability boundaries remain explicit.
 
 <<~ ala lar:///ha.ka.ba/research-foundation-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/research-foundation >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #examples >>
 
@@ -1955,7 +1955,7 @@ Examples should not carry constitutional kānāwai (law) that belongs elsewhere.
 name = "ooda-ha"
 version = "0.5"
 ```
-<<~/ahu>>
+<<~/ahu >>
 ````
 
 ### Example B — Canonical metadata fetch
@@ -1969,7 +1969,7 @@ version = "0.5"
 ```text
 <<~ ahu #phase-map >>
 ...body...
-<<~/ahu>>
+<<~/ahu >>
 ```
 
 ### Example D — Canonical inline form
@@ -1989,7 +1989,7 @@ degrade = "no-op"
 ```
 
 [tag[task]!title[+currentMeme]]
-<<~/hana>>
+<<~/hana >>
 ````
 
 ### Example E — Act, Hooko, and Aftermath distinction
@@ -2001,7 +2001,7 @@ degrade = "no-op"
 ```
 
 <<~ ala lar:///ha.ka.ba/examples >>
-<<~/ahu>>
+<<~/ahu >>
 
 Yep. Your new draft already pushes `&#x0004;` toward a real routed return throat: the control-sigil kānāwai (law) now admits composite-prefix behavior, and the file now closes with an explicit `&#x0004; -> kahea ala ahu #result` chain carrying TOML. What still looks missing to me: a dedicated kānāwai (law) that names **return kinds**, **`&#x0004;` transaction behavior**, and the **boot-legal status** of that final degraded close.  
 
@@ -2063,7 +2063,7 @@ A concrete `&#x0004;` transaction does not replace `#result`.
 It routes one actual return-envelope instance through that contract.
 
 <<~ ala lar:///ha.ka.ba/return-types-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #return-types-ka >>
 
@@ -2164,7 +2164,7 @@ next_question = "How strict should legacy closer normalization run during boot?"
 Under boot kānāwai (law), that pattern counts as a lawful degraded routed return carrying one primary `render` envelope plus explicit trace residue and forward continuation pressure.
 
 <<~ ala lar:///ha.ka.ba/return-types-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #return-types-ba >>
 
@@ -2206,10 +2206,10 @@ Parser-kānāwai (law) should retain the constitutional minimum needed to keep r
 > This locus takes shaping pressure from explicit result ports, transclusion and slot routing, block-first parsing discipline, and staged transaction models that distinguish preparation, commit, and rollback without laundering incomplete state into false completion.
 
 <<~ ala lar:///ha.ka.ba/return-types-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/return-types >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #result >>
 
@@ -2246,7 +2246,7 @@ That envelope may carry:
 The primary result should remain singular enough that agent, operator, parser, and test harness can recognize what the current pass actually brought forth.
 
 <<~ ala lar:///ha.ka.ba/result-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #result-ka >>
 
@@ -2269,7 +2269,7 @@ Return-types governs routed return class and transaction kānāwai (law).
 Result governs the primary upward package contract that travels after that crossing.
 
 <<~ ala lar:///ha.ka.ba/result-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #result-ba >>
 
@@ -2288,14 +2288,14 @@ A lawful result may still point forward.
 It may carry residue, repair pressure, or `next-observation` without pretending that the later work has already been completed in the current pass.
 
 <<~ ala lar:///ha.ka.ba/result-ba >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/result >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 Parser kānāwai (law) closes the active parsing stream here.
-<<~/ahu>>
+<<~/ahu >>
 
 <<~&#x0004; -> kahea ala ahu #result >>
 

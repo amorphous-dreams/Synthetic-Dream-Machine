@@ -25,7 +25,7 @@ covers = []
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 ```
-<<~/ahu>>
+<<~/ahu >>
 
 # Skill Package Template
 

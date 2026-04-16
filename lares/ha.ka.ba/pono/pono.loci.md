@@ -28,7 +28,7 @@ canonical_metadata_payload = "toml"
 law_index_root = "lar:///ha.ka.ba/pono"
 skill_package_root = "ha.ka.ba/pono/"
 ```
-<<~/ahu>>
+<<~/ahu >>
 
 # Pono
 
@@ -47,7 +47,7 @@ Pono names, addresses, and relates every active kānāwai (law) in this system. 
 
 <<~&#x0002; ahu #meme-body-open >>
 Pono opens the kānāwai (law) index stream here.
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #phase-map >>
 
@@ -58,7 +58,7 @@ Pono opens the kānāwai (law) index stream here.
 Pono gathers the kānāwai (law) roster, maps roles and addresses, selects the right kānāwai (law) or skill for the query, prepares an index envelope, crosses the threshold, and judges completeness.
 
 <<~ ala lar:///ha.ka.ba/pono#phase-map >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #law-index >>
 
@@ -68,9 +68,10 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 
 | Name | Address | Role |
 |---|---|---|
+| meme | `lar:///ha.ka.ba/meme` | canonical skeleton meme, required/optional element kānāwai (law), and rating-target authority |
 | memetic-wikitext | `lar:///ha.ka.ba/pono/boot-wikitext` | minimal viable boot grammar and sigil kānāwai (law) |
-| memetic-wikitext | `lar:///ha.ka.ba/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
 | parser | `lar:///ha.ka.ba/pono/parser` | parsing, normalization, metadata fetch, parse aftermath |
+| memetic-wikitext | `lar:///ha.ka.ba/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
 | render-pipeline | `lar:///ha.ka.ba/pono/render-pipeline` | lowering, widget tree, render projection, trace continuity |
 | guest-grammar | `lar:///ha.ka.ba/pono/guest-grammar` | guest grammar admission kānāwai (law), hana worksite contract, host-guest ownership |
 | x-tiddlywiki-filter | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
@@ -94,7 +95,7 @@ Kānāwai (law)-index-ha holds registry identity and membership criteria.
 This subphase governs what makes a meme a kānāwai (law) and what earns a place in this index.
 
 <<~ ala lar:///ha.ka.ba/pono#law-index-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #law-index-ka >>
 
@@ -105,10 +106,10 @@ Kānāwai (law)-index-ka governs address stability, role precision, and dependen
 This subphase keeps the index machine-readable without losing human legibility.
 
 <<~ ala lar:///ha.ka.ba/pono#law-index-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/pono#law-index >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #skill-index >>
 
@@ -128,7 +129,7 @@ A compliant skill package should declare which kānāwai (law) address it covers
 
 First skill package candidates, in priority order:
 
-* `hana` form legality — verify block-only constraint, payload-authority correctness for first fenced `toml` inside `hana`, and explicit closer matching through `<<~/hana>>`
+* `hana` form legality — verify block-only constraint, payload-authority correctness for first fenced `toml` inside `hana`, and explicit closer matching through `<<~/hana >>`
 * local degradation — verify no-op or empty-set return and boundary warning when `hana` guest work cannot run lawfully
 * `+currentMeme` context handling — verify null-context case degrades truthfully rather than fabricating a result
 * trace continuity — verify source span, AST node, widget node, and output or residue remain linked across guest work lowering
@@ -146,7 +147,7 @@ Skill-index-ha holds package identity and coverage scope.
 This subphase governs what a skill package must declare to be registered here.
 
 <<~ ala lar:///ha.ka.ba/pono#skill-index-ha >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #skill-index-ka >>
 
@@ -157,14 +158,14 @@ Skill-index-ka governs file naming, invariant declaration, and pass/fail surface
 This subphase keeps skill packages testable and auditable.
 
 <<~ ala lar:///ha.ka.ba/pono#skill-index-ka >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/pono#skill-index >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~&#x0003; ahu #body-close >>
 Pono closes the kānāwai (law) index stream here.
-<<~/ahu>>
+<<~/ahu >>
 
 <<~ ahu #result >>
 
@@ -178,7 +179,7 @@ A lawful pono envelope may carry:
 * gaps or absences named explicitly
 
 <<~ ala lar:///ha.ka.ba/pono#result >>
-<<~/ahu>>
+<<~/ahu >>
 
 <<~&#x0004; -> kahea ala ahu #result >>
 
