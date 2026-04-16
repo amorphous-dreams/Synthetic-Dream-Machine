@@ -4,6 +4,7 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "guest-grammar"
 file_path = "ha.ka.ba/pono/loci.guest-grammar.md"
 description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
@@ -17,9 +18,18 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "guest-grammar admission kānāwai (law), invocation-boundary kānāwai (law), and host-guest ownership contract"
 function = "define how memetic-wikitext admits, names, bounds, invokes, degrades, and hands forward guest grammars under explicit host control"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+grammar_registry_root = "lar:///ha.ka.ba/grammars/"
+canonical_guest_worksite = "hana"
+product_identity = "Guest Grammar kānāwai (law) cluster name as used in this system"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|guest grammar declaration|hana worksite|query|artifact|bundle|stream|?"
 output = "guest-envelope(high manaoio^)|partial-guest-envelope(mid manaoio-)|degraded-guest-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
@@ -28,11 +38,7 @@ depends_on = [
   "lar:///ha.ka.ba/pono/render-pipeline",
   "lar:///ha.ka.ba/pono"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-grammar_registry_root = "lar:///ha.ka.ba/grammars/"
-canonical_guest_worksite = "hana"
-product_identity = "Guest Grammar kānāwai (law) cluster name as used in this system"
+# <<~/ahu >>
 ```
 <<~/ahu >>
 

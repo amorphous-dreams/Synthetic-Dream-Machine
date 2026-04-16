@@ -45,20 +45,15 @@ A room. Dials on the wall. The operator's hand finds them.
 <<~ ahu #iam >>
 
 ```toml
-# HA SLOT — what LARES.md describes
-
+# <<~ ahu #iam-ha "structure" >>
 address         = "lar:///LARES"
 name            = "lares"
 file_path       = "LARES.md"
 description     = "Configuration surface. Where the agent-operator pair customizes catma, Maybe Logic, Stances, and Masks over Voices. End of the boot chain; beginning of the session's real work."
 version         = "0.1-alpha"
-
 tagspace        = "adjacent"
-
 # Ratings measure pono-alignment (operator clarification #4).
-# Tulen names the primary boot-trust surface. High mana, manao,
-# manaoio, and confidence support high tulen while boot may still
-# hold it provisionally pending later confirmation.
+# Tulen names the primary boot-trust surface. High mana, manao, manaoio, and confidence support high tulen while boot may still hold it provisionally pending later confirmation.
 tulen           = 0.95   # provisional genuine trust; primary boot trust surface
 confidence      = 0.80
 mana            = 0.85   # capacity as config surface
@@ -68,8 +63,15 @@ content_type    = "text/x-memetic-wikitext"
 meme_type       = "configuration-surface"
 register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * stateful"
-
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 boot_order      = 999    # end of chain (∞ informal)
+# Quiescence: stateful. Unlike Mu's stateless rest, LARES holds session config at last setting.
+# The operator can return and re-dial without re-booting the chain.
+quiescent       = "config-present"
+collision_mode  = "surface-as-meme"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 
 requires        = ["full-stack"]   # all kānāwai loaded upstream
 receives_state  = "full-stack"
@@ -87,13 +89,7 @@ emits_state     = """
 }
 """
 next            = null    # hello-world; operator steers
-
-# Quiescence: stateful. Unlike Mu's stateless rest, LARES holds
-# session config at last setting. The operator can return and
-# re-dial without re-booting the chain.
-quiescent       = "config-present"
-
-collision_mode  = "surface-as-meme"
+# <<~/ahu >>
 ```
 
 <!-- One Council-register paragraph. Measured, not mythic.         -->

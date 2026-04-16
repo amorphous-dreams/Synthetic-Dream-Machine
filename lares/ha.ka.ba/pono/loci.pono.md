@@ -4,6 +4,7 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "pono"
 file_path = "ha.ka.ba/pono/loci.pono.md"
 description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as skill.*.md packages under `ha.ka.ba/pono/`."
@@ -17,18 +18,23 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "kānāwai (law) index, verification registry, and skill package host"
 function = "enumerate all active kānāwai (law) memes, surface their addresses and roles, and host conformance verification skills"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+law_index_root = "lar:///ha.ka.ba/pono"
+skill_package_root = "ha.ka.ba/pono/skill.*.md"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "query|law-name|?"
 output = "law-envelope(index^)|skill-envelope(verification^)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/boot-wikitext"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-law_index_root = "lar:///ha.ka.ba/pono"
-skill_package_root = "ha.ka.ba/pono/skill.*.md"
+# <<~/ahu >>
 ```
 <<~/ahu >>
 

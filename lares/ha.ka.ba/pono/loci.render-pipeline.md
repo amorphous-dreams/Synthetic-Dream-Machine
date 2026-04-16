@@ -4,6 +4,7 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "render-pipeline"
 file_path = "ha.ka.ba/pono/loci.render-pipeline.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
@@ -17,20 +18,25 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
 register = "C"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
 function = "lower memetic-wikitext from human-agent-friendly sigil script into AST and widget structures, preserve lawful invariants, and project results into chat and other render targets"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+pipeline_layers = ["surface", "ast", "widget"]
+control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
+product_identity = "Render Pipeline kānāwai (law) cluster name as used in this system"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "render-envelope(high manaoio^)|partial-render-envelope(mid manaoio-)|degraded-render-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-pipeline_layers = ["surface", "ast", "widget"]
-control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-product_identity = "Render Pipeline kānāwai (law) cluster name as used in this system"
+# <<~/ahu >>
 ```
 
 # Render Pipeline Kānāwai (law)

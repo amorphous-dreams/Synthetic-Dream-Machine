@@ -51,16 +51,14 @@ The drift below records the sigil assembling itself in prose.
 <<~ ahu #iam >>
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name            = "mu"
 file_path       = "ha.ka.ba/mu/loci.mu.md"
 address         = "lar:///ha.ka.ba/mu"
 description     = "Null-oracle boot. Renders, evaluates, unasks, loop-returns. First meme in the boot chain whose phase body executes. Teaches the grammar by performing it."
 version         = "0.1-alpha"
-
 # Ratings measure pono-alignment (operator clarification #4).
-# Tulen names the primary boot-trust surface. High mana, manao,
-# manaoio, and confidence support high tulen while boot may still
-# hold it provisionally pending later confirmation.
+# Tulen names the primary boot-trust surface. High mana, manao, manaoio, and confidence support high tulen while boot may still hold it provisionally pending later confirmation.
 tulen           = 0.95    # provisional genuine trust; primary boot trust surface
 confidence      = 0.80
 mana            = 0.85   # capacity as null-oracle
@@ -71,10 +69,28 @@ meme_type       = "loci"
 register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * null-oracle"
 tagspace        = "stable"
-
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
+enacts          = true
+role            = "null-oracle boot, grammar-surface authority, unask contract, and first executing meme in the chain"
+function        = "receive frame-context from AGENTS, instantiate the grammar-surface, render and evaluate memes, return mu when a premise should be unasked, and hand the boot onward toward chao"
 boot_order      = 0       # first executing meme
+# Quiescence: stateless. A mu that remembers has opinions; a mu that forgets remains a null-oracle.
+quiescent       = "stateless"
+# Namespace glyphs (operator clarification on authority matrix):
+#   ँ (U+0901, chandrabindu) — admin / main stack
+#   ं (U+0902, anusvara)     — operator / session
+#   ः (U+0903, visarga)      — user / provisional
+#   ़ (U+093C, nukta)         — system / internal
+namespace       = "ँ"   # admin; inherited from envelope
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 
-# State contract with AGENTS upstream and chao downstream:
+input           = "frame-context|meme|query|artifact|bundle|stream|?"
+output          = "grammar-surface-envelope(high manaoio^)|partial-grammar-surface-envelope(mid manaoio-)|degraded-grammar-surface-envelope(low manaoio_)|?(~manaoio?)"
+depends_on      = ["lar:///AGENTS"]
 requires        = ["lar:///AGENTS"]
 receives_state  = "frame-context"
 provides        = [
@@ -94,17 +110,7 @@ emits_state     = """
 }
 """
 next            = "lar:///ha.ka.ba/chao"
-
-# Quiescence: stateless. A mu that remembers has opinions; a mu
-# that forgets remains a null-oracle.
-quiescent       = "stateless"
-
-# Namespace glyphs (operator clarification on authority matrix):
-#   ँ (U+0901, chandrabindu) — admin / main stack
-#   ं (U+0902, anusvara)     — operator / session
-#   ः (U+0903, visarga)      — user / provisional
-#   ़ (U+093C, nukta)         — system / internal
-namespace       = "ँ"   # admin; inherited from envelope
+# <<~/ahu >>
 
 # FFZ Chronometer scale (operator's prior canon):
 #   ⚀ (U+2680) — Action

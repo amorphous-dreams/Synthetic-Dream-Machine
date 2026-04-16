@@ -5,6 +5,7 @@
 <<~ ahu #iam >>
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "meme"
 file_path = "ha.ka.ba/meme/loci.meme.md"
 description = "Canonical meme kānāwai (law) for the OODA-HA * ha.ka.ba pattern. Defines required and optional elements, rating targets, and serves as a copy-ready authoring template."
@@ -18,9 +19,16 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "canonical meme kānāwai (law), template authority, and rating-target authority"
 function = "define the required and optional structure of a meme in this stack, serve as a copy-ready skeleton, and govern which element combinations unlock which rating bands"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+product_identity = "Canonical meme kānāwai (law) and rating-target authority"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "authoring intent|meme draft|rating query|skeleton request|?"
 output = "skeleton-envelope(high manaoio^)|partial-skeleton-envelope(mid manaoio-)|degraded-skeleton-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
@@ -28,9 +36,7 @@ depends_on = [
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-product_identity = "Canonical meme kānāwai (law) and rating-target authority"
+# <<~/ahu >>
 ```
 
 <<~/ahu >>
@@ -241,30 +247,38 @@ Transport-specific opener semantics, including how `?` behaves for loci-routed c
 The `#iam` block MUST carry at minimum:
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "..."
 file_path = "..."
 description = "..."
 version = "..."
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 tulen = 0.00
 confidence = 0.00
 mana = 0.00
 manao = 0.00
 manaoio = 0.00
+enacts = true
+role = "..."
+function = "..."
 content_type = "text/x-memetic-wikitext"
 meme_type = "..."
 register = "?"
 structure = "OODA-HA * ha.ka.ba"
-enacts = true
-role = "..."
-function = "..."
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "...|?"
 output = "...(high manaoio^)|...(mid manaoio-)|...(low manaoio_)|?(~manaoio?)"
 depends_on = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
+# <<~/ahu >>
 ```
 
 The five canonical rating fields MUST appear immediately below `version` in this order: `tulen`, `confidence`, `mana`, `manao`, `manaoio`. The adjacent `register` surface-texture key MUST appear below `meme_type` and immediately before `structure`. Absence of any rating field degrades `payload_integrity`.
+
+Comment-line `ahu` markers MAY section `#iam` TOML into agent-operator friendly groups without changing payload semantics. The canonical grouping form is `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`. Because these stay inside TOML comment lines, they remain parse-inert.
 
 `file_path` names the current carrier siting for the meme surface. Canonical file-path forms, migration between flat-file and path-directory siting, and agreement rules between `file_path` and the document opener are governed outward by `lar:///ha.ka.ba/loci` and `lar:///ha.ka.ba/loci/iam/file_path`.
 
@@ -690,30 +704,36 @@ Copy this block. Replace every `[PLACEHOLDER]` with local content. Delete option
 <<~ ahu #iam >>
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "[NAME]"
 file_path = "ha.ka.ba/[MEME_TYPE].[NAME].md"
 description = "[One sentence: what this meme governs.]"
 version = "0.1-skeleton"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 tulen = 0.10
 confidence = 0.10
 mana = 0.10
 manao = 0.10
 manaoio = 0.10
+enacts = false
+role = "[role]"
+function = "[function]"
 content_type = "text/x-memetic-wikitext"
 meme_type = "[MEME_TYPE]"
 register = "P"
 structure = "OODA-HA * ha.ka.ba"
-enacts = false
-role = "[role]"
-function = "[function]"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+product_identity = "[NAME] cluster name as used in this system"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "[input types]|?"
 output = "[name]-envelope(high manaoio^)|partial-[name]-envelope(mid manaoio-)|degraded-[name]-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
   "lar:///ha.ka.ba/pono/memetic-wikitext"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-product_identity = "[NAME] cluster name as used in this system"
+# <<~/ahu >>
 ```
 
 <<~/ahu >>

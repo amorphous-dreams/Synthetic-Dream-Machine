@@ -4,6 +4,7 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "x-tiddlywiki-filter"
 file_path = "ha.ka.ba/grammars/grammar.x-tiddlywiki-filter.md"
 description = "Registered imported function sigil grammar for TiddlyWiki-style filter work under explicit hana admission."
@@ -17,9 +18,20 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "grammar"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
 function = "define the admitted x-tiddlywiki-filter guest family, its host-facing priming contract, its sigil-centric term shifts, and its minimum lawful use through hana"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+grammar_key = "x-tiddlywiki-filter"
+guest_mime = "text/x-tiddlywiki-filter"
+invocation_worksite = "hana"
+prior_art_name = "TiddlyWiki filter language"
+product_identity = "X-TiddlyWiki-Filter grammar meme as used in this system"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "hana worksite|guest grammar query|filter body|artifact|bundle|stream|?"
 output = "grammar-envelope(high manaoio^)|partial-grammar-envelope(mid manaoio-)|degraded-grammar-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
@@ -28,13 +40,7 @@ depends_on = [
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-grammar_key = "x-tiddlywiki-filter"
-guest_mime = "text/x-tiddlywiki-filter"
-invocation_worksite = "hana"
-prior_art_name = "TiddlyWiki filter language"
-product_identity = "X-TiddlyWiki-Filter grammar meme as used in this system"
+# <<~/ahu >>
 ```
 <<~/ahu >>
 

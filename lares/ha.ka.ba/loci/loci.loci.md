@@ -5,6 +5,7 @@
 <<~ ahu #iam >>
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "loci"
 file_path = "ha.ka.ba/loci/loci.loci.md"
 description = "Routing kānāwai (law) for resolving lar: URIs to repository file paths. Declares the derivation algorithm, meme-type prefix table, carrier coherence predicates, address stability criteria, canon promotion rules, and the MCP-resolution research roadmap for all memes in this system."
@@ -18,26 +19,33 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
 register = "CS"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "routing kānāwai (law), carrier coherence authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 function = "resolve lar: URIs to file paths by local derivation where possible, surface current resolution tension where derivation misses, and govern carrier coherence, address stability, canon promotion, and MCP-resolution research"
-input = "lar: URI|routing query|meme_type|file_path|?"
-output = "routing-envelope(high manaoio^)|partial-routing-envelope(mid manaoio-)|degraded-routing-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/meme"
-]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 install_root = "lares/"
 path_root = "ha.ka.ba/"
 mcp_resolution_status = "research-roadmap"
 product_identity = "Loci routing kānāwai (law) as used in this system"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "lar: URI|routing query|meme_type|file_path|?"
+output = "routing-envelope(high manaoio^)|partial-routing-envelope(mid manaoio-)|degraded-routing-envelope(low manaoio_)|?(~manaoio?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/memetic-wikitext",
+  "lar:///ha.ka.ba/meme"
+]
+# <<~/ahu >>
 ```
 
 <<~/ahu >>
 
 # Loci
+
+<<~ ala lar:///ha.ka.ba/loci >>
 
 A self-describing routing authority for all `lar:` URIs in this system.
 
@@ -46,8 +54,6 @@ Loci declares the algorithm an agent uses to resolve a `lar:` URI to a file path
 This meme does not govern parse recognition, render lowering, or conformance verification. Those belong to their own kānāwai (law). Loci governs only routing — the traversal from a `lar:` URI to a real file in the repository.
 
 This file is itself a candidate-stable path-directory example of a `loci` meme_type meme. Its own migration from flat-file siting to `ha.ka.ba/loci/loci.loci.md` is part of the law it describes.
-
-<<~ ala lar:///ha.ka.ba/loci >>
 
 ## Supported Queries
 

@@ -12,29 +12,41 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "skill.template"
 file_path = "ha.ka.ba/pono/skill.template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha.ka.ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
 version = "0.1-draft"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 tulen = 0.52
 confidence = 0.52
 mana = 0.54
 manao = 0.60
 manaoio = 0.42
+enacts = true
+role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
+function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
 content_type = "text/x-memetic-wikitext"
 meme_type = "skill"
 register = "S"
 structure = "SKILL.md * OODA-HA * ha.ka.ba"
-enacts = true
-role = "skill template, verification authoring guide, and pre/post-MCP implementation roadmap"
-function = "describe the required shape of a pono verification skill package, declare the dual-surface SKILL.md + memetic-wikitext composition, and provide implementation patterns for grammar conformance checking"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+skill_package_root = "ha.ka.ba/pono/skill.*.md"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "target-meme|law-address|invariant-set|query|artifact|bundle|stream|?"
+output = "skill-envelope(high manaoio^)|partial-skill-envelope(mid manaoio-)|degraded-skill-envelope(low manaoio_)|?(~manaoio?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/memetic-wikitext",
+  "lar:///ha.ka.ba/pono"
+]
 covers = []
 invariants = []
 pass_surface = "all declared invariants hold; result envelope carries status = 'pass' with per-invariant verdicts"
 fail_surface = "one or more invariants fail; result envelope carries status = 'fail' with named failing invariant, observed surface, and repair path"
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-skill_package_root = "ha.ka.ba/pono/skill.*.md"
+# <<~/ahu >>
 ```
 <<~/ahu >>
 
@@ -111,6 +123,8 @@ fail_surface = "[description of what a failing result carries and what it names]
 ```
 
 `covers` may name more than one law address when the skill verifies a cross-law invariant.
+
+Comment-line `ahu` markers MAY group the `#iam` TOML into agent-operator friendly sections. The canonical grouping form is `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`.
 
 <<~ ahu #dual-surface-ha >>
 

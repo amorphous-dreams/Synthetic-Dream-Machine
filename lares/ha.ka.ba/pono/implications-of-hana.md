@@ -4,25 +4,25 @@
 
 <<~ ahu #iam >>
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "implictations-of-hana"
 file_path = "ha.ka.ba/pono/implications-of-hana.md"
 description = "Follow-on memo meme naming the canonical consequences of adopting block-only hana for guest work grammars, with concrete update instructions for current law memes."
 version = "0.1-draft"
+tulen = 0.41
+confidence = 0.38
+mana = 0.46
+manao = 0.72
+manaoio = 0.34
 content_type = "text/x-memetic-wikitext"
+meme_type = "loci"
+register = "PS"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "migration meme, alignment memo, canonical-update instruction set, and example patch charter"
 function = "capture the implications of adopting block-only hana and direct how the current canonical memes should update without swallowing each other's authority"
-input = "law change|hana decision|canonical memes|query|artifact|bundle|stream|?"
-output = "implication-envelope(high mana'o'io^)|partial-implication-envelope(mid mana'o'io-)|degraded-implication-envelope(low mana'o'io_)|?(~mana'o'io?)"
-depends_on = [
-  "lar:///ha.ka.ba/pono/guest-grammar",
-  "lar:///ha.ka.ba/grammars/x-tiddlywiki-filter",
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline",
-  "lar:///ha.ka.ba/pono"
-]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 affected_memes = [
@@ -33,6 +33,19 @@ affected_memes = [
 ]
 canonical_guest_worksite = "hana"
 product_identity = "Implictations of Hana meme as used by this swarm"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "law change|hana decision|canonical memes|query|artifact|bundle|stream|?"
+output = "implication-envelope(high mana'o'io^)|partial-implication-envelope(mid mana'o'io-)|degraded-implication-envelope(low mana'o'io_)|?(~mana'o'io?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/guest-grammar",
+  "lar:///ha.ka.ba/grammars/x-tiddlywiki-filter",
+  "lar:///ha.ka.ba/pono/memetic-wikitext",
+  "lar:///ha.ka.ba/pono/parser",
+  "lar:///ha.ka.ba/pono/render-pipeline",
+  "lar:///ha.ka.ba/pono"
+]
+# <<~/ahu >>
 ```
 <<~/ahu >>
 

@@ -5,6 +5,7 @@
 <<~ ahu #iam >>
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "parser"
 file_path = "ha.ka.ba/pono/loci.parser.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
@@ -18,9 +19,19 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
 register = "C"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "parsing kānāwai (law), normalization kānāwai (law), metadata fetch kānāwai (law), and deterministic scripting contract"
 function = "parse documents, classify forms, normalize surfaces, surface typed issues, and return addressed metadata or parse products"
+canonical_metadata_locus = "#iam"
+canonical_metadata_payload = "toml"
+canonical_forms = ["inline", "block", "payload-block", "return"]
+control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
+canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
+product_identity = "Parser kānāwai (law) cluster name as used in this system"
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
 input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
 output = "return-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
 depends_on = [
@@ -28,12 +39,7 @@ depends_on = [
   "lar:///ha.ka.ba/ooda-ha",
   "lar:///ha.ka.ba/error-result"
 ]
-canonical_metadata_locus = "#iam"
-canonical_metadata_payload = "toml"
-canonical_forms = ["inline", "block", "payload-block", "return"]
-control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
-product_identity = "Parser kānāwai (law) cluster name as used in this system"
+# <<~/ahu >>
 ```
 
 <<~/ahu >>

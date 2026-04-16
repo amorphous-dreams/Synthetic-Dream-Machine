@@ -3,6 +3,7 @@
 <<~ ahu #iam >>
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 name = "memetic-wikitext"
 file_path = "ha.ka.ba/pono/loci.memetic-wikitext.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
@@ -16,15 +17,11 @@ content_type = "text/x-memetic-wikitext"
 meme_type = "loci"
 register = "S"
 structure = "OODA-HA * ha.ka.ba"
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 enacts = true
 role = "constitutional root kānāwai (law), authoring kānāwai (law), primitive semantic kānāwai (law), and boot grammar contract"
 function = "govern lawful memetic-wikitext authoring surface, define primitive meanings and composition, and provide the minimum semantic and grammatical contract consumed by parser and render-pipeline"
-input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
-output = "meme-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
-depends_on = [
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline"
-]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
 canonical_forms = ["inline", "block", "payload-block", "return"]
@@ -42,6 +39,15 @@ non_goals = [
   "full-render-lowering-pipeline",
   "full-transaction-lifecycle"
 ]
+# <<~/ahu >>
+# <<~ ahu #iam-ba "flow" >>
+input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
+output = "meme-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
+depends_on = [
+  "lar:///ha.ka.ba/pono/parser",
+  "lar:///ha.ka.ba/pono/render-pipeline"
+]
+# <<~/ahu >>
 ```
 
 <<~/ahu >>
@@ -966,7 +972,10 @@ High `mana`, `manao`, `manaoio`, and `confidence` support high `tulen`.
 In canonical `#iam` TOML, the five canonical rating fields SHOULD appear immediately below `version`, and the adjacent `register` surface-texture key SHOULD appear below `meme_type` and immediately before `structure`, in this order:
 
 ```toml
+# <<~ ahu #iam-ha "structure" >>
 version = "..."
+# <<~/ahu >>
+# <<~ ahu #iam-ka "detail" >>
 tulen = 0.00
 confidence = 0.00
 mana = 0.00
@@ -976,9 +985,12 @@ content_type = "..."
 meme_type = "..."
 register = "?"
 structure = "..."
+# <<~/ahu >>
 ```
 
 This placement treats the rating cluster as first-class identity information directly under `version`, while `register` remains the downstream agent-operator surface texture that reads the confidence result.
+
+Comment-line `ahu` markers MAY section these groups inside TOML without changing payload semantics. Use `# <<~ ahu #iam-ha "structure" >>`, `# <<~ ahu #iam-ka "detail" >>`, and `# <<~ ahu #iam-ba "flow" >>`, each closed by `# <<~/ahu >>`, as the canonical human-facing grouping form.
 
 ### Interaction and Independence Kānāwai (law)
 
