@@ -27,6 +27,8 @@ canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 product_identity = "Parser kānāwai (law) cluster name as used in this system"
+confidence = 0.86
+confidence_band = "CS"
 ```
 
 <<~/ahu>>
@@ -544,6 +546,20 @@ Semantic role:
 
 * response or resolved-return throat
 
+#### `hana`
+
+Permitted forms:
+
+* `block`
+* `payload-block`
+
+Semantic role:
+
+* invitation-to-work primitive
+* bounded worksite for active work, data or code processing, or guest-grammar entry
+* local priming payload authority when first meaningful child carries fenced `toml`
+* canonical closer `<<~/hana>>`
+
 A later extension may declare further sigil types and permitted forms, but parser should require that declaration to remain explicit.
 
 <<~/ahu>>
@@ -954,6 +970,28 @@ Filter mode functions as a context-sensitive sub-grammar.
 Parser kānāwai (law) imports TiddlyWiki filter concepts, helper code, and strict grammar discipline here, while constraining entry points so that filter syntax does not leak across the whole document surface.
 
 Parser kānāwai (law) should keep this sub-grammar explicit, bounded, and host-declared.
+
+Guest grammars such as `x-tiddlywiki-filter` should enter a guest mode only through an explicit `hana` block. A `hana` block carrying `grammar = "x-tiddlywiki-filter"` in its priming payload may lawfully open filter mode for the span of its guest instruction body. Filter punctuation should not leak outside admitted `hana` regions.
+
+### Term-Consistency Rule
+
+Parser should treat `+currentMeme` as the canonical host-facing context pointer in examples, diagnostics, and guest-work notes for `x-tiddlywiki-filter`.
+
+Where parser cites TiddlyWiki prior art, it may mention `currentTiddler` in quoted or explanatory fashion, but host-facing examples and law statements should surface `+currentMeme`.
+
+Canonical guest-work example for parser context:
+
+````text
+<<~ hana #work >>
+```toml
+grammar = "x-tiddlywiki-filter"
+context = "+currentMeme"
+degrade = "no-op"
+```
+
+[+currentMeme] [get[status]]
+<<~/hana>>
+````
 
 ### Non-Breaking Parent Parse Kānāwai (law)
 
@@ -1936,6 +1974,20 @@ version = "0.5"
 ```text
 <<~ ala lar:///ha.ka.ba/ooda-ha >>
 ```
+
+### Example F — Canonical `hana` guest-work block
+
+````text
+<<~ hana #work >>
+```toml
+grammar = "x-tiddlywiki-filter"
+context = "+currentMeme"
+degrade = "no-op"
+```
+
+[tag[task]!title[+currentMeme]]
+<<~/hana>>
+````
 
 ### Example E — Act, Hooko, and Aftermath distinction
 

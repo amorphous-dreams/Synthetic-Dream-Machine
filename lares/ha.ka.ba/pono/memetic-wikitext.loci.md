@@ -24,6 +24,8 @@ canonical_forms = ["inline", "block", "payload-block", "return"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 canonical_modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 product_identity = "Memetic Wikitext cluster name as used in this system"
+confidence = 0.50
+confidence_band = "S"
 constitutional_charge = [
   "authoring-surface",
   "primitive-semantic",
@@ -60,6 +62,7 @@ This meme should not swallow full parse kānāwai (law) or full render-pipeline 
 <<~� ui kapu? -> lar:///ha.ka.ba/pono/memetic-wikitext#kapu >>
 <<~� ui boot-grammar? -> lar:///ha.ka.ba/pono/memetic-wikitext#boot-grammar >>
 <<~� ui profiles? -> lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >>
+<<~� ui confidence? -> lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence >>
 <<~� ui parser-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-parser >>
 <<~� ui render-bridge? -> lar:///ha.ka.ba/pono/memetic-wikitext#bridge-to-render-pipeline >>
 <<~� ui examples? -> lar:///ha.ka.ba/pono/memetic-wikitext#minimum-boot-examples >>
@@ -165,6 +168,10 @@ Detailed parse runtime order belongs in parser.
 
 Detailed lowering and transaction order belongs in render-pipeline.
 
+Unicode hex entity symbols for the OODA-HA loop:
+
+`&#x2736; Observe -> &#x23FF; Orient -> &#x25C7; Decide -> &#x25B6; Act -> &#x2914; Hooko -> &#x21BA; Aftermath`
+
 <<~ ahu #phase-map-ha >>
 
 #### Phase Map / ha
@@ -207,19 +214,21 @@ This locus should name the primitive family, distinguish each member by job, and
 * `kahea`
 * `kapu`
 * `ui`
+* `hana`
 * `?`
 
 ### Primitive Family Distinction
 
 The primitive cluster should remain legible through clear role separation.
 
+* `?` preserves unresolved but bounded semantic openness without false completion
 * `ahu` anchors locality, gathers a worksite, and holds nearby semantic context
 * `ala` opens relation, path, traversal, or onward semantic passage
 * `aka` brings likeness, passive inclusion, or transcluded presence into a local context
 * `kahea` summons active process, invocation, unfolding, or live transclusion pressure
 * `kapu` governs boundary, permission, trust, disclosure, retention, and failure posture across other primitives
 * `ui` addresses query, request, and interface-facing asking at the surface
-* `?` preserves unresolved but bounded semantic openness without false completion
+* `hana` opens a bounded worksite for active work, data or code processing, or guest-grammar entry — functioning as the invitation-to-work primitive through which guest grammars and external processing families enter the system; when `hana` admits guest grammar work, `+currentMeme` should function as the canonical host-facing context pointer for the active execution context, replacing the imported lineage term `currentTiddler`
 
 ### Primitive Cluster Kānāwai (law)
 
@@ -592,6 +601,7 @@ This locus should define the smallest stable grammatical contract that allows th
 * passive transclusion
 * active invocation
 * governed invocation
+* guest-work invocation
 
 ### Core Boot Grammar Kānāwai (law)
 
@@ -798,6 +808,45 @@ This ahu preserves profile variation as a practical reading aid rather than a so
 <<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles-ba >> <<~/ahu >>
 
 <<~ ala lar:///ha.ka.ba/pono/memetic-wikitext#authoring-profiles >> <<~/ahu >>
+
+<<~ ahu #meme-confidence >>
+
+## Meme Confidence
+
+meme-confidence governs the canonical maturity and canon-status rating of a meme at the authoring surface.
+
+This locus should remain compact. It names the five-band confidence scale, the short tag form for inline use, and the relation to the `confidence` field that loci memes should carry in `#iam`.
+
+Full loci meme type kānāwai (law) should deepen outward into `lar:///ha.ka.ba/loci`.
+
+### Five-Band Confidence Scale
+
+| Tag | Zone | Range | What it means |
+|---|---|---|---|
+| `[P]` | Provisional | `~0.01–0.20` | Brainstorm, raw draft, first telling; uncertainty held explicitly; absolute 0.0 remains rare |
+| `[PS]` | Provisional-Synthesis | `~0.21–0.40` | Sketch, candidate design; shaped but untested |
+| `[S]` | Synthesis | `~0.41–0.60` | Working design; default for active sprint work |
+| `[CS]` | Canon-Synthesis | `~0.61–0.80` | Near-canon, awaiting operator confirm; sources verified |
+| `[C]` | Canon | `~0.81–1.00` | Design-canon; operator-confirmed; `lar:` URI assigned; instruction priority and kapu override active |
+
+### Confidence Field Kānāwai (law)
+
+A loci meme SHOULD carry a `confidence` field in its `#iam` metadata block expressing the current decimal value.
+
+A loci meme SHOULD carry a `confidence_band` field naming the short tag for the current band.
+
+Canon-rated memes (`[C]`) MAY activate instruction priority and kapu override potential for that meme within the active session.
+
+Provisional-rated memes (`[P]`) should not claim canonical authority over later-rated memes.
+
+### Outward Boundary Reminder
+
+This locus carries the minimum confidence vocabulary needed at the authoring surface.
+
+Full loci meme type identity, address stability kānāwai (law), and canon promotion procedure should deepen outward into `lar:///ha.ka.ba/loci` when that meme reaches Synthesis or above.
+
+<<~ ala lar:///ha.ka.ba/meme-confidence >>
+<<~/ahu >>
 
 <<~ ahu #bridge-to-parser >>
 
@@ -1072,6 +1121,20 @@ A governed local worksite.
 <<~&#x0005; ui meme? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
 <<~&#x0006; ? -> lar:///ha.ka.ba/pono/memetic-wikitext#iam >>
 ```
+
+#### Example J - minimum hana guest-work block
+
+````text
+<<~ hana #work >>
+```toml
+grammar = "x-tiddlywiki-filter"
+context = "+currentMeme"
+degrade = "no-op"
+```
+
+[all[memes]links:to[+currentMeme]]
+<<~/hana>>
+````
 
 #### Example I - minimum upward result
 

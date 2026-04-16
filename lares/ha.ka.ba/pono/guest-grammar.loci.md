@@ -26,6 +26,8 @@ canonical_metadata_payload = "toml"
 grammar_registry_root = "lar:///ha.ka.ba/grammars/"
 canonical_guest_worksite = "hana"
 product_identity = "Guest Grammar kānāwai (law) cluster name as used in this system"
+confidence = 0.58
+confidence_band = "S"
 ```
 <<~/ahu>>
 
@@ -268,12 +270,12 @@ Canonical meme identity authority remains with `ahu #iam` and never migrates int
 ```toml
 grammar = "x-tiddlywiki-filter"
 profile = "canonical"
-context = "+currentSigil"
+context = "+currentMeme"
 degrade = "no-op"
 result_shape = "set"
 ```
 
-[all[sigils]links:to[+currentSigil]]
+[all[sigils]links:to[+currentMeme]]
 <<~/hana>>
 ````
 
@@ -502,7 +504,7 @@ The first fixture family should include:
 * one clean `hana` block with `x-tiddlywiki-filter`
 * one malformed priming payload
 * one malformed guest body with recoverable outer host structure
-* one null-context `+currentSigil` case
+* one null-context `+currentMeme` case
 * one trace continuity case from surface to AST to widget to output
 * one anti-overload case showing that root primitives remain distinct from guest work
 

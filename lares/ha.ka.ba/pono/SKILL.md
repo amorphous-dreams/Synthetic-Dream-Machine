@@ -18,6 +18,8 @@ function = "describe the required shape of a pono verification skill package"
 covers = []
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
+confidence = 0.32
+confidence_band = "PS"
 ```
 <<~/ahu>>
 

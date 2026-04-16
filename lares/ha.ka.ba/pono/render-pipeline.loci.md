@@ -9,7 +9,7 @@ file_path = "ha.ka.ba/pono/render-pipeline.loci.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
-structure = "OODA-HA"
+structure = "OODA-HA * ha.ka.ba"
 enacts = true
 role = "pipeline kānāwai (law), lowering kānāwai (law), widget-tree kānāwai (law), render projection kānāwai (law), and trace continuity contract"
 function = "lower memetic-wikitext from human-agent-friendly sigil script into AST and widget structures, preserve lawful invariants, and project results into chat and other render targets"
@@ -24,6 +24,8 @@ canonical_metadata_payload = "toml"
 pipeline_layers = ["surface", "ast", "widget"]
 control_sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 product_identity = "Render Pipeline kānāwai (law) cluster name as used in this system"
+confidence = 0.84
+confidence_band = "CS"
 ```
 
 # Render Pipeline Kānāwai (law)
@@ -32,7 +34,7 @@ A self-describing, self-enacting rendering and lowering kānāwai (law) for meme
 
 This meme governs how a reader, parser, renderer, agent, or target adapter may carry one memetic object through three linked product layers:
 
-1. high-mana sigil script surface
+1. high-mana sigil script surface (memetic wikitext)
 2. parsed AST
 3. widget tree
 
@@ -131,7 +133,7 @@ This subphase lowers entry cost and prepares the later loops.
 
 ## Phase Map
 
-`&#x2736; Observe -> &#x23FF; Orient -> &#x25C7; Decide -> &#x25B6; Act -> &#x2914; Hooko -> &#x21BA; Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ↺ Aftermath`
 
 Render Pipeline kānāwai (law) gathers the surface, maps the layers, chooses lawful lowerings, prepares projection, crosses the render threshold, and judges the landing.
 
@@ -179,7 +181,7 @@ This subphase keeps the loop readable without flattening it into vague pipeline 
 
 Render Pipeline kānāwai (law) recognizes three linked product layers:
 
-1. `surface` - the high-mana human-agent-friendly sigil script meme
+1. `surface` - the high-mana human-agent-friendly sigil script meme (memetic wikitext)
 2. `ast` - the parsed syntax and semantic product suitable for validation and transformation
 3. `widget` - the render-facing structured tree suitable for rapid projection into chat and other targets
 
@@ -946,6 +948,91 @@ This subphase keeps the kānāwai (law) high-yield and implementation-facing.
 <<~/ahu>>
 
 <<~ ala lar:///ha.ka.ba/pono/render-pipeline#research-foundation >>
+<<~/ahu>>
+
+<<~ ahu #guest-work-lowering >>
+
+## Guest Work Lowering
+
+Guest-work-lowering governs how `hana` surface regions lower through the three product layers into AST, widget, and target-facing results.
+
+A `hana` surface region should lower through at least these products:
+
+* one `GuestWorkNode` in the AST layer — carrying grammar key, context key, priming payload, and guest instruction body
+* one `GuestWorkResultWidget` in the widget layer — carrying the resolved or degraded result of the guest instruction
+* one trace path linking source span, AST node, widget node, and landed output or residue
+
+Lowering should preserve:
+
+* the priming payload distinct from the guest instruction body
+* the grammar identity across all three layers
+* trace continuity even when the guest instruction degrades or produces no-op output
+
+Degraded guest work should still preserve trace where possible rather than collapsing silently.
+
+### Term-Consistency Rule
+
+A guest work result derived from `+currentMeme` should remain traceable as `+currentMeme` through all three layers.
+
+The context pointer should not revert to older imported naming (`currentTiddler`) in AST, widget, or result metadata.
+
+Canonical context field alignment:
+
+* surface context field: `+currentMeme`
+* AST context field: `+currentMeme`
+* widget provenance field: `+currentMeme`
+
+### Canonical Three-Layer Example
+
+````text
+surface:
+<<~ hana #work >>
+```toml
+grammar = "x-tiddlywiki-filter"
+context = "+currentMeme"
+result_shape = "set"
+```
+
+[+currentMeme] [get[status]]
+<<~/hana>>
+
+ast:
+GuestWorkNode(grammar="x-tiddlywiki-filter", context="+currentMeme", result_shape="set", body="[+currentMeme] [get[status]]")
+
+widget:
+GuestWorkResultWidget(source=GuestWorkNode, result=<set|degraded|no-op>)
+````
+
+<<~ ahu #guest-work-lowering-ha >>
+
+#### Guest Work Lowering / ha
+
+Guest-work-lowering-ha holds the minimum product family that must survive between `hana` admission and render landing.
+
+This ahu keeps the guest path visible across layers.
+
+<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering-ha >>
+<<~/ahu>>
+
+<<~ ahu #guest-work-lowering-ka >>
+
+#### Guest Work Lowering / ka
+
+Guest-work-lowering-ka governs the minimum continuity claims the renderer may rely on when lowering guest work into widget and target forms.
+
+<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering-ka >>
+<<~/ahu>>
+
+<<~ ahu #guest-work-lowering-ba >>
+
+#### Guest Work Lowering / ba
+
+Guest-work-lowering-ba governs degradation posture, trace preservation, and lawful no-op landing when guest work cannot complete.
+
+<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering-ba >>
+<<~/ahu>>
+
+<<~ ala lar:///ha.ka.ba/pono/render-pipeline#guest-work-lowering >>
 <<~/ahu>>
 
 <<~&#x0003; ahu #body-close >>

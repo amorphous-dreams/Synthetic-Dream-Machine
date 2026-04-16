@@ -109,7 +109,7 @@ This meme should remain bounded by the host, invoked through `hana`, and transla
 
 * the grammar key `x-tiddlywiki-filter`
 * the host-facing term shift from tiddler to Sigil
-* the host-facing term shift from `currentTiddler` to `+currentSigil`
+* the host-facing term shift from `currentTiddler` to `+currentMeme`
 * the minimum preserved feature family expected at boot
 * the canonical relation between imported function sigils and host `hana` worksites
 * the minimum degradation and lowering expectations specific to this imported grammar
@@ -159,13 +159,13 @@ References to “tiddlers” are deprecated in this host context.
 
 Use **Sigil** for the atomic unit of data addressed by the imported grammar under memetic-wikitext.
 
-Use `+currentSigil` as the dynamic reference to the active execution context.
+Use `+currentMeme` as the dynamic reference to the active execution context.
 
 ### Canonical Direct Reuse Pattern
 
 * `tiddler` -> `sigil`
 * `tiddlers` -> `sigils`
-* `currentTiddler` -> `+currentSigil`
+* `currentTiddler` -> `+currentMeme`
 
 ### Translation Law
 
@@ -220,7 +220,7 @@ This grammar enters the host through `hana`.
 A lawful boot profile should therefore use a `hana` block with local priming payload that names:
 
 * `grammar = "x-tiddlywiki-filter"`
-* a lawful context, often `+currentSigil`
+* a lawful context, often `+currentMeme`
 * a degradation posture
 * an optional result shape
 
@@ -232,13 +232,13 @@ The guest filter body remains inside the `hana` worksite and does not execute am
 <<~ hana #work >>
 ```toml
 grammar = "x-tiddlywiki-filter"
-context = "+currentSigil"
+context = "+currentMeme"
 profile = "canonical"
 degrade = "no-op"
 result_shape = "set"
 ```
 
-[all[sigils]links:to[+currentSigil]]
+[all[sigils]links:to[+currentMeme]]
 <<~/hana>>
 ````
 
@@ -339,10 +339,10 @@ Boot-feature-set-ba remains intentionally light.
 <<~ hana #work >>
 ```toml
 grammar = "x-tiddlywiki-filter"
-context = "+currentSigil"
+context = "+currentMeme"
 ```
 
-[all[sigils]links:to[+currentSigil]]
+[all[sigils]links:to[+currentMeme]]
 <<~/hana>>
 ````
 
@@ -352,10 +352,10 @@ context = "+currentSigil"
 <<~ hana #work >>
 ```toml
 grammar = "x-tiddlywiki-filter"
-context = "+currentSigil"
+context = "+currentMeme"
 ```
 
-[tag[task]!title[+currentSigil]]
+[tag[task]!title[+currentMeme]]
 <<~/hana>>
 ````
 
@@ -365,10 +365,10 @@ context = "+currentSigil"
 <<~ hana #work >>
 ```toml
 grammar = "x-tiddlywiki-filter"
-context = "+currentSigil"
+context = "+currentMeme"
 ```
 
-[+currentSigil] [get[status]]
+[+currentMeme] [get[status]]
 <<~/hana>>
 ````
 
@@ -378,10 +378,10 @@ context = "+currentSigil"
 <<~ hana #work >>
 ```toml
 grammar = "x-tiddlywiki-filter"
-context = "+currentSigil"
+context = "+currentMeme"
 ```
 
-[list[+currentSigil!!parent-list]]
+[list[+currentMeme!!parent-list]]
 <<~/hana>>
 ````
 
@@ -391,7 +391,7 @@ context = "+currentSigil"
 <<~ hana #work >>
 ```toml
 grammar = "x-tiddlywiki-filter"
-context = "+currentSigil"
+context = "+currentMeme"
 ```
 
 [all[sigils]untagged[]!is[system]]
@@ -434,7 +434,7 @@ Canonical-examples-ba stays intentionally light.
 
 If this guest grammar is malformed, unsupported, or context-null, a lawful boot profile should degrade toward No-Op or empty-set return and emit one boundary warning rather than collapsing the parent parse.
 
-The host must not silently fabricate `+currentSigil` when the active context remains absent.
+The host must not silently fabricate `+currentMeme` when the active context remains absent.
 
 The parser may preserve literal residue or unresolved-region trace when truthful salvage requires it.
 

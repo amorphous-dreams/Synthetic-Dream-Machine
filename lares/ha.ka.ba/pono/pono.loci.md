@@ -6,7 +6,7 @@
 ```toml
 name = "pono"
 file_path = "ha.ka.ba/pono/pono.loci.md"
-description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as SKILL.md packages under lares/ha.ka.ba/pono/."
+description = "Index of all memetic-wikitext kānāwai (law) memes. Hosts verification skills as SKILL.md packages under `ha.ka.ba/pono/`."
 version = "0.1-draft"
 content_type = "text/x-memetic-wikitext"
 structure = "OODA-HA * ha.ka.ba"
@@ -16,12 +16,14 @@ function = "enumerate all active kānāwai (law) memes, surface their addresses 
 input = "query|law-name|?"
 output = "law-envelope(index^)|skill-envelope(verification^)|?(~mana'o'io?)"
 depends_on = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext"
+  "lar:///ha.ka.ba/pono/boot-wikitext"
 ]
 canonical_metadata_locus = "#iam"
 canonical_metadata_payload = "toml"
-law_index_root = "lar:///ha.ka.ba/"
-skill_package_root = "lares/ha.ka.ba/pono/"
+law_index_root = "lar:///ha.ka.ba/pono"
+skill_package_root = "ha.ka.ba/pono/"
+confidence = 0.65
+confidence_band = "CS"
 ```
 <<~/ahu>>
 
@@ -48,7 +50,7 @@ Pono opens the kānāwai (law) index stream here.
 
 ## Phase Map
 
-`&#x2736; Observe -> &#x23FF; Orient -> &#x25C7; Decide -> &#x25B6; Act -> &#x2914; Hooko -> &#x21BA; Aftermath`
+`✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act -> ⤴ Hooko -> ↺ Aftermath`
 
 Pono gathers the kānāwai (law) roster, maps roles and addresses, selects the right kānāwai (law) or skill for the query, prepares an index envelope, crosses the threshold, and judges completeness.
 
@@ -63,10 +65,18 @@ Active kānāwai (law) memes registered under `lar:///ha.ka.ba/`:
 
 | Name | Address | Role |
 |---|---|---|
+| memetic-wikitext | `lar:///ha.ka.ba/pono/boot-wikitext` | minimal viable boot grammar and sigil kānāwai (law) |
 | memetic-wikitext | `lar:///ha.ka.ba/pono/memetic-wikitext` | surface grammar and sigil kānāwai (law) |
 | parser | `lar:///ha.ka.ba/pono/parser` | parsing, normalization, metadata fetch, parse aftermath |
 | render-pipeline | `lar:///ha.ka.ba/pono/render-pipeline` | lowering, widget tree, render projection, trace continuity |
+| guest-grammar | `lar:///ha.ka.ba/pono/guest-grammar` | guest grammar admission kānāwai (law), hana worksite contract, host-guest ownership |
+| x-tiddlywiki-filter | `lar:///ha.ka.ba/grammars/x-tiddlywiki-filter` | first registered hana guest grammar |
 | pono | `lar:///ha.ka.ba/pono` | kānāwai (law) index and verification skill host |
+| loci | `lar:///ha.ka.ba/loci` | *(planned)* loci meme type identity, address stability, and canon promotion kānāwai (law) |
+
+The `guest-grammar` and `x-tiddlywiki-filter` kānāwai (law) memes carry a canonical host-facing term shift: `tiddler` → `meme`, `currentTiddler` → `+currentMeme`. Host-facing examples and law statements throughout the stack should reflect this shift. Imported lineage terms may appear only in visibly quoted prior-art notes.
+
+A **loci meme** occupies the stable `lar:///ha.ka.ba/*` tagspace with a locked address, a stable `lar:` URI. Loci memes carry `confidence` and `confidence_band` fields in `#iam`, and they reach prospective-canon status (`[CS]` or above) before an admin or operator may move them to `[C]` canon status. Other meme types may drift their path-root address (what3words-style path root section). *(planned)* The full loci kānāwai (law) should deepen into `lar:///ha.ka.ba/loci`; see `lar:///ha.ka.ba/pono/memetic-wikitext#meme-confidence` for the five-band confidence scale.
 
 A kānāwai (law) meme is active when it carries `enacts = true` in its `#iam` metadata block.
 
@@ -110,6 +120,19 @@ Each skill package verifies conformance of one or more kānāwai (law) memes.
 | *(none yet)* | — | — |
 
 A compliant skill package should declare which kānāwai (law) address it covers, what invariants it checks, and what a passing result looks like.
+
+### Verification Backlog
+
+First skill package candidates, in priority order:
+
+* `hana` form legality — verify block-only constraint, payload-authority correctness for first fenced `toml` inside `hana`, and explicit closer matching through `<<~/hana>>`
+* local degradation — verify no-op or empty-set return and boundary warning when `hana` guest work cannot run lawfully
+* `+currentMeme` context handling — verify null-context case degrades truthfully rather than fabricating a result
+* trace continuity — verify source span, AST node, widget node, and output or residue remain linked across guest work lowering
+* anti-overload — verify root primitives remain distinct from guest work; `ahu`, `ala`, `aka`, `kahea`, `kapu`, `ui`, `hana`, and `?` do not acquire foreign roles through guest grammar admission
+* term-shift alignment — verify host examples use `meme` instead of `tiddler` where the ontology already shifted
+* term-shift alignment — verify host examples use `+currentMeme` instead of `currentTiddler` in all law statements and guest-work examples
+* term-shift alignment — verify imported lineage phrases such as "Function Tiddlers" or `currentTiddler` appear only in visibly quoted prior-art notes rather than silently mixed into host law statements
 
 <<~ ahu #skill-index-ha >>
 
