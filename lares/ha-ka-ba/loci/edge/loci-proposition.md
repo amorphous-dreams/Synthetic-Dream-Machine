@@ -21,17 +21,13 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "semantic edge kānāwai (law), proposition authority, and ontology-link bridge"
 function = "govern labeled semantic relations between concepts sigils memes and loci while keeping proposition meaning distinct from execution or message flow"
 link-phrase-required = true
 ontology-backed = true
-default-direction = "forward"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "semantic relation|ontology question|link label|?"
-output = "proposition-envelope(high manaoio^)|partial-proposition-envelope(mid manaoio-)|degraded-proposition-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"

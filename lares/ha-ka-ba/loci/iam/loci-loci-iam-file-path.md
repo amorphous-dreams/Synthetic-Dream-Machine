@@ -6,7 +6,7 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "file-path"
+name = "loci/iam/file-path"
 file-path = "ha-ka-ba/loci/iam/loci-file-path.md"
 description = "Kānāwai (law) for the file-path metadata key. Governs its two canonical forms (flat-file and path-directory), its required agreement with the lar: URI in the document opener, and the migration procedure when a meme moves between forms."
 version = "0.1-draft"
@@ -30,9 +30,7 @@ path-root = "ha-ka-ba/"
 install-root = "lares/"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "file-path value|#iam TOML block|lar: URI|migration request|?"
-output = "file-path-envelope(high manaoio^)|partial-file-path-envelope(mid manaoio-)|degraded-file-path-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
      "lar:///ha.ka.ba/loci/iam",
      "lar:///ha.ka.ba/pono/memetic-wikitext",
      "lar:///ha.ka.ba/loci",
@@ -84,8 +82,6 @@ name = "file_path-observe"
 description = "Observe phase for raw file_path value capture from the #iam TOML block."
 role = "key value intake"
 function = "locate the file_path key in #iam, capture its raw string value, and note the document opener lar: URI for later agreement check"
-input = "#iam TOML block|meme surface|?"
-output = "raw file_path value|document opener lar: URI|meme name"
 phase = "observe"
 glyph = "✶"
 ```
@@ -147,8 +143,7 @@ name = "file_path-orient"
 description = "Orient phase for file_path form classification, URI agreement check, and migration-state assessment."
 role = "form classification and agreement mapping"
 function = "classify the file_path value into flat-file or path-directory form, check agreement with the lar: URI and meme_type, and assess whether the meme sits in a transitional migration state"
-input = "raw file_path value|document opener lar: URI|meme_type|meme name"
-output = "form classification|agreement verdict|migration state|open tensions"
+tensions"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -291,8 +286,7 @@ name = "file_path-decide"
 description = "Decide phase for conformance verdict, migration-posture commitment, and repair-path selection."
 role = "conformance commitment"
 function = "commit to a form verdict (flat-file, path-directory, malformed, transitional), issue the URI agreement verdict, and fix the repair path for any failure"
-input = "form classification|agreement verdict|migration state|open tensions"
-output = "form verdict|agreement verdict|migration posture|repair path"
+path"
 phase = "decide"
 glyph = "◇"
 ```
@@ -362,8 +356,6 @@ name = "file_path-act"
 description = "Act phase for conformance report preparation, repair guidance, and migration-step staging."
 role = "repair and report preparation"
 function = "assemble the conformance report with form and agreement verdicts, stage repair guidance for any failure, and prepare migration steps for Hooko during ongoing migration"
-input = "form verdict|agreement verdict|migration posture|repair path"
-output = "conformance report|repair guidance|staged migration steps|prepared return-envelope"
 phase = "act"
 glyph = "▶"
 ```
@@ -421,8 +413,6 @@ name = "file_path-hooko"
 description = "Hooko phase for file migration execution and document opener correction."
 role = "file_path mutation threshold"
 function = "execute git mv on migration, update file_path in #iam, and correct any agreement violation in the document opener"
-input = "staged migration steps|document opener correction"
-output = "moved file|updated #iam file_path|updated document opener|transaction trace"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -472,8 +462,6 @@ name = "file_path-aftermath"
 description = "Aftermath phase for migration completeness judgment, carrier-coherence check, and residue surfacing."
 role = "file_path evaluation and sync judgment"
 function = "judge whether all migration crossings completed, verify carrier coherence and physical-file agreement, and surface any incomplete crossings as named residue"
-input = "transaction trace|physical file state|document opener state"
-output = "migration completeness verdict|coherence judgment|residue list|next-observation route"
 phase = "aftermath"
 glyph = "↺"
 ```

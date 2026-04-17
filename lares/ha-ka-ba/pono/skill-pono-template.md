@@ -13,7 +13,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "template"
+name = "pono/skill-template"
 file-path = "ha-ka-ba/pono/skill-pono-template.md"
 description = "Template and authoring guide for memetic-wikitext verification skill packages under lares/ha-ka-ba/pono/. Covers the SKILL.md * OODA-HA * ha.ka.ba structure, invariant declaration, pre-MCP Python and Node implementation patterns, and post-MCP roadmap."
 version = "0.1-draft"
@@ -34,14 +34,10 @@ function = "describe the required shape of a pono verification skill package, de
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "target-meme|law-address|invariant-set|query|artifact|bundle|stream|?"
-output = "skill-envelope(high manaoio^)|partial-skill-envelope(mid manaoio-)|degraded-skill-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
     "lar:///ha.ka.ba/pono/memetic-wikitext",
     "lar:///ha.ka.ba/pono"
 ]
-covers = []
-invariants = []
 pass-surface = "all declared invariants hold; result envelope carries status = 'pass' with per-invariant verdicts"
 fail-surface = "one or more invariants fail; result envelope carries status = 'fail' with named failing invariant, observed surface, and repair path"
 # <<~/ahu >>

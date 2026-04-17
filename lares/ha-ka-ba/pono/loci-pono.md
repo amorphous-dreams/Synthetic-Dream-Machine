@@ -27,9 +27,7 @@ law-index-root = "lar:///ha.ka.ba/pono"
 skill-package-root = "ha-ka-ba/pono/skill-*.md"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "query|law-name|?"
-output = "law-envelope(index^)|skill-envelope(verification^)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/boot-wikitext"
 ]
 # <<~/ahu >>

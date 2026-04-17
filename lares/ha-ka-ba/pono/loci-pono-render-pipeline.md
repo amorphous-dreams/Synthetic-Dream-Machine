@@ -5,7 +5,7 @@
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "render-pipeline"
+name = "pono/render-pipeline"
 file-path = "ha-ka-ba/pono/loci-pono-render-pipeline.md"
 description = "Rendering and lowering kānāwai (law) for memetic-wikitext, covering the high-mana sigil surface, parsed AST, widget tree, render projection, trace continuity, and transactional aftermath."
 version = "0.1-draft"
@@ -27,9 +27,7 @@ pipeline-layers = ["surface", "ast", "widget"]
 control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
-output = "render-envelope(high manaoio^)|partial-render-envelope(mid manaoio-)|degraded-render-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser"
 ]
@@ -228,8 +226,6 @@ name = "render-pipeline-observe"
 description = "Observe phase for surface intake, raw render context gathering, and early layer boundary recognition."
 role = "input acquisition"
 function = "gather surface script, preserve source relation, and mark candidate layer transitions"
-input = "document bytes|text stream|fragment|query|artifact|?"
-output = "raw surface|candidate spans|source map seeds|target hints|explicit absences"
 phase = "observe"
 glyph = "&#x2736;"
 ```
@@ -299,8 +295,6 @@ name = "render-pipeline-orient"
 description = "Orient phase for layer assignment, product-family distinction, and lowering path formation."
 role = "context formation"
 function = "classify source regions, map them to pipeline layers, and hold lawful lowering options"
-input = "raw surface|candidate spans|source map seeds|target hints|explicit absences"
-output = "layer map|lowering candidates|target posture|open tensions"
 phase = "orient"
 glyph = "&#x23FF;"
 ```
@@ -366,8 +360,6 @@ name = "render-pipeline-decide"
 description = "Decide phase for lawful lowering choice, transaction class selection, and idempotency posture."
 role = "selection and commitment"
 function = "choose canonical lowerings, choose transaction class, and preserve lawful retry and trace posture"
-input = "layer map|lowering candidates|target posture|open tensions"
-output = "chosen lowerings|transaction class|idempotency posture|issue posture|recovery notes"
 phase = "decide"
 glyph = "&#x25C7;"
 ```
@@ -442,8 +434,6 @@ name = "render-pipeline-act"
 description = "Act phase for AST construction, widget lowering, and target projection preparation."
 role = "execution preparation"
 function = "build syntax products, lower them into widget structures, and prepare render payloads and trace bundles"
-input = "chosen lowerings|transaction class|idempotency posture|issue posture|recovery notes"
-output = "ast|widget tree|render payload|trace bundle|prepared transaction package"
 phase = "act"
 glyph = "&#x25B6;"
 ```
@@ -525,8 +515,6 @@ name = "render-pipeline-hooko"
 description = "Hooko phase for explicit render-threshold crossing, target commit, cache mutation, and truthful transaction landing."
 role = "state-crossing threshold"
 function = "carry prepared render work across the live threshold, land target-facing change, and preserve transaction truth"
-input = "prepared transaction package|ast|widget tree|render payload|trace bundle|issue posture"
-output = "committed render|degraded render|rolled-back render|transaction trace|target aftermath seeds"
 phase = "hooko"
 glyph = "&#x2914;"
 ```
@@ -590,8 +578,6 @@ name = "render-pipeline-aftermath"
 description = "Aftermath phase for render judgment, trace packaging, residue naming, and replay guidance."
 role = "evaluation and aftermath"
 function = "judge what landed, preserve source-to-target trace, and route repair or replay pressure forward"
-input = "committed render|degraded render|rolled-back render|transaction trace|target aftermath seeds"
-output = "render-envelope|trace bundle|repair guidance|next-observation"
 phase = "aftermath"
 glyph = "&#x21BA;"
 ```

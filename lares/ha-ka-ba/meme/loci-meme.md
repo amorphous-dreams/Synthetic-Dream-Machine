@@ -26,9 +26,7 @@ role = "canonical meme kānāwai (law), template authority, and rating-target au
 function = "define the required and optional structure of a meme in this stack, serve as a copy-ready skeleton, and govern which element combinations unlock which rating bands"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "authoring intent|meme draft|rating query|skeleton request|?"
-output = "skeleton-envelope(high manaoio^)|partial-skeleton-envelope(mid manaoio-)|degraded-skeleton-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"
@@ -88,8 +86,6 @@ name = "meme-observe"
 description = "Observe phase for surface gathering, element detection, and raw presence marking across a meme candidate."
 role = "element intake"
 function = "gather the authored surface, detect required and optional element sites, preserve raw form, and mark initial absences"
-input = "meme candidate|skeleton request|rating query|?"
-output = "raw surface|element presence map|absence map|candidate boundaries|confidence markers"
 phase = "observe"
 glyph = "✶"
 ```
@@ -196,8 +192,6 @@ name = "meme-orient"
 description = "Orient phase for element classification, required/optional mapping, stub-versus-filled distinction, and rating-band reachability assessment."
 role = "element classification"
 function = "classify detected elements as required or optional, distinguish filled content from stubs, assess sub-meme resolution states, and estimate reachable rating band"
-input = "raw surface|element presence map|absence map|candidate boundaries"
-output = "element classification map|stub map|resolution-state map|rating-band estimate|open tensions"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -269,9 +263,7 @@ role = "..."
 function = "..."
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "...|?"
-output = "...(high manaoio^)|...(mid manaoio-)|...(low manaoio_)|?(~manaoio?)"
-depends-on = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
+pranala = ["lar:///ha.ka.ba/pono/memetic-wikitext"]
 # <<~/ahu >>
 ```
 
@@ -495,8 +487,6 @@ name = "meme-decide"
 description = "Decide phase for conformance verdict, rating-target commitment, normalization posture, and skeleton-generation readiness."
 role = "selection and commitment"
 function = "commit to per-element conformance verdicts, select the reachable rating band, and fix the normalization and skeleton posture for Act"
-input = "element classification map|stub map|rating-band estimate|open tensions"
-output = "conformance verdicts|rating-target commitment|normalization plan|skeleton generation readiness"
 phase = "decide"
 glyph = "◇"
 ```
@@ -692,8 +682,6 @@ name = "meme-act"
 description = "Act phase for skeleton preparation, element assembly, normalized surface staging, and return-envelope construction."
 role = "execution preparation"
 function = "assemble the skeleton product, stage normalized element surfaces, and prepare the typed return envelope for Hooko crossing"
-input = "conformance verdicts|rating-target commitment|normalization plan"
-output = "skeleton product|normalized surface|conformance report|prepared return-envelope"
 phase = "act"
 glyph = "▶"
 ```
@@ -739,9 +727,7 @@ role = "[role]"
 function = "[function]"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "[input types]|?"
-output = "[name]-envelope(high manaoio^)|partial-[name]-envelope(mid manaoio-)|degraded-[name]-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext"
 ]
 # <<~/ahu >>
@@ -872,8 +858,6 @@ name = "meme-hooko"
 description = "Hooko phase for skeleton instantiation, file creation, session-load crossing, and mutation boundary."
 role = "state-crossing threshold"
 function = "carry the prepared skeleton across the live threshold, instantiate the new meme file, and hand changed state into aftermath"
-input = "prepared skeleton product|conformance report|prepared return-envelope"
-output = "instantiated meme file|session-load confirmation|transaction trace|handoff into aftermath"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -947,8 +931,6 @@ name = "meme-aftermath"
 description = "Aftermath phase for rating judgment, conformance report packaging, repair guidance, and recursive handoff."
 role = "evaluation and aftermath"
 function = "judge what rating the authored meme achieved, package the conformance report, name residue and repair paths, and route next observation"
-input = "instantiated meme file|transaction trace|conformance report|prepared return-envelope"
-output = "typed return-envelope|rating verdict|repair guidance|next-observation route"
 phase = "aftermath"
 glyph = "↺"
 ```

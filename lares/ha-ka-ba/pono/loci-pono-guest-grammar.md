@@ -5,7 +5,7 @@
 <<~ ahu #iam >>
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "guest-grammar"
+name = "pono/guest-grammar"
 file-path = "ha-ka-ba/pono/loci-pono-guest-grammar.md"
 description = "Kānāwai (law) for explicit admission of guest grammars into memetic-wikitext without overloading the root primitive cluster."
 version = "0.1-draft"
@@ -27,9 +27,7 @@ grammar-registry-root = "lar:///ha.ka.ba/grammars/"
 canonical-guest-worksite = "hana"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "memetic-wikitext document|guest grammar declaration|hana worksite|query|artifact|bundle|stream|?"
-output = "guest-envelope(high manaoio^)|partial-guest-envelope(mid manaoio-)|degraded-guest-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline",

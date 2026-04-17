@@ -70,22 +70,14 @@ register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * null-oracle"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts          = true
+namespace       = "ँ"   # admin; inherited from envelope
 role            = "null-oracle boot, grammar-surface authority, unask contract, and first executing meme in the chain"
 function        = "receive frame-context from AGENTS, instantiate the grammar-surface, render and evaluate memes, return mu when a premise warrants unasking, and hand the boot onward toward chao"
 boot-order      = 0       # first executing meme
-quiescent       = "stateless"
-namespace       = "ँ"   # admin; inherited from envelope
 scale           = "⚂"
-collision-mode  = "surface-as-meme"
-attenuation     = "narrow-only"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-
-input           = "frame-context|meme|query|artifact|bundle|stream|?"
-output          = "grammar-surface|render|evaluate|unask|loop"
-depends-on      = ["lar:///AGENTS"]
-next            = "lar:///ha.ka.ba/chao"
+pranala      = ["lar:///AGENTS"]
 # <<~/ahu >>
 ```
 

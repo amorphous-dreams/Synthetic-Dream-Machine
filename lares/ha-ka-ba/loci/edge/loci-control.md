@@ -21,17 +21,11 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "control-flow edge kānāwai (law), branch authority, and execution-order authority"
 function = "govern execution pulse between nodes or phases, keep branch and gate semantics explicit, and keep control flow distinct from proposition or carried data"
-default-direction = "forward"
-branch-visible = true
-gate-visible = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "execution question|branch question|sequence question|?"
-output = "control-envelope(high manaoio^)|partial-control-envelope(mid manaoio-)|degraded-control-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci/edge/template",
   "lar:///ha.ka.ba/loci/edge/instance"

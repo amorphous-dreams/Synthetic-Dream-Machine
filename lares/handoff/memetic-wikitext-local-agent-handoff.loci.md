@@ -26,9 +26,7 @@ active-pass = "ka"
 next-pass = "ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "current memetic-wikitext canvas draft|rebuild ledger|parser-law|render-pipeline-law|chat residue|?"
-output = "continued root revision(high mana'o'io^)|partial continuation(mid mana'o'io-)|degraded continuation(low mana'o'io_)|?(~mana'o'io?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/memetic-wikitext",
   "lar:///ha.ka.ba/parser-law",
   "lar:///ha.ka.ba/render-pipeline-law",

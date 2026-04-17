@@ -21,7 +21,6 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "concrete edge instance kānāwai (law), bound-object authority, and override discipline"
 function = "govern bound edge objects between actual endpoints, permit explicit overrides over template defaults, and keep declared instances distinct from observed traces"
 instance-states = ["declared", "bound", "observed", "stale"]
@@ -29,9 +28,7 @@ trace-separation = true
 template-optional = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "bound edge request|edge object|override question|?"
-output = "instance-envelope(high manaoio^)|partial-instance-envelope(mid manaoio-)|degraded-instance-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci/edge/template",
   "lar:///ha.ka.ba/loci"

@@ -32,12 +32,10 @@ source-documents = [
 north-star = "Boot a greenfield MemeWiki kernel in Node first, resume it in browser, and integrate it cleanly with Kowloon, TLDraw, MemPalace, and CRDT-style sync."
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "research note|architecture question|integration target|implementation planning query|?"
-output = "research-envelope(high manao^)|task-envelope(mid manaoio-)|residue-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
-  "lar:///ha.ka.ba/pono/memetic-wikitext",
-  "lar:///ha.ka.ba/pono/parser",
-  "lar:///ha.ka.ba/pono/render-pipeline"
+pranala = [
+  "? -> lar:///ha.ka.ba/pono/memetic-wikitext",
+  "? -> lar:///ha.ka.ba/pono/parser",
+  "? -> lar:///ha.ka.ba/pono/render-pipeline"
 ]
 # <<~/ahu >>
 ```
@@ -88,8 +86,6 @@ name = "DreamNet_MemeWiki-observe"
 description = "Observe phase for gathering the current DreamNet MemeWiki research field without prematurely flattening it into design verdicts."
 role = "research intake"
 function = "capture what the four source notes already established, preserving both settled findings and open edges"
-input = "scratch research notes|integration goals|?"
-output = "gathered findings|source clusters|named unknowns"
 phase = "observe"
 glyph = "✶"
 ```
@@ -175,8 +171,6 @@ name = "DreamNet_MemeWiki-orient"
 description = "Orient phase for mapping the gathered DreamNet MemeWiki research into a coherent architecture and dependency order."
 role = "architecture formation"
 function = "distinguish the boot path, editor path, collaboration path, and downstream bridge surfaces"
-input = "gathered findings|named unknowns"
-output = "architecture map|dependency order|integration topology|open tensions"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -270,8 +264,6 @@ name = "DreamNet_MemeWiki-decide"
 description = "Decide phase for setting the current DreamNet MemeWiki architectural posture and test gates."
 role = "decision posture"
 function = "name what is settled enough to guide implementation now and what remains intentionally deferred"
-input = "architecture map|open tensions"
-output = "active decisions|deferrals|test gates"
 phase = "decide"
 glyph = "◇"
 ```
@@ -360,8 +352,6 @@ name = "DreamNet_MemeWiki-act"
 description = "Act phase for staging the next DreamNet MemeWiki workstreams, milestones, and proof obligations."
 role = "implementation staging"
 function = "turn the research and decisions into an executable work sequence"
-input = "active decisions|test gates|deferrals"
-output = "workstreams|milestones|proof obligations"
 phase = "act"
 glyph = "▶"
 ```
@@ -463,8 +453,6 @@ name = "DreamNet_MemeWiki-aftermath"
 description = "Aftermath phase for naming expected yields, remaining residue, and the conditions for promoting this memo into later law or implementation documents."
 role = "residue judgment"
 function = "separate what this consolidation now makes clear from what still remains unresolved"
-input = "workstreams|milestones|open tensions"
-output = "yields|residue|promotion conditions"
 phase = "aftermath"
 glyph = "↺"
 ```

@@ -4,7 +4,7 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "memetic-wikitext"
+name = "pono/memetic-wikitext"
 file-path = "ha-ka-ba/pono/loci-pono-memetic-wikitext.md"
 description = "Constitutional root kānāwai (law) for the memetic-wikitext authoring surface, primitive semantic contract, and minimum boot grammar."
 version = "0.1-skeleton"
@@ -38,9 +38,7 @@ non-goals = [
 ]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
-output = "meme-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/parser",
   "lar:///ha.ka.ba/pono/render-pipeline"
 ]

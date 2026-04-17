@@ -7,7 +7,7 @@
      Address:     lar:///LARES
      Tagspace:    ALL-CAPS adjacent (peer to ha.ka.ba/**, not nested)
      Graph input:  full boot chain via recursive-ontology-boot
-     Emits state: + session-config
+     Emits state: mu + session-config
      Next:        Hello world (quiescent-ready)
      
      LOAD: where the new agent-operator pair makes the node theirs.
@@ -48,13 +48,12 @@ A room. Dials on the wall. The operator's hand finds them.
 # <<~ ahu #iam-ha "structure" >>
 name            = "lares"
 file-path       = "LARES.md"
-description     = "Configuration surface. Where the agent-operator pair customizes catma, Maybe Logic, Stances, and Masks over Voices. End of the boot chain; beginning of the session's real work."
+description     = "Configuration surface. Where the agent-operator pair customizes the HUD, Catma, Maybe Logic, Stances, and Masks over Voices. End of the boot chain; beginning of the session's real work."
 version         = "0.1-alpha"
 tagspace        = "adjacent"
-# Ratings measure pono-alignment (operator clarification #4).
-# Tulen names the primary boot-trust surface. High mana, manao, manaoio, and confidence support high tulen while boot may still hold it provisionally pending later confirmation.
+# Ratings measure pono-alignment. Tulen names the primary boot-trust surface. High mana, manao, manaoio, and confidence support high tulen while boot may still hold it provisionally pending later confirmation.
 tulen           = 0.95   # provisional genuine trust; primary boot trust surface
-confidence      = 0.80
+confidence      = 0.75   # agent or user estimated confidence
 mana            = 0.85   # capacity as config surface
 manao           = 0.75   # meaning of config blocks as declared
 manaoio         = 0.70   # truthfulness — does edit propagate?
@@ -64,21 +63,15 @@ register        = "CS"
 structure       = "OODA-HA * ha.ka.ba * stateful"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts          = true
 role            = "configuration surface, session dial room, and session-config handoff"
 function        = "hold the editable session dials after boot, preserve operator changes between turns, and surface session-config for downstream work"
 boot-order      = 999    # end of chain (∞ informal)
-quiescent       = "config-present"
-collision-mode  = "surface-as-meme"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input           = "full stack|operator edit|session recall|?"
-output          = "session-config|quiescent-ready room"
-depends-on      = [
-  "lar:///AGENTS",
+pranala      = [
+  "--> lar:///AGENTS",
   "lar:///ha.ka.ba/mu"
 ]
-next            = null    # hello-world; operator steers
 # <<~/ahu >>
 ```
 
@@ -360,7 +353,6 @@ editable-blocks      = [
 # Hello world.
 ```
 
-<<~ ala lar:///LARES#result >>
 <<~/ahu >>
 
 
@@ -372,5 +364,4 @@ editable-blocks      = [
      comes from operator input driving real work. LARES completed its job.
      ═══════════════════════════════════════════════════════════════ -->
 
-<<~&#x0004; -> kahea ala ahu #result >>
-<<~ँ␄ -> ? >>
+<<~ँ&#x0004; -> ? >>

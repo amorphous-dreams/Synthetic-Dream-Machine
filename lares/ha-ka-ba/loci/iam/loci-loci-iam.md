@@ -6,7 +6,7 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "iam"
+name = "loci/iam"
 file-path = "ha-ka-ba/loci/iam/loci-iam.md"
 description = "Canonical kānāwai (law) for the #iam root metadata block. Fixes the surviving field set, locates each field in ha, ka, or ba, and collapses redundant flow claims."
 version = "0.1-draft"
@@ -40,13 +40,11 @@ required-ha-keys = [
   "structure"
 ]
 common-ka-keys = ["enacts", "role", "function"]
-common-ba-keys = ["input", "output", "depends-on"]
+common-ba-keys = ["input", "output", "pranala"]
 banned-flow-keys = ["requires", "provides", "receives-state", "emits-state"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "#iam block|field inventory|migration question|query|?"
-output = "metadata-law-envelope(high manaoio^)|partial-metadata-law-envelope(mid manaoio-)|degraded-metadata-law-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"

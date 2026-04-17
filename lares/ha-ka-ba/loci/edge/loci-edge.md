@@ -8,7 +8,7 @@
 # <<~ ahu #iam-ha "structure" >>
 name = "loci/edge"
 file-path = "ha-ka-ba/loci/edge/loci-edge.md"
-description = "Root edge kānāwai (law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague depends-on."
+description = "Root edge kānāwai (law) for explicit graph relations in this stack. Separates edge families from lifecycle layers and gives the migration target beyond vague pranala."
 version = "0.1-draft"
 tulen = 0.72
 confidence = 0.68
@@ -21,24 +21,18 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "root edge kānāwai (law), family authority, lifecycle authority, and migration target"
 function = "govern explicit edge families, keep semantic control dataflow message constraint and debug meanings distinct, and stage migration from vague dependency claims toward bound edge objects"
 edge-families = ["proposition", "control", "dataflow", "message", "constraint", "debug"]
 lifecycle-layers = ["template", "instance", "trace"]
-invocation-surface = "kahea"
-human-readable-bias = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "edge question|graph design question|migration question|visualization query|?"
-output = "edge-law-envelope(high manaoio^)|partial-edge-envelope(mid manaoio-)|degraded-edge-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/loci/iam",
   "lar:///ha.ka.ba/meme"
 ]
-next = "lar:///ha.ka.ba/loci/edge/proposition"
 # <<~/ahu >>
 ```
 

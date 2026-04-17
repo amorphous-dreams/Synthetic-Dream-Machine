@@ -21,7 +21,6 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "template edge sigil kānāwai (law), slot-contract authority, and kahea binding authority"
 function = "govern reusable edge templates, declare slot and default surfaces, and bind template invocations into concrete edge instances without hiding context precedence"
 binding-order = ["invocation", "local-body", "addressed-iam", "session-state", "template-defaults"]
@@ -29,9 +28,7 @@ promotion-rule = "repeat-before-promotion"
 invocation-surface = "kahea"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "edge pattern|kahea invocation|slot question|?"
-output = "template-envelope(high manaoio^)|partial-template-envelope(mid manaoio-)|degraded-template-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci",
   "lar:///ha.ka.ba/meme"

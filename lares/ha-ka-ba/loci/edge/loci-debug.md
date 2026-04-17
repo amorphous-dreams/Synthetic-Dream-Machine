@@ -21,17 +21,13 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "debug edge kānāwai (law), observation authority, and hidden-edge illumination authority"
 function = "govern observation and reveal edges that surface hidden graph behavior, operator knowledge, or runtime residue without mutating the underlying ontology"
 visibility-modes = ["inline", "overlay", "trace-only", "operator-only"]
 changes-runtime = false
-source-visible = true
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "debug question|observation request|hidden-edge reveal|?"
-output = "debug-envelope(high manaoio^)|partial-debug-envelope(mid manaoio-)|degraded-debug-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/loci/edge",
   "lar:///ha.ka.ba/loci/edge/instance",
   "lar:///ha.ka.ba/loci"

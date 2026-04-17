@@ -20,7 +20,6 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "grammar meme, import-profile meme, sigil-centric translation contract, and boundary-safe work grammar registry entry"
 function = "define the admitted x-tiddlywiki-filter guest family, its host-facing priming contract, its sigil-centric term shifts, and its minimum lawful use through hana"
 grammar-key = "x-tiddlywiki-filter"
@@ -29,9 +28,7 @@ invocation-worksite = "hana"
 prior-art-name = "TiddlyWiki filter language"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "hana worksite|guest grammar query|filter body|artifact|bundle|stream|?"
-output = "grammar-envelope(high manaoio^)|partial-grammar-envelope(mid manaoio-)|degraded-grammar-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/guest-grammar",
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/pono/parser",

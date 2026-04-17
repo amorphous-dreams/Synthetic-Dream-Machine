@@ -21,17 +21,11 @@ register = "CS"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "loci-rating kānāwai (law), routing convention authority, address stability authority, canon promotion rule, and MCP-resolution roadmap"
 function = "resolve a `lar:` URI meme into routing evidence and present `mana`, `manao`, and `manaoio` posture, while governing explicit convention, address stability, canon promotion, and MCP-resolution research"
-install-root = "lares/"
-path-root = "ha-ka-ba/"
-mcp-resolution-status = "research-roadmap"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "lar: URI|routing query|meme_type|rating query|?"
-output = "loci-rating-envelope(high manaoio^)|partial-loci-rating-envelope(mid manaoio-)|degraded-loci-rating-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/meme"
 ]
@@ -108,8 +102,6 @@ name = "loci-observe"
 description = "Observe phase for `lar:` URI meme intake, opener-form recognition, and explicit-convention capture."
 role = "loci request intake"
 function = "receive the `lar:` URI meme to assess, capture the opener form and any visible convention surfaces, and note whether the request comes with a known `meme_type` or prior rating context"
-input = "lar: URI|routing query|?"
-output = "captured lar: URI|opener form|visible convention surfaces|meme_type (if known)|routing request context"
 phase = "observe"
 glyph = "✶"
 ```
@@ -181,8 +173,6 @@ name = "loci-orient"
 description = "Orient phase for URI decomposition, meme-type prefix mapping, derivation algorithm application, explicit-convention classification, and preliminary rating posture."
 role = "routing and rating classification"
 function = "decompose the `lar:` URI, apply the meme-type prefix table, run the derivation algorithm, classify the current convention as explicit or thin, and assess address stability plus preliminary rating posture"
-input = "captured lar: URI|meme_type (if known)|routing request context"
-output = "decomposed URI parts|derived candidate path|resolution classification|convention classification|stability assessment|rating posture"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -285,21 +275,18 @@ When a new `meme_type` enters use, an entry MUST join this table before any file
 
 ### Address Stability
 
-A `lar:` URI counts as stable when all three conditions hold simultaneously:
+A `lar:` URI counts as stable when all conditions hold simultaneously:
 
-1. `enacts = true` in the meme's `#iam` block
-2. `register` falls in `CS` or `C`
-3. The `lar:` URI in the document opener (R2) remains coherent with the meme's declared carrier identity and does not drift during migration or promotion
+1. `register` falls in `CS` or `C`
+2. The `lar:` URI in the document opener (R2) remains coherent with the meme's declared carrier identity and does not drift during migration or promotion
 
 A stable `lar:` URI stays **immutable**. It MUST NOT change even if the carrier migrates to a path-directory layout. On migration, delegated siting evidence may update while the address named in the opener remains the same.
 
-The `?` form in the document opener (`<<~&#x0001; ? -> lar:///...`) marks declared-open routing: the URI stands declared but address stability still lacks confirmation.
+The `?` form in the document opener (`<<~&#x0001; ? -> lar:///...`) marks holding uncertainty through the graph network. In document time a "new entity" command pattern from other programming languages.
 
 Here `?` should read as the graph's unbound uncertainty token at document time, not as filler punctuation.
 
-The `?` should remain until all three conditions above hold.
-
-That opener law differs from the meme footer law: even after opener `?` eventually gets removed at canon, a lawful meme may still discharge residual uncertainty outward through its footer `... -> ? >>`.
+A lawful meme MUST still discharge residual uncertainty outward through its footer `... -> ? >>`.
 
 <!-- OPTIONAL: <<~ ala lar:///ha.ka.ba/loci-address-stability >> -->
 <<~/ahu >>
@@ -406,8 +393,6 @@ name = "loci-decide"
 description = "Decide phase for resolution posture selection, rating assignment, and canon promotion stage commitment."
 role = "resolution and rating commitment"
 function = "commit to one resolution posture, assign the current `mana`, `manao`, and `manaoio` posture, and fix the current lifecycle stage"
-input = "decomposed URI parts|derived candidate path|resolution classification|convention classification|stability assessment|rating posture"
-output = "resolution commitment|rating set|lifecycle stage|routing product type|normalization plan"
 phase = "decide"
 glyph = "◇"
 ```
@@ -453,7 +438,6 @@ The full five-register rubric appears in `lar:///ha.ka.ba/meme#rating-targets`. 
 Higher `CS` posture for a `loci` typed meme additionally expects:
 
 * All nine required elements (R1–R9) present per `lar:///ha.ka.ba/meme`
-* `enacts = true`
 * Stable-address discipline strong enough to justify `CS`
 
 **Promotion from typed meme (`loci`) to canon typed meme (`loci`)** additionally requires:
@@ -541,8 +525,6 @@ name = "loci-act"
 description = "Act phase for rating-envelope preparation, local resolution output, forward reference emission for declared-unresolved addresses, and MCP-resolution roadmap staging."
 role = "rating and routing product preparation"
 function = "emit the current rating set, any resolved carrier path, prepare the MCP-resolution roadmap note, and emit typed forward references for declared-unresolved addresses"
-input = "resolution commitment|canon stage|routing product type"
-output = "rating set|resolved carrier path|mcp-resolution roadmap note|forward reference list|prepared return-envelope"
 phase = "act"
 glyph = "▶"
 ```
@@ -616,8 +598,6 @@ name = "loci-hooko"
 description = "Hooko phase for carrier mutation, promotion crossing, and any future live-resolver enactment not yet enacted here."
 role = "routing state crossing"
 function = "execute carrier mutations such as siting changes or delegated metadata updates, remove the ? from confirmed-canon document openers when justified, and name any future live-resolver crossing as external to this meme"
-input = "prepared carrier mutation|canon promotion decision|confirmed-canon document opener update"
-output = "updated carrier state|updated document opener|promotion confirmation|transaction trace"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -678,8 +658,6 @@ name = "loci-aftermath"
 description = "Aftermath phase for routing gap reporting, rating review, explicit-convention judgment, and MCP-roadmap escalation."
 role = "routing evaluation, rating review, and gap judgment"
 function = "judge which URIs resolved, which remain declared-unresolved, what rating set current evidence supports, whether explicit convention holds, and whether MCP-roadmap research should advance"
-input = "resolution results|forward reference list|transaction trace"
-output = "routing-and-rating completeness report|declared-unresolved list|convention verdict|next-observation route"
 phase = "aftermath"
 glyph = "↺"
 ```

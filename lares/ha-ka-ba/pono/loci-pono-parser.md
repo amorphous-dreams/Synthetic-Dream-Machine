@@ -6,7 +6,7 @@
 
 ```toml
 # <<~ ahu #iam-ha "structure" >>
-name = "parser"
+name = "pono/parser"
 file-path = "ha-ka-ba/pono/loci-pono-parser.md"
 description = "Full parsing kānāwai (law) for memetic-wikitext, including canonical sigil forms, metadata payload rules, mode transitions, normalization, and typed parse aftermath."
 version = "0.1-draft"
@@ -29,9 +29,7 @@ control-sigils = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&
 canonical-modes = ["preamble", "metadata", "prose", "sigil", "filter", "raw", "aftermath"]
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "memetic-wikitext document|fragment|meme|query|artifact|bundle|stream|?"
-output = "return-envelope(high manaoio^)|partial-envelope(mid manaoio-)|degraded-envelope(low manaoio_)|?(~manaoio?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/ooda-ha",
   "lar:///ha.ka.ba/error-result"
@@ -94,8 +92,6 @@ name = "parser-observe"
 description = "Observe phase for lexical intake, boundary recognition, and raw surface gathering."
 role = "input acquisition"
 function = "gather source text, detect boundaries, preserve raw surface, and mark initial gaps"
-input = "document bytes|text stream|fragment|query|artifact|?"
-output = "raw findings|candidate tokens|candidate boundaries|explicit absences|confidence markers"
 phase = "observe"
 glyph = "✶"
 ```
@@ -230,8 +226,6 @@ name = "parser-orient"
 description = "Orient phase for mode formation, sigil classification, payload recognition, and structural interpretation."
 role = "context formation"
 function = "classify regions, assign modes, relate sigil types to forms, and hold competing readings where needed"
-input = "raw findings|candidate tokens|candidate boundaries|candidate spans|named gaps"
-output = "mode map|sigil map|payload map|structural interpretation|open tensions"
 phase = "orient"
 glyph = "⏿"
 ```
@@ -383,8 +377,6 @@ name = "parser-decide"
 description = "Decide phase for canonical kānāwai (law) selection, ambiguity handling, normalization posture, and legal form enforcement."
 role = "selection and commitment"
 function = "choose canonical readings, reject illegal pairings, and fix lawful normalization routes"
-input = "mode map|sigil map|payload map|structural interpretation|open tensions"
-output = "chosen readings|scope bounds|normalization plan|issue posture|recovery notes"
 phase = "decide"
 glyph = "◇"
 ```
@@ -766,8 +758,6 @@ name = "parser-act"
 description = "Act phase for deterministic parse preparation, metadata extraction, mode transitions, normalization staging, and typed output preparation."
 role = "execution preparation"
 function = "apply parse rules, build syntax products, stage lawful variants, and prepare typed envelopes for Hooko crossing"
-input = "chosen readings|scope bounds|normalization plan|issue posture|recovery notes"
-output = "ast|metadata object|normalized text|issue objects|prepared return-envelope|prepared mutation package"
 phase = "act"
 glyph = "▶"
 ```
@@ -840,8 +830,6 @@ name = "parser-hooko"
 description = "Hooko phase for explicit state crossing, lawful mutation, continuity loading, artifact change, and transaction-pressure passage between Act and Aftermath."
 role = "state-crossing threshold"
 function = "carry prepared intent across the live threshold, perform the bounded change, preserve transaction truth, and hand changed state into aftermath without laundering mutation into narration"
-input = "prepared execution intent|chosen operation|transaction bounds|continuity pressure|artifact targets|issue posture"
-output = "changed state|committed mutation|degraded mutation|rolled-back mutation|transaction trace|handoff into aftermath"
 phase = "hooko"
 glyph = "⤴"
 ```
@@ -1436,8 +1424,6 @@ name = "parser-aftermath"
 description = "Aftermath phase for typed parse judgment, recovery discipline, trace packaging, repair guidance, and recursive handoff."
 role = "evaluation and aftermath"
 function = "judge what survived, package truthful return, preserve repairable residue, and route next observation"
-input = "syntax products|metadata object|issues|trace|normalized text|return-envelope candidate"
-output = "typed return-envelope|repair guidance|residue|next-observation"
 phase = "aftermath"
 glyph = "↺"
 ```

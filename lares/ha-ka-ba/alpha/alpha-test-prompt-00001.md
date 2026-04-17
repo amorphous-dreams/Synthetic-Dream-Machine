@@ -20,14 +20,11 @@ register = "S"
 structure = "OODA-HA * ha.ka.ba"
 # <<~/ahu >>
 # <<~ ahu #iam-ka "detail" >>
-enacts = true
 role = "session constitutional prompt, phase narration law, memory-load instruction, and failure-state indicator"
 function = "govern a talk-story development session through narrated OODA-HA loops, preserve hard-mode language constraints, define the Hooko gap as the sole site of action, and load these rules into active session memory"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "operator instruction|dev-session exchange|phase loop|?"
-output = "aligned-session-response(high mana'o'io^)|partial-session-response(mid mana'o'io-)|misaligned-session-response(low mana'o'io_)|?(~mana'o'io?)"
-depends-on = [
+pranala = [
   "lar:///ha.ka.ba/pono/memetic-wikitext",
   "lar:///ha.ka.ba/meme",
   "lar:///ha.ka.ba/loci"

@@ -26,9 +26,7 @@ handoff-scope = "parser-law root draft, return-types law, and immediate adjacent
 golden-reference-role = "one of three core golden tool references"
 # <<~/ahu >>
 # <<~ ahu #iam-ba "flow" >>
-input = "current parser-law draft|repo context|future agent attention|?"
-output = "aligned continuation(high mana'o'io^)|partial continuation(mid mana'o'io-)|misaligned continuation(low mana'o'io_)|?(~mana'o'io?)"
-depends-on = ["lar:///ha.ka.ba/pono/parser"]
+pranala = ["? -> lar:///ha.ka.ba/pono/parser"]
 # <<~/ahu >>
 ```
 <<~/ahu >>

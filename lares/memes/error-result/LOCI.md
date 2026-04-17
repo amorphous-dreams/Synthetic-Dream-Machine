@@ -7,7 +7,7 @@
         @content-type "text/x-memetic-wikitext"
         @structure "OODA-HA"
         @enacts "true"
-        @depends-on "lar:///ha.ka.ba/memetic-wikitext|lar:///ha.ka.ba/ooda-ha|lar:///ha.ka.ba/kapu"
+        @pranala "lar:///ha.ka.ba/memetic-wikitext|lar:///ha.ka.ba/ooda-ha|lar:///ha.ka.ba/kapu"
         @supersedes "lar:///ha.ka.ba/result?"
         @focus "typed aftermath law, runtime return envelope, issue taxonomy"
     >>
